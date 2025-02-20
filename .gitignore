@@ -1,0 +1,8 @@
+# Ignore environment files (API keys, credentials)
+.env
+
+# Ignore node_modules to prevent bloating repository
+node_modules/
+
+# Ignore system files
+.DS_Store
