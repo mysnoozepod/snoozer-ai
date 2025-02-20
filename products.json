@@ -1,0 +1,484 @@
+[
+    {
+        "name": "12\" All Foam Mattress",
+        "type": "Mattress",
+        "feel": "Plush",
+        "sizes": {
+            "Twin Extra Long": 1099,
+            "Queen": 1299,
+            "King": 1599,
+            "Split King": 2199,
+            "Cal King": 1599
+        },
+        "target_user": ["Side Sleepers", "Back Sleepers Who Prefer a Softer Surface"],
+        "comfort_level": "Plush",
+        "health_benefits": "Good for Pressure Relief, Provides a Sinking Feeling",
+        "features": ["Memory Foam Technology"],
+        "materials": ["High-Density Memory Foam", "Hypoallergenic Fabric Cover"],
+        "technology": "Memory Foam Technology for Enhanced Comfort and Pressure Relief",
+        "usage_instructions": "Place on any bed frame, box spring, or directly on the floor. Rotate regularly for best performance.",
+        "maintenance": "Spot clean with mild detergent and warm water. Avoid soaking the mattress.",
+        "warranty": "10-year limited warranty covering manufacturing defects and material breakdowns.",
+        "promotions": {
+            "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+            "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+            "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+        },
+        "ratings": 4.9,
+        "customer_reviews": [
+            "Absolutely love this mattress! The plush feel is perfect for side sleeping.",
+            "The memory foam provides great support and I no longer wake up with aches.",
+            "The best investment I've made for my sleep quality."
+        ],
+        "faq": {
+            "Is the mattress hypoallergenic?": "Yes, the hypoallergenic fabric cover resists dust mites, mold, and mildew.",
+            "What is the return policy?": "Mattresses can be returned under our 90-Day Sleep Trial.",
+            "Can the mattress be placed directly on the floor?": "Yes, the mattress can be placed on traditional frames, box springs, or directly on the floor."
+        },
+        "contact": {
+            "email": "support@mysnoozepod.com",
+            "phone": "1-800-SNOOZE-POD"
+        }
+    },
+    {
+        "name": "12\" Dual Comfort Hybrid Mattress",
+        "type": "Mattress",
+        "feel": ["Firm", "Medium Firm", "Medium Soft", "Soft"],
+        "sizes": {
+            "Twin Extra Long": 2099,
+            "Queen": 2499,
+            "Half Split Queen": 2999,
+            "King": 3199,
+            "Half Split King": 3799,
+            "Split King": 4199,
+            "Cal King": 3199,
+            "Half Split Cal King": 3799,
+            "Split Cal King": 4199
+        },
+        "target_user": ["Side Sleepers", "Back Sleepers"],
+        "comfort_level": "Dual Comfort Layers, Luxurious Plush Feel",
+        "health_benefits": "Reduces Pressure Points, Promotes Healthier Sleep Environment",
+        "features": ["Cooling Technology", "Durable Construction", "Hypoallergenic"],
+        "materials": ["Gel Memory Foam", "Individually Wrapped Coils", "Hypoallergenic Fabric Cover"],
+        "technology": "Dual Comfort Layers, Cooling Technology",
+        "usage_instructions": "Place on any bed frame, box spring, or directly on the floor. Rotate regularly for best performance.",
+        "maintenance": "Spot clean with mild detergent and warm water. Avoid soaking the mattress.",
+        "warranty": "10-year limited warranty covering manufacturing defects and material breakdowns.",
+        "promotions": {
+            "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+            "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+            "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+        },
+        "ratings": 4.8,
+        "customer_reviews": [
+            "Best mattress I've ever slept on! The dual comfort is a game-changer.",
+            "The cooling technology really works. I sleep so much better now.",
+            "Worth every penny. Highly recommended for anyone with back pain."
+        ],
+        "faq": {
+            "Can I choose different firmness levels for each side?": "Yes, you can customize the firmness level for each side of the mattress.",
+            "Is the mattress hypoallergenic?": "Yes, the hypoallergenic fabric cover resists dust mites, mold, and mildew.",
+            "What is the return policy?": "Mattresses can be returned under our 90-Day Sleep Trial."
+        },
+        "contact": {
+            "email": "support@mysnoozepod.com",
+            "phone": "1-800-SNOOZE-POD"
+        }
+    }
+]
+[
+    {
+        "name": "10” All Foam Mattress",
+        "type": "Mattress",
+        "feel": "Medium Firm",
+        "sizes": {
+            "Twin Extra Long": 799,
+            "Queen": 999,
+            "King": 1299,
+            "Split King": 1599,
+            "Cal King": 1299
+        },
+        "target_user": ["Back Sleepers Who Prefer a Softer Surface", "Side Sleepers Who Like a Firmer Surface"],
+        "comfort_level": "Medium Firm",
+        "health_benefits": "Good Pressure Relief, Sinking Feeling",
+        "features": ["Memory Foam Good for Pressure Relief"],
+        "materials": ["High-Density Memory Foam", "Hypoallergenic Fabric Cover"],
+        "technology": "Memory Foam Technology for Pressure Relief",
+        "usage_instructions": "Place on any bed frame, box spring, or directly on the floor. Rotate regularly for best performance.",
+        "maintenance": "Spot clean with mild detergent and warm water. Avoid soaking the mattress.",
+        "warranty": "10-year limited warranty covering manufacturing defects and material breakdowns.",
+        "promotions": {
+            "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+            "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+            "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+        },
+        "ratings": 4.7,
+        "customer_reviews": [
+            "Incredibly comfortable and supportive. The best sleep I've had in years.",
+            "Perfect balance of firm and soft. Highly recommended for back sleepers.",
+            "The memory foam really does relieve pressure points. I wake up pain-free."
+        ],
+        "faq": {
+            "Is the mattress hypoallergenic?": "Yes, the hypoallergenic fabric cover resists dust mites, mold, and mildew.",
+            "What is the return policy?": "Mattresses can be returned under our 90-Day Sleep Trial.",
+            "Can the mattress be placed directly on the floor?": "Yes, the mattress can be placed on traditional frames, box springs, or directly on the floor."
+        },
+        "contact": {
+            "email": "support@mysnoozepod.com",
+            "phone": "1-800-SNOOZE-POD"
+        }
+    },
+    {
+        "name": "Motion Base",
+        "type": "Adjustable Base",
+        "feel": "N/A",
+        "sizes": {
+            "Twin Extra Long": 1399,
+            "Queen": 2099,
+            "King": 2899
+        },
+        "target_user": ["Anyone looking for customizable sleep positions", "People with health conditions requiring elevated sleep positions"],
+        "comfort_level": "Adjustable to individual comfort preferences",
+        "health_benefits": "Enhances circulation, reduces snoring, relieves back pain",
+        "features": ["Customizable positions", "Remote control operation", "Compatibility with various mattress types"],
+        "materials": ["High-quality steel frame", "Durable motor components", "Upholstered fabric"],
+        "technology": "Remote control operation, USB charging ports, massage features (optional on certain models)",
+        "usage_instructions": "Use the remote control to adjust the head and foot positions to your desired angle. For optimal performance, ensure the base is placed on a flat, stable surface.",
+        "maintenance": "Wipe down with a damp cloth to clean. Periodically check and tighten any loose bolts or screws.",
+        "warranty": "10-year limited warranty covering manufacturing defects and mechanical issues.",
+        "promotions": {
+            "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+            "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+            "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+        },
+        "ratings": 4.8,
+        "customer_reviews": [
+            "The adjustable base has transformed my sleep. I love the customizable positions.",
+            "The best purchase I've made for my health. It's helped reduce my snoring and back pain.",
+            "Highly recommend the motion base. The remote control makes it so easy to adjust."
+        ],
+        "faq": {
+            "Can the base be used with any mattress?": "Yes, the motion base is compatible with most mattresses, including memory foam, latex, and hybrid mattresses.",
+            "Does the base have a weight limit?": "Yes, the base can support up to 850 lbs, including the mattress and occupants.",
+            "What if there is a mechanical issue?": "The base comes with a 10-year limited warranty that covers mechanical issues. Please contact customer support for assistance."
+        },
+        "contact": {
+            "email": "support@mysnoozepod.com",
+            "phone": "1-800-SNOOZE-POD"
+        }
+    }
+]
+[
+    {
+        "name": "Gelled Microfiber Pillow",
+        "type": "Accessory",
+        "feel": ["Soft", "Medium", "Firm"],
+        "sizes": {
+            "Standard": 60,
+            "Queen": 70,
+            "King": 80
+        },
+        "target_user": ["Side Sleepers", "Back Sleepers", "Stomach Sleepers"],
+        "comfort_level": "Available in Soft, Medium, and Firm to cater to different sleep positions and preferences",
+        "health_benefits": "Supports proper neck alignment, reduces neck pain, enhances sleep quality",
+        "features": ["Hypoallergenic materials", "Breathable fabric cover", "Cooling gel infusion"],
+        "materials": ["Gel-infused microfiber fill", "Hypoallergenic fabric cover"],
+        "technology": "Cooling gel technology for temperature regulation, adaptive support",
+        "usage_instructions": "Select the firmness that matches your sleeping position: Soft for stomach sleepers, Medium for back sleepers, and Firm for side sleepers.",
+        "maintenance": "Spot clean with mild detergent and warm water. Do not machine wash or dry. Air out regularly to maintain freshness.",
+        "warranty": "2-year limited warranty covering manufacturing defects and material breakdowns.",
+        "promotions": {
+            "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+            "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+            "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+        },
+        "ratings": 4.7,
+        "customer_reviews": [
+            "This pillow is a game-changer. The cooling gel keeps me comfortable all night.",
+            "Perfect blend of softness and support. I no longer wake up with neck pain.",
+            "Highly recommend for anyone looking for a high-quality, supportive pillow."
+        ],
+        "faq": {
+            "Are the pillows hypoallergenic?": "Yes, the pillows are made from hypoallergenic materials to resist dust mites, mold, and mildew.",
+            "Can the pillow cover be washed?": "The outer cover can be removed and spot cleaned, but do not machine wash the pillow itself.",
+            "What firmness should I choose?": "Choose Soft if you are a stomach sleeper, Medium for back sleepers, and Firm for side sleepers."
+        },
+        "contact": {
+            "email": "support@mysnoozepod.com",
+            "phone": "1-800-SNOOZE-POD"
+        }
+    },
+    {
+        "name": "Convolution Pillow",
+        "type": "Accessory",
+        "feel": "Adjustable firmness",
+        "sizes": {
+            "Standard": 80,
+            "Queen": 90,
+            "King": 100
+        },
+        "target_user": ["Side Sleepers", "Back Sleepers", "Stomach Sleepers"],
+        "comfort_level": "Adjustable to suit individual preferences",
+        "health_benefits": "Supports proper neck alignment, reduces neck pain, enhances sleep quality",
+        "features": ["Hypoallergenic materials", "Removable layers for customization"],
+        "materials": ["High-quality foam layers", "Hypoallergenic fabric cover"],
+        "technology": "Removable foam layers for adjustable firmness",
+        "usage_instructions": "Adjust the pillow by adding or removing foam layers to achieve your preferred firmness. Use with or without a pillowcase as preferred.",
+        "maintenance": "Spot clean with mild detergent and warm water. Do not machine wash or dry. Air out regularly to maintain freshness.",
+        "warranty": "2-year limited warranty covering manufacturing defects and material breakdowns.",
+        "promotions": {
+            "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+            "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+            "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+        },
+        "ratings": 4.8,
+        "customer_reviews": [
+            "The adjustable layers are fantastic. I can customize my pillow to the perfect firmness.",
+            "Great support and very comfortable. Helps with my neck pain.",
+            "Highly versatile pillow. Love that I can adjust it based on how I feel."
+        ],
+        "faq": {
+            "Are the pillows hypoallergenic?": "Yes, the pillows are made from hypoallergenic materials to resist dust mites, mold, and mildew.",
+            "Can the pillow cover be washed?": "The outer cover can be removed and spot cleaned, but do not machine wash the pillow itself.",
+            "How do I adjust the firmness?": "Simply remove or add foam layers to adjust the firmness to your liking."
+        },
+        "contact": {
+            "email": "support@mysnoozepod.com",
+            "phone": "1-800-SNOOZE-POD"
+        }
+    }
+]
+{
+    "name": "Triple Layer Down Pillow",
+    "type": "Accessory",
+    "feel": "Luxurious and Plush",
+    "sizes": {
+        "Standard": 100,
+        "Queen": 120,
+        "King": 140
+    },
+    "target_user": ["Side Sleepers", "Back Sleepers", "Stomach Sleepers"],
+    "comfort_level": "Plush and luxurious",
+    "health_benefits": "Provides soft support, enhances sleep quality, ideal for sensitive skin",
+    "features": ["Hypoallergenic down alternative", "Breathable cotton cover"],
+    "materials": ["Hypoallergenic down alternative", "Breathable cotton cover"],
+    "technology": "Triple-layer construction for enhanced comfort and support",
+    "usage_instructions": "Use with or without a pillowcase as preferred. Ideal for all sleeping positions due to its plush yet supportive nature.",
+    "maintenance": "Machine washable. Use a gentle cycle with mild detergent. Tumble dry on low heat.",
+    "warranty": "2-year limited warranty covering manufacturing defects and material breakdowns.",
+    "promotions": {
+        "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+        "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+        "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+    },
+    "ratings": 4.9,
+    "customer_reviews": [
+        "The most luxurious pillow I've ever used. It feels like sleeping on a cloud.",
+        "Perfect balance of softness and support. Highly recommend for anyone with sensitive skin.",
+        "Great quality and super comfortable. Worth every penny."
+    ],
+    "faq": {
+        "Is the pillow hypoallergenic?": "Yes, the pillow is made from hypoallergenic down alternative materials.",
+        "Can the pillow be machine washed?": "Yes, the pillow is machine washable. Use a gentle cycle with mild detergent and tumble dry on low heat.",
+        "What makes the triple layer design special?": "The triple-layer construction provides enhanced comfort and support, making the pillow exceptionally plush and luxurious."
+    },
+    "contact": {
+        "email": "support@mysnoozepod.com",
+        "phone": "1-800-SNOOZE-POD"
+    }
+}
+{
+    "name": "Dough Pillow",
+    "type": "Accessory",
+    "feel": "Soft and Supportive",
+    "sizes": {
+        "Standard": 70,
+        "Queen": 80,
+        "King": 90
+    },
+    "target_user": ["Side Sleepers", "Back Sleepers", "Stomach Sleepers"],
+    "comfort_level": "Soft and supportive",
+    "health_benefits": "Supports proper neck alignment, reduces neck pain, enhances sleep quality",
+    "features": ["Hypoallergenic materials", "Breathable fabric cover"],
+    "materials": ["Dough-like memory foam", "Hypoallergenic fabric cover"],
+    "technology": "Contouring memory foam technology",
+    "usage_instructions": "Use with or without a pillowcase as preferred. Ideal for all sleeping positions due to its soft yet supportive nature.",
+    "maintenance": "Spot clean with mild detergent and warm water. Do not machine wash or dry. Air out regularly to maintain freshness.",
+    "warranty": "2-year limited warranty covering manufacturing defects and material breakdowns.",
+    "promotions": {
+        "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+        "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+        "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+    },
+    "ratings": 4.8,
+    "customer_reviews": [
+        "The Dough Pillow is incredibly comfortable and supportive. It molds perfectly to my head and neck.",
+        "I've never slept better. The soft feel is perfect for my side sleeping.",
+        "Highly recommend this pillow for anyone looking for superior comfort."
+    ],
+    "faq": {
+        "Is the pillow hypoallergenic?": "Yes, the pillow is made from hypoallergenic materials to resist dust mites, mold, and mildew.",
+        "Can the pillow cover be washed?": "The outer cover can be removed and spot cleaned, but do not machine wash the pillow itself.",
+        "Is this pillow suitable for all sleeping positions?": "Yes, the Dough Pillow is designed to provide comfort and support for side, back, and stomach sleepers."
+    },
+    "contact": {
+        "email": "support@mysnoozepod.com",
+        "phone": "1-800-SNOOZE-POD"
+    }
+}
+{
+    "name": "Bamboo Charcoal Pillow",
+    "type": "Accessory",
+    "feel": "Medium Firmness",
+    "sizes": {
+        "Standard": 75,
+        "Queen": 85,
+        "King": 95
+    },
+    "target_user": ["Side Sleepers", "Back Sleepers", "Stomach Sleepers"],
+    "comfort_level": "Medium firmness",
+    "health_benefits": "Supports proper neck alignment, reduces neck pain, enhances sleep quality, controls odor and moisture",
+    "features": ["Hypoallergenic materials", "Infused with bamboo charcoal"],
+    "materials": ["Memory foam infused with bamboo charcoal", "Hypoallergenic fabric cover"],
+    "technology": "Bamboo charcoal infusion for odor and moisture control",
+    "usage_instructions": "Use with or without a pillowcase as preferred. Ideal for all sleeping positions due to its medium firmness and support.",
+    "maintenance": "Spot clean with mild detergent and warm water. Do not machine wash or dry. Air out regularly to maintain freshness.",
+    "warranty": "2-year limited warranty covering manufacturing defects and material breakdowns.",
+    "promotions": {
+        "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+        "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+        "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+    },
+    "ratings": 4.7,
+    "customer_reviews": [
+        "The bamboo charcoal really works. My pillow stays fresh and dry all night.",
+        "Perfect amount of support and comfort. I wake up feeling refreshed.",
+        "Highly recommend for anyone looking for a supportive and fresh-smelling pillow."
+    ],
+    "faq": {
+        "Is the pillow hypoallergenic?": "Yes, the pillow is made from hypoallergenic materials to resist dust mites, mold, and mildew.",
+        "Can the pillow cover be washed?": "The outer cover can be removed and spot cleaned, but do not machine wash the pillow itself.",
+        "What benefits does the bamboo charcoal provide?": "Bamboo charcoal helps control odor and moisture, keeping the pillow fresh and comfortable."
+    },
+    "contact": {
+        "email": "support@mysnoozepod.com",
+        "phone": "1-800-SNOOZE-POD"
+    }
+}
+{
+    "name": "Aromatherapy Zoned Dough Pillow",
+    "type": "Accessory",
+    "feel": "Soft and Supportive",
+    "sizes": {
+        "Standard": 85,
+        "Queen": 95,
+        "King": 105
+    },
+    "target_user": ["Side Sleepers", "Back Sleepers", "Stomach Sleepers"],
+    "comfort_level": "Soft and supportive",
+    "health_benefits": "Supports proper neck alignment, reduces neck pain, enhances sleep quality, promotes relaxation through aromatherapy",
+    "features": ["Hypoallergenic materials", "Infused with essential oils"],
+    "materials": ["Dough-like memory foam", "Hypoallergenic fabric cover", "Essential oil infusion"],
+    "technology": "Zoned support design, aromatherapy infusion",
+    "usage_instructions": "Use with or without a pillowcase as preferred. Enjoy the calming scent of infused essential oils for a relaxing sleep experience.",
+    "maintenance": "Spot clean with mild detergent and warm water. Do not machine wash or dry. Air out regularly to maintain freshness.",
+    "warranty": "2-year limited warranty covering manufacturing defects and material breakdowns.",
+    "promotions": {
+        "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+        "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+        "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+    },
+    "ratings": 4.9,
+    "customer_reviews": [
+        "The aromatherapy feature is amazing. I fall asleep faster and wake up feeling more rested.",
+        "Great support and very comfortable. The scent is soothing without being overpowering.",
+        "Highly recommend this pillow for anyone looking for both comfort and relaxation."
+    ],
+    "faq": {
+        "Is the pillow hypoallergenic?": "Yes, the pillow is made from hypoallergenic materials to resist dust mites, mold, and mildew.",
+        "Can the pillow cover be washed?": "The outer cover can be removed and spot cleaned, but do not machine wash the pillow itself.",
+        "What essential oils are used in the pillow?": "The pillow is infused with calming essential oils such as lavender and chamomile to promote relaxation."
+    },
+    "contact": {
+        "email": "support@mysnoozepod.com",
+        "phone": "1-800-SNOOZE-POD"
+    }
+}
+{
+    "name": "Aromatherapy Zoned ActiveDough Pillow",
+    "type": "Accessory",
+    "feel": "Soft and Supportive",
+    "sizes": {
+        "Standard": 90,
+        "Queen": 100,
+        "King": 110
+    },
+    "target_user": ["Side Sleepers", "Back Sleepers", "Stomach Sleepers"],
+    "comfort_level": "Soft and supportive",
+    "health_benefits": "Supports proper neck alignment, reduces neck pain, enhances sleep quality, promotes relaxation through aromatherapy",
+    "features": ["Hypoallergenic materials", "Infused with essential oils"],
+    "materials": ["ActiveDough memory foam", "Hypoallergenic fabric cover", "Essential oil infusion"],
+    "technology": "Zoned support design, aromatherapy infusion",
+    "usage_instructions": "Use with or without a pillowcase as preferred. Enjoy the calming scent of infused essential oils for a relaxing sleep experience.",
+    "maintenance": "Spot clean with mild detergent and warm water. Do not machine wash or dry. Air out regularly to maintain freshness.",
+    "warranty": "2-year limited warranty covering manufacturing defects and material breakdowns.",
+    "promotions": {
+        "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+        "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+        "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+    },
+    "ratings": 4.9,
+    "customer_reviews": [
+        "The aromatherapy feature is amazing. I fall asleep faster and wake up feeling more rested.",
+        "Great support and very comfortable. The scent is soothing without being overpowering.",
+        "Highly recommend this pillow for anyone looking for both comfort and relaxation."
+    ],
+    "faq": {
+        "Is the pillow hypoallergenic?": "Yes, the pillow is made from hypoallergenic materials to resist dust mites, mold, and mildew.",
+        "Can the pillow cover be washed?": "The outer cover can be removed and spot cleaned, but do not machine wash the pillow itself.",
+        "What essential oils are used in the pillow?": "The pillow is infused with calming essential oils such as lavender and chamomile to promote relaxation."
+    },
+    "contact": {
+        "email": "support@mysnoozepod.com",
+        "phone": "1-800-SNOOZE-POD"
+    }
+}
+{
+    "name": "Shredded Gel Dough Pillow",
+    "type": "Accessory",
+    "feel": "Adjustable Firmness",
+    "sizes": {
+        "Standard": 80,
+        "Queen": 90,
+        "King": 100
+    },
+    "target_user": ["Side Sleepers", "Back Sleepers", "Stomach Sleepers"],
+    "comfort_level": "Adjustable to suit individual preferences",
+    "health_benefits": "Supports proper neck alignment, reduces neck pain, enhances sleep quality, cooling effect",
+    "features": ["Hypoallergenic materials", "Cooling gel infusion"],
+    "materials": ["Shredded memory foam with cooling gel", "Hypoallergenic fabric cover"],
+    "technology": "Cooling gel infusion, adjustable shredded foam",
+    "usage_instructions": "Adjust the pillow by adding or removing shredded foam to achieve your preferred firmness. Use with or without a pillowcase as preferred.",
+    "maintenance": "Spot clean with mild detergent and warm water. Do not machine wash or dry. Air out regularly to maintain freshness.",
+    "warranty": "2-year limited warranty covering manufacturing defects and material breakdowns.",
+    "promotions": {
+        "current": "Everyday 5% Discount for Health & Wellness Professionals, First Responders, Teachers, Military Personnel, and Educators.",
+        "eligible": ["Health & Wellness Professionals", "First Responders", "Teachers", "Military Personnel", "Educators"],
+        "loyalty_program": "Earn points and redeem rewards through the Snooze Club."
+    },
+    "ratings": 4.8,
+    "customer_reviews": [
+        "The adjustable foam is fantastic. I can customize my pillow to the perfect firmness.",
+        "Great cooling effect and very comfortable. Helps with my neck pain.",
+        "Highly versatile pillow. Love that I can adjust it based on how I feel."
+    ],
+    "faq": {
+        "Are the pillows hypoallergenic?": "Yes, the pillows are made from hypoallergenic materials to resist dust mites, mold, and mildew.",
+        "Can the pillow cover be washed?": "The outer cover can be removed and spot cleaned, but do not machine wash the pillow itself.",
+        "How do I adjust the firmness?": "Simply add or remove shredded foam to adjust the firmness to your liking."
+    },
+    "contact": {
+        "email": "support@mysnoozepod.com",
+        "phone": "1-800-SNOOZE-POD"
+    }
+}

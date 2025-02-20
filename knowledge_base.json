@@ -1,0 +1,22 @@
+{
+  "mattress_firmness": {
+    "soft": "Soft mattresses provide pressure relief and are ideal for side sleepers who need cushioning for shoulders and hips.",
+    "medium": "Medium firmness offers a balance of support and comfort, making it a great choice for most sleep positions.",
+    "firm": "Firm mattresses provide strong support, recommended for back and stomach sleepers to maintain spinal alignment."
+  },
+  "mattress_materials": {
+    "memory_foam": "Memory foam contours to your body and reduces motion transfer, making it ideal for couples and pressure relief.",
+    "latex": "Latex is naturally cooling, durable, and responsive, offering a more eco-friendly mattress option.",
+    "innerspring": "Innerspring mattresses provide traditional bounce and airflow, offering strong support for back and stomach sleepers."
+  },
+  "sleep_positions": {
+    "side": "Side sleepers benefit from soft to medium mattresses with contouring support to relieve pressure on shoulders and hips.",
+    "back": "Back sleepers need a medium to firm mattress to maintain natural spinal alignment and prevent lower back pain.",
+    "stomach": "Stomach sleepers should use a firm mattress to avoid sinking, which can strain the spine and neck."
+  },
+  "cooling_technology": {
+    "gel_memory_foam": "Gel-infused memory foam draws heat away from the body, helping to regulate temperature throughout the night.",
+    "phase_change_materials": "Phase change materials absorb and release heat to maintain a steady sleep temperature.",
+    "breathable_coils": "Hybrid mattresses with coils promote airflow, preventing heat buildup compared to all-foam designs."
+  }
+}
