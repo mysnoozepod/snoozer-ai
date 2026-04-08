@@ -1,8 +1,28 @@
-# Ignore environment files (API keys, credentials)
-.env
-
-# Ignore node_modules to prevent bloating repository
 node_modules/
+dist/
+build/
+out/
+coverage/
 
-# Ignore system files
+.env
+.env.*
+!.env.example
+
+*.log
+*.zip
+
 .DS_Store
+Thumbs.db
+
+zip-preview/
+test-zip/
+snoozer-layer/
+Assistant Files/
+New folder/
+
+mongodb-database-tools-*/
+omnia-journey/dist-upload.zip
+omnia-journey/snoozer-ui.zip
+original-snoozer-backend.zip
+snoozer-backend.zip
+snoozer-layer.zip

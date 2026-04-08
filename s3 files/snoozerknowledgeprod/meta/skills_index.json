@@ -1,0 +1,16 @@
+// meta/skills_index.json
+{
+  "version": "1.0",
+  "updated": "2025-10-04T00:00:00Z",
+  "items": [
+    {
+      "topic": "financing",
+      "title": "Financing Options",
+      "path": "skills/financing.md",
+      "hints": [
+        "What financing options do you offer?",
+        "How does 0% APR work?"
+      ]
+    }
+  ]
+}

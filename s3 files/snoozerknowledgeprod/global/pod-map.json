@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "updated": "REPLACE_WITH_ISO_TIMESTAMP",
+  "pods": [
+    {
+      "podId": "1",
+      "label": "SnoozePod 1",
+      "mattressHandle": "12-all-foam-mattress",
+      "baseHandle": "platform-base",
+      "inStore": { "size": "Queen", "motionMode": "No Motion" },
+      "script": {
+        "oneLiner": "Pressure relief + easy comfort. Start here if you want a smoother foam feel.",
+        "whatToNotice": ["Shoulder pressure", "Hip sink", "Ease of rolling"]
+      }
+    },
+    {
+      "podId": "2",
+      "label": "SnoozePod 2",
+      "mattressHandle": "10-all-foam-mattress",
+      "baseHandle": "storage-base",
+      "inStore": { "size": "Queen", "motionMode": "No Motion" },
+      "script": {
+        "oneLiner": "Slightly firmer foam feel. Good for support without coils.",
+        "whatToNotice": ["Lower-back support", "Pressure build-up", "Heat feel"]
+      }
+    },
+    {
+      "podId": "3",
+      "label": "SnoozePod 3",
+      "mattressHandle": "12-dual-comfort-hybrid",
+      "baseHandle": "premium-motion-adjustable-base",
+      "inStore": { "size": "King", "motionMode": "Standard Motion" },
+      "script": {
+        "oneLiner": "Hybrid balance: coils for lift + comfort on top. Best all-around comparator.",
+        "whatToNotice": ["Bounce vs sink", "Edge support", "Motion transfer"]
+      }
+    },
+    {
+      "podId": "4",
+      "label": "SnoozePod 4",
+      "mattressHandle": "14-hybrid",
+      "baseHandle": "premium-motion-adjustable-base",
+      "inStore": { "size": "King", "motionMode": "Standard Motion" },
+      "script": {
+        "oneLiner": "More “lift” and responsiveness. Great if you hate feeling stuck.",
+        "whatToNotice": ["Ease of movement", "Support under hips", "Cooling feel"]
+      }
+    },
+    {
+      "podId": "5",
+      "label": "SnoozePod 5",
+      "mattressHandle": null,
+      "baseHandle": "premium-motion-adjustable-base",
+      "inStore": { "size": "King", "motionMode": "Standard Motion" },
+      "script": {
+        "oneLiner": "Base demo zone. Try zero gravity + head/feet adjustments.",
+        "whatToNotice": ["Low-back relief", "Neck comfort", "Stability when adjusting"]
+      }
+    }
+  ]
+}

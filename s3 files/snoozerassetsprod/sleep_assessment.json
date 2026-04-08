@@ -1,0 +1,153 @@
+{
+  "title": "Snooze Assessment – 3 Simple Decisions",
+  "questions": [
+    {
+      "id": "size",
+      "zohoField": "Size_Preference",
+      "zohoType": "picklist",
+      "text": "First up: what mattress size are you leaning toward?",
+      "options": ["Twin", "Full", "Queen", "King"]
+    },
+    {
+      "id": "motionMode",
+      "zohoField": "Motion_Preference",
+      "zohoType": "picklist",
+      "text": "For motion, which setup sounds closest to what you want? Standard Motion (one mattress and base that move together), Half Split Motion (head can move separately while feet stay in sync; available in Queen and King, and only with the Dual Comfort), Full Split Motion (head and feet move separately on each side; available in King setups), or No Motion (standard platform, storage base, highrise frame, or mattress only).",
+      "options": ["Standard Motion", "Half Split Motion", "Full Split Motion", "No Motion"]
+    },
+    {
+      "id": "sleepPartner",
+      "zohoField": "Sleep_Partner",
+      "zohoType": "picklist",
+      "text": "Do you regularly share the bed with a partner?",
+      "options": ["Yes", "No"]
+    },
+    {
+      "id": "sleepPosition",
+      "zohoField": "Sleep_Position",
+      "zohoType": "picklist",
+      "text": "How do you mostly sleep: on your side, back, stomach, or a mix?",
+      "options": ["Side", "Back", "Stomach", "Mix / Combination"]
+    },
+    {
+      "id": "motionSensitivity",
+      "zohoField": "Motion_Sensitivity",
+      "zohoType": "picklist",
+      "text": "How sensitive are you to movement in the bed?",
+      "options": [
+        "Low — movement rarely bothers me",
+        "Medium — I notice it but can deal with it",
+        "High — I wake up easily from movement"
+      ]
+    },
+    {
+      "id": "temperature",
+      "zohoField": "Temperature_Sensitivity",
+      "zohoType": "picklist",
+      "text": "Do you usually sleep hot, cold, or pretty neutral at night?",
+      "options": ["Hot", "Cold", "Neutral"]
+    },
+    {
+      "id": "firmness",
+      "zohoField": "Firmness_Preference",
+      "zohoType": "picklist",
+      "text": "If you had to choose, do you lean soft, medium, or firm for comfort?",
+      "options": ["Soft", "Medium", "Firm"]
+    },
+    {
+      "id": "snore",
+      "zohoField": "Snore",
+      "zohoType": "boolean",
+      "text": "Do you personally snore or use a CPAP / sleep apnea device?",
+      "options": ["Yes", "No", "Not sure"]
+    },
+    {
+      "id": "painPoints",
+      "zohoField": "Pain_Points",
+      "zohoType": "multiselect",
+      "multi": true,
+      "text": "Any back pain, pressure points, or other issues you hope the mattress can help with? (Choose all that apply or skip if none.)",
+      "options": [
+        "Lower back",
+        "Upper back",
+        "Hips",
+        "Shoulders",
+        "Neck",
+        "Sciatica",
+        "General pressure relief",
+        "Other / not listed"
+      ]
+    },
+    {
+      "id": "partnerSleepPosition",
+      "zohoField": "Partner_Sleep_Position",
+      "zohoType": "picklist",
+      "text": "How does your partner mostly sleep: on their side, back, stomach, or a mix?",
+      "options": ["Side", "Back", "Stomach", "Mix / Combination", "Not sure"],
+      "dependsOn": { "question": "sleepPartner", "value": "Yes" }
+    },
+    {
+      "id": "partnerMotionSensitivity",
+      "zohoField": "Partner_Motion_Sensitivity",
+      "zohoType": "picklist",
+      "text": "How sensitive is your partner to movement in the bed?",
+      "options": [
+        "Low — movement rarely bothers them",
+        "Medium — they notice it but can deal with it",
+        "High — they wake up easily from movement",
+        "Not sure"
+      ],
+      "dependsOn": { "question": "sleepPartner", "value": "Yes" }
+    },
+    {
+      "id": "partnerTemperature",
+      "zohoField": "Partner_Temperature_Sensitivity",
+      "zohoType": "picklist",
+      "text": "Does your partner usually sleep hot, cold, or neutral at night?",
+      "options": ["Hot", "Cold", "Neutral", "Not sure"],
+      "dependsOn": { "question": "sleepPartner", "value": "Yes" }
+    },
+    {
+      "id": "partnerFirmness",
+      "zohoField": "Partner_Firmness_Preference",
+      "zohoType": "picklist",
+      "text": "If your partner could pick their own feel, would they lean soft, medium, or firm?",
+      "options": ["Soft", "Medium", "Firm", "Not sure"],
+      "dependsOn": { "question": "sleepPartner", "value": "Yes" }
+    },
+    {
+      "id": "partnerPainPoints",
+      "zohoField": "Partner_Pain_Points",
+      "zohoType": "multiselect",
+      "multi": true,
+      "text": "Does your partner have any pain or pressure points they care about?",
+      "options": [
+        "Lower back",
+        "Upper back",
+        "Hips",
+        "Shoulders",
+        "Neck",
+        "Sciatica",
+        "General pressure relief",
+        "Other / not listed",
+        "Not sure"
+      ],
+      "dependsOn": { "question": "sleepPartner", "value": "Yes" }
+    },
+    {
+      "id": "partnerSnore",
+      "zohoField": "Partner_Snore",
+      "zohoType": "boolean",
+      "text": "Does your partner snore or use a CPAP / sleep apnea device?",
+      "options": ["Yes", "No", "Not sure"],
+      "dependsOn": { "question": "sleepPartner", "value": "Yes" }
+    },
+    {
+      "id": "budget",
+      "zohoField": "Budget",
+      "zohoType": "picklist",
+      "text": "What price range feels comfortable for your mattress or mattress + base? A ballpark is fine.",
+      "options": ["Under $1,500", "$1,500–$2,500", "$2,500–$3,500", "Over $3,500", "Not sure yet"]
+    }
+  ]
+}

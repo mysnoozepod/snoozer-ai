@@ -1,0 +1,16 @@
+// meta/faq_index.json
+{
+  "version": "1.0",
+  "updated": "2025-10-04T00:00:00Z",
+  "items": [
+    {
+      "slug": "delivery",
+      "title": "Delivery & Setup FAQ",
+      "path": "faq/delivery.md",
+      "anchors": [
+        { "id": "how-long-does-delivery-take", "line": 8 },
+        { "id": "do-you-offer-setup-or-installation", "line": 18 }
+      ]
+    }
+  ]
+}

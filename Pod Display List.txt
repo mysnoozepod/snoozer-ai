@@ -1,0 +1,23 @@
+Pod 1: 12" Dual Comfort
+       Left Side: Soft 
+       Right Side: Firm
+       Displayed in a Half Split King
+       Premium Motion Base
+
+Pod 2: 12" Dual Comfort 
+       Left Side: Medium Soft
+       Right Side: Medium Firm
+       Displayed in a Split King
+       Premium Motion Base
+
+Pod 3: 14" Hybrid 
+       Displayed in a King Size
+       Platform Base
+
+Pod 4: 12" All Foam
+       Displayed in a Queen Size
+       Premium Motion Base
+
+Pod 5: 10" All Foam
+       Displayed in a Queen Size
+       Storage Base

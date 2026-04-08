@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-06T00:00:00.000Z",
+  "defaults": {
+    "fallbackKey": "fallback.default"
+  },
+  "scripts": {
+    "fallback.default": {
+      "speech": "I’m here. Tell me what you want to do next.",
+      "captions": "I’m here. Tell me what you want to do next.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 5000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "default": {
+      "speech": "I’m here. Tell me what you want to do next.",
+      "captions": "I’m here. Tell me what you want to do next.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 5000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "global.default": {
+      "speech": "I’m here. Tell me what you want to do next.",
+      "captions": "I’m here. Tell me what you want to do next.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 5000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "generic_error": {
+      "speech": "Let’s reset that.",
+      "captions": "Something went wrong. Let’s reset.",
+      "state": "warning",
+      "priority": "high",
+      "ttlMs": 4000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "offline_mode": {
+      "speech": "Network unstable. Running local coach mode.",
+      "captions": "Offline mode active.",
+      "state": "warning",
+      "priority": "high",
+      "ttlMs": 5000,
+      "voiceStyle": "default",
+      "actions": []
+    }
+  }
+}

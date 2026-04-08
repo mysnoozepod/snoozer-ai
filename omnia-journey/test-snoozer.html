@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Snoozer Fetch</title>
+</head>
+<body>
+  <h1>Testing Snoozer API</h1>
+  <button id="btn">Send Test Request</button>
+  <pre id="output" style="white-space: pre-wrap; border: 1px solid #ccc; padding: 1rem; max-width: 600px; margin-top: 1rem;"></pre>
+
+  <script>
+    document.getElementById("btn").addEventListener("click", () => {
+      const out = document.getElementById("output");
+      out.textContent = "⏳ Sending request…";
+
+      fetch("https://u6czsiggj0.execute-api.us-east-1.amazonaws.com/prod/ask-snoozer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: "Test from static HTML" })
+      })
+      .then(r => {
+        out.textContent += "\\n→ Status: " + r.status;
+        return r.text();
+      })
+      .then(text => {
+        out.textContent += "\\n→ Body: " + text;
+      })
+      .catch(err => {
+        out.textContent += "\\n‼️ Fetch error: " + err;
+      });
+    });
+  </script>
+</body>
+</html>

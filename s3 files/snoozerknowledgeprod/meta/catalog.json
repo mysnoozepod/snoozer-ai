@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "categories": {
+    "mattress": [
+      "10-all-foam-mattress",
+      "12-all-foam-mattress",
+      "12-dual-comfort-hybrid",
+      "14-hybrid"
+    ],
+    "adjustable-base": [
+      "premium-motion-adjustable-base"
+    ],
+    "bed-frame": [
+      "anderson-platform-bed",
+      "jensen-platform-bed",
+      "platform-base",
+      "highrise-bed-base",
+      "storage-base",
+      "universal-heavy-duty-bed-frame"
+    ],
+    "headboard": [
+      "blackwell-headboard",
+      "carlisle-headboard",
+      "hennessy-headboard",
+      "scoresby-headboard"
+    ],
+    "bedding": [
+      "hyper-cotton-sheet-set",
+      "dri-tec-sheet-set",
+      "supima-cotton-sheet-set",
+      "italian-cotton-sheet-set",
+      "botanical-sheet-set",
+      "3-down-alternative-mattress-topper",
+      "2-5-gel-memory-foam-mattress-topper",
+      "mattress-pad",
+      "mattress-encasement",
+      "smooth-mattress-protector",
+      "terry-mattress-protector",
+      "dri-tec-mattress-protector",
+      "ver-tex-mattress-protector",
+      "icetech-mattress-protector",
+      "down-alternative-microfiber-comforter"
+    ],
+    "pillows": [
+      "carboncool-travel-pillow",
+      "carboncool-omniphase-pillow",
+      "flexfill-pillow",
+      "convolution-pillow",
+      "zoned-dough-lavender-travel-pillow",
+      "shredded-gel-dough-travel-pillow",
+      "zoned-dough-lavender-travel-neck-pillow",
+      "gel-dough-z-gel-travel-pillow",
+      "wrap-around-body-pillow",
+      "wedge-pillow",
+      "lounge-pillow",
+      "l-shape-pillow",
+      "horseshoe-pregnancy-body-pillow",
+      "shoulder-zoned-gel-dough-pillow",
+      "shoulder-zoned-activedough-pillow",
+      "shoulder-zoned-dough-peppermint-pillow-1",
+      "shoulder-zoned-dough-lavender-pillow-1",
+      "shoulder-zoned-dough-bamboo-charcoal-pillow-1",
+      "shoulder-gel-dough-z-gel-pillow",
+      "shoulder-carboncool-omniphase-pillow",
+      "zoned-talalay-latex-pillow",
+      "zoned-gel-dough-pillow",
+      "zoned-activedough-gel-pillow",
+      "shredded-gel-dough-pillow",
+      "gel-dough-z-gel-pillow",
+      "triplelayer-down-pillow",
+      "gelled-microfiber-pillow",
+      "gel-convolution-pillow",
+      "zoned-dough-peppermint-pillow",
+      "zoned-dough-lavender-pillow",
+      "zoned-dough-bamboo-charcoal-pillow",
+      "zoned-activedough-peppermint-pillow",
+      "zoned-activedough-lavender-pillow",
+      "zoned-activedough-bamboo-charcoal-pillow",
+      "shoulder-zoned-dough-peppermint-pillow",
+      "shoulder-zoned-dough-lavender-pillow",
+      "shoulder-zoned-dough-bamboo-charcoal-pillow"
+    ]
+  }
+}

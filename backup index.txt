@@ -1,0 +1,125 @@
+const express = require("express");
+const serverless = require("serverless-http");
+const dotenv = require("dotenv");
+const axios = require("axios");
+const { OpenAI } = require("openai");
+const { refreshZohoToken } = require("./services/zohoauth");
+const shopifyRoutes = require("./routes/shopifyRoutes");
+const zohoRoutes = require("./routes/zohoroutes");
+
+dotenv.config();
+
+const app = express();
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+app.options("*", (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "OPTIONS,GET,POST");
+  res.sendStatus(200);
+});
+
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  next();
+});
+
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.json({ message: "Snoozer API is live ✅" });
+});
+
+app.head("/ask-snoozer", (req, res) => {
+  res.sendStatus(200);
+});
+
+app.post("/ask-snoozer", async (req, res) => {
+  const raw = req.body.input || req.body.question;
+  const input = typeof raw === "string" ? raw.trim() : "";
+  if (!input) {
+    return res.status(400).json({ error: "Missing 'input' or 'question' field." });
+  }
+
+  const host = process.env.API_GATEWAY_HOST;
+  if (!host || !process.env.SNOOZER_ASSISTANT_ID || !process.env.OPENAI_API_KEY) {
+    return res.status(500).json({ error: "Server misconfiguration." });
+  }
+
+  const ecommerce = /\b(mattress|price|cost|shop|product|buy)\b/i;
+  if (!ecommerce.test(input)) {
+    try {
+      const c = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: "You are Snoozer, the AI showroom guide for MySnoozePod." },
+          { role: "user", content: input }
+        ]
+      });
+      const answer = c.choices?.[0]?.message?.content || "No response.";
+      return res.json({ source: "GPT", response: answer });
+    } catch {
+      return res.status(502).json({ error: "OpenAI API call failed." });
+    }
+  }
+
+  const url = `${host}/api/shopify/search?q=${encodeURIComponent(input)}`;
+  let products = [];
+  try {
+    const r = await axios.get(url, { timeout: 8000 });
+    if (Array.isArray(r.data?.data)) products = r.data.data;
+  } catch {}
+
+  if (products.length) {
+    const text = products
+      .map(p => (typeof p.summary === "string" ? p.summary : p.title))
+      .join("\n\n");
+    return res.json({ source: "Shopify", response: text });
+  }
+
+  try {
+    const c = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: "You are Snoozer, the AI showroom guide for MySnoozePod." },
+        { role: "user", content: input }
+      ]
+    });
+    const answer = c.choices?.[0]?.message?.content || "No response.";
+    return res.json({ source: "GPT", response: answer });
+  } catch {
+    return res.status(502).json({ error: "OpenAI API call failed." });
+  }
+});
+
+app.get("/api/zoho/token", async (req, res) => {
+  try {
+    const token = await refreshZohoToken();
+    return res.json({ access_token: token });
+  } catch {
+    return res.status(500).json({ error: "Failed to refresh Zoho token." });
+  }
+});
+
+app.use("/api/shopify", shopifyRoutes);
+app.use("/api/zoho", zohoRoutes);
+
+exports.lambdaHandler = serverless(app, {
+  request: (req, event) => {
+    let p = event.rawPath || event.path || "/";
+    const stage = event.requestContext?.stage;
+    if (stage && p.startsWith(`/${stage}`)) {
+      p = p.slice(stage.length + 1);
+      if (!p.startsWith("/")) p = "/" + p;
+      if (!p) p = "/";
+    }
+    req.url = p;
+    req.method = event.httpMethod || event.requestContext?.http?.method || "GET";
+  },
+});
+
+if (!process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  app.listen(process.env.PORT || 3000);
+}

@@ -1,0 +1,5 @@
+/* src/index.css
+   Compatibility wrapper.
+   Keep Tailwind directives in ONE place: src/styles/index.css
+*/
+@import "./styles/index.css";

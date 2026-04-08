@@ -1,0 +1,108 @@
+[
+  {
+    "intent": "returns",
+    "keys": [
+      "skills/returns.md",
+      "policies/returns.md"
+    ],
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "financing",
+    "keys": [
+      "skills/financing.md",
+      "policies/financing.md"
+    ],
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "delivery",
+    "keys": [
+      "skills/delivery.md",
+      "policies/delivery.md"
+    ],
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "warranty",
+    "keys": [
+      "skills/warranty.md",
+      "policies/warranty.md"
+    ],
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "pricing",
+    "keys": [
+      "skills/pricing.md"
+    ],
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "sleep_assessment",
+    "keys": [
+      "skills/sleep_assessment.md"
+    ],
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "mattress_details",
+    "baseKey": "products/mattress/",
+    "requiresProduct": true,
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "adjustable_base_details",
+    "baseKey": "products/adjustable-bases/",
+    "requiresProduct": true,
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "pillow_details",
+    "baseKey": "products/pillows/",
+    "requiresProduct": true,
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "bedding_details",
+    "baseKey": "products/bedding/",
+    "requiresProduct": true,
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "headboard_details",
+    "baseKey": "products/headboards/",
+    "requiresProduct": true,
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "compare_products",
+    "baseKey": "products/",
+    "requiresProduct": true,
+    "additionalKeys": [
+      "guides/compare.md"
+    ],
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "rest_test_coach",
+    "keys": [
+      "guides/rest_test.md"
+    ],
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "explore_coach",
+    "keys": [
+      "guides/explore.md"
+    ],
+    "cacheTtlMs": 300000
+  },
+  {
+    "intent": "fallback",
+    "keys": [
+      "meta/hud_fallbacks.json"
+    ],
+    "cacheTtlMs": 300000
+  }
+]

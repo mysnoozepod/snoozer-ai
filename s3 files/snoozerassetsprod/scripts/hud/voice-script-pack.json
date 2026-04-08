@@ -1,0 +1,242 @@
+{
+  "version": 1,
+  "updatedAt": "2026-03-30T00:00:00Z",
+  "defaults": {
+    "fallbackKey": "fallback.default"
+  },
+  "scripts": {
+    "fallback.default": {
+      "speech": "I’m here. Tell me what you want to do next.",
+      "captions": "I’m here. Tell me what you want to do next.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 5000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+
+    "welcome.entry.new": {
+      "speech": "Hi, welcome to MySnoozePod. I’m Snoozer, your personal sleep assistant. Let’s get you sleeping better.",
+      "captions": "Hi, welcome to MySnoozePod. I’m Snoozer, your personal sleep assistant. Let’s get you sleeping better.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 5000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "welcome.entry.returning": {
+      "speech": "Hi, welcome back to MySnoozePod. I’m Snoozer, your personal sleep assistant. Let’s get you sleeping better.",
+      "captions": "Hi, welcome back to MySnoozePod. I’m Snoozer, your personal sleep assistant. Let’s get you sleeping better.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 5000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+
+    "whattoexpect.default": {
+      "speech": "Here’s how this works. First, complete your Snooze Assessment so I can learn your sleep needs. Then head to your Snooze Test and try the recommended pods first. When you’re ready, complete your sleep setup and finish your selection.",
+      "captions": "Here’s how this works. First, complete your Snooze Assessment so I can learn your sleep needs. Then head to your Snooze Test and try the recommended pods first. When you’re ready, complete your sleep setup and finish your selection.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 6500,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "whattoexpect.assessment_complete": {
+      "speech": "Your Snooze Assessment is already on file. Next, head to your Snooze Test and try the recommended pods first. When you’re ready, complete your sleep setup and finish your selection.",
+      "captions": "Your Snooze Assessment is already on file. Next, head to your Snooze Test and try the recommended pods first. When you’re ready, complete your sleep setup and finish your selection.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 6500,
+      "voiceStyle": "default",
+      "actions": []
+    },
+
+    "assessment.intro": {
+      "speech": "Let’s begin.",
+      "captions": "Let’s begin.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 3000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "assessment.progress.halfway": {
+      "speech": "Nice progress.",
+      "captions": "Nice progress.",
+      "state": "celebrate",
+      "priority": "normal",
+      "ttlMs": 3000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "assessment.complete": {
+      "speech": "Assessment complete.",
+      "captions": "Assessment complete.",
+      "state": "celebrate",
+      "priority": "normal",
+      "ttlMs": 3500,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "assessment.saving": {
+      "speech": "Saving your results.",
+      "captions": "Saving your results.",
+      "state": "thinking",
+      "priority": "normal",
+      "ttlMs": 4000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "assessment.motion.half_split_invalid": {
+      "speech": "Half split is only available in Queen or King.",
+      "captions": "Half split is only available in Queen or King.",
+      "state": "warning",
+      "priority": "normal",
+      "ttlMs": 4500,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "assessment.motion.full_split_invalid": {
+      "speech": "Full split is only available in King.",
+      "captions": "Full split is only available in King.",
+      "state": "warning",
+      "priority": "normal",
+      "ttlMs": 4500,
+      "voiceStyle": "default",
+      "actions": []
+    },
+
+    "results.intro": {
+      "speech": "Here are your five SnoozePods. I marked the three I would try first. You can test them in any order.",
+      "captions": "Here are your five SnoozePods. I marked the three I would try first. You can test them in any order.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 6000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+
+    "pod.rest.choose_mode": {
+      "speech": "Choose either the seven minute or fifteen minute rest test.",
+      "captions": "Choose either the 7-minute or 15-minute Rest Test.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 4500,
+      "voiceStyle": "calm",
+      "actions": []
+    },
+    "pod.rest.quick.start": {
+      "speech": "Start with your seven minute Rest Test and settle into the mattress.",
+      "captions": "Start with your 7-minute Rest Test and settle into the mattress.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 5000,
+      "voiceStyle": "calm",
+      "actions": []
+    },
+    "pod.rest.deep.start": {
+      "speech": "Start with your fifteen minute Rest Test and give your body more time to settle.",
+      "captions": "Start with your 15-minute Rest Test and give your body more time to settle.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 5000,
+      "voiceStyle": "calm",
+      "actions": []
+    },
+    "pod.rest.head_up": {
+      "speech": "Now raise the adjustable base to Head Up and notice whether breathing feels easier.",
+      "captions": "Now raise the adjustable base to Head Up and notice whether breathing feels easier.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 5500,
+      "voiceStyle": "calm",
+      "actions": []
+    },
+    "pod.rest.zero_g": {
+      "speech": "Now try Zero Gravity and notice the pressure relief through your lower back, hips, and legs.",
+      "captions": "Now try Zero Gravity and notice the pressure relief through your lower back, hips, and legs.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 6000,
+      "voiceStyle": "calm",
+      "actions": []
+    },
+    "pod.rest.return_flat": {
+      "speech": "Now as the mattress returns to flat, notice how the pressure changes in your lower back and whether you feel the need to shift around again.",
+      "captions": "Now as the mattress returns to flat, notice how the pressure changes in your lower back and whether you feel the need to shift around again.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 6500,
+      "voiceStyle": "calm",
+      "actions": []
+    },
+    "pod.rest.step_complete": {
+      "speech": "That step is complete.",
+      "captions": "That step is complete.",
+      "state": "speaking",
+      "priority": "low",
+      "ttlMs": 2500,
+      "voiceStyle": "calm",
+      "actions": []
+    },
+    "pod.rest.final_impression": {
+      "speech": "Give me your first impression before moving on.",
+      "captions": "Give me your first impression before moving on.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 3500,
+      "voiceStyle": "calm",
+      "actions": []
+    },
+
+    "pod.details.default": {
+      "speech": "Review the details of this match and compare what stands out to you.",
+      "captions": "Review the details of this match and compare what stands out to you.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 4500,
+      "voiceStyle": "default",
+      "actions": []
+    },
+
+    "pod.build.default": {
+      "speech": "Build your setup one step at a time.",
+      "captions": "Build your setup one step at a time.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 4500,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "pod.build.added_to_cart": {
+      "speech": "Your selection was added to cart.",
+      "captions": "Your selection was added to cart.",
+      "state": "celebrate",
+      "priority": "normal",
+      "ttlMs": 3500,
+      "voiceStyle": "default",
+      "actions": []
+    },
+
+    "pod.checkout.ready": {
+      "speech": "Checkout options are ready.",
+      "captions": "Checkout options are ready.",
+      "state": "celebrate",
+      "priority": "normal",
+      "ttlMs": 4000,
+      "voiceStyle": "default",
+      "actions": []
+    },
+    "pod.checkout.phone": {
+      "speech": "Phone checkout is ready.",
+      "captions": "Phone checkout is ready.",
+      "state": "speaking",
+      "priority": "normal",
+      "ttlMs": 3500,
+      "voiceStyle": "default",
+      "actions": []
+    }
+  }
+}

@@ -1,0 +1,17 @@
+.git
+node_modules
+.env
+snoozer-backend.zip
+snoozer-layer.zip
+mongodb-database-tools-windows-x86_64-100.11.0 (1).zip
+*.log
+*.tar
+*.gz
+*.md
+*.tmp
+coverage
+test
+tests
+__pycache__
+.DS_Store
+Thumbs.db

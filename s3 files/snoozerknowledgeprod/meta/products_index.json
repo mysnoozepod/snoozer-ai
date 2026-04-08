@@ -1,0 +1,21 @@
+// meta/products_index.json
+{
+  "version": "1.0",
+  "updated": "2025-10-04T00:00:00Z",
+  "items": [
+    {
+      "handle": "10-all-foam-mattress-copy",
+      "title": "12\" All Foam Mattress",
+      "category": "mattresses",
+      "vendor": "Bed Gear",
+      "type": "Mattress",
+      "tags": ["foam","cooling"],
+      "price_min": 1799,
+      "price_max": 2199,
+      "options": ["Size","Color"],
+      "image": "https://cdn.shopify.com/...",
+      "path": "products/mattresses/10-all-foam-mattress-copy.md",
+      "attrs": { "cooling": true, "height_in": 12, "hybrid": false }
+    }
+  ]
+}

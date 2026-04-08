@@ -1,18 +1,27 @@
 {
-  "type": "module",
-  "name": "snoozer-ai",
+  "name": "snoozer-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Omnia Snoozer backend for Shopify, Zoho, and OpenAI integrations",
   "main": "index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.x"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "package:with-deps": "rm -f build.zip && npm ci && zip -r build.zip . -x \".git/*\" -x \"*.log\" -x \"build.zip\"",
+    "package:without-deps": "rm -f build.zip && zip -r build.zip . -x \"node_modules/*\" -x \".git/*\" -x \"*.log\" -x \"build.zip\" && echo \"⚠️ Remember: use a Lambda Layer for node_modules if you ship this zip.\""
+  },
   "dependencies": {
-    "@aws-sdk/client-apigatewaymanagementapi": "^3.750.0",
-    "@aws-sdk/client-dynamodb": "^3.751.0",
-    "@aws-sdk/client-lambda": "^3.750.0",
-    "@aws-sdk/client-s3": "^3.750.0",
-    "axios": "^1.5.0",
-    "dotenv": "^16.4.7",
-    "express": "^4.18.2",
-    "mongoose": "^8.10.0",
-    "pdf-lib": "^1.17.1"
+    "@aws-sdk/client-dynamodb": "^3.901.0",
+    "@aws-sdk/client-s3": "^3.901.0",
+    "@aws-sdk/lib-dynamodb": "^3.901.0",
+    "@aws-sdk/s3-request-presigner": "^3.609.0",
+    "axios": "^1.7.7",
+    "dotenv": "^17.2.3",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
   }
 }
