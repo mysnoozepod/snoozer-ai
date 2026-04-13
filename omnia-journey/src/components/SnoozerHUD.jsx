@@ -1,5 +1,5 @@
 // src/components/SnoozerHUD.jsx
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { SnoozerHUD as SnoozerHUDImpl } from "@/components/SnoozerPanel";
 
 function lower(v) {
@@ -13,8 +13,13 @@ function normalizePodId(podId) {
 }
 
 export function SnoozerHUD(props) {
+  const [hudState, setHudState] = useState("idle");
+  const [captions, setCaptions] = useState("");
+
   const normalized = useMemo(() => {
     const p = { ...(props || {}) };
+    const controlledState = lower(p.state) || lower(p.hudState);
+    const controlledCaptions = String(p.captions || "").trim();
 
     const mode = lower(p.mode);
     const chrome = lower(p.chrome);
@@ -45,8 +50,15 @@ export function SnoozerHUD(props) {
       p.showHeader = false;
     }
 
+    // Safe passthrough props for later integration inside SnoozerPanel.
+    // If SnoozerPanel does not use them yet, they are harmless.
+    p.state = controlledState || hudState;
+    p.captions = controlledCaptions || captions;
+    p.onHudStateChange = setHudState;
+    p.onCaptionsChange = setCaptions;
+
     return p;
-  }, [props]);
+  }, [props, hudState, captions]);
 
   return <SnoozerHUDImpl {...normalized} />;
 }

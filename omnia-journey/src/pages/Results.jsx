@@ -5,8 +5,7 @@ import { motion } from "framer-motion";
 import useRewards from "@/lib/useRewards";
 import { generateShowroomRecommendations } from "@/lib/utils/recommendations";
 import { api } from "@/lib/api";
-import { getVoiceState, stopVoice, subscribeVoice } from "@/lib/voice";
-import { useSnoozer } from "@/Layout.jsx";
+import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import { ImageOff, Volume2, ArrowRight, Star } from "lucide-react";
 
 const BRAND = {
@@ -244,7 +243,8 @@ function TypingDots() {
 
 export default function Results() {
   const navigate = useNavigate();
-  const snoozer = useSnoozer();
+  const { muted, replay, noteUserInteraction, sayScript, setMuted, voiceState } =
+    useShowroomHud();
 
   const shopperId = safeGet("snooze.accessCode") || "";
   const rewards = useRewards(shopperId);
@@ -256,19 +256,20 @@ export default function Results() {
 
   const [loading, setLoading] = useState(true);
   const [recs, setRecs] = useState(null);
-  const [voiceState, setVoiceState] = useState(() => getVoiceState());
-  const [muted, setMuted] = useState(() => Boolean(snoozer?.hud?.muted));
 
   const [imageByHandle, setImageByHandle] = useState({});
   const [productImageStatus, setProductImageStatus] = useState("idle");
 
   const requestedVoiceRef = useRef(false);
   const lastVoiceScriptRef = useRef("");
+  const bootVoiceTimerRef = useRef(null);
 
-  useEffect(() => {
-    const unsub = subscribeVoice(setVoiceState);
-    return () => unsub();
-  }, []);
+  const clearTimer = (ref) => {
+    if (ref.current) {
+      window.clearTimeout(ref.current);
+      ref.current = null;
+    }
+  };
 
   useEffect(() => {
     const prev = window.__SNOOZE_DISABLE_WIDGET;
@@ -277,17 +278,9 @@ export default function Results() {
     return () => {
       window.__SNOOZE_DISABLE_WIDGET = prev;
       document.body.classList.remove("no-global-chat");
+      clearTimer(bootVoiceTimerRef);
     };
   }, []);
-
-  useEffect(() => {
-    setMuted(Boolean(snoozer?.hud?.muted));
-  }, [snoozer?.hud?.muted]);
-
-  useEffect(() => {
-    if (muted) stopVoice();
-    snoozer?.setHudMuted?.(muted);
-  }, [muted, snoozer]);
 
   useEffect(() => {
     const flag = "snooze.snoozepod.resetOnResults.v1";
@@ -462,17 +455,21 @@ export default function Results() {
   const typedHeader = useTypingText(heroLine, { enabled: !loading, speedMs: 14 });
 
   useEffect(() => {
-    let cancelled = false;
+    if (loading || !voiceScript || muted) return;
 
-    async function bootHudVoice() {
-      if (loading || !voiceScript || muted) return;
-      if (lastVoiceScriptRef.current === voiceScript && requestedVoiceRef.current) return;
+    const voiceKey = `results::${pods.length}::${voiceScript}`;
+    if (requestedVoiceRef.current && lastVoiceScriptRef.current === voiceKey) return;
 
+    clearTimer(bootVoiceTimerRef);
+
+    bootVoiceTimerRef.current = window.setTimeout(() => {
       requestedVoiceRef.current = true;
-      lastVoiceScriptRef.current = voiceScript;
+      lastVoiceScriptRef.current = voiceKey;
 
-      try {
-        await snoozer?.sayHud?.({
+      sayScript({
+        scriptKey: "results.intro",
+        shopperId: shopperId || "guest",
+        fallback: {
           speech: voiceScript,
           captions: voiceScript,
           state: "speaking",
@@ -480,36 +477,14 @@ export default function Results() {
           ttlMs: 6000,
           voiceStyle: "default",
           actions: [],
-        });
-      } catch (err) {
-        if (!cancelled) {
-          console.warn("Results HUD intro failed:", err);
-        }
-      }
-    }
+        },
+      }).catch((err) => {
+        console.warn("Results intro voice failed:", err);
+      });
+    }, 700);
 
-    bootHudVoice();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [voiceScript, loading, muted, snoozer]);
-
-  const currentPageVoiceState = useMemo(() => {
-    const expectedText = String(voiceScript || "").trim();
-    const lastText = String(voiceState?.lastText || "").trim();
-
-    const isCurrentAttempt =
-      requestedVoiceRef.current &&
-      expectedText &&
-      lastText &&
-      expectedText === lastText;
-
-    return {
-      blocked: isCurrentAttempt ? Boolean(voiceState?.blocked) : false,
-      error: isCurrentAttempt ? String(voiceState?.error || "") : "",
-    };
-  }, [voiceScript, voiceState]);
+    return () => clearTimer(bootVoiceTimerRef);
+  }, [voiceScript, loading, muted, pods.length, sayScript, shopperId]);
 
   const resolveImageUrl = useCallback(
     (p) => {
@@ -538,18 +513,36 @@ export default function Results() {
     [imageByHandle, productImageStatus]
   );
 
-  const replayVoice = useCallback(() => {
+  const replayVoice = useCallback(async () => {
     if (!voiceScript) return;
-    snoozer?.noteUserInteraction?.();
-    snoozer?.replayHud?.();
-  }, [voiceScript, snoozer]);
+    noteUserInteraction?.();
+    await replay?.();
+    await sayScript({
+      scriptKey: "results.intro",
+      shopperId: shopperId || "guest",
+      fallback: {
+        speech: voiceScript,
+        captions: voiceScript,
+        state: "speaking",
+        priority: "normal",
+        ttlMs: 6000,
+        voiceStyle: "default",
+        actions: [],
+      },
+      overrides: {
+        priority: "high",
+        force: true,
+        replaceCurrent: true,
+      },
+    });
+  }, [voiceScript, noteUserInteraction, replay, sayScript, shopperId]);
 
   const openPodMode = useCallback(
     (podId) => {
-      snoozer?.noteUserInteraction?.();
+      noteUserInteraction?.();
       navigate(`/pod/${encodeURIComponent(podId)}`);
     },
-    [navigate, snoozer]
+    [navigate, noteUserInteraction]
   );
 
   return (
@@ -607,8 +600,8 @@ export default function Results() {
                   <button
                     type="button"
                     onClick={() => {
-                      snoozer?.noteUserInteraction?.();
-                      setMuted((m) => !m);
+                      noteUserInteraction?.();
+                      setMuted(!muted);
                     }}
                     className="rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
                   >
@@ -626,18 +619,9 @@ export default function Results() {
                 </div>
               </div>
 
-              {currentPageVoiceState.blocked || currentPageVoiceState.error ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {currentPageVoiceState.blocked ? (
-                    <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800">
-                      Tap replay for audio
-                    </span>
-                  ) : null}
-                  {currentPageVoiceState.error ? (
-                    <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700">
-                      Audio unavailable
-                    </span>
-                  ) : null}
+              {voiceState?.blocked ? (
+                <div className="mt-3 text-xs font-semibold text-amber-700">
+                  Tap again to enable voice
                 </div>
               ) : null}
             </motion.div>

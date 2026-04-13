@@ -4,22 +4,22 @@ import React, {
   useState,
   useEffect,
   useCallback,
-  useRef,
   createContext,
   useContext,
 } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+
 import RewardsDrawer from "./components/RewardsDrawer.jsx";
 import HeaderContextBar from "./components/HeaderContextBar.jsx";
 import FooterControlBar from "./components/FooterControlBar.jsx";
 import SnoozerHUD from "./components/SnoozerHUD.jsx";
+
+import { useHudRouteVoiceGuard } from "@/hooks/useHudRouteVoiceGuard";
 import {
-  cleanupVoice,
-  getVoiceState,
-  speakText,
-  stopVoice,
-  subscribeVoice,
-} from "./lib/voice.js";
+  VoiceQueueProvider,
+  useVoiceQueue,
+} from "@/lib/snoozer/voice/VoiceQueueContext";
+import { fetchHudAudio } from "@/lib/snoozer/voice/fetchHudAudio";
 
 /** ---- Brand tokens ---- */
 const COLOR = {
@@ -30,157 +30,45 @@ const COLOR = {
   border: "#E5E7EB",
 };
 
-/** ---- Context for rewards + layout controls ---- */
 const SnoozerContext = createContext(null);
-
-const HUD_DEFAULT = {
-  speech: "",
-  captions: "",
-  state: "idle",
-  priority: "normal",
-  ttlMs: 5000,
-  voiceStyle: "default",
-  actions: [],
-  shopperId: "",
-  scriptKey: "",
-};
-
-const RECENT_PAGE_SPEAK_MS = 2500;
-
-function lower(v) {
-  return String(v || "").toLowerCase().trim();
-}
-
-function safeGet(key) {
-  try {
-    return sessionStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function safeSet(key, value) {
-  try {
-    sessionStorage.setItem(key, value);
-  } catch {
-    // ignore
-  }
-}
-
-function normalizeHudState(v) {
-  const s = lower(v);
-  if (s === "listening") return "listening";
-  if (s === "thinking") return "thinking";
-  if (s === "speaking") return "speaking";
-  if (s === "celebrate") return "celebrate";
-  if (s === "warning") return "warning";
-  return "idle";
-}
-
-function normalizePriority(v) {
-  const s = lower(v);
-  if (s === "low") return "low";
-  if (s === "high") return "high";
-  return "normal";
-}
-
-function normalizeVoiceStyle(v) {
-  const s = lower(v);
-  return s === "calm" ? "calm" : "default";
-}
-
-function normalizeHudPayload(payload = {}) {
-  const speech =
-    typeof payload?.speech === "string"
-      ? payload.speech.trim()
-      : typeof payload?.text === "string"
-      ? payload.text.trim()
-      : "";
-
-  const captions =
-    typeof payload?.captions === "string"
-      ? payload.captions.trim()
-      : speech;
-
-  const ttlNum = Number(payload?.ttlMs);
-  const ttlMs =
-    Number.isFinite(ttlNum) && ttlNum > 0
-      ? Math.max(500, Math.min(ttlNum, 60000))
-      : 5000;
-
-  const actions = Array.isArray(payload?.actions)
-    ? payload.actions.slice(0, 12)
-    : [];
-
-  return {
-    speech,
-    captions,
-    state: normalizeHudState(payload?.state),
-    priority: normalizePriority(payload?.priority),
-    ttlMs,
-    voiceStyle: normalizeVoiceStyle(payload?.voiceStyle),
-    actions,
-    shopperId:
-      typeof payload?.shopperId === "string" ? payload.shopperId.trim() : "",
-    scriptKey:
-      typeof payload?.scriptKey === "string" ? payload.scriptKey.trim() : "",
-  };
-}
 
 export function useSnoozer() {
   return useContext(SnoozerContext);
 }
 
 function useShopperId() {
-  const readCurrent = useCallback(() => {
-    try {
-      return (
-        sessionStorage.getItem("snooze.accessCode") ||
-        sessionStorage.getItem("snooze.shopperId") ||
-        ""
-      );
-    } catch {
-      return "";
-    }
-  }, []);
-
-  const [id, setId] = useState(readCurrent);
+  const [id, setId] = useState("");
 
   useEffect(() => {
-    const sync = (nextValue) => {
-      if (typeof nextValue === "string") {
-        setId(nextValue || "");
-        return;
-      }
-      setId(readCurrent());
-    };
-
-    const onStorage = (e) => {
-      if (e.key === "snooze.accessCode" || e.key === "snooze.shopperId") {
-        sync(e.newValue || "");
-      }
-    };
-
-    const onShopperEvent = (e) => {
-      const nextValue = e?.detail?.shopperId;
-      sync(typeof nextValue === "string" ? nextValue : undefined);
-    };
-
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("snooze:shopper-id", onShopperEvent);
-
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("snooze:shopper-id", onShopperEvent);
-    };
-  }, [readCurrent]);
+    try {
+      const val =
+        sessionStorage.getItem("snooze.accessCode") ||
+        sessionStorage.getItem("snooze.shopperId") ||
+        "";
+      setId(val);
+    } catch {
+      setId("");
+    }
+  }, []);
 
   return id;
 }
 
-/** ---- Persistent Layout ---- */
-export default function Layout() {
+function LayoutShell() {
+  const location = useLocation();
+  const pathname = location.pathname || "/";
+
+  const shopperId = useShopperId();
+
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [hudOpen, setHudOpen] = useState(true);
+  const [hudMuted, setHudMutedState] = useState(() => {
+    try {
+      return sessionStorage.getItem("snooze.hudMuted") === "1";
+    } catch {
+      return false;
+    }
+  });
 
   const [rewards, setRewards] = useState({
     balance: 0,
@@ -188,34 +76,34 @@ export default function Layout() {
     title: "Dream Seeker",
   });
 
-  const [voiceState, setVoiceState] = useState(() => getVoiceState());
-  const [hudOpen, setHudOpen] = useState(true);
-  const [hudMuted, setHudMuted] = useState(() => safeGet("snooze.hud.muted") === "1");
-  const [hudMessageSeq, setHudMessageSeq] = useState(0);
-  const [hudMessage, setHudMessage] = useState(HUD_DEFAULT);
-  const [hudMessages, setHudMessages] = useState(() => {
-    const lastCaption = safeGet("snooze.snoozer.lastCaption") || "";
-    if (!lastCaption) return [];
-    return [{ role: "assistant", text: String(lastCaption) }];
+  const voiceQueue = useVoiceQueue() || {};
+
+  const {
+    currentJob = null,
+    replayCurrent = null,
+    replay = null,
+    enqueue = null,
+    push = null,
+    say = null,
+    speak = null,
+    play = null,
+    setMuted = null,
+    muted: queueMuted = undefined,
+    voiceState = {},
+    onUserInteraction = null,
+    noteUserInteraction: queueNoteUserInteraction = null,
+  } = voiceQueue;
+
+  useHudRouteVoiceGuard({
+    allowContinuation: true,
+    maxCarryoverMs: 3000,
   });
 
-  const shopperId = useShopperId();
-  const location = useLocation();
-  const pathname = location.pathname || "/";
-
-  const hudQueueRef = useRef([]);
-  const hudBusyRef = useRef(false);
-  const lastHudRef = useRef(HUD_DEFAULT);
-  const lastRouteSpeakAtRef = useRef(0);
-  const currentRouteRef = useRef(pathname);
-
-  // “Centered” minimal routes
   const isCenteredRoute =
     pathname.startsWith("/welcome") ||
     pathname.startsWith("/what-to-expect") ||
     pathname.startsWith("/results");
 
-  // Header/Footer bars only on these flows
   const showBars =
     pathname.startsWith("/explore") || pathname.startsWith("/checkout");
 
@@ -229,309 +117,189 @@ export default function Layout() {
   const showPersistentHudOverlay =
     hudOpen &&
     !pageOwnsSnoozerVisual &&
-    Boolean(
-      hudMessage.captions ||
-        hudMessage.speech ||
-        voiceState.loading ||
-        voiceState.playing
-    );
+    Boolean(currentJob?.captions || currentJob?.speech);
 
-  /** Rewards tier calculation */
   useEffect(() => {
-    const pts = Number(sessionStorage.getItem("snooze.points") || 0);
-    let level = 1;
-    let title = "Dream Seeker";
+    try {
+      const pts = Number(sessionStorage.getItem("snooze.points") || 0);
 
-    if (pts >= 200 && pts < 500) {
-      level = 2;
-      title = "Snooze Explorer";
-    } else if (pts >= 500 && pts < 1000) {
-      level = 3;
-      title = "Sleep Specialist";
-    } else if (pts >= 1000) {
-      level = 4;
-      title = "Master of Rest";
+      let level = 1;
+      let title = "Dream Seeker";
+
+      if (pts >= 200 && pts < 500) {
+        level = 2;
+        title = "Snooze Explorer";
+      } else if (pts >= 500 && pts < 1000) {
+        level = 3;
+        title = "Sleep Specialist";
+      } else if (pts >= 1000) {
+        level = 4;
+        title = "Master of Rest";
+      }
+
+      setRewards({ balance: pts, level, title });
+    } catch {
+      setRewards({
+        balance: 0,
+        level: 1,
+        title: "Dream Seeker",
+      });
     }
-
-    setRewards({ balance: pts, level, title });
   }, [shopperId]);
 
   useEffect(() => {
-    const unsub = subscribeVoice(setVoiceState);
-    return () => unsub();
-  }, []);
-
-  useEffect(() => {
-    safeSet("snooze.hud.muted", hudMuted ? "1" : "0");
-  }, [hudMuted]);
-
-  const pushHudAssistantMessage = useCallback((text) => {
-    const phrase = String(text || "").trim();
-    if (!phrase) return;
-
     try {
-      sessionStorage.setItem("snooze.snoozer.lastCaption", phrase);
+      sessionStorage.setItem("snooze.hudMuted", hudMuted ? "1" : "0");
     } catch {
       // ignore
     }
-
-    setHudMessages((prev) => {
-      const last = prev[prev.length - 1];
-      if (last?.role === "assistant" && last?.text === phrase) {
-        return prev;
-      }
-      return [...prev, { role: "assistant", text: phrase }].slice(-24);
-    });
-  }, []);
-
-  const clearHudQueue = useCallback(() => {
-    hudQueueRef.current = [];
-    hudBusyRef.current = false;
-  }, []);
-
-  const stopHud = useCallback(
-    ({ keepCaption = true } = {}) => {
-      clearHudQueue();
-      stopVoice();
-
-      setHudMessage((prev) => ({
-        ...prev,
-        state: "idle",
-        captions: keepCaption ? prev.captions : "",
-        speech: keepCaption ? prev.speech : "",
-      }));
-    },
-    [clearHudQueue]
-  );
-
-  const interruptHud = useCallback(() => {
-    clearHudQueue();
-    stopVoice();
-    hudBusyRef.current = false;
-  }, [clearHudQueue]);
+  }, [hudMuted]);
 
   useEffect(() => {
-    if (currentRouteRef.current === pathname) return;
-
-    currentRouteRef.current = pathname;
-    lastRouteSpeakAtRef.current = 0;
-
-    // Do not stop active voice on route change.
-    // Let the current page speech finish unless something explicitly interrupts it.
-    hudBusyRef.current = hudBusyRef.current;
-
-    if (pathname.startsWith("/checkout")) {
-      setHudMessage((prev) => ({
-        ...prev,
-        state: voiceState.playing ? prev.state : "idle",
-      }));
+    if (typeof queueMuted === "boolean" && queueMuted !== hudMuted) {
+      setHudMutedState(queueMuted);
     }
-  }, [pathname, voiceState.playing]);
+  }, [queueMuted, hudMuted]);
 
-  const noteUserInteraction = useCallback(() => {
-    // retained for callers, but no longer used to silence speech globally
-  }, []);
+  const setHudMuted = useCallback(
+    (nextMuted) => {
+      const value = Boolean(nextMuted);
+      setHudMutedState(value);
 
-  const processHudQueue = useCallback(async () => {
-    if (hudBusyRef.current) return;
-
-    const next = hudQueueRef.current.shift();
-    if (!next) return;
-
-    hudBusyRef.current = true;
-
-    try {
-      const suppressForPageRecency =
-        !next.force &&
-        next.passive === true &&
-        Date.now() - lastRouteSpeakAtRef.current <= RECENT_PAGE_SPEAK_MS;
-
-      const shouldSpeak =
-        !hudMuted &&
-        !suppressForPageRecency &&
-        !!next.speech;
-
-      if (shouldSpeak) {
-        lastRouteSpeakAtRef.current = Date.now();
-
-        await speakText(next.speech, {
-          shopperId: next.shopperId || shopperId || "guest",
-          muted: hudMuted,
-          force: false,
-        });
+      if (typeof setMuted === "function") {
+        setMuted(value);
       }
-    } catch {
-      // captions already rendered; voice failures stay non-fatal
-    } finally {
-      hudBusyRef.current = false;
-
-      if (hudQueueRef.current.length) {
-        processHudQueue();
-      }
-    }
-  }, [hudMuted, shopperId]);
+    },
+    [setMuted]
+  );
 
   const sayHud = useCallback(
-    async (payload = {}, opts = {}) => {
-      const next = normalizeHudPayload(payload);
+    async (payload) => {
+      const normalized =
+        typeof payload === "string"
+          ? {
+              speech: payload,
+              captions: payload,
+              state: "speaking",
+              priority: "normal",
+              ttlMs: 5000,
+              actions: [],
+            }
+          : {
+              speech: String(payload?.speech || payload?.captions || "").trim(),
+              captions: String(payload?.captions || payload?.speech || "").trim(),
+              state: payload?.state || "speaking",
+              priority: payload?.priority || "normal",
+              ttlMs: Number(payload?.ttlMs) || 5000,
+              voiceStyle: payload?.voiceStyle || "default",
+              actions: Array.isArray(payload?.actions) ? payload.actions : [],
+            };
 
-      if (!next.speech && !next.captions) return null;
+      if (!normalized.speech && !normalized.captions) return null;
 
-      const resolvedShopperId =
-        String(
-          opts?.shopperId ||
-            next.shopperId ||
-            shopperId ||
-            safeGet("snooze.accessCode") ||
-            safeGet("snooze.shopperId") ||
-            "guest"
-        ).trim() || "guest";
-
-      const finalMessage = {
-        ...next,
-        shopperId: resolvedShopperId,
-        state: next.state === "idle" ? "speaking" : next.state,
-        force: Boolean(opts?.force) || next.priority === "high",
-        passive: Boolean(opts?.passive),
-        interrupt: Boolean(opts?.interrupt),
-      };
-
-      lastHudRef.current = finalMessage;
-
-      setHudMessage(finalMessage);
-      setHudMessageSeq((v) => v + 1);
-      setHudOpen(true);
-      pushHudAssistantMessage(finalMessage.captions || finalMessage.speech || "");
-
-      const voiceSuppressed =
-        Boolean(opts?.captionsOnly) || !finalMessage.speech || hudMuted;
-
-      if (voiceSuppressed) {
-        return finalMessage;
+      const runner = enqueue || push || say || speak || play;
+      if (typeof runner === "function") {
+        return runner(normalized);
       }
 
-      if (finalMessage.priority === "low" && (voiceState.playing || voiceState.loading)) {
-        return finalMessage;
-      }
-
-      // Only explicitly interrupt when the caller asks for it.
-      if ((voiceState.playing || voiceState.loading) && finalMessage.interrupt) {
-        interruptHud();
-      }
-
-      hudQueueRef.current.push(finalMessage);
-      processHudQueue();
-
-      return finalMessage;
+      return null;
     },
-    [
-      hudMuted,
-      interruptHud,
-      processHudQueue,
-      pushHudAssistantMessage,
-      shopperId,
-      voiceState.loading,
-      voiceState.playing,
-    ]
+    [enqueue, push, say, speak, play]
   );
 
   const replayHud = useCallback(async () => {
-    const last = lastHudRef.current;
-    if (!last?.speech && !last?.captions) return;
+    if (typeof replayCurrent === "function") {
+      return replayCurrent();
+    }
 
-    interruptHud();
+    if (typeof replay === "function") {
+      return replay();
+    }
 
-    const replayPayload = {
-      ...last,
-      priority: "high",
-      force: true,
-      passive: false,
-      interrupt: true,
-      shopperId:
-        last.shopperId ||
-        shopperId ||
-        safeGet("snooze.accessCode") ||
-        safeGet("snooze.shopperId") ||
-        "guest",
-    };
+    if (currentJob?.speech || currentJob?.captions) {
+      return sayHud({
+        speech: currentJob?.speech || currentJob?.captions || "",
+        captions: currentJob?.captions || currentJob?.speech || "",
+        state: currentJob?.state || "speaking",
+        priority: currentJob?.priority || "normal",
+        ttlMs: Number(currentJob?.ttlMs) || 5000,
+        voiceStyle: currentJob?.voiceStyle || "default",
+        actions: Array.isArray(currentJob?.actions) ? currentJob.actions : [],
+      });
+    }
 
-    hudQueueRef.current.push(replayPayload);
-    processHudQueue();
-  }, [interruptHud, processHudQueue, shopperId]);
+    return null;
+  }, [replayCurrent, replay, currentJob, sayHud]);
 
-  const openSnoozer = useCallback(() => {
-    setHudOpen(true);
-  }, []);
+  const noteUserInteraction = useCallback(() => {
+    if (typeof queueNoteUserInteraction === "function") {
+      queueNoteUserInteraction();
+      return;
+    }
 
-  const closeSnoozer = useCallback(() => {
-    setHudOpen(false);
-  }, []);
+    if (typeof onUserInteraction === "function") {
+      onUserInteraction();
+    }
+  }, [queueNoteUserInteraction, onUserInteraction]);
 
-  const toggleSnoozer = useCallback(() => {
-    setHudOpen((prev) => !prev);
-  }, []);
+  const normalizedVoiceState = useMemo(
+    () => ({
+      blocked: Boolean(voiceState?.blocked),
+      error: String(voiceState?.error || ""),
+      loading: Boolean(voiceState?.loading),
+      playing: Boolean(voiceState?.playing),
+      lastText: String(
+        voiceState?.lastText ||
+          currentJob?.speech ||
+          currentJob?.captions ||
+          ""
+      ),
+    }),
+    [voiceState, currentJob]
+  );
 
-  /** Context value */
   const snoozerCtx = useMemo(
     () => ({
       shopperId,
       rewards,
-      voiceState,
+      currentJob,
+      voiceState: normalizedVoiceState,
       hud: {
-        ...hudMessage,
         open: hudOpen,
         muted: hudMuted,
-        seq: hudMessageSeq,
-        messages: hudMessages,
       },
-      earnPoints: (points, reason = "Milestone") => {
+      earnPoints: (points) => {
         setRewards((prev) => {
           const total = prev.balance + points;
-          sessionStorage.setItem("snooze.points", total);
+          try {
+            sessionStorage.setItem("snooze.points", total);
+          } catch {
+            // ignore
+          }
           return { ...prev, balance: total };
         });
-        console.log(`🏆 Earned ${points} pts for ${reason}`);
       },
+      openSnoozer: () => setHudOpen(true),
+      closeSnoozer: () => setHudOpen(false),
+      toggleSnoozer: () => setHudOpen((prev) => !prev),
       sayHud,
-      stopHud,
       replayHud,
       setHudMuted,
       noteUserInteraction,
-      clearHudQueue,
-      toggleSnoozer,
-      openSnoozer,
-      closeSnoozer,
-      interruptHud,
-      pushHudAssistantMessage,
     }),
     [
       shopperId,
       rewards,
-      voiceState,
-      hudMessage,
+      currentJob,
+      normalizedVoiceState,
       hudOpen,
       hudMuted,
-      hudMessageSeq,
-      hudMessages,
       sayHud,
-      stopHud,
       replayHud,
+      setHudMuted,
       noteUserInteraction,
-      clearHudQueue,
-      toggleSnoozer,
-      openSnoozer,
-      closeSnoozer,
-      interruptHud,
-      pushHudAssistantMessage,
     ]
   );
-
-  useEffect(() => {
-    return () => {
-      cleanupVoice();
-      clearHudQueue();
-    };
-  }, [clearHudQueue]);
 
   return (
     <SnoozerContext.Provider value={snoozerCtx}>
@@ -542,7 +310,6 @@ export default function Layout() {
           flexDirection: "column",
           backgroundColor: "#FFFFFF",
           color: COLOR.text,
-          overflowX: "hidden",
           position: "relative",
         }}
       >
@@ -555,19 +322,17 @@ export default function Layout() {
         />
 
         <main
-          id="main"
           style={{
             flex: 1,
             display: isCenteredRoute ? "grid" : "block",
             placeItems: isCenteredRoute ? "center" : "initial",
             padding: isCenteredRoute ? 0 : "16px",
-            transition: "all 0.4s ease",
           }}
         >
           <Outlet />
         </main>
 
-        {showPersistentHudOverlay ? (
+        {showPersistentHudOverlay && (
           <div
             style={{
               position: "fixed",
@@ -575,42 +340,27 @@ export default function Layout() {
               bottom: showBars ? 92 : 20,
               zIndex: 50,
               width: "min(360px, calc(100vw - 24px))",
-              pointerEvents: "auto",
             }}
           >
             <SnoozerHUD
-              shopperId={hudMessage.shopperId || shopperId || "guest"}
+              shopperId={shopperId || "guest"}
               mode="showroom"
               chrome="card"
               size="md"
               title="Snoozer"
-              subtitle={
-                voiceState.playing
-                  ? "Speaking"
-                  : voiceState.loading
-                  ? "Thinking"
-                  : "Ready"
-              }
+              subtitle="Ready"
+              speech={currentJob?.speech || currentJob?.captions || ""}
+              captions={currentJob?.captions || currentJob?.speech || ""}
+              state={currentJob?.state || (voiceState?.playing ? "speaking" : "idle")}
+              actions={Array.isArray(currentJob?.actions) ? currentJob.actions : []}
+              busy={Boolean(voiceState?.loading)}
+              error={String(voiceState?.error || "")}
               showHeader={true}
-              showStateLabel={false}
               showTranscriptToggle={true}
               showInput={false}
-              showInputProp={false}
-              speech={hudMessage.speech}
-              captions={hudMessage.captions}
-              state={hudMessage.state}
-              actions={hudMessage.actions}
-              messages={hudMessages}
-              busy={voiceState.loading}
-              error={voiceState.error || ""}
-              openCartUrl={
-                safeGet("snooze.shopify.checkoutUrl") ||
-                safeGet("snooze.checkoutUrl") ||
-                ""
-              }
             />
           </div>
-        ) : null}
+        )}
 
         {showBars && (
           <FooterControlBar
@@ -620,5 +370,18 @@ export default function Layout() {
         )}
       </div>
     </SnoozerContext.Provider>
+  );
+}
+
+export default function Layout() {
+  return (
+    <VoiceQueueProvider
+      fetchAudioForJob={fetchHudAudio}
+      fadeOutMs={250}
+      maxCarryoverMs={3000}
+      captionGraceMs={350}
+    >
+      <LayoutShell />
+    </VoiceQueueProvider>
   );
 }

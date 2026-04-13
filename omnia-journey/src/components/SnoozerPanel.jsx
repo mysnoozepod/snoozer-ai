@@ -285,6 +285,7 @@ export function SnoozerHUD({
   const listRef = useRef(null);
   const introTimeoutRef = useRef(null);
   const streamTimeoutRef = useRef(null);
+  const stateTimeoutRef = useRef(null);
   const lastStreamSourceRef = useRef("");
 
   const introSeenKey = useMemo(() => {
@@ -377,6 +378,11 @@ export function SnoozerHUD({
   }, [activeCaptionSource, sz.bubbleClamp, modeLower, localHudState, controlledState]);
 
   useEffect(() => {
+    if (stateTimeoutRef.current) {
+      clearTimeout(stateTimeoutRef.current);
+      stateTimeoutRef.current = null;
+    }
+
     if (controlledState != null && controlledState !== "") return;
     if (effectiveBusy) return;
     if (!lastAssistantText) return;
@@ -384,14 +390,26 @@ export function SnoozerHUD({
 
     if (localHudState === "thinking") {
       setLocalHudState("speaking");
-      const t = setTimeout(() => setLocalHudState("idle"), 1600);
-      return () => clearTimeout(t);
+      stateTimeoutRef.current = setTimeout(() => {
+        setLocalHudState("idle");
+        stateTimeoutRef.current = null;
+      }, 1600);
+      return;
     }
 
     if (localHudState === "speaking") {
-      const t = setTimeout(() => setLocalHudState("idle"), 1400);
-      return () => clearTimeout(t);
+      stateTimeoutRef.current = setTimeout(() => {
+        setLocalHudState("idle");
+        stateTimeoutRef.current = null;
+      }, 1400);
     }
+
+    return () => {
+      if (stateTimeoutRef.current) {
+        clearTimeout(stateTimeoutRef.current);
+        stateTimeoutRef.current = null;
+      }
+    };
   }, [effectiveBusy, lastAssistantText, localHudState, isStreaming, controlledState]);
 
   useEffect(() => {
@@ -420,6 +438,7 @@ export function SnoozerHUD({
         if (controlledState == null || controlledState === "") {
           setLocalHudState("idle");
         }
+        introTimeoutRef.current = null;
       }, Number(introTtlMs) || 2200);
     } catch {
       // ignore
@@ -427,7 +446,10 @@ export function SnoozerHUD({
 
     return () => {
       try {
-        if (introTimeoutRef.current) clearTimeout(introTimeoutRef.current);
+        if (introTimeoutRef.current) {
+          clearTimeout(introTimeoutRef.current);
+          introTimeoutRef.current = null;
+        }
       } catch {
         // ignore
       }
@@ -438,6 +460,7 @@ export function SnoozerHUD({
     return () => {
       if (introTimeoutRef.current) clearTimeout(introTimeoutRef.current);
       if (streamTimeoutRef.current) clearTimeout(streamTimeoutRef.current);
+      if (stateTimeoutRef.current) clearTimeout(stateTimeoutRef.current);
     };
   }, []);
 
@@ -496,6 +519,7 @@ export function SnoozerHUD({
 
       setLocalMessages((m) => [...m, { role: "assistant", text: reply }]);
 
+
       const hud = res?.hud || null;
       const nextHudState = normalizeHudState(hud?.state || "");
 
@@ -529,16 +553,28 @@ export function SnoozerHUD({
       if (cartId || checkoutUrl) {
         if (controlledState == null || controlledState === "") {
           setLocalHudState("celebrate");
-          setTimeout(() => setLocalHudState("idle"), 900);
+          if (stateTimeoutRef.current) clearTimeout(stateTimeoutRef.current);
+          stateTimeoutRef.current = setTimeout(() => {
+            setLocalHudState("idle");
+            stateTimeoutRef.current = null;
+          }, 900);
         }
         onCheckoutCreated && onCheckoutCreated({ cartId, checkoutUrl, contextPatch });
       } else if (nextHudState === "warning") {
         if (controlledState == null || controlledState === "") {
-          setTimeout(() => setLocalHudState("idle"), 1200);
+          if (stateTimeoutRef.current) clearTimeout(stateTimeoutRef.current);
+          stateTimeoutRef.current = setTimeout(() => {
+            setLocalHudState("idle");
+            stateTimeoutRef.current = null;
+          }, 1200);
         }
       } else {
         if (controlledState == null || controlledState === "") {
-          setTimeout(() => setLocalHudState("idle"), 1600);
+          if (stateTimeoutRef.current) clearTimeout(stateTimeoutRef.current);
+          stateTimeoutRef.current = setTimeout(() => {
+            setLocalHudState("idle");
+            stateTimeoutRef.current = null;
+          }, 1600);
         }
       }
     } catch (e) {
@@ -554,7 +590,11 @@ export function SnoozerHUD({
         },
       ]);
       if (controlledState == null || controlledState === "") {
-        setTimeout(() => setLocalHudState("idle"), 1200);
+        if (stateTimeoutRef.current) clearTimeout(stateTimeoutRef.current);
+        stateTimeoutRef.current = setTimeout(() => {
+          setLocalHudState("idle");
+          stateTimeoutRef.current = null;
+        }, 1200);
       }
     } finally {
       setLocalBusy(false);
@@ -602,10 +642,10 @@ export function SnoozerHUD({
         : effectiveState === "celebrate"
         ? "border-emerald-300 bg-emerald-50/60"
         : effectiveState === "thinking"
-        ? "border-indigo-200 bg-indigo-50/60"
-        : effectiveState === "speaking"
-        ? "border-indigo-200 bg-white/40"
-        : "border-white/40 bg-white/35";
+          ? "border-indigo-200 bg-indigo-50/60"
+          : effectiveState === "speaking"
+            ? "border-indigo-200 bg-white/40"
+            : "border-white/40 bg-white/35";
 
     return ["snoozer-bubble-tail", cls].join(" ");
   }, [effectiveState, presentationMode]);

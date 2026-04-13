@@ -20,7 +20,7 @@ import { api } from "@/lib/api";
 import PodBuilder from "@/components/PodBuilder";
 import { generateShowroomRecommendations } from "@/lib/utils/recommendations";
 import { useStore } from "@/lib/useStore";
-import { useSnoozer } from "@/Layout.jsx";
+import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import snoozerRestActiveImg from "@/assets/avatars/snoozer-rest-active.png";
@@ -299,6 +299,16 @@ function buildPodBuildVoice({ title, baseProductTitle }) {
 
 function buildPodCheckoutVoice() {
   return "Checkout options are ready.";
+}
+
+function getRestStepScriptKey(stepId) {
+  const id = String(stepId || "").trim().toLowerCase();
+
+  if (id.startsWith("head-up")) return "pod.rest.head_up";
+  if (id.startsWith("zero-g")) return "pod.rest.zero_g";
+  if (id.startsWith("flat-return")) return "pod.rest.return_flat";
+
+  return "";
 }
 
 function stageButtonClass(active) {
@@ -929,7 +939,9 @@ function GuidedRestTest({
     <div className="rounded-3xl border bg-white shadow-sm">
       <div className="border-b bg-slate-50 px-5 py-4 md:px-6 md:py-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xl font-extrabold text-gray-900 md:text-2xl">{activeStep?.title}</div>
+          <div className="text-xl font-extrabold text-gray-900 md:text-2xl">
+            {activeStep?.title}
+          </div>
 
           <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-extrabold text-gray-700 shadow-sm">
             <Timer className="h-4 w-4 text-indigo-700" />
@@ -947,7 +959,9 @@ function GuidedRestTest({
       </div>
 
       <div className="p-5 md:p-6">
-        <div className="max-w-3xl text-lg leading-8 text-gray-800 md:text-xl">{activeStep?.body}</div>
+        <div className="max-w-3xl text-lg leading-8 text-gray-800 md:text-xl">
+          {activeStep?.body}
+        </div>
 
         <div className="mt-5 text-sm font-semibold text-gray-500">
           {isRunning
@@ -992,7 +1006,7 @@ function GuidedRestTest({
 export default function Pod() {
   const { podId } = useParams();
   const navigate = useNavigate();
-  const snoozer = useSnoozer();
+  const { muted, noteUserInteraction, say, sayScript, voiceState } = useShowroomHud();
 
   const pid = normalizePodId(podId);
   const storagePrefix = useMemo(() => `snooze.pod.${pid}`, [pid]);
@@ -1026,14 +1040,10 @@ export default function Pod() {
   const [testComplete, setTestComplete] = useState(
     () => safeGet(`${storagePrefix}.testComplete`) === "1"
   );
-  const [feelChoice, setFeelChoice] = useState(
-    () => safeGet(`${storagePrefix}.feelChoice`) || ""
-  );
+  const [feelChoice, setFeelChoice] = useState(() => safeGet(`${storagePrefix}.feelChoice`) || "");
   const [showCheckoutOptions, setShowCheckoutOptions] = useState(false);
 
-  const [restModeId, setRestModeId] = useState(
-    () => safeGet(`${storagePrefix}.restModeId`) || ""
-  );
+  const [restModeId, setRestModeId] = useState(() => safeGet(`${storagePrefix}.restModeId`) || "");
   const [restStepIndex, setRestStepIndex] = useState(() => {
     const raw = safeGet(`${storagePrefix}.restStepIndex`);
     const n = Number(raw);
@@ -1047,27 +1057,48 @@ export default function Pod() {
   const [timerRunning, setTimerRunning] = useState(false);
   const [restPanelPhase, setRestPanelPhase] = useState("normal");
 
-  const voiceState = snoozer?.voiceState || {
-    blocked: false,
-    error: "",
-    loading: false,
-    playing: false,
-    lastText: "",
-  };
-
-  const lastPodVoiceRef = useRef("");
-  const lastPodVoiceAtRef = useRef(0);
-  const lastRequestedVoiceRef = useRef("");
+  const lastPodVoiceKeyRef = useRef("");
   const lastRestVoiceKeyRef = useRef("");
   const restAdvanceTimeoutRef = useRef(null);
+  const podEntryTimerRef = useRef(null);
+  const stageVoiceTimerRef = useRef(null);
+  const podEntrySpokenRef = useRef(false);
 
-  useEffect(() => safeSet(`${storagePrefix}.openStage`, openStage || "rest"), [storagePrefix, openStage]);
-  useEffect(() => safeSet(`${storagePrefix}.buildStepKey`, buildStepKey || "size"), [storagePrefix, buildStepKey]);
-  useEffect(() => safeSet(`${storagePrefix}.testComplete`, testComplete ? "1" : "0"), [storagePrefix, testComplete]);
-  useEffect(() => safeSet(`${storagePrefix}.feelChoice`, feelChoice || ""), [storagePrefix, feelChoice]);
-  useEffect(() => safeSet(`${storagePrefix}.restModeId`, restModeId || ""), [storagePrefix, restModeId]);
-  useEffect(() => safeSet(`${storagePrefix}.restStepIndex`, String(restStepIndex || 0)), [storagePrefix, restStepIndex]);
-  useEffect(() => safeSet(`${storagePrefix}.timerRemaining`, String(Math.max(0, timerRemaining || 0))), [storagePrefix, timerRemaining]);
+  const clearTimer = (ref) => {
+    if (ref.current) {
+      window.clearTimeout(ref.current);
+      ref.current = null;
+    }
+  };
+
+  useEffect(
+    () => safeSet(`${storagePrefix}.openStage`, openStage || "rest"),
+    [storagePrefix, openStage]
+  );
+  useEffect(
+    () => safeSet(`${storagePrefix}.buildStepKey`, buildStepKey || "size"),
+    [storagePrefix, buildStepKey]
+  );
+  useEffect(
+    () => safeSet(`${storagePrefix}.testComplete`, testComplete ? "1" : "0"),
+    [storagePrefix, testComplete]
+  );
+  useEffect(
+    () => safeSet(`${storagePrefix}.feelChoice`, feelChoice || ""),
+    [storagePrefix, feelChoice]
+  );
+  useEffect(
+    () => safeSet(`${storagePrefix}.restModeId`, restModeId || ""),
+    [storagePrefix, restModeId]
+  );
+  useEffect(
+    () => safeSet(`${storagePrefix}.restStepIndex`, String(restStepIndex || 0)),
+    [storagePrefix, restStepIndex]
+  );
+  useEffect(
+    () => safeSet(`${storagePrefix}.timerRemaining`, String(Math.max(0, timerRemaining || 0))),
+    [storagePrefix, timerRemaining]
+  );
 
   useEffect(() => {
     const prev = window.__SNOOZE_DISABLE_WIDGET;
@@ -1076,15 +1107,9 @@ export default function Pod() {
     return () => {
       window.__SNOOZE_DISABLE_WIDGET = prev;
       document.body.classList.remove("no-global-chat");
-    };
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (restAdvanceTimeoutRef.current) {
-        window.clearTimeout(restAdvanceTimeoutRef.current);
-        restAdvanceTimeoutRef.current = null;
-      }
+      clearTimer(restAdvanceTimeoutRef);
+      clearTimer(podEntryTimerRef);
+      clearTimer(stageVoiceTimerRef);
     };
   }, []);
 
@@ -1110,41 +1135,52 @@ export default function Pod() {
   const notIdealFor = useMemo(() => buildNotIdealFor(painSignals), [painSignals]);
 
   const speakPod = useCallback(
-    async (text, { force = false, calm = false, priority = "normal" } = {}) => {
+    async (
+      text,
+      {
+        force = false,
+        calm = false,
+        priority = "normal",
+        key = "",
+        scriptKey = "",
+        state = "speaking",
+      } = {}
+    ) => {
       const phrase = String(text || "").trim();
-      if (!phrase) return;
+      if (!phrase || muted) return null;
 
-      const now = Date.now();
-      const sameAsLastPhrase = phrase === lastPodVoiceRef.current;
-      const tooSoon = now - lastPodVoiceAtRef.current < 1200;
+      const dedupeKey = String(key || phrase).trim();
 
-      if (!force && sameAsLastPhrase && tooSoon) {
-        return;
+      if (!force && dedupeKey && lastPodVoiceKeyRef.current === dedupeKey) {
+        return null;
       }
 
-      if (!force && voiceState.loading && sameAsLastPhrase) {
-        return;
+      if (dedupeKey) {
+        lastPodVoiceKeyRef.current = dedupeKey;
       }
 
-      if (!force && voiceState.playing && sameAsLastPhrase) {
-        return;
-      }
-
-      lastPodVoiceRef.current = phrase;
-      lastPodVoiceAtRef.current = now;
-      lastRequestedVoiceRef.current = phrase;
-
-      await snoozer?.sayHud?.({
+      const payload = {
         speech: phrase,
         captions: phrase,
-        state: "speaking",
+        state,
         priority: force ? "high" : priority,
         ttlMs: calm ? 6500 : 5000,
         voiceStyle: calm ? "calm" : "default",
         actions: [],
-      });
+      };
+
+      if (scriptKey) {
+        return sayScript({
+          scriptKey,
+          shopperId,
+          fallback: payload,
+          overrides: payload,
+        });
+      }
+
+      return say(payload);
     },
-    [snoozer, voiceState.loading, voiceState.playing]
+    [muted, say, sayScript, shopperId]
   );
 
   useEffect(() => {
@@ -1193,11 +1229,13 @@ export default function Pod() {
     if (!recs?.pods?.length) return;
 
     const found =
-      recs.pods.find((p) => String(p.podId ?? p.id ?? "") === String(pid)) ||
-      recs.pods[0] ||
-      null;
+      recs.pods.find((p) => String(p.podId ?? p.id ?? "") === String(pid)) || recs.pods[0] || null;
 
     const sanitizedFound = found ? stripLegacyPodImageFields(found) : null;
+
+    podEntrySpokenRef.current = false;
+    lastPodVoiceKeyRef.current = "";
+    lastRestVoiceKeyRef.current = "";
 
     setActivePod(sanitizedFound || null);
     setSelectedMattressHandle(undefined);
@@ -1218,7 +1256,9 @@ export default function Pod() {
     setFeelChoice(savedFeelChoice);
     setRestModeId(savedRestModeId);
     setRestStepIndex(Number.isFinite(savedRestStepIndex) && savedRestStepIndex >= 0 ? savedRestStepIndex : 0);
-    setTimerRemaining(Number.isFinite(savedTimerRemaining) && savedTimerRemaining >= 0 ? savedTimerRemaining : 0);
+    setTimerRemaining(
+      Number.isFinite(savedTimerRemaining) && savedTimerRemaining >= 0 ? savedTimerRemaining : 0
+    );
     setTimerRunning(false);
     setRestPanelPhase("normal");
 
@@ -1232,8 +1272,6 @@ export default function Pod() {
       setCueType("tip");
       setCue("Choose your Rest Test");
     }
-
-    lastRestVoiceKeyRef.current = "";
   }, [recs, pid, storagePrefix]);
 
   const effectiveMattressHandle = useMemo(() => {
@@ -1316,6 +1354,30 @@ export default function Pod() {
   const mattressImage = useMemo(() => pickProductImage(mattressProduct), [mattressProduct]);
   const mattressHeroTitle = mattressProduct?.title || activePod?.subtitle || "Mattress";
 
+  useEffect(() => {
+    if (!activePod) return;
+    if (podEntrySpokenRef.current) return;
+
+    clearTimer(podEntryTimerRef);
+    podEntryTimerRef.current = window.setTimeout(() => {
+      podEntrySpokenRef.current = true;
+      speakPod(
+        buildPodRestVoice({
+          title,
+          mattressHeroTitle,
+          painSignals,
+        }),
+        {
+          force: true,
+          calm: true,
+          key: `pod-entry::${pid}::${title}`,
+        }
+      );
+    }, 850);
+
+    return () => clearTimer(podEntryTimerRef);
+  }, [activePod, title, mattressHeroTitle, painSignals, speakPod, pid]);
+
   const hasAdjustableBase = useMemo(
     () => detectAdjustableBase(activePod, baseProduct, effectiveBaseHandle),
     [activePod, baseProduct, effectiveBaseHandle]
@@ -1365,19 +1427,26 @@ export default function Pod() {
       setTimerRunning(false);
       setCueType("tip");
       setCue("Timer complete");
-      speakPod("That step is complete.", { priority: "low", calm: true });
+      speakPod("That step is complete.", {
+        priority: "low",
+        calm: true,
+        scriptKey: "pod.rest.step_complete",
+        key: `timer-complete::${activeRestStep?.id || "unknown"}`,
+      });
     }
-  }, [timerRunning, timerRemaining, speakPod]);
+  }, [timerRunning, timerRemaining, speakPod, activeRestStep?.id]);
 
   useEffect(() => {
     if (openStage !== "rest") return;
 
     if (!activeRestFlow) {
-      const key = "mode-select";
+      const key = "rest-mode-select";
       if (lastRestVoiceKeyRef.current === key) return;
       lastRestVoiceKeyRef.current = key;
       speakPod("Choose either the 7-minute or 15-minute rest test.", {
         calm: true,
+        scriptKey: "pod.rest.choose_mode",
+        key,
       });
       return;
     }
@@ -1397,6 +1466,8 @@ export default function Pod() {
     speakPod(activeRestStep.voice || activeRestStep.body, {
       calm: true,
       priority: timerRemaining === 0 ? "low" : "normal",
+      scriptKey: getRestStepScriptKey(activeRestStep.id),
+      key,
     });
   }, [openStage, activeRestFlow, activeRestStep, timerRemaining, timerRunning, restPanelPhase, speakPod]);
 
@@ -1409,7 +1480,7 @@ export default function Pod() {
             mattressHeroTitle,
             painSignals,
           }),
-          { force: true, calm: true }
+          { force: true, calm: true, key: `stage-rest::${pid}` }
         );
       }
 
@@ -1422,7 +1493,11 @@ export default function Pod() {
             isRecommended,
             rank,
           }),
-          { force: true }
+          {
+            force: true,
+            scriptKey: "pod.details.default",
+            key: `stage-details::${pid}`,
+          }
         );
       }
 
@@ -1432,7 +1507,11 @@ export default function Pod() {
             title,
             baseProductTitle: baseProduct?.title || "",
           }),
-          { force: true }
+          {
+            force: true,
+            scriptKey: "pod.build.default",
+            key: `stage-build::${pid}`,
+          }
         );
       }
 
@@ -1447,14 +1526,12 @@ export default function Pod() {
       rank,
       baseProduct?.title,
       speakPod,
+      pid,
     ]
   );
 
   const resetRestTest = useCallback(() => {
-    if (restAdvanceTimeoutRef.current) {
-      window.clearTimeout(restAdvanceTimeoutRef.current);
-      restAdvanceTimeoutRef.current = null;
-    }
+    clearTimer(restAdvanceTimeoutRef);
 
     setRestModeId("");
     setRestStepIndex(0);
@@ -1469,21 +1546,20 @@ export default function Pod() {
     speakPod("Choose either the 7-minute or 15-minute rest test.", {
       calm: true,
       force: true,
+      scriptKey: "pod.rest.choose_mode",
+      key: `rest-reset::${pid}`,
     });
-  }, [speakPod]);
+  }, [speakPod, pid]);
 
   const handleChooseRestMode = useCallback(
     (modeId) => {
-      snoozer?.noteUserInteraction?.();
+      noteUserInteraction?.();
 
       const flow = restFlows[modeId];
       const firstStep = flow?.steps?.[0] || null;
       if (!flow || !firstStep) return;
 
-      if (restAdvanceTimeoutRef.current) {
-        window.clearTimeout(restAdvanceTimeoutRef.current);
-        restAdvanceTimeoutRef.current = null;
-      }
+      clearTimer(restAdvanceTimeoutRef);
 
       setRestModeId(modeId);
       setRestStepIndex(0);
@@ -1498,13 +1574,15 @@ export default function Pod() {
       speakPod(`${flow.title}. ${firstStep.voice || firstStep.body}`, {
         calm: true,
         force: true,
+        scriptKey: modeId === "deep" ? "pod.rest.deep.start" : "pod.rest.quick.start",
+        key: `rest-mode::${modeId}::step-0`,
       });
     },
-    [restFlows, speakPod, snoozer]
+    [restFlows, speakPod, noteUserInteraction]
   );
 
   const handleStartTimer = useCallback(() => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
 
     if (!activeRestStep) return;
     if (timerRunning) return;
@@ -1514,14 +1592,11 @@ export default function Pod() {
     setCueType("tip");
     setCue(activeRestStep.cue || "Timer running");
     setRestPanelPhase("normal");
-  }, [activeRestStep, timerRunning, timerRemaining, snoozer]);
+  }, [activeRestStep, timerRunning, timerRemaining, noteUserInteraction]);
 
   const runRestTransition = useCallback(
     ({ nextIndex, nextStep, finalCue, nextCue, voiceText }) => {
-      if (restAdvanceTimeoutRef.current) {
-        window.clearTimeout(restAdvanceTimeoutRef.current);
-        restAdvanceTimeoutRef.current = null;
-      }
+      clearTimer(restAdvanceTimeoutRef);
 
       setTimerRunning(false);
       setRestPanelPhase("transition");
@@ -1548,7 +1623,12 @@ export default function Pod() {
         restAdvanceTimeoutRef.current = null;
 
         if (voiceText) {
-          speakPod(voiceText, { calm: true, force: true });
+          speakPod(voiceText, {
+            calm: true,
+            force: true,
+            scriptKey: getRestStepScriptKey(nextStep.id),
+            key: `rest-step-transition::${nextStep.id}`,
+          });
         }
       }, 650);
     },
@@ -1556,7 +1636,7 @@ export default function Pod() {
   );
 
   const handleAdvanceRestStep = useCallback(() => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
 
     if (!activeRestFlow?.steps?.length) return;
 
@@ -1570,10 +1650,10 @@ export default function Pod() {
       nextCue: nextStep?.cue || activeRestFlow.title,
       voiceText: nextStep?.voice || nextStep?.body || "",
     });
-  }, [activeRestFlow, restStepIndex, runRestTransition, snoozer]);
+  }, [activeRestFlow, restStepIndex, runRestTransition, noteUserInteraction]);
 
   const handleSkipRestStep = useCallback(() => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
 
     if (!activeRestFlow?.steps?.length) return;
 
@@ -1587,10 +1667,10 @@ export default function Pod() {
       nextCue: nextStep?.cue || activeRestFlow.title,
       voiceText: nextStep?.voice || nextStep?.body || "",
     });
-  }, [activeRestFlow, restStepIndex, runRestTransition, snoozer]);
+  }, [activeRestFlow, restStepIndex, runRestTransition, noteUserInteraction]);
 
   const handleFeelGreat = useCallback(() => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
     setFeelChoice("Great");
     setTestComplete(true);
     setTimerRunning(false);
@@ -1598,11 +1678,11 @@ export default function Pod() {
     setCue("Move to Build");
     setOpenStage("build");
     setRestPanelPhase("normal");
-    speakPod("Build this bed.", { force: true });
-  }, [speakPod, snoozer]);
+    speakPod("Build this bed.", { force: true, key: `feel-great::${pid}` });
+  }, [speakPod, noteUserInteraction, pid]);
 
   const handleFeelUnsure = useCallback(() => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
     setFeelChoice("Not sure");
     setTestComplete(true);
     setTimerRunning(false);
@@ -1610,19 +1690,19 @@ export default function Pod() {
     setCue("Review details");
     setOpenStage("details");
     setRestPanelPhase("normal");
-    speakPod("Review the details.", { force: true });
-  }, [speakPod, snoozer]);
+    speakPod("Review the details.", { force: true, key: `feel-unsure::${pid}` });
+  }, [speakPod, noteUserInteraction, pid]);
 
   const handleFeelNo = useCallback(() => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
     setFeelChoice("Not for me");
     setTestComplete(true);
     setTimerRunning(false);
     setCueType("warning");
     setCue("Try another pod from your results");
     setRestPanelPhase("normal");
-    speakPod("Try another pod from your results.", { force: true });
-  }, [speakPod, snoozer]);
+    speakPod("Try another pod from your results.", { force: true, key: `feel-no::${pid}` });
+  }, [speakPod, noteUserInteraction, pid]);
 
   const stageContent = useMemo(() => {
     if (openStage === "details") {
@@ -1665,7 +1745,7 @@ export default function Pod() {
             }
 
             if (typeof nextText === "string" && nextText.trim()) {
-              speakPod(nextText, { priority: "low" });
+              speakPod(nextText, { priority: "low", key: `builder-cue::${nextText}` });
             }
           }}
           primaryCtaLabel="Add to Cart"
@@ -1745,31 +1825,40 @@ export default function Pod() {
   }, [openStage, testComplete]);
 
   const goToDetailsStage = useCallback(() => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
     setOpenStage("details");
     setCueType("tip");
     setCue("Review this match");
     setRestPanelPhase("normal");
-    speakForStage("details");
-  }, [speakForStage, snoozer]);
+    clearTimer(stageVoiceTimerRef);
+    stageVoiceTimerRef.current = window.setTimeout(() => {
+      speakForStage("details");
+    }, 250);
+  }, [speakForStage, noteUserInteraction]);
 
   const goToBuildStage = useCallback(() => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
     setOpenStage("build");
     setCueType("success");
     setCue("Build this bed");
     setRestPanelPhase("normal");
-    speakForStage("build");
-  }, [speakForStage, snoozer]);
+    clearTimer(stageVoiceTimerRef);
+    stageVoiceTimerRef.current = window.setTimeout(() => {
+      speakForStage("build");
+    }, 250);
+  }, [speakForStage, noteUserInteraction]);
 
   const goToRestStage = useCallback(() => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
     setOpenStage("rest");
     setCueType("tip");
     setCue(restModeId ? "Rest Test in progress" : "Choose your Rest Test");
     setRestPanelPhase("normal");
-    speakForStage("rest");
-  }, [restModeId, speakForStage, snoozer]);
+    clearTimer(stageVoiceTimerRef);
+    stageVoiceTimerRef.current = window.setTimeout(() => {
+      speakForStage("rest");
+    }, 250);
+  }, [restModeId, speakForStage, noteUserInteraction]);
 
   const restPanelImage = useMemo(() => {
     if (openStage !== "rest") return [];
@@ -1896,23 +1985,6 @@ export default function Pod() {
 
   const showInlineStagePanel = !loading && !!activePod;
 
-  const currentPageVoiceState = useMemo(() => {
-    const currentRequested = String(lastRequestedVoiceRef.current || "").trim();
-    const currentLastText = String(voiceState?.lastText || "").trim();
-    const rawError = String(voiceState?.error || "").trim();
-
-    const interruptedByReplace = /interrupted by a call to pause\(\)/i.test(rawError);
-    const isCurrentAttempt =
-      !!currentRequested &&
-      !!currentLastText &&
-      currentRequested === currentLastText;
-
-    return {
-      blocked: isCurrentAttempt ? Boolean(voiceState?.blocked) : false,
-      error: isCurrentAttempt && !interruptedByReplace ? rawError : "",
-    };
-  }, [voiceState]);
-
   return (
     <section className="min-h-screen bg-gradient-to-b from-[#E8ECF5] to-white pb-28 pt-4 md:pt-5">
       <div className="mx-auto max-w-6xl px-4">
@@ -1920,7 +1992,7 @@ export default function Pod() {
           <button
             type="button"
             onClick={() => {
-              snoozer?.noteUserInteraction?.();
+              noteUserInteraction?.();
               navigate("/results");
             }}
             className="inline-flex items-center gap-3 rounded-2xl border bg-white px-5 py-3 text-base font-extrabold text-gray-900 shadow-sm transition hover:shadow"
@@ -1932,7 +2004,7 @@ export default function Pod() {
           <button
             type="button"
             onClick={() => {
-              snoozer?.noteUserInteraction?.();
+              noteUserInteraction?.();
               navigate("/snoozepod");
             }}
             className="inline-flex items-center gap-3 rounded-2xl border bg-white px-5 py-3 shadow-sm transition hover:shadow"
@@ -1982,15 +2054,15 @@ export default function Pod() {
                     />
                   </div>
 
-                  {(currentPageVoiceState.blocked || currentPageVoiceState.error) && (
+                  {(voiceState?.blocked || voiceState?.error) && (
                     <div className="mt-3 flex flex-wrap gap-3">
-                      {currentPageVoiceState.blocked ? (
+                      {voiceState?.blocked ? (
                         <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
                           Audio may require a tap
                         </span>
                       ) : null}
 
-                      {currentPageVoiceState.error ? (
+                      {voiceState?.error ? (
                         <span className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
                           Audio unavailable
                         </span>
@@ -2033,8 +2105,12 @@ export default function Pod() {
                     <button
                       type="button"
                       onClick={() => {
-                        snoozer?.noteUserInteraction?.();
-                        speakPod(buildPodCheckoutVoice(), { force: true });
+                        noteUserInteraction?.();
+                        speakPod(buildPodCheckoutVoice(), {
+                          force: true,
+                          scriptKey: "pod.checkout.ready",
+                          key: `checkout-kiosk::${pid}`,
+                        });
                         navigate("/snoozepod");
                       }}
                       className="rounded-2xl bg-indigo-600 px-6 py-4 text-base font-extrabold text-white hover:bg-indigo-700"
@@ -2054,8 +2130,12 @@ export default function Pod() {
                         rel="noreferrer"
                         className="inline-flex rounded-2xl border bg-white px-6 py-4 text-base font-extrabold text-gray-900 hover:bg-gray-50"
                         onClick={() => {
-                          snoozer?.noteUserInteraction?.();
-                          speakPod("Phone checkout ready.", { force: true });
+                          noteUserInteraction?.();
+                          speakPod("Phone checkout ready.", {
+                            force: true,
+                            scriptKey: "pod.checkout.phone",
+                            key: `checkout-phone::${pid}`,
+                          });
                         }}
                       >
                         Open Checkout
@@ -2086,7 +2166,7 @@ export default function Pod() {
                 icon={Headphones}
                 label="Talk to a Human"
                 onClick={() => {
-                  snoozer?.noteUserInteraction?.();
+                  noteUserInteraction?.();
                   setCueType("tip");
                   setCue("Human support handoff can be added next.");
                 }}
@@ -2096,28 +2176,28 @@ export default function Pod() {
                 icon={ShoppingCart}
                 label="View Cart"
                 onClick={() => {
-                  snoozer?.noteUserInteraction?.();
-                  speakPod("Opening cart.", { force: true });
+                  noteUserInteraction?.();
+                  speakPod("Opening cart.", { force: true, key: `view-cart::${pid}` });
                   navigate("/snoozepod");
                 }}
               />
 
-              <FooterAction
-                icon={Info}
-                label="Pod Details"
-                onClick={goToDetailsStage}
-              />
+              <FooterAction icon={Info} label="Pod Details" onClick={goToDetailsStage} />
 
               <FooterAction
                 icon={CreditCard}
                 label="Checkout"
                 tone="primary"
                 onClick={() => {
-                  snoozer?.noteUserInteraction?.();
+                  noteUserInteraction?.();
                   setShowCheckoutOptions(true);
                   setCueType("success");
                   setCue("Ready for checkout");
-                  speakPod(buildPodCheckoutVoice(), { force: true });
+                  speakPod(buildPodCheckoutVoice(), {
+                    force: true,
+                    scriptKey: "pod.checkout.ready",
+                    key: `footer-checkout::${pid}`,
+                  });
                 }}
               />
             </div>

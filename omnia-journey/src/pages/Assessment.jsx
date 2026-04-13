@@ -1,4 +1,3 @@
-// src/pages/Assessment.jsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,8 +6,7 @@ import { Volume2 } from "lucide-react";
 import { getAssessmentQuestions, saveAssessment } from "@/lib/api";
 import useRewards from "@/lib/useRewards";
 import { useStore } from "@/lib/useStore";
-import { getVoiceState, stopVoice, subscribeVoice } from "@/lib/voice";
-import { useSnoozer } from "@/Layout.jsx";
+import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 
 const BRAND = {
   primary: "#1A66D2",
@@ -342,6 +340,16 @@ function MotionOptionCard({ option, selected, disabled, disabledReason, onClick 
   );
 }
 
+function buildQuestionSpeech(question) {
+  if (!question) return "";
+
+  if (question.id === "size") return "What size are you shopping for?";
+  if (question.id === "baseType") return "What kind of base setup do you want?";
+  if (question.id === "motionMode") return "Choose your motion style.";
+
+  return String(question.text || "").trim();
+}
+
 export default function Assessment() {
   const [title, setTitle] = useState("Snooze Assessment");
   const [questions, setQuestions] = useState([]);
@@ -354,12 +362,11 @@ export default function Assessment() {
   const [halfwayAwarded, setHalfwayAwarded] = useState(false);
   const [completeAwarded, setCompleteAwarded] = useState(false);
 
-  const [muted, setMuted] = useState(() => false);
   const [step, setStep] = useState(0);
-  const [voiceState, setVoiceState] = useState(() => getVoiceState());
 
   const navigate = useNavigate();
-  const snoozer = useSnoozer();
+  const { muted, replay, noteUserInteraction, say, sayScript, setMuted, voiceState } =
+    useShowroomHud();
 
   const shopperId = useMemo(() => {
     try {
@@ -373,11 +380,16 @@ export default function Assessment() {
   const rewards = useRewards(shopperId);
   const { setAssessment, setAssessmentSummary } = useStore();
 
-  const lastSpokenRef = useRef("");
   const introSpokenRef = useRef(false);
   const submitTriggeredRef = useRef(false);
   const mountedRef = useRef(true);
   const questionsLoadedRef = useRef(false);
+  const lastQuestionVoiceKeyRef = useRef("");
+  const introTimerRef = useRef(null);
+  const questionTimerRef = useRef(null);
+  const progressTimerRef = useRef(null);
+  const submitTimerRef = useRef(null);
+  const introCompletedAtRef = useRef(0);
 
   const REQUIRED_IDS = useMemo(
     () =>
@@ -393,44 +405,61 @@ export default function Assessment() {
     []
   );
 
-  useEffect(() => {
-    const unsub = subscribeVoice(setVoiceState);
-    return () => unsub();
-  }, []);
+  const clearTimer = (ref) => {
+    if (ref.current) {
+      window.clearTimeout(ref.current);
+      ref.current = null;
+    }
+  };
 
   useEffect(() => {
     return () => {
       mountedRef.current = false;
-      stopVoice();
+      clearTimer(introTimerRef);
+      clearTimer(questionTimerRef);
+      clearTimer(progressTimerRef);
+      clearTimer(submitTimerRef);
     };
   }, []);
 
-  useEffect(() => {
-    setMuted(Boolean(snoozer?.hud?.muted));
-  }, [snoozer?.hud?.muted]);
-
   const speak = useCallback(
-    async (text, { force = false, calm = false } = {}) => {
+    async (
+      text,
+      {
+        force = false,
+        calm = false,
+        ttlMs,
+        state = "speaking",
+        priority = force ? "high" : "normal",
+        scriptKey = "",
+      } = {}
+    ) => {
       const phrase = String(text || "").trim();
-      if (!phrase) return;
+      if (!phrase || muted) return null;
 
-      return snoozer?.sayHud?.({
+      const payload = {
         speech: phrase,
         captions: phrase,
-        state: "speaking",
-        priority: force ? "high" : "normal",
-        ttlMs: calm ? 6500 : 5000,
+        state,
+        priority,
+        ttlMs: ttlMs || (calm ? 6500 : 5000),
         voiceStyle: calm ? "calm" : "default",
         actions: [],
-      });
-    },
-    [snoozer]
-  );
+      };
 
-  useEffect(() => {
-    if (muted) stopVoice();
-    snoozer?.setHudMuted?.(muted);
-  }, [muted, snoozer]);
+      if (scriptKey) {
+        return sayScript({
+          scriptKey,
+          shopperId,
+          fallback: payload,
+          overrides: payload,
+        });
+      }
+
+      return say(payload);
+    },
+    [muted, say, sayScript, shopperId]
+  );
 
   const isRequired = (q) => {
     if (!q) return false;
@@ -505,7 +534,14 @@ export default function Assessment() {
         delete next.motionMode;
         return next;
       });
-      speak("Half split is only available in Queen or King.");
+      clearTimer(questionTimerRef);
+      speak("Half split is only available in Queen or King.", {
+        force: true,
+        calm: true,
+        priority: "normal",
+        state: "warning",
+        scriptKey: "assessment.motion.half_split_invalid",
+      });
     }
 
     if (m.includes("full split") && !isFullSplitAllowed(size)) {
@@ -514,16 +550,49 @@ export default function Assessment() {
         delete next.motionMode;
         return next;
       });
-      speak("Full split is only available in King.");
+      clearTimer(questionTimerRef);
+      speak("Full split is only available in King.", {
+        force: true,
+        calm: true,
+        priority: "normal",
+        state: "warning",
+        scriptKey: "assessment.motion.full_split_invalid",
+      });
     }
   }, [answers.size, answers.motionMode, speak]);
 
   useEffect(() => {
     if (!current?.text) return;
-    if (lastSpokenRef.current === current.text) return;
-    lastSpokenRef.current = current.text;
-    speak(current.text);
-  }, [current?.id, current?.text, speak]);
+    if (loading) return;
+    if (submitting) return;
+    if (!questionsLoadedRef.current) return;
+
+    const speechText = buildQuestionSpeech(current);
+    const voiceKey = `${current.id}::${step}::${speechText}`;
+
+    if (lastQuestionVoiceKeyRef.current === voiceKey) return;
+
+    const now = Date.now();
+    const sinceIntro = introCompletedAtRef.current
+      ? now - introCompletedAtRef.current
+      : Number.POSITIVE_INFINITY;
+
+    const delayMs =
+      step === 0 && introCompletedAtRef.current
+        ? Math.max(900, 1400 - sinceIntro)
+        : 500;
+
+    clearTimer(questionTimerRef);
+    questionTimerRef.current = window.setTimeout(() => {
+      lastQuestionVoiceKeyRef.current = voiceKey;
+      speak(speechText, {
+        calm: current.id === "motionMode",
+        ttlMs: current.id === "motionMode" ? 6000 : 5000,
+      });
+    }, delayMs);
+
+    return () => clearTimer(questionTimerRef);
+  }, [current?.id, current?.text, step, loading, submitting, speak]);
 
   useEffect(() => {
     let cancelled = false;
@@ -611,7 +680,22 @@ export default function Assessment() {
     if (introSpokenRef.current) return;
 
     introSpokenRef.current = true;
-    speak("Let's begin.");
+    lastQuestionVoiceKeyRef.current = "";
+
+    clearTimer(introTimerRef);
+    clearTimer(questionTimerRef);
+
+    introTimerRef.current = window.setTimeout(async () => {
+      await speak("Let's begin.", {
+        force: true,
+        calm: true,
+        ttlMs: 4000,
+        scriptKey: "assessment.intro",
+      });
+      introCompletedAtRef.current = Date.now();
+    }, 900);
+
+    return () => clearTimer(introTimerRef);
   }, [loading, fetchError, speak]);
 
   useEffect(() => {
@@ -620,13 +704,29 @@ export default function Assessment() {
     if (!halfwayAwarded && doneCount >= halfwayMark) {
       setHalfwayAwarded(true);
       rewards.earn(100, "Halfway Through Snooze Assessment");
-      speak("Nice progress.");
+      clearTimer(progressTimerRef);
+      progressTimerRef.current = window.setTimeout(() => {
+        speak("Nice progress.", {
+          calm: true,
+          ttlMs: 3500,
+          state: "celebrate",
+          scriptKey: "assessment.progress.halfway",
+        });
+      }, 350);
     }
 
     if (!completeAwarded && doneCount === visibleQuestions.length) {
       setCompleteAwarded(true);
       rewards.earn(250, "Completed Snooze Assessment");
-      speak("Assessment complete.");
+      clearTimer(progressTimerRef);
+      progressTimerRef.current = window.setTimeout(() => {
+        speak("Assessment complete.", {
+          calm: true,
+          ttlMs: 3500,
+          state: "celebrate",
+          scriptKey: "assessment.complete",
+        });
+      }, 350);
     }
   }, [
     doneCount,
@@ -653,20 +753,23 @@ export default function Assessment() {
     if (questionIndex >= lastIndex) {
       if (!submitTriggeredRef.current) {
         submitTriggeredRef.current = true;
-        window.setTimeout(() => {
+        clearTimer(submitTimerRef);
+        submitTimerRef.current = window.setTimeout(() => {
           handleSubmit();
-        }, 150);
+        }, 220);
       }
       return;
     }
 
     window.setTimeout(() => {
       setStep((s) => clamp(Math.max(s, questionIndex) + 1, 0, lastIndex));
-    }, 120);
+    }, 180);
   };
 
   const handleSingleSelect = (qid, value) => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
+    clearTimer(questionTimerRef);
+
     const questionIndex = visibleQuestions.findIndex((q) => q.id === qid);
 
     setAnswers((prev) => {
@@ -684,7 +787,9 @@ export default function Assessment() {
   };
 
   const handleMultiToggle = (qid, option) => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
+    clearTimer(questionTimerRef);
+
     setAnswers((prev) => {
       const currentArr = Array.isArray(prev[qid]) ? prev[qid] : [];
       const normalized = normalizeOptionText(option);
@@ -698,7 +803,9 @@ export default function Assessment() {
   };
 
   const handleSkipCurrent = () => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
+    clearTimer(questionTimerRef);
+
     if (!current) return;
     if (isRequired(current)) return;
 
@@ -713,7 +820,8 @@ export default function Assessment() {
   };
 
   const handleBack = () => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
+    clearTimer(questionTimerRef);
     submitTriggeredRef.current = false;
     setStep((s) => clamp(s - 1, 0, Math.max(0, visibleQuestions.length - 1)));
   };
@@ -747,7 +855,13 @@ export default function Assessment() {
       setSubmitting(true);
 
       const cleaned = buildCleanAnswers();
-      await speak("Saving your results.");
+      await speak("Saving your results.", {
+        force: true,
+        calm: true,
+        state: "thinking",
+        priority: "normal",
+        scriptKey: "assessment.saving",
+      });
 
       await saveAssessment(shopperId || "guest", cleaned);
 
@@ -771,7 +885,7 @@ export default function Assessment() {
             assessmentSummary: summary,
           },
         });
-      }, 450);
+      }, 650);
     } catch (err) {
       console.error("Submit failed:", err);
       submitTriggeredRef.current = false;
@@ -782,9 +896,11 @@ export default function Assessment() {
   };
 
   const replayCurrentQuestion = async () => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
     if (!current?.text) return;
-    await speak(current.text, { force: true });
+    lastQuestionVoiceKeyRef.current = "";
+    await replay?.();
+    await speak(buildQuestionSpeech(current), { force: true, calm: current.id === "motionMode" });
   };
 
   const motionCards = useMemo(() => {
@@ -868,8 +984,8 @@ export default function Assessment() {
             <button
               type="button"
               onClick={() => {
-                snoozer?.noteUserInteraction?.();
-                setMuted((m) => !m);
+                noteUserInteraction?.();
+                setMuted(!muted);
               }}
               className="text-xs text-gray-600 underline hover:text-gray-900"
               aria-label={muted ? "Unmute Snoozer voice" : "Mute Snoozer voice"}
@@ -890,14 +1006,8 @@ export default function Assessment() {
             </button>
           </div>
 
-          {voiceState.loading ? (
-            <div className="text-[11px] text-gray-400">Loading voice…</div>
-          ) : null}
-          {voiceState.blocked ? (
-            <div className="text-[11px] font-medium text-amber-700">Tap Replay</div>
-          ) : null}
-          {voiceState.error ? (
-            <div className="max-w-[180px] text-[11px] text-red-600">{voiceState.error}</div>
+          {voiceState?.blocked ? (
+            <div className="text-[11px] text-amber-700">Tap again to enable voice</div>
           ) : null}
         </div>
       </div>

@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ClipboardList, BedDouble, Layers3 } from "lucide-react";
 import { getAssessment } from "@/lib/api";
-import { getVoiceState, subscribeVoice } from "@/lib/voice";
-import { useSnoozer } from "@/Layout.jsx";
+import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 
 function safeGet(key) {
   try {
@@ -29,20 +28,6 @@ function safeParseJson(str) {
   } catch {
     return null;
   }
-}
-
-async function safeReadJson(res) {
-  try {
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
-function buildApiBase() {
-  let base = import.meta.env.VITE_API_BASE?.replace(/\/$/, "") || "";
-  if (base && !/\/(prod|staging|dev)$/i.test(base)) base += "/prod";
-  return base;
 }
 
 function isValidSnapshot(s) {
@@ -128,12 +113,12 @@ function buildFallbackWhatToExpectScript(assessmentComplete) {
   if (assessmentComplete) {
     return {
       speech:
-        "Here’s what to expect. Your Snooze Assessment is already on file. Next, head to your Snooze Test and try the recommended pods first, so you can feel the differences for yourself. When you’re ready, complete your sleep setup and finish your selection.",
+        "Here’s how this works. Your Snooze Assessment is already done. Next, try your recommended SnoozePods, then complete your sleep setup.",
       captions:
-        "Here’s what to expect. Your Snooze Assessment is already on file. Next, head to your Snooze Test and try the recommended pods first, so you can feel the differences for yourself. When you’re ready, complete your sleep setup and finish your selection.",
+        "Here’s how this works. Your Snooze Assessment is already done. Next, try your recommended SnoozePods, then complete your sleep setup.",
       state: "speaking",
       priority: "normal",
-      ttlMs: 6500,
+      ttlMs: 5200,
       voiceStyle: "default",
       actions: [],
     };
@@ -141,85 +126,20 @@ function buildFallbackWhatToExpectScript(assessmentComplete) {
 
   return {
     speech:
-      "Here’s what to expect. First, complete your Snooze Assessment so I can learn your sleep needs. Then head to your Snooze Test and try the recommended pods first, so you can feel the differences for yourself. When you’re ready, complete your sleep setup and finish your selection.",
+      "Here’s how this works. Start with your Snooze Assessment, then try your recommended SnoozePods, then complete your sleep setup.",
     captions:
-      "Here’s what to expect. First, complete your Snooze Assessment so I can learn your sleep needs. Then head to your Snooze Test and try the recommended pods first, so you can feel the differences for yourself. When you’re ready, complete your sleep setup and finish your selection.",
+      "Here’s how this works. Start with your Snooze Assessment, then try your recommended SnoozePods, then complete your sleep setup.",
     state: "speaking",
     priority: "normal",
-    ttlMs: 6500,
+    ttlMs: 5200,
     voiceStyle: "default",
     actions: [],
   };
 }
 
-function normalizeHudPayload(payload, fallback) {
-  const base = fallback || {};
-  const body = payload?.data && typeof payload.data === "object" ? payload.data : payload || {};
-
-  const speech =
-    typeof body?.speech === "string" && body.speech.trim()
-      ? body.speech.trim()
-      : typeof body?.captions === "string" && body.captions.trim()
-      ? body.captions.trim()
-      : base.speech || "";
-
-  const captions =
-    typeof body?.captions === "string" && body.captions.trim()
-      ? body.captions.trim()
-      : speech || base.captions || "";
-
-  return {
-    speech,
-    captions,
-    state: body?.state || base.state || "speaking",
-    priority: body?.priority || base.priority || "normal",
-    ttlMs:
-      Number.isFinite(Number(body?.ttlMs)) && Number(body.ttlMs) > 0
-        ? Number(body.ttlMs)
-        : base.ttlMs || 6500,
-    voiceStyle: body?.voiceStyle || base.voiceStyle || "default",
-    actions: Array.isArray(body?.actions) ? body.actions : base.actions || [],
-    scriptKey:
-      typeof body?.scriptKey === "string" && body.scriptKey.trim()
-        ? body.scriptKey.trim()
-        : "",
-  };
-}
-
-async function resolveHudScript({ apiBase, shopperId, scriptKey, fallback }) {
-  if (!apiBase || !scriptKey) {
-    return fallback;
-  }
-
-  try {
-    const res = await fetch(`${apiBase}/hud/script`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        shopperId: shopperId || "guest",
-        scriptKey,
-        context: {},
-      }),
-    });
-
-    const payload = await safeReadJson(res);
-    if (!res.ok || !payload || typeof payload !== "object") {
-      return fallback;
-    }
-
-    return normalizeHudPayload(payload, fallback);
-  } catch (err) {
-    console.warn("HUD script resolve failed:", err);
-    return fallback;
-  }
-}
-
 export default function WhatToExpect() {
   const navigate = useNavigate();
-  const snoozer = useSnoozer();
-  const API_BASE = useMemo(() => buildApiBase(), []);
+  const { noteUserInteraction, sayScript, voiceState } = useShowroomHud();
 
   const shopperId = safeGet("snooze.accessCode") || safeGet("snooze.shopperId") || "";
   const supportPhone = useMemo(() => {
@@ -236,17 +156,11 @@ export default function WhatToExpect() {
     const parsed = raw ? safeParseJson(raw) : null;
     return isValidSnapshot(parsed) ? parsed : null;
   });
-  const [voiceState, setVoiceState] = useState(() => getVoiceState());
   const [activeStep, setActiveStep] = useState(0);
 
   const introTimerRef = useRef(null);
   const announcedKeyRef = useRef("");
   const isMountedRef = useRef(true);
-
-  useEffect(() => {
-    const unsub = subscribeVoice(setVoiceState);
-    return () => unsub();
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -348,8 +262,8 @@ export default function WhatToExpect() {
   }, [assessmentComplete]);
 
   useEffect(() => {
-    if (!snoozer?.sayHud) return;
     if (checking) return;
+    if (!sayScript) return;
 
     const announcementKey = `${shopperId || "guest"}::${
       assessmentComplete ? "complete" : "default"
@@ -362,33 +276,28 @@ export default function WhatToExpect() {
       introTimerRef.current = null;
     }
 
-    introTimerRef.current = window.setTimeout(async () => {
-      const fallback = buildFallbackWhatToExpectScript(assessmentComplete);
+    introTimerRef.current = window.setTimeout(() => {
+      if (!isMountedRef.current) return;
+
       const scriptKey = assessmentComplete
         ? "whattoexpect.assessment_complete"
         : "whattoexpect.default";
 
-      const resolved = await resolveHudScript({
-        apiBase: API_BASE,
-        shopperId,
+      sayScript({
         scriptKey,
-        fallback,
+        shopperId: shopperId || "guest",
+        fallback: voiceScript,
+        overrides: {
+          interruptible: true,
+          replaceCurrent: true,
+          force: true,
+        },
+      }).catch((err) => {
+        console.warn("What To Expect HUD intro failed.", err);
       });
 
-      if (!isMountedRef.current) return;
-
-      try {
-        await snoozer.sayHud(resolved, {
-          force: true,
-          passive: false,
-          shopperId: shopperId || "guest",
-        });
-
-        announcedKeyRef.current = announcementKey;
-      } catch (err) {
-        console.warn("What To Expect HUD intro failed.", err);
-      }
-    }, 350);
+      announcedKeyRef.current = announcementKey;
+    }, 250);
 
     return () => {
       if (introTimerRef.current) {
@@ -396,7 +305,7 @@ export default function WhatToExpect() {
         introTimerRef.current = null;
       }
     };
-  }, [API_BASE, assessmentComplete, checking, shopperId, snoozer]);
+  }, [assessmentComplete, checking, shopperId, sayScript, voiceScript]);
 
   useEffect(() => {
     setActiveStep(0);
@@ -431,7 +340,7 @@ export default function WhatToExpect() {
     : "Start Your Snooze Assessment";
 
   const primaryAction = () => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
 
     if (assessmentComplete) {
       navigate("/results");
@@ -446,7 +355,7 @@ export default function WhatToExpect() {
     : "Go to Snooze Test";
 
   const secondaryAction = () => {
-    snoozer?.noteUserInteraction?.();
+    noteUserInteraction?.();
 
     if (assessmentComplete) {
       navigate("/assessment");

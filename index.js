@@ -170,10 +170,7 @@ async function measureStep(step, fn) {
 
 function isTimeoutError(err) {
   const code = String(err?.code || "").toUpperCase();
-  return (
-    code.includes("TIMEOUT") ||
-    /timeout/i.test(String(err?.message || ""))
-  );
+  return code.includes("TIMEOUT") || /timeout/i.test(String(err?.message || ""));
 }
 
 function safeNumber(v, fallback) {
@@ -237,9 +234,9 @@ function enforceHudContract(input = {}, defaults = {}) {
   const speech =
     typeof merged.speech === "string" && merged.speech.trim()
       ? merged.speech.trim()
-      : (typeof defaults.speech === "string" && defaults.speech.trim()
-          ? defaults.speech.trim()
-          : HUD_DEFAULTS.speech);
+      : typeof defaults.speech === "string" && defaults.speech.trim()
+        ? defaults.speech.trim()
+        : HUD_DEFAULTS.speech;
 
   const captions =
     typeof merged.captions === "string" && merged.captions.trim()
@@ -1319,6 +1316,74 @@ async function handle(event = {}) {
     }
   }
 
+  // ─────────── HUD TTS
+  if (method === "POST" && routePath === "/hud/tts") {
+    const body = safeJsonBody(event);
+
+    try {
+      const text = typeof body?.text === "string" ? body.text : "";
+      const ssml = typeof body?.ssml === "string" ? body.ssml : "";
+      const voiceId = body?.voiceId || "Ruth";
+      const engine = body?.engine || "generative";
+      const format = body?.format || "mp3";
+
+      if (!text && !ssml) {
+        return response(event, 400, {
+          code: "E_TTS_TEXT_REQUIRED",
+          message: "text or ssml is required",
+        });
+      }
+
+      const voiceStep = await measureStep("hud_tts", () =>
+        withTimeout(
+          synthesizePollyAudio({
+            text,
+            ssml,
+            voiceId,
+            engine,
+            format,
+          }),
+          POLLY_TIMEOUT_MS,
+          "POLLY_TIMEOUT",
+          `HUD TTS exceeded ${POLLY_TIMEOUT_MS}ms`
+        )
+      );
+
+      if (!voiceStep.ok) throw voiceStep.error;
+
+      const out = voiceStep.value;
+
+      log("hud.tts", "ok", {
+        traceId,
+        voiceId: out.voiceId,
+        engine: out.engine,
+        format: out.format,
+        requestCharacters: out.requestCharacters,
+        pollyMs: voiceStep.ms,
+      });
+
+      return response(event, 200, {
+        ok: true,
+        audioBase64: out.audioBuffer.toString("base64"),
+        contentType: out.contentType,
+        voiceId: out.voiceId,
+        engine: out.engine,
+        format: out.format,
+      });
+    } catch (e) {
+      log("hud.tts.error", e.message, {
+        traceId,
+        timeoutMs: isTimeoutError(e) ? POLLY_TIMEOUT_MS : null,
+      });
+
+      return response(event, 500, {
+        code: isTimeoutError(e) ? "POLLY_TIMEOUT" : "E_HUD_TTS",
+        message: "Failed to synthesize HUD voice",
+        details: e.message,
+      });
+    }
+  }
+
   // ─────────── HUD Script Resolver
   if (method === "POST" && routePath === "/hud/script") {
     const body = safeJsonBody(event);
@@ -1410,8 +1475,8 @@ async function handle(event = {}) {
           typeof resolved.captions === "string"
             ? resolved.captions
             : typeof resolved.speech === "string"
-            ? resolved.speech
-            : "",
+              ? resolved.speech
+              : "",
         state: normalizeHudStateValue(resolved.state, "speaking"),
         priority: normalizeHudPriorityValue(resolved.priority, "normal"),
         ttlMs:
@@ -1628,8 +1693,8 @@ async function handle(event = {}) {
       body.contextPatch && typeof body.contextPatch === "object"
         ? body.contextPatch
         : typeof body === "object"
-        ? body
-        : {};
+          ? body
+          : {};
 
     if (!patch || typeof patch !== "object" || Array.isArray(patch)) {
       return response(event, 400, { message: "contextPatch object required" });
@@ -2115,8 +2180,8 @@ async function handle(event = {}) {
         sco && typeof sco === "object"
           ? sco
           : aiResult && aiResult.context && typeof aiResult.context === "object"
-          ? aiResult.context
-          : context;
+            ? aiResult.context
+            : context;
 
       const rawMessage = debug ? (aiResult?.raw || aiResult) : null;
 
