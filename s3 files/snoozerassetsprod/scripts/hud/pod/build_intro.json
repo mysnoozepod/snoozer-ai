@@ -1,0 +1,9 @@
+{
+  "id": "pod_build_intro",
+  "speech": "Now let’s build your SnoozePod. Choose your setup step by step, and I’ll help you keep it simple.",
+  "captions": "Now let’s build your SnoozePod. Choose your setup step by step, and I’ll help you keep it simple.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 6500,
+  "actions": []
+}

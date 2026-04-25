@@ -1,0 +1,9 @@
+{
+  "id": "global_tts_failure",
+  "speech": "I’m here to help.",
+  "captions": "I’m here to help.",
+  "state": "idle",
+  "priority": "low",
+  "ttlMs": 3000,
+  "actions": []
+}

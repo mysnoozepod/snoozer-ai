@@ -1,0 +1,9 @@
+{
+  "id": "welcome_enter",
+  "speech": "Hello, welcome to MySnoozePod. I’m Snoozer, your personal sleep assistant. Let’s get you sleeping better.",
+  "captions": "Hello, welcome to MySnoozePod. I’m Snoozer, your personal sleep assistant. Let’s get you sleeping better.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 6500,
+  "actions": []
+}

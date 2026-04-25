@@ -1,10 +1,83 @@
 const API_BASE = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
 const AUDIO_CACHE = new Map();
 const AUDIO_CACHE_MAX = 48;
+const HUD_AUDIO_TIMEOUT_MS = Number(import.meta.env.VITE_HUD_AUDIO_TIMEOUT_MS || 2000);
+const HUD_AUDIO_LONG_TIMEOUT_MS = Number(
+  import.meta.env.VITE_HUD_AUDIO_LONG_TIMEOUT_MS || 4500
+);
+const HUD_AUDIO_LONG_TEXT_THRESHOLD = Number(
+  import.meta.env.VITE_HUD_AUDIO_LONG_TEXT_THRESHOLD || 220
+);
+const HUD_AUDIO_FAILURE_THRESHOLD = 2;
+const HUD_AUDIO_COOLDOWN_MS = 10000;
+const hudAudioBreaker = {
+  consecutiveFailures: 0,
+  openUntil: 0,
+};
 
 function toApiUrl(path) {
   const cleanPath = String(path || "").startsWith("/") ? path : `/${path}`;
   return API_BASE ? `${API_BASE}${cleanPath}` : cleanPath;
+}
+
+function nowMs() {
+  return Date.now();
+}
+
+function browserOnline() {
+  return typeof navigator === "undefined" ? true : navigator.onLine !== false;
+}
+
+function isAudioBreakerOpen() {
+  return hudAudioBreaker.openUntil > nowMs();
+}
+
+function markAudioSuccess() {
+  hudAudioBreaker.consecutiveFailures = 0;
+  hudAudioBreaker.openUntil = 0;
+}
+
+function markAudioFailure(reason, { openBreaker = true, retrievalMs = 0 } = {}) {
+  hudAudioBreaker.consecutiveFailures += 1;
+
+  if (
+    openBreaker &&
+    hudAudioBreaker.consecutiveFailures >= HUD_AUDIO_FAILURE_THRESHOLD
+  ) {
+    hudAudioBreaker.openUntil = nowMs() + HUD_AUDIO_COOLDOWN_MS;
+  }
+
+  console.warn("[hud.audio] degraded", {
+    reason,
+    retrievalMs: Math.round(Number(retrievalMs) || 0),
+    breakerOpen: isAudioBreakerOpen(),
+    cooldownMs: Math.max(hudAudioBreaker.openUntil - nowMs(), 0),
+  });
+}
+
+function normalizeActionType(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function normalizeScriptKey(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function getHudAudioTimeoutMs(job) {
+  const speechLength = String(job?.speech || job?.captions || "").trim().length;
+  const actionType = normalizeActionType(job?.metadata?.actionType);
+  const scriptKey = normalizeScriptKey(job?.metadata?.scriptKey);
+  const isPodNarration =
+    actionType === "view_details" ||
+    actionType === "build_pod" ||
+    scriptKey.startsWith("pod.details.") ||
+    scriptKey === "pod.build.default";
+
+  if (isPodNarration || speechLength >= HUD_AUDIO_LONG_TEXT_THRESHOLD) {
+    return Math.max(HUD_AUDIO_TIMEOUT_MS, HUD_AUDIO_LONG_TIMEOUT_MS);
+  }
+
+  return HUD_AUDIO_TIMEOUT_MS;
 }
 
 function base64ToBlob(base64, contentType = "audio/mpeg") {
@@ -66,7 +139,12 @@ async function buildCacheKey(job) {
 
 async function fetchAndDecodeHudAudio(job) {
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), 6000);
+  const startedAt =
+    typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now();
+  const timeoutMs = getHudAudioTimeoutMs(job);
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const response = await fetch(toApiUrl("/hud/tts"), {
@@ -87,9 +165,16 @@ async function fetchAndDecodeHudAudio(job) {
     });
 
     const payload = await response.json().catch(() => null);
+    const retrievalMs =
+      (typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now()) - startedAt;
 
     if (!response.ok) {
-      console.error("[fetchHudAudio] non-200 response:", response.status, payload);
+      markAudioFailure(`http_${response.status}`, {
+        openBreaker: response.status >= 500 || response.status === 429,
+        retrievalMs,
+      });
       return null;
     }
 
@@ -99,7 +184,10 @@ async function fetchAndDecodeHudAudio(job) {
       typeof data?.audioBase64 === "string" ? data.audioBase64.trim() : "";
 
     if (!audioBase64) {
-      console.error("[fetchHudAudio] missing audioBase64 in response:", payload);
+      markAudioFailure("missing_audio_payload", {
+        openBreaker: false,
+        retrievalMs,
+      });
       return null;
     }
 
@@ -116,9 +204,14 @@ async function fetchAndDecodeHudAudio(job) {
         : null,
     };
   } catch (error) {
-    if (error?.name !== "AbortError") {
-      console.error("[fetchHudAudio] request failed:", error);
-    }
+    const retrievalMs =
+      (typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now()) - startedAt;
+    markAudioFailure(error?.name === "AbortError" ? "timeout" : "network", {
+      openBreaker: true,
+      retrievalMs,
+    });
     return null;
   } finally {
     window.clearTimeout(timeoutId);
@@ -134,6 +227,14 @@ export async function fetchHudAudio(job) {
   let cached = AUDIO_CACHE.get(cacheKey);
 
   if (!cached) {
+    if (!browserOnline()) {
+      return null;
+    }
+
+    if (isAudioBreakerOpen()) {
+      return null;
+    }
+
     const pending = fetchAndDecodeHudAudio(job);
     setCachedAudio(cacheKey, pending);
     cached = pending;
@@ -146,6 +247,7 @@ export async function fetchHudAudio(job) {
     return null;
   }
 
+  markAudioSuccess();
   setCachedAudio(cacheKey, Promise.resolve(resolved));
 
   const audioUrl = URL.createObjectURL(resolved.blob);

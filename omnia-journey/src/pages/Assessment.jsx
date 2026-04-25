@@ -133,7 +133,7 @@ function isFullSplitAllowed(size) {
 
 function normalizeTitle(t) {
   const s = String(t || "Snooze Assessment");
-  return s.replace(/\s*[–-]\s*3\s*simple\s*decisions\s*$/i, "").trim();
+  return s.replace(/\s*(?:\u2013|-)\s*3\s*simple\s*decisions\s*$/i, "").trim();
 }
 
 function isBudgetQuestion(q) {
@@ -365,8 +365,16 @@ export default function Assessment() {
   const [step, setStep] = useState(0);
 
   const navigate = useNavigate();
-  const { muted, replay, noteUserInteraction, say, sayScript, setMuted, voiceState } =
-    useShowroomHud();
+  const {
+    muted,
+    replay,
+    noteUserInteraction,
+    say,
+    sayScript,
+    interruptCurrent,
+    setMuted,
+    voiceState,
+  } = useShowroomHud();
 
   const shopperId = useMemo(() => {
     try {
@@ -389,6 +397,7 @@ export default function Assessment() {
   const questionTimerRef = useRef(null);
   const progressTimerRef = useRef(null);
   const submitTimerRef = useRef(null);
+  const resultsTransitionTimerRef = useRef(null);
   const introCompletedAtRef = useRef(0);
 
   const REQUIRED_IDS = useMemo(
@@ -412,6 +421,15 @@ export default function Assessment() {
     }
   };
 
+  const cancelAssessmentVoice = useCallback(() => {
+    clearTimer(questionTimerRef);
+    return interruptCurrent?.({
+      preserveQueue: false,
+      reason: "assessment-question-change",
+      fadeMs: 0,
+    });
+  }, [interruptCurrent]);
+
   useEffect(() => {
     return () => {
       mountedRef.current = false;
@@ -419,6 +437,7 @@ export default function Assessment() {
       clearTimer(questionTimerRef);
       clearTimer(progressTimerRef);
       clearTimer(submitTimerRef);
+      clearTimer(resultsTransitionTimerRef);
     };
   }, []);
 
@@ -445,6 +464,7 @@ export default function Assessment() {
         ttlMs: ttlMs || (calm ? 6500 : 5000),
         voiceStyle: calm ? "calm" : "default",
         actions: [],
+        replaceCurrent: force,
       };
 
       if (scriptKey) {
@@ -586,6 +606,7 @@ export default function Assessment() {
     questionTimerRef.current = window.setTimeout(() => {
       lastQuestionVoiceKeyRef.current = voiceKey;
       speak(speechText, {
+        force: true,
         calm: current.id === "motionMode",
         ttlMs: current.id === "motionMode" ? 6000 : 5000,
       });
@@ -700,6 +721,7 @@ export default function Assessment() {
 
   useEffect(() => {
     if (!visibleQuestions.length) return;
+    if (submitTriggeredRef.current || submitting) return;
 
     if (!halfwayAwarded && doneCount >= halfwayMark) {
       setHalfwayAwarded(true);
@@ -736,6 +758,7 @@ export default function Assessment() {
     halfwayAwarded,
     completeAwarded,
     speak,
+    submitting,
   ]);
 
   const setSkip = (qid, val) => {
@@ -768,7 +791,7 @@ export default function Assessment() {
 
   const handleSingleSelect = (qid, value) => {
     noteUserInteraction?.();
-    clearTimer(questionTimerRef);
+    cancelAssessmentVoice();
 
     const questionIndex = visibleQuestions.findIndex((q) => q.id === qid);
 
@@ -804,7 +827,7 @@ export default function Assessment() {
 
   const handleSkipCurrent = () => {
     noteUserInteraction?.();
-    clearTimer(questionTimerRef);
+    cancelAssessmentVoice();
 
     if (!current) return;
     if (isRequired(current)) return;
@@ -821,9 +844,22 @@ export default function Assessment() {
 
   const handleBack = () => {
     noteUserInteraction?.();
-    clearTimer(questionTimerRef);
+    cancelAssessmentVoice();
     submitTriggeredRef.current = false;
+    clearTimer(resultsTransitionTimerRef);
     setStep((s) => clamp(s - 1, 0, Math.max(0, visibleQuestions.length - 1)));
+  };
+
+  const currentIsMultiQuestion = isMultiQuestion(current);
+  const currentCanAdvance = isDoneOrSkipped(current);
+  const showNextButton =
+    Boolean(current) && currentIsMultiQuestion && step < visibleQuestions.length - 1;
+
+  const handleAdvanceCurrent = () => {
+    noteUserInteraction?.();
+    if (!current || !currentCanAdvance || !showNextButton) return;
+    cancelAssessmentVoice();
+    goToNextOrSubmit(step);
   };
 
   const canFinish = useMemo(() => {
@@ -850,16 +886,22 @@ export default function Assessment() {
 
   const handleSubmit = async () => {
     if (submitting) return;
+    let shouldResetSubmitting = true;
 
     try {
+      submitTriggeredRef.current = true;
       setSubmitting(true);
+      clearTimer(progressTimerRef);
+      clearTimer(resultsTransitionTimerRef);
+      await cancelAssessmentVoice();
 
       const cleaned = buildCleanAnswers();
-      await speak("Saving your results.", {
+      const savingJob = await speak("Saving your results.", {
         force: true,
         calm: true,
         state: "thinking",
         priority: "normal",
+        ttlMs: 2600,
         scriptKey: "assessment.saving",
       });
 
@@ -877,7 +919,12 @@ export default function Assessment() {
         // ignore
       }
 
-      setTimeout(() => {
+      const transitionMs = Math.max(
+        2200,
+        Math.min((Number(savingJob?.ttlMs) || 2600) + 500, 3800)
+      );
+
+      resultsTransitionTimerRef.current = window.setTimeout(() => {
         navigate("/results", {
           state: {
             results: cleaned,
@@ -885,13 +932,16 @@ export default function Assessment() {
             assessmentSummary: summary,
           },
         });
-      }, 650);
+      }, transitionMs);
+      shouldResetSubmitting = false;
     } catch (err) {
       console.error("Submit failed:", err);
       submitTriggeredRef.current = false;
-      alert("Something went wrong saving your assessment. Please try again.");
+      alert("We couldn't save your assessment. Please try again.");
     } finally {
-      setSubmitting(false);
+      if (shouldResetSubmitting && mountedRef.current) {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -899,6 +949,7 @@ export default function Assessment() {
     noteUserInteraction?.();
     if (!current?.text) return;
     lastQuestionVoiceKeyRef.current = "";
+    await cancelAssessmentVoice();
     await replay?.();
     await speak(buildQuestionSpeech(current), { force: true, calm: current.id === "motionMode" });
   };
@@ -941,7 +992,7 @@ export default function Assessment() {
       <div className="mx-auto max-w-3xl p-6">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Snooze Assessment</h1>
-          <div className="text-sm text-gray-500">Loading…</div>
+          <div className="text-sm text-gray-500">Preparing your Snooze Assessment</div>
         </div>
         <div className="animate-pulse space-y-4">
           <div className="h-4 w-1/3 rounded bg-gray-200" />
@@ -1169,7 +1220,7 @@ export default function Assessment() {
               animate={{ opacity: 1 }}
               className="text-gray-600"
             >
-              No questions available.
+              We are getting your Snooze Assessment ready.
             </motion.div>
           )}
         </AnimatePresence>
@@ -1200,7 +1251,20 @@ export default function Assessment() {
               cursor: canFinish ? "pointer" : "not-allowed",
             }}
           >
-            {submitting ? "Saving…" : "Finish & View Results"}
+            {submitting ? "Saving your results..." : "Finish & View Results"}
+          </Button>
+        ) : showNextButton ? (
+          <Button
+            type="button"
+            onClick={handleAdvanceCurrent}
+            disabled={!currentCanAdvance || submitting}
+            className="text-white"
+            style={{
+              background: currentCanAdvance ? BRAND.primary : "#D1D5DB",
+              cursor: currentCanAdvance ? "pointer" : "not-allowed",
+            }}
+          >
+            Next
           </Button>
         ) : (
           <div className="w-[152px]" aria-hidden="true" />
@@ -1209,3 +1273,5 @@ export default function Assessment() {
     </div>
   );
 }
+
+

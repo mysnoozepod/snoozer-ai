@@ -1,4 +1,4 @@
-// index.js — Omnia / Snoozer Backend Core
+// index.js â€” Omnia / Snoozer Backend Core
 // Handler: index.lambdaHandler
 //
 // Deterministic-first Ask Snoozer:
@@ -29,28 +29,28 @@ let rewardsRoutes;
 try {
   rewardsRoutes = require("./routes/rewardsRoutes");
 } catch {
-  console.log("⚠️ rewardsRoutes not found.");
+  console.log("âš ï¸ rewardsRoutes not found.");
 }
 
 let buildIndexes;
 try {
   ({ buildIndexes } = require("./services/s3Indexer"));
 } catch {
-  console.log("⚠️ s3Indexer not loaded.");
+  console.log("âš ï¸ s3Indexer not loaded.");
 }
 
 let recsService = null;
 try {
   recsService = require("./services/recommendations");
 } catch {
-  console.log("⚠️ recommendations service not loaded (ok).");
+  console.log("âš ï¸ recommendations service not loaded (ok).");
 }
 
 let getHudScriptPayload = null;
 try {
   ({ getHudScriptPayload } = require("./services/hudScripts"));
 } catch (e) {
-  console.log("⚠️ hudScripts service not loaded.", e.message);
+  console.log("âš ï¸ hudScripts service not loaded.", e.message);
 }
 
 const { S3Client, GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
@@ -67,7 +67,7 @@ let PollyClient, SynthesizeSpeechCommand;
 try {
   ({ PollyClient, SynthesizeSpeechCommand } = require("@aws-sdk/client-polly"));
 } catch {
-  console.log("⚠️ Polly client not loaded.");
+  console.log("âš ï¸ Polly client not loaded.");
 }
 
 const {
@@ -82,9 +82,9 @@ const {
   logContractResponse,
 } = require("./utils/responseContract");
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Config / Globals
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const REGION = process.env.AWS_REGION || "us-east-1";
 const s3 = new S3Client({ region: REGION });
 const ddbDoc = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }));
@@ -118,8 +118,8 @@ const POLLY_TIMEOUT_MS = Number(process.env.POLLY_TIMEOUT_MS || 2000);
 
 // Strict HUD defaults
 const HUD_DEFAULTS = {
-  speech: "I’m here.",
-  captions: "I’m here.",
+  speech: "I'm here.",
+  captions: "I'm here.",
   state: "speaking",
   priority: "normal",
   ttlMs: 5000,
@@ -128,9 +128,9 @@ const HUD_DEFAULTS = {
 
 let questionsInFlight = null;
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Timing / timeout helpers
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function elapsedMs(startedAtMs) {
   return Math.max(0, Date.now() - Number(startedAtMs || Date.now()));
 }
@@ -178,9 +178,9 @@ function safeNumber(v, fallback) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // HUD mode helpers
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function isShowroomMode(mode) {
   const m = String(mode || "").toLowerCase().trim();
   return m === "pod" || m === "explore" || m === "showroom";
@@ -218,6 +218,21 @@ function normalizeHudVoiceStyleValue(v, fallback = "default") {
 function normalizeHudScriptKey(v) {
   const s = String(v || "").trim();
   return s || "";
+}
+
+function normalizeHudPageValue(v) {
+  const s = String(v || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w.-]+/g, "_")
+    .replace(/[.-]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return s || "";
+}
+
+function normalizeHudEventValue(v) {
+  return normalizeHudPageValue(v);
 }
 
 function sanitizeHudActions(actions) {
@@ -377,76 +392,177 @@ function buildDeterministicHudOverride({ mode, context, aiResult, normalized, ok
   };
 }
 
-function inferHudScriptKey({ ok, mode, context, payload, aiResult, normalized }) {
-  const explicit =
+function extractHudActionTypes(...actionLists) {
+  const values = [];
+
+  for (const actions of actionLists) {
+    if (!Array.isArray(actions)) continue;
+    for (const action of actions) {
+      if (typeof action === "string") {
+        values.push(action.trim().toLowerCase());
+        continue;
+      }
+      if (action && typeof action === "object" && typeof action.type === "string") {
+        values.push(action.type.trim().toLowerCase());
+      }
+    }
+  }
+
+  return new Set(values.filter(Boolean));
+}
+
+function inferHudScriptRequest({ ok, mode, context, payload, aiResult, normalized }) {
+  const explicitPage =
+    normalizeHudPageValue(aiResult?.hud?.page) ||
+    normalizeHudPageValue(payload?.page || payload?.hudPage) ||
+    normalizeHudPageValue(context?.hudPage);
+  const explicitEvent =
+    normalizeHudEventValue(aiResult?.hud?.event) ||
+    normalizeHudEventValue(payload?.event || payload?.hudEvent) ||
+    normalizeHudEventValue(context?.hudEvent);
+  const explicitScriptKey =
     normalizeHudScriptKey(aiResult?.hud?.scriptKey) ||
-    normalizeHudScriptKey(payload?.hudScriptKey) ||
+    normalizeHudScriptKey(payload?.scriptKey || payload?.hudScriptKey) ||
     normalizeHudScriptKey(context?.hudScriptKey);
 
-  if (explicit) return explicit;
+  if (explicitPage && explicitEvent) {
+    return {
+      page: explicitPage,
+      event: explicitEvent,
+      scriptKey: explicitScriptKey || undefined,
+      reason: "explicit_page_event",
+    };
+  }
 
-  if (!ok) return "fallback.default";
+  if (explicitScriptKey) {
+    return {
+      scriptKey: explicitScriptKey,
+      reason: "explicit_script_key",
+    };
+  }
 
-  const m = String(mode || "").toLowerCase().trim();
+  const lowerText = String(
+    aiResult?.hud?.captions ||
+      aiResult?.hud?.speech ||
+      normalized?.reply ||
+      normalized?.message?.text ||
+      normalized?.error?.message ||
+      ""
+  )
+    .toLowerCase()
+    .trim();
 
-  if (m === "pod") {
-    const stage = String(
-      context?.progress?.lastCheckpoint ||
-        context?.phase ||
-        context?.zoneContext ||
-        ""
-    )
-      .toLowerCase()
-      .trim();
+  const lowerErrorCode = String(
+    normalized?.error?.code ||
+      aiResult?.error?.code ||
+      aiResult?.meta?.error ||
+      ""
+  )
+    .toLowerCase()
+    .trim();
 
-    const lowerText = String(
-      aiResult?.hud?.captions ||
-        aiResult?.hud?.speech ||
-        normalized?.reply ||
-        normalized?.message?.text ||
-        ""
-    )
-      .toLowerCase()
-      .trim();
+  const stage = String(
+    context?.progress?.lastCheckpoint ||
+      context?.phase ||
+      context?.zoneContext ||
+      ""
+  )
+    .toLowerCase()
+    .trim();
 
+  const actionTypes = extractHudActionTypes(
+    normalized?.actions,
+    aiResult?.actions,
+    aiResult?.suggestedActions
+  );
+
+  if (!ok) {
     if (
-      stage.includes("checkout") ||
-      lowerText.includes("checkout") ||
-      lowerText.includes("added to cart")
+      isTimeoutError(normalized?.error) ||
+      isTimeoutError(aiResult?.error) ||
+      lowerErrorCode.includes("timeout") ||
+      lowerErrorCode.includes("retrieval")
     ) {
-      if (lowerText.includes("phone")) return "pod.checkout.phone";
-      return "pod.checkout.ready";
+      return {
+        page: "global",
+        event: "offline_mode",
+        reason: "error_timeout",
+      };
     }
 
-    if (stage.includes("build")) {
-      if (lowerText.includes("added to cart")) return "pod.build.added_to_cart";
-      return "pod.build.default";
-    }
+    return {
+      page: "global",
+      event: "retrieval_warning",
+      reason: "error_fallback",
+    };
+  }
 
-    if (stage.includes("details")) {
-      return "pod.details.default";
-    }
+  if (
+    aiResult?.checkoutUrl ||
+    actionTypes.has("go_to_checkout") ||
+    lowerText.includes("checkout")
+  ) {
+    return {
+      page: "checkout",
+      event: "handoff",
+      reason: "checkout_handoff",
+    };
+  }
 
-    if (
-      stage.includes("rest") ||
-      lowerText.includes("rest test") ||
+  if (
+    actionTypes.has("go_to_cart") ||
+    actionTypes.has("cart_view") ||
+    actionTypes.has("remove_from_cart") ||
+    actionTypes.has("update_cart_qty") ||
+    lowerText.includes("your cart")
+  ) {
+    return {
+      page: "cart",
+      event: "enter",
+      reason: "cart_enter",
+    };
+  }
+
+  if (
+    stage.includes("build") &&
+    (lowerText.includes("finish your snoozepod") ||
+      lowerText.includes("choose your size") ||
+      lowerText.includes("review your setup"))
+  ) {
+    return {
+      page: "build",
+      event: "intro",
+      reason: "build_intro",
+    };
+  }
+
+  if (
+    stage.includes("rest") &&
+    (lowerText.includes("rest test") ||
       lowerText.includes("zero gravity") ||
       lowerText.includes("head up") ||
-      lowerText.includes("return flat")
-    ) {
-      if (lowerText.includes("zero gravity")) return "pod.rest.zero_g";
-      if (lowerText.includes("head up")) return "pod.rest.head_up";
-      if (lowerText.includes("return flat")) return "pod.rest.return_flat";
-      if (lowerText.includes("complete")) return "pod.rest.step_complete";
-      return "pod.rest.choose_mode";
-    }
+      lowerText.includes("return flat"))
+  ) {
+    return {
+      page: "rest_test",
+      event: "start",
+      reason: "rest_test_start",
+    };
   }
 
-  if (m === "explore" || m === "showroom") {
-    return "results.intro";
+  const showroomMode = String(mode || "").toLowerCase().trim();
+  if (
+    (showroomMode === "explore" || showroomMode === "showroom") &&
+    (stage.includes("results") || lowerText.includes("recommended pods"))
+  ) {
+    return {
+      page: "results",
+      event: "enter",
+      reason: "results_enter",
+    };
   }
 
-  return "";
+  return null;
 }
 
 async function buildHudFromAny(input, { ok, mode, context, aiResult, payload, defaultSpeech, traceId } = {}) {
@@ -458,7 +574,7 @@ async function buildHudFromAny(input, { ok, mode, context, aiResult, payload, de
     ok,
   });
 
-  const inferredScriptKey = inferHudScriptKey({
+  const inferredRequest = inferHudScriptRequest({
     ok,
     mode,
     context,
@@ -470,31 +586,59 @@ async function buildHudFromAny(input, { ok, mode, context, aiResult, payload, de
   let scriptPayload = null;
   let retrievalMs = 0;
   let fallbackUsed = false;
+  let fallbackTier = null;
 
-  if (inferredScriptKey && typeof getHudScriptPayload === "function") {
+  if (inferredRequest && typeof getHudScriptPayload === "function") {
     const retrieval = await measureStep("hud_script_retrieval", () =>
-      withTimeout(
-        getHudScriptPayload(inferredScriptKey),
-        S3_RETRIEVAL_TIMEOUT_MS,
-        "HUD_SCRIPT_TIMEOUT",
-        `HUD script retrieval exceeded ${S3_RETRIEVAL_TIMEOUT_MS}ms`,
-        { scriptKey: inferredScriptKey }
-      )
+      getHudScriptPayload(inferredRequest, {
+        traceId,
+        shopperId: payload?.shopperId || context?.shopperId || null,
+        context,
+      })
     );
 
     retrievalMs = retrieval.ms;
 
     if (retrieval.ok) {
       scriptPayload = retrieval.value;
+      fallbackUsed = Boolean(retrieval.value?.scriptMeta?.fallbackUsed);
+      fallbackTier = retrieval.value?.scriptMeta?.fallbackTier || "s3";
     } else {
       fallbackUsed = true;
       log("hud.script.resolve.error", retrieval.error.message, {
         traceId,
-        scriptKey: inferredScriptKey,
+        request: inferredRequest,
         retrievalMs,
         timeoutMs: retrieval.error?.timeoutMs || null,
       });
     }
+  }
+
+  if (scriptPayload && inferredRequest) {
+    const strictScriptHud = enforceHudContract(scriptPayload, {
+      speech: defaultSpeech || HUD_DEFAULTS.speech,
+      captions: defaultSpeech || HUD_DEFAULTS.captions,
+      state: override.state,
+      priority: override.priority,
+      ttlMs: override.ttlMs,
+      actions: [],
+    });
+
+    log("hud.contract", "resolved", {
+      traceId,
+      mode: String(mode || "").toLowerCase().trim() || "default",
+      page: scriptPayload?.scriptMeta?.page || inferredRequest.page || null,
+      event: scriptPayload?.scriptMeta?.event || inferredRequest.event || null,
+      scriptKey: inferredRequest.scriptKey || null,
+      retrievalMs: scriptPayload?.scriptMeta?.retrievalMs ?? retrievalMs,
+      fallbackUsed,
+      fallbackTier,
+      state: strictScriptHud.state,
+      priority: strictScriptHud.priority,
+      ttlMs: strictScriptHud.ttlMs,
+    });
+
+    return strictScriptHud;
   }
 
   const explicitHud = aiResult?.hud && typeof aiResult.hud === "object" ? aiResult.hud : {};
@@ -543,9 +687,12 @@ async function buildHudFromAny(input, { ok, mode, context, aiResult, payload, de
   log("hud.contract", "resolved", {
     traceId,
     mode: String(mode || "").toLowerCase().trim() || "default",
-    scriptKey: inferredScriptKey || null,
+    page: null,
+    event: null,
+    scriptKey: inferredRequest?.scriptKey || null,
     retrievalMs,
     fallbackUsed,
+    fallbackTier,
     state: strictHud.state,
     priority: strictHud.priority,
     ttlMs: strictHud.ttlMs,
@@ -554,9 +701,9 @@ async function buildHudFromAny(input, { ok, mode, context, aiResult, payload, de
   return strictHud;
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // CORS + HTTP Helpers
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function splitCSV(v = "") {
   return String(v || "")
     .split(/[,\s]+/)
@@ -650,9 +797,9 @@ function log(src, msg, extra = {}) {
   console.log(JSON.stringify({ src, msg, time: new Date().toISOString(), ...extra }));
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Optional Snooze Profile + Zoho integration
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let buildSnoozeProfile = null;
 let mapProfileToZohoFields = null;
 try {
@@ -660,7 +807,7 @@ try {
   buildSnoozeProfile = sp.buildSnoozeProfile;
   mapProfileToZohoFields = sp.mapProfileToZohoFields;
 } catch (e) {
-  console.log("⚠️ snoozeProfile service not loaded.", e.message);
+  console.log("âš ï¸ snoozeProfile service not loaded.", e.message);
 }
 
 let upsertContactByShopperId = null;
@@ -668,22 +815,22 @@ try {
   const zohoSvc = require("./services/zoho");
   upsertContactByShopperId = zohoSvc.upsertContactByShopperId;
 } catch (e) {
-  console.log("⚠️ Zoho service not loaded for Snooze Profile.", e.message);
+  console.log("âš ï¸ Zoho service not loaded for Snooze Profile.", e.message);
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Optional Assessment Snapshot (Zoho + Dynamo unified view)
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let getAssessmentSnapshot = null;
 try {
   ({ getAssessmentSnapshot } = require("./handlers/getAssessmentSnapshot"));
 } catch (e) {
-  console.log("⚠️ getAssessmentSnapshot handler not loaded.", e.message);
+  console.log("âš ï¸ getAssessmentSnapshot handler not loaded.", e.message);
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Path + Body helpers
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function normalizePath(event) {
   const raw = event.rawPath || event.path || "/";
   const stage = event.requestContext?.stage;
@@ -749,9 +896,9 @@ function deriveEffectiveThreadId(event, payload) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Polly helpers
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function normalizePollyEngine(engine) {
   const e = String(engine || "").toLowerCase().trim();
   if (e === "generative") return "generative";
@@ -836,9 +983,9 @@ async function synthesizePollyAudio({
   };
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Snoozer Context Object (SCO) builders
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function nowIso() {
   return new Date().toISOString();
 }
@@ -979,9 +1126,9 @@ function normalizeContextPatch(patch, aiResult = null) {
   return p;
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Deterministic pod anchoring
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function normalizePodAnchors(payloadContext = {}, payload = {}) {
   const ctx = isObject(payloadContext) ? { ...payloadContext } : {};
 
@@ -1024,9 +1171,9 @@ function normalizePodAnchors(payloadContext = {}, payload = {}) {
   return ctx;
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Sessions storage
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function getSessionItem(sessionId) {
   const out = await ddbDoc.send(new GetCommand({ TableName: SESSIONS_TABLE, Key: { sessionId } }));
   return out.Item || null;
@@ -1060,9 +1207,9 @@ async function saveSessionContext(sessionId, context) {
   return { iso, ttl };
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Assessment + Content Logic (S3-backed)
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function fetchQuestionsObject() {
   const res = await s3.send(new GetObjectCommand({ Bucket: QUESTIONS_BUCKET, Key: QUESTIONS_KEY }));
   const chunks = [];
@@ -1188,9 +1335,9 @@ async function getSeedRecommendations(shopperId) {
   return { products: [], hints: tags.slice(0, 4), source: "assessment" };
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // IoT Scene Trigger (publish to IoT Core if configured)
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function triggerScene({ podId, scene }) {
   if (!IOT_ENDPOINT || !IoTDataPlaneClient || !PublishCommand) {
     return { ok: false, reason: "iot_disabled" };
@@ -1214,9 +1361,9 @@ async function triggerScene({ podId, scene }) {
   return { ok: true, topic };
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Main
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function handle(event = {}) {
   const method = (event.httpMethod || event.requestContext?.http?.method || "GET").toUpperCase();
 
@@ -1240,7 +1387,7 @@ async function handle(event = {}) {
     });
   }
 
-  // ─────────── Voice: Welcome / Polly
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Voice: Welcome / Polly
   if (method === "POST" && routePath === "/voice/welcome") {
     const body = safeJsonBody(event);
 
@@ -1316,7 +1463,7 @@ async function handle(event = {}) {
     }
   }
 
-  // ─────────── HUD TTS
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ HUD TTS
   if (method === "POST" && routePath === "/hud/tts") {
     const body = safeJsonBody(event);
 
@@ -1360,6 +1507,7 @@ async function handle(event = {}) {
         format: out.format,
         requestCharacters: out.requestCharacters,
         pollyMs: voiceStep.ms,
+        totalMs: voiceStep.ms,
       });
 
       return response(event, 200, {
@@ -1374,6 +1522,7 @@ async function handle(event = {}) {
       log("hud.tts.error", e.message, {
         traceId,
         timeoutMs: isTimeoutError(e) ? POLLY_TIMEOUT_MS : null,
+        totalMs: 0,
       });
 
       return response(event, 500, {
@@ -1384,7 +1533,7 @@ async function handle(event = {}) {
     }
   }
 
-  // ─────────── HUD Script Resolver
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ HUD Script Resolver
   if (method === "POST" && routePath === "/hud/script") {
     const body = safeJsonBody(event);
 
@@ -1394,46 +1543,35 @@ async function handle(event = {}) {
           event,
           200,
           buildFallbackHud({
-            speech: "HUD scripts are unavailable right now.",
-            captions: "HUD scripts are unavailable right now.",
+            speech: "I'm here if you need me.",
+            captions: "I'm here if you need me.",
           })
         );
       }
 
       const shopperId = body?.shopperId ? String(body.shopperId).trim() : "guest";
-      const scriptKey = normalizeHudScriptKey(body?.scriptKey || body?.hudScriptKey);
       const context = isObject(body?.context) ? body.context : {};
-
-      if (!scriptKey) {
-        return flatResponse(
-          event,
-          200,
-          buildFallbackHud({
-            speech: "A script key is required.",
-            captions: "A script key is required.",
-          })
-        );
-      }
+      const request = {
+        page: body?.page || body?.hudPage,
+        event: body?.event || body?.hudEvent,
+        scriptKey: body?.scriptKey || body?.hudScriptKey,
+      };
 
       const retrieval = await measureStep("hud_script_resolve", () =>
-        withTimeout(
-          getHudScriptPayload(scriptKey, {
-            shopperId,
-            context,
-          }),
-          S3_RETRIEVAL_TIMEOUT_MS,
-          "HUD_SCRIPT_TIMEOUT",
-          `HUD script retrieval exceeded ${S3_RETRIEVAL_TIMEOUT_MS}ms`,
-          { shopperId, scriptKey }
-        )
+        getHudScriptPayload(request, {
+          traceId,
+          shopperId,
+          context,
+        })
       );
 
       if (!retrieval.ok) {
         log("hud.script.resolve.error", retrieval.error.message, {
           traceId,
           shopperId,
-          scriptKey,
+          request,
           retrievalMs: retrieval.ms,
+          totalMs: retrieval.ms,
           timeoutMs: retrieval.error?.timeoutMs || null,
           fallbackUsed: true,
         });
@@ -1442,8 +1580,8 @@ async function handle(event = {}) {
           event,
           200,
           buildFallbackHud({
-            speech: "I’m here if you need me.",
-            captions: "I’m here if you need me.",
+            speech: "I'm here if you need me.",
+            captions: "I'm here if you need me.",
           })
         );
       }
@@ -1454,8 +1592,9 @@ async function handle(event = {}) {
         log("hud.script.resolve.miss", "not_found", {
           traceId,
           shopperId,
-          scriptKey,
+          request,
           retrievalMs: retrieval.ms,
+          totalMs: retrieval.ms,
           fallbackUsed: true,
         });
 
@@ -1463,8 +1602,8 @@ async function handle(event = {}) {
           event,
           200,
           buildFallbackHud({
-            speech: "I’m here if you need me.",
-            captions: "I’m here if you need me.",
+            speech: "I'm here if you need me.",
+            captions: "I'm here if you need me.",
           })
         );
       }
@@ -1489,17 +1628,30 @@ async function handle(event = {}) {
       log("hud.script.resolve", "ok", {
         traceId,
         shopperId,
-        scriptKey,
-        retrievalMs: retrieval.ms,
-        fallbackUsed: false,
+        page: resolved?.scriptMeta?.page || null,
+        event: resolved?.scriptMeta?.event || null,
+        scriptKey: normalizeHudScriptKey(body?.scriptKey || body?.hudScriptKey) || null,
+        retrievalMs: resolved?.scriptMeta?.retrievalMs ?? retrieval.ms,
+        totalMs: resolved?.scriptMeta?.totalMs ?? retrieval.ms,
+        fallbackUsed: Boolean(resolved?.scriptMeta?.fallbackUsed),
+        fallbackTier: resolved?.scriptMeta?.fallbackTier || "s3",
+        validationPassed: resolved?.scriptMeta?.validationPassed !== false,
         state: hud.state,
       });
 
-      return flatResponse(event, 200, hud);
+      return flatResponse(event, 200, {
+        ...hud,
+        voiceStyle: normalizeHudVoiceStyleValue(resolved?.voiceStyle, "default"),
+      });
     } catch (e) {
       log("hud.script.resolve.error", e.message, {
         traceId,
-        scriptKey: normalizeHudScriptKey(body?.scriptKey || body?.hudScriptKey),
+        request: {
+          page: normalizeHudPageValue(body?.page || body?.hudPage),
+          event: normalizeHudEventValue(body?.event || body?.hudEvent),
+          scriptKey: normalizeHudScriptKey(body?.scriptKey || body?.hudScriptKey),
+        },
+        totalMs: 0,
         fallbackUsed: true,
       });
 
@@ -1507,14 +1659,14 @@ async function handle(event = {}) {
         event,
         200,
         buildFallbackHud({
-          speech: "I’m here if you need me.",
-          captions: "I’m here if you need me.",
+          speech: "I'm here if you need me.",
+          captions: "I'm here if you need me.",
         })
       );
     }
   }
 
-  // ─────────── Content: Assessment JSON (S3)
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Content: Assessment JSON (S3)
   if (method === "GET" && (routePath === "/content/assessment" || routePath === "/content/assessment/meta")) {
     try {
       const headStep = await measureStep("assessment_head_meta", () =>
@@ -1615,7 +1767,7 @@ async function handle(event = {}) {
     }
   }
 
-  // ─────────── Sessions: START
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Sessions: START
   if (method === "POST" && routePath === "/session/start") {
     const body = safeJsonBody(event);
 
@@ -1658,7 +1810,7 @@ async function handle(event = {}) {
     }
   }
 
-  // ─────────── Sessions: GET context
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Sessions: GET context
   if (method === "GET" && routePath.startsWith("/session/context/")) {
     const sessionId = decodeURIComponent(routePath.split("/").pop() || "");
     if (!sessionId) return response(event, 400, { message: "sessionId required" });
@@ -1683,7 +1835,7 @@ async function handle(event = {}) {
     }
   }
 
-  // ─────────── Sessions: PATCH context
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Sessions: PATCH context
   if (method === "PATCH" && routePath.startsWith("/session/context/")) {
     const sessionId = decodeURIComponent(routePath.split("/").pop() || "");
     if (!sessionId) return response(event, 400, { message: "sessionId required" });
@@ -1726,7 +1878,7 @@ async function handle(event = {}) {
     }
   }
 
-  // ─────────── Admin reindex
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Admin reindex
   if (method === "POST" && routePath === "/admin/reindex") {
     const key = getHeader(event.headers, "x-api-key") || "";
     if (ADMIN_API_KEY && key !== ADMIN_API_KEY) {
@@ -1739,7 +1891,7 @@ async function handle(event = {}) {
     return response(event, 200, { ok: true, ...out });
   }
 
-  // ─────────── Assessment (legacy endpoints)
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Assessment (legacy endpoints)
   if (method === "GET" && routePath === "/assessment-questions") {
     const loaded = await loadAssessmentQuestions();
     return response(event, 200, loaded.data, {
@@ -1833,7 +1985,7 @@ async function handle(event = {}) {
     });
   }
 
-  // ─────────── Shopify RPC passthroughs
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Shopify RPC passthroughs
   if (method === "POST" && routePath === "/shopify/listProducts") {
     return await withTimeout(
       shopify.listProducts(event),
@@ -1859,7 +2011,7 @@ async function handle(event = {}) {
     );
   }
 
-  // ─────────── Shopify persistent cart ops
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Shopify persistent cart ops
   if (method === "POST" && routePath === "/shopify/cart/get") {
     return await withTimeout(
       shopify.getCart(event),
@@ -1893,7 +2045,7 @@ async function handle(event = {}) {
     );
   }
 
-  // ─────────── Rewards
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Rewards
   if (rewardsRoutes) {
     if (method === "GET" && /^\/rewards\/balance\/[^/]+$/.test(routePath)) {
       return await rewardsRoutes.getRewardsBalance(event);
@@ -1912,7 +2064,7 @@ async function handle(event = {}) {
     }
   }
 
-  // ─────────── Ask Snoozer (SCO-aware + deterministic-first)
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Ask Snoozer (SCO-aware + deterministic-first)
   if (method === "POST" && (routePath === "/ask-snoozer" || routePath === "/ask")) {
     const startedAt = Date.now();
     const payload = safeJsonBody(event);
@@ -2263,7 +2415,7 @@ async function handle(event = {}) {
           context: mergedContext,
           aiResult,
           payload,
-          defaultSpeech: env.reply || env.message?.text || "I’m here.",
+          defaultSpeech: env.reply || env.message?.text || "I'm here.",
           traceId,
         });
         return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
@@ -2351,14 +2503,14 @@ async function handle(event = {}) {
     }
   }
 
-  // ─────────── CRM
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ CRM
   if (method === "POST" && routePath === "/crm/track-event") {
     const body = safeJsonBody(event);
     log("crm.event", "track", { ...body, traceId });
     return response(event, 200, { ok: true });
   }
 
-  // ─────────── Recommendations
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Recommendations
   if (method === "GET" && routePath.startsWith("/recommendations/")) {
     const shopperId = decodeURIComponent(routePath.split("/").pop() || "guest");
 
@@ -2372,7 +2524,7 @@ async function handle(event = {}) {
     return response(event, 200, recs);
   }
 
-  // ─────────── IoT Scene Trigger
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ IoT Scene Trigger
   if (method === "POST" && routePath === "/iot/trigger-scene") {
     const { podId, scene } = safeJsonBody(event);
     try {
@@ -2386,9 +2538,9 @@ async function handle(event = {}) {
   return response(event, 404, { message: "Not found" });
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Export Lambda
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 exports.lambdaHandler = async (event) => {
   try {
     const out = await handle(event);

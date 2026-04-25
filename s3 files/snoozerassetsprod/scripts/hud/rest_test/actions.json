@@ -1,0 +1,9 @@
+{
+  "id": "rest_test_actions",
+  "speech": "When you’re ready, you can explore more details about this mattress or build your SnoozePod.",
+  "captions": "When you’re ready, you can explore more details about this mattress or build your SnoozePod.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 6000,
+  "actions": []
+}

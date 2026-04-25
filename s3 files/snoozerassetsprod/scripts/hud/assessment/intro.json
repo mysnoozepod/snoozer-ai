@@ -1,0 +1,9 @@
+{
+  "id": "assessment_intro",
+  "speech": "Welcome to your Snooze Assessment. Answer a few quick questions, and I’ll help match you with the SnoozePods that fit your sleep needs best.",
+  "captions": "Welcome to your Snooze Assessment. Answer a few quick questions, and I’ll help match you with the SnoozePods that fit your sleep needs best.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 7500,
+  "actions": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "assessment_completion",
+  "speech": "Nice work. You’ve completed your Snooze Assessment. Now let’s take a look at your recommended SnoozePods.",
+  "captions": "Nice work. You’ve completed your Snooze Assessment. Now let’s take a look at your recommended SnoozePods.",
+  "state": "celebrate",
+  "priority": "normal",
+  "ttlMs": 7000,
+  "actions": []
+}

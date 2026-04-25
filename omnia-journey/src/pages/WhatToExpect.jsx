@@ -113,9 +113,9 @@ function buildFallbackWhatToExpectScript(assessmentComplete) {
   if (assessmentComplete) {
     return {
       speech:
-        "Here’s how this works. Your Snooze Assessment is already done. Next, try your recommended SnoozePods, then complete your sleep setup.",
+        "Here's how this works. Your Snooze Assessment is already done. Next, try your recommended SnoozePods, then complete your sleep setup.",
       captions:
-        "Here’s how this works. Your Snooze Assessment is already done. Next, try your recommended SnoozePods, then complete your sleep setup.",
+        "Here's how this works. Your Snooze Assessment is already done. Next, try your recommended SnoozePods, then complete your sleep setup.",
       state: "speaking",
       priority: "normal",
       ttlMs: 5200,
@@ -126,9 +126,9 @@ function buildFallbackWhatToExpectScript(assessmentComplete) {
 
   return {
     speech:
-      "Here’s how this works. Start with your Snooze Assessment, then try your recommended SnoozePods, then complete your sleep setup.",
+      "Here's how this works. Start with your Snooze Assessment, then try your recommended SnoozePods, then complete your sleep setup.",
     captions:
-      "Here’s how this works. Start with your Snooze Assessment, then try your recommended SnoozePods, then complete your sleep setup.",
+      "Here's how this works. Start with your Snooze Assessment, then try your recommended SnoozePods, then complete your sleep setup.",
     state: "speaking",
     priority: "normal",
     ttlMs: 5200,
@@ -139,16 +139,9 @@ function buildFallbackWhatToExpectScript(assessmentComplete) {
 
 export default function WhatToExpect() {
   const navigate = useNavigate();
-  const { noteUserInteraction, sayScript, voiceState } = useShowroomHud();
+  const { noteUserInteraction, runHudAction, voiceState } = useShowroomHud();
 
   const shopperId = safeGet("snooze.accessCode") || safeGet("snooze.shopperId") || "";
-  const supportPhone = useMemo(() => {
-    return (
-      safeGet("snooze.supportPhone") ||
-      import.meta.env.VITE_SUPPORT_PHONE ||
-      "(8517-2541-3787)"
-    );
-  }, []);
 
   const [checking, setChecking] = useState(false);
   const [snapshot, setSnapshot] = useState(() => {
@@ -263,7 +256,7 @@ export default function WhatToExpect() {
 
   useEffect(() => {
     if (checking) return;
-    if (!sayScript) return;
+    if (!runHudAction) return;
 
     const announcementKey = `${shopperId || "guest"}::${
       assessmentComplete ? "complete" : "default"
@@ -283,7 +276,7 @@ export default function WhatToExpect() {
         ? "whattoexpect.assessment_complete"
         : "whattoexpect.default";
 
-      sayScript({
+      runHudAction(assessmentComplete ? "view_results" : "start_assessment", {
         scriptKey,
         shopperId: shopperId || "guest",
         fallback: voiceScript,
@@ -305,7 +298,7 @@ export default function WhatToExpect() {
         introTimerRef.current = null;
       }
     };
-  }, [assessmentComplete, checking, shopperId, sayScript, voiceScript]);
+  }, [assessmentComplete, checking, shopperId, runHudAction, voiceScript]);
 
   useEffect(() => {
     setActiveStep(0);
@@ -333,10 +326,9 @@ export default function WhatToExpect() {
     };
   }, [voiceScript.speech, voiceState]);
 
+  const ctaReady = assessmentComplete || !checking || Boolean(snapshot) || !shopperId;
   const primaryLabel = assessmentComplete
-    ? "Continue to Snooze Test"
-    : checking
-    ? "Checking Your Snooze Session..."
+    ? "Go to My Recommended Pods"
     : "Start Your Snooze Assessment";
 
   const primaryAction = () => {
@@ -350,19 +342,9 @@ export default function WhatToExpect() {
     navigate("/assessment");
   };
 
-  const secondaryLabel = assessmentComplete
-    ? "Retake Your Snooze Assessment"
-    : "Go to Snooze Test";
-
   const secondaryAction = () => {
     noteUserInteraction?.();
-
-    if (assessmentComplete) {
-      navigate("/assessment");
-      return;
-    }
-
-    navigate("/results");
+    navigate("/assessment");
   };
 
   return (
@@ -454,7 +436,7 @@ export default function WhatToExpect() {
                 step="2"
                 title="Snooze Test"
                 body="Try the recommended pods first, so you can feel the differences for yourself."
-                detail="You’ll start with the pod matches Snoozer recommends, so you’re not guessing from a wall of mattresses."
+                detail="You'll start with the pod matches Snoozer recommends, so you're not guessing from a wall of mattresses."
                 icon={BedDouble}
                 active={activeStep === 1}
               />
@@ -484,43 +466,52 @@ export default function WhatToExpect() {
 
                   <div className="mt-2 text-base leading-relaxed text-gray-600">
                     {assessmentComplete
-                      ? "Snoozer already has enough information to move you into your Snooze Test. You can also retake your Snooze Assessment if you want a fresh recommendation."
+                      ? "Snoozer already has enough information to take you to your recommended pods. You can also retake your Snooze Assessment if you want a fresh recommendation."
                       : "This is the fastest way for Snoozer to guide you toward the sleep setup that fits you best."}
                   </div>
                 </div>
 
                 <div className="flex w-full flex-col gap-3 md:w-[340px]">
-                  <Button
-                    type="button"
-                    onClick={primaryAction}
-                    disabled={checking}
-                    className="w-full rounded-2xl bg-[#1A66D2] py-6 text-base font-semibold text-white hover:bg-[#1550A0]"
-                  >
-                    {primaryLabel}
-                  </Button>
+                  {ctaReady ? (
+                    <>
+                      <Button
+                        type="button"
+                        onClick={primaryAction}
+                        disabled={checking}
+                        className="w-full rounded-2xl bg-[#1A66D2] py-6 text-base font-semibold text-white hover:bg-[#1550A0]"
+                      >
+                        {primaryLabel}
+                      </Button>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={secondaryAction}
-                    disabled={checking}
-                    className="w-full rounded-2xl border-[#B7CBEF] py-6 text-base font-semibold text-[#335C97] hover:bg-[#EEF4FF]"
-                  >
-                    {secondaryLabel}
-                  </Button>
+                      {assessmentComplete ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={secondaryAction}
+                          disabled={checking}
+                          className="w-full rounded-2xl border-[#B7CBEF] py-6 text-base font-semibold text-[#335C97] hover:bg-[#EEF4FF]"
+                        >
+                          Retake Snooze Assessment
+                        </Button>
+                      ) : null}
+                    </>
+                  ) : (
+                    <Button
+                      type="button"
+                      disabled
+                      className="w-full rounded-2xl bg-[#1A66D2] py-6 text-base font-semibold text-white"
+                    >
+                      Preparing Your Next Step
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-200 bg-white px-6 py-4 md:px-8">
-            <div className="flex flex-col gap-2 text-sm text-gray-600 md:flex-row md:items-center md:justify-between">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="font-semibold text-gray-900">Support:</span>
-                <span>{supportPhone}</span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
+          {currentPageVoiceState.blocked || currentPageVoiceState.error ? (
+            <div className="border-t border-gray-200 bg-white px-6 py-4 md:px-8">
+              <div className="flex flex-wrap items-center justify-end gap-2 text-sm text-gray-600">
                 {currentPageVoiceState.blocked ? (
                   <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
                     Tap to enable Snoozer voice
@@ -534,7 +525,7 @@ export default function WhatToExpect() {
                 ) : null}
               </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </div>
     </section>

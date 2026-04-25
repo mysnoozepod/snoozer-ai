@@ -1,0 +1,9 @@
+{
+  "id": "rest_test_reflection",
+  "speech": "Take a moment to think about what you just felt. Notice comfort, support, pressure relief, and how relaxed your body feels on this mattress.",
+  "captions": "Take a moment to think about what you just felt. Notice comfort, support, pressure relief, and how relaxed your body feels on this mattress.",
+  "state": "thinking",
+  "priority": "normal",
+  "ttlMs": 7500,
+  "actions": []
+}

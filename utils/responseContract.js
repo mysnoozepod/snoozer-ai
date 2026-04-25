@@ -31,7 +31,7 @@ function safeString(x) {
 function safeText(x, max = 1200) {
   const s = safeString(x).trim();
   if (!s) return "";
-  return s.length > max ? s.slice(0, max) + "…" : s;
+  return s.length > max ? s.slice(0, max) + "..." : s;
 }
 
 function safeNumber(x, fallback = 0) {
@@ -127,9 +127,9 @@ function isDebugRequest(event) {
   return h === "1" || h === "true";
 }
 
-// ─────────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Legacy Snoozer contract (existing)
-// ─────────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 /**
  * Normalize the response into the canonical legacy contract:
@@ -151,7 +151,7 @@ function normalizeSnoozerResponse(raw, opts = {}) {
     routePath = "",
     startedAtMs,
     debug = false,
-    defaultReply = "Tell me what you’re shopping for and I’ll pull the best options.",
+    defaultReply = "Tell me what you're shopping for and I'll pull the best options.",
   } = opts;
 
   const traceId =
@@ -299,9 +299,9 @@ function logContractResponse(normalized) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // HUD contract (strict)
-// ─────────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 const HUD_STATES = ["idle", "listening", "thinking", "speaking", "celebrate", "warning"];
 const HUD_PRIORITIES = ["low", "normal", "high"];
@@ -324,6 +324,65 @@ function clampTtlMs(v, def = 5000) {
   const n = Number(v);
   if (!Number.isFinite(n) || n <= 0) return def;
   return Math.max(1000, Math.min(n, 15000));
+}
+
+function validateHudContract(raw) {
+  const safe = isObj(raw) ? raw : null;
+  const errors = [];
+
+  if (!safe) {
+    return {
+      valid: false,
+      errors: ["HUD payload must be an object."],
+      value: null,
+    };
+  }
+
+  if (typeof safe.speech !== "string" || !safe.speech.trim()) {
+    errors.push("speech must be a non-empty string.");
+  }
+
+  if (typeof safe.captions !== "string" || !safe.captions.trim()) {
+    errors.push("captions must be a non-empty string.");
+  }
+
+  if (!isHudState(safe.state)) {
+    errors.push(`state must be one of: ${HUD_STATES.join(", ")}.`);
+  }
+
+  if (!isHudPriority(safe.priority)) {
+    errors.push(`priority must be one of: ${HUD_PRIORITIES.join(", ")}.`);
+  }
+
+  const ttlMs = Number(safe.ttlMs);
+  if (!Number.isFinite(ttlMs) || ttlMs <= 0) {
+    errors.push("ttlMs must be a finite positive number.");
+  }
+
+  if (!Array.isArray(safe.actions)) {
+    errors.push("actions must be an array.");
+  }
+
+  if (errors.length) {
+    return {
+      valid: false,
+      errors,
+      value: null,
+    };
+  }
+
+  return {
+    valid: true,
+    errors: [],
+    value: {
+      speech: safeText(safe.speech, 1200),
+      captions: safeText(safe.captions, 1800),
+      state: normalizeHudEnum(safe.state),
+      priority: normalizeHudEnum(safe.priority),
+      ttlMs: clampTtlMs(safe.ttlMs, 5000),
+      actions: normalizeActions(safe.actions, { max: 25 }),
+    },
+  };
 }
 
 function hasNormalizedErrorish(normalized) {
@@ -372,7 +431,7 @@ function normalizeHudResponse(rawOrNormalized, opts = {}) {
     state: stateOverride,
     priority: priorityOverride,
     ttlMs: ttlOverride,
-    defaultSpeech = "I’m here. Tell me what you want to do next.",
+    defaultSpeech = "I'm here. Tell me what you want to do next.",
     speechMaxChars = 1200,
     captionsMaxChars = 1800,
   } = opts;
@@ -429,13 +488,18 @@ function normalizeHudResponse(rawOrNormalized, opts = {}) {
  */
 function enforceHudContract(rawOrNormalized, opts = {}) {
   const hud = normalizeHudResponse(rawOrNormalized, opts);
+  const validated = validateHudContract(hud);
+
+  if (validated.valid && validated.value) {
+    return validated.value;
+  }
 
   return {
-    speech: safeText(hud.speech, opts.speechMaxChars || 1200) || "I’m here.",
+    speech: safeText(hud.speech, opts.speechMaxChars || 1200) || "I'm here.",
     captions:
       safeText(hud.captions, opts.captionsMaxChars || 1800) ||
       safeText(hud.speech, opts.captionsMaxChars || 1800) ||
-      "I’m here.",
+      "I'm here.",
     state: isHudState(hud.state) ? hud.state : "warning",
     priority: isHudPriority(hud.priority) ? hud.priority : "normal",
     ttlMs: clampTtlMs(hud.ttlMs, 5000),
@@ -451,7 +515,10 @@ module.exports = {
 
   // HUD
   normalizeHudResponse,
+  validateHudContract,
   enforceHudContract,
   HUD_STATES,
   HUD_PRIORITIES,
 };
+
+

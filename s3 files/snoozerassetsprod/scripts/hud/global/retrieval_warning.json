@@ -1,0 +1,9 @@
+{
+  "id": "global_retrieval_warning",
+  "speech": "I’m having trouble loading that right now. Let’s keep things moving.",
+  "captions": "I’m having trouble loading that right now. Let’s keep things moving.",
+  "state": "warning",
+  "priority": "high",
+  "ttlMs": 5000,
+  "actions": []
+}

@@ -3,69 +3,72 @@ const axios = require("axios");
 const router = express.Router();
 
 const {
-  findLeadByEmail,
   createLead,
-  getOrderStatus
+  findLeadByEmail,
+  getOrderStatus,
 } = require("../services/zoho");
+const {
+  getZohoApiBase,
+  logZohoConfigStatus,
+  refreshZohoToken,
+  resolveZohoConfig,
+} = require("../services/zohoauth");
 
-// 🔍 GET /api/zoho/crm/users
-router.get("/crm/users", async (req, res) => {
+router.get("/crm/users", async (_req, res) => {
   try {
-    const accessToken = await require("../services/zohoauth").refreshZohoToken();
-    console.log("🔑 Zoho Access Token starts with:", accessToken.substring(0, 10));
+    const status = logZohoConfigStatus("zoho.routes.users");
+    if (!status.enabled) {
+      return res.status(503).json({
+        error: "Zoho CRM unavailable",
+        detail: "Zoho configuration is incomplete",
+      });
+    }
 
-    const zohoRes = await axios.get("https://www.zohoapis.com/crm/v2/users", {
+    const accessToken = await refreshZohoToken();
+    const base = getZohoApiBase(resolveZohoConfig());
+
+    const zohoResponse = await axios.get(`${base}/crm/v2/users`, {
       headers: {
         Authorization: `Zoho-oauthtoken ${accessToken}`,
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
 
-    res.status(200).json(zohoRes.data?.data || []);
-  } catch (err) {
-    console.error("❌ Zoho API error:", err?.response?.data || err.message);
+    res.status(200).json(zohoResponse.data?.data || []);
+  } catch (error) {
+    console.error("Zoho API error:", error?.response?.data || error.message);
     res.status(500).json({
       error: "Zoho CRM API failed",
-      detail: err?.response?.data || err.message
+      detail: error?.response?.data || error.message,
     });
   }
 });
 
-// 🧠 POST /api/zoho/lead
 router.post("/lead", async (req, res) => {
   try {
     const leadData = req.body;
-    console.log("📥 Incoming lead data:", leadData);
-
     const existing = await findLeadByEmail(leadData.Email || leadData.email);
     const result = existing || (await createLead(leadData));
-
-    console.log("✅ Lead response:", result);
     res.status(200).json(result);
   } catch (error) {
-    console.error("❌ Zoho Lead Error:", error?.response?.data || error.message);
+    console.error("Zoho Lead Error:", error?.response?.data || error.message);
     res.status(500).json({
       error: "Zoho Lead operation failed",
-      detail: error?.response?.data || error.message
+      detail: error?.response?.data || error.message,
     });
   }
 });
 
-// 📦 GET /api/zoho/order/:num
 router.get("/order/:num", async (req, res) => {
   try {
     const orderNum = req.params.num;
-    console.log("🔎 Looking up Zoho order:", orderNum);
-
     const order = await getOrderStatus(orderNum);
-    console.log("✅ Order lookup response:", order);
-
     res.status(200).json(order);
   } catch (error) {
-    console.error("❌ Zoho Order Error:", error?.response?.data || error.message);
+    console.error("Zoho Order Error:", error?.response?.data || error.message);
     res.status(500).json({
       error: "Zoho Order lookup failed",
-      detail: error?.response?.data || error.message
+      detail: error?.response?.data || error.message,
     });
   }
 });

@@ -1,0 +1,9 @@
+{
+  "id": "cart_enter",
+  "speech": "Here’s your cart. Take a moment to review your selections, and when you’re ready, continue to checkout.",
+  "captions": "Here’s your cart. Take a moment to review your selections, and when you’re ready, continue to checkout.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 6500,
+  "actions": []
+}

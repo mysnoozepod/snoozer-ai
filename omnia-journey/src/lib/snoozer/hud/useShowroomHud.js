@@ -2,18 +2,89 @@ import { useCallback, useMemo } from "react";
 import { useVoiceQueue } from "../voice/VoiceQueueContext";
 import { fetchHudScript } from "./fetchHudScript";
 
+const SHOWROOM_ACTION_MAP = {
+  start_assessment: {
+    intent: "assessment",
+    state: "speaking",
+    priority: "high",
+  },
+  view_results: {
+    intent: "results",
+    state: "speaking",
+    priority: "high",
+  },
+  view_details: {
+    intent: "details",
+    state: "speaking",
+    priority: "normal",
+  },
+  start_rest_test: {
+    intent: "rest_test",
+    state: "speaking",
+    priority: "high",
+  },
+  build_pod: {
+    intent: "build",
+    state: "speaking",
+    priority: "high",
+  },
+  add_to_cart: {
+    intent: "cart",
+    state: "celebrate",
+    priority: "high",
+  },
+  checkout_handoff: {
+    intent: "checkout",
+    state: "celebrate",
+    priority: "high",
+  },
+};
+
+function normalizeActionType(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function buildActionMetadata(hudPayload = {}) {
+  const actionType = normalizeActionType(
+    hudPayload?.actionType || hudPayload?.metadata?.actionType
+  );
+  const actionConfig = actionType ? SHOWROOM_ACTION_MAP[actionType] || null : null;
+  const metadata =
+    hudPayload?.metadata && typeof hudPayload.metadata === "object"
+      ? { ...hudPayload.metadata }
+      : {};
+
+  if (actionType) {
+    metadata.actionType = actionType;
+    metadata.actionIntent = actionConfig?.intent || actionType;
+  }
+
+  if (hudPayload?.scriptKey && !metadata.scriptKey) {
+    metadata.scriptKey = String(hudPayload.scriptKey).trim();
+  }
+
+  return { actionType, actionConfig, metadata };
+}
+
 function normalizeHudPayload(hudPayload = {}) {
+  const { actionConfig, metadata } = buildActionMetadata(hudPayload);
+
   return {
     speech: String(hudPayload?.speech || "").trim(),
     captions: String(hudPayload?.captions || hudPayload?.speech || "").trim(),
-    state: hudPayload?.state || "speaking",
-    priority: hudPayload?.priority || "normal",
+    state: hudPayload?.state || actionConfig?.state || "speaking",
+    priority: hudPayload?.priority || actionConfig?.priority || "normal",
     ttlMs: Number(hudPayload?.ttlMs) || 5000,
     actions: Array.isArray(hudPayload?.actions) ? hudPayload.actions : [],
     voiceStyle: hudPayload?.voiceStyle || "default",
     allowContinuation: hudPayload?.allowContinuation === true,
     interruptible: hudPayload?.interruptible !== false,
-    metadata: hudPayload?.metadata || {},
+    allowInterruptActiveHigh: hudPayload?.allowInterruptActiveHigh === true,
+    metadata,
     replaceCurrent: hudPayload?.replaceCurrent === true,
     force: hudPayload?.force === true,
   };
@@ -143,6 +214,52 @@ export function useShowroomHud() {
     [say]
   );
 
+  const runHudAction = useCallback(
+    async (actionType, input = {}) => {
+      const normalizedActionType = normalizeActionType(actionType);
+      const actionConfig = normalizedActionType
+        ? SHOWROOM_ACTION_MAP[normalizedActionType] || null
+        : null;
+      const metadata =
+        input?.metadata && typeof input.metadata === "object"
+          ? { ...input.metadata }
+          : {};
+
+      if (normalizedActionType) {
+        metadata.actionType = normalizedActionType;
+        metadata.actionIntent = actionConfig?.intent || normalizedActionType;
+      }
+
+      if (input?.scriptKey || input?.fallback) {
+        return sayScript({
+          ...input,
+          actionType: normalizedActionType || input?.actionType,
+          metadata,
+          overrides: {
+            ...(actionConfig?.state && !input?.overrides?.state
+              ? { state: actionConfig.state }
+              : {}),
+            ...(actionConfig?.priority && !input?.overrides?.priority
+              ? { priority: actionConfig.priority }
+              : {}),
+            ...(input?.overrides && typeof input.overrides === "object"
+              ? input.overrides
+              : {}),
+          },
+        });
+      }
+
+      return say({
+        ...input,
+        actionType: normalizedActionType || input?.actionType,
+        metadata,
+        state: input?.state || actionConfig?.state || "speaking",
+        priority: input?.priority || actionConfig?.priority || "normal",
+      });
+    },
+    [say, sayScript]
+  );
+
   const interruptCurrent = useCallback(
     (options = {}) => {
       if (typeof interrupt === "function") {
@@ -229,6 +346,7 @@ export function useShowroomHud() {
     clearAll,
     muted: Boolean(voice?.muted),
     setMuted,
+    runHudAction,
     noteUserInteraction,
     currentJob: voice?.currentJob || null,
     queue: Array.isArray(voice?.queue) ? voice.queue : [],

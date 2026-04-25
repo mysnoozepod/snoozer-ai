@@ -1,0 +1,9 @@
+{
+  "id": "pod_details_lasts",
+  "speech": "Here’s why this mattress is built to last. The materials and construction are designed to hold comfort and support over time.",
+  "captions": "Here’s why this mattress is built to last. The materials and construction are designed to hold comfort and support over time.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 7000,
+  "actions": []
+}

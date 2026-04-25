@@ -10,7 +10,6 @@ import {
   BedDouble,
   CheckCircle2,
   HelpCircle,
-  XCircle,
   ImageOff,
   Headphones,
   Info,
@@ -293,8 +292,188 @@ function buildPodDetailsVoice({ title, mattressHeroTitle, benefits, isRecommende
     .join(" ");
 }
 
-function buildPodBuildVoice({ title, baseProductTitle }) {
-  return [title, "Build your setup.", baseProductTitle || ""].filter(Boolean).join(" ");
+const DETAILS_ACTIONS = [
+  { id: "feel", label: "How it feels" },
+  { id: "inside", label: "What's inside" },
+  { id: "lasts", label: "Why it lasts" },
+  { id: "choose", label: "Why choose this" },
+];
+
+const DEFAULT_DETAILS_ACTION_ID = "choose";
+
+function normalizeText(value) {
+  return String(value || "").trim();
+}
+
+function lowerText(value) {
+  return normalizeText(value).toLowerCase();
+}
+
+function stripHtml(value) {
+  return normalizeText(value)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function joinReadableList(items = []) {
+  const list = (Array.isArray(items) ? items : [])
+    .map((item) => normalizeText(item))
+    .filter(Boolean);
+
+  if (!list.length) return "";
+  if (list.length === 1) return list[0];
+  if (list.length === 2) return `${list[0]} and ${list[1]}`;
+  return `${list.slice(0, -1).join(", ")}, and ${list[list.length - 1]}`;
+}
+
+function detectMattressTruth({ mattressProduct, activePod, baseProduct }) {
+  const mattressTitle = normalizeText(
+    mattressProduct?.title || activePod?.displayMattress || activePod?.subtitle || "Mattress"
+  );
+  const mattressHandle = normalizeText(mattressProduct?.handle || activePod?.mattressHandle);
+  const mattressDescription = stripHtml(mattressProduct?.description || "");
+  const baseTitle = normalizeText(baseProduct?.title || activePod?.displayedIn?.baseLabel || "");
+  const combined = `${mattressTitle} ${mattressHandle} ${mattressDescription} ${baseTitle}`.toLowerCase();
+
+  const isDualComfort =
+    Boolean(activePod?.flags?.isDualComfortMattress) || combined.includes("dual comfort");
+  const family = isDualComfort
+    ? "dual"
+    : combined.includes("hybrid") || combined.includes("coil")
+      ? "hybrid"
+      : combined.includes("foam")
+        ? "foam"
+        : "balanced";
+
+  return {
+    mattressTitle,
+    mattressDescription,
+    baseTitle,
+    family,
+    isDualComfort,
+    hasCoils: family === "hybrid" || family === "dual" || combined.includes("coil"),
+    hasCooling:
+      combined.includes("cool") ||
+      combined.includes("cooling") ||
+      combined.includes("breathable") ||
+      combined.includes("temperature") ||
+      combined.includes("gel"),
+    hasPressureRelief:
+      combined.includes("pressure") ||
+      combined.includes("relief") ||
+      combined.includes("cushion") ||
+      combined.includes("comfort"),
+  };
+}
+
+function buildPodReasonContext(pod, recommendationMeta = {}) {
+  return {
+    hasPartner: recommendationMeta?.hasPartner === true,
+    size: normalizeText(recommendationMeta?.size),
+    position: lowerText(recommendationMeta?.position),
+    firmness: lowerText(recommendationMeta?.firmness),
+    isDualComfort: Boolean(pod?.flags?.isDualComfortMattress),
+    isAdjustable:
+      Boolean(pod?.flags?.isAdjustableFixture) ||
+      pod?.hasAdjustableBase === true ||
+      lowerText(pod?.baseType) === "adjustable",
+  };
+}
+
+function getPodReasonVariant(reasonKey, ctx) {
+  switch (normalizeText(reasonKey)) {
+    case "requested_full_split":
+      return "it supports the Full Split motion you asked for";
+    case "requested_half_split":
+      return "it supports the Half Split motion you asked for";
+    case "split_requires_dual":
+      return "its Dual Comfort setup lines up with the split-motion path from your assessment";
+    case "partner_friendly":
+      return ctx.isDualComfort
+        ? "its Dual Comfort setup is a strong fit for shared sleep"
+        : "it gives you a more partner-friendly setup to test";
+    case "primary_mattress_exact":
+      return "it matches the mattress style Snoozer would test first for you";
+    case "primary_mattress_family":
+      return "it stays close to the mattress style Snoozer matched to your assessment";
+    case "side_sleeper_pressure_relief":
+      return "it may give you the pressure relief side sleepers often notice first";
+    case "back_or_stomach_support":
+      return "it may give you the support back and stomach sleepers usually need";
+    case "firmness_firm_match":
+      return "it lines up with the firmer feel you selected";
+    case "firmness_soft_match":
+      return "it lines up with the softer feel you selected";
+    case "requested_standard_motion":
+      return "it gives you an adjustable setup with standard motion";
+    case "fixture_size_match":
+      return ctx.size
+        ? `it is shown in ${ctx.size}, which matches the size you selected`
+        : "it matches the size path from your assessment";
+    case "simple_non_motion_option":
+      return "it gives you a simpler non-motion option to anchor your comparison";
+    default:
+      return "";
+  }
+}
+
+function getPodFallbackReason(ctx) {
+  if (ctx.isDualComfort && ctx.hasPartner) {
+    return "its Dual Comfort setup gives shared sleep more flexibility";
+  }
+
+  if (ctx.isDualComfort) {
+    return "it gives you a flexible Dual Comfort setup to test early";
+  }
+
+  if (ctx.isAdjustable) {
+    return "it gives you an adjustable setup worth testing early";
+  }
+
+  if (ctx.position === "side") {
+    return "it gives you another pressure-relief-focused option to test";
+  }
+
+  if (ctx.firmness === "firm") {
+    return "it gives you another supportive option to test";
+  }
+
+  return "it gives you another strong pod to test before deciding";
+}
+
+function pickPreferredReasonKeys(reasonKeys = []) {
+  const preferredOrder = [
+    "requested_full_split",
+    "requested_half_split",
+    "split_requires_dual",
+    "partner_friendly",
+    "primary_mattress_exact",
+    "primary_mattress_family",
+    "side_sleeper_pressure_relief",
+    "back_or_stomach_support",
+    "firmness_firm_match",
+    "firmness_soft_match",
+    "requested_standard_motion",
+    "fixture_size_match",
+    "simple_non_motion_option",
+  ];
+
+  return preferredOrder.filter((key) => reasonKeys.includes(key));
+}
+
+function buildPodBuildVoice({ title, mattressTitle, isDualComfort }) {
+  return [
+    `Let's finish your SnoozePod.`,
+    mattressTitle
+      ? `We will keep ${mattressTitle} as the mattress on this pod.`
+      : "We will keep the mattress already on this pod.",
+    isDualComfort
+      ? "Choose your size, base, motion setup, and comfort on each side, then review everything before you add it to your cart."
+      : "Choose your size, base, and motion setup if you want it, then review everything before you add it to your cart.",
+  ]
+    .filter(Boolean)
+    .join(" ");
 }
 
 function buildPodCheckoutVoice() {
@@ -336,27 +515,27 @@ const BUILD_VISUALS = {
   size: {
     title: "Choose Your Size",
     image: [PUBLIC_ASSETS.sizeDimensions],
-    caption: "Choose the size that fits your room, sleep setup, and comfort needs.",
+    caption: "Start with the size that fits your room and the way you want to sleep.",
   },
   base: {
     title: "Choose Your Base",
     image: [],
-    caption: "Choose mattress only, a platform base, or an adjustable base.",
+    caption: "Choose the foundation that feels right with this mattress.",
   },
   motion: {
     title: "Choose Your Motion",
     image: [PUBLIC_ASSETS.standardMotion],
-    caption: "Motion options only apply when adjustable base is selected.",
-  },
-  mattress: {
-    title: "Choose Your Mattress",
-    image: [],
-    caption: "Choose the mattress feel and build that fits this setup.",
+    caption: "Pick the motion setup that fits the way you want to relax and adjust.",
   },
   dual: {
-    title: "Choose Dual Comfort",
+    title: "Choose Comfort Setup",
     image: [],
-    caption: "Choose the left and right comfort feel separately.",
+    caption: "Choose the feel on each side so the bed feels right from edge to edge.",
+  },
+  review: {
+    title: "Review Your Setup",
+    image: [],
+    caption: "Take one last look at your mattress, base, motion, and comfort setup before you add it to cart.",
   },
 };
 
@@ -428,7 +607,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       voice:
         "Now as the mattress returns to the flat position, notice how the pressure changes in your lower back and whether you feel the need to shift around again.",
       startCta: "Start Timer",
-      doneCta: "See Final Question",
+      doneCta: "Final Reflection",
     },
   ];
 
@@ -442,7 +621,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       voice:
         "Take one more quiet moment before deciding and notice pressure relief, alignment, and overall support.",
       startCta: "Start Timer",
-      doneCta: "See Final Question",
+      doneCta: "Final Reflection",
     },
   ];
 
@@ -503,7 +682,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       voice:
         "Now as the mattress returns to the flat position, notice how the pressure changes in your lower back and whether you feel the need to shift around again.",
       startCta: "Start Timer",
-      doneCta: "See Final Question",
+      doneCta: "Final Reflection",
     },
   ];
 
@@ -526,7 +705,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       body: "Take one final quiet moment before deciding how this mattress feels overall.",
       voice: "Take one final quiet moment before deciding how this mattress feels overall.",
       startCta: "Start Timer",
-      doneCta: "See Final Question",
+      doneCta: "Final Reflection",
     },
   ];
 
@@ -552,6 +731,62 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
         : [...deepFlat, ...deepNonAdjustableTail],
     },
   };
+}
+
+const REST_COMPLETION_STAGES = {
+  reflection: "reflection",
+  actions: "actions",
+};
+
+const REST_REFLECTION_OPTIONS = [
+  {
+    id: "pressure_relief",
+    label: "Pressure relief felt good",
+    icon: CheckCircle2,
+  },
+  {
+    id: "support",
+    label: "Support felt good",
+    icon: BedDouble,
+  },
+  {
+    id: "not_sure",
+    label: "Not sure yet",
+    icon: HelpCircle,
+  },
+  {
+    id: "compare_pod",
+    label: "Want to compare another pod",
+    icon: MessageSquare,
+  },
+];
+
+function normalizeRestCompletionStage(value) {
+  const stage = String(value || "").trim().toLowerCase();
+  if (stage === REST_COMPLETION_STAGES.reflection) return REST_COMPLETION_STAGES.reflection;
+  if (stage === REST_COMPLETION_STAGES.actions) return REST_COMPLETION_STAGES.actions;
+  return "";
+}
+
+function buildRestReflectionVoice(modeTitle) {
+  const title = String(modeTitle || "Rest Test").trim();
+  return `${title} complete. What stood out most?`;
+}
+
+function buildRestActionsVoice(modeId, reflectionLabel = "") {
+  const intro = reflectionLabel ? `Thanks. ${reflectionLabel}. ` : "";
+
+  if (modeId === "quick") {
+    return (
+      intro +
+      "Next, you can try the 15-minute rest test, learn about this pod, customize your pod, or go back to rest test options."
+    );
+  }
+
+  return (
+    intro +
+    "Next, you can retake the 15-minute rest test, learn about this pod, customize your pod, or go back to rest test options."
+  );
 }
 
 function detectAdjustableBase(activePod, baseProduct, effectiveBaseHandle) {
@@ -695,14 +930,23 @@ function ResponsiveImage({ src, alt, className, imgClassName }) {
   );
 }
 
-function WhyChosenCard({ isRecommended, rank, sentence }) {
+function WhyChosenCard({
+  isRecommended,
+  rank,
+  sentence,
+  detailsMode = false,
+  detailsIntro = "",
+  actions = [],
+  activeActionId = "",
+  onActionSelect,
+}) {
   return (
-    <div className="rounded-3xl border bg-white p-4 shadow-sm md:p-5">
+    <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
       <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">
-        Why this pod was chosen
+        {detailsMode ? "Learn About This Pod" : "Why Snoozer Picked This Pod"}
       </div>
 
-      <div className="mt-3 flex items-center gap-4">
+      <div className="mt-3 grid gap-4 md:grid-cols-[auto_minmax(0,1fr)] md:items-start">
         <img
           src={PUBLIC_ASSETS.snoozerAvatar}
           alt="Snoozer"
@@ -713,9 +957,39 @@ function WhyChosenCard({ isRecommended, rank, sentence }) {
 
         <div className="min-w-0">
           <div className="text-xl font-extrabold leading-tight text-gray-900 md:text-2xl">
-            {isRecommended ? `Recommended #${rank || "1"} for you` : "Selected for you"}
+            {detailsMode
+              ? "Tap the part you want Snoozer to explain"
+              : isRecommended
+                ? `Recommended #${rank || "1"} for you`
+                : "Selected for you"}
           </div>
-          <div className="mt-2 text-base leading-7 text-gray-700">{sentence}</div>
+          <div className="mt-2 text-base leading-7 text-gray-700">
+            {detailsMode ? detailsIntro || sentence : sentence}
+          </div>
+
+          {detailsMode && actions.length ? (
+            <div className="mt-4 flex flex-wrap gap-2.5">
+              {actions.map((action) => {
+                const active = activeActionId === action.id;
+
+                return (
+                  <button
+                    key={action.id}
+                    type="button"
+                    onClick={() => onActionSelect?.(action.id)}
+                    className={[
+                      "rounded-full border px-4 py-2 text-sm font-extrabold transition",
+                      active
+                        ? "border-indigo-300 bg-indigo-50 text-indigo-900"
+                        : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
+                    ].join(" ")}
+                  >
+                    {action.label}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -724,7 +998,7 @@ function WhyChosenCard({ isRecommended, rank, sentence }) {
 
 function OnThisPodCard({ title, image }) {
   return (
-    <div className="rounded-3xl border bg-white p-4 shadow-sm md:p-5">
+    <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
       <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">
         On This Pod
       </div>
@@ -733,11 +1007,11 @@ function OnThisPodCard({ title, image }) {
         {title}
       </div>
 
-      <div className="mt-3 overflow-hidden rounded-3xl border bg-gray-50">
+      <div className="mt-4 overflow-hidden rounded-3xl border bg-gray-50">
         <ResponsiveImage
           src={[image, PUBLIC_ASSETS.noImage]}
           alt={title}
-          className="aspect-[16/10]"
+          className="aspect-[4/3] xl:aspect-[5/4]"
           imgClassName="h-full w-full object-contain"
         />
       </div>
@@ -747,7 +1021,7 @@ function OnThisPodCard({ title, image }) {
 
 function RestTestVisualCard({ title, image, caption }) {
   return (
-    <div className="rounded-3xl border bg-white p-4 shadow-sm md:p-5">
+    <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
       <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">
         Snoozer Guide
       </div>
@@ -756,11 +1030,11 @@ function RestTestVisualCard({ title, image, caption }) {
         {title}
       </div>
 
-      <div className="mt-3 overflow-hidden rounded-3xl border bg-gray-50">
+      <div className="mt-4 overflow-hidden rounded-3xl border bg-gray-50">
         <ResponsiveImage
           src={image}
           alt={title}
-          className="aspect-[16/10]"
+          className="aspect-[4/3] xl:aspect-[5/4]"
           imgClassName="h-full w-full object-cover"
         />
       </div>
@@ -770,9 +1044,9 @@ function RestTestVisualCard({ title, image, caption }) {
   );
 }
 
-function BuildVisualCard({ title, image, caption, eyebrow = "Build Guide" }) {
+function BuildVisualCard({ title, image, caption, eyebrow = "Setup Preview" }) {
   return (
-    <div className="rounded-3xl border bg-white p-4 shadow-sm md:p-5">
+    <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
       <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">
         {eyebrow}
       </div>
@@ -781,11 +1055,11 @@ function BuildVisualCard({ title, image, caption, eyebrow = "Build Guide" }) {
         {title}
       </div>
 
-      <div className="mt-3 overflow-hidden rounded-3xl border bg-gray-50">
+      <div className="mt-4 overflow-hidden rounded-3xl border bg-gray-50">
         <ResponsiveImage
           src={image}
           alt={title}
-          className="aspect-[16/10]"
+          className="aspect-[4/3] xl:aspect-[5/4]"
           imgClassName="h-full w-full object-contain"
         />
       </div>
@@ -797,15 +1071,40 @@ function BuildVisualCard({ title, image, caption, eyebrow = "Build Guide" }) {
 
 function DetailCard({ title, items = [] }) {
   return (
-    <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+    <div className="h-full rounded-3xl border bg-white p-5 shadow-sm md:p-6">
       <div className="text-lg font-extrabold text-gray-900 md:text-xl">{title}</div>
       <div className="mt-3 space-y-2.5">
         {items.map((item) => (
-          <div key={item} className="text-base text-gray-700">
+          <div key={item} className="text-base leading-7 text-gray-700">
             {item}
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function DetailBodyCard({ title, body, itemsTitle = "", items = [] }) {
+  return (
+    <div className="h-full rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+      <div className="text-lg font-extrabold text-gray-900 md:text-xl">{title}</div>
+
+      {body ? <div className="mt-3 text-base leading-7 text-gray-700">{body}</div> : null}
+
+      {items.length ? (
+        <div className="mt-4 space-y-2.5">
+          {itemsTitle ? (
+            <div className="text-sm font-extrabold uppercase tracking-[0.12em] text-gray-500">
+              {itemsTitle}
+            </div>
+          ) : null}
+          {items.map((item) => (
+            <div key={item} className="text-base text-gray-700">
+              {item}
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -822,11 +1121,11 @@ function GuidedRestTest({
   onAdvanceStep,
   onSkipStep,
   onResetTest,
-  onGreat,
-  onUnsure,
-  onNo,
-  isComplete,
-  feelChoice,
+  onSelectReflection,
+  onViewDetails,
+  onBuildPod,
+  completionStage,
+  reflectionChoice,
   hasAdjustableBase,
 }) {
   if (!activeMode) {
@@ -871,7 +1170,7 @@ function GuidedRestTest({
     );
   }
 
-  if (isComplete || activeStep?.id === "response") {
+  if (completionStage === REST_COMPLETION_STAGES.reflection) {
     return (
       <div className="rounded-3xl border bg-white shadow-sm">
         <div className="border-b bg-slate-50 px-5 py-4 md:px-6 md:py-5">
@@ -879,48 +1178,83 @@ function GuidedRestTest({
         </div>
 
         <div className="p-5 md:p-6">
-          <div className="text-lg font-semibold text-gray-700">What was your first impression?</div>
+          <div className="text-lg font-semibold text-gray-700">What stood out most?</div>
 
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+            {REST_REFLECTION_OPTIONS.map((option) => {
+              const Icon = option.icon;
+
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => onSelectReflection(option.id)}
+                  className="inline-flex items-center gap-3 rounded-2xl border bg-white px-5 py-4 text-left text-base font-extrabold text-gray-900 hover:bg-gray-50"
+                >
+                  <Icon className="h-5 w-5 shrink-0 text-indigo-700" />
+                  <span>{option.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (completionStage === REST_COMPLETION_STAGES.actions) {
+    const primaryActionLabel =
+      activeMode?.id === "quick" ? "Try 15-Minute Rest Test" : "Retake 15-Minute Rest Test";
+    const primaryActionModeId = activeMode?.id === "quick" ? "deep" : activeMode?.id || "deep";
+
+    return (
+      <div className="rounded-3xl border bg-white shadow-sm">
+        <div className="border-b bg-slate-50 px-5 py-4 md:px-6 md:py-5">
+          <div className="text-xl font-extrabold text-gray-900 md:text-2xl">Rest Test</div>
+        </div>
+
+        <div className="p-5 md:p-6">
+          <div className="text-lg font-semibold text-gray-700">You finished the {activeMode?.title}.</div>
+
+          {reflectionChoice ? (
+            <div className="mt-3 rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-900">
+              Reflection saved: {reflectionChoice}
+            </div>
+          ) : null}
+
+          <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
             <button
               type="button"
-              onClick={onGreat}
-              className="inline-flex items-center gap-2 rounded-2xl border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 hover:bg-gray-50"
+              onClick={() => onChooseMode(primaryActionModeId)}
+              className="rounded-2xl bg-indigo-600 px-5 py-3.5 text-base font-extrabold text-white hover:bg-indigo-700"
             >
-              <CheckCircle2 className="h-5 w-5 text-indigo-700" />
-              Felt Great
+              {primaryActionLabel}
             </button>
 
             <button
               type="button"
-              onClick={onUnsure}
-              className="inline-flex items-center gap-2 rounded-2xl border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 hover:bg-gray-50"
+              onClick={onViewDetails}
+              className="rounded-2xl border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 hover:bg-gray-50"
             >
-              <HelpCircle className="h-5 w-5 text-indigo-700" />
-              Not Sure
+              Learn About This Pod
             </button>
 
             <button
               type="button"
-              onClick={onNo}
-              className="inline-flex items-center gap-2 rounded-2xl border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 hover:bg-gray-50"
+              onClick={onBuildPod}
+              className="rounded-2xl border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 hover:bg-gray-50"
             >
-              <XCircle className="h-5 w-5 text-indigo-700" />
-              Not For Me
+              Customize Your Pod
+            </button>
+
+            <button
+              type="button"
+              onClick={onResetTest}
+              className="rounded-2xl border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 hover:bg-gray-50"
+            >
+              Back to Rest Test Options
             </button>
           </div>
-
-          {(isComplete || feelChoice) && (
-            <div className="mt-5 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={onResetTest}
-                className="rounded-2xl border bg-white px-5 py-3 text-sm font-extrabold text-gray-900 hover:bg-gray-50"
-              >
-                Restart Rest Test
-              </button>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -1006,7 +1340,8 @@ function GuidedRestTest({
 export default function Pod() {
   const { podId } = useParams();
   const navigate = useNavigate();
-  const { muted, noteUserInteraction, say, sayScript, voiceState } = useShowroomHud();
+  const { muted, noteUserInteraction, say, sayScript, interruptCurrent, voiceState } =
+    useShowroomHud();
 
   const pid = normalizePodId(podId);
   const storagePrefix = useMemo(() => `snooze.pod.${pid}`, [pid]);
@@ -1041,6 +1376,12 @@ export default function Pod() {
     () => safeGet(`${storagePrefix}.testComplete`) === "1"
   );
   const [feelChoice, setFeelChoice] = useState(() => safeGet(`${storagePrefix}.feelChoice`) || "");
+  const [restCompletionStage, setRestCompletionStage] = useState(() =>
+    normalizeRestCompletionStage(safeGet(`${storagePrefix}.restCompletionStage`))
+  );
+  const [detailsActionId, setDetailsActionId] = useState(
+    () => safeGet(`${storagePrefix}.detailsActionId`) || DEFAULT_DETAILS_ACTION_ID
+  );
   const [showCheckoutOptions, setShowCheckoutOptions] = useState(false);
 
   const [restModeId, setRestModeId] = useState(() => safeGet(`${storagePrefix}.restModeId`) || "");
@@ -1060,9 +1401,6 @@ export default function Pod() {
   const lastPodVoiceKeyRef = useRef("");
   const lastRestVoiceKeyRef = useRef("");
   const restAdvanceTimeoutRef = useRef(null);
-  const podEntryTimerRef = useRef(null);
-  const stageVoiceTimerRef = useRef(null);
-  const podEntrySpokenRef = useRef(false);
 
   const clearTimer = (ref) => {
     if (ref.current) {
@@ -1088,6 +1426,14 @@ export default function Pod() {
     [storagePrefix, feelChoice]
   );
   useEffect(
+    () => safeSet(`${storagePrefix}.restCompletionStage`, restCompletionStage || ""),
+    [storagePrefix, restCompletionStage]
+  );
+  useEffect(
+    () => safeSet(`${storagePrefix}.detailsActionId`, detailsActionId || DEFAULT_DETAILS_ACTION_ID),
+    [storagePrefix, detailsActionId]
+  );
+  useEffect(
     () => safeSet(`${storagePrefix}.restModeId`, restModeId || ""),
     [storagePrefix, restModeId]
   );
@@ -1108,8 +1454,6 @@ export default function Pod() {
       window.__SNOOZE_DISABLE_WIDGET = prev;
       document.body.classList.remove("no-global-chat");
       clearTimer(restAdvanceTimeoutRef);
-      clearTimer(podEntryTimerRef);
-      clearTimer(stageVoiceTimerRef);
     };
   }, []);
 
@@ -1143,6 +1487,7 @@ export default function Pod() {
         priority = "normal",
         key = "",
         scriptKey = "",
+        actionType = "",
         state = "speaking",
       } = {}
     ) => {
@@ -1167,21 +1512,53 @@ export default function Pod() {
         ttlMs: calm ? 6500 : 5000,
         voiceStyle: calm ? "calm" : "default",
         actions: [],
+        replaceCurrent: force,
       };
 
       if (scriptKey) {
         return sayScript({
           scriptKey,
+          actionType,
           shopperId,
           fallback: payload,
           overrides: payload,
         });
       }
 
-      return say(payload);
+      return say({
+        ...payload,
+        actionType,
+      });
     },
     [muted, say, sayScript, shopperId]
   );
+
+  const cancelPodVoice = useCallback(
+    async ({ resetKeys = true } = {}) => {
+      clearTimer(restAdvanceTimeoutRef);
+
+      if (resetKeys) {
+        lastPodVoiceKeyRef.current = "";
+        lastRestVoiceKeyRef.current = "";
+      }
+
+      if (typeof interruptCurrent === "function") {
+        await interruptCurrent({
+          preserveQueue: false,
+          reason: "pod-action-change",
+          fadeMs: 0,
+        });
+      }
+    },
+    [interruptCurrent]
+  );
+
+  useEffect(() => {
+    return () => {
+      clearTimer(restAdvanceTimeoutRef);
+      void cancelPodVoice();
+    };
+  }, [cancelPodVoice]);
 
   useEffect(() => {
     let alive = true;
@@ -1233,7 +1610,6 @@ export default function Pod() {
 
     const sanitizedFound = found ? stripLegacyPodImageFields(found) : null;
 
-    podEntrySpokenRef.current = false;
     lastPodVoiceKeyRef.current = "";
     lastRestVoiceKeyRef.current = "";
 
@@ -1246,6 +1622,11 @@ export default function Pod() {
     const savedBuildStepKey = safeGet(`${storagePrefix}.buildStepKey`) || "size";
     const savedTestComplete = safeGet(`${storagePrefix}.testComplete`) === "1";
     const savedFeelChoice = safeGet(`${storagePrefix}.feelChoice`) || "";
+    const savedRestCompletionStage = normalizeRestCompletionStage(
+      safeGet(`${storagePrefix}.restCompletionStage`)
+    );
+    const savedDetailsActionId =
+      safeGet(`${storagePrefix}.detailsActionId`) || DEFAULT_DETAILS_ACTION_ID;
     const savedRestModeId = safeGet(`${storagePrefix}.restModeId`) || "";
     const savedRestStepIndex = Number(safeGet(`${storagePrefix}.restStepIndex`));
     const savedTimerRemaining = Number(safeGet(`${storagePrefix}.timerRemaining`));
@@ -1254,6 +1635,11 @@ export default function Pod() {
     setBuildStepKey(savedBuildStepKey);
     setTestComplete(savedTestComplete);
     setFeelChoice(savedFeelChoice);
+    setRestCompletionStage(
+      savedRestCompletionStage ||
+        (savedTestComplete ? REST_COMPLETION_STAGES.actions : "")
+    );
+    setDetailsActionId(savedDetailsActionId || DEFAULT_DETAILS_ACTION_ID);
     setRestModeId(savedRestModeId);
     setRestStepIndex(Number.isFinite(savedRestStepIndex) && savedRestStepIndex >= 0 ? savedRestStepIndex : 0);
     setTimerRemaining(
@@ -1271,6 +1657,11 @@ export default function Pod() {
     } else {
       setCueType("tip");
       setCue("Choose your Rest Test");
+    }
+
+    if (savedTestComplete && savedRestCompletionStage === REST_COMPLETION_STAGES.reflection) {
+      setCueType("tip");
+      setCue("Final reflection");
     }
   }, [recs, pid, storagePrefix]);
 
@@ -1354,30 +1745,6 @@ export default function Pod() {
   const mattressImage = useMemo(() => pickProductImage(mattressProduct), [mattressProduct]);
   const mattressHeroTitle = mattressProduct?.title || activePod?.subtitle || "Mattress";
 
-  useEffect(() => {
-    if (!activePod) return;
-    if (podEntrySpokenRef.current) return;
-
-    clearTimer(podEntryTimerRef);
-    podEntryTimerRef.current = window.setTimeout(() => {
-      podEntrySpokenRef.current = true;
-      speakPod(
-        buildPodRestVoice({
-          title,
-          mattressHeroTitle,
-          painSignals,
-        }),
-        {
-          force: true,
-          calm: true,
-          key: `pod-entry::${pid}::${title}`,
-        }
-      );
-    }, 850);
-
-    return () => clearTimer(podEntryTimerRef);
-  }, [activePod, title, mattressHeroTitle, painSignals, speakPod, pid]);
-
   const hasAdjustableBase = useMemo(
     () => detectAdjustableBase(activePod, baseProduct, effectiveBaseHandle),
     [activePod, baseProduct, effectiveBaseHandle]
@@ -1401,6 +1768,255 @@ export default function Pod() {
     if (!activeRestFlow?.steps?.length) return null;
     return activeRestFlow.steps[restStepIndex] || null;
   }, [activeRestFlow, restStepIndex]);
+
+  const recommendationMeta = recs?.meta || {};
+
+  const detailReasonKeys = useMemo(
+    () =>
+      Array.isArray(activePod?.diagnostics?.scoreReasons)
+        ? activePod.diagnostics.scoreReasons
+        : [],
+    [activePod]
+  );
+
+  const detailReasonContext = useMemo(
+    () => buildPodReasonContext(activePod, recommendationMeta),
+    [activePod, recommendationMeta]
+  );
+
+  const mattressTruth = useMemo(
+    () => detectMattressTruth({ mattressProduct, activePod, baseProduct }),
+    [mattressProduct, activePod, baseProduct]
+  );
+
+  const shopperDetailContext = useMemo(() => {
+    const focusAreas = painSignals
+      .filter((signal) =>
+        ["shoulder", "hip", "backpain", "neck"].includes(normalizeText(signal?.key))
+      )
+      .map((signal) => signal?.label)
+      .filter(Boolean);
+
+    const position = lowerText(
+      recommendationMeta?.position ||
+        assessment?.sleepPosition ||
+        assessment?.position ||
+        assessment?.primaryPosition
+    );
+
+    const firmness = lowerText(
+      recommendationMeta?.firmness ||
+        assessment?.firmness ||
+        assessment?.comfort ||
+        assessment?.feel
+    );
+
+    const tempValue = lowerText(
+      assessment?.temperature || assessment?.sleepTemp || assessment?.sleepsHot
+    );
+
+    const partnerValue = lowerText(
+      assessment?.sleepPartner || assessment?.partner || assessment?.shareBed
+    );
+
+    return {
+      focusAreas,
+      position,
+      firmness,
+      sleepsHot:
+        painSignals.some((signal) => signal?.key === "hot") ||
+        tempValue.includes("hot") ||
+        tempValue.includes("warm"),
+      hasPartner:
+        recommendationMeta?.hasPartner === true ||
+        painSignals.some((signal) => signal?.key === "partner") ||
+        partnerValue.includes("yes") ||
+        partnerValue.includes("partner"),
+      wantsSplit: detailReasonKeys.some((key) =>
+        ["requested_full_split", "requested_half_split", "split_requires_dual"].includes(key)
+      ),
+    };
+  }, [painSignals, recommendationMeta, assessment, detailReasonKeys]);
+
+  const detailsQuickActionIntro = useMemo(() => {
+    const summary = pickPreferredReasonKeys(detailReasonKeys)
+      .map((key) => getPodReasonVariant(key, detailReasonContext))
+      .find(Boolean);
+
+    const reasonLine = summary || getPodFallbackReason(detailReasonContext);
+    return `Snoozer matched this pod because ${reasonLine}. Tap the guide you want next.`;
+  }, [detailReasonKeys, detailReasonContext]);
+
+  const detailsContentByAction = useMemo(() => {
+    const orderedReasons = pickPreferredReasonKeys(detailReasonKeys);
+    const topReason =
+      orderedReasons.map((key) => getPodReasonVariant(key, detailReasonContext)).find(Boolean) ||
+      getPodFallbackReason(detailReasonContext);
+
+    const reasonBullets = orderedReasons
+      .map((key) => getPodReasonVariant(key, detailReasonContext))
+      .filter(Boolean)
+      .slice(0, 3)
+      .map((line) => line.charAt(0).toUpperCase() + line.slice(1) + ".");
+
+    const focusLine = shopperDetailContext.focusAreas.length
+      ? `Pay closest attention to ${joinReadableList(shopperDetailContext.focusAreas)}.`
+      : "";
+
+    const positionNotice =
+      shopperDetailContext.position === "side"
+        ? "For side sleeping, notice whether your shoulders and hips settle before the bed starts to feel pushy."
+        : shopperDetailContext.position === "back"
+          ? "For back sleeping, notice whether your lower back feels supported without the surface feeling stiff."
+          : shopperDetailContext.position === "stomach"
+            ? "For stomach sleeping, notice whether your midsection stays lifted instead of dipping."
+            : "Notice how quickly your body settles into a natural position without needing to readjust.";
+
+    const firmnessNotice =
+      shopperDetailContext.firmness === "firm"
+        ? "Because you leaned firmer in the assessment, the right sign here is steady lift more than a sink-in feel."
+        : shopperDetailContext.firmness === "soft"
+          ? "Because you leaned softer in the assessment, the right sign here is cushioning without losing alignment."
+          : "Because you landed near the middle on feel, look for a balanced mix of cushioning and support.";
+
+    const coolingNotice = shopperDetailContext.sleepsHot
+      ? mattressTruth.hasCooling
+        ? "This build shows cooling or breathable cues in the product data, so notice whether it settles temperature more comfortably after a few minutes."
+        : "You mentioned sleeping warm, so use this test to judge temperature comfort once you have been on it for a few minutes."
+      : "";
+
+    const partnerNotice =
+      shopperDetailContext.hasPartner && (mattressTruth.isDualComfort || shopperDetailContext.wantsSplit)
+        ? "Because shared sleep came up in your assessment, this pod is worth attention for how it can separate comfort or motion more cleanly."
+        : shopperDetailContext.hasPartner
+          ? "Because you share the bed, pay attention to how stable and undisturbed the surface feels when you move."
+          : "";
+
+    const feelBody =
+      mattressTruth.family === "foam"
+        ? `${mattressTruth.mattressTitle} should feel quieter and more body-conforming, with a smoother cradle instead of a lifted bounce.`
+        : mattressTruth.family === "dual"
+          ? `${mattressTruth.mattressTitle} should feel supportive first, then cushioned where pressure builds, with more flexibility for shared comfort decisions later.`
+          : mattressTruth.family === "hybrid"
+            ? `${mattressTruth.mattressTitle} should feel a little more lifted and supportive than an all-foam bed, while still giving pressure points room to settle.`
+            : `${mattressTruth.mattressTitle} is meant to feel balanced: enough give to relieve pressure, with enough pushback to keep you supported.`;
+
+    const insideBody =
+      mattressTruth.family === "foam"
+        ? `This pod is anchored by an all-foam build, so the feel is more uniform from top to bottom and less springy when you lie down.`
+        : mattressTruth.family === "dual"
+          ? `This pod uses a Dual Comfort Hybrid build, which means the support structure stays strong while the comfort side can stay more flexible for different sleepers.`
+          : mattressTruth.family === "hybrid"
+            ? `This pod uses a hybrid-style build, which usually means comfort foams on top with a stronger support core underneath.`
+            : `This pod is built to balance comfort layers up top with a more supportive base underneath.`;
+
+    const lastsBody =
+      mattressTruth.hasCoils
+        ? "The long-term strength here comes from the support core doing the heavy lifting while the comfort layers handle pressure relief up top."
+        : "The long-term strength here comes from the support layers underneath keeping the feel more consistent while the top layers handle comfort.";
+
+    const chooseBody = `Snoozer put this pod in front of you because ${topReason}.`;
+
+    return {
+      feel: {
+        id: "feel",
+        title: "How it feels",
+        body: feelBody,
+        primaryTitle: "What to notice first",
+        primaryItems: [positionNotice, firmnessNotice, focusLine].filter(Boolean),
+        secondaryTitle: "Why that matters for you",
+        secondaryItems: [coolingNotice, partnerNotice].filter(Boolean),
+        voiceScript: [feelBody, positionNotice, focusLine || firmnessNotice].filter(Boolean).join(" "),
+        cue: "How it feels",
+        scriptKey: "pod.details.feel",
+      },
+      inside: {
+        id: "inside",
+        title: "What's inside",
+        body: insideBody,
+        primaryTitle: "What that means on the floor",
+        primaryItems: [
+          mattressTruth.hasCoils
+            ? "A stronger support core usually creates a more lifted, easier-to-move-on feel."
+            : "A foam-led build usually creates a quieter, more even surface with less bounce.",
+          mattressTruth.hasPressureRelief
+            ? "The comfort layers are there to let shoulders, hips, and other pressure points settle more naturally."
+            : "",
+          hasAdjustableBase && mattressTruth.baseTitle
+            ? `This pod is paired with ${mattressTruth.baseTitle}, so you can also judge the mattress through head-up and Zero Gravity positions.`
+            : "",
+        ].filter(Boolean),
+        secondaryTitle: "Why that matters for you",
+        secondaryItems: [
+          partnerNotice,
+          shopperDetailContext.sleepsHot && mattressTruth.hasCooling
+            ? "Because temperature comfort matters to you, the cooling-focused materials are worth noticing early."
+            : "",
+        ].filter(Boolean),
+        voiceScript: [insideBody, partnerNotice].filter(Boolean).join(" "),
+        cue: "What's inside",
+        scriptKey: "pod.details.inside",
+      },
+      lasts: {
+        id: "lasts",
+        title: "Why it lasts",
+        body: lastsBody,
+        primaryTitle: "Why shoppers care about that",
+        primaryItems: [
+          mattressTruth.hasCoils
+            ? "When the support core carries more of the load, the comfort layers are not doing all the work by themselves."
+            : "When the support layers stay stable underneath, the comfort feel has a better shot of staying consistent over time.",
+          mattressTruth.isDualComfort
+            ? "A Dual Comfort setup also gives you flexibility if two sleepers do not want the same feel."
+            : "",
+          hasAdjustableBase
+            ? "Because this pod is shown with an adjustable base, you can also judge how stable the mattress stays through movement and position changes."
+            : "",
+        ].filter(Boolean),
+        secondaryTitle: "What to pay attention to",
+        secondaryItems: [
+          "Ask yourself whether the bed still feels composed when you move, roll, or change positions.",
+          shopperDetailContext.hasPartner
+            ? "If you share the bed, notice whether the support still feels dependable when one sleeper shifts."
+            : "",
+        ].filter(Boolean),
+        voiceScript: [lastsBody, partnerNotice].filter(Boolean).join(" "),
+        cue: "Why it lasts",
+        scriptKey: "pod.details.lasts",
+      },
+      choose: {
+        id: "choose",
+        title: "Why choose this",
+        body: chooseBody,
+        primaryTitle: "What Snoozer saw in your assessment",
+        primaryItems: [
+          isRecommended ? `This is currently one of the first pods Snoozer wants you to test.` : "",
+          ...reasonBullets,
+          focusLine,
+        ].filter(Boolean),
+        secondaryTitle: "Why it could matter more to you than a generic browse",
+        secondaryItems: [
+          partnerNotice,
+          coolingNotice,
+          notIdealFor[0] ? `If you want a wider comparison, keep this in mind too: ${notIdealFor[0]}.` : "",
+        ].filter(Boolean),
+        voiceScript: [chooseBody, reasonBullets[0], partnerNotice].filter(Boolean).join(" "),
+        cue: "Why choose this",
+        scriptKey: "pod.details.choose",
+      },
+    };
+  }, [
+    detailReasonKeys,
+    detailReasonContext,
+    shopperDetailContext,
+    mattressTruth,
+    hasAdjustableBase,
+    notIdealFor,
+    isRecommended,
+  ]);
+
+  const activeDetailsContent =
+    detailsContentByAction[detailsActionId] || detailsContentByAction[DEFAULT_DETAILS_ACTION_ID] || null;
 
   useEffect(() => {
     if (!timerRunning) return;
@@ -1427,87 +2043,40 @@ export default function Pod() {
       setTimerRunning(false);
       setCueType("tip");
       setCue("Timer complete");
-      speakPod("That step is complete.", {
-        priority: "low",
-        calm: true,
-        scriptKey: "pod.rest.step_complete",
-        key: `timer-complete::${activeRestStep?.id || "unknown"}`,
-      });
     }
-  }, [timerRunning, timerRemaining, speakPod, activeRestStep?.id]);
-
-  useEffect(() => {
-    if (openStage !== "rest") return;
-
-    if (!activeRestFlow) {
-      const key = "rest-mode-select";
-      if (lastRestVoiceKeyRef.current === key) return;
-      lastRestVoiceKeyRef.current = key;
-      speakPod("Choose either the 7-minute or 15-minute rest test.", {
-        calm: true,
-        scriptKey: "pod.rest.choose_mode",
-        key,
-      });
-      return;
-    }
-
-    if (!activeRestStep) return;
-    if (restPanelPhase === "transition") return;
-
-    const shouldSpeakAtStepBoundary =
-      timerRemaining === activeRestStep.seconds || timerRemaining === 0;
-
-    if (!shouldSpeakAtStepBoundary) return;
-
-    const key = `${activeRestFlow.id}:${activeRestStep.id}:${timerRunning ? "run" : "stop"}:${timerRemaining}`;
-    if (lastRestVoiceKeyRef.current === key) return;
-
-    lastRestVoiceKeyRef.current = key;
-    speakPod(activeRestStep.voice || activeRestStep.body, {
-      calm: true,
-      priority: timerRemaining === 0 ? "low" : "normal",
-      scriptKey: getRestStepScriptKey(activeRestStep.id),
-      key,
-    });
-  }, [openStage, activeRestFlow, activeRestStep, timerRemaining, timerRunning, restPanelPhase, speakPod]);
+  }, [timerRunning, timerRemaining]);
 
   const speakForStage = useCallback(
     (id) => {
       if (id === "rest") {
-        return speakPod(
-          buildPodRestVoice({
-            title,
-            mattressHeroTitle,
-            painSignals,
-          }),
-          { force: true, calm: true, key: `stage-rest::${pid}` }
-        );
+        return Promise.resolve(null);
       }
 
       if (id === "details") {
-        return speakPod(
-          buildPodDetailsVoice({
-            title,
-            mattressHeroTitle,
-            benefits,
-            isRecommended,
-            rank,
-          }),
-          {
-            force: true,
-            scriptKey: "pod.details.default",
-            key: `stage-details::${pid}`,
-          }
-        );
+        return speakPod(activeDetailsContent?.voiceScript || buildPodDetailsVoice({
+          title,
+          mattressHeroTitle,
+          benefits,
+          isRecommended,
+          rank,
+        }), {
+          actionType: "view_details",
+          force: true,
+          calm: true,
+          scriptKey: activeDetailsContent?.scriptKey || "pod.details.default",
+          key: `stage-details::${pid}::${activeDetailsContent?.id || DEFAULT_DETAILS_ACTION_ID}`,
+        });
       }
 
       if (id === "build") {
         return speakPod(
           buildPodBuildVoice({
             title,
-            baseProductTitle: baseProduct?.title || "",
+            mattressTitle: mattressHeroTitle,
+            isDualComfort: mattressTruth.isDualComfort,
           }),
           {
+            actionType: "build_pod",
             force: true,
             scriptKey: "pod.build.default",
             key: `stage-build::${pid}`,
@@ -1520,18 +2089,50 @@ export default function Pod() {
     [
       title,
       mattressHeroTitle,
-      painSignals,
       benefits,
       isRecommended,
       rank,
-      baseProduct?.title,
       speakPod,
       pid,
+      activeDetailsContent,
+      mattressTruth.isDualComfort,
     ]
   );
 
-  const resetRestTest = useCallback(() => {
+  const activateDetailsAction = useCallback(
+    async (actionId = DEFAULT_DETAILS_ACTION_ID, { ensureDetailsStage = false } = {}) => {
+      const nextId = normalizeText(actionId) || DEFAULT_DETAILS_ACTION_ID;
+      const content =
+        detailsContentByAction[nextId] || detailsContentByAction[DEFAULT_DETAILS_ACTION_ID] || null;
+
+      noteUserInteraction?.();
+      await cancelPodVoice();
+
+      if (ensureDetailsStage) {
+        setOpenStage("details");
+      }
+
+      setDetailsActionId(nextId);
+      setCueType(nextId === "choose" ? "success" : "tip");
+      setCue(content?.cue || "Learn About This Pod");
+      setRestPanelPhase("normal");
+
+      if (!content?.voiceScript) return;
+
+      void speakPod(content.voiceScript, {
+        actionType: "view_details",
+        calm: true,
+        force: true,
+        scriptKey: content.scriptKey || `pod.details.${nextId}`,
+        key: `details-action::${pid}::${nextId}`,
+      });
+    },
+    [detailsContentByAction, noteUserInteraction, cancelPodVoice, speakPod, pid]
+  );
+
+  const resetRestTest = useCallback(async () => {
     clearTimer(restAdvanceTimeoutRef);
+    await cancelPodVoice();
 
     setRestModeId("");
     setRestStepIndex(0);
@@ -1539,20 +2140,15 @@ export default function Pod() {
     setTimerRunning(false);
     setTestComplete(false);
     setFeelChoice("");
+    setRestCompletionStage("");
     setCueType("tip");
     setCue("Choose your Rest Test");
     setRestPanelPhase("normal");
     lastRestVoiceKeyRef.current = "";
-    speakPod("Choose either the 7-minute or 15-minute rest test.", {
-      calm: true,
-      force: true,
-      scriptKey: "pod.rest.choose_mode",
-      key: `rest-reset::${pid}`,
-    });
-  }, [speakPod, pid]);
+  }, [cancelPodVoice]);
 
   const handleChooseRestMode = useCallback(
-    (modeId) => {
+    async (modeId) => {
       noteUserInteraction?.();
 
       const flow = restFlows[modeId];
@@ -1560,6 +2156,7 @@ export default function Pod() {
       if (!flow || !firstStep) return;
 
       clearTimer(restAdvanceTimeoutRef);
+      await cancelPodVoice();
 
       setRestModeId(modeId);
       setRestStepIndex(0);
@@ -1567,18 +2164,20 @@ export default function Pod() {
       setTimerRunning(false);
       setTestComplete(false);
       setFeelChoice("");
+      setRestCompletionStage("");
       setCueType("tip");
       setCue(flow.title);
       setRestPanelPhase("normal");
       lastRestVoiceKeyRef.current = "";
       speakPod(`${flow.title}. ${firstStep.voice || firstStep.body}`, {
+        actionType: "start_rest_test",
         calm: true,
         force: true,
         scriptKey: modeId === "deep" ? "pod.rest.deep.start" : "pod.rest.quick.start",
         key: `rest-mode::${modeId}::step-0`,
       });
     },
-    [restFlows, speakPod, noteUserInteraction]
+    [cancelPodVoice, restFlows, speakPod, noteUserInteraction]
   );
 
   const handleStartTimer = useCallback(() => {
@@ -1594,9 +2193,34 @@ export default function Pod() {
     setRestPanelPhase("normal");
   }, [activeRestStep, timerRunning, timerRemaining, noteUserInteraction]);
 
+  const completeRestRoutine = useCallback(
+    (flow) => {
+      if (!flow) return;
+
+      setTimerRemaining(0);
+      setTimerRunning(false);
+      setTestComplete(true);
+      setFeelChoice("");
+      setRestCompletionStage(REST_COMPLETION_STAGES.reflection);
+      setCueType("tip");
+      setCue("Final reflection");
+      setRestPanelPhase("normal");
+      lastRestVoiceKeyRef.current = "";
+
+      void speakPod(buildRestReflectionVoice(flow.title), {
+        calm: true,
+        force: true,
+        scriptKey: flow.id === "deep" ? "pod.rest.deep.reflection" : "pod.rest.quick.reflection",
+        key: `rest-reflection::${flow.id}`,
+      });
+    },
+    [speakPod]
+  );
+
   const runRestTransition = useCallback(
-    ({ nextIndex, nextStep, finalCue, nextCue, voiceText }) => {
+    ({ flow, nextIndex, nextStep, nextCue, voiceText }) => {
       clearTimer(restAdvanceTimeoutRef);
+      void cancelPodVoice();
 
       setTimerRunning(false);
       setRestPanelPhase("transition");
@@ -1605,12 +2229,8 @@ export default function Pod() {
 
       restAdvanceTimeoutRef.current = window.setTimeout(() => {
         if (!nextStep) {
-          setTimerRemaining(0);
-          setCueType("tip");
-          setCue(finalCue || "How did it feel?");
-          setRestPanelPhase("normal");
-          lastRestVoiceKeyRef.current = "";
           restAdvanceTimeoutRef.current = null;
+          completeRestRoutine(flow);
           return;
         }
 
@@ -1623,7 +2243,7 @@ export default function Pod() {
         restAdvanceTimeoutRef.current = null;
 
         if (voiceText) {
-          speakPod(voiceText, {
+          void speakPod(voiceText, {
             calm: true,
             force: true,
             scriptKey: getRestStepScriptKey(nextStep.id),
@@ -1632,7 +2252,7 @@ export default function Pod() {
         }
       }, 650);
     },
-    [speakPod]
+    [cancelPodVoice, completeRestRoutine, speakPod]
   );
 
   const handleAdvanceRestStep = useCallback(() => {
@@ -1644,9 +2264,9 @@ export default function Pod() {
     const nextStep = activeRestFlow.steps[nextIndex] || null;
 
     runRestTransition({
+      flow: activeRestFlow,
       nextIndex,
       nextStep,
-      finalCue: "How did it feel?",
       nextCue: nextStep?.cue || activeRestFlow.title,
       voiceText: nextStep?.voice || nextStep?.body || "",
     });
@@ -1661,68 +2281,69 @@ export default function Pod() {
     const nextStep = activeRestFlow.steps[nextIndex] || null;
 
     runRestTransition({
+      flow: activeRestFlow,
       nextIndex,
       nextStep,
-      finalCue: "How did it feel?",
       nextCue: nextStep?.cue || activeRestFlow.title,
       voiceText: nextStep?.voice || nextStep?.body || "",
     });
   }, [activeRestFlow, restStepIndex, runRestTransition, noteUserInteraction]);
 
-  const handleFeelGreat = useCallback(() => {
-    noteUserInteraction?.();
-    setFeelChoice("Great");
-    setTestComplete(true);
-    setTimerRunning(false);
-    setCueType("success");
-    setCue("Move to Build");
-    setOpenStage("build");
-    setRestPanelPhase("normal");
-    speakPod("Build this bed.", { force: true, key: `feel-great::${pid}` });
-  }, [speakPod, noteUserInteraction, pid]);
+  const handleSelectRestReflection = useCallback(
+    async (choiceId) => {
+      noteUserInteraction?.();
 
-  const handleFeelUnsure = useCallback(() => {
-    noteUserInteraction?.();
-    setFeelChoice("Not sure");
-    setTestComplete(true);
-    setTimerRunning(false);
-    setCueType("tip");
-    setCue("Review details");
-    setOpenStage("details");
-    setRestPanelPhase("normal");
-    speakPod("Review the details.", { force: true, key: `feel-unsure::${pid}` });
-  }, [speakPod, noteUserInteraction, pid]);
+      const choice = REST_REFLECTION_OPTIONS.find((option) => option.id === choiceId) || null;
+      if (!choice || !activeRestFlow) return;
 
-  const handleFeelNo = useCallback(() => {
-    noteUserInteraction?.();
-    setFeelChoice("Not for me");
-    setTestComplete(true);
-    setTimerRunning(false);
-    setCueType("warning");
-    setCue("Try another pod from your results");
-    setRestPanelPhase("normal");
-    speakPod("Try another pod from your results.", { force: true, key: `feel-no::${pid}` });
-  }, [speakPod, noteUserInteraction, pid]);
+      await cancelPodVoice();
+
+      setFeelChoice(choice.label);
+      setTestComplete(true);
+      setRestCompletionStage(REST_COMPLETION_STAGES.actions);
+      setTimerRunning(false);
+      setCueType(choiceId === "compare_pod" ? "tip" : choiceId === "not_sure" ? "tip" : "success");
+      setCue(choice.label);
+      setRestPanelPhase("normal");
+
+      void speakPod(buildRestActionsVoice(activeRestFlow.id, choice.label), {
+        calm: true,
+        force: true,
+        scriptKey: activeRestFlow.id === "deep" ? "pod.rest.deep.actions" : "pod.rest.quick.actions",
+        key: `rest-actions::${activeRestFlow.id}::${choice.id}`,
+      });
+    },
+    [activeRestFlow, cancelPodVoice, noteUserInteraction, speakPod]
+  );
 
   const stageContent = useMemo(() => {
     if (openStage === "details") {
-      return (
-        <div className="space-y-4">
-          <DetailCard
-            title="Why it matched you"
-            items={[
-              `Recommended because you mentioned ${whyThisPodReason}.`,
-              ...buildDetailBullets({
-                mattressTitle: mattressHeroTitle,
-                benefits,
-                painSignals,
-                isRecommended,
-                rank,
-              }),
-            ].filter(Boolean)}
-          />
+      const hasSecondary = Boolean(activeDetailsContent?.secondaryItems?.length);
 
-          <DetailCard title="Compare if" items={notIdealFor} />
+      return (
+        <div
+          className={[
+            "grid gap-4",
+            hasSecondary ? "xl:grid-cols-[minmax(0,1.16fr)_minmax(320px,0.84fr)]" : "",
+          ].join(" ")}
+        >
+          <div className="min-w-0">
+            <DetailBodyCard
+              title={activeDetailsContent?.title || "Learn About This Pod"}
+              body={activeDetailsContent?.body || detailsQuickActionIntro}
+              itemsTitle={activeDetailsContent?.primaryTitle || ""}
+              items={activeDetailsContent?.primaryItems || []}
+            />
+          </div>
+
+          {hasSecondary ? (
+            <div className="min-w-0">
+              <DetailCard
+                title={activeDetailsContent.secondaryTitle || "Why that matters for you"}
+                items={activeDetailsContent.secondaryItems}
+              />
+            </div>
+          ) : null}
         </div>
       );
     }
@@ -1743,13 +2364,8 @@ export default function Pod() {
             if (typeof nextText === "string" && nextText.toLowerCase().includes("added to cart")) {
               setShowCheckoutOptions(true);
             }
-
-            if (typeof nextText === "string" && nextText.trim()) {
-              speakPod(nextText, { priority: "low", key: `builder-cue::${nextText}` });
-            }
           }}
           primaryCtaLabel="Add to Cart"
-          secondaryCtaLabel="Save Build"
           onViewSnoozePod={() => navigate("/snoozepod")}
         />
       );
@@ -1759,7 +2375,7 @@ export default function Pod() {
       <GuidedRestTest
         flowOptions={restFlows}
         activeMode={activeRestFlow}
-        activeStep={activeRestStep || { id: "response" }}
+        activeStep={activeRestStep}
         activeStepIndex={restStepIndex}
         timerRemaining={timerRemaining}
         timerRunning={timerRunning}
@@ -1768,31 +2384,32 @@ export default function Pod() {
         onAdvanceStep={handleAdvanceRestStep}
         onSkipStep={handleSkipRestStep}
         onResetTest={resetRestTest}
-        onGreat={handleFeelGreat}
-        onUnsure={handleFeelUnsure}
-        onNo={handleFeelNo}
-        isComplete={testComplete}
-        feelChoice={feelChoice}
+        onSelectReflection={handleSelectRestReflection}
+        onViewDetails={() => void activateDetailsAction(DEFAULT_DETAILS_ACTION_ID, { ensureDetailsStage: true })}
+        onBuildPod={async () => {
+          noteUserInteraction?.();
+          await cancelPodVoice();
+          setOpenStage("build");
+          setCueType("success");
+          setCue("Finish Your SnoozePod");
+          setRestPanelPhase("normal");
+          void speakForStage("build");
+        }}
+        completionStage={restCompletionStage}
+        reflectionChoice={feelChoice}
         hasAdjustableBase={hasAdjustableBase}
       />
     );
   }, [
     openStage,
-    whyThisPodReason,
-    mattressHeroTitle,
-    benefits,
-    painSignals,
-    isRecommended,
-    rank,
-    notIdealFor,
-    activePod,
+    activeDetailsContent,
+    detailsQuickActionIntro,
     assessment,
     mattressProduct,
     baseProduct,
     onSelectionHandlesChange,
     onBuildStepChange,
     navigate,
-    speakPod,
     restFlows,
     activeRestFlow,
     activeRestStep,
@@ -1804,61 +2421,63 @@ export default function Pod() {
     handleAdvanceRestStep,
     handleSkipRestStep,
     resetRestTest,
-    handleFeelGreat,
-    handleFeelUnsure,
-    handleFeelNo,
-    testComplete,
+    handleSelectRestReflection,
+    activateDetailsAction,
+    restCompletionStage,
     feelChoice,
     hasAdjustableBase,
+    noteUserInteraction,
+    cancelPodVoice,
   ]);
 
   const stageSubtitle = useMemo(() => {
-    if (openStage === "build") return "Build your setup one step at a time.";
+    if (openStage === "build") {
+      return "Finish your SnoozePod by choosing the size, base, motion, and comfort setup that feels right, then review everything before adding it to your cart.";
+    }
+    if (openStage === "details") {
+      return "Use the guides above to hear how this pod feels, what is inside, why it lasts, and why Snoozer matched it to you.";
+    }
     return headerPersonalization;
   }, [openStage, headerPersonalization]);
 
   const footerStageLabel = useMemo(() => {
-    if (openStage === "details") return "Details";
-    if (openStage === "build") return "Build Your Pod";
+    if (openStage === "details") return "Learn About This Pod";
+    if (openStage === "build") return "Customize Your Pod";
+    if (restCompletionStage === REST_COMPLETION_STAGES.reflection) return "Final reflection";
     if (testComplete) return "Rest Test complete";
     return "Rest Test";
-  }, [openStage, testComplete]);
+  }, [openStage, restCompletionStage, testComplete]);
 
-  const goToDetailsStage = useCallback(() => {
-    noteUserInteraction?.();
-    setOpenStage("details");
-    setCueType("tip");
-    setCue("Review this match");
-    setRestPanelPhase("normal");
-    clearTimer(stageVoiceTimerRef);
-    stageVoiceTimerRef.current = window.setTimeout(() => {
-      speakForStage("details");
-    }, 250);
-  }, [speakForStage, noteUserInteraction]);
+  const goToDetailsStage = useCallback(async () => {
+    await activateDetailsAction(DEFAULT_DETAILS_ACTION_ID, { ensureDetailsStage: true });
+  }, [activateDetailsAction]);
 
-  const goToBuildStage = useCallback(() => {
+  const goToBuildStage = useCallback(async () => {
     noteUserInteraction?.();
+    await cancelPodVoice();
     setOpenStage("build");
     setCueType("success");
-    setCue("Build this bed");
+    setCue("Finish Your SnoozePod");
     setRestPanelPhase("normal");
-    clearTimer(stageVoiceTimerRef);
-    stageVoiceTimerRef.current = window.setTimeout(() => {
-      speakForStage("build");
-    }, 250);
-  }, [speakForStage, noteUserInteraction]);
+    void speakForStage("build");
+  }, [cancelPodVoice, speakForStage, noteUserInteraction]);
 
   const goToRestStage = useCallback(() => {
     noteUserInteraction?.();
+    void cancelPodVoice();
     setOpenStage("rest");
     setCueType("tip");
-    setCue(restModeId ? "Rest Test in progress" : "Choose your Rest Test");
+    setCue(
+      restCompletionStage === REST_COMPLETION_STAGES.reflection
+        ? "Final reflection"
+        : restCompletionStage === REST_COMPLETION_STAGES.actions
+          ? feelChoice || "Rest Test complete"
+          : restModeId
+            ? "Rest Test in progress"
+            : "Choose your Rest Test"
+    );
     setRestPanelPhase("normal");
-    clearTimer(stageVoiceTimerRef);
-    stageVoiceTimerRef.current = window.setTimeout(() => {
-      speakForStage("rest");
-    }, 250);
-  }, [restModeId, speakForStage, noteUserInteraction]);
+  }, [cancelPodVoice, restModeId, restCompletionStage, feelChoice, noteUserInteraction]);
 
   const restPanelImage = useMemo(() => {
     if (openStage !== "rest") return [];
@@ -1871,7 +2490,7 @@ export default function Pod() {
       return REST_GUIDE_IMAGES.choice;
     }
 
-    if (testComplete || (activeRestStep && activeRestStep.id === "response")) {
+    if (restCompletionStage) {
       return REST_GUIDE_IMAGES.active;
     }
 
@@ -1880,19 +2499,22 @@ export default function Pod() {
     }
 
     return REST_GUIDE_IMAGES.choice;
-  }, [openStage, restPanelPhase, activeRestFlow, testComplete, activeRestStep, timerRunning]);
+  }, [openStage, restPanelPhase, activeRestFlow, restCompletionStage, timerRunning]);
 
   const restPanelTitle = useMemo(() => {
     if (openStage !== "rest") return "";
 
     if (restPanelPhase === "transition") return "Next Step";
     if (!activeRestFlow) return "Choose Your Rest Test";
-    if (testComplete || (activeRestStep && activeRestStep.id === "response")) {
-      return "Final Impression";
+    if (restCompletionStage === REST_COMPLETION_STAGES.reflection) {
+      return "Final Reflection";
+    }
+    if (restCompletionStage === REST_COMPLETION_STAGES.actions) {
+      return "Next Actions";
     }
     if (timerRunning) return activeRestStep?.cue || "Rest Test Active";
     return activeRestFlow?.title || "Rest Test";
-  }, [openStage, restPanelPhase, activeRestFlow, testComplete, activeRestStep, timerRunning]);
+  }, [openStage, restPanelPhase, activeRestFlow, restCompletionStage, activeRestStep, timerRunning]);
 
   const restPanelCaption = useMemo(() => {
     if (openStage !== "rest") return "";
@@ -1905,8 +2527,12 @@ export default function Pod() {
       return "Choose either the 7-minute or 15-minute rest test to begin.";
     }
 
-    if (testComplete || (activeRestStep && activeRestStep.id === "response")) {
-      return "Give your first impression before moving on.";
+    if (restCompletionStage === REST_COMPLETION_STAGES.reflection) {
+      return "Choose the one thing that stood out most during this rest test.";
+    }
+
+    if (restCompletionStage === REST_COMPLETION_STAGES.actions) {
+      return "Choose what to do next without losing your place on this pod.";
     }
 
     if (timerRunning) {
@@ -1914,7 +2540,7 @@ export default function Pod() {
     }
 
     return "Review the step, then start the timer when you are ready.";
-  }, [openStage, restPanelPhase, activeRestFlow, testComplete, activeRestStep, timerRunning]);
+  }, [openStage, restPanelPhase, activeRestFlow, restCompletionStage, activeRestStep, timerRunning]);
 
   const buildPanelVisual = useMemo(() => {
     const baseImage = pickProductImage(baseProduct);
@@ -1937,11 +2563,19 @@ export default function Pod() {
       };
     }
 
-    if (step === "mattress" || step === "dual") {
+    if (step === "dual") {
       return {
-        title: step === "dual" ? BUILD_VISUALS.dual.title : BUILD_VISUALS.mattress.title,
+        title: BUILD_VISUALS.dual.title,
         image: [mattressImage, PUBLIC_ASSETS.noImage],
-        caption: step === "dual" ? BUILD_VISUALS.dual.caption : BUILD_VISUALS.mattress.caption,
+        caption: BUILD_VISUALS.dual.caption,
+      };
+    }
+
+    if (step === "review" || step === "mattress") {
+      return {
+        title: BUILD_VISUALS.review.title,
+        image: [mattressImage, baseImage, PUBLIC_ASSETS.sizeDimensions],
+        caption: BUILD_VISUALS.review.caption,
       };
     }
 
@@ -1987,7 +2621,7 @@ export default function Pod() {
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-[#E8ECF5] to-white pb-28 pt-4 md:pt-5">
-      <div className="mx-auto max-w-6xl px-4">
+      <div className="mx-auto max-w-[1500px] px-4 lg:px-6">
         <div className="mb-3 flex items-center justify-between gap-3">
           <button
             type="button"
@@ -2043,13 +2677,13 @@ export default function Pod() {
                     <StageButton
                       active={openStage === "details"}
                       icon={MessageSquare}
-                      label="Details"
+                      label="Learn About This Pod"
                       onClick={goToDetailsStage}
                     />
                     <StageButton
                       active={openStage === "build"}
                       icon={BedDouble}
-                      label="Build Your Pod"
+                      label="Customize Your Pod"
                       onClick={goToBuildStage}
                     />
                   </div>
@@ -2072,26 +2706,35 @@ export default function Pod() {
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.03fr_0.97fr]">
-                <div className="space-y-4">
-                  <WhyChosenCard
-                    isRecommended={isRecommended}
-                    rank={rank}
-                    sentence={whyThisPodSentence}
-                  />
+              <div className="mt-4 grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.34fr)_minmax(360px,0.96fr)] xl:items-start">
+                <div className="min-w-0 space-y-4">
+                  {openStage !== "build" ? (
+                    <WhyChosenCard
+                      isRecommended={isRecommended}
+                      rank={rank}
+                      sentence={whyThisPodSentence}
+                      detailsMode={openStage === "details"}
+                      detailsIntro={detailsQuickActionIntro}
+                      actions={DETAILS_ACTIONS}
+                      activeActionId={detailsActionId}
+                      onActionSelect={(actionId) =>
+                        void activateDetailsAction(actionId, { ensureDetailsStage: true })
+                      }
+                    />
+                  ) : null}
 
                   {showInlineStagePanel ? (
-                    <div className="rounded-[32px] border border-white/60 bg-white shadow-xl">
+                    <div className="overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-xl">
                       <div className="p-0">{stageContent}</div>
                     </div>
                   ) : (
                     <div className="rounded-[32px] border border-white/60 bg-white p-6 shadow-xl">
-                      <div className="py-6 text-center text-gray-500">Loading</div>
+                      <div className="py-6 text-center text-gray-500">Preparing this pod</div>
                     </div>
                   )}
                 </div>
 
-                <div className="space-y-4">{rightPanelContent}</div>
+                <div className="min-w-0 space-y-4">{rightPanelContent}</div>
               </div>
             </div>
           </div>
@@ -2106,11 +2749,7 @@ export default function Pod() {
                       type="button"
                       onClick={() => {
                         noteUserInteraction?.();
-                        speakPod(buildPodCheckoutVoice(), {
-                          force: true,
-                          scriptKey: "pod.checkout.ready",
-                          key: `checkout-kiosk::${pid}`,
-                        });
+                        void cancelPodVoice();
                         navigate("/snoozepod");
                       }}
                       className="rounded-2xl bg-indigo-600 px-6 py-4 text-base font-extrabold text-white hover:bg-indigo-700"
@@ -2131,11 +2770,7 @@ export default function Pod() {
                         className="inline-flex rounded-2xl border bg-white px-6 py-4 text-base font-extrabold text-gray-900 hover:bg-gray-50"
                         onClick={() => {
                           noteUserInteraction?.();
-                          speakPod("Phone checkout ready.", {
-                            force: true,
-                            scriptKey: "pod.checkout.phone",
-                            key: `checkout-phone::${pid}`,
-                          });
+                          void cancelPodVoice();
                         }}
                       >
                         Open Checkout
@@ -2155,7 +2790,7 @@ export default function Pod() {
 
       {!loading && activePod ? (
         <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
+          <div className="mx-auto flex max-w-[1500px] flex-col gap-3 px-4 py-3 lg:px-6 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
               <div className="text-sm font-extrabold text-gray-900">{title}</div>
               <div className="mt-1 text-sm text-gray-600">{footerStageLabel}</div>
@@ -2168,7 +2803,7 @@ export default function Pod() {
                 onClick={() => {
                   noteUserInteraction?.();
                   setCueType("tip");
-                  setCue("Human support handoff can be added next.");
+                  setCue("A sleep expert can help you from here.");
                 }}
               />
 
@@ -2177,12 +2812,12 @@ export default function Pod() {
                 label="View Cart"
                 onClick={() => {
                   noteUserInteraction?.();
-                  speakPod("Opening cart.", { force: true, key: `view-cart::${pid}` });
+                  void cancelPodVoice();
                   navigate("/snoozepod");
                 }}
               />
 
-              <FooterAction icon={Info} label="Pod Details" onClick={goToDetailsStage} />
+              <FooterAction icon={Info} label="Learn About This Pod" onClick={goToDetailsStage} />
 
               <FooterAction
                 icon={CreditCard}
@@ -2190,14 +2825,10 @@ export default function Pod() {
                 tone="primary"
                 onClick={() => {
                   noteUserInteraction?.();
+                  void cancelPodVoice();
                   setShowCheckoutOptions(true);
                   setCueType("success");
                   setCue("Ready for checkout");
-                  speakPod(buildPodCheckoutVoice(), {
-                    force: true,
-                    scriptKey: "pod.checkout.ready",
-                    key: `footer-checkout::${pid}`,
-                  });
                 }}
               />
             </div>

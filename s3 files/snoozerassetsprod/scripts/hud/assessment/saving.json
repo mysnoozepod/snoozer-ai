@@ -1,0 +1,9 @@
+{
+  "id": "assessment_saving",
+  "speech": "Saving your responses. Give me a moment while I prepare your results.",
+  "captions": "Saving your responses. Give me a moment while I prepare your results.",
+  "state": "thinking",
+  "priority": "normal",
+  "ttlMs": 5000,
+  "actions": []
+}

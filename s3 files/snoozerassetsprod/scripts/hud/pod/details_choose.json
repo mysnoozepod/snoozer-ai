@@ -1,0 +1,9 @@
+{
+  "id": "pod_details_choose",
+  "speech": "Let’s take a closer look at this mattress. I’ll walk you through how it feels, what makes it different, and who it may be best for.",
+  "captions": "Let’s take a closer look at this mattress. I’ll walk you through how it feels, what makes it different, and who it may be best for.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 8000,
+  "actions": []
+}

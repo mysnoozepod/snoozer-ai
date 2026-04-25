@@ -265,13 +265,61 @@ export function VoiceQueueProvider({
       if (!job) return;
 
       clearCaptionTimer();
+      const startedAt = Number(job.startedAt || job.createdAt || Date.now());
+      const elapsedMs = Math.max(Date.now() - startedAt, 0);
+      const totalMs = Math.max(
+        Number(job.durationMs || job.ttlMs || 5000) || 5000,
+        1200
+      );
+      const remainingMs = Math.max(totalMs - elapsedMs + controller.captionGraceMs, 1200);
       captionTimerRef.current = window.setTimeout(() => {
         const live = controller.getSnapshot().currentJob;
         if (!live || live.id !== job.id) return;
         completeCurrentAndContinue(job.id);
-      }, Math.max(job.ttlMs || 5000, 1200));
+      }, remainingMs);
     },
     [clearCaptionTimer, controller, completeCurrentAndContinue]
+  );
+
+  const degradeCurrentToCaptions = useCallback(
+    (jobId, { blocked = false, errorMessage = "" } = {}) => {
+      const live = controller.getSnapshot().currentJob;
+      if (!live || (jobId && live.id !== jobId)) return false;
+
+      clearCaptionTimer();
+      releaseAudioElement(audioRef.current, { resetPlayback: false });
+      controller.markCaptionsOnly(live.id);
+
+      const fresh = controller.getSnapshot().currentJob;
+      if (!fresh || fresh.id !== live.id) return false;
+
+      syncHudFromJob(fresh, "speaking");
+
+      if (!fresh.startedAt) {
+        controller.markStarted(fresh.id);
+      }
+
+      setVoiceStatePartial({
+        loading: false,
+        playing: false,
+        blocked: Boolean(blocked),
+        error: errorMessage ? String(errorMessage) : "",
+      });
+
+      scheduleCaptionsOnlyCompletion(
+        controller.getSnapshot().currentJob || fresh
+      );
+
+      return true;
+    },
+    [
+      clearCaptionTimer,
+      controller,
+      releaseAudioElement,
+      scheduleCaptionsOnlyCompletion,
+      setVoiceStatePartial,
+      syncHudFromJob,
+    ]
   );
 
   const maybeRunNext = useCallback(async () => {
@@ -331,10 +379,7 @@ export function VoiceQueueProvider({
       audioPayload = await fetchAudioForJob?.(job);
     } catch (error) {
       if (isActiveRun()) {
-        console.error("[VoiceQueue] fetchAudioForJob failed:", error);
-        setVoiceStatePartial({
-          error: error?.message || "Failed to fetch audio.",
-        });
+        console.warn("[VoiceQueue] fetchAudioForJob failed:", error);
       }
     }
 
@@ -364,15 +409,7 @@ export function VoiceQueueProvider({
     }
 
     if (!fresh.audioUrl) {
-      syncHudFromJob(fresh, "speaking");
-      controller.markStarted(fresh.id);
-      setVoiceStatePartial((prev) => ({
-        ...prev,
-        loading: false,
-        playing: false,
-        blocked: Boolean(prev.blocked),
-      }));
-      scheduleCaptionsOnlyCompletion(fresh);
+      degradeCurrentToCaptions(fresh.id);
       return;
     }
 
@@ -389,8 +426,8 @@ export function VoiceQueueProvider({
 
       audio.onerror = () => {
         if (!isActiveRun()) return;
-        console.error("[VoiceQueue] audio playback error");
-        failCurrentAndContinue(job.id, "Audio playback failed.");
+        console.warn("[VoiceQueue] audio playback degraded to captions-only");
+        degradeCurrentToCaptions(job.id);
       };
 
       syncHudFromJob(fresh, "speaking");
@@ -424,17 +461,14 @@ export function VoiceQueueProvider({
           String(error?.message || "")
         );
 
-      setVoiceStatePartial({
-        loading: false,
-        playing: false,
+      degradeCurrentToCaptions(fresh.id, {
         blocked: isAutoplayBlock,
-        error: isAutoplayBlock ? "" : error?.message || "Audio playback failed.",
+        errorMessage: "",
       });
-
-      scheduleCaptionsOnlyCompletion(fresh);
     }
   }, [
     controller,
+    degradeCurrentToCaptions,
     fetchAudioForJob,
     muted,
     scheduleCaptionsOnlyCompletion,
@@ -442,7 +476,6 @@ export function VoiceQueueProvider({
     syncHudFromJob,
     invalidateRunToken,
     completeCurrentAndContinue,
-    failCurrentAndContinue,
     releaseAudioElement,
   ]);
 
@@ -461,13 +494,25 @@ export function VoiceQueueProvider({
 
       const speech = String(response.speech || "").trim();
       const captions = String(response.captions || response.speech || "").trim();
+      const incomingPriority =
+        response.priority === "high"
+          ? "high"
+          : response.priority === "low"
+            ? "low"
+            : "normal";
 
       if (!speech && !captions) return null;
 
-      const shouldReplace =
+      const liveCurrentJob = controller.getSnapshot().currentJob;
+      const activeCritical = liveCurrentJob?.priority === "high";
+      const forceRequested =
         response.replaceCurrent === true ||
         response.force === true ||
-        response.priority === "high";
+        incomingPriority === "high";
+      const canInterruptCritical =
+        response.allowInterruptActiveHigh === true || incomingPriority === "high";
+      const shouldReplace =
+        forceRequested && (!activeCritical || canInterruptCritical);
 
       if (shouldReplace) {
         clearCaptionTimer();
@@ -490,7 +535,7 @@ export function VoiceQueueProvider({
         speech,
         captions,
         state: response.state || "speaking",
-        priority: shouldReplace ? "normal" : response.priority || "normal",
+        priority: incomingPriority,
         ttlMs: response.ttlMs || 5000,
         actions: Array.isArray(response.actions) ? response.actions : [],
         voiceStyle: response.voiceStyle || "default",

@@ -1,0 +1,9 @@
+{
+  "id": "global_offline_mode",
+  "speech": "The showroom is running in offline coach mode right now. You can still continue through the experience.",
+  "captions": "The showroom is running in offline coach mode right now. You can still continue through the experience.",
+  "state": "warning",
+  "priority": "high",
+  "ttlMs": 6500,
+  "actions": []
+}

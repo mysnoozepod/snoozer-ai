@@ -1,0 +1,9 @@
+{
+  "id": "rest_test_ten_seconds_left",
+  "speech": "You’re almost done. Take these last few seconds to notice pressure relief, support, and overall comfort.",
+  "captions": "You’re almost done. Take these last few seconds to notice pressure relief, support, and overall comfort.",
+  "state": "speaking",
+  "priority": "low",
+  "ttlMs": 6500,
+  "actions": []
+}

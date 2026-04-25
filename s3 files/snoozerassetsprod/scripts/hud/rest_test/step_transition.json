@@ -1,0 +1,9 @@
+{
+  "id": "rest_test_step_transition",
+  "speech": "Now let’s move to the next position. Take a moment, get settled again, and notice any change in comfort or support.",
+  "captions": "Now let’s move to the next position. Take a moment, get settled again, and notice any change in comfort or support.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 7000,
+  "actions": []
+}

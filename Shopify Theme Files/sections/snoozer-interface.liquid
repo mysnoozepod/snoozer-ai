@@ -1,0 +1,70 @@
+<div id="snoozer-interface" class="snoozer-container">
+   <h2>Welcome to MySnoozePod</h2>
+   <p>Your personal AI Sleep Consultant is here to help you.</p>
+   <input type="text" id="snoozer-input" placeholder="Ask Snoozer anything..." />
+   <button id="snoozer-send">Send</button>
+   <div id="snoozer-response"></div>
+</div>
+
+<style>
+   .snoozer-container {
+       text-align: center;
+       padding: 20px;
+       background-color: #f4f4f4;
+       border-radius: 10px;
+       margin: 30px auto;
+       width: 60%;
+   }
+
+   #snoozer-input {
+       padding: 10px;
+       width: 80%;
+       border-radius: 5px;
+       border: 1px solid #ccc;
+   }
+
+   #snoozer-send {
+       padding: 10px 20px;
+       background-color: #007bff;
+       color: white;
+       border: none;
+       border-radius: 5px;
+       cursor: pointer;
+       margin-left: 10px;
+   }
+
+   #snoozer-response {
+       margin-top: 20px;
+       padding: 10px;
+       background-color: #e9ecef;
+       border-radius: 5px;
+   }
+</style>
+
+<script>
+   document.getElementById('snoozer-send').addEventListener('click', function() {
+       var input = document.getElementById('snoozer-input').value;
+       if (input) {
+           // Call to your Snoozer API for AI interaction
+           fetch('https://your-snoozer-backend-api.com/ask', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ question: input })
+           })
+           .then(response => response.json())
+           .then(data => {
+               document.getElementById('snoozer-response').innerText = data.response;
+           })
+           .catch(error => {
+               document.getElementById('snoozer-response').innerText = 'Sorry, something went wrong.';
+           });
+       }
+   });
+</script>
+
+{% schema %}
+  {
+    "name": "Snoozer Interface",
+    "settings": []
+  }
+{% endschema %}

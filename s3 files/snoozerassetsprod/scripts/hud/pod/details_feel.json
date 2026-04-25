@@ -1,0 +1,9 @@
+{
+  "id": "pod_details_feel",
+  "speech": "Here’s how this mattress feels. Pay attention to comfort, support, pressure relief, and how quickly your body settles in.",
+  "captions": "Here’s how this mattress feels. Pay attention to comfort, support, pressure relief, and how quickly your body settles in.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 7000,
+  "actions": []
+}

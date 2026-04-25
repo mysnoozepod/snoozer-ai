@@ -1,10 +1,52 @@
 const API_BASE = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
 const SCRIPT_CACHE = new Map();
 const SCRIPT_CACHE_MAX = 48;
+const HUD_SCRIPT_TIMEOUT_MS = 1800;
+const HUD_SCRIPT_FAILURE_THRESHOLD = 2;
+const HUD_SCRIPT_COOLDOWN_MS = 8000;
+const hudScriptBreaker = {
+  consecutiveFailures: 0,
+  openUntil: 0,
+};
 
 function toApiUrl(path) {
   const cleanPath = String(path || "").startsWith("/") ? path : `/${path}`;
   return API_BASE ? `${API_BASE}${cleanPath}` : cleanPath;
+}
+
+function nowMs() {
+  return Date.now();
+}
+
+function browserOnline() {
+  return typeof navigator === "undefined" ? true : navigator.onLine !== false;
+}
+
+function isScriptBreakerOpen() {
+  return hudScriptBreaker.openUntil > nowMs();
+}
+
+function markScriptSuccess() {
+  hudScriptBreaker.consecutiveFailures = 0;
+  hudScriptBreaker.openUntil = 0;
+}
+
+function markScriptFailure(reason, { openBreaker = false, retrievalMs = 0 } = {}) {
+  hudScriptBreaker.consecutiveFailures += 1;
+
+  if (
+    openBreaker &&
+    hudScriptBreaker.consecutiveFailures >= HUD_SCRIPT_FAILURE_THRESHOLD
+  ) {
+    hudScriptBreaker.openUntil = nowMs() + HUD_SCRIPT_COOLDOWN_MS;
+  }
+
+  console.warn("[hud.script] degraded", {
+    reason,
+    retrievalMs: Math.round(Number(retrievalMs) || 0),
+    breakerOpen: isScriptBreakerOpen(),
+    cooldownMs: Math.max(hudScriptBreaker.openUntil - nowMs(), 0),
+  });
 }
 
 function clampTtlMs(value, fallback = 5000) {
@@ -107,7 +149,22 @@ export async function fetchHudScript({
     return cloneHudPayload(resolved);
   }
 
+  if (!browserOnline()) {
+    return null;
+  }
+
+  if (isScriptBreakerOpen()) {
+    return null;
+  }
+
   const pending = (async () => {
+    const controller = new AbortController();
+    const startedAt =
+      typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now();
+    const timeoutId = window.setTimeout(() => controller.abort(), HUD_SCRIPT_TIMEOUT_MS);
+
     try {
       const response = await fetch(toApiUrl("/hud/script"), {
         method: "POST",
@@ -115,6 +172,7 @@ export async function fetchHudScript({
           "Content-Type": "application/json",
           "x-hud": "true",
         },
+        signal: controller.signal,
         body: JSON.stringify({
           scriptKey: key,
           shopperId: shopperId || "guest",
@@ -123,17 +181,36 @@ export async function fetchHudScript({
       });
 
       const payload = await response.json().catch(() => null);
-      if (!response.ok) return null;
+      const retrievalMs =
+        (typeof performance !== "undefined" && typeof performance.now === "function"
+          ? performance.now()
+          : Date.now()) - startedAt;
 
-      const normalized = normalizeHudPayload(payload);
-      if (!normalized || isBackendFallback(normalized)) {
+      if (!response.ok) {
+        markScriptFailure(`http_${response.status}`, {
+          openBreaker: response.status >= 500 || response.status === 429,
+          retrievalMs,
+        });
         return null;
       }
 
+      const normalized = normalizeHudPayload(payload);
+      if (!normalized || isBackendFallback(normalized)) return null;
+
+      markScriptSuccess();
       return normalized;
     } catch (error) {
-      console.warn("[fetchHudScript] request failed:", error);
+      const retrievalMs =
+        (typeof performance !== "undefined" && typeof performance.now === "function"
+          ? performance.now()
+          : Date.now()) - startedAt;
+      markScriptFailure(error?.name === "AbortError" ? "timeout" : "network", {
+        openBreaker: true,
+        retrievalMs,
+      });
       return null;
+    } finally {
+      window.clearTimeout(timeoutId);
     }
   })();
 

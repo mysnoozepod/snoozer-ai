@@ -1,0 +1,9 @@
+{
+  "id": "what_to_expect_enter",
+  "speech": "Here’s what to expect. We’ll learn about your sleep needs through your Snooze Assessment, test the different options, answer any questions you may have, and help you build your SnoozePod.",
+  "captions": "Here’s what to expect. We’ll learn about your sleep needs through your Snooze Assessment, test the different options, answer any questions you may have, and help you build your SnoozePod.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 8500,
+  "actions": []
+}

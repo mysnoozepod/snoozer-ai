@@ -167,9 +167,15 @@ function extractDisplayMattress(p) {
   const subtitle = normalizeText(p?.subtitle);
   if (!subtitle) return "Mattress";
 
-  const afterBullet = subtitle.includes("•")
-    ? subtitle.split("•").slice(-1).join("•").trim()
-    : subtitle;
+  const subtitleParts = subtitle
+    .split(/\s*(?:\u2022|\u00b7|\|)\s*/)
+    .map((part) => normalizeText(part))
+    .filter(Boolean);
+
+  const afterBullet =
+    subtitleParts.length > 1
+      ? subtitleParts[subtitleParts.length - 1]
+      : subtitle;
 
   return simplifyMattressLabel(afterBullet);
 }
@@ -189,6 +195,175 @@ function buildHeroLine({ pods }) {
 function buildResultsVoiceScript({ pods }) {
   if (!pods.length) return "Your results are ready.";
   return "Here are your 5 SnoozePods. I marked the 3 I would try first. You can test them in any order.";
+}
+
+function buildReasonContext(pod, recommendationMeta = {}) {
+  return {
+    hasPartner: recommendationMeta?.hasPartner === true,
+    size: normalizeText(recommendationMeta?.size),
+    position: normalizeText(recommendationMeta?.position).toLowerCase(),
+    firmness: normalizeText(recommendationMeta?.firmness).toLowerCase(),
+    isDualComfort: Boolean(pod?.flags?.isDualComfortMattress),
+    isAdjustable:
+      Boolean(pod?.flags?.isAdjustableFixture) ||
+      pod?.hasAdjustableBase === true ||
+      normalizeText(pod?.baseType).toLowerCase() === "adjustable",
+  };
+}
+
+function getReasonVariant(reasonKey, ctx) {
+  switch (String(reasonKey || "").trim()) {
+    case "requested_full_split":
+      return {
+        recommended: "it supports the Full Split motion you asked for",
+        consider: "you want to compare the Full Split motion you asked for",
+      };
+    case "requested_half_split":
+      return {
+        recommended: "it supports the Half Split motion you asked for",
+        consider: "you want to compare the Half Split motion you asked for",
+      };
+    case "split_requires_dual":
+      return {
+        recommended: "its Dual Comfort setup lines up with the split-motion path from your assessment",
+        consider: "you still want a Dual Comfort option for split motion",
+      };
+    case "partner_friendly":
+      return ctx.isDualComfort
+        ? {
+            recommended: "its Dual Comfort setup is a strong fit for shared sleep",
+            consider: "you want a more partner-friendly setup to compare",
+          }
+        : {
+            recommended: "it gives you a more partner-friendly setup to test",
+            consider: "you want another partner-friendly option to compare",
+          };
+    case "primary_mattress_exact":
+      return {
+        recommended: "it matches the mattress style Snoozer would test first for you",
+        consider: "you want to compare Snoozer's closest mattress match again",
+      };
+    case "primary_mattress_family":
+      return {
+        recommended: "it stays close to the mattress style Snoozer matched to your assessment",
+        consider: "you want to compare another mattress in the same feel family",
+      };
+    case "side_sleeper_pressure_relief":
+      return {
+        recommended: "it may give you the pressure relief side sleepers often notice first",
+        consider: "you want to compare more pressure relief for side sleeping",
+      };
+    case "back_or_stomach_support":
+      return {
+        recommended: "it may give you the support back and stomach sleepers usually need",
+        consider: "you want to compare a more supportive feel",
+      };
+    case "firmness_firm_match":
+      return {
+        recommended: "it lines up with the firmer feel you selected",
+        consider: "you still want to compare a firmer feel",
+      };
+    case "firmness_soft_match":
+      return {
+        recommended: "it lines up with the softer feel you selected",
+        consider: "you still want to compare a softer feel",
+      };
+    case "requested_standard_motion":
+      return {
+        recommended: "it gives you an adjustable setup with standard motion",
+        consider: "you still want to compare an adjustable setup with standard motion",
+      };
+    case "fixture_size_match":
+      return {
+        recommended: ctx.size
+          ? `it is shown in ${ctx.size}, which matches the size you selected`
+          : "it matches the size path from your assessment",
+        consider: ctx.size
+          ? `you want to stay close to the ${ctx.size} setup you selected`
+          : "you want to stay close to the size path from your assessment",
+      };
+    case "simple_non_motion_option":
+      return {
+        recommended: "it gives you a simple non-motion setup to anchor your comparison",
+        consider: "you want a simpler non-motion option in the mix",
+      };
+    default:
+      return null;
+  }
+}
+
+function getFallbackReasonVariant(ctx) {
+  if (ctx.isDualComfort && ctx.hasPartner) {
+    return {
+      recommended: "its Dual Comfort setup gives shared sleep more flexibility",
+      consider: "you want a shared-sleep setup with more flexibility",
+    };
+  }
+
+  if (ctx.isDualComfort) {
+    return {
+      recommended: "it gives you a flexible Dual Comfort setup to test early",
+      consider: "you want to compare a Dual Comfort setup",
+    };
+  }
+
+  if (ctx.isAdjustable) {
+    return {
+      recommended: "it gives you an adjustable setup worth testing early",
+      consider: "you still want to compare an adjustable setup",
+    };
+  }
+
+  if (ctx.position === "side") {
+    return {
+      recommended: "it gives you another pressure-relief-focused option to test",
+      consider: "you want another pressure-relief option to compare",
+    };
+  }
+
+  if (ctx.firmness === "firm") {
+    return {
+      recommended: "it gives you another supportive option to test",
+      consider: "you want another supportive option to compare",
+    };
+  }
+
+  return {
+    recommended: "it gives you another strong pod to test before deciding",
+    consider: "you want another feel to compare before deciding",
+  };
+}
+
+function buildPodReasonText({ pod, recommendedRank, recommendationMeta }) {
+  const scoreReasons = Array.isArray(pod?.diagnostics?.scoreReasons)
+    ? pod.diagnostics.scoreReasons
+    : [];
+
+  const ctx = buildReasonContext(pod, recommendationMeta);
+  const preferredOrder = [
+    "requested_full_split",
+    "requested_half_split",
+    "split_requires_dual",
+    "partner_friendly",
+    "primary_mattress_exact",
+    "primary_mattress_family",
+    "side_sleeper_pressure_relief",
+    "back_or_stomach_support",
+    "firmness_firm_match",
+    "firmness_soft_match",
+    "requested_standard_motion",
+    "fixture_size_match",
+    "simple_non_motion_option",
+  ];
+
+  const orderedReasons = preferredOrder.filter((key) => scoreReasons.includes(key));
+  const variant =
+    orderedReasons.map((key) => getReasonVariant(key, ctx)).find(Boolean) ||
+    getFallbackReasonVariant(ctx);
+
+  return recommendedRank > 0
+    ? `Recommended because ${variant.recommended}.`
+    : `Also worth considering if ${variant.consider}.`;
 }
 
 function useTypingText(fullText, { enabled = true, speedMs = 18 } = {}) {
@@ -243,7 +418,7 @@ function TypingDots() {
 
 export default function Results() {
   const navigate = useNavigate();
-  const { muted, replay, noteUserInteraction, sayScript, setMuted, voiceState } =
+  const { muted, replay, noteUserInteraction, runHudAction, setMuted, voiceState } =
     useShowroomHud();
 
   const shopperId = safeGet("snooze.accessCode") || "";
@@ -466,7 +641,7 @@ export default function Results() {
       requestedVoiceRef.current = true;
       lastVoiceScriptRef.current = voiceKey;
 
-      sayScript({
+      runHudAction("view_results", {
         scriptKey: "results.intro",
         shopperId: shopperId || "guest",
         fallback: {
@@ -484,7 +659,7 @@ export default function Results() {
     }, 700);
 
     return () => clearTimer(bootVoiceTimerRef);
-  }, [voiceScript, loading, muted, pods.length, sayScript, shopperId]);
+  }, [voiceScript, loading, muted, pods.length, runHudAction, shopperId]);
 
   const resolveImageUrl = useCallback(
     (p) => {
@@ -517,7 +692,7 @@ export default function Results() {
     if (!voiceScript) return;
     noteUserInteraction?.();
     await replay?.();
-    await sayScript({
+    await runHudAction("view_results", {
       scriptKey: "results.intro",
       shopperId: shopperId || "guest",
       fallback: {
@@ -535,7 +710,7 @@ export default function Results() {
         replaceCurrent: true,
       },
     });
-  }, [voiceScript, noteUserInteraction, replay, sayScript, shopperId]);
+  }, [voiceScript, noteUserInteraction, replay, runHudAction, shopperId]);
 
   const openPodMode = useCallback(
     (podId) => {
@@ -629,7 +804,7 @@ export default function Results() {
             <section className="mt-4">
               {loading ? (
                 <div className="rounded-[24px] border border-gray-200 bg-white px-6 py-10 text-center text-gray-600 shadow-sm">
-                  Loading your pod matches
+                  Preparing your pod matches
                 </div>
               ) : pods.length ? (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -640,6 +815,11 @@ export default function Results() {
                     const imageStatus = getImageStatus(p);
                     const recommendedRank = recommendedRankByPodId[id] || 0;
                     const badge = rankBadgeLabel(recommendedRank);
+                    const reasonText = buildPodReasonText({
+                      pod: p,
+                      recommendedRank,
+                      recommendationMeta: recs?.meta || {},
+                    });
 
                     return (
                       <PodCard
@@ -649,6 +829,7 @@ export default function Results() {
                         imageUrl={imageUrl}
                         imageStatus={imageStatus}
                         badge={badge}
+                        reasonText={reasonText}
                         onOpen={() => openPodMode(id)}
                       />
                     );
@@ -673,8 +854,15 @@ function PodCard({
   imageUrl,
   imageStatus,
   badge,
+  reasonText,
   onOpen,
 }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [imageUrl]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -693,17 +881,18 @@ function PodCard({
       <div className="mt-2 text-sm font-semibold text-gray-500">SnoozePod {id}</div>
 
       <div className="mt-2 aspect-[4/3] overflow-hidden rounded-[18px] border border-gray-200 bg-gray-50">
-        {imageUrl ? (
+        {imageUrl && !imgFailed ? (
           <img
             src={imageUrl}
             alt={`${displayMattress} on SnoozePod ${id}`}
             className="h-full w-full object-cover"
             loading="lazy"
             decoding="async"
+            onError={() => setImgFailed(true)}
           />
         ) : imageStatus === "loading" ? (
           <div className="flex h-full w-full items-center justify-center px-4 text-center text-sm font-medium text-gray-500">
-            Loading image
+            Preparing image
           </div>
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 text-center text-sm font-medium text-gray-500">
@@ -719,14 +908,16 @@ function PodCard({
         {displayMattress}
       </div>
 
-      <div className="mt-2 text-sm text-gray-600">Ready to test</div>
+      <div className="mt-2 min-h-[64px] text-sm leading-relaxed text-gray-600">
+        {reasonText}
+      </div>
 
       <button
         type="button"
         onClick={onOpen}
         className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1A66D2] px-4 py-3 text-sm font-extrabold text-white transition hover:opacity-95"
       >
-        Go to SnoozePod {id}
+        Test This Pod
         <ArrowRight className="h-4 w-4" />
       </button>
     </motion.div>

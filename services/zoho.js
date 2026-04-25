@@ -1,102 +1,39 @@
-// services/zoho.js
-//
-// Thin Zoho CRM helper for Snoozer / Omnia.
-// - Token refresh is handled by ./zohoauth
-// - Supports Leads helpers + Contacts upsert by Snoozer Shopper ID
-//
-// ✅ Local-dev friendly:
-// If Zoho env vars are missing, this module will NOT crash your backend.
-// Instead, Zoho calls become no-ops (return null) with a single warning.
-
 const axios = require("axios");
-
-// ─────────────────────────────────────────────
-// Config
-// ─────────────────────────────────────────────
+const {
+  getZohoApiBase,
+  getZohoConfigStatus,
+  logZohoConfigStatus,
+  refreshZohoToken,
+  resolveZohoConfig,
+} = require("./zohoauth");
 
 const ZOHO_API_VERSION = process.env.ZOHO_API_VERSION || "v2";
-
-// Contacts module + Shopper ID field
 const CONTACTS_MODULE = "Contacts";
 const SHOPPER_ID_FIELD =
   process.env.ZOHO_CONTACT_KEY_FIELD || "Snoozer_Shopper_ID";
-
 const DEFAULT_CONTACT_LAST_NAME =
   process.env.ZOHO_DEFAULT_CONTACT_LAST_NAME || "Snooze Guest";
 
-// ─────────────────────────────────────────────
-// Local-dev guardrails (do not crash if Zoho isn't configured)
-// ─────────────────────────────────────────────
-
-let _warnedZohoDisabled = false;
-
-function warnZohoDisabledOnce(reason) {
-  if (_warnedZohoDisabled) return;
-  _warnedZohoDisabled = true;
-
-  console.log(
-    "⚠️ Zoho disabled (local/dev). Skipping Zoho calls.",
-    JSON.stringify({ reason }, null, 2)
-  );
-}
-
-function getEnvAny(...keys) {
-  for (const k of keys) {
-    const v = process.env[k];
-    if (v != null && String(v).trim() !== "") return v;
-  }
-  return "";
-}
-
-/**
- * Try to match whatever ./zohoauth expects.
- * Your runtime log showed it cares about:
- *  - OAUTH_DOMAIN
- *  - API_DOMAIN
- *  - CLIENT_ID
- *  - CLIENT_SECRET
- *  - REFRESH_TOKEN
- *
- * We support both "ZOHO_*" and the simpler names so you don't have to rename things everywhere.
- */
 function getZohoConfigSnapshot() {
-  const OAUTH_DOMAIN = getEnvAny(
-    "ZOHO_OAUTH_DOMAIN",
-    "OAUTH_DOMAIN",
-    "ZCRM_OAUTH_DOMAIN"
-  );
-
-  const API_DOMAIN = getEnvAny(
-    "ZCRM_API_DOMAIN",
-    "ZOHO_API_DOMAIN",
-    "API_DOMAIN"
-  );
-
-  const CLIENT_ID = getEnvAny("ZOHO_CLIENT_ID", "CLIENT_ID");
-  const CLIENT_SECRET = getEnvAny("ZOHO_CLIENT_SECRET", "CLIENT_SECRET");
-  const REFRESH_TOKEN = getEnvAny("ZOHO_REFRESH_TOKEN", "REFRESH_TOKEN");
-
-  // Optional override used by your previous code
-  const ZOHO_BASE_URL = getEnvAny("ZOHO_BASE_URL");
+  const status = getZohoConfigStatus();
+  const config = status.config;
 
   return {
-    OAUTH_DOMAIN,
-    API_DOMAIN,
-    CLIENT_ID,
-    CLIENT_SECRET,
-    REFRESH_TOKEN,
-    ZOHO_BASE_URL,
+    OAUTH_DOMAIN: config.oauthDomain,
+    API_DOMAIN: config.apiDomain,
+    CLIENT_ID: config.clientId,
+    CLIENT_SECRET: config.clientSecret,
+    REFRESH_TOKEN: config.refreshToken,
+    ZOHO_BASE_URL: config.crmBase,
+    enabled: status.enabled,
+    missingRequiredKeys: status.missingRequiredKeys.slice(),
+    resolvedEnvNames: { ...status.resolvedEnvNames },
+    aliasSet: status.aliasSet,
   };
 }
 
 function hasZohoConfig() {
-  const cfg = getZohoConfigSnapshot();
-  return !!(
-    cfg.CLIENT_ID &&
-    cfg.CLIENT_SECRET &&
-    cfg.REFRESH_TOKEN &&
-    (cfg.API_DOMAIN || cfg.ZOHO_BASE_URL)
-  );
+  return getZohoConfigStatus().enabled;
 }
 
 class ZohoNotConfiguredError extends Error {
@@ -106,50 +43,28 @@ class ZohoNotConfiguredError extends Error {
   }
 }
 
-/**
- * Lazy-load zohoauth so missing env vars won't crash require-time.
- * Returns { refreshZohoToken, API_DOMAIN } or throws.
- */
-function loadZohoAuth() {
-  try {
-    // eslint-disable-next-line global-require
-    const auth = require("./zohoauth");
-    if (!auth || typeof auth.refreshZohoToken !== "function") {
-      throw new Error("zohoauth missing refreshZohoToken()");
-    }
-    return auth;
-  } catch (e) {
-    throw new ZohoNotConfiguredError(
-      `Zoho auth not available: ${e.message || String(e)}`
-    );
-  }
+function buildZohoNotConfiguredError(status) {
+  const error = new ZohoNotConfiguredError("Zoho env vars missing or incomplete");
+  error.code = "ZOHO_CONFIG_INCOMPLETE";
+  error.missingRequiredKeys = status?.missingRequiredKeys?.slice?.() || [];
+  return error;
 }
 
-// ─────────────────────────────────────────────
-// Core request helper
-// ─────────────────────────────────────────────
+function extractZohoResponseCode(data) {
+  return data?.data?.[0]?.code || data?.code || null;
+}
+
+function extractZohoResponseMessage(data, fallback = null) {
+  return data?.data?.[0]?.message || data?.message || fallback;
+}
 
 async function zohoRequest(path, method = "get", payload = null) {
-  if (!hasZohoConfig()) {
-    const snap = getZohoConfigSnapshot();
-    warnZohoDisabledOnce({
-      missing: {
-        CLIENT_ID: !snap.CLIENT_ID,
-        CLIENT_SECRET: !snap.CLIENT_SECRET,
-        REFRESH_TOKEN: !snap.REFRESH_TOKEN,
-        API_DOMAIN_or_ZOHO_BASE_URL: !(snap.API_DOMAIN || snap.ZOHO_BASE_URL),
-      },
-    });
-    throw new ZohoNotConfiguredError("Zoho env vars missing");
+  const status = logZohoConfigStatus("zoho.request");
+  if (!status.enabled) {
+    throw buildZohoNotConfiguredError(status);
   }
 
-  const { refreshZohoToken, API_DOMAIN } = loadZohoAuth();
-  const snap = getZohoConfigSnapshot();
-
-  // Prefer explicit override, then zohoauth's API_DOMAIN, then Zoho default.
-  const base =
-    snap.ZOHO_BASE_URL || API_DOMAIN || snap.API_DOMAIN || "https://www.zohoapis.com";
-
+  const base = getZohoApiBase(status.config);
   const token = await refreshZohoToken();
   const url = `${base}/crm/${ZOHO_API_VERSION}${path}`;
 
@@ -165,84 +80,77 @@ async function zohoRequest(path, method = "get", payload = null) {
   if (payload) config.data = payload;
 
   try {
-    const resp = await axios(config);
-    return resp.data;
+    const response = await axios(config);
+    return response.data;
   } catch (err) {
-    const status = err.response?.status;
-    const data = err.response?.data;
-
+    const responseData = err?.response?.data;
     console.error(
-      "❌ Zoho request error",
-      JSON.stringify({ path, method, status, data }, null, 2)
+      JSON.stringify({
+        source: "zoho.request",
+        event: "failed",
+        method,
+        path,
+        status: err?.response?.status || null,
+        code: extractZohoResponseCode(responseData),
+        message: extractZohoResponseMessage(responseData, err.message),
+      })
     );
     throw err;
   }
 }
 
-// ─────────────────────────────────────────────
-// Leads helpers (existing behavior preserved)
-// ─────────────────────────────────────────────
-
 async function createLead(leadData) {
   try {
-    const resp = await zohoRequest("/Leads", "post", {
+    const response = await zohoRequest("/Leads", "post", {
       data: [leadData],
       trigger: ["approval", "workflow", "blueprint"],
     });
-    return resp.data?.[0] || null;
-  } catch (e) {
-    if (e && e.name === "ZohoNotConfiguredError") return null;
-    throw e;
+    return response.data?.[0] || null;
+  } catch (error) {
+    if (error && error.name === "ZohoNotConfiguredError") return null;
+    throw error;
   }
 }
 
 async function findLeadByEmail(email) {
   try {
-    const resp = await zohoRequest(
+    const response = await zohoRequest(
       `/Leads/search?criteria=${encodeURIComponent(`(Email:equals:${email})`)}`
     );
-    return resp.data?.[0] || null;
-  } catch (e) {
-    if (e && e.name === "ZohoNotConfiguredError") return null;
-    throw e;
+    return response.data?.[0] || null;
+  } catch (error) {
+    if (error && error.name === "ZohoNotConfiguredError") return null;
+    throw error;
   }
 }
 
 async function findLeadByAccessCode(code) {
   try {
-    const resp = await zohoRequest(
+    const response = await zohoRequest(
       `/Leads/search?criteria=${encodeURIComponent(
         `(Access_Code:equals:${code})`
       )}`
     );
-    return resp.data?.[0] || null;
-  } catch (e) {
-    if (e && e.name === "ZohoNotConfiguredError") return null;
-    throw e;
+    return response.data?.[0] || null;
+  } catch (error) {
+    if (error && error.name === "ZohoNotConfiguredError") return null;
+    throw error;
   }
 }
 
-// ─────────────────────────────────────────────
-// Orders helper (existing)
-// ─────────────────────────────────────────────
-
 async function getOrderStatus(orderNumber) {
   try {
-    const resp = await zohoRequest(
+    const response = await zohoRequest(
       `/Orders/search?criteria=${encodeURIComponent(
         `(Order_Number:equals:${orderNumber})`
       )}`
     );
-    return resp.data?.[0] || null;
-  } catch (e) {
-    if (e && e.name === "ZohoNotConfiguredError") return null;
-    throw e;
+    return response.data?.[0] || null;
+  } catch (error) {
+    if (error && error.name === "ZohoNotConfiguredError") return null;
+    throw error;
   }
 }
-
-// ─────────────────────────────────────────────
-// Contacts: Shopper ID–based helpers
-// ─────────────────────────────────────────────
 
 async function findContactByShopperId(shopperId) {
   if (!shopperId) return null;
@@ -251,15 +159,13 @@ async function findContactByShopperId(shopperId) {
     const criteria = encodeURIComponent(
       `(${SHOPPER_ID_FIELD}:equals:${shopperId})`
     );
-
-    const resp = await zohoRequest(
+    const response = await zohoRequest(
       `/${CONTACTS_MODULE}/search?criteria=${criteria}`
     );
-
-    return resp.data?.[0] || null;
-  } catch (e) {
-    if (e && e.name === "ZohoNotConfiguredError") return null;
-    throw e;
+    return response.data?.[0] || null;
+  } catch (error) {
+    if (error && error.name === "ZohoNotConfiguredError") return null;
+    throw error;
   }
 }
 
@@ -268,24 +174,34 @@ async function upsertContactByShopperId(shopperId, contactFields = {}) {
     throw new Error("upsertContactByShopperId: shopperId is required");
   }
 
-  // If Zoho isn't configured locally, don't crash the app.
-  if (!hasZohoConfig()) {
-    warnZohoDisabledOnce("Missing Zoho env vars; upsert skipped");
+  const status = logZohoConfigStatus("zoho.contact.upsert");
+  if (!status.enabled) {
     return null;
   }
+
+  console.log(
+    JSON.stringify({
+      source: "zoho.contact.upsert",
+      event: "attempt",
+      shopperId,
+    })
+  );
 
   let existing = null;
   try {
     existing = await findContactByShopperId(shopperId);
-  } catch (err) {
+  } catch (error) {
     console.error(
-      "⚠️ Zoho findContactByShopperId failed",
-      JSON.stringify({ shopperId, message: err.message }, null, 2)
+      JSON.stringify({
+        source: "zoho.contact.lookup",
+        event: "failed",
+        shopperId,
+        message: error.message,
+      })
     );
   }
 
-  const isUpdate = !!(existing && existing.id);
-
+  const isUpdate = Boolean(existing && existing.id);
   const basePayload = {
     ...contactFields,
     [SHOPPER_ID_FIELD]: shopperId,
@@ -295,41 +211,45 @@ async function upsertContactByShopperId(shopperId, contactFields = {}) {
     const hasLastName =
       basePayload.Last_Name != null &&
       String(basePayload.Last_Name).trim() !== "";
-    if (!hasLastName) basePayload.Last_Name = DEFAULT_CONTACT_LAST_NAME;
+    if (!hasLastName) {
+      basePayload.Last_Name = DEFAULT_CONTACT_LAST_NAME;
+    }
   }
 
   const path = isUpdate
     ? `/${CONTACTS_MODULE}/${existing.id}`
     : `/${CONTACTS_MODULE}`;
   const method = isUpdate ? "put" : "post";
+  const payload = {
+    data: [basePayload],
+    trigger: ["workflow"],
+  };
 
-  const payload = { data: [basePayload], trigger: ["workflow"] };
-
-  const resp = await zohoRequest(path, method, payload);
+  const response = await zohoRequest(path, method, payload);
+  const result = response.data?.[0] || null;
 
   console.log(
-    "🔍 Zoho upsertContactByShopperId response",
-    JSON.stringify(
-      {
-        shopperId,
-        op: isUpdate ? "update" : "create",
-        payload: basePayload,
-        response: resp,
-      },
-      null,
-      2
-    )
+    JSON.stringify({
+      source: "zoho.contact.upsert",
+      event: "succeeded",
+      shopperId,
+      operation: isUpdate ? "update" : "create",
+      code: result?.code || null,
+      contactId: result?.details?.id || null,
+    })
   );
 
-  return resp.data?.[0] || null;
+  return result;
 }
 
 module.exports = {
   createLead,
+  findContactByShopperId,
+  findLeadByAccessCode,
   findLeadByEmail,
   getOrderStatus,
-  findLeadByAccessCode,
-
-  findContactByShopperId,
+  getZohoConfigSnapshot,
+  hasZohoConfig,
+  resolveZohoConfig,
   upsertContactByShopperId,
 };

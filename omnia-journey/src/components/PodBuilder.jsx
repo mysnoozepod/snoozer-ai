@@ -1,135 +1,119 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/useStore";
-
 import {
   SIZE_OPTIONS,
   BASE_OPTIONS_UI,
-  MATTRESS_OPTIONS_UI,
   MOTION_TYPES_UI,
   DUAL_COMFORT_OPTIONS,
   getBaseHandleForType,
   getMattressHandleForType,
 } from "@/lib/utils/recommendations";
 
-/* ─────────────────────────────────────────────
-   Helpers
-───────────────────────────────────────────── */
-
-function lower(v) {
-  return String(v || "").toLowerCase().trim();
+function lower(value) {
+  return String(value || "").toLowerCase().trim();
 }
 
-function money(n) {
-  const x = typeof n === "number" && Number.isFinite(n) ? n : Number(n);
-  const v = Number.isFinite(x) ? x : 0;
+function money(value) {
+  const amount = Number(value);
+  const safe = Number.isFinite(amount) ? amount : 0;
+
   try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(v);
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(safe);
   } catch {
-    return `$${v.toFixed(2)}`;
+    return `$${safe.toFixed(0)}`;
   }
 }
 
 function monthlyEstimate(total) {
-  const t = typeof total === "number" && Number.isFinite(total) ? total : Number(total);
-  const safe = Number.isFinite(t) ? t : 0;
-  return safe / 12;
-}
-
-function isLikelyRenderableImageUrl(value) {
-  const s = String(value || "").trim();
-  if (!s) return false;
-
-  if (/^data:image\//i.test(s)) return true;
-  if (/^blob:/i.test(s)) return true;
-  if (/^https?:\/\//i.test(s)) return true;
-
-  if (/^\/pods\//i.test(s)) return false;
-  if (/^pods\//i.test(s)) return false;
-
-  if (/^\//.test(s) && /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(s)) return true;
-
-  return false;
+  const value = Number(total);
+  return (Number.isFinite(value) ? value : 0) / 12;
 }
 
 function sanitizeImageUrl(value) {
-  const s = String(value || "").trim();
-  return isLikelyRenderableImageUrl(s) ? s : "";
+  const src = String(value || "").trim();
+  if (!src) return "";
+  if (/^data:image\//i.test(src)) return src;
+  if (/^https?:\/\//i.test(src)) return src;
+  if (/^\//.test(src) && /\.(png|jpe?g|webp|gif|svg)(\?.*)?$/i.test(src)) return src;
+  return "";
 }
 
-function pickFeaturedImage(p) {
+function pickFeaturedImage(product) {
   const candidates = [
-    p?.imageUrl,
-    p?.image,
-    p?.featuredImage?.url,
-    p?.featuredImage?.src,
-    p?.images?.[0]?.url,
-    p?.images?.[0]?.src,
-    p?.images?.edges?.[0]?.node?.url,
-    p?.media?.[0]?.image?.url,
-    p?.media?.[0]?.preview?.image?.url,
+    product?.imageUrl,
+    product?.image,
+    product?.featuredImage?.url,
+    product?.featuredImage?.src,
+    product?.images?.[0]?.url,
+    product?.images?.[0]?.src,
+    product?.images?.edges?.[0]?.node?.url,
+    product?.media?.[0]?.image?.url,
+    product?.media?.[0]?.preview?.image?.url,
   ];
 
   for (const candidate of candidates) {
-    const url = sanitizeImageUrl(candidate);
-    if (url) return url;
+    const src = sanitizeImageUrl(candidate);
+    if (src) return src;
   }
 
   return "/no-image.svg";
 }
 
 function normalizeVariants(product) {
-  const v = product?.variants;
-  if (Array.isArray(v)) return v;
-  if (Array.isArray(v?.edges)) return v.edges.map((e) => e?.node).filter(Boolean);
-  if (Array.isArray(v?.nodes)) return v.nodes.filter(Boolean);
+  const variants = product?.variants;
+  if (Array.isArray(variants)) return variants;
+  if (Array.isArray(variants?.edges)) return variants.edges.map((edge) => edge?.node).filter(Boolean);
+  if (Array.isArray(variants?.nodes)) return variants.nodes.filter(Boolean);
   return [];
 }
 
 function parseVariantPrice(variant) {
-  const amt =
+  const amount =
     variant?.price?.amount ??
     variant?.priceV2?.amount ??
     variant?.priceAmount ??
     variant?.price ??
     null;
 
-  const n = Number(String(amt ?? "").replace(/[^0-9.]/g, ""));
-  return Number.isFinite(n) ? n : 0;
+  const parsed = Number(String(amount ?? "").replace(/[^0-9.]/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function variantMatchesSize(variant, size) {
   const target = lower(size);
   if (!target) return false;
 
-  const opts = Array.isArray(variant?.selectedOptions) ? variant.selectedOptions : [];
-  return opts.some((o) => lower(o?.value) === target);
+  const selectedOptions = Array.isArray(variant?.selectedOptions) ? variant.selectedOptions : [];
+  return selectedOptions.some((option) => lower(option?.value) === target);
 }
 
 function pickVariantForSize(product, size) {
   const variants = normalizeVariants(product);
   if (!variants.length) return null;
-  const found = variants.find((v) => variantMatchesSize(v, size));
-  return found || variants[0] || null;
+  return variants.find((variant) => variantMatchesSize(variant, size)) || variants[0] || null;
 }
 
-function safeVariantId(v) {
-  const id = v?.id ? String(v.id).trim() : "";
-  if (!id) return null;
+function safeVariantId(variant) {
+  const id = variant?.id ? String(variant.id).trim() : "";
   if (!id.startsWith("gid://shopify/ProductVariant/")) return null;
   return id;
 }
 
-function allowedMotionTypesForSize(size) {
-  const s = String(size || "");
-  if (s === "King") return ["standard", "half_split", "full_split"];
-  if (s === "Queen") return ["standard", "half_split"];
+function allowedMotionTypesForSelection(size, supportsSplitMotion) {
+  if (!supportsSplitMotion) return ["standard"];
+  if (size === "King") return ["standard", "half_split", "full_split"];
+  if (size === "Queen") return ["standard", "half_split"];
   return ["standard"];
 }
 
 function labelFor(list, value, fallback = "—") {
-  const found = Array.isArray(list) ? list.find((x) => x?.value === value) : null;
-  return found?.label || fallback;
+  const match = Array.isArray(list) ? list.find((option) => option?.value === value) : null;
+  return match?.label || fallback;
 }
 
 function isSplitMotion(motionType) {
@@ -137,35 +121,38 @@ function isSplitMotion(motionType) {
 }
 
 function inferBaseTypeFromPod(pod) {
-  const h = lower(pod?.baseHandle);
+  const handle = lower(pod?.baseHandle);
   const label = lower(pod?.displayedIn?.baseLabel);
   const motion = lower(pod?.displayedIn?.motion);
 
-  if (h.includes("adjust") || h.includes("motion") || label.includes("adjustable") || motion.includes("motion")) {
+  if (
+    handle.includes("adjust") ||
+    handle.includes("motion") ||
+    label.includes("adjustable") ||
+    motion.includes("motion")
+  ) {
     return "adjustable";
   }
-  if (h.includes("storage") || label.includes("storage")) return "storage";
-  if (h.includes("platform") || label.includes("platform")) return "platform";
-  if (!h) return "none";
+  if (handle.includes("storage") || label.includes("storage")) return "storage";
+  if (handle.includes("platform") || label.includes("platform")) return "platform";
   return "none";
 }
 
 function inferMotionTypeFromPod(pod) {
-  const m = lower(pod?.displayedIn?.motion);
-  if (m.includes("full split")) return "full_split";
-  if (m.includes("half split")) return "half_split";
+  const motion = lower(pod?.displayedIn?.motion);
+  if (motion.includes("full split")) return "full_split";
+  if (motion.includes("half split")) return "half_split";
   return "standard";
 }
 
 function inferMattressTypeFromPod(pod) {
-  const h = lower(pod?.mattressHandle);
-  if (h.includes("dual") && h.includes("comfort")) return "dual12";
-  if (h.includes("hybrid") && h.includes("14")) return "hybrid14";
-  if (h.includes("14") && h.includes("hybrid")) return "hybrid14";
-  if (h.includes("foam") && h.includes("10")) return "foam10";
-  if (h.includes("foam") && h.includes("12")) return "foam12";
-  if (h.includes("hybrid")) return "hybrid14";
-  if (h.includes("foam")) return "foam12";
+  const handle = lower(pod?.mattressHandle);
+  if (handle.includes("dual") && handle.includes("comfort")) return "dual12";
+  if (handle.includes("hybrid") && handle.includes("14")) return "hybrid14";
+  if (handle.includes("foam") && handle.includes("10")) return "foam10";
+  if (handle.includes("foam") && handle.includes("12")) return "foam12";
+  if (handle.includes("hybrid")) return "hybrid14";
+  if (handle.includes("foam")) return "foam12";
   return "foam12";
 }
 
@@ -189,101 +176,201 @@ function writeSavedBuild(pod, value) {
   } catch {}
 }
 
-function optionSubtitleForBase(value) {
-  if (value === "adjustable") return "Motion ready";
-  if (value === "storage") return "Storage base";
-  if (value === "platform") return "Platform base";
-  return "Mattress only";
-}
-
-function optionSubtitleForMotion(value) {
-  if (value === "full_split") return "King only";
-  if (value === "half_split") return "Queen or King";
-  return "Standard motion";
-}
-
-function optionSubtitleForMattress(value) {
-  if (value === "dual12") return "Dual comfort";
-  if (value === "hybrid14") return "Hybrid feel";
-  if (value === "foam10") return "10 inch foam";
-  return "12 inch foam";
-}
-
-function getStepMeta(stepKey) {
-  switch (stepKey) {
-    case "size":
-      return {
-        eyebrow: "Step 1",
-        title: "Choose Your Size",
-        description: "Pick the size first. The rest of the build follows from this.",
-      };
-    case "base":
-      return {
-        eyebrow: "Step 2",
-        title: "Choose Your Base",
-        description: "Decide whether you want mattress only, a platform base, or adjustable base.",
-      };
-    case "motion":
-      return {
-        eyebrow: "Step 3",
-        title: "Choose Your Motion",
-        description: "Motion options only apply when adjustable base is selected.",
-      };
-    case "mattress":
-      return {
-        eyebrow: "Next Step",
-        title: "Choose Your Mattress",
-        description: "Now choose the mattress that fits this setup.",
-      };
-    case "dual":
-      return {
-        eyebrow: "Final Step",
-        title: "Choose Dual Comfort",
-        description: "Set the left and right feel separately for this mattress.",
-      };
-    default:
-      return {
-        eyebrow: "Build Your Pod",
-        title: "Build Your Pod",
-        description: "Choose your setup one step at a time.",
-      };
+function readShopperKey() {
+  try {
+    return (
+      sessionStorage.getItem("snooze.shopperId") ||
+      sessionStorage.getItem("snooze.accessCode") ||
+      "guest"
+    );
+  } catch {
+    return "guest";
   }
 }
 
-/* ─────────────────────────────────────────────
-   UI bits
-───────────────────────────────────────────── */
-
-function StepPill({ active, done, children, onClick, disabled = false }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={[
-        "inline-flex items-center justify-center rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] transition",
-        disabled
-          ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
-          : active
-          ? "border-indigo-600 bg-indigo-600 text-white"
-          : done
-          ? "border-gray-200 bg-white text-gray-900"
-          : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50",
-      ].join(" ")}
-    >
-      {children}
-    </button>
-  );
+function readAssessmentValue(assessment, ...keys) {
+  for (const key of keys) {
+    const direct = assessment?.[key];
+    if (direct !== undefined && direct !== null && String(direct).trim()) return direct;
+    const nested = assessment?.answers?.[key];
+    if (nested !== undefined && nested !== null && String(nested).trim()) return nested;
+  }
+  return "";
 }
 
-function ChoiceCard({
-  title,
-  subtitle,
-  selected,
-  onClick,
-  disabled = false,
-  featured = false,
-}) {
+function normalizeSizeChoice(value) {
+  const raw = String(value || "").trim();
+  return SIZE_OPTIONS.includes(raw) ? raw : "";
+}
+
+function normalizeBaseTypeChoice(value) {
+  const normalized = lower(value);
+  if (
+    !normalized ||
+    normalized === "no" ||
+    normalized === "no base" ||
+    normalized === "none" ||
+    normalized.includes("mattress only")
+  ) {
+    return "none";
+  }
+  if (normalized.includes("adjust")) return "adjustable";
+  if (normalized.includes("storage")) return "storage";
+  if (normalized.includes("platform")) return "platform";
+  return "";
+}
+
+function normalizeMotionTypeChoice(value) {
+  const normalized = lower(value);
+  if (!normalized) return "";
+  if (normalized.includes("full split")) return "full_split";
+  if (normalized.includes("half split")) return "half_split";
+  if (normalized.includes("split")) return "half_split";
+  if (normalized.includes("standard")) return "standard";
+  if (normalized.includes("no motion")) return "standard";
+  return "";
+}
+
+function normalizeComfortChoice(value) {
+  const normalized = lower(value);
+  if (!normalized) return "";
+  if (normalized.includes("firm") && !normalized.includes("medium")) return "Firm";
+  if (normalized.includes("medium") && normalized.includes("soft")) return "Medium Soft";
+  if (normalized.includes("medium") && normalized.includes("firm")) return "Medium Firm";
+  if (normalized.includes("soft")) return "Soft";
+  if (normalized.includes("medium")) return "Medium Firm";
+  return "";
+}
+
+function normalizePartnerChoice(value) {
+  const normalized = lower(value);
+  if (!normalized) return "";
+  if (normalized === "yes" || normalized.includes("partner") || normalized.includes("share")) {
+    return "yes";
+  }
+  if (normalized === "no") return "no";
+  return normalized;
+}
+
+function buildAssessmentPreferenceContext(assessment = {}) {
+  return {
+    size: normalizeSizeChoice(
+      readAssessmentValue(assessment, "size", "interestedSize", "preferredSize")
+    ),
+    baseType: normalizeBaseTypeChoice(
+      readAssessmentValue(assessment, "baseType", "basePreference", "preferredBaseType", "foundation")
+    ),
+    motionType: normalizeMotionTypeChoice(
+      readAssessmentValue(assessment, "motionMode", "motionPreference", "motionType", "motion")
+    ),
+    firmness: normalizeComfortChoice(
+      readAssessmentValue(assessment, "firmness", "comfort", "feel", "comfortPreference")
+    ),
+    partnerFirmness: normalizeComfortChoice(
+      readAssessmentValue(assessment, "partnerFirmness", "secondaryFirmness")
+    ),
+    sleepPartner: normalizePartnerChoice(
+      readAssessmentValue(assessment, "sleepPartner", "partner", "shareBed")
+    ),
+  };
+}
+
+function buildAssessmentSignature(assessment = {}) {
+  const context = buildAssessmentPreferenceContext(assessment);
+  return JSON.stringify(context);
+}
+
+function resolveMotionSelection(candidate, allowedMotion) {
+  const allowed = Array.isArray(allowedMotion) && allowedMotion.length ? allowedMotion : ["standard"];
+  const normalized = normalizeMotionTypeChoice(candidate);
+
+  if (!normalized) return allowed[0] || "standard";
+  if (allowed.includes(normalized)) return normalized;
+  if (normalized === "full_split" && allowed.includes("half_split")) return "half_split";
+  return allowed[0] || "standard";
+}
+
+function buildDefaultSelections({ assessment, pod, supportsSplitMotion, isDualComfort }) {
+  const context = buildAssessmentPreferenceContext(assessment);
+  const sizeFromAssessment = context.size;
+  const baseFromAssessment = context.baseType;
+  const motionFromAssessment = context.motionType;
+  const firmnessFromAssessment = context.firmness;
+  const partnerFirmnessFromAssessment = context.partnerFirmness;
+
+  const size = sizeFromAssessment || normalizeSizeChoice(pod?.displayedIn?.size) || "Queen";
+  const baseType = baseFromAssessment || inferBaseTypeFromPod(pod) || "none";
+  const allowedMotion = allowedMotionTypesForSelection(size, supportsSplitMotion);
+  const motionFallback = inferMotionTypeFromPod(pod) || "standard";
+  const motionType =
+    baseType === "adjustable"
+      ? resolveMotionSelection(motionFromAssessment || motionFallback, allowedMotion)
+      : "standard";
+
+  return {
+    size,
+    baseType,
+    motionType,
+    dcLeft:
+      (isDualComfort && firmnessFromAssessment) ||
+      pod?.displayedIn?.dualComfort?.left ||
+      "Medium Firm",
+    dcRight:
+      (isDualComfort && (partnerFirmnessFromAssessment || firmnessFromAssessment)) ||
+      pod?.displayedIn?.dualComfort?.right ||
+      "Medium Soft",
+    sources: {
+      size: sizeFromAssessment ? "assessment" : "pod",
+      baseType: baseFromAssessment ? "assessment" : "pod",
+      motionType: motionFromAssessment && baseType === "adjustable" ? "assessment" : "pod",
+      comfort:
+        isDualComfort && (firmnessFromAssessment || partnerFirmnessFromAssessment)
+          ? "assessment"
+          : "pod",
+    },
+  };
+}
+
+function sanitizeSelections(savedBuild, defaults, supportsSplitMotion, isDualComfort) {
+  const size =
+    defaults.sources?.size === "assessment"
+      ? defaults.size
+      : normalizeSizeChoice(savedBuild?.size) || defaults.size;
+  const baseType =
+    defaults.sources?.baseType === "assessment"
+      ? defaults.baseType
+      : normalizeBaseTypeChoice(savedBuild?.baseType) || defaults.baseType;
+  const allowedMotion = allowedMotionTypesForSelection(size, supportsSplitMotion);
+  const motionType =
+    baseType === "adjustable"
+      ? resolveMotionSelection(
+          defaults.sources?.motionType === "assessment"
+            ? defaults.motionType
+            : normalizeMotionTypeChoice(savedBuild?.motionType) || defaults.motionType,
+          allowedMotion
+        )
+      : "standard";
+
+  return {
+    size,
+    baseType,
+    motionType,
+    dcLeft:
+      isDualComfort
+        ? defaults.sources?.comfort === "assessment"
+          ? defaults.dcLeft
+          : normalizeComfortChoice(savedBuild?.dcLeft) || defaults.dcLeft
+        : "",
+    dcRight:
+      isDualComfort
+        ? defaults.sources?.comfort === "assessment"
+          ? defaults.dcRight
+          : normalizeComfortChoice(savedBuild?.dcRight) || defaults.dcRight
+        : "",
+  };
+}
+
+function ChoiceCard({ title, subtitle, active, disabled = false, onClick }) {
   return (
     <button
       type="button"
@@ -291,224 +378,72 @@ function ChoiceCard({
       onClick={onClick}
       className={[
         "w-full rounded-3xl border p-5 text-left shadow-sm transition md:p-6",
-        disabled ? "cursor-not-allowed opacity-50" : "hover:shadow-md",
-        selected
-          ? "border-indigo-500 bg-indigo-50"
-          : featured
-          ? "border-gray-300 bg-gray-50"
-          : "border-gray-200 bg-white",
+        disabled ? "cursor-not-allowed opacity-50" : "hover:-translate-y-0.5 hover:shadow-md",
+        active ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white",
       ].join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div>
           <div className="text-lg font-extrabold text-gray-900">{title}</div>
           {subtitle ? <div className="mt-2 text-sm text-gray-600">{subtitle}</div> : null}
         </div>
-
         <div
           className={[
             "mt-1 h-6 w-6 shrink-0 rounded-full border",
-            selected ? "border-indigo-600 bg-indigo-600" : "border-gray-300 bg-white",
+            active ? "border-indigo-600 bg-indigo-600" : "border-gray-300 bg-white",
           ].join(" ")}
-          aria-hidden
         >
-          {selected ? <div className="mx-auto mt-1 h-2.5 w-2.5 rounded-full bg-white" /> : null}
+          {active ? <div className="mx-auto mt-1 h-2.5 w-2.5 rounded-full bg-white" /> : null}
         </div>
       </div>
     </button>
   );
 }
 
-function StepHeader({ eyebrow, title, description, currentStepIndex, totalSteps }) {
-  return (
-    <div className="rounded-3xl border bg-gradient-to-br from-slate-50 to-white p-6 shadow-sm md:p-7">
-      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">{eyebrow}</div>
-      <div className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">{title}</div>
-      <div className="mt-2 max-w-2xl text-base text-gray-700">{description}</div>
-      <div className="mt-4 text-xs font-semibold text-gray-500">
-        Step {currentStepIndex + 1} of {totalSteps}
-      </div>
-    </div>
-  );
+function subtitleForSize(option) {
+  switch (option) {
+    case "Twin":
+      return "A clean fit for compact spaces.";
+    case "Twin XL":
+      return "Extra length without taking up extra width.";
+    case "Full":
+      return "A little more room to stretch out.";
+    case "Queen":
+      return "The most popular balance of comfort and space.";
+    case "King":
+      return "Maximum room to spread out.";
+    default:
+      return "";
+  }
 }
 
-function EstimateStrip({ monthly, previewTotal }) {
-  return (
-    <div className="rounded-3xl border bg-white p-5 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-            Estimated Monthly
-          </div>
-          <div className="mt-2 text-3xl font-extrabold text-indigo-950">{money(monthly)}</div>
-        </div>
-
-        <div className="text-right">
-          <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-            Estimated Total
-          </div>
-          <div className="mt-2 text-xl font-extrabold text-gray-900">{money(previewTotal)}</div>
-        </div>
-      </div>
-    </div>
-  );
+function subtitleForBase(option) {
+  switch (option) {
+    case "none":
+      return "Keep the focus on the mattress feel.";
+    case "adjustable":
+      return "Lift, recline, and unlock motion features.";
+    case "platform":
+      return "A simple, supportive foundation.";
+    case "storage":
+      return "Support plus built-in storage underneath.";
+    default:
+      return "";
+  }
 }
 
-function PreviewPanel({
-  wantsBase,
-  selectedMattressLabel,
-  selectedBaseLabel,
-  selectedMotionLabel,
-  isDualComfort,
-  dcLeft,
-  dcRight,
-  mattressProduct,
-  baseProduct,
-  mattressImage,
-  baseImage,
-  canAddMattress,
-  baseMerchId,
-  baseMismatch,
-}) {
-  return (
-    <div className="rounded-3xl border bg-white p-5 shadow-sm">
-      <div className="mb-4">
-        <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">Your Build</div>
-        <div className="mt-2 text-2xl font-extrabold text-gray-900">Review Before You Add to Cart</div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-3xl border bg-gray-50 p-4">
-          <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-            Mattress
-          </div>
-
-          <div className="mt-3 flex gap-4">
-            <img
-              src={mattressImage}
-              alt={mattressProduct?.title || "Mattress"}
-              className="h-24 w-24 rounded-2xl border bg-white object-cover"
-              onError={(e) => {
-                e.currentTarget.src = "/no-image.svg";
-              }}
-            />
-
-            <div className="min-w-0">
-              <div className="text-lg font-extrabold text-gray-900">{selectedMattressLabel}</div>
-              <div className="mt-1 text-sm text-gray-600">{mattressProduct?.title || "Mattress"}</div>
-
-              {!canAddMattress ? (
-                <div className="mt-2 text-sm font-semibold text-amber-700">Unavailable in this size</div>
-              ) : null}
-
-              {isDualComfort ? (
-                <div className="mt-2 text-sm text-gray-700">
-                  {dcLeft} / {dcRight}
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border bg-gray-50 p-4">
-          <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-            Base
-          </div>
-
-          {!wantsBase ? (
-            <div className="mt-3 text-base text-gray-700">Mattress Only</div>
-          ) : baseMismatch ? (
-            <div className="mt-3">
-              <div className="text-lg font-extrabold text-gray-900">{selectedBaseLabel}</div>
-              <div className="mt-1 text-sm text-amber-700">Base match pending</div>
-            </div>
-          ) : !baseProduct ? (
-            <div className="mt-3 text-base text-gray-700">Loading base</div>
-          ) : (
-            <div className="mt-3 flex gap-4">
-              <img
-                src={baseImage}
-                alt={baseProduct?.title || "Base"}
-                className="h-24 w-24 rounded-2xl border bg-white object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = "/no-image.svg";
-                }}
-              />
-
-              <div className="min-w-0">
-                <div className="text-lg font-extrabold text-gray-900">
-                  {baseProduct?.title || selectedBaseLabel || "Base"}
-                </div>
-                <div className="mt-1 text-sm text-gray-600">{selectedMotionLabel}</div>
-
-                {!baseMerchId ? (
-                  <div className="mt-2 text-sm font-semibold text-amber-700">Unavailable in this size</div>
-                ) : null}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+function subtitleForMotion(option) {
+  switch (option) {
+    case "standard":
+      return "One-piece movement across the whole bed.";
+    case "half_split":
+      return "Separate head adjustment with a shared foot.";
+    case "full_split":
+      return "Independent movement on both sides.";
+    default:
+      return "";
+  }
 }
-
-function FooterActions({
-  primaryCtaLabel,
-  secondaryCtaLabel,
-  onAdd,
-  onSave,
-  onReset,
-  onViewCart,
-  onBack,
-  canGoBack,
-  isReadyToAdd,
-}) {
-  return (
-    <div className="rounded-3xl border bg-white p-5 shadow-sm">
-      {!isReadyToAdd ? (
-        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
-          Complete the steps above, then review your build before adding it to cart.
-        </div>
-      ) : null}
-
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
-        <Button
-          variant="outline"
-          onClick={onBack}
-          disabled={!canGoBack}
-          className="rounded-2xl py-6 text-base font-extrabold"
-        >
-          Back
-        </Button>
-
-        <Button
-          onClick={onAdd}
-          disabled={!isReadyToAdd}
-          className="rounded-2xl py-6 text-base font-extrabold"
-        >
-          {primaryCtaLabel}
-        </Button>
-
-        <Button variant="outline" onClick={onSave} className="rounded-2xl py-6 text-base font-extrabold">
-          {secondaryCtaLabel}
-        </Button>
-
-        <Button variant="outline" onClick={onReset} className="rounded-2xl py-6 text-base font-extrabold">
-          Reset
-        </Button>
-
-        <Button variant="outline" onClick={onViewCart} className="rounded-2xl py-6 text-base font-extrabold">
-          View Cart
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   Component
-───────────────────────────────────────────── */
 
 export default function PodBuilder({
   pod,
@@ -519,70 +454,71 @@ export default function PodBuilder({
   onSelectionHandlesChange,
   onBuildStepChange,
   primaryCtaLabel = "Add to Cart",
-  secondaryCtaLabel = "Save Build",
-  onViewSnoozePod = undefined,
+  onViewSnoozePod,
 }) {
-  const addToSnoozePod = useStore((s) => s.addToSnoozePod);
-  const getSnoozePodSubtotal = useStore((s) => s.getSnoozePodSubtotal);
+  const addToSnoozePod = useStore((state) => state.addToSnoozePod);
+  const getSnoozePodSubtotal = useStore((state) => state.getSnoozePodSubtotal);
 
-  const initialSize = assessment?.size || pod?.displayedIn?.size || pod?.meta?.size || "Queen";
-  const initialBaseType = useMemo(() => inferBaseTypeFromPod(pod), [pod]);
-  const initialMotionType = useMemo(() => inferMotionTypeFromPod(pod), [pod]);
-  const initialMattressType = useMemo(() => inferMattressTypeFromPod(pod), [pod]);
+  const fixedMattressType = useMemo(() => inferMattressTypeFromPod(pod), [pod]);
+  const fixedMattressHandle = useMemo(
+    () => pod?.mattressHandle || getMattressHandleForType(fixedMattressType) || null,
+    [pod?.mattressHandle, fixedMattressType]
+  );
+  const isDualComfort = fixedMattressType === "dual12";
+  const supportsSplitMotion = isDualComfort;
+  const shopperKey = useMemo(() => readShopperKey(), []);
+  const assessmentSignature = useMemo(() => buildAssessmentSignature(assessment), [assessment]);
 
   const savedBuild = useMemo(() => readSavedBuild(pod), [pod]);
+  const compatibleSavedBuild = useMemo(() => {
+    if (!savedBuild || typeof savedBuild !== "object") return null;
 
-  const [size, setSize] = useState(String(savedBuild?.size || initialSize || "Queen"));
-  const [baseType, setBaseType] = useState(savedBuild?.baseType || initialBaseType);
-  const [motionType, setMotionType] = useState(savedBuild?.motionType || initialMotionType);
-  const [mattressType, setMattressType] = useState(savedBuild?.mattressType || initialMattressType);
-  const [dcLeft, setDcLeft] = useState(savedBuild?.dcLeft || pod?.displayedIn?.dualComfort?.left || "Medium Firm");
-  const [dcRight, setDcRight] = useState(savedBuild?.dcRight || pod?.displayedIn?.dualComfort?.right || "Medium Soft");
+    const savedShopperKey = String(savedBuild?.shopperKey || "").trim();
+    const savedSignature = String(savedBuild?.assessmentSignature || "").trim();
+
+    if (savedShopperKey && savedShopperKey !== shopperKey) return null;
+    if (savedSignature && savedSignature !== assessmentSignature) return null;
+    if (!savedSignature && assessmentSignature) return null;
+
+    return savedBuild;
+  }, [savedBuild, shopperKey, assessmentSignature]);
+  const defaults = useMemo(
+    () => buildDefaultSelections({ assessment, pod, supportsSplitMotion, isDualComfort }),
+    [assessment, pod, supportsSplitMotion, isDualComfort]
+  );
+  const initialSelections = useMemo(
+    () => sanitizeSelections(compatibleSavedBuild, defaults, supportsSplitMotion, isDualComfort),
+    [compatibleSavedBuild, defaults, supportsSplitMotion, isDualComfort]
+  );
+
+  const [size, setSize] = useState(initialSelections.size);
+  const [baseType, setBaseType] = useState(initialSelections.baseType);
+  const [motionType, setMotionType] = useState(initialSelections.motionType);
+  const [dcLeft, setDcLeft] = useState(initialSelections.dcLeft);
+  const [dcRight, setDcRight] = useState(initialSelections.dcRight);
 
   const showMotion = baseType === "adjustable";
-  const isDualComfort = mattressType === "dual12";
   const wantsBase = baseType !== "none";
-
   const steps = useMemo(() => {
     const list = [
       { key: "size", label: "Size" },
       { key: "base", label: "Base" },
     ];
     if (showMotion) list.push({ key: "motion", label: "Motion" });
-    list.push({ key: "mattress", label: "Mattress" });
     if (isDualComfort) list.push({ key: "dual", label: "Comfort" });
+    list.push({ key: "review", label: "Review" });
     return list;
   }, [showMotion, isDualComfort]);
 
-  const initialStepKey = useMemo(() => {
-    const candidate = String(savedBuild?.stepKey || "size");
-    return steps.some((s) => s.key === candidate) ? candidate : "size";
-  }, [savedBuild?.stepKey, steps]);
+  const [stepKey, setStepKey] = useState(() => {
+    const candidate = String(compatibleSavedBuild?.stepKey || "size").trim();
+    return steps.some((step) => step.key === candidate) ? candidate : "size";
+  });
 
-  const [stepKey, setStepKey] = useState(initialStepKey);
-
-  const allowedMotion = useMemo(() => allowedMotionTypesForSize(size), [size]);
-
-  useEffect(() => {
-    const exists = steps.some((s) => s.key === stepKey);
-    if (!exists) {
-      if (showMotion) {
-        setStepKey("motion");
-      } else if (stepKey === "motion") {
-        setStepKey("mattress");
-      } else if (isDualComfort) {
-        setStepKey("dual");
-      } else {
-        setStepKey("mattress");
-      }
-    }
-  }, [steps, stepKey, showMotion, isDualComfort]);
-
-  useEffect(() => {
-    if (typeof onBuildStepChange === "function") {
-      onBuildStepChange(stepKey);
-    }
-  }, [stepKey, onBuildStepChange]);
+  const allowedMotion = useMemo(
+    () => allowedMotionTypesForSelection(size, supportsSplitMotion),
+    [size, supportsSplitMotion]
+  );
 
   useEffect(() => {
     if (!showMotion && motionType !== "standard") {
@@ -591,498 +527,503 @@ export default function PodBuilder({
   }, [showMotion, motionType]);
 
   useEffect(() => {
-    if (!showMotion) return;
-
-    if (!allowedMotion.includes(motionType)) {
-      const next = allowedMotion[0] || "standard";
-      setMotionType(next);
-      onCue?.(`Motion updated to ${labelFor(MOTION_TYPES_UI, next, "Standard")}.`, "warning");
+    if (showMotion && !allowedMotion.includes(motionType)) {
+      setMotionType(allowedMotion[0] || "standard");
     }
-  }, [allowedMotion, motionType, onCue, showMotion]);
+  }, [showMotion, allowedMotion, motionType]);
 
   useEffect(() => {
-    if (!showMotion) return;
-
-    if (isSplitMotion(motionType) && mattressType !== "dual12") {
-      setMattressType("dual12");
-      onCue?.("Split motion requires Dual Comfort. Mattress updated.", "warning");
-    }
-  }, [showMotion, motionType, mattressType, onCue]);
-
-  const expectedBaseHandle = useMemo(() => getBaseHandleForType(baseType), [baseType]);
-  const expectedMattressHandle = useMemo(() => getMattressHandleForType(mattressType), [mattressType]);
+    if (steps.some((step) => step.key === stepKey)) return;
+    setStepKey(isDualComfort ? "dual" : "review");
+  }, [steps, stepKey, isDualComfort]);
 
   useEffect(() => {
-    if (typeof onSelectionHandlesChange !== "function") return;
+    onBuildStepChange?.(stepKey);
+  }, [stepKey, onBuildStepChange]);
 
-    onSelectionHandlesChange({
-      mattressHandle: expectedMattressHandle || pod?.mattressHandle || null,
-      baseHandle: baseType === "none" ? null : expectedBaseHandle || null,
+  const selectedBaseHandle = useMemo(
+    () => (baseType === "none" ? null : getBaseHandleForType(baseType) || null),
+    [baseType]
+  );
+
+  useEffect(() => {
+    onSelectionHandlesChange?.({
+      mattressHandle: fixedMattressHandle,
+      baseHandle: selectedBaseHandle,
     });
-  }, [onSelectionHandlesChange, expectedMattressHandle, expectedBaseHandle, baseType, pod?.mattressHandle]);
+  }, [onSelectionHandlesChange, fixedMattressHandle, selectedBaseHandle]);
 
   useEffect(() => {
     writeSavedBuild(pod, {
       size,
       baseType,
       motionType,
-      mattressType,
       dcLeft,
       dcRight,
       stepKey,
+      shopperKey,
+      assessmentSignature,
     });
-  }, [pod, size, baseType, motionType, mattressType, dcLeft, dcRight, stepKey]);
-
-  const providedBaseHandle = useMemo(() => {
-    return baseProduct?.handle ? String(baseProduct.handle).trim() : "";
-  }, [baseProduct]);
-
-  const baseMismatch = useMemo(() => {
-    if (!wantsBase) return false;
-    if (!expectedBaseHandle) return true;
-    if (!providedBaseHandle) return true;
-    return lower(providedBaseHandle) !== lower(expectedBaseHandle);
-  }, [wantsBase, expectedBaseHandle, providedBaseHandle]);
-
-  useEffect(() => {
-    if (!baseMismatch || !wantsBase) return;
-
-    const selected = labelFor(BASE_OPTIONS_UI, baseType, baseType);
-    const expected = expectedBaseHandle || "—";
-    const got = providedBaseHandle || "—";
-
-    onCue?.(`Base mismatch blocked: selected "${selected}", expected "${expected}", got "${got}".`, "warning");
-  }, [baseMismatch, wantsBase, baseType, expectedBaseHandle, providedBaseHandle, onCue]);
+  }, [pod, size, baseType, motionType, dcLeft, dcRight, stepKey, shopperKey, assessmentSignature]);
 
   const mattressVariant = useMemo(() => pickVariantForSize(mattressProduct, size), [mattressProduct, size]);
-
-  const safeBaseProduct = baseMismatch ? null : baseProduct;
-  const baseVariant = useMemo(() => pickVariantForSize(safeBaseProduct, size), [safeBaseProduct, size]);
-
+  const baseVariant = useMemo(
+    () => (wantsBase ? pickVariantForSize(baseProduct, size) : null),
+    [baseProduct, wantsBase, size]
+  );
   const mattressMerchId = useMemo(() => safeVariantId(mattressVariant), [mattressVariant]);
   const baseMerchId = useMemo(() => safeVariantId(baseVariant), [baseVariant]);
-
   const mattressPrice = useMemo(() => parseVariantPrice(mattressVariant), [mattressVariant]);
   const basePrice = useMemo(() => parseVariantPrice(baseVariant), [baseVariant]);
-
-  const mattressImage = useMemo(() => pickFeaturedImage(mattressProduct), [mattressProduct]);
-  const baseImage = useMemo(() => pickFeaturedImage(safeBaseProduct), [safeBaseProduct]);
-
-  const previewTotal = useMemo(() => {
-    const m = mattressPrice || 0;
-    const b = wantsBase && !baseMismatch ? basePrice || 0 : 0;
-    return m + b;
-  }, [mattressPrice, basePrice, wantsBase, baseMismatch]);
-
+  const previewTotal = useMemo(() => mattressPrice + (wantsBase ? basePrice : 0), [mattressPrice, basePrice, wantsBase]);
   const monthly = useMemo(() => monthlyEstimate(previewTotal), [previewTotal]);
 
-  const canAddMattress = Boolean(mattressMerchId);
-
-  const selectedMattressLabel = useMemo(
-    () => labelFor(MATTRESS_OPTIONS_UI, mattressType, mattressType),
-    [mattressType]
-  );
-  const selectedBaseLabel = useMemo(
-    () => labelFor(BASE_OPTIONS_UI, baseType, baseType),
-    [baseType]
-  );
-  const selectedMotionLabel = useMemo(
-    () => labelFor(MOTION_TYPES_UI, motionType, motionType),
-    [motionType]
-  );
-
-  const done = useMemo(() => {
-    const d = new Set();
-    if (size) d.add("size");
-    if (baseType) d.add("base");
-    if (!showMotion || motionType) d.add("motion");
-    if (mattressType) d.add("mattress");
-    if (!isDualComfort || (dcLeft && dcRight)) d.add("dual");
-    return d;
-  }, [size, baseType, showMotion, motionType, mattressType, isDualComfort, dcLeft, dcRight]);
-
-  const currentStepIndex = Math.max(0, steps.findIndex((s) => s.key === stepKey));
-  const currentStepMeta = getStepMeta(stepKey);
-
+  const selectedBaseLabel =
+    baseType === "none" ? "Mattress Only" : labelFor(BASE_OPTIONS_UI, baseType, "Mattress Only");
+  const selectedMotionLabel = labelFor(MOTION_TYPES_UI, motionType, "Standard");
+  const mattressLabel = mattressProduct?.title || pod?.displayMattress || pod?.subtitle || "Mattress";
+  const currentStepIndex = Math.max(0, steps.findIndex((step) => step.key === stepKey));
+  const nextStep = steps[currentStepIndex + 1] || null;
   const canGoBack = currentStepIndex > 0;
+  const currentStepMeta = useMemo(() => {
+    if (stepKey === "size") {
+      return {
+        eyebrow: "Choose your size",
+        title: "Pick the size that feels right for your room and sleep setup.",
+      };
+    }
+    if (stepKey === "base") {
+      return {
+        eyebrow: "Choose your base",
+        title: "Decide how you want this SnoozePod set up underneath.",
+      };
+    }
+    if (stepKey === "motion") {
+      return {
+        eyebrow: "Choose your motion",
+        title: "Pick the motion setup that fits the way you want to rest.",
+      };
+    }
+    if (stepKey === "dual") {
+      return {
+        eyebrow: "Choose your comfort setup",
+        title: "Set the feel on each side so the bed matches the way you want it to sleep.",
+      };
+    }
+    return {
+      eyebrow: "Your SnoozePod",
+      title: "Review your setup before adding it to your cart.",
+    };
+  }, [stepKey]);
+  const canProceed =
+    stepKey === "size"
+      ? Boolean(size)
+      : stepKey === "base"
+        ? Boolean(baseType)
+        : stepKey === "motion"
+          ? Boolean(motionType)
+          : stepKey === "dual"
+            ? Boolean(dcLeft && dcRight)
+            : Boolean(mattressMerchId) && (!wantsBase || Boolean(baseMerchId));
 
-  const isReadyToAdd = useMemo(() => {
-    if (!canAddMattress) return false;
-    if (wantsBase && baseMismatch) return false;
-    if (wantsBase && !baseMerchId) return false;
-    if (isDualComfort && (!dcLeft || !dcRight)) return false;
-    return Boolean(size && baseType && mattressType);
-  }, [canAddMattress, wantsBase, baseMismatch, baseMerchId, isDualComfort, dcLeft, dcRight, size, baseType, mattressType]);
+  const goNext = useCallback(() => {
+    if (!nextStep || !canProceed) return;
+    setStepKey(nextStep.key);
+    if (nextStep.key === "review") onCue?.("Take one last look before you add it to cart.", "tip");
+  }, [nextStep, canProceed, onCue]);
 
   const goBack = useCallback(() => {
     if (!canGoBack) return;
-    const prev = steps[currentStepIndex - 1];
-    if (prev?.key) setStepKey(prev.key);
+    setStepKey(steps[currentStepIndex - 1].key);
   }, [canGoBack, currentStepIndex, steps]);
 
-  const clearConfiguration = useCallback(() => {
-    setSize(String(initialSize || "Queen"));
-    setBaseType(initialBaseType);
-    setMotionType(initialMotionType);
-    setMattressType(initialMattressType);
-    setDcLeft(pod?.displayedIn?.dualComfort?.left || "Medium Firm");
-    setDcRight(pod?.displayedIn?.dualComfort?.right || "Medium Soft");
+  const resetBuild = useCallback(() => {
+    setSize(defaults.size);
+    setBaseType(defaults.baseType);
+    setMotionType(defaults.motionType);
+    setDcLeft(defaults.dcLeft);
+    setDcRight(defaults.dcRight);
     setStepKey("size");
-    onCue?.("Build reset.", "tip");
-  }, [
-    initialSize,
-    initialBaseType,
-    initialMotionType,
-    initialMattressType,
-    onCue,
-    pod?.displayedIn?.dualComfort?.left,
-    pod?.displayedIn?.dualComfort?.right,
-  ]);
+    onCue?.("Your setup has been reset.", "tip");
+  }, [defaults, onCue]);
 
   const addToPlan = useCallback(() => {
-    if (!canAddMattress) {
-      onCue?.("Mattress unavailable in this size.", "warning");
+    if (!mattressMerchId) {
+      onCue?.("This mattress is unavailable in the selected size.", "warning");
       return;
     }
 
-    const podIdLabel = String(pod?.podId ?? pod?.id ?? "").trim();
+    const podLabel = String(pod?.podId ?? pod?.id ?? "").trim();
 
     addToSnoozePod({
       merchandiseId: mattressMerchId,
-      handle: mattressProduct?.handle || expectedMattressHandle || pod?.mattressHandle || null,
+      handle: fixedMattressHandle,
       title: mattressProduct?.title || "Mattress",
-      imageUrl: mattressImage,
+      imageUrl: pickFeaturedImage(mattressProduct),
       unitPrice: mattressPrice,
       quantity: 1,
       attributes: [
         { key: "Size", value: size },
-        { key: "Mattress", value: selectedMattressLabel },
-        ...(isDualComfort ? [{ key: "Dual Comfort", value: "Yes" }] : []),
+        { key: "Mattress", value: mattressLabel },
+        ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
         ...(isDualComfort
           ? [
               { key: "Left Feel", value: dcLeft },
               { key: "Right Feel", value: dcRight },
             ]
           : []),
-        ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
-        ...(podIdLabel ? [{ key: "SnoozePod", value: `SnoozePod ${podIdLabel}` }] : []),
+        ...(podLabel ? [{ key: "SnoozePod", value: `SnoozePod ${podLabel}` }] : []),
       ],
     });
 
-    if (wantsBase) {
-      if (baseMismatch) {
-        onCue?.("Mattress added. Base blocked.", "warning");
-      } else if (!safeBaseProduct || !baseMerchId) {
-        onCue?.("Mattress added. Base unavailable.", "warning");
-      } else {
-        addToSnoozePod({
-          merchandiseId: baseMerchId,
-          handle: safeBaseProduct?.handle || expectedBaseHandle || pod?.baseHandle || null,
-          title: safeBaseProduct?.title || selectedBaseLabel || "Base",
-          imageUrl: baseImage,
-          unitPrice: basePrice,
-          quantity: 1,
-          attributes: [
-            { key: "Size", value: size },
-            { key: "Base", value: selectedBaseLabel },
-            ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
-            ...(podIdLabel ? [{ key: "SnoozePod", value: `SnoozePod ${podIdLabel}` }] : []),
-          ],
-        });
-      }
+    if (wantsBase && baseMerchId) {
+      addToSnoozePod({
+        merchandiseId: baseMerchId,
+        handle: selectedBaseHandle,
+        title: baseProduct?.title || selectedBaseLabel,
+        imageUrl: pickFeaturedImage(baseProduct),
+        unitPrice: basePrice,
+        quantity: 1,
+        attributes: [
+          { key: "Size", value: size },
+          { key: "Base", value: selectedBaseLabel },
+          ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
+          ...(podLabel ? [{ key: "SnoozePod", value: `SnoozePod ${podLabel}` }] : []),
+        ],
+      });
     }
 
-    const baseSummary = wantsBase ? ` • ${selectedBaseLabel}` : " • Mattress Only";
-    onCue?.(`Added to cart: ${String(size).toUpperCase()} • ${selectedMattressLabel}${baseSummary}.`, "success");
+    onCue?.(`Added to cart: ${size} ${mattressLabel}${wantsBase ? ` with ${selectedBaseLabel}` : ""}.`, "success");
   }, [
     addToSnoozePod,
-    baseImage,
     baseMerchId,
-    baseMismatch,
     basePrice,
-    canAddMattress,
+    baseProduct,
     dcLeft,
     dcRight,
-    expectedBaseHandle,
-    expectedMattressHandle,
+    fixedMattressHandle,
     isDualComfort,
-    mattressImage,
+    mattressLabel,
     mattressMerchId,
     mattressPrice,
-    mattressProduct?.handle,
-    mattressProduct?.title,
+    mattressProduct,
     onCue,
-    pod?.baseHandle,
     pod?.id,
-    pod?.mattressHandle,
     pod?.podId,
-    safeBaseProduct,
+    selectedBaseHandle,
     selectedBaseLabel,
-    selectedMattressLabel,
     selectedMotionLabel,
     showMotion,
     size,
     wantsBase,
   ]);
 
-  const saveBuild = useCallback(() => {
-    writeSavedBuild(pod, {
-      size,
-      baseType,
-      motionType,
-      mattressType,
-      dcLeft,
-      dcRight,
-      stepKey,
-    });
-
-    const label = `${String(size).toUpperCase()} • ${selectedMattressLabel}${wantsBase ? ` • ${selectedBaseLabel}` : " • Mattress Only"}`;
-    onCue?.(`Saved: ${label}.`, "success");
-  }, [
-    pod,
-    size,
-    baseType,
-    motionType,
-    mattressType,
-    dcLeft,
-    dcRight,
-    stepKey,
-    onCue,
-    selectedMattressLabel,
-    wantsBase,
-    selectedBaseLabel,
-  ]);
-
   const viewCart = useCallback(() => {
-    const subtotal = getSnoozePodSubtotal?.() ?? 0;
-    onCue?.(`Cart: ${money(subtotal)}.`, "tip");
-    if (typeof onViewSnoozePod === "function") onViewSnoozePod();
+    onCue?.(`Cart: ${money(getSnoozePodSubtotal?.() ?? 0)}.`, "tip");
+    onViewSnoozePod?.();
   }, [getSnoozePodSubtotal, onCue, onViewSnoozePod]);
 
   return (
-    <div className="space-y-6">
-      <StepHeader
-        eyebrow={currentStepMeta.eyebrow}
-        title={currentStepMeta.title}
-        description={currentStepMeta.description}
-        currentStepIndex={currentStepIndex}
-        totalSteps={steps.length}
-      />
+    <div className="space-y-5 p-5 md:p-6">
+      <div className="rounded-[32px] border bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-6 shadow-sm">
+        <div className="rounded-3xl bg-white/90 px-6 py-7 text-center shadow-sm md:px-8">
+          <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+            Finish Your SnoozePod
+          </div>
+          <div className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 md:text-5xl">
+            Choose your size, base, and comfort setup.
+          </div>
+          <div className="mx-auto mt-3 max-w-3xl text-base leading-7 text-gray-700 md:text-lg">
+            Then review everything before adding it to your cart.
+          </div>
+        </div>
 
-      <div className="flex flex-wrap gap-2">
-        {steps.map((s, index) => {
-          const locked = index > currentStepIndex && !done.has(s.key);
+        <div className="mt-5 flex flex-wrap gap-2 rounded-3xl border border-white/70 bg-white/85 p-3 shadow-sm">
+          {steps.map((step, index) => {
+            const clickable = index <= currentStepIndex;
+            return (
+              <button
+                key={step.key}
+                type="button"
+                disabled={!clickable}
+                onClick={() => clickable && setStepKey(step.key)}
+                className={[
+                  "rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] transition",
+                  step.key === stepKey
+                    ? "border-indigo-600 bg-indigo-600 text-white"
+                    : clickable
+                      ? "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                      : "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400",
+                ].join(" ")}
+              >
+                {step.label}
+              </button>
+            );
+          })}
+        </div>
 
-          return (
-            <StepPill
-              key={s.key}
-              active={s.key === stepKey}
-              done={done.has(s.key)}
-              disabled={locked}
-              onClick={() => {
-                if (locked) return;
-                setStepKey(s.key);
-              }}
-            >
-              {s.label}
-            </StepPill>
-          );
-        })}
+        <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
+          <div className="rounded-2xl border bg-white px-4 py-3 text-right shadow-sm">
+            <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+              Estimated Monthly
+            </div>
+            <div className="mt-1 text-xl font-extrabold text-indigo-950">{money(monthly)}</div>
+          </div>
+
+          <div className="rounded-2xl border bg-white px-4 py-3 text-right shadow-sm">
+            <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+              Estimated Total
+            </div>
+            <div className="mt-1 text-xl font-extrabold text-gray-900">{money(previewTotal)}</div>
+          </div>
+        </div>
       </div>
 
-      <EstimateStrip monthly={monthly} previewTotal={previewTotal} />
-
-      {stepKey === "size" ? (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            {SIZE_OPTIONS.map((option) => (
-              <ChoiceCard
-                key={option}
-                title={option}
-                subtitle={size === option ? "Selected" : "Choose size"}
-                selected={size === option}
-                featured={size === option}
-                onClick={() => {
-                  setSize(option);
-
-                  if (baseType === "adjustable") {
-                    const allowed = allowedMotionTypesForSize(option);
-                    const safeMotion = allowed.includes(motionType) ? motionType : allowed[0] || "standard";
-                    setMotionType(safeMotion);
-
-                    if (isSplitMotion(safeMotion)) {
-                      setMattressType("dual12");
-                    }
-                  }
-
-                  setStepKey("base");
-                }}
-              />
-            ))}
+      {stepKey !== "review" ? (
+        <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
+          <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+            Step {currentStepIndex + 1} of {steps.length}
           </div>
-        </div>
-      ) : null}
-
-      {stepKey === "base" ? (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            {BASE_OPTIONS_UI.map((option) => (
-              <ChoiceCard
-                key={option.value}
-                title={option.label}
-                subtitle={optionSubtitleForBase(option.value)}
-                selected={baseType === option.value}
-                featured={baseType === option.value}
-                onClick={() => {
-                  setBaseType(option.value);
-
-                  if (option.value !== "adjustable") {
-                    setMotionType("standard");
-                    setStepKey("mattress");
-                    onCue?.(`${option.label} selected.`, "success");
-                  } else {
-                    setStepKey("motion");
-                    onCue?.("Adjustable base selected.", "success");
-                  }
-                }}
-              />
-            ))}
+          <div className="mt-2 text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl">
+            {currentStepMeta.title}
           </div>
-        </div>
-      ) : null}
+          <div className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-gray-400">
+            {currentStepMeta.eyebrow}
+          </div>
 
-      {stepKey === "motion" && showMotion ? (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            {MOTION_TYPES_UI.map((option) => {
-              const allowed = allowedMotion.includes(option.value);
+          {stepKey === "size" ? (
+            <div className="mt-5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
+              {SIZE_OPTIONS.map((option) => (
+                <ChoiceCard
+                  key={option}
+                  title={option}
+                  subtitle={subtitleForSize(option)}
+                  active={size === option}
+                  onClick={() => setSize(option)}
+                />
+              ))}
+            </div>
+          ) : null}
 
-              return (
+          {stepKey === "base" ? (
+            <div className="mt-5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
+              {BASE_OPTIONS_UI.map((option) => (
                 <ChoiceCard
                   key={option.value}
-                  title={option.label}
-                  subtitle={optionSubtitleForMotion(option.value)}
-                  selected={motionType === option.value}
-                  disabled={!allowed}
-                  featured={motionType === option.value}
-                  onClick={() => {
-                    if (!allowed) return;
-
-                    setMotionType(option.value);
-
-                    if (isSplitMotion(option.value)) {
-                      setMattressType("dual12");
-                    }
-
-                    setStepKey("mattress");
-                  }}
+                  title={option.value === "none" ? "Mattress Only" : option.label}
+                  subtitle={subtitleForBase(option.value)}
+                  active={baseType === option.value}
+                  onClick={() => setBaseType(option.value)}
                 />
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
+              ))}
+            </div>
+          ) : null}
 
-      {stepKey === "mattress" ? (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {MATTRESS_OPTIONS_UI.map((option) => {
-              const disabled = isSplitMotion(motionType) && option.value !== "dual12";
-
-              return (
-                <ChoiceCard
-                  key={option.value}
-                  title={option.label}
-                  subtitle={optionSubtitleForMattress(option.value)}
-                  selected={mattressType === option.value}
-                  disabled={disabled}
-                  featured={mattressType === option.value}
-                  onClick={() => {
-                    if (disabled) return;
-
-                    setMattressType(option.value);
-
-                    if (option.value === "dual12") {
-                      setStepKey("dual");
-                    } else {
-                      onCue?.(`${option.label} selected. Review your build below.`, "success");
-                    }
-                  }}
-                />
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
-
-      {stepKey === "dual" && isDualComfort ? (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="rounded-3xl border bg-white p-5 shadow-sm">
-              <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">
-                Left
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                {DUAL_COMFORT_OPTIONS.map((option) => (
+          {stepKey === "motion" && showMotion ? (
+            <div className="mt-5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))]">
+              {MOTION_TYPES_UI.map((option) => {
+                const allowed = allowedMotion.includes(option.value);
+                return (
                   <ChoiceCard
-                    key={`left-${option}`}
-                    title={option}
-                    selected={dcLeft === option}
-                    featured={dcLeft === option}
-                    onClick={() => setDcLeft(option)}
+                    key={option.value}
+                    title={option.label}
+                    subtitle={allowed ? subtitleForMotion(option.value) : "Not available with this size."}
+                    active={motionType === option.value}
+                    disabled={!allowed}
+                    onClick={() => allowed && setMotionType(option.value)}
                   />
-                ))}
+                );
+              })}
+            </div>
+          ) : null}
+
+          {stepKey === "dual" && isDualComfort ? (
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <div className="rounded-3xl border bg-slate-50 p-5">
+                <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">Left Side</div>
+                <div className="mt-2 text-base text-gray-600">Choose the feel you want on this side.</div>
+                <div className="mt-4 grid gap-3">
+                  {DUAL_COMFORT_OPTIONS.map((option) => (
+                    <ChoiceCard
+                      key={`left-${option}`}
+                      title={option}
+                      active={dcLeft === option}
+                      onClick={() => setDcLeft(option)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-3xl border bg-slate-50 p-5">
+                <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">Right Side</div>
+                <div className="mt-2 text-base text-gray-600">Set the feel you want on the other side.</div>
+                <div className="mt-4 grid gap-3">
+                  {DUAL_COMFORT_OPTIONS.map((option) => (
+                    <ChoiceCard
+                      key={`right-${option}`}
+                      title={option}
+                      active={dcRight === option}
+                      onClick={() => setDcRight(option)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              onClick={goBack}
+              disabled={!canGoBack}
+              className="rounded-2xl px-5 py-6 text-base font-extrabold"
+            >
+              Back
+            </Button>
+            <Button
+              onClick={goNext}
+              disabled={!canProceed}
+              className="rounded-2xl px-6 py-6 text-base font-extrabold"
+            >
+              {nextStep?.key === "review" ? "Review Your Setup" : "Next"}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {stepKey === "review" ? (
+        <div className="space-y-4">
+          <div className="rounded-[32px] border bg-white p-5 shadow-sm md:p-6">
+            <div className="grid gap-4 xl:grid-cols-[minmax(280px,0.78fr)_minmax(0,1.22fr)] xl:items-start">
+              <div className="rounded-3xl border bg-slate-50 p-5">
+                <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+                  Mattress
+                </div>
+                <div className="mt-4 flex gap-4">
+                  <img
+                    src={pickFeaturedImage(mattressProduct)}
+                    alt={mattressLabel}
+                    className="h-28 w-28 rounded-3xl border bg-white object-cover"
+                    onError={(event) => {
+                      event.currentTarget.src = "/no-image.svg";
+                    }}
+                  />
+                  <div className="min-w-0">
+                    <div className="text-xl font-extrabold text-gray-900">{mattressLabel}</div>
+                    <div className="mt-2 text-sm leading-6 text-gray-600">
+                      Your size, base, motion, and comfort choices finish the setup around this
+                      mattress.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-3xl border bg-slate-50 p-5">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl">
+                      Review Your Setup
+                    </div>
+                    <div className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 md:text-base">
+                      Take one last look before adding this SnoozePod to your cart.
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap justify-end gap-3">
+                    <div className="rounded-2xl bg-white px-4 py-3 text-right shadow-sm">
+                      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+                        Estimated Monthly
+                      </div>
+                      <div className="mt-1 text-xl font-extrabold text-indigo-950">{money(monthly)}</div>
+                    </div>
+
+                    <div className="rounded-2xl bg-white px-4 py-3 text-right shadow-sm">
+                      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+                        Estimated Total
+                      </div>
+                      <div className="mt-1 text-xl font-extrabold text-gray-900">{money(previewTotal)}</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="rounded-3xl border bg-white p-5 shadow-sm">
-              <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">
-                Right
+            <div className="mt-4 rounded-3xl border bg-slate-50 p-5">
+              <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+                <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
+                  <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+                    Mattress
+                  </div>
+                  <div className="mt-1 text-lg font-extrabold text-gray-900">{mattressLabel}</div>
+                </div>
+                <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
+                  <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+                    Size
+                  </div>
+                  <div className="mt-1 text-lg font-extrabold text-gray-900">{size}</div>
+                </div>
+                <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
+                  <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+                    Base
+                  </div>
+                  <div className="mt-1 text-lg font-extrabold text-gray-900">{selectedBaseLabel}</div>
+                </div>
+                <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
+                  <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+                    Motion
+                  </div>
+                  <div className="mt-1 text-lg font-extrabold text-gray-900">
+                    {showMotion ? selectedMotionLabel : "No Motion"}
+                  </div>
+                </div>
+                {isDualComfort ? (
+                  <div className="rounded-2xl bg-white px-4 py-3 shadow-sm sm:[grid-column:span_2/span_2] xl:[grid-column:auto]">
+                    <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
+                      Comfort Setup
+                    </div>
+                    <div className="mt-1 text-lg font-extrabold text-gray-900">{dcLeft} / {dcRight}</div>
+                  </div>
+                ) : null}
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                {DUAL_COMFORT_OPTIONS.map((option) => (
-                  <ChoiceCard
-                    key={`right-${option}`}
-                    title={option}
-                    selected={dcRight === option}
-                    featured={dcRight === option}
-                    onClick={() => setDcRight(option)}
-                  />
-                ))}
+            </div>
+
+            <div className="mt-4 border-t border-slate-200 pt-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={goBack}
+                  disabled={!canGoBack}
+                  className="rounded-2xl px-5 py-6 text-base font-extrabold"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={addToPlan}
+                  disabled={!canProceed}
+                  className="rounded-2xl px-6 py-6 text-base font-extrabold"
+                >
+                  {primaryCtaLabel}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={viewCart}
+                  className="rounded-2xl px-5 py-6 text-base font-extrabold"
+                >
+                  View Cart
+                </Button>
               </div>
+
+              <button
+                type="button"
+                onClick={resetBuild}
+                className="mt-4 text-sm font-extrabold text-gray-500 underline-offset-4 hover:text-gray-800 hover:underline"
+              >
+                Start Over
+              </button>
             </div>
           </div>
         </div>
       ) : null}
-
-      <PreviewPanel
-        wantsBase={wantsBase}
-        selectedMattressLabel={selectedMattressLabel}
-        selectedBaseLabel={selectedBaseLabel}
-        selectedMotionLabel={selectedMotionLabel}
-        isDualComfort={isDualComfort}
-        dcLeft={dcLeft}
-        dcRight={dcRight}
-        mattressProduct={mattressProduct}
-        baseProduct={safeBaseProduct}
-        mattressImage={mattressImage}
-        baseImage={baseImage}
-        canAddMattress={Boolean(mattressProduct && pickVariantForSize(mattressProduct, size))}
-        baseMerchId={baseMerchId}
-        baseMismatch={baseMismatch}
-      />
-
-      <FooterActions
-        primaryCtaLabel={primaryCtaLabel}
-        secondaryCtaLabel={secondaryCtaLabel}
-        onAdd={addToPlan}
-        onSave={saveBuild}
-        onReset={clearConfiguration}
-        onViewCart={viewCart}
-        onBack={goBack}
-        canGoBack={canGoBack}
-        isReadyToAdd={isReadyToAdd}
-      />
     </div>
   );
 }

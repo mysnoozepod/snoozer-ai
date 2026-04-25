@@ -41,7 +41,7 @@ function normalizeAccessCode(raw) {
 
 export default function Welcome() {
   const navigate = useNavigate();
-  const { noteUserInteraction, sayScript } = useShowroomHud();
+  const { noteUserInteraction, runHudAction } = useShowroomHud();
 
   const API_BASE = useMemo(() => buildApiBase(), []);
 
@@ -93,7 +93,7 @@ export default function Welcome() {
         });
       }
 
-      const introJob = await sayScript({
+      const introJob = await runHudAction("start_assessment", {
         scriptKey: "welcome.entry.new",
         shopperId: trimmed,
         fallback: {
@@ -122,10 +122,12 @@ export default function Welcome() {
       });
 
       clearTransitionTimer();
-      const transitionMs = Math.max(
-        2200,
-        Math.min(Number(introJob?.ttlMs) || 4200, 5200)
+      const resolvedIntroMs = Number(introJob?.ttlMs) || 4200;
+      const baseTransitionMs = Math.max(
+        3600,
+        Math.min(resolvedIntroMs + 1800, 7600)
       );
+      const transitionMs = Math.min(baseTransitionMs + 2000, 9600);
 
       transitionTimerRef.current = window.setTimeout(() => {
         navigate("/what-to-expect");
@@ -203,7 +205,7 @@ export default function Welcome() {
             disabled={loading}
             className="w-full bg-[#1A66D2] py-6 text-lg font-semibold text-white"
           >
-            {loading ? "Snooze Session Loading" : "Start Your Snooze Session"}
+            {loading ? "Starting Your Snooze Session" : "Start Your Snooze Session"}
           </Button>
         </div>
       </motion.div>

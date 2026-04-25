@@ -1,0 +1,9 @@
+{
+  "id": "rest_test_zero_g",
+  "speech": "Now try the zero gravity position. Let your body relax and notice how the mattress supports you with pressure taken off your back.",
+  "captions": "Now try the zero gravity position. Let your body relax and notice how the mattress supports you with pressure taken off your back.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 7500,
+  "actions": []
+}

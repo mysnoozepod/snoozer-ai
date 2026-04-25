@@ -1,0 +1,9 @@
+{
+  "id": "rest_test_choice_prompt",
+  "speech": "Choose the Snooze Test that works best for you. A shorter test is great for a quick feel. A longer test gives you more time to settle in.",
+  "captions": "Choose the Snooze Test that works best for you. A shorter test is great for a quick feel. A longer test gives you more time to settle in.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 8000,
+  "actions": []
+}

@@ -1,0 +1,9 @@
+{
+  "id": "assessment_halfway",
+  "speech": "Nice work. You’re halfway through your Snooze Assessment. Keep going, and I’ll use your answers to narrow down your best matches.",
+  "captions": "Nice work. You’re halfway through your Snooze Assessment. Keep going, and I’ll use your answers to narrow down your best matches.",
+  "state": "celebrate",
+  "priority": "normal",
+  "ttlMs": 7000,
+  "actions": []
+}

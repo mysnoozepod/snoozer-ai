@@ -29,7 +29,7 @@ function readLastCaption() {
 function clampText(str, max = 220) {
   const s = String(str || "");
   if (s.length <= max) return s;
-  return `${s.slice(0, max - 1).trim()}…`;
+  return `${s.slice(0, max - 3).trim()}...`;
 }
 
 function normalizeHudState(v) {
@@ -273,7 +273,7 @@ export function SnoozerHUD({
   const activeCaptionSource = externalCaptionText || lastAssistantText || "";
   const bubbleText = useMemo(() => {
     if (effectiveBusy && !isStreaming && !externalCaptionText) return "";
-    if (effectiveError) return "Something went wrong.";
+    if (effectiveError) return "Snoozer had trouble responding.";
     return displayedText || "";
   }, [effectiveBusy, effectiveError, displayedText, isStreaming, externalCaptionText]);
 
@@ -578,7 +578,7 @@ export function SnoozerHUD({
         }
       }
     } catch (e) {
-      setLocalError(e?.message || "Snoozer hit a wall.");
+      setLocalError(e?.message || "Snoozer had trouble responding.");
       if (controlledState == null || controlledState === "") {
         setLocalHudState("warning");
       }
@@ -586,7 +586,7 @@ export function SnoozerHUD({
         ...m,
         {
           role: "assistant",
-          text: "Something went wrong.",
+          text: "Snoozer had trouble responding.",
         },
       ]);
       if (controlledState == null || controlledState === "") {
@@ -857,7 +857,7 @@ export function SnoozerHUD({
                 {effectiveBusy ? (
                   <div className="text-sm text-gray-600">
                     <span className="font-extrabold">Snoozer: </span>
-                    Thinking…
+                    Thinking...
                   </div>
                 ) : null}
               </div>
@@ -872,3 +872,4 @@ export function SnoozerHUD({
 export default function SnoozerPanel(props) {
   return <SnoozerHUD {...props} />;
 }
+
