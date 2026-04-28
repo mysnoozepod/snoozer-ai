@@ -6,11 +6,101 @@
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
+  {%- if section.id == 'hero' -%}
+    .section-{{ section.id }}-padding {
+      padding-top: 3.2rem !important;
+      padding-bottom: 4.8rem !important;
+    }
+
+    .section-{{ section.id }}-padding .rich-text__wrapper {
+      width: 100%;
+    }
+
+    .section-{{ section.id }}-padding .rich-text__blocks {
+      max-width: 64rem;
+    }
+
+    .section-{{ section.id }}-padding .rich-text__blocks > * + * {
+      margin-top: 1.6rem;
+    }
+
+    .section-{{ section.id }}-padding .rich-text__heading {
+      max-width: 12ch;
+    }
+
+    .section-{{ section.id }}-padding .rich-text__text {
+      max-width: 58rem;
+    }
+
+    .section-{{ section.id }}-padding .rich-text__buttons {
+      width: auto;
+      max-width: none;
+      gap: 1.2rem;
+      margin-top: 0.8rem;
+    }
+
+    .section-{{ section.id }}-padding .rich-text__buttons--multiple > * {
+      flex-grow: 0;
+      min-width: 22rem;
+    }
+  {%- elsif section.id == 'why-guided-intro' -%}
+    .section-{{ section.id }}-padding {
+      padding-top: 5.6rem !important;
+      padding-bottom: 1.6rem !important;
+    }
+
+    .section-{{ section.id }}-padding .rich-text__blocks {
+      max-width: 72rem;
+    }
+
+    .section-{{ section.id }}-padding .rich-text__blocks > * + * {
+      margin-top: 1.6rem;
+    }
+  {%- endif -%}
+
   @media screen and (min-width: 750px) {
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top }}px;
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
+
+    {%- if section.id == 'hero' -%}
+      .section-{{ section.id }}-padding {
+        padding-top: 4rem !important;
+        padding-bottom: 5.6rem !important;
+      }
+    {%- elsif section.id == 'why-guided-intro' -%}
+      .section-{{ section.id }}-padding {
+        padding-top: 6.4rem !important;
+        padding-bottom: 2rem !important;
+      }
+    {%- endif -%}
+  }
+
+  @media screen and (min-width: 990px) {
+    {%- if section.id == 'hero' -%}
+      .section-{{ section.id }}-padding {
+        padding-top: 5.6rem !important;
+        padding-bottom: 6.4rem !important;
+      }
+
+      .section-{{ section.id }}-padding .rich-text__blocks > * + * {
+        margin-top: 2rem;
+      }
+
+      .section-{{ section.id }}-padding .rich-text__heading {
+        max-width: 10ch;
+      }
+
+      .section-{{ section.id }}-padding .rich-text__buttons {
+        gap: 1.6rem;
+      }
+    {%- elsif section.id == 'why-guided-intro' -%}
+      .section-{{ section.id }}-padding {
+        padding-top: 6.4rem !important;
+        padding-bottom: 2.4rem !important;
+      }
+    {%- endif -%}
   }
 {%- endstyle -%}
 

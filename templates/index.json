@@ -173,46 +173,17 @@
     "light-product-preview": {
       "type": "custom-liquid",
       "settings": {
-        "custom_liquid": "{{ 'component-card.css' | asset_url | stylesheet_tag }}\n{{ 'template-collection.css' | asset_url | stylesheet_tag }}\n{{ 'quick-add.css' | asset_url | stylesheet_tag }}\n<script src='{{ \"product-form.js\" | asset_url }}' defer='defer'></script>\n<script src='{{ \"quick-add.js\" | asset_url }}' defer='defer'></script>\n<div class='collection'>\n  <div class='collection__title title-wrapper title-wrapper--no-top-margin page-width'>\n    <h2 class='title inline-richtext h2'>Top Picks Based on Real Sleep Profiles</h2>\n    <div class='collection__description body rte'>\n      <p>These customer favorites help people make a more confident sleep decision.</p>\n      <p><a href='/search?q=mattress&amp;options%5Bprefix%5D=last&amp;type=product'>View All Mattresses &rarr;</a></p>\n    </div>\n  </div>\n  <div class='page-width'>\n    <ul class='grid product-grid contains-card contains-card--product contains-card--standard grid--3-col-desktop grid--2-col-tablet-down' role='list'>\n      {% assign preview_handles = '12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' %}\n      {% assign skip_card_product_styles = false %}\n      {% for handle in preview_handles %}\n        {% assign preview_product = all_products[handle] %}\n        {% if preview_product != blank %}\n          <li class='grid__item'>\n            {% render 'card-product', card_product: preview_product, media_aspect_ratio: 'square', image_shape: 'default', show_secondary_image: false, show_vendor: false, show_rating: false, skip_styles: skip_card_product_styles, section_id: section.id, quick_add: 'standard' %}\n          </li>\n          {% assign skip_card_product_styles = true %}\n        {% endif %}\n      {% endfor %}\n    </ul>\n  </div>\n</div>",
+        "custom_liquid": "{{ 'component-card.css' | asset_url | stylesheet_tag }}\n{{ 'template-collection.css' | asset_url | stylesheet_tag }}\n{{ 'quick-add.css' | asset_url | stylesheet_tag }}\n<script src='{{ \"product-form.js\" | asset_url }}' defer='defer'></script>\n<script src='{{ \"quick-add.js\" | asset_url }}' defer='defer'></script>\n<div class='homepage-shelf homepage-shelf--preview'>\n  <div class='homepage-shelf__header page-width'>\n    <div class='homepage-shelf__copy'>\n      <h2 class='homepage-shelf__title title inline-richtext h2'>Top Picks Based on Real Sleep Profiles</h2>\n      <div class='homepage-shelf__description collection__description body rte'>\n        <p>Start here. These are common matches for shoppers looking for better sleep.</p>\n      </div>\n    </div>\n    <a class='homepage-shelf__link link underlined-link' href='/search?q=mattress&amp;options%5Bprefix%5D=last&amp;type=product'>View All Mattresses &rarr;</a>\n  </div>\n  <div class='page-width'>\n    <ul class='grid product-grid contains-card contains-card--product contains-card--standard grid--3-col-desktop grid--2-col-tablet-down' role='list'>\n      {% assign preview_handles = '12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' %}\n      {% assign skip_card_product_styles = false %}\n      {% for handle in preview_handles %}\n        {% assign preview_product = all_products[handle] %}\n        {% if preview_product != blank %}\n          <li class='grid__item'>\n            {% render 'card-product', card_product: preview_product, media_aspect_ratio: 'square', image_shape: 'default', show_secondary_image: false, show_vendor: false, show_rating: false, skip_styles: skip_card_product_styles, section_id: section.id, quick_add: 'standard' %}\n          </li>\n          {% assign skip_card_product_styles = true %}\n        {% endif %}\n      {% endfor %}\n    </ul>\n  </div>\n</div>",
         "color_scheme": "scheme-2",
         "padding_top": 64,
         "padding_bottom": 64
       }
     },
     "showroom": {
-      "type": "rich-text",
-      "blocks": {
-        "heading": {
-          "type": "heading",
-          "settings": {
-            "heading": "The SnoozePod Unmanned Showroom",
-            "heading_size": "h2"
-          }
-        },
-        "text": {
-          "type": "text",
-          "settings": {
-            "text": "<p>Experience mattresses in a private, pressure-free environment. Explore at your own pace, test what you like, and get guidance on your terms.</p>"
-          }
-        },
-        "button": {
-          "type": "button",
-          "settings": {
-            "button_label": "Book a Snooze Session",
-            "button_link": "/pages/book-a-snooze-session",
-            "button_style_secondary": false,
-            "button_label_2": "",
-            "button_link_2": "",
-            "button_style_secondary_2": false
-          }
-        }
-      },
-      "block_order": ["heading", "text", "button"],
+      "type": "custom-liquid",
       "settings": {
-        "desktop_content_position": "left",
-        "content_alignment": "left",
+        "custom_liquid": "<div class='page-width homepage-showroom'>\n  <div class='homepage-showroom__content'>\n    <h2 class='homepage-showroom__heading h2'>The SnoozePod Unmanned Showroom</h2>\n    <p class='homepage-showroom__copy'>Experience mattresses in a private, pressure-free environment. Explore at your own pace, test what you like, and get guidance on your terms.</p>\n    <a class='button button--primary' href='/pages/book-a-snooze-session'>Book a Snooze Session</a>\n  </div>\n  {% assign showroom_product = all_products['12-dual-comfort-hybrid'] %}\n  {% if showroom_product != blank and showroom_product.featured_media != blank %}\n    {% assign showroom_alt = showroom_product.featured_media.alt | default: showroom_product.title | escape %}\n    <div class='homepage-showroom__media'>\n      {{ showroom_product.featured_media | image_url: width: 1400 | image_tag: class: 'homepage-showroom__image', widths: '480, 720, 960, 1200, 1400', sizes: '(min-width: 990px) 48rem, calc(100vw - 3.2rem)', alt: showroom_alt, loading: 'lazy' }}\n    </div>\n  {% endif %}\n</div>",
         "color_scheme": "scheme-1",
-        "full_width": false,
         "padding_top": 64,
         "padding_bottom": 64
       }
@@ -230,7 +201,7 @@
         "text": {
           "type": "text",
           "settings": {
-            "text": "<p>Most people guess when choosing a mattress. MySnoozePod helps remove the guesswork by guiding you through a clear path from assessment to recommendation to experience.</p>"
+            "text": "<p>Most people guess when buying a mattress. We don't. MySnoozePod guides you from assessment to recommendation to experience, so your decision feels clearer before you buy.</p>"
           }
         }
       },
@@ -302,7 +273,7 @@
     "full-product-section": {
       "type": "custom-liquid",
       "settings": {
-        "custom_liquid": "<div class='collection'>\n  <div class='collection__title title-wrapper title-wrapper--no-top-margin page-width'>\n    <h2 class='title inline-richtext h2'>Explore Mattresses</h2>\n  </div>\n  <div class='page-width'>\n    <ul class='grid product-grid contains-card contains-card--product contains-card--standard grid--4-col-desktop grid--2-col-tablet-down' role='list'>\n      {% assign mattress_handles = '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' %}\n      {% assign skip_card_product_styles = false %}\n      {% for handle in mattress_handles %}\n        {% assign mattress_product = all_products[handle] %}\n        {% if mattress_product != blank %}\n          <li class='grid__item'>\n            {% render 'card-product', card_product: mattress_product, media_aspect_ratio: 'square', image_shape: 'default', show_secondary_image: false, show_vendor: false, show_rating: false, skip_styles: skip_card_product_styles, section_id: section.id, quick_add: 'standard' %}\n          </li>\n          {% assign skip_card_product_styles = true %}\n        {% endif %}\n      {% endfor %}\n    </ul>\n  </div>\n</div>",
+        "custom_liquid": "<div class='homepage-shelf homepage-shelf--full'>\n  <div class='homepage-shelf__header page-width'>\n    <h2 class='homepage-shelf__title title inline-richtext h2'>Explore Mattresses</h2>\n  </div>\n  <div class='page-width'>\n    <ul class='grid product-grid contains-card contains-card--product contains-card--standard grid--4-col-desktop grid--2-col-tablet-down' role='list'>\n      {% assign mattress_handles = '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' %}\n      {% assign skip_card_product_styles = false %}\n      {% for handle in mattress_handles %}\n        {% assign mattress_product = all_products[handle] %}\n        {% if mattress_product != blank %}\n          <li class='grid__item'>\n            {% render 'card-product', card_product: mattress_product, media_aspect_ratio: 'square', image_shape: 'default', show_secondary_image: false, show_vendor: false, show_rating: false, skip_styles: skip_card_product_styles, section_id: section.id, quick_add: 'standard' %}\n          </li>\n          {% assign skip_card_product_styles = true %}\n        {% endif %}\n      {% endfor %}\n    </ul>\n  </div>\n</div>",
         "color_scheme": "scheme-2",
         "padding_top": 64,
         "padding_bottom": 64

@@ -28,11 +28,221 @@
     height: 100%;
   }
 
+  {%- if section.id == 'value-strip' -%}
+    .section-{{ section.id }}-padding {
+      padding-top: 4.8rem !important;
+      padding-bottom: 4.8rem !important;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-list {
+      gap: 2.4rem 1.6rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card {
+      text-align: center;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
+      width: 5.2rem;
+      height: 5.2rem;
+      background: rgba(var(--color-accent-blue), 0.08);
+      color: rgb(var(--color-primary-navy));
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
+      width: 2.2rem;
+      height: 2.2rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper + .multicolumn-card__info {
+      padding-top: 1.2rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info {
+      padding: 0;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info h3 {
+      font-size: 1.8rem;
+      line-height: 2.4rem;
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info .rte {
+      max-width: 24rem;
+      margin: 0 auto;
+    }
+  {%- elsif section.id == 'how-it-works' -%}
+    .section-{{ section.id }}-padding .multicolumn__title {
+      margin-bottom: 3.2rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-list {
+      gap: 2rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card {
+      height: 100%;
+      padding: 2.4rem;
+      border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
+      border-radius: 1.6rem;
+      background: rgb(var(--color-background));
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper {
+      margin: 0 0 1.6rem;
+      width: auto;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
+      width: 5.6rem;
+      height: 5.6rem;
+      background: rgba(var(--color-accent-blue), 0.08);
+      color: rgb(var(--color-primary-navy));
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
+      width: 2.4rem;
+      height: 2.4rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper + .multicolumn-card__info {
+      padding-top: 0;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info {
+      padding: 0;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__step-label {
+      margin: 0 0 0.8rem;
+      font-size: 1.2rem;
+      line-height: 1.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: rgb(var(--color-accent-blue));
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info h3 {
+      font-size: 2rem;
+      line-height: 2.8rem;
+      margin-bottom: 0.8rem;
+    }
+  {%- elsif section.id == 'why-guided-benefits' -%}
+    .section-{{ section.id }}-padding {
+      padding-top: 0 !important;
+      padding-bottom: 6.4rem !important;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-list {
+      gap: 2rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card {
+      height: 100%;
+      padding: 2.4rem;
+      border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
+      border-radius: 1.6rem;
+      background: rgb(var(--color-background));
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper {
+      margin: 0 0 1.6rem;
+      width: auto;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
+      width: 5rem;
+      height: 5rem;
+      background: rgba(var(--color-primary-navy), 0.06);
+      color: rgb(var(--color-primary-navy));
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper + .multicolumn-card__info {
+      padding-top: 0;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info {
+      padding: 0;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info h3 {
+      font-size: 1.9rem;
+      line-height: 2.6rem;
+      margin-bottom: 0.8rem;
+    }
+  {%- elsif section.id == 'category-navigation' -%}
+    .section-{{ section.id }}-padding .multicolumn__title {
+      margin-bottom: 2.4rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-list {
+      gap: 2rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card {
+      height: 100%;
+      padding: 2.4rem;
+      border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
+      border-radius: 1.6rem;
+      background: rgb(var(--color-background));
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper {
+      margin: 0 0 1.6rem;
+      width: auto;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper + .multicolumn-card__info {
+      padding-top: 0;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info {
+      padding: 0;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info h3 {
+      font-size: 1.9rem;
+      line-height: 2.6rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info .link {
+      margin-top: 1.6rem;
+      font-weight: 500;
+    }
+  {%- endif -%}
+
   @media screen and (min-width: 750px) {
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top }}px;
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
+
+    {%- if section.id == 'value-strip' -%}
+      .section-{{ section.id }}-padding {
+        padding-top: 5.6rem !important;
+        padding-bottom: 5.6rem !important;
+      }
+    {%- elsif section.id == 'why-guided-benefits' -%}
+      .section-{{ section.id }}-padding {
+        padding-bottom: 7.2rem !important;
+      }
+    {%- endif -%}
+  }
+
+  @media screen and (min-width: 990px) {
+    {%- if section.id == 'how-it-works' -%}
+      .section-{{ section.id }}-padding .multicolumn__title {
+        margin-bottom: 4rem;
+      }
+    {%- elsif section.id == 'why-guided-benefits' -%}
+      .section-{{ section.id }}-padding {
+        padding-bottom: 8rem !important;
+      }
+    {%- endif -%}
   }
 {%- endstyle -%}
 
@@ -151,6 +361,9 @@
                 </div>
               {%- endif -%}
               <div class="multicolumn-card__info">
+                {%- if section.id == 'how-it-works' -%}
+                  <p class="multicolumn-card__step-label">Step {{ forloop.index }}</p>
+                {%- endif -%}
                 {%- if block.settings.title != blank -%}
                   <h3 class="inline-richtext">{{ block.settings.title }}</h3>
                 {%- endif -%}
