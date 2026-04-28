@@ -12,6 +12,13 @@
       padding-bottom: 4.8rem !important;
     }
 
+    .section-{{ section.id }}-padding .homepage-hero {
+      display: grid;
+      gap: 2.4rem;
+      align-items: center;
+    }
+
+    .section-{{ section.id }}-padding .homepage-hero__copy,
     .section-{{ section.id }}-padding .rich-text__wrapper {
       width: 100%;
     }
@@ -39,9 +46,32 @@
       margin-top: 0.8rem;
     }
 
+    .section-{{ section.id }}-padding .rich-text__buttons--multiple {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
     .section-{{ section.id }}-padding .rich-text__buttons--multiple > * {
+      width: 100%;
       flex-grow: 0;
-      min-width: 22rem;
+    }
+
+    .section-{{ section.id }}-padding .homepage-hero__media {
+      overflow: hidden;
+      border-radius: 1.6rem;
+      border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
+      background: rgb(var(--color-background));
+      aspect-ratio: 4 / 3;
+      min-height: 24rem;
+    }
+
+    .section-{{ section.id }}-padding .homepage-hero__image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 78% center;
     }
   {%- elsif section.id == 'why-guided-intro' -%}
     .section-{{ section.id }}-padding {
@@ -69,6 +99,16 @@
         padding-top: 4rem !important;
         padding-bottom: 5.6rem !important;
       }
+
+      .section-{{ section.id }}-padding .rich-text__buttons--multiple {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+
+      .section-{{ section.id }}-padding .rich-text__buttons--multiple > * {
+        width: auto;
+        min-width: 22rem;
+      }
     {%- elsif section.id == 'why-guided-intro' -%}
       .section-{{ section.id }}-padding {
         padding-top: 6.4rem !important;
@@ -84,6 +124,11 @@
         padding-bottom: 6.4rem !important;
       }
 
+      .section-{{ section.id }}-padding .homepage-hero {
+        grid-template-columns: minmax(0, 1fr) minmax(36rem, 50rem);
+        gap: 4.8rem;
+      }
+
       .section-{{ section.id }}-padding .rich-text__blocks > * + * {
         margin-top: 2rem;
       }
@@ -95,6 +140,11 @@
       .section-{{ section.id }}-padding .rich-text__buttons {
         gap: 1.6rem;
       }
+
+      .section-{{ section.id }}-padding .homepage-hero__media {
+        aspect-ratio: 6 / 5;
+        min-height: 46rem;
+      }
     {%- elsif section.id == 'why-guided-intro' -%}
       .section-{{ section.id }}-padding {
         padding-top: 6.4rem !important;
@@ -104,83 +154,108 @@
   }
 {%- endstyle -%}
 
+{%- capture rich_text_blocks -%}
+  {%- for block in section.blocks -%}
+    {%- case block.type -%}
+      {%- when 'heading' -%}
+        <h2
+          class="rich-text__heading rte inline-richtext {{ block.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {{ block.shopify_attributes }}
+          {% if settings.animations_reveal_on_scroll %}
+            data-cascade
+            style="--animation-order: {{ forloop.index }};"
+          {% endif %}
+        >
+          {{ block.settings.heading }}
+        </h2>
+      {%- when 'caption' -%}
+        <p
+          class="rich-text__caption {{ block.settings.text_style }} {{ block.settings.text_style }}--{{ block.settings.text_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {{ block.shopify_attributes }}
+          {% if settings.animations_reveal_on_scroll %}
+            data-cascade
+            style="--animation-order: {{ forloop.index }};"
+          {% endif %}
+        >
+          {{ block.settings.caption | escape }}
+        </p>
+      {%- when 'text' -%}
+        <div
+          class="rich-text__text rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {{ block.shopify_attributes }}
+          {% if settings.animations_reveal_on_scroll %}
+            data-cascade
+            style="--animation-order: {{ forloop.index }};"
+          {% endif %}
+        >
+          {{ block.settings.text }}
+        </div>
+      {%- when 'button' -%}
+        <div
+          class="rich-text__buttons{% if block.settings.button_label != blank and block.settings.button_label_2 != blank %} rich-text__buttons--multiple{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {{ block.shopify_attributes }}
+          {% if settings.animations_reveal_on_scroll %}
+            data-cascade
+            style="--animation-order: {{ forloop.index }};"
+          {% endif %}
+        >
+          {%- if block.settings.button_label != blank -%}
+            <a
+              {% if block.settings.button_link == blank %}
+                role="link" aria-disabled="true"
+              {% else %}
+                href="{{ block.settings.button_link }}"
+              {% endif %}
+              class="button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+            >
+              {{- block.settings.button_label | escape -}}
+            </a>
+          {%- endif -%}
+          {%- if block.settings.button_label_2 != blank -%}
+            <a
+              {% if block.settings.button_link_2 == blank %}
+                role="link" aria-disabled="true"
+              {% else %}
+                href="{{ block.settings.button_link_2 }}"
+              {% endif %}
+              class="button{% if block.settings.button_style_secondary_2 %} button--secondary{% else %} button--primary{% endif %}"
+            >
+              {{- block.settings.button_label_2 | escape -}}
+            </a>
+          {%- endif -%}
+        </div>
+    {%- endcase -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
 <div class="isolate{% unless section.settings.full_width %} page-width{% endunless %}">
   <div class="rich-text content-container color-{{ section.settings.color_scheme }} gradient{% if section.settings.full_width %} rich-text--full-width content-container--full-width{% endif %} section-{{ section.id }}-padding">
-    <div class="rich-text__wrapper rich-text__wrapper--{{ section.settings.desktop_content_position }}{% if section.settings.full_width %} page-width{% endif %}">
-      <div class="rich-text__blocks {{ section.settings.content_alignment }}">
-        {%- for block in section.blocks -%}
-          {%- case block.type -%}
-            {%- when 'heading' -%}
-              <h2
-                class="rich-text__heading rte inline-richtext {{ block.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-                {{ block.shopify_attributes }}
-                {% if settings.animations_reveal_on_scroll %}
-                  data-cascade
-                  style="--animation-order: {{ forloop.index }};"
-                {% endif %}
-              >
-                {{ block.settings.heading }}
-              </h2>
-            {%- when 'caption' -%}
-              <p
-                class="rich-text__caption {{ block.settings.text_style }} {{ block.settings.text_style }}--{{ block.settings.text_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-                {{ block.shopify_attributes }}
-                {% if settings.animations_reveal_on_scroll %}
-                  data-cascade
-                  style="--animation-order: {{ forloop.index }};"
-                {% endif %}
-              >
-                {{ block.settings.caption | escape }}
-              </p>
-            {%- when 'text' -%}
-              <div
-                class="rich-text__text rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-                {{ block.shopify_attributes }}
-                {% if settings.animations_reveal_on_scroll %}
-                  data-cascade
-                  style="--animation-order: {{ forloop.index }};"
-                {% endif %}
-              >
-                {{ block.settings.text }}
-              </div>
-            {%- when 'button' -%}
-              <div
-                class="rich-text__buttons{% if block.settings.button_label != blank and block.settings.button_label_2 != blank %} rich-text__buttons--multiple{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-                {{ block.shopify_attributes }}
-                {% if settings.animations_reveal_on_scroll %}
-                  data-cascade
-                  style="--animation-order: {{ forloop.index }};"
-                {% endif %}
-              >
-                {%- if block.settings.button_label != blank -%}
-                  <a
-                    {% if block.settings.button_link == blank %}
-                      role="link" aria-disabled="true"
-                    {% else %}
-                      href="{{ block.settings.button_link }}"
-                    {% endif %}
-                    class="button{% if block.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
-                  >
-                    {{- block.settings.button_label | escape -}}
-                  </a>
-                {%- endif -%}
-                {%- if block.settings.button_label_2 != blank -%}
-                  <a
-                    {% if block.settings.button_link_2 == blank %}
-                      role="link" aria-disabled="true"
-                    {% else %}
-                      href="{{ block.settings.button_link_2 }}"
-                    {% endif %}
-                    class="button{% if block.settings.button_style_secondary_2 %} button--secondary{% else %} button--primary{% endif %}"
-                  >
-                    {{- block.settings.button_label_2 | escape -}}
-                  </a>
-                {%- endif -%}
-              </div>
-          {%- endcase -%}
-        {%- endfor -%}
+    {%- if section.id == 'hero' -%}
+      <div class="homepage-hero">
+        <div class="homepage-hero__copy rich-text__wrapper rich-text__wrapper--{{ section.settings.desktop_content_position }}{% if section.settings.full_width %} page-width{% endif %}">
+          <div class="rich-text__blocks {{ section.settings.content_alignment }}">
+            {{ rich_text_blocks }}
+          </div>
+        </div>
+        <div class="homepage-hero__media">
+          <img
+            class="homepage-hero__image"
+            src="{{ 'homepage-hero-guidance.png' | asset_url }}"
+            alt="Bright modern bedroom with a premium mattress setup"
+            width="1536"
+            height="1024"
+            loading="eager"
+            fetchpriority="high"
+          >
+        </div>
       </div>
-    </div>
+    {%- else -%}
+      <div class="rich-text__wrapper rich-text__wrapper--{{ section.settings.desktop_content_position }}{% if section.settings.full_width %} page-width{% endif %}">
+        <div class="rich-text__blocks {{ section.settings.content_alignment }}">
+          {{ rich_text_blocks }}
+        </div>
+      </div>
+    {%- endif -%}
   </div>
 </div>
 
