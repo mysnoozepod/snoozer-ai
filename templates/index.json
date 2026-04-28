@@ -1,18 +1,59 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
-    "hero": {
-      "type": "hero-guided",
+    "image_with_text_hVQzdT": {
+      "type": "image-with-text",
+      "blocks": {
+        "heading_Mmbkk6": {
+          "type": "heading",
+          "settings": {
+            "heading": "Image with text",
+            "heading_size": "h1"
+          }
+        },
+        "text_bxVqWR": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
+            "text_style": "body"
+          }
+        },
+        "button_yf4Rey": {
+          "type": "button",
+          "settings": {
+            "button_label": "Button label",
+            "button_link": "",
+            "button_style_secondary": false
+          }
+        }
+      },
+      "block_order": [
+        "heading_Mmbkk6",
+        "text_bxVqWR",
+        "button_yf4Rey"
+      ],
+      "name": "t:sections.image-with-text.presets.name",
       "settings": {
-        "image": "",
-        "heading": "Better Sleep Starts With Personalized Guidance",
-        "subtext": "Take our quick sleep assessment and get recommendations built around your unique needs.",
-        "primary_button_label": "Start Your Sleep Assessment",
-        "primary_button_link": "/pages/sleep-assessment",
-        "secondary_button_label": "Shop Mattresses",
-        "secondary_button_link": "/search?q=mattress&options%5Bprefix%5D=last&type=product",
-        "color_scheme": "scheme-2",
-        "padding_top": 64,
-        "padding_bottom": 64
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "layout": "image_first",
+        "desktop_content_position": "top",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "section_color_scheme": "",
+        "color_scheme": "",
+        "image_behavior": "none",
+        "mobile_content_alignment": "left",
+        "padding_top": 36,
+        "padding_bottom": 36
       }
     },
     "value-strip": {
@@ -21,7 +62,6 @@
         "value-1": {
           "type": "column",
           "settings": {
-            "image": "",
             "icon": "silhouette",
             "title": "Personalized Guidance",
             "text": "<p>Recommendations built around how you sleep.</p>",
@@ -32,7 +72,6 @@
         "value-2": {
           "type": "column",
           "settings": {
-            "image": "",
             "icon": "lock",
             "title": "Private Experience",
             "text": "<p>Explore comfort in a pressure-free setting.</p>",
@@ -43,7 +82,6 @@
         "value-3": {
           "type": "column",
           "settings": {
-            "image": "",
             "icon": "question_mark",
             "title": "No Guesswork",
             "text": "<p>Clear guidance helps narrow the right options.</p>",
@@ -54,7 +92,6 @@
         "value-4": {
           "type": "column",
           "settings": {
-            "image": "",
             "icon": "price_tag",
             "title": "Transparent Pricing",
             "text": "<p>Know what you are comparing without surprises.</p>",
@@ -63,7 +100,12 @@
           }
         }
       },
-      "block_order": ["value-1", "value-2", "value-3", "value-4"],
+      "block_order": [
+        "value-1",
+        "value-2",
+        "value-3",
+        "value-4"
+      ],
       "settings": {
         "title": "",
         "heading_size": "h2",
@@ -81,13 +123,25 @@
         "padding_bottom": 64
       }
     },
+    "showroom": {
+      "type": "split-image-section",
+      "settings": {
+        "heading": "The SnoozePod Unmanned Showroom",
+        "text": "Experience mattresses in a private, pressure-free environment. Explore at your own pace, test what you like, and get guidance on your terms.",
+        "button_label": "Book a Snooze Session",
+        "button_link": "/pages/book-a-snooze-session",
+        "image_position": "right",
+        "color_scheme": "scheme-1",
+        "padding_top": 64,
+        "padding_bottom": 64
+      }
+    },
     "how-it-works": {
       "type": "multicolumn",
       "blocks": {
         "step-1": {
           "type": "column",
           "settings": {
-            "image": "",
             "icon": "clipboard",
             "title": "Take Assessment",
             "text": "<p>Answer a few simple questions about your sleep and preferences.</p>",
@@ -98,7 +152,6 @@
         "step-2": {
           "type": "column",
           "settings": {
-            "image": "",
             "icon": "check_mark",
             "title": "Get Your Plan",
             "text": "<p>We match you with sleep options built around your needs.</p>",
@@ -109,7 +162,6 @@
         "step-3": {
           "type": "column",
           "settings": {
-            "image": "",
             "icon": "eye",
             "title": "Test & Compare",
             "text": "<p>Explore options, compare comfort, and find your best fit.</p>",
@@ -120,7 +172,6 @@
         "step-4": {
           "type": "column",
           "settings": {
-            "image": "",
             "icon": "heart",
             "title": "Build Your Setup",
             "text": "<p>Complete your sleep setup with the mattress, base, and comfort options that fit.</p>",
@@ -129,7 +180,12 @@
           }
         }
       },
-      "block_order": ["step-1", "step-2", "step-3", "step-4"],
+      "block_order": [
+        "step-1",
+        "step-2",
+        "step-3",
+        "step-4"
+      ],
       "settings": {
         "title": "How Shopping at MySnoozePod Works",
         "heading_size": "h2",
@@ -150,7 +206,6 @@
     "how-it-works-visual": {
       "type": "process-visual-section",
       "settings": {
-        "image": "",
         "heading": "",
         "position": "below",
         "color_scheme": "scheme-2",
@@ -158,184 +213,121 @@
         "padding_bottom": 64
       }
     },
-    "light-product-preview": {
-      "type": "custom-liquid",
+    "featured_collection_4WFByd": {
+      "type": "featured-collection",
+      "name": "t:sections.featured-collection.presets.name",
       "settings": {
-        "custom_liquid": "{{ 'component-card.css' | asset_url | stylesheet_tag }}\n{{ 'template-collection.css' | asset_url | stylesheet_tag }}\n{{ 'quick-add.css' | asset_url | stylesheet_tag }}\n<script src='{{ \"product-form.js\" | asset_url }}' defer='defer'></script>\n<script src='{{ \"quick-add.js\" | asset_url }}' defer='defer'></script>\n<div class='homepage-shelf homepage-shelf--preview'>\n  <div class='homepage-shelf__header page-width'>\n    <div class='homepage-shelf__copy'>\n      <h2 class='homepage-shelf__title title inline-richtext h2'>Top Picks Based on Real Sleep Profiles</h2>\n      <div class='homepage-shelf__description collection__description body rte'>\n        <p>Start here. These are common matches for shoppers looking for better sleep.</p>\n      </div>\n    </div>\n    <a class='homepage-shelf__link link underlined-link' href='/search?q=mattress&amp;options%5Bprefix%5D=last&amp;type=product'>View All Mattresses &rarr;</a>\n  </div>\n  <div class='page-width'>\n    <ul class='grid product-grid contains-card contains-card--product contains-card--standard grid--3-col-desktop grid--2-col-tablet-down' role='list'>\n      {% assign preview_handles = '12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' %}\n      {% assign skip_card_product_styles = false %}\n      {% for handle in preview_handles %}\n        {% assign preview_product = all_products[handle] %}\n        {% if preview_product != blank %}\n          <li class='grid__item'>\n            {% render 'card-product', card_product: preview_product, media_aspect_ratio: 'square', image_shape: 'default', show_secondary_image: false, show_vendor: false, show_rating: false, skip_styles: skip_card_product_styles, section_id: section.id, quick_add: 'standard' %}\n          </li>\n          {% assign skip_card_product_styles = true %}\n        {% endif %}\n      {% endfor %}\n    </ul>\n  </div>\n</div>",
-        "color_scheme": "scheme-2",
-        "padding_top": 64,
-        "padding_bottom": 64
+        "title": "Featured collection",
+        "heading_size": "h1",
+        "description": "",
+        "show_description": false,
+        "description_style": "body",
+        "collection": "",
+        "products_to_show": 4,
+        "columns_desktop": 4,
+        "full_width": false,
+        "show_view_all": true,
+        "view_all_style": "solid",
+        "enable_desktop_slider": false,
+        "color_scheme": "",
+        "image_ratio": "adapt",
+        "image_shape": "default",
+        "show_secondary_image": false,
+        "show_vendor": false,
+        "show_rating": false,
+        "quick_add": "none",
+        "columns_mobile": "2",
+        "swipe_on_mobile": false,
+        "padding_top": 36,
+        "padding_bottom": 36
       }
     },
-    "showroom": {
-      "type": "split-image-section",
-      "settings": {
-        "image": "",
-        "heading": "The SnoozePod Unmanned Showroom",
-        "text": "Experience mattresses in a private, pressure-free environment. Explore at your own pace, test what you like, and get guidance on your terms.",
-        "button_label": "Book a Snooze Session",
-        "button_link": "/pages/book-a-snooze-session",
-        "image_position": "right",
-        "color_scheme": "scheme-1",
-        "padding_top": 64,
-        "padding_bottom": 64
-      }
-    },
-    "why-guided-intro": {
-      "type": "rich-text",
+    "image_with_text_ny7ibh": {
+      "type": "image-with-text",
       "blocks": {
-        "heading": {
+        "heading_iJ44KK": {
           "type": "heading",
           "settings": {
-            "heading": "Why Our Guided Approach Works",
-            "heading_size": "h2"
+            "heading": "Image with text",
+            "heading_size": "h1"
           }
         },
-        "text": {
+        "text_dCtgf9": {
           "type": "text",
           "settings": {
-            "text": "<p>Most people guess when buying a mattress. We don't. MySnoozePod guides you from assessment to recommendation to experience, so your decision feels clearer before you buy.</p>"
+            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
+            "text_style": "body"
+          }
+        },
+        "button_xMHKwB": {
+          "type": "button",
+          "settings": {
+            "button_label": "Button label",
+            "button_link": "",
+            "button_style_secondary": false
           }
         }
       },
-      "block_order": ["heading", "text"],
+      "block_order": [
+        "heading_iJ44KK",
+        "text_dCtgf9",
+        "button_xMHKwB"
+      ],
+      "name": "t:sections.image-with-text.presets.name",
       "settings": {
-        "desktop_content_position": "left",
-        "content_alignment": "left",
-        "color_scheme": "scheme-2",
-        "full_width": false,
-        "padding_top": 64,
-        "padding_bottom": 0
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "layout": "image_first",
+        "desktop_content_position": "top",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "section_color_scheme": "",
+        "color_scheme": "",
+        "image_behavior": "none",
+        "mobile_content_alignment": "left",
+        "padding_top": 36,
+        "padding_bottom": 36
       }
     },
-    "why-guided-benefits": {
-      "type": "multicolumn",
+    "collection_list_KVb8Pk": {
+      "type": "collection-list",
       "blocks": {
-        "benefit-1": {
-          "type": "column",
+        "featured_collection_xWfdyL": {
+          "type": "featured_collection",
           "settings": {
-            "image": "",
-            "icon": "silhouette",
-            "title": "Designed Around You",
-            "text": "<p>Your sleep needs shape every recommendation.</p>",
-            "link_label": "",
-            "link": ""
+            "collection": ""
           }
         },
-        "benefit-2": {
-          "type": "column",
+        "featured_collection_RRmtAR": {
+          "type": "featured_collection",
           "settings": {
-            "image": "",
-            "icon": "heart",
-            "title": "Better Sleep, Every Night",
-            "text": "<p>Comfort decisions get clearer before you buy.</p>",
-            "link_label": "",
-            "link": ""
+            "collection": ""
           }
         },
-        "benefit-3": {
-          "type": "column",
+        "featured_collection_rwAwV9": {
+          "type": "featured_collection",
           "settings": {
-            "image": "",
-            "icon": "star",
-            "title": "Quality You Can Trust",
-            "text": "<p>Dependable products and honest guidance stay front and center.</p>",
-            "link_label": "",
-            "link": ""
+            "collection": ""
           }
         }
       },
-      "block_order": ["benefit-1", "benefit-2", "benefit-3"],
+      "block_order": [
+        "featured_collection_xWfdyL",
+        "featured_collection_RRmtAR",
+        "featured_collection_rwAwV9"
+      ],
+      "name": "t:sections.collection-list.presets.name",
       "settings": {
-        "title": "",
-        "heading_size": "h2",
-        "image_width": "third",
-        "image_ratio": "adapt",
+        "title": "Collections",
+        "heading_size": "h1",
+        "image_ratio": "square",
         "columns_desktop": 3,
-        "column_alignment": "left",
-        "background_style": "none",
-        "button_label": "",
-        "button_link": "",
-        "color_scheme": "scheme-2",
+        "color_scheme": "",
+        "show_view_all": false,
         "columns_mobile": "1",
         "swipe_on_mobile": false,
-        "padding_top": 0,
-        "padding_bottom": 64
-      }
-    },
-    "full-product-section": {
-      "type": "custom-liquid",
-      "settings": {
-        "custom_liquid": "<div class='homepage-shelf homepage-shelf--full'>\n  <div class='homepage-shelf__header page-width'>\n    <h2 class='homepage-shelf__title title inline-richtext h2'>Explore Mattresses</h2>\n  </div>\n  <div class='page-width'>\n    <ul class='grid product-grid contains-card contains-card--product contains-card--standard grid--4-col-desktop grid--2-col-tablet-down' role='list'>\n      {% assign mattress_handles = '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' %}\n      {% assign skip_card_product_styles = false %}\n      {% for handle in mattress_handles %}\n        {% assign mattress_product = all_products[handle] %}\n        {% if mattress_product != blank %}\n          <li class='grid__item'>\n            {% render 'card-product', card_product: mattress_product, media_aspect_ratio: 'square', image_shape: 'default', show_secondary_image: false, show_vendor: false, show_rating: false, skip_styles: skip_card_product_styles, section_id: section.id, quick_add: 'standard' %}\n          </li>\n          {% assign skip_card_product_styles = true %}\n        {% endif %}\n      {% endfor %}\n    </ul>\n  </div>\n</div>",
-        "color_scheme": "scheme-2",
-        "padding_top": 64,
-        "padding_bottom": 64
-      }
-    },
-    "category-navigation": {
-      "type": "multicolumn",
-      "blocks": {
-        "category-1": {
-          "type": "column",
-          "settings": {
-            "image": "",
-            "icon": "heart",
-            "title": "Mattresses",
-            "text": "<p>Browse foam and hybrid comfort options.</p>",
-            "link_label": "Shop Mattresses",
-            "link": "/search?q=mattress&options%5Bprefix%5D=last&type=product"
-          }
-        },
-        "category-2": {
-          "type": "column",
-          "settings": {
-            "image": "",
-            "icon": "lightning_bolt",
-            "title": "Adjustable Bases",
-            "text": "<p>Compare motion and support foundations.</p>",
-            "link_label": "Shop Adjustable Bases",
-            "link": "/search?q=adjustable+base&options%5Bprefix%5D=last&type=product"
-          }
-        },
-        "category-3": {
-          "type": "column",
-          "settings": {
-            "image": "",
-            "icon": "snowflake",
-            "title": "Bedding",
-            "text": "<p>See sheets, protectors, and comfort layers.</p>",
-            "link_label": "Shop Bedding",
-            "link": "/search?q=sheet&options%5Bprefix%5D=last&type=product"
-          }
-        },
-        "category-4": {
-          "type": "column",
-          "settings": {
-            "image": "",
-            "icon": "box",
-            "title": "Accessories",
-            "text": "<p>Round out your setup with pillow essentials.</p>",
-            "link_label": "Shop Accessories",
-            "link": "/search?q=pillow&options%5Bprefix%5D=last&type=product"
-          }
-        }
-      },
-      "block_order": ["category-1", "category-2", "category-3", "category-4"],
-      "settings": {
-        "title": "Shop by Category",
-        "heading_size": "h2",
-        "image_width": "third",
-        "image_ratio": "adapt",
-        "columns_desktop": 4,
-        "column_alignment": "left",
-        "background_style": "primary",
-        "button_label": "",
-        "button_link": "",
-        "color_scheme": "scheme-1",
-        "columns_mobile": "1",
-        "swipe_on_mobile": false,
-        "padding_top": 64,
-        "padding_bottom": 64
+        "padding_top": 36,
+        "padding_bottom": 36
       }
     },
     "email-capture": {
@@ -359,26 +351,58 @@
           "settings": {}
         }
       },
-      "block_order": ["heading", "paragraph", "email-form"],
+      "block_order": [
+        "heading",
+        "paragraph",
+        "email-form"
+      ],
       "settings": {
         "color_scheme": "scheme-3",
         "full_width": false,
         "padding_top": 64,
         "padding_bottom": 64
       }
+    },
+    "featured_collection_666q7i": {
+      "type": "featured-collection",
+      "name": "t:sections.featured-collection.presets.name",
+      "settings": {
+        "title": "Featured collection",
+        "heading_size": "h1",
+        "description": "",
+        "show_description": false,
+        "description_style": "body",
+        "collection": "",
+        "products_to_show": 4,
+        "columns_desktop": 4,
+        "full_width": false,
+        "show_view_all": true,
+        "view_all_style": "solid",
+        "enable_desktop_slider": false,
+        "color_scheme": "",
+        "image_ratio": "adapt",
+        "image_shape": "default",
+        "show_secondary_image": false,
+        "show_vendor": false,
+        "show_rating": false,
+        "quick_add": "none",
+        "columns_mobile": "2",
+        "swipe_on_mobile": false,
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
     }
   },
   "order": [
-    "hero",
+    "image_with_text_hVQzdT",
     "value-strip",
+    "showroom",
     "how-it-works",
     "how-it-works-visual",
-    "light-product-preview",
-    "showroom",
-    "why-guided-intro",
-    "why-guided-benefits",
-    "full-product-section",
-    "category-navigation",
+    "featured_collection_4WFByd",
+    "image_with_text_ny7ibh",
+    "collection_list_KVb8Pk",
+    "featured_collection_666q7i",
     "email-capture"
   ]
 }
