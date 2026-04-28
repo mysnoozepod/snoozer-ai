@@ -1,41 +1,18 @@
 {
   "sections": {
     "hero": {
-      "type": "rich-text",
-      "blocks": {
-        "heading": {
-          "type": "heading",
-          "settings": {
-            "heading": "Better Sleep Starts With Personalized Guidance",
-            "heading_size": "h1"
-          }
-        },
-        "text": {
-          "type": "text",
-          "settings": {
-            "text": "<p>Take our quick sleep assessment and get recommendations built around your unique needs.</p>"
-          }
-        },
-        "buttons": {
-          "type": "button",
-          "settings": {
-            "button_label": "Start Your Sleep Assessment",
-            "button_link": "/pages/sleep-assessment",
-            "button_style_secondary": false,
-            "button_label_2": "Shop Mattresses",
-            "button_link_2": "/search?q=mattress&options%5Bprefix%5D=last&type=product",
-            "button_style_secondary_2": true
-          }
-        }
-      },
-      "block_order": ["heading", "text", "buttons"],
+      "type": "hero-guided",
       "settings": {
-        "desktop_content_position": "left",
-        "content_alignment": "left",
+        "image": "",
+        "heading": "Better Sleep Starts With Personalized Guidance",
+        "subtext": "Take our quick sleep assessment and get recommendations built around your unique needs.",
+        "primary_button_label": "Start Your Sleep Assessment",
+        "primary_button_link": "/pages/sleep-assessment",
+        "secondary_button_label": "Shop Mattresses",
+        "secondary_button_link": "/search?q=mattress&options%5Bprefix%5D=last&type=product",
         "color_scheme": "scheme-2",
-        "full_width": false,
-        "padding_top": 80,
-        "padding_bottom": 80
+        "padding_top": 64,
+        "padding_bottom": 64
       }
     },
     "value-strip": {
@@ -170,6 +147,17 @@
         "padding_bottom": 64
       }
     },
+    "how-it-works-visual": {
+      "type": "process-visual-section",
+      "settings": {
+        "image": "",
+        "heading": "",
+        "position": "below",
+        "color_scheme": "scheme-2",
+        "padding_top": 0,
+        "padding_bottom": 64
+      }
+    },
     "light-product-preview": {
       "type": "custom-liquid",
       "settings": {
@@ -180,9 +168,14 @@
       }
     },
     "showroom": {
-      "type": "custom-liquid",
+      "type": "split-image-section",
       "settings": {
-        "custom_liquid": "<div class='page-width homepage-showroom'>\n  <div class='homepage-showroom__content'>\n    <h2 class='homepage-showroom__heading h2'>The SnoozePod Unmanned Showroom</h2>\n    <p class='homepage-showroom__copy'>Experience mattresses in a private, pressure-free environment. Explore at your own pace, test what you like, and get guidance on your terms.</p>\n    <a class='button button--primary' href='/pages/book-a-snooze-session'>Book a Snooze Session</a>\n  </div>\n  <div class='homepage-showroom__media'>\n    <img class='homepage-showroom__image' src='{{ \"homepage-showroom-snoozepod.png\" | asset_url }}' alt='Private unmanned SnoozePod showroom with mattress and tablet guidance' width='1536' height='1024' loading='lazy'>\n  </div>\n</div>",
+        "image": "",
+        "heading": "The SnoozePod Unmanned Showroom",
+        "text": "Experience mattresses in a private, pressure-free environment. Explore at your own pace, test what you like, and get guidance on your terms.",
+        "button_label": "Book a Snooze Session",
+        "button_link": "/pages/book-a-snooze-session",
+        "image_position": "right",
         "color_scheme": "scheme-1",
         "padding_top": 64,
         "padding_bottom": 64
@@ -379,6 +372,7 @@
     "hero",
     "value-strip",
     "how-it-works",
+    "how-it-works-visual",
     "light-product-preview",
     "showroom",
     "why-guided-intro",

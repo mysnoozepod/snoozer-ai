@@ -131,23 +131,6 @@
       margin-bottom: 0.8rem;
     }
 
-    .section-{{ section.id }}-padding .how-it-works__visual {
-      margin: 3.2rem auto 0;
-      max-width: 108rem;
-    }
-
-    .section-{{ section.id }}-padding .how-it-works__visual-frame {
-      overflow: hidden;
-      border-radius: 1.6rem;
-      border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
-      background: rgb(var(--color-background));
-    }
-
-    .section-{{ section.id }}-padding .how-it-works__visual-image {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
   {%- elsif section.id == 'why-guided-benefits' -%}
     .section-{{ section.id }}-padding {
       padding-top: 0 !important;
@@ -257,9 +240,6 @@
         margin-bottom: 4rem;
       }
 
-      .section-{{ section.id }}-padding .how-it-works__visual {
-        margin-top: 4rem;
-      }
     {%- elsif section.id == 'why-guided-benefits' -%}
       .section-{{ section.id }}-padding {
         padding-bottom: 8rem !important;
@@ -440,20 +420,6 @@
         </div>
       {%- endif -%}
     </slider-component>
-    {%- if section.id == 'how-it-works' -%}
-      <div class="how-it-works__visual">
-        <div class="how-it-works__visual-frame">
-          <img
-            class="how-it-works__visual-image"
-            src="{{ 'homepage-how-it-works-visual.png' | asset_url }}"
-            alt="Four-step guided MySnoozePod shopping process"
-            width="1774"
-            height="887"
-            loading="lazy"
-          >
-        </div>
-      </div>
-    {%- endif -%}
     <div class="center{% if show_mobile_slider %} small-hide medium-hide{% endif %}">
       {%- if section.settings.button_label != blank -%}
         <a
