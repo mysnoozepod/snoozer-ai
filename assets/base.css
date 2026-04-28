@@ -4197,7 +4197,7 @@ button.shopify-payment-button__button--unbranded:hover {
   .header__nav-row {
     display: flex;
     align-items: center;
-    min-height: 4rem;
+    min-height: 3.8rem;
     border-top: 0.1rem solid rgba(var(--color-text-primary), 0.08);
   }
 
@@ -4207,16 +4207,16 @@ button.shopify-payment-button__button--unbranded:hover {
 
   .header__nav-row .list-menu--inline {
     display: flex;
-    gap: 2.4rem;
+    gap: 2.8rem;
     flex-wrap: wrap;
   }
 
   .header__nav-row .header__menu-item {
-    padding: 1.1rem 0;
-    font-size: 1.35rem;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    color: rgb(var(--color-text-secondary));
+    padding: 0.95rem 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 0.018em;
+    color: rgba(var(--color-text-primary), 0.82);
   }
 
   .header__nav-row .header__menu-item:hover,

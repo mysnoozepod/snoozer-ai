@@ -30,21 +30,24 @@
 
   {%- if section.id == 'value-strip' -%}
     .section-{{ section.id }}-padding {
-      padding-top: 4rem !important;
-      padding-bottom: 4rem !important;
+      padding-top: 3.2rem !important;
+      padding-bottom: 3.2rem !important;
     }
 
     .section-{{ section.id }}-padding .multicolumn-list {
-      gap: 2.4rem 1.6rem;
+      gap: 2rem 1.2rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
-      width: 5.2rem;
-      height: 5.2rem;
+      width: 5rem;
+      height: 5rem;
       background: rgba(var(--color-accent-blue), 0.08);
       color: rgb(var(--color-primary-navy));
     }
@@ -54,12 +57,18 @@
       height: 2.2rem;
     }
 
+    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper {
+      width: auto;
+      margin: 0 auto;
+    }
+
     .section-{{ section.id }}-padding .multicolumn-card__image-wrapper + .multicolumn-card__info {
-      padding-top: 1.2rem;
+      padding-top: 1rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info {
       padding: 0;
+      width: 100%;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info h3 {
@@ -74,17 +83,22 @@
       margin: 0 auto;
     }
   {%- elsif section.id == 'how-it-works' -%}
+    .section-{{ section.id }}-padding {
+      padding-top: 3.6rem !important;
+      padding-bottom: 3.2rem !important;
+    }
+
     .section-{{ section.id }}-padding .multicolumn__title {
-      margin-bottom: 3.2rem;
+      margin-bottom: 2.4rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-list {
-      gap: 2rem;
+      gap: 1.6rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card {
       height: 100%;
-      padding: 2.4rem;
+      padding: 2rem;
       border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
       border-radius: 1.6rem;
       background: rgb(var(--color-background));
@@ -175,17 +189,22 @@
       margin-bottom: 0.8rem;
     }
   {%- elsif section.id == 'category-navigation' or section.id == 'collection_list_KVb8Pk' -%}
+    .section-{{ section.id }}-padding {
+      padding-top: 3.2rem !important;
+      padding-bottom: 4rem !important;
+    }
+
     .section-{{ section.id }}-padding .multicolumn__title {
-      margin-bottom: 2rem;
+      margin-bottom: 1.6rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-list {
-      gap: 2rem;
+      gap: 1.6rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card {
       height: 100%;
-      padding: 2.4rem;
+      padding: 2rem;
       border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
       border-radius: 1.6rem;
       background: rgb(var(--color-background));
@@ -224,7 +243,17 @@
 
     {%- if section.id == 'value-strip' -%}
       .section-{{ section.id }}-padding {
+        padding-top: 4rem !important;
+        padding-bottom: 4rem !important;
+      }
+    {%- elsif section.id == 'how-it-works' -%}
+      .section-{{ section.id }}-padding {
         padding-top: 4.8rem !important;
+        padding-bottom: 4rem !important;
+      }
+    {%- elsif section.id == 'category-navigation' or section.id == 'collection_list_KVb8Pk' -%}
+      .section-{{ section.id }}-padding {
+        padding-top: 4rem !important;
         padding-bottom: 4.8rem !important;
       }
     {%- elsif section.id == 'why-guided-benefits' -%}
@@ -237,7 +266,7 @@
   @media screen and (min-width: 990px) {
     {%- if section.id == 'how-it-works' -%}
       .section-{{ section.id }}-padding .multicolumn__title {
-        margin-bottom: 4rem;
+        margin-bottom: 3.2rem;
       }
 
     {%- elsif section.id == 'why-guided-benefits' -%}
