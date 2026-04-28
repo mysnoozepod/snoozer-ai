@@ -4,10 +4,10 @@
     padding-bottom: calc({{ section.settings.padding_bottom }}px  * 0.75);
   }
 
-  {%- if section.id == 'light-product-preview' -%}
+  {%- if section.id == 'light-product-preview' or section.id == 'featured_collection_4WFByd' -%}
     .section-{{ section.id }}-padding {
-      padding-top: 5.6rem !important;
-      padding-bottom: 6.4rem !important;
+      padding-top: 4rem !important;
+      padding-bottom: 4.8rem !important;
     }
 
     .section-{{ section.id }}-padding .homepage-shelf__header {
@@ -75,7 +75,7 @@
       height: 100%;
       object-fit: cover;
     }
-  {%- elsif section.id == 'full-product-section' -%}
+  {%- elsif section.id == 'full-product-section' or section.id == 'featured_collection_666q7i' -%}
     .section-{{ section.id }}-padding .homepage-shelf__header {
       margin-bottom: 2.4rem;
     }
@@ -91,10 +91,10 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
 
-    {%- if section.id == 'light-product-preview' -%}
+    {%- if section.id == 'light-product-preview' or section.id == 'featured_collection_4WFByd' -%}
       .section-{{ section.id }}-padding {
-        padding-top: 6.4rem !important;
-        padding-bottom: 7.2rem !important;
+        padding-top: 4.8rem !important;
+        padding-bottom: 5.6rem !important;
       }
     {%- elsif section.id == 'showroom' -%}
       .section-{{ section.id }}-padding {
@@ -105,7 +105,7 @@
   }
 
   @media screen and (min-width: 990px) {
-    {%- if section.id == 'light-product-preview' -%}
+    {%- if section.id == 'light-product-preview' or section.id == 'featured_collection_4WFByd' -%}
       .section-{{ section.id }}-padding .homepage-shelf__header {
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: end;
