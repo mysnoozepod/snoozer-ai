@@ -1,0 +1,219 @@
+{%- style -%}
+  .snooze-hero-{{ section.id }} {
+    padding-top: 4.8rem;
+    padding-bottom: 4.8rem;
+  }
+
+  .snooze-hero-{{ section.id }} .snooze-hero__grid {
+    display: grid;
+    gap: 2.4rem;
+    align-items: center;
+  }
+
+  .snooze-hero-{{ section.id }} .snooze-hero__content,
+  .snooze-hero-{{ section.id }} .snooze-hero__media-wrap {
+    min-width: 0;
+  }
+
+  .snooze-hero-{{ section.id }} .snooze-hero__content {
+    max-width: 58rem;
+  }
+
+  .snooze-hero-{{ section.id }} .snooze-hero__heading {
+    margin: 0;
+    max-width: 10ch;
+  }
+
+  .snooze-hero-{{ section.id }} .snooze-hero__subtext {
+    margin: 1.6rem 0 0;
+    color: rgba(var(--color-foreground), 0.75);
+  }
+
+  .snooze-hero-{{ section.id }} .snooze-hero__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-top: 2.4rem;
+  }
+
+  .snooze-hero-{{ section.id }} .snooze-hero__actions .button {
+    width: 100%;
+  }
+
+  .snooze-hero-{{ section.id }} .snooze-hero__media {
+    overflow: hidden;
+    border-radius: 1.6rem;
+    border: 0.1rem solid rgba(var(--color-foreground), 0.08);
+    background: rgba(var(--color-foreground), 0.03);
+    aspect-ratio: 4 / 3;
+    min-height: 24rem;
+  }
+
+  .snooze-hero-{{ section.id }} .snooze-hero__media--empty {
+    display: block;
+  }
+
+  .snooze-hero-{{ section.id }} .snooze-hero__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snooze-hero-{{ section.id }} {
+      padding-top: 6.4rem;
+      padding-bottom: 6.4rem;
+    }
+
+    .snooze-hero-{{ section.id }} .snooze-hero__actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 1.6rem;
+    }
+
+    .snooze-hero-{{ section.id }} .snooze-hero__actions .button {
+      width: auto;
+      min-width: 22rem;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snooze-hero-{{ section.id }} .snooze-hero__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(34rem, 48rem);
+      gap: 4.8rem;
+    }
+
+    .snooze-hero-{{ section.id }} .snooze-hero__media {
+      min-height: 42rem;
+    }
+  }
+{%- endstyle -%}
+
+<section class="snooze-hero snooze-hero-{{ section.id }}">
+  <div class="page-width">
+    <div class="snooze-hero__grid">
+      <div class="snooze-hero__content">
+        {%- if section.settings.heading != blank -%}
+          <h1 class="snooze-hero__heading h1">
+            {{ section.settings.heading | escape }}
+          </h1>
+        {%- endif -%}
+
+        {%- if section.settings.subtext != blank -%}
+          <div class="snooze-hero__subtext rte">
+            <p>{{ section.settings.subtext | escape | newline_to_br }}</p>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.primary_cta_label != blank or section.settings.secondary_cta_label != blank -%}
+          <div class="snooze-hero__actions">
+            {%- if section.settings.primary_cta_label != blank -%}
+              <a
+                {% if section.settings.primary_cta_link == blank %}
+                  role="link" aria-disabled="true"
+                {% else %}
+                  href="{{ section.settings.primary_cta_link }}"
+                {% endif %}
+                class="button button--primary"
+              >
+                {{ section.settings.primary_cta_label | escape }}
+              </a>
+            {%- endif -%}
+
+            {%- if section.settings.secondary_cta_label != blank -%}
+              <a
+                {% if section.settings.secondary_cta_link == blank %}
+                  role="link" aria-disabled="true"
+                {% else %}
+                  href="{{ section.settings.secondary_cta_link }}"
+                {% endif %}
+                class="button button--secondary"
+              >
+                {{ section.settings.secondary_cta_label | escape }}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="snooze-hero__media-wrap">
+        {%- if section.settings.hero_image != blank -%}
+          <div class="snooze-hero__media">
+            {{
+              section.settings.hero_image
+              | image_url: width: 2400
+              | image_tag:
+                widths: '480, 720, 960, 1200, 1600, 2000, 2400',
+                sizes: '(min-width: 990px) 48rem, 100vw',
+                class: 'snooze-hero__image',
+                loading: 'eager',
+                fetchpriority: 'high',
+                alt: section.settings.hero_image.alt | default: section.settings.heading | escape
+            }}
+          </div>
+        {%- else -%}
+          <div class="snooze-hero__media snooze-hero__media--empty" aria-hidden="true"></div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Snooze hero",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Section heading"
+    },
+    {
+      "type": "textarea",
+      "id": "subtext",
+      "label": "Subtext",
+      "default": "Short supporting text."
+    },
+    {
+      "type": "text",
+      "id": "primary_cta_label",
+      "label": "Primary CTA label",
+      "default": "Primary action"
+    },
+    {
+      "type": "url",
+      "id": "primary_cta_link",
+      "label": "Primary CTA link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_cta_label",
+      "label": "Secondary CTA label",
+      "default": "Secondary action"
+    },
+    {
+      "type": "url",
+      "id": "secondary_cta_link",
+      "label": "Secondary CTA link"
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Hero image"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Snooze hero"
+    }
+  ]
+}
+{% endschema %}

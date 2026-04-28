@@ -1,0 +1,185 @@
+{%- style -%}
+  .snooze-guided-{{ section.id }} {
+    padding-top: 4.8rem;
+    padding-bottom: 4.8rem;
+  }
+
+  .snooze-guided-{{ section.id }} .snooze-guided__layout {
+    display: grid;
+    gap: 2.4rem;
+    align-items: center;
+  }
+
+  .snooze-guided-{{ section.id }} .snooze-guided__layout--centered {
+    max-width: 72rem;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .snooze-guided-{{ section.id }} .snooze-guided__content,
+  .snooze-guided-{{ section.id }} .snooze-guided__media-wrap {
+    min-width: 0;
+  }
+
+  .snooze-guided-{{ section.id }} .snooze-guided__heading {
+    margin: 0;
+  }
+
+  .snooze-guided-{{ section.id }} .snooze-guided__body {
+    margin: 1.6rem 0 0;
+    color: rgba(var(--color-foreground), 0.75);
+  }
+
+  .snooze-guided-{{ section.id }} .snooze-guided__cta {
+    margin-top: 2.4rem;
+  }
+
+  .snooze-guided-{{ section.id }} .snooze-guided__media {
+    overflow: hidden;
+    border-radius: 1.6rem;
+    border: 0.1rem solid rgba(var(--color-foreground), 0.08);
+    background: rgba(var(--color-foreground), 0.03);
+    aspect-ratio: 4 / 3;
+  }
+
+  .snooze-guided-{{ section.id }} .snooze-guided__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .snooze-guided-{{ section.id }} .snooze-guided__layout--centered .snooze-guided__media-wrap {
+    max-width: 56rem;
+    margin: 0 auto;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snooze-guided-{{ section.id }} {
+      padding-top: 6.4rem;
+      padding-bottom: 6.4rem;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snooze-guided-{{ section.id }} .snooze-guided__layout--split {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 4.8rem;
+    }
+  }
+{%- endstyle -%}
+
+<section class="snooze-guided snooze-guided-{{ section.id }}">
+  <div class="page-width">
+    <div class="snooze-guided__layout snooze-guided__layout--{{ section.settings.layout }}">
+      {%- if section.settings.image != blank -%}
+        <div class="snooze-guided__media-wrap">
+          <div class="snooze-guided__media">
+            {{
+              section.settings.image
+              | image_url: width: 2400
+              | image_tag:
+                widths: '480, 720, 960, 1200, 1600, 2000, 2400',
+                sizes: '(min-width: 990px) 50vw, 100vw',
+                class: 'snooze-guided__image',
+                loading: 'lazy',
+                alt: section.settings.image.alt | default: section.settings.heading | escape
+            }}
+          </div>
+        </div>
+      {%- endif -%}
+
+      <div class="snooze-guided__content">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="snooze-guided__heading h2">
+            {{ section.settings.heading | escape }}
+          </h2>
+        {%- endif -%}
+
+        {%- if section.settings.body != blank -%}
+          <div class="snooze-guided__body rte">
+            <p>{{ section.settings.body | escape | newline_to_br }}</p>
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.cta_label != blank -%}
+          <div class="snooze-guided__cta">
+            <a
+              {% if section.settings.cta_link == blank %}
+                role="link" aria-disabled="true"
+              {% else %}
+                href="{{ section.settings.cta_link }}"
+              {% endif %}
+              class="button button--primary"
+            >
+              {{ section.settings.cta_label | escape }}
+            </a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Snooze guided",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Section heading"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Short supporting text."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Learn more"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "centered",
+      "options": [
+        {
+          "value": "centered",
+          "label": "Centered"
+        },
+        {
+          "value": "split",
+          "label": "Split"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Snooze guided"
+    }
+  ]
+}
+{% endschema %}
