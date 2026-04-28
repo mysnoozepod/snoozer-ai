@@ -7,6 +7,27 @@
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
+  .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
+    width: 4.8rem;
+    height: 4.8rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--color-foreground), 0.08);
+    color: rgb(var(--color-foreground));
+  }
+
+  .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper svg {
+    width: 100%;
+    height: 100%;
+  }
+
   @media screen and (min-width: 750px) {
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top }}px;
@@ -58,7 +79,12 @@
         -%}
         {%- for block in section.blocks -%}
           {%- assign empty_column = '' -%}
+          {%- assign has_icon = false -%}
+          {%- if block.settings.icon != blank and block.settings.icon != 'none' -%}
+            {%- assign has_icon = true -%}
+          {%- endif -%}
           {%- if block.settings.image == blank
+            and has_icon == false
             and block.settings.title == blank
             and block.settings.text == blank
             and block.settings.link_label == blank
@@ -115,6 +141,12 @@
                         sizes: sizes,
                         class: 'multicolumn-card__image'
                     }}
+                  </div>
+                </div>
+              {%- elsif has_icon -%}
+                <div class="multicolumn-card__image-wrapper multicolumn-card__image-wrapper--third-width multicolumn-card-spacing">
+                  <div class="multicolumn-card__icon-wrapper">
+                    {% render 'icon-accordion', icon: block.settings.icon %}
                   </div>
                 </div>
               {%- endif -%}
@@ -395,6 +427,74 @@
           "type": "image_picker",
           "id": "image",
           "label": "t:sections.multicolumn.blocks.column.settings.image.label"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "check_mark",
+              "label": "Check mark"
+            },
+            {
+              "value": "clipboard",
+              "label": "Clipboard"
+            },
+            {
+              "value": "box",
+              "label": "Box"
+            },
+            {
+              "value": "eye",
+              "label": "Eye"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            },
+            {
+              "value": "lock",
+              "label": "Lock"
+            },
+            {
+              "value": "lightning_bolt",
+              "label": "Lightning bolt"
+            },
+            {
+              "value": "map_pin",
+              "label": "Map pin"
+            },
+            {
+              "value": "price_tag",
+              "label": "Price tag"
+            },
+            {
+              "value": "question_mark",
+              "label": "Question mark"
+            },
+            {
+              "value": "silhouette",
+              "label": "Silhouette"
+            },
+            {
+              "value": "snowflake",
+              "label": "Snowflake"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            },
+            {
+              "value": "stopwatch",
+              "label": "Stopwatch"
+            }
+          ],
+          "default": "none",
+          "label": "Icon"
         },
         {
           "type": "inline_richtext",

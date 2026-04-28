@@ -1,11 +1,6 @@
 <link rel="stylesheet" href="{{ 'component-list-menu.css' | asset_url }}" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="{{ 'component-search.css' | asset_url }}" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="{{ 'component-menu-drawer.css' | asset_url }}" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="{{ 'component-cart-notification.css' | asset_url }}" media="print" onload="this.media='all'">
-
-{%- if settings.predictive_search_enabled -%}
-  <link rel="stylesheet" href="{{ 'component-price.css' | asset_url }}" media="print" onload="this.media='all'">
-{%- endif -%}
 
 {%- if section.settings.menu_type_desktop == 'mega' -%}
   <link rel="stylesheet" href="{{ 'component-mega-menu.css' | asset_url }}" media="print" onload="this.media='all'">
@@ -148,11 +143,6 @@
       <div class="header__branding">
         {{ header_logo }}
       </div>
-
-      <div class="header__search-panel small-hide medium-hide">
-        {% render 'header-search', input_id: 'Search-Inline', mode: 'inline' %}
-      </div>
-
       <div class="header__icons{% if localization_forms %} header__icons--localization header-localization{% endif %}">
         <div class="desktop-localization-wrapper small-hide medium-hide">
           {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
@@ -230,11 +220,6 @@
         </a>
       </div>
     </div>
-
-    <div class="header__search-row large-up-hide">
-      {% render 'header-search', input_id: 'Search-Mobile', mode: 'inline' %}
-    </div>
-
     {%- if show_desktop_menu -%}
       <div class="header__nav-row small-hide medium-hide">
         {%- if section.settings.menu_type_desktop == 'mega' -%}

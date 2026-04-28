@@ -8,8 +8,8 @@
         "announcement-bar-0": {
           "type": "announcement",
           "settings": {
-            "text": "",
-            "link": ""
+            "text": "Book a Snooze Session in our unmanned showroom or virtually. Book Now ->",
+            "link": "/pages/book-a-snooze-session"
           }
         }
       },
