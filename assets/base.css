@@ -4260,10 +4260,39 @@ button.shopify-payment-button__button--unbranded:hover {
 
   .header__nav-row .header__menu-item {
     padding: 0.95rem 0;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
     font-size: 1.8rem;
+    font-style: normal;
     font-weight: 600;
-    letter-spacing: 0.005em;
-    color: rgb(var(--color-primary-navy));
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-transform: none;
+    color: #071A44;
+    text-shadow: none;
+    -webkit-text-stroke: 0;
+    filter: none;
+    transform: none;
+    font-synthesis: none;
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+  }
+
+  .header__nav-row summary.header__menu-item {
+    padding-right: 2.6rem;
+  }
+
+  .header__nav-row .header__menu-item span {
+    font-family: inherit;
+    font-size: inherit;
+    font-style: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    text-shadow: none;
+    -webkit-text-stroke: 0;
+    filter: none;
+    transform: none;
   }
 
   .header__nav-row .header__menu-item:hover,
@@ -4281,8 +4310,10 @@ button.shopify-payment-button__button--unbranded:hover {
 
 .header .list-menu__item--link,
 .header .menu-drawer__menu-item {
+  font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
   font-size: 1.6rem;
   font-weight: 600;
+  line-height: 1.2;
   letter-spacing: 0;
   color: rgb(var(--color-text-primary));
 }
