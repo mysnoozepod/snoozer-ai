@@ -58,24 +58,105 @@
     line-height: 1.4;
   }
 
+  .header__main {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.8rem;
+    min-height: 5.8rem;
+    padding: 0.8rem 0;
+  }
+
+  .header__icons {
+    display: flex;
+    align-items: center;
+    justify-self: end;
+    gap: 0.6rem;
+  }
+
+  .header__icon {
+    width: 4.6rem;
+    height: 4.6rem;
+    border-radius: 0.8rem;
+  }
+
+  .header__icon .svg-wrapper {
+    width: 2.4rem;
+    height: 2.4rem;
+  }
+
+  .header__icon--cart .cart-count-bubble {
+    min-width: 1.8rem;
+    min-height: 1.8rem;
+    padding: 0 0.4rem;
+    right: -0.2rem;
+    top: -0.2rem;
+  }
+
   .header__snoozer-entry {
     display: none;
   }
 
   .header__snoozer-row {
-    padding: 0 0 1.2rem;
+    padding: 0 0 1rem;
+  }
+
+  .header__mobile-nav {
+    padding: 0.4rem 0 0.2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    border-top: 0.1rem solid rgba(var(--color-text-primary), 0.08);
+  }
+
+  .header__mobile-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .header__mobile-nav-list {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 2rem;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+  }
+
+  .header__mobile-nav-item {
+    flex: 0 0 auto;
+  }
+
+  .header__mobile-nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 4.4rem;
+    padding: 0.4rem 0;
+    white-space: nowrap;
+    text-decoration: none;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0;
+    color: #071a44;
+  }
+
+  .header__mobile-nav-link:hover,
+  .header__mobile-nav-link--active {
+    color: rgb(var(--color-text-primary));
   }
 
   .header__snoozer-pill {
     display: inline-flex;
     width: 100%;
     align-items: center;
-    gap: 1.2rem;
-    padding: 1rem 1.4rem;
+    gap: 1.4rem;
+    padding: 1.2rem 1.6rem;
     border: 0.1rem solid #cbd5e1;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 1rem 2.4rem rgba(7, 26, 68, 0.06);
+    min-height: 5.8rem;
+    background: #ffffff;
+    box-shadow: 0 1rem 2.4rem rgba(7, 26, 68, 0.05);
     color: #071a44;
     cursor: pointer;
     text-align: left;
@@ -92,8 +173,8 @@
   }
 
   .header__snoozer-avatar {
-    width: 3.4rem;
-    height: 3.4rem;
+    width: 3.8rem;
+    height: 3.8rem;
     border-radius: 999px;
     object-fit: contain;
     flex-shrink: 0;
@@ -104,9 +185,9 @@
     flex: 1;
     min-width: 0;
     font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 1.25;
     color: rgba(7, 26, 68, 0.76);
     white-space: nowrap;
     overflow: hidden;
@@ -114,8 +195,8 @@
   }
 
   .header__snoozer-arrow {
-    width: 1.8rem;
-    height: 1.8rem;
+    width: 2.2rem;
+    height: 2.2rem;
     flex-shrink: 0;
     color: #071a44;
   }
@@ -131,38 +212,54 @@
   }
 
   .header__snoozer-row .header__snoozer-pill {
-    min-height: 5.2rem;
-  }
-
-  .header__snoozer-row .header__snoozer-avatar {
-    width: 3.6rem;
-    height: 3.6rem;
+    min-height: 5.8rem;
   }
 
   @media screen and (min-width: 990px) {
+    .header__main {
+      grid-template-columns: minmax(0, auto) minmax(42rem, 52rem) auto;
+      gap: 2.4rem;
+      min-height: 7rem;
+      padding: 0.8rem 0 1rem;
+    }
+
+    .header__icon {
+      width: 4.8rem;
+      height: 4.8rem;
+    }
+
+    .header__icon .svg-wrapper {
+      width: 2.6rem;
+      height: 2.6rem;
+    }
+
     .header__snoozer-entry {
       display: flex;
       align-items: center;
-      margin-right: 0.8rem;
-      width: min(32rem, 30vw);
-      min-width: 25rem;
+      justify-self: center;
+      width: min(100%, 52rem);
+      min-width: 42rem;
     }
 
     .header__snoozer-entry .header__snoozer-pill {
-      min-height: 4.8rem;
-      padding: 0.9rem 1.4rem;
+      min-height: 5.6rem;
+      padding: 1rem 1.8rem;
     }
 
     .header__snoozer-entry .header__snoozer-avatar {
-      width: 3rem;
-      height: 3rem;
+      width: 3.8rem;
+      height: 3.8rem;
     }
 
     .header__snoozer-entry .header__snoozer-text {
-      font-size: 1.4rem;
+      font-size: 1.65rem;
     }
 
     .header__snoozer-row {
+      display: none;
+    }
+
+    .header__mobile-nav {
       display: none;
     }
   }
@@ -274,10 +371,10 @@
       <div class="header__branding">
         {{ header_logo }}
       </div>
+      <div class="header__snoozer-entry small-hide medium-hide">
+        {{ ask_snoozer_pill }}
+      </div>
       <div class="header__icons{% if localization_forms %} header__icons--localization header-localization{% endif %}">
-        <div class="header__snoozer-entry small-hide medium-hide">
-          {{ ask_snoozer_pill }}
-        </div>
         <div class="desktop-localization-wrapper small-hide medium-hide">
           {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
             <localization-form data-prevent-hide>
@@ -303,7 +400,7 @@
         </div>
 
         {%- if shop.customer_accounts_enabled -%}
-          <a href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}" class="header__icon header__icon--account link focus-inset small-hide medium-hide">
+          <a href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}" class="header__icon header__icon--account link focus-inset">
             {%- if section.settings.enable_customer_avatar -%}
               <account-icon>
                 {%- if customer and customer.has_avatar? -%}
@@ -357,6 +454,22 @@
     <div class="header__snoozer-row large-up-hide">
       {{ ask_snoozer_pill }}
     </div>
+    {%- if section.settings.menu != blank -%}
+      <nav class="header__mobile-nav large-up-hide" aria-label="Category navigation">
+        <ul class="header__mobile-nav-list list-menu" role="list">
+          {%- for link in section.settings.menu.links -%}
+            <li class="header__mobile-nav-item">
+              <a
+                href="{{ link.url }}"
+                class="header__mobile-nav-link{% if link.current %} header__mobile-nav-link--active{% endif %}"
+              >
+                {{ link.title | escape }}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
     {%- if show_desktop_menu -%}
       <div class="header__nav-row small-hide medium-hide">
         {%- if section.settings.menu_type_desktop == 'mega' -%}

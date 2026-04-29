@@ -351,6 +351,22 @@
     {% endstyle %}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
+    <style>
+      body.template-index #MainContent .section + .section {
+        margin-top: 4.8rem;
+      }
+
+      @media screen and (min-width: 990px) {
+        body.template-index #MainContent .section + .section {
+          margin-top: 5.6rem;
+        }
+      }
+
+      body.template-index [id*='zsiq'],
+      body.template-index [class*='zsiq'] {
+        display: none !important;
+      }
+    </style>
     <link rel="stylesheet" href="{{ 'component-cart-items.css' | asset_url }}" media="print" onload="this.media='all'">
 
     {%- if settings.cart_type == 'drawer' -%}
@@ -467,8 +483,11 @@
     {%- if settings.cart_type == 'drawer' -%}
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
- <script>window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}</script>
-<script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siqcda661a5093970c67007a899dc1d8fc72eadd34c33bbdca0115957229aecd250" defer></script>
-<script>window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}</script><script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siqf3e47be9abb875cff20af1736fa2e5874236dabf539904973c7a2c51503648f0" defer></script>
+    {%- unless request.page_type == 'index' -%}
+      <script>window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}</script>
+      <script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siqcda661a5093970c67007a899dc1d8fc72eadd34c33bbdca0115957229aecd250" defer></script>
+      <script>window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}</script>
+      <script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siqf3e47be9abb875cff20af1736fa2e5874236dabf539904973c7a2c51503648f0" defer></script>
+    {%- endunless -%}
   </body>
 </html>
