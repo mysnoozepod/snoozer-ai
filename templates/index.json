@@ -12,12 +12,12 @@
     "image_with_text_hVQzdT": {
       "type": "snooze-hero",
       "settings": {
-        "heading": "Better Sleep Starts With Personalized Guidance",
-        "subtext": "A clear starting point for assessment, shopping, and guided support.",
+        "heading": "Find the right mattress without the guesswork",
+        "subtext": "We guide you through a short sleep assessment to narrow your options and help you choose with confidence",
         "primary_cta_label": "Start Your Sleep Assessment",
         "primary_cta_link": "/pages/sleep-assessment",
-        "secondary_cta_label": "Shop Mattresses",
-        "secondary_cta_link": "/search?q=mattress&options%5Bprefix%5D=last&type=product"
+        "secondary_cta_label": "",
+        "secondary_cta_link": ""
       }
     },
     "value-strip": {
@@ -26,9 +26,9 @@
         "value-1": {
           "type": "column",
           "settings": {
-            "icon": "silhouette",
-            "title": "Personalized Guidance",
-            "text": "<p>Recommendations built around how you sleep.</p>",
+            "icon": "map_pin",
+            "title": "Start anywhere",
+            "text": "<p>Begin online or in-store - your progress stays with you</p>",
             "link_label": "",
             "link": ""
           }
@@ -36,9 +36,9 @@
         "value-2": {
           "type": "column",
           "settings": {
-            "icon": "lock",
-            "title": "Private Experience",
-            "text": "<p>Explore comfort in a pressure-free setting.</p>",
+            "icon": "clipboard",
+            "title": "Guided testing",
+            "text": "<p>If you visit, you'll test a small number of options in a structured way</p>",
             "link_label": "",
             "link": ""
           }
@@ -46,19 +46,9 @@
         "value-3": {
           "type": "column",
           "settings": {
-            "icon": "question_mark",
-            "title": "No Guesswork",
-            "text": "<p>Clear guidance helps narrow the right options.</p>",
-            "link_label": "",
-            "link": ""
-          }
-        },
-        "value-4": {
-          "type": "column",
-          "settings": {
-            "icon": "price_tag",
-            "title": "Transparent Pricing",
-            "text": "<p>Know what you are comparing without surprises.</p>",
+            "icon": "check_mark",
+            "title": "Finish your way",
+            "text": "<p>Complete your setup in-store or at home - whatever's easier</p>",
             "link_label": "",
             "link": ""
           }
@@ -67,21 +57,20 @@
       "block_order": [
         "value-1",
         "value-2",
-        "value-3",
-        "value-4"
+        "value-3"
       ],
       "settings": {
         "title": "",
         "heading_size": "h2",
         "image_width": "third",
         "image_ratio": "adapt",
-        "columns_desktop": 4,
+        "columns_desktop": 3,
         "column_alignment": "center",
         "background_style": "none",
         "button_label": "",
         "button_link": "",
         "color_scheme": "scheme-1",
-        "columns_mobile": "2",
+        "columns_mobile": "1",
         "swipe_on_mobile": false,
         "padding_top": 48,
         "padding_bottom": 40
@@ -90,10 +79,10 @@
     "showroom": {
       "type": "snooze-showroom",
       "settings": {
-        "heading": "The SnoozePod Unmanned Showroom",
-        "body": "A simple section for introducing the private showroom experience and the booking path.",
-        "cta_label": "Book a Snooze Session",
-        "cta_link": "/pages/book-a-snooze-session",
+        "heading": "Start online, continue in-store or finish at home",
+        "body": "Begin with a quick sleep assessment, then follow a guided path - either test your options in-store or complete your setup online.",
+        "cta_label": "Start Your Sleep Assessment",
+        "cta_link": "/pages/sleep-assessment",
         "image": "shopify://shop_images/ChatGPT_Image_Apr_28_2026_03_23_05_AM.png",
         "image_position": "right"
       }
@@ -105,8 +94,8 @@
           "type": "column",
           "settings": {
             "icon": "clipboard",
-            "title": "Take Assessment",
-            "text": "<p>Answer a few simple questions about your sleep and preferences.</p>",
+            "title": "Start with You",
+            "text": "<p>Answer a few quick questions about how you sleep</p>",
             "link_label": "",
             "link": ""
           }
@@ -115,8 +104,8 @@
           "type": "column",
           "settings": {
             "icon": "check_mark",
-            "title": "Get Your Plan",
-            "text": "<p>We match you with sleep options built around your needs.</p>",
+            "title": "Get Guided Options",
+            "text": "<p>We narrow it down to a small number of options that fit your needs</p>",
             "link_label": "",
             "link": ""
           }
@@ -125,18 +114,8 @@
           "type": "column",
           "settings": {
             "icon": "eye",
-            "title": "Test & Compare",
-            "text": "<p>Explore options, compare comfort, and find your best fit.</p>",
-            "link_label": "",
-            "link": ""
-          }
-        },
-        "step-4": {
-          "type": "column",
-          "settings": {
-            "icon": "heart",
-            "title": "Build Your Setup",
-            "text": "<p>Complete your sleep setup with the mattress, base, and comfort options that fit.</p>",
+            "title": "Test and Decide",
+            "text": "<p>Try them out and feel the difference so you can choose with confidence</p>",
             "link_label": "",
             "link": ""
           }
@@ -145,15 +124,14 @@
       "block_order": [
         "step-1",
         "step-2",
-        "step-3",
-        "step-4"
+        "step-3"
       ],
       "settings": {
         "title": "How Shopping at MySnoozePod Works",
         "heading_size": "h2",
         "image_width": "third",
         "image_ratio": "adapt",
-        "columns_desktop": 4,
+        "columns_desktop": 3,
         "column_alignment": "left",
         "background_style": "primary",
         "button_label": "",
@@ -178,7 +156,7 @@
     "featured_collection_4WFByd": {
       "type": "custom-liquid",
       "settings": {
-        "custom_liquid": "{{ 'component-card.css' | asset_url | stylesheet_tag }}\n{{ 'template-collection.css' | asset_url | stylesheet_tag }}\n<div class='homepage-shelf homepage-shelf--preview'>\n  <div class='homepage-shelf__header page-width'>\n    <div class='homepage-shelf__copy'>\n      <h2 class='homepage-shelf__title title inline-richtext h2'>Top Picks Based on Real Sleep Profiles</h2>\n      <div class='homepage-shelf__description collection__description body rte'>\n        <p>A compact preview shelf for featured mattress options.</p>\n      </div>\n    </div>\n    <a class='homepage-shelf__link link underlined-link' href='/search?q=mattress&amp;options%5Bprefix%5D=last&amp;type=product'>View All Mattresses &rarr;</a>\n  </div>\n  <div class='page-width'>\n    <ul class='grid product-grid contains-card contains-card--product contains-card--standard grid--3-col-desktop grid--2-col-tablet-down' role='list'>\n      {% assign preview_handles = '12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' %}\n      {% assign skip_card_product_styles = false %}\n      {% for handle in preview_handles %}\n        {% assign preview_product = all_products[handle] %}\n        {% if preview_product != blank %}\n          <li class='grid__item'>\n            {% render 'card-product', card_product: preview_product, media_aspect_ratio: 'square', image_shape: 'default', show_secondary_image: false, show_vendor: false, show_rating: false, skip_styles: skip_card_product_styles, section_id: section.id, quick_add: 'none' %}\n          </li>\n          {% assign skip_card_product_styles = true %}\n        {% endif %}\n      {% endfor %}\n    </ul>\n  </div>\n</div>",
+        "custom_liquid": "<div class='homepage-shelf homepage-shelf--preview'>\n  <div class='homepage-shelf__header page-width'>\n    <div class='homepage-shelf__copy'>\n      <h2 class='homepage-shelf__title title inline-richtext h2'>Start with what fits how you sleep</h2>\n      <div class='homepage-shelf__description collection__description body rte'>\n        <p>We'll narrow this down for you based on your sleep assessment</p>\n      </div>\n    </div>\n  </div>\n  <div class='page-width'>\n    <ul class='grid homepage-fit-grid grid--4-col-desktop grid--2-col-tablet-down' role='list'>\n      <li class='grid__item'>\n        <div class='homepage-fit-card'>\n          <h3 class='homepage-fit-card__title h3'>Pressure Relief</h3>\n          <p class='homepage-fit-card__copy'>Relieves pressure where your body needs it most</p>\n          <p class='homepage-fit-card__support'>A good fit if you wake up with shoulder or hip discomfort</p>\n        </div>\n      </li>\n      <li class='grid__item'>\n        <div class='homepage-fit-card'>\n          <h3 class='homepage-fit-card__title h3'>Balanced Support</h3>\n          <p class='homepage-fit-card__copy'>A balanced feel that works for most sleep styles</p>\n          <p class='homepage-fit-card__support'>Keeps your body aligned without feeling too firm or too soft</p>\n        </div>\n      </li>\n      <li class='grid__item'>\n        <div class='homepage-fit-card'>\n          <h3 class='homepage-fit-card__title h3'>Cooling</h3>\n          <p class='homepage-fit-card__copy'>Helps you stay cool throughout the night</p>\n          <p class='homepage-fit-card__support'>A good option if you tend to sleep warm</p>\n        </div>\n      </li>\n      <li class='grid__item'>\n        <div class='homepage-fit-card'>\n          <h3 class='homepage-fit-card__title h3'>Dual Comfort</h3>\n          <p class='homepage-fit-card__copy'>Designed for two different sleep preferences</p>\n          <p class='homepage-fit-card__support'>So both sides feel right without compromise</p>\n        </div>\n      </li>\n    </ul>\n  </div>\n</div>",
         "color_scheme": "scheme-2",
         "padding_top": 40,
         "padding_bottom": 48
@@ -187,10 +165,10 @@
     "image_with_text_ny7ibh": {
       "type": "snooze-guided",
       "settings": {
-        "heading": "Guided Sleep Shopping",
-        "body": "A simple explanation area for how guided support can narrow the right setup.",
-        "cta_label": "Learn More",
-        "cta_link": "/pages/sleep-assessment",
+        "heading": "A guided way to choose the right mattress",
+        "body": "Instead of trying to figure it out on your own, we guide you through a simple process that narrows your options and helps you choose with confidence.",
+        "cta_label": "",
+        "cta_link": "",
         "layout": "centered"
       }
     },
@@ -200,56 +178,45 @@
         "category_1": {
           "type": "column",
           "settings": {
-            "icon": "heart",
-            "title": "Mattresses",
-            "text": "<p>Primary mattress shopping category.</p>",
-            "link_label": "Shop Mattresses",
-            "link": "/search?q=mattress&options%5Bprefix%5D=last&type=product"
+            "icon": "box",
+            "title": "No overwhelm",
+            "text": "<p>You won't be sorting through dozens of options</p>",
+            "link_label": "",
+            "link": ""
           }
         },
         "category_2": {
           "type": "column",
           "settings": {
-            "icon": "lightning_bolt",
-            "title": "Adjustable Bases",
-            "text": "<p>Foundations and adjustable support options.</p>",
-            "link_label": "Shop Adjustable Bases",
-            "link": "/search?q=adjustable+base&options%5Bprefix%5D=last&type=product"
+            "icon": "clipboard",
+            "title": "Clear direction",
+            "text": "<p>Each step is designed to narrow things down</p>",
+            "link_label": "",
+            "link": ""
           }
         },
         "category_3": {
           "type": "column",
           "settings": {
-            "icon": "snowflake",
-            "title": "Bedding",
-            "text": "<p>Sheets, protectors, and layered comfort basics.</p>",
-            "link_label": "Shop Bedding",
-            "link": "/search?q=sheet&options%5Bprefix%5D=last&type=product"
-          }
-        },
-        "category_4": {
-          "type": "column",
-          "settings": {
-            "icon": "box",
-            "title": "Accessories",
-            "text": "<p>Pillows and supporting sleep essentials.</p>",
-            "link_label": "Shop Accessories",
-            "link": "/search?q=pillow&options%5Bprefix%5D=last&type=product"
+            "icon": "check_mark",
+            "title": "Confident decision",
+            "text": "<p>You'll know what works before you choose</p>",
+            "link_label": "",
+            "link": ""
           }
         }
       },
       "block_order": [
         "category_1",
         "category_2",
-        "category_3",
-        "category_4"
+        "category_3"
       ],
       "settings": {
-        "title": "Shop by Category",
+        "title": "",
         "heading_size": "h2",
         "image_width": "third",
         "image_ratio": "adapt",
-        "columns_desktop": 4,
+        "columns_desktop": 3,
         "column_alignment": "left",
         "background_style": "primary",
         "button_label": "",

@@ -37,6 +37,36 @@
       text-underline-offset: 0.3rem;
     }
 
+    .section-{{ section.id }}-padding .homepage-fit-grid {
+      --grid-mobile-horizontal-spacing: 1.2rem;
+      --grid-mobile-vertical-spacing: 1.2rem;
+      --grid-desktop-horizontal-spacing: 2rem;
+      --grid-desktop-vertical-spacing: 2rem;
+      margin-bottom: 0;
+    }
+
+    .section-{{ section.id }}-padding .homepage-fit-card {
+      height: 100%;
+      padding: 2rem;
+      border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
+      border-radius: 1.6rem;
+      background: rgb(var(--color-background));
+    }
+
+    .section-{{ section.id }}-padding .homepage-fit-card__title {
+      margin: 0 0 1rem;
+    }
+
+    .section-{{ section.id }}-padding .homepage-fit-card__copy,
+    .section-{{ section.id }}-padding .homepage-fit-card__support {
+      margin: 0;
+    }
+
+    .section-{{ section.id }}-padding .homepage-fit-card__support {
+      margin-top: 1rem;
+      color: rgb(var(--color-text-secondary));
+    }
+
     .section-{{ section.id }}-padding .homepage-shelf__header + .page-width,
     .section-{{ section.id }}-padding .homepage-shelf .product-grid {
       --grid-mobile-horizontal-spacing: 1.2rem;
@@ -90,11 +120,18 @@
     }
 
     .section-{{ section.id }}-padding .homepage-shelf__header {
+      display: grid;
+      gap: 1.2rem;
       margin-bottom: 2rem;
     }
 
     .section-{{ section.id }}-padding .homepage-shelf__title {
       margin: 0;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf__actions {
+      display: flex;
+      align-items: center;
     }
 
     .section-{{ section.id }}-padding .homepage-shelf .product-grid {
@@ -139,6 +176,8 @@
       }
     {%- elsif section.id == 'full-product-section' or section.id == 'featured_collection_666q7i' -%}
       .section-{{ section.id }}-padding .homepage-shelf__header {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
         margin-bottom: 2.4rem;
       }
     {%- elsif section.id == 'showroom' -%}

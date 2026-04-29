@@ -150,11 +150,15 @@
                 class: 'snooze-hero__image',
                 loading: 'eager',
                 fetchpriority: 'high',
-                alt: section.settings.hero_image.alt | default: section.settings.heading | escape
+                alt: section.settings.hero_image.alt | default: 'Single person testing a mattress in a calm guided sleep environment' | escape
             }}
           </div>
         {%- else -%}
-          <div class="snooze-hero__media snooze-hero__media--empty" aria-hidden="true"></div>
+          <div
+            class="snooze-hero__media snooze-hero__media--empty"
+            role="img"
+            aria-label="Single person testing a mattress in a calm guided sleep environment"
+          ></div>
         {%- endif -%}
       </div>
     </div>

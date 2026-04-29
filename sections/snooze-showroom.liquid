@@ -110,9 +110,17 @@
                 sizes: '(min-width: 990px) 50vw, 100vw',
                 class: 'snooze-showroom__image',
                 loading: 'lazy',
-                alt: section.settings.image.alt | default: section.settings.heading | escape
+                alt: section.settings.image.alt | default: 'Online sleep assessment connected to in-store mattress testing' | escape
             }}
           </div>
+        </div>
+      {%- else -%}
+        <div class="snooze-showroom__media-wrap">
+          <div
+            class="snooze-showroom__media"
+            role="img"
+            aria-label="Online sleep assessment connected to in-store mattress testing"
+          ></div>
         </div>
       {%- endif -%}
     </div>
