@@ -140,6 +140,10 @@
     display: none;
   }
 
+  .header__snoozer-desktop-row {
+    display: none;
+  }
+
   .header__snoozer-row {
     padding: 0 0 1rem;
   }
@@ -260,14 +264,19 @@
 
   @media screen and (min-width: 990px) {
     .header__main {
-      grid-template-columns: minmax(18rem, 24rem) minmax(44rem, 52rem) auto;
-      gap: 2.4rem;
-      min-height: 8.8rem;
-      padding: 0.8rem 0 1.2rem;
+      grid-template-columns: minmax(18rem, 1fr) auto;
+      gap: 2rem;
+      min-height: 6.8rem;
+      padding: 1.2rem 0 0.6rem;
+    }
+
+    .header__main-toggle {
+      display: none;
     }
 
     .header__branding {
       justify-content: flex-start;
+      grid-column: 1;
     }
 
     .header__heading-link .h2 {
@@ -299,40 +308,44 @@
     }
 
     .header__icons {
+      grid-column: 2;
       align-self: start;
+      justify-self: end;
       padding-top: 0.2rem;
     }
 
     .header__snoozer-entry {
+      display: none;
+    }
+
+    .header__snoozer-desktop-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      justify-self: center;
-      align-self: flex-start;
       width: 100%;
-      max-width: 52rem;
-      min-width: 44rem;
-      margin-top: 2.8rem;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 2.8rem auto 1.8rem;
+      padding: 0;
     }
 
-    .header__snoozer-entry .header__snoozer-pill {
+    .header__snoozer-desktop-row .header__snoozer-pill {
+      display: flex;
+      width: min(100%, 52rem);
+      max-width: 52rem;
       min-height: 6rem;
       padding: 1.4rem 2rem;
     }
 
-    .header__snoozer-entry .header__snoozer-avatar {
+    .header__snoozer-desktop-row .header__snoozer-avatar {
       width: 4rem;
       height: 4rem;
     }
 
-    .header__snoozer-entry .header__snoozer-text {
+    .header__snoozer-desktop-row .header__snoozer-text {
       font-size: 1.7rem;
     }
 
     .header__nav-row {
-      padding-top: 0.6rem;
+      padding-top: 0;
     }
 
     .header__nav-row .header__inline-menu {
@@ -463,9 +476,6 @@
       <div class="header__branding">
         {{ header_logo }}
       </div>
-      <div class="header__snoozer-entry small-hide medium-hide">
-        {{ ask_snoozer_pill }}
-      </div>
       <div class="header__icons{% if localization_forms %} header__icons--localization header-localization{% endif %}">
         <div class="desktop-localization-wrapper small-hide medium-hide">
           {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
@@ -542,6 +552,9 @@
           {%- endif -%}
         </a>
       </div>
+    </div>
+    <div class="header__snoozer-desktop-row small-hide medium-hide">
+      {{ ask_snoozer_pill }}
     </div>
     <div class="header__snoozer-row large-up-hide">
       {{ ask_snoozer_pill }}
