@@ -17,28 +17,6 @@
     background: transparent;
   }
 
-  .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__header {
-    display: grid;
-    gap: 1.2rem;
-    margin-bottom: 2.4rem;
-  }
-
-  .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__title {
-    margin: 0;
-  }
-
-  .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__actions {
-    display: flex;
-    align-items: center;
-  }
-
-  .section-{{ section.id }}-padding .homepage-shelf--full .product-grid {
-    --grid-mobile-horizontal-spacing: 2.4rem;
-    --grid-mobile-vertical-spacing: 2.4rem;
-    --grid-desktop-horizontal-spacing: 3.2rem;
-    --grid-desktop-vertical-spacing: 3.2rem;
-  }
-
   {%- if section.id == 'light-product-preview' or section.id == 'featured_collection_4WFByd' -%}
     .section-{{ section.id }}-padding {
       padding-top: 3.2rem !important;
@@ -153,6 +131,136 @@
       padding-top: 6.4rem !important;
       padding-bottom: 6.4rem !important;
     }
+
+    .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__header {
+      display: grid;
+      justify-items: center;
+      gap: 1.2rem;
+      margin-bottom: 3.2rem;
+      text-align: center;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__copy {
+      max-width: 64rem;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__title {
+      margin: 0;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__description {
+      margin: 0;
+      color: rgb(var(--color-text-secondary));
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__description p {
+      margin: 0;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf__grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.6rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf__item {
+      min-width: 0;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 1.8rem;
+      border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
+      border-radius: 1.6rem;
+      background: #ffffff;
+      box-shadow: 0 0.8rem 2rem rgba(var(--color-primary-navy), 0.05);
+      transition: border-color var(--duration-short) ease, box-shadow var(--duration-short) ease,
+        transform var(--duration-short) ease;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card__media-link {
+      display: block;
+      text-decoration: none;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card__media {
+      overflow: hidden;
+      aspect-ratio: 1 / 1;
+      border-radius: 1.2rem;
+      background: rgb(242, 244, 247);
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card__image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform var(--duration-short) ease;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card__body {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      gap: 1.4rem;
+      padding-top: 1.8rem;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card__title {
+      margin: 0;
+      font-size: 1.8rem;
+      line-height: 2.4rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card__title-link {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card__benefits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card__benefit {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.8rem;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #243247;
+      font-size: 1.25rem;
+      line-height: 1.6rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: auto;
+      padding-top: 0.4rem;
+      color: #071a44;
+      font-size: 1.45rem;
+      line-height: 2rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf-card__cta:hover {
+      text-decoration: underline;
+      text-underline-offset: 0.25rem;
+    }
   {%- endif -%}
 
   @media screen and (min-width: 750px) {
@@ -171,6 +279,10 @@
         padding-top: 6.4rem !important;
         padding-bottom: 6.4rem !important;
       }
+    {%- elsif section.id == 'full-product-section' or section.id == 'featured_collection_666q7i' -%}
+      .section-{{ section.id }}-padding .homepage-shelf__grid {
+        gap: 2rem;
+      }
     {%- endif -%}
   }
 
@@ -184,9 +296,29 @@
       }
     {%- elsif section.id == 'full-product-section' or section.id == 'featured_collection_666q7i' -%}
       .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__header {
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        margin-bottom: 2.4rem;
+        margin-bottom: 4rem;
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf__grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 2.8rem;
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf-card {
+        padding: 2rem;
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf-card__body {
+        padding-top: 2rem;
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf-card__title {
+        font-size: 1.95rem;
+        line-height: 2.6rem;
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf-card__cta {
+        font-size: 1.5rem;
       }
     {%- elsif section.id == 'showroom' -%}
       .section-{{ section.id }}-padding {
@@ -201,9 +333,95 @@
     {%- endif -%}
   }
 {%- endstyle -%}
+{%- liquid
+  assign render_curated_homepage_shelf = false
+  if section.id == 'featured_collection_666q7i'
+    assign render_curated_homepage_shelf = true
+  endif
+-%}
 <div class="color-{{ section.settings.color_scheme }} gradient{% if section.id == 'full-product-section' or section.id == 'featured_collection_666q7i' or section.settings.custom_liquid contains 'homepage-shelf--full' %} homepage-shelf-section homepage-shelf-section--featured{% endif %}">
   <div class="section-{{ section.id }}-padding">
-    {{ section.settings.custom_liquid }}
+    {%- if render_curated_homepage_shelf -%}
+      <div class="homepage-shelf homepage-shelf--full">
+        <div class="homepage-shelf__header page-width">
+          <div class="homepage-shelf__copy">
+            <h2 class="homepage-shelf__title title inline-richtext h2">Find What Works For How You Sleep</h2>
+            <div class="homepage-shelf__description collection__description body rte">
+              <p>Start with the Snooze Assessment. Snoozer guides you to the right mattress.</p>
+            </div>
+          </div>
+        </div>
+        <div class="page-width">
+          <ul class="homepage-shelf__grid" role="list">
+            {%- assign mattress_handles = '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' -%}
+            {%- for handle in mattress_handles -%}
+              {%- assign mattress_product = all_products[handle] -%}
+              {%- if mattress_product != blank -%}
+                {%- liquid
+                  assign benefit_1 = ''
+                  assign benefit_2 = ''
+                  assign benefit_3 = ''
+                  case handle
+                    when '10-all-foam-mattress'
+                      assign benefit_1 = 'Pressure Relief'
+                      assign benefit_2 = 'Motion Isolation'
+                      assign benefit_3 = 'Back Support'
+                    when '12-all-foam-mattress'
+                      assign benefit_1 = 'Plush Comfort'
+                      assign benefit_2 = 'Pressure Relief'
+                      assign benefit_3 = 'Cooling Cover'
+                    when '12-dual-comfort-hybrid'
+                      assign benefit_1 = 'Dual Comfort'
+                      assign benefit_2 = 'Couples'
+                      assign benefit_3 = 'Balanced Support'
+                    when '14-hybrid'
+                      assign benefit_1 = 'Cooling Support'
+                      assign benefit_2 = 'Hybrid Feel'
+                      assign benefit_3 = 'Edge Support'
+                  endcase
+                  assign card_alt = mattress_product.featured_media.alt | default: mattress_product.title
+                -%}
+                <li class="homepage-shelf__item">
+                  <article class="homepage-shelf-card">
+                    <a class="homepage-shelf-card__media-link" href="{{ mattress_product.url }}">
+                      <div class="homepage-shelf-card__media">
+                        {%- if mattress_product.featured_media -%}
+                          {{
+                            mattress_product.featured_media
+                            | image_url: width: 900
+                            | image_tag:
+                              class: 'homepage-shelf-card__image',
+                              widths: '320, 480, 640, 720, 900',
+                              sizes: '(min-width: 990px) calc((1320px - 84px) / 4), (min-width: 750px) calc((100vw - 80px) / 2), calc((100vw - 48px) / 2)',
+                              loading: 'lazy',
+                              alt: card_alt
+                          }}
+                        {%- endif -%}
+                      </div>
+                    </a>
+                    <div class="homepage-shelf-card__body">
+                      <h3 class="homepage-shelf-card__title">
+                        <a class="homepage-shelf-card__title-link" href="{{ mattress_product.url }}">
+                          {{ mattress_product.title | escape }}
+                        </a>
+                      </h3>
+                      <div class="homepage-shelf-card__benefits" aria-label="Product benefits">
+                        <span class="homepage-shelf-card__benefit">{{ benefit_1 }}</span>
+                        <span class="homepage-shelf-card__benefit">{{ benefit_2 }}</span>
+                        <span class="homepage-shelf-card__benefit">{{ benefit_3 }}</span>
+                      </div>
+                      <a class="homepage-shelf-card__cta" href="{{ mattress_product.url }}">View Details &rarr;</a>
+                    </div>
+                  </article>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      </div>
+    {%- else -%}
+      {{ section.settings.custom_liquid }}
+    {%- endif -%}
   </div>
 </div>
 
