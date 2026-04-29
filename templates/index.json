@@ -148,6 +148,7 @@
     },
     "how-it-works-visual": {
       "type": "process-visual-section",
+      "disabled": true,
       "settings": {
         "heading": "",
         "position": "below",
@@ -158,6 +159,7 @@
     },
     "featured_collection_4WFByd": {
       "type": "custom-liquid",
+      "disabled": true,
       "settings": {
         "custom_liquid": "<div class='homepage-shelf homepage-shelf--preview'>\n  <div class='homepage-shelf__header page-width'>\n    <div class='homepage-shelf__copy'>\n      <h2 class='homepage-shelf__title title inline-richtext h2'>Start With What Fits How You Sleep</h2>\n      <div class='homepage-shelf__description collection__description body rte'>\n        <p>We'll help narrow the options based on how you sleep.</p>\n      </div>\n    </div>\n  </div>\n  <div class='page-width'>\n    <ul class='grid homepage-fit-grid grid--4-col-desktop grid--2-col-tablet-down' role='list'>\n      <li class='grid__item'>\n        <div class='homepage-fit-card'>\n          <h3 class='homepage-fit-card__title h3'>Pressure Relief</h3>\n          <p class='homepage-fit-card__copy'>Relieves pressure where your body needs it most.</p>\n          <p class='homepage-fit-card__support'>A good fit if you wake up with shoulder or hip discomfort.</p>\n        </div>\n      </li>\n      <li class='grid__item'>\n        <div class='homepage-fit-card'>\n          <h3 class='homepage-fit-card__title h3'>Balanced Support</h3>\n          <p class='homepage-fit-card__copy'>A balanced feel that works for most sleep styles.</p>\n          <p class='homepage-fit-card__support'>Keeps your body aligned without feeling too firm or too soft.</p>\n        </div>\n      </li>\n      <li class='grid__item'>\n        <div class='homepage-fit-card'>\n          <h3 class='homepage-fit-card__title h3'>Cooling</h3>\n          <p class='homepage-fit-card__copy'>Helps you stay cool throughout the night.</p>\n          <p class='homepage-fit-card__support'>A good option if you tend to sleep warm.</p>\n        </div>\n      </li>\n      <li class='grid__item'>\n        <div class='homepage-fit-card'>\n          <h3 class='homepage-fit-card__title h3'>Dual Comfort</h3>\n          <p class='homepage-fit-card__copy'>Designed for two different sleep preferences.</p>\n          <p class='homepage-fit-card__support'>So both sides feel right - without compromise.</p>\n        </div>\n      </li>\n    </ul>\n  </div>\n</div>",
         "color_scheme": "scheme-2",
@@ -167,6 +169,7 @@
     },
     "image_with_text_ny7ibh": {
       "type": "snooze-guided",
+      "disabled": true,
       "settings": {
         "heading": "A Guided Way To Choose The Right Mattress",
         "body": "Instead of trying to figure it out on your own, we guide you through a simple process that narrows your options and helps you choose with confidence.",
@@ -214,6 +217,7 @@
         "category_2",
         "category_3"
       ],
+      "disabled": true,
       "settings": {
         "title": "",
         "heading_size": "h2",
@@ -233,6 +237,7 @@
     },
     "featured_collection_666q7i": {
       "type": "custom-liquid",
+      "disabled": true,
       "settings": {
         "custom_liquid": "{{ 'component-card.css' | asset_url | stylesheet_tag }}\n{{ 'template-collection.css' | asset_url | stylesheet_tag }}\n<div class='homepage-shelf homepage-shelf--full'>\n  <div class='homepage-shelf__header page-width'>\n    <h2 class='homepage-shelf__title title inline-richtext h2'>Find The Mattress That Works For How You Sleep</h2>\n    <div class='homepage-shelf__actions'>\n      <a class='button button--primary' href='/pages/sleep-assessment'>Start Your Sleep Assessment</a>\n    </div>\n  </div>\n  <div class='page-width'>\n    <ul class='grid product-grid contains-card contains-card--product contains-card--standard grid--4-col-desktop grid--2-col-tablet-down' role='list'>\n      {% assign mattress_handles = '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' %}\n      {% assign skip_card_product_styles = false %}\n      {% for handle in mattress_handles %}\n        {% assign mattress_product = all_products[handle] %}\n        {% if mattress_product != blank %}\n          <li class='grid__item'>\n            {% render 'card-product', card_product: mattress_product, media_aspect_ratio: 'square', image_shape: 'default', show_secondary_image: false, show_vendor: false, show_rating: false, skip_styles: skip_card_product_styles, section_id: section.id, quick_add: 'none' %}\n          </li>\n          {% assign skip_card_product_styles = true %}\n        {% endif %}\n      {% endfor %}\n    </ul>\n  </div>\n</div>",
         "color_scheme": "scheme-2",
