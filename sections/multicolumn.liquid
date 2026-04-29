@@ -30,12 +30,12 @@
 
   {%- if section.id == 'value-strip' -%}
     .section-{{ section.id }}-padding {
-      padding-top: 2.8rem !important;
-      padding-bottom: 3.2rem !important;
+      padding-top: 2.2rem !important;
+      padding-bottom: 2.6rem !important;
     }
 
     .section-{{ section.id }}-padding .multicolumn__title {
-      margin-bottom: 1.8rem;
+      margin-bottom: 1.4rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-list {
@@ -66,10 +66,10 @@
     .section-{{ section.id }}-padding .multicolumn-card {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      text-align: left;
-      min-height: 19rem;
-      padding: 2.4rem 2.2rem;
+      align-items: center;
+      text-align: center;
+      min-height: 18rem;
+      padding: 2.2rem 2rem;
       border: 0.1rem solid rgba(var(--color-text-primary), 0.06);
       border-radius: 2rem;
       background: rgb(var(--color-background));
@@ -78,20 +78,26 @@
 
     .section-{{ section.id }}-padding .multicolumn-card__image-wrapper {
       width: auto;
-      margin: 0 0 1.6rem;
+      margin: 0 auto 1rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
-      width: 5.4rem;
-      height: 5.4rem;
+      width: 5.2rem;
+      height: 5.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
       background: #eef2f7;
       color: rgb(var(--color-primary-navy));
-      margin-bottom: 1.6rem;
+      margin: 0 auto 1.2rem;
     }
 
-    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
-      width: 2.8rem;
-      height: 2.8rem;
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper,
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper svg,
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper img {
+      width: 3rem;
+      height: 3rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__image-wrapper + .multicolumn-card__info {
@@ -107,7 +113,7 @@
       font-size: 2.2rem;
       line-height: 2.8rem;
       font-weight: 700;
-      margin-bottom: 1rem;
+      margin-bottom: 0.6rem;
       color: rgb(var(--color-primary-navy));
       letter-spacing: -0.03em;
     }
@@ -342,8 +348,8 @@
 
     {%- if section.id == 'value-strip' -%}
       .section-{{ section.id }}-padding {
-        padding-top: 3.2rem !important;
-        padding-bottom: 4rem !important;
+        padding-top: 2.6rem !important;
+        padding-bottom: 3.2rem !important;
       }
 
       .section-{{ section.id }}-padding .multicolumn-list {
@@ -357,8 +363,8 @@
       }
 
       .section-{{ section.id }}-padding .multicolumn-card {
-        min-height: 22rem;
-        padding: 2.8rem;
+        min-height: 20rem;
+        padding: 2.6rem;
       }
 
       .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
@@ -366,7 +372,9 @@
         height: 6rem;
       }
 
-      .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
+      .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper,
+      .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper svg,
+      .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper img {
         width: 3.2rem;
         height: 3.2rem;
       }

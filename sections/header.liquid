@@ -262,8 +262,8 @@
     .header__main {
       grid-template-columns: minmax(18rem, 24rem) minmax(44rem, 52rem) auto;
       gap: 2.4rem;
-      min-height: 7.4rem;
-      padding: 0.8rem 0 1rem;
+      min-height: 8.8rem;
+      padding: 0.8rem 0 1.2rem;
     }
 
     .header__branding {
@@ -306,11 +306,15 @@
     .header__snoozer-entry {
       display: flex;
       align-items: center;
+      justify-content: center;
       justify-self: center;
-      align-self: center;
-      width: min(100%, 52rem);
+      align-self: flex-start;
+      width: 100%;
+      max-width: 52rem;
       min-width: 44rem;
-      padding-top: 0.4rem;
+      margin-top: 2.8rem;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .header__snoozer-entry .header__snoozer-pill {
@@ -328,7 +332,7 @@
     }
 
     .header__nav-row {
-      padding-top: 0.2rem;
+      padding-top: 0.6rem;
     }
 
     .header__nav-row .header__inline-menu {
