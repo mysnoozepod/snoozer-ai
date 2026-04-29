@@ -30,40 +30,72 @@
 
   {%- if section.id == 'value-strip' -%}
     .section-{{ section.id }}-padding {
-      padding-top: 3.2rem !important;
+      padding-top: 2.8rem !important;
       padding-bottom: 3.2rem !important;
     }
 
+    .section-{{ section.id }}-padding .multicolumn__title {
+      margin-bottom: 1.8rem;
+    }
+
     .section-{{ section.id }}-padding .multicolumn-list {
-      gap: 2rem 1.2rem;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(28rem, 82%);
+      gap: 1.6rem;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      padding-bottom: 0.4rem;
+      scroll-padding-inline: 1.6rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-list__item {
+      scroll-snap-align: center;
+    }
+
+    .section-{{ section.id }}-padding .slider-buttons {
+      display: none !important;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-
-    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
-      width: 5rem;
-      height: 5rem;
-      background: rgba(var(--color-accent-blue), 0.08);
-      color: rgb(var(--color-primary-navy));
-    }
-
-    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
-      width: 2.2rem;
-      height: 2.2rem;
+      align-items: flex-start;
+      text-align: left;
+      min-height: 19rem;
+      padding: 2.4rem 2.2rem;
+      border: 0.1rem solid rgba(var(--color-text-primary), 0.06);
+      border-radius: 2rem;
+      background: rgb(var(--color-background));
+      box-shadow: 0 1.2rem 3rem rgba(7, 26, 68, 0.06);
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__image-wrapper {
       width: auto;
-      margin: 0 auto;
+      margin: 0 0 1.6rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
+      width: 5.4rem;
+      height: 5.4rem;
+      background: #eef2f7;
+      color: rgb(var(--color-primary-navy));
+      margin-bottom: 1.6rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
+      width: 2.8rem;
+      height: 2.8rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__image-wrapper + .multicolumn-card__info {
-      padding-top: 1rem;
+      padding-top: 0;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info {
@@ -72,15 +104,24 @@
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info h3 {
-      font-size: 1.8rem;
-      line-height: 2.4rem;
-      font-weight: 600;
-      margin-bottom: 0.8rem;
+      font-size: 2.2rem;
+      line-height: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: rgb(var(--color-primary-navy));
+      letter-spacing: -0.03em;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info .rte {
-      max-width: 24rem;
-      margin: 0 auto;
+      max-width: 28rem;
+      margin: 0;
+      font-size: 1.7rem;
+      line-height: 2.4rem;
+      color: rgba(var(--color-text-primary), 0.82);
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info .rte p {
+      margin: 0;
     }
   {%- elsif section.id == 'how-it-works' -%}
     .section-{{ section.id }}-padding {
@@ -120,9 +161,21 @@
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__image-wrapper,
-    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper,
     .section-{{ section.id }}-padding .multicolumn-card__step-label {
       display: none;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
+      width: 5.4rem;
+      height: 5.4rem;
+      background: #eef2f7;
+      color: rgb(var(--color-primary-navy));
+      margin: 0 0 1.6rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
+      width: 2.8rem;
+      height: 2.8rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card--linked {
@@ -185,6 +238,10 @@
 
     .section-{{ section.id }}-padding .multicolumn-list__item {
       scroll-snap-align: center;
+    }
+
+    .section-{{ section.id }}-padding .slider-buttons {
+      display: none !important;
     }
 
   {%- elsif section.id == 'why-guided-benefits' -%}
@@ -285,8 +342,33 @@
 
     {%- if section.id == 'value-strip' -%}
       .section-{{ section.id }}-padding {
-        padding-top: 4rem !important;
+        padding-top: 3.2rem !important;
         padding-bottom: 4rem !important;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-list {
+        display: grid;
+        grid-auto-flow: row;
+        grid-auto-columns: initial;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        overflow: visible;
+        scroll-snap-type: none;
+        padding-bottom: 0;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card {
+        min-height: 22rem;
+        padding: 2.8rem;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
+        width: 6rem;
+        height: 6rem;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
+        width: 3.2rem;
+        height: 3.2rem;
       }
     {%- elsif section.id == 'how-it-works' -%}
       .section-{{ section.id }}-padding {
@@ -307,6 +389,16 @@
       .section-{{ section.id }}-padding .multicolumn-card {
         min-height: 22rem;
         padding: 2.8rem;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
+        width: 6rem;
+        height: 6rem;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
+        width: 3.2rem;
+        height: 3.2rem;
       }
     {%- elsif section.id == 'category-navigation' or section.id == 'collection_list_KVb8Pk' -%}
       .section-{{ section.id }}-padding {

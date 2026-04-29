@@ -255,15 +255,15 @@
   }
 
   .header__snoozer-row .header__snoozer-pill {
-    min-height: 5.8rem;
+    min-height: 6rem;
   }
 
   @media screen and (min-width: 990px) {
     .header__main {
-      grid-template-columns: minmax(18rem, 24rem) minmax(48rem, 60rem) auto;
-      gap: 2.8rem;
+      grid-template-columns: minmax(18rem, 24rem) minmax(44rem, 52rem) auto;
+      gap: 2.4rem;
       min-height: 7.4rem;
-      padding: 1rem 0 0.8rem;
+      padding: 0.8rem 0 1rem;
     }
 
     .header__branding {
@@ -298,16 +298,23 @@
       height: 3.2rem;
     }
 
+    .header__icons {
+      align-self: start;
+      padding-top: 0.2rem;
+    }
+
     .header__snoozer-entry {
       display: flex;
       align-items: center;
       justify-self: center;
-      width: min(100%, 60rem);
-      min-width: 48rem;
+      align-self: center;
+      width: min(100%, 52rem);
+      min-width: 44rem;
+      padding-top: 0.4rem;
     }
 
     .header__snoozer-entry .header__snoozer-pill {
-      min-height: 6.2rem;
+      min-height: 6rem;
       padding: 1.4rem 2rem;
     }
 
