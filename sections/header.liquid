@@ -57,6 +57,115 @@
     padding-top: 0.8rem;
     line-height: 1.4;
   }
+
+  .header__snoozer-entry {
+    display: none;
+  }
+
+  .header__snoozer-row {
+    padding: 0 0 1.2rem;
+  }
+
+  .header__snoozer-pill {
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1rem 1.4rem;
+    border: 0.1rem solid #cbd5e1;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 1rem 2.4rem rgba(7, 26, 68, 0.06);
+    color: #071a44;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .header__snoozer-pill:hover {
+    border-color: rgba(7, 26, 68, 0.2);
+    box-shadow: 0 1.2rem 2.8rem rgba(7, 26, 68, 0.08);
+  }
+
+  .header__snoozer-pill:focus-visible {
+    outline: 0.2rem solid rgba(30, 92, 196, 0.24);
+    outline-offset: 0.2rem;
+  }
+
+  .header__snoozer-avatar {
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 999px;
+    object-fit: contain;
+    flex-shrink: 0;
+    background: #ffffff;
+  }
+
+  .header__snoozer-text {
+    flex: 1;
+    min-width: 0;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: rgba(7, 26, 68, 0.76);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header__snoozer-arrow {
+    width: 1.8rem;
+    height: 1.8rem;
+    flex-shrink: 0;
+    color: #071a44;
+  }
+
+  .header__snoozer-arrow .svg-wrapper,
+  .header__snoozer-arrow svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .header__snoozer-arrow .svg-wrapper {
+    display: block;
+  }
+
+  .header__snoozer-row .header__snoozer-pill {
+    min-height: 5.2rem;
+  }
+
+  .header__snoozer-row .header__snoozer-avatar {
+    width: 3.6rem;
+    height: 3.6rem;
+  }
+
+  @media screen and (min-width: 990px) {
+    .header__snoozer-entry {
+      display: flex;
+      align-items: center;
+      margin-right: 0.8rem;
+      width: min(32rem, 30vw);
+      min-width: 25rem;
+    }
+
+    .header__snoozer-entry .header__snoozer-pill {
+      min-height: 4.8rem;
+      padding: 0.9rem 1.4rem;
+    }
+
+    .header__snoozer-entry .header__snoozer-avatar {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    .header__snoozer-entry .header__snoozer-text {
+      font-size: 1.4rem;
+    }
+
+    .header__snoozer-row {
+      display: none;
+    }
+  }
 </style>
 
 {%- style -%}
@@ -131,6 +240,29 @@
     {%- endif -%}
   {%- endcapture -%}
 
+  {%- capture ask_snoozer_pill -%}
+    <button
+      type="button"
+      class="header__snoozer-pill"
+      data-snoozer-trigger
+      data-snoozer-source="header"
+      aria-label="Ask Snoozer anything about your sleep"
+    >
+      <img
+        src="{{ 'snoozer-avatar.png' | asset_url }}"
+        alt="Snoozer avatar"
+        class="header__snoozer-avatar"
+        loading="eager"
+        width="36"
+        height="36"
+      >
+      <span class="header__snoozer-text">Ask Snoozer anything about your sleep...</span>
+      <span class="header__snoozer-arrow" aria-hidden="true">
+        <span class="svg-wrapper">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
+      </span>
+    </button>
+  {%- endcapture -%}
+
   <header class="header page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %} header--mobile-{{ section.settings.mobile_logo_position }}">
     <div class="header__main">
       <div class="header__main-toggle">
@@ -143,6 +275,9 @@
         {{ header_logo }}
       </div>
       <div class="header__icons{% if localization_forms %} header__icons--localization header-localization{% endif %}">
+        <div class="header__snoozer-entry small-hide medium-hide">
+          {{ ask_snoozer_pill }}
+        </div>
         <div class="desktop-localization-wrapper small-hide medium-hide">
           {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
             <localization-form data-prevent-hide>
@@ -219,6 +354,9 @@
         </a>
       </div>
     </div>
+    <div class="header__snoozer-row large-up-hide">
+      {{ ask_snoozer_pill }}
+    </div>
     {%- if show_desktop_menu -%}
       <div class="header__nav-row small-hide medium-hide">
         {%- if section.settings.menu_type_desktop == 'mega' -%}
@@ -274,6 +412,47 @@
     }
   </script>
 {%- endif -%}
+
+<script>
+  (() => {
+    if (window.__mysnoozepodSnoozerTriggerBound) return;
+    window.__mysnoozepodSnoozerTriggerBound = true;
+
+    function openSnoozer(source) {
+      const detail = { source: source || 'unknown' };
+
+      if (typeof window.openSnoozer === 'function') {
+        window.openSnoozer(detail);
+        return;
+      }
+
+      if (window.SnoozerHUD && typeof window.SnoozerHUD.open === 'function') {
+        window.SnoozerHUD.open(detail);
+        return;
+      }
+
+      if (window.Snoozer && typeof window.Snoozer.open === 'function') {
+        window.Snoozer.open(detail);
+        return;
+      }
+
+      window.dispatchEvent(new CustomEvent('mysnoozepod:snoozer:open', { detail }));
+      window.dispatchEvent(new CustomEvent('snoozer:open', { detail }));
+      console.log('Ask Snoozer clicked');
+    }
+
+    window.MySnoozePod = window.MySnoozePod || {};
+    window.MySnoozePod.openSnoozer = openSnoozer;
+
+    document.addEventListener('click', (event) => {
+      const trigger = event.target.closest('[data-snoozer-trigger]');
+      if (!trigger) return;
+
+      event.preventDefault();
+      openSnoozer(trigger.getAttribute('data-snoozer-source'));
+    });
+  })();
+</script>
 
 {% schema %}
 {

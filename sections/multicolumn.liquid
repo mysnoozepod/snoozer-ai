@@ -145,6 +145,33 @@
       margin-bottom: 0.8rem;
     }
 
+    .section-{{ section.id }}-padding .multicolumn-list {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(26rem, calc(100% - 5.6rem));
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+      padding-bottom: 0.4rem;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-list__item {
+      scroll-snap-align: start;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__desktop-copy {
+      display: none;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__mobile-copy {
+      display: block;
+    }
+
   {%- elsif section.id == 'why-guided-benefits' -%}
     .section-{{ section.id }}-padding {
       padding-top: 0 !important;
@@ -251,6 +278,23 @@
         padding-top: 4.8rem !important;
         padding-bottom: 4rem !important;
       }
+
+      .section-{{ section.id }}-padding .multicolumn-list {
+        display: grid;
+        grid-auto-flow: row;
+        grid-auto-columns: initial;
+        overflow: visible;
+        scroll-snap-type: none;
+        padding-bottom: 0;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card__desktop-copy {
+        display: block;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card__mobile-copy {
+        display: none;
+      }
     {%- elsif section.id == 'category-navigation' or section.id == 'collection_list_KVb8Pk' -%}
       .section-{{ section.id }}-padding {
         padding-top: 4rem !important;
@@ -321,8 +365,19 @@
         {%- for block in section.blocks -%}
           {%- assign empty_column = '' -%}
           {%- assign has_icon = false -%}
+          {%- assign mobile_step_text = '' -%}
           {%- if block.settings.icon != blank and block.settings.icon != 'none' -%}
             {%- assign has_icon = true -%}
+          {%- endif -%}
+          {%- if section.id == 'how-it-works' -%}
+            {%- case forloop.index -%}
+              {%- when 1 -%}
+                {%- assign mobile_step_text = 'Tell us how you sleep.' -%}
+              {%- when 2 -%}
+                {%- assign mobile_step_text = 'We narrow it down.' -%}
+              {%- when 3 -%}
+                {%- assign mobile_step_text = 'Try them and feel the difference.' -%}
+            {%- endcase -%}
           {%- endif -%}
           {%- if block.settings.image == blank
             and has_icon == false
@@ -399,7 +454,12 @@
                   <h3 class="inline-richtext">{{ block.settings.title }}</h3>
                 {%- endif -%}
                 {%- if block.settings.text != blank -%}
-                  <div class="rte">{{ block.settings.text }}</div>
+                  {%- if section.id == 'how-it-works' and mobile_step_text != blank -%}
+                    <div class="rte multicolumn-card__desktop-copy">{{ block.settings.text }}</div>
+                    <div class="rte multicolumn-card__mobile-copy"><p>{{ mobile_step_text }}</p></div>
+                  {%- else -%}
+                    <div class="rte">{{ block.settings.text }}</div>
+                  {%- endif -%}
                 {%- endif -%}
                 {%- if block.settings.link_label != blank -%}
                   <a

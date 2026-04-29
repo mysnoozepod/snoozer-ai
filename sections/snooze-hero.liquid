@@ -82,6 +82,84 @@
     min-width: 0;
   }
 
+  .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell {
+    position: relative;
+    z-index: 3;
+    margin-top: -2.4rem;
+    margin-bottom: 1.6rem;
+  }
+
+  .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-card {
+    display: grid;
+    gap: 1.4rem;
+    align-items: center;
+    padding: 1.8rem 2rem;
+    border: 0.1rem solid rgba(var(--color-foreground), 0.08);
+    border-radius: 1.8rem;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 1.2rem 3rem rgba(7, 26, 68, 0.08);
+  }
+
+  .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-identity {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    min-width: 0;
+  }
+
+  .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-image {
+    width: 5.6rem;
+    height: 5.6rem;
+    border-radius: 1.4rem;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: rgba(var(--color-foreground), 0.04);
+  }
+
+  .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-copy {
+    min-width: 0;
+  }
+
+  .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-title {
+    margin: 0;
+    font-size: 1.8rem;
+    line-height: 1.2;
+    color: rgb(var(--color-primary-navy));
+  }
+
+  .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-text {
+    margin: 0.4rem 0 0;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    color: rgba(var(--color-text-primary), 0.76);
+  }
+
+  .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.6rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: rgb(var(--color-primary-navy));
+    cursor: pointer;
+  }
+
+  .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-action:hover {
+    color: rgb(var(--color-accent-blue));
+  }
+
+  .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-action:focus-visible {
+    outline: 0.2rem solid rgba(30, 92, 196, 0.24);
+    outline-offset: 0.3rem;
+    border-radius: 0.6rem;
+  }
+
   @media screen and (min-width: 750px) {
     .snooze-hero-{{ section.id }} {
       min-height: 54rem;
@@ -98,6 +176,22 @@
     .snooze-hero-{{ section.id }} .snooze-hero__actions {
       gap: 1.6rem;
     }
+
+    .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell {
+      margin-top: -3.2rem;
+      margin-bottom: 2.4rem;
+    }
+
+    .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-card {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 1.6rem;
+      padding: 2rem 2.4rem;
+    }
+
+    .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell .snooze-hero__assistant-image {
+      width: 6.4rem;
+      height: 6.4rem;
+    }
   }
 
   @media screen and (min-width: 990px) {
@@ -111,6 +205,11 @@
       padding-bottom: 7.2rem;
       padding-left: clamp(5vw, 6vw, 8rem);
       padding-right: clamp(4rem, 5vw, 7.2rem);
+    }
+
+    .snooze-hero-{{ section.id }} + .snooze-hero__assistant-shell {
+      margin-top: -3.6rem;
+      margin-bottom: 3.2rem;
     }
   }
 {%- endstyle -%}
@@ -186,6 +285,36 @@
     </div>
   </div>
 </section>
+
+<div class="page-width snooze-hero__assistant-shell">
+  <div class="snooze-hero__assistant-card">
+    <div class="snooze-hero__assistant-identity">
+      <img
+        src="{{ 'snoozer-coach.png' | asset_url }}"
+        alt="Snoozer coach portrait"
+        class="snooze-hero__assistant-image"
+        loading="lazy"
+        width="64"
+        height="64"
+      >
+      <div class="snooze-hero__assistant-copy">
+        <h2 class="snooze-hero__assistant-title">Meet Snoozer</h2>
+        <p class="snooze-hero__assistant-text">Not sure where to start? Snoozer can help guide you.</p>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="snooze-hero__assistant-action"
+      data-snoozer-trigger
+      data-snoozer-source="hero-strip"
+      aria-label="Ask Snoozer"
+    >
+      <span>Ask Snoozer</span>
+      <span aria-hidden="true">&rarr;</span>
+    </button>
+  </div>
+</div>
 
 {% schema %}
 {

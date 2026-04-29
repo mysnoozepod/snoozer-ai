@@ -82,8 +82,8 @@
       "settings": {
         "heading": "Start Online, Continue In-Store Or Finish At Home",
         "body": "Start with a few simple questions, then follow a guided path - test your options in-store or complete your setup online.",
-        "cta_label": "Start Your Sleep Assessment",
-        "cta_link": "/pages/sleep-assessment",
+        "cta_label": "",
+        "cta_link": "",
         "image": "shopify://shop_images/ChatGPT_Image_Apr_28_2026_03_23_05_AM.png",
         "image_position": "right"
       }
