@@ -79,6 +79,7 @@
     },
     "showroom": {
       "type": "snooze-showroom",
+      "disabled": true,
       "settings": {
         "heading": "Start Online, Continue In-Store Or Finish At Home",
         "body": "Start with a few simple questions, then follow a guided path - test your options in-store or complete your setup online.",
@@ -127,6 +128,7 @@
         "step-2",
         "step-3"
       ],
+      "disabled": true,
       "settings": {
         "title": "How Shopping At MySnoozePod Works",
         "heading_size": "h2",
