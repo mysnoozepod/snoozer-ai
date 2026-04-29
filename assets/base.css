@@ -3726,6 +3726,17 @@ body,
   color: rgb(var(--color-foreground));
 }
 
+body,
+#MainContent,
+.content-for-layout {
+  background-color: #f5f5f7;
+}
+
+.shopify-section > .color-scheme-2.gradient,
+.shopify-section > [class*='color-scheme-2'].gradient {
+  background: #f5f5f7;
+}
+
 p,
 .rte p,
 .text-body,
