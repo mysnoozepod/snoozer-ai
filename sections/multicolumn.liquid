@@ -84,76 +84,99 @@
     }
   {%- elsif section.id == 'how-it-works' -%}
     .section-{{ section.id }}-padding {
-      padding-top: 3.2rem !important;
-      padding-bottom: 2.8rem !important;
+      padding-top: 2.8rem !important;
+      padding-bottom: 3.2rem !important;
     }
 
     .section-{{ section.id }}-padding .multicolumn__title {
-      margin-bottom: 2rem;
+      margin-bottom: 1.8rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-list {
-      gap: 1.4rem;
+      gap: 1.6rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card {
       height: 100%;
-      padding: 1.8rem;
-      border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
-      border-radius: 1.6rem;
+      min-height: 19rem;
+      padding: 2.4rem 2.2rem;
+      border: 0.1rem solid rgba(var(--color-text-primary), 0.06);
+      border-radius: 2rem;
       background: rgb(var(--color-background));
+      box-shadow: 0 1.2rem 3rem rgba(7, 26, 68, 0.06);
+      position: relative;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+      overflow: hidden;
     }
 
-    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper {
-      margin: 0 0 1.4rem;
-      width: auto;
+    .section-{{ section.id }}-padding .multicolumn-card:hover {
+      transform: translateY(-0.3rem);
+      box-shadow: 0 1.8rem 3.6rem rgba(7, 26, 68, 0.1);
+      border-color: rgba(var(--color-primary-navy), 0.12);
     }
 
-    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
-      width: 5.2rem;
-      height: 5.2rem;
-      background: rgba(var(--color-accent-blue), 0.08);
-      color: rgb(var(--color-primary-navy));
+    .section-{{ section.id }}-padding .multicolumn-card:active {
+      transform: scale(0.99);
     }
 
-    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
-      width: 2.3rem;
-      height: 2.3rem;
+    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper,
+    .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper,
+    .section-{{ section.id }}-padding .multicolumn-card__step-label {
+      display: none;
     }
 
-    .section-{{ section.id }}-padding .multicolumn-card__image-wrapper + .multicolumn-card__info {
-      padding-top: 0;
+    .section-{{ section.id }}-padding .multicolumn-card--linked {
+      cursor: pointer;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info {
       padding: 0;
+      position: relative;
+      z-index: 1;
     }
 
-    .section-{{ section.id }}-padding .multicolumn-card__step-label {
-      margin: 0 0 0.6rem;
-      font-size: 1.2rem;
-      line-height: 1.6rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-weight: 600;
-      color: rgb(var(--color-accent-blue));
+    .section-{{ section.id }}-padding .multicolumn-card__overlay-link,
+    .section-{{ section.id }}-padding .multicolumn-card__overlay-button {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      border-radius: inherit;
+      background: transparent;
+      cursor: pointer;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info h3 {
-      font-size: 1.9rem;
-      line-height: 2.6rem;
-      margin-bottom: 0.6rem;
+      font-size: 2.4rem;
+      line-height: 3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: rgb(var(--color-primary-navy));
+      letter-spacing: -0.03em;
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info .rte {
+      font-size: 1.7rem;
+      line-height: 2.4rem;
+      color: rgba(var(--color-text-primary), 0.82);
+    }
+
+    .section-{{ section.id }}-padding .multicolumn-card__info .rte p {
+      margin: 0;
     }
 
     .section-{{ section.id }}-padding .multicolumn-list {
       display: grid;
       grid-auto-flow: column;
-      grid-auto-columns: minmax(26rem, calc(100% - 6.4rem));
+      grid-auto-columns: minmax(28rem, 82%);
       overflow-x: auto;
       overscroll-behavior-x: contain;
-      scroll-snap-type: x proximity;
+      scroll-snap-type: x mandatory;
       scrollbar-width: none;
       padding-bottom: 0.4rem;
+      scroll-padding-inline: 1.6rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-list::-webkit-scrollbar {
@@ -161,15 +184,7 @@
     }
 
     .section-{{ section.id }}-padding .multicolumn-list__item {
-      scroll-snap-align: start;
-    }
-
-    .section-{{ section.id }}-padding .multicolumn-card__desktop-copy {
-      display: none;
-    }
-
-    .section-{{ section.id }}-padding .multicolumn-card__mobile-copy {
-      display: block;
+      scroll-snap-align: center;
     }
 
   {%- elsif section.id == 'why-guided-benefits' -%}
@@ -275,8 +290,8 @@
       }
     {%- elsif section.id == 'how-it-works' -%}
       .section-{{ section.id }}-padding {
-        padding-top: 4rem !important;
-        padding-bottom: 3.6rem !important;
+        padding-top: 3.2rem !important;
+        padding-bottom: 4rem !important;
       }
 
       .section-{{ section.id }}-padding .multicolumn-list {
@@ -286,28 +301,12 @@
         overflow: visible;
         scroll-snap-type: none;
         padding-bottom: 0;
-      }
-
-      .section-{{ section.id }}-padding .multicolumn-card__desktop-copy {
-        display: block;
-      }
-
-      .section-{{ section.id }}-padding .multicolumn-card__mobile-copy {
-        display: none;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
       .section-{{ section.id }}-padding .multicolumn-card {
-        padding: 2rem;
-      }
-
-      .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
-        width: 5.6rem;
-        height: 5.6rem;
-      }
-
-      .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper {
-        width: 2.4rem;
-        height: 2.4rem;
+        min-height: 22rem;
+        padding: 2.8rem;
       }
     {%- elsif section.id == 'category-navigation' or section.id == 'collection_list_KVb8Pk' -%}
       .section-{{ section.id }}-padding {
@@ -324,7 +323,7 @@
   @media screen and (min-width: 990px) {
     {%- if section.id == 'how-it-works' -%}
       .section-{{ section.id }}-padding .multicolumn__title {
-        margin-bottom: 2.8rem;
+        margin-bottom: 2rem;
       }
 
     {%- elsif section.id == 'why-guided-benefits' -%}
@@ -379,19 +378,16 @@
         {%- for block in section.blocks -%}
           {%- assign empty_column = '' -%}
           {%- assign has_icon = false -%}
-          {%- assign mobile_step_text = '' -%}
+          {%- assign is_how_it_works_card = false -%}
+          {%- assign is_snoozer_trigger = false -%}
           {%- if block.settings.icon != blank and block.settings.icon != 'none' -%}
             {%- assign has_icon = true -%}
           {%- endif -%}
           {%- if section.id == 'how-it-works' -%}
-            {%- case forloop.index -%}
-              {%- when 1 -%}
-                {%- assign mobile_step_text = 'Tell us how you sleep.' -%}
-              {%- when 2 -%}
-                {%- assign mobile_step_text = 'We narrow it down.' -%}
-              {%- when 3 -%}
-                {%- assign mobile_step_text = 'Try them and feel the difference.' -%}
-            {%- endcase -%}
+            {%- assign is_how_it_works_card = true -%}
+            {%- if block.settings.link == '#ask-snoozer' -%}
+              {%- assign is_snoozer_trigger = true -%}
+            {%- endif -%}
           {%- endif -%}
           {%- if block.settings.image == blank
             and has_icon == false
@@ -411,7 +407,24 @@
               style="--animation-order: {{ forloop.index }};"
             {% endif %}
           >
-            <div class="multicolumn-card content-container">
+            <div class="multicolumn-card content-container{% if is_how_it_works_card and block.settings.link != blank %} multicolumn-card--linked{% endif %}">
+              {%- if is_how_it_works_card and block.settings.link != blank -%}
+                {%- if is_snoozer_trigger -%}
+                  <button
+                    type="button"
+                    class="multicolumn-card__overlay-button"
+                    data-snoozer-trigger
+                    data-snoozer-source="process-card-{{ forloop.index }}"
+                    aria-label="{{ block.settings.title | escape }}"
+                  ></button>
+                {%- else -%}
+                  <a
+                    href="{{ block.settings.link }}"
+                    class="multicolumn-card__overlay-link"
+                    aria-label="{{ block.settings.title | escape }}"
+                  ></a>
+                {%- endif -%}
+              {%- endif -%}
               {%- if block.settings.image != blank -%}
                 {% if section.settings.image_ratio == 'adapt' or section.settings.image_ratio == 'circle' %}
                   {% assign spaced_image = true %}
@@ -461,21 +474,16 @@
                 </div>
               {%- endif -%}
               <div class="multicolumn-card__info">
-                {%- if section.id == 'how-it-works' -%}
+                {%- if section.id == 'how-it-works' and is_how_it_works_card == false -%}
                   <p class="multicolumn-card__step-label">Step {{ forloop.index }}</p>
                 {%- endif -%}
                 {%- if block.settings.title != blank -%}
                   <h3 class="inline-richtext">{{ block.settings.title }}</h3>
                 {%- endif -%}
                 {%- if block.settings.text != blank -%}
-                  {%- if section.id == 'how-it-works' and mobile_step_text != blank -%}
-                    <div class="rte multicolumn-card__desktop-copy">{{ block.settings.text }}</div>
-                    <div class="rte multicolumn-card__mobile-copy"><p>{{ mobile_step_text }}</p></div>
-                  {%- else -%}
-                    <div class="rte">{{ block.settings.text }}</div>
-                  {%- endif -%}
+                  <div class="rte">{{ block.settings.text }}</div>
                 {%- endif -%}
-                {%- if block.settings.link_label != blank -%}
+                {%- if block.settings.link_label != blank and is_how_it_works_card == false -%}
                   <a
                     class="link animate-arrow"
                     {% if block.settings.link == blank %}

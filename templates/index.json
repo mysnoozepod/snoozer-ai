@@ -95,31 +95,31 @@
         "step-1": {
           "type": "column",
           "settings": {
-            "icon": "clipboard",
-            "title": "Start With You",
-            "text": "<p>Tell us how you sleep.</p>",
+            "icon": "none",
+            "title": "Shop Anywhere",
+            "text": "<p>Online or in our unmanned showroom</p>",
             "link_label": "",
-            "link": ""
+            "link": "/search?q=mattress*&type=product"
           }
         },
         "step-2": {
           "type": "column",
           "settings": {
-            "icon": "check_mark",
-            "title": "Get Guided Options",
-            "text": "<p>We narrow it down to a small number of options that fit your needs.</p>",
+            "icon": "none",
+            "title": "Get Answers Fast",
+            "text": "<p>Ask Snoozer anything. Skip the guesswork.</p>",
             "link_label": "",
-            "link": ""
+            "link": "#ask-snoozer"
           }
         },
         "step-3": {
           "type": "column",
           "settings": {
-            "icon": "eye",
-            "title": "Test And Decide",
-            "text": "<p>Try them out and feel the difference so you can choose with confidence.</p>",
+            "icon": "none",
+            "title": "Build Your SnoozePod",
+            "text": "<p>Create your perfect sleep setup when you're ready</p>",
             "link_label": "",
-            "link": ""
+            "link": "/snoozepod"
           }
         }
       },
