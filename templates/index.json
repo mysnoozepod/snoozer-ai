@@ -61,12 +61,12 @@
         "value-3"
       ],
       "settings": {
-        "title": "How Shopping At MySnoozePod Works",
+        "title": "",
         "heading_size": "h2",
         "image_width": "third",
         "image_ratio": "adapt",
         "columns_desktop": 3,
-        "column_alignment": "left",
+        "column_alignment": "center",
         "background_style": "none",
         "button_label": "",
         "button_link": "",
