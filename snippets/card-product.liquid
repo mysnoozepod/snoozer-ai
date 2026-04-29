@@ -31,8 +31,34 @@
 {%- if card_product and card_product != empty -%}
   {%- liquid
     assign ratio = 1
+    assign is_homepage_featured_card = false
+    if section_id == 'featured_collection_666q7i' or section_id == 'full-product-section'
+      assign is_homepage_featured_card = true
+    elsif request.page_type == 'index' and quick_add == 'standard'
+      assign is_homepage_featured_card = true
+    endif
+
+    assign benefit_1 = 'Pressure Relief'
+    assign benefit_2 = 'Back Support'
+    assign benefit_3 = 'Sleeps Cool'
+
+    assign product_handle = card_product.handle | downcase
+    assign product_title = card_product.title | downcase
+    if product_handle contains 'dual-comfort' or product_title contains 'dual comfort'
+      assign benefit_1 = 'Dual Comfort'
+      assign benefit_2 = 'Pressure Relief'
+      assign benefit_3 = 'Back Support'
+    elsif product_handle contains 'hybrid' or product_title contains 'hybrid'
+      assign benefit_1 = 'Sleeps Cool'
+      assign benefit_2 = 'Pressure Relief'
+      assign benefit_3 = 'Back Support'
+    elsif product_handle contains 'foam' or product_title contains 'foam'
+      assign benefit_1 = 'Pressure Relief'
+      assign benefit_2 = 'Motion Isolation'
+      assign benefit_3 = 'Back Support'
+    endif
   -%}
-  <div class="card-wrapper product-card-wrapper underline-links-hover">
+  <div class="card-wrapper product-card-wrapper{% if is_homepage_featured_card %} product-card-wrapper--homepage-featured{% endif %} underline-links-hover">
     <div
       class="
         card card--{{ settings.card_style }}
@@ -153,128 +179,136 @@
             </a>
           </h3>
           <div class="card-information">
-            {%- if show_vendor -%}
-              <span class="visually-hidden">{{ 'accessibility.vendor' | t }}</span>
-              <div class="caption-with-letter-spacing light">{{ card_product.vendor }}</div>
-            {%- endif -%}
-
-            {%- if show_rating and card_product.metafields.reviews.rating.value != blank -%}
-              {% liquid
-                assign rating_decimal = 0
-                assign decimal = card_product.metafields.reviews.rating.value.rating | modulo: 1
-                if decimal >= 0.3 and decimal <= 0.7
-                  assign rating_decimal = 0.5
-                elsif decimal > 0.7
-                  assign rating_decimal = 1
-                endif
-              %}
-              <div
-                class="rating"
-                role="img"
-                aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: card_product.metafields.reviews.rating.value, rating_max: card_product.metafields.reviews.rating.value.scale_max }}"
-              >
-                <span
-                  aria-hidden="true"
-                  class="rating-star"
-                  style="--rating: {{ card_product.metafields.reviews.rating.value.rating | floor }}; --rating-max: {{ card_product.metafields.reviews.rating.value.scale_max }}; --rating-decimal: {{ rating_decimal }};"
-                ></span>
+            {%- if is_homepage_featured_card -%}
+              <div class="card-benefits" aria-label="Product benefits">
+                <span class="card-benefit">{{ benefit_1 }}</span>
+                <span class="card-benefit">{{ benefit_2 }}</span>
+                <span class="card-benefit">{{ benefit_3 }}</span>
               </div>
-              <p class="rating-text caption">
-                <span aria-hidden="true">
-                  {{- card_product.metafields.reviews.rating.value }} /
-                  {{ card_product.metafields.reviews.rating.value.scale_max -}}
-                </span>
-              </p>
-              <p class="rating-count caption">
-                <span aria-hidden="true">({{ card_product.metafields.reviews.rating_count }})</span>
-                <span class="visually-hidden">
-                  {{- card_product.metafields.reviews.rating_count }}
-                  {{ 'accessibility.total_reviews' | t -}}
-                </span>
-              </p>
-            {%- endif -%}
+            {%- else -%}
+              {%- if show_vendor -%}
+                <span class="visually-hidden">{{ 'accessibility.vendor' | t }}</span>
+                <div class="caption-with-letter-spacing light">{{ card_product.vendor }}</div>
+              {%- endif -%}
 
-            {% render 'price', product: card_product, price_class: '', show_compare_at_price: true %}
-            {%- if card_product.quantity_price_breaks_configured? -%}
-              {% if card_product.variants.size == 1 and quick_add == 'bulk' %}
+              {%- if show_rating and card_product.metafields.reviews.rating.value != blank -%}
                 {% liquid
-                  assign quantity_rule = card_product.selected_or_first_available_variant.quantity_rule
-                  assign has_qty_rules = false
-                  if quantity_rule.increment > 1 or quantity_rule.min > 1 or quantity_rule.max != null
-                    assign has_qty_rules = true
+                  assign rating_decimal = 0
+                  assign decimal = card_product.metafields.reviews.rating.value.rating | modulo: 1
+                  if decimal >= 0.3 and decimal <= 0.7
+                    assign rating_decimal = 0.5
+                  elsif decimal > 0.7
+                    assign rating_decimal = 1
                   endif
                 %}
-                <quantity-popover>
-                  <button class="card__information-volume-pricing-note card__information-volume-pricing-note--button card__information-volume-pricing-note--button-{{ settings.card_text_alignment }} quantity-popover__info-button--icon-only button button button--tertiary medium-hide small-hide">
-                    <span class="caption">{{ 'products.product.volume_pricing.note' | t }}</span>
-                  </button>
-                  <button class="card__information-volume-pricing-note card__information-volume-pricing-note--button card__information-volume-pricing-note--button-{{ settings.card_text_alignment }} quantity-popover__info-button--icon-with-label button button--tertiary large-up-hide">
-                    <span class="caption">{{ 'products.product.volume_pricing.note' | t }}</span>
-                  </button>
-              {% else %}
-                <div class="card__information-volume-pricing-note">
-                  <span class="caption">{{ 'products.product.volume_pricing.note' | t }}</span>
-                </div>
-              {% endif %}
-              {% if card_product.variants.size == 1 and quick_add == 'bulk' %}
                 <div
-                  class="global-settings-popup quantity-popover__info"
-                  tabindex="-1"
-                  hidden
-                  id="quantity-popover-info-{{ card_product.selected_or_first_available_variant.id }}"
+                  class="rating"
+                  role="img"
+                  aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: card_product.metafields.reviews.rating.value, rating_max: card_product.metafields.reviews.rating.value.scale_max }}"
                 >
-                  {%- if has_qty_rules -%}
-                    <div class="quantity__rules caption no-js-hidden">
-                      {%- if quantity_rule.increment > 1 -%}
-                        <span class="divider">
-                          {{- 'products.product.quantity.multiples_of' | t: quantity: quantity_rule.increment -}}
-                        </span>
-                      {%- endif -%}
-                      {%- if quantity_rule.min > 1 -%}
-                        <span class="divider">
-                          {{- 'products.product.quantity.min_of' | t: quantity: quantity_rule.min -}}
-                        </span>
-                      {%- endif -%}
-                      {%- if quantity_rule.max != null -%}
-                        <span class="divider">
-                          {{- 'products.product.quantity.max_of' | t: quantity: quantity_rule.max -}}
-                        </span>
-                      {%- endif -%}
-                    </div>
-                  {%- endif -%}
-                  <button
-                    class="button-close button button--tertiary large-up-hide"
-                    type="button"
-                    aria-label="{{ 'accessibility.close' | t }}"
-                  >
-                    {{- 'icon-close.svg' | inline_asset_content -}}
-                  </button>
-                  {%- if card_product.selected_or_first_available_variant.quantity_price_breaks.size > 0 -%}
-                    <volume-pricing class="parent-display">
-                      <ul class="list-unstyled">
-                        <li>
-                          <span>{{ card_product.selected_or_first_available_variant.quantity_rule.min }}+</span>
-                          {%- assign price = card_product.selected_or_first_available_variant.price
-                            | money_with_currency
-                          -%}
-                          <span>{{ 'sections.quick_order_list.each' | t: money: price }}</span>
-                        </li>
-                        {%- for price_break in card_product.selected_or_first_available_variant.quantity_price_breaks -%}
-                          <li>
-                            <span>
-                              {{- price_break.minimum_quantity -}}
-                              <span aria-hidden="true">+</span></span
-                            >
-                            {%- assign price = price_break.price | money_with_currency -%}
-                            <span> {{ 'sections.quick_order_list.each' | t: money: price }}</span>
-                          </li>
-                        {%- endfor -%}
-                      </ul>
-                    </volume-pricing>
-                  {%- endif -%}
+                  <span
+                    aria-hidden="true"
+                    class="rating-star"
+                    style="--rating: {{ card_product.metafields.reviews.rating.value.rating | floor }}; --rating-max: {{ card_product.metafields.reviews.rating.value.scale_max }}; --rating-decimal: {{ rating_decimal }};"
+                  ></span>
                 </div>
-                </quantity-popover>
-              {% endif %}
+                <p class="rating-text caption">
+                  <span aria-hidden="true">
+                    {{- card_product.metafields.reviews.rating.value }} /
+                    {{ card_product.metafields.reviews.rating.value.scale_max -}}
+                  </span>
+                </p>
+                <p class="rating-count caption">
+                  <span aria-hidden="true">({{ card_product.metafields.reviews.rating_count }})</span>
+                  <span class="visually-hidden">
+                    {{- card_product.metafields.reviews.rating_count }}
+                    {{ 'accessibility.total_reviews' | t -}}
+                  </span>
+                </p>
+              {%- endif -%}
+
+              {% render 'price', product: card_product, price_class: '', show_compare_at_price: true %}
+              {%- if card_product.quantity_price_breaks_configured? -%}
+                {% if card_product.variants.size == 1 and quick_add == 'bulk' %}
+                  {% liquid
+                    assign quantity_rule = card_product.selected_or_first_available_variant.quantity_rule
+                    assign has_qty_rules = false
+                    if quantity_rule.increment > 1 or quantity_rule.min > 1 or quantity_rule.max != null
+                      assign has_qty_rules = true
+                    endif
+                  %}
+                  <quantity-popover>
+                    <button class="card__information-volume-pricing-note card__information-volume-pricing-note--button card__information-volume-pricing-note--button-{{ settings.card_text_alignment }} quantity-popover__info-button--icon-only button button button--tertiary medium-hide small-hide">
+                      <span class="caption">{{ 'products.product.volume_pricing.note' | t }}</span>
+                    </button>
+                    <button class="card__information-volume-pricing-note card__information-volume-pricing-note--button card__information-volume-pricing-note--button-{{ settings.card_text_alignment }} quantity-popover__info-button--icon-with-label button button--tertiary large-up-hide">
+                      <span class="caption">{{ 'products.product.volume_pricing.note' | t }}</span>
+                    </button>
+                {% else %}
+                  <div class="card__information-volume-pricing-note">
+                    <span class="caption">{{ 'products.product.volume_pricing.note' | t }}</span>
+                  </div>
+                {% endif %}
+                {% if card_product.variants.size == 1 and quick_add == 'bulk' %}
+                  <div
+                    class="global-settings-popup quantity-popover__info"
+                    tabindex="-1"
+                    hidden
+                    id="quantity-popover-info-{{ card_product.selected_or_first_available_variant.id }}"
+                  >
+                    {%- if has_qty_rules -%}
+                      <div class="quantity__rules caption no-js-hidden">
+                        {%- if quantity_rule.increment > 1 -%}
+                          <span class="divider">
+                            {{- 'products.product.quantity.multiples_of' | t: quantity: quantity_rule.increment -}}
+                          </span>
+                        {%- endif -%}
+                        {%- if quantity_rule.min > 1 -%}
+                          <span class="divider">
+                            {{- 'products.product.quantity.min_of' | t: quantity: quantity_rule.min -}}
+                          </span>
+                        {%- endif -%}
+                        {%- if quantity_rule.max != null -%}
+                          <span class="divider">
+                            {{- 'products.product.quantity.max_of' | t: quantity: quantity_rule.max -}}
+                          </span>
+                        {%- endif -%}
+                      </div>
+                    {%- endif -%}
+                    <button
+                      class="button-close button button--tertiary large-up-hide"
+                      type="button"
+                      aria-label="{{ 'accessibility.close' | t }}"
+                    >
+                      {{- 'icon-close.svg' | inline_asset_content -}}
+                    </button>
+                    {%- if card_product.selected_or_first_available_variant.quantity_price_breaks.size > 0 -%}
+                      <volume-pricing class="parent-display">
+                        <ul class="list-unstyled">
+                          <li>
+                            <span>{{ card_product.selected_or_first_available_variant.quantity_rule.min }}+</span>
+                            {%- assign price = card_product.selected_or_first_available_variant.price
+                              | money_with_currency
+                            -%}
+                            <span>{{ 'sections.quick_order_list.each' | t: money: price }}</span>
+                          </li>
+                          {%- for price_break in card_product.selected_or_first_available_variant.quantity_price_breaks -%}
+                            <li>
+                              <span>
+                                {{- price_break.minimum_quantity -}}
+                                <span aria-hidden="true">+</span></span
+                              >
+                              {%- assign price = price_break.price | money_with_currency -%}
+                              <span> {{ 'sections.quick_order_list.each' | t: money: price }}</span>
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      </volume-pricing>
+                    {%- endif -%}
+                  </div>
+                  </quantity-popover>
+                {% endif %}
+              {%- endif -%}
             {%- endif -%}
           </div>
         </div>
@@ -285,7 +319,11 @@
               class="quick-add__submit button button--full-width button--secondary{% if horizontal_quick_add %} card--horizontal__quick-add animate-arrow{% endif %}"
               aria-labelledby="CardLink-{{ section_id }}-{{ card_product.id }}"
             >
-              {{ 'products.product.choose_options' | t }}
+              {%- if is_homepage_featured_card -%}
+                View SnoozePod
+              {%- else -%}
+                {{ 'products.product.choose_options' | t }}
+              {%- endif -%}
               {%- if horizontal_quick_add -%}
                 <span class="icon-wrap">
                   {{- 'icon-arrow.svg' | inline_asset_content -}}

@@ -72,7 +72,7 @@
         "button_link": "",
         "color_scheme": "scheme-1",
         "columns_mobile": "1",
-        "swipe_on_mobile": true,
+        "swipe_on_mobile": false,
         "padding_top": 48,
         "padding_bottom": 40
       }
@@ -268,7 +268,7 @@
       "type": "custom-liquid",
       "disabled": true,
       "settings": {
-        "custom_liquid": "{{ 'component-card.css' | asset_url | stylesheet_tag }}\n{{ 'template-collection.css' | asset_url | stylesheet_tag }}\n<div class='homepage-shelf homepage-shelf--full'>\n  <div class='homepage-shelf__header page-width'>\n    <h2 class='homepage-shelf__title title inline-richtext h2'>Find The Mattress That Works For How You Sleep</h2>\n    <div class='homepage-shelf__actions'>\n      <a class='button button--primary' href='/pages/sleep-assessment'>Start Your Sleep Assessment</a>\n    </div>\n  </div>\n  <div class='page-width'>\n    <ul class='grid product-grid contains-card contains-card--product contains-card--standard grid--4-col-desktop grid--2-col-tablet-down' role='list'>\n      {% assign mattress_handles = '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' %}\n      {% assign skip_card_product_styles = false %}\n      {% for handle in mattress_handles %}\n        {% assign mattress_product = all_products[handle] %}\n        {% if mattress_product != blank %}\n          <li class='grid__item'>\n            {% render 'card-product', card_product: mattress_product, media_aspect_ratio: 'square', image_shape: 'default', show_secondary_image: false, show_vendor: false, show_rating: false, skip_styles: skip_card_product_styles, section_id: section.id, quick_add: 'none' %}\n          </li>\n          {% assign skip_card_product_styles = true %}\n        {% endif %}\n      {% endfor %}\n    </ul>\n  </div>\n</div>",
+        "custom_liquid": "{{ 'component-card.css' | asset_url | stylesheet_tag }}\n{{ 'template-collection.css' | asset_url | stylesheet_tag }}\n<div class='homepage-shelf homepage-shelf--full'>\n  <div class='homepage-shelf__header page-width'>\n    <h2 class='homepage-shelf__title title inline-richtext h2'>Find Your Fit</h2>\n    <div class='homepage-shelf__actions'>\n      <a class='button button--primary' href='/pages/sleep-assessment'>Start Your Sleep Assessment</a>\n    </div>\n  </div>\n  <div class='page-width'>\n    <ul class='grid product-grid contains-card contains-card--product contains-card--standard grid--4-col-desktop grid--2-col-tablet-down' role='list'>\n      {% assign mattress_handles = '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' %}\n      {% assign skip_card_product_styles = false %}\n      {% for handle in mattress_handles %}\n        {% assign mattress_product = all_products[handle] %}\n        {% if mattress_product != blank %}\n          <li class='grid__item'>\n            {% render 'card-product', card_product: mattress_product, media_aspect_ratio: 'square', image_shape: 'default', show_secondary_image: false, show_vendor: false, show_rating: false, skip_styles: skip_card_product_styles, section_id: section.id, quick_add: 'standard' %}\n          </li>\n          {% assign skip_card_product_styles = true %}\n        {% endif %}\n      {% endfor %}\n    </ul>\n  </div>\n</div>",
         "color_scheme": "scheme-2",
         "padding_top": 48,
         "padding_bottom": 56

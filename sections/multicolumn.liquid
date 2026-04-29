@@ -30,33 +30,20 @@
 
   {%- if section.id == 'value-strip' -%}
     .section-{{ section.id }}-padding {
-      padding-top: 2.2rem !important;
-      padding-bottom: 2.6rem !important;
-    }
-
-    .section-{{ section.id }}-padding .multicolumn__title {
-      margin-bottom: 1.4rem;
+      padding-top: 2.4rem !important;
+      padding-bottom: 2.4rem !important;
     }
 
     .section-{{ section.id }}-padding .multicolumn-list {
       display: grid;
-      grid-auto-flow: column;
-      grid-auto-columns: minmax(28rem, 82%);
+      grid-template-columns: minmax(0, 1fr);
       gap: 1.6rem;
-      overflow-x: auto;
-      overscroll-behavior-x: contain;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-      padding-bottom: 0.4rem;
-      scroll-padding-inline: 1.6rem;
-    }
-
-    .section-{{ section.id }}-padding .multicolumn-list::-webkit-scrollbar {
-      display: none;
+      overflow: visible;
+      padding-bottom: 0;
     }
 
     .section-{{ section.id }}-padding .multicolumn-list__item {
-      scroll-snap-align: center;
+      width: 100%;
     }
 
     .section-{{ section.id }}-padding .slider-buttons {
@@ -68,17 +55,18 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      min-height: 18rem;
-      padding: 2.2rem 2rem;
-      border: 0.1rem solid rgba(var(--color-text-primary), 0.06);
-      border-radius: 2rem;
-      background: rgb(var(--color-background));
-      box-shadow: 0 1.2rem 3rem rgba(7, 26, 68, 0.06);
+      width: 100%;
+      min-height: 100%;
+      padding: 2.4rem;
+      border: 0;
+      border-radius: 1.4rem;
+      background: #ffffff;
+      box-shadow: 0 1rem 2.4rem rgba(7, 26, 68, 0.06);
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__image-wrapper {
       width: auto;
-      margin: 0 auto 1rem;
+      margin: 0 auto 1.2rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
@@ -96,8 +84,8 @@
     .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper,
     .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper svg,
     .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper img {
-      width: 3rem;
-      height: 3rem;
+      width: 3.2rem;
+      height: 3.2rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__image-wrapper + .multicolumn-card__info {
@@ -107,6 +95,8 @@
     .section-{{ section.id }}-padding .multicolumn-card__info {
       padding: 0;
       width: 100%;
+      display: grid;
+      justify-items: center;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info h3 {
@@ -119,15 +109,19 @@
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info .rte {
-      max-width: 28rem;
+      max-width: 22rem;
       margin: 0;
-      font-size: 1.7rem;
-      line-height: 2.4rem;
+      font-size: 1.5rem;
+      line-height: 2.2rem;
       color: rgba(var(--color-text-primary), 0.82);
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info .rte p {
       margin: 0;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
     }
   {%- elsif section.id == 'how-it-works' -%}
     .section-{{ section.id }}-padding {
@@ -348,23 +342,26 @@
 
     {%- if section.id == 'value-strip' -%}
       .section-{{ section.id }}-padding {
-        padding-top: 2.6rem !important;
-        padding-bottom: 3.2rem !important;
+        padding-top: 2.4rem !important;
+        padding-bottom: 2.4rem !important;
       }
 
       .section-{{ section.id }}-padding .multicolumn-list {
         display: grid;
         grid-auto-flow: row;
         grid-auto-columns: initial;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 30rem));
+        justify-content: center;
+        gap: 2.4rem;
         overflow: visible;
         scroll-snap-type: none;
         padding-bottom: 0;
       }
 
       .section-{{ section.id }}-padding .multicolumn-card {
-        min-height: 20rem;
-        padding: 2.6rem;
+        max-width: 30rem;
+        min-height: 100%;
+        padding: 3.2rem 2.8rem;
       }
 
       .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
@@ -375,8 +372,8 @@
       .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper,
       .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper svg,
       .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper img {
-        width: 3.2rem;
-        height: 3.2rem;
+        width: 3.6rem;
+        height: 3.6rem;
       }
     {%- elsif section.id == 'how-it-works' -%}
       .section-{{ section.id }}-padding {
