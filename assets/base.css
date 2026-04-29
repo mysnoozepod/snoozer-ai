@@ -3726,15 +3726,27 @@ body,
   color: rgb(var(--color-foreground));
 }
 
-body,
-#MainContent,
-.content-for-layout {
+body.template-index,
+body.template-index #MainContent,
+body.template-index .content-for-layout,
+body.template-index #MainContent > .shopify-section {
   background-color: #f5f5f7;
 }
 
-.shopify-section > .color-scheme-2.gradient,
-.shopify-section > [class*='color-scheme-2'].gradient {
+body.template-index #MainContent .color-scheme-1.gradient,
+body.template-index #MainContent .color-scheme-2.gradient {
   background: #f5f5f7;
+  background-image: none;
+  background-attachment: scroll;
+}
+
+body.template-index #MainContent .section + .section {
+  margin-top: 5.6rem;
+}
+
+body.template-index #MainContent .title-wrapper,
+body.template-index #MainContent .title-wrapper-with-link {
+  margin-bottom: 2rem;
 }
 
 p,
@@ -3983,22 +3995,46 @@ button.shopify-payment-button__button--unbranded:hover {
   align-items: center;
 }
 
+.announcement-bar-section .utility-bar,
+.announcement-bar-section .utility-bar.gradient {
+  background: #071a44;
+  color: #ffffff;
+}
+
+.announcement-bar-section .utility-bar__grid,
+.announcement-bar__announcement {
+  min-height: 4.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .announcement-bar,
 .announcement-bar__announcement {
-  min-height: 3.6rem;
+  min-height: 4.4rem;
 }
 
 .announcement-bar__message {
-  padding: 0.6rem 0;
-  min-height: 3.6rem;
-  font-size: 1.4rem;
-  line-height: 2rem;
+  padding: 1rem 1.6rem;
+  min-height: 4.4rem;
+  font-size: 1.5rem;
+  line-height: 2.2rem;
   letter-spacing: 0;
+  font-weight: 600;
+  text-align: center;
   color: inherit;
+}
+
+.announcement-bar__message span,
+.announcement-bar__link,
+.announcement-bar__link.link--text {
+  color: #ffffff;
 }
 
 .announcement-bar__link:hover {
   text-decoration: none;
+  color: #ffffff;
+  opacity: 0.92;
 }
 
 .section-header,
@@ -4216,18 +4252,18 @@ button.shopify-payment-button__button--unbranded:hover {
     width: 100%;
   }
 
-  .header__nav-row .list-menu--inline {
+.header__nav-row .list-menu--inline {
     display: flex;
-    gap: 2.8rem;
+    gap: 3.2rem;
     flex-wrap: wrap;
   }
 
   .header__nav-row .header__menu-item {
     padding: 0.95rem 0;
-    font-size: 1.4rem;
+    font-size: 1.8rem;
     font-weight: 600;
-    letter-spacing: 0.018em;
-    color: rgba(var(--color-text-primary), 0.82);
+    letter-spacing: 0.005em;
+    color: rgb(var(--color-primary-navy));
   }
 
   .header__nav-row .header__menu-item:hover,
@@ -4240,5 +4276,24 @@ button.shopify-payment-button__button--unbranded:hover {
     border: 1px solid rgba(var(--color-text-primary), 0.08);
     border-radius: 0 0 1.6rem 1.6rem;
     box-shadow: 0 2rem 4rem rgba(var(--color-primary-navy), 0.08);
+  }
+}
+
+.header .list-menu__item--link,
+.header .menu-drawer__menu-item {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: rgb(var(--color-text-primary));
+}
+
+@media screen and (min-width: 990px) {
+  body.template-index #MainContent .section + .section {
+    margin-top: 6.4rem;
+  }
+
+  body.template-index #MainContent .title-wrapper,
+  body.template-index #MainContent .title-wrapper-with-link {
+    margin-bottom: 2.4rem;
   }
 }
