@@ -47,7 +47,7 @@
         "value-3": {
           "type": "column",
           "settings": {
-            "icon": "eye",
+            "icon": "box",
             "title": "Build Your SnoozePod",
             "text": "<p>Create your perfect sleep setup when you're ready.</p>",
             "link_label": "",
