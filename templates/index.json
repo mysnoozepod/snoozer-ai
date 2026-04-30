@@ -86,17 +86,6 @@
         "padding_bottom": 56
       }
     },
-    "showroom": {
-      "type": "snooze-showroom",
-      "settings": {
-        "heading": "Start Online, Continue In-Store Or Finish At Home",
-        "body": "Start with a few simple questions, then follow a guided path - test your options in-store or complete your setup online.",
-        "cta_label": "",
-        "cta_link": "",
-        "image": "shopify://shop_images/ChatGPT_Image_Apr_28_2026_03_23_05_AM.png",
-        "image_position": "right"
-      }
-    },
     "email-capture": {
       "type": "newsletter",
       "blocks": {
@@ -129,13 +118,61 @@
         "padding_top": 64,
         "padding_bottom": 64
       }
+    },
+    "image_with_text_wUxjfL": {
+      "type": "image-with-text",
+      "blocks": {
+        "heading_PLPUkK": {
+          "type": "heading",
+          "settings": {
+            "heading": "Unmanned, Automated Showroom",
+            "heading_size": "h0"
+          }
+        },
+        "text_rk3Mw6": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Test our products in a private, and personalized setting</p>",
+            "text_style": "body"
+          }
+        },
+        "button_H8Rdhw": {
+          "type": "button",
+          "settings": {
+            "button_label": "Book A Snooze Session",
+            "button_link": "shopify://pages/booking-a-snooze-session",
+            "button_style_secondary": false
+          }
+        }
+      },
+      "block_order": [
+        "heading_PLPUkK",
+        "text_rk3Mw6",
+        "button_H8Rdhw"
+      ],
+      "name": "t:sections.image-with-text.presets.name",
+      "settings": {
+        "image": "shopify://shop_images/ChatGPT_Image_Apr_28_2026_03_23_05_AM.png",
+        "height": "adapt",
+        "desktop_image_width": "medium",
+        "layout": "image_first",
+        "desktop_content_position": "top",
+        "desktop_content_alignment": "left",
+        "content_layout": "no-overlap",
+        "section_color_scheme": "",
+        "color_scheme": "",
+        "image_behavior": "none",
+        "mobile_content_alignment": "center",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
     }
   },
   "order": [
     "image_with_text_hVQzdT",
     "value-strip",
     "featured_collection_666q7i",
-    "showroom",
-    "email-capture"
+    "email-capture",
+    "image_with_text_wUxjfL"
   ]
 }
