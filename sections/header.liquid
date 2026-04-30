@@ -115,6 +115,10 @@
     gap: 0.4rem;
   }
 
+  .header__store-meta {
+    display: none;
+  }
+
   .header__icon {
     display: inline-flex;
     align-items: center;
@@ -126,7 +130,7 @@
   }
 
   .header__icon--account {
-    width: auto;
+    width: 4.4rem;
     min-width: 4.4rem;
     padding: 0.8rem;
     border: 0.1rem solid rgba(7, 26, 68, 0.08);
@@ -315,8 +319,8 @@
 
   @media screen and (min-width: 990px) {
     .header__main {
-      grid-template-columns: minmax(19rem, 21rem) minmax(22rem, 1fr) auto;
-      gap: 1.6rem;
+      grid-template-columns: minmax(26rem, 1fr) auto minmax(26rem, 1fr);
+      gap: 2rem;
       min-height: 7.8rem;
       padding: 1rem 0 0.6rem;
     }
@@ -341,14 +345,15 @@
 
     .header__snoozer-entry {
       display: flex;
-      grid-column: 2;
+      grid-column: 2 / 3;
       align-items: center;
       justify-content: center;
+      justify-self: center;
       min-width: 0;
     }
 
     .header__snoozer-entry .header__snoozer-pill {
-      width: min(100%, 24rem);
+      width: min(100%, 26rem);
       min-height: 4.8rem;
       padding: 0.9rem 1.4rem;
       box-shadow: none;
@@ -367,21 +372,63 @@
       grid-column: 3;
       align-self: center;
       justify-self: end;
-      gap: 0.8rem;
+      gap: 0.9rem;
     }
 
     .header__icon--account {
-      padding: 0.8rem 1.2rem;
+      padding: 0.8rem;
     }
 
-    .header__utility-label {
-      display: inline;
+    .header__store-meta {
+      display: grid;
+      grid-template-columns: 2.2rem auto;
+      align-items: center;
+      gap: 0.9rem;
+      margin-right: 0.4rem;
+      padding-right: 1.6rem;
+      border-right: 0.1rem solid rgba(7, 26, 68, 0.12);
+      color: #071a44;
+    }
+
+    .header__store-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.2rem;
+      height: 2.2rem;
+      color: #071a44;
+    }
+
+    .header__store-icon .svg-wrapper,
+    .header__store-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .header__store-copy {
+      display: grid;
+      gap: 0.15rem;
+      min-width: 0;
+    }
+
+    .header__store-title,
+    .header__store-text {
+      display: block;
+      white-space: nowrap;
       font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
-      font-size: 1.45rem;
+      color: #243247;
+    }
+
+    .header__store-title {
+      font-size: 1.35rem;
       font-weight: 600;
       line-height: 1.2;
-      color: #071a44;
-      white-space: nowrap;
+    }
+
+    .header__store-text {
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.2;
     }
 
     .header__icon--cart {
@@ -557,17 +604,24 @@
           {%- endif -%}
         </div>
 
-        {%- if shop.customer_accounts_enabled -%}
-          <a
-            href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
-            class="header__icon header__icon--account header__utility-link link focus-inset"
-            aria-label="Rewards / Sign In"
-          >
-            <span class="svg-wrapper">{{ 'icon-account.svg' | inline_asset_content }}</span>
-            <span class="header__utility-label small-hide medium-hide">Rewards / Sign In</span>
-            <span class="visually-hidden">Rewards / Sign In</span>
-          </a>
-        {%- endif -%}
+        <div class="header__store-meta small-hide medium-hide" aria-label="Store hours and showroom support">
+          <span class="header__store-icon" aria-hidden="true">
+            <span class="svg-wrapper">{{ 'icon-map-pin.svg' | inline_asset_content }}</span>
+          </span>
+          <div class="header__store-copy">
+            <span class="header__store-title">Open By Appointment</span>
+            <span class="header__store-text">Showroom + Virtual Support</span>
+          </div>
+        </div>
+
+        <a
+          href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
+          class="header__icon header__icon--account header__utility-link link focus-inset"
+          aria-label="Customer log in"
+        >
+          <span class="svg-wrapper">{{ 'icon-account.svg' | inline_asset_content }}</span>
+          <span class="visually-hidden">Customer log in</span>
+        </a>
 
         {%- for block in section.blocks -%}
           {%- case block.type -%}
