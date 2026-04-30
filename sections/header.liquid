@@ -9,7 +9,7 @@
 <style>
   header-drawer {
     justify-self: start;
-    margin-left: -1.2rem;
+    margin-left: -0.8rem;
   }
 
   {%- if section.settings.sticky_header_type == 'reduce-logo-size' -%}
@@ -60,17 +60,31 @@
 
   .header__main {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 4.4rem minmax(0, 1fr) auto;
     align-items: center;
-    gap: 1rem;
-    min-height: 6rem;
-    padding: 0.8rem 0 0.6rem;
+    gap: 0.8rem;
+    min-height: 6.8rem;
+    padding: 0.8rem 0 0.4rem;
+  }
+
+  .header__main-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
   }
 
   .header__branding {
     min-width: 0;
     display: flex;
     justify-content: center;
+  }
+
+  .header__heading-logo-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 16rem;
   }
 
   .header__heading-link {
@@ -87,69 +101,84 @@
   }
 
   .header__heading-logo {
-    width: auto;
-    max-height: 3.4rem;
+    display: block;
+    width: 100%;
+    max-width: 16rem;
+    height: auto;
+    max-height: none;
   }
 
   .header__icons {
     display: flex;
     align-items: center;
     justify-self: end;
-    gap: 0.8rem;
+    gap: 0.4rem;
   }
 
   .header__icon {
-    width: 4.6rem;
-    height: 4.6rem;
-    border-radius: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.4rem;
+    height: 4.4rem;
+    border-radius: 999px;
+    color: #071a44;
   }
 
   .header__icon--account {
-    width: 4.8rem;
-    height: 4.8rem;
+    width: auto;
+    min-width: 4.4rem;
+    padding: 0.8rem;
+    border: 0.1rem solid rgba(7, 26, 68, 0.08);
+    background: #ffffff;
   }
 
   .header__icon .svg-wrapper {
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 2.3rem;
+    height: 2.3rem;
   }
 
   .header__icon--cart {
-    width: 5.6rem;
-    height: 5.6rem;
+    width: 4.8rem;
+    height: 4.8rem;
     border: 0.1rem solid #cbd5e1;
     border-radius: 999px;
     background: #ffffff;
-    box-shadow: 0 1rem 2.4rem rgba(7, 26, 68, 0.08);
+    box-shadow: 0 0.6rem 1.6rem rgba(7, 26, 68, 0.06);
   }
 
   .header__icon--cart .svg-wrapper {
-    width: 3rem;
-    height: 3rem;
+    width: 2.6rem;
+    height: 2.6rem;
   }
 
   .header__icon--cart .cart-count-bubble {
-    min-width: 2rem;
-    min-height: 2rem;
-    padding: 0 0.45rem;
-    right: 0.2rem;
-    top: 0.2rem;
+    min-width: 1.8rem;
+    min-height: 1.8rem;
+    padding: 0 0.4rem;
+    right: 0.1rem;
+    top: 0.1rem;
+  }
+
+  .header__utility-link {
+    gap: 0.8rem;
+    text-decoration: none;
+  }
+
+  .header__utility-label {
+    display: none;
   }
 
   .header__snoozer-entry {
     display: none;
   }
 
-  .header__snoozer-desktop-row {
-    display: none;
-  }
-
   .header__snoozer-row {
-    padding: 0 0 1rem;
+    padding: 0.4rem 0 0.2rem;
   }
 
   .header__mobile-nav {
-    padding: 0.4rem 0 0.2rem;
+    padding: 0.2rem 0 0;
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -164,9 +193,9 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 2.2rem;
+    gap: 1.8rem;
     overflow-x: auto;
-    padding-bottom: 0.2rem;
+    padding: 0.2rem 0 0.1rem;
   }
 
   .header__mobile-nav-item {
@@ -176,12 +205,12 @@
   .header__mobile-nav-link {
     display: inline-flex;
     align-items: center;
-    min-height: 4.6rem;
-    padding: 0.4rem 0;
+    min-height: 4.2rem;
+    padding: 0.3rem 0;
     white-space: nowrap;
     text-decoration: none;
     font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 1.6rem;
+    font-size: 1.55rem;
     font-weight: 600;
     line-height: 1.2;
     letter-spacing: 0;
@@ -197,13 +226,13 @@
     display: inline-flex;
     width: 100%;
     align-items: center;
-    gap: 1.4rem;
-    padding: 1.3rem 1.8rem;
+    gap: 0.9rem;
+    padding: 1rem 1.4rem;
     border: 0.1rem solid #cbd5e1;
     border-radius: 999px;
-    min-height: 6rem;
+    min-height: 5rem;
     background: #ffffff;
-    box-shadow: 0 1.2rem 2.8rem rgba(7, 26, 68, 0.06);
+    box-shadow: 0 0.5rem 1.4rem rgba(7, 26, 68, 0.05);
     color: #071a44;
     cursor: pointer;
     text-align: left;
@@ -220,8 +249,8 @@
   }
 
   .header__snoozer-avatar {
-    width: 4rem;
-    height: 4rem;
+    width: 3rem;
+    height: 3rem;
     border-radius: 999px;
     object-fit: contain;
     flex-shrink: 0;
@@ -232,18 +261,18 @@
     flex: 1;
     min-width: 0;
     font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 1.65rem;
+    font-size: 1.45rem;
     font-weight: 600;
     line-height: 1.25;
-    color: rgba(7, 26, 68, 0.76);
+    color: #243247;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .header__snoozer-arrow {
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 1.9rem;
+    height: 1.9rem;
     flex-shrink: 0;
     color: #071a44;
   }
@@ -258,16 +287,38 @@
     display: block;
   }
 
+  .header__nav-row {
+    border-top: 0.1rem solid rgba(var(--color-text-primary), 0.08);
+  }
+
+  .header__nav-row .header__menu-item {
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0;
+    color: #071a44;
+    text-decoration: none;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .header__nav-row .header__menu-item .icon-caret,
+  .header__nav-row .header__menu-item svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
   .header__snoozer-row .header__snoozer-pill {
-    min-height: 6rem;
+    min-height: 5.2rem;
   }
 
   @media screen and (min-width: 990px) {
     .header__main {
-      grid-template-columns: minmax(18rem, 1fr) auto;
-      gap: 2rem;
-      min-height: 6.8rem;
-      padding: 1.2rem 0 0.6rem;
+      grid-template-columns: minmax(19rem, 21rem) minmax(22rem, 1fr) auto;
+      gap: 1.6rem;
+      min-height: 7.8rem;
+      padding: 1rem 0 0.6rem;
     }
 
     .header__main-toggle {
@@ -279,69 +330,68 @@
       grid-column: 1;
     }
 
-    .header__heading-link .h2 {
-      font-size: 3.4rem;
+    .header__heading-logo-wrapper {
+      max-width: 20rem;
+      justify-content: flex-start;
     }
 
     .header__heading-logo {
-      max-height: 4rem;
+      max-width: 20rem;
     }
 
-    .header__icon {
-      width: 4.8rem;
-      height: 4.8rem;
+    .header__snoozer-entry {
+      display: flex;
+      grid-column: 2;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
     }
 
-    .header__icon .svg-wrapper {
-      width: 2.6rem;
-      height: 2.6rem;
+    .header__snoozer-entry .header__snoozer-pill {
+      width: min(100%, 24rem);
+      min-height: 4.8rem;
+      padding: 0.9rem 1.4rem;
+      box-shadow: none;
     }
 
-    .header__icon--cart {
-      width: 6.2rem;
-      height: 6.2rem;
-    }
-
-    .header__icon--cart .svg-wrapper {
+    .header__snoozer-entry .header__snoozer-avatar {
       width: 3.2rem;
       height: 3.2rem;
     }
 
+    .header__snoozer-entry .header__snoozer-text {
+      font-size: 1.5rem;
+    }
+
     .header__icons {
-      grid-column: 2;
-      align-self: start;
+      grid-column: 3;
+      align-self: center;
       justify-self: end;
-      padding-top: 0.2rem;
+      gap: 0.8rem;
     }
 
-    .header__snoozer-entry {
-      display: none;
+    .header__icon--account {
+      padding: 0.8rem 1.2rem;
     }
 
-    .header__snoozer-desktop-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      margin: 2.8rem auto 1.8rem;
-      padding: 0;
+    .header__utility-label {
+      display: inline;
+      font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 1.45rem;
+      font-weight: 600;
+      line-height: 1.2;
+      color: #071a44;
+      white-space: nowrap;
     }
 
-    .header__snoozer-desktop-row .header__snoozer-pill {
-      display: flex;
-      width: min(100%, 52rem);
-      max-width: 52rem;
-      min-height: 6rem;
-      padding: 1.4rem 2rem;
+    .header__icon--cart {
+      width: 5rem;
+      height: 5rem;
     }
 
-    .header__snoozer-desktop-row .header__snoozer-avatar {
-      width: 4rem;
-      height: 4rem;
-    }
-
-    .header__snoozer-desktop-row .header__snoozer-text {
-      font-size: 1.7rem;
+    .header__icon--cart .svg-wrapper {
+      width: 2.7rem;
+      height: 2.7rem;
     }
 
     .header__nav-row {
@@ -355,8 +405,9 @@
     .header__nav-row .list-menu--inline {
       display: flex;
       width: 100%;
-      justify-content: space-between;
-      gap: clamp(2.4rem, 3vw, 4.8rem);
+      align-items: center;
+      justify-content: center;
+      gap: clamp(2.4rem, 2.8vw, 4.2rem);
       flex-wrap: nowrap;
     }
 
@@ -458,7 +509,7 @@
         width="36"
         height="36"
       >
-      <span class="header__snoozer-text">Ask Snoozer anything about your sleep...</span>
+      <span class="header__snoozer-text">Ask Snoozer</span>
       <span class="header__snoozer-arrow" aria-hidden="true">
         <span class="svg-wrapper">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
       </span>
@@ -476,6 +527,11 @@
       <div class="header__branding">
         {{ header_logo }}
       </div>
+
+      <div class="header__snoozer-entry small-hide medium-hide">
+        {{ ask_snoozer_pill }}
+      </div>
+
       <div class="header__icons{% if localization_forms %} header__icons--localization header-localization{% endif %}">
         <div class="desktop-localization-wrapper small-hide medium-hide">
           {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
@@ -502,27 +558,14 @@
         </div>
 
         {%- if shop.customer_accounts_enabled -%}
-          <a href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}" class="header__icon header__icon--account link focus-inset">
-            {%- if section.settings.enable_customer_avatar -%}
-              <account-icon>
-                {%- if customer and customer.has_avatar? -%}
-                  {{ customer | avatar }}
-                {%- else -%}
-                  <span class="svg-wrapper">{{ 'icon-account.svg' | inline_asset_content }}</span>
-                {%- endif -%}
-              </account-icon>
-            {%- else -%}
-              <span class="svg-wrapper">{{ 'icon-account.svg' | inline_asset_content }}</span>
-            {%- endif -%}
-            <span class="visually-hidden">
-              {%- liquid
-                if customer
-                  echo 'customer.account_fallback' | t
-                else
-                  echo 'customer.log_in' | t
-                endif
-              -%}
-            </span>
+          <a
+            href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
+            class="header__icon header__icon--account header__utility-link link focus-inset"
+            aria-label="Rewards / Sign In"
+          >
+            <span class="svg-wrapper">{{ 'icon-account.svg' | inline_asset_content }}</span>
+            <span class="header__utility-label small-hide medium-hide">Rewards / Sign In</span>
+            <span class="visually-hidden">Rewards / Sign In</span>
           </a>
         {%- endif -%}
 
@@ -552,9 +595,6 @@
           {%- endif -%}
         </a>
       </div>
-    </div>
-    <div class="header__snoozer-desktop-row small-hide medium-hide">
-      {{ ask_snoozer_pill }}
     </div>
     <div class="header__snoozer-row large-up-hide">
       {{ ask_snoozer_pill }}
