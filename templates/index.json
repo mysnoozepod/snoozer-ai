@@ -92,14 +92,14 @@
         "heading_PLPUkK": {
           "type": "heading",
           "settings": {
-            "heading": "Unmanned, Automated Showroom",
+            "heading": "Automated Showroom",
             "heading_size": "h0"
           }
         },
         "text_rk3Mw6": {
           "type": "text",
           "settings": {
-            "text": "<p>Test our products in a private, and personalized setting</p>",
+            "text": "<p>Get up to one hour, to test our products in a private, and personalized setting</p>",
             "text_style": "body"
           }
         },
