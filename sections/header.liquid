@@ -319,10 +319,10 @@
 
   @media screen and (min-width: 990px) {
     .header__main {
-      grid-template-columns: minmax(26rem, 1fr) auto minmax(26rem, 1fr);
+      grid-template-columns: minmax(22rem, 1fr) 50rem minmax(30rem, 1fr);
       gap: 2rem;
-      min-height: 10rem;
-      padding: 0.2rem 0 0.2rem;
+      min-height: 8rem;
+      padding: 0;
     }
 
     .header__main-toggle {
@@ -346,30 +346,32 @@
     .header__snoozer-entry {
       display: flex;
       grid-column: 2 / 3;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
       justify-self: center;
-      min-width: 0;
-      margin-top: 3.4rem;
+      width: 50rem;
+      min-width: 50rem;
+      margin-top: 0;
       margin-bottom: 0;
-      position: relative;
-      top: 1rem;
+      transform: translateY(2.4rem);
     }
 
     .header__snoozer-entry .header__snoozer-pill {
-      width: min(100%, 44rem);
-      min-height: 6.4rem;
-      padding: 1.3rem 2.2rem;
+      width: 100%;
+      max-width: 50rem;
+      height: 6rem;
+      min-height: 6rem;
+      padding: 0 2.2rem;
       box-shadow: none;
     }
 
     .header__snoozer-entry .header__snoozer-avatar {
-      width: 4rem;
-      height: 4rem;
+      width: 3.8rem;
+      height: 3.8rem;
     }
 
     .header__snoozer-entry .header__snoozer-text {
-      font-size: 2rem;
+      font-size: 1.9rem;
     }
 
     .header__icons {
@@ -377,6 +379,8 @@
       align-self: center;
       justify-self: end;
       gap: 0.9rem;
+      align-items: center;
+      transform: translateY(-1.4rem);
     }
 
     .header__icon--account {
@@ -388,13 +392,11 @@
       grid-template-columns: 2.2rem auto;
       align-items: center;
       gap: 0.9rem;
-      margin-right: -0.6rem;
+      margin-right: 0.2rem;
       padding-right: 1.6rem;
       border-right: 0.1rem solid rgba(7, 26, 68, 0.12);
       color: #071a44;
-      position: relative;
-      top: -1.4rem;
-      left: -2.8rem;
+      transform: translate(-2.4rem, -1.4rem);
     }
 
     .header__store-icon {
@@ -441,16 +443,11 @@
     .header__icon--cart {
       width: 5rem;
       height: 5rem;
-      transform: translateY(-1.35rem);
     }
 
     .header__icon--cart .svg-wrapper {
       width: 2.7rem;
       height: 2.7rem;
-    }
-
-    .header__icon--account {
-      transform: translateY(-1.35rem);
     }
 
     .header__nav-row {
