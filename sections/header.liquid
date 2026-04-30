@@ -321,8 +321,8 @@
     .header__main {
       grid-template-columns: minmax(26rem, 1fr) auto minmax(26rem, 1fr);
       gap: 2rem;
-      min-height: 7.8rem;
-      padding: 1rem 0 0.6rem;
+      min-height: 8.4rem;
+      padding: 0.8rem 0 0.5rem;
     }
 
     .header__main-toggle {
@@ -346,26 +346,28 @@
     .header__snoozer-entry {
       display: flex;
       grid-column: 2 / 3;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
       justify-self: center;
       min-width: 0;
+      margin-top: 1.2rem;
+      margin-bottom: 0.2rem;
     }
 
     .header__snoozer-entry .header__snoozer-pill {
-      width: min(100%, 26rem);
-      min-height: 4.8rem;
-      padding: 0.9rem 1.4rem;
+      width: min(100%, 31rem);
+      min-height: 5.4rem;
+      padding: 1rem 1.7rem;
       box-shadow: none;
     }
 
     .header__snoozer-entry .header__snoozer-avatar {
-      width: 3.2rem;
-      height: 3.2rem;
+      width: 3.5rem;
+      height: 3.5rem;
     }
 
     .header__snoozer-entry .header__snoozer-text {
-      font-size: 1.5rem;
+      font-size: 1.7rem;
     }
 
     .header__icons {
@@ -373,6 +375,7 @@
       align-self: center;
       justify-self: end;
       gap: 0.9rem;
+      transform: translateY(-0.35rem);
     }
 
     .header__icon--account {
@@ -384,10 +387,13 @@
       grid-template-columns: 2.2rem auto;
       align-items: center;
       gap: 0.9rem;
-      margin-right: 0.4rem;
+      margin-right: 0.8rem;
       padding-right: 1.6rem;
       border-right: 0.1rem solid rgba(7, 26, 68, 0.12);
       color: #071a44;
+      position: relative;
+      top: -0.4rem;
+      left: -0.6rem;
     }
 
     .header__store-icon {
