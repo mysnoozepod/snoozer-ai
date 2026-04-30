@@ -42,7 +42,7 @@
         "menu": "main-menu",
         "menu_type_desktop": "dropdown",
         "sticky_header_type": "none",
-        "show_line_separator": false,
+        "show_line_separator": true,
         "color_scheme": "scheme-2",
         "menu_color_scheme": "scheme-2",
         "enable_country_selector": false,

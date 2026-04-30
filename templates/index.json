@@ -30,8 +30,8 @@
             "icon": "clipboard",
             "title": "Shop Anywhere",
             "text": "<p>Online or in our unmanned showroom.</p>",
-            "link_label": "",
-            "link": ""
+            "link_label": "Book A Snooze Session",
+            "link": "shopify://pages/booking-a-snooze-session"
           }
         },
         "value-2": {
