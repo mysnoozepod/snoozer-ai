@@ -115,6 +115,12 @@
     gap: 0.4rem;
   }
 
+  .header__action-group {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
   .header__store-meta {
     display: none;
   }
@@ -378,9 +384,13 @@
       grid-column: 3;
       align-self: center;
       justify-self: end;
-      gap: 0.9rem;
+      gap: 0;
       align-items: center;
-      transform: translateY(-1.4rem);
+    }
+
+    .header__action-group {
+      gap: 1.2rem;
+      transform: translate(-1.2rem, -1rem);
     }
 
     .header__icon--account {
@@ -391,12 +401,12 @@
       display: grid;
       grid-template-columns: 2.2rem auto;
       align-items: center;
-      gap: 0.9rem;
-      margin-right: 0.2rem;
+      gap: 1rem;
+      margin-right: 1.8rem;
       padding-right: 1.6rem;
       border-right: 0.1rem solid rgba(7, 26, 68, 0.12);
       color: #071a44;
-      transform: translate(-2.4rem, -1.4rem);
+      transform: translate(-2.8rem, -1rem);
     }
 
     .header__store-icon {
@@ -431,13 +441,13 @@
     .header__store-title {
       font-size: 1.35rem;
       font-weight: 600;
-      line-height: 1.2;
+      line-height: 1.1;
     }
 
     .header__store-text {
       font-size: 1.25rem;
       font-weight: 500;
-      line-height: 1.2;
+      line-height: 1.1;
     }
 
     .header__icon--cart {
@@ -623,14 +633,15 @@
           </div>
         </div>
 
-        <a
-          href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
-          class="header__icon header__icon--account header__utility-link link focus-inset"
-          aria-label="Customer log in"
-        >
-          <span class="svg-wrapper">{{ 'icon-account.svg' | inline_asset_content }}</span>
-          <span class="visually-hidden">Customer log in</span>
-        </a>
+        <div class="header__action-group">
+          <a
+            href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
+            class="header__icon header__icon--account header__utility-link link focus-inset"
+            aria-label="Customer log in"
+          >
+            <span class="svg-wrapper">{{ 'icon-account.svg' | inline_asset_content }}</span>
+            <span class="visually-hidden">Customer log in</span>
+          </a>
 
         {%- for block in section.blocks -%}
           {%- case block.type -%}
@@ -641,22 +652,23 @@
           {%- endcase -%}
         {%- endfor -%}
 
-        <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble">
-          {% if cart == empty %}
-            <span class="svg-wrapper">{{ 'icon-cart-empty.svg' | inline_asset_content }}</span>
-          {% else %}
-            <span class="svg-wrapper">{{ 'icon-cart.svg' | inline_asset_content }}</span>
-          {% endif %}
-          <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
-          {%- if cart != empty -%}
-            <div class="cart-count-bubble">
-              {%- if cart.item_count < 100 -%}
-                <span aria-hidden="true">{{ cart.item_count }}</span>
-              {%- endif -%}
-              <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
-            </div>
-          {%- endif -%}
-        </a>
+          <a href="{{ routes.cart_url }}" class="header__icon header__icon--cart link focus-inset" id="cart-icon-bubble">
+            {% if cart == empty %}
+              <span class="svg-wrapper">{{ 'icon-cart-empty.svg' | inline_asset_content }}</span>
+            {% else %}
+              <span class="svg-wrapper">{{ 'icon-cart.svg' | inline_asset_content }}</span>
+            {% endif %}
+            <span class="visually-hidden">{{ 'templates.cart.cart' | t }}</span>
+            {%- if cart != empty -%}
+              <div class="cart-count-bubble">
+                {%- if cart.item_count < 100 -%}
+                  <span aria-hidden="true">{{ cart.item_count }}</span>
+                {%- endif -%}
+                <span class="visually-hidden">{{ 'sections.header.cart_count' | t: count: cart.item_count }}</span>
+              </div>
+            {%- endif -%}
+          </a>
+        </div>
       </div>
     </div>
     <div class="header__snoozer-row large-up-hide">
