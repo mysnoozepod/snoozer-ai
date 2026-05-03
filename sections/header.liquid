@@ -125,6 +125,10 @@
     display: none;
   }
 
+  .header__utility-separator {
+    display: none;
+  }
+
   .header__icon {
     display: inline-flex;
     align-items: center;
@@ -359,7 +363,7 @@
       min-width: 50.8rem;
       margin-top: 0;
       margin-bottom: 0;
-      transform: translate(1.8rem, 3.6rem);
+      transform: translate(0, 4.6rem);
     }
 
     .header__snoozer-entry .header__snoozer-pill {
@@ -390,7 +394,7 @@
 
     .header__action-group {
       gap: 1.2rem;
-      transform: translate(0, -1.6rem);
+      transform: translate(0.4rem, -2.4rem);
     }
 
     .header__icon--account {
@@ -402,11 +406,21 @@
       grid-template-columns: 2.2rem auto;
       align-items: center;
       gap: 1rem;
-      margin-right: 3.6rem;
-      padding-right: 1.6rem;
-      border-right: 0.1rem solid rgba(7, 26, 68, 0.12);
+      margin-right: 0;
+      padding-right: 0;
+      border-right: none;
       color: #071a44;
-      transform: translate(-4.8rem, -2rem);
+      transform: translate(-5.8rem, -2.8rem);
+    }
+
+    .header__utility-separator {
+      display: block;
+      width: 0.1rem;
+      height: 3.2rem;
+      flex: 0 0 auto;
+      margin: 0 1.2rem;
+      background: #d8dee8;
+      transform: translateY(-2.6rem);
     }
 
     .header__store-icon {
@@ -632,6 +646,8 @@
             <span class="header__store-text">Showroom + Virtual Support</span>
           </div>
         </div>
+
+        <span class="header__utility-separator small-hide medium-hide" aria-hidden="true"></span>
 
         <div class="header__action-group">
           <a
