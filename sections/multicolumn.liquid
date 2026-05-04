@@ -30,14 +30,17 @@
 
   {%- if section.id == 'value-strip' -%}
     .section-{{ section.id }}-padding {
-      padding-top: 2.4rem !important;
-      padding-bottom: 2.4rem !important;
+      max-width: var(--content-max);
+      padding-top: var(--sp-5) !important;
+      padding-bottom: var(--sp-5) !important;
+      padding-left: var(--page-padding-mobile);
+      padding-right: var(--page-padding-mobile);
     }
 
     .section-{{ section.id }}-padding .multicolumn-list {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      gap: 1.6rem;
+      gap: var(--sp-3);
       overflow: visible;
       padding-bottom: 0;
     }
@@ -51,41 +54,42 @@
     }
 
     .section-{{ section.id }}-padding .multicolumn-card {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 4.8rem minmax(0, 1fr);
       align-items: center;
-      text-align: center;
+      column-gap: var(--sp-4);
+      text-align: left;
       width: 100%;
       min-height: 100%;
-      padding: 2.4rem;
-      border: 0;
-      border-radius: 1.4rem;
+      padding: var(--card-padding-mobile);
+      border: var(--card-border);
+      border-radius: var(--radius-lg);
       background: #ffffff;
-      box-shadow: 0 1rem 2.4rem rgba(7, 26, 68, 0.06);
+      box-shadow: var(--card-shadow-soft);
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__image-wrapper {
-      width: auto;
-      margin: 0 auto 1.2rem;
+      width: 100%;
+      margin: 0;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
-      width: 5.2rem;
-      height: 5.2rem;
+      width: 4.8rem;
+      height: 4.8rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       background: #eef2f7;
       color: rgb(var(--color-primary-navy));
-      margin: 0 auto 1.2rem;
+      margin: 0;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper,
     .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper svg,
     .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper img {
-      width: 3.2rem;
-      height: 3.2rem;
+      width: 2.4rem;
+      height: 2.4rem;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__image-wrapper + .multicolumn-card__info {
@@ -96,23 +100,23 @@
       padding: 0;
       width: 100%;
       display: grid;
-      justify-items: center;
+      justify-items: start;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info h3 {
-      font-size: 2.2rem;
-      line-height: 2.8rem;
+      font-size: var(--h3-mobile);
+      line-height: 1.2;
       font-weight: 700;
-      margin-bottom: 0.6rem;
+      margin: 0 0 var(--sp-2);
       color: rgb(var(--color-primary-navy));
       letter-spacing: -0.03em;
     }
 
     .section-{{ section.id }}-padding .multicolumn-card__info .rte {
-      max-width: 22rem;
+      max-width: 30rem;
       margin: 0;
-      font-size: 1.5rem;
-      line-height: 2.2rem;
+      font-size: var(--body-mobile);
+      line-height: 1.45;
       color: rgba(var(--color-text-primary), 0.82);
     }
 
@@ -342,38 +346,57 @@
 
     {%- if section.id == 'value-strip' -%}
       .section-{{ section.id }}-padding {
-        padding-top: 2.4rem !important;
-        padding-bottom: 2.4rem !important;
+        padding-top: var(--sp-6) !important;
+        padding-bottom: var(--sp-6) !important;
+        padding-left: var(--page-padding-tablet);
+        padding-right: var(--page-padding-tablet);
       }
 
       .section-{{ section.id }}-padding .multicolumn-list {
         display: grid;
         grid-auto-flow: row;
         grid-auto-columns: initial;
-        grid-template-columns: repeat(3, minmax(0, 30rem));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         justify-content: center;
-        gap: 2.4rem;
+        gap: var(--sp-5);
         overflow: visible;
         scroll-snap-type: none;
         padding-bottom: 0;
       }
 
       .section-{{ section.id }}-padding .multicolumn-card {
-        max-width: 30rem;
+        max-width: none;
         min-height: 100%;
-        padding: 3.2rem 2.8rem;
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
+        text-align: center;
+        row-gap: var(--sp-4);
+        padding: var(--card-padding-desktop);
       }
 
       .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper {
-        width: 6rem;
-        height: 6rem;
+        width: 5.6rem;
+        height: 5.6rem;
+        margin: 0 auto;
       }
 
       .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper .svg-wrapper,
       .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper svg,
       .section-{{ section.id }}-padding .multicolumn-card__icon-wrapper img {
-        width: 3.6rem;
-        height: 3.6rem;
+        width: 2.8rem;
+        height: 2.8rem;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card__info {
+        justify-items: center;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card__info .rte {
+        max-width: 22rem;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card__info h3 {
+        font-size: var(--h3-desktop);
       }
     {%- elsif section.id == 'how-it-works' -%}
       .section-{{ section.id }}-padding {

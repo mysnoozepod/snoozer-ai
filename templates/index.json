@@ -13,11 +13,11 @@
       "type": "snooze-hero",
       "settings": {
         "heading": "Find The Right Mattress Without The Guesswork",
-        "subtext": "We guide you through a simple process that narrows your options and helps you choose with confidence.",
-        "primary_cta_label": "Start Your Sleep Assessment",
-        "primary_cta_link": "/pages/sleep-assessment",
-        "secondary_cta_label": "",
-        "secondary_cta_link": "",
+        "subtext": "Shop online or visit our unmanned showroom for a calmer way to choose your sleep setup.",
+        "primary_cta_label": "Book a Snooze Session",
+        "primary_cta_link": "shopify://pages/booking-a-snooze-session",
+        "secondary_cta_label": "Shop Mattresses",
+        "secondary_cta_link": "shopify://collections/mattresses",
         "hero_image": "shopify://shop_images/STMAM455QQAB-MM12QQPO38GH-polariscoolsyncmattressandbase-ENraisedprofileWEB1715614443_original_0c19bfe5-4af4-4552-9889-853e8bd6abda.jpg"
       }
     },
@@ -27,7 +27,7 @@
         "value-1": {
           "type": "column",
           "settings": {
-            "icon": "clipboard",
+            "icon": "map_pin",
             "title": "Shop Anywhere",
             "text": "<p>Online or in our unmanned showroom.</p>",
             "link_label": "",
@@ -37,9 +37,9 @@
         "value-2": {
           "type": "column",
           "settings": {
-            "icon": "check_mark",
+            "icon": "question_mark",
             "title": "Get Answers Fast",
-            "text": "<p>Ask Snoozer anything. Skip the guesswork.</p>",
+            "text": "<p>Ask Snoozer when you need help choosing.</p>",
             "link_label": "",
             "link": ""
           }
@@ -49,7 +49,7 @@
           "settings": {
             "icon": "box",
             "title": "Build Your SnoozePod",
-            "text": "<p>Create your perfect sleep setup when you're ready.</p>",
+            "text": "<p>Pair your mattress with bases, pillows, and bedding.</p>",
             "link_label": "",
             "link": ""
           }

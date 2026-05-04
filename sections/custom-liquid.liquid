@@ -128,29 +128,40 @@
     }
   {%- elsif section.id == 'full-product-section' or section.id contains 'featured_collection_666q7i' or section.settings.custom_liquid contains '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' -%}
     .section-{{ section.id }}-padding {
-      padding-top: 6.4rem !important;
-      padding-bottom: 6.4rem !important;
+      padding-top: var(--sp-7) !important;
+      padding-bottom: var(--sp-7) !important;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__inner {
+      width: min(100%, var(--content-max));
+      margin: 0 auto;
+      padding-inline: var(--page-padding-mobile);
     }
 
     .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__header {
       display: grid;
-      justify-items: center;
-      gap: 1.2rem;
-      margin-bottom: 3.2rem;
-      text-align: center;
+      gap: var(--sp-3);
+      margin-bottom: var(--sp-5);
+      text-align: left;
     }
 
     .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__copy {
-      max-width: 64rem;
+      max-width: 62rem;
     }
 
     .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__title {
       margin: 0;
+      font-size: var(--h2-mobile);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: rgb(var(--color-primary-navy));
     }
 
     .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__description {
       margin: 0;
-      color: rgb(var(--color-text-secondary));
+      color: rgba(var(--color-text-primary), 0.78);
+      font-size: var(--body-mobile);
+      line-height: 1.45;
     }
 
     .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__description p {
@@ -160,7 +171,7 @@
     .section-{{ section.id }}-padding .homepage-shelf__grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.6rem;
+      gap: var(--sp-4);
       margin: 0;
       padding: 0;
       list-style: none;
@@ -174,11 +185,11 @@
       display: flex;
       flex-direction: column;
       height: 100%;
-      padding: 1.8rem;
-      border: 0.1rem solid rgba(var(--color-text-primary), 0.08);
-      border-radius: 1.6rem;
+      padding: var(--card-padding-mobile);
+      border: var(--card-border);
+      border-radius: var(--radius-lg);
       background: #ffffff;
-      box-shadow: 0 0.8rem 2rem rgba(var(--color-primary-navy), 0.05);
+      box-shadow: var(--card-shadow-soft);
       transition: border-color var(--duration-short) ease, box-shadow var(--duration-short) ease,
         transform var(--duration-short) ease;
     }
@@ -190,16 +201,19 @@
 
     .section-{{ section.id }}-padding .homepage-shelf-card__media {
       overflow: hidden;
-      aspect-ratio: 1 / 1;
-      border-radius: 1.2rem;
-      background: rgb(242, 244, 247);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--product-image-height-mobile);
+      border-radius: var(--radius-md);
+      background: #f4f6fa;
     }
 
     .section-{{ section.id }}-padding .homepage-shelf-card__image {
       display: block;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       transition: transform var(--duration-short) ease;
     }
 
@@ -207,16 +221,16 @@
       display: flex;
       flex: 1 1 auto;
       flex-direction: column;
-      gap: 1.4rem;
-      padding-top: 1.8rem;
+      gap: var(--sp-2);
+      padding-top: var(--sp-4);
     }
 
     .section-{{ section.id }}-padding .homepage-shelf-card__title {
       margin: 0;
-      font-size: 1.8rem;
-      line-height: 2.4rem;
-      font-weight: 600;
-      letter-spacing: -0.01em;
+      font-size: var(--h3-mobile);
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: -0.02em;
     }
 
     .section-{{ section.id }}-padding .homepage-shelf-card__title-link {
@@ -224,35 +238,22 @@
       text-decoration: none;
     }
 
-    .section-{{ section.id }}-padding .homepage-shelf-card__benefits {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-    }
-
-    .section-{{ section.id }}-padding .homepage-shelf-card__benefit {
-      display: inline-flex;
-      align-items: center;
-      min-height: 2.8rem;
-      padding: 0.5rem 1rem;
-      border-radius: 999px;
-      background: #eef2f7;
-      color: #243247;
-      font-size: 1.25rem;
-      line-height: 1.6rem;
-      font-weight: 500;
-      white-space: nowrap;
+    .section-{{ section.id }}-padding .homepage-shelf-card__descriptor {
+      margin: 0;
+      color: rgba(var(--color-text-primary), 0.74);
+      font-size: var(--body-mobile);
+      line-height: 1.4;
     }
 
     .section-{{ section.id }}-padding .homepage-shelf-card__cta {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: var(--sp-1);
       margin-top: auto;
-      padding-top: 0.4rem;
+      padding-top: var(--sp-2);
       color: #071a44;
-      font-size: 1.45rem;
-      line-height: 2rem;
+      font-size: var(--body-mobile);
+      line-height: 1.3;
       font-weight: 600;
       text-decoration: none;
     }
@@ -260,6 +261,21 @@
     .section-{{ section.id }}-padding .homepage-shelf-card__cta:hover {
       text-decoration: underline;
       text-underline-offset: 0.25rem;
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf__footer {
+      display: flex;
+      justify-content: center;
+      margin-top: var(--sp-5);
+    }
+
+    .section-{{ section.id }}-padding .homepage-shelf__section-cta {
+      min-width: min(100%, 28rem);
+      min-height: var(--button-height-mobile);
+      padding-inline: var(--sp-5);
+      border-radius: var(--button-radius);
+      font-size: var(--body-mobile);
+      font-weight: 600;
     }
   {%- endif -%}
 
@@ -280,8 +296,17 @@
         padding-bottom: 6.4rem !important;
       }
     {%- elsif section.id == 'full-product-section' or section.id contains 'featured_collection_666q7i' or section.settings.custom_liquid contains '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' -%}
+      .section-{{ section.id }}-padding {
+        padding-top: var(--sp-8) !important;
+        padding-bottom: var(--sp-8) !important;
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__inner {
+        padding-inline: var(--page-padding-tablet);
+      }
+
       .section-{{ section.id }}-padding .homepage-shelf__grid {
-        gap: 2rem;
+        gap: var(--sp-5);
       }
     {%- endif -%}
   }
@@ -296,29 +321,51 @@
       }
     {%- elsif section.id == 'full-product-section' or section.id contains 'featured_collection_666q7i' or section.settings.custom_liquid contains '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' -%}
       .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__header {
-        margin-bottom: 4rem;
+        margin-bottom: var(--sp-6);
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__inner {
+        padding-inline: var(--page-padding-desktop);
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__title {
+        font-size: var(--h2-desktop);
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__description {
+        font-size: var(--body-desktop);
       }
 
       .section-{{ section.id }}-padding .homepage-shelf__grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 2.8rem;
+        gap: var(--sp-5);
       }
 
       .section-{{ section.id }}-padding .homepage-shelf-card {
-        padding: 2rem;
+        padding: var(--card-padding-desktop);
       }
 
-      .section-{{ section.id }}-padding .homepage-shelf-card__body {
-        padding-top: 2rem;
+      .section-{{ section.id }}-padding .homepage-shelf-card:hover {
+        transform: translateY(-0.3rem);
+        box-shadow: 0 1.2rem 3rem rgba(8, 25, 55, 0.08);
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf-card__media {
+        height: var(--product-image-height-desktop);
       }
 
       .section-{{ section.id }}-padding .homepage-shelf-card__title {
-        font-size: 1.95rem;
-        line-height: 2.6rem;
+        font-size: var(--h3-desktop);
       }
 
+      .section-{{ section.id }}-padding .homepage-shelf-card__descriptor,
       .section-{{ section.id }}-padding .homepage-shelf-card__cta {
-        font-size: 1.5rem;
+        font-size: var(--body-desktop);
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf__section-cta {
+        min-height: var(--button-height-desktop);
+        font-size: var(--body-desktop);
       }
     {%- elsif section.id == 'showroom' -%}
       .section-{{ section.id }}-padding {
@@ -342,42 +389,44 @@
 <div class="color-{{ section.settings.color_scheme }} gradient{% if section.id == 'full-product-section' or section.id contains 'featured_collection_666q7i' or section.settings.custom_liquid contains '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' or section.settings.custom_liquid contains 'homepage-shelf--full' %} homepage-shelf-section homepage-shelf-section--featured{% endif %}">
   <div class="section-{{ section.id }}-padding">
     {%- if render_curated_homepage_shelf -%}
+      {%- liquid
+        assign mattress_collection = collections['mattresses']
+        assign mattress_collection_url = routes.all_products_collection_url
+        if mattress_collection != blank and mattress_collection.url != blank
+          assign mattress_collection_url = mattress_collection.url
+        endif
+      -%}
       <div class="homepage-shelf homepage-shelf--full">
-        <div class="homepage-shelf__header page-width">
-          <div class="homepage-shelf__copy">
-            <h2 class="homepage-shelf__title title inline-richtext h2">Find What Works For How You Sleep</h2>
-            <div class="homepage-shelf__description collection__description body rte">
-              <p>Start with the Snooze Assessment. Snoozer guides you to the right mattress.</p>
+        <div class="homepage-shelf__inner">
+          <div class="homepage-shelf__header">
+            <div class="homepage-shelf__copy">
+              <h2 class="homepage-shelf__title title inline-richtext h2">Start With The Mattress</h2>
+              <div class="homepage-shelf__description collection__description body rte">
+                <p>Explore comfort options built for different sleep styles, support needs, and budgets.</p>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="page-width">
           <ul class="homepage-shelf__grid" role="list">
             {%- assign mattress_handles = '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|' -%}
             {%- for handle in mattress_handles -%}
               {%- assign mattress_product = all_products[handle] -%}
               {%- if mattress_product != blank -%}
                 {%- liquid
-                  assign benefit_1 = ''
-                  assign benefit_2 = ''
-                  assign benefit_3 = ''
+                  assign card_title = mattress_product.title
+                  assign card_descriptor = ''
                   case handle
                     when '10-all-foam-mattress'
-                      assign benefit_1 = 'Pressure Relief'
-                      assign benefit_2 = 'Motion Isolation'
-                      assign benefit_3 = 'Back Support'
+                      assign card_title = '10" All Foam'
+                      assign card_descriptor = 'Simple comfort. Great value.'
                     when '12-all-foam-mattress'
-                      assign benefit_1 = 'Plush Comfort'
-                      assign benefit_2 = 'Pressure Relief'
-                      assign benefit_3 = 'Cooling Cover'
+                      assign card_title = '12" All Foam'
+                      assign card_descriptor = 'More comfort. More support.'
                     when '12-dual-comfort-hybrid'
-                      assign benefit_1 = 'Dual Comfort'
-                      assign benefit_2 = 'Couples'
-                      assign benefit_3 = 'Balanced Support'
+                      assign card_title = '12" Dual Comfort Hybrid'
+                      assign card_descriptor = 'Pressure relief + support.'
                     when '14-hybrid'
-                      assign benefit_1 = 'Cooling Support'
-                      assign benefit_2 = 'Hybrid Feel'
-                      assign benefit_3 = 'Edge Support'
+                      assign card_title = '14" Hybrid'
+                      assign card_descriptor = 'Premium support. Luxury feel.'
                   endcase
                   assign card_alt = mattress_product.featured_media.alt | default: mattress_product.title
                 -%}
@@ -391,8 +440,8 @@
                             | image_url: width: 900
                             | image_tag:
                               class: 'homepage-shelf-card__image',
-                              widths: '320, 480, 640, 720, 900',
-                              sizes: '(min-width: 990px) calc((1320px - 84px) / 4), (min-width: 750px) calc((100vw - 80px) / 2), calc((100vw - 48px) / 2)',
+                              widths: '220, 320, 420, 520, 720, 900',
+                              sizes: '(min-width: 990px) calc((min(100vw, 1280px) - 192px) / 4), (min-width: 750px) calc((100vw - 88px) / 2), calc((100vw - 56px) / 2)',
                               loading: 'lazy',
                               alt: card_alt
                           }}
@@ -402,21 +451,22 @@
                     <div class="homepage-shelf-card__body">
                       <h3 class="homepage-shelf-card__title">
                         <a class="homepage-shelf-card__title-link" href="{{ mattress_product.url }}">
-                          {{ mattress_product.title | escape }}
+                          {{ card_title }}
                         </a>
                       </h3>
-                      <div class="homepage-shelf-card__benefits" aria-label="Product benefits">
-                        <span class="homepage-shelf-card__benefit">{{ benefit_1 }}</span>
-                        <span class="homepage-shelf-card__benefit">{{ benefit_2 }}</span>
-                        <span class="homepage-shelf-card__benefit">{{ benefit_3 }}</span>
-                      </div>
-                      <a class="homepage-shelf-card__cta" href="{{ mattress_product.url }}">View Details &rarr;</a>
+                      <p class="homepage-shelf-card__descriptor">{{ card_descriptor }}</p>
+                      <a class="homepage-shelf-card__cta" href="{{ mattress_product.url }}">View &rarr;</a>
                     </div>
                   </article>
                 </li>
               {%- endif -%}
             {%- endfor -%}
           </ul>
+          <div class="homepage-shelf__footer">
+            <a class="homepage-shelf__section-cta button button--secondary" href="{{ mattress_collection_url }}">
+              Shop Mattresses
+            </a>
+          </div>
         </div>
       </div>
     {%- else -%}
