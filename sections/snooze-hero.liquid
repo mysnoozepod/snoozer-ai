@@ -2,7 +2,7 @@
   .snooze-hero-{{ section.id }} {
     position: relative;
     width: 100%;
-    min-height: var(--hero-height-mobile);
+    min-height: max(var(--hero-height-mobile), 360px);
     overflow: hidden;
     isolation: isolate;
     background: #d7dbe2;
@@ -12,7 +12,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, rgba(7, 26, 68, 0.68) 0%, rgba(7, 26, 68, 0.28) 48%, rgba(7, 26, 68, 0.12) 100%);
+    background: linear-gradient(180deg, rgba(7, 26, 68, 0.18) 0%, rgba(7, 26, 68, 0.36) 44%, rgba(7, 26, 68, 0.82) 100%);
     z-index: 1;
   }
 
@@ -45,33 +45,33 @@
     display: flex;
     align-items: flex-end;
     width: min(100%, var(--wide-content-max));
-    min-height: var(--hero-height-mobile);
+    min-height: max(var(--hero-height-mobile), 360px);
     margin: 0 auto;
-    padding: var(--sp-7) var(--page-padding-mobile) var(--sp-5);
+    padding: var(--sp-5);
   }
 
   .snooze-hero-{{ section.id }} .snooze-hero__content {
-    width: min(100%, 52rem);
-    max-width: 52rem;
+    width: min(100%, 32rem);
+    max-width: 32rem;
     min-width: 0;
   }
 
   .snooze-hero-{{ section.id }} .snooze-hero__heading {
     margin: 0;
-    max-width: 10ch;
+    max-width: 320px;
     color: #ffffff;
     font-size: var(--h1-mobile);
-    line-height: 0.98;
+    line-height: 1.05;
     font-weight: 700;
     letter-spacing: -0.04em;
   }
 
   .snooze-hero-{{ section.id }} .snooze-hero__subtext {
     margin: var(--sp-4) 0 0;
-    max-width: 34rem;
+    max-width: 320px;
     color: rgba(255, 255, 255, 0.85);
     font-size: var(--body-mobile);
-    line-height: 1.45;
+    line-height: 1.35;
   }
 
   .snooze-hero-{{ section.id }} .snooze-hero__subtext p {
@@ -82,7 +82,7 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: var(--sp-3);
+    gap: 10px;
     margin-top: var(--sp-5);
   }
 
