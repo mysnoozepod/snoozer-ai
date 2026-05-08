@@ -27,7 +27,7 @@
 
   .snoozepod-environment-{{ section.id }} .snoozepod-environment__subheading {
     margin: 0;
-    max-width: 68rem;
+    max-width: 72rem;
     color: rgba(var(--color-text-primary), 0.78);
     font-size: var(--body-mobile);
     line-height: 1.4;
@@ -51,7 +51,7 @@
     flex-direction: column;
     gap: var(--sp-3);
     height: 100%;
-    min-height: 14rem;
+    min-height: 100%;
     padding: var(--card-padding-mobile);
     border: var(--card-border);
     border-radius: var(--radius-lg);
@@ -61,37 +61,36 @@
     text-decoration: none;
   }
 
-  .snoozepod-environment-{{ section.id }} .snoozepod-environment__card:hover {
-    transform: translateY(-0.2rem);
-  }
-
-  .snoozepod-environment-{{ section.id }} .snoozepod-environment__card-image,
-  .snoozepod-environment-{{ section.id }} .snoozepod-environment__icon {
-    width: 4.6rem;
-    height: 4.6rem;
-    border-radius: var(--radius-pill);
-    display: inline-flex;
+  .snoozepod-environment-{{ section.id }} .snoozepod-environment__media {
+    height: calc(var(--category-image-height-mobile) + var(--sp-2));
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, #faf7f2 0%, #ffffff 100%);
+    display: flex;
     align-items: center;
     justify-content: center;
-    background: #eef2f7;
-    color: rgb(var(--color-primary-navy));
     overflow: hidden;
-    flex-shrink: 0;
   }
 
-  .snoozepod-environment-{{ section.id }} .snoozepod-environment__card-image img {
+  .snoozepod-environment-{{ section.id }} .snoozepod-environment__media img,
+  .snoozepod-environment-{{ section.id }} .snoozepod-environment__media svg {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
   }
 
-  .snoozepod-environment-{{ section.id }} .snoozepod-environment__icon .svg-wrapper,
-  .snoozepod-environment-{{ section.id }} .snoozepod-environment__icon svg {
-    width: 2rem;
-    height: 2rem;
+  .snoozepod-environment-{{ section.id }} .snoozepod-environment__placeholder {
+    width: 100%;
+    height: 100%;
   }
 
-  .snoozepod-environment-{{ section.id }} .snoozepod-environment__card-title {
+  .snoozepod-environment-{{ section.id }} .placeholder-svg {
+    width: 100%;
+    height: 100%;
+    fill: rgba(8, 25, 55, 0.12);
+    background: transparent;
+  }
+
+  .snoozepod-environment-{{ section.id }} .snoozepod-environment__title {
     margin: 0 0 var(--sp-1);
     color: rgb(var(--color-primary-navy));
     font-size: 16px;
@@ -100,11 +99,23 @@
     letter-spacing: -0.02em;
   }
 
-  .snoozepod-environment-{{ section.id }} .snoozepod-environment__card-text {
+  .snoozepod-environment-{{ section.id }} .snoozepod-environment__description {
     margin: 0;
     color: rgba(var(--color-text-primary), 0.74);
     font-size: 13px;
     line-height: 1.35;
+  }
+
+  .snoozepod-environment-{{ section.id }} .snoozepod-environment__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    margin-top: auto;
+    padding-top: var(--sp-2);
+    color: rgb(var(--color-primary-navy));
+    font-size: var(--small-text);
+    font-weight: 600;
+    text-decoration: none;
   }
 
   .snoozepod-environment-{{ section.id }} .snoozepod-environment__footer {
@@ -117,8 +128,7 @@
     width: min(100%, 32rem);
     min-height: var(--button-height-mobile);
     border-radius: var(--button-radius);
-    font-size: var(--body-mobile);
-    font-weight: 600;
+    justify-content: center;
   }
 
   @media screen and (min-width: 750px) {
@@ -133,7 +143,7 @@
     }
 
     .snoozepod-environment-{{ section.id }} .snoozepod-environment__grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
@@ -156,15 +166,18 @@
     }
 
     .snoozepod-environment-{{ section.id }} .snoozepod-environment__card {
-      min-height: 18rem;
       padding: var(--card-padding-desktop);
     }
 
-    .snoozepod-environment-{{ section.id }} .snoozepod-environment__card-title {
+    .snoozepod-environment-{{ section.id }} .snoozepod-environment__media {
+      height: calc(var(--category-image-height-mobile) + var(--sp-6));
+    }
+
+    .snoozepod-environment-{{ section.id }} .snoozepod-environment__title {
       font-size: var(--h3-desktop);
     }
 
-    .snoozepod-environment-{{ section.id }} .snoozepod-environment__card-text {
+    .snoozepod-environment-{{ section.id }} .snoozepod-environment__description {
       font-size: var(--body-mobile);
     }
 
@@ -191,40 +204,60 @@
       <ul class="snoozepod-environment__grid" role="list">
         {%- for block in section.blocks -%}
           {%- liquid
-            assign tile_url = block.settings.optional_link
+            assign linked_collection = block.settings.collection
+            assign card_url = block.settings.link
+            assign card_image = block.settings.image_override
+            assign card_title = block.settings.title_override
+
+            if linked_collection != blank
+              if card_url == blank
+                assign card_url = linked_collection.url
+              endif
+              if card_image == blank and linked_collection.featured_image != blank
+                assign card_image = linked_collection.featured_image
+              endif
+              if card_title == blank
+                assign card_title = linked_collection.title
+              endif
+            endif
+
+            if card_title == blank
+              assign card_title = 'Collection'
+            endif
           -%}
           <li {{ block.shopify_attributes }}>
-            {%- if tile_url != blank -%}
-              <a class="snoozepod-environment__card" href="{{ tile_url }}">
+            {%- if card_url != blank -%}
+              <a class="snoozepod-environment__card" href="{{ card_url }}">
             {%- else -%}
               <div class="snoozepod-environment__card">
             {%- endif -%}
-                {%- if block.settings.image != blank -%}
-                  <span class="snoozepod-environment__card-image">
+                <div class="snoozepod-environment__media">
+                  {%- if card_image != blank -%}
                     {{
-                      block.settings.image
-                      | image_url: width: 96
+                      card_image
+                      | image_url: width: 320
                       | image_tag:
-                        widths: '64, 96, 128',
-                        sizes: '46px',
+                        widths: '144, 200, 240, 320, 400',
+                        sizes: '(min-width: 750px) calc((100vw - 128px) / 3), calc((100vw - 52px) / 2)',
                         loading: 'lazy',
-                        alt: block.settings.title | escape
+                        alt: card_title | escape
                     }}
-                  </span>
-                {%- elsif block.settings.icon != blank and block.settings.icon != 'none' -%}
-                  <span class="snoozepod-environment__icon">
-                    {% render 'icon-accordion', icon: block.settings.icon %}
-                  </span>
-                {%- endif -%}
-                <div class="snoozepod-environment__copy">
-                  {%- if block.settings.title != blank -%}
-                    <h3 class="snoozepod-environment__card-title">{{ block.settings.title | escape }}</h3>
-                  {%- endif -%}
-                  {%- if block.settings.short_text != blank -%}
-                    <p class="snoozepod-environment__card-text">{{ block.settings.short_text | escape }}</p>
+                  {%- else -%}
+                    <span class="snoozepod-environment__placeholder">
+                      {{ 'collection-1' | placeholder_svg_tag }}
+                    </span>
                   {%- endif -%}
                 </div>
-            {%- if tile_url != blank -%}
+                <div class="snoozepod-environment__copy">
+                  <h3 class="snoozepod-environment__title">{{ card_title | escape }}</h3>
+                  {%- if block.settings.description != blank -%}
+                    <p class="snoozepod-environment__description">{{ block.settings.description | escape }}</p>
+                  {%- endif -%}
+                </div>
+                {%- if block.settings.cta_label != blank and card_url != blank -%}
+                  <span class="snoozepod-environment__link">{{ block.settings.cta_label | escape }}</span>
+                {%- endif -%}
+            {%- if card_url != blank -%}
               </a>
             {%- else -%}
               </div>
@@ -249,7 +282,7 @@
 
 {% schema %}
 {
-  "name": "SnoozePod environment",
+  "name": "SnoozePod collections",
   "class": "section",
   "tag": "section",
   "disabled_on": {
@@ -266,13 +299,13 @@
       "type": "textarea",
       "id": "subheading",
       "label": "Subheading",
-      "default": "Your SnoozePod is the complete sleep environment around you — mattress, base, pillows, sheets, protection, lighting, sound, and comfort details."
+      "default": "A SnoozePod is your full sleep setup - mattress, base, pillows, sheets, protection, and the pieces that complete your room."
     },
     {
       "type": "text",
       "id": "cta_label",
       "label": "CTA label",
-      "default": "Explore The Full Setup"
+      "default": "Explore Our Collections"
     },
     {
       "type": "url",
@@ -297,7 +330,7 @@
       "step": 4,
       "unit": "px",
       "label": "Top padding",
-      "default": 36
+      "default": 32
     },
     {
       "type": "range",
@@ -307,72 +340,59 @@
       "step": 4,
       "unit": "px",
       "label": "Bottom padding",
-      "default": 36
+      "default": 32
     }
   ],
   "blocks": [
     {
-      "type": "environment_item",
-      "name": "Environment item",
+      "type": "collection_card",
+      "name": "Collection card",
       "settings": [
         {
-          "type": "image_picker",
-          "id": "image",
-          "label": "Image"
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
         },
         {
-          "type": "select",
-          "id": "icon",
-          "label": "Icon",
-          "default": "box",
-          "options": [
-            { "value": "none", "label": "None" },
-            { "value": "box", "label": "Box" },
-            { "value": "3d_model", "label": "3D model" },
-            { "value": "heart", "label": "Heart" },
-            { "value": "leaf", "label": "Leaf" },
-            { "value": "lock", "label": "Lock" },
-            { "value": "ruler", "label": "Ruler" },
-            { "value": "lightning_bolt", "label": "Lightning bolt" },
-            { "value": "star", "label": "Star" },
-            { "value": "question_mark", "label": "Question mark" },
-            { "value": "snowflake", "label": "Snowflake" },
-            { "value": "silhouette", "label": "Silhouette" },
-            { "value": "stopwatch", "label": "Stopwatch" }
-          ]
+          "type": "image_picker",
+          "id": "image_override",
+          "label": "Image override"
         },
         {
           "type": "text",
-          "id": "title",
-          "label": "Title",
-          "default": "Item"
+          "id": "title_override",
+          "label": "Title override"
         },
         {
           "type": "textarea",
-          "id": "short_text",
-          "label": "Short text",
-          "default": "Short supporting detail."
+          "id": "description",
+          "label": "Description",
+          "default": "Short supporting description."
+        },
+        {
+          "type": "text",
+          "id": "cta_label",
+          "label": "CTA label",
+          "default": "Explore ->"
         },
         {
           "type": "url",
-          "id": "optional_link",
-          "label": "Optional link"
+          "id": "link",
+          "label": "Fallback link"
         }
       ]
     }
   ],
   "presets": [
     {
-      "name": "SnoozePod environment",
+      "name": "SnoozePod collections",
       "blocks": [
-        { "type": "environment_item" },
-        { "type": "environment_item" },
-        { "type": "environment_item" },
-        { "type": "environment_item" },
-        { "type": "environment_item" },
-        { "type": "environment_item" },
-        { "type": "environment_item" },
-        { "type": "environment_item" }
+        { "type": "collection_card" },
+        { "type": "collection_card" },
+        { "type": "collection_card" },
+        { "type": "collection_card" },
+        { "type": "collection_card" },
+        { "type": "collection_card" }
       ]
     }
   ]

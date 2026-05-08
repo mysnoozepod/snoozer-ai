@@ -137,101 +137,85 @@
     "snoozepod_environment_GYx7gN": {
       "type": "snoozepod-environment",
       "blocks": {
-        "environment_1": {
-          "type": "environment_item",
+        "collection_1": {
+          "type": "collection_card",
           "settings": {
-            "image": "",
-            "icon": "box",
-            "title": "Mattress",
-            "short_text": "Support and comfort where your setup starts.",
-            "optional_link": "shopify://collections/mattresses"
+            "collection": "shopify://collections/mattresses",
+            "image_override": "",
+            "title_override": "Mattresses",
+            "description": "Find your comfort and support starting point.",
+            "cta_label": "Explore ->",
+            "link": ""
           }
         },
-        "environment_2": {
-          "type": "environment_item",
+        "collection_2": {
+          "type": "collection_card",
           "settings": {
-            "image": "",
-            "icon": "3d_model",
-            "title": "Base",
-            "short_text": "Add elevation, movement, and recovery support.",
-            "optional_link": "shopify://collections/bases"
+            "collection": "shopify://collections/bases",
+            "image_override": "",
+            "title_override": "Bases",
+            "description": "Add elevation, adjustability, and recovery support.",
+            "cta_label": "Explore ->",
+            "link": ""
           }
         },
-        "environment_3": {
-          "type": "environment_item",
+        "collection_3": {
+          "type": "collection_card",
           "settings": {
-            "image": "",
-            "icon": "heart",
-            "title": "Pillows",
-            "short_text": "Match your neck, shoulders, and sleep position.",
-            "optional_link": "shopify://collections/pillows"
+            "collection": "shopify://collections/pillows",
+            "image_override": "",
+            "title_override": "Pillows",
+            "description": "Support your neck, shoulders, and sleep position.",
+            "cta_label": "Explore ->",
+            "link": ""
           }
         },
-        "environment_4": {
-          "type": "environment_item",
+        "collection_4": {
+          "type": "collection_card",
           "settings": {
-            "image": "",
-            "icon": "leaf",
-            "title": "Sheets",
-            "short_text": "Layer in breathable comfort around the bed.",
-            "optional_link": "shopify://collections/bedding"
+            "collection": "shopify://collections/bedding",
+            "image_override": "",
+            "title_override": "Sheets",
+            "description": "Add breathable layers for nightly comfort.",
+            "cta_label": "Explore ->",
+            "link": ""
           }
         },
-        "environment_5": {
-          "type": "environment_item",
+        "collection_5": {
+          "type": "collection_card",
           "settings": {
-            "image": "",
-            "icon": "lock",
-            "title": "Protectors",
-            "short_text": "Help keep the setup fresh, clean, and covered.",
-            "optional_link": "shopify://collections/bedding"
+            "collection": "shopify://collections/bedding",
+            "image_override": "",
+            "title_override": "Protectors",
+            "description": "Help keep your setup fresh and protected.",
+            "cta_label": "Explore ->",
+            "link": ""
           }
         },
-        "environment_6": {
-          "type": "environment_item",
+        "collection_6": {
+          "type": "collection_card",
           "settings": {
-            "image": "",
-            "icon": "ruler",
-            "title": "Furniture",
-            "short_text": "Finish the room around how you sleep and wake.",
-            "optional_link": "shopify://collections/furniture"
-          }
-        },
-        "environment_7": {
-          "type": "environment_item",
-          "settings": {
-            "image": "",
-            "icon": "lightning_bolt",
-            "title": "Lighting",
-            "short_text": "Create a calmer rhythm for winding down.",
-            "optional_link": ""
-          }
-        },
-        "environment_8": {
-          "type": "environment_item",
-          "settings": {
-            "image": "",
-            "icon": "star",
-            "title": "Sound",
-            "short_text": "Shape the room with fewer distractions at night.",
-            "optional_link": ""
+            "collection": "shopify://collections/furniture",
+            "image_override": "",
+            "title_override": "Furniture",
+            "description": "Finish the room around your sleep environment.",
+            "cta_label": "Explore ->",
+            "link": ""
           }
         }
       },
       "block_order": [
-        "environment_1",
-        "environment_2",
-        "environment_3",
-        "environment_4",
-        "environment_5",
-        "environment_6",
-        "environment_7",
-        "environment_8"
+        "collection_1",
+        "collection_2",
+        "collection_3",
+        "collection_4",
+        "collection_5",
+        "collection_6"
       ],
       "settings": {
         "heading": "More Than A Mattress",
-        "subheading": "Your SnoozePod is the complete sleep environment around you — mattress, base, pillows, sheets, protection, lighting, sound, and comfort details.",
-        "cta_label": "Explore The Full Setup",
+        "subheading": "A SnoozePod is your full sleep setup - mattress, base, pillows, sheets, protection, and the pieces that complete your room.",
+        "cta_label": "Explore Our Collections",
         "cta_link": "",
         "color_scheme": "scheme-1",
         "padding_top": 32,
@@ -449,9 +433,8 @@
     "featured_collection_666q7i",
     "image_with_text_wUxjfL",
     "snoozepod_environment_GYx7gN",
-    "snoozepod_category_tiles_P3rqvB",
     "snoozer_guidance_panel_J4mzcT",
-    "snoozepod_trust_strip_F6kqDr",
-    "snoozepod_final_build_cta_K8nqLs"
+    "snoozepod_final_build_cta_K8nqLs",
+    "snoozepod_trust_strip_F6kqDr"
   ]
 }
