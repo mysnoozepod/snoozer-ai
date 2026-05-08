@@ -482,7 +482,24 @@
   }
 
   @media screen and (min-width: 990px) {
-    {%- if section.id == 'how-it-works' -%}
+    {%- if is_value_strip -%}
+      .section-{{ section.id }}-padding {
+        max-width: 144rem;
+        padding-top: 72px !important;
+        padding-bottom: 64px !important;
+        padding-left: 64px;
+        padding-right: 64px;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-list {
+        gap: 2.8rem;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-card {
+        padding: 2.8rem 2.6rem;
+      }
+
+    {%- elsif section.id == 'how-it-works' -%}
       .section-{{ section.id }}-padding .multicolumn__title {
         margin-bottom: 2rem;
       }
@@ -490,6 +507,15 @@
     {%- elsif section.id == 'why-guided-benefits' -%}
       .section-{{ section.id }}-padding {
         padding-bottom: 8rem !important;
+      }
+    {%- endif -%}
+  }
+
+  @media screen and (min-width: 1440px) {
+    {%- if is_value_strip -%}
+      .section-{{ section.id }}-padding {
+        padding-left: 72px;
+        padding-right: 72px;
       }
     {%- endif -%}
   }

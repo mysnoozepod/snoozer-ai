@@ -327,8 +327,14 @@
         margin-bottom: var(--sp-6);
       }
 
+      .homepage-shelf-section--featured .section-{{ section.id }}-padding {
+        padding-top: 64px !important;
+        padding-bottom: 72px !important;
+      }
+
       .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__inner {
-        padding-inline: var(--page-padding-desktop);
+        width: min(100%, var(--wide-content-max));
+        padding-inline: 64px;
       }
 
       .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__title {
@@ -341,11 +347,15 @@
 
       .section-{{ section.id }}-padding .homepage-shelf__grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: var(--sp-5);
+        gap: 32px;
       }
 
       .section-{{ section.id }}-padding .homepage-shelf-card {
-        padding: var(--card-padding-desktop);
+        min-height: 390px;
+        max-height: 420px;
+        padding: 32px;
+        border: 1px solid rgba(10, 25, 55, 0.10);
+        border-radius: 18px;
       }
 
       .section-{{ section.id }}-padding .homepage-shelf-card:hover {
@@ -354,7 +364,13 @@
       }
 
       .section-{{ section.id }}-padding .homepage-shelf-card__media {
-        height: var(--product-image-height-desktop);
+        height: 190px;
+        border-radius: 16px;
+      }
+
+      .section-{{ section.id }}-padding .homepage-shelf-card__body {
+        gap: 8px;
+        padding-top: 18px;
       }
 
       .section-{{ section.id }}-padding .homepage-shelf-card__title {
@@ -366,8 +382,13 @@
         font-size: var(--body-desktop);
       }
 
+      .section-{{ section.id }}-padding .homepage-shelf__footer {
+        margin-top: 40px;
+      }
+
       .section-{{ section.id }}-padding .homepage-shelf__section-cta {
-        min-height: var(--button-height-desktop);
+        width: min(100%, 420px);
+        min-height: 64px;
         font-size: var(--body-desktop);
       }
     {%- elsif section.id == 'showroom' -%}
@@ -379,6 +400,14 @@
       .section-{{ section.id }}-padding .homepage-showroom {
         grid-template-columns: minmax(0, 1fr) minmax(32rem, 48rem);
         gap: 4.8rem;
+      }
+    {%- endif -%}
+  }
+
+  @media screen and (min-width: 1440px) {
+    {%- if section.id == 'full-product-section' or section.id contains 'featured_collection_666q7i' or section.settings.custom_liquid contains '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' -%}
+      .section-{{ section.id }}-padding .homepage-shelf--full .homepage-shelf__inner {
+        padding-inline: 72px;
       }
     {%- endif -%}
   }

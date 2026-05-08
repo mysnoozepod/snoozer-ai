@@ -103,36 +103,73 @@
 
   @media screen and (min-width: 990px) {
     .snoozepod-final-cta-{{ section.id }} {
-      padding-left: var(--page-padding-desktop);
-      padding-right: var(--page-padding-desktop);
+      width: min(100%, var(--wide-content-max));
+      padding-left: 64px;
+      padding-right: 64px;
+    }
+
+    body.template-index #MainContent .snoozepod-final-cta-section.section {
+      margin-top: 0;
+    }
+
+    .section-{{ section.id }}-padding {
+      padding-top: 64px !important;
+      padding-bottom: 56px !important;
     }
 
     .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__card {
-      padding: 32px 40px;
+      display: flex;
+      align-items: center;
+      min-height: 300px;
+      max-height: 360px;
+      padding: 64px;
+      border-radius: 28px;
     }
 
     .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__heading {
-      font-size: 40px;
+      max-width: 620px;
+      font-size: 48px;
+      line-height: 1.02;
     }
 
     .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__subheading {
+      max-width: 700px;
+      margin-top: 18px;
       font-size: var(--body-desktop);
     }
 
     .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions {
-      grid-template-columns: repeat(2, minmax(0, auto));
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
       justify-content: start;
+      margin-top: 34px;
     }
 
     .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button {
       width: auto;
-      min-width: 24rem;
-      min-height: var(--button-height-desktop);
+      min-height: 60px;
+      font-size: var(--body-desktop);
+    }
+
+    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button--primary {
+      min-width: 300px;
+    }
+
+    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button--secondary {
+      min-width: 280px;
+    }
+  }
+
+  @media screen and (min-width: 1440px) {
+    .snoozepod-final-cta-{{ section.id }} {
+      padding-left: 72px;
+      padding-right: 72px;
     }
   }
 {%- endstyle -%}
 
-<section class="section color-{{ section.settings.color_scheme }} gradient">
+<section class="section color-{{ section.settings.color_scheme }} gradient snoozepod-final-cta-section">
   <div class="section-{{ section.id }}-padding">
     <div class="snoozepod-final-cta-{{ section.id }}">
       <div class="snoozepod-final-cta__card">
@@ -218,7 +255,7 @@
       "type": "text",
       "id": "primary_cta_label",
       "label": "Primary CTA label",
-      "default": "Start Building Your Setup"
+      "default": "Start Building Your Sleep Environment"
     },
     {
       "type": "url",

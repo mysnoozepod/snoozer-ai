@@ -13,7 +13,7 @@
       "type": "snooze-hero",
       "settings": {
         "heading": "Find The Right Mattress Without The Guesswork",
-        "subtext": "Shop online or visit our unmanned showroom for a calmer way to choose your sleep setup.",
+        "subtext": "Shop online or visit our unmanned showroom for a calmer way to choose your sleep environment.",
         "primary_cta_label": "Book a Snooze Session",
         "primary_cta_link": "shopify://pages/booking-a-snooze-session",
         "secondary_cta_label": "Shop Mattresses",
@@ -266,7 +266,7 @@
       "settings": {
         "heading": "Build Your SnoozePod",
         "subheading": "Create a sleep environment built around how you rest, recover, cool down, and wake up.",
-        "primary_cta_label": "Start Building Your Setup",
+        "primary_cta_label": "Start Building Your Sleep Environment",
         "primary_cta_link": "",
         "secondary_cta_label": "Plan It With Snoozer",
         "secondary_cta_link": "",

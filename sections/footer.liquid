@@ -25,6 +25,13 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  @media screen and (min-width: 990px) {
+    body.template-index .footer .footer__content-bottom {
+      padding-top: 28px;
+      padding-bottom: 28px;
+    }
+  }
 {%- endstyle -%}
 
 <footer class="footer color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">

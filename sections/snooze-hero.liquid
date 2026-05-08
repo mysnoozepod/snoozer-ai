@@ -146,36 +146,64 @@
 
   @media screen and (min-width: 990px) {
     .snooze-hero-{{ section.id }} {
-      min-height: var(--hero-height-desktop);
+      min-height: 560px;
+    }
+
+    .snooze-hero-{{ section.id }}::before {
+      background:
+        linear-gradient(90deg, rgba(7, 26, 68, 0.82) 0%, rgba(7, 26, 68, 0.52) 34%, rgba(7, 26, 68, 0.16) 68%, rgba(7, 26, 68, 0.05) 100%),
+        linear-gradient(180deg, rgba(7, 26, 68, 0.08) 0%, rgba(7, 26, 68, 0.2) 100%);
+    }
+
+    .snooze-hero-{{ section.id }} .snooze-hero__image {
+      object-position: center center;
     }
 
     .snooze-hero-{{ section.id }} .snooze-hero__inner {
-      min-height: var(--hero-height-desktop);
+      width: min(100%, var(--wide-content-max));
+      min-height: 560px;
       align-items: center;
-      padding-top: var(--sp-8);
-      padding-bottom: var(--sp-8);
-      padding-left: var(--page-padding-desktop);
-      padding-right: var(--page-padding-desktop);
+      padding-top: 72px;
+      padding-bottom: 72px;
+      padding-left: 64px;
+      padding-right: 64px;
     }
 
     .snooze-hero-{{ section.id }} .snooze-hero__content {
-      width: min(100%, 56rem);
-      max-width: 56rem;
+      width: min(100%, 620px);
+      max-width: 620px;
     }
 
     .snooze-hero-{{ section.id }} .snooze-hero__heading {
-      font-size: var(--h1-desktop);
+      max-width: 620px;
+      font-size: clamp(52px, 5vw, 78px);
       line-height: 0.96;
     }
 
     .snooze-hero-{{ section.id }} .snooze-hero__subtext {
-      max-width: 46rem;
+      max-width: 540px;
+      margin-top: 22px;
       font-size: var(--body-desktop);
     }
 
+    .snooze-hero-{{ section.id }} .snooze-hero__actions {
+      gap: 18px;
+      margin-top: 32px;
+    }
+
     .snooze-hero-{{ section.id }} .snooze-hero__actions .button {
-      min-height: var(--button-height-desktop);
+      min-width: 240px;
+      min-height: 64px;
+      padding-left: 32px;
+      padding-right: 32px;
       font-size: var(--body-desktop);
+    }
+  }
+
+  @media screen and (min-width: 1440px) {
+    .snooze-hero-{{ section.id }} .snooze-hero__inner {
+      padding-left: 72px;
+      padding-right: 72px;
     }
   }
 {%- endstyle -%}
@@ -271,7 +299,7 @@
       "type": "textarea",
       "id": "subtext",
       "label": "Subtext",
-      "default": "Short supporting text."
+      "default": "Shop online or visit our unmanned showroom for a calmer way to choose your sleep environment."
     },
     {
       "type": "text",

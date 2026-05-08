@@ -149,12 +149,23 @@
 
   @media screen and (min-width: 990px) {
     .snoozepod-environment-{{ section.id }} {
-      padding-left: var(--page-padding-desktop);
-      padding-right: var(--page-padding-desktop);
+      width: min(100%, var(--wide-content-max));
+      padding-left: 64px;
+      padding-right: 64px;
+    }
+
+    body.template-index #MainContent .snoozepod-environment-section.section {
+      margin-top: 0;
+    }
+
+    .section-{{ section.id }}-padding {
+      padding-top: 64px !important;
+      padding-bottom: 72px !important;
     }
 
     .snoozepod-environment-{{ section.id }} .snoozepod-environment__header {
-      margin-bottom: var(--sp-6);
+      max-width: 760px;
+      margin-bottom: 34px;
     }
 
     .snoozepod-environment-{{ section.id }} .snoozepod-environment__heading {
@@ -162,32 +173,67 @@
     }
 
     .snoozepod-environment-{{ section.id }} .snoozepod-environment__subheading {
+      max-width: 760px;
       font-size: var(--body-desktop);
     }
 
+    .snoozepod-environment-{{ section.id }} .snoozepod-environment__grid {
+      gap: 28px;
+    }
+
     .snoozepod-environment-{{ section.id }} .snoozepod-environment__card {
-      padding: var(--card-padding-desktop);
+      gap: 0;
+      min-height: 330px;
+      max-height: 360px;
+      padding: 28px 30px;
+      border: 1px solid rgba(10, 25, 55, 0.10);
     }
 
     .snoozepod-environment-{{ section.id }} .snoozepod-environment__media {
-      height: calc(var(--category-image-height-mobile) + var(--sp-6));
+      height: 150px;
+    }
+
+    .snoozepod-environment-{{ section.id }} .snoozepod-environment__copy {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
     }
 
     .snoozepod-environment-{{ section.id }} .snoozepod-environment__title {
+      margin: 22px 0 0;
       font-size: var(--h3-desktop);
     }
 
     .snoozepod-environment-{{ section.id }} .snoozepod-environment__description {
+      margin-top: 8px;
       font-size: var(--body-mobile);
     }
 
     .snoozepod-environment-{{ section.id }} .snoozepod-environment__cta {
-      min-height: var(--button-height-desktop);
+      width: min(100%, 440px);
+      min-height: 64px;
+      font-size: var(--body-desktop);
+    }
+
+    .snoozepod-environment-{{ section.id }} .snoozepod-environment__link {
+      margin-top: auto;
+      padding-top: 22px;
+    }
+
+    .snoozepod-environment-{{ section.id }} .snoozepod-environment__footer {
+      margin-top: 42px;
+    }
+  }
+
+  @media screen and (min-width: 1440px) {
+    .snoozepod-environment-{{ section.id }} {
+      padding-left: 72px;
+      padding-right: 72px;
     }
   }
 {%- endstyle -%}
 
-<section class="section color-{{ section.settings.color_scheme }} gradient">
+<section class="section color-{{ section.settings.color_scheme }} gradient snoozepod-environment-section">
   <div class="section-{{ section.id }}-padding">
     <div class="snoozepod-environment-{{ section.id }}">
       <div class="snoozepod-environment__header">
@@ -299,7 +345,7 @@
       "type": "textarea",
       "id": "subheading",
       "label": "Subheading",
-      "default": "A SnoozePod is your full sleep setup - mattress, base, pillows, sheets, protection, and the pieces that complete your room."
+      "default": "A SnoozePod brings your full sleep environment together: mattress, base, pillows, sheets, protection, and the pieces that complete your room."
     },
     {
       "type": "text",
@@ -373,7 +419,7 @@
           "type": "text",
           "id": "cta_label",
           "label": "CTA label",
-          "default": "Explore ->"
+          "default": "Explore"
         },
         {
           "type": "url",

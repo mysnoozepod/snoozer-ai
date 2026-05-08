@@ -86,32 +86,76 @@
 
   @media screen and (min-width: 990px) {
     .snoozepod-trust-strip-{{ section.id }} {
-      padding-left: var(--page-padding-desktop);
-      padding-right: var(--page-padding-desktop);
+      width: min(100%, var(--wide-content-max));
+      padding-left: 64px;
+      padding-right: 64px;
+    }
+
+    body.template-index #MainContent .snoozepod-trust-strip-section.section {
+      margin-top: 24px;
+      margin-bottom: 48px;
+    }
+
+    .section-{{ section.id }}-padding {
+      padding-top: 32px !important;
+      padding-bottom: 48px !important;
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__panel {
-      padding: var(--card-padding-desktop);
+      padding: 32px 40px;
+      border-radius: 22px;
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: var(--sp-4);
+      gap: 24px;
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item {
-      padding-right: var(--sp-4);
-      border-right: 1px solid rgba(8, 25, 55, 0.08);
+      position: relative;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+      padding-right: 24px;
+      border-right: 0;
+    }
+
+    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: 1px;
+      height: 48px;
+      transform: translateY(-50%);
+      background: rgba(10, 25, 55, 0.12);
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item:last-child {
-      border-right: 0;
       padding-right: 0;
+    }
+
+    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__icon {
+      width: 48px;
+      height: 48px;
+    }
+
+    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__icon .svg-wrapper,
+    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__icon svg {
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  @media screen and (min-width: 1440px) {
+    .snoozepod-trust-strip-{{ section.id }} {
+      padding-left: 72px;
+      padding-right: 72px;
     }
   }
 {%- endstyle -%}
 
-<section class="section color-{{ section.settings.color_scheme }} gradient">
+<section class="section color-{{ section.settings.color_scheme }} gradient snoozepod-trust-strip-section">
   <div class="section-{{ section.id }}-padding">
     <div class="snoozepod-trust-strip-{{ section.id }}">
       <div class="snoozepod-trust-strip__panel">

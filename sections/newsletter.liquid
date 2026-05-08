@@ -1,6 +1,13 @@
 {{ 'component-newsletter.css' | asset_url | stylesheet_tag }}
 {{ 'newsletter-section.css' | asset_url | stylesheet_tag }}
 
+{%- liquid
+  assign is_footer_newsletter = false
+  if section.id == 'newsletter' or section.id contains 'newsletter'
+    assign is_footer_newsletter = true
+  endif
+-%}
+
 {%- style -%}
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
@@ -39,6 +46,48 @@
       }
     {%- endif -%}
   }
+
+  {%- if is_footer_newsletter -%}
+    @media screen and (min-width: 990px) {
+      body.template-index #shopify-section-{{ section.id }} .newsletter__wrapper.section-{{ section.id }}-padding {
+        max-width: min(100%, var(--wide-content-max));
+        margin: 0 auto;
+        padding-top: 72px !important;
+        padding-bottom: 72px !important;
+        padding-left: 64px;
+        padding-right: 64px;
+      }
+
+      body.template-index #shopify-section-{{ section.id }} .newsletter__wrapper h2.inline-richtext {
+        font-size: 44px;
+        line-height: 1.08;
+      }
+
+      body.template-index #shopify-section-{{ section.id }} .newsletter__wrapper > * + * {
+        margin-top: 14px;
+      }
+
+      body.template-index #shopify-section-{{ section.id }} .newsletter__wrapper > .newsletter__subheading + div {
+        margin-top: 28px;
+      }
+
+      body.template-index #shopify-section-{{ section.id }} .newsletter__subheading {
+        max-width: 72rem;
+      }
+
+      body.template-index #shopify-section-{{ section.id }} .newsletter-form,
+      body.template-index #shopify-section-{{ section.id }} .newsletter-form__field-wrapper {
+        max-width: 520px;
+      }
+    }
+
+    @media screen and (min-width: 1440px) {
+      body.template-index #shopify-section-{{ section.id }} .newsletter__wrapper.section-{{ section.id }}-padding {
+        padding-left: 72px;
+        padding-right: 72px;
+      }
+    }
+  {%- endif -%}
 {%- endstyle -%}
 
 <div class="newsletter center {% if section.settings.full_width == false %}newsletter--narrow page-width{% endif %}">
