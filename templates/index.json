@@ -143,7 +143,7 @@
             "collection": "mattresses",
             "title_override": "Mattresses",
             "description": "Find your comfort and support starting point.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         },
@@ -153,7 +153,7 @@
             "collection": "bases",
             "title_override": "Bases",
             "description": "Add elevation, adjustability, and recovery support.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         },
@@ -163,7 +163,7 @@
             "collection": "pillows",
             "title_override": "Pillows",
             "description": "Support your neck, shoulders, and sleep position.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         },
@@ -173,7 +173,7 @@
             "collection": "sheet-sets",
             "title_override": "Sheet Sets",
             "description": "Add breathable layers for nightly comfort.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         },
@@ -183,7 +183,7 @@
             "collection": "mattress-toppers",
             "title_override": "Mattress Toppers",
             "description": "Add comfort, pressure relief, and a refreshed feel.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         },
@@ -193,7 +193,7 @@
             "collection": "furniture",
             "title_override": "Furniture",
             "description": "Finish the room around your sleep environment.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         }
@@ -208,12 +208,12 @@
       ],
       "settings": {
         "heading": "More Than A Mattress",
-        "subheading": "Your SnoozePod is the complete sleep setup around you ? mattress, base, pillows, sheets, protection, and the pieces that complete your room.",
+        "subheading": "Your SnoozePod is the complete sleep setup around you - mattress, base, pillows, sheets, protection, and the pieces that complete your room.",
         "cta_label": "Explore Our Collections",
         "cta_link": "",
         "color_scheme": "scheme-1",
         "padding_top": 32,
-        "padding_bottom": 12
+        "padding_bottom": 4
       }
     },
     "snoozer_guidance_panel_J4mzcT": {
@@ -257,8 +257,8 @@
         "cta_link": "",
         "use_snoozer_trigger": true,
         "color_scheme": "scheme-1",
-        "padding_top": 8,
-        "padding_bottom": 12
+        "padding_top": 0,
+        "padding_bottom": 4
       }
     },
     "snoozepod_final_build_cta_K8nqLs": {
@@ -272,8 +272,8 @@
         "secondary_cta_link": "",
         "use_snoozer_trigger_secondary": true,
         "color_scheme": "scheme-1",
-        "padding_top": 8,
-        "padding_bottom": 28
+        "padding_top": 0,
+        "padding_bottom": 20
       }
     },
     "snoozepod_trust_strip_F6kqDr": {
@@ -320,7 +320,7 @@
       ],
       "settings": {
         "color_scheme": "scheme-1",
-        "padding_top": 8,
+        "padding_top": 0,
         "padding_bottom": 4
       }
     }
