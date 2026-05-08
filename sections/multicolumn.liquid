@@ -485,8 +485,8 @@
     {%- if is_value_strip -%}
       .section-{{ section.id }}-padding {
         max-width: 144rem;
-        padding-top: 72px !important;
-        padding-bottom: 72px !important;
+        padding-top: 64px !important;
+        padding-bottom: 64px !important;
         padding-left: 64px;
         padding-right: 64px;
       }
@@ -497,8 +497,10 @@
         column-gap: 64px;
         row-gap: 0;
         align-items: start;
+        width: 100%;
         justify-content: center;
         overflow: visible;
+        padding-bottom: 0;
       }
 
       .section-{{ section.id }}-padding .multicolumn-list__item {
@@ -514,8 +516,8 @@
         align-items: center;
         width: 100%;
         max-width: 360px;
-        height: 100%;
-        min-height: auto;
+        height: auto;
+        min-height: 0;
         padding: 32px 28px;
         border-radius: 24px;
         margin-left: auto;
@@ -565,6 +567,7 @@
         margin: 0 auto;
         font-size: 20px;
         line-height: 1.45;
+        text-align: center;
       }
 
       .section-{{ section.id }}-padding .multicolumn-card__info .rte p {

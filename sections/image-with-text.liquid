@@ -126,14 +126,25 @@
 
       .section-{{ section.id }}-padding .image-with-text__grid {
         display: grid;
-        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+        grid-template-columns: minmax(0, 0.95fr) minmax(520px, 1.05fr);
         align-items: center;
         column-gap: 72px;
+        width: 100%;
+      }
+
+      .section-{{ section.id }}-padding .image-with-text__media-item {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .section-{{ section.id }}-padding .image-with-text__text-item {
+        width: 100%;
+        min-width: 520px;
       }
 
       .section-{{ section.id }}-padding .image-with-text__media {
         width: 100%;
-        height: auto;
+        height: 520px;
         min-height: 0;
         max-height: 520px;
         padding-bottom: 0 !important;
@@ -149,27 +160,41 @@
       }
 
       .section-{{ section.id }}-padding .image-with-text__content {
+        width: 100%;
+        min-width: 520px;
         min-height: auto;
-        max-width: 640px;
+        max-width: 680px;
         padding: 40px 44px;
         border-radius: 0 28px 28px 0;
+        justify-self: start;
         align-self: center;
+        overflow: visible;
+        text-align: left;
+        display: block;
       }
 
       .section-{{ section.id }}-padding .image-with-text__heading {
-        max-width: 620px;
+        display: block;
+        width: 100%;
+        max-width: 680px;
         margin: 0 0 28px;
         font-size: clamp(44px, 4.2vw, 64px);
         line-height: 1.08;
         font-weight: 700;
         letter-spacing: -0.03em;
+        white-space: normal;
+        word-break: normal;
+        overflow-wrap: normal;
+        text-align: left;
       }
 
       .section-{{ section.id }}-padding .image-with-text__text.rte {
+        width: 100%;
         max-width: 620px;
         margin: 0;
         font-size: 21px;
         line-height: 1.45;
+        text-align: left;
       }
 
       .section-{{ section.id }}-padding .image-with-text__text.rte > p {
@@ -181,6 +206,8 @@
         padding-left: 28px;
         font-size: 20px;
         line-height: 1.55;
+        max-width: 620px;
+        text-align: left;
       }
 
       .section-{{ section.id }}-padding .image-with-text__text.rte li + li {
@@ -188,13 +215,21 @@
       }
 
       .section-{{ section.id }}-padding .image-with-text__content .button {
+        display: inline-flex;
+        align-items: center;
         width: fit-content;
         min-width: 360px;
+        max-width: none;
         min-height: 64px;
+        padding-left: 40px;
+        padding-right: 40px;
         justify-content: center;
         border-radius: 8px;
         font-size: 20px;
         font-weight: 700;
+        white-space: nowrap;
+        overflow: visible;
+        text-align: center;
       }
     }
 
