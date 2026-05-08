@@ -141,9 +141,9 @@
           "type": "collection_card",
           "settings": {
             "collection": "bases",
-            "title_override": "",
-            "description": "Short supporting description.",
-            "cta_label": "Explore ->",
+            "title_override": "Bases",
+            "description": "Add elevation, adjustability, and recovery support.",
+            "cta_label": "Explore ?",
             "link": ""
           }
         },
@@ -151,9 +151,9 @@
           "type": "collection_card",
           "settings": {
             "collection": "pillows",
-            "title_override": "",
-            "description": "Short supporting description.",
-            "cta_label": "Explore ->",
+            "title_override": "Pillows",
+            "description": "Support your neck, shoulders, and sleep position.",
+            "cta_label": "Explore ?",
             "link": ""
           }
         },
@@ -161,9 +161,9 @@
           "type": "collection_card",
           "settings": {
             "collection": "sheet-sets",
-            "title_override": "",
-            "description": "Short supporting description.",
-            "cta_label": "Explore ->",
+            "title_override": "Sheet Sets",
+            "description": "Add breathable layers for nightly comfort.",
+            "cta_label": "Explore ?",
             "link": ""
           }
         },
@@ -171,9 +171,9 @@
           "type": "collection_card",
           "settings": {
             "collection": "mattress-toppers",
-            "title_override": "",
-            "description": "Short supporting description.",
-            "cta_label": "Explore ->",
+            "title_override": "Mattress Toppers",
+            "description": "Add comfort, pressure relief, and a refreshed feel.",
+            "cta_label": "Explore ?",
             "link": ""
           }
         },
@@ -181,9 +181,9 @@
           "type": "collection_card",
           "settings": {
             "collection": "furniture",
-            "title_override": "",
-            "description": "Short supporting description.",
-            "cta_label": "Explore ->",
+            "title_override": "Furniture",
+            "description": "Finish the room around your sleep environment.",
+            "cta_label": "Explore ?",
             "link": ""
           }
         },
@@ -191,25 +191,25 @@
           "type": "collection_card",
           "settings": {
             "collection": "mattresses",
-            "title_override": "",
-            "description": "Short supporting description.",
-            "cta_label": "Explore ->",
+            "title_override": "Mattresses",
+            "description": "Find your comfort and support starting point.",
+            "cta_label": "Explore ?",
             "link": ""
           }
         }
       },
       "block_order": [
+        "collection_card_Wx9PJa",
         "collection_card_zWHTDn",
         "collection_card_WaM9nN",
         "collection_card_bYkEkh",
         "collection_card_dFBGFW",
-        "collection_card_gK9axe",
-        "collection_card_Wx9PJa"
+        "collection_card_gK9axe"
       ],
       "settings": {
         "heading": "More Than A Mattress",
-        "subheading": "Your SnoozePod is the complete sleep environment around you — mattress, base, pillows, sheets, protection, lighting, sound, and comfort details.",
-        "cta_label": "Explore Sleep Products",
+        "subheading": "Your SnoozePod is the complete sleep setup around you ? mattress, base, pillows, sheets, protection, and the pieces that complete your room.",
+        "cta_label": "Explore Our Collections",
         "cta_link": "",
         "color_scheme": "scheme-1",
         "padding_top": 32,
@@ -269,7 +269,7 @@
           "settings": {
             "icon": "map_pin",
             "title": "Unmanned showroom",
-            "short_text": "Private, low-pressure showroom experience."
+            "short_text": "Private, low-pressure shopping."
           }
         },
         "trust_2": {
@@ -277,7 +277,7 @@
           "settings": {
             "icon": "question_mark",
             "title": "Virtual support",
-            "short_text": "Get help online when you need it."
+            "short_text": "Get help online."
           }
         },
         "trust_3": {
@@ -285,15 +285,15 @@
           "settings": {
             "icon": "stopwatch",
             "title": "Private sessions",
-            "short_text": "Try mattresses and bases at your pace."
+            "short_text": "Try products at your pace."
           }
         },
         "trust_4": {
           "type": "trust_item",
           "settings": {
             "icon": "box",
-            "title": "Sleep environment guidance",
-            "short_text": "Build beyond the mattress with focused support."
+            "title": "Sleep guidance",
+            "short_text": "Build beyond the mattress."
           }
         }
       },
