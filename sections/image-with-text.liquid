@@ -1,12 +1,19 @@
 {{ 'component-image-with-text.css' | asset_url | stylesheet_tag }}
 
+{%- liquid
+  assign is_showroom_conversion = false
+  if section.id == 'image_with_text_wUxjfL' or section.id contains 'image_with_text_wUxjfL'
+    assign is_showroom_conversion = true
+  endif
+-%}
+
 {%- style -%}
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
-  {%- if section.id == 'image_with_text_wUxjfL' -%}
+  {%- if is_showroom_conversion -%}
     @media screen and (max-width: 749px) {
       .section-{{ section.id }}-padding {
         padding-top: var(--sp-6) !important;
@@ -21,7 +28,7 @@
       .section-{{ section.id }}-padding .image-with-text {
         overflow: hidden;
         border: var(--card-border);
-        border-radius: var(--radius-xl);
+        border-radius: 20px;
         background: #ffffff;
         box-shadow: var(--card-shadow-soft);
       }
@@ -31,10 +38,10 @@
       }
 
       .section-{{ section.id }}-padding .image-with-text__media {
-        height: var(--showroom-image-height-mobile);
-        min-height: var(--showroom-image-height-mobile);
+        height: 190px;
+        min-height: 190px;
         padding-bottom: 0 !important;
-        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        border-radius: 20px 20px 0 0;
         background: #eef2f7;
       }
 
@@ -45,18 +52,16 @@
       }
 
       .section-{{ section.id }}-padding .image-with-text__content {
-        display: grid;
-        align-content: start;
-        gap: var(--sp-3);
+        display: block;
         min-height: auto;
         padding: 20px;
-        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+        border-radius: 0 0 20px 20px;
       }
 
       .section-{{ section.id }}-padding .image-with-text__heading {
-        margin: 0;
-        font-size: var(--h2-mobile);
-        line-height: 1.12;
+        margin: 0 0 var(--sp-3);
+        font-size: 26px;
+        line-height: 1.08;
         letter-spacing: -0.03em;
       }
 
@@ -67,12 +72,12 @@
       .section-{{ section.id }}-padding .image-with-text__text.rte p {
         margin: 0;
         font-size: var(--body-mobile);
-        line-height: 1.45;
+        line-height: 1.35;
       }
 
       .section-{{ section.id }}-padding .image-with-text__text.rte ul {
         display: grid;
-        gap: var(--sp-2);
+        gap: 8px;
         margin: var(--sp-4) 0 0;
         padding-left: 1.8rem;
       }
@@ -86,6 +91,7 @@
         width: 100%;
         min-height: var(--button-height-mobile);
         justify-content: center;
+        margin-top: 18px;
       }
     }
   {%- endif -%}
