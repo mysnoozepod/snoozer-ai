@@ -4,6 +4,11 @@
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
+  /* Tighten the final CTA -> trust transition on mobile without changing desktop rhythm. */
+  #shopify-section-{{ section.id }} .section-{{ section.id }}-padding {
+    padding-top: calc(var(--spacing-sections-mobile) - 24px) !important;
+  }
+
   .snoozepod-trust-strip-{{ section.id }} {
     width: min(100%, var(--content-max));
     margin: 0 auto;
