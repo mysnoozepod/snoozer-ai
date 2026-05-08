@@ -137,13 +137,23 @@
     "snoozepod_environment_GYx7gN": {
       "type": "snoozepod-environment",
       "blocks": {
+        "collection_card_Wx9PJa": {
+          "type": "collection_card",
+          "settings": {
+            "collection": "mattresses",
+            "title_override": "Mattresses",
+            "description": "Find your comfort and support starting point.",
+            "cta_label": "Explore",
+            "link": ""
+          }
+        },
         "collection_card_zWHTDn": {
           "type": "collection_card",
           "settings": {
             "collection": "bases",
             "title_override": "Bases",
             "description": "Add elevation, adjustability, and recovery support.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         },
@@ -153,7 +163,7 @@
             "collection": "pillows",
             "title_override": "Pillows",
             "description": "Support your neck, shoulders, and sleep position.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         },
@@ -163,7 +173,7 @@
             "collection": "sheet-sets",
             "title_override": "Sheet Sets",
             "description": "Add breathable layers for nightly comfort.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         },
@@ -173,7 +183,7 @@
             "collection": "mattress-toppers",
             "title_override": "Mattress Toppers",
             "description": "Add comfort, pressure relief, and a refreshed feel.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         },
@@ -183,17 +193,7 @@
             "collection": "furniture",
             "title_override": "Furniture",
             "description": "Finish the room around your sleep environment.",
-            "cta_label": "Explore ?",
-            "link": ""
-          }
-        },
-        "collection_card_Wx9PJa": {
-          "type": "collection_card",
-          "settings": {
-            "collection": "mattresses",
-            "title_override": "Mattresses",
-            "description": "Find your comfort and support starting point.",
-            "cta_label": "Explore ?",
+            "cta_label": "Explore",
             "link": ""
           }
         }
@@ -261,6 +261,21 @@
         "padding_bottom": 32
       }
     },
+    "snoozepod_final_build_cta_K8nqLs": {
+      "type": "snoozepod-final-build-cta",
+      "settings": {
+        "heading": "Build Your SnoozePod",
+        "subheading": "Create a sleep environment built around how you rest, recover, cool down, and wake up.",
+        "primary_cta_label": "Start Building Your Setup",
+        "primary_cta_link": "",
+        "secondary_cta_label": "Plan It With Snoozer",
+        "secondary_cta_link": "",
+        "use_snoozer_trigger_secondary": true,
+        "color_scheme": "scheme-1",
+        "padding_top": 24,
+        "padding_bottom": 48
+      }
+    },
     "snoozepod_trust_strip_F6kqDr": {
       "type": "snoozepod-trust-strip",
       "blocks": {
@@ -307,21 +322,6 @@
         "color_scheme": "scheme-1",
         "padding_top": 24,
         "padding_bottom": 24
-      }
-    },
-    "snoozepod_final_build_cta_K8nqLs": {
-      "type": "snoozepod-final-build-cta",
-      "settings": {
-        "heading": "Build Your SnoozePod",
-        "subheading": "Create a sleep environment built around how you rest, recover, cool down, and wake up.",
-        "primary_cta_label": "Start Building Your Setup",
-        "primary_cta_link": "",
-        "secondary_cta_label": "Plan It With Snoozer",
-        "secondary_cta_link": "",
-        "use_snoozer_trigger_secondary": true,
-        "color_scheme": "scheme-1",
-        "padding_top": 24,
-        "padding_bottom": 48
       }
     }
   },
