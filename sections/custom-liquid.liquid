@@ -4,7 +4,7 @@
   }
 
   .homepage-shelf-section--featured .section-{{ section.id }}-padding {
-    padding-top: var(--sp-6) !important;
+    padding-top: calc(var(--sp-6) - var(--sp-3)) !important;
     padding-bottom: var(--sp-6) !important;
   }
 
@@ -128,7 +128,7 @@
     }
   {%- elsif section.id == 'full-product-section' or section.id contains 'featured_collection_666q7i' or section.settings.custom_liquid contains '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' -%}
     .section-{{ section.id }}-padding {
-      padding-top: var(--sp-6) !important;
+      padding-top: calc(var(--sp-6) - var(--sp-3)) !important;
       padding-bottom: var(--sp-6) !important;
     }
 
