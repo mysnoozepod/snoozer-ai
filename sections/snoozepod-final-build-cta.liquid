@@ -1,0 +1,282 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  .snoozepod-final-cta-{{ section.id }} {
+    width: min(100%, var(--content-max));
+    margin: 0 auto;
+    padding-left: var(--page-padding-mobile);
+    padding-right: var(--page-padding-mobile);
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__card {
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
+    border-radius: var(--radius-xl);
+    background:
+      linear-gradient(135deg, rgba(7, 26, 68, 0.96) 0%, rgba(17, 36, 88, 0.92) 58%, rgba(32, 58, 128, 0.92) 100%);
+    color: #ffffff;
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 42%);
+    pointer-events: none;
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__media {
+    position: absolute;
+    inset: 0;
+    opacity: 0.2;
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__heading {
+    margin: 0;
+    color: #ffffff;
+    font-size: 28px;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__subheading {
+    margin: var(--sp-3) 0 0;
+    max-width: 56rem;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: var(--body-mobile);
+    line-height: 1.4;
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions {
+    display: grid;
+    gap: var(--sp-3);
+    margin-top: var(--sp-5);
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button {
+    width: 100%;
+    min-height: var(--button-height-mobile);
+    border-radius: var(--button-radius);
+    justify-content: center;
+    font-size: var(--body-mobile);
+    font-weight: 600;
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button--primary {
+    background: #ffffff;
+    color: rgb(var(--color-primary-navy));
+    border-color: #ffffff;
+  }
+
+  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button--secondary {
+    background: transparent;
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.7);
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+
+    .snoozepod-final-cta-{{ section.id }} {
+      padding-left: var(--page-padding-tablet);
+      padding-right: var(--page-padding-tablet);
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-final-cta-{{ section.id }} {
+      padding-left: var(--page-padding-desktop);
+      padding-right: var(--page-padding-desktop);
+    }
+
+    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__card {
+      padding: 32px 40px;
+    }
+
+    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__heading {
+      font-size: 40px;
+    }
+
+    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__subheading {
+      font-size: var(--body-desktop);
+    }
+
+    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions {
+      grid-template-columns: repeat(2, minmax(0, auto));
+      justify-content: start;
+    }
+
+    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button {
+      width: auto;
+      min-width: 24rem;
+      min-height: var(--button-height-desktop);
+    }
+  }
+{%- endstyle -%}
+
+<section class="section color-{{ section.settings.color_scheme }} gradient">
+  <div class="section-{{ section.id }}-padding">
+    <div class="snoozepod-final-cta-{{ section.id }}">
+      <div class="snoozepod-final-cta__card">
+        {%- if section.settings.background_image != blank -%}
+          <div class="snoozepod-final-cta__media" aria-hidden="true">
+            {{
+              section.settings.background_image
+              | image_url: width: 1600
+              | image_tag:
+                widths: '480, 720, 960, 1280, 1600',
+                sizes: '100vw',
+                loading: 'lazy',
+                alt: ''
+            }}
+          </div>
+        {%- endif -%}
+        <div class="snoozepod-final-cta__content">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="snoozepod-final-cta__heading">{{ section.settings.heading | escape }}</h2>
+          {%- endif -%}
+          {%- if section.settings.subheading != blank -%}
+            <p class="snoozepod-final-cta__subheading">{{ section.settings.subheading | escape }}</p>
+          {%- endif -%}
+          <div class="snoozepod-final-cta__actions">
+            {%- if section.settings.primary_cta_label != blank -%}
+              <a
+                class="button button--primary"
+                href="{% if section.settings.primary_cta_link != blank %}{{ section.settings.primary_cta_link }}{% else %}{{ routes.collections_url }}{% endif %}"
+              >
+                {{ section.settings.primary_cta_label | escape }}
+              </a>
+            {%- endif -%}
+            {%- if section.settings.secondary_cta_label != blank -%}
+              {%- if section.settings.use_snoozer_trigger_secondary or section.settings.secondary_cta_link == blank -%}
+                <button
+                  type="button"
+                  class="button button--secondary"
+                  data-snoozer-trigger
+                  data-snoozer-source="final-build-cta"
+                >
+                  {{ section.settings.secondary_cta_label | escape }}
+                </button>
+              {%- else -%}
+                <a class="button button--secondary" href="{{ section.settings.secondary_cta_link }}">
+                  {{ section.settings.secondary_cta_label | escape }}
+                </a>
+              {%- endif -%}
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "SnoozePod final CTA",
+  "class": "section",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Build Your SnoozePod"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Create a sleep environment built around how you rest, recover, cool down, and wake up."
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image"
+    },
+    {
+      "type": "text",
+      "id": "primary_cta_label",
+      "label": "Primary CTA label",
+      "default": "Start Building Your Setup"
+    },
+    {
+      "type": "url",
+      "id": "primary_cta_link",
+      "label": "Primary CTA link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_cta_label",
+      "label": "Secondary CTA label",
+      "default": "Plan It With Snoozer"
+    },
+    {
+      "type": "url",
+      "id": "secondary_cta_link",
+      "label": "Secondary CTA link"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_snoozer_trigger_secondary",
+      "label": "Use Snoozer trigger for secondary CTA",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "SnoozePod final CTA"
+    }
+  ]
+}
+{% endschema %}

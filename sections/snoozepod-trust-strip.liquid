@@ -1,0 +1,225 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  .snoozepod-trust-strip-{{ section.id }} {
+    width: min(100%, var(--content-max));
+    margin: 0 auto;
+    padding-left: var(--page-padding-mobile);
+    padding-right: var(--page-padding-mobile);
+  }
+
+  .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__panel {
+    padding: var(--card-padding-mobile);
+    border: var(--card-border);
+    border-radius: var(--radius-lg);
+    background: #ffffff;
+    box-shadow: var(--card-shadow-soft);
+  }
+
+  .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item {
+    display: grid;
+    grid-template-columns: 3.6rem minmax(0, 1fr);
+    gap: var(--sp-2);
+    align-items: start;
+  }
+
+  .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__icon {
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: var(--radius-pill);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2f7;
+    color: rgb(var(--color-primary-navy));
+  }
+
+  .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__icon .svg-wrapper,
+  .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__icon svg {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
+  .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__title {
+    margin: 0 0 2px;
+    color: rgb(var(--color-primary-navy));
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__text {
+    margin: 0;
+    color: rgba(var(--color-text-primary), 0.72);
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+
+    .snoozepod-trust-strip-{{ section.id }} {
+      padding-left: var(--page-padding-tablet);
+      padding-right: var(--page-padding-tablet);
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-trust-strip-{{ section.id }} {
+      padding-left: var(--page-padding-desktop);
+      padding-right: var(--page-padding-desktop);
+    }
+
+    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__panel {
+      padding: var(--card-padding-desktop);
+    }
+
+    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--sp-4);
+    }
+
+    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item {
+      padding-right: var(--sp-4);
+      border-right: 1px solid rgba(8, 25, 55, 0.08);
+    }
+
+    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item:last-child {
+      border-right: 0;
+      padding-right: 0;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section color-{{ section.settings.color_scheme }} gradient">
+  <div class="section-{{ section.id }}-padding">
+    <div class="snoozepod-trust-strip-{{ section.id }}">
+      <div class="snoozepod-trust-strip__panel">
+        <ul class="snoozepod-trust-strip__grid" role="list">
+          {%- for block in section.blocks -%}
+            <li class="snoozepod-trust-strip__item" {{ block.shopify_attributes }}>
+              {%- if block.settings.icon != blank and block.settings.icon != 'none' -%}
+                <span class="snoozepod-trust-strip__icon">
+                  {% render 'icon-accordion', icon: block.settings.icon %}
+                </span>
+              {%- endif -%}
+              <div>
+                {%- if block.settings.title != blank -%}
+                  <h3 class="snoozepod-trust-strip__title">{{ block.settings.title | escape }}</h3>
+                {%- endif -%}
+                {%- if block.settings.short_text != blank -%}
+                  <p class="snoozepod-trust-strip__text">{{ block.settings.short_text | escape }}</p>
+                {%- endif -%}
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "SnoozePod trust strip",
+  "class": "section",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 32
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust_item",
+      "name": "Trust item",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "map_pin",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "map_pin", "label": "Map pin" },
+            { "value": "question_mark", "label": "Question mark" },
+            { "value": "stopwatch", "label": "Stopwatch" },
+            { "value": "box", "label": "Box" },
+            { "value": "check_mark", "label": "Check mark" },
+            { "value": "silhouette", "label": "Silhouette" },
+            { "value": "heart", "label": "Heart" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Trust title"
+        },
+        {
+          "type": "textarea",
+          "id": "short_text",
+          "label": "Short text",
+          "default": "Short supporting detail."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "SnoozePod trust strip",
+      "blocks": [
+        { "type": "trust_item" },
+        { "type": "trust_item" },
+        { "type": "trust_item" },
+        { "type": "trust_item" }
+      ]
+    }
+  ]
+}
+{% endschema %}

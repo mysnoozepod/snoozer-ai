@@ -1,0 +1,406 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} {
+    width: min(100%, var(--content-max));
+    margin: 0 auto;
+    padding-left: var(--page-padding-mobile);
+    padding-right: var(--page-padding-mobile);
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__header {
+    display: grid;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-5);
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__heading {
+    margin: 0;
+    color: rgb(var(--color-primary-navy));
+    font-size: var(--h2-mobile);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__subheading {
+    margin: 0;
+    max-width: 68rem;
+    color: rgba(var(--color-text-primary), 0.78);
+    font-size: var(--body-mobile);
+    line-height: 1.4;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__subheading p {
+    margin: 0;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    height: 100%;
+    min-height: 100%;
+    padding: var(--card-padding-mobile);
+    border: var(--card-border);
+    border-radius: var(--radius-lg);
+    background: #ffffff;
+    box-shadow: var(--card-shadow-soft);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__media {
+    height: var(--category-image-height-mobile);
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, #faf7f2 0%, #ffffff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__icon {
+    width: 4.8rem;
+    height: 4.8rem;
+    border-radius: var(--radius-pill);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2f7;
+    color: rgb(var(--color-primary-navy));
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__icon .svg-wrapper,
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__icon svg {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__title {
+    margin: 0 0 var(--sp-1);
+    color: rgb(var(--color-primary-navy));
+    font-size: 16px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__description {
+    margin: 0;
+    color: rgba(var(--color-text-primary), 0.74);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    margin-top: auto;
+    padding-top: var(--sp-2);
+    color: rgb(var(--color-primary-navy));
+    font-size: var(--small-text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__footer {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--sp-5);
+  }
+
+  .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__cta {
+    width: min(100%, 32rem);
+    min-height: var(--button-height-mobile);
+    border-radius: var(--button-radius);
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+
+    .snoozepod-category-tiles-{{ section.id }} {
+      padding-left: var(--page-padding-tablet);
+      padding-right: var(--page-padding-tablet);
+    }
+
+    .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (min-width: 1200px) {
+    .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-category-tiles-{{ section.id }} {
+      padding-left: var(--page-padding-desktop);
+      padding-right: var(--page-padding-desktop);
+    }
+
+    .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__heading {
+      font-size: var(--h2-desktop);
+    }
+
+    .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__subheading {
+      font-size: var(--body-desktop);
+    }
+
+    .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__card {
+      padding: var(--card-padding-desktop);
+    }
+
+    .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__title {
+      font-size: 18px;
+    }
+
+    .snoozepod-category-tiles-{{ section.id }} .snoozepod-category-tiles__description {
+      font-size: 14px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section color-{{ section.settings.color_scheme }} gradient">
+  <div class="section-{{ section.id }}-padding">
+    <div class="snoozepod-category-tiles-{{ section.id }}">
+      <div class="snoozepod-category-tiles__header">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="snoozepod-category-tiles__heading">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <div class="snoozepod-category-tiles__subheading rte">
+            <p>{{ section.settings.subheading | escape }}</p>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <ul class="snoozepod-category-tiles__grid" role="list">
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign tile_url = block.settings.link
+            assign tile_image = block.settings.image
+            if block.settings.collection != blank
+              assign tile_url = block.settings.collection.url
+              if tile_image == blank and block.settings.collection.featured_image != blank
+                assign tile_image = block.settings.collection.featured_image
+              endif
+            endif
+          -%}
+          <li {{ block.shopify_attributes }}>
+            {%- if tile_url != blank -%}
+              <a class="snoozepod-category-tiles__card" href="{{ tile_url }}">
+            {%- else -%}
+              <div class="snoozepod-category-tiles__card">
+            {%- endif -%}
+                <div class="snoozepod-category-tiles__media">
+                  {%- if tile_image != blank -%}
+                    {{
+                      tile_image
+                      | image_url: width: 240
+                      | image_tag:
+                        widths: '144, 200, 240, 320',
+                        sizes: '(min-width: 1200px) 180px, (min-width: 750px) 240px, calc((100vw - 64px) / 2)',
+                        loading: 'lazy',
+                        alt: block.settings.title | escape
+                    }}
+                  {%- elsif block.settings.icon != blank and block.settings.icon != 'none' -%}
+                    <span class="snoozepod-category-tiles__icon">
+                      {% render 'icon-accordion', icon: block.settings.icon %}
+                    </span>
+                  {%- endif -%}
+                </div>
+                <div class="snoozepod-category-tiles__copy">
+                  {%- if block.settings.title != blank -%}
+                    <h3 class="snoozepod-category-tiles__title">{{ block.settings.title | escape }}</h3>
+                  {%- endif -%}
+                  {%- if block.settings.description != blank -%}
+                    <p class="snoozepod-category-tiles__description">{{ block.settings.description | escape }}</p>
+                  {%- endif -%}
+                </div>
+                {%- if block.settings.cta_label != blank and tile_url != blank -%}
+                  <span class="snoozepod-category-tiles__link">{{ block.settings.cta_label | escape }}</span>
+                {%- endif -%}
+            {%- if tile_url != blank -%}
+              </a>
+            {%- else -%}
+              </div>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if section.settings.cta_label != blank -%}
+        <div class="snoozepod-category-tiles__footer">
+          <a
+            class="button button--secondary snoozepod-category-tiles__cta"
+            href="{% if section.settings.cta_link != blank %}{{ section.settings.cta_link }}{% else %}{{ routes.collections_url }}{% endif %}"
+          >
+            {{ section.settings.cta_label | escape }}
+          </a>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "SnoozePod category tiles",
+  "class": "section",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Choose The Pieces That Fit Your Sleep"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Start with the essentials, then add the comfort details that make the room work for you."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Browse Sleep Essentials"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category_tile",
+      "name": "Category tile",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Fallback link"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Fallback icon",
+          "default": "box",
+          "options": [
+            { "value": "none", "label": "None" },
+            { "value": "box", "label": "Box" },
+            { "value": "3d_model", "label": "3D model" },
+            { "value": "heart", "label": "Heart" },
+            { "value": "leaf", "label": "Leaf" },
+            { "value": "lock", "label": "Lock" },
+            { "value": "ruler", "label": "Ruler" },
+            { "value": "lightning_bolt", "label": "Lightning bolt" },
+            { "value": "question_mark", "label": "Question mark" },
+            { "value": "snowflake", "label": "Snowflake" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Category"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description",
+          "default": "Short supporting description."
+        },
+        {
+          "type": "text",
+          "id": "cta_label",
+          "label": "CTA label",
+          "default": "Explore →"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "SnoozePod category tiles",
+      "blocks": [
+        { "type": "category_tile" },
+        { "type": "category_tile" },
+        { "type": "category_tile" },
+        { "type": "category_tile" },
+        { "type": "category_tile" },
+        { "type": "category_tile" }
+      ]
+    }
+  ]
+}
+{% endschema %}

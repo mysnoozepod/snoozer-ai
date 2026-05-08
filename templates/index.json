@@ -134,37 +134,312 @@
         "padding_bottom": 36
       }
     },
-    "email-capture": {
-      "type": "newsletter",
+    "snoozepod_environment_GYx7gN": {
+      "type": "snoozepod-environment",
       "blocks": {
-        "heading": {
-          "type": "heading",
+        "environment_1": {
+          "type": "environment_item",
           "settings": {
-            "heading": "Stay In The Loop",
-            "heading_size": "h2"
+            "image": "",
+            "icon": "box",
+            "title": "Mattress",
+            "short_text": "Support and comfort where your setup starts.",
+            "optional_link": "shopify://collections/mattresses"
           }
         },
-        "paragraph": {
-          "type": "paragraph",
+        "environment_2": {
+          "type": "environment_item",
           "settings": {
-            "text": "<p>Get sleep tips, exclusive offers, and product updates.</p>"
+            "image": "",
+            "icon": "3d_model",
+            "title": "Base",
+            "short_text": "Add elevation, movement, and recovery support.",
+            "optional_link": "shopify://collections/bases"
           }
         },
-        "email-form": {
-          "type": "email_form",
-          "settings": {}
+        "environment_3": {
+          "type": "environment_item",
+          "settings": {
+            "image": "",
+            "icon": "heart",
+            "title": "Pillows",
+            "short_text": "Match your neck, shoulders, and sleep position.",
+            "optional_link": "shopify://collections/pillows"
+          }
+        },
+        "environment_4": {
+          "type": "environment_item",
+          "settings": {
+            "image": "",
+            "icon": "leaf",
+            "title": "Sheets",
+            "short_text": "Layer in breathable comfort around the bed.",
+            "optional_link": "shopify://collections/bedding"
+          }
+        },
+        "environment_5": {
+          "type": "environment_item",
+          "settings": {
+            "image": "",
+            "icon": "lock",
+            "title": "Protectors",
+            "short_text": "Help keep the setup fresh, clean, and covered.",
+            "optional_link": "shopify://collections/bedding"
+          }
+        },
+        "environment_6": {
+          "type": "environment_item",
+          "settings": {
+            "image": "",
+            "icon": "ruler",
+            "title": "Furniture",
+            "short_text": "Finish the room around how you sleep and wake.",
+            "optional_link": "shopify://collections/furniture"
+          }
+        },
+        "environment_7": {
+          "type": "environment_item",
+          "settings": {
+            "image": "",
+            "icon": "lightning_bolt",
+            "title": "Lighting",
+            "short_text": "Create a calmer rhythm for winding down.",
+            "optional_link": ""
+          }
+        },
+        "environment_8": {
+          "type": "environment_item",
+          "settings": {
+            "image": "",
+            "icon": "star",
+            "title": "Sound",
+            "short_text": "Shape the room with fewer distractions at night.",
+            "optional_link": ""
+          }
         }
       },
       "block_order": [
-        "heading",
-        "paragraph",
-        "email-form"
+        "environment_1",
+        "environment_2",
+        "environment_3",
+        "environment_4",
+        "environment_5",
+        "environment_6",
+        "environment_7",
+        "environment_8"
       ],
       "settings": {
-        "color_scheme": "scheme-3",
-        "full_width": false,
-        "padding_top": 64,
-        "padding_bottom": 64
+        "heading": "More Than A Mattress",
+        "subheading": "Your SnoozePod is the complete sleep environment around you — mattress, base, pillows, sheets, protection, lighting, sound, and comfort details.",
+        "cta_label": "Explore The Full Setup",
+        "cta_link": "",
+        "color_scheme": "scheme-1",
+        "padding_top": 32,
+        "padding_bottom": 32
+      }
+    },
+    "snoozepod_category_tiles_P3rqvB": {
+      "type": "snoozepod-category-tiles",
+      "blocks": {
+        "category_1": {
+          "type": "category_tile",
+          "settings": {
+            "collection": "shopify://collections/mattresses",
+            "link": "",
+            "image": "",
+            "icon": "box",
+            "title": "Mattresses",
+            "description": "Find your comfort and support starting point.",
+            "cta_label": "Explore →"
+          }
+        },
+        "category_2": {
+          "type": "category_tile",
+          "settings": {
+            "collection": "shopify://collections/bases",
+            "link": "",
+            "image": "",
+            "icon": "3d_model",
+            "title": "Bases",
+            "description": "Add elevation, adjustability, and recovery support.",
+            "cta_label": "Explore →"
+          }
+        },
+        "category_3": {
+          "type": "category_tile",
+          "settings": {
+            "collection": "shopify://collections/pillows",
+            "link": "",
+            "image": "",
+            "icon": "heart",
+            "title": "Pillows",
+            "description": "Match your neck, shoulder, and sleep position needs.",
+            "cta_label": "Explore →"
+          }
+        },
+        "category_4": {
+          "type": "category_tile",
+          "settings": {
+            "collection": "shopify://collections/bedding",
+            "link": "",
+            "image": "",
+            "icon": "leaf",
+            "title": "Sheets",
+            "description": "Add breathable layers for better nightly comfort.",
+            "cta_label": "Explore →"
+          }
+        },
+        "category_5": {
+          "type": "category_tile",
+          "settings": {
+            "collection": "shopify://collections/bedding",
+            "link": "",
+            "image": "",
+            "icon": "lock",
+            "title": "Protectors",
+            "description": "Help keep your sleep setup fresh and protected.",
+            "cta_label": "Explore →"
+          }
+        },
+        "category_6": {
+          "type": "category_tile",
+          "settings": {
+            "collection": "shopify://collections/furniture",
+            "link": "",
+            "image": "",
+            "icon": "ruler",
+            "title": "Furniture",
+            "description": "Finish the room around your sleep environment.",
+            "cta_label": "Explore →"
+          }
+        }
+      },
+      "block_order": [
+        "category_1",
+        "category_2",
+        "category_3",
+        "category_4",
+        "category_5",
+        "category_6"
+      ],
+      "settings": {
+        "heading": "Choose The Pieces That Fit Your Sleep",
+        "subheading": "Start with the essentials, then add the comfort details that make the room work for you.",
+        "cta_label": "Browse Sleep Essentials",
+        "cta_link": "",
+        "color_scheme": "scheme-1",
+        "padding_top": 32,
+        "padding_bottom": 32
+      }
+    },
+    "snoozer_guidance_panel_J4mzcT": {
+      "type": "snoozer-guidance-panel",
+      "blocks": {
+        "prompt_1": {
+          "type": "prompt_chip",
+          "settings": {
+            "label": "I sleep hot"
+          }
+        },
+        "prompt_2": {
+          "type": "prompt_chip",
+          "settings": {
+            "label": "I need better support"
+          }
+        },
+        "prompt_3": {
+          "type": "prompt_chip",
+          "settings": {
+            "label": "I want less pressure"
+          }
+        },
+        "prompt_4": {
+          "type": "prompt_chip",
+          "settings": {
+            "label": "Help me compare options"
+          }
+        }
+      },
+      "block_order": [
+        "prompt_1",
+        "prompt_2",
+        "prompt_3",
+        "prompt_4"
+      ],
+      "settings": {
+        "heading": "Have A Sleep Question?",
+        "subheading": "Ask Snoozer about comfort, support, cooling, bases, pillows, or preparing for your showroom visit.",
+        "snoozer_image": "",
+        "cta_label": "Start With A Question",
+        "cta_link": "",
+        "use_snoozer_trigger": true,
+        "color_scheme": "scheme-1",
+        "padding_top": 24,
+        "padding_bottom": 32
+      }
+    },
+    "snoozepod_trust_strip_F6kqDr": {
+      "type": "snoozepod-trust-strip",
+      "blocks": {
+        "trust_1": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "map_pin",
+            "title": "Unmanned showroom",
+            "short_text": "Private, low-pressure showroom experience."
+          }
+        },
+        "trust_2": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "question_mark",
+            "title": "Virtual support",
+            "short_text": "Get help online when you need it."
+          }
+        },
+        "trust_3": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "stopwatch",
+            "title": "Private sessions",
+            "short_text": "Try mattresses and bases at your pace."
+          }
+        },
+        "trust_4": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "box",
+            "title": "Sleep environment guidance",
+            "short_text": "Build beyond the mattress with focused support."
+          }
+        }
+      },
+      "block_order": [
+        "trust_1",
+        "trust_2",
+        "trust_3",
+        "trust_4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 24,
+        "padding_bottom": 24
+      }
+    },
+    "snoozepod_final_build_cta_K8nqLs": {
+      "type": "snoozepod-final-build-cta",
+      "settings": {
+        "heading": "Build Your SnoozePod",
+        "subheading": "Create a sleep environment built around how you rest, recover, cool down, and wake up.",
+        "background_image": "",
+        "primary_cta_label": "Start Building Your Setup",
+        "primary_cta_link": "",
+        "secondary_cta_label": "Plan It With Snoozer",
+        "secondary_cta_link": "",
+        "use_snoozer_trigger_secondary": true,
+        "color_scheme": "scheme-1",
+        "padding_top": 24,
+        "padding_bottom": 48
       }
     }
   },
@@ -173,6 +448,10 @@
     "value-strip",
     "featured_collection_666q7i",
     "image_with_text_wUxjfL",
-    "email-capture"
+    "snoozepod_environment_GYx7gN",
+    "snoozepod_category_tiles_P3rqvB",
+    "snoozer_guidance_panel_J4mzcT",
+    "snoozepod_trust_strip_F6kqDr",
+    "snoozepod_final_build_cta_K8nqLs"
   ]
 }

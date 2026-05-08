@@ -1,0 +1,320 @@
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  .snoozer-guidance-panel-{{ section.id }} {
+    width: min(100%, var(--content-max));
+    margin: 0 auto;
+    padding-left: var(--page-padding-mobile);
+    padding-right: var(--page-padding-mobile);
+  }
+
+  .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__card {
+    padding: 20px;
+    border: var(--card-border);
+    border-radius: var(--radius-xl);
+    background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 100%);
+    box-shadow: var(--card-shadow-soft);
+  }
+
+  .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__top {
+    display: grid;
+    grid-template-columns: 5.8rem minmax(0, 1fr);
+    gap: var(--sp-3);
+    align-items: start;
+  }
+
+  .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__avatar {
+    width: 5.8rem;
+    height: 5.8rem;
+    border-radius: var(--radius-pill);
+    background: #ffffff;
+    border: var(--card-border);
+    object-fit: contain;
+    padding: 0.6rem;
+  }
+
+  .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__heading {
+    margin: 0;
+    color: rgb(var(--color-primary-navy));
+    font-size: var(--h2-mobile);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__subheading {
+    margin: var(--sp-2) 0 0;
+    color: rgba(var(--color-text-primary), 0.78);
+    font-size: var(--body-mobile);
+    line-height: 1.4;
+  }
+
+  .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-top: var(--sp-4);
+  }
+
+  .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.8rem;
+    padding: 0 var(--sp-4);
+    border: var(--card-border);
+    border-radius: var(--radius-pill);
+    background: #ffffff;
+    color: rgb(var(--color-primary-navy));
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__actions {
+    margin-top: var(--sp-4);
+  }
+
+  .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__actions .button {
+    width: 100%;
+    min-height: var(--button-height-mobile);
+    border-radius: var(--button-radius);
+    justify-content: center;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+
+    .snoozer-guidance-panel-{{ section.id }} {
+      padding-left: var(--page-padding-tablet);
+      padding-right: var(--page-padding-tablet);
+    }
+
+    .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__card {
+      padding: 24px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozer-guidance-panel-{{ section.id }} {
+      padding-left: var(--page-padding-desktop);
+      padding-right: var(--page-padding-desktop);
+    }
+
+    .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--sp-5);
+      align-items: center;
+      padding: 28px 32px;
+    }
+
+    .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__content {
+      min-width: 0;
+    }
+
+    .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__heading {
+      font-size: var(--h2-desktop);
+    }
+
+    .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__subheading {
+      font-size: var(--body-desktop);
+      max-width: 62rem;
+    }
+
+    .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__actions {
+      margin-top: 0;
+    }
+
+    .snoozer-guidance-panel-{{ section.id }} .snoozer-guidance-panel__actions .button {
+      width: auto;
+      min-width: 24rem;
+      min-height: var(--button-height-desktop);
+    }
+  }
+{%- endstyle -%}
+
+<section class="section color-{{ section.settings.color_scheme }} gradient">
+  <div class="section-{{ section.id }}-padding">
+    <div class="snoozer-guidance-panel-{{ section.id }}">
+      <div class="snoozer-guidance-panel__card">
+        <div class="snoozer-guidance-panel__content">
+          <div class="snoozer-guidance-panel__top">
+            {%- if section.settings.snoozer_image != blank -%}
+              {{
+                section.settings.snoozer_image
+                | image_url: width: 144
+                | image_tag:
+                  widths: '72, 96, 144',
+                  sizes: '58px',
+                  loading: 'lazy',
+                  class: 'snoozer-guidance-panel__avatar',
+                  alt: 'Snoozer'
+              }}
+            {%- else -%}
+              <img
+                class="snoozer-guidance-panel__avatar"
+                src="{{ 'snoozer-avatar.png' | asset_url }}"
+                alt="Snoozer"
+                loading="lazy"
+                width="58"
+                height="58"
+              >
+            {%- endif -%}
+            <div>
+              {%- if section.settings.heading != blank -%}
+                <h2 class="snoozer-guidance-panel__heading">{{ section.settings.heading | escape }}</h2>
+              {%- endif -%}
+              {%- if section.settings.subheading != blank -%}
+                <p class="snoozer-guidance-panel__subheading">{{ section.settings.subheading | escape }}</p>
+              {%- endif -%}
+            </div>
+          </div>
+
+          {%- if section.blocks.size > 0 -%}
+            <div class="snoozer-guidance-panel__chips" role="list">
+              {%- for block in section.blocks -%}
+                <button
+                  type="button"
+                  class="snoozer-guidance-panel__chip"
+                  data-snoozer-trigger
+                  data-snoozer-source="guidance-chip-{{ forloop.index }}"
+                  aria-label="{{ block.settings.label | escape }}"
+                  {{ block.shopify_attributes }}
+                >
+                  {{ block.settings.label | escape }}
+                </button>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        </div>
+
+        <div class="snoozer-guidance-panel__actions">
+          {%- if section.settings.use_snoozer_trigger or section.settings.cta_link == blank -%}
+            <button
+              type="button"
+              class="button button--primary"
+              data-snoozer-trigger
+              data-snoozer-source="guidance-panel"
+            >
+              {{ section.settings.cta_label | escape }}
+            </button>
+          {%- else -%}
+            <a class="button button--primary" href="{{ section.settings.cta_link }}">
+              {{ section.settings.cta_label | escape }}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Snoozer guidance panel",
+  "class": "section",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Have A Sleep Question?"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Ask Snoozer about comfort, support, cooling, bases, pillows, or preparing for your showroom visit."
+    },
+    {
+      "type": "image_picker",
+      "id": "snoozer_image",
+      "label": "Snoozer image"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Start With A Question"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_snoozer_trigger",
+      "label": "Use Snoozer trigger instead of CTA link",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Section padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 32
+    }
+  ],
+  "blocks": [
+    {
+      "type": "prompt_chip",
+      "name": "Prompt chip",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "I sleep hot"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Snoozer guidance panel",
+      "blocks": [
+        { "type": "prompt_chip" },
+        { "type": "prompt_chip" },
+        { "type": "prompt_chip" },
+        { "type": "prompt_chip" }
+      ]
+    }
+  ]
+}
+{% endschema %}
