@@ -92,23 +92,23 @@
     }
 
     body.template-index #MainContent .snoozepod-trust-strip-section.section {
-      margin-top: 24px;
-      margin-bottom: 48px;
+      margin-top: 0;
+      margin-bottom: 0;
     }
 
     .section-{{ section.id }}-padding {
-      padding-top: 32px !important;
-      padding-bottom: 48px !important;
+      padding-top: 64px !important;
+      padding-bottom: 64px !important;
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__panel {
-      padding: 32px 40px;
-      border-radius: 22px;
+      padding: 28px 32px;
+      border-radius: 24px;
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 24px;
+      gap: 0;
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item {
@@ -116,19 +116,17 @@
       grid-template-columns: 48px minmax(0, 1fr);
       gap: 16px;
       align-items: center;
+      padding-left: 24px;
       padding-right: 24px;
       border-right: 0;
     }
 
-    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      right: 0;
-      width: 1px;
-      height: 48px;
-      transform: translateY(-50%);
-      background: rgba(10, 25, 55, 0.12);
+    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item:first-child {
+      padding-left: 0;
+    }
+
+    .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item:not(:first-child) {
+      border-left: 1px solid rgba(10, 25, 55, 0.12);
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item:last-child {

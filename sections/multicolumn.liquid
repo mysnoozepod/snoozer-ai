@@ -492,11 +492,21 @@
       }
 
       .section-{{ section.id }}-padding .multicolumn-list {
-        gap: 2.8rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 32px;
+        align-items: stretch;
+      }
+
+      .section-{{ section.id }}-padding .multicolumn-list__item {
+        width: auto !important;
+        max-width: none !important;
       }
 
       .section-{{ section.id }}-padding .multicolumn-card {
-        padding: 2.8rem 2.6rem;
+        height: 100%;
+        min-height: 170px;
+        padding: 32px 28px;
+        border-radius: 24px;
       }
 
     {%- elsif section.id == 'how-it-works' -%}

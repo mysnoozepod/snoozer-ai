@@ -4320,7 +4320,7 @@ button.shopify-payment-button__button--unbranded:hover {
 
 @media screen and (min-width: 990px) {
   body.template-index #MainContent .section + .section {
-    margin-top: 6.4rem;
+    margin-top: 0;
   }
 
   body.template-index #MainContent .title-wrapper,

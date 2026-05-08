@@ -126,6 +126,7 @@
 
       .section-{{ section.id }}-padding .image-with-text__grid {
         align-items: stretch;
+        column-gap: 56px;
       }
 
       .section-{{ section.id }}-padding .image-with-text__media {
@@ -144,6 +145,20 @@
         min-height: 100%;
         padding: 40px 44px;
         border-radius: 0 28px 28px 0;
+      }
+
+      .section-{{ section.id }}-padding .image-with-text__heading {
+        max-width: 620px;
+      }
+
+      .section-{{ section.id }}-padding .image-with-text__text.rte {
+        max-width: 560px;
+      }
+
+      .section-{{ section.id }}-padding .image-with-text__content .button {
+        width: 360px;
+        min-height: 64px;
+        justify-content: center;
       }
     }
 
