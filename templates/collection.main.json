@@ -6,7 +6,7 @@
         "show_eyebrow": true,
         "eyebrow": "SnoozePod Collection",
         "heading_override": "",
-        "body": "Explore products designed to support your sleep environment with less guesswork.",
+        "body": "Explore sleep products built to support your full sleep environment.",
         "image_alt": ""
       }
     },
@@ -90,54 +90,6 @@
         "secondary_label": "Ask Snoozer",
         "show_secondary": true
       }
-    },
-    "trust-strip": {
-      "type": "snoozepod-trust-strip",
-      "blocks": {
-        "trust_1": {
-          "type": "trust_item",
-          "settings": {
-            "icon": "map_pin",
-            "title": "Unmanned showroom",
-            "short_text": "Private, low-pressure shopping."
-          }
-        },
-        "trust_2": {
-          "type": "trust_item",
-          "settings": {
-            "icon": "question_mark",
-            "title": "Virtual support",
-            "short_text": "Get help online."
-          }
-        },
-        "trust_3": {
-          "type": "trust_item",
-          "settings": {
-            "icon": "stopwatch",
-            "title": "Private sessions",
-            "short_text": "Try products at your pace."
-          }
-        },
-        "trust_4": {
-          "type": "trust_item",
-          "settings": {
-            "icon": "box",
-            "title": "Sleep guidance",
-            "short_text": "Build beyond the mattress."
-          }
-        }
-      },
-      "block_order": [
-        "trust_1",
-        "trust_2",
-        "trust_3",
-        "trust_4"
-      ],
-      "settings": {
-        "color_scheme": "scheme-1",
-        "padding_top": 16,
-        "padding_bottom": 32
-      }
     }
   },
   "order": [
@@ -145,7 +97,6 @@
     "guidance",
     "product-grid",
     "education",
-    "final-cta",
-    "trust-strip"
+    "final-cta"
   ]
 }
