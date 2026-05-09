@@ -149,18 +149,18 @@
                                 {{ 'products.product.price.regular_price' | t }}
                               </span>
                               <s class="cart-item__old-price product-option">
-                                {{- item.original_price | money -}}
+                                <span class="bcpo-cart-item-price" data-key="{{item.key}}"><span class="bcpo-cart-item-original-price" data-key="{{item.key}}">{{ item.original_price | money }}</span></span>
                               </s>
                               <span class="visually-hidden">
                                 {{ 'products.product.price.sale_price' | t }}
                               </span>
                               <strong class="cart-item__final-price product-option">
-                                {{ item.final_price | money }}
+                                <span class="bcpo-cart-item-price" data-key="{{item.key}}">{{ item.final_price | money }}</span>
                               </strong>
                             </div>
                           {%- else -%}
                             <div class="product-option">
-                              {{ item.original_price | money }}
+                              <span class="bcpo-cart-item-price" data-key="{{item.key}}"><span class="bcpo-cart-item-original-price" data-key="{{item.key}}">{{ item.original_price | money }}</span></span>
                             </div>
                           {%- endif -%}
 
@@ -194,10 +194,29 @@
                                           target="_blank"
                                           aria-describedby="a11y-new-window-message"
                                         >
-                                          {{ property.last | split: '/' | last }}
+                                          
+{% assign file_type = property.last | split: '.' | last | downcase %}
+{% assign file_types = 'jpg,jpeg,webp,gif,png,apng,avif,svg,bmp,ico,tiff' | split: ',' %}
+{% if file_types contains file_type %}
+  <div class="bcpo-cart-file"><img src="{{ property.last }}" style="max-width: 50px; height: auto;"></div>
+{% else %}
+  <span class="bcpo-cart-file">Uploaded file</span>
+{% endif %}
+
                                         </a>
                                       {%- else -%}
-                                        {{ property.last }}
+                                        
+{% if property.last contains '/uploads/' %}
+	{% assign file_type = property.last | split: '.' | last | downcase %}
+	{% assign file_types = 'jpg,jpeg,webp,gif,png,apng,avif,svg,bmp,ico,tiff' | split: ',' %}
+	{% if file_types contains file_type %}
+		<div class="bcpo-cart-file"><img src="{{ property.last }}" style="max-width: 50px; height: auto;"></div>
+	{% else %}
+		<span class="bcpo-cart-file">Uploaded file</span>
+	{% endif %}
+{% else %}
+	{{ property.last }}
+{% endif %}
                                       {%- endif -%}
                                     </dd>
                                   </div>
@@ -231,18 +250,18 @@
                                   {{ 'products.product.price.regular_price' | t }}
                                 </span>
                                 <s class="cart-item__old-price price price--end">
-                                  {{ item.original_line_price | money }}
+                                  <span class="bcpo-cart-item-line-price" data-key="{{item.key}}"><span class="bcpo-cart-item-original-price" data-key="{{item.key}}">{{ item.original_price | money }}</span></span>
                                 </s>
                                 <span class="visually-hidden">
                                   {{ 'products.product.price.sale_price' | t }}
                                 </span>
                                 <span class="price price--end">
-                                  {{ item.final_line_price | money }}
+                                  <span class="bcpo-cart-item-line-price" data-key="{{item.key}}">{{ item.final_price | money }}</span>
                                 </span>
                               </div>
                             {%- else -%}
                               <span class="price price--end">
-                                {{ item.original_line_price | money }}
+                                <span class="bcpo-cart-item-line-price" data-key="{{item.key}}"><span class="bcpo-cart-item-original-price" data-key="{{item.key}}">{{ item.original_price | money }}</span></span>
                               </span>
                             {%- endif -%}
 
@@ -495,7 +514,7 @@
 
           <div class="totals" role="status">
             <h2 class="totals__total">{{ 'sections.cart.estimated_total' | t }}</h2>
-            <p class="totals__total-value">{{ cart.total_price | money_with_currency }}</p>
+            <p class="totals__total-value"><span class="bcpo-cart-original-total">{{ cart.total_price | money_with_currency }}</span></p>
           </div>
 
           <small class="tax-note caption-large rte">
@@ -559,3 +578,5 @@
     </div>
   </div>
 </cart-drawer>
+
+<!-- bcpo done -->
