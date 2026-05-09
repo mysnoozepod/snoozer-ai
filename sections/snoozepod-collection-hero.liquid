@@ -1,0 +1,214 @@
+{%- liquid
+  assign hero_heading = section.settings.heading_override | strip
+  if hero_heading == blank
+    assign hero_heading = collection.title
+  endif
+
+  assign hero_body = section.settings.body | strip
+  assign hero_image = section.settings.image
+  if hero_image == blank and collection.image != blank
+    assign hero_image = collection.image
+  endif
+
+  assign hero_alt = section.settings.image_alt | strip
+  if hero_alt == blank
+    if section.settings.image != blank
+      assign hero_alt = hero_heading
+    elsif collection.image != blank and collection.image.alt != blank
+      assign hero_alt = collection.image.alt
+    else
+      assign hero_alt = hero_heading
+    endif
+  endif
+-%}
+
+{%- style -%}
+  .snoozepod-collection-hero-{{ section.id }} {
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 44px 22px 36px;
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 28px;
+    align-items: center;
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__copy {
+    min-width: 0;
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__eyebrow {
+    display: inline-block;
+    margin: 0 0 12px;
+    color: rgba(7, 25, 66, 0.7);
+    font-size: 13px;
+    line-height: 1.2;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__heading {
+    margin: 0;
+    color: #071942;
+    font-size: clamp(34px, 11vw, 48px);
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__body {
+    margin: 18px 0 0;
+    max-width: 680px;
+    color: rgba(7, 25, 66, 0.75);
+    font-size: 18px;
+    line-height: 1.45;
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__body p {
+    margin: 0;
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media {
+    overflow: hidden;
+    border-radius: 22px;
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media img {
+    display: block;
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozepod-collection-hero-{{ section.id }} {
+      padding-left: 32px;
+      padding-right: 32px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-collection-hero-{{ section.id }} {
+      padding-top: 72px;
+      padding-bottom: 48px;
+      padding-left: 64px;
+      padding-right: 64px;
+    }
+
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__grid {
+      grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+      gap: 56px;
+    }
+
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__eyebrow {
+      margin-bottom: 14px;
+    }
+
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__heading {
+      font-size: clamp(42px, 5vw, 76px);
+      line-height: 0.95;
+    }
+
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__body {
+      margin-top: 24px;
+      font-size: 21px;
+      line-height: 1.45;
+    }
+
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media {
+      border-radius: 28px;
+    }
+
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media img {
+      height: 420px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section snoozepod-collection-hero-section">
+  <div class="snoozepod-collection-hero-{{ section.id }}">
+    <div class="snoozepod-collection-hero__grid{% if hero_image == blank %} snoozepod-collection-hero__grid--single{% endif %}">
+      <div class="snoozepod-collection-hero__copy">
+        {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
+          <p class="snoozepod-collection-hero__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h1 class="snoozepod-collection-hero__heading">{{ hero_heading | escape }}</h1>
+        {%- if hero_body != blank -%}
+          <div class="snoozepod-collection-hero__body rte">
+            <p>{{ hero_body | escape }}</p>
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if hero_image != blank -%}
+        <div class="snoozepod-collection-hero__media">
+          {{
+            hero_image
+            | image_url: width: 1600
+            | image_tag:
+              widths: '480, 720, 960, 1280, 1600',
+              sizes: '(min-width: 990px) calc((100vw - 128px) * 0.53), 100vw',
+              loading: 'eager',
+              fetchpriority: 'high',
+              alt: hero_alt | escape
+          }}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "SnoozePod collection hero",
+  "class": "section",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "SnoozePod Collection"
+    },
+    {
+      "type": "text",
+      "id": "heading_override",
+      "label": "Heading override"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Explore the pieces that help complete your sleep environment."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image override"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text"
+    }
+  ],
+  "presets": [
+    {
+      "name": "SnoozePod collection hero"
+    }
+  ]
+}
+{% endschema %}

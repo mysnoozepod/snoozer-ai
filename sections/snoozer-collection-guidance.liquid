@@ -1,0 +1,295 @@
+{%- liquid
+  assign chip_1 = section.settings.chip_1 | strip
+  assign chip_2 = section.settings.chip_2 | strip
+  assign chip_3 = section.settings.chip_3 | strip
+  assign chip_4 = section.settings.chip_4 | strip
+-%}
+
+{%- style -%}
+  .snoozer-collection-guidance-{{ section.id }} {
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 32px 22px;
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 26px;
+    border-radius: 24px;
+    border: 1px solid rgba(7, 25, 66, 0.10);
+    background: #ffffff;
+    box-shadow: 0 20px 50px rgba(7, 25, 66, 0.08);
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__content {
+    min-width: 0;
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__top {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 999px;
+    border: 1px solid rgba(7, 25, 66, 0.10);
+    background: #ffffff;
+    object-fit: contain;
+    padding: 6px;
+    display: block;
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__avatar--fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #071942;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__heading {
+    margin: 0;
+    color: #071942;
+    font-size: 32px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__body {
+    margin: 14px 0 0;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 17px;
+    line-height: 1.45;
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 18px;
+    border: 1px solid rgba(7, 25, 66, 0.10);
+    border-radius: 999px;
+    background: rgba(7, 25, 66, 0.04);
+    color: #071942;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__actions .button,
+  .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__actions .snoozer-collection-guidance__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 58px;
+    padding: 0 34px;
+    border: 0;
+    border-radius: 999px;
+    background: #071942;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    width: 100%;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozer-collection-guidance-{{ section.id }} {
+      padding-left: 32px;
+      padding-right: 32px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozer-collection-guidance-{{ section.id }} {
+      padding: 40px 64px;
+    }
+
+    .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__card {
+      padding: 42px;
+      border-radius: 32px;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 36px;
+      align-items: center;
+    }
+
+    .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__avatar {
+      width: 64px;
+      height: 64px;
+      padding: 8px;
+    }
+
+    .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__heading {
+      font-size: 44px;
+    }
+
+    .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__body {
+      max-width: 700px;
+      font-size: 20px;
+    }
+
+    .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__actions {
+      justify-content: flex-end;
+    }
+
+    .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__actions .button,
+    .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__actions .snoozer-collection-guidance__cta {
+      width: auto;
+      min-width: 320px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section snoozer-collection-guidance-section">
+  <div class="snoozer-collection-guidance-{{ section.id }}">
+    <div class="snoozer-collection-guidance__card">
+      <div class="snoozer-collection-guidance__content">
+        <div class="snoozer-collection-guidance__top">
+          {%- if section.settings.show_avatar -%}
+            <img
+              class="snoozer-collection-guidance__avatar"
+              src="{{ 'snoozer-avatar.png' | asset_url }}"
+              alt="Snoozer"
+              loading="lazy"
+              width="64"
+              height="64"
+            >
+          {%- endif -%}
+          <div>
+            <h2 class="snoozer-collection-guidance__heading">{{ section.settings.heading | escape }}</h2>
+            <p class="snoozer-collection-guidance__body">{{ section.settings.body | escape }}</p>
+          </div>
+        </div>
+
+        {%- if section.settings.show_chips -%}
+          <div class="snoozer-collection-guidance__chips">
+            {%- if chip_1 != blank -%}
+              <button type="button" class="snoozer-collection-guidance__chip" data-snoozer-trigger data-snoozer-source="collection-chip-1">{{ chip_1 | escape }}</button>
+            {%- endif -%}
+            {%- if chip_2 != blank -%}
+              <button type="button" class="snoozer-collection-guidance__chip" data-snoozer-trigger data-snoozer-source="collection-chip-2">{{ chip_2 | escape }}</button>
+            {%- endif -%}
+            {%- if chip_3 != blank -%}
+              <button type="button" class="snoozer-collection-guidance__chip" data-snoozer-trigger data-snoozer-source="collection-chip-3">{{ chip_3 | escape }}</button>
+            {%- endif -%}
+            {%- if chip_4 != blank -%}
+              <button type="button" class="snoozer-collection-guidance__chip" data-snoozer-trigger data-snoozer-source="collection-chip-4">{{ chip_4 | escape }}</button>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="snoozer-collection-guidance__actions">
+        {%- if section.settings.cta_link != blank and section.settings.cta_link != '#ask-snoozer' -%}
+          <a class="snoozer-collection-guidance__cta" href="{{ section.settings.cta_link }}">
+            {{ section.settings.cta_label | escape }}
+          </a>
+        {%- else -%}
+          <button type="button" class="snoozer-collection-guidance__cta" data-snoozer-trigger data-snoozer-source="collection-guidance">
+            {{ section.settings.cta_label | escape }}
+          </button>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Snoozer collection guidance",
+  "class": "section",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Have A Sleep Question?"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Ask Snoozer about comfort, support, cooling, bases, pillows, or preparing for your showroom visit."
+    },
+    {
+      "type": "text",
+      "id": "chip_1",
+      "label": "Chip 1",
+      "default": "I sleep hot"
+    },
+    {
+      "type": "text",
+      "id": "chip_2",
+      "label": "Chip 2",
+      "default": "I need better support"
+    },
+    {
+      "type": "text",
+      "id": "chip_3",
+      "label": "Chip 3",
+      "default": "I want less pressure"
+    },
+    {
+      "type": "text",
+      "id": "chip_4",
+      "label": "Chip 4",
+      "default": "Help me compare options"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Start With A Question"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_chips",
+      "label": "Show prompt chips",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_avatar",
+      "label": "Show Snoozer avatar",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Snoozer collection guidance"
+    }
+  ]
+}
+{% endschema %}

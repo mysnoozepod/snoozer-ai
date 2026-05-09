@@ -1,0 +1,183 @@
+{%- style -%}
+  .snoozepod-category-education-{{ section.id }} {
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 36px 22px;
+  }
+
+  .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 28px;
+    border-radius: 32px;
+    background: #f5f7fb;
+  }
+
+  .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__eyebrow {
+    display: inline-block;
+    margin: 0 0 12px;
+    color: rgba(7, 25, 66, 0.7);
+    font-size: 13px;
+    line-height: 1.2;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__heading {
+    margin: 0;
+    color: #071942;
+    font-size: 30px;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__body {
+    margin: 0;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__body p {
+    margin: 0;
+  }
+
+  .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__bullets {
+    margin: 0;
+    padding-left: 20px;
+    color: #071942;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__bullets li + li {
+    margin-top: 10px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozepod-category-education-{{ section.id }} {
+      padding-left: 32px;
+      padding-right: 32px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-category-education-{{ section.id }} {
+      padding: 56px 64px;
+    }
+
+    .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__card {
+      grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+      gap: 48px;
+      padding: 48px;
+    }
+
+    .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__heading {
+      font-size: 40px;
+      line-height: 1.05;
+    }
+
+    .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__body {
+      font-size: 20px;
+    }
+
+    .snoozepod-category-education-{{ section.id }} .snoozepod-category-education__bullets {
+      font-size: 18px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section snoozepod-category-education-section">
+  <div class="snoozepod-category-education-{{ section.id }}">
+    <div class="snoozepod-category-education__card">
+      <div>
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="snoozepod-category-education__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h2 class="snoozepod-category-education__heading">{{ section.settings.heading | escape }}</h2>
+      </div>
+
+      <div>
+        <div class="snoozepod-category-education__body rte">
+          <p>{{ section.settings.body | escape }}</p>
+        </div>
+
+        {%- if section.settings.show_bullets -%}
+          <ul class="snoozepod-category-education__bullets">
+            {%- if section.settings.bullet_1 != blank -%}
+              <li>{{ section.settings.bullet_1 | escape }}</li>
+            {%- endif -%}
+            {%- if section.settings.bullet_2 != blank -%}
+              <li>{{ section.settings.bullet_2 | escape }}</li>
+            {%- endif -%}
+            {%- if section.settings.bullet_3 != blank -%}
+              <li>{{ section.settings.bullet_3 | escape }}</li>
+            {%- endif -%}
+          </ul>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "SnoozePod category education",
+  "class": "section",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Sleep Environment Guide"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "How This Fits Your SnoozePod"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Each piece plays a role. Start with the essentials, then add the comfort details that support how you rest, recover, and wake up."
+    },
+    {
+      "type": "text",
+      "id": "bullet_1",
+      "label": "Bullet 1",
+      "default": "Start with comfort and support."
+    },
+    {
+      "type": "text",
+      "id": "bullet_2",
+      "label": "Bullet 2",
+      "default": "Add pieces that solve specific sleep needs."
+    },
+    {
+      "type": "text",
+      "id": "bullet_3",
+      "label": "Bullet 3",
+      "default": "Keep the final sleep environment simple and intentional."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_bullets",
+      "label": "Show bullets",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "SnoozePod category education"
+    }
+  ]
+}
+{% endschema %}

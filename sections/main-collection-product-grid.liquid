@@ -36,7 +36,117 @@
   }
 {%- endstyle -%}
 
-<div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
+{%- if template.suffix == 'snoozepod' -%}
+  {%- style -%}
+    .snoozepod-collection-grid.section-{{ section.id }}-padding {
+      padding-top: 24px;
+      padding-bottom: 48px;
+    }
+
+    .snoozepod-collection-grid .page-width,
+    .snoozepod-collection-grid .facets-wrapper,
+    .snoozepod-collection-grid .collection.page-width,
+    .snoozepod-collection-grid .facets-vertical.page-width {
+      max-width: min(100%, var(--wide-content-max));
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 22px;
+      padding-right: 22px;
+    }
+
+    .snoozepod-collection-grid .product-grid {
+      gap: 18px;
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .card {
+      height: 100%;
+      overflow: hidden;
+      border: 1px solid rgba(10, 25, 55, 0.10);
+      border-radius: 24px;
+      background: #ffffff;
+      box-shadow: 0 12px 28px rgba(7, 25, 66, 0.06);
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .card__inner {
+      border-radius: 24px 24px 0 0;
+      background: #f7f8fb;
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .card__media,
+    .snoozepod-collection-grid .product-card-wrapper .card--standard .card__media,
+    .snoozepod-collection-grid .product-card-wrapper .card__media .media {
+      border-radius: 20px 20px 0 0;
+      background: linear-gradient(180deg, #faf8f3 0%, #f5f7fb 100%);
+      overflow: hidden;
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .card__content {
+      padding: 18px;
+      gap: 14px;
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .card__information {
+      gap: 10px;
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .card__heading {
+      font-size: 20px;
+      line-height: 1.18;
+      letter-spacing: -0.02em;
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .card-information,
+    .snoozepod-collection-grid .product-card-wrapper .price,
+    .snoozepod-collection-grid .product-card-wrapper .caption-with-letter-spacing {
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .quick-add__submit {
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    @media screen and (min-width: 990px) {
+      .snoozepod-collection-grid.section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+
+      .snoozepod-collection-grid .page-width,
+      .snoozepod-collection-grid .facets-wrapper,
+      .snoozepod-collection-grid .collection.page-width,
+      .snoozepod-collection-grid .facets-vertical.page-width {
+        padding-left: 64px;
+        padding-right: 64px;
+      }
+
+      .snoozepod-collection-grid .product-grid {
+        gap: 28px;
+      }
+
+      .snoozepod-collection-grid .product-card-wrapper .card__content {
+        padding: 24px;
+      }
+
+      .snoozepod-collection-grid .product-card-wrapper .card__heading {
+        font-size: 22px;
+      }
+
+      .snoozepod-collection-grid .product-card-wrapper .card-information,
+      .snoozepod-collection-grid .product-card-wrapper .price,
+      .snoozepod-collection-grid .product-card-wrapper .caption-with-letter-spacing {
+        font-size: 17px;
+      }
+
+      .snoozepod-collection-grid .product-card-wrapper .quick-add__submit {
+        font-size: 16px;
+      }
+    }
+  {%- endstyle -%}
+{%- endif -%}
+
+<div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if template.suffix == 'snoozepod' %} snoozepod-collection-grid{% endif %}">
   {%- paginate collection.products by section.settings.products_per_page -%}
     {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
     {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}

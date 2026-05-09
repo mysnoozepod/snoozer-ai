@@ -1,0 +1,87 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "snoozepod-collection-hero",
+      "settings": {
+        "show_eyebrow": true,
+        "eyebrow": "SnoozePod Collection",
+        "heading_override": "",
+        "body": "Explore the pieces that help complete your sleep environment.",
+        "image_alt": ""
+      }
+    },
+    "guidance": {
+      "type": "snoozer-collection-guidance",
+      "settings": {
+        "heading": "Have A Sleep Question?",
+        "body": "Ask Snoozer about comfort, support, cooling, bases, pillows, or preparing for your showroom visit.",
+        "chip_1": "I sleep hot",
+        "chip_2": "I need better support",
+        "chip_3": "I want less pressure",
+        "chip_4": "Help me compare options",
+        "cta_label": "Start With A Question",
+        "show_chips": true,
+        "show_avatar": true
+      }
+    },
+    "product-grid": {
+      "type": "main-collection-product-grid",
+      "settings": {
+        "products_per_page": 24,
+        "columns_desktop": 4,
+        "color_scheme": "scheme-1",
+        "image_ratio": "portrait",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": false,
+        "quick_add": "none",
+        "enable_filtering": false,
+        "filter_type": "horizontal",
+        "enable_sorting": true,
+        "columns_mobile": "2",
+        "padding_top": 24,
+        "padding_bottom": 64
+      }
+    },
+    "education": {
+      "type": "snoozepod-category-education",
+      "settings": {
+        "eyebrow": "Sleep Environment Guide",
+        "heading": "How This Fits Your SnoozePod",
+        "body": "Each piece plays a role. Start with the essentials, then add the comfort details that support how you rest, recover, and wake up.",
+        "bullet_1": "Start with comfort and support.",
+        "bullet_2": "Add pieces that solve specific sleep needs.",
+        "bullet_3": "Keep the final sleep environment simple and intentional.",
+        "show_bullets": true
+      }
+    },
+    "final-cta": {
+      "type": "snoozepod-collection-cta",
+      "settings": {
+        "heading": "Build Your SnoozePod",
+        "body": "Create a sleep environment built around how you rest, recover, cool down, and wake up.",
+        "primary_label": "Start Building Your Sleep Environment",
+        "primary_link": "shopify://collections/all",
+        "secondary_label": "Plan It With Snoozer",
+        "show_secondary": true
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "guidance",
+    "product-grid",
+    "education",
+    "final-cta"
+  ]
+}
