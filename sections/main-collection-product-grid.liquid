@@ -36,7 +36,7 @@
   }
 {%- endstyle -%}
 
-{%- if template.suffix == 'snoozepod' -%}
+{%- if template.suffix == 'snoozepod' or template.suffix == 'main' -%}
   {%- style -%}
     .snoozepod-collection-grid.section-{{ section.id }}-padding {
       padding-top: 24px;
@@ -146,7 +146,7 @@
   {%- endstyle -%}
 {%- endif -%}
 
-<div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if template.suffix == 'snoozepod' %} snoozepod-collection-grid{% endif %}">
+<div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if template.suffix == 'snoozepod' or template.suffix == 'main' %} snoozepod-collection-grid{% endif %}">
   {%- paginate collection.products by section.settings.products_per_page -%}
     {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
     {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}

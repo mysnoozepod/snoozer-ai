@@ -1,20 +1,27 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
-    "banner": {
-      "type": "main-collection-banner",
+    "hero": {
+      "type": "snoozepod-collection-hero",
       "settings": {
-        "show_collection_description": true,
-        "show_collection_image": false,
-        "color_scheme": "scheme-1"
+        "show_eyebrow": true,
+        "eyebrow": "SnoozePod Collection",
+        "heading_override": "",
+        "body": "Explore products designed to support your sleep environment with less guesswork.",
+        "image_alt": ""
+      }
+    },
+    "guidance": {
+      "type": "snoozer-collection-guidance",
+      "settings": {
+        "heading": "Need help choosing?",
+        "body": "Ask Snoozer for help comparing comfort, support, materials, and fit.",
+        "chip_1": "I sleep hot",
+        "chip_2": "I need better support",
+        "chip_3": "Help me compare",
+        "chip_4": "Show me the best fit",
+        "cta_label": "Ask Snoozer",
+        "show_chips": true,
+        "show_avatar": true
       }
     },
     "product-grid": {
@@ -33,13 +40,112 @@
         "filter_type": "horizontal",
         "enable_sorting": true,
         "columns_mobile": "2",
-        "padding_top": 0,
-        "padding_bottom": 60
+        "padding_top": 8,
+        "padding_bottom": 56
+      }
+    },
+    "education": {
+      "type": "snoozepod-category-education",
+      "blocks": {
+        "tile_1": {
+          "type": "education_tile",
+          "settings": {
+            "title": "Start with comfort",
+            "text": "Choose the feel and support that match how you sleep."
+          }
+        },
+        "tile_2": {
+          "type": "education_tile",
+          "settings": {
+            "title": "Layer in support",
+            "text": "Add products that improve position, pressure relief, and recovery."
+          }
+        },
+        "tile_3": {
+          "type": "education_tile",
+          "settings": {
+            "title": "Finish the room",
+            "text": "Complete the environment around your nightly routine."
+          }
+        }
+      },
+      "block_order": [
+        "tile_1",
+        "tile_2",
+        "tile_3"
+      ],
+      "settings": {
+        "eyebrow": "Sleep Environment Guide",
+        "heading": "How This Fits Your Sleep Environment",
+        "body": "Your SnoozePod is built from the pieces that shape how you rest: mattress, base, pillows, sheets, protection, and finishing details."
+      }
+    },
+    "final-cta": {
+      "type": "snoozepod-collection-cta",
+      "settings": {
+        "heading": "Build Around Better Sleep",
+        "body": "Explore this collection, then use Snoozer to connect the right pieces around your sleep needs.",
+        "primary_label": "Explore Products",
+        "primary_link": "#product-grid",
+        "secondary_label": "Ask Snoozer",
+        "show_secondary": true
+      }
+    },
+    "trust-strip": {
+      "type": "snoozepod-trust-strip",
+      "blocks": {
+        "trust_1": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "map_pin",
+            "title": "Unmanned showroom",
+            "short_text": "Private, low-pressure shopping."
+          }
+        },
+        "trust_2": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "question_mark",
+            "title": "Virtual support",
+            "short_text": "Get help online."
+          }
+        },
+        "trust_3": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "stopwatch",
+            "title": "Private sessions",
+            "short_text": "Try products at your pace."
+          }
+        },
+        "trust_4": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "box",
+            "title": "Sleep guidance",
+            "short_text": "Build beyond the mattress."
+          }
+        }
+      },
+      "block_order": [
+        "trust_1",
+        "trust_2",
+        "trust_3",
+        "trust_4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 16,
+        "padding_bottom": 32
       }
     }
   },
   "order": [
-    "banner",
-    "product-grid"
+    "hero",
+    "guidance",
+    "product-grid",
+    "education",
+    "final-cta",
+    "trust-strip"
   ]
 }

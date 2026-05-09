@@ -4,7 +4,11 @@
     assign hero_heading = collection.title
   endif
 
-  assign hero_body = section.settings.body | strip
+  assign hero_body = collection.description | strip
+  if hero_body == blank
+    assign hero_body = section.settings.body | strip
+  endif
+
   assign hero_image = section.settings.image
   if hero_image == blank and collection.image != blank
     assign hero_image = collection.image
@@ -27,7 +31,7 @@
     max-width: 1440px;
     margin-left: auto;
     margin-right: auto;
-    padding: 44px 22px 36px;
+    padding: 32px 22px;
   }
 
   .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__grid {
@@ -54,17 +58,17 @@
   .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__heading {
     margin: 0;
     color: #071942;
-    font-size: clamp(34px, 11vw, 48px);
+    font-size: clamp(30px, 9vw, 34px);
     line-height: 1;
     font-weight: 700;
     letter-spacing: -0.04em;
   }
 
   .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__body {
-    margin: 18px 0 0;
-    max-width: 680px;
+    margin: 16px 0 0;
+    max-width: 62rem;
     color: rgba(7, 25, 66, 0.75);
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.45;
   }
 
@@ -75,6 +79,7 @@
   .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media {
     overflow: hidden;
     border-radius: 22px;
+    background: linear-gradient(180deg, #f5f7fb 0%, #edf2f9 100%);
   }
 
   .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media img {
@@ -82,6 +87,32 @@
     width: 100%;
     height: 260px;
     object-fit: cover;
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__fallback {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    width: 100%;
+    height: 260px;
+    padding: 24px;
+    background:
+      radial-gradient(circle at top right, rgba(44, 66, 120, 0.18), transparent 38%),
+      linear-gradient(180deg, #f5f7fb 0%, #edf2f9 100%);
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__fallback-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.8);
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
   }
 
   @media screen and (min-width: 750px) {
@@ -93,8 +124,8 @@
 
   @media screen and (min-width: 990px) {
     .snoozepod-collection-hero-{{ section.id }} {
-      padding-top: 72px;
-      padding-bottom: 48px;
+      padding-top: 56px;
+      padding-bottom: 56px;
       padding-left: 64px;
       padding-right: 64px;
     }
@@ -109,13 +140,15 @@
     }
 
     .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__heading {
-      font-size: clamp(42px, 5vw, 76px);
-      line-height: 0.95;
+      max-width: 620px;
+      font-size: clamp(38px, 4vw, 64px);
+      line-height: 0.96;
     }
 
     .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__body {
-      margin-top: 24px;
-      font-size: 21px;
+      max-width: 620px;
+      margin-top: 20px;
+      font-size: 19px;
       line-height: 1.45;
     }
 
@@ -123,8 +156,10 @@
       border-radius: 28px;
     }
 
-    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media img {
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media img,
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__fallback {
       height: 420px;
+      max-height: 460px;
     }
   }
 {%- endstyle -%}
@@ -139,7 +174,11 @@
         <h1 class="snoozepod-collection-hero__heading">{{ hero_heading | escape }}</h1>
         {%- if hero_body != blank -%}
           <div class="snoozepod-collection-hero__body rte">
-            <p>{{ hero_body | escape }}</p>
+            {%- if collection.description != blank -%}
+              {{ collection.description }}
+            {%- else -%}
+              <p>{{ hero_body | escape }}</p>
+            {%- endif -%}
           </div>
         {%- endif -%}
       </div>
@@ -156,6 +195,12 @@
               fetchpriority: 'high',
               alt: hero_alt | escape
           }}
+        </div>
+      {%- else -%}
+        <div class="snoozepod-collection-hero__media" aria-hidden="true">
+          <div class="snoozepod-collection-hero__fallback">
+            <span class="snoozepod-collection-hero__fallback-mark">SnoozePod Collection</span>
+          </div>
         </div>
       {%- endif -%}
     </div>
@@ -192,7 +237,7 @@
       "type": "textarea",
       "id": "body",
       "label": "Body",
-      "default": "Explore the pieces that help complete your sleep environment."
+      "default": "Explore products designed to support your sleep environment with less guesswork."
     },
     {
       "type": "image_picker",
