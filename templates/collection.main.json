@@ -86,7 +86,7 @@
         "heading": "Build Around Better Sleep",
         "body": "Explore this collection, then use Snoozer to connect the right pieces around your sleep needs.",
         "primary_label": "Explore Products",
-        "primary_link": "#product-grid",
+        "primary_link": "#ProductGridContainer",
         "secondary_label": "Ask Snoozer",
         "show_secondary": true
       }

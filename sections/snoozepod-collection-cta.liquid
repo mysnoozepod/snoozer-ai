@@ -1,9 +1,7 @@
 {%- style -%}
   .snoozepod-collection-cta-{{ section.id }} {
-    max-width: 1440px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 36px 22px 56px;
+    max-width: 1480px;
+    margin: 24px 16px 48px;
   }
 
   .snoozepod-collection-cta-{{ section.id }} .snoozepod-collection-cta__card {
@@ -11,7 +9,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 24px;
-    padding: 30px;
+    padding: 32px 24px;
     border-radius: 34px;
     background: linear-gradient(135deg, #071942 0%, #2c4278 100%);
     color: #ffffff;
@@ -75,14 +73,14 @@
 
   @media screen and (min-width: 750px) {
     .snoozepod-collection-cta-{{ section.id }} {
-      padding-left: 32px;
-      padding-right: 32px;
+      margin-left: 24px;
+      margin-right: 24px;
     }
   }
 
   @media screen and (min-width: 990px) {
     .snoozepod-collection-cta-{{ section.id }} {
-      padding: 56px 64px 80px;
+      margin: 48px auto 72px;
     }
 
     .snoozepod-collection-cta-{{ section.id }} .snoozepod-collection-cta__card {
@@ -90,7 +88,8 @@
       justify-content: space-between;
       align-items: center;
       gap: 40px;
-      padding: 56px;
+      padding: 48px 64px;
+      border-radius: 32px;
     }
 
     .snoozepod-collection-cta-{{ section.id }} .snoozepod-collection-cta__heading {
@@ -174,19 +173,19 @@
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Build Your SnoozePod"
+      "default": "Build Around Better Sleep"
     },
     {
       "type": "textarea",
       "id": "body",
       "label": "Body",
-      "default": "Create a sleep environment built around how you rest, recover, cool down, and wake up."
+      "default": "Explore this collection, then use Snoozer to connect the right pieces around your sleep needs."
     },
     {
       "type": "text",
       "id": "primary_label",
       "label": "Primary CTA label",
-      "default": "Start Building Your Sleep Environment"
+      "default": "Explore Products"
     },
     {
       "type": "url",
@@ -197,7 +196,7 @@
       "type": "text",
       "id": "secondary_label",
       "label": "Secondary CTA label",
-      "default": "Plan It With Snoozer"
+      "default": "Ask Snoozer"
     },
     {
       "type": "url",

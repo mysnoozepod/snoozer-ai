@@ -7,17 +7,15 @@
 
 {%- style -%}
   .snoozer-collection-guidance-{{ section.id }} {
-    max-width: 1440px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 32px 22px;
+    max-width: 1480px;
+    margin: 24px 16px;
   }
 
   .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__card {
     display: grid;
     grid-template-columns: 1fr;
     gap: 24px;
-    padding: 26px;
+    padding: 24px;
     border-radius: 24px;
     border: 1px solid rgba(7, 25, 66, 0.10);
     background: #ffffff;
@@ -118,20 +116,20 @@
 
   @media screen and (min-width: 750px) {
     .snoozer-collection-guidance-{{ section.id }} {
-      padding-left: 32px;
-      padding-right: 32px;
+      margin-left: 24px;
+      margin-right: 24px;
     }
   }
 
   @media screen and (min-width: 990px) {
     .snoozer-collection-guidance-{{ section.id }} {
-      padding: 40px 64px;
+      margin: 32px auto;
     }
 
     .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__card {
-      padding: 42px;
-      border-radius: 32px;
-      grid-template-columns: minmax(0, 1fr) 320px;
+      padding: 40px 56px;
+      border-radius: 28px;
+      grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
       gap: 36px;
       align-items: center;
     }

@@ -28,10 +28,11 @@
 
 {%- style -%}
   .snoozepod-collection-hero-{{ section.id }} {
-    max-width: 1440px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 36px 20px 32px;
+    max-width: 1480px;
+    margin: 24px 16px;
+    padding: 24px;
+    border-radius: 24px;
+    background: #f5f7fb;
   }
 
   .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__grid {
@@ -85,7 +86,7 @@
   .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media img {
     display: block;
     width: 100%;
-    height: 260px;
+    height: 220px;
     object-fit: cover;
   }
 
@@ -94,7 +95,7 @@
     align-items: flex-end;
     justify-content: flex-start;
     width: 100%;
-    height: 260px;
+    height: 220px;
     padding: 24px;
     background:
       radial-gradient(circle at top right, rgba(44, 66, 120, 0.18), transparent 38%),
@@ -117,22 +118,29 @@
 
   @media screen and (min-width: 750px) {
     .snoozepod-collection-hero-{{ section.id }} {
-      padding-left: 32px;
-      padding-right: 32px;
+      margin-left: 24px;
+      margin-right: 24px;
     }
   }
 
   @media screen and (min-width: 990px) {
     .snoozepod-collection-hero-{{ section.id }} {
-      padding-top: 56px;
-      padding-bottom: 48px;
-      padding-left: 64px;
-      padding-right: 64px;
+      margin: 48px auto 32px;
+      padding: 48px 64px;
+      border-radius: 32px;
     }
 
     .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__grid {
-      grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+      grid-template-columns: minmax(420px, 0.9fr) minmax(520px, 1fr);
       gap: 56px;
+    }
+
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media {
+      order: 1;
+    }
+
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__copy {
+      order: 2;
     }
 
     .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__eyebrow {
@@ -146,9 +154,9 @@
     }
 
     .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__body {
-      max-width: 620px;
+      max-width: 640px;
       margin-top: 20px;
-      font-size: 19px;
+      font-size: 20px;
       line-height: 1.45;
     }
 
@@ -158,8 +166,8 @@
 
     .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__media img,
     .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__fallback {
-      height: 420px;
-      max-height: 460px;
+      height: 430px;
+      max-height: 430px;
     }
   }
 {%- endstyle -%}
@@ -167,22 +175,6 @@
 <section class="section snoozepod-collection-hero-section">
   <div class="snoozepod-collection-hero-{{ section.id }}">
     <div class="snoozepod-collection-hero__grid{% if hero_image == blank %} snoozepod-collection-hero__grid--single{% endif %}">
-      <div class="snoozepod-collection-hero__copy">
-        {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
-          <p class="snoozepod-collection-hero__eyebrow">{{ section.settings.eyebrow | escape }}</p>
-        {%- endif -%}
-        <h1 class="snoozepod-collection-hero__heading">{{ hero_heading | escape }}</h1>
-        {%- if hero_body != blank -%}
-          <div class="snoozepod-collection-hero__body rte">
-            {%- if collection.description != blank -%}
-              {{ collection.description }}
-            {%- else -%}
-              <p>{{ hero_body | escape }}</p>
-            {%- endif -%}
-          </div>
-        {%- endif -%}
-      </div>
-
       {%- if hero_image != blank -%}
         <div class="snoozepod-collection-hero__media">
           {{
@@ -203,6 +195,22 @@
           </div>
         </div>
       {%- endif -%}
+
+      <div class="snoozepod-collection-hero__copy">
+        {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
+          <p class="snoozepod-collection-hero__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h1 class="snoozepod-collection-hero__heading">{{ hero_heading | escape }}</h1>
+        {%- if hero_body != blank -%}
+          <div class="snoozepod-collection-hero__body rte">
+            {%- if collection.description != blank -%}
+              {{ collection.description }}
+            {%- else -%}
+              <p>{{ hero_body | escape }}</p>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
     </div>
   </div>
 </section>
@@ -237,7 +245,7 @@
       "type": "textarea",
       "id": "body",
       "label": "Body",
-      "default": "Explore products designed to support your sleep environment with less guesswork."
+      "default": "Explore sleep products built to support your full sleep environment."
     },
     {
       "type": "image_picker",
