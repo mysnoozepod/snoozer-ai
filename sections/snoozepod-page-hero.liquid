@@ -1,0 +1,195 @@
+{%- liquid
+  assign hero_heading = section.settings.heading_override | strip
+  if hero_heading == blank
+    assign hero_heading = page.title
+  endif
+
+  assign hero_body = section.settings.body | strip
+  assign hero_image = section.settings.image
+  assign hero_alt = section.settings.image_alt | strip
+  if hero_alt == blank
+    assign hero_alt = hero_heading
+  endif
+-%}
+
+{%- style -%}
+  .snoozepod-page-hero-{{ section.id }} {
+    max-width: 1480px;
+    margin: 20px 16px;
+    padding: 32px 24px;
+    border-radius: 28px;
+    background: #f5f7fb;
+  }
+
+  .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__grid--single {
+    grid-template-columns: 1fr;
+  }
+
+  .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__copy {
+    min-width: 0;
+  }
+
+  .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__eyebrow {
+    display: inline-block;
+    margin: 0 0 12px;
+    color: rgba(7, 25, 66, 0.7);
+    font-size: 13px;
+    line-height: 1.2;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__heading {
+    margin: 0;
+    color: #071942;
+    font-size: 36px;
+    line-height: 1.04;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+  }
+
+  .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__body {
+    margin: 16px 0 0;
+    max-width: 820px;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__body p {
+    margin: 0;
+  }
+
+  .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__media {
+    overflow: hidden;
+    border-radius: 24px;
+    background: linear-gradient(180deg, #edf2f9 0%, #dfe7f3 100%);
+  }
+
+  .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__media img {
+    display: block;
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-page-hero-{{ section.id }} {
+      margin: 32px auto 40px;
+      padding: 56px 64px;
+      border-radius: 36px;
+    }
+
+    .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__grid {
+      grid-template-columns: minmax(0, 52fr) minmax(0, 48fr);
+      gap: 48px;
+    }
+
+    .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__heading {
+      font-size: 56px;
+      line-height: 1.04;
+    }
+
+    .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__body {
+      font-size: 20px;
+      line-height: 1.55;
+    }
+
+    .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__media {
+      border-radius: 28px;
+    }
+
+    .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__media img {
+      max-height: 460px;
+      height: 460px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozepod-page-hero-{{ section.id }}">
+    <div class="snoozepod-page-hero__grid{% if hero_image == blank %} snoozepod-page-hero__grid--single{% endif %}">
+      <div class="snoozepod-page-hero__copy">
+        {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
+          <p class="snoozepod-page-hero__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h1 class="snoozepod-page-hero__heading">{{ hero_heading | escape }}</h1>
+        {%- if hero_body != blank -%}
+          <div class="snoozepod-page-hero__body rte">
+            <p>{{ hero_body | escape }}</p>
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if hero_image != blank -%}
+        <div class="snoozepod-page-hero__media">
+          {{
+            hero_image
+            | image_url: width: 1600
+            | image_tag:
+              widths: '480, 720, 960, 1280, 1600',
+              sizes: '(min-width: 990px) calc((100vw - 128px) * 0.48), 100vw',
+              loading: 'eager',
+              fetchpriority: 'high',
+              alt: hero_alt | escape
+          }}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page hero",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "MySnoozePod"
+    },
+    {
+      "type": "text",
+      "id": "heading_override",
+      "label": "Heading override"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "A calmer way to build your sleep environment with guided support from Snoozer."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "image_alt",
+      "label": "Image alt text"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page hero"
+    }
+  ]
+}
+{% endschema %}

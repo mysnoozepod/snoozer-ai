@@ -1,23 +1,89 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
-    "main": {
-      "type": "main-page",
+    "hero": {
+      "type": "snoozepod-page-hero",
       "settings": {
-        "padding_top": 36,
-        "padding_bottom": 28
+        "show_eyebrow": true,
+        "eyebrow": "MySnoozePod",
+        "heading_override": "",
+        "body": "A calmer way to build your sleep environment with guided support from Snoozer."
+      }
+    },
+    "content": {
+      "type": "snoozepod-page-content",
+      "settings": {}
+    },
+    "guide": {
+      "type": "snoozer-page-guide",
+      "settings": {
+        "heading": "Need Help?",
+        "body": "Ask Snoozer for guidance before choosing your next step.",
+        "chip_1": "Help me understand",
+        "chip_2": "Compare options",
+        "chip_3": "What should I do next?",
+        "chip_4": "Build my sleep environment",
+        "cta_label": "Ask Snoozer",
+        "show_chips": true,
+        "show_avatar": true
+      }
+    },
+    "cards": {
+      "type": "snoozepod-page-cards",
+      "blocks": {
+        "card_1": {
+          "type": "page_card",
+          "settings": {
+            "title": "Guided",
+            "text": "Snoozer helps simplify choices around comfort, support, and your sleep environment.",
+            "link_label": "",
+            "link_url": ""
+          }
+        },
+        "card_2": {
+          "type": "page_card",
+          "settings": {
+            "title": "Private",
+            "text": "Explore online or through a private Snooze Session without sales pressure.",
+            "link_label": "",
+            "link_url": ""
+          }
+        },
+        "card_3": {
+          "type": "page_card",
+          "settings": {
+            "title": "Built Around You",
+            "text": "Create a sleep environment around how you rest, recover, cool down, and wake up.",
+            "link_label": "",
+            "link_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "card_1",
+        "card_2",
+        "card_3"
+      ],
+      "settings": {
+        "heading": "Explore The Next Step",
+        "body": "Use these cards to highlight the most important ideas, actions, or support points for this page."
+      }
+    },
+    "final_cta": {
+      "type": "snoozepod-page-cta",
+      "settings": {
+        "heading": "Ready For Your Next Step?",
+        "body": "Use Snoozer to keep building around your sleep health and wellness journey.",
+        "primary_label": "Ask Snoozer",
+        "secondary_label": "Book A Snooze Session",
+        "show_secondary": true
       }
     }
   },
   "order": [
-    "main"
+    "hero",
+    "content",
+    "guide",
+    "cards",
+    "final_cta"
   ]
 }

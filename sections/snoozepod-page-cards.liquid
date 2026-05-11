@@ -1,0 +1,201 @@
+{%- style -%}
+  .snoozepod-page-cards-{{ section.id }} {
+    max-width: 1480px;
+    margin: 40px auto;
+    padding: 0 16px;
+  }
+
+  .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__header {
+    margin-bottom: 20px;
+  }
+
+  .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__heading {
+    margin: 0;
+    color: #071942;
+    font-size: 30px;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__body {
+    margin: 12px 0 0;
+    max-width: 760px;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__body p {
+    margin: 0;
+  }
+
+  .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__card {
+    height: 100%;
+    padding: 24px;
+    border-radius: 24px;
+    background: #ffffff;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+  }
+
+  .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__card-title {
+    margin: 0;
+    color: #071942;
+    font-size: 24px;
+    line-height: 1.15;
+    font-weight: 700;
+  }
+
+  .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__card-text {
+    margin: 12px 0 0;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    color: #071942;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-page-cards-{{ section.id }} {
+      padding: 0 32px;
+    }
+
+    .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .snoozepod-page-cards-{{ section.id }} .snoozepod-page-cards__card {
+      padding: 28px;
+      border-radius: 28px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozepod-page-cards-{{ section.id }}">
+    {%- if section.settings.heading != blank or section.settings.body != blank -%}
+      <div class="snoozepod-page-cards__header">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="snoozepod-page-cards__heading">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+        {%- if section.settings.body != blank -%}
+          <div class="snoozepod-page-cards__body rte">
+            <p>{{ section.settings.body | escape }}</p>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="snoozepod-page-cards__grid">
+        {%- for block in section.blocks -%}
+          <div class="snoozepod-page-cards__card" {{ block.shopify_attributes }}>
+            <h3 class="snoozepod-page-cards__card-title">{{ block.settings.title | escape }}</h3>
+            <p class="snoozepod-page-cards__card-text">{{ block.settings.text | escape }}</p>
+            {%- if block.settings.link_label != blank and block.settings.link_url != blank -%}
+              <a class="snoozepod-page-cards__card-link" href="{{ block.settings.link_url }}">
+                {{ block.settings.link_label | escape }}
+                <span aria-hidden="true">→</span>
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page cards",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Explore The Next Step"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Use these cards to highlight the most important ideas, actions, or support points for this page."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "page_card",
+      "name": "Page card",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Guided"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "Snoozer helps simplify choices around comfort, support, and your sleep environment."
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label"
+        },
+        {
+          "type": "url",
+          "id": "link_url",
+          "label": "Link URL"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page cards",
+      "blocks": [
+        {
+          "type": "page_card",
+          "settings": {
+            "title": "Guided",
+            "text": "Snoozer helps simplify choices around comfort, support, and your sleep environment."
+          }
+        },
+        {
+          "type": "page_card",
+          "settings": {
+            "title": "Private",
+            "text": "Explore online or through a private Snooze Session without sales pressure."
+          }
+        },
+        {
+          "type": "page_card",
+          "settings": {
+            "title": "Built Around You",
+            "text": "Create a sleep environment around how you rest, recover, cool down, and wake up."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

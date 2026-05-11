@@ -1,0 +1,61 @@
+{%- style -%}
+  .snoozepod-page-content-{{ section.id }} {
+    max-width: 1040px;
+    margin: 32px auto;
+    padding: 0 20px;
+  }
+
+  .snoozepod-page-content-{{ section.id }} .snoozepod-page-content__rte {
+    color: rgba(7, 25, 66, 0.86);
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  .snoozepod-page-content-{{ section.id }} .snoozepod-page-content__rte > *:first-child {
+    margin-top: 0;
+  }
+
+  .snoozepod-page-content-{{ section.id }} .snoozepod-page-content__rte > *:last-child {
+    margin-bottom: 0;
+  }
+
+  .snoozepod-page-content-{{ section.id }} .snoozepod-page-content__rte h1,
+  .snoozepod-page-content-{{ section.id }} .snoozepod-page-content__rte h2,
+  .snoozepod-page-content-{{ section.id }} .snoozepod-page-content__rte h3,
+  .snoozepod-page-content-{{ section.id }} .snoozepod-page-content__rte h4 {
+    color: #071942;
+    line-height: 1.2;
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-page-content-{{ section.id }} {
+      padding: 0 32px;
+    }
+
+    .snoozepod-page-content-{{ section.id }} .snoozepod-page-content__rte {
+      font-size: 19px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozepod-page-content-{{ section.id }}">
+    <div class="snoozepod-page-content__rte rte">
+      {{ page.content }}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page content",
+  "class": "section",
+  "tag": "section",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Page content"
+    }
+  ]
+}
+{% endschema %}
