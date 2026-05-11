@@ -774,11 +774,11 @@
   endfor
 -%}
 
-{%- assign snoozer_assessment_url = '#' -%}
+{%- assign snoozer_assessment_url = '/pages/snooze-assessment' -%}
 {%- assign snoozer_mattresses_url = '/collections/mattresses' -%}
 {%- assign snoozer_bases_url = '/collections/bases' -%}
-{%- assign snoozer_booking_url = '/pages/book-a-snooze-session' -%}
-{%- assign snoozer_expectations_url = '/pages/book-a-snooze-session' -%}
+{%- assign snoozer_booking_url = '/pages/book-your-snooze-session' -%}
+{%- assign snoozer_expectations_url = '/pages/book-your-snooze-session' -%}
 
 <div class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
   {%- liquid
@@ -1124,9 +1124,13 @@
     window.__mysnoozepodSnoozerTriggerBound = true;
 
     const defaultResponse = "Start with how you sleep. I'll guide you from there.";
-    const fallbackResponse = "I can guide you with that. Start with the Snooze Assessment or choose a sleep concern below.";
+    const fallbackResponse = "I can still guide you. Try one of these starting points.";
+    const loadingResponse = "Snoozer is checking that for you…";
     const shells = Array.from(document.querySelectorAll('[data-snoozer-shell]'));
     const header = document.querySelector('.header');
+    const requestPageType = {{ request.page_type | json }};
+    const HUD_ASK_TIMEOUT_MS = 3000;
+    const SNOOZER_SESSION_STORAGE_KEY = 'mysnoozepod_snoozer_session_id';
     let lastPointerOpen = 0;
     const routes = {
       assessment: {{ snoozer_assessment_url | json }},
@@ -1135,6 +1139,12 @@
       booking: {{ snoozer_booking_url | json }},
       expectations: {{ snoozer_expectations_url | json }}
     };
+    const liveFallbackChips = [
+      { label: 'I sleep hot', value: 'I sleep hot' },
+      { label: 'I need firm support', value: 'I need firm support' },
+      { label: 'Help me compare mattresses', value: 'compare foam vs hybrid' },
+      { label: 'Take Snooze Assessment', value: 'take snooze assessment' }
+    ];
     const defaultChips = [
       { label: 'I sleep hot', state: 'sleep_hot' },
       { label: 'I need firm support', state: 'firm_support' },
@@ -1372,26 +1382,313 @@
       }
     }
 
+    function normalizeText(value) {
+      return String(value || '').trim();
+    }
+
+    function normalizeApiBase(value) {
+      return normalizeText(value).replace(/\/+$/, '');
+    }
+
+    function getApiBase() {
+      const globalConfig = window.MySnoozePod || {};
+      const candidates = [
+        globalConfig.apiBase,
+        globalConfig.api_base,
+        window.__SNOOZER_API_BASE__,
+        document.documentElement.getAttribute('data-snoozer-api-base')
+      ];
+
+      for (let index = 0; index < candidates.length; index += 1) {
+        const candidate = normalizeApiBase(candidates[index]);
+        if (candidate) return candidate;
+      }
+
+      return '';
+    }
+
+    function buildApiUrl(path) {
+      const base = getApiBase();
+      const cleanPath = String(path || '').startsWith('/') ? String(path || '') : `/${String(path || '')}`;
+      if (base) return `${base}${cleanPath}`;
+      return cleanPath.startsWith('/api/') ? cleanPath : `/api${cleanPath}`;
+    }
+
+    function pathStartsWithSegment(pathname, segment) {
+      if (!pathname || !segment) return false;
+      return pathname === segment || pathname.startsWith(`${segment}/`);
+    }
+
+    function getCurrentPathname() {
+      const pathname = normalizeText(window.location && window.location.pathname);
+      return pathname || '/';
+    }
+
+    function getPageType() {
+      const normalized = normalizeText(requestPageType).toLowerCase();
+
+      if (normalized === 'index') return 'home';
+      if (
+        normalized === 'collection' ||
+        normalized === 'product' ||
+        normalized === 'page' ||
+        normalized === 'cart' ||
+        normalized === 'search'
+      ) {
+        return normalized;
+      }
+
+      const pathname = getCurrentPathname().toLowerCase();
+
+      if (pathname === '/') return 'home';
+      if (pathStartsWithSegment(pathname, '/collections')) return 'collection';
+      if (pathStartsWithSegment(pathname, '/products')) return 'product';
+      if (pathStartsWithSegment(pathname, '/pages')) return 'page';
+      if (pathStartsWithSegment(pathname, '/cart')) return 'cart';
+      if (pathStartsWithSegment(pathname, '/search')) return 'search';
+
+      return 'unknown';
+    }
+
+    function getSessionId() {
+      const globalConfig = window.MySnoozePod || {};
+      const existingGlobal = normalizeText(globalConfig.sessionId || globalConfig.session_id);
+      if (existingGlobal) return existingGlobal;
+
+      try {
+        const existingStored = normalizeText(window.sessionStorage.getItem(SNOOZER_SESSION_STORAGE_KEY));
+        if (existingStored) return existingStored;
+
+        const nextId = `snoozer_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+        window.sessionStorage.setItem(SNOOZER_SESSION_STORAGE_KEY, nextId);
+        return nextId;
+      } catch (error) {
+        return `snoozer_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+      }
+    }
+
+    function setShellBusy(shell, isBusy) {
+      if (!shell) return;
+
+      shell.dataset.snoozerBusy = isBusy ? 'true' : 'false';
+
+      const form = shell.querySelector('[data-snoozer-form]');
+      const submit = form && form.querySelector('[type="submit"]');
+
+      if (form) {
+        form.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+      }
+
+      if (submit) {
+        submit.disabled = Boolean(isBusy);
+      }
+    }
+
+    function getCardCopy(card) {
+      const href = normalizeText(card && card.href);
+      const handle = normalizeText(card && card.handle);
+      const type = normalizeText(card && card.type).toLowerCase();
+      const label = normalizeText(card && card.label);
+
+      if (href === routes.assessment) return 'Start with your sleep profile.';
+      if (href === routes.booking) return 'Test your fit in person.';
+      if (href === routes.mattresses || handle === 'mattresses') {
+        return 'Compare feel, support, and cooling.';
+      }
+
+      if (type === 'page' && /assessment/i.test(label)) {
+        return 'Start with your sleep profile.';
+      }
+
+      if (type === 'page' && /book/i.test(label)) {
+        return 'Test your fit in person.';
+      }
+
+      return 'Start here.';
+    }
+
+    function isSafeInternalHref(value) {
+      const href = normalizeText(value);
+      if (!href) return false;
+      if (!href.startsWith('/')) return false;
+      if (href.startsWith('//')) return false;
+      if (/^javascript:/i.test(href)) return false;
+      return true;
+    }
+
+    function toArray(value) {
+      return Array.isArray(value) ? value : [];
+    }
+
+    function buildLiveFallbackPayload() {
+      return {
+        status: 'ok',
+        reply: fallbackResponse,
+        intent: 'fallback',
+        chips: liveFallbackChips.slice(),
+        actions: [
+          {
+            label: 'Take Snooze Assessment',
+            type: 'page',
+            href: routes.assessment
+          }
+        ],
+        products: [],
+        collections: [
+          {
+            label: 'Shop Mattresses',
+            handle: 'mattresses',
+            href: routes.mattresses
+          }
+        ],
+        pages: [
+          {
+            label: 'Book Your Snooze Session',
+            href: routes.booking
+          }
+        ],
+        meta: {
+          path: window.location && window.location.pathname ? window.location.pathname : '/',
+          source: 'fallback',
+          latency_ms: 0,
+          error: 'HUD_ASK_FALLBACK'
+        }
+      };
+    }
+
+    function normalizeLiveChip(chip) {
+      const label = normalizeText(chip && chip.label);
+      const value = normalizeText(chip && (chip.value || chip.label));
+
+      if (!label || !value) return null;
+
+      return {
+        label,
+        value
+      };
+    }
+
+    function normalizeLiveCard(item) {
+      const label = normalizeText(item && item.label);
+      const href = normalizeText(item && item.href);
+
+      if (!label || !isSafeInternalHref(href)) return null;
+
+      return {
+        label,
+        href,
+        handle: normalizeText(item && item.handle),
+        type: normalizeText(item && item.type).toLowerCase()
+      };
+    }
+
+    function normalizeLivePayload(payload) {
+      const raw = unwrapLivePayload(payload);
+      if (!raw || typeof raw !== 'object') {
+        return buildLiveFallbackPayload();
+      }
+
+      const reply = normalizeText(raw.reply) || fallbackResponse;
+      const chips = toArray(raw.chips)
+        .map((chip) => normalizeLiveChip(chip))
+        .filter(Boolean);
+      const actions = toArray(raw.actions)
+        .map((item) => normalizeLiveCard(item))
+        .filter(Boolean);
+      const collections = toArray(raw.collections)
+        .map((item) => normalizeLiveCard(item))
+        .filter(Boolean);
+      const pages = toArray(raw.pages)
+        .map((item) => normalizeLiveCard(item))
+        .filter(Boolean);
+
+      if (
+        reply === fallbackResponse &&
+        chips.length === 0 &&
+        actions.length === 0 &&
+        collections.length === 0 &&
+        pages.length === 0
+      ) {
+        return buildLiveFallbackPayload();
+      }
+
+      return {
+        status: normalizeText(raw.status) || 'ok',
+        reply,
+        intent: normalizeText(raw.intent) || 'live',
+        chips,
+        actions,
+        products: toArray(raw.products),
+        collections,
+        pages,
+        meta: raw.meta && typeof raw.meta === 'object' ? raw.meta : {}
+      };
+    }
+
+    function buildCardsFromLivePayload(payload) {
+      const items = []
+        .concat(toArray(payload && payload.actions))
+        .concat(toArray(payload && payload.collections))
+        .concat(toArray(payload && payload.pages));
+      const seen = new Set();
+
+      return items.reduce((cards, item) => {
+        const normalizedCard = normalizeLiveCard(item);
+        if (!normalizedCard) return cards;
+
+        if (seen.has(normalizedCard.href)) return cards;
+        seen.add(normalizedCard.href);
+
+        cards.push({
+          label: normalizedCard.label,
+          copy: getCardCopy(normalizedCard),
+          href: normalizedCard.href,
+          handle: normalizedCard.handle,
+          type: normalizedCard.type
+        });
+
+        return cards;
+      }, []).slice(0, 3);
+    }
+
+    function unwrapLivePayload(payload) {
+      if (
+        payload &&
+        typeof payload === 'object' &&
+        payload.data &&
+        typeof payload.data === 'object'
+      ) {
+        return payload.data;
+      }
+
+      return payload;
+    }
+
     function createChip(chip, selectedLabel) {
+      const normalizedChip = normalizeLiveChip(chip);
+      if (!normalizedChip) return null;
+
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'header__snoozer-chip';
-      button.setAttribute('data-snoozer-state-trigger', chip.state);
-      button.setAttribute('aria-pressed', chip.label === selectedLabel ? 'true' : 'false');
-      button.textContent = chip.label;
+
+      button.setAttribute('data-snoozer-chip-value', normalizedChip.value);
+      button.setAttribute('aria-pressed', normalizedChip.label === selectedLabel ? 'true' : 'false');
+      button.textContent = normalizedChip.label;
       return button;
     }
 
     function createAction(card) {
+      if (!card || !normalizeText(card.label) || !isSafeInternalHref(card.href)) {
+        return null;
+      }
+
       const link = document.createElement('a');
       const label = document.createElement('span');
       const copy = document.createElement('span');
 
       link.className = 'header__snoozer-action';
-      link.href = card.href || '#';
-      if (card.placeholder || link.getAttribute('href') === '#') {
-        link.setAttribute('data-snoozer-placeholder-link', '');
-      }
+      link.href = card.href;
 
       label.className = 'header__snoozer-action-label';
       label.textContent = card.label;
@@ -1415,12 +1712,47 @@
 
       clearNode(chipList);
       state.chips.forEach((chip) => {
-        chipList.appendChild(createChip(chip, selectedLabel));
+        const chipButton = createChip(chip, selectedLabel);
+        if (chipButton) {
+          chipList.appendChild(chipButton);
+        }
       });
 
       clearNode(actions);
       state.cards.forEach((card) => {
-        actions.appendChild(createAction(card));
+        const actionCard = createAction(card);
+        if (actionCard) {
+          actions.appendChild(actionCard);
+        }
+      });
+    }
+
+    function renderLivePayload(shell, payload, selectedLabel = '') {
+      if (!shell) return;
+
+      const normalizedPayload = normalizeLivePayload(payload);
+
+      const chipList = shell.querySelector('[data-snoozer-chip-list]');
+      const actions = shell.querySelector('[data-snoozer-actions]');
+      const cards = buildCardsFromLivePayload(normalizedPayload);
+
+      shell.dataset.snoozerState = normalizeText(normalizedPayload.intent) || 'live';
+      setResponse(shell, normalizedPayload.reply || fallbackResponse);
+
+      clearNode(chipList);
+      normalizedPayload.chips.forEach((chip) => {
+        const chipButton = createChip(chip, selectedLabel);
+        if (chipButton) {
+          chipList.appendChild(chipButton);
+        }
+      });
+
+      clearNode(actions);
+      cards.forEach((card) => {
+        const actionCard = createAction(card);
+        if (actionCard) {
+          actions.appendChild(actionCard);
+        }
       });
     }
 
@@ -1433,6 +1765,56 @@
       });
 
       return match ? match.state : 'fallback';
+    }
+
+    async function submitLiveQuery(shell, query) {
+      if (!shell || shell.dataset.snoozerBusy === 'true') return;
+
+      const input = shell.querySelector('[data-snoozer-input]');
+      const normalizedQuery = normalizeText(query || (input && input.value));
+
+      if (input) {
+        input.value = normalizedQuery;
+      }
+
+      setShellBusy(shell, true);
+      setResponse(shell, loadingResponse);
+
+      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timeoutId = window.setTimeout(() => {
+        if (controller) controller.abort();
+      }, HUD_ASK_TIMEOUT_MS);
+
+      try {
+        const response = await fetch(buildApiUrl('/hud/ask'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            query: normalizedQuery,
+            path: window.location && window.location.pathname ? window.location.pathname : '/',
+            page_type: getPageType(),
+            surface: 'shopify_header',
+            session_id: getSessionId()
+          }),
+          signal: controller ? controller.signal : undefined
+        });
+
+        const rawPayload = await response.json().catch(() => null);
+        const payload = normalizeLivePayload(rawPayload);
+
+        if (!response.ok) {
+          throw new Error('HUD_ASK_INVALID_RESPONSE');
+        }
+
+        renderLivePayload(shell, payload, normalizedQuery);
+      } catch (error) {
+        renderLivePayload(shell, buildLiveFallbackPayload(), normalizedQuery);
+      } finally {
+        window.clearTimeout(timeoutId);
+        setShellBusy(shell, false);
+      }
     }
 
     function closeShell(shell) {
@@ -1503,7 +1885,7 @@
       const trigger = event.target.closest('[data-snoozer-trigger]');
       const closeButton = event.target.closest('[data-snoozer-close]');
       const placeholderLink = event.target.closest('[data-snoozer-placeholder-link]');
-      const stateTrigger = event.target.closest('[data-snoozer-state-trigger]');
+      const chipValueTrigger = event.target.closest('[data-snoozer-chip-value]');
 
       if (placeholderLink) {
         event.preventDefault();
@@ -1515,15 +1897,14 @@
         return;
       }
 
-      if (stateTrigger) {
-        const stateShell = stateTrigger.closest('[data-snoozer-shell]');
+      if (chipValueTrigger) {
+        const stateShell = chipValueTrigger.closest('[data-snoozer-shell]');
         if (!stateShell) return;
 
         event.preventDefault();
-        renderState(
+        submitLiveQuery(
           stateShell,
-          stateTrigger.getAttribute('data-snoozer-state-trigger'),
-          stateTrigger.textContent.trim()
+          chipValueTrigger.getAttribute('data-snoozer-chip-value')
         );
         return;
       }
@@ -1569,7 +1950,7 @@
 
       form.addEventListener('submit', (event) => {
         event.preventDefault();
-        renderState(shell, resolveStateFromQuery(input.value));
+        submitLiveQuery(shell, input.value);
       });
     });
   })();
