@@ -1,0 +1,433 @@
+{%- liquid
+  assign hero_image = section.settings.hero_image
+  assign hero_alt = section.settings.hero_image_alt | strip
+  if hero_alt == blank
+    assign hero_alt = section.settings.hero_headline
+  endif
+  assign benefit_blocks = section.blocks | where: 'type', 'benefit'
+  assign step_blocks = section.blocks | where: 'type', 'step'
+  assign preview_blocks = section.blocks | where: 'type', 'preview_card'
+-%}
+
+{%- style -%}
+  .snoozer-landing-assessment-{{ section.id }} {
+    max-width: 1180px;
+    margin: 20px auto 48px;
+    padding: 0 16px;
+    color: #071942;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-stack {
+    display: grid;
+    gap: 20px;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-panel,
+  .snoozer-landing-assessment-{{ section.id }} .landing-band {
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 28px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-panel--soft {
+    background: #f5f7fb;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-hero {
+    display: grid;
+    gap: 24px;
+    padding: 28px 24px;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-eyebrow {
+    margin: 0 0 10px;
+    color: rgba(7, 25, 66, 0.7);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-title {
+    margin: 0;
+    font-size: 36px;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-text {
+    margin: 14px 0 0;
+    max-width: 48rem;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(7, 25, 66, 0.12);
+    background: #ffffff;
+    color: #071942;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-button--primary {
+    background: #071942;
+    border-color: #071942;
+    color: #ffffff;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-visual,
+  .snoozer-landing-assessment-{{ section.id }} .landing-fallback {
+    min-height: 220px;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-visual img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 220px;
+    object-fit: cover;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-fallback {
+    display: flex;
+    align-items: flex-end;
+    padding: 22px;
+    background:
+      radial-gradient(circle at top right, rgba(44, 66, 120, 0.16), transparent 34%),
+      linear-gradient(180deg, #eaf0f8 0%, #dfe7f3 100%);
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-section {
+    padding: 24px;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-heading {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-subtext {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-grid--three {
+    grid-template-columns: 1fr;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-card {
+    height: 100%;
+    padding: 20px;
+    border-radius: 22px;
+    background: #ffffff;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-card--soft {
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-card__title {
+    margin: 0;
+    font-size: 22px;
+    line-height: 1.15;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-card__text {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-step {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-step__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: #071942;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-band {
+    padding: 24px;
+    background: #071942;
+    color: #ffffff;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-band .landing-heading,
+  .snoozer-landing-assessment-{{ section.id }} .landing-band .landing-subtext {
+    color: #ffffff;
+  }
+
+  .snoozer-landing-assessment-{{ section.id }} .landing-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    color: #071942;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozer-landing-assessment-{{ section.id }} {
+      padding: 0 24px;
+    }
+
+    .snoozer-landing-assessment-{{ section.id }} .landing-grid--three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozer-landing-assessment-{{ section.id }} {
+      padding: 0 32px;
+    }
+
+    .snoozer-landing-assessment-{{ section.id }} .landing-hero {
+      grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+      align-items: center;
+      gap: 28px;
+      padding: 36px 36px 34px;
+    }
+
+    .snoozer-landing-assessment-{{ section.id }} .landing-title {
+      font-size: 52px;
+    }
+
+    .snoozer-landing-assessment-{{ section.id }} .landing-visual,
+    .snoozer-landing-assessment-{{ section.id }} .landing-fallback,
+    .snoozer-landing-assessment-{{ section.id }} .landing-visual img {
+      min-height: 300px;
+      height: 100%;
+    }
+
+    .snoozer-landing-assessment-{{ section.id }} .landing-section,
+    .snoozer-landing-assessment-{{ section.id }} .landing-band {
+      padding: 30px 32px;
+    }
+
+    .snoozer-landing-assessment-{{ section.id }} .landing-heading {
+      font-size: 32px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozer-landing-assessment-{{ section.id }}">
+    <div class="landing-stack">
+      <div class="landing-panel landing-panel--soft">
+        <div class="landing-hero">
+          <div>
+            <p class="landing-eyebrow">{{ section.settings.hero_eyebrow | escape }}</p>
+            <h1 class="landing-title">{{ section.settings.hero_headline | escape }}</h1>
+            <p class="landing-text">{{ section.settings.hero_text | escape }}</p>
+            <div class="landing-actions">
+              <a class="landing-button landing-button--primary" href="{% if section.settings.primary_link != blank %}{{ section.settings.primary_link }}{% else %}#{% endif %}">
+                {{ section.settings.primary_label | escape }}
+              </a>
+              <a class="landing-button" href="{% if section.settings.secondary_link != blank %}{{ section.settings.secondary_link }}{% else %}#{% endif %}">
+                {{ section.settings.secondary_label | escape }}
+              </a>
+            </div>
+          </div>
+          {%- if hero_image != blank -%}
+            <div class="landing-visual">
+              {{
+                hero_image
+                | image_url: width: 1400
+                | image_tag:
+                  widths: '480, 720, 960, 1400',
+                  sizes: '(min-width: 990px) 42vw, 100vw',
+                  loading: 'lazy',
+                  alt: hero_alt | escape
+              }}
+            </div>
+          {%- else -%}
+            <div class="landing-fallback">Guided next step</div>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="landing-panel">
+        <div class="landing-section">
+          <div class="landing-grid landing-grid--three">
+            {%- for block in benefit_blocks -%}
+              <div class="landing-card" {{ block.shopify_attributes }}>
+                <h2 class="landing-card__title">{{ block.settings.title | escape }}</h2>
+                <p class="landing-card__text">{{ block.settings.text | escape }}</p>
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      </div>
+
+      <div class="landing-panel">
+        <div class="landing-section">
+          <h2 class="landing-heading">{{ section.settings.how_heading | escape }}</h2>
+          <div class="landing-grid landing-grid--three">
+            {%- for block in step_blocks -%}
+              <div class="landing-card landing-step" {{ block.shopify_attributes }}>
+                <span class="landing-step__count">{{ forloop.index }}</span>
+                <h3 class="landing-card__title">{{ block.settings.title | escape }}</h3>
+                {%- if block.settings.text != blank -%}
+                  <p class="landing-card__text">{{ block.settings.text | escape }}</p>
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      </div>
+
+      <div class="landing-band">
+        <h2 class="landing-heading">{{ section.settings.strip_heading | escape }}</h2>
+        <p class="landing-subtext">{{ section.settings.strip_text | escape }}</p>
+      </div>
+
+      <div class="landing-panel">
+        <div class="landing-section">
+          <h2 class="landing-heading">{{ section.settings.preview_heading | escape }}</h2>
+          <p class="landing-subtext">{{ section.settings.preview_text | escape }}</p>
+          {%- if preview_blocks.size > 0 -%}
+            <div class="landing-grid landing-grid--three">
+              {%- for block in preview_blocks -%}
+                <div class="landing-card landing-card--soft" {{ block.shopify_attributes }}>
+                  <h3 class="landing-card__title">{{ block.settings.title | escape }}</h3>
+                  <p class="landing-card__text">{{ block.settings.text | escape }}</p>
+                  {%- if block.settings.link_label != blank and block.settings.link_url != blank -%}
+                    <a class="landing-card__link" href="{{ block.settings.link_url }}">
+                      {{ block.settings.link_label | escape }}
+                    </a>
+                  {%- endif -%}
+                </div>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="landing-band">
+        <h2 class="landing-heading">{{ section.settings.final_heading | escape }}</h2>
+        <div class="landing-actions">
+          <a class="landing-button" href="{% if section.settings.final_link != blank %}{{ section.settings.final_link }}{% else %}#{% endif %}">
+            {{ section.settings.final_label | escape }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Landing assessment",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "Guided Sleep Matching" },
+    { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Find the sleep environment that fits how you actually rest." },
+    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Answer a few simple questions and let Snoozer guide you toward a clearer mattress, base, and comfort direction." },
+    { "type": "text", "id": "primary_label", "label": "Primary CTA label", "default": "Start Your Snooze Assessment" },
+    { "type": "url", "id": "primary_link", "label": "Primary CTA link" },
+    { "type": "text", "id": "secondary_label", "label": "Secondary CTA label", "default": "Ask Snoozer" },
+    { "type": "url", "id": "secondary_link", "label": "Secondary CTA link" },
+    { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
+    { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
+    { "type": "text", "id": "how_heading", "label": "How it works heading", "default": "How It Works" },
+    { "type": "text", "id": "strip_heading", "label": "Guidance strip heading", "default": "Snoozer keeps the experience simple." },
+    { "type": "textarea", "id": "strip_text", "label": "Guidance strip text", "default": "No pressure. No endless product maze. Just guided support when you need direction." },
+    { "type": "text", "id": "preview_heading", "label": "Preview heading", "default": "Not ready to choose yet?" },
+    { "type": "textarea", "id": "preview_text", "label": "Preview text", "default": "That is the point. Start with the assessment and let the path narrow from there." },
+    { "type": "text", "id": "final_heading", "label": "Final CTA heading", "default": "Start with your sleep profile." },
+    { "type": "text", "id": "final_label", "label": "Final CTA label", "default": "Start Your Snooze Assessment" },
+    { "type": "url", "id": "final_link", "label": "Final CTA link" }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Personalized Guidance" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Built around your sleep position, comfort needs, and rest goals." }
+      ]
+    },
+    {
+      "type": "step",
+      "name": "Step",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Tell us how you sleep" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Share the basics first, then let the path narrow." }
+      ]
+    },
+    {
+      "type": "preview_card",
+      "name": "Preview card",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Explore Mattresses" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Start browsing only after the guided path becomes clearer." },
+        { "type": "text", "id": "link_label", "label": "Link label", "default": "Explore Mattresses" },
+        { "type": "url", "id": "link_url", "label": "Link URL" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Landing assessment",
+      "blocks": [
+        { "type": "benefit", "settings": { "title": "Personalized Guidance", "text": "Built around your sleep position, comfort needs, and rest goals." } },
+        { "type": "benefit", "settings": { "title": "Less Guesswork", "text": "Narrow the path before you start comparing products." } },
+        { "type": "benefit", "settings": { "title": "Clear Next Step", "text": "Move from confusion to a guided recommendation." } },
+        { "type": "step", "settings": { "title": "Tell us how you sleep", "text": "" } },
+        { "type": "step", "settings": { "title": "Get your guided match", "text": "" } },
+        { "type": "step", "settings": { "title": "Test or invest with confidence", "text": "" } },
+        { "type": "preview_card", "settings": { "title": "Explore Mattresses", "text": "Browse only after the guided direction starts to sharpen.", "link_label": "Explore Mattresses" } },
+        { "type": "preview_card", "settings": { "title": "Book A Session", "text": "If you would rather feel the difference in person, use a private Snooze Session.", "link_label": "Book Your Snooze Session" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

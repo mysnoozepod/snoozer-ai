@@ -1,0 +1,467 @@
+{%- liquid
+  assign hero_image = section.settings.hero_image
+  assign hero_alt = section.settings.hero_image_alt | strip
+  if hero_alt == blank
+    assign hero_alt = section.settings.hero_headline
+  endif
+  assign visit_steps = section.blocks | where: 'type', 'visit_step'
+  assign difference_cards = section.blocks | where: 'type', 'difference_card'
+  assign faq_items = section.blocks | where: 'type', 'faq_item'
+-%}
+
+{%- style -%}
+  .snoozer-landing-booking-{{ section.id }} {
+    max-width: 1180px;
+    margin: 20px auto 48px;
+    padding: 0 16px;
+    color: #071942;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .landing-stack {
+    display: grid;
+    gap: 20px;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .panel,
+  .snoozer-landing-booking-{{ section.id }} .band {
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 28px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .panel--soft {
+    background: #f5f7fb;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .hero {
+    display: grid;
+    gap: 24px;
+    padding: 28px 24px;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .eyebrow {
+    margin: 0 0 10px;
+    color: rgba(7, 25, 66, 0.7);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .title {
+    margin: 0;
+    font-size: 36px;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .text,
+  .snoozer-landing-booking-{{ section.id }} .subtext {
+    margin: 14px 0 0;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(7, 25, 66, 0.12);
+    background: #ffffff;
+    color: #071942;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .button--primary {
+    background: #071942;
+    border-color: #071942;
+    color: #ffffff;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .visual,
+  .snoozer-landing-booking-{{ section.id }} .fallback {
+    min-height: 220px;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .visual img {
+    display: block;
+    width: 100%;
+    min-height: 220px;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .fallback {
+    display: flex;
+    align-items: flex-end;
+    padding: 22px;
+    background:
+      radial-gradient(circle at top right, rgba(44, 66, 120, 0.16), transparent 34%),
+      linear-gradient(180deg, #eaf0f8 0%, #dfe7f3 100%);
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .section-pad,
+  .snoozer-landing-booking-{{ section.id }} .band {
+    padding: 24px;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .heading {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .grid--four,
+  .snoozer-landing-booking-{{ section.id }} .grid--three {
+    grid-template-columns: 1fr;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .card {
+    height: 100%;
+    padding: 20px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 22px;
+    background: #ffffff;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .card__title {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.15;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .card__text {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .embed-area {
+    padding: 20px;
+    border-radius: 22px;
+    border: 1px dashed rgba(7, 25, 66, 0.18);
+    background: rgba(7, 25, 66, 0.03);
+    color: rgba(7, 25, 66, 0.72);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .faq {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .faq details {
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    padding: 16px 18px;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .faq summary {
+    cursor: pointer;
+    list-style: none;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .faq summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .faq__answer {
+    margin-top: 12px;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .band {
+    background: #071942;
+    color: #ffffff;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .band .heading,
+  .snoozer-landing-booking-{{ section.id }} .band .subtext {
+    color: #ffffff;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozer-landing-booking-{{ section.id }} {
+      padding: 0 24px;
+    }
+
+    .snoozer-landing-booking-{{ section.id }} .grid--three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .snoozer-landing-booking-{{ section.id }} .grid--four {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozer-landing-booking-{{ section.id }} {
+      padding: 0 32px;
+    }
+
+    .snoozer-landing-booking-{{ section.id }} .hero {
+      grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.98fr);
+      gap: 28px;
+      padding: 36px;
+      align-items: center;
+    }
+
+    .snoozer-landing-booking-{{ section.id }} .title {
+      font-size: 50px;
+    }
+
+    .snoozer-landing-booking-{{ section.id }} .visual,
+    .snoozer-landing-booking-{{ section.id }} .fallback,
+    .snoozer-landing-booking-{{ section.id }} .visual img {
+      min-height: 300px;
+      height: 100%;
+    }
+
+    .snoozer-landing-booking-{{ section.id }} .grid--four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .snoozer-landing-booking-{{ section.id }} .section-pad,
+    .snoozer-landing-booking-{{ section.id }} .band {
+      padding: 30px 32px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozer-landing-booking-{{ section.id }}">
+    <div class="landing-stack">
+      <div class="panel panel--soft">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">{{ section.settings.hero_eyebrow | escape }}</p>
+            <h1 class="title">{{ section.settings.hero_headline | escape }}</h1>
+            <p class="text">{{ section.settings.hero_text | escape }}</p>
+            <div class="actions">
+              <a class="button button--primary" href="{% if section.settings.primary_link != blank %}{{ section.settings.primary_link }}{% else %}#{% endif %}">
+                {{ section.settings.primary_label | escape }}
+              </a>
+              <a class="button" href="{% if section.settings.secondary_link != blank %}{{ section.settings.secondary_link }}{% else %}#{% endif %}">
+                {{ section.settings.secondary_label | escape }}
+              </a>
+            </div>
+          </div>
+          {%- if hero_image != blank -%}
+            <div class="visual">
+              {{
+                hero_image
+                | image_url: width: 1400
+                | image_tag:
+                  widths: '480, 720, 960, 1400',
+                  sizes: '(min-width: 990px) 42vw, 100vw',
+                  loading: 'lazy',
+                  alt: hero_alt | escape
+              }}
+            </div>
+          {%- else -%}
+            <div class="fallback">Private Snooze Session</div>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.visit_heading | escape }}</h2>
+          <div class="grid grid--four">
+            {%- for block in visit_steps -%}
+              <div class="card" {{ block.shopify_attributes }}>
+                <h3 class="card__title">{{ block.settings.title | escape }}</h3>
+                {%- if block.settings.text != blank -%}
+                  <p class="card__text">{{ block.settings.text | escape }}</p>
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.different_heading | escape }}</h2>
+          <div class="grid grid--three">
+            {%- for block in difference_cards -%}
+              <div class="card" {{ block.shopify_attributes }}>
+                <h3 class="card__title">{{ block.settings.title | escape }}</h3>
+                <p class="card__text">{{ block.settings.text | escape }}</p>
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      </div>
+
+      <div class="band">
+        <h2 class="heading">{{ section.settings.trust_heading | escape }}</h2>
+        <p class="subtext">{{ section.settings.trust_text | escape }}</p>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.assessment_heading | escape }}</h2>
+          <p class="subtext">{{ section.settings.assessment_text | escape }}</p>
+          <div class="actions">
+            <a class="button button--primary" href="{% if section.settings.assessment_link != blank %}{{ section.settings.assessment_link }}{% else %}#{% endif %}">
+              {{ section.settings.assessment_label | escape }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.booking_heading | escape }}</h2>
+          <p class="subtext">{{ section.settings.booking_text | escape }}</p>
+          {%- if section.settings.booking_notes != blank -%}
+            <div class="embed-area">{{ section.settings.booking_notes | newline_to_br }}</div>
+          {%- endif -%}
+          <div class="actions">
+            <a class="button button--primary" href="{% if section.settings.booking_link != blank %}{{ section.settings.booking_link }}{% else %}#{% endif %}">
+              {{ section.settings.booking_label | escape }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.faq_heading | escape }}</h2>
+          <div class="faq">
+            {%- for block in faq_items -%}
+              <details {{ block.shopify_attributes }}>
+                <summary>{{ block.settings.question | escape }}</summary>
+                <div class="faq__answer">{{ block.settings.answer | escape }}</div>
+              </details>
+            {%- endfor -%}
+          </div>
+        </div>
+      </div>
+
+      <div class="band">
+        <h2 class="heading">{{ section.settings.final_heading | escape }}</h2>
+        <div class="actions">
+          <a class="button" href="{% if section.settings.final_link != blank %}{{ section.settings.final_link }}{% else %}#{% endif %}">
+            {{ section.settings.final_label | escape }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Landing booking",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "Book Your Snooze Session" },
+    { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Visit a calmer way to test your next sleep environment." },
+    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Your Snooze Session gives you time to experience recommended comfort without the pressure of a traditional showroom." },
+    { "type": "text", "id": "primary_label", "label": "Primary CTA label", "default": "Book Your Snooze Session" },
+    { "type": "url", "id": "primary_link", "label": "Primary CTA link" },
+    { "type": "text", "id": "secondary_label", "label": "Secondary CTA label", "default": "Take the Snooze Assessment First" },
+    { "type": "url", "id": "secondary_link", "label": "Secondary CTA link" },
+    { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
+    { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
+    { "type": "text", "id": "visit_heading", "label": "Visit steps heading", "default": "What Happens During Your Visit" },
+    { "type": "text", "id": "different_heading", "label": "Why different heading", "default": "Why It Is Different" },
+    { "type": "text", "id": "trust_heading", "label": "Trust heading", "default": "Simple, private, and guided." },
+    { "type": "textarea", "id": "trust_text", "label": "Trust text", "default": "You will know where to start, what to test, and what to do next." },
+    { "type": "text", "id": "assessment_heading", "label": "Assessment prompt heading", "default": "For the best visit, complete your Snooze Assessment first." },
+    { "type": "textarea", "id": "assessment_text", "label": "Assessment prompt text", "default": "A little guidance up front makes the visit clearer and calmer." },
+    { "type": "text", "id": "assessment_label", "label": "Assessment CTA label", "default": "Start Your Snooze Assessment" },
+    { "type": "url", "id": "assessment_link", "label": "Assessment CTA link" },
+    { "type": "text", "id": "booking_heading", "label": "Booking heading", "default": "Ready to schedule?" },
+    { "type": "textarea", "id": "booking_text", "label": "Booking text", "default": "Use the button below or replace this area with your preferred booking embed later." },
+    { "type": "textarea", "id": "booking_notes", "label": "Booking placeholder content", "default": "Paste scheduling notes or embed instructions here later if needed." },
+    { "type": "text", "id": "booking_label", "label": "Booking CTA label", "default": "Book Now" },
+    { "type": "url", "id": "booking_link", "label": "Booking CTA link" },
+    { "type": "text", "id": "faq_heading", "label": "FAQ heading", "default": "Frequently Asked Questions" },
+    { "type": "text", "id": "final_heading", "label": "Final CTA heading", "default": "Book your Snooze Session." },
+    { "type": "text", "id": "final_label", "label": "Final CTA label", "default": "Book Your Snooze Session" },
+    { "type": "url", "id": "final_link", "label": "Final CTA link" }
+  ],
+  "blocks": [
+    {
+      "type": "visit_step",
+      "name": "Visit step",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Check in" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Start the visit with a clear guided path." }
+      ]
+    },
+    {
+      "type": "difference_card",
+      "name": "Difference card",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "No hovering salesperson" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Move through the experience with less pressure and more clarity." }
+      ]
+    },
+    {
+      "type": "faq_item",
+      "name": "FAQ item",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question", "default": "Do I need an appointment?" },
+        { "type": "textarea", "id": "answer", "label": "Answer", "default": "Use this answer area to clarify the visit process." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Landing booking",
+      "blocks": [
+        { "type": "visit_step", "settings": { "title": "Check in", "text": "" } },
+        { "type": "visit_step", "settings": { "title": "Follow the guided path", "text": "" } },
+        { "type": "visit_step", "settings": { "title": "Test your recommended fit", "text": "" } },
+        { "type": "visit_step", "settings": { "title": "Choose your next step", "text": "" } },
+        { "type": "difference_card", "settings": { "title": "No hovering salesperson", "text": "" } },
+        { "type": "difference_card", "settings": { "title": "Guided by Snoozer", "text": "" } },
+        { "type": "difference_card", "settings": { "title": "Built around your sleep profile", "text": "" } },
+        { "type": "faq_item", "settings": { "question": "Do I need an appointment?", "answer": "" } },
+        { "type": "faq_item", "settings": { "question": "How long does a Snooze Session take?", "answer": "" } },
+        { "type": "faq_item", "settings": { "question": "Can I bring someone with me?", "answer": "" } },
+        { "type": "faq_item", "settings": { "question": "Will someone be available if I need help?", "answer": "" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

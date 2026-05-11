@@ -1,0 +1,544 @@
+{%- liquid
+  assign hero_image = section.settings.hero_image
+  assign hero_alt = section.settings.hero_image_alt | strip
+  if hero_alt == blank
+    assign hero_alt = section.settings.hero_headline
+  endif
+  assign help_cards = section.blocks | where: 'type', 'help_card'
+  assign preview_cards = section.blocks | where: 'type', 'preview_card'
+  assign faq_items = section.blocks | where: 'type', 'faq_item'
+  assign selected_collection = section.settings.featured_collection
+-%}
+
+{%- style -%}
+  .snoozer-landing-problem-{{ section.id }} {
+    max-width: 1180px;
+    margin: 20px auto 48px;
+    padding: 0 16px;
+    color: #071942;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .stack {
+    display: grid;
+    gap: 20px;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .panel,
+  .snoozer-landing-problem-{{ section.id }} .band {
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 28px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .panel--soft {
+    background: #f5f7fb;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .hero {
+    display: grid;
+    gap: 24px;
+    padding: 28px 24px;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .eyebrow {
+    margin: 0 0 10px;
+    color: rgba(7, 25, 66, 0.7);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .title {
+    margin: 0;
+    font-size: 36px;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .text,
+  .snoozer-landing-problem-{{ section.id }} .subtext {
+    margin: 14px 0 0;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(7, 25, 66, 0.12);
+    background: #ffffff;
+    color: #071942;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .button--primary {
+    background: #071942;
+    border-color: #071942;
+    color: #ffffff;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .visual,
+  .snoozer-landing-problem-{{ section.id }} .fallback {
+    min-height: 220px;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .visual img {
+    display: block;
+    width: 100%;
+    min-height: 220px;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .fallback {
+    display: flex;
+    align-items: flex-end;
+    padding: 22px;
+    background:
+      radial-gradient(circle at top right, rgba(44, 66, 120, 0.16), transparent 34%),
+      linear-gradient(180deg, #eaf0f8 0%, #dfe7f3 100%);
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .section-pad,
+  .snoozer-landing-problem-{{ section.id }} .band {
+    padding: 24px;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .heading {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .grid--four,
+  .snoozer-landing-problem-{{ section.id }} .grid--preview,
+  .snoozer-landing-problem-{{ section.id }} .grid--faq {
+    grid-template-columns: 1fr;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .card {
+    height: 100%;
+    padding: 20px;
+    border-radius: 22px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    background: #ffffff;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .card__title {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.15;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .card__text,
+  .snoozer-landing-problem-{{ section.id }} .product-card__text {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .product-card__media,
+  .snoozer-landing-problem-{{ section.id }} .product-card__fallback {
+    width: 100%;
+    height: 180px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #f5f7fb;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .product-card__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .product-card__fallback {
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+    color: rgba(7, 25, 66, 0.72);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .product-card__price {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #071942;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .product-card__link {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 14px;
+    color: #071942;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .faq {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .faq details {
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 18px;
+    background: #ffffff;
+    padding: 16px 18px;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .faq summary {
+    cursor: pointer;
+    list-style: none;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .faq summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .faq__answer {
+    margin-top: 12px;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .band {
+    background: #071942;
+    color: #ffffff;
+  }
+
+  .snoozer-landing-problem-{{ section.id }} .band .heading,
+  .snoozer-landing-problem-{{ section.id }} .band .subtext {
+    color: #ffffff;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozer-landing-problem-{{ section.id }} {
+      padding: 0 24px;
+    }
+
+    .snoozer-landing-problem-{{ section.id }} .grid--four,
+    .snoozer-landing-problem-{{ section.id }} .grid--preview {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozer-landing-problem-{{ section.id }} {
+      padding: 0 32px;
+    }
+
+    .snoozer-landing-problem-{{ section.id }} .hero {
+      grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.98fr);
+      gap: 28px;
+      padding: 36px;
+      align-items: center;
+    }
+
+    .snoozer-landing-problem-{{ section.id }} .title {
+      font-size: 50px;
+    }
+
+    .snoozer-landing-problem-{{ section.id }} .visual,
+    .snoozer-landing-problem-{{ section.id }} .fallback,
+    .snoozer-landing-problem-{{ section.id }} .visual img {
+      min-height: 300px;
+      height: 100%;
+    }
+
+    .snoozer-landing-problem-{{ section.id }} .grid--four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .snoozer-landing-problem-{{ section.id }} .grid--preview {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .snoozer-landing-problem-{{ section.id }} .section-pad,
+    .snoozer-landing-problem-{{ section.id }} .band {
+      padding: 30px 32px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozer-landing-problem-{{ section.id }}">
+    <div class="stack">
+      <div class="panel panel--soft">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">{{ section.settings.hero_eyebrow | escape }}</p>
+            <h1 class="title">{{ section.settings.hero_headline | escape }}</h1>
+            <p class="text">{{ section.settings.hero_text | escape }}</p>
+            <div class="actions">
+              <a class="button button--primary" href="{% if section.settings.primary_link != blank %}{{ section.settings.primary_link }}{% else %}#{% endif %}">
+                {{ section.settings.primary_label | escape }}
+              </a>
+              <a class="button" href="{% if section.settings.secondary_link != blank %}{{ section.settings.secondary_link }}{% else %}#{% endif %}">
+                {{ section.settings.secondary_label | escape }}
+              </a>
+            </div>
+          </div>
+          {%- if hero_image != blank -%}
+            <div class="visual">
+              {{
+                hero_image
+                | image_url: width: 1400
+                | image_tag:
+                  widths: '480, 720, 960, 1400',
+                  sizes: '(min-width: 990px) 42vw, 100vw',
+                  loading: 'lazy',
+                  alt: hero_alt | escape
+              }}
+            </div>
+          {%- else -%}
+            <div class="fallback">Comfort and support guide</div>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.clarifier_heading | escape }}</h2>
+          <p class="subtext">{{ section.settings.clarifier_text | escape }}</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.help_heading | escape }}</h2>
+          <div class="grid grid--four">
+            {%- for block in help_cards -%}
+              <div class="card" {{ block.shopify_attributes }}>
+                <h3 class="card__title">{{ block.settings.title | escape }}</h3>
+                {%- if block.settings.text != blank -%}
+                  <p class="card__text">{{ block.settings.text | escape }}</p>
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      </div>
+
+      <div class="band">
+        <h2 class="heading">{{ section.settings.snoozer_heading | escape }}</h2>
+        <p class="subtext">{{ section.settings.snoozer_text | escape }}</p>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.preview_heading | escape }}</h2>
+          <p class="subtext">{{ section.settings.preview_text | escape }}</p>
+          <div class="grid grid--preview">
+            {%- if selected_collection != blank -%}
+              {%- for product in selected_collection.products limit: section.settings.product_limit -%}
+                <article class="card">
+                  {%- if product.featured_image != blank -%}
+                    <div class="product-card__media">
+                      {{
+                        product.featured_image
+                        | image_url: width: 720
+                        | image_tag:
+                          widths: '360, 540, 720',
+                          sizes: '(min-width: 990px) 22vw, 100vw',
+                          loading: 'lazy',
+                          alt: product.title | escape
+                      }}
+                    </div>
+                  {%- else -%}
+                    <div class="product-card__fallback">{{ product.title | escape }}</div>
+                  {%- endif -%}
+                  <h3 class="card__title">{{ product.title | escape }}</h3>
+                  {%- if section.settings.show_price -%}
+                    <div class="product-card__price">{{ product.price | money }}</div>
+                  {%- endif -%}
+                  <a class="product-card__link" href="{{ product.url }}">View Product</a>
+                </article>
+              {%- endfor -%}
+            {%- else -%}
+              {%- for block in preview_cards -%}
+                <article class="card" {{ block.shopify_attributes }}>
+                  {%- if block.settings.image != blank -%}
+                    <div class="product-card__media">
+                      {{
+                        block.settings.image
+                        | image_url: width: 720
+                        | image_tag:
+                          widths: '360, 540, 720',
+                          sizes: '(min-width: 990px) 22vw, 100vw',
+                          loading: 'lazy',
+                          alt: block.settings.title | escape
+                      }}
+                    </div>
+                  {%- else -%}
+                    <div class="product-card__fallback">{{ block.settings.title | escape }}</div>
+                  {%- endif -%}
+                  <h3 class="card__title">{{ block.settings.title | escape }}</h3>
+                  <p class="product-card__text">{{ block.settings.text | escape }}</p>
+                  {%- if block.settings.link_label != blank and block.settings.link_url != blank -%}
+                    <a class="product-card__link" href="{{ block.settings.link_url }}">
+                      {{ block.settings.link_label | escape }}
+                    </a>
+                  {%- endif -%}
+                </article>
+              {%- endfor -%}
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+
+      <div class="band">
+        <h2 class="heading">{{ section.settings.assessment_heading | escape }}</h2>
+        <div class="actions">
+          <a class="button" href="{% if section.settings.assessment_link != blank %}{{ section.settings.assessment_link }}{% else %}#{% endif %}">
+            {{ section.settings.assessment_label | escape }}
+          </a>
+        </div>
+      </div>
+
+      <div class="band">
+        <h2 class="heading">{{ section.settings.booking_heading | escape }}</h2>
+        <div class="actions">
+          <a class="button" href="{% if section.settings.booking_link != blank %}{{ section.settings.booking_link }}{% else %}#{% endif %}">
+            {{ section.settings.booking_label | escape }}
+          </a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.faq_heading | escape }}</h2>
+          <div class="faq">
+            {%- for block in faq_items -%}
+              <details {{ block.shopify_attributes }}>
+                <summary>{{ block.settings.question | escape }}</summary>
+                <div class="faq__answer">{{ block.settings.answer | escape }}</div>
+              </details>
+            {%- endfor -%}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Problem solution",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "Sleep Problem Guide" },
+    { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Still waking up uncomfortable?" },
+    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Your mattress, base, and sleep environment can change how supported and settled you feel at night." },
+    { "type": "text", "id": "primary_label", "label": "Primary CTA label", "default": "Find Your Fit" },
+    { "type": "url", "id": "primary_link", "label": "Primary CTA link" },
+    { "type": "text", "id": "secondary_label", "label": "Secondary CTA label", "default": "Start Your Snooze Assessment" },
+    { "type": "url", "id": "secondary_link", "label": "Secondary CTA link" },
+    { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
+    { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
+    { "type": "text", "id": "clarifier_heading", "label": "Clarifier heading", "default": "What might be getting in the way?" },
+    { "type": "textarea", "id": "clarifier_text", "label": "Clarifier text", "default": "Comfort issues usually come from a mix of pressure, support, temperature, and sleep position. Snoozer helps narrow the path." },
+    { "type": "text", "id": "help_heading", "label": "Help cards heading", "default": "What Usually Helps" },
+    { "type": "text", "id": "snoozer_heading", "label": "Snoozer heading", "default": "Let Snoozer narrow it down." },
+    { "type": "textarea", "id": "snoozer_text", "label": "Snoozer text", "default": "Instead of guessing through every mattress, start with how you sleep." },
+    { "type": "text", "id": "preview_heading", "label": "Preview heading", "default": "Explore a few directions" },
+    { "type": "textarea", "id": "preview_text", "label": "Preview text", "default": "Use a collection or a few manual cards to preview where someone could start next." },
+    { "type": "collection", "id": "featured_collection", "label": "Featured collection" },
+    { "type": "range", "id": "product_limit", "label": "Product limit", "min": 2, "max": 8, "step": 1, "default": 4 },
+    { "type": "checkbox", "id": "show_price", "label": "Show price", "default": true },
+    { "type": "text", "id": "assessment_heading", "label": "Assessment CTA heading", "default": "Get your personalized direction." },
+    { "type": "text", "id": "assessment_label", "label": "Assessment CTA label", "default": "Start Your Snooze Assessment" },
+    { "type": "url", "id": "assessment_link", "label": "Assessment CTA link" },
+    { "type": "text", "id": "booking_heading", "label": "Booking CTA heading", "default": "Want to feel the difference in person?" },
+    { "type": "text", "id": "booking_label", "label": "Booking CTA label", "default": "Book Your Snooze Session" },
+    { "type": "url", "id": "booking_link", "label": "Booking CTA link" },
+    { "type": "text", "id": "faq_heading", "label": "FAQ heading", "default": "Frequently Asked Questions" }
+  ],
+  "blocks": [
+    {
+      "type": "help_card",
+      "name": "Help card",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Better pressure relief" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Choose a short explanation for why this direction may help." }
+      ]
+    },
+    {
+      "type": "preview_card",
+      "name": "Preview card",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "title", "label": "Title", "default": "Foam Mattress" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Use a short note to explain why this could be a useful direction." },
+        { "type": "text", "id": "link_label", "label": "Link label", "default": "Explore Mattresses" },
+        { "type": "url", "id": "link_url", "label": "Link URL" }
+      ]
+    },
+    {
+      "type": "faq_item",
+      "name": "FAQ item",
+      "settings": [
+        { "type": "text", "id": "question", "label": "Question", "default": "Can a mattress help with comfort issues?" },
+        { "type": "textarea", "id": "answer", "label": "Answer", "default": "Use this answer area to explain the next step without making medical claims." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Problem solution",
+      "blocks": [
+        { "type": "help_card", "settings": { "title": "Better pressure relief", "text": "" } },
+        { "type": "help_card", "settings": { "title": "More stable support", "text": "" } },
+        { "type": "help_card", "settings": { "title": "Cooling comfort", "text": "" } },
+        { "type": "help_card", "settings": { "title": "Adjustable positioning", "text": "" } },
+        { "type": "preview_card", "settings": { "title": "Start with mattresses", "text": "Use manual cards when you do not want to connect a collection yet.", "link_label": "Explore Mattresses" } },
+        { "type": "preview_card", "settings": { "title": "Explore bases", "text": "Highlight a second direction if it supports the comfort story.", "link_label": "Explore Bases" } },
+        { "type": "preview_card", "settings": { "title": "Add pillows", "text": "Use a third card to extend the sleep environment conversation.", "link_label": "Explore Pillows" } },
+        { "type": "preview_card", "settings": { "title": "Layer protection", "text": "Round out the path with supporting pieces if that feels helpful.", "link_label": "Explore Protection" } },
+        { "type": "faq_item", "settings": { "question": "Can a mattress help with comfort issues?", "answer": "" } },
+        { "type": "faq_item", "settings": { "question": "Should I choose foam or hybrid?", "answer": "" } },
+        { "type": "faq_item", "settings": { "question": "Do adjustable bases matter?", "answer": "" } },
+        { "type": "faq_item", "settings": { "question": "How does Snoozer recommend products?", "answer": "" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

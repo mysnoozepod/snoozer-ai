@@ -1,0 +1,10 @@
+{
+  "sections": {
+    "main": {
+      "type": "snoozer-landing-brand-trust"
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

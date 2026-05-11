@@ -1,0 +1,10 @@
+{
+  "sections": {
+    "main": {
+      "type": "snoozer-landing-category-guide"
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

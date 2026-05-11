@@ -1,0 +1,385 @@
+{%- liquid
+  assign hero_image = section.settings.hero_image
+  assign hero_alt = section.settings.hero_image_alt | strip
+  if hero_alt == blank
+    assign hero_alt = section.settings.hero_headline
+  endif
+  assign journey_cards = section.blocks | where: 'type', 'journey_step'
+  assign founder_image = section.settings.founder_image
+  assign founder_alt = section.settings.founder_image_alt | strip
+  if founder_alt == blank
+    assign founder_alt = section.settings.founder_heading
+  endif
+-%}
+
+{%- style -%}
+  .snoozer-landing-brand-{{ section.id }} {
+    max-width: 1180px;
+    margin: 20px auto 48px;
+    padding: 0 16px;
+    color: #071942;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .stack {
+    display: grid;
+    gap: 20px;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .panel,
+  .snoozer-landing-brand-{{ section.id }} .band {
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 28px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .panel--soft {
+    background: #f5f7fb;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .hero,
+  .snoozer-landing-brand-{{ section.id }} .founder {
+    display: grid;
+    gap: 24px;
+    padding: 28px 24px;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .eyebrow {
+    margin: 0 0 10px;
+    color: rgba(7, 25, 66, 0.7);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .title {
+    margin: 0;
+    font-size: 36px;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .text,
+  .snoozer-landing-brand-{{ section.id }} .subtext {
+    margin: 14px 0 0;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(7, 25, 66, 0.12);
+    background: #ffffff;
+    color: #071942;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .button--primary {
+    background: #071942;
+    border-color: #071942;
+    color: #ffffff;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .visual,
+  .snoozer-landing-brand-{{ section.id }} .fallback {
+    min-height: 220px;
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .visual img {
+    display: block;
+    width: 100%;
+    min-height: 220px;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .fallback {
+    display: flex;
+    align-items: flex-end;
+    padding: 22px;
+    background:
+      radial-gradient(circle at top right, rgba(44, 66, 120, 0.16), transparent 34%),
+      linear-gradient(180deg, #eaf0f8 0%, #dfe7f3 100%);
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .section-pad,
+  .snoozer-landing-brand-{{ section.id }} .band {
+    padding: 24px;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .heading {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .grid--four {
+    grid-template-columns: 1fr;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .card {
+    height: 100%;
+    padding: 20px;
+    border-radius: 22px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    background: #ffffff;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .card__title {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.15;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .card__text {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .band {
+    background: #071942;
+    color: #ffffff;
+  }
+
+  .snoozer-landing-brand-{{ section.id }} .band .heading,
+  .snoozer-landing-brand-{{ section.id }} .band .subtext {
+    color: #ffffff;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozer-landing-brand-{{ section.id }} {
+      padding: 0 24px;
+    }
+
+    .snoozer-landing-brand-{{ section.id }} .grid--four {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozer-landing-brand-{{ section.id }} {
+      padding: 0 32px;
+    }
+
+    .snoozer-landing-brand-{{ section.id }} .hero,
+    .snoozer-landing-brand-{{ section.id }} .founder {
+      grid-template-columns: minmax(0, 1.02fr) minmax(360px, 0.98fr);
+      gap: 28px;
+      padding: 36px;
+      align-items: center;
+    }
+
+    .snoozer-landing-brand-{{ section.id }} .title {
+      font-size: 50px;
+    }
+
+    .snoozer-landing-brand-{{ section.id }} .visual,
+    .snoozer-landing-brand-{{ section.id }} .fallback,
+    .snoozer-landing-brand-{{ section.id }} .visual img {
+      min-height: 300px;
+      height: 100%;
+    }
+
+    .snoozer-landing-brand-{{ section.id }} .grid--four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .snoozer-landing-brand-{{ section.id }} .section-pad,
+    .snoozer-landing-brand-{{ section.id }} .band {
+      padding: 30px 32px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozer-landing-brand-{{ section.id }}">
+    <div class="stack">
+      <div class="panel panel--soft">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">{{ section.settings.hero_eyebrow | escape }}</p>
+            <h1 class="title">{{ section.settings.hero_headline | escape }}</h1>
+            <p class="text">{{ section.settings.hero_text | escape }}</p>
+            <div class="actions">
+              <a class="button button--primary" href="{% if section.settings.primary_link != blank %}{{ section.settings.primary_link }}{% else %}#{% endif %}">
+                {{ section.settings.primary_label | escape }}
+              </a>
+              <a class="button" href="{% if section.settings.secondary_link != blank %}{{ section.settings.secondary_link }}{% else %}#{% endif %}">
+                {{ section.settings.secondary_label | escape }}
+              </a>
+            </div>
+          </div>
+          {%- if hero_image != blank -%}
+            <div class="visual">
+              {{
+                hero_image
+                | image_url: width: 1400
+                | image_tag:
+                  widths: '480, 720, 960, 1400',
+                  sizes: '(min-width: 990px) 42vw, 100vw',
+                  loading: 'lazy',
+                  alt: hero_alt | escape
+              }}
+            </div>
+          {%- else -%}
+            <div class="fallback">Guided journey</div>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.why_heading | escape }}</h2>
+          <p class="subtext">{{ section.settings.why_text | escape }}</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.journey_heading | escape }}</h2>
+          <div class="grid grid--four">
+            {%- for block in journey_cards -%}
+              <div class="card" {{ block.shopify_attributes }}>
+                <h3 class="card__title">{{ block.settings.title | escape }}</h3>
+                {%- if block.settings.text != blank -%}
+                  <p class="card__text">{{ block.settings.text | escape }}</p>
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.snoozer_heading | escape }}</h2>
+          <p class="subtext">{{ section.settings.snoozer_text | escape }}</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-pad">
+          <h2 class="heading">{{ section.settings.bridge_heading | escape }}</h2>
+          <p class="subtext">{{ section.settings.bridge_text | escape }}</p>
+        </div>
+      </div>
+
+      <div class="panel panel--soft">
+        <div class="founder">
+          <div>
+            <h2 class="heading">{{ section.settings.founder_heading | escape }}</h2>
+            <p class="subtext">{{ section.settings.founder_text | escape }}</p>
+          </div>
+          {%- if founder_image != blank -%}
+            <div class="visual">
+              {{
+                founder_image
+                | image_url: width: 1400
+                | image_tag:
+                  widths: '480, 720, 960, 1400',
+                  sizes: '(min-width: 990px) 42vw, 100vw',
+                  loading: 'lazy',
+                  alt: founder_alt | escape
+              }}
+            </div>
+          {%- else -%}
+            <div class="fallback">Brand story</div>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="band">
+        <h2 class="heading">{{ section.settings.final_heading | escape }}</h2>
+        <div class="actions">
+          <a class="button" href="{% if section.settings.final_link != blank %}{{ section.settings.final_link }}{% else %}#{% endif %}">
+            {{ section.settings.final_label | escape }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Brand trust",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "MySnoozePod" },
+    { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "A guided sleep health and wellness journey." },
+    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "We are building a simpler way to understand, test, and invest in your sleep environment." },
+    { "type": "text", "id": "primary_label", "label": "Primary CTA label", "default": "Start Your Snooze Assessment" },
+    { "type": "url", "id": "primary_link", "label": "Primary CTA link" },
+    { "type": "text", "id": "secondary_label", "label": "Secondary CTA label", "default": "Book Your Snooze Session" },
+    { "type": "url", "id": "secondary_link", "label": "Secondary CTA link" },
+    { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
+    { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
+    { "type": "text", "id": "why_heading", "label": "Why section heading", "default": "Mattress shopping should feel clearer." },
+    { "type": "textarea", "id": "why_text", "label": "Why section text", "default": "Too many choices create confusion. MySnoozePod uses guided steps to make the path calmer, simpler, and more personal." },
+    { "type": "text", "id": "journey_heading", "label": "Journey heading", "default": "The Guided Journey" },
+    { "type": "text", "id": "snoozer_heading", "label": "Snoozer heading", "default": "Snoozer is your guide." },
+    { "type": "textarea", "id": "snoozer_text", "label": "Snoozer text", "default": "Snoozer helps keep the experience focused, calm, and clear. It is not here to pressure you or overwhelm you." },
+    { "type": "text", "id": "bridge_heading", "label": "Bridge heading", "default": "One guided experience, online and in person." },
+    { "type": "textarea", "id": "bridge_text", "label": "Bridge text", "default": "The same guided logic supports your path whether you begin at home or inside the showroom." },
+    { "type": "text", "id": "founder_heading", "label": "Founder section heading", "default": "Built for a better retail experience." },
+    { "type": "textarea", "id": "founder_text", "label": "Founder section text", "default": "MySnoozePod is designed around clarity, comfort, and a more intentional way to shop for sleep." },
+    { "type": "image_picker", "id": "founder_image", "label": "Founder section image" },
+    { "type": "text", "id": "founder_image_alt", "label": "Founder image alt text" },
+    { "type": "text", "id": "final_heading", "label": "Final CTA heading", "default": "Your sleep health and wellness journey begins now." },
+    { "type": "text", "id": "final_label", "label": "Final CTA label", "default": "Start Your Snooze Assessment" },
+    { "type": "url", "id": "final_link", "label": "Final CTA link" }
+  ],
+  "blocks": [
+    {
+      "type": "journey_step",
+      "name": "Journey step",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Start with your sleep profile" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Add a short line to explain the step." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brand trust",
+      "blocks": [
+        { "type": "journey_step", "settings": { "title": "Start with your sleep profile", "text": "" } },
+        { "type": "journey_step", "settings": { "title": "Review your guided match", "text": "" } },
+        { "type": "journey_step", "settings": { "title": "Experience your Snooze Session", "text": "" } },
+        { "type": "journey_step", "settings": { "title": "Invest with confidence", "text": "" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
