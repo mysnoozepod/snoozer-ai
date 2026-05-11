@@ -456,6 +456,10 @@
         document.documentElement.classList.add('shopify-design-mode');
       }
     </script>
+    <script>
+      window.MySnoozePod = window.MySnoozePod || {};
+      window.MySnoozePod.apiBase = "https://u6zcsiqgj0.execute-api.us-east-1.amazonaws.com/prod";
+    </script>
   </head>
 
   <body class="gradient template-{{ request.page_type | handle }}{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
