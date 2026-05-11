@@ -26,6 +26,32 @@
     }
   }
 
+  .footer__checkout-trust {
+    display: grid;
+    gap: 0.6rem;
+    margin-bottom: 1.6rem;
+    max-width: 32rem;
+  }
+
+  .footer__checkout-heading,
+  .footer__checkout-copy {
+    margin: 0;
+  }
+
+  .footer__checkout-heading {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(var(--color-foreground), 0.68);
+  }
+
+  .footer__checkout-copy {
+    font-size: 1.4rem;
+    line-height: 1.55;
+    color: rgba(var(--color-foreground), 0.74);
+  }
+
   @media screen and (min-width: 990px) {
     body.template-index .footer .footer__content-bottom {
       padding-top: 28px;
@@ -43,6 +69,11 @@
 
     if settings.brand_image == blank and settings.brand_headline == blank and settings.brand_description == blank
       assign brand_empty = true
+    endif
+
+    assign show_checkout_trust = false
+    if template.name == 'cart' or template.directory == 'customers'
+      assign show_checkout_trust = true
     endif
 
     if section.blocks.size == 1 and section.blocks[0].type == 'brand_information' and brand_empty and has_social_icons == false and section.settings.newsletter_enable == false and section.settings.enable_follow_on_shop == false
@@ -290,6 +321,12 @@
         {%- endif -%}
       </div>
       <div class="footer__column footer__column--info">
+        {%- if show_checkout_trust -%}
+          <div class="footer__checkout-trust">
+            <p class="footer__checkout-heading">{{ 'sections.footer.checkout_heading' | t }}</p>
+            <p class="footer__checkout-copy">{{ 'sections.footer.checkout_copy' | t }}</p>
+          </div>
+        {%- endif -%}
         {%- if section.settings.payment_enable -%}
           <div class="footer__payment">
             <span class="visually-hidden">{{ 'sections.footer.payment' | t }}</span>

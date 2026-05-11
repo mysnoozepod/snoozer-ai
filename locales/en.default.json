@@ -42,7 +42,7 @@
     "cart": {
       "view": "View cart ({{ count }})",
       "view_empty_cart": "View cart",
-      "item_added": "Item added to your cart"
+      "item_added": "Item added to your sleep investment"
     },
     "share": {
       "close": "Close share",
@@ -288,7 +288,10 @@
       "estimated_total": "Estimated total",
       "new_estimated_total": "New estimated total",
       "note": "Order special instructions",
-      "checkout": "Check out",
+      "checkout": "Complete Your Sleep Investment",
+      "checkout_heading": "Complete Your Sleep Investment",
+      "secure_checkout": "Secure checkout",
+      "checkout_support": "Protected checkout. Clear next steps. No pressure.",
       "empty": "Your cart is empty",
       "cart_error": "There was an error while updating your cart. Please try again.",
       "cart_quantity_error_html": "You can only add {{ quantity }} of this item to your cart.",
@@ -309,12 +312,14 @@
       },
       "update": "Update",
       "login": {
-        "title": "Have an account?",
-        "paragraph_html": "<a href=\"{{ link }}\" class=\"link underlined-link\">Log in</a> to check out faster."
+        "title": "Have a MySnoozePod account?",
+        "paragraph_html": "<a href=\"{{ link }}\" class=\"link underlined-link\">Log in</a> for a faster, clearer checkout."
       }
     },
     "footer": {
-      "payment": "Payment methods"
+      "payment": "Secure checkout payment methods",
+      "checkout_heading": "Secure checkout",
+      "checkout_copy": "Protected checkout. Clear next steps. No pressure."
     },
     "featured_blog": {
       "view_all": "View all",
@@ -385,15 +390,16 @@
   },
   "customer": {
     "account": {
-      "title": "Account",
+      "title": "MySnoozePod Account",
+      "subtitle": "Review your recent sleep investment details.",
       "details": "Account details",
       "view_addresses": "View addresses",
-      "return": "Return to Account details"
+      "return": "Back to your account"
     },
     "account_fallback": "Account",
     "activate_account": {
-      "title": "Activate account",
-      "subtext": "Create your password to activate your account.",
+      "title": "Activate your account",
+      "subtext": "Create your password to activate your MySnoozePod account.",
       "password": "Password",
       "password_confirm": "Confirm password",
       "submit": "Activate account",
@@ -401,6 +407,7 @@
     },
     "addresses": {
       "title": "Addresses",
+      "subtitle": "Keep your delivery details current for a smoother sleep investment journey.",
       "default": "Default",
       "add_new": "Add a new address",
       "edit_address": "Edit address",
@@ -429,16 +436,18 @@
       "create_account": "Create account",
       "email": "Email",
       "forgot_password": "Forgot your password?",
-      "guest_continue": "Continue",
-      "guest_title": "Continue as a guest",
+      "guest_continue": "Continue as guest",
+      "guest_title": "Continue to secure checkout",
       "password": "Password",
-      "title": "Login",
+      "title": "Sign in",
+      "subtitle": "Sign in to manage your MySnoozePod account.",
       "sign_in": "Sign in",
       "submit": "Submit",
       "alternate_provider_separator": "or"
     },
     "order": {
       "title": "Order {{ name }}",
+      "subtitle": "Review your recent sleep investment details.",
       "date_html": "Placed on {{ date }}",
       "cancelled_html": "Order Cancelled on {{ date }}",
       "cancelled_reason": "Reason: {{ reason }}",
@@ -475,11 +484,12 @@
     },
     "recover_password": {
       "title": "Reset your password",
-      "subtext": "We will send you an email to reset your password",
+      "subtext": "Enter your email and we'll send a link to reset your password.",
       "success": "We've sent you an email with a link to update your password."
     },
     "register": {
-      "title": "Create account",
+      "title": "Create your account",
+      "subtitle": "Create your MySnoozePod account to manage your sleep investment with clarity.",
       "first_name": "First name",
       "last_name": "Last name",
       "email": "Email",
@@ -488,7 +498,7 @@
     },
     "reset_password": {
       "title": "Reset account password",
-      "subtext": "Enter a new password",
+      "subtext": "Enter a new password to keep your MySnoozePod account secure.",
       "password": "Password",
       "password_confirm": "Confirm password",
       "submit": "Reset password"

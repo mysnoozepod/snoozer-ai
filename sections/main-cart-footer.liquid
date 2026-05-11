@@ -9,10 +9,30 @@
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
+  #main-cart-footer .cart__summary-heading {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: rgb(var(--color-foreground));
+  }
+
+  #main-cart-footer .cart__summary-support {
+    margin: 0;
+    font-size: 1.4rem;
+    line-height: 1.55;
+    color: rgba(var(--color-foreground), 0.68);
+  }
+
   @media screen and (min-width: 750px) {
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top }}px;
       padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+
+    #main-cart-footer .cart__summary-heading {
+      font-size: 2.8rem;
     }
   }
 {%- endstyle -%}
@@ -39,8 +59,9 @@
 
       <div class="cart__blocks">
         <div class="cart__summary-intro">
-          <p class="cart__summary-kicker">Sleep investment summary</p>
-          <p class="cart__summary-copy">Review your subtotal and continue when you're ready.</p>
+          <p class="cart__summary-kicker">{{ 'sections.cart.secure_checkout' | t }}</p>
+          <p class="cart__summary-heading">{{ 'sections.cart.checkout_heading' | t }}</p>
+          <p class="cart__summary-support">{{ 'sections.cart.checkout_support' | t }}</p>
         </div>
 
         {% for block in section.blocks %}
