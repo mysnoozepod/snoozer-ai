@@ -793,6 +793,15 @@ function flatResponse(event, statusCode, body = {}, extraHeaders = {}) {
   };
 }
 
+function rawJsonResponse(event, statusCode, body = {}, extraHeaders = {}) {
+  const traceId = getTraceId(event);
+  return {
+    statusCode,
+    headers: baseHeaders(event, { "X-Trace-Id": traceId, ...extraHeaders }),
+    body: JSON.stringify(body),
+  };
+}
+
 function log(src, msg, extra = {}) {
   console.log(JSON.stringify({ src, msg, time: new Date().toISOString(), ...extra }));
 }
@@ -894,6 +903,303 @@ function deriveEffectiveThreadId(event, payload) {
     (p.shopperId ? `shopper_${String(p.shopperId).trim()}` : null) ||
     makeSessionId()
   );
+}
+
+const HUD_ASK_ACTION_ASSESSMENT = Object.freeze({
+  label: "Take Snooze Assessment",
+  type: "page",
+  href: "/pages/snooze-assessment",
+});
+
+const HUD_ASK_ACTION_BOOKING = Object.freeze({
+  label: "Book Your Snooze Session",
+  type: "page",
+  href: "/pages/book-your-snooze-session",
+});
+
+const HUD_ASK_PAGE_ASSESSMENT = Object.freeze({
+  label: "Take Snooze Assessment",
+  href: "/pages/snooze-assessment",
+});
+
+const HUD_ASK_PAGE_BOOKING = Object.freeze({
+  label: "Book Your Snooze Session",
+  href: "/pages/book-your-snooze-session",
+});
+
+const HUD_ASK_COLLECTION_MATTRESSES = Object.freeze({
+  label: "Shop Mattresses",
+  handle: "mattresses",
+  href: "/collections/mattresses",
+});
+
+const HUD_ASK_DEFAULT_CHIPS = Object.freeze([
+  { label: "I sleep hot", value: "I sleep hot" },
+  { label: "I need firm support", value: "I need firm support" },
+  { label: "I snore", value: "I snore" },
+  { label: "Help me compare mattresses", value: "compare foam vs hybrid" },
+]);
+
+const HUD_ASK_FALLBACK_CHIPS = Object.freeze([
+  { label: "I sleep hot", value: "I sleep hot" },
+  { label: "I need firm support", value: "I need firm support" },
+  { label: "Help me compare mattresses", value: "compare foam vs hybrid" },
+  { label: "Take Snooze Assessment", value: "take snooze assessment" },
+]);
+
+const HUD_ASK_INTENT_CONFIG = Object.freeze({
+  default: {
+    reply: "Start with how you sleep. I'll guide you from there.",
+    chips: HUD_ASK_DEFAULT_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  sleep_hot: {
+    reply:
+      "Cooling comfort usually starts with breathable materials and the right support feel.",
+    chips: [
+      { label: "Compare foam vs hybrid", value: "compare foam vs hybrid" },
+      { label: "I need firm support", value: "I need firm support" },
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+    ],
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  firm_support: {
+    reply:
+      "Firm support can help keep your body aligned without making the bed feel rigid.",
+    chips: [
+      { label: "I have back pain", value: "I have back pain" },
+      { label: "Compare mattresses", value: "compare foam vs hybrid" },
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+    ],
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  back_pain: {
+    reply:
+      "For back discomfort, focus on support, pressure relief, and keeping your spine neutral.",
+    chips: [
+      { label: "I need firm support", value: "I need firm support" },
+      { label: "I sleep hot", value: "I sleep hot" },
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+    ],
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  snoring: {
+    reply:
+      "Elevation may help some sleepers breathe easier, especially when paired with the right base.",
+    chips: [
+      { label: "Book Your Snooze Session", value: "book snooze session" },
+      { label: "Compare mattresses", value: "compare foam vs hybrid" },
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+    ],
+    actions: [HUD_ASK_ACTION_BOOKING],
+    collections: [],
+    pages: [HUD_ASK_PAGE_ASSESSMENT],
+  },
+  compare_mattresses: {
+    reply:
+      "Foam usually feels more contouring. Hybrid usually adds more lift, airflow, and bounce.",
+    chips: [
+      { label: "I sleep hot", value: "I sleep hot" },
+      { label: "I need firm support", value: "I need firm support" },
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+    ],
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  assessment_help: {
+    reply: "The Snooze Assessment is the fastest way to narrow the right direction.",
+    chips: [
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+      { label: "Help me compare mattresses", value: "compare foam vs hybrid" },
+      { label: "Book Your Snooze Session", value: "book snooze session" },
+    ],
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  booking_help: {
+    reply:
+      "A Snooze Session lets you test the experience in person without a traditional sales floor.",
+    chips: [
+      { label: "Book Your Snooze Session", value: "book snooze session" },
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+      { label: "Help me compare mattresses", value: "compare foam vs hybrid" },
+    ],
+    actions: [HUD_ASK_ACTION_BOOKING],
+    collections: [],
+    pages: [HUD_ASK_PAGE_ASSESSMENT],
+  },
+  fallback: {
+    reply: "I can still guide you. Try one of these starting points.",
+    chips: HUD_ASK_FALLBACK_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+});
+
+function normalizeHudAskText(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function sanitizeHudAskPath(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "/";
+  return raw.startsWith("/") ? raw : `/${raw}`;
+}
+
+function includesHudAskKeyword(text, keywords = []) {
+  return keywords.some((keyword) => text.includes(keyword));
+}
+
+function resolveHudAskIntent(query) {
+  const normalized = normalizeHudAskText(query);
+  if (!normalized) return "default";
+
+  if (
+    includesHudAskKeyword(normalized, [
+      "assessment",
+      "quiz",
+      "help me choose",
+      "not sure",
+    ])
+  ) {
+    return "assessment_help";
+  }
+
+  if (
+    includesHudAskKeyword(normalized, [
+      "book",
+      "appointment",
+      "snooze session",
+      "showroom",
+      "visit",
+    ])
+  ) {
+    return "booking_help";
+  }
+
+  if (
+    includesHudAskKeyword(normalized, [
+      "snore",
+      "snoring",
+      "elevation",
+      "raise head",
+      "adjustable base",
+    ])
+  ) {
+    return "snoring";
+  }
+
+  if (
+    includesHudAskKeyword(normalized, [
+      "compare",
+      "foam vs hybrid",
+      "hybrid",
+      "foam",
+      "difference",
+    ])
+  ) {
+    return "compare_mattresses";
+  }
+
+  if (
+    includesHudAskKeyword(normalized, [
+      "back pain",
+      "lower back",
+      "pressure",
+      "alignment",
+    ])
+  ) {
+    return "back_pain";
+  }
+
+  if (includesHudAskKeyword(normalized, ["firm", "support", "too soft"])) {
+    return "firm_support";
+  }
+
+  if (includesHudAskKeyword(normalized, ["sleep hot", "hot", "cooling", "sweat", "warm"])) {
+    return "sleep_hot";
+  }
+
+  return "fallback";
+}
+
+function cloneHudAskChip(chip = {}) {
+  return {
+    label: String(chip.label || "").trim(),
+    value: String(chip.value || chip.label || "").trim(),
+  };
+}
+
+function cloneHudAskAction(action = {}) {
+  return {
+    label: String(action.label || "").trim(),
+    type: String(action.type || "page").trim(),
+    href: String(action.href || "").trim(),
+  };
+}
+
+function cloneHudAskCollection(collection = {}) {
+  return {
+    label: String(collection.label || "").trim(),
+    handle: String(collection.handle || "").trim(),
+    href: String(collection.href || "").trim(),
+  };
+}
+
+function cloneHudAskPage(page = {}) {
+  return {
+    label: String(page.label || "").trim(),
+    href: String(page.href || "").trim(),
+  };
+}
+
+function buildHudAskPayload({
+  intent = "fallback",
+  path = "/",
+  latencyMs = 0,
+  threadId = null,
+  error = null,
+  source = "live",
+} = {}) {
+  const config = HUD_ASK_INTENT_CONFIG[intent] || HUD_ASK_INTENT_CONFIG.fallback;
+
+  return {
+    status: "ok",
+    reply: config.reply,
+    intent,
+    chips: config.chips.map((chip) => cloneHudAskChip(chip)).filter((chip) => chip.label && chip.value),
+    actions: config.actions
+      .map((action) => cloneHudAskAction(action))
+      .filter((action) => action.label && action.type && action.href),
+    products: [],
+    collections: config.collections
+      .map((collection) => cloneHudAskCollection(collection))
+      .filter((collection) => collection.label && collection.handle && collection.href),
+    pages: config.pages
+      .map((page) => cloneHudAskPage(page))
+      .filter((page) => page.label && page.href),
+    meta: {
+      path: sanitizeHudAskPath(path),
+      source,
+      latency_ms: Math.max(0, Math.round(Number(latencyMs) || 0)),
+      error: error || null,
+    },
+    thread_id: threadId || null,
+  };
 }
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1385,6 +1691,59 @@ async function handle(event = {}) {
       service: "omnia-api",
       ts: new Date().toISOString(),
     });
+  }
+
+  if (method === "POST" && routePath === "/hud/ask") {
+    const startedAt = Date.now();
+    const body = safeJsonBody(event);
+
+    try {
+      const query = typeof body?.query === "string" ? body.query.trim() : "";
+      const pathValue = sanitizeHudAskPath(body?.path || "/");
+      const pageType = String(body?.page_type || "unknown").trim().toLowerCase() || "unknown";
+      const surface = String(body?.surface || "shopify_header").trim().toLowerCase() || "shopify_header";
+      const threadId = deriveEffectiveThreadId(event, {
+        thread_id: body?.thread_id,
+        sessionId: body?.session_id,
+      });
+      const intent = resolveHudAskIntent(query);
+      const payload = buildHudAskPayload({
+        intent,
+        path: pathValue,
+        latencyMs: elapsedMs(startedAt),
+        threadId,
+      });
+
+      log("hud.ask", "ok", {
+        traceId,
+        threadId,
+        intent,
+        path: pathValue,
+        pageType,
+        surface,
+        latencyMs: payload.meta.latency_ms,
+      });
+
+      return rawJsonResponse(event, 200, payload);
+    } catch (e) {
+      const fallback = buildHudAskPayload({
+        intent: "fallback",
+        path: sanitizeHudAskPath(body?.path || "/"),
+        latencyMs: elapsedMs(startedAt),
+        threadId: deriveEffectiveThreadId(event, {
+          thread_id: body?.thread_id,
+          sessionId: body?.session_id,
+        }),
+        error: "HUD_ASK_FALLBACK",
+      });
+
+      log("hud.ask.error", e.message, {
+        traceId,
+        latencyMs: fallback.meta.latency_ms,
+      });
+
+      return rawJsonResponse(event, 200, fallback);
+    }
   }
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Voice: Welcome / Polly

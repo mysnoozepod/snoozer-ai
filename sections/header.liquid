@@ -774,11 +774,11 @@
   endfor
 -%}
 
-{%- assign snoozer_assessment_url = '#' -%}
+{%- assign snoozer_assessment_url = '/pages/snooze-assessment' -%}
 {%- assign snoozer_mattresses_url = '/collections/mattresses' -%}
 {%- assign snoozer_bases_url = '/collections/bases' -%}
-{%- assign snoozer_booking_url = '/pages/book-a-snooze-session' -%}
-{%- assign snoozer_expectations_url = '/pages/book-a-snooze-session' -%}
+{%- assign snoozer_booking_url = '/pages/book-your-snooze-session' -%}
+{%- assign snoozer_expectations_url = '/pages/book-your-snooze-session' -%}
 
 <div class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
   {%- liquid
@@ -1124,9 +1124,13 @@
     window.__mysnoozepodSnoozerTriggerBound = true;
 
     const defaultResponse = "Start with how you sleep. I'll guide you from there.";
-    const fallbackResponse = "I can guide you with that. Start with the Snooze Assessment or choose a sleep concern below.";
+    const fallbackResponse = "I can still guide you. Try one of these starting points.";
+    const loadingResponse = "Snoozer is checking that for you…";
     const shells = Array.from(document.querySelectorAll('[data-snoozer-shell]'));
     const header = document.querySelector('.header');
+    const requestPageType = {{ request.page_type | json }};
+    const HUD_ASK_TIMEOUT_MS = 3000;
+    const SNOOZER_SESSION_STORAGE_KEY = 'mysnoozepod_snoozer_session_id';
     let lastPointerOpen = 0;
     const routes = {
       assessment: {{ snoozer_assessment_url | json }},
@@ -1135,6 +1139,12 @@
       booking: {{ snoozer_booking_url | json }},
       expectations: {{ snoozer_expectations_url | json }}
     };
+    const liveFallbackChips = [
+      { label: 'I sleep hot', value: 'I sleep hot' },
+      { label: 'I need firm support', value: 'I need firm support' },
+      { label: 'Help me compare mattresses', value: 'compare foam vs hybrid' },
+      { label: 'Take Snooze Assessment', value: 'take snooze assessment' }
+    ];
     const defaultChips = [
       { label: 'I sleep hot', state: 'sleep_hot' },
       { label: 'I need firm support', state: 'firm_support' },
@@ -1372,13 +1382,211 @@
       }
     }
 
+    function normalizeText(value) {
+      return String(value || '').trim();
+    }
+
+    function normalizeApiBase(value) {
+      return normalizeText(value).replace(/\/+$/, '');
+    }
+
+    function getApiBase() {
+      const globalConfig = window.MySnoozePod || {};
+      const candidates = [
+        globalConfig.apiBase,
+        globalConfig.api_base,
+        window.__SNOOZER_API_BASE__,
+        document.documentElement.getAttribute('data-snoozer-api-base')
+      ];
+
+      for (let index = 0; index < candidates.length; index += 1) {
+        const candidate = normalizeApiBase(candidates[index]);
+        if (candidate) return candidate;
+      }
+
+      return '';
+    }
+
+    function buildApiUrl(path) {
+      const base = getApiBase();
+      const cleanPath = String(path || '').startsWith('/') ? String(path || '') : `/${String(path || '')}`;
+      if (base) return `${base}${cleanPath}`;
+      return cleanPath.startsWith('/api/') ? cleanPath : `/api${cleanPath}`;
+    }
+
+    function getPageType() {
+      const normalized = normalizeText(requestPageType).toLowerCase();
+      if (!normalized) return 'unknown';
+      return normalized === 'index' ? 'home' : normalized;
+    }
+
+    function getSessionId() {
+      const globalConfig = window.MySnoozePod || {};
+      const existingGlobal = normalizeText(globalConfig.sessionId || globalConfig.session_id);
+      if (existingGlobal) return existingGlobal;
+
+      try {
+        const existingStored = normalizeText(window.sessionStorage.getItem(SNOOZER_SESSION_STORAGE_KEY));
+        if (existingStored) return existingStored;
+
+        const nextId = `snoozer_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+        window.sessionStorage.setItem(SNOOZER_SESSION_STORAGE_KEY, nextId);
+        return nextId;
+      } catch (error) {
+        return `snoozer_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+      }
+    }
+
+    function setShellBusy(shell, isBusy) {
+      if (!shell) return;
+
+      shell.dataset.snoozerBusy = isBusy ? 'true' : 'false';
+
+      const form = shell.querySelector('[data-snoozer-form]');
+      const submit = form && form.querySelector('[type="submit"]');
+
+      if (form) {
+        form.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+      }
+
+      if (submit) {
+        submit.disabled = Boolean(isBusy);
+      }
+    }
+
+    function getCardCopy(card) {
+      const href = normalizeText(card && card.href);
+      const handle = normalizeText(card && card.handle);
+      const type = normalizeText(card && card.type).toLowerCase();
+      const label = normalizeText(card && card.label);
+
+      if (href === routes.assessment) return 'Start with your sleep profile.';
+      if (href === routes.booking) return 'Test your fit in person.';
+      if (href === routes.mattresses || handle === 'mattresses') {
+        return 'Compare feel, support, and cooling.';
+      }
+
+      if (type === 'page' && /assessment/i.test(label)) {
+        return 'Start with your sleep profile.';
+      }
+
+      if (type === 'page' && /book/i.test(label)) {
+        return 'Test your fit in person.';
+      }
+
+      return 'Start here.';
+    }
+
+    function buildLiveFallbackPayload() {
+      return {
+        status: 'ok',
+        reply: fallbackResponse,
+        intent: 'fallback',
+        chips: liveFallbackChips.slice(),
+        actions: [
+          {
+            label: 'Take Snooze Assessment',
+            type: 'page',
+            href: routes.assessment
+          }
+        ],
+        products: [],
+        collections: [
+          {
+            label: 'Shop Mattresses',
+            handle: 'mattresses',
+            href: routes.mattresses
+          }
+        ],
+        pages: [
+          {
+            label: 'Book Your Snooze Session',
+            href: routes.booking
+          }
+        ],
+        meta: {
+          path: window.location && window.location.pathname ? window.location.pathname : '/',
+          source: 'fallback',
+          latency_ms: 0,
+          error: 'HUD_ASK_FALLBACK'
+        }
+      };
+    }
+
+    function buildCardsFromLivePayload(payload) {
+      const items = []
+        .concat(Array.isArray(payload && payload.actions) ? payload.actions : [])
+        .concat(Array.isArray(payload && payload.collections) ? payload.collections : [])
+        .concat(Array.isArray(payload && payload.pages) ? payload.pages : []);
+      const seen = new Set();
+
+      return items.reduce((cards, item) => {
+        const label = normalizeText(item && item.label);
+        const href = normalizeText(item && item.href);
+        const key = `${label}::${href}`;
+
+        if (!label || !href || seen.has(key)) return cards;
+        seen.add(key);
+
+        cards.push({
+          label,
+          copy: getCardCopy(item),
+          href,
+          handle: normalizeText(item && item.handle),
+          type: normalizeText(item && item.type).toLowerCase()
+        });
+
+        return cards;
+      }, []).slice(0, 3);
+    }
+
+    function unwrapLivePayload(payload) {
+      if (
+        payload &&
+        typeof payload === 'object' &&
+        payload.data &&
+        typeof payload.data === 'object' &&
+        typeof payload.data.reply === 'string'
+      ) {
+        return payload.data;
+      }
+
+      return payload;
+    }
+
+    function isValidLivePayload(payload) {
+      return Boolean(
+        payload &&
+          typeof payload === 'object' &&
+          typeof payload.reply === 'string' &&
+          Array.isArray(payload.chips) &&
+          Array.isArray(payload.actions) &&
+          Array.isArray(payload.products) &&
+          Array.isArray(payload.collections) &&
+          Array.isArray(payload.pages) &&
+          payload.meta &&
+          typeof payload.meta === 'object'
+      );
+    }
+
     function createChip(chip, selectedLabel) {
       const button = document.createElement('button');
+      const chipLabel = normalizeText(chip && chip.label);
+      const chipValue = normalizeText(chip && chip.value);
+
       button.type = 'button';
       button.className = 'header__snoozer-chip';
-      button.setAttribute('data-snoozer-state-trigger', chip.state);
-      button.setAttribute('aria-pressed', chip.label === selectedLabel ? 'true' : 'false');
-      button.textContent = chip.label;
+
+      if (chip && chip.state) {
+        button.setAttribute('data-snoozer-state-trigger', chip.state);
+      }
+
+      if (chipValue) {
+        button.setAttribute('data-snoozer-chip-value', chipValue);
+      }
+
+      button.setAttribute('aria-pressed', chipLabel === selectedLabel ? 'true' : 'false');
+      button.textContent = chipLabel;
       return button;
     }
 
@@ -1389,7 +1597,7 @@
 
       link.className = 'header__snoozer-action';
       link.href = card.href || '#';
-      if (card.placeholder || link.getAttribute('href') === '#') {
+      if (link.getAttribute('href') === '#') {
         link.setAttribute('data-snoozer-placeholder-link', '');
       }
 
@@ -1424,6 +1632,27 @@
       });
     }
 
+    function renderLivePayload(shell, payload, selectedLabel = '') {
+      if (!shell || !isValidLivePayload(payload)) return;
+
+      const chipList = shell.querySelector('[data-snoozer-chip-list]');
+      const actions = shell.querySelector('[data-snoozer-actions]');
+      const cards = buildCardsFromLivePayload(payload);
+
+      shell.dataset.snoozerState = normalizeText(payload.intent) || 'live';
+      setResponse(shell, payload.reply);
+
+      clearNode(chipList);
+      (payload.chips || []).forEach((chip) => {
+        chipList.appendChild(createChip(chip, selectedLabel));
+      });
+
+      clearNode(actions);
+      cards.forEach((card) => {
+        actions.appendChild(createAction(card));
+      });
+    }
+
     function resolveStateFromQuery(query) {
       const normalized = (query || '').trim().toLowerCase();
       if (!normalized) return 'default';
@@ -1433,6 +1662,56 @@
       });
 
       return match ? match.state : 'fallback';
+    }
+
+    async function submitLiveQuery(shell, query) {
+      if (!shell || shell.dataset.snoozerBusy === 'true') return;
+
+      const input = shell.querySelector('[data-snoozer-input]');
+      const normalizedQuery = normalizeText(query || (input && input.value));
+
+      if (input) {
+        input.value = normalizedQuery;
+      }
+
+      setShellBusy(shell, true);
+      setResponse(shell, loadingResponse);
+
+      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timeoutId = window.setTimeout(() => {
+        if (controller) controller.abort();
+      }, HUD_ASK_TIMEOUT_MS);
+
+      try {
+        const response = await fetch(buildApiUrl('/hud/ask'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            query: normalizedQuery,
+            path: window.location && window.location.pathname ? window.location.pathname : '/',
+            page_type: getPageType(),
+            surface: 'shopify_header',
+            session_id: getSessionId()
+          }),
+          signal: controller ? controller.signal : undefined
+        });
+
+        const rawPayload = await response.json().catch(() => null);
+        const payload = unwrapLivePayload(rawPayload);
+
+        if (!response.ok || !isValidLivePayload(payload)) {
+          throw new Error('HUD_ASK_INVALID_RESPONSE');
+        }
+
+        renderLivePayload(shell, payload, normalizedQuery);
+      } catch (error) {
+        renderLivePayload(shell, buildLiveFallbackPayload(), normalizedQuery);
+      } finally {
+        window.clearTimeout(timeoutId);
+        setShellBusy(shell, false);
+      }
     }
 
     function closeShell(shell) {
@@ -1503,7 +1782,10 @@
       const trigger = event.target.closest('[data-snoozer-trigger]');
       const closeButton = event.target.closest('[data-snoozer-close]');
       const placeholderLink = event.target.closest('[data-snoozer-placeholder-link]');
-      const stateTrigger = event.target.closest('[data-snoozer-state-trigger]');
+      const chipValueTrigger = event.target.closest('[data-snoozer-chip-value]');
+      const stateTrigger = chipValueTrigger
+        ? null
+        : event.target.closest('[data-snoozer-state-trigger]');
 
       if (placeholderLink) {
         event.preventDefault();
@@ -1512,6 +1794,18 @@
       if (closeButton) {
         event.preventDefault();
         closeAllShells();
+        return;
+      }
+
+      if (chipValueTrigger) {
+        const stateShell = chipValueTrigger.closest('[data-snoozer-shell]');
+        if (!stateShell) return;
+
+        event.preventDefault();
+        submitLiveQuery(
+          stateShell,
+          chipValueTrigger.getAttribute('data-snoozer-chip-value')
+        );
         return;
       }
 
@@ -1569,7 +1863,7 @@
 
       form.addEventListener('submit', (event) => {
         event.preventDefault();
-        renderState(shell, resolveStateFromQuery(input.value));
+        submitLiveQuery(shell, input.value);
       });
     });
   })();
