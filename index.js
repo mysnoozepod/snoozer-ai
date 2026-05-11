@@ -46,6 +46,25 @@ try {
   console.log("âš ï¸ recommendations service not loaded (ok).");
 }
 
+let shopifySvc = null;
+try {
+  shopifySvc = require("./services/shopify");
+} catch {
+  console.log("Ã¢Å¡Â Ã¯Â¸Â shopify service not loaded (ok).");
+}
+
+let openaiSvc = null;
+function getOpenAiSvc() {
+  if (openaiSvc) return openaiSvc;
+  try {
+    openaiSvc = require("./services/openai");
+  } catch (error) {
+    console.log("Ã¢Å¡Â Ã¯Â¸Â openai service helpers not loaded (ok).", error.message);
+    openaiSvc = null;
+  }
+  return openaiSvc;
+}
+
 let getHudScriptPayload = null;
 try {
   ({ getHudScriptPayload } = require("./services/hudScripts"));
@@ -1272,6 +1291,38 @@ function cloneHudAskPages(pages = []) {
   return pages.map((page) => cloneHudAskPage(page)).filter((page) => page.label && page.href);
 }
 
+function cloneHudAskProduct(product = {}) {
+  return {
+    type: "product",
+    label: String(product.label || product.title || "").trim(),
+    title: String(product.title || product.label || "").trim(),
+    handle: String(product.handle || "").trim(),
+    href: String(product.href || "").trim(),
+    product_id: String(product.product_id || "").trim(),
+    variant_id: String(product.variant_id || "").trim(),
+    variant_title: String(product.variant_title || "").trim(),
+    reason: String(product.reason || "").trim(),
+    tags: Array.isArray(product.tags)
+      ? product.tags.map((tag) => String(tag || "").trim()).filter(Boolean).slice(0, 3)
+      : [],
+  };
+}
+
+function cloneHudAskProducts(products = []) {
+  const seen = new Set();
+
+  return products
+    .map((product) => cloneHudAskProduct(product))
+    .filter((product) => {
+      if (!product.title || !product.handle || !product.product_id) return false;
+      if (!product.href.startsWith("/products/")) return false;
+      if (seen.has(product.href)) return false;
+      seen.add(product.href);
+      return true;
+    })
+    .slice(0, 3);
+}
+
 function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
   if (pageType === "collection") {
     switch (intent) {
@@ -1429,14 +1480,42 @@ function resolveHudAskContextualConfig({ intent, pageType, path }) {
   };
 }
 
+function resolveHudAskReplyOverride({
+  intent,
+  query,
+  pageType,
+  path,
+  products = [],
+  fallbackReply,
+} = {}) {
+  const normalized = String(query || "").toLowerCase();
+  const hasProducts = Array.isArray(products) && products.length > 0;
+
+  if (
+    hasProducts &&
+    includesHudAskKeyword(normalized, ["cheap", "budget", "affordable", "low price", "least expensive"])
+  ) {
+    return "Start with the size you need, then compare the most accessible comfort and support options.";
+  }
+
+  return buildHudAskReplyForContext({
+    intent,
+    pageType,
+    path,
+    baseReply: fallbackReply,
+  });
+}
+
 function buildHudAskPayload({
   intent = "fallback",
+  query = "",
   path = "/",
   pageType = "unknown",
   latencyMs = 0,
   threadId = null,
   error = null,
   source = "live",
+  products = [],
 } = {}) {
   const normalizedPath = sanitizeHudAskPath(path);
   const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
@@ -1448,11 +1527,18 @@ function buildHudAskPayload({
 
   return {
     status: "ok",
-    reply: config.reply,
+    reply: resolveHudAskReplyOverride({
+      intent,
+      query,
+      pageType: normalizedPageType,
+      path: normalizedPath,
+      products,
+      fallbackReply: config.reply,
+    }),
     intent,
     chips: cloneHudAskChips(config.chips),
     actions: cloneHudAskActions(config.actions),
-    products: [],
+    products: cloneHudAskProducts(products),
     collections: cloneHudAskCollections(config.collections),
     pages: cloneHudAskPages(config.pages),
     meta: {
@@ -1463,6 +1549,538 @@ function buildHudAskPayload({
     },
     thread_id: threadId || null,
   };
+}
+
+function normalizeHudAskHandleList(handles = []) {
+  return Array.from(
+    new Set(
+      (Array.isArray(handles) ? handles : [])
+        .map((handle) => String(handle || "").trim())
+        .filter(Boolean)
+    )
+  );
+}
+
+function getHudAskCatalogHandles(catalog, categoryKey) {
+  return normalizeHudAskHandleList(catalog?.categories?.[categoryKey] || []);
+}
+
+function buildHudAskFallbackCatalog() {
+  const mattressHandles = normalizeHudAskHandleList(
+    Object.values(recsService?.HANDLES?.mattresses || {})
+  );
+  const adjustableBaseHandles = normalizeHudAskHandleList([
+    recsService?.HANDLES?.bases?.adjustable,
+  ]);
+
+  if (!mattressHandles.length && !adjustableBaseHandles.length) {
+    return null;
+  }
+
+  return {
+    categories: {
+      mattress: mattressHandles,
+      "adjustable-base": adjustableBaseHandles,
+    },
+  };
+}
+
+function fallbackHudAskCatalogHasHandle(catalog, handle) {
+  const lower = String(handle || "").trim().toLowerCase();
+  const allHandles = normalizeHudAskHandleList(
+    getHudAskCatalogHandles(catalog, "mattress").concat(
+      getHudAskCatalogHandles(catalog, "adjustable-base")
+    )
+  );
+
+  return allHandles.some((item) => item.toLowerCase() === lower);
+}
+
+function isHudAskMattressCollectionPath(path) {
+  return /^\/collections\/mattresses(?:[/?#]|$)/i.test(String(path || "").trim());
+}
+
+function extractHudAskProductHandleFromPath(path) {
+  const match = String(path || "").trim().match(/^\/products\/([^/?#]+)/i);
+  if (!match) return "";
+
+  try {
+    return decodeURIComponent(match[1] || "").trim().toLowerCase();
+  } catch {
+    return String(match[1] || "").trim().toLowerCase();
+  }
+}
+
+function normalizeHudAskSizeKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function parseHudAskSizeLabel(query) {
+  const text = String(query || "").toLowerCase();
+  const sizeMatchers = [
+    ["split cal king", "Split Cal King"],
+    ["half split king", "Half Split King"],
+    ["split king", "Split King"],
+    ["cal king", "Cal King"],
+    ["half split queen", "Half Split Queen"],
+    ["twin xl", "Twin XL"],
+    ["queen", "Queen"],
+    ["king", "King"],
+    ["full", "Full"],
+    ["twin", "Twin"],
+  ];
+
+  for (const [needle, label] of sizeMatchers) {
+    if (text.includes(needle)) return label;
+  }
+
+  return "";
+}
+
+function hudAskQueryWantsBudget(query) {
+  return includesHudAskKeyword(String(query || "").toLowerCase(), [
+    "cheap",
+    "budget",
+    "affordable",
+    "low price",
+    "least expensive",
+    "best price",
+  ]);
+}
+
+function classifyHudAskHandle(handle, mattressHandles = [], adjustableBaseHandles = []) {
+  const lower = String(handle || "").trim().toLowerCase();
+  const mattressSet = new Set(mattressHandles.map((item) => String(item || "").trim().toLowerCase()));
+  const adjustableSet = new Set(
+    adjustableBaseHandles.map((item) => String(item || "").trim().toLowerCase())
+  );
+
+  return {
+    isMattress: mattressSet.has(lower) || /mattress|hybrid|foam/.test(lower),
+    isAdjustableBase:
+      adjustableSet.has(lower) || (lower.includes("adjustable") && lower.includes("base")),
+    isHybrid: lower.includes("hybrid"),
+    isFoam: lower.includes("foam") && !lower.includes("hybrid"),
+    isDualComfort: lower.includes("dual-comfort"),
+    isBudgetFoam: lower.startsWith("10-") && lower.includes("foam"),
+  };
+}
+
+function moveHudAskHandleToFront(handles = [], targetHandle = "") {
+  const target = String(targetHandle || "").trim().toLowerCase();
+  const normalized = normalizeHudAskHandleList(handles);
+  if (!target || !normalized.some((handle) => handle.toLowerCase() === target)) {
+    return normalized;
+  }
+
+  const match = normalized.find((handle) => handle.toLowerCase() === target);
+  return [match].concat(normalized.filter((handle) => handle.toLowerCase() !== target));
+}
+
+function scoreHudAskHandleForIntent(intent, handle, mattressHandles, adjustableBaseHandles) {
+  const profile = classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles);
+
+  if (intent === "snoring") {
+    return profile.isAdjustableBase ? 100 : 0;
+  }
+
+  if (intent === "sleep_hot") {
+    if (profile.isHybrid && !profile.isDualComfort) return 100;
+    if (profile.isDualComfort) return 96;
+    if (profile.isFoam && !profile.isBudgetFoam) return 82;
+    if (profile.isFoam) return 76;
+    return 0;
+  }
+
+  if (intent === "firm_support" || intent === "back_pain") {
+    if (profile.isHybrid && !profile.isDualComfort) return 100;
+    if (profile.isBudgetFoam) return 92;
+    if (profile.isDualComfort) return 86;
+    if (profile.isFoam) return 80;
+    return 0;
+  }
+
+  return 0;
+}
+
+function buildHudAskCompareHandles(mattressHandles = [], currentHandle = "") {
+  const normalizedCurrent = String(currentHandle || "").trim().toLowerCase();
+  const foamHandles = mattressHandles.filter((handle) =>
+    classifyHudAskHandle(handle, mattressHandles, []).isFoam
+  );
+  const hybridHandles = mattressHandles.filter((handle) => {
+    const profile = classifyHudAskHandle(handle, mattressHandles, []);
+    return profile.isHybrid && !profile.isDualComfort;
+  });
+  const balancedHandles = mattressHandles.filter((handle) =>
+    classifyHudAskHandle(handle, mattressHandles, []).isDualComfort
+  );
+
+  const out = [];
+  if (normalizedCurrent) {
+    const match = mattressHandles.find((handle) => String(handle || "").trim().toLowerCase() === normalizedCurrent);
+    if (match) out.push(match);
+  }
+
+  const currentProfile = classifyHudAskHandle(normalizedCurrent, mattressHandles, []);
+  if (currentProfile.isFoam) {
+    if (hybridHandles[0]) out.push(hybridHandles[0]);
+    if (balancedHandles[0]) out.push(balancedHandles[0]);
+  } else if (currentProfile.isHybrid || currentProfile.isDualComfort) {
+    if (foamHandles[0]) out.push(foamHandles[0]);
+    if (currentProfile.isDualComfort ? hybridHandles[0] : balancedHandles[0]) {
+      out.push(currentProfile.isDualComfort ? hybridHandles[0] : balancedHandles[0]);
+    }
+  } else {
+    if (foamHandles[0]) out.push(foamHandles[0]);
+    if (hybridHandles[0]) out.push(hybridHandles[0]);
+    if (balancedHandles[0]) out.push(balancedHandles[0]);
+  }
+
+  return normalizeHudAskHandleList(out).slice(0, 3);
+}
+
+function resolveHudAskCandidateHandles({
+  intent,
+  query,
+  path,
+  pageType,
+  catalog,
+  catalogHasHandle,
+}) {
+  const normalizedPath = sanitizeHudAskPath(path);
+  const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
+  const mattressHandles = getHudAskCatalogHandles(catalog, "mattress");
+  const adjustableBaseHandles = getHudAskCatalogHandles(catalog, "adjustable-base");
+  const currentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
+  const safeCurrentHandle =
+    currentProductHandle && typeof catalogHasHandle === "function" && catalogHasHandle(catalog, currentProductHandle)
+      ? currentProductHandle
+      : "";
+
+  if (
+    normalizedPageType === "cart" ||
+    (normalizedPageType === "page" &&
+      (isHudAskAssessmentPath(normalizedPath) || isHudAskBookingPath(normalizedPath)))
+  ) {
+    return [];
+  }
+
+  if (hudAskQueryWantsBudget(query) && parseHudAskSizeLabel(query)) {
+    return normalizeHudAskHandleList(mattressHandles).slice(0, 4);
+  }
+
+  if (intent === "compare_mattresses") {
+    const compared = buildHudAskCompareHandles(mattressHandles, safeCurrentHandle);
+    return compared.length ? compared : normalizeHudAskHandleList(mattressHandles).slice(0, 3);
+  }
+
+  if (intent === "snoring") {
+    if (normalizedPageType === "collection" && isHudAskMattressCollectionPath(normalizedPath)) {
+      return [];
+    }
+    return normalizeHudAskHandleList(adjustableBaseHandles).slice(0, 2);
+  }
+
+  if (!["sleep_hot", "firm_support", "back_pain"].includes(intent)) {
+    return [];
+  }
+
+  const scored = normalizeHudAskHandleList(mattressHandles)
+    .map((handle) => ({
+      handle,
+      score: scoreHudAskHandleForIntent(intent, handle, mattressHandles, adjustableBaseHandles),
+    }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map((item) => item.handle);
+
+  if (normalizedPageType === "collection" && isHudAskMattressCollectionPath(normalizedPath)) {
+    return scored.slice(0, 3);
+  }
+
+  if (normalizedPageType === "product" && safeCurrentHandle) {
+    return moveHudAskHandleToFront(scored, safeCurrentHandle).slice(0, 3);
+  }
+
+  return scored.slice(0, 3);
+}
+
+function findHudAskVariantForSize(product, sizeLabel) {
+  const wantedSize = normalizeHudAskSizeKey(sizeLabel);
+  if (!wantedSize || !Array.isArray(product?.variants)) return null;
+
+  return (
+    product.variants.find((variant) => {
+      const selectedOptions = Array.isArray(variant?.selectedOptions) ? variant.selectedOptions : [];
+      return selectedOptions.some(
+        (option) =>
+          String(option?.name || "").toLowerCase() === "size" &&
+          normalizeHudAskSizeKey(option?.value || "") === wantedSize
+      );
+    }) || null
+  );
+}
+
+function findHudAskVariantById(product, variantId) {
+  const wanted = String(variantId || "").trim();
+  if (!wanted || !Array.isArray(product?.variants)) return null;
+  return product.variants.find((variant) => String(variant?.id || "").trim() === wanted) || null;
+}
+
+function buildHudAskProductTags({ intent, handle, sizeLabel = "" } = {}) {
+  const lower = String(handle || "").trim().toLowerCase();
+  const tags = [];
+
+  if (lower.includes("hybrid")) tags.push("Hybrid");
+  if (lower.includes("foam") && !lower.includes("hybrid")) tags.push("Foam");
+  if (lower.includes("adjustable") && lower.includes("base")) tags.push("Adjustable Base");
+
+  if (intent === "sleep_hot") tags.push("Cooling");
+  if (intent === "firm_support" || intent === "back_pain") tags.push("Support");
+  if (intent === "snoring") tags.push("Elevation");
+  if (sizeLabel) tags.push(sizeLabel);
+
+  return Array.from(new Set(tags)).slice(0, 3);
+}
+
+function buildHudAskProductReason({
+  intent,
+  handle,
+  currentProductHandle = "",
+  sizeLabel = "",
+  budgetQuery = false,
+} = {}) {
+  const lower = String(handle || "").trim().toLowerCase();
+  const isCurrent = lower && lower === String(currentProductHandle || "").trim().toLowerCase();
+  const sizePrefix = sizeLabel ? `${sizeLabel} ` : "";
+
+  if (budgetQuery && sizeLabel) {
+    return `One of the more accessible ${sizePrefix.toLowerCase()}options to compare first.`.replace(
+      /\s+/g,
+      " "
+    );
+  }
+
+  if (isCurrent) {
+    return "This is the product you are viewing now, so it is a good anchor for comparison.";
+  }
+
+  switch (intent) {
+    case "sleep_hot":
+      if (lower.includes("hybrid") && !lower.includes("dual-comfort")) {
+        return "A breathable hybrid starting point if you want airflow with steady support.";
+      }
+      if (lower.includes("dual-comfort")) {
+        return "A balanced hybrid option to compare if you want airflow and flexibility.";
+      }
+      return "A contouring option to compare while you weigh cooling against closer body contact.";
+    case "firm_support":
+      if (lower.includes("hybrid") && !lower.includes("dual-comfort")) {
+        return "A support-first option to compare if alignment is your priority.";
+      }
+      if (lower.startsWith("10-")) {
+        return "A firmer all-foam option to compare against the hybrid feel.";
+      }
+      return "A steadier comfort option to compare while you focus on support.";
+    case "back_pain":
+      if (lower.includes("hybrid") && !lower.includes("dual-comfort")) {
+        return "A strong support-first option to compare for neutral alignment.";
+      }
+      if (lower.includes("dual-comfort")) {
+        return "A balanced option to compare for support with pressure relief.";
+      }
+      return "Worth comparing if you want pressure relief without losing support.";
+    case "snoring":
+      return "An adjustable base lets you compare elevation with your mattress feel.";
+    case "compare_mattresses":
+      if (lower.includes("hybrid") && !lower.includes("dual-comfort")) {
+        return "Hybrid usually adds more lift, airflow, and bounce.";
+      }
+      if (lower.includes("dual-comfort")) {
+        return "A balanced hybrid comparison if you want a middle ground feel.";
+      }
+      return "Foam usually feels more contouring with closer body contact.";
+    default:
+      return "A safe starting point to compare next.";
+  }
+}
+
+async function resolveHudAskProducts({
+  intent,
+  query,
+  path,
+  pageType,
+  traceId,
+} = {}) {
+  if (!shopifySvc?.fetchProductsByHandles) return [];
+
+  const openaiHelpers = getOpenAiSvc();
+  const fallbackCatalog = buildHudAskFallbackCatalog();
+
+  try {
+    const [catalogResult, canonResult] =
+      openaiHelpers && typeof openaiHelpers.getCatalogOnce === "function"
+        ? await Promise.all([
+            withTimeout(
+              openaiHelpers.getCatalogOnce(),
+              S3_RETRIEVAL_TIMEOUT_MS,
+              "HUD_ASK_CATALOG_TIMEOUT",
+              "Timed out loading HUD ask catalog"
+            ).catch(() => ({ value: null, error: true })),
+            typeof openaiHelpers.getCanonOnce === "function"
+              ? withTimeout(
+                  openaiHelpers.getCanonOnce(),
+                  S3_RETRIEVAL_TIMEOUT_MS,
+                  "HUD_ASK_CANON_TIMEOUT",
+                  "Timed out loading HUD ask canon"
+                ).catch(() => ({ value: null, error: true }))
+              : Promise.resolve({ value: null, error: null }),
+          ])
+        : [{ value: null, error: true }, { value: null, error: true }];
+
+    const catalog = catalogResult?.value || fallbackCatalog;
+    const canon = canonResult?.value || null;
+    const catalogHasHandle =
+      openaiHelpers && typeof openaiHelpers.catalogHasHandle === "function"
+        ? openaiHelpers.catalogHasHandle
+        : fallbackHudAskCatalogHasHandle;
+    if (!catalog) return [];
+
+    const normalizedPath = sanitizeHudAskPath(path);
+    const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
+    const sizeLabel = parseHudAskSizeLabel(query);
+    const budgetQuery = hudAskQueryWantsBudget(query);
+    const currentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
+    const candidateHandles = resolveHudAskCandidateHandles({
+      intent,
+      query,
+      path: normalizedPath,
+      pageType: normalizedPageType,
+      catalog,
+      catalogHasHandle,
+    });
+
+    if (!candidateHandles.length) return [];
+
+    const productsResponse = await withTimeout(
+      shopifySvc.fetchProductsByHandles({ handles: candidateHandles, lite: false }),
+      SHOPIFY_TIMEOUT_MS,
+      "HUD_ASK_PRODUCT_TIMEOUT",
+      "Timed out loading HUD ask products"
+    );
+
+    const fetchedItems = Array.isArray(productsResponse?.items) ? productsResponse.items : [];
+    const productsByHandle = new Map(
+      fetchedItems
+        .filter((item) => item?.handle && item?.id)
+        .map((item) => [String(item.handle).trim().toLowerCase(), item])
+    );
+
+    const enriched = candidateHandles
+      .map((handle, index) => {
+        const product = productsByHandle.get(String(handle || "").trim().toLowerCase());
+        if (!product || !product.handle || !product.id) return null;
+
+        let chosenVariant = sizeLabel ? findHudAskVariantForSize(product, sizeLabel) : null;
+
+        if (
+          !chosenVariant &&
+          sizeLabel &&
+          canon &&
+          typeof openaiHelpers.resolveVariantFromCanon === "function"
+        ) {
+          const canonVariantId = openaiHelpers.resolveVariantFromCanon(canon, product.handle, sizeLabel);
+          if (canonVariantId) {
+            chosenVariant = findHudAskVariantById(product, canonVariantId);
+          }
+        }
+
+        if (!chosenVariant && sizeLabel) {
+          return null;
+        }
+
+        if (!chosenVariant) {
+          chosenVariant =
+            findHudAskVariantById(product, product.firstAvailableVariantId || product.variantId) ||
+            (Array.isArray(product.variants)
+              ? product.variants.find((variant) => variant?.available) || product.variants[0]
+              : null);
+        }
+
+        const variantId = String(
+          chosenVariant?.id || product.firstAvailableVariantId || product.variantId || ""
+        ).trim();
+        if (!variantId) return null;
+
+        const variantTitle = String(chosenVariant?.title || "").trim();
+        const variantPrice = Number(chosenVariant?.price);
+
+        return {
+          product,
+          handle: String(product.handle || "").trim(),
+          order: index,
+          variantId,
+          variantTitle: variantTitle === "Default Title" ? "" : variantTitle,
+          variantPrice: Number.isFinite(variantPrice) ? variantPrice : Number.MAX_SAFE_INTEGER,
+        };
+      })
+      .filter(Boolean);
+
+    const ordered =
+      budgetQuery && sizeLabel
+        ? enriched.sort((a, b) => {
+            if (a.variantPrice !== b.variantPrice) return a.variantPrice - b.variantPrice;
+            return a.order - b.order;
+          })
+        : enriched.sort((a, b) => a.order - b.order);
+
+    const products = ordered.slice(0, 3).map((entry) => ({
+      type: "product",
+      label: String(entry.product.title || "").trim(),
+      title: String(entry.product.title || "").trim(),
+      handle: entry.handle,
+      href: `/products/${entry.handle}`,
+      product_id: String(entry.product.id || "").trim(),
+      variant_id: entry.variantId,
+      variant_title: entry.variantTitle,
+      reason: buildHudAskProductReason({
+        intent,
+        handle: entry.handle,
+        currentProductHandle,
+        sizeLabel,
+        budgetQuery,
+      }),
+      tags: buildHudAskProductTags({
+        intent,
+        handle: entry.handle,
+        sizeLabel: budgetQuery ? sizeLabel : "",
+      }),
+    }));
+
+    log("hud.ask.products", "resolved", {
+      traceId,
+      intent,
+      path: normalizedPath,
+      pageType: normalizedPageType,
+      catalogSource: catalogResult?.value ? "s3" : "fallback",
+      productCount: products.length,
+      handles: products.map((product) => product.handle),
+    });
+
+    return products;
+  } catch (error) {
+    log("hud.ask.products.error", error.message, {
+      traceId,
+      intent,
+      path,
+      pageType,
+    });
+    return [];
+  }
 }
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1979,12 +2597,21 @@ async function handle(event = {}) {
         sessionId: body?.session_id,
       });
       const intent = resolveHudAskIntent(query);
+      const products = await resolveHudAskProducts({
+        intent,
+        query,
+        path: pathValue,
+        pageType,
+        traceId,
+      });
       const payload = buildHudAskPayload({
         intent,
+        query,
         path: pathValue,
         pageType,
         latencyMs: elapsedMs(startedAt),
         threadId,
+        products,
       });
 
       log("hud.ask", "ok", {
@@ -1994,6 +2621,7 @@ async function handle(event = {}) {
         path: pathValue,
         pageType,
         surface,
+        productCount: payload.products.length,
         latencyMs: payload.meta.latency_ms,
       });
 
@@ -2001,6 +2629,7 @@ async function handle(event = {}) {
     } catch (e) {
       const fallback = buildHudAskPayload({
         intent: "fallback",
+        query: typeof body?.query === "string" ? body.query.trim() : "",
         path: sanitizeHudAskPath(body?.path || "/"),
         pageType: normalizeHudAskPageType(body?.page_type || "unknown", body?.path || "/"),
         latencyMs: elapsedMs(startedAt),

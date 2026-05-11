@@ -2345,4 +2345,12 @@ async function runSnoozer({ message, mode, context, thread_id } = {}) {
   return { ok: true, response: result };
 }
 
-module.exports = { getSnoozerResponse, runSnoozer };
+module.exports = {
+  getSnoozerResponse,
+  runSnoozer,
+  getCatalogOnce,
+  getCanonOnce,
+  catalogHasHandle,
+  resolveVariantFromCanon,
+  resolveVariantByHandleAndSize,
+};
