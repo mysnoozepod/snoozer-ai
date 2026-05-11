@@ -1414,10 +1414,40 @@
       return cleanPath.startsWith('/api/') ? cleanPath : `/api${cleanPath}`;
     }
 
+    function pathStartsWithSegment(pathname, segment) {
+      if (!pathname || !segment) return false;
+      return pathname === segment || pathname.startsWith(`${segment}/`);
+    }
+
+    function getCurrentPathname() {
+      const pathname = normalizeText(window.location && window.location.pathname);
+      return pathname || '/';
+    }
+
     function getPageType() {
       const normalized = normalizeText(requestPageType).toLowerCase();
-      if (!normalized) return 'unknown';
-      return normalized === 'index' ? 'home' : normalized;
+
+      if (normalized === 'index') return 'home';
+      if (
+        normalized === 'collection' ||
+        normalized === 'product' ||
+        normalized === 'page' ||
+        normalized === 'cart' ||
+        normalized === 'search'
+      ) {
+        return normalized;
+      }
+
+      const pathname = getCurrentPathname().toLowerCase();
+
+      if (pathname === '/') return 'home';
+      if (pathStartsWithSegment(pathname, '/collections')) return 'collection';
+      if (pathStartsWithSegment(pathname, '/products')) return 'product';
+      if (pathStartsWithSegment(pathname, '/pages')) return 'page';
+      if (pathStartsWithSegment(pathname, '/cart')) return 'cart';
+      if (pathStartsWithSegment(pathname, '/search')) return 'search';
+
+      return 'unknown';
     }
 
     function getSessionId() {

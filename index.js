@@ -947,6 +947,50 @@ const HUD_ASK_FALLBACK_CHIPS = Object.freeze([
   { label: "Take Snooze Assessment", value: "take snooze assessment" },
 ]);
 
+const HUD_ASK_HOME_CHIPS = Object.freeze([
+  { label: "I sleep hot", value: "I sleep hot" },
+  { label: "I need firm support", value: "I need firm support" },
+  { label: "Compare mattresses", value: "compare foam vs hybrid" },
+  { label: "Take Snooze Assessment", value: "take snooze assessment" },
+]);
+
+const HUD_ASK_COLLECTION_CHIPS = Object.freeze([
+  { label: "Compare foam vs hybrid", value: "compare foam vs hybrid" },
+  { label: "I need firm support", value: "I need firm support" },
+  { label: "I sleep hot", value: "I sleep hot" },
+]);
+
+const HUD_ASK_PRODUCT_CHIPS = Object.freeze([
+  { label: "Is this good for back pain?", value: "my back hurts" },
+  { label: "Compare this type", value: "compare foam vs hybrid" },
+  { label: "Take Snooze Assessment", value: "take snooze assessment" },
+]);
+
+const HUD_ASK_PAGE_ASSESSMENT_CHIPS = Object.freeze([
+  { label: "Take Snooze Assessment", value: "take snooze assessment" },
+  { label: "Help me compare mattresses", value: "compare foam vs hybrid" },
+  { label: "Book a Snooze Session", value: "book a snooze session" },
+]);
+
+const HUD_ASK_PAGE_BOOKING_CHIPS = Object.freeze([
+  { label: "Book a Snooze Session", value: "book a snooze session" },
+  { label: "Take Snooze Assessment", value: "take snooze assessment" },
+  { label: "Help me compare mattresses", value: "compare foam vs hybrid" },
+]);
+
+const HUD_ASK_CART_CHIPS = Object.freeze([
+  { label: "Am I choosing right?", value: "am I choosing right" },
+  { label: "Take Snooze Assessment", value: "take snooze assessment" },
+  { label: "Book a Snooze Session", value: "book a snooze session" },
+]);
+
+const HUD_ASK_SEARCH_CHIPS = Object.freeze([
+  { label: "I sleep hot", value: "I sleep hot" },
+  { label: "I need firm support", value: "I need firm support" },
+  { label: "Compare foam vs hybrid", value: "compare foam vs hybrid" },
+  { label: "Take Snooze Assessment", value: "take snooze assessment" },
+]);
+
 const HUD_ASK_INTENT_CONFIG = Object.freeze({
   default: {
     reply: "Start with how you sleep. I'll guide you from there.",
@@ -1060,6 +1104,46 @@ function sanitizeHudAskPath(value) {
   return raw.startsWith("/") ? raw : `/${raw}`;
 }
 
+function hudAskPathStartsWithSegment(path, segment) {
+  const normalizedPath = sanitizeHudAskPath(path).toLowerCase();
+  const normalizedSegment = sanitizeHudAskPath(segment).toLowerCase();
+  return normalizedPath === normalizedSegment || normalizedPath.startsWith(`${normalizedSegment}/`);
+}
+
+function normalizeHudAskPageType(value, path = "/") {
+  const normalized = normalizeHudAskText(value);
+  if (normalized === "index") return "home";
+
+  if (
+    normalized === "home" ||
+    normalized === "collection" ||
+    normalized === "product" ||
+    normalized === "page" ||
+    normalized === "cart" ||
+    normalized === "search" ||
+    normalized === "unknown"
+  ) {
+    return normalized;
+  }
+
+  const normalizedPath = sanitizeHudAskPath(path).toLowerCase();
+  if (normalizedPath === "/") return "home";
+  if (hudAskPathStartsWithSegment(normalizedPath, "/collections")) return "collection";
+  if (hudAskPathStartsWithSegment(normalizedPath, "/products")) return "product";
+  if (hudAskPathStartsWithSegment(normalizedPath, "/pages")) return "page";
+  if (hudAskPathStartsWithSegment(normalizedPath, "/cart")) return "cart";
+  if (hudAskPathStartsWithSegment(normalizedPath, "/search")) return "search";
+  return "unknown";
+}
+
+function isHudAskAssessmentPath(path) {
+  return hudAskPathStartsWithSegment(path, "/pages/snooze-assessment");
+}
+
+function isHudAskBookingPath(path) {
+  return hudAskPathStartsWithSegment(path, "/pages/book-your-snooze-session");
+}
+
 function includesHudAskKeyword(text, keywords = []) {
   return keywords.some((keyword) => text.includes(keyword));
 }
@@ -1168,33 +1252,211 @@ function cloneHudAskPage(page = {}) {
   };
 }
 
+function cloneHudAskChips(chips = []) {
+  return chips.map((chip) => cloneHudAskChip(chip)).filter((chip) => chip.label && chip.value);
+}
+
+function cloneHudAskActions(actions = []) {
+  return actions
+    .map((action) => cloneHudAskAction(action))
+    .filter((action) => action.label && action.type && action.href);
+}
+
+function cloneHudAskCollections(collections = []) {
+  return collections
+    .map((collection) => cloneHudAskCollection(collection))
+    .filter((collection) => collection.label && collection.handle && collection.href);
+}
+
+function cloneHudAskPages(pages = []) {
+  return pages.map((page) => cloneHudAskPage(page)).filter((page) => page.label && page.href);
+}
+
+function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
+  if (pageType === "collection") {
+    switch (intent) {
+      case "sleep_hot":
+        return "While you browse, focus on breathable materials and the support feel that stays comfortable through the night.";
+      case "firm_support":
+        return "As you browse, look for support and alignment without making the bed feel rigid.";
+      case "back_pain":
+        return "As you browse, focus on support, pressure relief, and keeping your spine neutral.";
+      case "snoring":
+        return "If elevation matters, compare the mattress feel first, then pair it with the right base.";
+      case "compare_mattresses":
+        return "While you browse, compare feel, airflow, support, and bounce rather than guessing from names alone.";
+      case "assessment_help":
+        return "The Snooze Assessment can narrow the right direction before you keep browsing.";
+      case "booking_help":
+        return "You can keep browsing here, or book a Snooze Session to test the feel in person.";
+      default:
+        return "Browse by feel, support, and cooling, then use the Snooze Assessment if you want a clearer direction.";
+    }
+  }
+
+  if (pageType === "product") {
+    switch (intent) {
+      case "sleep_hot":
+        return "Use this page to check comfort materials, airflow, and support details. The Snooze Assessment can help confirm fit.";
+      case "firm_support":
+        return "Use this page to check support feel, comfort details, and overall fit. The Snooze Assessment can help confirm fit.";
+      case "back_pain":
+        return "Use this page to check support, pressure relief, and comfort details. The Snooze Assessment can help confirm fit.";
+      case "snoring":
+        return "Use this page to check comfort details first. If elevation matters, pair that with the right base.";
+      case "compare_mattresses":
+        return "Use this page to check feel, support, and comfort details, then compare that against the next type.";
+      case "booking_help":
+        return "If you want to test the feel in person, a Snooze Session can help confirm fit.";
+      default:
+        return "Use this page to check feel, support, and comfort details. The Snooze Assessment can help confirm fit.";
+    }
+  }
+
+  if (pageType === "page") {
+    if (isHudAskAssessmentPath(path)) {
+      if (intent === "booking_help") {
+        return "You can book a Snooze Session later. The Snooze Assessment is the fastest way to narrow the right direction first.";
+      }
+      return "The Snooze Assessment is the fastest way to narrow the right direction.";
+    }
+
+    if (isHudAskBookingPath(path)) {
+      if (intent === "assessment_help") {
+        return "The Snooze Assessment can narrow the right direction before your Snooze Session.";
+      }
+      return "A Snooze Session lets you test the experience in person without a traditional sales floor.";
+    }
+  }
+
+  if (pageType === "cart") {
+    return "Before you finish, make sure the feel, support, and setup match how you sleep.";
+  }
+
+  if (pageType === "search") {
+    return "Use a few key sleep needs to narrow the right direction.";
+  }
+
+  return baseReply;
+}
+
+function resolveHudAskContextualConfig({ intent, pageType, path }) {
+  const baseConfig = HUD_ASK_INTENT_CONFIG[intent] || HUD_ASK_INTENT_CONFIG.fallback;
+  const normalizedPageType = normalizeHudAskPageType(pageType, path);
+  const reply = buildHudAskReplyForContext({
+    intent,
+    pageType: normalizedPageType,
+    path,
+    baseReply: baseConfig.reply,
+  });
+
+  if (normalizedPageType === "home") {
+    return {
+      reply,
+      chips: HUD_ASK_HOME_CHIPS,
+      actions: [HUD_ASK_ACTION_ASSESSMENT],
+      collections: [HUD_ASK_COLLECTION_MATTRESSES],
+      pages: [HUD_ASK_PAGE_BOOKING],
+    };
+  }
+
+  if (normalizedPageType === "collection") {
+    return {
+      reply,
+      chips: HUD_ASK_COLLECTION_CHIPS,
+      actions: [HUD_ASK_ACTION_ASSESSMENT],
+      collections: [HUD_ASK_COLLECTION_MATTRESSES],
+      pages: [],
+    };
+  }
+
+  if (normalizedPageType === "product") {
+    return {
+      reply,
+      chips: HUD_ASK_PRODUCT_CHIPS,
+      actions: [HUD_ASK_ACTION_ASSESSMENT],
+      collections: [],
+      pages: [],
+    };
+  }
+
+  if (normalizedPageType === "page" && isHudAskAssessmentPath(path)) {
+    return {
+      reply,
+      chips: HUD_ASK_PAGE_ASSESSMENT_CHIPS,
+      actions: [HUD_ASK_ACTION_ASSESSMENT],
+      collections: [],
+      pages: [HUD_ASK_PAGE_BOOKING],
+    };
+  }
+
+  if (normalizedPageType === "page" && isHudAskBookingPath(path)) {
+    return {
+      reply,
+      chips: HUD_ASK_PAGE_BOOKING_CHIPS,
+      actions: [HUD_ASK_ACTION_BOOKING],
+      collections: [],
+      pages: [HUD_ASK_PAGE_ASSESSMENT],
+    };
+  }
+
+  if (normalizedPageType === "cart") {
+    return {
+      reply,
+      chips: HUD_ASK_CART_CHIPS,
+      actions: [HUD_ASK_ACTION_ASSESSMENT],
+      collections: [],
+      pages: [HUD_ASK_PAGE_BOOKING],
+    };
+  }
+
+  if (normalizedPageType === "search") {
+    return {
+      reply,
+      chips: HUD_ASK_SEARCH_CHIPS,
+      actions: [HUD_ASK_ACTION_ASSESSMENT],
+      collections: [HUD_ASK_COLLECTION_MATTRESSES],
+      pages: [],
+    };
+  }
+
+  return {
+    reply,
+    chips: baseConfig.chips,
+    actions: baseConfig.actions,
+    collections: baseConfig.collections,
+    pages: baseConfig.pages,
+  };
+}
+
 function buildHudAskPayload({
   intent = "fallback",
   path = "/",
+  pageType = "unknown",
   latencyMs = 0,
   threadId = null,
   error = null,
   source = "live",
 } = {}) {
-  const config = HUD_ASK_INTENT_CONFIG[intent] || HUD_ASK_INTENT_CONFIG.fallback;
+  const normalizedPath = sanitizeHudAskPath(path);
+  const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
+  const config = resolveHudAskContextualConfig({
+    intent,
+    pageType: normalizedPageType,
+    path: normalizedPath,
+  });
 
   return {
     status: "ok",
     reply: config.reply,
     intent,
-    chips: config.chips.map((chip) => cloneHudAskChip(chip)).filter((chip) => chip.label && chip.value),
-    actions: config.actions
-      .map((action) => cloneHudAskAction(action))
-      .filter((action) => action.label && action.type && action.href),
+    chips: cloneHudAskChips(config.chips),
+    actions: cloneHudAskActions(config.actions),
     products: [],
-    collections: config.collections
-      .map((collection) => cloneHudAskCollection(collection))
-      .filter((collection) => collection.label && collection.handle && collection.href),
-    pages: config.pages
-      .map((page) => cloneHudAskPage(page))
-      .filter((page) => page.label && page.href),
+    collections: cloneHudAskCollections(config.collections),
+    pages: cloneHudAskPages(config.pages),
     meta: {
-      path: sanitizeHudAskPath(path),
+      path: normalizedPath,
       source,
       latency_ms: Math.max(0, Math.round(Number(latencyMs) || 0)),
       error: error || null,
@@ -1701,7 +1963,7 @@ async function handle(event = {}) {
     try {
       const query = typeof body?.query === "string" ? body.query.trim() : "";
       const pathValue = sanitizeHudAskPath(body?.path || "/");
-      const pageType = String(body?.page_type || "unknown").trim().toLowerCase() || "unknown";
+      const pageType = normalizeHudAskPageType(body?.page_type || "unknown", pathValue);
       const surface = String(body?.surface || "shopify_header").trim().toLowerCase() || "shopify_header";
       const threadId = deriveEffectiveThreadId(event, {
         thread_id: body?.thread_id,
@@ -1711,6 +1973,7 @@ async function handle(event = {}) {
       const payload = buildHudAskPayload({
         intent,
         path: pathValue,
+        pageType,
         latencyMs: elapsedMs(startedAt),
         threadId,
       });
@@ -1730,6 +1993,7 @@ async function handle(event = {}) {
       const fallback = buildHudAskPayload({
         intent: "fallback",
         path: sanitizeHudAskPath(body?.path || "/"),
+        pageType: normalizeHudAskPageType(body?.page_type || "unknown", body?.path || "/"),
         latencyMs: elapsedMs(startedAt),
         threadId: deriveEffectiveThreadId(event, {
           thread_id: body?.thread_id,
