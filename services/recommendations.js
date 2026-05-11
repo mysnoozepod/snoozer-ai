@@ -241,6 +241,7 @@ async function getSeedRecommendations(shopperId) {
 }
 
 module.exports = {
+  HANDLES,
   getRecommendations,
   getSeedRecommendations,
 };

@@ -1582,6 +1582,30 @@
       };
     }
 
+    function normalizeLiveProduct(item) {
+      const title = normalizeText(item && (item.title || item.label));
+      const href = normalizeText(item && item.href);
+      const reason = normalizeText(item && item.reason);
+      const tags = toArray(item && item.tags)
+        .map((tag) => normalizeText(tag))
+        .filter(Boolean)
+        .slice(0, 3);
+
+      if (!title || !href.startsWith('/products/') || !isSafeInternalHref(href)) {
+        return null;
+      }
+
+      return {
+        label: title,
+        title,
+        href,
+        handle: normalizeText(item && item.handle),
+        type: 'product',
+        reason,
+        tags
+      };
+    }
+
     function normalizeLivePayload(payload) {
       const raw = unwrapLivePayload(payload);
       if (!raw || typeof raw !== 'object') {
@@ -1601,9 +1625,13 @@
       const pages = toArray(raw.pages)
         .map((item) => normalizeLiveCard(item))
         .filter(Boolean);
+      const products = toArray(raw.products)
+        .map((item) => normalizeLiveProduct(item))
+        .filter(Boolean);
 
       if (
         reply === fallbackResponse &&
+        products.length === 0 &&
         chips.length === 0 &&
         actions.length === 0 &&
         collections.length === 0 &&
@@ -1618,7 +1646,7 @@
         intent: normalizeText(raw.intent) || 'live',
         chips,
         actions,
-        products: toArray(raw.products),
+        products,
         collections,
         pages,
         meta: raw.meta && typeof raw.meta === 'object' ? raw.meta : {}
@@ -1627,21 +1655,37 @@
 
     function buildCardsFromLivePayload(payload) {
       const items = []
+        .concat(toArray(payload && payload.products))
         .concat(toArray(payload && payload.actions))
         .concat(toArray(payload && payload.collections))
         .concat(toArray(payload && payload.pages));
       const seen = new Set();
 
       return items.reduce((cards, item) => {
-        const normalizedCard = normalizeLiveCard(item);
+        const normalizedCard =
+          normalizeText(item && item.type).toLowerCase() === 'product'
+            ? normalizeLiveProduct(item)
+            : normalizeLiveCard(item);
         if (!normalizedCard) return cards;
 
         if (seen.has(normalizedCard.href)) return cards;
         seen.add(normalizedCard.href);
 
+        const productTags = toArray(normalizedCard.tags)
+          .map((tag) => normalizeText(tag))
+          .filter(Boolean)
+          .slice(0, 3);
+        const productCopy = [
+          normalizeText(normalizedCard.reason),
+          productTags.length ? productTags.join(' | ') : ''
+        ].filter(Boolean).join(' ');
+
         cards.push({
-          label: normalizedCard.label,
-          copy: getCardCopy(normalizedCard),
+          label: normalizedCard.title || normalizedCard.label,
+          copy:
+            normalizedCard.type === 'product'
+              ? productCopy || 'View product details.'
+              : getCardCopy(normalizedCard),
           href: normalizedCard.href,
           handle: normalizedCard.handle,
           type: normalizedCard.type
