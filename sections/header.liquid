@@ -189,6 +189,13 @@
 
   .header__snoozer-row {
     padding: 0.4rem 0 0.2rem;
+    position: relative;
+    z-index: 22;
+  }
+
+  .header__snoozer-shell {
+    position: relative;
+    width: 100%;
   }
 
   .header__mobile-nav {
@@ -250,6 +257,7 @@
     color: #071a44;
     cursor: pointer;
     text-align: left;
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
   }
 
   .header__snoozer-pill:hover {
@@ -327,6 +335,218 @@
     min-height: 5.2rem;
   }
 
+  .header__snoozer-shell.is-open .header__snoozer-pill {
+    border-color: rgba(7, 26, 68, 0.16);
+    box-shadow: 0 1rem 2.4rem rgba(7, 26, 68, 0.12);
+  }
+
+  .header__snoozer-shell.is-open .header__snoozer-arrow {
+    transform: rotate(90deg);
+  }
+
+  .header__snoozer-panel {
+    position: absolute;
+    top: calc(100% + 1rem);
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 1.8rem;
+    border: 0.1rem solid rgba(7, 26, 68, 0.1);
+    border-radius: 2.4rem;
+    background: #ffffff;
+    box-shadow: 0 2.4rem 5.4rem rgba(7, 26, 68, 0.14);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-0.8rem);
+    transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+    z-index: 30;
+  }
+
+  .header__snoozer-shell.is-open .header__snoozer-panel {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .header__snoozer-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.2rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .header__snoozer-kicker {
+    margin: 0 0 0.4rem;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(7, 26, 68, 0.66);
+  }
+
+  .header__snoozer-support {
+    margin: 0;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.45rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: #243247;
+  }
+
+  .header__snoozer-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.6rem;
+    height: 3.6rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: #eef3f9;
+    color: #071a44;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .header__snoozer-close span {
+    display: block;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .header__snoozer-input-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.8rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .header__snoozer-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 4.6rem;
+    padding: 0 1.4rem;
+    border: 0.1rem solid rgba(7, 26, 68, 0.12);
+    border-radius: 1.6rem;
+    background: #f6f8fb;
+    color: #071a44;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.45rem;
+    line-height: 1.2;
+  }
+
+  .header__snoozer-input::placeholder {
+    color: rgba(36, 50, 71, 0.72);
+  }
+
+  .header__snoozer-input:focus-visible {
+    outline: 0.2rem solid rgba(30, 92, 196, 0.2);
+    outline-offset: 0.2rem;
+  }
+
+  .header__snoozer-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 4.6rem;
+    padding: 0 1.6rem;
+    border: 0;
+    border-radius: 1.6rem;
+    background: #071a44;
+    color: #ffffff;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .header__snoozer-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .header__snoozer-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.6rem;
+    padding: 0 1.2rem;
+    border: 0.1rem solid rgba(7, 26, 68, 0.1);
+    border-radius: 999px;
+    background: #f6f8fb;
+    color: #243247;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+  }
+
+  .header__snoozer-chip[aria-pressed='true'],
+  .header__snoozer-chip:hover,
+  .header__snoozer-chip:focus-visible {
+    border-color: rgba(7, 26, 68, 0.22);
+    background: #eef4fb;
+    color: #071a44;
+  }
+
+  .header__snoozer-response {
+    margin: 0 0 1.4rem;
+    padding: 1.3rem 1.4rem;
+    border-radius: 1.8rem;
+    background: #f8fafc;
+    color: #243247;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  .header__snoozer-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+
+  .header__snoozer-action {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.2rem 1.3rem;
+    border: 0.1rem solid rgba(7, 26, 68, 0.1);
+    border-radius: 1.8rem;
+    background: #ffffff;
+    text-decoration: none;
+    color: #071a44;
+    box-shadow: 0 0.8rem 1.8rem rgba(7, 26, 68, 0.05);
+  }
+
+  .header__snoozer-action-label {
+    display: block;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .header__snoozer-action-copy {
+    display: block;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: rgba(36, 50, 71, 0.76);
+  }
+
   @media screen and (min-width: 990px) {
     .header__main {
       grid-template-columns: minmax(22rem, 1fr) 50.8rem minmax(30rem, 1fr);
@@ -359,6 +579,8 @@
       align-items: center;
       justify-content: center;
       justify-self: center;
+      position: relative;
+      overflow: visible;
       width: 50.8rem;
       min-width: 50.8rem;
       margin-top: 0;
@@ -382,6 +604,10 @@
 
     .header__snoozer-entry .header__snoozer-text {
       font-size: 1.9rem;
+    }
+
+    .header__snoozer-entry .header__snoozer-panel {
+      padding: 2rem;
     }
 
     .header__icons {
@@ -499,6 +725,28 @@
       display: none;
     }
   }
+
+  @media screen and (max-width: 989px) {
+    .header--snoozer-open .header__mobile-nav {
+      display: none;
+    }
+
+    .header__snoozer-panel {
+      width: 100%;
+      max-width: 100%;
+      padding: 1.6rem;
+      border-radius: 2rem;
+    }
+
+    .header__snoozer-input-wrap,
+    .header__snoozer-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .header__snoozer-action {
+      padding: 1.15rem 1.3rem;
+    }
+  }
 </style>
 
 {%- style -%}
@@ -520,6 +768,10 @@
     endif
   endfor
 -%}
+
+{%- assign snoozer_assessment_url = '#' -%}
+{%- assign snoozer_mattresses_url = '/collections/mattresses' -%}
+{%- assign snoozer_booking_url = '/pages/book-a-snooze-session' -%}
 
 <div class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
   {%- liquid
@@ -573,27 +825,124 @@
     {%- endif -%}
   {%- endcapture -%}
 
-  {%- capture ask_snoozer_pill -%}
-    <button
-      type="button"
-      class="header__snoozer-pill"
-      data-snoozer-trigger
-      data-snoozer-source="header"
-      aria-label="Ask Snoozer anything about your sleep"
-    >
-      <img
-        src="{{ 'snoozer-avatar.png' | asset_url }}"
-        alt="Snoozer avatar"
-        class="header__snoozer-avatar"
-        loading="eager"
-        width="36"
-        height="36"
+  {%- capture ask_snoozer_panel_inner -%}
+    <div class="header__snoozer-panel-head">
+      <div>
+        <p class="header__snoozer-kicker">Snoozer</p>
+        <p class="header__snoozer-support">Tell me what you need help with.</p>
+      </div>
+      <button type="button" class="header__snoozer-close large-up-hide" data-snoozer-close aria-label="Close Ask Snoozer panel">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <form class="header__snoozer-input-wrap" data-snoozer-form>
+      <input
+        type="text"
+        class="header__snoozer-input"
+        data-snoozer-input
+        autocomplete="off"
+        placeholder="Ask about comfort, cooling, or support"
+        aria-label="Tell Snoozer what you need help with"
       >
-      <span class="header__snoozer-text">Ask Snoozer</span>
-      <span class="header__snoozer-arrow" aria-hidden="true">
-        <span class="svg-wrapper">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
-      </span>
-    </button>
+      <button type="submit" class="header__snoozer-submit">Guide Me</button>
+    </form>
+    <div class="header__snoozer-chip-list" aria-label="Suggested Snoozer prompts">
+      <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Cooling and airflow matter most here. I can help narrow the right feel.">I sleep hot</button>
+      <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Firm support can help with alignment, but comfort still matters.">I need firm support</button>
+      <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Snoring can be affected by sleep position and elevation. Start with your sleep setup.">I snore</button>
+      <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Compare by feel, support, cooling, and adjustability - not just price.">I want to compare mattresses</button>
+    </div>
+    <p class="header__snoozer-response" data-snoozer-response aria-live="polite">Start with how you sleep. I'll guide you from there.</p>
+    <div class="header__snoozer-actions">
+      <a href="{{ snoozer_assessment_url }}" class="header__snoozer-action" data-snoozer-placeholder-link>
+        <span class="header__snoozer-action-label">Take Snooze Assessment</span>
+        <span class="header__snoozer-action-copy">Start with your sleep profile.</span>
+      </a>
+      <a href="{{ snoozer_mattresses_url }}" class="header__snoozer-action">
+        <span class="header__snoozer-action-label">View Mattresses</span>
+        <span class="header__snoozer-action-copy">Compare feel, support, and cooling.</span>
+      </a>
+      <a href="{{ snoozer_booking_url }}" class="header__snoozer-action">
+        <span class="header__snoozer-action-label">Book Snooze Session</span>
+        <span class="header__snoozer-action-copy">Test your fit in person.</span>
+      </a>
+    </div>
+  {%- endcapture -%}
+
+  {%- capture ask_snoozer_desktop -%}
+    <div class="header__snoozer-shell" data-snoozer-shell>
+      <button
+        type="button"
+        class="header__snoozer-pill"
+        data-snoozer-trigger
+        data-snoozer-anchor-trigger
+        data-snoozer-source="header-desktop"
+        aria-label="Ask Snoozer anything about your sleep"
+        aria-expanded="false"
+        aria-controls="HeaderSnoozerPanelDesktop-{{ section.id }}"
+      >
+        <img
+          src="{{ 'snoozer-avatar.png' | asset_url }}"
+          alt="Snoozer avatar"
+          class="header__snoozer-avatar"
+          loading="eager"
+          width="36"
+          height="36"
+        >
+        <span class="header__snoozer-text">Ask Snoozer</span>
+        <span class="header__snoozer-arrow" aria-hidden="true">
+          <span class="svg-wrapper">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
+        </span>
+      </button>
+      <div
+        id="HeaderSnoozerPanelDesktop-{{ section.id }}"
+        class="header__snoozer-panel"
+        data-snoozer-panel
+        role="region"
+        aria-label="Ask Snoozer guided search"
+        aria-hidden="true"
+      >
+        {{ ask_snoozer_panel_inner }}
+      </div>
+    </div>
+  {%- endcapture -%}
+
+  {%- capture ask_snoozer_mobile -%}
+    <div class="header__snoozer-shell" data-snoozer-shell>
+      <button
+        type="button"
+        class="header__snoozer-pill"
+        data-snoozer-trigger
+        data-snoozer-anchor-trigger
+        data-snoozer-source="header-mobile"
+        aria-label="Ask Snoozer anything about your sleep"
+        aria-expanded="false"
+        aria-controls="HeaderSnoozerPanelMobile-{{ section.id }}"
+      >
+        <img
+          src="{{ 'snoozer-avatar.png' | asset_url }}"
+          alt="Snoozer avatar"
+          class="header__snoozer-avatar"
+          loading="eager"
+          width="36"
+          height="36"
+        >
+        <span class="header__snoozer-text">Ask Snoozer</span>
+        <span class="header__snoozer-arrow" aria-hidden="true">
+          <span class="svg-wrapper">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
+        </span>
+      </button>
+      <div
+        id="HeaderSnoozerPanelMobile-{{ section.id }}"
+        class="header__snoozer-panel"
+        data-snoozer-panel
+        role="region"
+        aria-label="Ask Snoozer guided search"
+        aria-hidden="true"
+      >
+        {{ ask_snoozer_panel_inner }}
+      </div>
+    </div>
   {%- endcapture -%}
 
   <header class="header page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %} header--mobile-{{ section.settings.mobile_logo_position }}">
@@ -609,7 +958,7 @@
       </div>
 
       <div class="header__snoozer-entry small-hide medium-hide">
-        {{ ask_snoozer_pill }}
+        {{ ask_snoozer_desktop }}
       </div>
 
       <div class="header__icons{% if localization_forms %} header__icons--localization header-localization{% endif %}">
@@ -688,7 +1037,7 @@
       </div>
     </div>
     <div class="header__snoozer-row large-up-hide">
-      {{ ask_snoozer_pill }}
+      {{ ask_snoozer_mobile }}
     </div>
     {%- if section.settings.menu != blank -%}
       <nav class="header__mobile-nav large-up-hide" aria-label="Category navigation">
@@ -767,38 +1116,159 @@
     if (window.__mysnoozepodSnoozerTriggerBound) return;
     window.__mysnoozepodSnoozerTriggerBound = true;
 
-    function openSnoozer(source) {
-      const detail = { source: source || 'unknown' };
+    const defaultResponse = "Start with how you sleep. I'll guide you from there.";
+    const typedResponse = "I can guide you with that. Start with the Snooze Assessment or choose a category below.";
+    const shells = Array.from(document.querySelectorAll('[data-snoozer-shell]'));
+    const header = document.querySelector('.header');
+    let lastPointerOpen = 0;
 
-      if (typeof window.openSnoozer === 'function') {
-        window.openSnoozer(detail);
+    function setResponse(shell, text) {
+      const response = shell && shell.querySelector('[data-snoozer-response]');
+      if (!response) return;
+      response.textContent = text || defaultResponse;
+    }
+
+    function setChipState(shell, selectedChip) {
+      if (!shell) return;
+
+      shell.querySelectorAll('[data-snoozer-chip]').forEach((chip) => {
+        chip.setAttribute('aria-pressed', chip === selectedChip ? 'true' : 'false');
+      });
+    }
+
+    function closeShell(shell) {
+      if (!shell) return;
+
+      shell.classList.remove('is-open');
+
+      const trigger = shell.querySelector('[data-snoozer-anchor-trigger]');
+      const panel = shell.querySelector('[data-snoozer-panel]');
+
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+      if (panel) panel.setAttribute('aria-hidden', 'true');
+    }
+
+    function closeAllShells() {
+      shells.forEach((shell) => closeShell(shell));
+
+      if (header) header.classList.remove('header--snoozer-open');
+    }
+
+    function openShell(shell) {
+      if (!shell) return;
+
+      shells.forEach((currentShell) => {
+        if (currentShell !== shell) closeShell(currentShell);
+      });
+
+      shell.classList.add('is-open');
+
+      const trigger = shell.querySelector('[data-snoozer-anchor-trigger]');
+      const panel = shell.querySelector('[data-snoozer-panel]');
+      if (trigger) trigger.setAttribute('aria-expanded', 'true');
+
+      if (panel) panel.setAttribute('aria-hidden', 'false');
+      if (header) header.classList.add('header--snoozer-open');
+    }
+
+    function toggleShell(shell) {
+      if (!shell) return;
+
+      if (shell.classList.contains('is-open')) {
+        closeAllShells();
         return;
       }
 
-      if (window.SnoozerHUD && typeof window.SnoozerHUD.open === 'function') {
-        window.SnoozerHUD.open(detail);
-        return;
-      }
+      openShell(shell);
+    }
 
-      if (window.Snoozer && typeof window.Snoozer.open === 'function') {
-        window.Snoozer.open(detail);
-        return;
-      }
+    function getVisibleShell() {
+      return shells.find((shell) => shell.offsetParent !== null) || shells[0] || null;
+    }
 
-      window.dispatchEvent(new CustomEvent('mysnoozepod:snoozer:open', { detail }));
-      window.dispatchEvent(new CustomEvent('snoozer:open', { detail }));
-      console.log('Ask Snoozer clicked');
+    function openVisibleShell(source) {
+      const visibleShell = getVisibleShell();
+      if (!visibleShell) return;
+
+      openShell(visibleShell);
     }
 
     window.MySnoozePod = window.MySnoozePod || {};
-    window.MySnoozePod.openSnoozer = openSnoozer;
+    window.MySnoozePod.openSnoozer = openVisibleShell;
+
+    document.addEventListener('pointerdown', () => {
+      lastPointerOpen = Date.now();
+    });
 
     document.addEventListener('click', (event) => {
       const trigger = event.target.closest('[data-snoozer-trigger]');
-      if (!trigger) return;
+      const closeButton = event.target.closest('[data-snoozer-close]');
+      const placeholderLink = event.target.closest('[data-snoozer-placeholder-link]');
 
-      event.preventDefault();
-      openSnoozer(trigger.getAttribute('data-snoozer-source'));
+      if (placeholderLink) {
+        event.preventDefault();
+      }
+
+      if (closeButton) {
+        event.preventDefault();
+        closeAllShells();
+        return;
+      }
+
+      if (trigger) {
+        const triggerShell = trigger.closest('[data-snoozer-shell]');
+        event.preventDefault();
+
+        if (trigger.hasAttribute('data-snoozer-anchor-trigger') && triggerShell) {
+          toggleShell(triggerShell);
+          return;
+        }
+
+        openVisibleShell(trigger.getAttribute('data-snoozer-source'));
+        return;
+      }
+
+      if (!event.target.closest('[data-snoozer-shell]')) {
+        closeAllShells();
+      }
+    });
+
+    document.addEventListener('focusin', (event) => {
+      const trigger = event.target.closest('[data-snoozer-anchor-trigger]');
+      if (!trigger) return;
+      if (Date.now() - lastPointerOpen < 250) return;
+
+      const triggerShell = trigger.closest('[data-snoozer-shell]');
+      openShell(triggerShell);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      closeAllShells();
+    });
+
+    shells.forEach((shell) => {
+      const form = shell.querySelector('[data-snoozer-form]');
+      const input = shell.querySelector('[data-snoozer-input]');
+
+      shell.querySelectorAll('[data-snoozer-chip]').forEach((chip) => {
+        chip.setAttribute('aria-pressed', 'false');
+
+        chip.addEventListener('click', () => {
+          setChipState(shell, chip);
+          setResponse(shell, chip.getAttribute('data-snoozer-response-text'));
+        });
+      });
+
+      if (!form || !input) return;
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const hasValue = input.value.trim() !== '';
+        setChipState(shell, null);
+        setResponse(shell, hasValue ? typedResponse : defaultResponse);
+      });
     });
   })();
 </script>
