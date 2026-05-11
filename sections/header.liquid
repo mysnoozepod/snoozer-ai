@@ -1672,10 +1672,6 @@
       button.type = 'button';
       button.className = 'header__snoozer-chip';
 
-      if (chip && chip.state) {
-        button.setAttribute('data-snoozer-state-trigger', chip.state);
-      }
-
       button.setAttribute('data-snoozer-chip-value', normalizedChip.value);
       button.setAttribute('aria-pressed', normalizedChip.label === selectedLabel ? 'true' : 'false');
       button.textContent = normalizedChip.label;
@@ -1890,9 +1886,6 @@
       const closeButton = event.target.closest('[data-snoozer-close]');
       const placeholderLink = event.target.closest('[data-snoozer-placeholder-link]');
       const chipValueTrigger = event.target.closest('[data-snoozer-chip-value]');
-      const stateTrigger = chipValueTrigger
-        ? null
-        : event.target.closest('[data-snoozer-state-trigger]');
 
       if (placeholderLink) {
         event.preventDefault();
@@ -1912,19 +1905,6 @@
         submitLiveQuery(
           stateShell,
           chipValueTrigger.getAttribute('data-snoozer-chip-value')
-        );
-        return;
-      }
-
-      if (stateTrigger) {
-        const stateShell = stateTrigger.closest('[data-snoozer-shell]');
-        if (!stateShell) return;
-
-        event.preventDefault();
-        renderState(
-          stateShell,
-          stateTrigger.getAttribute('data-snoozer-state-trigger'),
-          stateTrigger.textContent.trim()
         );
         return;
       }
