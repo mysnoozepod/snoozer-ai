@@ -1965,6 +1965,15 @@ async function handle(event = {}) {
       const pathValue = sanitizeHudAskPath(body?.path || "/");
       const pageType = normalizeHudAskPageType(body?.page_type || "unknown", pathValue);
       const surface = String(body?.surface || "shopify_header").trim().toLowerCase() || "shopify_header";
+      const requestId = String(event?.requestContext?.requestId || traceId || "").trim() || null;
+      console.log("[hud/ask] invoked", {
+        path: pathValue,
+        method,
+        query,
+        page_type: pageType,
+        surface,
+        requestId,
+      });
       const threadId = deriveEffectiveThreadId(event, {
         thread_id: body?.thread_id,
         sessionId: body?.session_id,
