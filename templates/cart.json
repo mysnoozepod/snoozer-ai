@@ -1,1 +1,91 @@
-{"sections":{"cart-items":{"type":"main-cart-items","settings":{"color_scheme":"scheme-1","padding_top":36,"padding_bottom":36}},"cart-footer":{"type":"main-cart-footer","blocks":{"subtotal":{"type":"subtotal","settings":{}},"buttons":{"type":"buttons","settings":{}}},"block_order":["subtotal","buttons"],"settings":{"color_scheme":"scheme-1","padding_top":20,"padding_bottom":40}}},"order":["cart-items","cart-footer"]}
+{
+  "sections": {
+    "cart-items": {
+      "type": "main-cart-items",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "cart-footer": {
+      "type": "main-cart-footer",
+      "blocks": {
+        "subtotal": {
+          "type": "subtotal",
+          "settings": {}
+        },
+        "buttons": {
+          "type": "buttons",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "subtotal",
+        "buttons"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 20,
+        "padding_bottom": 40
+      }
+    },
+    "snoozer-guidance": {
+      "type": "snoozer-cart-guidance-cards",
+      "settings": {
+        "card_1_heading": "Not sure this is the right setup?",
+        "card_1_text": "Complete your Snooze Assessment and get a more personalized recommendation.",
+        "card_1_cta_label": "Start Snooze Assessment",
+        "card_2_heading": "Want to experience it in person?",
+        "card_2_text": "Book a Snooze Session to test your recommended setup before you invest.",
+        "card_2_cta_label": "Book Your Snooze Session"
+      }
+    },
+    "snoozer-trust": {
+      "type": "snoozer-cart-trust-strip",
+      "blocks": {
+        "guided_support": {
+          "type": "trust_item",
+          "settings": {
+            "title": "Guided Support",
+            "text": "Snoozer helps keep the path simple and clear."
+          }
+        },
+        "flexible_payment": {
+          "type": "trust_item",
+          "settings": {
+            "title": "Flexible Payment Options",
+            "text": "Explore payment options that support a better sleep investment."
+          }
+        },
+        "secure_checkout": {
+          "type": "trust_item",
+          "settings": {
+            "title": "Secure Checkout",
+            "text": "Your checkout remains protected and straightforward."
+          }
+        },
+        "rest_easy": {
+          "type": "trust_item",
+          "settings": {
+            "title": "Rest Easy",
+            "text": "Move forward with clarity before you invest."
+          }
+        }
+      },
+      "block_order": [
+        "guided_support",
+        "flexible_payment",
+        "secure_checkout",
+        "rest_easy"
+      ],
+      "settings": {}
+    }
+  },
+  "order": [
+    "cart-items",
+    "cart-footer",
+    "snoozer-guidance",
+    "snoozer-trust"
+  ]
+}

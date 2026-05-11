@@ -1,0 +1,155 @@
+{%- style -%}
+  .snoozer-cart-guidance {
+    padding: 0 0 2.4rem;
+  }
+
+  .snoozer-cart-guidance__inner {
+    width: min(132rem, calc(100% - 4rem));
+    margin: 0 auto;
+  }
+
+  .snoozer-cart-guidance__grid {
+    display: grid;
+    gap: 1.6rem;
+    grid-template-columns: 1fr;
+  }
+
+  .snoozer-cart-guidance__card {
+    display: grid;
+    gap: 1.2rem;
+    padding: 2.4rem 2rem;
+    background: rgb(var(--color-background));
+    border: 0.1rem solid rgba(var(--color-foreground), 0.08);
+    border-radius: 2.4rem;
+    box-shadow: 0 1.2rem 3rem rgba(var(--color-foreground), 0.05);
+  }
+
+  .snoozer-cart-guidance__heading {
+    margin: 0;
+    font-size: 2.2rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .snoozer-cart-guidance__text {
+    margin: 0;
+    color: rgba(var(--color-foreground), 0.72);
+    font-size: 1.6rem;
+    line-height: 1.55;
+  }
+
+  .snoozer-cart-guidance__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 5.2rem;
+    padding: 0 2.2rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozer-cart-guidance {
+      padding-bottom: 3.2rem;
+    }
+
+    .snoozer-cart-guidance__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2rem;
+    }
+
+    .snoozer-cart-guidance__card {
+      padding: 3rem 2.8rem;
+    }
+  }
+{%- endstyle -%}
+
+<section class="snoozer-cart-guidance section-{{ section.id }}" aria-labelledby="SnoozerCartGuidance-{{ section.id }}">
+  <div class="snoozer-cart-guidance__inner">
+    <div class="snoozer-cart-guidance__grid">
+      <article class="snoozer-cart-guidance__card">
+        <h2 class="snoozer-cart-guidance__heading" id="SnoozerCartGuidance-{{ section.id }}">
+          {{ section.settings.card_1_heading }}
+        </h2>
+        <p class="snoozer-cart-guidance__text">{{ section.settings.card_1_text }}</p>
+        <a
+          class="snoozer-cart-guidance__cta button"
+          href="{{ section.settings.card_1_cta_link | default: routes.root_url }}"
+        >
+          {{ section.settings.card_1_cta_label }}
+        </a>
+      </article>
+
+      <article class="snoozer-cart-guidance__card">
+        <h2 class="snoozer-cart-guidance__heading">{{ section.settings.card_2_heading }}</h2>
+        <p class="snoozer-cart-guidance__text">{{ section.settings.card_2_text }}</p>
+        <a
+          class="snoozer-cart-guidance__cta button button--secondary"
+          href="{{ section.settings.card_2_cta_link | default: routes.root_url }}"
+        >
+          {{ section.settings.card_2_cta_label }}
+        </a>
+      </article>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cart guidance",
+  "settings": [
+    {
+      "type": "text",
+      "id": "card_1_heading",
+      "label": "Card 1 heading",
+      "default": "Not sure this is the right setup?"
+    },
+    {
+      "type": "textarea",
+      "id": "card_1_text",
+      "label": "Card 1 text",
+      "default": "Complete your Snooze Assessment and get a more personalized recommendation."
+    },
+    {
+      "type": "text",
+      "id": "card_1_cta_label",
+      "label": "Card 1 CTA label",
+      "default": "Start Snooze Assessment"
+    },
+    {
+      "type": "url",
+      "id": "card_1_cta_link",
+      "label": "Card 1 CTA link"
+    },
+    {
+      "type": "text",
+      "id": "card_2_heading",
+      "label": "Card 2 heading",
+      "default": "Want to experience it in person?"
+    },
+    {
+      "type": "textarea",
+      "id": "card_2_text",
+      "label": "Card 2 text",
+      "default": "Book a Snooze Session to test your recommended setup before you invest."
+    },
+    {
+      "type": "text",
+      "id": "card_2_cta_label",
+      "label": "Card 2 CTA label",
+      "default": "Book Your Snooze Session"
+    },
+    {
+      "type": "url",
+      "id": "card_2_cta_link",
+      "label": "Card 2 CTA link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cart guidance"
+    }
+  ]
+}
+{% endschema %}

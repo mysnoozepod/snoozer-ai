@@ -1,0 +1,121 @@
+{%- style -%}
+  .snoozer-cart-trust {
+    padding: 0 0 4.8rem;
+  }
+
+  .snoozer-cart-trust__inner {
+    width: min(132rem, calc(100% - 4rem));
+    margin: 0 auto;
+  }
+
+  .snoozer-cart-trust__grid {
+    display: grid;
+    gap: 1.2rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .snoozer-cart-trust__item {
+    display: grid;
+    gap: 0.6rem;
+    padding: 2rem 1.6rem;
+    background: rgb(var(--color-background));
+    border: 0.1rem solid rgba(var(--color-foreground), 0.08);
+    border-radius: 2rem;
+  }
+
+  .snoozer-cart-trust__title {
+    margin: 0;
+    font-size: 1.6rem;
+    line-height: 1.25;
+  }
+
+  .snoozer-cart-trust__text {
+    margin: 0;
+    font-size: 1.4rem;
+    line-height: 1.55;
+    color: rgba(var(--color-foreground), 0.72);
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozer-cart-trust__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+{%- endstyle -%}
+
+<section class="snoozer-cart-trust section-{{ section.id }}" aria-labelledby="SnoozerCartTrust-{{ section.id }}">
+  <div class="snoozer-cart-trust__inner">
+    <div class="snoozer-cart-trust__grid">
+      {%- for block in section.blocks -%}
+        <article class="snoozer-cart-trust__item" {{ block.shopify_attributes }}>
+          <h2 class="snoozer-cart-trust__title"{% if forloop.first %} id="SnoozerCartTrust-{{ section.id }}"{% endif %}>
+            {{ block.settings.title }}
+          </h2>
+          <p class="snoozer-cart-trust__text">{{ block.settings.text }}</p>
+        </article>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cart trust strip",
+  "blocks": [
+    {
+      "type": "trust_item",
+      "name": "Trust item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Guided Support"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "Snoozer helps keep the path simple and clear."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "presets": [
+    {
+      "name": "Cart trust strip",
+      "blocks": [
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "Guided Support",
+            "text": "Snoozer helps keep the path simple and clear."
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "Flexible Payment Options",
+            "text": "Explore payment options that support a better sleep investment."
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "Secure Checkout",
+            "text": "Your checkout remains protected and straightforward."
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "Rest Easy",
+            "text": "Move forward with clarity before you invest."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
