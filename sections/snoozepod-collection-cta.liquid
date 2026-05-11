@@ -22,7 +22,7 @@
   .snoozepod-collection-cta-{{ section.id }} .snoozepod-collection-cta__heading {
     margin: 0;
     color: #ffffff;
-    font-size: 34px;
+    font-size: 30px;
     line-height: 1;
     letter-spacing: -0.03em;
   }
@@ -51,7 +51,7 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 58px;
+    min-height: 52px;
     padding: 0 34px;
     border-radius: 999px;
     font-size: 17px;
@@ -80,7 +80,7 @@
 
   @media screen and (min-width: 990px) {
     .snoozepod-collection-cta-{{ section.id }} {
-      margin: 48px auto 72px;
+      margin: 48px auto 64px;
     }
 
     .snoozepod-collection-cta-{{ section.id }} .snoozepod-collection-cta__card {
@@ -93,7 +93,7 @@
     }
 
     .snoozepod-collection-cta-{{ section.id }} .snoozepod-collection-cta__heading {
-      font-size: 46px;
+      font-size: 40px;
     }
 
     .snoozepod-collection-cta-{{ section.id }} .snoozepod-collection-cta__body {
@@ -110,10 +110,12 @@
 
     .snoozepod-collection-cta-{{ section.id }} .snoozepod-collection-cta__button--primary {
       min-width: 300px;
+      min-height: 56px;
     }
 
     .snoozepod-collection-cta-{{ section.id }} .snoozepod-collection-cta__button--secondary {
       min-width: 280px;
+      min-height: 56px;
     }
   }
 {%- endstyle -%}
@@ -162,7 +164,7 @@
 
 {% schema %}
 {
-  "name": "SnoozePod collection CTA",
+  "name": "Collection CTA",
   "class": "section",
   "tag": "section",
   "disabled_on": {
@@ -212,7 +214,7 @@
   ],
   "presets": [
     {
-      "name": "SnoozePod collection CTA"
+      "name": "Collection CTA"
     }
   ]
 }

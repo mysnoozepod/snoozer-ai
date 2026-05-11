@@ -8,14 +8,14 @@
 {%- style -%}
   .snoozer-collection-guidance-{{ section.id }} {
     max-width: 1480px;
-    margin: 24px 16px;
+    margin: 20px 16px 32px;
   }
 
   .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__card {
     display: grid;
     grid-template-columns: 1fr;
     gap: 24px;
-    padding: 24px;
+    padding: 24px 20px;
     border-radius: 24px;
     border: 1px solid rgba(7, 25, 66, 0.10);
     background: #ffffff;
@@ -56,7 +56,7 @@
   .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__heading {
     margin: 0;
     color: #071942;
-    font-size: 32px;
+    font-size: 28px;
     line-height: 1;
     letter-spacing: -0.03em;
   }
@@ -64,7 +64,7 @@
   .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__body {
     margin: 14px 0 0;
     color: rgba(7, 25, 66, 0.78);
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.45;
   }
 
@@ -123,11 +123,11 @@
 
   @media screen and (min-width: 990px) {
     .snoozer-collection-guidance-{{ section.id }} {
-      margin: 32px auto;
+      margin: 24px auto 40px;
     }
 
     .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__card {
-      padding: 40px 56px;
+      padding: 36px 48px;
       border-radius: 28px;
       grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
       gap: 36px;
@@ -141,12 +141,12 @@
     }
 
     .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__heading {
-      font-size: 44px;
+      font-size: 36px;
     }
 
     .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__body {
       max-width: 700px;
-      font-size: 20px;
+      font-size: 18px;
     }
 
     .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__actions {
@@ -156,7 +156,8 @@
     .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__actions .button,
     .snoozer-collection-guidance-{{ section.id }} .snoozer-collection-guidance__actions .snoozer-collection-guidance__cta {
       width: auto;
-      min-width: 320px;
+      min-width: 260px;
+      min-height: 56px;
     }
   }
 {%- endstyle -%}
@@ -217,7 +218,7 @@
 
 {% schema %}
 {
-  "name": "Snoozer Guidance",
+  "name": "Snoozer guidance",
   "class": "section",
   "tag": "section",
   "disabled_on": {
@@ -286,7 +287,7 @@
   ],
   "presets": [
     {
-      "name": "Snoozer Guidance"
+      "name": "Snoozer guidance"
     }
   ]
 }

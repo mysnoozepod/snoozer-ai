@@ -30,7 +30,7 @@
   .snoozepod-collection-hero-{{ section.id }} {
     max-width: 1480px;
     margin: 24px 16px;
-    padding: 24px;
+    padding: 28px 22px;
     border-radius: 24px;
     background: #f5f7fb;
   }
@@ -40,6 +40,10 @@
     grid-template-columns: 1fr;
     gap: 28px;
     align-items: center;
+  }
+
+  .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__grid--single {
+    grid-template-columns: 1fr;
   }
 
   .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__copy {
@@ -121,6 +125,10 @@
       margin-left: 24px;
       margin-right: 24px;
     }
+
+    .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__heading {
+      font-size: 44px;
+    }
   }
 
   @media screen and (min-width: 990px) {
@@ -154,7 +162,7 @@
     }
 
     .snoozepod-collection-hero-{{ section.id }} .snoozepod-collection-hero__body {
-      max-width: 640px;
+      max-width: 760px;
       margin-top: 20px;
       font-size: 20px;
       line-height: 1.45;
@@ -188,12 +196,6 @@
               alt: hero_alt | escape
           }}
         </div>
-      {%- else -%}
-        <div class="snoozepod-collection-hero__media" aria-hidden="true">
-          <div class="snoozepod-collection-hero__fallback">
-            <span class="snoozepod-collection-hero__fallback-mark">SnoozePod Collection</span>
-          </div>
-        </div>
       {%- endif -%}
 
       <div class="snoozepod-collection-hero__copy">
@@ -217,7 +219,7 @@
 
 {% schema %}
 {
-  "name": "SnoozePod collection hero",
+  "name": "Collection hero",
   "class": "section",
   "tag": "section",
   "disabled_on": {
@@ -260,7 +262,7 @@
   ],
   "presets": [
     {
-      "name": "SnoozePod collection hero"
+      "name": "Collection hero"
     }
   ]
 }
