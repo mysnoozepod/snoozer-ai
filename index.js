@@ -1010,6 +1010,19 @@ const HUD_ASK_SEARCH_CHIPS = Object.freeze([
   { label: "Take Snooze Assessment", value: "take snooze assessment" },
 ]);
 
+const HUD_ASK_BUDGET_CHIPS = Object.freeze([
+  { label: "Cheap queen size", value: "cheap queen size" },
+  { label: "King size mattress", value: "king size mattress" },
+  { label: "I need firm support", value: "I need firm support" },
+]);
+
+const HUD_ASK_SIZE_CHIPS = Object.freeze([
+  { label: "Queen size mattress", value: "i need a mattress in a queen size" },
+  { label: "King size mattress", value: "king size mattress" },
+  { label: "I need a split king", value: "i need a split king" },
+  { label: "Twin XL", value: "twin xl" },
+]);
+
 const HUD_ASK_INTENT_CONFIG = Object.freeze({
   default: {
     reply: "Start with how you sleep. I'll guide you from there.",
@@ -1101,6 +1114,58 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
     collections: [],
     pages: [HUD_ASK_PAGE_ASSESSMENT],
   },
+  budget_value: {
+    reply:
+      "For value, start with the simplest verified mattress options and confirm the right size.",
+    chips: HUD_ASK_BUDGET_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  size_help: {
+    reply:
+      "Start by narrowing the size you need, then compare feel and support within that size.",
+    chips: HUD_ASK_SIZE_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  queen_size: {
+    reply: "Here are verified Queen-compatible options to compare first.",
+    chips: HUD_ASK_SIZE_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  king_size: {
+    reply: "Here are verified King-compatible options to compare first.",
+    chips: HUD_ASK_SIZE_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  split_king: {
+    reply:
+      "Split king usually depends on matching two compatible sides with the right base setup.",
+    chips: HUD_ASK_SIZE_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  twin_xl: {
+    reply: "Here are verified Twin XL-compatible options to compare first.",
+    chips: HUD_ASK_SIZE_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  full_size: {
+    reply: "Here are verified Full-size options to compare first.",
+    chips: HUD_ASK_SIZE_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
   fallback: {
     reply: "I can still guide you. Try one of these starting points.",
     chips: HUD_ASK_FALLBACK_CHIPS,
@@ -1170,6 +1235,7 @@ function includesHudAskKeyword(text, keywords = []) {
 function resolveHudAskIntent(query) {
   const normalized = normalizeHudAskText(query);
   if (!normalized) return "default";
+  const requestedSizeLabel = parseHudAskSizeLabel(normalized);
 
   if (
     includesHudAskKeyword(normalized, [
@@ -1238,7 +1304,68 @@ function resolveHudAskIntent(query) {
     return "sleep_hot";
   }
 
+  if (
+    includesHudAskKeyword(normalized, [
+      "cheap",
+      "affordable",
+      "budget",
+      "value",
+      "lowest price",
+      "best price",
+      "inexpensive",
+      "not expensive",
+      "least expensive",
+      "low price",
+    ])
+  ) {
+    return "budget_value";
+  }
+
+  switch (requestedSizeLabel) {
+    case "Split King":
+    case "Half Split King":
+      return "split_king";
+    case "Twin XL":
+      return "twin_xl";
+    case "Queen":
+    case "Half Split Queen":
+      return "queen_size";
+    case "King":
+    case "Cal King":
+    case "Split Cal King":
+      return "king_size";
+    case "Full":
+      return "full_size";
+    default:
+      break;
+  }
+
+  if (includesHudAskKeyword(normalized, ["size", "mattress size"])) {
+    return "size_help";
+  }
+
   return "fallback";
+}
+
+function isHudAskSizeIntent(intent) {
+  return [
+    "size_help",
+    "queen_size",
+    "king_size",
+    "split_king",
+    "twin_xl",
+    "full_size",
+  ].includes(String(intent || "").trim());
+}
+
+function isHudAskSpecificSizeIntent(intent) {
+  return [
+    "queen_size",
+    "king_size",
+    "split_king",
+    "twin_xl",
+    "full_size",
+  ].includes(String(intent || "").trim());
 }
 
 function cloneHudAskChip(chip = {}) {
@@ -1325,6 +1452,14 @@ function cloneHudAskProducts(products = []) {
 
 function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
   if (pageType === "collection") {
+    if (intent === "budget_value") {
+      return "While you browse, start with the simplest verified mattress options and confirm the size you need.";
+    }
+
+    if (isHudAskSizeIntent(intent)) {
+      return "While you browse, stay inside the size you need, then compare feel and support.";
+    }
+
     switch (intent) {
       case "sleep_hot":
         return "While you browse, focus on breathable materials and the support feel that stays comfortable through the night.";
@@ -1346,6 +1481,14 @@ function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
   }
 
   if (pageType === "product") {
+    if (intent === "budget_value") {
+      return "Use this page to compare verified size options, support, and overall value before you decide.";
+    }
+
+    if (isHudAskSizeIntent(intent)) {
+      return "Use this page to confirm the size options first, then compare feel and support.";
+    }
+
     switch (intent) {
       case "sleep_hot":
         return "Use this page to check comfort materials, airflow, and support details. The Snooze Assessment can help confirm fit.";
@@ -1488,14 +1631,16 @@ function resolveHudAskReplyOverride({
   products = [],
   fallbackReply,
 } = {}) {
-  const normalized = String(query || "").toLowerCase();
   const hasProducts = Array.isArray(products) && products.length > 0;
 
-  if (
-    hasProducts &&
-    includesHudAskKeyword(normalized, ["cheap", "budget", "affordable", "low price", "least expensive"])
-  ) {
-    return "Start with the size you need, then compare the most accessible comfort and support options.";
+  if (intent === "budget_value") {
+    return hasProducts
+      ? "For value, start with the simplest verified mattress options and confirm the right size."
+      : "For value, start with the simplest verified mattress options and confirm the right size.";
+  }
+
+  if (intent === "split_king" && hasProducts) {
+    return "Start with verified Split King-compatible options, then confirm the right base setup.";
   }
 
   return buildHudAskReplyForContext({
@@ -1645,10 +1790,34 @@ function hudAskQueryWantsBudget(query) {
     "cheap",
     "budget",
     "affordable",
+    "value",
     "low price",
     "least expensive",
     "best price",
+    "lowest price",
+    "inexpensive",
+    "not expensive",
   ]);
+}
+
+function resolveHudAskRequestedSizeLabel(intent, query) {
+  const parsed = parseHudAskSizeLabel(query);
+  if (parsed) return parsed;
+
+  switch (String(intent || "").trim()) {
+    case "queen_size":
+      return "Queen";
+    case "king_size":
+      return "King";
+    case "split_king":
+      return "Split King";
+    case "twin_xl":
+      return "Twin XL";
+    case "full_size":
+      return "Full";
+    default:
+      return "";
+  }
 }
 
 function classifyHudAskHandle(handle, mattressHandles = [], adjustableBaseHandles = []) {
@@ -1769,8 +1938,16 @@ function resolveHudAskCandidateHandles({
     return [];
   }
 
-  if (hudAskQueryWantsBudget(query) && parseHudAskSizeLabel(query)) {
-    return normalizeHudAskHandleList(mattressHandles).slice(0, 4);
+  if (intent === "size_help") {
+    return [];
+  }
+
+  if (intent === "budget_value" || isHudAskSpecificSizeIntent(intent)) {
+    const baseHandles =
+      normalizedPageType === "product" && safeCurrentHandle
+        ? moveHudAskHandleToFront(mattressHandles, safeCurrentHandle)
+        : normalizeHudAskHandleList(mattressHandles);
+    return baseHandles.slice(0, 4);
   }
 
   if (intent === "compare_mattresses") {
@@ -1842,6 +2019,7 @@ function buildHudAskProductTags({ intent, handle, sizeLabel = "" } = {}) {
   if (intent === "sleep_hot") tags.push("Cooling");
   if (intent === "firm_support" || intent === "back_pain") tags.push("Support");
   if (intent === "snoring") tags.push("Elevation");
+  if (intent === "budget_value") tags.push("Value");
   if (sizeLabel) tags.push(sizeLabel);
 
   return Array.from(new Set(tags)).slice(0, 3);
@@ -1863,6 +2041,20 @@ function buildHudAskProductReason({
       /\s+/g,
       " "
     );
+  }
+
+  if (intent === "budget_value") {
+    return sizeLabel
+      ? `A verified ${sizeLabel} option to compare early if value is the priority.`
+      : "One of the simpler verified mattress options to compare first if value matters most.";
+  }
+
+  if (intent === "split_king") {
+    return "Verified in Split King so you can compare compatibility before you choose a base setup.";
+  }
+
+  if (isHudAskSpecificSizeIntent(intent) && sizeLabel) {
+    return `Verified in ${sizeLabel} so you can compare feel and support in the size you need.`;
   }
 
   if (isCurrent) {
@@ -1952,7 +2144,7 @@ async function resolveHudAskProducts({
 
     const normalizedPath = sanitizeHudAskPath(path);
     const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
-    const sizeLabel = parseHudAskSizeLabel(query);
+    const sizeLabel = resolveHudAskRequestedSizeLabel(intent, query);
     const budgetQuery = hudAskQueryWantsBudget(query);
     const currentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
     const candidateHandles = resolveHudAskCandidateHandles({
@@ -2017,7 +2209,11 @@ async function resolveHudAskProducts({
         if (!variantId) return null;
 
         const variantTitle = String(chosenVariant?.title || "").trim();
-        const variantPrice = Number(chosenVariant?.price);
+        const variantPrice = Number(
+          chosenVariant?.price ??
+            product?.priceRange?.min ??
+            product?.price
+        );
 
         return {
           product,
@@ -2031,7 +2227,7 @@ async function resolveHudAskProducts({
       .filter(Boolean);
 
     const ordered =
-      budgetQuery && sizeLabel
+      budgetQuery || isHudAskSpecificSizeIntent(intent)
         ? enriched.sort((a, b) => {
             if (a.variantPrice !== b.variantPrice) return a.variantPrice - b.variantPrice;
             return a.order - b.order;
@@ -2057,7 +2253,7 @@ async function resolveHudAskProducts({
       tags: buildHudAskProductTags({
         intent,
         handle: entry.handle,
-        sizeLabel: budgetQuery ? sizeLabel : "",
+        sizeLabel,
       }),
     }));
 
