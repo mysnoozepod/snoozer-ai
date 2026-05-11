@@ -1477,6 +1477,19 @@
       return 'Start here.';
     }
 
+    function isSafeInternalHref(value) {
+      const href = normalizeText(value);
+      if (!href) return false;
+      if (!href.startsWith('/')) return false;
+      if (href.startsWith('//')) return false;
+      if (/^javascript:/i.test(href)) return false;
+      return true;
+    }
+
+    function toArray(value) {
+      return Array.isArray(value) ? value : [];
+    }
+
     function buildLiveFallbackPayload() {
       return {
         status: 'ok',
@@ -1513,27 +1526,95 @@
       };
     }
 
+    function normalizeLiveChip(chip) {
+      const label = normalizeText(chip && chip.label);
+      const value = normalizeText(chip && (chip.value || chip.label));
+
+      if (!label || !value) return null;
+
+      return {
+        label,
+        value
+      };
+    }
+
+    function normalizeLiveCard(item) {
+      const label = normalizeText(item && item.label);
+      const href = normalizeText(item && item.href);
+
+      if (!label || !isSafeInternalHref(href)) return null;
+
+      return {
+        label,
+        href,
+        handle: normalizeText(item && item.handle),
+        type: normalizeText(item && item.type).toLowerCase()
+      };
+    }
+
+    function normalizeLivePayload(payload) {
+      const raw = unwrapLivePayload(payload);
+      if (!raw || typeof raw !== 'object') {
+        return buildLiveFallbackPayload();
+      }
+
+      const reply = normalizeText(raw.reply) || fallbackResponse;
+      const chips = toArray(raw.chips)
+        .map((chip) => normalizeLiveChip(chip))
+        .filter(Boolean);
+      const actions = toArray(raw.actions)
+        .map((item) => normalizeLiveCard(item))
+        .filter(Boolean);
+      const collections = toArray(raw.collections)
+        .map((item) => normalizeLiveCard(item))
+        .filter(Boolean);
+      const pages = toArray(raw.pages)
+        .map((item) => normalizeLiveCard(item))
+        .filter(Boolean);
+
+      if (
+        reply === fallbackResponse &&
+        chips.length === 0 &&
+        actions.length === 0 &&
+        collections.length === 0 &&
+        pages.length === 0
+      ) {
+        return buildLiveFallbackPayload();
+      }
+
+      return {
+        status: normalizeText(raw.status) || 'ok',
+        reply,
+        intent: normalizeText(raw.intent) || 'live',
+        chips,
+        actions,
+        products: toArray(raw.products),
+        collections,
+        pages,
+        meta: raw.meta && typeof raw.meta === 'object' ? raw.meta : {}
+      };
+    }
+
     function buildCardsFromLivePayload(payload) {
       const items = []
-        .concat(Array.isArray(payload && payload.actions) ? payload.actions : [])
-        .concat(Array.isArray(payload && payload.collections) ? payload.collections : [])
-        .concat(Array.isArray(payload && payload.pages) ? payload.pages : []);
+        .concat(toArray(payload && payload.actions))
+        .concat(toArray(payload && payload.collections))
+        .concat(toArray(payload && payload.pages));
       const seen = new Set();
 
       return items.reduce((cards, item) => {
-        const label = normalizeText(item && item.label);
-        const href = normalizeText(item && item.href);
-        const key = `${label}::${href}`;
+        const normalizedCard = normalizeLiveCard(item);
+        if (!normalizedCard) return cards;
 
-        if (!label || !href || seen.has(key)) return cards;
-        seen.add(key);
+        if (seen.has(normalizedCard.href)) return cards;
+        seen.add(normalizedCard.href);
 
         cards.push({
-          label,
-          copy: getCardCopy(item),
-          href,
-          handle: normalizeText(item && item.handle),
-          type: normalizeText(item && item.type).toLowerCase()
+          label: normalizedCard.label,
+          copy: getCardCopy(normalizedCard),
+          href: normalizedCard.href,
+          handle: normalizedCard.handle,
+          type: normalizedCard.type
         });
 
         return cards;
@@ -1545,8 +1626,7 @@
         payload &&
         typeof payload === 'object' &&
         payload.data &&
-        typeof payload.data === 'object' &&
-        typeof payload.data.reply === 'string'
+        typeof payload.data === 'object'
       ) {
         return payload.data;
       }
@@ -1554,26 +1634,11 @@
       return payload;
     }
 
-    function isValidLivePayload(payload) {
-      return Boolean(
-        payload &&
-          typeof payload === 'object' &&
-          typeof payload.reply === 'string' &&
-          Array.isArray(payload.chips) &&
-          Array.isArray(payload.actions) &&
-          Array.isArray(payload.products) &&
-          Array.isArray(payload.collections) &&
-          Array.isArray(payload.pages) &&
-          payload.meta &&
-          typeof payload.meta === 'object'
-      );
-    }
-
     function createChip(chip, selectedLabel) {
-      const button = document.createElement('button');
-      const chipLabel = normalizeText(chip && chip.label);
-      const chipValue = normalizeText(chip && chip.value);
+      const normalizedChip = normalizeLiveChip(chip);
+      if (!normalizedChip) return null;
 
+      const button = document.createElement('button');
       button.type = 'button';
       button.className = 'header__snoozer-chip';
 
@@ -1581,25 +1646,23 @@
         button.setAttribute('data-snoozer-state-trigger', chip.state);
       }
 
-      if (chipValue) {
-        button.setAttribute('data-snoozer-chip-value', chipValue);
-      }
-
-      button.setAttribute('aria-pressed', chipLabel === selectedLabel ? 'true' : 'false');
-      button.textContent = chipLabel;
+      button.setAttribute('data-snoozer-chip-value', normalizedChip.value);
+      button.setAttribute('aria-pressed', normalizedChip.label === selectedLabel ? 'true' : 'false');
+      button.textContent = normalizedChip.label;
       return button;
     }
 
     function createAction(card) {
+      if (!card || !normalizeText(card.label) || !isSafeInternalHref(card.href)) {
+        return null;
+      }
+
       const link = document.createElement('a');
       const label = document.createElement('span');
       const copy = document.createElement('span');
 
       link.className = 'header__snoozer-action';
-      link.href = card.href || '#';
-      if (link.getAttribute('href') === '#') {
-        link.setAttribute('data-snoozer-placeholder-link', '');
-      }
+      link.href = card.href;
 
       label.className = 'header__snoozer-action-label';
       label.textContent = card.label;
@@ -1623,33 +1686,47 @@
 
       clearNode(chipList);
       state.chips.forEach((chip) => {
-        chipList.appendChild(createChip(chip, selectedLabel));
+        const chipButton = createChip(chip, selectedLabel);
+        if (chipButton) {
+          chipList.appendChild(chipButton);
+        }
       });
 
       clearNode(actions);
       state.cards.forEach((card) => {
-        actions.appendChild(createAction(card));
+        const actionCard = createAction(card);
+        if (actionCard) {
+          actions.appendChild(actionCard);
+        }
       });
     }
 
     function renderLivePayload(shell, payload, selectedLabel = '') {
-      if (!shell || !isValidLivePayload(payload)) return;
+      if (!shell) return;
+
+      const normalizedPayload = normalizeLivePayload(payload);
 
       const chipList = shell.querySelector('[data-snoozer-chip-list]');
       const actions = shell.querySelector('[data-snoozer-actions]');
-      const cards = buildCardsFromLivePayload(payload);
+      const cards = buildCardsFromLivePayload(normalizedPayload);
 
-      shell.dataset.snoozerState = normalizeText(payload.intent) || 'live';
-      setResponse(shell, payload.reply);
+      shell.dataset.snoozerState = normalizeText(normalizedPayload.intent) || 'live';
+      setResponse(shell, normalizedPayload.reply || fallbackResponse);
 
       clearNode(chipList);
-      (payload.chips || []).forEach((chip) => {
-        chipList.appendChild(createChip(chip, selectedLabel));
+      normalizedPayload.chips.forEach((chip) => {
+        const chipButton = createChip(chip, selectedLabel);
+        if (chipButton) {
+          chipList.appendChild(chipButton);
+        }
       });
 
       clearNode(actions);
       cards.forEach((card) => {
-        actions.appendChild(createAction(card));
+        const actionCard = createAction(card);
+        if (actionCard) {
+          actions.appendChild(actionCard);
+        }
       });
     }
 
@@ -1699,9 +1776,9 @@
         });
 
         const rawPayload = await response.json().catch(() => null);
-        const payload = unwrapLivePayload(rawPayload);
+        const payload = normalizeLivePayload(rawPayload);
 
-        if (!response.ok || !isValidLivePayload(payload)) {
+        if (!response.ok) {
           throw new Error('HUD_ASK_INVALID_RESPONSE');
         }
 

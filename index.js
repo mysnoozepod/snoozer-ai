@@ -1118,6 +1118,7 @@ function resolveHudAskIntent(query) {
   if (
     includesHudAskKeyword(normalized, [
       "back pain",
+      "back hurts",
       "lower back",
       "pressure",
       "alignment",
