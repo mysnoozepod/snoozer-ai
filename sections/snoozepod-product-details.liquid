@@ -1,0 +1,190 @@
+{%- style -%}
+  .snoozepod-product-details-{{ section.id }} {
+    max-width: 1480px;
+    margin: 20px 16px;
+  }
+
+  .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__card {
+    padding: 24px;
+    border-radius: 24px;
+    border: 1px solid rgba(7, 25, 66, 0.10);
+    background: #ffffff;
+    box-shadow: 0 20px 50px rgba(7, 25, 66, 0.05);
+  }
+
+  .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__heading {
+    margin: 0;
+    color: #071942;
+    font-size: 28px;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__body {
+    margin: 12px 0 0;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__item {
+    height: 100%;
+    padding: 20px;
+    border-radius: 20px;
+    background: #f5f7fb;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+  }
+
+  .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__item-title {
+    margin: 0;
+    color: #071942;
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__item-text {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-product-details-{{ section.id }} {
+      margin: 32px auto;
+      padding: 0 32px;
+    }
+
+    .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__card {
+      padding: 32px;
+      border-radius: 32px;
+    }
+
+    .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__heading {
+      font-size: 34px;
+    }
+
+    .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__body {
+      font-size: 18px;
+      max-width: 760px;
+    }
+
+    .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .snoozepod-product-details-{{ section.id }} .snoozepod-product-details__item {
+      padding: 24px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozepod-product-details-{{ section.id }}">
+    <div class="snoozepod-product-details__card">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="snoozepod-product-details__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+      {%- if section.settings.body != blank -%}
+        <p class="snoozepod-product-details__body">{{ section.settings.body | escape }}</p>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <div class="snoozepod-product-details__grid">
+          {%- for block in section.blocks -%}
+            <div class="snoozepod-product-details__item" {{ block.shopify_attributes }}>
+              <h3 class="snoozepod-product-details__item-title">{{ block.settings.heading | escape }}</h3>
+              <p class="snoozepod-product-details__item-text">{{ block.settings.text | escape }}</p>
+            </div>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product details",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Product details"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Use these details to compare comfort, support, materials, and fit."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "detail_item",
+      "name": "Detail item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Comfort"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "Add a short explanation of how this product feels and who it suits."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product details",
+      "blocks": [
+        {
+          "type": "detail_item",
+          "settings": {
+            "heading": "Comfort",
+            "text": "Add a short explanation of how this product feels and who it suits."
+          }
+        },
+        {
+          "type": "detail_item",
+          "settings": {
+            "heading": "Support",
+            "text": "Explain the level of support, alignment, and response it offers."
+          }
+        },
+        {
+          "type": "detail_item",
+          "settings": {
+            "heading": "Materials",
+            "text": "List the materials or construction details that shape performance."
+          }
+        },
+        {
+          "type": "detail_item",
+          "settings": {
+            "heading": "Best For",
+            "text": "Highlight the sleep positions or needs this product can serve well."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

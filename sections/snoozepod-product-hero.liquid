@@ -1,0 +1,579 @@
+<product-info
+  id="MainProduct-{{ section.id }}"
+  class="snoozepod-product-hero-section color-{{ section.settings.color_scheme }} gradient"
+  data-section="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-update-url="true"
+  data-url="{{ product.url }}"
+  {% if section.settings.image_zoom == 'hover' %}
+    data-zoom-on-hover
+  {% endif %}
+>
+  {{ 'section-main-product.css' | asset_url | stylesheet_tag }}
+  {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
+  {{ 'component-price.css' | asset_url | stylesheet_tag }}
+  {{ 'component-slider.css' | asset_url | stylesheet_tag }}
+  {{ 'component-rating.css' | asset_url | stylesheet_tag }}
+  {{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+
+  {% unless product.has_only_default_variant %}
+    {{ 'component-product-variant-picker.css' | asset_url | stylesheet_tag }}
+    {{ 'component-swatch-input.css' | asset_url | stylesheet_tag }}
+    {{ 'component-swatch.css' | asset_url | stylesheet_tag }}
+  {% endunless %}
+
+  <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+
+  {% if section.settings.image_zoom == 'hover' %}
+    <script id="EnableZoomOnHover-{{ section.id }}" src="{{ 'magnify.js' | asset_url }}" defer="defer"></script>
+  {% endif %}
+  {%- if request.design_mode -%}
+    <script src="{{ 'theme-editor.js' | asset_url }}" defer="defer"></script>
+  {%- endif -%}
+
+  {%- assign first_3d_model = product.media | where: 'media_type', 'model' | first -%}
+  {%- if first_3d_model -%}
+    {{ 'component-product-model.css' | asset_url | stylesheet_tag }}
+    <link
+      id="ModelViewerStyle-{{ section.id }}"
+      rel="stylesheet"
+      href="https://cdn.shopify.com/shopifycloud/model-viewer-ui/assets/v1.0/model-viewer-ui.css"
+      media="print"
+      onload="this.media='all'"
+    >
+    <link
+      id="ModelViewerOverride-{{ section.id }}"
+      rel="stylesheet"
+      href="{{ 'component-model-viewer-ui.css' | asset_url }}"
+      media="print"
+      onload="this.media='all'"
+    >
+  {%- endif -%}
+
+  {%- assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' -%}
+  {%- assign product_form_id = 'product-form-' | append: section.id -%}
+
+  {%- style -%}
+    .snoozepod-product-hero-{{ section.id }} {
+      max-width: 1480px;
+      margin: 20px 16px;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__media-card,
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__fallback,
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__info-card {
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__media-card,
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__info-card {
+      border: 1px solid rgba(7, 25, 66, 0.10);
+      background: #ffffff;
+      box-shadow: 0 20px 50px rgba(7, 25, 66, 0.06);
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__fallback {
+      display: flex;
+      align-items: flex-end;
+      min-height: 260px;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top right, rgba(44, 66, 120, 0.16), transparent 36%),
+        linear-gradient(180deg, #f5f7fb 0%, #edf2f9 100%);
+      color: rgba(7, 25, 66, 0.76);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__info-card {
+      padding: 24px;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product__title {
+      margin: 0;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product__title h1 {
+      margin: 0;
+      color: #071942;
+      font-size: 32px;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product__text {
+      margin: 0 0 12px;
+      color: rgba(7, 25, 66, 0.68);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} [id^='price-'] {
+      margin-top: 16px;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .price {
+      color: #071942;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .price--large .price-item,
+    .snoozepod-product-hero-{{ section.id }} .price__regular .price-item--regular,
+    .snoozepod-product-hero-{{ section.id }} .price__sale .price-item--sale {
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} variant-selects,
+    .snoozepod-product-hero-{{ section.id }} .product-form__input {
+      display: block;
+      margin-top: 20px;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product-form__input--pill input[type='radio'] + label,
+    .snoozepod-product-hero-{{ section.id }} .product-form__input--swatch input[type='radio'] + label {
+      border-radius: 999px;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product-form__buttons {
+      margin-top: 24px;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product-form__submit,
+    .snoozepod-product-hero-{{ section.id }} .shopify-payment-button__button {
+      min-height: 56px;
+      border-radius: 999px;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product__description {
+      margin-top: 24px;
+      color: rgba(7, 25, 66, 0.8);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product__description > *:first-child {
+      margin-top: 0;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product__description > *:last-child {
+      margin-bottom: 0;
+    }
+
+    @media screen and (min-width: 750px) {
+      .snoozepod-product-hero-{{ section.id }} {
+        margin-left: 24px;
+        margin-right: 24px;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .product__title h1 {
+        font-size: 40px;
+      }
+    }
+
+    @media screen and (min-width: 990px) {
+      .snoozepod-product-hero-{{ section.id }} {
+        margin: 32px auto 40px;
+        padding: 0 32px;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__grid {
+        grid-template-columns: minmax(0, 58fr) minmax(0, 42fr);
+        gap: 48px;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__media-card,
+      .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__info-card {
+        border-radius: 32px;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__info-card {
+        padding: 40px;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .product__title h1 {
+        max-width: 12ch;
+        font-size: 48px;
+        line-height: 1.02;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .product__description {
+        font-size: 17px;
+      }
+    }
+  {%- endstyle -%}
+
+  <section class="section">
+    <div class="snoozepod-product-hero-{{ section.id }}">
+      <div class="snoozepod-product-hero__grid">
+        <div class="snoozepod-product-hero__media-wrapper">
+          {%- if product.media.size > 0 -%}
+            <div class="snoozepod-product-hero__media-card product__media-wrapper">
+              {% render 'product-media-gallery', variant_images: variant_images %}
+            </div>
+          {%- else -%}
+            <div class="snoozepod-product-hero__fallback">
+              <span>{{ product.title | escape }}</span>
+            </div>
+          {%- endif -%}
+        </div>
+
+        <div class="snoozepod-product-hero__info-wrapper">
+          <section
+            id="ProductInfo-{{ section.id }}"
+            class="snoozepod-product-hero__info-card{% if section.settings.enable_sticky_info %} product__column-sticky{% endif %}"
+          >
+            {%- for block in section.blocks -%}
+              {%- case block.type -%}
+                {%- when '@app' -%}
+                  {% render block %}
+                {%- when 'text' -%}
+                  {%- if block.settings.text != blank -%}
+                    <p
+                      class="product__text inline-richtext{% if block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if block.settings.text_style == 'body' %} text-body{% endif %}"
+                      {{ block.shopify_attributes }}
+                    >
+                      {{ block.settings.text }}
+                    </p>
+                  {%- endif -%}
+                {%- when 'title' -%}
+                  <div class="product__title" {{ block.shopify_attributes }}>
+                    <h1>{{ product.title | escape }}</h1>
+                  </div>
+                {%- when 'price' -%}
+                  <div id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
+                    {%- render 'price',
+                      product: product,
+                      use_variant: true,
+                      show_badges: true,
+                      price_class: 'price--large'
+                    -%}
+                  </div>
+                {%- when 'variant_picker' -%}
+                  {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
+                {%- when 'buy_buttons' -%}
+                  {%- render 'buy-buttons',
+                    block: block,
+                    product: product,
+                    product_form_id: product_form_id,
+                    section_id: section.id,
+                    show_pickup_availability: false
+                  -%}
+                {%- when 'description' -%}
+                  {%- if product.description != blank -%}
+                    <div class="product__description rte" {{ block.shopify_attributes }}>
+                      {{ product.description }}
+                    </div>
+                  {%- endif -%}
+              {%- endcase -%}
+            {%- endfor -%}
+          </section>
+        </div>
+      </div>
+
+      {%- if product.media.size > 0 -%}
+        {% render 'product-media-modal', variant_images: variant_images %}
+        <script src="{{ 'product-modal.js' | asset_url }}" defer="defer"></script>
+        <script src="{{ 'media-gallery.js' | asset_url }}" defer="defer"></script>
+      {%- endif -%}
+
+      {%- if first_3d_model -%}
+        <script type="application/json" id="ProductJSON-{{ product.id }}">
+          {{ product.media | where: 'media_type', 'model' | json }}
+        </script>
+        <script src="{{ 'product-model.js' | asset_url }}" defer="defer"></script>
+      {%- endif -%}
+
+      <script type="application/ld+json">
+        {{ product | structured_data }}
+      </script>
+    </div>
+  </section>
+</product-info>
+
+{% schema %}
+{
+  "name": "Product hero",
+  "tag": "section",
+  "class": "section",
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "text",
+      "name": "Text",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "{{ product.vendor }}"
+        },
+        {
+          "type": "select",
+          "id": "text_style",
+          "label": "Text style",
+          "default": "uppercase",
+          "options": [
+            {
+              "value": "body",
+              "label": "Body"
+            },
+            {
+              "value": "subtitle",
+              "label": "Subtitle"
+            },
+            {
+              "value": "uppercase",
+              "label": "Uppercase"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "name": "Title",
+      "settings": []
+    },
+    {
+      "type": "price",
+      "name": "Price",
+      "settings": []
+    },
+    {
+      "type": "variant_picker",
+      "name": "Variant picker",
+      "settings": [
+        {
+          "type": "select",
+          "id": "picker_type",
+          "label": "Picker type",
+          "default": "button",
+          "options": [
+            {
+              "value": "dropdown",
+              "label": "Dropdown"
+            },
+            {
+              "value": "button",
+              "label": "Buttons"
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "swatch_shape",
+          "label": "Swatch shape",
+          "default": "circle",
+          "options": [
+            {
+              "value": "circle",
+              "label": "Circle"
+            },
+            {
+              "value": "square",
+              "label": "Square"
+            },
+            {
+              "value": "none",
+              "label": "None"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "buy_buttons",
+      "name": "Buy buttons",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_dynamic_checkout",
+          "label": "Show dynamic checkout",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "show_gift_card_recipient",
+          "label": "Show gift card recipient",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "description",
+      "name": "Description",
+      "settings": []
+    }
+  ],
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_info",
+      "label": "Enable sticky info",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "select",
+      "id": "media_size",
+      "label": "Media size",
+      "default": "medium",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "constrain_to_viewport",
+      "label": "Constrain media to viewport",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "media_fit",
+      "label": "Media fit",
+      "default": "contain",
+      "options": [
+        {
+          "value": "contain",
+          "label": "Contain"
+        },
+        {
+          "value": "cover",
+          "label": "Cover"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "gallery_layout",
+      "label": "Gallery layout",
+      "default": "thumbnail_slider",
+      "options": [
+        {
+          "value": "stacked",
+          "label": "Stacked"
+        },
+        {
+          "value": "columns",
+          "label": "Columns"
+        },
+        {
+          "value": "thumbnail",
+          "label": "Thumbnails"
+        },
+        {
+          "value": "thumbnail_slider",
+          "label": "Thumbnail slider"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "image_zoom",
+      "label": "Image zoom",
+      "default": "lightbox",
+      "options": [
+        {
+          "value": "lightbox",
+          "label": "Lightbox"
+        },
+        {
+          "value": "hover",
+          "label": "Zoom on hover"
+        },
+        {
+          "value": "none",
+          "label": "None"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "mobile_thumbnails",
+      "label": "Mobile thumbnails",
+      "default": "hide",
+      "options": [
+        {
+          "value": "columns",
+          "label": "Columns"
+        },
+        {
+          "value": "show",
+          "label": "Show"
+        },
+        {
+          "value": "hide",
+          "label": "Hide"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_variants",
+      "label": "Hide variant-only media",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_video_looping",
+      "label": "Loop videos",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product hero",
+      "blocks": [
+        {
+          "type": "text"
+        },
+        {
+          "type": "title"
+        },
+        {
+          "type": "price"
+        },
+        {
+          "type": "variant_picker"
+        },
+        {
+          "type": "buy_buttons"
+        },
+        {
+          "type": "description"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

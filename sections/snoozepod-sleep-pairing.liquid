@@ -1,0 +1,202 @@
+{%- style -%}
+  .snoozepod-sleep-pairing-{{ section.id }} {
+    max-width: 1480px;
+    margin: 20px 16px;
+  }
+
+  .snoozepod-sleep-pairing-{{ section.id }} .snoozepod-sleep-pairing__card {
+    padding: 24px;
+    border-radius: 24px;
+    border: 1px solid rgba(7, 25, 66, 0.10);
+    background: #ffffff;
+    box-shadow: 0 20px 50px rgba(7, 25, 66, 0.05);
+  }
+
+  .snoozepod-sleep-pairing-{{ section.id }} .snoozepod-sleep-pairing__heading {
+    margin: 0;
+    color: #071942;
+    font-size: 30px;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-sleep-pairing-{{ section.id }} .snoozepod-sleep-pairing__body {
+    margin: 14px 0 0;
+    max-width: 760px;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-sleep-pairing-{{ section.id }} .snoozepod-sleep-pairing__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .snoozepod-sleep-pairing-{{ section.id }} .snoozepod-sleep-pairing__item {
+    height: 100%;
+    padding: 20px;
+    border-radius: 20px;
+    background: #f5f7fb;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+  }
+
+  .snoozepod-sleep-pairing-{{ section.id }} .snoozepod-sleep-pairing__item-title {
+    margin: 0;
+    color: #071942;
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .snoozepod-sleep-pairing-{{ section.id }} .snoozepod-sleep-pairing__item-text {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .snoozepod-sleep-pairing-{{ section.id }} .snoozepod-sleep-pairing__item-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    color: #071942;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-sleep-pairing-{{ section.id }} {
+      margin: 32px auto;
+      padding: 0 32px;
+    }
+
+    .snoozepod-sleep-pairing-{{ section.id }} .snoozepod-sleep-pairing__card {
+      padding: 40px;
+      border-radius: 32px;
+    }
+
+    .snoozepod-sleep-pairing-{{ section.id }} .snoozepod-sleep-pairing__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozepod-sleep-pairing-{{ section.id }}">
+    <div class="snoozepod-sleep-pairing__card">
+      <h2 class="snoozepod-sleep-pairing__heading">{{ section.settings.heading | escape }}</h2>
+      <p class="snoozepod-sleep-pairing__body">{{ section.settings.body | escape }}</p>
+
+      {%- if section.blocks.size > 0 -%}
+        <div class="snoozepod-sleep-pairing__grid">
+          {%- for block in section.blocks -%}
+            <div class="snoozepod-sleep-pairing__item" {{ block.shopify_attributes }}>
+              <h3 class="snoozepod-sleep-pairing__item-title">{{ block.settings.title | escape }}</h3>
+              <p class="snoozepod-sleep-pairing__item-text">{{ block.settings.text | escape }}</p>
+              {%- if block.settings.link != blank -%}
+                <a class="snoozepod-sleep-pairing__item-link" href="{{ block.settings.link }}">
+                  {{ block.settings.link_label | escape }}
+                  <span aria-hidden="true">→</span>
+                </a>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Sleep pairing",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Build Around This Product"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Pair this with the right base, pillows, bedding, and protection to complete your sleep environment."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "pairing_card",
+      "name": "Pairing card",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Bases"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "Add a base that supports the way this product should perform."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link label",
+          "default": "Explore"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sleep pairing",
+      "blocks": [
+        {
+          "type": "pairing_card",
+          "settings": {
+            "title": "Bases",
+            "text": "Add a base that supports the way this product should perform."
+          }
+        },
+        {
+          "type": "pairing_card",
+          "settings": {
+            "title": "Pillows",
+            "text": "Balance comfort and alignment with the right pillow options."
+          }
+        },
+        {
+          "type": "pairing_card",
+          "settings": {
+            "title": "Bedding",
+            "text": "Layer in breathable bedding for a cleaner, calmer sleep environment."
+          }
+        },
+        {
+          "type": "pairing_card",
+          "settings": {
+            "title": "Protection",
+            "text": "Keep the surface fresh while protecting long-term comfort."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

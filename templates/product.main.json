@@ -1,30 +1,17 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
-    "main": {
-      "type": "main-product",
+    "hero": {
+      "type": "snoozepod-product-hero",
       "blocks": {
         "vendor": {
           "type": "text",
           "settings": {
             "text": "{{ product.vendor }}",
-            "text_style": "body"
+            "text_style": "uppercase"
           }
         },
         "title": {
           "type": "title",
-          "settings": {}
-        },
-        "rating": {
-          "type": "rating",
           "settings": {}
         },
         "price": {
@@ -38,53 +25,141 @@
             "swatch_shape": "circle"
           }
         },
-        "quantity_selector": {
-          "type": "quantity_selector",
-          "settings": {}
-        },
         "buy_buttons": {
           "type": "buy_buttons",
           "settings": {
-            "show_dynamic_checkout": true,
-            "show_gift_card_recipient": true
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
           }
         },
         "description": {
           "type": "description",
           "settings": {}
-        },
-        "share": {
-          "type": "share",
-          "settings": {
-            "share_label": "Share"
-          }
         }
       },
       "block_order": [
         "vendor",
         "title",
-        "rating",
         "price",
         "variant_picker",
-        "quantity_selector",
         "buy_buttons",
-        "description",
-        "share"
+        "description"
       ],
       "settings": {
         "enable_sticky_info": true,
         "color_scheme": "scheme-1",
-        "media_size": "small",
+        "media_size": "medium",
         "constrain_to_viewport": true,
         "media_fit": "contain",
         "gallery_layout": "thumbnail_slider",
-        "media_position": "left",
         "image_zoom": "lightbox",
         "mobile_thumbnails": "hide",
         "hide_variants": true,
-        "enable_video_looping": false,
-        "padding_top": 60,
-        "padding_bottom": 60
+        "enable_video_looping": false
+      }
+    },
+    "guide": {
+      "type": "snoozer-product-guide",
+      "settings": {
+        "heading": "Need Help Choosing?",
+        "body": "Ask Snoozer to compare comfort, support, cooling, and how this fits your sleep environment.",
+        "chip_1": "Is this right for me?",
+        "chip_2": "Compare comfort",
+        "chip_3": "Help me choose",
+        "chip_4": "Build my sleep environment",
+        "cta_label": "Ask Snoozer",
+        "show_chips": true,
+        "show_avatar": true
+      }
+    },
+    "details": {
+      "type": "snoozepod-product-details",
+      "blocks": {
+        "comfort": {
+          "type": "detail_item",
+          "settings": {
+            "heading": "Comfort",
+            "text": "Add a short explanation of how this product feels and who it suits."
+          }
+        },
+        "support": {
+          "type": "detail_item",
+          "settings": {
+            "heading": "Support",
+            "text": "Explain the level of support, alignment, and response it offers."
+          }
+        },
+        "materials": {
+          "type": "detail_item",
+          "settings": {
+            "heading": "Materials",
+            "text": "List the materials or construction details that shape performance."
+          }
+        },
+        "best-for": {
+          "type": "detail_item",
+          "settings": {
+            "heading": "Best For",
+            "text": "Highlight the sleep positions or needs this product can serve well."
+          }
+        }
+      },
+      "block_order": [
+        "comfort",
+        "support",
+        "materials",
+        "best-for"
+      ],
+      "settings": {
+        "heading": "Product details",
+        "body": "Use these details to compare comfort, support, materials, and fit."
+      }
+    },
+    "pairing": {
+      "type": "snoozepod-sleep-pairing",
+      "blocks": {
+        "bases": {
+          "type": "pairing_card",
+          "settings": {
+            "title": "Bases",
+            "text": "Add a base that supports the way this product should perform.",
+            "link_label": "Explore"
+          }
+        },
+        "pillows": {
+          "type": "pairing_card",
+          "settings": {
+            "title": "Pillows",
+            "text": "Balance comfort and alignment with the right pillow options.",
+            "link_label": "Explore"
+          }
+        },
+        "bedding": {
+          "type": "pairing_card",
+          "settings": {
+            "title": "Bedding",
+            "text": "Layer in breathable bedding for a cleaner, calmer sleep environment.",
+            "link_label": "Explore"
+          }
+        },
+        "protection": {
+          "type": "pairing_card",
+          "settings": {
+            "title": "Protection",
+            "text": "Keep the surface fresh while protecting long-term comfort.",
+            "link_label": "Explore"
+          }
+        }
+      },
+      "block_order": [
+        "bases",
+        "pillows",
+        "bedding",
+        "protection"
+      ],
+      "settings": {
+        "heading": "Build Around This Product",
+        "body": "Pair this with the right base, pillows, bedding, and protection to complete your sleep environment."
       }
     },
     "related-products": {
@@ -102,12 +177,26 @@
         "show_rating": false,
         "columns_mobile": "2",
         "padding_top": 0,
-        "padding_bottom": 60
+        "padding_bottom": 24
+      }
+    },
+    "final-cta": {
+      "type": "snoozepod-product-cta",
+      "settings": {
+        "heading": "Ready To Build Your Sleep Environment?",
+        "body": "Use Snoozer to connect this product to the rest of your sleep needs.",
+        "primary_label": "Ask Snoozer",
+        "secondary_label": "Book A Snooze Session",
+        "show_secondary": true
       }
     }
   },
   "order": [
-    "main",
-    "related-products"
+    "hero",
+    "guide",
+    "details",
+    "pairing",
+    "related-products",
+    "final-cta"
   ]
 }

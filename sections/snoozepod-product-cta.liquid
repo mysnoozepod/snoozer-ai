@@ -1,0 +1,202 @@
+{%- style -%}
+  .snoozepod-product-cta-{{ section.id }} {
+    max-width: 1480px;
+    margin: 20px 16px 48px;
+  }
+
+  .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 32px 24px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #071942 0%, #2c4278 100%);
+    color: #ffffff;
+  }
+
+  .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__heading {
+    margin: 0;
+    color: #ffffff;
+    font-size: 30px;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__body {
+    margin: 14px 0 0;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__body p {
+    margin: 0;
+  }
+
+  .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__actions {
+    display: grid;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 28px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__button--primary {
+    border: 0;
+    background: #ffffff;
+    color: #071942;
+  }
+
+  .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__button--secondary {
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: transparent;
+    color: #ffffff;
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-product-cta-{{ section.id }} {
+      margin: 40px auto 56px;
+      padding: 0 32px;
+    }
+
+    .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__card {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 32px;
+      padding: 48px 64px;
+      border-radius: 36px;
+    }
+
+    .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__heading {
+      font-size: 40px;
+    }
+
+    .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__body {
+      max-width: 640px;
+      font-size: 18px;
+    }
+
+    .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__actions {
+      width: auto;
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__button {
+      width: auto;
+      min-height: 56px;
+    }
+
+    .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__button--primary {
+      min-width: 240px;
+    }
+
+    .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__button--secondary {
+      min-width: 260px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozepod-product-cta-{{ section.id }}">
+    <div class="snoozepod-product-cta__card">
+      <div class="snoozepod-product-cta__copy">
+        <h2 class="snoozepod-product-cta__heading">{{ section.settings.heading | escape }}</h2>
+        <div class="snoozepod-product-cta__body rte">
+          <p>{{ section.settings.body | escape }}</p>
+        </div>
+      </div>
+
+      <div class="snoozepod-product-cta__actions">
+        {%- if section.settings.primary_link != blank and section.settings.primary_link != '#' -%}
+          <a class="snoozepod-product-cta__button snoozepod-product-cta__button--primary" href="{{ section.settings.primary_link }}">
+            {{ section.settings.primary_label | escape }}
+          </a>
+        {%- else -%}
+          <button type="button" class="snoozepod-product-cta__button snoozepod-product-cta__button--primary" data-snoozer-trigger data-snoozer-source="product-final-cta">
+            {{ section.settings.primary_label | escape }}
+          </button>
+        {%- endif -%}
+
+        {%- if section.settings.show_secondary and section.settings.secondary_label != blank -%}
+          <a
+            class="snoozepod-product-cta__button snoozepod-product-cta__button--secondary"
+            href="{% if section.settings.secondary_link != blank %}{{ section.settings.secondary_link }}{% else %}#{% endif %}"
+          >
+            {{ section.settings.secondary_label | escape }}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product CTA",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Ready To Build Your Sleep Environment?"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Use Snoozer to connect this product to the rest of your sleep needs."
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Primary CTA label",
+      "default": "Ask Snoozer"
+    },
+    {
+      "type": "url",
+      "id": "primary_link",
+      "label": "Primary CTA link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Secondary CTA label",
+      "default": "Book A Snooze Session"
+    },
+    {
+      "type": "url",
+      "id": "secondary_link",
+      "label": "Secondary CTA link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary",
+      "label": "Show secondary CTA",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product CTA"
+    }
+  ]
+}
+{% endschema %}

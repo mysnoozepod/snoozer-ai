@@ -1,0 +1,262 @@
+{%- liquid
+  assign chip_1 = section.settings.chip_1 | strip
+  assign chip_2 = section.settings.chip_2 | strip
+  assign chip_3 = section.settings.chip_3 | strip
+  assign chip_4 = section.settings.chip_4 | strip
+-%}
+
+{%- style -%}
+  .snoozer-product-guide-{{ section.id }} {
+    max-width: 1480px;
+    margin: 20px 16px;
+  }
+
+  .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 24px 20px;
+    border-radius: 24px;
+    background: #f5f7fb;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+  }
+
+  .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__intro {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    padding: 6px;
+    border: 1px solid rgba(7, 25, 66, 0.10);
+    background: #ffffff;
+    object-fit: contain;
+  }
+
+  .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__heading {
+    margin: 0;
+    color: #071942;
+    font-size: 28px;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__body {
+    margin: 12px 0 0;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__side {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+
+  .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(7, 25, 66, 0.10);
+    background: #ffffff;
+    color: #071942;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+
+  .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 28px;
+    border: 0;
+    border-radius: 999px;
+    background: #071942;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozer-product-guide-{{ section.id }} {
+      margin: 32px auto;
+      padding: 0 32px;
+    }
+
+    .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__card {
+      grid-template-columns: minmax(0, 1.85fr) minmax(260px, 1fr);
+      gap: 28px;
+      padding: 32px 40px;
+      border-radius: 32px;
+    }
+
+    .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__heading {
+      font-size: 36px;
+    }
+
+    .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__body {
+      font-size: 18px;
+    }
+
+    .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__avatar {
+      width: 58px;
+      height: 58px;
+    }
+
+    .snoozer-product-guide-{{ section.id }} .snoozer-product-guide__cta {
+      min-width: 260px;
+      width: auto;
+      min-height: 56px;
+      justify-self: end;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozer-product-guide-{{ section.id }}">
+    <div class="snoozer-product-guide__card">
+      <div class="snoozer-product-guide__content">
+        <div class="snoozer-product-guide__intro">
+          {%- if section.settings.show_avatar -%}
+            <img
+              class="snoozer-product-guide__avatar"
+              src="{{ 'snoozer-avatar.png' | asset_url }}"
+              alt="Snoozer"
+              loading="lazy"
+              width="58"
+              height="58"
+            >
+          {%- endif -%}
+          <div>
+            <h2 class="snoozer-product-guide__heading">{{ section.settings.heading | escape }}</h2>
+            <p class="snoozer-product-guide__body">{{ section.settings.body | escape }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="snoozer-product-guide__side">
+        {%- if section.settings.show_chips -%}
+          <div class="snoozer-product-guide__chips">
+            {%- if chip_1 != blank -%}
+              <button type="button" class="snoozer-product-guide__chip" data-snoozer-trigger data-snoozer-source="product-chip-1">{{ chip_1 | escape }}</button>
+            {%- endif -%}
+            {%- if chip_2 != blank -%}
+              <button type="button" class="snoozer-product-guide__chip" data-snoozer-trigger data-snoozer-source="product-chip-2">{{ chip_2 | escape }}</button>
+            {%- endif -%}
+            {%- if chip_3 != blank -%}
+              <button type="button" class="snoozer-product-guide__chip" data-snoozer-trigger data-snoozer-source="product-chip-3">{{ chip_3 | escape }}</button>
+            {%- endif -%}
+            {%- if chip_4 != blank -%}
+              <button type="button" class="snoozer-product-guide__chip" data-snoozer-trigger data-snoozer-source="product-chip-4">{{ chip_4 | escape }}</button>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.cta_link != blank and section.settings.cta_link != '#' -%}
+          <a class="snoozer-product-guide__cta" href="{{ section.settings.cta_link }}">
+            {{ section.settings.cta_label | escape }}
+          </a>
+        {%- else -%}
+          <button type="button" class="snoozer-product-guide__cta" data-snoozer-trigger data-snoozer-source="product-guide">
+            {{ section.settings.cta_label | escape }}
+          </button>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Snoozer guide",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Need Help Choosing?"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Ask Snoozer to compare comfort, support, cooling, and how this fits your sleep environment."
+    },
+    {
+      "type": "text",
+      "id": "chip_1",
+      "label": "Chip 1",
+      "default": "Is this right for me?"
+    },
+    {
+      "type": "text",
+      "id": "chip_2",
+      "label": "Chip 2",
+      "default": "Compare comfort"
+    },
+    {
+      "type": "text",
+      "id": "chip_3",
+      "label": "Chip 3",
+      "default": "Help me choose"
+    },
+    {
+      "type": "text",
+      "id": "chip_4",
+      "label": "Chip 4",
+      "default": "Build my sleep environment"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Ask Snoozer"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_chips",
+      "label": "Show chips",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_avatar",
+      "label": "Show avatar",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Snoozer guide"
+    }
+  ]
+}
+{% endschema %}
