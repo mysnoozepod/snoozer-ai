@@ -133,6 +133,15 @@ const DIFFERENCE_TERMS = Object.freeze([
   "not the same",
 ]);
 
+const SIDE_CONFLICT_TERMS = Object.freeze([
+  "each side",
+  "both sides",
+  "one side",
+  "two sides",
+  "left side",
+  "right side",
+]);
+
 const ASSESSMENT_TERMS = Object.freeze([
   "take snooze assessment",
   "snooze assessment",
@@ -149,18 +158,27 @@ const ASSESSMENT_TERMS = Object.freeze([
 const BOOKING_TERMS = Object.freeze([
   "book",
   "appointment",
+  "try this in person",
   "try in person",
+  "test the mattress",
   "showroom",
   "snooze session",
   "visit",
   "test this",
+  "try before buying",
 ]);
 
 const POLICY_TERMS = Object.freeze([
+  "finance",
   "shipping",
   "return",
   "warranty",
   "financing",
+  "no money down",
+  "monthly payment",
+  "payments",
+  "pay over time",
+  "deliver",
   "delivery",
   "setup",
   "policy",
@@ -180,8 +198,12 @@ const BASE_ELEVATION_TERMS = Object.freeze([
   "snore",
   "snoring",
   "elevation",
+  "raise my head",
   "raise head",
+  "head up",
+  "elevate",
   "adjustable base",
+  "adjustable bed",
   "zero gravity",
 ]);
 
@@ -201,6 +223,25 @@ const BACK_PAIN_TERMS = Object.freeze([
   "lower back",
   "pressure",
   "alignment",
+  "pressure relief",
+  "pressure points",
+  "sore",
+  "soreness",
+  "wake up sore",
+  "wake up uncomfortable",
+  "uncomfortable",
+]);
+
+const SIDE_SLEEPER_TERMS = Object.freeze([
+  "side sleeper",
+  "sleep on my side",
+  "sleep on my side and",
+]);
+
+const RESTLESS_SLEEP_TERMS = Object.freeze([
+  "toss and turn",
+  "tossing and turning",
+  "restless",
 ]);
 
 const FIRM_SUPPORT_TERMS = Object.freeze([
@@ -389,17 +430,25 @@ function classifyAskSnoozerIntent(input, context = {}) {
   }
 
   const partnerSignal = includesAny(text, PARTNER_TERMS);
+  const sideConflictSignal = includesAny(text, SIDE_CONFLICT_TERMS);
   const differenceSignal =
     includesAny(text, DIFFERENCE_TERMS) ||
     (/soft/.test(text) && /firm/.test(text)) ||
     (partnerSignal && /(different|opposite|one of us|both of us|but)/.test(text));
+  const sideSleeperSignal = includesAny(text, SIDE_SLEEPER_TERMS);
+  const sorenessSignal = includesAny(text, BACK_PAIN_TERMS);
+  const restlessSignal = includesAny(text, RESTLESS_SLEEP_TERMS);
 
-  if (partnerSignal && differenceSignal) {
+  if ((partnerSignal && differenceSignal) || (differenceSignal && sideConflictSignal)) {
     return buildClassification({
       intent: "couple_conflict",
       intentGroup: "couple_conflict",
       confidenceLabel: "high",
-      signals: ["partner", "comfort_conflict"],
+      signals: [
+        partnerSignal ? "partner" : "",
+        sideConflictSignal ? "split_sides" : "",
+        "comfort_conflict",
+      ].filter(Boolean),
       productBias: ["dual_comfort", "partner_flexibility", "split_options"],
       actionBias: ["assessment", "booking"],
       notes,
@@ -511,8 +560,29 @@ function classifyAskSnoozerIntent(input, context = {}) {
       intent: "back_pain",
       intentGroup: "product_fit",
       confidenceLabel: "high",
-      signals: ["back_pain"],
+      signals: [
+        "back_pain",
+        sorenessSignal ? "soreness" : "",
+        sideSleeperSignal ? "side_sleeper" : "",
+      ].filter(Boolean),
       productBias: ["alignment", "pressure_relief", "support"],
+      actionBias: ["assessment"],
+      notes,
+      sizeLabel,
+      budgetSignal,
+    });
+  }
+
+  if (sideSleeperSignal || restlessSignal) {
+    return buildClassification({
+      intent: "back_pain",
+      intentGroup: "product_fit",
+      confidenceLabel: sideSleeperSignal || restlessSignal ? "medium" : "low",
+      signals: [
+        sideSleeperSignal ? "side_sleeper" : "",
+        restlessSignal ? "restless_sleep" : "",
+      ].filter(Boolean),
+      productBias: ["pressure_relief", "support", "alignment"],
       actionBias: ["assessment"],
       notes,
       sizeLabel,
