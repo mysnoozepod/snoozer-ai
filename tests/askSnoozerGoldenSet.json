@@ -1,0 +1,732 @@
+[
+  {
+    "id": "sleep_hot_home",
+    "category": "product_fit",
+    "query": "I sleep hot",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["sleep_hot"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 3,
+        "expected_handles": ["14-hybrid", "12-dual-comfort-hybrid", "12-all-foam-mattress"]
+      },
+      "must_not_include": ["hard sell", "guarantee", "cure"]
+    }
+  },
+  {
+    "id": "firm_support_home",
+    "category": "product_fit",
+    "query": "I need firm support",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["firm_support"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 3 },
+      "must_not_include": ["guarantee", "cure"]
+    }
+  },
+  {
+    "id": "back_hurts_home",
+    "category": "product_fit",
+    "query": "my back hurts",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["back_pain"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 3 },
+      "must_not_include": ["cure", "heal", "treat"]
+    }
+  },
+  {
+    "id": "best_beds_for_back_pain",
+    "category": "product_fit",
+    "query": "best beds for back pain",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["back_pain"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 3 },
+      "must_not_include": ["cure", "heal", "treat"]
+    }
+  },
+  {
+    "id": "wake_up_sore",
+    "category": "product_fit",
+    "query": "I wake up sore",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["back_pain", "firm_support", "sleep_hot"],
+      "confidence_label_min": "medium",
+      "products": { "min": 1, "max": 3 }
+    }
+  },
+  {
+    "id": "side_sleeper_wake_up_sore",
+    "category": "product_fit",
+    "query": "I sleep on my side and wake up sore",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["back_pain", "firm_support"],
+      "confidence_label_min": "medium",
+      "products": { "min": 1, "max": 3 }
+    }
+  },
+  {
+    "id": "pressure_relief",
+    "category": "product_fit",
+    "query": "I need pressure relief",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["back_pain"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 3 }
+    }
+  },
+  {
+    "id": "toss_and_turn",
+    "category": "product_fit",
+    "query": "I toss and turn",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["firm_support", "sleep_hot", "back_pain"],
+      "confidence_label_min": "medium",
+      "products": { "min": 1, "max": 3 }
+    }
+  },
+
+  {
+    "id": "soft_but_wife_firm",
+    "category": "couple_conflict",
+    "query": "I like soft but my wife likes firm",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "couple_conflict",
+      "accepted_intents": ["couple_conflict"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 3,
+        "preferred_first_handle": "12-dual-comfort-hybrid"
+      }
+    }
+  },
+  {
+    "id": "firm_but_wife_soft",
+    "category": "couple_conflict",
+    "query": "I like firm my wife likes soft",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "couple_conflict",
+      "accepted_intents": ["couple_conflict"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 3,
+        "preferred_first_handle": "12-dual-comfort-hybrid"
+      }
+    }
+  },
+  {
+    "id": "partner_different_firmness",
+    "category": "couple_conflict",
+    "query": "my partner and I like different firmness",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "couple_conflict",
+      "accepted_intents": ["couple_conflict"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 3,
+        "preferred_first_handle": "12-dual-comfort-hybrid"
+      }
+    }
+  },
+  {
+    "id": "different_comfort_each_side",
+    "category": "couple_conflict",
+    "query": "we need different comfort on each side",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "couple_conflict",
+      "accepted_intents": ["couple_conflict"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 3,
+        "preferred_first_handle": "12-dual-comfort-hybrid"
+      }
+    }
+  },
+  {
+    "id": "plush_and_firm",
+    "category": "couple_conflict",
+    "query": "one of us likes plush and one likes firm",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "couple_conflict",
+      "accepted_intents": ["couple_conflict"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 3,
+        "preferred_first_handle": "12-dual-comfort-hybrid"
+      }
+    }
+  },
+
+  {
+    "id": "compare_foam_vs_hybrid",
+    "category": "product_compare",
+    "query": "compare foam vs hybrid",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_compare",
+      "accepted_intents": ["compare_mattresses"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 2,
+        "max": 3,
+        "expected_handles": ["12-all-foam-mattress", "14-hybrid", "12-dual-comfort-hybrid"]
+      }
+    }
+  },
+  {
+    "id": "difference_between_foam_and_hybrid",
+    "category": "product_compare",
+    "query": "what is the difference between foam and hybrid",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_compare",
+      "accepted_intents": ["compare_mattresses"],
+      "confidence_label_min": "high",
+      "products": { "min": 2, "max": 3 }
+    }
+  },
+  {
+    "id": "should_i_get_foam_or_hybrid",
+    "category": "product_compare",
+    "query": "should I get foam or hybrid",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_compare",
+      "accepted_intents": ["compare_mattresses"],
+      "confidence_label_min": "high",
+      "products": { "min": 2, "max": 3 }
+    }
+  },
+  {
+    "id": "hybrid_vs_all_foam",
+    "category": "product_compare",
+    "query": "hybrid vs all foam",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_compare",
+      "accepted_intents": ["compare_mattresses"],
+      "confidence_label_min": "high",
+      "products": { "min": 2, "max": 3 }
+    }
+  },
+
+  {
+    "id": "cheap_mattress",
+    "category": "size_price",
+    "query": "cheap mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 3,
+        "expected_handles": ["10-all-foam-mattress", "12-all-foam-mattress", "14-hybrid"]
+      },
+      "must_not_include": ["$799", "$1299", "$2899"]
+    }
+  },
+  {
+    "id": "affordable_mattress",
+    "category": "size_price",
+    "query": "affordable mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 3 }
+    }
+  },
+  {
+    "id": "budget_queen_mattress",
+    "category": "size_price",
+    "query": "budget queen mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 3,
+        "expected_handles": ["10-all-foam-mattress", "12-all-foam-mattress", "12-dual-comfort-hybrid"]
+      }
+    }
+  },
+  {
+    "id": "how_much_is_a_queen_size_cheap_bed",
+    "category": "size_price",
+    "query": "how much is a queen size cheap bed",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 3,
+        "expected_handles": ["10-all-foam-mattress", "12-all-foam-mattress", "12-dual-comfort-hybrid"]
+      },
+      "must_not_include": ["$", "0% apr", "guarantee"]
+    }
+  },
+  {
+    "id": "queen_size_mattress",
+    "category": "size_price",
+    "query": "queen size mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["queen_size"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 3,
+        "preferred_handles": ["10-all-foam-mattress", "12-all-foam-mattress", "12-dual-comfort-hybrid", "14-hybrid"]
+      }
+    }
+  },
+  {
+    "id": "king_size_mattress",
+    "category": "size_price",
+    "query": "king size mattress",
+    "context": { "path": "/collections/mattresses", "page_type": "collection", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["king_size"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 3 }
+    }
+  },
+  {
+    "id": "twin_xl_mattress",
+    "category": "size_price",
+    "query": "twin xl mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["twin_xl"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 3 }
+    }
+  },
+  {
+    "id": "split_king_mattress",
+    "category": "size_price",
+    "query": "I need a split king",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["split_king"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 3 }
+    }
+  },
+  {
+    "id": "do_you_have_split_king",
+    "category": "size_price",
+    "query": "do you have split king",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["split_king"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 3 }
+    }
+  },
+
+  {
+    "id": "i_snore",
+    "category": "base_elevation",
+    "query": "I snore",
+    "context": { "path": "/products/12-dual-comfort-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "base_elevation",
+      "accepted_intents": ["snoring"],
+      "confidence_label_min": "high",
+      "products": {
+        "min": 1,
+        "max": 2,
+        "expected_handles": ["premium-motion-adjustable-base"]
+      },
+      "must_not_include": ["cure", "treat", "medical"]
+    }
+  },
+  {
+    "id": "raise_my_head",
+    "category": "base_elevation",
+    "query": "I need to raise my head",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "base_elevation",
+      "accepted_intents": ["snoring"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 2 },
+      "must_not_include": ["cure", "treat", "medical"]
+    }
+  },
+  {
+    "id": "adjustable_base",
+    "category": "base_elevation",
+    "query": "adjustable base",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "base_elevation",
+      "accepted_intents": ["snoring"],
+      "confidence_label_min": "medium",
+      "products": { "min": 1, "max": 2 }
+    }
+  },
+  {
+    "id": "zero_gravity",
+    "category": "base_elevation",
+    "query": "zero gravity",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "base_elevation",
+      "accepted_intents": ["snoring"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 2 }
+    }
+  },
+  {
+    "id": "elevation_help",
+    "category": "base_elevation",
+    "query": "can elevation help me sleep better",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "base_elevation",
+      "accepted_intents": ["snoring"],
+      "confidence_label_min": "high",
+      "products": { "min": 1, "max": 2 },
+      "must_not_include": ["cure", "treat", "guarantee"]
+    }
+  },
+
+  {
+    "id": "take_snooze_assessment",
+    "category": "assessment_handoff",
+    "query": "take snooze assessment",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_help"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "required_hrefs": ["/pages/snooze-assessment"]
+    }
+  },
+  {
+    "id": "help_me_choose",
+    "category": "assessment_handoff",
+    "query": "help me choose",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_help"],
+      "confidence_label_min": "high",
+      "required_hrefs": ["/pages/snooze-assessment"]
+    }
+  },
+  {
+    "id": "what_should_i_get",
+    "category": "assessment_handoff",
+    "query": "what should I get",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_help"],
+      "confidence_label_min": "high",
+      "required_hrefs": ["/pages/snooze-assessment"]
+    }
+  },
+  {
+    "id": "i_am_not_sure",
+    "category": "assessment_handoff",
+    "query": "I am not sure",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_help"],
+      "confidence_label_min": "high",
+      "required_hrefs": ["/pages/snooze-assessment"]
+    }
+  },
+  {
+    "id": "match_me_with_a_mattress",
+    "category": "assessment_handoff",
+    "query": "match me with a mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_help"],
+      "confidence_label_min": "high",
+      "required_hrefs": ["/pages/snooze-assessment"]
+    }
+  },
+
+  {
+    "id": "book_a_snooze_session",
+    "category": "booking_handoff",
+    "query": "book a snooze session",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "booking_handoff",
+      "accepted_intents": ["booking_help"],
+      "confidence_label_min": "high",
+      "required_hrefs": ["/pages/book-your-snooze-session"]
+    }
+  },
+  {
+    "id": "try_in_person",
+    "category": "booking_handoff",
+    "query": "can I try this in person",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "booking_handoff",
+      "accepted_intents": ["booking_help"],
+      "confidence_label_min": "high",
+      "required_hrefs": ["/pages/book-your-snooze-session"]
+    }
+  },
+  {
+    "id": "showroom_visit",
+    "category": "booking_handoff",
+    "query": "showroom visit",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "booking_handoff",
+      "accepted_intents": ["booking_help"],
+      "confidence_label_min": "high",
+      "required_hrefs": ["/pages/book-your-snooze-session"]
+    }
+  },
+  {
+    "id": "test_the_mattress",
+    "category": "booking_handoff",
+    "query": "can I test the mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "booking_handoff",
+      "accepted_intents": ["booking_help"],
+      "confidence_label_min": "high",
+      "required_hrefs": ["/pages/book-your-snooze-session"]
+    }
+  },
+  {
+    "id": "appointment",
+    "category": "booking_handoff",
+    "query": "appointment",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "booking_handoff",
+      "accepted_intents": ["booking_help"],
+      "confidence_label_min": "high",
+      "required_hrefs": ["/pages/book-your-snooze-session"]
+    }
+  },
+
+  {
+    "id": "finance_no_money_down",
+    "category": "policy_support",
+    "query": "can I finance with no money down",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["0% apr", "guaranteed approval", "no credit check"]
+    }
+  },
+  {
+    "id": "offer_financing",
+    "category": "policy_support",
+    "query": "do you offer financing",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "return_policy",
+    "category": "policy_support",
+    "query": "what is your return policy",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "do_you_deliver",
+    "category": "policy_support",
+    "query": "do you deliver",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "warranty_information",
+    "category": "policy_support",
+    "query": "warranty information",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+
+  {
+    "id": "am_i_choosing_right",
+    "category": "cart_confidence",
+    "query": "am I choosing right",
+    "context": { "path": "/cart", "page_type": "cart", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "cart_confidence",
+      "accepted_intents": ["cart_confidence"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "required_hrefs": ["/pages/snooze-assessment"]
+    }
+  },
+  {
+    "id": "should_i_buy_this",
+    "category": "cart_confidence",
+    "query": "should I buy this",
+    "context": { "path": "/cart", "page_type": "cart", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "cart_confidence",
+      "accepted_intents": ["cart_confidence"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "before_i_checkout",
+    "category": "cart_confidence",
+    "query": "before I checkout",
+    "context": { "path": "/cart", "page_type": "cart", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "cart_confidence",
+      "accepted_intents": ["cart_confidence"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "is_this_the_right_mattress",
+    "category": "cart_confidence",
+    "query": "is this the right mattress",
+    "context": { "path": "/cart", "page_type": "cart", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "cart_confidence",
+      "accepted_intents": ["cart_confidence"],
+      "confidence_label_min": "medium",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "what_else_do_i_need",
+    "category": "cart_confidence",
+    "query": "what else do I need",
+    "context": { "path": "/cart", "page_type": "cart", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "cart_confidence",
+      "accepted_intents": ["cart_confidence"],
+      "confidence_label_min": "medium",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+
+  {
+    "id": "random_gibberish",
+    "category": "fallback_unclear",
+    "query": "random gibberish",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "fallback_unclear",
+      "accepted_intents": ["fallback", "default"],
+      "confidence_label_min": "low",
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["starting points"]
+    }
+  },
+  {
+    "id": "hello",
+    "category": "fallback_unclear",
+    "query": "hello",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "fallback_unclear",
+      "accepted_intents": ["fallback", "default"],
+      "confidence_label_min": "low",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "asdf_mattress_banana",
+    "category": "fallback_unclear",
+    "query": "asdf mattress banana",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "fallback_unclear",
+      "accepted_intents": ["fallback", "default"],
+      "confidence_label_min": "low",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "i_do_not_know",
+    "category": "fallback_unclear",
+    "query": "I do not know",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "fallback_unclear",
+      "accepted_intents": ["fallback", "default"],
+      "confidence_label_min": "low",
+      "products": { "min": 0, "max": 0 }
+    }
+  }
+]
