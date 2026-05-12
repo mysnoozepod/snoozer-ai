@@ -65,6 +65,12 @@ function getOpenAiSvc() {
   return openaiSvc;
 }
 
+const {
+  classifyAskSnoozerIntent,
+  hasAskSnoozerBudgetSignal,
+  parseAskSnoozerSizeLabel,
+} = require("./services/askSnoozerIntents");
+
 let getHudScriptPayload = null;
 try {
   ({ getHudScriptPayload } = require("./services/hudScripts"));
@@ -1114,6 +1120,18 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
     collections: [],
     pages: [HUD_ASK_PAGE_ASSESSMENT],
   },
+  couple_conflict: {
+    reply:
+      "If two sleepers want different comfort, start with flexible options that let each side feel right.",
+    chips: [
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+      { label: "Book Your Snooze Session", value: "book snooze session" },
+      { label: "Compare mattresses", value: "compare foam vs hybrid" },
+    ],
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
   budget_value: {
     reply:
       "For value, start with the simplest verified mattress options and confirm the right size.",
@@ -1164,6 +1182,26 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  policy_support: {
+    reply:
+      "For shipping, returns, warranty, financing, or delivery questions, I can point you to the right next step.",
+    chips: [
+      { label: "Book Your Snooze Session", value: "book snooze session" },
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+      { label: "Help me compare mattresses", value: "compare foam vs hybrid" },
+    ],
+    actions: [HUD_ASK_ACTION_BOOKING],
+    collections: [],
+    pages: [HUD_ASK_PAGE_ASSESSMENT],
+  },
+  cart_confidence: {
+    reply:
+      "Before you finish, make sure the feel, support, and setup match how you sleep.",
+    chips: HUD_ASK_CART_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [],
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   fallback: {
@@ -1232,119 +1270,8 @@ function includesHudAskKeyword(text, keywords = []) {
   return keywords.some((keyword) => text.includes(keyword));
 }
 
-function resolveHudAskIntent(query) {
-  const normalized = normalizeHudAskText(query);
-  if (!normalized) return "default";
-  const requestedSizeLabel = parseHudAskSizeLabel(normalized);
-
-  if (
-    includesHudAskKeyword(normalized, [
-      "assessment",
-      "quiz",
-      "help me choose",
-      "not sure",
-    ])
-  ) {
-    return "assessment_help";
-  }
-
-  if (
-    includesHudAskKeyword(normalized, [
-      "book",
-      "appointment",
-      "snooze session",
-      "showroom",
-      "visit",
-    ])
-  ) {
-    return "booking_help";
-  }
-
-  if (
-    includesHudAskKeyword(normalized, [
-      "snore",
-      "snoring",
-      "elevation",
-      "raise head",
-      "adjustable base",
-    ])
-  ) {
-    return "snoring";
-  }
-
-  if (
-    includesHudAskKeyword(normalized, [
-      "compare",
-      "foam vs hybrid",
-      "hybrid",
-      "foam",
-      "difference",
-    ])
-  ) {
-    return "compare_mattresses";
-  }
-
-  if (
-    includesHudAskKeyword(normalized, [
-      "back pain",
-      "back hurts",
-      "lower back",
-      "pressure",
-      "alignment",
-    ])
-  ) {
-    return "back_pain";
-  }
-
-  if (includesHudAskKeyword(normalized, ["firm", "support", "too soft"])) {
-    return "firm_support";
-  }
-
-  if (includesHudAskKeyword(normalized, ["sleep hot", "hot", "cooling", "sweat", "warm"])) {
-    return "sleep_hot";
-  }
-
-  if (
-    includesHudAskKeyword(normalized, [
-      "cheap",
-      "affordable",
-      "budget",
-      "value",
-      "lowest price",
-      "best price",
-      "inexpensive",
-      "not expensive",
-      "least expensive",
-      "low price",
-    ])
-  ) {
-    return "budget_value";
-  }
-
-  switch (requestedSizeLabel) {
-    case "Split King":
-    case "Half Split King":
-      return "split_king";
-    case "Twin XL":
-      return "twin_xl";
-    case "Queen":
-    case "Half Split Queen":
-      return "queen_size";
-    case "King":
-    case "Cal King":
-    case "Split Cal King":
-      return "king_size";
-    case "Full":
-      return "full_size";
-    default:
-      break;
-  }
-
-  if (includesHudAskKeyword(normalized, ["size", "mattress size"])) {
-    return "size_help";
-  }
-
-  return "fallback";
+function resolveHudAskIntent(query, context = {}) {
+  return classifyAskSnoozerIntent(query, context).intent;
 }
 
 function isHudAskSizeIntent(intent) {
@@ -1460,6 +1387,10 @@ function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
       return "While you browse, stay inside the size you need, then compare feel and support.";
     }
 
+    if (intent === "couple_conflict") {
+      return "While you browse, start with flexible comfort options that can support two different preferences.";
+    }
+
     switch (intent) {
       case "sleep_hot":
         return "While you browse, focus on breathable materials and the support feel that stays comfortable through the night.";
@@ -1487,6 +1418,10 @@ function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
 
     if (isHudAskSizeIntent(intent)) {
       return "Use this page to confirm the size options first, then compare feel and support.";
+    }
+
+    if (intent === "couple_conflict") {
+      return "Use this page to compare whether the setup can support different comfort preferences on each side.";
     }
 
     switch (intent) {
@@ -1529,6 +1464,10 @@ function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
 
   if (pageType === "search") {
     return "Use a few key sleep needs to narrow the right direction.";
+  }
+
+  if (intent === "policy_support") {
+    return "For shipping, returns, warranty, financing, or delivery questions, I can point you to the right next step.";
   }
 
   return baseReply;
@@ -1652,6 +1591,7 @@ function resolveHudAskReplyOverride({
 }
 
 function buildHudAskPayload({
+  classification = null,
   intent = "fallback",
   query = "",
   path = "/",
@@ -1664,8 +1604,9 @@ function buildHudAskPayload({
 } = {}) {
   const normalizedPath = sanitizeHudAskPath(path);
   const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
+  const resolvedIntent = String(classification?.intent || intent || "fallback").trim() || "fallback";
   const config = resolveHudAskContextualConfig({
-    intent,
+    intent: resolvedIntent,
     pageType: normalizedPageType,
     path: normalizedPath,
   });
@@ -1673,14 +1614,20 @@ function buildHudAskPayload({
   return {
     status: "ok",
     reply: resolveHudAskReplyOverride({
-      intent,
+      intent: resolvedIntent,
       query,
       pageType: normalizedPageType,
       path: normalizedPath,
       products,
       fallbackReply: config.reply,
     }),
-    intent,
+    intent: resolvedIntent,
+    intent_group: String(classification?.intent_group || "").trim() || null,
+    confidence:
+      typeof classification?.confidence === "number" && Number.isFinite(classification.confidence)
+        ? classification.confidence
+        : null,
+    confidence_label: String(classification?.confidence_label || "").trim() || null,
     chips: cloneHudAskChips(config.chips),
     actions: cloneHudAskActions(config.actions),
     products: cloneHudAskProducts(products),
@@ -1764,40 +1711,11 @@ function normalizeHudAskSizeKey(value) {
 }
 
 function parseHudAskSizeLabel(query) {
-  const text = String(query || "").toLowerCase();
-  const sizeMatchers = [
-    ["split cal king", "Split Cal King"],
-    ["half split king", "Half Split King"],
-    ["split king", "Split King"],
-    ["cal king", "Cal King"],
-    ["half split queen", "Half Split Queen"],
-    ["twin xl", "Twin XL"],
-    ["queen", "Queen"],
-    ["king", "King"],
-    ["full", "Full"],
-    ["twin", "Twin"],
-  ];
-
-  for (const [needle, label] of sizeMatchers) {
-    if (text.includes(needle)) return label;
-  }
-
-  return "";
+  return parseAskSnoozerSizeLabel(query);
 }
 
 function hudAskQueryWantsBudget(query) {
-  return includesHudAskKeyword(String(query || "").toLowerCase(), [
-    "cheap",
-    "budget",
-    "affordable",
-    "value",
-    "low price",
-    "least expensive",
-    "best price",
-    "lowest price",
-    "inexpensive",
-    "not expensive",
-  ]);
+  return hasAskSnoozerBudgetSignal(query);
 }
 
 function resolveHudAskRequestedSizeLabel(intent, query) {
@@ -1913,6 +1831,7 @@ function buildHudAskCompareHandles(mattressHandles = [], currentHandle = "") {
 }
 
 function resolveHudAskCandidateHandles({
+  classification = null,
   intent,
   query,
   path,
@@ -1924,6 +1843,7 @@ function resolveHudAskCandidateHandles({
   const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
   const mattressHandles = getHudAskCatalogHandles(catalog, "mattress");
   const adjustableBaseHandles = getHudAskCatalogHandles(catalog, "adjustable-base");
+  const productBias = Array.isArray(classification?.product_bias) ? classification.product_bias : [];
   const currentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
   const safeCurrentHandle =
     currentProductHandle && typeof catalogHasHandle === "function" && catalogHasHandle(catalog, currentProductHandle)
@@ -1940,6 +1860,22 @@ function resolveHudAskCandidateHandles({
 
   if (intent === "size_help") {
     return [];
+  }
+
+  if (intent === "couple_conflict" || productBias.includes("dual_comfort")) {
+    const couplePriority = normalizeHudAskHandleList([
+      recsService?.HANDLES?.mattresses?.dualComfort,
+      recsService?.HANDLES?.mattresses?.hybrid14,
+      recsService?.HANDLES?.mattresses?.allFoam12,
+      recsService?.HANDLES?.mattresses?.allFoam10,
+    ]).filter((handle) =>
+      mattressHandles.some(
+        (candidate) => String(candidate || "").trim().toLowerCase() === String(handle || "").trim().toLowerCase()
+      )
+    );
+
+    const merged = normalizeHudAskHandleList(couplePriority.concat(mattressHandles));
+    return merged.slice(0, 3);
   }
 
   if (intent === "budget_value" || isHudAskSpecificSizeIntent(intent)) {
@@ -2014,12 +1950,14 @@ function buildHudAskProductTags({ intent, handle, sizeLabel = "" } = {}) {
 
   if (lower.includes("hybrid")) tags.push("Hybrid");
   if (lower.includes("foam") && !lower.includes("hybrid")) tags.push("Foam");
+  if (lower.includes("dual-comfort")) tags.push("Dual Comfort");
   if (lower.includes("adjustable") && lower.includes("base")) tags.push("Adjustable Base");
 
   if (intent === "sleep_hot") tags.push("Cooling");
   if (intent === "firm_support" || intent === "back_pain") tags.push("Support");
   if (intent === "snoring") tags.push("Elevation");
   if (intent === "budget_value") tags.push("Value");
+  if (intent === "couple_conflict") tags.push("Partner Sleep");
   if (sizeLabel) tags.push(sizeLabel);
 
   return Array.from(new Set(tags)).slice(0, 3);
@@ -2051,6 +1989,13 @@ function buildHudAskProductReason({
 
   if (intent === "split_king") {
     return "Verified in Split King so you can compare compatibility before you choose a base setup.";
+  }
+
+  if (intent === "couple_conflict") {
+    if (lower.includes("dual-comfort")) {
+      return "A strong option to compare when two sleepers want different comfort on each side.";
+    }
+    return "Worth comparing if you want a second option around a two-sleeper comfort decision.";
   }
 
   if (isHudAskSpecificSizeIntent(intent) && sizeLabel) {
@@ -2102,6 +2047,7 @@ function buildHudAskProductReason({
 }
 
 async function resolveHudAskProducts({
+  classification = null,
   intent,
   query,
   path,
@@ -2144,10 +2090,13 @@ async function resolveHudAskProducts({
 
     const normalizedPath = sanitizeHudAskPath(path);
     const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
-    const sizeLabel = resolveHudAskRequestedSizeLabel(intent, query);
-    const budgetQuery = hudAskQueryWantsBudget(query);
+    const sizeLabel =
+      String(classification?.size_label || "").trim() || resolveHudAskRequestedSizeLabel(intent, query);
+    const budgetQuery =
+      Boolean(classification?.budget_signal) || hudAskQueryWantsBudget(query);
     const currentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
     const candidateHandles = resolveHudAskCandidateHandles({
+      classification,
       intent,
       query,
       path: normalizedPath,
@@ -2257,9 +2206,10 @@ async function resolveHudAskProducts({
       }),
     }));
 
-    log("hud.ask.products", "resolved", {
+      log("hud.ask.products", "resolved", {
       traceId,
       intent,
+      intentGroup: classification?.intent_group || null,
       path: normalizedPath,
       pageType: normalizedPageType,
       catalogSource: catalogResult?.value ? "s3" : "fallback",
@@ -2272,6 +2222,7 @@ async function resolveHudAskProducts({
     log("hud.ask.products.error", error.message, {
       traceId,
       intent,
+      intentGroup: classification?.intent_group || null,
       path,
       pageType,
     });
@@ -2792,8 +2743,14 @@ async function handle(event = {}) {
         thread_id: body?.thread_id,
         sessionId: body?.session_id,
       });
-      const intent = resolveHudAskIntent(query);
+      const classification = classifyAskSnoozerIntent(query, {
+        path: pathValue,
+        page_type: pageType,
+        surface,
+      });
+      const intent = classification.intent;
       const products = await resolveHudAskProducts({
+        classification,
         intent,
         query,
         path: pathValue,
@@ -2801,6 +2758,7 @@ async function handle(event = {}) {
         traceId,
       });
       const payload = buildHudAskPayload({
+        classification,
         intent,
         query,
         path: pathValue,
@@ -2814,6 +2772,9 @@ async function handle(event = {}) {
         traceId,
         threadId,
         intent,
+        intentGroup: classification.intent_group || null,
+        confidence: classification.confidence || null,
+        confidenceLabel: classification.confidence_label || null,
         path: pathValue,
         pageType,
         surface,
@@ -2824,6 +2785,12 @@ async function handle(event = {}) {
       return rawJsonResponse(event, 200, payload);
     } catch (e) {
       const fallback = buildHudAskPayload({
+        classification: {
+          intent: "fallback",
+          intent_group: "fallback_unclear",
+          confidence: 0.42,
+          confidence_label: "low",
+        },
         intent: "fallback",
         query: typeof body?.query === "string" ? body.query.trim() : "",
         path: sanitizeHudAskPath(body?.path || "/"),
