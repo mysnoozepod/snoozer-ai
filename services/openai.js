@@ -2350,6 +2350,7 @@ module.exports = {
   runSnoozer,
   getCatalogOnce,
   getCanonOnce,
+  getObjectText,
   catalogHasHandle,
   resolveVariantFromCanon,
   resolveVariantByHandleAndSize,

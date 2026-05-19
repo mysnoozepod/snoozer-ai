@@ -564,9 +564,12 @@
     "expected": {
       "intent_group": "policy_support",
       "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_skill", "local_skill"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["0% apr", "guaranteed approval", "no credit check"]
+      "must_not_include": ["guaranteed approval", "no credit check"]
     }
   },
   {
@@ -577,8 +580,27 @@
     "expected": {
       "intent_group": "policy_support",
       "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_skill", "local_skill"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "monthly_payments",
+    "category": "policy_support",
+    "query": "do you offer monthly payments",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_skill", "local_skill"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["guaranteed approval", "no credit check"]
     }
   },
   {
@@ -589,8 +611,12 @@
     "expected": {
       "intent_group": "policy_support",
       "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
-      "products": { "min": 0, "max": 0 }
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["current policy or checkout information"]
     }
   },
   {
@@ -601,8 +627,44 @@
     "expected": {
       "intent_group": "policy_support",
       "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
-      "products": { "min": 0, "max": 0 }
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["current policy or checkout information"]
+    }
+  },
+  {
+    "id": "return_if_i_dont_like",
+    "category": "policy_support",
+    "query": "can i return if i dont like my mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["current policy or checkout information"]
+    }
+  },
+  {
+    "id": "offer_refunds",
+    "category": "policy_support",
+    "query": "do you offer refunds",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["current policy or checkout information"]
     }
   },
   {
@@ -613,8 +675,12 @@
     "expected": {
       "intent_group": "policy_support",
       "accepted_intents": ["policy_support"],
+      "policy_subtype": "delivery",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
-      "products": { "min": 0, "max": 0 }
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["current policy or checkout information"]
     }
   },
   {
@@ -625,8 +691,44 @@
     "expected": {
       "intent_group": "policy_support",
       "accepted_intents": ["policy_support"],
+      "policy_subtype": "delivery",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
-      "products": { "min": 0, "max": 0 }
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["current policy or checkout information"]
+    }
+  },
+  {
+    "id": "delivery_workflow",
+    "category": "policy_support",
+    "query": "how does delivery work",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "delivery",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["current policy or checkout information"]
+    }
+  },
+  {
+    "id": "delivery_cost",
+    "category": "policy_support",
+    "query": "how much is delivery",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "delivery",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["current policy or checkout information", "free for everyone"]
     }
   },
   {
@@ -637,8 +739,28 @@
     "expected": {
       "intent_group": "policy_support",
       "accepted_intents": ["policy_support"],
+      "policy_subtype": "warranty",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
-      "products": { "min": 0, "max": 0 }
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["current policy or checkout information"]
+    }
+  },
+  {
+    "id": "warranty_question",
+    "category": "policy_support",
+    "query": "do the beds come with warranties",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "warranty",
+      "policy_retrieved": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_not_include": ["current policy or checkout information"]
     }
   },
 

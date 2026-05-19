@@ -170,22 +170,91 @@ const BOOKING_TERMS = Object.freeze([
 
 const POLICY_TERMS = Object.freeze([
   "finance",
+  "refund",
+  "refunds",
   "shipping",
   "return",
   "dont like",
   "don't like",
+  "delivery work",
   "delivery take",
   "how long does delivery take",
   "warranty",
+  "warranties",
   "financing",
   "no money down",
   "monthly payment",
+  "monthly payments",
   "payments",
   "pay over time",
+  "payment plan",
+  "payment plans",
   "deliver",
   "delivery",
   "setup",
   "policy",
+]);
+
+const POLICY_RETURNS_TERMS = Object.freeze([
+  "return",
+  "returns",
+  "refund",
+  "refunds",
+  "exchange",
+  "trial",
+  "dont like",
+  "don't like",
+]);
+
+const POLICY_DELIVERY_TERMS = Object.freeze([
+  "deliver",
+  "delivery",
+  "shipping",
+  "setup",
+  "white glove",
+  "remove my old mattress",
+  "mattress removal",
+  "old bed",
+  "old mattress",
+  "track",
+  "schedule",
+]);
+
+const POLICY_WARRANTY_TERMS = Object.freeze([
+  "warranty",
+  "warranties",
+  "coverage",
+  "claim",
+  "claims",
+  "guarantee",
+  "defect",
+  "defects",
+  "sagging",
+]);
+
+const POLICY_FINANCING_TERMS = Object.freeze([
+  "finance",
+  "financing",
+  "no money down",
+  "monthly payment",
+  "monthly payments",
+  "payment plan",
+  "payment plans",
+  "pay over time",
+  "shop pay",
+  "affirm",
+  "synchrony",
+  "0% apr",
+  "apr",
+]);
+
+const POLICY_PRICING_TERMS = Object.freeze([
+  "how much",
+  "price",
+  "cost",
+  "pricing",
+  "fee",
+  "fees",
 ]);
 
 const CART_TERMS = Object.freeze([
@@ -352,6 +421,25 @@ function hasAskSnoozerBudgetSignal(value) {
   return includesAny(normalizeAskSnoozerText(value), BUDGET_TERMS);
 }
 
+function classifyAskSnoozerPolicySubtype(value) {
+  const text = normalizeAskSnoozerText(value);
+  if (!text) return "general_policy";
+
+  if (includesAny(text, POLICY_RETURNS_TERMS)) return "returns";
+  if (includesAny(text, POLICY_WARRANTY_TERMS)) return "warranty";
+  if (includesAny(text, POLICY_FINANCING_TERMS)) return "financing";
+
+  if (
+    includesAny(text, POLICY_DELIVERY_TERMS) ||
+    (text.includes("how much") && text.includes("delivery"))
+  ) {
+    return "delivery";
+  }
+
+  if (includesAny(text, POLICY_PRICING_TERMS)) return "pricing";
+  return "general_policy";
+}
+
 function inferLegacyIntentFromSize(sizeLabel = "") {
   switch (String(sizeLabel || "").trim()) {
     case "Split King":
@@ -383,6 +471,7 @@ function buildClassification({
   notes = [],
   sizeLabel = "",
   budgetSignal = false,
+  policySubtype = "",
 } = {}) {
   const groupMeta =
     ASK_SNOOZER_INTENT_TAXONOMY[intentGroup] ||
@@ -406,6 +495,7 @@ function buildClassification({
     notes: Array.from(new Set((notes || []).filter(Boolean))),
     size_label: String(sizeLabel || "").trim(),
     budget_signal: Boolean(budgetSignal),
+    policy_subtype: String(policySubtype || "").trim(),
   };
 }
 
@@ -488,15 +578,17 @@ function classifyAskSnoozerIntent(input, context = {}) {
   }
 
   if (includesAny(text, POLICY_TERMS)) {
+    const policySubtype = classifyAskSnoozerPolicySubtype(text);
     return buildClassification({
       intent: "policy_support",
       intentGroup: "policy_support",
       confidenceLabel: "high",
-      signals: ["policy"],
+      signals: ["policy", policySubtype].filter(Boolean),
       actionBias: ["booking"],
       notes,
       sizeLabel,
       budgetSignal,
+      policySubtype,
     });
   }
 
@@ -638,6 +730,7 @@ module.exports = {
   ASK_SNOOZER_INTENT_TAXONOMY,
   LEGACY_INTENT_GROUP_MAP,
   classifyAskSnoozerIntent,
+  classifyAskSnoozerPolicySubtype,
   hasAskSnoozerBudgetSignal,
   normalizeAskSnoozerText,
   parseAskSnoozerSizeLabel,

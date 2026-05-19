@@ -245,6 +245,17 @@ function validateExpectedBehavior(testCase, payload, failures) {
   }
 
   if (
+    expected.policy_subtype &&
+    String(payload?.policy_subtype || "").trim() !== String(expected.policy_subtype).trim()
+  ) {
+    addFailure(
+      failures,
+      "wrong_intent",
+      `Expected policy_subtype=${expected.policy_subtype}, got ${payload?.policy_subtype || "(blank)"}`
+    );
+  }
+
+  if (
     Array.isArray(expected.accepted_intents) &&
     expected.accepted_intents.length > 0 &&
     !expected.accepted_intents.includes(payload?.intent)
@@ -331,6 +342,27 @@ function validateExpectedBehavior(testCase, payload, failures) {
         failures,
         "missing_action",
         `Missing required hrefs: ${missing.join(", ")}`
+      );
+    }
+  }
+
+  if (typeof expected.policy_retrieved === "boolean") {
+    if (Boolean(payload?.meta?.policy_retrieved) !== expected.policy_retrieved) {
+      addFailure(
+        failures,
+        expected.policy_retrieved ? "unexpected_fallback" : "response_contract_break",
+        `Expected meta.policy_retrieved=${expected.policy_retrieved}, got ${Boolean(payload?.meta?.policy_retrieved)}`
+      );
+    }
+  }
+
+  if (Array.isArray(expected.policy_source_any_of) && expected.policy_source_any_of.length > 0) {
+    const actualSource = String(payload?.meta?.policy_source || "").trim();
+    if (!expected.policy_source_any_of.includes(actualSource)) {
+      addFailure(
+        failures,
+        "unexpected_fallback",
+        `Expected policy source in [${expected.policy_source_any_of.join(", ")}], got ${actualSource || "(blank)"}`
       );
     }
   }

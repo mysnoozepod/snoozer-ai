@@ -70,6 +70,7 @@ const {
   hasAskSnoozerBudgetSignal,
   parseAskSnoozerSizeLabel,
 } = require("./services/askSnoozerIntents");
+const { resolveAskSnoozerPolicyAnswer } = require("./services/askSnoozerPolicy");
 
 let getHudScriptPayload = null;
 try {
@@ -1057,7 +1058,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   firm_support: {
     reply:
-      "Focus on alignment first, then comfort feel.",
+      "Start with support first, then decide how soft or firm you want the bed.",
     chips: [
       { label: "I have back pain", value: "I have back pain" },
       { label: "Compare mattresses", value: "compare foam vs hybrid" },
@@ -1193,7 +1194,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   policy_support: {
     reply:
-      "I can point you in the right direction, but final policy details should be confirmed from the current policy or checkout information.",
+      "Policy details can affect timing, fees, or coverage, so check the exact terms before you decide.",
     chips: HUD_ASK_POLICY_CHIPS,
     actions: [],
     collections: [],
@@ -1470,7 +1471,7 @@ function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
   }
 
   if (intent === "policy_support") {
-    return "I can point you in the right direction, but final policy details should be confirmed from the current policy or checkout information.";
+    return "Policy details can affect timing, fees, or coverage, so check the exact terms before you decide.";
   }
 
   return baseReply;
@@ -1584,7 +1585,12 @@ function resolveHudAskReplyOverride({
   path,
   products = [],
   fallbackReply,
+  replyOverride = "",
 } = {}) {
+  if (String(replyOverride || "").trim()) {
+    return String(replyOverride || "").trim();
+  }
+
   const hasProducts = Array.isArray(products) && products.length > 0;
   const normalizedQuery = normalizeHudAskText(query);
   const sizeLabel = resolveHudAskRequestedSizeLabel(intent, query);
@@ -1595,7 +1601,7 @@ function resolveHudAskReplyOverride({
       normalizedQuery.includes("dont like") ||
       normalizedQuery.includes("don't like")
     ) {
-      return "I can point you in the right direction, but return details should be confirmed from the current policy or checkout information.";
+      return "Return options can vary by item and order details. Check the return terms before you decide so you know exactly what applies.";
     }
 
     if (
@@ -1604,7 +1610,7 @@ function resolveHudAskReplyOverride({
       normalizedQuery.includes("shipping") ||
       normalizedQuery.includes("setup")
     ) {
-      return "I can point you in the right direction, but delivery and setup details should be confirmed from the current policy or checkout information.";
+      return "Delivery details can vary by order, area, and setup needs. Check the current delivery information before you place the order.";
     }
 
     if (
@@ -1614,18 +1620,18 @@ function resolveHudAskReplyOverride({
       normalizedQuery.includes("pay over time") ||
       normalizedQuery.includes("no money down")
     ) {
-      return "I can point you in the right direction, but financing terms should be confirmed from the current policy or checkout information.";
+      return "Financing options may be available, but exact offers and approval terms can change. Check the current financing details before you decide.";
     }
 
-    return "I can point you in the right direction, but final policy details should be confirmed from the current policy or checkout information.";
+    return "Policy details can affect timing, fees, or coverage, so check the exact terms before you decide.";
   }
 
   if (hasProducts) {
     switch (intent) {
       case "sleep_hot":
-        return "Start with breathable comfort and support that will not trap heat. These options lean toward better airflow without giving up pressure relief.";
+        return "Start with breathable support that will not trap heat. These picks lean toward airflow while still giving you pressure relief.";
       case "firm_support":
-        return "Focus on alignment first, then comfort feel. These options are stronger starting points if you do not want the bed to feel too soft.";
+        return "Start with support first, then decide how soft or firm you want the bed. These are stronger starting points if you do not want the mattress to feel too soft.";
       case "back_pain":
         return "For back discomfort, prioritize neutral alignment and pressure relief. These options are better starting points when support matters as much as comfort.";
       case "couple_conflict":
@@ -1685,6 +1691,13 @@ function buildHudAskPayload({
   error = null,
   source = "live",
   products = [],
+  replyOverride = "",
+  chipsOverride = null,
+  actionsOverride = null,
+  collectionsOverride = null,
+  pagesOverride = null,
+  metaExtra = null,
+  policySubtype = "",
 } = {}) {
   const normalizedPath = sanitizeHudAskPath(path);
   const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
@@ -1694,6 +1707,10 @@ function buildHudAskPayload({
     pageType: normalizedPageType,
     path: normalizedPath,
   });
+  const safeMetaExtra =
+    metaExtra && typeof metaExtra === "object" && !Array.isArray(metaExtra) ? metaExtra : {};
+  const resolvedPolicySubtype =
+    String(policySubtype || classification?.policy_subtype || "").trim() || null;
 
   return {
     status: "ok",
@@ -1704,26 +1721,70 @@ function buildHudAskPayload({
       path: normalizedPath,
       products,
       fallbackReply: config.reply,
+      replyOverride,
     }),
     intent: resolvedIntent,
     intent_group: String(classification?.intent_group || "").trim() || null,
+    policy_subtype: resolvedPolicySubtype,
     confidence:
       typeof classification?.confidence === "number" && Number.isFinite(classification.confidence)
         ? classification.confidence
         : null,
     confidence_label: String(classification?.confidence_label || "").trim() || null,
-    chips: cloneHudAskChips(config.chips),
-    actions: cloneHudAskActions(config.actions),
+    chips: Array.isArray(chipsOverride) ? cloneHudAskChips(chipsOverride) : cloneHudAskChips(config.chips),
+    actions: Array.isArray(actionsOverride)
+      ? cloneHudAskActions(actionsOverride)
+      : cloneHudAskActions(config.actions),
     products: cloneHudAskProducts(products),
-    collections: cloneHudAskCollections(config.collections),
-    pages: cloneHudAskPages(config.pages),
+    collections: Array.isArray(collectionsOverride)
+      ? cloneHudAskCollections(collectionsOverride)
+      : cloneHudAskCollections(config.collections),
+    pages: Array.isArray(pagesOverride) ? cloneHudAskPages(pagesOverride) : cloneHudAskPages(config.pages),
     meta: {
       path: normalizedPath,
       source,
       latency_ms: Math.max(0, Math.round(Number(latencyMs) || 0)),
       error: error || null,
+      ...safeMetaExtra,
     },
     thread_id: threadId || null,
+  };
+}
+
+async function resolveHudAskPolicyStrategy({
+  classification = null,
+  intent = "fallback",
+  query = "",
+  traceId = "",
+} = {}) {
+  if (String(classification?.intent_group || "").trim() !== "policy_support" || intent !== "policy_support") {
+    return null;
+  }
+
+  const resolved = await resolveAskSnoozerPolicyAnswer({
+    query,
+    traceId,
+    timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
+  });
+
+  log("hud.ask.policy", "resolved", {
+    traceId,
+    intentGroup: "policy_support",
+    policySubtype: resolved.policySubtype || "general_policy",
+    source: resolved.source || "fallback",
+    key: resolved.key || null,
+    retrieved: Boolean(resolved.retrieved),
+  });
+
+  return {
+    replyOverride: resolved.reply,
+    chipsOverride: Array.isArray(resolved.chips) && resolved.chips.length ? resolved.chips : null,
+    policySubtype: resolved.policySubtype || "general_policy",
+    metaExtra: {
+      policy_source: resolved.source || "fallback",
+      policy_key: resolved.key || null,
+      policy_retrieved: Boolean(resolved.retrieved),
+    },
   };
 }
 
@@ -2841,6 +2902,12 @@ async function handle(event = {}) {
         pageType,
         traceId,
       });
+      const policyStrategy = await resolveHudAskPolicyStrategy({
+        classification,
+        intent,
+        query,
+        traceId,
+      });
       const payload = buildHudAskPayload({
         classification,
         intent,
@@ -2850,6 +2917,10 @@ async function handle(event = {}) {
         latencyMs: elapsedMs(startedAt),
         threadId,
         products,
+        replyOverride: policyStrategy?.replyOverride || "",
+        chipsOverride: policyStrategy?.chipsOverride || null,
+        metaExtra: policyStrategy?.metaExtra || null,
+        policySubtype: policyStrategy?.policySubtype || classification?.policy_subtype || "",
       });
 
       log("hud.ask", "ok", {
@@ -2857,6 +2928,8 @@ async function handle(event = {}) {
         threadId,
         intent,
         intentGroup: classification.intent_group || null,
+        policySubtype: payload.policy_subtype || null,
+        policySource: payload.meta?.policy_source || null,
         confidence: classification.confidence || null,
         confidenceLabel: classification.confidence_label || null,
         path: pathValue,
