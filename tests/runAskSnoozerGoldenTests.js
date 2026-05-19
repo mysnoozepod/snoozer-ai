@@ -144,6 +144,11 @@ function validateContract(payload, failures) {
 function validateGuardrails(payload, failures) {
   const reply = typeof payload?.reply === "string" ? payload.reply : "";
   const visibleText = summarizeVisibleText(payload);
+  const answerStrategy = String(payload?.meta?.answer_strategy || "").trim();
+  const priceReplyAllowed =
+    answerStrategy === "verified_price" &&
+    payload?.intent_group === "size_price" &&
+    Boolean(payload?.meta?.answer_grounded);
 
   if (reply.length > MAX_REPLY_LENGTH) {
     addFailure(
@@ -161,7 +166,7 @@ function validateGuardrails(payload, failures) {
     addFailure(failures, "response_contract_break", "Visible text exposes internal product identifiers");
   }
 
-  if (/\$\s*\d|\b\d+\s*(?:\/mo|per month|monthly)\b/i.test(reply)) {
+  if (!priceReplyAllowed && /\$\s*\d|\b\d+\s*(?:\/mo|per month|monthly)\b/i.test(reply)) {
     addFailure(failures, "unsafe_claim", "Reply contains unverified price language");
   }
 

@@ -296,7 +296,7 @@
         "max": 3,
         "preferred_handles": ["10-all-foam-mattress", "12-all-foam-mattress", "12-dual-comfort-hybrid"]
       },
-      "must_not_include": ["$", "guarantee"]
+      "must_not_include": ["guarantee", "call for price"]
     }
   },
   {
@@ -329,7 +329,7 @@
         "max": 3,
         "expected_handles": ["10-all-foam-mattress", "12-all-foam-mattress", "12-dual-comfort-hybrid"]
       },
-      "must_not_include": ["$", "0% apr", "guarantee"]
+      "must_not_include": ["0% apr", "guarantee", "call for price"]
     }
   },
   {
@@ -342,7 +342,7 @@
       "accepted_intents": ["queen_size"],
       "confidence_label_min": "high",
       "answer_grounded": true,
-      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
       "answer_facts_count_min": 1,
       "products": {
         "min": 1,
@@ -1429,6 +1429,326 @@
       "answer_facts_count_min": 1,
       "required_hrefs": ["/pages/book-your-snooze-session"],
       "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "product_hot_sleepers_named",
+    "category": "product_fit",
+    "query": "Is the 14 Hybrid good for hot sleepers?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["product_question"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["14\" hybrid mattress", "airflow"],
+      "must_not_include": ["guarantee", "cure"]
+    }
+  },
+  {
+    "id": "product_named_queen_availability",
+    "category": "size_price",
+    "query": "Does the 12 Dual Comfort come in Queen?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["queen_size"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "12-dual-comfort-hybrid" },
+      "must_include": ["queen", "dual comfort"]
+    }
+  },
+  {
+    "id": "product_named_size_list",
+    "category": "size_price",
+    "query": "What sizes does the 14 Hybrid come in?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["size_help"],
+      "confidence_label_min": "medium",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["twin xl", "queen", "split king"]
+    }
+  },
+  {
+    "id": "product_page_adjustable_base_context",
+    "category": "product_fit",
+    "query": "Can this work with an adjustable base?",
+    "context": { "path": "/products/14-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["product_question"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 3, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["base setup"],
+      "must_not_include": ["guarantee", "cure"]
+    }
+  },
+  {
+    "id": "product_page_couples_context",
+    "category": "product_fit",
+    "query": "Is this good for couples?",
+    "context": { "path": "/products/12-dual-comfort-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["product_question"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "12-dual-comfort-hybrid" },
+      "must_include": ["couple-friendly", "different feels"]
+    }
+  },
+  {
+    "id": "price_all_foam_queen",
+    "category": "size_price",
+    "query": "How much is the all foam in Queen?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 2, "max": 2, "expected_handles": ["10-all-foam-mattress", "12-all-foam-mattress"] },
+      "must_include": ["$799", "queen", "10\" all foam mattress"]
+    }
+  },
+  {
+    "id": "most_affordable_hybrid",
+    "category": "size_price",
+    "query": "What is your most affordable hybrid?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 2, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["starting at", "$2,399", "14\" hybrid mattress"]
+    }
+  },
+  {
+    "id": "financing_can_i_finance",
+    "category": "policy_support",
+    "query": "Can I finance?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["monthly payment", "0% apr"]
+    }
+  },
+  {
+    "id": "financing_monthly_payments",
+    "category": "policy_support",
+    "query": "Do you offer monthly payments?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["monthly payment", "0% apr"]
+    }
+  },
+  {
+    "id": "financing_what_would_payments_be",
+    "category": "policy_support",
+    "query": "What would payments be?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["monthly payment", "0% apr"],
+      "must_not_include": ["return policy", "100-night"]
+    }
+  },
+  {
+    "id": "assessment_start_question_flow",
+    "category": "assessment_handoff",
+    "query": "Can you ask me questions?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_start"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["how do you usually sleep", "side sleeper", "back sleeper", "combination sleeper"]
+    }
+  },
+  {
+    "id": "compare_named_products",
+    "category": "product_compare",
+    "query": "Compare 10 All Foam and 14 Hybrid",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_compare",
+      "accepted_intents": ["compare_mattresses"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 2, "max": 2, "expected_handles": ["14-hybrid", "10-all-foam-mattress"] },
+      "must_include": ["lift", "contouring"]
+    }
+  },
+  {
+    "id": "couple_shopping_best_mattress",
+    "category": "couple_conflict",
+    "query": "best mattress for me and my wife",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "couple_conflict",
+      "accepted_intents": ["couple_conflict"],
+      "confidence_label_min": "medium",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 3, "preferred_first_handle": "12-dual-comfort-hybrid" },
+      "must_include": ["partner", "dual-comfort"]
+    }
+  },
+  {
+    "id": "product_page_this_mattress_context",
+    "category": "product_fit",
+    "query": "this mattress",
+    "context": { "path": "/products/14-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["product_question"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["current page context"]
+    }
+  },
+  {
+    "id": "product_page_this_queen_context",
+    "category": "size_price",
+    "query": "Does this come in Queen?",
+    "context": { "path": "/products/12-dual-comfort-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["queen_size"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "12-dual-comfort-hybrid" },
+      "must_include": ["queen", "dual comfort"]
+    }
+  },
+  {
+    "id": "product_page_back_support_context",
+    "category": "product_fit",
+    "query": "Is this good for back support?",
+    "context": { "path": "/products/10-all-foam-mattress", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["product_question"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "10-all-foam-mattress" },
+      "must_include": ["support-and-pressure-relief"],
+      "must_not_include": ["cure", "heal", "treat"]
+    }
+  },
+  {
+    "id": "delivery_chip_setup_supported",
+    "category": "policy_support",
+    "query": "Do you deliver and set up?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "delivery",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["white-glove", "old mattress removal"]
+    }
+  },
+  {
+    "id": "assessment_chip_partner_moves_supported",
+    "category": "couple_conflict",
+    "query": "Partner moves",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "couple_conflict",
+      "accepted_intents": ["couple_conflict"],
+      "confidence_label_min": "medium",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 3, "preferred_first_handle": "12-dual-comfort-hybrid" },
+      "must_include": ["couple-friendly"]
+    }
+  },
+  {
+    "id": "assessment_chip_side_sleeper_supported",
+    "category": "assessment_handoff",
+    "query": "Side sleeper",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_start"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["how do you usually sleep", "side sleeper"]
     }
   },
 

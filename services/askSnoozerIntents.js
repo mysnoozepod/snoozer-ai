@@ -76,9 +76,11 @@ const LEGACY_INTENT_GROUP_MAP = Object.freeze({
   sleep_hot: "product_fit",
   firm_support: "product_fit",
   back_pain: "product_fit",
+  product_question: "product_fit",
   snoring: "base_elevation",
   compare_mattresses: "product_compare",
   assessment_help: "assessment_handoff",
+  assessment_start: "assessment_handoff",
   booking_help: "booking_handoff",
   budget_value: "size_price",
   size_help: "size_price",
@@ -165,6 +167,28 @@ const ASSESSMENT_TERMS = Object.freeze([
   "recommend for me",
 ]);
 
+const ASSESSMENT_START_TERMS = Object.freeze([
+  "can you ask me questions",
+  "ask me questions",
+  "start assessment",
+  "start the assessment",
+  "start quiz",
+  "start the quiz",
+  "give me the quiz",
+  "give me a quiz",
+]);
+
+const ASSESSMENT_POSITION_TERMS = Object.freeze([
+  "side sleeper",
+  "back sleeper",
+  "stomach sleeper",
+  "combination sleeper",
+  "combo sleeper",
+  "i sleep on my back",
+  "i sleep on my stomach",
+  "i switch positions",
+]);
+
 const BOOKING_TERMS = Object.freeze([
   "book",
   "book snooze session",
@@ -208,6 +232,8 @@ const POLICY_TERMS = Object.freeze([
   "monthly payments",
   "payments",
   "pay over time",
+  "credit",
+  "prequalify",
   "payment plan",
   "payment plans",
   "deliver",
@@ -289,11 +315,15 @@ const POLICY_FINANCING_TERMS = Object.freeze([
   "finance",
   "financing",
   "no money down",
+  "payment",
+  "payments",
   "monthly payment",
   "monthly payments",
   "payment plan",
   "payment plans",
   "pay over time",
+  "credit",
+  "prequalify",
   "shop pay",
   "affirm",
   "synchrony",
@@ -331,6 +361,36 @@ const BASE_ELEVATION_TERMS = Object.freeze([
   "adjustable base",
   "adjustable bed",
   "zero gravity",
+]);
+
+const PRODUCT_REFERENCE_TERMS = Object.freeze([
+  "this mattress",
+  "this bed",
+  "this one",
+  "this product",
+  "does this",
+  "is this",
+  "can this",
+]);
+
+const PRODUCT_QUESTION_TERMS = Object.freeze([
+  "good for",
+  "hot sleepers",
+  "side sleepers",
+  "back support",
+  "back pain",
+  "firm",
+  "couples",
+  "partner moves",
+  "moves too much",
+  "share the bed",
+  "motion isolation",
+  "adjustable base",
+  "adjustable bed",
+  "work with",
+  "come in",
+  "what sizes",
+  "what size",
 ]);
 
 const PRODUCT_COMPARE_TERMS = Object.freeze([
@@ -456,6 +516,40 @@ function normalizeAskSnoozerPageType(value, path = "/") {
 
 function includesAny(text, phrases = []) {
   return phrases.some((phrase) => text.includes(phrase));
+}
+
+function looksLikeAskSnoozerNamedProduct(text) {
+  return (
+    /(?:^|\b)(?:10|12|14)\s*(?:["”]|inch|in)?\s*(?:all foam|dual comfort|hybrid)(?:\b|$)/.test(text) ||
+    /\bdual comfort\b/.test(text) ||
+    /\ball foam mattress\b/.test(text)
+  );
+}
+
+function looksLikeAssessmentStartQuery(text) {
+  return includesAny(text, ASSESSMENT_START_TERMS);
+}
+
+function looksLikeAssessmentPositionQuery(text) {
+  return includesAny(text, ASSESSMENT_POSITION_TERMS);
+}
+
+function looksLikeProductQuestion(text, pageType) {
+  const hasProductReference =
+    (pageType === "product" && includesAny(text, PRODUCT_REFERENCE_TERMS)) ||
+    looksLikeAskSnoozerNamedProduct(text);
+  if (!hasProductReference) return false;
+
+   const bareCurrentProductReference =
+    pageType === "product" &&
+    includesAny(text, PRODUCT_REFERENCE_TERMS) &&
+    text.split(/\s+/).filter(Boolean).length <= 3;
+
+  const hasQuestionSignal =
+    includesAny(text, PRODUCT_QUESTION_TERMS) ||
+    /\b(?:does|can|is|what|which)\b/.test(text);
+
+  return hasQuestionSignal || bareCurrentProductReference;
 }
 
 function parseAskSnoozerSizeLabel(value) {
@@ -592,6 +686,9 @@ function classifyAskSnoozerIntent(input, context = {}) {
     includesAny(text, DIFFERENCE_TERMS) ||
     (/soft/.test(text) && /firm/.test(text)) ||
     (partnerSignal && /(different|opposite|one of us|both of us|but)/.test(text));
+  const broadPartnerShoppingSignal =
+    partnerSignal &&
+    /(best mattress|good mattress|help|choose|pick|find|partner moves|moves too much|share the bed)/.test(text);
   const sideSleeperSignal = includesAny(text, SIDE_SLEEPER_TERMS);
   const sorenessSignal = includesAny(text, BACK_PAIN_TERMS);
   const restlessSignal = includesAny(text, RESTLESS_SLEEP_TERMS);
@@ -607,6 +704,36 @@ function classifyAskSnoozerIntent(input, context = {}) {
         "comfort_conflict",
       ].filter(Boolean),
       productBias: ["dual_comfort", "partner_flexibility", "split_options"],
+      actionBias: ["assessment", "booking"],
+      notes,
+      sizeLabel,
+      budgetSignal,
+    });
+  }
+
+  if (looksLikeAssessmentStartQuery(text) || looksLikeAssessmentPositionQuery(text)) {
+    return buildClassification({
+      intent: "assessment_start",
+      intentGroup: "assessment_handoff",
+      confidenceLabel: "high",
+      signals: [
+        looksLikeAssessmentStartQuery(text) ? "assessment_start" : "",
+        looksLikeAssessmentPositionQuery(text) ? "sleep_position" : "",
+      ].filter(Boolean),
+      actionBias: ["assessment"],
+      notes,
+      sizeLabel,
+      budgetSignal,
+    });
+  }
+
+  if (broadPartnerShoppingSignal) {
+    return buildClassification({
+      intent: "couple_conflict",
+      intentGroup: "couple_conflict",
+      confidenceLabel: "medium",
+      signals: ["partner", "shared_sleep"],
+      productBias: ["dual_comfort", "motion_isolation", "partner_flexibility"],
       actionBias: ["assessment", "booking"],
       notes,
       sizeLabel,
@@ -668,20 +795,6 @@ function classifyAskSnoozerIntent(input, context = {}) {
     });
   }
 
-  if (includesAny(text, BASE_ELEVATION_TERMS) || /\bbase\b/.test(text)) {
-    return buildClassification({
-      intent: "snoring",
-      intentGroup: "base_elevation",
-      confidenceLabel: includesAny(text, BASE_ELEVATION_TERMS) ? "high" : "medium",
-      signals: ["base_elevation"],
-      productBias: ["adjustable_base", "elevation"],
-      actionBias: ["booking", "assessment"],
-      notes,
-      sizeLabel,
-      budgetSignal,
-    });
-  }
-
   if (
     includesAny(text, PRODUCT_COMPARE_TERMS) ||
     (text.includes("foam") && text.includes("hybrid"))
@@ -726,6 +839,45 @@ function classifyAskSnoozerIntent(input, context = {}) {
       ].filter(Boolean),
       productBias: ["alignment", "pressure_relief", "support"],
       actionBias: ["assessment"],
+      notes,
+      sizeLabel,
+      budgetSignal,
+    });
+  }
+
+  if (looksLikeProductQuestion(text, pageType)) {
+    return buildClassification({
+      intent: "product_question",
+      intentGroup: "product_fit",
+      confidenceLabel: "high",
+      signals: [
+        "product_question",
+        includesAny(text, ["adjustable base", "adjustable bed"]) ? "adjustable_base" : "",
+        includesAny(text, ["couples", "partner moves", "moves too much", "share the bed"])
+          ? "couples"
+          : "",
+      ].filter(Boolean),
+      productBias: [
+        includesAny(text, ["hot sleepers", "sleep hot", "cooling"]) ? "cooling" : "",
+        includesAny(text, ["back support", "back pain", "firm", "support"]) ? "support" : "",
+        includesAny(text, ["couples", "partner moves", "motion isolation"]) ? "motion_isolation" : "",
+        includesAny(text, ["adjustable base", "adjustable bed"]) ? "adjustable_base" : "",
+      ].filter(Boolean),
+      actionBias: ["assessment"],
+      notes,
+      sizeLabel,
+      budgetSignal,
+    });
+  }
+
+  if (includesAny(text, BASE_ELEVATION_TERMS) || /\bbase\b/.test(text)) {
+    return buildClassification({
+      intent: "snoring",
+      intentGroup: "base_elevation",
+      confidenceLabel: includesAny(text, BASE_ELEVATION_TERMS) ? "high" : "medium",
+      signals: ["base_elevation"],
+      productBias: ["adjustable_base", "elevation"],
+      actionBias: ["booking", "assessment"],
       notes,
       sizeLabel,
       budgetSignal,

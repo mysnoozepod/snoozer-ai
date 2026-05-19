@@ -57,6 +57,14 @@ const SUPPLEMENTAL_SOURCE_CANDIDATES = Object.freeze({
   }),
 });
 
+const PRODUCT_DOC_KEY_BY_HANDLE = Object.freeze({
+  "10-all-foam-mattress": "products/mattress/all-foam-10.md",
+  "12-all-foam-mattress": "products/mattress/all-foam-12.md",
+  "12-dual-comfort-hybrid": "products/mattress/dual-comfort-12.md",
+  "14-hybrid": "products/mattress/hybrid-14.md",
+  "premium-motion-adjustable-base": "products/bases/premium-motion-base.md",
+});
+
 const SPLIT_EDUCATION_TERMS = Object.freeze([
   "half split",
   "split mattress",
@@ -251,6 +259,52 @@ function hasAnyQueryTerm(query, terms = []) {
 
 function hasAnyNormalizedTerm(text, terms = []) {
   return terms.some((term) => text.includes(normalizeAskSnoozerText(term)));
+}
+
+function extractProductHandleFromPath(pathValue = "") {
+  const match = String(pathValue || "").trim().match(/^\/products\/([^/?#]+)/i);
+  if (!match) return "";
+  try {
+    return decodeURIComponent(match[1] || "").trim().toLowerCase();
+  } catch {
+    return String(match[1] || "").trim().toLowerCase();
+  }
+}
+
+function getAskSnoozerProductDocKey(handle = "") {
+  const normalized = String(handle || "").trim().toLowerCase();
+  return PRODUCT_DOC_KEY_BY_HANDLE[normalized] || "";
+}
+
+async function loadProductKnowledgeSources(handles = [], options = {}) {
+  const out = [];
+  const seen = new Set();
+
+  for (const handle of Array.isArray(handles) ? handles : []) {
+    const key = getAskSnoozerProductDocKey(handle);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+
+    const loaded = await loadKnowledgeCandidates([key], options);
+    if (!loaded?.raw) continue;
+
+    out.push(
+      buildSourceRecord({
+        raw: loaded.raw,
+        source:
+          loaded.source === "s3_policy"
+            ? "s3_knowledge"
+            : loaded.source === "local_policy"
+              ? "local_knowledge"
+              : loaded.source,
+        key: loaded.key,
+        sourceKind: "knowledge",
+        policySubtype: "",
+      })
+    );
+  }
+
+  return out;
 }
 
 function extractHints(raw) {
@@ -833,6 +887,8 @@ async function resolveAskSnoozerPolicySources({ query = "", traceId = "", timeou
 async function resolveAskSnoozerSupplementalSources({
   classification = null,
   query = "",
+  path = "/",
+  products = [],
   traceId = "",
   timeoutMs = DEFAULT_TIMEOUT_MS,
 } = {}) {
@@ -841,7 +897,10 @@ async function resolveAskSnoozerSupplementalSources({
   const intent = String(classification?.intent || "").trim();
   const sources = [];
 
-  if (intentGroup === "assessment_handoff" && hasAnyNormalizedTerm(normalizedQuery, ASSESSMENT_SOURCE_TERMS)) {
+  if (
+    intentGroup === "assessment_handoff" &&
+    (hasAnyNormalizedTerm(normalizedQuery, ASSESSMENT_SOURCE_TERMS) || intent === "assessment_start")
+  ) {
     const candidates = SUPPLEMENTAL_SOURCE_CANDIDATES.assessment_handoff;
     const loadedSkills = [];
 
@@ -889,6 +948,31 @@ async function resolveAskSnoozerSupplementalSources({
           policySubtype: "",
         })
       );
+    }
+  }
+
+  if (["product_fit", "product_compare", "size_price", "base_elevation", "couple_conflict"].includes(intentGroup)) {
+    const productHandles = Array.from(
+      new Set(
+        []
+          .concat(
+            Array.isArray(products)
+              ? products.map((product) => String(product?.handle || "").trim().toLowerCase())
+              : []
+          )
+          .concat(extractProductHandleFromPath(path))
+          .filter(Boolean)
+      )
+    ).slice(0, 3);
+
+    if (productHandles.length) {
+      const knowledgeSources = await loadProductKnowledgeSources(productHandles, {
+        timeoutMs,
+        traceId,
+      });
+      if (knowledgeSources.length) {
+        sources.push(...knowledgeSources);
+      }
     }
   }
 

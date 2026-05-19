@@ -385,6 +385,409 @@ function queryLooksLikeSplitEducation(query = "") {
   ].some((term) => includesTerm(normalizedQuery, term));
 }
 
+function queryLooksLikeAssessmentQuestionFlow(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "can you ask me questions") ||
+    includesTerm(normalizedQuery, "ask me questions") ||
+    includesTerm(normalizedQuery, "start assessment") ||
+    includesTerm(normalizedQuery, "give me the quiz")
+  );
+}
+
+function queryLooksLikePriceQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "how much") ||
+    includesTerm(normalizedQuery, "price") ||
+    includesTerm(normalizedQuery, "cost") ||
+    includesTerm(normalizedQuery, "cheapest") ||
+    includesTerm(normalizedQuery, "affordable") ||
+    includesTerm(normalizedQuery, "under $") ||
+    includesTerm(normalizedQuery, "under ")
+  );
+}
+
+function queryLooksLikeCheapestQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "cheapest") ||
+    includesTerm(normalizedQuery, "most affordable") ||
+    includesTerm(normalizedQuery, "lowest price") ||
+    includesTerm(normalizedQuery, "budget")
+  );
+}
+
+function queryLooksLikeSpecificSizeAvailability(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return includesTerm(normalizedQuery, "come in") || includesTerm(normalizedQuery, "available");
+}
+
+function queryLooksLikeSizeListQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return includesTerm(normalizedQuery, "what sizes") || includesTerm(normalizedQuery, "what size");
+}
+
+function queryLooksLikeAdjustableBaseQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "adjustable base") ||
+    includesTerm(normalizedQuery, "adjustable bed") ||
+    includesTerm(normalizedQuery, "work with an adjustable base")
+  );
+}
+
+function queryLooksLikeCouplesQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "couples") ||
+    includesTerm(normalizedQuery, "partner moves") ||
+    includesTerm(normalizedQuery, "moves too much") ||
+    includesTerm(normalizedQuery, "share the bed")
+  );
+}
+
+function queryLooksLikeHotSleeperQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return includesTerm(normalizedQuery, "hot sleeper") || includesTerm(normalizedQuery, "sleep hot");
+}
+
+function queryLooksLikeBackSupportQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "back support") ||
+    includesTerm(normalizedQuery, "back pain") ||
+    includesTerm(normalizedQuery, "pressure relief")
+  );
+}
+
+function queryLooksLikeFirmnessQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return includesTerm(normalizedQuery, "firm") || includesTerm(normalizedQuery, "soft");
+}
+
+function formatCurrencyValue(amount, currencyCode = "USD") {
+  const numeric = Number(amount);
+  if (!Number.isFinite(numeric)) return "";
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currencyCode || "USD",
+      maximumFractionDigits: 0,
+    }).format(numeric);
+  } catch {
+    return `$${Math.round(numeric)}`;
+  }
+}
+
+function inferProductProfile(handle = "") {
+  const normalized = String(handle || "").trim().toLowerCase();
+  return {
+    isDualComfort: normalized.includes("dual-comfort"),
+    isHybrid: normalized.includes("hybrid") && !normalized.includes("dual-comfort"),
+    isFoam: normalized.includes("foam") && !normalized.includes("hybrid"),
+    isBudgetFoam: normalized.startsWith("10-") && normalized.includes("foam"),
+    isAdjustableBase: normalized.includes("adjustable") && normalized.includes("base"),
+  };
+}
+
+function extractAvailableSizes(entry = null) {
+  if (!entry?.product || !Array.isArray(entry.product.variants)) return [];
+  const seen = new Set();
+  const sizes = [];
+
+  for (const variant of entry.product.variants) {
+    const selectedOptions = Array.isArray(variant?.selectedOptions) ? variant.selectedOptions : [];
+    const sizeOption = selectedOptions.find(
+      (option) => String(option?.name || "").trim().toLowerCase() === "size"
+    );
+    const label = cleanAnswerText(sizeOption?.value || "");
+    const key = normalizeAskSnoozerText(label);
+    if (!label || !key || seen.has(key)) continue;
+    seen.add(key);
+    sizes.push(label);
+  }
+
+  return sizes;
+}
+
+function formatSizeList(labels = []) {
+  const safe = labels.filter(Boolean);
+  if (!safe.length) return "";
+  if (safe.length === 1) return safe[0];
+  if (safe.length === 2) return `${safe[0]} and ${safe[1]}`;
+  return `${safe.slice(0, -1).join(", ")}, and ${safe[safe.length - 1]}`;
+}
+
+function buildAssessmentStartChips() {
+  return [
+    { label: "Side sleeper", value: "Side sleeper" },
+    { label: "Back sleeper", value: "Back sleeper" },
+    { label: "Stomach sleeper", value: "Stomach sleeper" },
+    { label: "Combination sleeper", value: "Combination sleeper" },
+  ];
+}
+
+function buildAssessmentStartReply() {
+  return {
+    reply: "Yes. Start with one: how do you usually sleep - side, back, stomach, or combination?",
+    grounded: true,
+    chips: buildAssessmentStartChips(),
+  };
+}
+
+function buildProductSpecificReply({
+  query = "",
+  intent = "",
+  intentGroup = "",
+  facts = [],
+  productContext = null,
+} = {}) {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  const entries = Array.isArray(productContext?.entries) ? productContext.entries.filter(Boolean) : [];
+  const sizeLabel = cleanAnswerText(productContext?.sizeLabel || "");
+  const currentHandle = String(productContext?.currentProductHandle || "").trim().toLowerCase();
+  const primary =
+    entries.find((entry) => String(entry?.handle || "").trim().toLowerCase() === currentHandle) ||
+    entries[0] ||
+    null;
+
+  if (!primary) {
+    return { reply: "", grounded: false, reason: "no_product_context" };
+  }
+
+  const primaryTitle = cleanAnswerText(primary.title || primary.label || "");
+  const primaryProfile = inferProductProfile(primary.handle);
+  const primarySizes = extractAvailableSizes(primary);
+  const sourceType = productContext?.answerSourceType || "shopify_product";
+  const sourceKey =
+    primary.handle ||
+    entries
+      .map((entry) => cleanAnswerText(entry?.handle || ""))
+      .filter(Boolean)
+      .join(",");
+
+  const factTexts = dedupeFacts(
+    facts.map((fact, index) => ({
+      text: cleanAnswerText(fact?.text || ""),
+      source_type: fact?.source_type || sourceType,
+      source_key: fact?.source_key || sourceKey,
+      order: index,
+    }))
+  ).map((fact) => fact.text);
+
+  if (queryLooksLikeSpecificSizeAvailability(normalizedQuery) && sizeLabel) {
+    const matchedSize = primarySizes.find(
+      (label) => normalizeAskSnoozerText(label) === normalizeAskSnoozerText(sizeLabel)
+    );
+    return {
+      reply: matchedSize
+        ? `Yes - ${primaryTitle} has a ${matchedSize} option in the current Shopify variant data.`
+        : `I do not see a verified ${sizeLabel} variant for ${primaryTitle} right now.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: [
+        matchedSize
+          ? `${primaryTitle} includes a ${matchedSize} size in the verified variant data.`
+          : `${primaryTitle} does not show a verified ${sizeLabel} size in the current variant data.`,
+      ],
+      strategy: "verified_size_availability",
+    };
+  }
+
+  if (queryLooksLikeSizeListQuestion(normalizedQuery) && primarySizes.length) {
+    return {
+      reply: `${primaryTitle} currently comes in ${formatSizeList(primarySizes)}.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: [`${primaryTitle} sizes: ${primarySizes.join(", ")}`],
+      strategy: "verified_size_list",
+    };
+  }
+
+  if (queryLooksLikePriceQuestion(normalizedQuery)) {
+    const pricedEntries = entries.filter((entry) => Number.isFinite(Number(entry?.variantPrice)));
+    const bestPriceEntry = pricedEntries[0] || primary;
+    const price = formatCurrencyValue(bestPriceEntry?.variantPrice, bestPriceEntry?.currencyCode || "USD");
+    const title = cleanAnswerText(bestPriceEntry?.title || "");
+    const variantTitle = cleanAnswerText(bestPriceEntry?.matchedSizeLabel || sizeLabel || bestPriceEntry?.variantTitle || "");
+    const multipleMatches = pricedEntries.length > 1 && !currentHandle;
+    const explicitSize = Boolean(sizeLabel);
+
+    if (price) {
+      if (queryLooksLikeCheapestQuestion(normalizedQuery)) {
+        return {
+          reply: explicitSize
+            ? `${title} is the lowest verified ${variantTitle ? `${variantTitle} ` : ""}match I found at ${price}. Compare it first if price is your main filter.`
+            : `${title} is the most affordable verified match I found, starting at ${price}. Compare it first if price is your main filter.`,
+          grounded: true,
+          sourceType,
+          sourceKey: bestPriceEntry.handle || sourceKey,
+          facts: [`${title} ${variantTitle || bestPriceEntry?.variantTitle || ""} current verified price: ${price}`.trim()],
+          strategy: "verified_price",
+        };
+      }
+
+      if (multipleMatches) {
+        return {
+          reply: explicitSize
+            ? `The lowest verified ${variantTitle ? `${variantTitle} ` : ""}match I found is ${title} at ${price}. I am also showing the other close matches so you can compare.`
+            : `The lowest verified starting price I found is ${title} at ${price}. I am also showing the other close matches so you can compare.`,
+          grounded: true,
+          sourceType,
+          sourceKey: bestPriceEntry.handle || sourceKey,
+          facts: [`${title} ${variantTitle || bestPriceEntry?.variantTitle || ""} current verified price: ${price}`.trim()],
+          strategy: "verified_price",
+        };
+      }
+
+      return {
+        reply: `The current ${variantTitle ? `${variantTitle} ` : ""}price I found for ${title} is ${price}.`,
+        grounded: true,
+        sourceType,
+        sourceKey: bestPriceEntry.handle || sourceKey,
+        facts: [`${title} ${variantTitle || bestPriceEntry?.variantTitle || ""} current verified price: ${price}`.trim()],
+        strategy: "verified_price",
+      };
+    }
+
+    return {
+      reply:
+        "I found matching products, but I do not have a verified live price for that exact size in this response.",
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: factTexts.length ? factTexts : [`Matching products found for ${cleanAnswerText(query)}.`],
+      strategy: "verified_price",
+    };
+  }
+
+  if (intentGroup === "product_compare" && entries.length >= 2) {
+    const [first, second] = entries;
+    const firstProfile = inferProductProfile(first.handle);
+    const secondProfile = inferProductProfile(second.handle);
+    let comparisonReply = `${cleanAnswerText(first.title || "")} and ${cleanAnswerText(second.title || "")} are good products to compare.`;
+
+    if (firstProfile.isFoam && secondProfile.isHybrid) {
+      comparisonReply = `${cleanAnswerText(first.title || "")} is the simpler contouring option. ${cleanAnswerText(second.title || "")} is the stronger starting point if you want more lift, airflow, and support.`;
+    } else if (firstProfile.isHybrid && secondProfile.isFoam) {
+      comparisonReply = `${cleanAnswerText(first.title || "")} is the stronger starting point if you want more lift, airflow, and support. ${cleanAnswerText(second.title || "")} is the simpler contouring option.`;
+    } else if (firstProfile.isDualComfort && secondProfile.isHybrid) {
+      comparisonReply = `${cleanAnswerText(first.title || "")} gives you more flexibility across both sides. ${cleanAnswerText(second.title || "")} is the cleaner pick if you want a softer hybrid with airflow and support.`;
+    } else if (firstProfile.isHybrid && secondProfile.isDualComfort) {
+      comparisonReply = `${cleanAnswerText(first.title || "")} is the stronger airflow-and-support starting point. ${cleanAnswerText(second.title || "")} is better when two sleepers want more flexibility side to side.`;
+    }
+
+    return {
+      reply: comparisonReply,
+      grounded: true,
+      sourceType,
+      sourceKey: entries.map((entry) => entry.handle).filter(Boolean).join(","),
+      facts: factTexts.length ? factTexts.slice(0, 3) : entries.map((entry) => cleanAnswerText(entry.reason || entry.title || "")).filter(Boolean).slice(0, 3),
+      strategy: "verified_products",
+    };
+  }
+
+  if (queryLooksLikeAdjustableBaseQuestion(normalizedQuery)) {
+    const adjustableFact = findFact(facts, ["pairs well with an adjustable base", "adjustable base", "adjustable bases"]);
+    const splitFact = findFact(facts, ["two twin xl bases", "split king", "independent control"]);
+    return {
+      reply: joinUniqueSentences([
+        adjustableFact?.text
+          ? `Yes - ${primaryTitle} is described as pairing well with an adjustable base.`
+          : `${primaryTitle} can be a reasonable adjustable-base starting point, but compare the size and base setup before you decide.`,
+        splitFact?.text
+          ? "If you want split movement, make sure the mattress size and base setup match."
+          : "",
+      ]),
+      grounded: true,
+      sourceType: adjustableFact?.source_type || sourceType,
+      sourceKey: adjustableFact?.source_key || sourceKey,
+      facts: [
+        adjustableFact?.text || `${primaryTitle} has adjustable-base pairing guidance.`,
+        splitFact?.text || "",
+      ].filter(Boolean),
+      strategy: "source_summary",
+    };
+  }
+
+  if (queryLooksLikeCouplesQuestion(normalizedQuery)) {
+    return {
+      reply: primaryProfile.isDualComfort
+        ? `${primaryTitle} is one of the better couple-friendly options because it can support different feels on each side without splitting the mattress.`
+        : `${primaryTitle} is a stronger starting point for couples if motion isolation or shared comfort is the priority.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: factTexts.length ? factTexts.slice(0, 2) : [`${primaryTitle} is positioned for couples or motion isolation.`],
+      strategy: "source_summary",
+    };
+  }
+
+  if (queryLooksLikeHotSleeperQuestion(normalizedQuery) || intent === "sleep_hot") {
+    return {
+      reply: primaryProfile.isHybrid || primaryProfile.isDualComfort
+        ? `${primaryTitle} is a stronger starting point if you want airflow with support. If cooling is the priority, compare it against the other breathable options before deciding.`
+        : `${primaryTitle} can still be worth comparing, but it is better to weigh it against the more breathable options if cooling is your priority.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: factTexts.length ? factTexts.slice(0, 2) : [`${primaryTitle} includes airflow or cooling guidance.`],
+      strategy: "source_summary",
+    };
+  }
+
+  if (queryLooksLikeBackSupportQuestion(normalizedQuery) || intent === "back_pain" || intent === "firm_support") {
+    return {
+      reply: primaryProfile.isHybrid
+        ? `${primaryTitle} is a stronger starting point if you want support with pressure relief underneath. Compare it if you want support without an overly hard feel.`
+        : `${primaryTitle} can be a solid support-and-pressure-relief starting point, especially if you do not want the bed to feel overly firm.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: factTexts.length ? factTexts.slice(0, 2) : [`${primaryTitle} includes support and pressure-relief guidance.`],
+      strategy: "source_summary",
+    };
+  }
+
+  if (queryLooksLikeFirmnessQuestion(normalizedQuery)) {
+    let firmnessReply = `${primaryTitle} is worth comparing if firmness is your main filter.`;
+    if (primaryProfile.isDualComfort) {
+      firmnessReply = `${primaryTitle} gives you multiple comfort options, so you can compare Soft, Medium Soft, Medium Firm, and Firm without leaving the product line.`;
+    } else if (primaryProfile.isHybrid) {
+      firmnessReply = `${primaryTitle} leans softer than a firm support-first mattress, so compare it if you want cushioning with structure underneath.`;
+    } else if (primaryProfile.isBudgetFoam) {
+      firmnessReply = `${primaryTitle} is the firmer all-foam starting point in this lineup if you want a steadier feel.`;
+    } else if (primaryProfile.isFoam) {
+      firmnessReply = `${primaryTitle} leans more cushioned than firm, so compare it if you want extra pressure relief and a softer feel.`;
+    }
+
+    return {
+      reply: firmnessReply,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: factTexts.length ? factTexts.slice(0, 2) : [`${primaryTitle} includes firmness guidance.`],
+      strategy: "source_summary",
+    };
+  }
+
+  if (intent === "product_question" || currentHandle) {
+    return {
+      reply: `${primaryTitle} is a good product to compare from the current page context. Use the size and feature details here to confirm fit before you decide.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: factTexts.length ? factTexts.slice(0, 2) : [`${primaryTitle} is the active product context for this answer.`],
+      strategy: "source_summary",
+    };
+  }
+
+  return { reply: "", grounded: false, reason: "no_product_specific_reply" };
+}
+
 function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
   const normalizedQuery = normalizeAskSnoozerText(query);
   const topFact = facts[0]?.text || "";
@@ -716,6 +1119,11 @@ function buildProductReply({ intent = "", products = [] } = {}) {
         reply: "Start with support first and pressure relief second. These options are stronger starting points when you want the bed to hold you up without feeling harsh.",
         grounded: true,
       };
+    case "product_question":
+      return {
+        reply: "Use the current product details as the anchor, then compare size, support, and setup before you decide.",
+        grounded: true,
+      };
     case "couple_conflict":
       return {
         reply: "If you and your partner like different feels, start with options built to balance both sides. Dual-comfort designs should be prioritized here.",
@@ -840,6 +1248,7 @@ function buildAskSnoozerAnswer({
   context = null,
   sources = [],
   products = [],
+  productContext = null,
   actions = [],
   pages = [],
   collections = [],
@@ -879,13 +1288,14 @@ function buildAskSnoozerAnswer({
       extracted_facts: selected.facts.map((fact) => fact.text),
       needs_handoff: !policyReply.grounded,
       reason: policyReply.reason || "",
+      chips_override: null,
     };
   }
 
   if (
     ["product_fit", "product_compare", "size_price", "couple_conflict", "base_elevation"].includes(intentGroup) &&
     selected.facts.length &&
-    (queryLooksLikeSplitEducation(query) || intent === "size_help")
+    queryLooksLikeSplitEducation(query)
   ) {
     const guidedReply = buildSourceGuidedReply({
       query,
@@ -906,6 +1316,7 @@ function buildAskSnoozerAnswer({
         extracted_facts: selected.facts.map((fact) => fact.text),
         needs_handoff: false,
         reason: "",
+        chips_override: null,
       };
     }
   }
@@ -915,6 +1326,37 @@ function buildAskSnoozerAnswer({
     Array.isArray(products) &&
     products.length
   ) {
+    const productSpecificReply = buildProductSpecificReply({
+      query,
+      intent,
+      intentGroup,
+      facts: selected.facts,
+      productContext,
+    });
+
+    if (productSpecificReply.grounded) {
+      return {
+        reply: clampReply(productSpecificReply.reply),
+        answer_grounded: true,
+        answer_source_type: productSpecificReply.sourceType || selected.primarySourceType || "shopify_product",
+        answer_source_key: productSpecificReply.sourceKey || selected.primarySourceKey || "",
+        answer_facts_count: Array.isArray(productSpecificReply.facts) ? productSpecificReply.facts.length : selected.facts.length,
+        matched_preview: previewText(
+          Array.isArray(productSpecificReply.facts) && productSpecificReply.facts.length
+            ? productSpecificReply.facts.join(" ")
+            : selected.matchedPreview || ""
+        ),
+        answer_strategy: productSpecificReply.strategy || "verified_products",
+        extracted_facts:
+          Array.isArray(productSpecificReply.facts) && productSpecificReply.facts.length
+            ? productSpecificReply.facts
+            : selected.facts.map((fact) => fact.text),
+        needs_handoff: false,
+        reason: "",
+        chips_override: null,
+      };
+    }
+
     const productReply = buildProductReply({ intent, products });
     const productFacts = selected.facts.length
       ? selected.facts
@@ -941,6 +1383,7 @@ function buildAskSnoozerAnswer({
       extracted_facts: productFacts.map((fact) => fact.text),
       needs_handoff: false,
       reason: "",
+      chips_override: null,
     };
   }
 
@@ -948,8 +1391,11 @@ function buildAskSnoozerAnswer({
     const handoffFacts = dedupeFacts(
       selected.facts.concat(buildHandoffFacts({ actions, pages, collections }))
     );
+    const assessmentStartReply = intent === "assessment_start" ? buildAssessmentStartReply() : null;
     const guidedReply =
-      intentGroup === "assessment_handoff"
+      assessmentStartReply?.grounded
+        ? assessmentStartReply
+        : intentGroup === "assessment_handoff"
         ? buildSourceGuidedReply({
             query,
             intent,
@@ -976,6 +1422,7 @@ function buildAskSnoozerAnswer({
       extracted_facts: handoffFacts.map((fact) => fact.text),
       needs_handoff: true,
       reason: resolvedReply.reason || "",
+      chips_override: Array.isArray(resolvedReply.chips) ? resolvedReply.chips : null,
     };
   }
 
@@ -991,6 +1438,7 @@ function buildAskSnoozerAnswer({
     extracted_facts: [],
     needs_handoff: false,
     reason: fallback.reason || "no_source",
+    chips_override: null,
   };
 }
 
