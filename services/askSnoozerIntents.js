@@ -62,6 +62,20 @@ const ASK_SNOOZER_INTENT_TAXONOMY = Object.freeze({
     fallback_behavior: "guide_then_assessment",
     default_action_bias: ["assessment", "booking"],
   }),
+  brand_education: Object.freeze({
+    strategy: "guide_brand",
+    route_family: "actions",
+    allowed_product_families: [],
+    fallback_behavior: "guide_then_assessment",
+    default_action_bias: ["assessment", "booking"],
+  }),
+  accessory_help: Object.freeze({
+    strategy: "recommend_products",
+    route_family: "products",
+    allowed_product_families: ["pillows", "bedding", "accessories"],
+    fallback_behavior: "guide_then_assessment",
+    default_action_bias: ["assessment"],
+  }),
   fallback_unclear: Object.freeze({
     strategy: "fallback_guide",
     route_family: "fallback",
@@ -82,7 +96,10 @@ const LEGACY_INTENT_GROUP_MAP = Object.freeze({
   assessment_help: "assessment_handoff",
   assessment_start: "assessment_handoff",
   booking_help: "booking_handoff",
+  brand_education: "brand_education",
+  accessory_help: "accessory_help",
   budget_value: "size_price",
+  bundle_price: "size_price",
   size_help: "size_price",
   queen_size: "size_price",
   king_size: "size_price",
@@ -167,6 +184,23 @@ const ASSESSMENT_TERMS = Object.freeze([
   "recommend for me",
 ]);
 
+const BRAND_EDUCATION_TERMS = Object.freeze([
+  "what is a snoozepod",
+  "what is snoozepod",
+  "what is a sleep pod",
+  "what is a sleep setup",
+  "what is snoozer",
+  "who is snoozer",
+  "what is ask snoozer",
+  "what is a snooze session",
+  "what is the snooze session",
+  "what is a snooze assessment",
+  "what is the snooze assessment",
+  "what is a rest test",
+  "what is rest test",
+  "why build a pod",
+]);
+
 const ASSESSMENT_START_TERMS = Object.freeze([
   "can you ask me questions",
   "ask me questions",
@@ -205,6 +239,9 @@ const BOOKING_TERMS = Object.freeze([
 
 const POLICY_TERMS = Object.freeze([
   "finance",
+  "apr",
+  "0% apr",
+  "interest",
   "refund",
   "refunds",
   "shipping",
@@ -232,10 +269,13 @@ const POLICY_TERMS = Object.freeze([
   "monthly payments",
   "payments",
   "pay over time",
+  "buy now and pay later",
   "credit",
   "prequalify",
   "payment plan",
   "payment plans",
+  "what would payments be",
+  "pay monthly",
   "deliver",
   "delivery",
   "how fast can i get my mattress",
@@ -248,6 +288,11 @@ const POLICY_TERMS = Object.freeze([
   "warranty claim",
   "warranty claims",
   "file a warranty claim",
+  "synchrony",
+  "shop pay",
+  "affirm",
+  "down payment",
+  "credit check",
   "setup",
   "policy",
 ]);
@@ -315,20 +360,25 @@ const POLICY_FINANCING_TERMS = Object.freeze([
   "finance",
   "financing",
   "no money down",
+  "down payment",
   "payment",
   "payments",
+  "what would payments be",
   "monthly payment",
   "monthly payments",
   "payment plan",
   "payment plans",
   "pay over time",
+  "buy now and pay later",
   "credit",
+  "credit check",
   "prequalify",
   "shop pay",
   "affirm",
   "synchrony",
   "0% apr",
   "apr",
+  "interest",
 ]);
 
 const POLICY_PRICING_TERMS = Object.freeze([
@@ -475,6 +525,33 @@ const SIZE_HELP_TERMS = Object.freeze([
   "do couples need split mattress",
 ]);
 
+const ACCESSORY_TERMS = Object.freeze([
+  "pillow",
+  "pillows",
+  "mattress protector",
+  "protector",
+  "protectors",
+  "bedding",
+  "sheet set",
+  "sheets",
+  "accessories",
+  "accessory",
+  "what accessories do i need",
+  "what else should i add",
+  "what else should i add to my snoozepod",
+]);
+
+const BUNDLE_PRICE_TERMS = Object.freeze([
+  "adjustable base",
+  "motion base",
+  "mattress and base",
+  "with an adjustable base",
+  "with a base",
+  "add a base",
+  "add a queen adjustable base",
+  "base price",
+]);
+
 function normalizeAskSnoozerText(value) {
   return String(value || "")
     .trim()
@@ -532,6 +609,21 @@ function looksLikeAssessmentStartQuery(text) {
 
 function looksLikeAssessmentPositionQuery(text) {
   return includesAny(text, ASSESSMENT_POSITION_TERMS);
+}
+
+function looksLikeBrandEducationQuery(text) {
+  return includesAny(text, BRAND_EDUCATION_TERMS);
+}
+
+function looksLikeAccessoryQuery(text) {
+  return includesAny(text, ACCESSORY_TERMS);
+}
+
+function looksLikeBundlePriceQuery(text) {
+  return (
+    includesAny(text, BUNDLE_PRICE_TERMS) &&
+    (includesAny(text, BUDGET_TERMS) || includesAny(text, POLICY_PRICING_TERMS))
+  );
 }
 
 function looksLikeProductQuestion(text, pageType) {
@@ -741,6 +833,19 @@ function classifyAskSnoozerIntent(input, context = {}) {
     });
   }
 
+  if (looksLikeBrandEducationQuery(text)) {
+    return buildClassification({
+      intent: "brand_education",
+      intentGroup: "brand_education",
+      confidenceLabel: "high",
+      signals: ["brand_education"],
+      actionBias: ["assessment", "booking"],
+      notes,
+      sizeLabel,
+      budgetSignal,
+    });
+  }
+
   if (includesAny(text, ASSESSMENT_TERMS)) {
     return buildClassification({
       intent: "assessment_help",
@@ -764,6 +869,20 @@ function classifyAskSnoozerIntent(input, context = {}) {
       notes,
       sizeLabel,
       budgetSignal,
+    });
+  }
+
+  if (looksLikeBundlePriceQuery(text)) {
+    return buildClassification({
+      intent: "bundle_price",
+      intentGroup: "size_price",
+      confidenceLabel: "high",
+      signals: ["bundle_price", sizeLabel ? "size" : ""].filter(Boolean),
+      productBias: ["adjustable_base", "verified_variants", sizeLabel ? normalizeAskSnoozerText(sizeLabel) : ""].filter(Boolean),
+      actionBias: ["assessment"],
+      notes,
+      sizeLabel,
+      budgetSignal: true,
     });
   }
 
@@ -922,6 +1041,20 @@ function classifyAskSnoozerIntent(input, context = {}) {
       confidenceLabel: "high",
       signals: ["cooling"],
       productBias: ["cooling", "hybrid", "breathable"],
+      actionBias: ["assessment"],
+      notes,
+      sizeLabel,
+      budgetSignal,
+    });
+  }
+
+  if (looksLikeAccessoryQuery(text)) {
+    return buildClassification({
+      intent: "accessory_help",
+      intentGroup: "accessory_help",
+      confidenceLabel: "high",
+      signals: ["accessories"],
+      productBias: ["pillows", "bedding", "accessories"],
       actionBias: ["assessment"],
       notes,
       sizeLabel,

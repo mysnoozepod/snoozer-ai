@@ -466,6 +466,67 @@ function queryLooksLikeFirmnessQuestion(query = "") {
   return includesTerm(normalizedQuery, "firm") || includesTerm(normalizedQuery, "soft");
 }
 
+function queryLooksLikeSideSleeperQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return includesTerm(normalizedQuery, "side sleeper") || includesTerm(normalizedQuery, "side sleepers");
+}
+
+function queryLooksLikeDifferenceQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return includesTerm(normalizedQuery, "what makes") || includesTerm(normalizedQuery, "different");
+}
+
+function queryLooksLikeBundlePriceQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    queryLooksLikePriceQuestion(normalizedQuery) &&
+    (
+      includesTerm(normalizedQuery, "adjustable base") ||
+      includesTerm(normalizedQuery, "motion base") ||
+      includesTerm(normalizedQuery, "mattress and base") ||
+      includesTerm(normalizedQuery, "with a base") ||
+      includesTerm(normalizedQuery, "add a base") ||
+      includesTerm(normalizedQuery, "add a queen adjustable base")
+    )
+  );
+}
+
+function queryLooksLikeFinancingAprQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "0% apr") ||
+    includesTerm(normalizedQuery, "apr") ||
+    includesTerm(normalizedQuery, "interest")
+  );
+}
+
+function queryLooksLikeFinancingProviderQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "synchrony") ||
+    includesTerm(normalizedQuery, "shop pay") ||
+    includesTerm(normalizedQuery, "affirm")
+  );
+}
+
+function queryLooksLikeFinancingPaymentQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "monthly payment") ||
+    includesTerm(normalizedQuery, "monthly payments") ||
+    includesTerm(normalizedQuery, "payment plan") ||
+    includesTerm(normalizedQuery, "payment plans") ||
+    includesTerm(normalizedQuery, "what would payments be") ||
+    includesTerm(normalizedQuery, "pay over time") ||
+    includesTerm(normalizedQuery, "buy now and pay later")
+  );
+}
+
+function queryLooksLikeFinancingCreditQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return includesTerm(normalizedQuery, "credit") || includesTerm(normalizedQuery, "prequalify");
+}
+
 function formatCurrencyValue(amount, currencyCode = "USD") {
   const numeric = Number(amount);
   if (!Number.isFinite(numeric)) return "";
@@ -488,6 +549,23 @@ function inferProductProfile(handle = "") {
     isFoam: normalized.includes("foam") && !normalized.includes("hybrid"),
     isBudgetFoam: normalized.startsWith("10-") && normalized.includes("foam"),
     isAdjustableBase: normalized.includes("adjustable") && normalized.includes("base"),
+    isPillow: normalized.includes("pillow"),
+    isProtector: normalized.includes("protector") || normalized.includes("encasement"),
+    isBedding:
+      normalized.includes("sheet") ||
+      normalized.includes("bedding") ||
+      normalized.includes("comforter") ||
+      normalized.includes("topper") ||
+      normalized.includes("pad"),
+    isAccessory:
+      normalized.includes("pillow") ||
+      normalized.includes("protector") ||
+      normalized.includes("encasement") ||
+      normalized.includes("sheet") ||
+      normalized.includes("bedding") ||
+      normalized.includes("comforter") ||
+      normalized.includes("topper") ||
+      normalized.includes("pad"),
   };
 }
 
@@ -525,6 +603,9 @@ function buildAssessmentStartChips() {
     { label: "Back sleeper", value: "Back sleeper" },
     { label: "Stomach sleeper", value: "Stomach sleeper" },
     { label: "Combination sleeper", value: "Combination sleeper" },
+    { label: "I sleep hot", value: "I sleep hot" },
+    { label: "Need firm support", value: "I need firm support" },
+    { label: "Partner moves", value: "Partner moves" },
   ];
 }
 
@@ -533,6 +614,195 @@ function buildAssessmentStartReply() {
     reply: "Yes. Start with one: how do you usually sleep - side, back, stomach, or combination?",
     grounded: true,
     chips: buildAssessmentStartChips(),
+  };
+}
+
+function buildBrandEducationReply({ query = "", facts = [] } = {}) {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+
+  if (includesTerm(normalizedQuery, "snoozepod") || includesTerm(normalizedQuery, "sleep pod")) {
+    return {
+      reply:
+        "A SnoozePod is the full sleep setup around your mattress: the mattress, base, pillows, and accessories chosen around how you sleep.",
+      grounded: true,
+    };
+  }
+
+  if (includesTerm(normalizedQuery, "snooze session")) {
+    return {
+      reply:
+        "A Snooze Session is the in-person feel test so you can try beds before deciding. It is the best next step when you want to compare support, motion, or setup in person.",
+      grounded: true,
+    };
+  }
+
+  if (includesTerm(normalizedQuery, "snooze assessment")) {
+    return {
+      reply:
+        "The Snooze Assessment is the short guided flow that narrows size, motion, and mattress direction. It is the fastest way to start when you do not want to guess.",
+      grounded: true,
+    };
+  }
+
+  if (includesTerm(normalizedQuery, "rest test")) {
+    return {
+      reply:
+        "A Rest Test is the guided time-on-bed comparison so you can notice support, pressure relief, and movement before you choose.",
+      grounded: true,
+    };
+  }
+
+  if (includesTerm(normalizedQuery, "snoozer")) {
+    return {
+      reply:
+        "Snoozer is the shopping guide inside the HUD. He helps you compare mattresses, pricing, policies, and next steps without guessing.",
+      grounded: true,
+    };
+  }
+
+  return {
+    reply: joinUniqueSentences(facts.map((fact) => fact.text)),
+    grounded: Boolean(facts.length),
+  };
+}
+
+function buildBundlePricingReply({ query = "", productContext = null } = {}) {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  const entries = Array.isArray(productContext?.entries) ? productContext.entries.filter(Boolean) : [];
+  if (!entries.length || !(productContext?.bundleRequested || queryLooksLikeBundlePriceQuestion(normalizedQuery))) {
+    return { reply: "", grounded: false, reason: "no_bundle_context" };
+  }
+
+  const sizeLabel = cleanAnswerText(productContext?.sizeLabel || "");
+  const mattressEntry =
+    entries.find((entry) => !inferProductProfile(entry?.handle).isAdjustableBase) || null;
+  const baseEntry =
+    entries.find((entry) => inferProductProfile(entry?.handle).isAdjustableBase) || null;
+  const mattressPrice = formatCurrencyValue(mattressEntry?.variantPrice, mattressEntry?.currencyCode || "USD");
+  const basePrice = formatCurrencyValue(baseEntry?.variantPrice, baseEntry?.currencyCode || "USD");
+  const sourceType = productContext?.answerSourceType || "shopify_product";
+  const sourceKey = entries.map((entry) => String(entry?.handle || "").trim()).filter(Boolean).join(",");
+
+  if (!sizeLabel) {
+    return {
+      reply: "I can price the mattress and adjustable base separately, but I still need the size to give you the right subtotal.",
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: entries
+        .map((entry) => `${entry.title} is part of the current bundle comparison.`)
+        .slice(0, 2),
+      strategy: "verified_bundle_price",
+    };
+  }
+
+  if (mattressPrice && basePrice) {
+    const subtotal = formatCurrencyValue(
+      Number(mattressEntry.variantPrice) + Number(baseEntry.variantPrice),
+      mattressEntry?.currencyCode || baseEntry?.currencyCode || "USD"
+    );
+    const sizePrefix = sizeLabel ? `${sizeLabel} ` : "";
+
+    return {
+      reply: `${mattressEntry.title} and ${baseEntry.title} total ${subtotal} for a verified ${sizePrefix}pre-checkout subtotal before taxes, delivery, or financing.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: [
+        `${mattressEntry.title} ${sizeLabel || mattressEntry?.variantTitle || ""} current verified price: ${mattressPrice}`.trim(),
+        `${baseEntry.title} ${sizeLabel || baseEntry?.variantTitle || ""} current verified price: ${basePrice}`.trim(),
+        `Estimated pre-checkout subtotal: ${subtotal}`.trim(),
+      ],
+      strategy: "verified_bundle_price",
+    };
+  }
+
+  if (basePrice && !mattressEntry) {
+    return {
+      reply: `${baseEntry.title} is ${basePrice} in the current verified ${sizeLabel || "matching"} size data. I still need the mattress model to give you a combined subtotal.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: [`${baseEntry.title} ${sizeLabel || baseEntry?.variantTitle || ""} current verified price: ${basePrice}`.trim()],
+      strategy: "verified_bundle_price",
+    };
+  }
+
+  if (basePrice && mattressEntry && !mattressPrice) {
+    return {
+      reply: `${baseEntry.title} is ${basePrice} in the current verified ${sizeLabel || "matching"} size data. I still need a verified mattress price before I can total the bundle.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: [`${baseEntry.title} ${sizeLabel || baseEntry?.variantTitle || ""} current verified price: ${basePrice}`.trim()],
+      strategy: "verified_bundle_price",
+    };
+  }
+
+  if (mattressPrice && baseEntry && !basePrice) {
+    return {
+      reply: `${mattressEntry.title} is ${mattressPrice} in the current verified ${sizeLabel || "matching"} size data. I do not have a verified live base price for the same setup yet.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: [`${mattressEntry.title} ${sizeLabel || mattressEntry?.variantTitle || ""} current verified price: ${mattressPrice}`.trim()],
+      strategy: "verified_bundle_price",
+    };
+  }
+
+  return {
+    reply: "I found the matching setup path, but I do not have verified live prices for every part of that bundle in this response yet.",
+    grounded: false,
+    sourceType,
+    sourceKey,
+    facts: [],
+    strategy: "safe_fallback",
+    reason: "missing_bundle_prices",
+  };
+}
+
+function buildAccessoryReply({ query = "", products = [] } = {}) {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  if (!Array.isArray(products) || !products.length) {
+    const isPillowQuestion = includesTerm(normalizedQuery, "pillow");
+    return {
+      reply: isPillowQuestion
+        ? "I do not see verified pillow options in the current product set yet. Start with the mattress and base first, then add pillows once they are listed."
+        : "I do not see verified accessory options in the current product set yet. Start with the mattress and base first, then add the extras once they are listed.",
+      grounded: false,
+      reason: "no_verified_accessories",
+    };
+  }
+
+  const handles = products.map((product) => String(product?.handle || "").trim().toLowerCase());
+  const hasPillows = handles.some((handle) => inferProductProfile(handle).isPillow);
+  const hasBedding = handles.some((handle) => inferProductProfile(handle).isBedding || inferProductProfile(handle).isProtector);
+
+  if (includesTerm(normalizedQuery, "pillow") || hasPillows) {
+    return {
+      reply: "I found verified pillow options in the current product set. Start with these and compare cooling, loft, and support feel.",
+      grounded: true,
+      strategy: "verified_products",
+    };
+  }
+
+  if (
+    includesTerm(normalizedQuery, "protector") ||
+    includesTerm(normalizedQuery, "bedding") ||
+    includesTerm(normalizedQuery, "sheet") ||
+    hasBedding
+  ) {
+    return {
+      reply: "I found verified bedding and protector options in the current product set. Start with these and match them to how cool, soft, or low-maintenance you want the setup to feel.",
+      grounded: true,
+      strategy: "verified_products",
+    };
+  }
+
+  return {
+    reply: "If you are building out the full setup, start with the mattress and base first, then add the accessories that match how you sleep.",
+    grounded: true,
+    strategy: "verified_products",
   };
 }
 
@@ -575,6 +845,15 @@ function buildProductSpecificReply({
       order: index,
     }))
   ).map((fact) => fact.text);
+
+  const bundleReply = buildBundlePricingReply({
+    query,
+    productContext,
+  });
+
+  if (bundleReply.grounded) {
+    return bundleReply;
+  }
 
   if (queryLooksLikeSpecificSizeAvailability(normalizedQuery) && sizeLabel) {
     const matchedSize = primarySizes.find(
@@ -739,6 +1018,20 @@ function buildProductSpecificReply({
     };
   }
 
+  if (queryLooksLikeSideSleeperQuestion(normalizedQuery)) {
+    return {
+      reply:
+        primaryProfile.isHybrid || primaryProfile.isDualComfort
+          ? `${primaryTitle} is a better starting point for side sleepers if you want pressure relief with support underneath. Compare it if shoulder and hip pressure matter most.`
+          : `${primaryTitle} can work well for side sleepers if you want more contouring and pressure relief around the shoulders and hips.`,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: factTexts.length ? factTexts.slice(0, 2) : [`${primaryTitle} includes pressure-relief guidance for side sleepers.`],
+      strategy: "source_summary",
+    };
+  }
+
   if (queryLooksLikeBackSupportQuestion(normalizedQuery) || intent === "back_pain" || intent === "firm_support") {
     return {
       reply: primaryProfile.isHybrid
@@ -748,6 +1041,26 @@ function buildProductSpecificReply({
       sourceType,
       sourceKey,
       facts: factTexts.length ? factTexts.slice(0, 2) : [`${primaryTitle} includes support and pressure-relief guidance.`],
+      strategy: "source_summary",
+    };
+  }
+
+  if (queryLooksLikeDifferenceQuestion(normalizedQuery)) {
+    let differenceReply = `${primaryTitle} is worth comparing if you want a clearer feel and feature difference before you decide.`;
+    if (primaryProfile.isDualComfort) {
+      differenceReply = `${primaryTitle} stands out because it lets you choose different comfort levels on each side while keeping one mattress. It is a better couple-friendly option when flexibility matters.`;
+    } else if (primaryProfile.isHybrid) {
+      differenceReply = `${primaryTitle} stands out because it adds more lift, airflow, and support than a simpler all-foam setup.`;
+    } else if (primaryProfile.isFoam) {
+      differenceReply = `${primaryTitle} stands out if you want a simpler contouring all-foam feel with stronger motion isolation.`;
+    }
+
+    return {
+      reply: differenceReply,
+      grounded: true,
+      sourceType,
+      sourceKey,
+      facts: factTexts.length ? factTexts.slice(0, 2) : [`${primaryTitle} has distinct feel and feature guidance in the current product facts.`],
       strategy: "source_summary",
     };
   }
@@ -1007,6 +1320,8 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     const monthlyFact = findFact(facts, ["monthly payment", "monthly payments", "spread out your purchase"]);
     const aprFact = findFact(facts, ["0% apr", "qualified customers", "qualified"]);
     const minimumFact = findFact(facts, ["minimum purchase", "$499", "no penalties"]);
+    const providerFact = findFact(facts, ["synchrony", "shop pay", "affirm"]);
+    const earlyPayFact = findFact(facts, ["pay off early", "no penalties"]);
 
     if (includesTerm(normalizedQuery, "no money down")) {
       return {
@@ -1017,6 +1332,58 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
           aprFact?.text && !/no money down/i.test(aprFact.text)
             ? "I do not see an exact no-money-down promise in the current financing guidance."
             : minimumFact?.text || "",
+        ]),
+        grounded: true,
+      };
+    }
+
+    if (queryLooksLikeFinancingAprQuestion(normalizedQuery)) {
+      return {
+        reply: joinUniqueSentences([
+          aprFact?.text
+            ? "0% APR means qualified customers may be able to pay over time without interest during the promotional period."
+            : topFact,
+          providerFact?.text
+            ? "The current financing guidance points to providers like Synchrony and Shop Pay for those plans."
+            : minimumFact?.text || earlyPayFact?.text || "",
+        ]),
+        grounded: true,
+      };
+    }
+
+    if (queryLooksLikeFinancingProviderQuestion(normalizedQuery)) {
+      return {
+        reply: joinUniqueSentences([
+          providerFact?.text
+            ? "The current financing guidance points to providers like Synchrony, Shop Pay, and Affirm where available."
+            : topFact,
+          aprFact?.text
+            ? "It also says some shoppers may qualify for 0% APR plans."
+            : minimumFact?.text || "",
+        ]),
+        grounded: true,
+      };
+    }
+
+    if (queryLooksLikeFinancingPaymentQuestion(normalizedQuery)) {
+      return {
+        reply: joinUniqueSentences([
+          monthlyFact?.text
+            ? "Pay over time and monthly payment options may be available for qualified customers through the financing provider."
+            : topFact,
+          "I do not have a verified payment calculator in this response, so I will not guess your exact payment.",
+        ]),
+        grounded: true,
+      };
+    }
+
+    if (queryLooksLikeFinancingCreditQuestion(normalizedQuery)) {
+      return {
+        reply: joinUniqueSentences([
+          monthlyFact?.text
+            ? "The financing guidance says pay-over-time options are handled by the financing provider."
+            : topFact,
+          "Approval, qualification, and any credit review are handled by that provider, so I will not guess the outcome here.",
         ]),
         grounded: true,
       };
@@ -1145,6 +1512,7 @@ function buildProductReply({ intent = "", products = [] } = {}) {
     case "twin_xl":
     case "full_size":
     case "size_help":
+    case "bundle_price":
       return {
         reply: "Start with verified size matches first, then compare support and how soft or firm you want the bed.",
         grounded: true,
@@ -1152,6 +1520,11 @@ function buildProductReply({ intent = "", products = [] } = {}) {
     case "snoring":
       return {
         reply: "Start with the adjustable-base path rather than guessing at a mattress alone. Elevation can change how the whole setup feels.",
+        grounded: true,
+      };
+    case "accessory_help":
+      return {
+        reply: "Start with the verified accessories that match how you sleep. Compare support, cooling, and setup needs before you add extras.",
         grounded: true,
       };
     default:
@@ -1292,10 +1665,33 @@ function buildAskSnoozerAnswer({
     };
   }
 
+  if (intentGroup === "brand_education") {
+    const brandReply = buildBrandEducationReply({
+      query,
+      facts: selected.facts,
+    });
+
+    return {
+      reply: clampReply(brandReply.reply),
+      answer_grounded: Boolean(brandReply.grounded && selected.facts.length),
+      answer_source_type: selected.primarySourceType || "fallback",
+      answer_source_key: selected.primarySourceKey || "",
+      answer_facts_count: selected.facts.length,
+      matched_preview: selected.matchedPreview || "",
+      answer_strategy: brandReply.grounded ? "source_summary" : "safe_fallback",
+      extracted_facts: selected.facts.map((fact) => fact.text),
+      needs_handoff: false,
+      reason: brandReply.grounded ? "" : "no_relevant_facts",
+      chips_override: null,
+    };
+  }
+
   if (
-    ["product_fit", "product_compare", "size_price", "couple_conflict", "base_elevation"].includes(intentGroup) &&
+    ["product_fit", "product_compare", "size_price", "couple_conflict", "base_elevation", "accessory_help"].includes(intentGroup) &&
     selected.facts.length &&
-    queryLooksLikeSplitEducation(query)
+    queryLooksLikeSplitEducation(query) &&
+    !queryLooksLikePriceQuestion(query) &&
+    !queryLooksLikeSpecificSizeAvailability(query)
   ) {
     const guidedReply = buildSourceGuidedReply({
       query,
@@ -1322,10 +1718,33 @@ function buildAskSnoozerAnswer({
   }
 
   if (
-    ["product_fit", "product_compare", "size_price", "couple_conflict", "base_elevation"].includes(intentGroup) &&
+    ["product_fit", "product_compare", "size_price", "couple_conflict", "base_elevation", "accessory_help"].includes(intentGroup) &&
     Array.isArray(products) &&
     products.length
   ) {
+    if (intentGroup === "accessory_help") {
+      const accessoryReply = buildAccessoryReply({
+        query,
+        products,
+      });
+
+      return {
+        reply: clampReply(accessoryReply.reply),
+        answer_grounded: Boolean(accessoryReply.grounded),
+        answer_source_type: selected.primarySourceType || "shopify_product",
+        answer_source_key:
+          selected.primarySourceKey ||
+          products.map((product) => String(product.handle || "").trim()).filter(Boolean).join(","),
+        answer_facts_count: selected.facts.length,
+        matched_preview: previewText(selected.facts.map((fact) => fact.text).join(" ")),
+        answer_strategy: accessoryReply.strategy || "verified_products",
+        extracted_facts: selected.facts.map((fact) => fact.text),
+        needs_handoff: false,
+        reason: accessoryReply.reason || "",
+        chips_override: null,
+      };
+    }
+
     const productSpecificReply = buildProductSpecificReply({
       query,
       intent,
@@ -1383,6 +1802,27 @@ function buildAskSnoozerAnswer({
       extracted_facts: productFacts.map((fact) => fact.text),
       needs_handoff: false,
       reason: "",
+      chips_override: null,
+    };
+  }
+
+  if (intentGroup === "accessory_help") {
+    const accessoryReply = buildAccessoryReply({
+      query,
+      products,
+    });
+
+    return {
+      reply: clampReply(accessoryReply.reply),
+      answer_grounded: Boolean(accessoryReply.grounded),
+      answer_source_type: selected.primarySourceType || "fallback",
+      answer_source_key: selected.primarySourceKey || "",
+      answer_facts_count: selected.facts.length,
+      matched_preview: selected.matchedPreview || "",
+      answer_strategy: accessoryReply.grounded ? accessoryReply.strategy || "source_summary" : "safe_fallback",
+      extracted_facts: selected.facts.map((fact) => fact.text),
+      needs_handoff: false,
+      reason: accessoryReply.reason || "",
       chips_override: null,
     };
   }

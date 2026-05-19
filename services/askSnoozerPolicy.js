@@ -13,27 +13,29 @@ const PROMPT_LOCAL_ROOT = path.join(__dirname, "..", "s3 files", "snoozerprompts
 const DEFAULT_TIMEOUT_MS = Number(process.env.S3_RETRIEVAL_TIMEOUT_MS || 300);
 
 const localMirrorCache = new Map();
+const remoteKnowledgeMissCache = new Set();
+const remotePromptMissCache = new Set();
 
 const POLICY_KEY_CANDIDATES = Object.freeze({
   returns: Object.freeze({
     policy: ["policies/returns.md", "faq/returns.md"],
-    skill: ["skill/returns.md", "skills/returns.md"],
+    skill: ["skills/returns.md", "skill/returns.md"],
   }),
   delivery: Object.freeze({
     policy: ["policies/delivery-policy.md", "policies/delivery.md"],
-    skill: ["skill/delivery.md", "skills/delivery.md"],
+    skill: ["skills/delivery.md", "skill/delivery.md"],
   }),
   warranty: Object.freeze({
     policy: ["policies/warranty.md", "faq/warranty.md"],
-    skill: ["skill/warranty.md", "skills/warranty.md"],
+    skill: ["skills/warranty.md", "skill/warranty.md"],
   }),
   financing: Object.freeze({
     policy: [],
-    skill: ["skill/financing.md", "skills/financing.md"],
+    skill: ["skills/financing.md", "skill/financing.md"],
   }),
   pricing: Object.freeze({
     policy: [],
-    skill: ["skill/pricing.md", "skills/pricing.md"],
+    skill: ["skills/pricing.md", "skill/pricing.md"],
   }),
   general_policy: Object.freeze({
     policy: ["faq/general.md"],
@@ -45,10 +47,10 @@ const SUPPLEMENTAL_SOURCE_CANDIDATES = Object.freeze({
   assessment_handoff: Object.freeze({
     knowledge: [],
     skill: [
-      "skill/help_me_choose.md",
       "skills/help_me_choose.md",
-      "skill/where_to_start.md",
+      "skill/help_me_choose.md",
       "skills/where_to_start.md",
+      "skill/where_to_start.md",
     ],
   }),
   split_education: Object.freeze({
@@ -84,6 +86,49 @@ const ASSESSMENT_SOURCE_TERMS = Object.freeze([
   "find me a good bed",
   "i need a good mattress",
 ]);
+
+const BRAND_SOURCE_FACTS = Object.freeze({
+  snoozepod: Object.freeze({
+    title: "SnoozePod",
+    key: "brand:snoozepod",
+    facts: [
+      "A SnoozePod is the full sleep setup around your mattress, base, pillows, and accessories.",
+      "It is built around how you sleep so the mattress, base, and add-ons work together instead of being chosen separately.",
+    ],
+  }),
+  snoozer: Object.freeze({
+    title: "Snoozer",
+    key: "brand:snoozer",
+    facts: [
+      "Snoozer is the MySnoozePod shopping guide inside the HUD.",
+      "He helps you compare mattresses, sizing, pricing, policies, and next steps without guessing.",
+    ],
+  }),
+  snooze_session: Object.freeze({
+    title: "Snooze Session",
+    key: "brand:snooze-session",
+    facts: [
+      "A Snooze Session is the in-person feel test so you can try beds before deciding.",
+      "It is the best next step when you want to compare support, motion, or adjustable-base setup in person.",
+    ],
+  }),
+  snooze_assessment: Object.freeze({
+    title: "Snooze Assessment",
+    key: "brand:snooze-assessment",
+    facts: [
+      "The Snooze Assessment is a short guided flow that narrows size, motion, and mattress direction.",
+      "It is the fastest way to start when you know you need help but do not want to guess.",
+    ],
+  }),
+  rest_test: Object.freeze({
+    title: "Rest Test",
+    key: "brand:rest-test",
+    facts: [
+      "A Rest Test is the guided time-on-bed comparison so you can notice support, pressure relief, and movement before you choose.",
+      "It is meant to help you feel the difference instead of trying to decide from specs alone.",
+    ],
+  }),
+});
 
 function tryRequireOpenAi() {
   try {
@@ -276,16 +321,36 @@ function getAskSnoozerProductDocKey(handle = "") {
   return PRODUCT_DOC_KEY_BY_HANDLE[normalized] || "";
 }
 
+function getAskSnoozerProductDocKeys(handle = "") {
+  const normalized = String(handle || "").trim().toLowerCase();
+  if (!normalized) return [];
+
+  return Array.from(
+    new Set(
+      [
+        getAskSnoozerProductDocKey(normalized),
+        `products/pillows/${normalized}.md`,
+        `products/bedding/${normalized}.md`,
+        `products/bases/${normalized}.md`,
+        `products/mattress/${normalized}.md`,
+      ].filter(Boolean)
+    )
+  );
+}
+
 async function loadProductKnowledgeSources(handles = [], options = {}) {
   const out = [];
   const seen = new Set();
 
   for (const handle of Array.isArray(handles) ? handles : []) {
-    const key = getAskSnoozerProductDocKey(handle);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
+    const keys = getAskSnoozerProductDocKeys(handle);
+    if (!keys.length) continue;
 
-    const loaded = await loadKnowledgeCandidates([key], options);
+    const dedupeKey = keys.join("|");
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
+
+    const loaded = await loadKnowledgeCandidates(keys, options);
     if (!loaded?.raw) continue;
 
     out.push(
@@ -353,6 +418,60 @@ function buildSourceRecord({ raw = "", source = "", key = "", sourceKind = "", p
     text: normalizeMarkdown(raw),
     facts: [],
   };
+}
+
+function buildFactSourceRecord({
+  title = "",
+  key = "",
+  sourceType = "local_brand",
+  sourceKind = "knowledge",
+  facts = [],
+} = {}) {
+  const normalizedFacts = Array.isArray(facts)
+    ? facts.map((fact) => cleanShopperText(fact)).filter(Boolean)
+    : [];
+
+  return {
+    source_type: String(sourceType || "").trim() || "fallback",
+    source_key: String(key || "").trim() || "",
+    source_kind: String(sourceKind || "").trim() || "",
+    policy_subtype: "",
+    title: cleanShopperText(title),
+    text: normalizedFacts.join("\n"),
+    facts: normalizedFacts.map((fact, index) => ({
+      text: fact,
+      heading: cleanShopperText(title),
+      kind: "fact",
+      order: index,
+    })),
+  };
+}
+
+function resolveBrandFactRecords(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  const out = [];
+
+  if (/(snoozepod|sleep pod)/.test(normalizedQuery)) {
+    out.push(buildFactSourceRecord(BRAND_SOURCE_FACTS.snoozepod));
+  }
+
+  if (/(ask snoozer|who is snoozer|what is snoozer|\bsnoozer\b)/.test(normalizedQuery)) {
+    out.push(buildFactSourceRecord(BRAND_SOURCE_FACTS.snoozer));
+  }
+
+  if (/snooze session/.test(normalizedQuery)) {
+    out.push(buildFactSourceRecord(BRAND_SOURCE_FACTS.snooze_session));
+  }
+
+  if (/snooze assessment/.test(normalizedQuery)) {
+    out.push(buildFactSourceRecord(BRAND_SOURCE_FACTS.snooze_assessment));
+  }
+
+  if (/rest test/.test(normalizedQuery)) {
+    out.push(buildFactSourceRecord(BRAND_SOURCE_FACTS.rest_test));
+  }
+
+  return out;
 }
 
 function buildFallbackPolicyReply(policySubtype) {
@@ -696,7 +815,11 @@ async function loadKnowledgeCandidates(keys, options = {}) {
   const timeoutMs = Number(options.timeoutMs) || DEFAULT_TIMEOUT_MS;
 
   for (const key of keys) {
-    if (openaiHelpers && typeof openaiHelpers.getObjectText === "function") {
+    if (
+      openaiHelpers &&
+      typeof openaiHelpers.getObjectText === "function" &&
+      !remoteKnowledgeMissCache.has(key)
+    ) {
       const result = await openaiHelpers.getObjectText(KNOWLEDGE_BUCKET, key, { timeoutMs });
       if (result?.value) {
         return {
@@ -705,6 +828,7 @@ async function loadKnowledgeCandidates(keys, options = {}) {
           key,
         };
       }
+      remoteKnowledgeMissCache.add(key);
     }
 
     const local = readLocalMirror(KNOWLEDGE_LOCAL_ROOT, key);
@@ -724,13 +848,16 @@ async function loadPromptCandidates(keys, options = {}) {
   const reqId = String(options.traceId || "").trim() || undefined;
 
   for (const key of keys) {
-    const loaded = await loadPromptFromS3(key, { reqId });
-    if (loaded) {
-      return {
-        raw: normalizeMarkdown(loaded),
-        source: "s3_skill",
-        key,
-      };
+    if (!remotePromptMissCache.has(key)) {
+      const loaded = await loadPromptFromS3(key, { reqId });
+      if (loaded) {
+        return {
+          raw: normalizeMarkdown(loaded),
+          source: "s3_skill",
+          key,
+        };
+      }
+      remotePromptMissCache.add(key);
     }
 
     const local = readLocalMirror(PROMPT_LOCAL_ROOT, key);
@@ -951,7 +1078,15 @@ async function resolveAskSnoozerSupplementalSources({
     }
   }
 
-  if (["product_fit", "product_compare", "size_price", "base_elevation", "couple_conflict"].includes(intentGroup)) {
+  if (intentGroup === "brand_education") {
+    sources.push(...resolveBrandFactRecords(query));
+  }
+
+  if (
+    ["product_fit", "product_compare", "size_price", "base_elevation", "couple_conflict", "accessory_help"].includes(
+      intentGroup
+    )
+  ) {
     const productHandles = Array.from(
       new Set(
         []

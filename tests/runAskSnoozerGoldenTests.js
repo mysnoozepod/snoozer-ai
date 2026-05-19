@@ -146,7 +146,7 @@ function validateGuardrails(payload, failures) {
   const visibleText = summarizeVisibleText(payload);
   const answerStrategy = String(payload?.meta?.answer_strategy || "").trim();
   const priceReplyAllowed =
-    answerStrategy === "verified_price" &&
+    (answerStrategy === "verified_price" || answerStrategy === "verified_bundle_price") &&
     payload?.intent_group === "size_price" &&
     Boolean(payload?.meta?.answer_grounded);
 

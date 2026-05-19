@@ -1751,6 +1751,262 @@
       "must_include": ["how do you usually sleep", "side sleeper"]
     }
   },
+  {
+    "id": "brand_what_is_a_snoozepod",
+    "category": "brand_education",
+    "query": "what is a snoozepod",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "brand_education",
+      "accepted_intents": ["brand_education"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["local_brand", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["mattress", "base", "pillows", "accessories"]
+    }
+  },
+  {
+    "id": "brand_who_is_snoozer",
+    "category": "brand_education",
+    "query": "who is Snoozer",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "brand_education",
+      "accepted_intents": ["brand_education"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["local_brand", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["shopping guide", "mattresses", "pricing", "policies"]
+    }
+  },
+  {
+    "id": "brand_what_is_a_snooze_session",
+    "category": "brand_education",
+    "query": "what is a Snooze Session",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "brand_education",
+      "accepted_intents": ["brand_education"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["local_brand", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["in-person", "try beds", "support"]
+    }
+  },
+  {
+    "id": "financing_apr_how_it_works",
+    "category": "policy_support",
+    "query": "How does 0% APR work?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["0% apr", "qualified customers", "interest"],
+      "must_not_include": ["approved", "guaranteed"]
+    }
+  },
+  {
+    "id": "financing_provider_synchrony",
+    "category": "policy_support",
+    "query": "Do you use Synchrony?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["synchrony", "shop pay", "0% apr"]
+    }
+  },
+  {
+    "id": "financing_provider_shop_pay",
+    "category": "policy_support",
+    "query": "Do you use Shop Pay?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["shop pay", "synchrony", "0% apr"]
+    }
+  },
+  {
+    "id": "financing_chip_buy_now_pay_later_supported",
+    "category": "policy_support",
+    "query": "Can I buy now and pay later?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["pay over time", "qualified customers"]
+    }
+  },
+  {
+    "id": "financing_chip_payment_plans_supported",
+    "category": "policy_support",
+    "query": "Do you offer payment plans?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "financing",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["monthly payment", "0% apr"]
+    }
+  },
+  {
+    "id": "accessory_recommend_pillow",
+    "category": "accessory_help",
+    "query": "is a good pillow you can recommend",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "accessory_help",
+      "accepted_intents": ["accessory_help"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 3 },
+      "must_include": ["pillow", "cooling", "support"]
+    }
+  },
+  {
+    "id": "accessory_sell_pillows",
+    "category": "accessory_help",
+    "query": "do you sell pillows",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "accessory_help",
+      "accepted_intents": ["accessory_help"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 3 },
+      "must_include": ["pillow", "current product set"]
+    }
+  },
+  {
+    "id": "accessory_build_snoozepod",
+    "category": "accessory_help",
+    "query": "what else should I add to my SnoozePod",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "accessory_help",
+      "accepted_intents": ["accessory_help"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 3 },
+      "must_include": ["pillow", "support feel"]
+    }
+  },
+  {
+    "id": "bundle_price_queen_adjustable_base",
+    "category": "size_price",
+    "query": "so how much if i add a queen adjustable base",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["bundle_price"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "expected_handles": ["premium-motion-adjustable-base"] },
+      "must_include": ["queen", "adjustable base", "need the mattress model"]
+    }
+  },
+  {
+    "id": "bundle_price_with_adjustable_base_on_product",
+    "category": "size_price",
+    "query": "how much with an adjustable base",
+    "context": { "path": "/products/14-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["bundle_price"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 2, "max": 2, "expected_handles": ["14-hybrid", "premium-motion-adjustable-base"] },
+      "must_include": ["need the size", "adjustable base"]
+    }
+  },
+  {
+    "id": "bundle_price_mattress_and_base_on_product",
+    "category": "size_price",
+    "query": "mattress and base price",
+    "context": { "path": "/products/12-dual-comfort-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["bundle_price"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 2, "max": 2, "expected_handles": ["12-dual-comfort-hybrid", "premium-motion-adjustable-base"] },
+      "must_include": ["need the size", "adjustable base"]
+    }
+  },
+  {
+    "id": "split_price_dual_comfort_half_split_queen",
+    "category": "size_price",
+    "query": "How much is the 12 Dual Comfort in Half Split Queen?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "expected_handles": ["12-dual-comfort-hybrid"] },
+      "must_include": ["half split queen", "$2,499"]
+    }
+  },
 
   {
     "id": "random_gibberish",

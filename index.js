@@ -23,6 +23,8 @@
 require("dotenv").config();
 
 const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
 const shopify = require("./routes/shopifyRoutes");
 
 let rewardsRoutes;
@@ -963,6 +965,12 @@ const HUD_ASK_COLLECTION_MATTRESSES = Object.freeze({
   href: "/collections/mattresses",
 });
 
+const HUD_ASK_COLLECTION_ACCESSORIES = Object.freeze({
+  label: "Shop Accessories",
+  handle: "accessories",
+  href: "/collections/accessories",
+});
+
 const HUD_ASK_DEFAULT_CHIPS = Object.freeze([
   { label: "I sleep hot", value: "I sleep hot" },
   { label: "I need firm support", value: "I need firm support" },
@@ -1132,6 +1140,22 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
     collections: [],
     pages: [HUD_ASK_PAGE_ASSESSMENT],
   },
+  assessment_start: {
+    reply:
+      "Start with one useful sleep question first, then I can narrow the setup from there.",
+    chips: HUD_ASK_HOME_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  product_question: {
+    reply:
+      "Use the current product details as the anchor, then compare size, support, and setup before you decide.",
+    chips: HUD_ASK_PRODUCT_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
   couple_conflict: {
     reply:
       "Different comfort needs are exactly where dual-comfort options matter.",
@@ -1142,6 +1166,38 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
     ],
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  bundle_price: {
+    reply:
+      "I can price the mattress and adjustable base separately, then give you a pre-checkout subtotal when both prices are verified.",
+    chips: HUD_ASK_SIZE_CHIPS,
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  brand_education: {
+    reply:
+      "I can explain the setup and the next step without making you guess through the catalog.",
+    chips: [
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+      { label: "Book Your Snooze Session", value: "book snooze session" },
+      { label: "Compare mattresses", value: "compare foam vs hybrid" },
+    ],
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_MATTRESSES],
+    pages: [HUD_ASK_PAGE_BOOKING],
+  },
+  accessory_help: {
+    reply:
+      "I can help you fill out the setup with verified accessories once the products are there to compare.",
+    chips: [
+      { label: "Do you sell pillows?", value: "do you sell pillows" },
+      { label: "What accessories do I need?", value: "what accessories do I need" },
+      { label: "Take Snooze Assessment", value: "take snooze assessment" },
+    ],
+    actions: [HUD_ASK_ACTION_ASSESSMENT],
+    collections: [HUD_ASK_COLLECTION_ACCESSORIES],
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   budget_value: {
@@ -1893,12 +1949,18 @@ function getHudAskCatalogHandles(catalog, categoryKey) {
 }
 
 function buildHudAskFallbackCatalog() {
-  const mattressHandles = normalizeHudAskHandleList(
-    Object.values(recsService?.HANDLES?.mattresses || {})
-  );
-  const adjustableBaseHandles = normalizeHudAskHandleList([
-    recsService?.HANDLES?.bases?.adjustable,
-  ]);
+  const localCatalogPath = path.join(__dirname, "s3 files", "snoozerknowledgeprod", "meta", "catalog.json");
+  try {
+    if (fs.existsSync(localCatalogPath)) {
+      const parsed = JSON.parse(fs.readFileSync(localCatalogPath, "utf8"));
+      if (parsed?.categories && typeof parsed.categories === "object") {
+        return parsed;
+      }
+    }
+  } catch {}
+
+  const mattressHandles = normalizeHudAskHandleList(Object.values(recsService?.HANDLES?.mattresses || {}));
+  const adjustableBaseHandles = normalizeHudAskHandleList([recsService?.HANDLES?.bases?.adjustable]);
 
   if (!mattressHandles.length && !adjustableBaseHandles.length) {
     return null;
@@ -1908,6 +1970,8 @@ function buildHudAskFallbackCatalog() {
     categories: {
       mattress: mattressHandles,
       "adjustable-base": adjustableBaseHandles,
+      pillows: [],
+      bedding: [],
     },
   };
 }
@@ -1915,9 +1979,7 @@ function buildHudAskFallbackCatalog() {
 function fallbackHudAskCatalogHasHandle(catalog, handle) {
   const lower = String(handle || "").trim().toLowerCase();
   const allHandles = normalizeHudAskHandleList(
-    getHudAskCatalogHandles(catalog, "mattress").concat(
-      getHudAskCatalogHandles(catalog, "adjustable-base")
-    )
+    Object.values(catalog?.categories || {}).flatMap((items) => (Array.isArray(items) ? items : []))
   );
 
   return allHandles.some((item) => item.toLowerCase() === lower);
@@ -1994,17 +2056,27 @@ function resolveHudAskRequestedSizeLabel(intent, query) {
   }
 }
 
-function classifyHudAskHandle(handle, mattressHandles = [], adjustableBaseHandles = []) {
+function classifyHudAskHandle(handle, mattressHandles = [], adjustableBaseHandles = [], pillowHandles = [], beddingHandles = []) {
   const lower = String(handle || "").trim().toLowerCase();
   const mattressSet = new Set(mattressHandles.map((item) => String(item || "").trim().toLowerCase()));
   const adjustableSet = new Set(
     adjustableBaseHandles.map((item) => String(item || "").trim().toLowerCase())
   );
+  const pillowSet = new Set(pillowHandles.map((item) => String(item || "").trim().toLowerCase()));
+  const beddingSet = new Set(beddingHandles.map((item) => String(item || "").trim().toLowerCase()));
 
   return {
     isMattress: mattressSet.has(lower) || /mattress|hybrid|foam/.test(lower),
     isAdjustableBase:
       adjustableSet.has(lower) || (lower.includes("adjustable") && lower.includes("base")),
+    isPillow: pillowSet.has(lower) || lower.includes("pillow"),
+    isProtector: beddingSet.has(lower) && (lower.includes("protector") || lower.includes("encasement")),
+    isBedding:
+      beddingSet.has(lower) ||
+      lower.includes("sheet") ||
+      lower.includes("comforter") ||
+      lower.includes("protector") ||
+      lower.includes("encasement"),
     isHybrid: lower.includes("hybrid"),
     isFoam: lower.includes("foam") && !lower.includes("hybrid"),
     isDualComfort: lower.includes("dual-comfort"),
@@ -2106,7 +2178,7 @@ function resolveHudAskNamedHandles(query, handles = []) {
   return scored.filter((item) => item.score >= threshold).map((item) => item.handle);
 }
 
-function filterHudAskHandlesForQuery(query, handles = [], mattressHandles = [], adjustableBaseHandles = []) {
+function filterHudAskHandlesForQuery(query, handles = [], mattressHandles = [], adjustableBaseHandles = [], pillowHandles = [], beddingHandles = []) {
   const normalizedQuery = normalizeHudAskText(query);
   const normalizedHandles = normalizeHudAskHandleList(handles);
 
@@ -2114,26 +2186,45 @@ function filterHudAskHandlesForQuery(query, handles = [], mattressHandles = [], 
 
   if (normalizedQuery.includes("adjustable base") || normalizedQuery.includes("motion base")) {
     return normalizedHandles.filter(
-      (handle) => classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles).isAdjustableBase
+      (handle) => classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles, pillowHandles, beddingHandles).isAdjustableBase
     );
   }
 
   if (normalizedQuery.includes("dual comfort")) {
     return normalizedHandles.filter(
-      (handle) => classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles).isDualComfort
+      (handle) => classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles, pillowHandles, beddingHandles).isDualComfort
     );
   }
 
   if (normalizedQuery.includes("all foam") && !normalizedQuery.includes("hybrid")) {
     return normalizedHandles.filter(
-      (handle) => classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles).isFoam
+      (handle) => classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles, pillowHandles, beddingHandles).isFoam
     );
   }
 
   if (normalizedQuery.includes("hybrid")) {
     return normalizedHandles.filter((handle) => {
-      const profile = classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles);
+      const profile = classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles, pillowHandles, beddingHandles);
       return profile.isHybrid || profile.isDualComfort;
+    });
+  }
+
+  if (normalizedQuery.includes("pillow")) {
+    return normalizedHandles.filter(
+      (handle) => classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles, pillowHandles, beddingHandles).isPillow
+    );
+  }
+
+  if (
+    normalizedQuery.includes("bedding") ||
+    normalizedQuery.includes("sheet") ||
+    normalizedQuery.includes("protector") ||
+    normalizedQuery.includes("comforter") ||
+    normalizedQuery.includes("accessories")
+  ) {
+    return normalizedHandles.filter((handle) => {
+      const profile = classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles, pillowHandles, beddingHandles);
+      return profile.isBedding || profile.isProtector || profile.isPillow;
     });
   }
 
@@ -2189,6 +2280,31 @@ function buildHudAskCompareHandles(mattressHandles = [], currentHandle = "") {
   const balancedHandles = mattressHandles.filter((handle) =>
     classifyHudAskHandle(handle, mattressHandles, []).isDualComfort
   );
+  const preferredFoamHandles = normalizeHudAskHandleList([
+    recsService?.HANDLES?.mattresses?.allFoam12,
+    recsService?.HANDLES?.mattresses?.allFoam10,
+  ]).filter((handle) =>
+    foamHandles.some(
+      (candidate) => String(candidate || "").trim().toLowerCase() === String(handle || "").trim().toLowerCase()
+    )
+  );
+  const preferredHybridHandles = normalizeHudAskHandleList([
+    recsService?.HANDLES?.mattresses?.hybrid14,
+  ]).filter((handle) =>
+    hybridHandles.some(
+      (candidate) => String(candidate || "").trim().toLowerCase() === String(handle || "").trim().toLowerCase()
+    )
+  );
+  const preferredBalancedHandles = normalizeHudAskHandleList([
+    recsService?.HANDLES?.mattresses?.dualComfort,
+  ]).filter((handle) =>
+    balancedHandles.some(
+      (candidate) => String(candidate || "").trim().toLowerCase() === String(handle || "").trim().toLowerCase()
+    )
+  );
+  const primaryFoamHandle = preferredFoamHandles[0] || foamHandles[0];
+  const primaryHybridHandle = preferredHybridHandles[0] || hybridHandles[0];
+  const primaryBalancedHandle = preferredBalancedHandles[0] || balancedHandles[0];
 
   const out = [];
   if (normalizedCurrent) {
@@ -2198,17 +2314,17 @@ function buildHudAskCompareHandles(mattressHandles = [], currentHandle = "") {
 
   const currentProfile = classifyHudAskHandle(normalizedCurrent, mattressHandles, []);
   if (currentProfile.isFoam) {
-    if (hybridHandles[0]) out.push(hybridHandles[0]);
-    if (balancedHandles[0]) out.push(balancedHandles[0]);
+    if (primaryHybridHandle) out.push(primaryHybridHandle);
+    if (primaryBalancedHandle) out.push(primaryBalancedHandle);
   } else if (currentProfile.isHybrid || currentProfile.isDualComfort) {
-    if (foamHandles[0]) out.push(foamHandles[0]);
-    if (currentProfile.isDualComfort ? hybridHandles[0] : balancedHandles[0]) {
-      out.push(currentProfile.isDualComfort ? hybridHandles[0] : balancedHandles[0]);
+    if (primaryFoamHandle) out.push(primaryFoamHandle);
+    if (currentProfile.isDualComfort ? primaryHybridHandle : primaryBalancedHandle) {
+      out.push(currentProfile.isDualComfort ? primaryHybridHandle : primaryBalancedHandle);
     }
   } else {
-    if (foamHandles[0]) out.push(foamHandles[0]);
-    if (hybridHandles[0]) out.push(hybridHandles[0]);
-    if (balancedHandles[0]) out.push(balancedHandles[0]);
+    if (primaryFoamHandle) out.push(primaryFoamHandle);
+    if (primaryHybridHandle) out.push(primaryHybridHandle);
+    if (primaryBalancedHandle) out.push(primaryBalancedHandle);
   }
 
   return normalizeHudAskHandleList(out).slice(0, 3);
@@ -2227,26 +2343,33 @@ function resolveHudAskCandidateHandles({
   const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
   const mattressHandles = getHudAskCatalogHandles(catalog, "mattress");
   const adjustableBaseHandles = getHudAskCatalogHandles(catalog, "adjustable-base");
+  const pillowHandles = getHudAskCatalogHandles(catalog, "pillows");
+  const beddingHandles = getHudAskCatalogHandles(catalog, "bedding");
+  const accessoryHandles = normalizeHudAskHandleList(pillowHandles.concat(beddingHandles));
   const productBias = Array.isArray(classification?.product_bias) ? classification.product_bias : [];
   const currentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
   const safeCurrentHandle =
     currentProductHandle && typeof catalogHasHandle === "function" && catalogHasHandle(catalog, currentProductHandle)
       ? currentProductHandle
       : "";
-  const allCatalogHandles = normalizeHudAskHandleList(mattressHandles.concat(adjustableBaseHandles));
+  const allCatalogHandles = normalizeHudAskHandleList(
+    mattressHandles.concat(adjustableBaseHandles, pillowHandles, beddingHandles)
+  );
   const namedHandles = resolveHudAskNamedHandles(query, allCatalogHandles);
   const prefersCurrentProduct = hudAskQueryUsesCurrentProductContext(query);
   const filteredMattressHandles = filterHudAskHandlesForQuery(
     query,
     namedHandles.length ? namedHandles : mattressHandles,
     mattressHandles,
-    adjustableBaseHandles
+    adjustableBaseHandles,
+    pillowHandles,
+    beddingHandles
   );
   const directCurrentProductQuestion =
     normalizedPageType === "product" &&
     safeCurrentHandle &&
     prefersCurrentProduct &&
-    (intent === "budget_value" || intent === "size_help" || isHudAskSpecificSizeIntent(intent));
+    (intent === "budget_value" || intent === "bundle_price" || intent === "size_help" || isHudAskSpecificSizeIntent(intent));
 
   if (
     normalizedPageType === "cart" ||
@@ -2266,6 +2389,18 @@ function resolveHudAskCandidateHandles({
         ? [safeCurrentHandle]
         : [];
     return normalizeHudAskHandleList(sizeHelpHandles).slice(0, 3);
+  }
+
+  if (intent === "accessory_help") {
+    const filteredAccessoryHandles = filterHudAskHandlesForQuery(
+      query,
+      accessoryHandles,
+      mattressHandles,
+      adjustableBaseHandles,
+      pillowHandles,
+      beddingHandles
+    );
+    return normalizeHudAskHandleList(filteredAccessoryHandles.length ? filteredAccessoryHandles : accessoryHandles).slice(0, 3);
   }
 
   if (intent === "couple_conflict" || productBias.includes("dual_comfort")) {
@@ -2291,6 +2426,9 @@ function resolveHudAskCandidateHandles({
   }
 
   if (intent === "product_question") {
+    const wantsAdjustableBase =
+      normalizeHudAskText(query).includes("adjustable base") ||
+      normalizeHudAskText(query).includes("motion base");
     const productQuestionHandles =
       safeCurrentHandle && prefersCurrentProduct
         ? normalizeHudAskHandleList([safeCurrentHandle].concat(namedHandles))
@@ -2299,7 +2437,31 @@ function resolveHudAskCandidateHandles({
           : safeCurrentHandle
             ? [safeCurrentHandle]
             : filteredMattressHandles;
-    return normalizeHudAskHandleList(productQuestionHandles).slice(0, 3);
+    return normalizeHudAskHandleList(
+      wantsAdjustableBase && adjustableBaseHandles[0]
+        ? productQuestionHandles.concat(adjustableBaseHandles[0])
+        : productQuestionHandles
+    ).slice(0, 3);
+  }
+
+  if (intent === "bundle_price") {
+    const namedMattressHandles = namedHandles.filter(
+      (handle) => classifyHudAskHandle(handle, mattressHandles, adjustableBaseHandles, pillowHandles, beddingHandles).isMattress
+    );
+    const bundleHandles = normalizeHudAskHandleList(
+      []
+        .concat(
+          safeCurrentHandle && normalizedPageType === "product" ? [safeCurrentHandle] : [],
+          namedMattressHandles,
+          adjustableBaseHandles[0] ? [adjustableBaseHandles[0]] : []
+        )
+    );
+
+    if (bundleHandles.length) {
+      return bundleHandles.slice(0, 3);
+    }
+
+    return normalizeHudAskHandleList(adjustableBaseHandles).slice(0, 1);
   }
 
   if (intent === "budget_value" || isHudAskSpecificSizeIntent(intent)) {
@@ -2318,15 +2480,31 @@ function resolveHudAskCandidateHandles({
     return baseHandles.slice(0, 4);
   }
 
-  if (intent === "compare_mattresses") {
-    if (namedHandles.length >= 2) {
-      return normalizeHudAskHandleList(namedHandles).slice(0, 3);
-    }
+    if (intent === "compare_mattresses") {
+      const normalizedCompareQuery = normalizeHudAskText(query);
+      const explicitNamedCompare =
+        /\b10\b/.test(normalizedCompareQuery) ||
+        /\b12\b/.test(normalizedCompareQuery) ||
+        /\b14\b/.test(normalizedCompareQuery) ||
+        normalizedCompareQuery.includes("dual comfort");
+      const genericCategoryCompare =
+        !explicitNamedCompare &&
+        (
+          (normalizedCompareQuery.includes("foam") && normalizedCompareQuery.includes("hybrid")) ||
+          normalizedCompareQuery.includes("hybrid vs all foam") ||
+          normalizedCompareQuery.includes("all foam vs hybrid")
+        );
 
-    const compared = buildHudAskCompareHandles(mattressHandles, safeCurrentHandle);
-    const merged = normalizeHudAskHandleList(namedHandles.concat(compared));
-    return merged.length ? merged.slice(0, 3) : normalizeHudAskHandleList(mattressHandles).slice(0, 3);
-  }
+      if (namedHandles.length >= 2 && !genericCategoryCompare) {
+        return normalizeHudAskHandleList(namedHandles).slice(0, 3);
+      }
+
+      const compared = buildHudAskCompareHandles(mattressHandles, safeCurrentHandle);
+      const merged = genericCategoryCompare
+        ? compared
+        : normalizeHudAskHandleList(namedHandles.concat(compared));
+      return merged.length ? merged.slice(0, 3) : normalizeHudAskHandleList(mattressHandles).slice(0, 3);
+    }
 
   if (intent === "snoring") {
     if (normalizedPageType === "collection" && isHudAskMattressCollectionPath(normalizedPath)) {
@@ -2347,7 +2525,7 @@ function resolveHudAskCandidateHandles({
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score)
     .map((item) => item.handle);
-  const mergedScored = normalizeHudAskHandleList(namedHandles.concat(filteredMattressHandles, scored));
+  const mergedScored = normalizeHudAskHandleList(namedHandles.concat(scored, filteredMattressHandles));
 
   if (normalizedPageType === "collection" && isHudAskMattressCollectionPath(normalizedPath)) {
     return mergedScored.slice(0, 3);
@@ -2364,13 +2542,34 @@ function findHudAskVariantForSize(product, sizeLabel) {
   const wantedSize = normalizeHudAskSizeKey(sizeLabel);
   if (!wantedSize || !Array.isArray(product?.variants)) return null;
 
+  const acceptableSizes = new Set([wantedSize]);
+  if (wantedSize === "queen") acceptableSizes.add("queen2pc");
+  if (wantedSize === "king") acceptableSizes.add("king2pc");
+  if (wantedSize === "calking") acceptableSizes.add("calking2pc");
+  if (wantedSize === "splitking" || wantedSize === "halfsplitking") {
+    acceptableSizes.add("king2pc");
+    acceptableSizes.add("king");
+  }
+  if (wantedSize === "halfsplitqueen") {
+    acceptableSizes.add("queen2pc");
+    acceptableSizes.add("queen");
+  }
+
   return (
     product.variants.find((variant) => {
       const selectedOptions = Array.isArray(variant?.selectedOptions) ? variant.selectedOptions : [];
       return selectedOptions.some(
         (option) =>
           String(option?.name || "").toLowerCase() === "size" &&
-          normalizeHudAskSizeKey(option?.value || "") === wantedSize
+          (() => {
+            const optionKey = normalizeHudAskSizeKey(option?.value || "");
+            return Array.from(acceptableSizes).some(
+              (accepted) =>
+                optionKey === accepted ||
+                optionKey.startsWith(accepted) ||
+                accepted.startsWith(optionKey)
+            );
+          })()
       );
     }) || null
   );
@@ -2390,11 +2589,15 @@ function buildHudAskProductTags({ intent, handle, sizeLabel = "" } = {}) {
   if (lower.includes("foam") && !lower.includes("hybrid")) tags.push("Foam");
   if (lower.includes("dual-comfort")) tags.push("Dual Comfort");
   if (lower.includes("adjustable") && lower.includes("base")) tags.push("Adjustable Base");
+  if (lower.includes("pillow")) tags.push("Pillow");
+  if (lower.includes("protector") || lower.includes("encasement")) tags.push("Protector");
+  if (lower.includes("sheet") || lower.includes("comforter") || lower.includes("bedding")) tags.push("Bedding");
 
   if (intent === "sleep_hot") tags.push("Cooling");
   if (intent === "firm_support" || intent === "back_pain") tags.push("Support");
   if (intent === "snoring") tags.push("Elevation");
   if (intent === "budget_value") tags.push("Value");
+  if (intent === "bundle_price") tags.push("Bundle");
   if (intent === "couple_conflict") tags.push("Partner Sleep");
   if (sizeLabel) tags.push(sizeLabel);
 
@@ -2425,6 +2628,17 @@ function buildHudAskProductReason({
       : "One of the simpler verified mattress options to compare first if value matters most.";
   }
 
+  if (intent === "bundle_price") {
+    if (lower.includes("adjustable") && lower.includes("base")) {
+      return sizeLabel
+        ? `A verified ${sizeLabel} adjustable-base match so you can total the setup safely.`
+        : "A verified adjustable-base match so you can total the setup safely.";
+    }
+    return sizeLabel
+      ? `A verified ${sizeLabel} mattress match for bundle pricing and setup comparison.`
+      : "A verified mattress match so you can total the setup with a base.";
+  }
+
   if (intent === "split_king") {
     return "Verified in Split King so you can compare compatibility before you choose a base setup.";
   }
@@ -2437,6 +2651,9 @@ function buildHudAskProductReason({
   }
 
   if (intent === "product_question") {
+    if (lower.includes("adjustable") && lower.includes("base")) {
+      return "A verified base match to compare with the current mattress setup.";
+    }
     if (lower.includes("dual-comfort")) {
       return "Worth comparing when you want split comfort, cooling, or more flexibility for two sleepers.";
     }
@@ -2447,6 +2664,19 @@ function buildHudAskProductReason({
       return "Worth comparing if you want a more contouring feel and stronger motion isolation.";
     }
     return "A good product-specific starting point to compare next.";
+  }
+
+  if (intent === "accessory_help") {
+    if (lower.includes("pillow")) {
+      return "A verified pillow option to compare for cooling, loft, or support feel.";
+    }
+    if (lower.includes("protector") || lower.includes("encasement")) {
+      return "A verified protector option to compare if you want a cleaner, lower-maintenance setup.";
+    }
+    if (lower.includes("sheet") || lower.includes("comforter") || lower.includes("bedding")) {
+      return "A verified bedding option to compare if you want to complete the setup around the mattress.";
+    }
+    return "A verified accessory option to compare as you build out the setup.";
   }
 
   if (isHudAskSpecificSizeIntent(intent) && sizeLabel) {
@@ -2606,6 +2836,12 @@ async function resolveHudAskProducts({
     const budgetQuery =
       Boolean(classification?.budget_signal) || hudAskQueryWantsBudget(query);
     const budgetCap = extractHudAskBudgetCap(query);
+    const bundleRequested =
+      String(intent || "").trim() === "bundle_price" ||
+      (normalizeHudAskText(query).includes("adjustable base") &&
+        (normalizeHudAskText(query).includes("how much") ||
+          normalizeHudAskText(query).includes("price") ||
+          normalizeHudAskText(query).includes("cost")));
     const currentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
     const candidateHandles = resolveHudAskCandidateHandles({
       classification,
@@ -2628,6 +2864,7 @@ async function resolveHudAskProducts({
         sizeLabel,
         budgetQuery,
         budgetCap,
+        bundleRequested,
       };
     }
 
@@ -2726,7 +2963,9 @@ async function resolveHudAskProducts({
       .filter(Boolean);
 
     const ordered =
-      budgetQuery || isHudAskSpecificSizeIntent(intent)
+      intent === "bundle_price"
+        ? enriched.sort((a, b) => a.order - b.order)
+        : budgetQuery || isHudAskSpecificSizeIntent(intent)
         ? enriched.sort((a, b) => {
             if (a.variantPrice !== b.variantPrice) return a.variantPrice - b.variantPrice;
             return a.order - b.order;
@@ -2785,6 +3024,7 @@ async function resolveHudAskProducts({
       sizeLabel,
       budgetQuery,
       budgetCap,
+      bundleRequested,
     };
   } catch (error) {
     log("hud.ask.products.error", error.message, {
@@ -2803,6 +3043,7 @@ async function resolveHudAskProducts({
       sizeLabel: "",
       budgetQuery: false,
       budgetCap: null,
+      bundleRequested: String(intent || "").trim() === "bundle_price",
     };
   }
 }
