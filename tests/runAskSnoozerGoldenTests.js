@@ -366,6 +366,16 @@ function validateExpectedBehavior(testCase, payload, failures) {
     }
   }
 
+  if (typeof expected.answer_grounded === "boolean") {
+    if (Boolean(payload?.meta?.answer_grounded) !== expected.answer_grounded) {
+      addFailure(
+        failures,
+        expected.answer_grounded ? "unexpected_fallback" : "response_contract_break",
+        `Expected meta.answer_grounded=${expected.answer_grounded}, got ${Boolean(payload?.meta?.answer_grounded)}`
+      );
+    }
+  }
+
   if (Array.isArray(expected.policy_source_any_of) && expected.policy_source_any_of.length > 0) {
     const actualSource = String(payload?.meta?.policy_source || "").trim();
     if (!expected.policy_source_any_of.includes(actualSource)) {
@@ -373,6 +383,28 @@ function validateExpectedBehavior(testCase, payload, failures) {
         failures,
         "unexpected_fallback",
         `Expected policy source in [${expected.policy_source_any_of.join(", ")}], got ${actualSource || "(blank)"}`
+      );
+    }
+  }
+
+  if (Array.isArray(expected.answer_source_any_of) && expected.answer_source_any_of.length > 0) {
+    const actualSource = String(payload?.meta?.answer_source_type || "").trim();
+    if (!expected.answer_source_any_of.includes(actualSource)) {
+      addFailure(
+        failures,
+        "unexpected_fallback",
+        `Expected answer source in [${expected.answer_source_any_of.join(", ")}], got ${actualSource || "(blank)"}`
+      );
+    }
+  }
+
+  if (Number.isFinite(expected.answer_facts_count_min)) {
+    const actualFacts = Number(payload?.meta?.answer_facts_count || 0);
+    if (actualFacts < expected.answer_facts_count_min) {
+      addFailure(
+        failures,
+        expected.answer_facts_count_min > 0 ? "unexpected_fallback" : "response_contract_break",
+        `Expected meta.answer_facts_count >= ${expected.answer_facts_count_min}, got ${actualFacts}`
       );
     }
   }

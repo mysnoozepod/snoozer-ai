@@ -8,6 +8,9 @@
       "intent_group": "product_fit",
       "accepted_intents": ["sleep_hot"],
       "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
       "products": {
         "min": 1,
         "max": 3,
@@ -25,6 +28,9 @@
       "intent_group": "product_fit",
       "accepted_intents": ["firm_support"],
       "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
       "products": { "min": 1, "max": 3 },
       "must_not_include": ["guarantee", "cure"]
     }
@@ -113,6 +119,9 @@
       "intent_group": "couple_conflict",
       "accepted_intents": ["couple_conflict"],
       "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
       "products": {
         "min": 1,
         "max": 3,
@@ -194,6 +203,9 @@
       "intent_group": "product_compare",
       "accepted_intents": ["compare_mattresses"],
       "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
       "products": {
         "min": 2,
         "max": 3,
@@ -268,6 +280,26 @@
     }
   },
   {
+    "id": "show_me_your_cheapest_mattress",
+    "category": "size_price",
+    "query": "show me your cheapest mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": {
+        "min": 1,
+        "max": 3,
+        "preferred_handles": ["10-all-foam-mattress", "12-all-foam-mattress", "12-dual-comfort-hybrid"]
+      },
+      "must_not_include": ["$", "guarantee"]
+    }
+  },
+  {
     "id": "budget_queen_mattress",
     "category": "size_price",
     "query": "budget queen mattress",
@@ -309,6 +341,9 @@
       "intent_group": "size_price",
       "accepted_intents": ["queen_size"],
       "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
       "products": {
         "min": 1,
         "max": 3,
@@ -374,6 +409,9 @@
       "intent_group": "base_elevation",
       "accepted_intents": ["snoring"],
       "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
       "products": {
         "min": 1,
         "max": 2,
@@ -442,6 +480,9 @@
       "intent_group": "assessment_handoff",
       "accepted_intents": ["assessment_help"],
       "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["action_allowlist"],
+      "answer_facts_count_min": 1,
       "products": { "min": 0, "max": 0 },
       "required_hrefs": ["/pages/snooze-assessment"]
     }
@@ -504,6 +545,9 @@
       "intent_group": "booking_handoff",
       "accepted_intents": ["booking_help"],
       "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["action_allowlist"],
+      "answer_facts_count_min": 1,
       "required_hrefs": ["/pages/book-your-snooze-session"]
     }
   },
@@ -568,6 +612,9 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_skill", "local_skill"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["monthly payment", "0% apr", "qualified"],
@@ -586,6 +633,9 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_skill", "local_skill"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["monthly payment", "0% apr"],
@@ -604,6 +654,9 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_skill", "local_skill"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["monthly payment", "0% apr"],
@@ -622,6 +675,9 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["100-night", "returned or exchanged"],
@@ -640,10 +696,34 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["100-night", "3 to 5 business days"],
       "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "whats_your_return_policy",
+    "category": "policy_support",
+    "query": "whats your return policy",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["100-night", "returned or exchanged"],
+      "must_not_include": ["i can point you in the right direction", "current policy or checkout information"]
     }
   },
   {
@@ -676,6 +756,9 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["100-night", "returned or exchanged"],
@@ -694,10 +777,34 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["final sale", "mattress purchases only"],
       "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "return_my_adjustable_base",
+    "category": "policy_support",
+    "query": "can i return my adjustable base",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["final sale", "mattress purchases only"],
+      "must_not_include": ["i can point you in the right direction", "current policy or checkout information"]
     }
   },
   {
@@ -712,6 +819,9 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["100-night", "3 to 5 business days"],
@@ -730,6 +840,9 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["3 to 7 business days", "white-glove"],
@@ -748,6 +861,9 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["3 to 7 business days", "text or email"],
@@ -766,10 +882,34 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["3 to 7 business days", "trusted local carriers"],
       "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "delivery_workflow_question_mark",
+    "category": "policy_support",
+    "query": "how does delivery work?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "delivery",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["3 to 7 business days", "trusted local carriers"],
+      "must_not_include": ["i can point you in the right direction", "current policy or checkout information"]
     }
   },
   {
@@ -802,10 +942,34 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["10-year limited warranty", "materials or workmanship"],
       "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "warranty_short_question",
+    "category": "policy_support",
+    "query": "warranty?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "warranty",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["10-year limited warranty", "mattresses are covered"],
+      "must_not_include": ["i can point you in the right direction", "current policy or checkout information"]
     }
   },
   {
@@ -820,10 +984,34 @@
       "policy_retrieved": true,
       "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
       "must_include": ["10-year limited warranty", "materials or workmanship"],
       "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "warranty_length_mattresses",
+    "category": "policy_support",
+    "query": "how long is the warranty on mattresses",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "warranty",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["10-year limited warranty", "mattresses are covered"],
+      "must_not_include": ["i can point you in the right direction", "current policy or checkout information"]
     }
   },
   {
@@ -947,6 +1135,9 @@
       "intent_group": "fallback_unclear",
       "accepted_intents": ["fallback", "default"],
       "confidence_label_min": "low",
+      "answer_grounded": false,
+      "answer_source_any_of": ["fallback"],
+      "answer_facts_count_min": 0,
       "products": { "min": 0, "max": 0 }
     }
   },

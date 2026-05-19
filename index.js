@@ -70,7 +70,8 @@ const {
   hasAskSnoozerBudgetSignal,
   parseAskSnoozerSizeLabel,
 } = require("./services/askSnoozerIntents");
-const { resolveAskSnoozerPolicyAnswer } = require("./services/askSnoozerPolicy");
+const { resolveAskSnoozerPolicySources } = require("./services/askSnoozerPolicy");
+const { buildAskSnoozerAnswer } = require("./services/askSnoozerAnswerEngine");
 
 let getHudScriptPayload = null;
 try {
@@ -1751,50 +1752,109 @@ function buildHudAskPayload({
   };
 }
 
-async function resolveHudAskPolicyStrategy({
+async function resolveHudAskAnswerStrategy({
   classification = null,
   intent = "fallback",
   query = "",
+  path = "/",
+  pageType = "unknown",
   traceId = "",
+  products = [],
+  productResolution = null,
 } = {}) {
-  if (String(classification?.intent_group || "").trim() !== "policy_support" || intent !== "policy_support") {
-    return null;
+  const intentGroup = String(classification?.intent_group || "").trim() || "fallback_unclear";
+  const config = resolveHudAskContextualConfig({
+    intent,
+    pageType,
+    path,
+  });
+
+  const sources = [];
+  let chipsOverride = null;
+  let policySubtype = String(classification?.policy_subtype || "").trim() || "";
+  let policySource = "fallback";
+  let policyKey = null;
+  let policyRetrieved = false;
+
+  if (intentGroup === "policy_support") {
+    const resolved = await resolveAskSnoozerPolicySources({
+      query,
+      traceId,
+      timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
+    });
+
+    policySubtype = String(resolved?.policySubtype || policySubtype || "general_policy").trim();
+    policySource = resolved?.source || "fallback";
+    policyKey = resolved?.key || null;
+    policyRetrieved = Boolean(resolved?.retrieved);
+    chipsOverride = Array.isArray(resolved?.chips) && resolved.chips.length ? resolved.chips : null;
+
+    if (Array.isArray(resolved?.sources) && resolved.sources.length) {
+      sources.push(...resolved.sources);
+    }
+
+    log("hud.ask.policy", "resolved", {
+      traceId,
+      intentGroup,
+      policySubtype: policySubtype || "general_policy",
+      source: policySource || "fallback",
+      key: policyKey || null,
+      retrieved: policyRetrieved,
+    });
   }
 
-  const resolved = await resolveAskSnoozerPolicyAnswer({
+  const productSourceRecord = buildHudAskProductSourceRecord({
+    products,
+    catalogSource: productResolution?.catalogSource || "",
+  });
+  if (productSourceRecord) {
+    sources.push(productSourceRecord);
+  }
+
+  const answer = buildAskSnoozerAnswer({
     query,
-    traceId,
-    timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
+    intent,
+    intent_group: intentGroup,
+    context: {
+      path,
+      page_type: pageType,
+    },
+    sources,
+    products,
+    actions: config.actions,
+    pages: config.pages,
+    collections: config.collections,
+    policy_subtype: policySubtype,
   });
 
-  log("hud.ask.policy", "resolved", {
+  log("hud.ask.answer", "grounded", {
     traceId,
-    intentGroup: "policy_support",
-    policySubtype: resolved.policySubtype || "general_policy",
-    source: resolved.source || "fallback",
-    key: resolved.key || null,
-    retrieved: Boolean(resolved.retrieved),
-  });
-
-  log("hud.ask.policy.answer", "grounded", {
-    traceId,
-    policySubtype: resolved.policySubtype || "general_policy",
-    source: resolved.source || "fallback",
-    key: resolved.key || null,
-    matched: Boolean(resolved.matched),
-    answerGrounded: Boolean(resolved.answerGrounded),
-    matchedPreview: String(resolved.matchedPreview || "").trim() || null,
+    intent,
+    intentGroup,
+    policySubtype: policySubtype || null,
+    answerStrategy: answer.answer_strategy || "safe_fallback",
+    answerGrounded: Boolean(answer.answer_grounded),
+    answerSourceType: answer.answer_source_type || "fallback",
+    answerSourceKey: answer.answer_source_key || null,
+    factsCount: Number(answer.answer_facts_count || 0),
+    matchedPreview: String(answer.matched_preview || "").trim() || null,
+    reason: answer.answer_grounded ? null : answer.reason || "no_source",
   });
 
   return {
-    replyOverride: resolved.reply,
-    chipsOverride: Array.isArray(resolved.chips) && resolved.chips.length ? resolved.chips : null,
-    policySubtype: resolved.policySubtype || "general_policy",
+    replyOverride: answer.reply || "",
+    chipsOverride,
+    policySubtype,
     metaExtra: {
-      policy_source: resolved.source || "fallback",
-      policy_key: resolved.key || null,
-      policy_retrieved: Boolean(resolved.retrieved),
-      policy_answer_grounded: Boolean(resolved.answerGrounded),
+      policy_source: policySource || "fallback",
+      policy_key: policyKey || null,
+      policy_retrieved: policyRetrieved,
+      policy_answer_grounded: intentGroup === "policy_support" ? Boolean(answer.answer_grounded) : null,
+      answer_grounded: Boolean(answer.answer_grounded),
+      answer_source_type: answer.answer_source_type || "fallback",
+      answer_source_key: answer.answer_source_key || null,
+      answer_strategy: answer.answer_strategy || "safe_fallback",
+      answer_facts_count: Number(answer.answer_facts_count || 0),
     },
   };
 }
@@ -2202,6 +2262,44 @@ function buildHudAskProductReason({
   }
 }
 
+function buildHudAskProductSourceRecord({
+  products = [],
+  catalogSource = "fallback_catalog",
+} = {}) {
+  const safeProducts = Array.isArray(products) ? products.filter(Boolean) : [];
+  if (!safeProducts.length) return null;
+
+  return {
+    source_type:
+      catalogSource === "s3_catalog"
+        ? "shopify_product+s3_catalog"
+        : "shopify_product+fallback_catalog",
+    source_key: safeProducts
+      .map((product) => String(product?.handle || "").trim())
+      .filter(Boolean)
+      .join(","),
+    title: "Verified products",
+    text: safeProducts
+      .map((product) => {
+        const parts = [
+          String(product?.title || product?.label || "").trim(),
+          String(product?.reason || "").trim(),
+          Array.isArray(product?.tags) && product.tags.length ? `Tags: ${product.tags.join(", ")}` : "",
+        ].filter(Boolean);
+        return parts.join(". ");
+      })
+      .filter(Boolean)
+      .join("\n"),
+    facts: safeProducts
+      .map((product) => ({
+        text: String(product?.reason || product?.title || product?.label || "").trim(),
+        heading: String(product?.title || product?.label || "").trim(),
+        kind: "fact",
+      }))
+      .filter((fact) => fact.text),
+  };
+}
+
 async function resolveHudAskProducts({
   classification = null,
   intent,
@@ -2210,7 +2308,13 @@ async function resolveHudAskProducts({
   pageType,
   traceId,
 } = {}) {
-  if (!shopifySvc?.fetchProductsByHandles) return [];
+  if (!shopifySvc?.fetchProductsByHandles) {
+    return {
+      products: [],
+      catalogSource: "fallback_catalog",
+      answerSourceType: "shopify_product+fallback_catalog",
+    };
+  }
 
   const openaiHelpers = getOpenAiSvc();
   const fallbackCatalog = buildHudAskFallbackCatalog();
@@ -2242,7 +2346,13 @@ async function resolveHudAskProducts({
       openaiHelpers && typeof openaiHelpers.catalogHasHandle === "function"
         ? openaiHelpers.catalogHasHandle
         : fallbackHudAskCatalogHasHandle;
-    if (!catalog) return [];
+    if (!catalog) {
+      return {
+        products: [],
+        catalogSource: "fallback_catalog",
+        answerSourceType: "shopify_product+fallback_catalog",
+      };
+    }
 
     const normalizedPath = sanitizeHudAskPath(path);
     const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
@@ -2261,7 +2371,14 @@ async function resolveHudAskProducts({
       catalogHasHandle,
     });
 
-    if (!candidateHandles.length) return [];
+    if (!candidateHandles.length) {
+      return {
+        products: [],
+        catalogSource: catalogResult?.value ? "s3_catalog" : "fallback_catalog",
+        answerSourceType:
+          catalogResult?.value ? "shopify_product+s3_catalog" : "shopify_product+fallback_catalog",
+      };
+    }
 
     const productsResponse = await withTimeout(
       shopifySvc.fetchProductsByHandles({ handles: candidateHandles, lite: false }),
@@ -2373,7 +2490,12 @@ async function resolveHudAskProducts({
       handles: products.map((product) => product.handle),
     });
 
-    return products;
+    return {
+      products,
+      catalogSource: catalogResult?.value ? "s3_catalog" : "fallback_catalog",
+      answerSourceType:
+        catalogResult?.value ? "shopify_product+s3_catalog" : "shopify_product+fallback_catalog",
+    };
   } catch (error) {
     log("hud.ask.products.error", error.message, {
       traceId,
@@ -2382,7 +2504,11 @@ async function resolveHudAskProducts({
       path,
       pageType,
     });
-    return [];
+    return {
+      products: [],
+      catalogSource: "fallback_catalog",
+      answerSourceType: "shopify_product+fallback_catalog",
+    };
   }
 }
 
@@ -2905,7 +3031,7 @@ async function handle(event = {}) {
         surface,
       });
       const intent = classification.intent;
-      const products = await resolveHudAskProducts({
+      const productResolution = await resolveHudAskProducts({
         classification,
         intent,
         query,
@@ -2913,11 +3039,16 @@ async function handle(event = {}) {
         pageType,
         traceId,
       });
-      const policyStrategy = await resolveHudAskPolicyStrategy({
+      const products = Array.isArray(productResolution?.products) ? productResolution.products : [];
+      const answerStrategy = await resolveHudAskAnswerStrategy({
         classification,
         intent,
         query,
+        path: pathValue,
+        pageType,
         traceId,
+        products,
+        productResolution,
       });
       const payload = buildHudAskPayload({
         classification,
@@ -2928,10 +3059,10 @@ async function handle(event = {}) {
         latencyMs: elapsedMs(startedAt),
         threadId,
         products,
-        replyOverride: policyStrategy?.replyOverride || "",
-        chipsOverride: policyStrategy?.chipsOverride || null,
-        metaExtra: policyStrategy?.metaExtra || null,
-        policySubtype: policyStrategy?.policySubtype || classification?.policy_subtype || "",
+        replyOverride: answerStrategy?.replyOverride || "",
+        chipsOverride: answerStrategy?.chipsOverride || null,
+        metaExtra: answerStrategy?.metaExtra || null,
+        policySubtype: answerStrategy?.policySubtype || classification?.policy_subtype || "",
       });
 
       log("hud.ask", "ok", {

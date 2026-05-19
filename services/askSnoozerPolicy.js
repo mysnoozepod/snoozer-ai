@@ -229,6 +229,38 @@ function extractHints(raw) {
     }));
 }
 
+function extractSourceTitle(raw, fallbackKey = "") {
+  const text = normalizeMarkdown(raw);
+  const frontMatterTitle = text.match(/^\s*title:\s*(.+)$/im);
+  if (frontMatterTitle?.[1]) {
+    return cleanShopperText(frontMatterTitle[1].replace(/^["']|["']$/g, ""));
+  }
+
+  const leadingTitle = text.match(/^\s*Title:\s*(.+)$/im);
+  if (leadingTitle?.[1]) {
+    return cleanShopperText(leadingTitle[1].replace(/^["']|["']$/g, ""));
+  }
+
+  const headingTitle = stripFrontMatter(text).match(/^\s*#+\s+(.+)$/m);
+  if (headingTitle?.[1]) {
+    return cleanShopperText(headingTitle[1]);
+  }
+
+  return cleanShopperText(String(fallbackKey || "").split("/").pop().replace(/\.md$/i, ""));
+}
+
+function buildSourceRecord({ raw = "", source = "", key = "", sourceKind = "", policySubtype = "" } = {}) {
+  return {
+    source_type: String(source || "").trim() || "fallback",
+    source_key: String(key || "").trim() || "",
+    source_kind: String(sourceKind || "").trim() || "",
+    policy_subtype: String(policySubtype || "").trim() || "",
+    title: extractSourceTitle(raw, key),
+    text: normalizeMarkdown(raw),
+    facts: [],
+  };
+}
+
 function buildFallbackPolicyReply(policySubtype) {
   switch (String(policySubtype || "").trim()) {
     case "returns":
@@ -697,7 +729,55 @@ async function resolveAskSnoozerPolicyAnswer({ query = "", traceId = "", timeout
   };
 }
 
+async function resolveAskSnoozerPolicySources({ query = "", traceId = "", timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+  const policySubtype = classifyAskSnoozerPolicySubtype(query);
+  const keys = POLICY_KEY_CANDIDATES[policySubtype] || POLICY_KEY_CANDIDATES.general_policy;
+
+  const sources = [];
+  const policyMatch = await loadKnowledgeCandidates(keys.policy, { timeoutMs, traceId });
+  if (policyMatch?.raw) {
+    sources.push(
+      buildSourceRecord({
+        raw: policyMatch.raw,
+        source: policyMatch.source,
+        key: policyMatch.key,
+        sourceKind: "policy",
+        policySubtype,
+      })
+    );
+  }
+
+  const skillMatch = await loadPromptCandidates(keys.skill, { timeoutMs, traceId });
+  if (skillMatch?.raw) {
+    sources.push(
+      buildSourceRecord({
+        raw: skillMatch.raw,
+        source: skillMatch.source,
+        key: skillMatch.key,
+        sourceKind: "skill",
+        policySubtype,
+      })
+    );
+  }
+
+  const primary = sources[0] || null;
+
+  return {
+    policySubtype,
+    sources,
+    chips: skillMatch?.raw ? extractHints(skillMatch.raw) : [],
+    retrieved: sources.length > 0,
+    source: primary?.source_type || "fallback",
+    key: primary?.source_key || "",
+    sourceKind: primary?.source_kind || "fallback",
+  };
+}
+
 module.exports = {
   classifyAskSnoozerPolicySubtype,
+  cleanShopperText,
+  normalizeMarkdown,
   resolveAskSnoozerPolicyAnswer,
+  resolveAskSnoozerPolicySources,
+  stripFrontMatter,
 };
