@@ -356,6 +356,16 @@ function validateExpectedBehavior(testCase, payload, failures) {
     }
   }
 
+  if (typeof expected.policy_answer_grounded === "boolean") {
+    if (Boolean(payload?.meta?.policy_answer_grounded) !== expected.policy_answer_grounded) {
+      addFailure(
+        failures,
+        expected.policy_answer_grounded ? "unexpected_fallback" : "response_contract_break",
+        `Expected meta.policy_answer_grounded=${expected.policy_answer_grounded}, got ${Boolean(payload?.meta?.policy_answer_grounded)}`
+      );
+    }
+  }
+
   if (Array.isArray(expected.policy_source_any_of) && expected.policy_source_any_of.length > 0) {
     const actualSource = String(payload?.meta?.policy_source || "").trim();
     if (!expected.policy_source_any_of.includes(actualSource)) {

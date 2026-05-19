@@ -1776,6 +1776,16 @@ async function resolveHudAskPolicyStrategy({
     retrieved: Boolean(resolved.retrieved),
   });
 
+  log("hud.ask.policy.answer", "grounded", {
+    traceId,
+    policySubtype: resolved.policySubtype || "general_policy",
+    source: resolved.source || "fallback",
+    key: resolved.key || null,
+    matched: Boolean(resolved.matched),
+    answerGrounded: Boolean(resolved.answerGrounded),
+    matchedPreview: String(resolved.matchedPreview || "").trim() || null,
+  });
+
   return {
     replyOverride: resolved.reply,
     chipsOverride: Array.isArray(resolved.chips) && resolved.chips.length ? resolved.chips : null,
@@ -1784,6 +1794,7 @@ async function resolveHudAskPolicyStrategy({
       policy_source: resolved.source || "fallback",
       policy_key: resolved.key || null,
       policy_retrieved: Boolean(resolved.retrieved),
+      policy_answer_grounded: Boolean(resolved.answerGrounded),
     },
   };
 }

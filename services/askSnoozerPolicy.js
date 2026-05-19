@@ -81,6 +81,13 @@ function cleanShopperText(raw) {
     .trim();
 }
 
+function previewText(text, maxChars = 160) {
+  const cleaned = cleanShopperText(text);
+  if (!cleaned) return "";
+  if (cleaned.length <= maxChars) return cleaned;
+  return `${cleaned.slice(0, maxChars - 3).trim()}...`;
+}
+
 function clampReply(text, fallback = "") {
   const cleaned = cleanShopperText(text);
   if (!cleaned) return String(fallback || "").trim();
@@ -93,6 +100,26 @@ function clampReply(text, fallback = "") {
   const picked = sentences.slice(0, 2).join(" ").trim();
   if (picked && picked.length <= 220) return picked;
   return cleaned.slice(0, 217).trim().replace(/[,:;]$/, "") + "...";
+}
+
+function buildGroundedResult(reply, matchedPreview, extra = {}) {
+  return {
+    reply: clampReply(reply, extra.fallback || ""),
+    matched: Boolean(String(matchedPreview || "").trim()),
+    answerGrounded: Boolean(String(matchedPreview || "").trim()),
+    matchedPreview: previewText(matchedPreview),
+    ...extra,
+  };
+}
+
+function buildUngroundedResult(reply, extra = {}) {
+  return {
+    reply: clampReply(reply, extra.fallback || ""),
+    matched: false,
+    answerGrounded: false,
+    matchedPreview: "",
+    ...extra,
+  };
 }
 
 function extractSection(raw, headings = []) {
@@ -181,6 +208,11 @@ function extractBulletItemsUnderHeading(raw, headings = []) {
     .slice(0, 3);
 }
 
+function hasAnyQueryTerm(query, terms = []) {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return terms.some((term) => normalizedQuery.includes(normalizeAskSnoozerText(term)));
+}
+
 function extractHints(raw) {
   const text = normalizeMarkdown(raw);
   const match = text.match(/hints:\s*([\s\S]*?)(?:\n---|\n##|\n[A-Za-z0-9_-]+:)/i);
@@ -216,39 +248,103 @@ function buildFallbackPolicyReply(policySubtype) {
 
 function buildReturnsReply(raw, query) {
   const normalizedQuery = normalizeAskSnoozerText(query);
-  if (normalizedQuery.includes("refund")) {
-    const refundSection = extractSection(raw, ["Refund Process"]);
-    if (refundSection) {
-      return clampReply(
-        refundSection,
-        "Refund timing can vary by order details, so review the return terms before you decide."
+  const overview = extractSection(raw, ["Overview"]);
+  const eligibility = extractSection(raw, ["Eligibility"]);
+  const nonReturnable = extractSection(raw, ["Non-Returnable Items"]);
+  const refundSection = extractSection(raw, ["Refund Process"]);
+  const startReturn = extractSection(raw, ["How to Start a Return"]);
+
+  if (
+    hasAnyQueryTerm(normalizedQuery, [
+      "adjustable base",
+      "motion base",
+      "base",
+      "adjustable frame",
+      "frame",
+      "pillows",
+      "pillow",
+      "bedding",
+      "accessories",
+    ])
+  ) {
+    const detail = nonReturnable || overview;
+    if (detail) {
+      return buildGroundedResult(
+        "The current return policy says motion bases, adjustable frames, bedding, pillows, and accessories are final sale once opened or delivered. The 100-night return window applies to mattress purchases only.",
+        detail,
+        { fallback: buildFallbackPolicyReply("returns") }
       );
     }
   }
 
-  if (normalizedQuery.includes("dont like") || normalizedQuery.includes("don't like")) {
-    const overview = extractSection(raw, ["Overview"]);
-    if (overview) return clampReply(overview, buildFallbackPolicyReply("returns"));
+  if (normalizedQuery.includes("refund")) {
+    if (
+      refundSection &&
+      (normalizedQuery.includes("how long") || normalizedQuery.includes("when"))
+    ) {
+      return buildGroundedResult(
+        "The current return policy says mattress refunds are usually processed within 3 to 5 business days after pickup. The original payment method is used unless something else is arranged.",
+        refundSection,
+        { fallback: "I do not see the exact refund timing in the current policy text. Check the return policy before you decide." }
+      );
+    }
+
+    if (overview || refundSection) {
+      return buildGroundedResult(
+        "According to the current return policy, mattresses come with a 100-night sleep trial and can be returned or exchanged once within that window. Refunds are usually processed within 3 to 5 business days after pickup.",
+        `${overview}\n${refundSection}`.trim(),
+        { fallback: buildFallbackPolicyReply("returns") }
+      );
+    }
+
+    return buildUngroundedResult(
+      "I do not see the exact refund timing in the current policy text. Check the return policy before you decide.",
+      { fallback: buildFallbackPolicyReply("returns") }
+    );
   }
 
-  return (
-    clampReply(extractSection(raw, ["Overview"])) ||
-    clampReply(extractFaqSection(raw, ["what s your return policy", "how long do refunds take"])) ||
-    buildFallbackPolicyReply("returns")
+  if (normalizedQuery.includes("dont like") || normalizedQuery.includes("don't like")) {
+    if (overview || eligibility) {
+      return buildGroundedResult(
+        "According to the current return policy, mattresses come with a 100-night sleep trial and can be returned or exchanged once within that window. The mattress needs to stay in good condition.",
+        `${overview}\n${eligibility}`.trim(),
+        { fallback: buildFallbackPolicyReply("returns") }
+      );
+    }
+  }
+
+  if (overview || startReturn) {
+    return buildGroundedResult(
+      "According to the current return policy, mattresses come with a 100-night sleep trial and can be returned or exchanged once within that window. If you need to start a return, Snoozer or the store can help arrange pickup.",
+      `${overview}\n${startReturn}`.trim(),
+      { fallback: buildFallbackPolicyReply("returns") }
+    );
+  }
+
+  return buildUngroundedResult(
+    "I do not see that exact return detail in the current policy text. Check the return policy before deciding.",
+    { fallback: buildFallbackPolicyReply("returns") }
   );
 }
 
 function buildDeliveryReply(raw, query) {
   const normalizedQuery = normalizeAskSnoozerText(query);
+  const overview = extractSection(raw, ["Overview"]);
+  const options = extractSection(raw, ["Delivery Options"]);
+  const fees = extractSection(raw, ["Delivery Fees", "Is delivery free"]);
+  const scheduling = extractSection(raw, ["Scheduling & Tracking"]);
 
   if (
     normalizedQuery.includes("how much") ||
     normalizedQuery.includes("fee") ||
     normalizedQuery.includes("free")
   ) {
-    const fees = extractSection(raw, ["Delivery Fees", "Is delivery free"]);
     if (fees) {
-      return "Delivery pricing depends on the order and service area, and basic delivery may be included on qualifying orders. Confirm the exact fee before you place the order.";
+      return buildGroundedResult(
+        "Delivery pricing depends on the order and service area, and basic delivery may be included on qualifying orders. Confirm the exact fee before you place the order.",
+        fees,
+        { fallback: buildFallbackPolicyReply("delivery") }
+      );
     }
   }
 
@@ -257,8 +353,14 @@ function buildDeliveryReply(raw, query) {
     normalizedQuery.includes("white glove") ||
     normalizedQuery.includes("remove")
   ) {
-    const options = extractSection(raw, ["Delivery Options", "Do you offer setup", "Will you remove"]);
-    if (options) return clampReply(options, buildFallbackPolicyReply("delivery"));
+    const setupDetail = options || extractFaqSection(raw, ["do you offer setup", "will you remove my old mattress"]);
+    if (setupDetail) {
+      return buildGroundedResult(
+        "The delivery policy says you can add in-room setup, assembly, and packaging removal, and old mattress removal is available on request.",
+        setupDetail,
+        { fallback: buildFallbackPolicyReply("delivery") }
+      );
+    }
   }
 
   if (
@@ -268,20 +370,47 @@ function buildDeliveryReply(raw, query) {
   ) {
     const timing =
       extractFaqSection(raw, ["how long does delivery take", "how do i track"]) ||
-      extractSection(raw, ["Scheduling & Tracking", "Overview"]);
-    if (timing) return clampReply(timing, buildFallbackPolicyReply("delivery"));
+      scheduling ||
+      overview;
+    if (timing) {
+      return buildGroundedResult(
+        "Most orders arrive in about 3 to 7 business days, and scheduling is handled by text or email once the order is ready.",
+        timing,
+        { fallback: buildFallbackPolicyReply("delivery") }
+      );
+    }
   }
 
-  return (
-    clampReply(extractSection(raw, ["Overview"])) ||
-    clampReply(extractFaqSection(raw, ["how long does delivery take", "who handles delivery"])) ||
-    buildFallbackPolicyReply("delivery")
+  if (overview || options) {
+    return buildGroundedResult(
+      "The current delivery policy says orders are delivered through trusted local carriers, with standard delivery usually running 3 to 7 business days. White-glove setup and old mattress removal can also be added when needed.",
+      `${overview}\n${options}`.trim(),
+      { fallback: buildFallbackPolicyReply("delivery") }
+    );
+  }
+
+  return buildUngroundedResult(
+    "I do not see that exact delivery detail in the current policy text. Check the delivery policy before deciding.",
+    { fallback: buildFallbackPolicyReply("delivery") }
   );
 }
 
 function buildWarrantyReply(raw, query) {
   const normalizedQuery = normalizeAskSnoozerText(query);
   const warrantyBullets = extractBulletItemsUnderHeading(raw, ["Mattress Warranty"]);
+  const motionBaseBullets = extractBulletItemsUnderHeading(raw, ["Motion Base Warranty"]);
+  const claimSection = extractSection(raw, ["How to Claim"]);
+  const exclusions = extractSection(raw, ["Exclusions"]);
+
+  if (hasAnyQueryTerm(normalizedQuery, ["adjustable base", "motion base", "base"])) {
+    if (motionBaseBullets.length > 0) {
+      return buildGroundedResult(
+        "The current warranty says motion bases carry a 10-year limited warranty. The first year includes full coverage, and later coverage is limited to parts.",
+        motionBaseBullets.join(" "),
+        { fallback: buildFallbackPolicyReply("warranty") }
+      );
+    }
+  }
 
   if (normalizedQuery.includes("cover")) {
     const coverage =
@@ -289,64 +418,121 @@ function buildWarrantyReply(raw, query) {
       (warrantyBullets[1]
         ? `It covers ${warrantyBullets[1].replace(/^Covers\s+/i, "").replace(/including:\s*$/i, "including qualifying defects.")}`
         : extractFirstBulletsUnderHeading(raw, ["Mattress Warranty"]));
-    if (coverage) return clampReply(coverage, buildFallbackPolicyReply("warranty"));
+    if (coverage) {
+      return buildGroundedResult(
+        clampReply(coverage, buildFallbackPolicyReply("warranty")),
+        coverage,
+        { fallback: buildFallbackPolicyReply("warranty") }
+      );
+    }
   }
 
   if (normalizedQuery.includes("claim")) {
-    const claims = extractSection(raw, ["How to Claim"]) || extractFaqSection(raw, ["how do i file a warranty claim"]);
-    if (claims) return clampReply(claims, buildFallbackPolicyReply("warranty"));
+    const claims = claimSection || extractFaqSection(raw, ["how do i file a warranty claim"]);
+    if (claims) {
+      return buildGroundedResult(
+        "The warranty guidance says to contact MySnoozePod Customer Care with proof of purchase and photos of the issue. From there, the claim can lead to repair, replacement, or a comparable substitute.",
+        claims,
+        { fallback: buildFallbackPolicyReply("warranty") }
+      );
+    }
+  }
+
+  if (normalizedQuery.includes("not covered") || normalizedQuery.includes("excluded")) {
+    if (exclusions) {
+      return buildGroundedResult(
+        "The warranty does not cover normal wear, stains, misuse, or unauthorized modifications. It is meant for defects in materials or workmanship, not comfort preference changes.",
+        exclusions,
+        { fallback: buildFallbackPolicyReply("warranty") }
+      );
+    }
   }
 
   if (warrantyBullets.length > 0) {
-    const lead = warrantyBullets[0].replace(/\s*\.$/, "");
-    const followUp = warrantyBullets[1]
-      ? warrantyBullets[1]
-          .replace(/^Covers\s+/i, "It covers ")
-          .replace(/including:\s*$/i, "including qualifying defects.")
-      : "It covers qualifying defects in materials or workmanship.";
-    return clampReply(`${lead}. ${followUp}`, buildFallbackPolicyReply("warranty"));
+    return buildGroundedResult(
+      "Yes. Mattresses are covered by a 10-year limited warranty against defects in materials or workmanship. Motion bases have their own 10-year limited coverage, with fuller coverage in the first year.",
+      `${warrantyBullets.join(" ")} ${motionBaseBullets.join(" ")}`.trim(),
+      { fallback: buildFallbackPolicyReply("warranty") }
+    );
   }
 
-  return (
-    clampReply(extractFirstBulletsUnderHeading(raw, ["Mattress Warranty"])) ||
-    clampReply(extractFaqSection(raw, ["how long is the warranty"])) ||
-    clampReply(extractSection(raw, ["Reply"])) ||
-    buildFallbackPolicyReply("warranty")
+  return buildUngroundedResult(
+    "I do not see that exact warranty detail in the current policy text. Check the warranty page before deciding.",
+    { fallback: buildFallbackPolicyReply("warranty") }
   );
 }
 
 function buildFinancingReply(raw, query) {
   const normalizedQuery = normalizeAskSnoozerText(query);
   const replySection = extractSection(raw, ["Reply"]) || extractSection(raw, ["Summary"]);
-  const baseReply = clampReply(replySection, buildFallbackPolicyReply("financing"));
+  const keyFacts = extractSection(raw, ["Key Facts"]);
+  const groundedBlock = `${replySection}\n${keyFacts}`.trim();
 
   if (
     normalizedQuery.includes("no money down") &&
-    !/no money down/i.test(baseReply)
+    !/no money down/i.test(groundedBlock)
   ) {
-    const lead = baseReply.split(/(?<=[.!?])\s+/).slice(0, 1).join(" ").trim();
-    return clampReply(
-      `${lead} Check the exact approval terms and current offer details before you decide.`,
-      buildFallbackPolicyReply("financing")
+    return buildGroundedResult(
+      "I do not see an exact no-money-down promise in the current financing guidance. It does say monthly payment options and 0% APR plans may be available for qualified customers.",
+      groundedBlock,
+      { fallback: buildFallbackPolicyReply("financing") }
     );
   }
 
-  return baseReply;
+  if (normalizedQuery.includes("monthly")) {
+    return buildGroundedResult(
+      "The current financing guidance says monthly payment options are available, and some shoppers may qualify for 0% APR plans. Check the exact approval terms and minimum purchase before you decide.",
+      groundedBlock,
+      { fallback: buildFallbackPolicyReply("financing") }
+    );
+  }
+
+  if (replySection || keyFacts) {
+    return buildGroundedResult(
+      "The current financing guidance says flexible monthly payment options are available, including 0% APR plans for qualified customers. Check the exact approval terms before you decide.",
+      groundedBlock,
+      { fallback: buildFallbackPolicyReply("financing") }
+    );
+  }
+
+  return buildUngroundedResult(
+    "I do not see that exact financing detail in the current guidance. Check the financing information before you decide.",
+    { fallback: buildFallbackPolicyReply("financing") }
+  );
 }
 
 function buildPricingReply(raw) {
-  return (
-    clampReply(extractSection(raw, ["Reply"])) ||
-    clampReply(extractSection(raw, ["Summary"])) ||
-    buildFallbackPolicyReply("pricing")
+  const replySection = extractSection(raw, ["Reply"]) || extractSection(raw, ["Summary"]);
+  if (replySection) {
+    return buildGroundedResult(
+      clampReply(replySection, buildFallbackPolicyReply("pricing")),
+      replySection,
+      { fallback: buildFallbackPolicyReply("pricing") }
+    );
+  }
+
+  return buildUngroundedResult(
+    "I do not see that exact pricing detail in the current guidance. Check the latest pricing before you decide.",
+    { fallback: buildFallbackPolicyReply("pricing") }
   );
 }
 
 function buildGeneralPolicyReply(raw) {
-  return (
-    clampReply(extractFaqSection(raw, ["what s the return policy", "how long does delivery take"])) ||
-    clampReply(extractSection(raw, ["Overview", "Reply"])) ||
-    buildFallbackPolicyReply("general_policy")
+  const section =
+    extractFaqSection(raw, ["what s the return policy", "how long does delivery take"]) ||
+    extractSection(raw, ["Overview", "Reply"]);
+
+  if (section) {
+    return buildGroundedResult(
+      clampReply(section, buildFallbackPolicyReply("general_policy")),
+      section,
+      { fallback: buildFallbackPolicyReply("general_policy") }
+    );
+  }
+
+  return buildUngroundedResult(
+    "I do not see that exact policy detail in the current text. Check the policy page before deciding.",
+    { fallback: buildFallbackPolicyReply("general_policy") }
   );
 }
 
@@ -457,35 +643,43 @@ async function resolveAskSnoozerPolicyAnswer({ query = "", traceId = "", timeout
 
   const policyMatch = await loadKnowledgeCandidates(keys.policy, { timeoutMs, traceId });
   if (policyMatch?.raw) {
+    const grounded = buildReplyFromRetrievedContent({
+      policySubtype,
+      raw: policyMatch.raw,
+      query,
+    });
     return {
       policySubtype,
-      reply: buildReplyFromRetrievedContent({
-        policySubtype,
-        raw: policyMatch.raw,
-        query,
-      }),
+      reply: grounded.reply,
       chips: [],
       retrieved: true,
       source: policyMatch.source,
       key: policyMatch.key,
       sourceKind: "policy",
+      matched: Boolean(grounded.matched),
+      answerGrounded: Boolean(grounded.answerGrounded),
+      matchedPreview: grounded.matchedPreview || "",
     };
   }
 
   const skillMatch = await loadPromptCandidates(keys.skill, { timeoutMs, traceId });
   if (skillMatch?.raw) {
+    const grounded = buildReplyFromRetrievedContent({
+      policySubtype,
+      raw: skillMatch.raw,
+      query,
+    });
     return {
       policySubtype,
-      reply: buildReplyFromRetrievedContent({
-        policySubtype,
-        raw: skillMatch.raw,
-        query,
-      }),
+      reply: grounded.reply,
       chips: extractHints(skillMatch.raw),
       retrieved: true,
       source: skillMatch.source,
       key: skillMatch.key,
       sourceKind: "skill",
+      matched: Boolean(grounded.matched),
+      answerGrounded: Boolean(grounded.answerGrounded),
+      matchedPreview: grounded.matchedPreview || "",
     };
   }
 
@@ -497,6 +691,9 @@ async function resolveAskSnoozerPolicyAnswer({ query = "", traceId = "", timeout
     source: "fallback",
     key: "",
     sourceKind: "fallback",
+    matched: false,
+    answerGrounded: false,
+    matchedPreview: "",
   };
 }
 

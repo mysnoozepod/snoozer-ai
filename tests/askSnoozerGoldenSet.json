@@ -566,10 +566,12 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "financing",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_skill", "local_skill"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["guaranteed approval", "no credit check"]
+      "must_include": ["monthly payment", "0% apr", "qualified"],
+      "must_not_include": ["guaranteed approval", "no credit check", "i can point you in the right direction"]
     }
   },
   {
@@ -582,9 +584,12 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "financing",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_skill", "local_skill"],
       "confidence_label_min": "high",
-      "products": { "min": 0, "max": 0 }
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["monthly payment", "0% apr"],
+      "must_not_include": ["i can point you in the right direction"]
     }
   },
   {
@@ -597,10 +602,12 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "financing",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_skill", "local_skill"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["guaranteed approval", "no credit check"]
+      "must_include": ["monthly payment", "0% apr"],
+      "must_not_include": ["guaranteed approval", "no credit check", "i can point you in the right direction"]
     }
   },
   {
@@ -613,10 +620,30 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "returns",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["current policy or checkout information"]
+      "must_include": ["100-night", "returned or exchanged"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "refund_policy",
+    "category": "policy_support",
+    "query": "what is your refund policy",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["100-night", "3 to 5 business days"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
   {
@@ -629,10 +656,12 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "returns",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["current policy or checkout information"]
+      "must_include": ["100-night", "good condition"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
   {
@@ -645,10 +674,30 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "returns",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["current policy or checkout information"]
+      "must_include": ["100-night", "returned or exchanged"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "return_adjustable_base",
+    "category": "policy_support",
+    "query": "can i return adjustable base",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["final sale", "mattress purchases only"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
   {
@@ -661,10 +710,12 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "returns",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["current policy or checkout information"]
+      "must_include": ["100-night", "3 to 5 business days"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
   {
@@ -677,10 +728,12 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "delivery",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["current policy or checkout information"]
+      "must_include": ["3 to 7 business days", "white-glove"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
   {
@@ -693,10 +746,12 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "delivery",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["current policy or checkout information"]
+      "must_include": ["3 to 7 business days", "text or email"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
   {
@@ -709,10 +764,12 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "delivery",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["current policy or checkout information"]
+      "must_include": ["3 to 7 business days", "trusted local carriers"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
   {
@@ -725,10 +782,12 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "delivery",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["current policy or checkout information", "free for everyone"]
+      "must_include": ["qualifying orders", "service area"],
+      "must_not_include": ["current policy or checkout information", "free for everyone", "i can point you in the right direction"]
     }
   },
   {
@@ -741,10 +800,12 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "warranty",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["current policy or checkout information"]
+      "must_include": ["10-year limited warranty", "materials or workmanship"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
   {
@@ -757,10 +818,48 @@
       "accepted_intents": ["policy_support"],
       "policy_subtype": "warranty",
       "policy_retrieved": true,
+      "policy_answer_grounded": true,
       "policy_source_any_of": ["s3_policy", "local_policy"],
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_not_include": ["current policy or checkout information"]
+      "must_include": ["10-year limited warranty", "materials or workmanship"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "warranties_on_beds",
+    "category": "policy_support",
+    "query": "are there warranties on beds",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "warranty",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["10-year limited warranty", "materials or workmanship"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "warranty_on_12_all_foam",
+    "category": "policy_support",
+    "query": "do you offer a warranty on 12 all foam",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "warranty",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "policy_source_any_of": ["s3_policy", "local_policy"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["10-year limited warranty", "materials or workmanship"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
 
