@@ -70,7 +70,10 @@ const {
   hasAskSnoozerBudgetSignal,
   parseAskSnoozerSizeLabel,
 } = require("./services/askSnoozerIntents");
-const { resolveAskSnoozerPolicySources } = require("./services/askSnoozerPolicy");
+const {
+  resolveAskSnoozerPolicySources,
+  resolveAskSnoozerSupplementalSources,
+} = require("./services/askSnoozerPolicy");
 const { buildAskSnoozerAnswer } = require("./services/askSnoozerAnswerEngine");
 
 let getHudScriptPayload = null;
@@ -1801,6 +1804,17 @@ async function resolveHudAskAnswerStrategy({
       key: policyKey || null,
       retrieved: policyRetrieved,
     });
+  }
+
+  const supplemental = await resolveAskSnoozerSupplementalSources({
+    classification,
+    query,
+    traceId,
+    timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
+  });
+
+  if (Array.isArray(supplemental?.sources) && supplemental.sources.length) {
+    sources.push(...supplemental.sources);
   }
 
   const productSourceRecord = buildHudAskProductSourceRecord({

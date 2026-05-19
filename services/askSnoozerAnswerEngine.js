@@ -351,6 +351,40 @@ function joinUniqueSentences(parts = [], maxSentences = 2) {
   return clampReply(out.join(" "));
 }
 
+function queryLooksLikeTrialQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "trial") ||
+    includesTerm(normalizedQuery, "100 night") ||
+    includesTerm(normalizedQuery, "100-night") ||
+    includesTerm(normalizedQuery, "sleep trial") ||
+    includesTerm(normalizedQuery, "how long can i try it") ||
+    includesTerm(normalizedQuery, "how long do i have to return it")
+  );
+}
+
+function queryLooksLikeWarrantyRegistration(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return includesTerm(normalizedQuery, "register") || includesTerm(normalizedQuery, "registration");
+}
+
+function queryLooksLikeWarrantyClaim(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return includesTerm(normalizedQuery, "claim") || includesTerm(normalizedQuery, "contact");
+}
+
+function queryLooksLikeSplitEducation(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return [
+    "half split",
+    "split mattress",
+    "split head mattress",
+    "flex head mattress",
+    "why would i need a split mattress",
+    "do couples need split mattress",
+  ].some((term) => includesTerm(normalizedQuery, term));
+}
+
 function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
   const normalizedQuery = normalizeAskSnoozerText(query);
   const topFact = facts[0]?.text || "";
@@ -370,6 +404,21 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     const refundFact = findFact(facts, ["refund", "3 to 5 business days", "pickup fee"]);
     const finalSaleFact = findFact(facts, ["final sale", "motion bases", "adjustable frames"]);
     const mattressOnlyFact = findFact(facts, ["mattress purchases only", "good condition", "stains"]);
+    const trialStartFact = findFact(facts, ["begins the day your mattress is delivered", "from delivery"]);
+
+    if (queryLooksLikeTrialQuestion(normalizedQuery)) {
+      return {
+        reply: joinUniqueSentences([
+          trialFact?.text
+            ? "Mattresses can be returned or exchanged once during the 100-night trial."
+            : topFact,
+          finalSaleFact?.text
+            ? "Adjustable bases and motion bases are final sale once opened or delivered."
+            : trialStartFact?.text || "",
+        ]),
+        grounded: true,
+      };
+    }
 
     if (includesTerm(normalizedQuery, "adjustable base") || includesTerm(normalizedQuery, "motion base")) {
       if (finalSaleFact) {
@@ -456,7 +505,7 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
 
     return {
       reply: joinUniqueSentences([
-        "The delivery guidance says orders are delivered through trusted local carriers, with standard delivery usually running 3 to 7 business days.",
+        "Delivery usually runs 3 to 7 business days through trusted local carriers.",
         setupFact?.text
           ? "White-glove setup and old mattress removal are also available when needed."
           : schedulingFact?.text || "",
@@ -470,6 +519,45 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     const coverageFact = findFact(facts, ["materials", "workmanship", "sagging", "defects"]);
     const baseFact = findFact(facts, ["motion bases", "first year", "parts only"]);
     const exclusionsFact = findFact(facts, ["not covered", "excludes", "stains", "misuse"]);
+    const registrationFact = findFact(facts, [
+      "no registration is needed",
+      "no registration needed",
+      "proof of purchase automatically activates",
+      "proof of purchase activates",
+    ]);
+    const claimFact = findFact(facts, [
+      "claims can be filed",
+      "contact us through snoozer",
+      "by email",
+      "in-store",
+      "proof of purchase is required",
+    ]);
+
+    if (queryLooksLikeWarrantyRegistration(normalizedQuery)) {
+      return {
+        reply: joinUniqueSentences([
+          registrationFact?.text
+            ? "I do not see a separate registration requirement in the current warranty guidance."
+            : topFact,
+          registrationFact?.text
+            ? "Your proof of purchase activates the coverage."
+            : claimFact?.text || "",
+        ]),
+        grounded: true,
+      };
+    }
+
+    if (queryLooksLikeWarrantyClaim(normalizedQuery)) {
+      return {
+        reply: joinUniqueSentences([
+          claimFact?.text
+            ? "The warranty guidance says claims can be started through Snoozer, by email, or in-store."
+            : topFact,
+          "Keep your order details or proof of purchase handy when you file the claim.",
+        ]),
+        grounded: true,
+      };
+    }
 
     if (includesTerm(normalizedQuery, "base")) {
       return {
@@ -558,6 +646,53 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     reply: joinUniqueSentences(facts.map((fact) => fact.text)),
     grounded: true,
   };
+}
+
+function buildSourceGuidedReply({ query = "", intent = "", intentGroup = "", facts = [] } = {}) {
+  if (!facts.length) {
+    return { reply: "", grounded: false, reason: "no_relevant_facts" };
+  }
+
+  if (intentGroup === "assessment_handoff") {
+    return {
+      reply: joinUniqueSentences([
+        "Start with how you sleep, what feels uncomfortable now, and whether you sleep hot.",
+        "The Snooze Assessment is the fastest way to narrow the right mattress without guessing.",
+      ]),
+      grounded: true,
+    };
+  }
+
+  if (intentGroup === "size_price" && (intent === "size_help" || intent === "split_king" || queryLooksLikeSplitEducation(query))) {
+    const splitFact = findFact(facts, [
+      "different feel per side",
+      "split comfort",
+      "one mattress",
+      "half split queen",
+      "half split king",
+      "split king",
+    ]);
+    const adjustableFact = findFact(facts, [
+      "not the same as a split mattress for adjustable bases",
+      "move independently on an adjustable base",
+      "adjustable base setup",
+      "split king mattress",
+    ]);
+
+    return {
+      reply: joinUniqueSentences([
+        splitFact?.text
+          ? "A split or half-split setup can let each side feel different without turning the mattress into two separate pieces."
+          : "A split or half-split setup is usually about giving each side more independence.",
+        adjustableFact?.text
+          ? "If you also want different comfort or movement on each side, check adjustable-base compatibility too."
+          : "Couples usually look at it when they want different comfort or movement on each side.",
+      ]),
+      grounded: true,
+    };
+  }
+
+  return { reply: "", grounded: false, reason: "no_source_reply" };
 }
 
 function buildProductReply({ intent = "", products = [] } = {}) {
@@ -716,7 +851,14 @@ function buildAskSnoozerAnswer({
     intentGroup,
     intent,
     policySubtype,
-    maxFacts: intentGroup === "policy_support" ? 20 : MAX_FACTS,
+    maxFacts:
+      intentGroup === "policy_support"
+        ? 30
+        : queryLooksLikeSplitEducation(query)
+          ? 8
+          : intentGroup === "assessment_handoff"
+            ? 6
+            : MAX_FACTS,
   });
 
   if (intentGroup === "policy_support") {
@@ -738,6 +880,34 @@ function buildAskSnoozerAnswer({
       needs_handoff: !policyReply.grounded,
       reason: policyReply.reason || "",
     };
+  }
+
+  if (
+    ["product_fit", "product_compare", "size_price", "couple_conflict", "base_elevation"].includes(intentGroup) &&
+    selected.facts.length &&
+    (queryLooksLikeSplitEducation(query) || intent === "size_help")
+  ) {
+    const guidedReply = buildSourceGuidedReply({
+      query,
+      intent,
+      intentGroup,
+      facts: selected.facts,
+    });
+
+    if (guidedReply.grounded) {
+      return {
+        reply: clampReply(guidedReply.reply),
+        answer_grounded: true,
+        answer_source_type: selected.primarySourceType || "fallback",
+        answer_source_key: selected.primarySourceKey || "",
+        answer_facts_count: selected.facts.length,
+        matched_preview: selected.matchedPreview || "",
+        answer_strategy: "source_summary",
+        extracted_facts: selected.facts.map((fact) => fact.text),
+        needs_handoff: false,
+        reason: "",
+      };
+    }
   }
 
   if (
@@ -775,20 +945,37 @@ function buildAskSnoozerAnswer({
   }
 
   if (["assessment_handoff", "booking_handoff", "cart_confidence"].includes(intentGroup)) {
-    const handoffFacts = buildHandoffFacts({ actions, pages, collections });
+    const handoffFacts = dedupeFacts(
+      selected.facts.concat(buildHandoffFacts({ actions, pages, collections }))
+    );
+    const guidedReply =
+      intentGroup === "assessment_handoff"
+        ? buildSourceGuidedReply({
+            query,
+            intent,
+            intentGroup,
+            facts: handoffFacts,
+          })
+        : { reply: "", grounded: false };
     const handoffReply = buildHandoffReply({ intentGroup, facts: handoffFacts });
+    const resolvedReply = guidedReply.grounded ? guidedReply : handoffReply;
+    const primaryFact = handoffFacts[0] || null;
 
     return {
-      reply: clampReply(handoffReply.reply),
-      answer_grounded: Boolean(handoffReply.grounded && handoffFacts.length),
-      answer_source_type: handoffFacts[0]?.source_type || "fallback",
-      answer_source_key: handoffFacts[0]?.source_key || "",
+      reply: clampReply(resolvedReply.reply),
+      answer_grounded: Boolean(resolvedReply.grounded && handoffFacts.length),
+      answer_source_type: primaryFact?.source_type || "fallback",
+      answer_source_key: primaryFact?.source_key || "",
       answer_facts_count: handoffFacts.length,
       matched_preview: previewText(handoffFacts.map((fact) => fact.text).join(" ")),
-      answer_strategy: handoffReply.grounded ? "guided_handoff" : "safe_fallback",
+      answer_strategy: resolvedReply.grounded
+        ? intentGroup === "assessment_handoff" && selected.facts.length
+          ? "source_summary"
+          : "guided_handoff"
+        : "safe_fallback",
       extracted_facts: handoffFacts.map((fact) => fact.text),
       needs_handoff: true,
-      reason: handoffReply.reason || "",
+      reason: resolvedReply.reason || "",
     };
   }
 

@@ -1112,6 +1112,325 @@
       "products": { "min": 0, "max": 0 }
     }
   },
+  {
+    "id": "help_me_find_a_good_mattress",
+    "category": "assessment_handoff",
+    "query": "help me find a good mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_help"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "required_hrefs": ["/pages/snooze-assessment"],
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["sleep hot", "assessment"],
+      "must_not_include": ["i can point you in the right direction", "current policy or checkout information"]
+    }
+  },
+  {
+    "id": "help_me_choose_a_mattress",
+    "category": "assessment_handoff",
+    "query": "help me choose a mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_help"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "required_hrefs": ["/pages/snooze-assessment"],
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "what_mattress_should_i_get",
+    "category": "assessment_handoff",
+    "query": "what mattress should I get",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_help"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "required_hrefs": ["/pages/snooze-assessment"],
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "where_should_i_start",
+    "category": "assessment_handoff",
+    "query": "where should I start",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "assessment_handoff",
+      "accepted_intents": ["assessment_help"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_skill", "local_skill"],
+      "answer_facts_count_min": 1,
+      "required_hrefs": ["/pages/snooze-assessment"],
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "register_my_mattress",
+    "category": "policy_support",
+    "query": "Do I need to register my mattress?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "warranty",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["registration", "proof of purchase"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "register_for_warranty",
+    "category": "policy_support",
+    "query": "register my mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "warranty",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["proof of purchase"],
+      "must_not_include": ["registration portal", "current policy or checkout information"]
+    }
+  },
+  {
+    "id": "warranty_claim_contact",
+    "category": "policy_support",
+    "query": "who do I contact for warranty claims?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "warranty",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["snoozer", "proof of purchase"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "trial_period_length",
+    "category": "policy_support",
+    "query": "How long is the trial period?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["100-night", "final sale"],
+      "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
+    }
+  },
+  {
+    "id": "how_long_can_i_try_it",
+    "category": "policy_support",
+    "query": "how long can I try it",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["100-night", "final sale"]
+    }
+  },
+  {
+    "id": "one_hundred_night_trial",
+    "category": "policy_support",
+    "query": "100 night trial",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["100-night"]
+    }
+  },
+  {
+    "id": "half_split_mattress",
+    "category": "size_price",
+    "query": "whats a half split mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["size_help"],
+      "confidence_label_min": "medium",
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["half-split", "adjustable-base"],
+      "must_not_include": ["guaranteed", "always available"]
+    }
+  },
+  {
+    "id": "what_is_a_split_mattress",
+    "category": "size_price",
+    "query": "what is a split mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["size_help"],
+      "confidence_label_min": "medium",
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["split", "adjustable-base"]
+    }
+  },
+  {
+    "id": "split_king_mattress_question",
+    "category": "size_price",
+    "query": "split king mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["split_king", "size_help"],
+      "confidence_label_min": "medium",
+      "answer_grounded": true,
+      "products": { "min": 1, "max": 3 }
+    }
+  },
+  {
+    "id": "why_need_split_mattress",
+    "category": "size_price",
+    "query": "why would I need a split mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["size_help"],
+      "confidence_label_min": "medium",
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["split", "comfort"]
+    }
+  },
+  {
+    "id": "delivery_chip_how_fast",
+    "category": "policy_support",
+    "query": "How fast can I get my mattress?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "delivery",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["3 to 7 business days", "white-glove"]
+    }
+  },
+  {
+    "id": "returns_chip_exchange",
+    "category": "policy_support",
+    "query": "Can I exchange my mattress?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["100-night", "returned or exchanged"]
+    }
+  },
+  {
+    "id": "returns_chip_returnable_bases",
+    "category": "policy_support",
+    "query": "Are motion bases or pillows returnable?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "policy_subtype": "returns",
+      "confidence_label_min": "high",
+      "policy_retrieved": true,
+      "policy_answer_grounded": true,
+      "answer_grounded": true,
+      "answer_source_any_of": ["s3_policy", "local_policy"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["final sale", "mattress purchases only"]
+    }
+  },
+  {
+    "id": "booking_chip_without_article",
+    "category": "booking_handoff",
+    "query": "book snooze session",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "booking_handoff",
+      "accepted_intents": ["booking_help"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["action_allowlist"],
+      "answer_facts_count_min": 1,
+      "required_hrefs": ["/pages/book-your-snooze-session"],
+      "products": { "min": 0, "max": 0 }
+    }
+  },
 
   {
     "id": "random_gibberish",

@@ -16,7 +16,7 @@ const localMirrorCache = new Map();
 
 const POLICY_KEY_CANDIDATES = Object.freeze({
   returns: Object.freeze({
-    policy: ["policies/returns.md"],
+    policy: ["policies/returns.md", "faq/returns.md"],
     skill: ["skill/returns.md", "skills/returns.md"],
   }),
   delivery: Object.freeze({
@@ -24,7 +24,7 @@ const POLICY_KEY_CANDIDATES = Object.freeze({
     skill: ["skill/delivery.md", "skills/delivery.md"],
   }),
   warranty: Object.freeze({
-    policy: ["policies/warranty.md"],
+    policy: ["policies/warranty.md", "faq/warranty.md"],
     skill: ["skill/warranty.md", "skills/warranty.md"],
   }),
   financing: Object.freeze({
@@ -40,6 +40,42 @@ const POLICY_KEY_CANDIDATES = Object.freeze({
     skill: [],
   }),
 });
+
+const SUPPLEMENTAL_SOURCE_CANDIDATES = Object.freeze({
+  assessment_handoff: Object.freeze({
+    knowledge: [],
+    skill: [
+      "skill/help_me_choose.md",
+      "skills/help_me_choose.md",
+      "skill/where_to_start.md",
+      "skills/where_to_start.md",
+    ],
+  }),
+  split_education: Object.freeze({
+    knowledge: ["products/mattress/dual-comfort-12.md"],
+    skill: [],
+  }),
+});
+
+const SPLIT_EDUCATION_TERMS = Object.freeze([
+  "half split",
+  "split mattress",
+  "split head mattress",
+  "flex head mattress",
+  "split comfort",
+  "split king",
+]);
+
+const ASSESSMENT_SOURCE_TERMS = Object.freeze([
+  "help me find",
+  "help me choose",
+  "help me pick",
+  "where should i start",
+  "what mattress should i get",
+  "recommend a mattress",
+  "find me a good bed",
+  "i need a good mattress",
+]);
 
 function tryRequireOpenAi() {
   try {
@@ -211,6 +247,10 @@ function extractBulletItemsUnderHeading(raw, headings = []) {
 function hasAnyQueryTerm(query, terms = []) {
   const normalizedQuery = normalizeAskSnoozerText(query);
   return terms.some((term) => normalizedQuery.includes(normalizeAskSnoozerText(term)));
+}
+
+function hasAnyNormalizedTerm(text, terms = []) {
+  return terms.some((term) => text.includes(normalizeAskSnoozerText(term)));
 }
 
 function extractHints(raw) {
@@ -652,6 +692,22 @@ async function loadPromptCandidates(keys, options = {}) {
   return null;
 }
 
+async function loadAllKnowledgeCandidates(keys = [], options = {}) {
+  const out = [];
+  const seen = new Set();
+
+  for (const key of Array.isArray(keys) ? keys : []) {
+    const loaded = await loadKnowledgeCandidates([key], options);
+    if (!loaded?.raw) continue;
+    const dedupeKey = `${loaded.source}:${loaded.key}`;
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
+    out.push(loaded);
+  }
+
+  return out;
+}
+
 function buildReplyFromRetrievedContent({ policySubtype, raw, query }) {
   switch (String(policySubtype || "").trim()) {
     case "returns":
@@ -673,7 +729,7 @@ async function resolveAskSnoozerPolicyAnswer({ query = "", traceId = "", timeout
   const policySubtype = classifyAskSnoozerPolicySubtype(query);
   const keys = POLICY_KEY_CANDIDATES[policySubtype] || POLICY_KEY_CANDIDATES.general_policy;
 
-  const policyMatch = await loadKnowledgeCandidates(keys.policy, { timeoutMs, traceId });
+  const policyMatch = (await loadAllKnowledgeCandidates(keys.policy, { timeoutMs, traceId }))[0] || null;
   if (policyMatch?.raw) {
     const grounded = buildReplyFromRetrievedContent({
       policySubtype,
@@ -734,8 +790,9 @@ async function resolveAskSnoozerPolicySources({ query = "", traceId = "", timeou
   const keys = POLICY_KEY_CANDIDATES[policySubtype] || POLICY_KEY_CANDIDATES.general_policy;
 
   const sources = [];
-  const policyMatch = await loadKnowledgeCandidates(keys.policy, { timeoutMs, traceId });
-  if (policyMatch?.raw) {
+  const policyMatches = await loadAllKnowledgeCandidates(keys.policy, { timeoutMs, traceId });
+  for (const policyMatch of policyMatches) {
+    if (!policyMatch?.raw) continue;
     sources.push(
       buildSourceRecord({
         raw: policyMatch.raw,
@@ -773,11 +830,80 @@ async function resolveAskSnoozerPolicySources({ query = "", traceId = "", timeou
   };
 }
 
+async function resolveAskSnoozerSupplementalSources({
+  classification = null,
+  query = "",
+  traceId = "",
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+} = {}) {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  const intentGroup = String(classification?.intent_group || "").trim();
+  const intent = String(classification?.intent || "").trim();
+  const sources = [];
+
+  if (intentGroup === "assessment_handoff" && hasAnyNormalizedTerm(normalizedQuery, ASSESSMENT_SOURCE_TERMS)) {
+    const candidates = SUPPLEMENTAL_SOURCE_CANDIDATES.assessment_handoff;
+    const loadedSkills = [];
+
+    for (const key of candidates.skill) {
+      const loaded = await loadPromptCandidates([key], { timeoutMs, traceId });
+      if (!loaded?.raw) continue;
+      loadedSkills.push(loaded);
+    }
+
+    for (const loaded of loadedSkills) {
+      sources.push(
+        buildSourceRecord({
+          raw: loaded.raw,
+          source: loaded.source,
+          key: loaded.key,
+          sourceKind: "skill",
+          policySubtype: "",
+        })
+      );
+    }
+  }
+
+  if (
+    intentGroup === "size_price" &&
+    hasAnyNormalizedTerm(normalizedQuery, SPLIT_EDUCATION_TERMS)
+  ) {
+    const candidates = SUPPLEMENTAL_SOURCE_CANDIDATES.split_education;
+    const loadedKnowledge = await loadKnowledgeCandidates(candidates.knowledge, {
+      timeoutMs,
+      traceId,
+    });
+
+    if (loadedKnowledge?.raw) {
+      sources.push(
+        buildSourceRecord({
+          raw: loadedKnowledge.raw,
+          source:
+            loadedKnowledge.source === "s3_policy"
+              ? "s3_knowledge"
+              : loadedKnowledge.source === "local_policy"
+                ? "local_knowledge"
+                : loadedKnowledge.source,
+          key: loadedKnowledge.key,
+          sourceKind: "knowledge",
+          policySubtype: "",
+        })
+      );
+    }
+  }
+
+  return {
+    sources,
+    retrieved: sources.length > 0,
+  };
+}
+
 module.exports = {
   classifyAskSnoozerPolicySubtype,
   cleanShopperText,
   normalizeMarkdown,
   resolveAskSnoozerPolicyAnswer,
   resolveAskSnoozerPolicySources,
+  resolveAskSnoozerSupplementalSources,
   stripFrontMatter,
 };
