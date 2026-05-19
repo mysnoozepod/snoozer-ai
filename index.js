@@ -1029,9 +1029,15 @@ const HUD_ASK_SIZE_CHIPS = Object.freeze([
   { label: "Twin XL", value: "twin xl" },
 ]);
 
+const HUD_ASK_POLICY_CHIPS = Object.freeze([
+  { label: "What is your return policy?", value: "what is your return policy" },
+  { label: "How long does delivery take?", value: "how long does delivery take" },
+  { label: "Do you offer financing?", value: "do you offer financing" },
+]);
+
 const HUD_ASK_INTENT_CONFIG = Object.freeze({
   default: {
-    reply: "Start with how you sleep. I'll guide you from there.",
+    reply: "Start with how you sleep. I can guide the next step from there.",
     chips: HUD_ASK_DEFAULT_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
@@ -1039,7 +1045,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   sleep_hot: {
     reply:
-      "Cooling comfort usually starts with breathable materials and the right support feel.",
+      "Start with breathable comfort and support that will not trap heat.",
     chips: [
       { label: "Compare foam vs hybrid", value: "compare foam vs hybrid" },
       { label: "I need firm support", value: "I need firm support" },
@@ -1051,7 +1057,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   firm_support: {
     reply:
-      "Firm support can help keep your body aligned without making the bed feel rigid.",
+      "Focus on alignment first, then comfort feel.",
     chips: [
       { label: "I have back pain", value: "I have back pain" },
       { label: "Compare mattresses", value: "compare foam vs hybrid" },
@@ -1063,7 +1069,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   back_pain: {
     reply:
-      "For back discomfort, focus on support, pressure relief, and keeping your spine neutral.",
+      "For back discomfort, prioritize neutral alignment and pressure relief.",
     chips: [
       { label: "I need firm support", value: "I need firm support" },
       { label: "I sleep hot", value: "I sleep hot" },
@@ -1075,7 +1081,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   snoring: {
     reply:
-      "Elevation may help some sleepers breathe easier, especially when paired with the right base.",
+      "Elevation may help some sleepers feel more comfortable.",
     chips: [
       { label: "Book Your Snooze Session", value: "book snooze session" },
       { label: "Compare mattresses", value: "compare foam vs hybrid" },
@@ -1087,7 +1093,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   compare_mattresses: {
     reply:
-      "Foam usually feels more contouring. Hybrid usually adds more lift, airflow, and bounce.",
+      "Foam usually gives deeper contouring. Hybrid usually adds more lift, airflow, and bounce.",
     chips: [
       { label: "I sleep hot", value: "I sleep hot" },
       { label: "I need firm support", value: "I need firm support" },
@@ -1098,7 +1104,8 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   assessment_help: {
-    reply: "The Snooze Assessment is the fastest way to narrow the right direction.",
+    reply:
+      "The Snooze Assessment is the fastest way to narrow this down properly. Use it when comfort, support, or size is unclear.",
     chips: [
       { label: "Take Snooze Assessment", value: "take snooze assessment" },
       { label: "Help me compare mattresses", value: "compare foam vs hybrid" },
@@ -1110,7 +1117,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   booking_help: {
     reply:
-      "A Snooze Session lets you test the experience in person without a traditional sales floor.",
+      "A Snooze Session is the best next step if you want to test the feel before deciding.",
     chips: [
       { label: "Book Your Snooze Session", value: "book snooze session" },
       { label: "Take Snooze Assessment", value: "take snooze assessment" },
@@ -1122,7 +1129,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   couple_conflict: {
     reply:
-      "If two sleepers want different comfort, start with flexible options that let each side feel right.",
+      "Different comfort needs are exactly where dual-comfort options matter.",
     chips: [
       { label: "Take Snooze Assessment", value: "take snooze assessment" },
       { label: "Book Your Snooze Session", value: "book snooze session" },
@@ -1134,7 +1141,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   budget_value: {
     reply:
-      "For value, start with the simplest verified mattress options and confirm the right size.",
+      "For value, start with the simplest verified mattress options and confirm the right size before deciding.",
     chips: HUD_ASK_BUDGET_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
@@ -1149,14 +1156,14 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   queen_size: {
-    reply: "Here are verified Queen-compatible options to compare first.",
+    reply: "These verified Queen options are a better place to compare feel and support first.",
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   king_size: {
-    reply: "Here are verified King-compatible options to compare first.",
+    reply: "These verified King options are a better place to compare feel and support first.",
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
@@ -1171,14 +1178,14 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   twin_xl: {
-    reply: "Here are verified Twin XL-compatible options to compare first.",
+    reply: "These verified Twin XL options are a better place to compare feel and support first.",
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   full_size: {
-    reply: "Here are verified Full-size options to compare first.",
+    reply: "These verified Full-size options are a better place to compare feel and support first.",
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
@@ -1186,15 +1193,11 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   policy_support: {
     reply:
-      "For shipping, returns, warranty, financing, or delivery questions, I can point you to the right next step.",
-    chips: [
-      { label: "Book Your Snooze Session", value: "book snooze session" },
-      { label: "Take Snooze Assessment", value: "take snooze assessment" },
-      { label: "Help me compare mattresses", value: "compare foam vs hybrid" },
-    ],
-    actions: [HUD_ASK_ACTION_BOOKING],
+      "I can point you in the right direction, but final policy details should be confirmed from the current policy or checkout information.",
+    chips: HUD_ASK_POLICY_CHIPS,
+    actions: [],
     collections: [],
-    pages: [HUD_ASK_PAGE_ASSESSMENT],
+    pages: [],
   },
   cart_confidence: {
     reply:
@@ -1467,10 +1470,21 @@ function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
   }
 
   if (intent === "policy_support") {
-    return "For shipping, returns, warranty, financing, or delivery questions, I can point you to the right next step.";
+    return "I can point you in the right direction, but final policy details should be confirmed from the current policy or checkout information.";
   }
 
   return baseReply;
+}
+
+function shouldHudAskUseIntentCards(intent) {
+  return [
+    "snoring",
+    "assessment_help",
+    "booking_help",
+    "couple_conflict",
+    "policy_support",
+    "cart_confidence",
+  ].includes(String(intent || "").trim());
 }
 
 function resolveHudAskContextualConfig({ intent, pageType, path }) {
@@ -1482,14 +1496,15 @@ function resolveHudAskContextualConfig({ intent, pageType, path }) {
     path,
     baseReply: baseConfig.reply,
   });
+  const useIntentCards = shouldHudAskUseIntentCards(intent);
 
   if (normalizedPageType === "home") {
     return {
       reply,
       chips: HUD_ASK_HOME_CHIPS,
-      actions: [HUD_ASK_ACTION_ASSESSMENT],
-      collections: [HUD_ASK_COLLECTION_MATTRESSES],
-      pages: [HUD_ASK_PAGE_BOOKING],
+      actions: useIntentCards ? baseConfig.actions : [HUD_ASK_ACTION_ASSESSMENT],
+      collections: useIntentCards ? baseConfig.collections : [HUD_ASK_COLLECTION_MATTRESSES],
+      pages: useIntentCards ? baseConfig.pages : [HUD_ASK_PAGE_BOOKING],
     };
   }
 
@@ -1497,9 +1512,9 @@ function resolveHudAskContextualConfig({ intent, pageType, path }) {
     return {
       reply,
       chips: HUD_ASK_COLLECTION_CHIPS,
-      actions: [HUD_ASK_ACTION_ASSESSMENT],
-      collections: [HUD_ASK_COLLECTION_MATTRESSES],
-      pages: [],
+      actions: useIntentCards ? baseConfig.actions : [HUD_ASK_ACTION_ASSESSMENT],
+      collections: useIntentCards ? baseConfig.collections : [HUD_ASK_COLLECTION_MATTRESSES],
+      pages: useIntentCards ? baseConfig.pages : [],
     };
   }
 
@@ -1507,9 +1522,9 @@ function resolveHudAskContextualConfig({ intent, pageType, path }) {
     return {
       reply,
       chips: HUD_ASK_PRODUCT_CHIPS,
-      actions: [HUD_ASK_ACTION_ASSESSMENT],
-      collections: [],
-      pages: [],
+      actions: useIntentCards ? baseConfig.actions : [HUD_ASK_ACTION_ASSESSMENT],
+      collections: useIntentCards ? baseConfig.collections : [],
+      pages: useIntentCards ? baseConfig.pages : [],
     };
   }
 
@@ -1571,15 +1586,84 @@ function resolveHudAskReplyOverride({
   fallbackReply,
 } = {}) {
   const hasProducts = Array.isArray(products) && products.length > 0;
+  const normalizedQuery = normalizeHudAskText(query);
+  const sizeLabel = resolveHudAskRequestedSizeLabel(intent, query);
 
-  if (intent === "budget_value") {
-    return hasProducts
-      ? "For value, start with the simplest verified mattress options and confirm the right size."
-      : "For value, start with the simplest verified mattress options and confirm the right size.";
+  if (intent === "policy_support") {
+    if (
+      normalizedQuery.includes("return") ||
+      normalizedQuery.includes("dont like") ||
+      normalizedQuery.includes("don't like")
+    ) {
+      return "I can point you in the right direction, but return details should be confirmed from the current policy or checkout information.";
+    }
+
+    if (
+      normalizedQuery.includes("deliver") ||
+      normalizedQuery.includes("delivery") ||
+      normalizedQuery.includes("shipping") ||
+      normalizedQuery.includes("setup")
+    ) {
+      return "I can point you in the right direction, but delivery and setup details should be confirmed from the current policy or checkout information.";
+    }
+
+    if (
+      normalizedQuery.includes("finance") ||
+      normalizedQuery.includes("financing") ||
+      normalizedQuery.includes("payment") ||
+      normalizedQuery.includes("pay over time") ||
+      normalizedQuery.includes("no money down")
+    ) {
+      return "I can point you in the right direction, but financing terms should be confirmed from the current policy or checkout information.";
+    }
+
+    return "I can point you in the right direction, but final policy details should be confirmed from the current policy or checkout information.";
   }
 
-  if (intent === "split_king" && hasProducts) {
-    return "Start with verified Split King-compatible options, then confirm the right base setup.";
+  if (hasProducts) {
+    switch (intent) {
+      case "sleep_hot":
+        return "Start with breathable comfort and support that will not trap heat. These options lean toward better airflow without giving up pressure relief.";
+      case "firm_support":
+        return "Focus on alignment first, then comfort feel. These options are stronger starting points if you do not want the bed to feel too soft.";
+      case "back_pain":
+        return "For back discomfort, prioritize neutral alignment and pressure relief. These options are better starting points when support matters as much as comfort.";
+      case "couple_conflict":
+        return "Different comfort needs are exactly where dual-comfort options matter. Start with beds that can balance support without forcing one feel on both sleepers.";
+      case "compare_mattresses":
+        return "Foam usually gives deeper contouring. Hybrid usually adds more lift, airflow, and bounce, so these are good starting points to compare.";
+      case "budget_value":
+        return "For value, start with the simplest verified mattress options and confirm the right size before deciding.";
+      case "size_help":
+        return sizeLabel
+          ? `These verified ${sizeLabel} options are a better place to compare feel and support without guessing on size.`
+          : "Start by confirming the size you need, then compare feel and support inside that size.";
+      case "queen_size":
+      case "king_size":
+      case "twin_xl":
+      case "full_size":
+        return sizeLabel
+          ? `These verified ${sizeLabel} options are a better place to compare feel and support first.`
+          : "These verified size options are a better place to compare feel and support first.";
+      case "split_king":
+        return "Split king usually depends on matching two compatible sides with the right base setup. These verified options help you compare that path safely.";
+      case "snoring":
+        return "Elevation may help some sleepers feel more comfortable. Start with the adjustable-base path rather than guessing at a mattress alone.";
+      default:
+        break;
+    }
+  }
+
+  if (intent === "assessment_help") {
+    return "The Snooze Assessment is the fastest way to narrow this down properly. Use it when comfort, support, or size is unclear.";
+  }
+
+  if (intent === "booking_help") {
+    return "A Snooze Session is the best next step if you want to test the feel before deciding.";
+  }
+
+  if (intent === "fallback") {
+    return "I can still guide you. Try one of these starting points.";
   }
 
   return buildHudAskReplyForContext({

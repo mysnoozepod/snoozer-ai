@@ -423,7 +423,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 0.8rem;
-    margin-bottom: 1.4rem;
+    margin-bottom: 1.2rem;
   }
 
   .header__snoozer-input {
@@ -471,7 +471,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.8rem;
-    margin-bottom: 1.4rem;
+    margin-bottom: 0;
   }
 
   .header__snoozer-chip {
@@ -480,36 +480,89 @@
     justify-content: center;
     min-height: 3.6rem;
     padding: 0 1.2rem;
-    border: 0.1rem solid rgba(7, 26, 68, 0.1);
+    border: 0.1rem solid rgba(7, 26, 68, 0.12);
     border-radius: 999px;
-    background: #f6f8fb;
+    background: #f8fafc;
     color: #243247;
     font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
     font-size: 1.3rem;
     font-weight: 600;
     line-height: 1.2;
     cursor: pointer;
-    transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+    transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease, transform 180ms ease;
   }
 
   .header__snoozer-chip[aria-pressed='true'],
   .header__snoozer-chip:hover,
   .header__snoozer-chip:focus-visible {
     border-color: rgba(7, 26, 68, 0.22);
-    background: #eef4fb;
+    background: #edf4ff;
     color: #071a44;
+    transform: translateY(-0.1rem);
+  }
+
+  .header__snoozer-chip-zone,
+  .header__snoozer-results {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .header__snoozer-chip-zone {
+    margin-bottom: 1.4rem;
+  }
+
+  .header__snoozer-section-label {
+    margin: 0;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(7, 26, 68, 0.62);
+  }
+
+  .header__snoozer-response-card {
+    margin-bottom: 1.5rem;
+    padding: 1.45rem 1.45rem 1.5rem;
+    border: 0.1rem solid rgba(18, 67, 148, 0.14);
+    border-radius: 2rem;
+    background: linear-gradient(180deg, #eef4ff 0%, #f7faff 100%);
+    box-shadow: 0 1.2rem 2.8rem rgba(7, 26, 68, 0.08);
+  }
+
+  .header__snoozer-response-kicker {
+    margin: 0 0 0.55rem;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(7, 26, 68, 0.62);
+  }
+
+  .header__snoozer-last-query {
+    margin: 0 0 0.7rem;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.18rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: rgba(36, 50, 71, 0.82);
+  }
+
+  .header__snoozer-last-query[hidden],
+  .header__snoozer-results[hidden] {
+    display: none !important;
   }
 
   .header__snoozer-response {
-    margin: 0 0 1.4rem;
-    padding: 1.3rem 1.4rem;
-    border-radius: 1.8rem;
-    background: #f8fafc;
+    margin: 0;
     color: #243247;
     font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 1.4rem;
-    font-weight: 500;
-    line-height: 1.5;
+    font-size: 1.46rem;
+    font-weight: 600;
+    line-height: 1.58;
   }
 
   .header__snoozer-actions {
@@ -528,6 +581,19 @@
     text-decoration: none;
     color: #071a44;
     box-shadow: 0 0.8rem 1.8rem rgba(7, 26, 68, 0.05);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+
+  .header__snoozer-action:hover,
+  .header__snoozer-action:focus-visible {
+    transform: translateY(-0.15rem);
+    border-color: rgba(18, 67, 148, 0.18);
+    box-shadow: 0 1.2rem 2.2rem rgba(7, 26, 68, 0.08);
+  }
+
+  .header__snoozer-action--product {
+    background: #fcfdff;
+    border-color: rgba(18, 67, 148, 0.14);
   }
 
   .header__snoozer-action-label {
@@ -545,6 +611,28 @@
     font-weight: 500;
     line-height: 1.35;
     color: rgba(36, 50, 71, 0.76);
+  }
+
+  .header__snoozer-action-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.15rem;
+  }
+
+  .header__snoozer-action-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.1rem;
+    padding: 0 0.7rem;
+    border-radius: 999px;
+    background: #edf4ff;
+    color: #124394;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
   }
 
   @media screen and (min-width: 990px) {
@@ -853,26 +941,36 @@
       >
       <button type="submit" class="header__snoozer-submit">Guide Me</button>
     </form>
-    <div class="header__snoozer-chip-list" data-snoozer-chip-list aria-label="Suggested Snoozer prompts">
-      <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Cooling and airflow matter most here. I can help narrow the right feel.">I sleep hot</button>
-      <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Firm support can help with alignment, but comfort still matters.">I need firm support</button>
-      <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Snoring can be affected by sleep position and elevation. Start with your sleep setup.">I snore</button>
-      <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Compare by feel, support, cooling, and adjustability - not just price.">I want to compare mattresses</button>
+    <div class="header__snoozer-chip-zone">
+      <p class="header__snoozer-section-label">Quick starts</p>
+      <div class="header__snoozer-chip-list" data-snoozer-chip-list aria-label="Suggested Snoozer prompts">
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Cooling and airflow matter most here. I can help narrow the right feel.">I sleep hot</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Firm support can help with alignment, but comfort still matters.">I need firm support</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Snoring can be affected by sleep position and elevation. Start with your sleep setup.">I snore</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Compare by feel, support, cooling, and adjustability - not just price.">I want to compare mattresses</button>
+      </div>
     </div>
-    <p class="header__snoozer-response" data-snoozer-response aria-live="polite">Start with how you sleep. I'll guide you from there.</p>
-    <div class="header__snoozer-actions" data-snoozer-actions>
-      <a href="{{ snoozer_assessment_url }}" class="header__snoozer-action" data-snoozer-placeholder-link>
-        <span class="header__snoozer-action-label">Take Snooze Assessment</span>
-        <span class="header__snoozer-action-copy">Start with your sleep profile.</span>
-      </a>
-      <a href="{{ snoozer_mattresses_url }}" class="header__snoozer-action">
-        <span class="header__snoozer-action-label">View Mattresses</span>
-        <span class="header__snoozer-action-copy">Compare feel, support, and cooling.</span>
-      </a>
-      <a href="{{ snoozer_booking_url }}" class="header__snoozer-action">
-        <span class="header__snoozer-action-label">Book Snooze Session</span>
-        <span class="header__snoozer-action-copy">Test your fit in person.</span>
-      </a>
+    <div class="header__snoozer-response-card">
+      <p class="header__snoozer-response-kicker">Snoozer says</p>
+      <p class="header__snoozer-last-query" data-snoozer-last-query hidden></p>
+      <p class="header__snoozer-response" data-snoozer-response aria-live="polite">Start with how you sleep. I'll guide you from there.</p>
+    </div>
+    <div class="header__snoozer-results" data-snoozer-results>
+      <p class="header__snoozer-section-label" data-snoozer-results-label>Good starting points</p>
+      <div class="header__snoozer-actions" data-snoozer-actions>
+        <a href="{{ snoozer_assessment_url }}" class="header__snoozer-action" data-snoozer-placeholder-link>
+          <span class="header__snoozer-action-label">Take Snooze Assessment</span>
+          <span class="header__snoozer-action-copy">Start with your sleep profile.</span>
+        </a>
+        <a href="{{ snoozer_mattresses_url }}" class="header__snoozer-action">
+          <span class="header__snoozer-action-label">View Mattresses</span>
+          <span class="header__snoozer-action-copy">Compare feel, support, and cooling.</span>
+        </a>
+        <a href="{{ snoozer_booking_url }}" class="header__snoozer-action">
+          <span class="header__snoozer-action-label">Book Snooze Session</span>
+          <span class="header__snoozer-action-copy">Test your fit in person.</span>
+        </a>
+      </div>
     </div>
   {%- endcapture -%}
 
@@ -1126,6 +1224,8 @@
     const defaultResponse = "Start with how you sleep. I'll guide you from there.";
     const fallbackResponse = "I can still guide you. Try one of these starting points.";
     const loadingResponse = "Snoozer is checking that for you…";
+    const defaultInputPlaceholder = "Ask about comfort, cooling, or support";
+    const followUpInputPlaceholder = "Ask another sleep question…";
     const shells = Array.from(document.querySelectorAll('[data-snoozer-shell]'));
     const header = document.querySelector('.header');
     const requestPageType = {{ request.page_type | json }};
@@ -1370,6 +1470,28 @@
       response.textContent = text || defaultResponse;
     }
 
+    function setLastQuery(shell, text) {
+      const queryNode = shell && shell.querySelector('[data-snoozer-last-query]');
+      if (!queryNode) return;
+
+      const normalized = normalizeText(text);
+      if (!normalized) {
+        queryNode.textContent = '';
+        queryNode.hidden = true;
+        return;
+      }
+
+      queryNode.textContent = `You asked: ${normalized}`;
+      queryNode.hidden = false;
+    }
+
+    function setInputPlaceholder(shell, text) {
+      const input = shell && shell.querySelector('[data-snoozer-input]');
+      if (!input) return;
+
+      input.placeholder = normalizeText(text) || defaultInputPlaceholder;
+    }
+
     function getStateDefinition(stateName) {
       return stateDefinitions[stateName] || stateDefinitions.fallback;
     }
@@ -1474,9 +1596,14 @@
 
       const form = shell.querySelector('[data-snoozer-form]');
       const submit = form && form.querySelector('[type="submit"]');
+      const input = shell.querySelector('[data-snoozer-input]');
 
       if (form) {
         form.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+      }
+
+      if (input) {
+        input.disabled = Boolean(isBusy);
       }
 
       if (submit) {
@@ -1675,20 +1802,16 @@
           .map((tag) => normalizeText(tag))
           .filter(Boolean)
           .slice(0, 3);
-        const productCopy = [
-          normalizeText(normalizedCard.reason),
-          productTags.length ? productTags.join(' | ') : ''
-        ].filter(Boolean).join(' ');
-
         cards.push({
           label: normalizedCard.title || normalizedCard.label,
           copy:
             normalizedCard.type === 'product'
-              ? productCopy || 'View product details.'
+              ? normalizeText(normalizedCard.reason) || 'View product details.'
               : getCardCopy(normalizedCard),
           href: normalizedCard.href,
           handle: normalizedCard.handle,
-          type: normalizedCard.type
+          type: normalizedCard.type,
+          tags: normalizedCard.type === 'product' ? productTags : []
         });
 
         return cards;
@@ -1730,8 +1853,15 @@
       const link = document.createElement('a');
       const label = document.createElement('span');
       const copy = document.createElement('span');
+      const tags = toArray(card.tags)
+        .map((tag) => normalizeText(tag))
+        .filter(Boolean)
+        .slice(0, 3);
 
       link.className = 'header__snoozer-action';
+      if (normalizeText(card.type).toLowerCase() === 'product') {
+        link.classList.add('header__snoozer-action--product');
+      }
       link.href = card.href;
 
       label.className = 'header__snoozer-action-label';
@@ -1741,7 +1871,37 @@
       copy.textContent = card.copy;
 
       link.append(label, copy);
+
+      if (tags.length) {
+        const tagsWrap = document.createElement('div');
+        tagsWrap.className = 'header__snoozer-action-tags';
+
+        tags.forEach((tag) => {
+          const tagNode = document.createElement('span');
+          tagNode.className = 'header__snoozer-action-tag';
+          tagNode.textContent = tag;
+          tagsWrap.appendChild(tagNode);
+        });
+
+        link.appendChild(tagsWrap);
+      }
+
       return link;
+    }
+
+    function syncResultsZone(shell, cards) {
+      const results = shell && shell.querySelector('[data-snoozer-results]');
+      const label = shell && shell.querySelector('[data-snoozer-results-label]');
+      const hasCards = Array.isArray(cards) && cards.length > 0;
+
+      if (!results) return;
+
+      results.hidden = !hasCards;
+
+      if (!label) return;
+
+      const hasProductCard = hasCards && cards.some((card) => normalizeText(card && card.type).toLowerCase() === 'product');
+      label.textContent = hasProductCard ? 'Good starting points' : 'Recommended next';
     }
 
     function renderState(shell, stateName, selectedLabel = '') {
@@ -1753,6 +1913,8 @@
 
       shell.dataset.snoozerState = stateName;
       setResponse(shell, state.response);
+      setLastQuery(shell, '');
+      setInputPlaceholder(shell, defaultInputPlaceholder);
 
       clearNode(chipList);
       state.chips.forEach((chip) => {
@@ -1769,6 +1931,7 @@
           actions.appendChild(actionCard);
         }
       });
+      syncResultsZone(shell, state.cards);
     }
 
     function renderLivePayload(shell, payload, selectedLabel = '') {
@@ -1782,6 +1945,8 @@
 
       shell.dataset.snoozerState = normalizeText(normalizedPayload.intent) || 'live';
       setResponse(shell, normalizedPayload.reply || fallbackResponse);
+      setLastQuery(shell, selectedLabel);
+      setInputPlaceholder(shell, followUpInputPlaceholder);
 
       clearNode(chipList);
       normalizedPayload.chips.forEach((chip) => {
@@ -1798,6 +1963,7 @@
           actions.appendChild(actionCard);
         }
       });
+      syncResultsZone(shell, cards);
     }
 
     function resolveStateFromQuery(query) {
@@ -1816,6 +1982,7 @@
 
       const input = shell.querySelector('[data-snoozer-input]');
       const normalizedQuery = normalizeText(query || (input && input.value));
+      if (!normalizedQuery) return;
 
       if (input) {
         input.value = normalizedQuery;
@@ -1823,6 +1990,7 @@
 
       setShellBusy(shell, true);
       setResponse(shell, loadingResponse);
+      setLastQuery(shell, normalizedQuery);
 
       const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const timeoutId = window.setTimeout(() => {
@@ -1853,8 +2021,14 @@
         }
 
         renderLivePayload(shell, payload, normalizedQuery);
+        if (input) {
+          input.value = '';
+        }
       } catch (error) {
         renderLivePayload(shell, buildLiveFallbackPayload(), normalizedQuery);
+        if (input) {
+          input.value = '';
+        }
       } finally {
         window.clearTimeout(timeoutId);
         setShellBusy(shell, false);

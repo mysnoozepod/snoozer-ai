@@ -594,9 +594,33 @@
     }
   },
   {
+    "id": "dont_like_mattress",
+    "category": "policy_support",
+    "query": "what if i dont like my mattress",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
     "id": "do_you_deliver",
     "category": "policy_support",
     "query": "do you deliver",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "policy_support",
+      "accepted_intents": ["policy_support"],
+      "confidence_label_min": "high",
+      "products": { "min": 0, "max": 0 }
+    }
+  },
+  {
+    "id": "delivery_timing",
+    "category": "policy_support",
+    "query": "how long does delivery take",
     "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
     "expected": {
       "intent_group": "policy_support",
