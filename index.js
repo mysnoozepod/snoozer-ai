@@ -2054,15 +2054,109 @@ function extractHudAskBudgetCap(query) {
 
 function hudAskQueryUsesCurrentProductContext(query) {
   const normalizedQuery = normalizeHudAskText(query);
-  return [
-    "this mattress",
-    "this bed",
-    "this one",
-    "this product",
-    "does this",
-    "is this",
-    "can this",
-  ].some((term) => normalizedQuery.includes(term));
+  if (!normalizedQuery) return false;
+
+  if (
+    [
+      "this mattress",
+      "this bed",
+      "this one",
+      "this product",
+      "does this",
+      "is this",
+      "can this",
+      "that mattress",
+      "that bed",
+      "that one",
+      "that product",
+      "does that",
+      "is that",
+      "can that",
+      "does it",
+      "is it",
+      "can it",
+      "will it",
+      "how much is it",
+      "how much is that",
+      "what sizes does it come in",
+      "what size does it come in",
+      "what sizes does that come in",
+      "what size does that come in",
+      "does it come in",
+      "does that come in",
+    ].some((term) => normalizedQuery.includes(term))
+  ) {
+    return true;
+  }
+
+  return (
+    /\b(?:this|that|it)\b/.test(normalizedQuery) &&
+    /\b(?:come in|size|sizes|price|cost|how much|good for|work with|support|cooling|couples|hot sleepers|back support)\b/.test(
+      normalizedQuery
+    )
+  );
+}
+
+const HUD_ASK_CLARIFICATION_PRODUCT_TITLES = Object.freeze({
+  "10-all-foam-mattress": '10" All Foam',
+  "12-all-foam-mattress": '12" All Foam',
+  "12-dual-comfort-hybrid": '12" Dual Comfort Hybrid',
+  "14-hybrid": '14" Hybrid',
+});
+
+function humanizeHudAskHandle(handle = "") {
+  return String(handle || "")
+    .trim()
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function getHudAskClarificationProductTitle(handle = "") {
+  const lower = String(handle || "").trim().toLowerCase();
+  return HUD_ASK_CLARIFICATION_PRODUCT_TITLES[lower] || humanizeHudAskHandle(handle);
+}
+
+function buildHudAskClarificationProducts(mattressHandles = []) {
+  const preferredHandles = normalizeHudAskHandleList([
+    recsService?.HANDLES?.mattresses?.allFoam10,
+    recsService?.HANDLES?.mattresses?.allFoam12,
+    recsService?.HANDLES?.mattresses?.dualComfort,
+    recsService?.HANDLES?.mattresses?.hybrid14,
+  ]);
+  const availableHandles = normalizeHudAskHandleList(mattressHandles);
+  const ordered = normalizeHudAskHandleList(
+    preferredHandles.filter((handle) =>
+      availableHandles.some(
+        (candidate) =>
+          String(candidate || "").trim().toLowerCase() === String(handle || "").trim().toLowerCase()
+      )
+    ).concat(availableHandles)
+  ).slice(0, 4);
+
+  return ordered.map((handle) => ({
+    handle,
+    title: getHudAskClarificationProductTitle(handle),
+  }));
+}
+
+function shouldHudAskClarifyAmbiguousProductQuery({
+  classification = null,
+  query = "",
+  hasReliableCurrentProductContext = false,
+  namedHandles = [],
+} = {}) {
+  const intentGroup = String(classification?.intent_group || "").trim();
+  const relevantIntentGroup = intentGroup === "size_price" || intentGroup === "product_fit";
+  const hasNamedProduct = Array.isArray(namedHandles) && namedHandles.length > 0;
+
+  return (
+    relevantIntentGroup &&
+    hudAskQueryUsesCurrentProductContext(query) &&
+    !hasReliableCurrentProductContext &&
+    !hasNamedProduct
+  );
 }
 
 function resolveHudAskRequestedSizeLabel(intent, query) {
@@ -2373,6 +2467,7 @@ function resolveHudAskCandidateHandles({
   pageType,
   catalog,
   catalogHasHandle,
+  currentProductHandle = "",
 }) {
   const normalizedPath = sanitizeHudAskPath(path);
   const normalizedPageType = normalizeHudAskPageType(pageType, normalizedPath);
@@ -2382,11 +2477,24 @@ function resolveHudAskCandidateHandles({
   const beddingHandles = getHudAskCatalogHandles(catalog, "bedding");
   const accessoryHandles = normalizeHudAskHandleList(pillowHandles.concat(beddingHandles));
   const productBias = Array.isArray(classification?.product_bias) ? classification.product_bias : [];
-  const currentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
-  const safeCurrentHandle =
-    currentProductHandle && typeof catalogHasHandle === "function" && catalogHasHandle(catalog, currentProductHandle)
-      ? currentProductHandle
+  const explicitCurrentProductHandle = String(currentProductHandle || "").trim().toLowerCase();
+  const pathCurrentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
+  const explicitCurrentProductIsReliable =
+    explicitCurrentProductHandle &&
+    typeof catalogHasHandle === "function" &&
+    catalogHasHandle(catalog, explicitCurrentProductHandle);
+  const pathCurrentProductIsReliable =
+    pathCurrentProductHandle &&
+    typeof catalogHasHandle === "function" &&
+    catalogHasHandle(catalog, pathCurrentProductHandle);
+  const safeCurrentHandle = explicitCurrentProductIsReliable
+    ? explicitCurrentProductHandle
+    : pathCurrentProductIsReliable
+      ? pathCurrentProductHandle
       : "";
+  const hasReliableCurrentProductContext = Boolean(
+    safeCurrentHandle && (explicitCurrentProductIsReliable || normalizedPageType === "product")
+  );
   const allCatalogHandles = normalizeHudAskHandleList(
     mattressHandles.concat(adjustableBaseHandles, pillowHandles, beddingHandles)
   );
@@ -2401,7 +2509,7 @@ function resolveHudAskCandidateHandles({
     beddingHandles
   );
   const directCurrentProductQuestion =
-    normalizedPageType === "product" &&
+    hasReliableCurrentProductContext &&
     safeCurrentHandle &&
     prefersCurrentProduct &&
     (intent === "budget_value" || intent === "bundle_price" || intent === "size_help" || isHudAskSpecificSizeIntent(intent));
@@ -2416,7 +2524,7 @@ function resolveHudAskCandidateHandles({
     }
     const sizeHelpHandles = namedHandles.length
       ? namedHandles
-      : safeCurrentHandle && normalizedPageType === "product"
+      : hasReliableCurrentProductContext && safeCurrentHandle
         ? [safeCurrentHandle]
         : [];
     return normalizeHudAskHandleList(sizeHelpHandles).slice(0, 3);
@@ -2803,6 +2911,7 @@ async function resolveHudAskProducts({
   path,
   pageType,
   traceId,
+  currentProductHandle = "",
 } = {}) {
   if (!shopifySvc?.fetchProductsByHandles) {
     return {
@@ -2873,7 +2982,52 @@ async function resolveHudAskProducts({
         (normalizeHudAskText(query).includes("how much") ||
           normalizeHudAskText(query).includes("price") ||
           normalizeHudAskText(query).includes("cost")));
-    const currentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
+    const payloadCurrentProductHandle = String(currentProductHandle || "").trim().toLowerCase();
+    const pathCurrentProductHandle = extractHudAskProductHandleFromPath(normalizedPath);
+    const mattressHandles = getHudAskCatalogHandles(catalog, "mattress");
+    const adjustableBaseHandles = getHudAskCatalogHandles(catalog, "adjustable-base");
+    const pillowHandles = getHudAskCatalogHandles(catalog, "pillows");
+    const beddingHandles = getHudAskCatalogHandles(catalog, "bedding");
+    const payloadCurrentProductIsReliable =
+      payloadCurrentProductHandle && catalogHasHandle(catalog, payloadCurrentProductHandle);
+    const pathCurrentProductIsReliable =
+      pathCurrentProductHandle && catalogHasHandle(catalog, pathCurrentProductHandle);
+    const safeCurrentHandle = payloadCurrentProductIsReliable
+      ? payloadCurrentProductHandle
+      : pathCurrentProductIsReliable
+        ? pathCurrentProductHandle
+        : "";
+    const hasReliableCurrentProductContext = Boolean(
+      safeCurrentHandle && (payloadCurrentProductIsReliable || normalizedPageType === "product")
+    );
+    const allCatalogHandles = normalizeHudAskHandleList(
+      mattressHandles.concat(adjustableBaseHandles, pillowHandles, beddingHandles)
+    );
+    const namedHandles = resolveHudAskNamedHandles(query, allCatalogHandles);
+
+    if (
+      shouldHudAskClarifyAmbiguousProductQuery({
+        classification,
+        query,
+        hasReliableCurrentProductContext,
+        namedHandles,
+      })
+    ) {
+      return {
+        products: [],
+        catalogSource: catalogResult?.value ? "s3_catalog" : "fallback_catalog",
+        answerSourceType: "clarification",
+        entries: [],
+        currentProductHandle: safeCurrentHandle,
+        sizeLabel,
+        budgetQuery,
+        budgetCap,
+        bundleRequested,
+        needsProductClarification: true,
+        clarificationProducts: buildHudAskClarificationProducts(mattressHandles),
+      };
+    }
+
     const candidateHandles = resolveHudAskCandidateHandles({
       classification,
       intent,
@@ -2882,6 +3036,7 @@ async function resolveHudAskProducts({
       pageType: normalizedPageType,
       catalog,
       catalogHasHandle,
+      currentProductHandle: safeCurrentHandle,
     });
 
     if (!candidateHandles.length) {
@@ -2891,7 +3046,7 @@ async function resolveHudAskProducts({
         answerSourceType:
           catalogResult?.value ? "shopify_product+s3_catalog" : "shopify_product+fallback_catalog",
         entries: [],
-        currentProductHandle,
+        currentProductHandle: safeCurrentHandle,
         sizeLabel,
         budgetQuery,
         budgetCap,
@@ -3020,7 +3175,7 @@ async function resolveHudAskProducts({
       reason: buildHudAskProductReason({
         intent,
         handle: entry.handle,
-        currentProductHandle,
+        currentProductHandle: safeCurrentHandle,
         sizeLabel,
         budgetQuery,
       }),
@@ -3051,7 +3206,7 @@ async function resolveHudAskProducts({
         ...entry,
         matchedSizeLabel: sizeLabel,
       })),
-      currentProductHandle,
+      currentProductHandle: safeCurrentHandle,
       sizeLabel,
       budgetQuery,
       budgetCap,
@@ -3070,7 +3225,8 @@ async function resolveHudAskProducts({
       catalogSource: "fallback_catalog",
       answerSourceType: "shopify_product+fallback_catalog",
       entries: [],
-      currentProductHandle: extractHudAskProductHandleFromPath(path),
+      currentProductHandle:
+        String(currentProductHandle || "").trim().toLowerCase() || extractHudAskProductHandleFromPath(path),
       sizeLabel: "",
       budgetQuery: false,
       budgetCap: null,
@@ -3579,6 +3735,8 @@ async function handle(event = {}) {
       const pathValue = sanitizeHudAskPath(body?.path || "/");
       const pageType = normalizeHudAskPageType(body?.page_type || "unknown", pathValue);
       const surface = String(body?.surface || "shopify_header").trim().toLowerCase() || "shopify_header";
+      const currentProductHandle =
+        typeof body?.currentProductHandle === "string" ? body.currentProductHandle.trim() : "";
       const requestId = String(event?.requestContext?.requestId || traceId || "").trim() || null;
       console.log("[hud/ask] invoked", {
         path: pathValue,
@@ -3586,6 +3744,7 @@ async function handle(event = {}) {
         query,
         page_type: pageType,
         surface,
+        currentProductHandle: currentProductHandle || null,
         requestId,
       });
       const threadId = deriveEffectiveThreadId(event, {
@@ -3605,6 +3764,7 @@ async function handle(event = {}) {
         path: pathValue,
         pageType,
         traceId,
+        currentProductHandle,
       });
       const products = Array.isArray(productResolution?.products) ? productResolution.products : [];
       const answerStrategy = await resolveHudAskAnswerStrategy({

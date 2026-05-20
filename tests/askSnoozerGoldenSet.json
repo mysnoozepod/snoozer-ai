@@ -1465,6 +1465,37 @@
     }
   },
   {
+    "id": "home_pronoun_queen_needs_clarification",
+    "category": "size_price",
+    "query": "Does this come in Queen?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["queen_size"],
+      "confidence_label_min": "high",
+      "answer_grounded": false,
+      "answer_source_any_of": ["clarification"],
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["which mattress", "queen", "10\" all foam", "14\" hybrid"]
+    }
+  },
+  {
+    "id": "product_named_queen_availability_14_hybrid",
+    "category": "size_price",
+    "query": "Does the 14 Hybrid come in Queen?",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["queen_size"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["queen", "14\" hybrid"]
+    }
+  },
+  {
     "id": "product_named_size_list",
     "category": "size_price",
     "query": "What sizes does the 14 Hybrid come in?",
@@ -1707,6 +1738,59 @@
       "answer_facts_count_min": 1,
       "products": { "min": 2, "max": 2, "expected_handles": ["10-all-foam-mattress", "12-all-foam-mattress"] },
       "must_include": ["$799", "queen", "10\" all foam mattress"]
+    }
+  },
+  {
+    "id": "home_pronoun_price_needs_clarification",
+    "category": "size_price",
+    "query": "how much is it",
+    "context": { "path": "/", "page_type": "home", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "answer_grounded": false,
+      "answer_source_any_of": ["clarification"],
+      "products": { "min": 0, "max": 0 },
+      "must_include": ["which mattress", "pricing", "10\" all foam", "14\" hybrid"],
+      "must_not_include": ["$"]
+    }
+  },
+  {
+    "id": "product_page_it_price_context",
+    "category": "size_price",
+    "query": "how much is it",
+    "context": { "path": "/products/14-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["14\" hybrid mattress", "$"]
+    }
+  },
+  {
+    "id": "home_pronoun_price_payload_context",
+    "category": "size_price",
+    "query": "how much is it",
+    "context": {
+      "path": "/",
+      "page_type": "home",
+      "surface": "shopify_header",
+      "currentProductHandle": "14-hybrid"
+    },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["14\" hybrid mattress", "$"]
     }
   },
   {

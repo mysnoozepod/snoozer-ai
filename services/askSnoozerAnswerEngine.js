@@ -438,6 +438,39 @@ function queryLooksLikeAdjustableBaseQuestion(query = "") {
   );
 }
 
+function buildProductClarificationReply({ query = "", productContext = null } = {}) {
+  const clarificationProducts = Array.isArray(productContext?.clarificationProducts)
+    ? productContext.clarificationProducts.filter(Boolean)
+    : [];
+  const titles = clarificationProducts
+    .map((product) => cleanAnswerText(product?.title || product?.label || product?.handle || ""))
+    .filter(Boolean);
+  const sizeLabel = cleanAnswerText(productContext?.sizeLabel || "");
+
+  let checkLabel = "fit, size, or pricing";
+  if (queryLooksLikePriceQuestion(query)) {
+    checkLabel = sizeLabel ? `${sizeLabel} pricing` : "pricing";
+  } else if (queryLooksLikeSpecificSizeAvailability(query) && sizeLabel) {
+    checkLabel = `${sizeLabel} availability`;
+  } else if (queryLooksLikeSizeListQuestion(query) || queryLooksLikeSpecificSizeAvailability(query)) {
+    checkLabel = "size availability";
+  }
+
+  return {
+    reply: titles.length
+      ? `Which mattress are you asking about? I can check ${checkLabel} for ${formatSizeList(titles)}.`
+      : `Which mattress are you asking about? I can check ${checkLabel} once I know the model.`,
+    grounded: false,
+    sourceType: "clarification",
+    sourceKey: clarificationProducts
+      .map((product) => cleanAnswerText(product?.handle || ""))
+      .filter(Boolean)
+      .join(","),
+    facts: [],
+    strategy: "needs_product_clarification",
+  };
+}
+
 function queryLooksLikeCouplesQuestion(query = "") {
   const normalizedQuery = normalizeAskSnoozerText(query);
   return (
@@ -1643,6 +1676,27 @@ function buildAskSnoozerAnswer({
             ? 6
             : MAX_FACTS,
   });
+
+  if (productContext?.needsProductClarification) {
+    const clarificationReply = buildProductClarificationReply({
+      query,
+      productContext,
+    });
+
+    return {
+      reply: clampReply(clarificationReply.reply),
+      answer_grounded: false,
+      answer_source_type: clarificationReply.sourceType || "clarification",
+      answer_source_key: clarificationReply.sourceKey || "",
+      answer_facts_count: 0,
+      matched_preview: "",
+      answer_strategy: clarificationReply.strategy || "needs_product_clarification",
+      extracted_facts: [],
+      needs_handoff: false,
+      reason: "needs_product_clarification",
+      chips_override: null,
+    };
+  }
 
   if (intentGroup === "policy_support") {
     const policyReply = buildPolicyReply({

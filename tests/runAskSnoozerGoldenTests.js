@@ -28,6 +28,10 @@ function buildEvent(testCase) {
     surface: testCase.context?.surface || "shopify_header",
   };
 
+  if (typeof testCase.context?.currentProductHandle === "string" && testCase.context.currentProductHandle.trim()) {
+    body.currentProductHandle = testCase.context.currentProductHandle.trim();
+  }
+
   return {
     version: "2.0",
     routeKey: "POST /hud/ask",
