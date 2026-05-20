@@ -4,8 +4,9 @@ const {
   normalizeMarkdown,
   stripFrontMatter,
 } = require("./askSnoozerPolicy");
+const { HUD_SAFE_PAGE_ROUTES } = require("./askSnoozerRoutes");
 
-const MAX_REPLY_CHARS = 220;
+const MAX_REPLY_CHARS = 205;
 const MAX_FACTS = 3;
 
 const STOP_WORDS = new Set([
@@ -121,7 +122,7 @@ function clampReply(text, fallback = "") {
     .map((item) => item.trim())
     .filter(Boolean);
 
-  const joined = sentences.slice(0, 3).join(" ").trim();
+  const joined = sentences.slice(0, 2).join(" ").trim();
   if (joined && joined.length <= MAX_REPLY_CHARS) return joined;
   return `${cleaned.slice(0, MAX_REPLY_CHARS - 3).trim().replace(/[,:;]$/, "")}...`;
 }
@@ -1488,7 +1489,7 @@ function buildProductReply({ intent = "", products = [] } = {}) {
       };
     case "product_question":
       return {
-        reply: "Use the current product details as the anchor, then compare size, support, and setup before you decide.",
+        reply: "Start with the verified details for this mattress, then compare size, support, and base setup before you decide.",
         grounded: true,
       };
     case "couple_conflict":
@@ -1538,18 +1539,18 @@ function buildProductReply({ intent = "", products = [] } = {}) {
 function buildHandoffFacts({ actions = [], pages = [], collections = [] } = {}) {
   const facts = [];
   for (const action of actions) {
-    if (action?.href === "/pages/snooze-assessment") {
+    if (action?.href === HUD_SAFE_PAGE_ROUTES.assessment) {
       facts.push("The Snooze Assessment is the fastest way to narrow support, sleeping position, and size before you start guessing.");
     }
-    if (action?.href === "/pages/book-your-snooze-session") {
+    if (action?.href === HUD_SAFE_PAGE_ROUTES.booking) {
       facts.push("A Snooze Session lets you try the bed in person before you decide.");
     }
   }
   for (const page of pages) {
-    if (page?.href === "/pages/snooze-assessment") {
+    if (page?.href === HUD_SAFE_PAGE_ROUTES.assessment) {
       facts.push("The assessment is a guided next step when comfort, support, or size is still unclear.");
     }
-    if (page?.href === "/pages/book-your-snooze-session") {
+    if (page?.href === HUD_SAFE_PAGE_ROUTES.booking) {
       facts.push("Booking a Snooze Session helps when you want to test the feel instead of guessing from the screen.");
     }
   }
@@ -1564,9 +1565,9 @@ function buildHandoffFacts({ actions = [], pages = [], collections = [] } = {}) 
     heading: "Allowlisted next step",
     source_type: "action_allowlist",
     source_key: text.includes("Snooze Session")
-      ? "/pages/book-your-snooze-session"
+      ? HUD_SAFE_PAGE_ROUTES.booking
       : text.includes("Assessment")
-        ? "/pages/snooze-assessment"
+        ? HUD_SAFE_PAGE_ROUTES.assessment
         : "/collections/mattresses",
     order: index,
   })));

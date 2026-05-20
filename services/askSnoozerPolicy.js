@@ -321,21 +321,48 @@ function getAskSnoozerProductDocKey(handle = "") {
   return PRODUCT_DOC_KEY_BY_HANDLE[normalized] || "";
 }
 
+function inferAskSnoozerProductDocCategory(handle = "") {
+  const normalized = String(handle || "").trim().toLowerCase();
+  if (!normalized) return "";
+  if (normalized.includes("pillow")) return "pillows";
+  if (
+    normalized.includes("sheet") ||
+    normalized.includes("protector") ||
+    normalized.includes("bedding") ||
+    normalized.includes("encasement")
+  ) {
+    return "bedding";
+  }
+  if (
+    normalized.includes("base") ||
+    normalized.includes("motion") ||
+    normalized.includes("foundation") ||
+    normalized.includes("frame")
+  ) {
+    return "bases";
+  }
+  if (
+    normalized.includes("mattress") ||
+    normalized.includes("hybrid") ||
+    normalized.includes("foam") ||
+    normalized.includes("dual-comfort")
+  ) {
+    return "mattress";
+  }
+  return "";
+}
+
 function getAskSnoozerProductDocKeys(handle = "") {
   const normalized = String(handle || "").trim().toLowerCase();
   if (!normalized) return [];
 
-  return Array.from(
-    new Set(
-      [
-        getAskSnoozerProductDocKey(normalized),
-        `products/pillows/${normalized}.md`,
-        `products/bedding/${normalized}.md`,
-        `products/bases/${normalized}.md`,
-        `products/mattress/${normalized}.md`,
-      ].filter(Boolean)
-    )
-  );
+  const directKey = getAskSnoozerProductDocKey(normalized);
+  if (directKey) return [directKey];
+
+  const inferredCategory = inferAskSnoozerProductDocCategory(normalized);
+  if (!inferredCategory) return [];
+
+  return [`products/${inferredCategory}/${normalized}.md`];
 }
 
 async function loadProductKnowledgeSources(handles = [], options = {}) {

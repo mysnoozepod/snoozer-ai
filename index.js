@@ -77,6 +77,12 @@ const {
   resolveAskSnoozerSupplementalSources,
 } = require("./services/askSnoozerPolicy");
 const { buildAskSnoozerAnswer } = require("./services/askSnoozerAnswerEngine");
+const {
+  HUD_SAFE_PAGE_ROUTES,
+  HUD_SAFE_COLLECTION_ROUTES,
+  HUD_HREF_ALIASES,
+  canonicalizeHudHref,
+} = require("./services/askSnoozerRoutes");
 
 let getHudScriptPayload = null;
 try {
@@ -940,35 +946,29 @@ function deriveEffectiveThreadId(event, payload) {
 const HUD_ASK_ACTION_ASSESSMENT = Object.freeze({
   label: "Take Snooze Assessment",
   type: "page",
-  href: "/pages/snooze-assessment",
+  href: HUD_SAFE_PAGE_ROUTES.assessment,
 });
 
 const HUD_ASK_ACTION_BOOKING = Object.freeze({
   label: "Book Your Snooze Session",
   type: "page",
-  href: "/pages/book-your-snooze-session",
+  href: HUD_SAFE_PAGE_ROUTES.booking,
 });
 
 const HUD_ASK_PAGE_ASSESSMENT = Object.freeze({
   label: "Take Snooze Assessment",
-  href: "/pages/snooze-assessment",
+  href: HUD_SAFE_PAGE_ROUTES.assessment,
 });
 
 const HUD_ASK_PAGE_BOOKING = Object.freeze({
   label: "Book Your Snooze Session",
-  href: "/pages/book-your-snooze-session",
+  href: HUD_SAFE_PAGE_ROUTES.booking,
 });
 
 const HUD_ASK_COLLECTION_MATTRESSES = Object.freeze({
   label: "Shop Mattresses",
   handle: "mattresses",
-  href: "/collections/mattresses",
-});
-
-const HUD_ASK_COLLECTION_ACCESSORIES = Object.freeze({
-  label: "Shop Accessories",
-  handle: "accessories",
-  href: "/collections/accessories",
+  href: HUD_SAFE_COLLECTION_ROUTES.mattresses,
 });
 
 const HUD_ASK_DEFAULT_CHIPS = Object.freeze([
@@ -1197,7 +1197,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
       { label: "Take Snooze Assessment", value: "take snooze assessment" },
     ],
     actions: [HUD_ASK_ACTION_ASSESSMENT],
-    collections: [HUD_ASK_COLLECTION_ACCESSORIES],
+    collections: [],
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   budget_value: {
@@ -1323,11 +1323,14 @@ function normalizeHudAskPageType(value, path = "/") {
 }
 
 function isHudAskAssessmentPath(path) {
-  return hudAskPathStartsWithSegment(path, "/pages/snooze-assessment");
+  return hudAskPathStartsWithSegment(path, HUD_SAFE_PAGE_ROUTES.assessment);
 }
 
 function isHudAskBookingPath(path) {
-  return hudAskPathStartsWithSegment(path, "/pages/book-your-snooze-session");
+  const bookingAliases = [HUD_SAFE_PAGE_ROUTES.booking].concat(
+    Object.keys(HUD_HREF_ALIASES).filter((href) => HUD_HREF_ALIASES[href] === HUD_SAFE_PAGE_ROUTES.booking)
+  );
+  return bookingAliases.some((segment) => hudAskPathStartsWithSegment(path, segment));
 }
 
 function includesHudAskKeyword(text, keywords = []) {
@@ -1367,25 +1370,44 @@ function cloneHudAskChip(chip = {}) {
 }
 
 function cloneHudAskAction(action = {}) {
+  const type = String(action.type || "page").trim();
+  const href = canonicalizeHudHref(action.href, {
+    allowProducts: true,
+    allowPages: true,
+    allowCollections: true,
+    allowStaticProducts: true,
+  });
   return {
     label: String(action.label || "").trim(),
-    type: String(action.type || "page").trim(),
-    href: String(action.href || "").trim(),
+    type,
+    href,
   };
 }
 
 function cloneHudAskCollection(collection = {}) {
+  const href = canonicalizeHudHref(collection.href, {
+    allowProducts: false,
+    allowPages: false,
+    allowCollections: true,
+    allowStaticProducts: false,
+  });
   return {
     label: String(collection.label || "").trim(),
     handle: String(collection.handle || "").trim(),
-    href: String(collection.href || "").trim(),
+    href,
   };
 }
 
 function cloneHudAskPage(page = {}) {
+  const href = canonicalizeHudHref(page.href, {
+    allowProducts: false,
+    allowPages: true,
+    allowCollections: false,
+    allowStaticProducts: false,
+  });
   return {
     label: String(page.label || "").trim(),
-    href: String(page.href || "").trim(),
+    href,
   };
 }
 
@@ -1410,12 +1432,19 @@ function cloneHudAskPages(pages = []) {
 }
 
 function cloneHudAskProduct(product = {}) {
+  const fallbackHref = product?.handle ? `/products/${String(product.handle || "").trim()}` : "";
+  const href = canonicalizeHudHref(product.href || fallbackHref, {
+    allowProducts: true,
+    allowPages: false,
+    allowCollections: false,
+    allowStaticProducts: true,
+  });
   return {
     type: "product",
     label: String(product.label || product.title || "").trim(),
     title: String(product.title || product.label || "").trim(),
     handle: String(product.handle || "").trim(),
-    href: String(product.href || "").trim(),
+    href,
     product_id: String(product.product_id || "").trim(),
     variant_id: String(product.variant_id || "").trim(),
     variant_title: String(product.variant_title || "").trim(),

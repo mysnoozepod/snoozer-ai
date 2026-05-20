@@ -2,6 +2,11 @@
 
 const fs = require("fs");
 const path = require("path");
+const {
+  canonicalizeHudHref,
+  isKnownDeadHudHref,
+  isSafeHudInternalHref,
+} = require("../services/askSnoozerRoutes");
 
 const FIXTURE_PATH = path.join(__dirname, "askSnoozerGoldenSet.json");
 const MAX_REPLY_LENGTH = 220;
@@ -93,17 +98,22 @@ function summarizeVisibleText(payload) {
 }
 
 function isSafeInternalHref(href) {
-  if (typeof href !== "string") return false;
-  const trimmed = href.trim();
-  if (!trimmed) return false;
-  if (!trimmed.startsWith("/")) return false;
-  if (trimmed.startsWith("//")) return false;
-  if (/^javascript:/i.test(trimmed)) return false;
-  return true;
+  return isSafeHudInternalHref(href, {
+    allowProducts: true,
+    allowPages: true,
+    allowCollections: true,
+    allowStaticProducts: true,
+  });
 }
 
 function isSafeProductHref(href) {
-  return isSafeInternalHref(href) && href.startsWith("/products/");
+  const canonical = canonicalizeHudHref(href, {
+    allowProducts: true,
+    allowPages: false,
+    allowCollections: false,
+    allowStaticProducts: true,
+  });
+  return Boolean(canonical) && canonical.startsWith("/products/");
 }
 
 function addFailure(failures, category, message) {
@@ -203,11 +213,21 @@ function validateGuardrails(payload, failures) {
     ...toArray(payload?.collections),
     ...toArray(payload?.pages),
   ]) {
+    if (!String(item?.label || "").trim()) {
+      addFailure(failures, "response_contract_break", "Action/page/collection entry missing label");
+    }
     if (!isSafeInternalHref(item?.href)) {
       addFailure(
         failures,
         "response_contract_break",
         `Unsafe action/page/collection href: ${String(item?.href || "") || "(blank)"}`
+      );
+    }
+    if (isKnownDeadHudHref(item?.href)) {
+      addFailure(
+        failures,
+        "response_contract_break",
+        `Known-dead action/page/collection href: ${String(item?.href || "") || "(blank)"}`
       );
     }
     allHrefs.push(String(item?.href || ""));
@@ -238,7 +258,12 @@ function validateExpectedBehavior(testCase, payload, failures) {
     ...toArray(payload?.pages),
     ...products,
   ]
-    .map((item) => String(item?.href || "").trim())
+    .map((item) => canonicalizeHudHref(String(item?.href || "").trim(), {
+      allowProducts: true,
+      allowPages: true,
+      allowCollections: true,
+      allowStaticProducts: true,
+    }))
     .filter(Boolean);
 
   if (expected.intent_group && payload?.intent_group !== expected.intent_group) {
@@ -341,7 +366,17 @@ function validateExpectedBehavior(testCase, payload, failures) {
   }
 
   if (Array.isArray(expected.required_hrefs) && expected.required_hrefs.length > 0) {
-    const missing = expected.required_hrefs.filter((href) => !hrefPool.includes(href));
+    const requiredHrefs = expected.required_hrefs
+      .map((href) =>
+        canonicalizeHudHref(String(href || "").trim(), {
+          allowProducts: true,
+          allowPages: true,
+          allowCollections: true,
+          allowStaticProducts: true,
+        })
+      )
+      .filter(Boolean);
+    const missing = requiredHrefs.filter((href) => !hrefPool.includes(href));
     if (missing.length > 0) {
       addFailure(
         failures,

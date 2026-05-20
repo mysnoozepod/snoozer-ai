@@ -350,11 +350,14 @@
     left: 0;
     width: 100%;
     max-width: 100%;
+    max-height: min(78vh, calc(100vh - 11rem));
     padding: 1.8rem;
     border: 0.1rem solid rgba(7, 26, 68, 0.1);
     border-radius: 2.4rem;
     background: #ffffff;
     box-shadow: 0 2.4rem 5.4rem rgba(7, 26, 68, 0.14);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -827,6 +830,7 @@
     .header__snoozer-panel {
       width: 100%;
       max-width: 100%;
+      max-height: calc(100vh - 9rem);
       padding: 1.6rem;
       border-radius: 2rem;
     }
@@ -864,9 +868,9 @@
 
 {%- assign snoozer_assessment_url = '/pages/snooze-assessment' -%}
 {%- assign snoozer_mattresses_url = '/collections/mattresses' -%}
-{%- assign snoozer_bases_url = '/collections/bases' -%}
-{%- assign snoozer_booking_url = '/pages/book-your-snooze-session' -%}
-{%- assign snoozer_expectations_url = '/pages/book-your-snooze-session' -%}
+{%- assign snoozer_bases_url = '/products/premium-motion-adjustable-base' -%}
+{%- assign snoozer_booking_url = '/pages/booking-a-snooze-session' -%}
+{%- assign snoozer_expectations_url = '/pages/booking-a-snooze-session' -%}
 
 <div class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
   {%- liquid
@@ -1239,6 +1243,17 @@
       booking: {{ snoozer_booking_url | json }},
       expectations: {{ snoozer_expectations_url | json }}
     };
+    const routeAliases = {
+      '/pages/book-your-snooze-session': routes.booking
+    };
+    const knownDeadHrefs = ['/pages/book-your-snooze-session', '#'];
+    const knownStaticHrefs = [
+      routes.assessment,
+      routes.mattresses,
+      routes.bases,
+      routes.booking,
+      routes.expectations
+    ].filter(Boolean);
     const liveFallbackChips = [
       { label: 'I sleep hot', value: 'I sleep hot' },
       { label: 'I need firm support', value: 'I need firm support' },
@@ -1336,7 +1351,7 @@
         ],
         cards: [
           {
-            label: 'View Adjustable Bases',
+            label: 'View Adjustable Base',
             copy: 'Explore head-up comfort and positioning.',
             href: routes.bases
           },
@@ -1612,13 +1627,16 @@
     }
 
     function getCardCopy(card) {
-      const href = normalizeText(card && card.href);
+      const href = normalizeHrefPath(card && card.href);
       const handle = normalizeText(card && card.handle);
       const type = normalizeText(card && card.type).toLowerCase();
       const label = normalizeText(card && card.label);
 
       if (href === routes.assessment) return 'Start with your sleep profile.';
       if (href === routes.booking) return 'Test your fit in person.';
+      if (href === routes.bases || handle === 'premium-motion-adjustable-base') {
+        return 'Explore elevation and motion.';
+      }
       if (href === routes.mattresses || handle === 'mattresses') {
         return 'Compare feel, support, and cooling.';
       }
@@ -1634,13 +1652,28 @@
       return 'Start here.';
     }
 
+    function normalizeHrefPath(value) {
+      const raw = normalizeText(value);
+      if (!raw) return '';
+      if (/^javascript:/i.test(raw)) return '';
+      if (/^[a-z]+:\/\//i.test(raw)) return '';
+      if (raw.startsWith('//')) return '';
+
+      const withoutHash = raw.split('#')[0].trim();
+      const withoutQuery = withoutHash.split('?')[0].trim();
+      if (!withoutQuery) return '';
+
+      const prefixed = withoutQuery.startsWith('/') ? withoutQuery : `/${withoutQuery.replace(/^\/+/, '')}`;
+      const normalized = prefixed === '/' ? prefixed : prefixed.replace(/\/+$/, '');
+      return routeAliases[normalized] || normalized;
+    }
+
     function isSafeInternalHref(value) {
-      const href = normalizeText(value);
+      const href = normalizeHrefPath(value);
       if (!href) return false;
-      if (!href.startsWith('/')) return false;
-      if (href.startsWith('//')) return false;
-      if (/^javascript:/i.test(href)) return false;
-      return true;
+      if (knownDeadHrefs.includes(href) || knownDeadHrefs.includes(normalizeText(value))) return false;
+      if (href.startsWith('/products/')) return true;
+      return knownStaticHrefs.includes(href);
     }
 
     function toArray(value) {
@@ -1697,7 +1730,7 @@
 
     function normalizeLiveCard(item) {
       const label = normalizeText(item && item.label);
-      const href = normalizeText(item && item.href);
+      const href = normalizeHrefPath(item && item.href);
 
       if (!label || !isSafeInternalHref(href)) return null;
 
@@ -1711,7 +1744,8 @@
 
     function normalizeLiveProduct(item) {
       const title = normalizeText(item && (item.title || item.label));
-      const href = normalizeText(item && item.href);
+      const handle = normalizeText(item && item.handle);
+      const href = normalizeHrefPath((item && item.href) || (handle ? `/products/${handle}` : ''));
       const reason = normalizeText(item && item.reason);
       const tags = toArray(item && item.tags)
         .map((tag) => normalizeText(tag))
@@ -1726,7 +1760,7 @@
         label: title,
         title,
         href,
-        handle: normalizeText(item && item.handle),
+        handle,
         type: 'product',
         reason,
         tags

@@ -7,6 +7,8 @@
   assign visit_steps = section.blocks | where: 'type', 'visit_step'
   assign difference_cards = section.blocks | where: 'type', 'difference_card'
   assign faq_items = section.blocks | where: 'type', 'faq_item'
+  assign assessment_page_url = '/pages/snooze-assessment'
+  assign booking_page_url = '/pages/booking-a-snooze-session'
 -%}
 
 {%- style -%}
@@ -272,10 +274,10 @@
             <h1 class="title">{{ section.settings.hero_headline | escape }}</h1>
             <p class="text">{{ section.settings.hero_text | escape }}</p>
             <div class="actions">
-              <a class="button button--primary" href="{% if section.settings.primary_link != blank %}{{ section.settings.primary_link }}{% else %}#{% endif %}">
+              <a class="button button--primary" href="{% if section.settings.primary_link != blank %}{{ section.settings.primary_link }}{% else %}{{ booking_page_url }}{% endif %}">
                 {{ section.settings.primary_label | escape }}
               </a>
-              <a class="button" href="{% if section.settings.secondary_link != blank %}{{ section.settings.secondary_link }}{% else %}#{% endif %}">
+              <a class="button" href="{% if section.settings.secondary_link != blank %}{{ section.settings.secondary_link }}{% else %}{{ assessment_page_url }}{% endif %}">
                 {{ section.settings.secondary_label | escape }}
               </a>
             </div>
@@ -338,7 +340,7 @@
           <h2 class="heading">{{ section.settings.assessment_heading | escape }}</h2>
           <p class="subtext">{{ section.settings.assessment_text | escape }}</p>
           <div class="actions">
-            <a class="button button--primary" href="{% if section.settings.assessment_link != blank %}{{ section.settings.assessment_link }}{% else %}#{% endif %}">
+            <a class="button button--primary" href="{% if section.settings.assessment_link != blank %}{{ section.settings.assessment_link }}{% else %}{{ assessment_page_url }}{% endif %}">
               {{ section.settings.assessment_label | escape }}
             </a>
           </div>
@@ -353,7 +355,7 @@
             <div class="embed-area">{{ section.settings.booking_notes | newline_to_br }}</div>
           {%- endif -%}
           <div class="actions">
-            <a class="button button--primary" href="{% if section.settings.booking_link != blank %}{{ section.settings.booking_link }}{% else %}#{% endif %}">
+            <a class="button button--primary" href="{% if section.settings.booking_link != blank %}{{ section.settings.booking_link }}{% else %}{{ booking_page_url }}{% endif %}">
               {{ section.settings.booking_label | escape }}
             </a>
           </div>
@@ -377,7 +379,7 @@
       <div class="band">
         <h2 class="heading">{{ section.settings.final_heading | escape }}</h2>
         <div class="actions">
-          <a class="button" href="{% if section.settings.final_link != blank %}{{ section.settings.final_link }}{% else %}#{% endif %}">
+          <a class="button" href="{% if section.settings.final_link != blank %}{{ section.settings.final_link }}{% else %}{{ booking_page_url }}{% endif %}">
             {{ section.settings.final_label | escape }}
           </a>
         </div>

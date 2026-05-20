@@ -97,6 +97,13 @@ const META_TTL_MS = Number(process.env.S3_META_CACHE_TTL_MS || 300000);
 const MAX_CTX_FILES = Number(process.env.MAX_CTX_FILES || 4);
 const MAX_CTX_BYTES = Number(process.env.MAX_CTX_BYTES || 10000);
 const MAX_HISTORY_TURNS = Number(process.env.MAX_HISTORY_TURNS || 3);
+const POD_PRODUCT_DOC_KEY_BY_HANDLE = Object.freeze({
+  "10-all-foam-mattress": "products/mattress/all-foam-10.md",
+  "12-all-foam-mattress": "products/mattress/all-foam-12.md",
+  "12-dual-comfort-hybrid": "products/mattress/dual-comfort-12.md",
+  "14-hybrid": "products/mattress/hybrid-14.md",
+  "premium-motion-adjustable-base": "products/bases/premium-motion-base.md",
+});
 
 // Hard cap for payload
 const MAX_TOTAL_MESSAGE_CHARS = Number(process.env.MAX_TOTAL_MESSAGE_CHARS || 60000);
@@ -1253,11 +1260,9 @@ async function getKnowledgeContext({ mode, query, context, intent, retrievalMeta
         errors.push(new Error(`Handle not allowed by catalog: ${firstHandle}`));
         logEvent("catalog.blocked_handle", { handle: firstHandle });
       } else {
-        const candidates = [
-          `products/mattress/${firstHandle}.md`,
-          `products/adjustable-bases/${firstHandle}.md`,
-          `products/${firstHandle}.md`,
-        ];
+        const normalizedHandle = String(firstHandle || "").trim().toLowerCase();
+        const directKey = POD_PRODUCT_DOC_KEY_BY_HANDLE[normalizedHandle] || "";
+        const candidates = directKey ? [directKey] : [`products/${normalizedHandle}.md`];
 
         for (const k of candidates) {
           const txtResult = await getObjectText(KNOWLEDGE_BUCKET, k);

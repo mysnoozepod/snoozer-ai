@@ -548,7 +548,7 @@
       "answer_grounded": true,
       "answer_source_any_of": ["action_allowlist"],
       "answer_facts_count_min": 1,
-      "required_hrefs": ["/pages/book-your-snooze-session"]
+      "required_hrefs": ["/pages/booking-a-snooze-session"]
     }
   },
   {
@@ -560,7 +560,7 @@
       "intent_group": "booking_handoff",
       "accepted_intents": ["booking_help"],
       "confidence_label_min": "high",
-      "required_hrefs": ["/pages/book-your-snooze-session"]
+      "required_hrefs": ["/pages/booking-a-snooze-session"]
     }
   },
   {
@@ -572,7 +572,7 @@
       "intent_group": "booking_handoff",
       "accepted_intents": ["booking_help"],
       "confidence_label_min": "high",
-      "required_hrefs": ["/pages/book-your-snooze-session"]
+      "required_hrefs": ["/pages/booking-a-snooze-session"]
     }
   },
   {
@@ -584,7 +584,7 @@
       "intent_group": "booking_handoff",
       "accepted_intents": ["booking_help"],
       "confidence_label_min": "high",
-      "required_hrefs": ["/pages/book-your-snooze-session"]
+      "required_hrefs": ["/pages/booking-a-snooze-session"]
     }
   },
   {
@@ -596,7 +596,7 @@
       "intent_group": "booking_handoff",
       "accepted_intents": ["booking_help"],
       "confidence_label_min": "high",
-      "required_hrefs": ["/pages/book-your-snooze-session"]
+      "required_hrefs": ["/pages/booking-a-snooze-session"]
     }
   },
 
@@ -1427,7 +1427,7 @@
       "answer_grounded": true,
       "answer_source_any_of": ["action_allowlist"],
       "answer_facts_count_min": 1,
-      "required_hrefs": ["/pages/book-your-snooze-session"],
+      "required_hrefs": ["/pages/booking-a-snooze-session"],
       "products": { "min": 0, "max": 0 }
     }
   },
@@ -1484,7 +1484,7 @@
     "id": "product_named_hot_sleepers_page_context",
     "category": "product_fit",
     "query": "Is the 14 Hybrid good for hot sleepers?",
-    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "context": { "path": "/pages/booking-a-snooze-session", "page_type": "page", "surface": "shopify_header" },
     "expected": {
       "intent_group": "product_fit",
       "accepted_intents": ["product_question"],
@@ -1500,7 +1500,7 @@
     "id": "product_named_couples_page_context",
     "category": "product_fit",
     "query": "Is the 12 Dual Comfort good for couples?",
-    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "context": { "path": "/pages/booking-a-snooze-session", "page_type": "page", "surface": "shopify_header" },
     "expected": {
       "intent_group": "product_fit",
       "accepted_intents": ["product_question"],
@@ -1516,7 +1516,7 @@
     "id": "product_named_sizes_page_context",
     "category": "size_price",
     "query": "What sizes does the 14 Hybrid come in?",
-    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "context": { "path": "/pages/booking-a-snooze-session", "page_type": "page", "surface": "shopify_header" },
     "expected": {
       "intent_group": "size_price",
       "accepted_intents": ["size_help"],
@@ -1532,7 +1532,7 @@
     "id": "compare_foam_vs_hybrid_page_context",
     "category": "product_compare",
     "query": "compare foam vs hybrid",
-    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "context": { "path": "/pages/booking-a-snooze-session", "page_type": "page", "surface": "shopify_header" },
     "expected": {
       "intent_group": "product_compare",
       "accepted_intents": ["compare_mattresses"],
@@ -1552,7 +1552,7 @@
     "id": "compare_named_products_page_context",
     "category": "product_compare",
     "query": "compare 10 All Foam and 14 Hybrid",
-    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "context": { "path": "/pages/booking-a-snooze-session", "page_type": "page", "surface": "shopify_header" },
     "expected": {
       "intent_group": "product_compare",
       "accepted_intents": ["compare_mattresses"],
@@ -1568,7 +1568,7 @@
     "id": "product_named_queen_page_context",
     "category": "size_price",
     "query": "Does the 12 Dual Comfort come in Queen?",
-    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "context": { "path": "/pages/booking-a-snooze-session", "page_type": "page", "surface": "shopify_header" },
     "expected": {
       "intent_group": "size_price",
       "accepted_intents": ["queen_size"],
@@ -1584,7 +1584,7 @@
     "id": "product_named_price_page_context",
     "category": "size_price",
     "query": "How much is the 12 All Foam?",
-    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "context": { "path": "/pages/booking-a-snooze-session", "page_type": "page", "surface": "shopify_header" },
     "expected": {
       "intent_group": "size_price",
       "accepted_intents": ["budget_value"],
@@ -1600,7 +1600,7 @@
     "id": "product_named_price_queen_page_context",
     "category": "size_price",
     "query": "How much is the 10 All Foam in Queen?",
-    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "context": { "path": "/pages/booking-a-snooze-session", "page_type": "page", "surface": "shopify_header" },
     "expected": {
       "intent_group": "size_price",
       "accepted_intents": ["budget_value"],
