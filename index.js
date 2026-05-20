@@ -2084,6 +2084,65 @@ function classifyHudAskHandle(handle, mattressHandles = [], adjustableBaseHandle
   };
 }
 
+const HUD_ASK_HANDLE_ALIAS_MAP = Object.freeze({
+  "14-hybrid": Object.freeze([
+    { text: "14 hybrid", score: 12 },
+    { text: '14" hybrid', score: 12 },
+    { text: "14 inch hybrid", score: 12 },
+    { text: "14-inch hybrid", score: 12 },
+    { text: "fourteen hybrid", score: 10 },
+    { text: "hybrid 14", score: 10 },
+    { text: "14 hybrid mattress", score: 12 },
+    { text: "hybrid mattress 14", score: 10 },
+    { text: "hybrid", score: 3 },
+  ]),
+  "12-dual-comfort-hybrid": Object.freeze([
+    { text: "12 dual comfort hybrid", score: 12 },
+    { text: "12 dual comfort", score: 11 },
+    { text: '12" dual comfort', score: 11 },
+    { text: "12 inch dual comfort", score: 11 },
+    { text: "12-inch dual comfort", score: 11 },
+    { text: "dual comfort hybrid", score: 10 },
+    { text: "12 dual comfort mattress", score: 11 },
+    { text: "dual comfort", score: 8 },
+    { text: "half split queen", score: 5 },
+    { text: "half split king", score: 5 },
+    { text: "hybrid", score: 2 },
+  ]),
+  "12-all-foam-mattress": Object.freeze([
+    { text: "12 all foam mattress", score: 12 },
+    { text: "12 all foam", score: 11 },
+    { text: '12" all foam', score: 11 },
+    { text: "12 inch all foam", score: 11 },
+    { text: "12-inch all foam", score: 11 },
+    { text: "all foam 12", score: 10 },
+    { text: "all foam mattress", score: 5 },
+    { text: "all foam", score: 3 },
+    { text: "foam", score: 2 },
+  ]),
+  "10-all-foam-mattress": Object.freeze([
+    { text: "10 all foam mattress", score: 12 },
+    { text: "10 all foam", score: 11 },
+    { text: '10" all foam', score: 11 },
+    { text: "10 inch all foam", score: 11 },
+    { text: "10-inch all foam", score: 11 },
+    { text: "all foam 10", score: 10 },
+    { text: "all foam mattress", score: 5 },
+    { text: "all foam", score: 3 },
+    { text: "foam", score: 2 },
+  ]),
+  "premium-motion-adjustable-base": Object.freeze([
+    { text: "premium motion adjustable base", score: 12 },
+    { text: "premium motion base", score: 11 },
+    { text: "motion adjustable base", score: 10 },
+    { text: "queen adjustable base", score: 9 },
+    { text: "split king adjustable base", score: 9 },
+    { text: "adjustable base", score: 8 },
+    { text: "motion base", score: 8 },
+    { text: "base", score: 1 },
+  ]),
+});
+
 function buildHudAskHandleAliases(handle = "") {
   const lower = String(handle || "").trim().toLowerCase();
   const aliases = [];
@@ -2092,60 +2151,7 @@ function buildHudAskHandleAliases(handle = "") {
 
   aliases.push({ text: lower.replace(/-/g, " "), score: 4 });
 
-  switch (lower) {
-    case "14-hybrid":
-      aliases.push(
-        { text: '14 hybrid', score: 12 },
-        { text: '14" hybrid', score: 12 },
-        { text: "14 inch hybrid", score: 12 },
-        { text: "hybrid 14", score: 10 },
-        { text: "hybrid", score: 3 }
-      );
-      break;
-    case "12-dual-comfort-hybrid":
-      aliases.push(
-        { text: "12 dual comfort hybrid", score: 12 },
-        { text: "12 dual comfort", score: 11 },
-        { text: '12" dual comfort', score: 11 },
-        { text: "dual comfort hybrid", score: 9 },
-        { text: "dual comfort", score: 8 },
-        { text: "half split queen", score: 5 },
-        { text: "half split king", score: 5 },
-        { text: "hybrid", score: 2 }
-      );
-      break;
-    case "12-all-foam-mattress":
-      aliases.push(
-        { text: "12 all foam mattress", score: 12 },
-        { text: "12 all foam", score: 11 },
-        { text: '12" all foam', score: 11 },
-        { text: "all foam mattress", score: 5 },
-        { text: "all foam", score: 3 },
-        { text: "foam", score: 2 }
-      );
-      break;
-    case "10-all-foam-mattress":
-      aliases.push(
-        { text: "10 all foam mattress", score: 12 },
-        { text: "10 all foam", score: 11 },
-        { text: '10" all foam', score: 11 },
-        { text: "all foam mattress", score: 5 },
-        { text: "all foam", score: 3 },
-        { text: "foam", score: 2 }
-      );
-      break;
-    case "premium-motion-adjustable-base":
-      aliases.push(
-        { text: "premium motion adjustable base", score: 12 },
-        { text: "premium motion base", score: 11 },
-        { text: "motion adjustable base", score: 10 },
-        { text: "adjustable base", score: 5 },
-        { text: "motion base", score: 5 }
-      );
-      break;
-    default:
-      break;
-  }
+  aliases.push(...(HUD_ASK_HANDLE_ALIAS_MAP[lower] || []));
 
   return aliases;
 }
@@ -2371,11 +2377,7 @@ function resolveHudAskCandidateHandles({
     prefersCurrentProduct &&
     (intent === "budget_value" || intent === "bundle_price" || intent === "size_help" || isHudAskSpecificSizeIntent(intent));
 
-  if (
-    normalizedPageType === "cart" ||
-    (normalizedPageType === "page" &&
-      (isHudAskAssessmentPath(normalizedPath) || isHudAskBookingPath(normalizedPath)))
-  ) {
+  if (normalizedPageType === "cart") {
     return [];
   }
 

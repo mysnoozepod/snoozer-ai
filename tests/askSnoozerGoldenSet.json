@@ -1481,6 +1481,138 @@
     }
   },
   {
+    "id": "product_named_hot_sleepers_page_context",
+    "category": "product_fit",
+    "query": "Is the 14 Hybrid good for hot sleepers?",
+    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["product_question"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["14\" hybrid mattress", "airflow"]
+    }
+  },
+  {
+    "id": "product_named_couples_page_context",
+    "category": "product_fit",
+    "query": "Is the 12 Dual Comfort good for couples?",
+    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["product_question"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "12-dual-comfort-hybrid" },
+      "must_include": ["different feels", "couple-friendly"]
+    }
+  },
+  {
+    "id": "product_named_sizes_page_context",
+    "category": "size_price",
+    "query": "What sizes does the 14 Hybrid come in?",
+    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["size_help"],
+      "confidence_label_min": "medium",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["twin xl", "queen", "split king"]
+    }
+  },
+  {
+    "id": "compare_foam_vs_hybrid_page_context",
+    "category": "product_compare",
+    "query": "compare foam vs hybrid",
+    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_compare",
+      "accepted_intents": ["compare_mattresses"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": {
+        "min": 2,
+        "max": 3,
+        "expected_handles": ["12-all-foam-mattress", "14-hybrid", "12-dual-comfort-hybrid"]
+      },
+      "must_include": ["foam", "hybrid", "airflow"]
+    }
+  },
+  {
+    "id": "compare_named_products_page_context",
+    "category": "product_compare",
+    "query": "compare 10 All Foam and 14 Hybrid",
+    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_compare",
+      "accepted_intents": ["compare_mattresses"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 2, "max": 2, "expected_handles": ["14-hybrid", "10-all-foam-mattress"] },
+      "must_include": ["lift", "contouring"]
+    }
+  },
+  {
+    "id": "product_named_queen_page_context",
+    "category": "size_price",
+    "query": "Does the 12 Dual Comfort come in Queen?",
+    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["queen_size"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "12-dual-comfort-hybrid" },
+      "must_include": ["queen", "dual comfort"]
+    }
+  },
+  {
+    "id": "product_named_price_page_context",
+    "category": "size_price",
+    "query": "How much is the 12 All Foam?",
+    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "expected_handles": ["12-all-foam-mattress"] },
+      "must_include": ["12\" all foam mattress"]
+    }
+  },
+  {
+    "id": "product_named_price_queen_page_context",
+    "category": "size_price",
+    "query": "How much is the 10 All Foam in Queen?",
+    "context": { "path": "/pages/book-your-snooze-session", "page_type": "page", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["budget_value"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "expected_handles": ["10-all-foam-mattress"] },
+      "must_include": ["queen", "10\" all foam mattress"]
+    }
+  },
+  {
     "id": "product_page_adjustable_base_context",
     "category": "product_fit",
     "query": "Can this work with an adjustable base?",
@@ -1498,6 +1630,38 @@
     }
   },
   {
+    "id": "product_page_adjustable_base_dual_comfort_context",
+    "category": "product_fit",
+    "query": "Can this work with an adjustable base?",
+    "context": { "path": "/products/12-dual-comfort-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["product_question"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 3, "preferred_first_handle": "12-dual-comfort-hybrid" },
+      "must_include": ["base setup"]
+    }
+  },
+  {
+    "id": "product_page_hot_sleepers_context",
+    "category": "product_fit",
+    "query": "Is this good for hot sleepers?",
+    "context": { "path": "/products/14-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "product_fit",
+      "accepted_intents": ["product_question"],
+      "confidence_label_min": "high",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["14\" hybrid mattress", "airflow"]
+    }
+  },
+  {
     "id": "product_page_couples_context",
     "category": "product_fit",
     "query": "Is this good for couples?",
@@ -1511,6 +1675,22 @@
       "answer_facts_count_min": 1,
       "products": { "min": 1, "max": 1, "preferred_first_handle": "12-dual-comfort-hybrid" },
       "must_include": ["couple-friendly", "different feels"]
+    }
+  },
+  {
+    "id": "product_page_sizes_context",
+    "category": "size_price",
+    "query": "What sizes does this come in?",
+    "context": { "path": "/products/14-hybrid", "page_type": "product", "surface": "shopify_header" },
+    "expected": {
+      "intent_group": "size_price",
+      "accepted_intents": ["size_help"],
+      "confidence_label_min": "medium",
+      "answer_grounded": true,
+      "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog"],
+      "answer_facts_count_min": 1,
+      "products": { "min": 1, "max": 1, "preferred_first_handle": "14-hybrid" },
+      "must_include": ["twin xl", "queen", "split king"]
     }
   },
   {

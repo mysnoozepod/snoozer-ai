@@ -595,6 +595,14 @@ function includesAny(text, phrases = []) {
   return phrases.some((phrase) => text.includes(phrase));
 }
 
+function looksLikeAskSnoozerNamedProductAlias(text) {
+  return (
+    /(?:^|\b)(?:10|ten|12|twelve|14|fourteen)\s*(?:["â€]|inch|in|-inch)?\s*(?:all foam|dual comfort|hybrid)(?:\s*mattress)?(?:\b|$)/.test(text) ||
+    /\bdual comfort(?: hybrid)?\b/.test(text) ||
+    /\ball foam(?: mattress)?\b/.test(text)
+  );
+}
+
 function looksLikeAskSnoozerNamedProduct(text) {
   return (
     /(?:^|\b)(?:10|12|14)\s*(?:["”]|inch|in)?\s*(?:all foam|dual comfort|hybrid)(?:\b|$)/.test(text) ||
@@ -628,8 +636,9 @@ function looksLikeBundlePriceQuery(text) {
 
 function looksLikeProductQuestion(text, pageType) {
   const hasProductReference =
-    (pageType === "product" && includesAny(text, PRODUCT_REFERENCE_TERMS)) ||
-    looksLikeAskSnoozerNamedProduct(text);
+      (pageType === "product" && includesAny(text, PRODUCT_REFERENCE_TERMS)) ||
+    looksLikeAskSnoozerNamedProduct(text) ||
+    looksLikeAskSnoozerNamedProductAlias(text);
   if (!hasProductReference) return false;
 
    const bareCurrentProductReference =
