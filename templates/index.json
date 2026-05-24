@@ -15,7 +15,7 @@
         "heading": "Find The Right Mattress Without The Guesswork",
         "subtext": "Shop online or visit our unmanned showroom for a calmer way to choose your sleep environment.",
         "primary_cta_label": "Book a Snooze Session",
-        "primary_cta_link": "shopify://pages/booking-a-snooze-session",
+        "primary_cta_link": "shopify://pages/book-a-snooze-session",
         "secondary_cta_label": "Shop Mattresses",
         "secondary_cta_link": "shopify://collections/mattresses",
         "hero_image": "shopify://shop_images/STMAM455QQAB-MM12QQPO38GH-polariscoolsyncmattressandbase-ENraisedprofileWEB1715614443_original_0c19bfe5-4af4-4552-9889-853e8bd6abda.jpg"
@@ -31,7 +31,7 @@
             "title": "Shop Anywhere",
             "text": "<p>Online or in our unmanned showroom.</p>",
             "link_label": "",
-            "link": "shopify://pages/booking-a-snooze-session"
+            "link": "shopify://pages/book-a-snooze-session"
           }
         },
         "value-2": {
@@ -107,7 +107,7 @@
           "type": "button",
           "settings": {
             "button_label": "Book Your Snooze Session",
-            "button_link": "shopify://pages/booking-a-snooze-session",
+            "button_link": "shopify://pages/book-a-snooze-session",
             "button_style_secondary": false
           }
         }
