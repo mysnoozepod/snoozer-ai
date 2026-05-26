@@ -1,7 +1,44 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
-      "type": "snoozer-landing-booking"
+      "type": "snoozer-landing-booking",
+      "settings": {
+        "hero_eyebrow": "Book Your Snooze Session",
+        "hero_headline": "Book A Snooze Session",
+        "hero_text": "Try mattresses, bases, pillows, and bedding in a private, guided showroom experience.",
+        "primary_label": "Book Your Snooze Session",
+        "primary_link": "",
+        "secondary_label": "Start Snooze Assessment",
+        "secondary_link": "",
+        "hero_image": "shopify://shop_images/ChatGPT_Image_Apr_28_2026_03_23_05_AM.png",
+        "hero_image_alt": "",
+        "visit_heading": "What Happens During Your Visit",
+        "different_heading": "Simple, private, and guided.",
+        "different_text": "You will know where to start, what to test, and what to do next.",
+        "assessment_heading": "Start with your Snooze Assessment",
+        "assessment_text": "A few answers help Snoozer understand your comfort, support, and sleep-environment needs before your visit.",
+        "assessment_label": "Start Your Snooze Assessment",
+        "assessment_link": "",
+        "booking_heading": "Ready to schedule?",
+        "booking_text": "Choose a time for your private Snooze Session below.",
+        "calendly_url": "https://calendly.com/zohotyree/30min",
+        "faq_heading": "Frequently Asked Questions",
+        "final_heading": "Ready For Your Next Step?",
+        "final_text": "Book your session or start with the assessment so Snoozer can help guide your visit.",
+        "final_primary_label": "Book A Snooze Session",
+        "final_primary_link": "",
+        "final_secondary_label": "Start Snooze Assessment",
+        "final_secondary_link": ""
+      }
     }
   },
   "order": [
