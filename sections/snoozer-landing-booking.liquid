@@ -7,9 +7,6 @@
   assign visit_steps = section.blocks | where: 'type', 'visit_step'
   assign difference_cards = section.blocks | where: 'type', 'difference_card'
   assign faq_items = section.blocks | where: 'type', 'faq_item'
-  assign assessment_page_url = '/pages/snooze-assessment'
-  assign booking_anchor_id = 'snooze-session-booking-' | append: section.id
-  assign booking_anchor_href = '#' | append: booking_anchor_id
   assign calendly_url = section.settings.calendly_url | strip
   if calendly_url == blank
     assign calendly_url = 'https://calendly.com/zohotyree/30min'
@@ -19,14 +16,14 @@
 {%- style -%}
   .snoozer-landing-booking-{{ section.id }} {
     max-width: 1180px;
-    margin: 20px auto 48px;
+    margin: 16px auto 40px;
     padding: 0 16px;
     color: #071942;
   }
 
   .snoozer-landing-booking-{{ section.id }} .landing-stack {
     display: grid;
-    gap: 20px;
+    gap: 16px;
   }
 
   .snoozer-landing-booking-{{ section.id }} .panel,
@@ -43,7 +40,7 @@
 
   .snoozer-landing-booking-{{ section.id }} .hero {
     display: grid;
-    gap: 24px;
+    gap: 20px;
     padding: 28px 24px;
   }
 
@@ -65,39 +62,18 @@
 
   .snoozer-landing-booking-{{ section.id }} .text,
   .snoozer-landing-booking-{{ section.id }} .subtext {
-    margin: 14px 0 0;
+    margin: 12px 0 0;
     color: rgba(7, 25, 66, 0.78);
     font-size: 17px;
     line-height: 1.55;
   }
 
-  .snoozer-landing-booking-{{ section.id }} .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 20px;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 52px;
-    padding: 0 24px;
-    border-radius: 999px;
-    border: 1px solid rgba(7, 25, 66, 0.12);
-    background: #ffffff;
-    color: #071942;
-    font-size: 16px;
-    font-weight: 700;
-    text-align: center;
-    text-decoration: none;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .button--primary {
-    background: #071942;
-    border-color: #071942;
-    color: #ffffff;
+  .snoozer-landing-booking-{{ section.id }} .helper {
+    margin: 14px 0 0;
+    color: rgba(7, 25, 66, 0.7);
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 600;
   }
 
   .snoozer-landing-booking-{{ section.id }} .visual,
@@ -128,7 +104,7 @@
   }
 
   .snoozer-landing-booking-{{ section.id }} .section-pad,
-  .snoozer-landing-booking-{{ section.id }} .band {
+  .snoozer-landing-booking-{{ section.id }} .section-pad {
     padding: 24px;
   }
 
@@ -142,7 +118,7 @@
   .snoozer-landing-booking-{{ section.id }} .grid {
     display: grid;
     gap: 16px;
-    margin-top: 18px;
+    margin-top: 16px;
   }
 
   .snoozer-landing-booking-{{ section.id }} .grid--three,
@@ -205,7 +181,7 @@
   .snoozer-landing-booking-{{ section.id }} .faq {
     display: grid;
     gap: 12px;
-    margin-top: 18px;
+    margin-top: 16px;
   }
 
   .snoozer-landing-booking-{{ section.id }} .faq details {
@@ -231,16 +207,6 @@
     color: rgba(7, 25, 66, 0.76);
     font-size: 15px;
     line-height: 1.55;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .band {
-    background: #071942;
-    color: #ffffff;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .band .heading,
-  .snoozer-landing-booking-{{ section.id }} .band .subtext {
-    color: #ffffff;
   }
 
   @media screen and (min-width: 750px) {
@@ -278,16 +244,12 @@
     }
 
     .snoozer-landing-booking-{{ section.id }} .section-pad,
-    .snoozer-landing-booking-{{ section.id }} .band {
+    .snoozer-landing-booking-{{ section.id }} .section-pad {
       padding: 30px 32px;
     }
   }
 
   @media screen and (max-width: 749px) {
-    .snoozer-landing-booking-{{ section.id }} .button {
-      width: 100%;
-    }
-
     .snoozer-landing-booking-{{ section.id }} .calendly-inline-widget {
       min-height: 800px;
       height: 800px;
@@ -311,20 +273,9 @@
             {%- endif -%}
             <h1 class="title">{{ section.settings.hero_headline | escape }}</h1>
             <p class="text">{{ section.settings.hero_text | escape }}</p>
-            <div class="actions">
-              <a
-                class="button button--primary"
-                href="{% if section.settings.primary_link != blank %}{{ section.settings.primary_link }}{% else %}{{ booking_anchor_href }}{% endif %}"
-              >
-                {{ section.settings.primary_label | escape }}
-              </a>
-              <a
-                class="button"
-                href="{% if section.settings.secondary_link != blank %}{{ section.settings.secondary_link }}{% else %}{{ assessment_page_url }}{% endif %}"
-              >
-                {{ section.settings.secondary_label | escape }}
-              </a>
-            </div>
+            {%- if section.settings.hero_helper_text != blank -%}
+              <p class="helper">{{ section.settings.hero_helper_text | escape }}</p>
+            {%- endif -%}
           </div>
           {%- if hero_image != blank -%}
             <div class="visual">
@@ -347,6 +298,9 @@
       <div class="panel">
         <div class="section-pad">
           <h2 class="heading">{{ section.settings.visit_heading | escape }}</h2>
+          {%- if section.settings.visit_text != blank -%}
+            <p class="subtext section-copy">{{ section.settings.visit_text | escape }}</p>
+          {%- endif -%}
           <div class="grid grid--three">
             {%- for block in visit_steps -%}
               <div class="card" {{ block.shopify_attributes }}>
@@ -363,7 +317,9 @@
       <div class="panel">
         <div class="section-pad">
           <h2 class="heading">{{ section.settings.different_heading | escape }}</h2>
-          <p class="subtext section-copy">{{ section.settings.different_text | escape }}</p>
+          {%- if section.settings.different_text != blank -%}
+            <p class="subtext section-copy">{{ section.settings.different_text | escape }}</p>
+          {%- endif -%}
           <div class="grid grid--difference">
             {%- for block in difference_cards -%}
               <div class="card" {{ block.shopify_attributes }}>
@@ -377,22 +333,7 @@
         </div>
       </div>
 
-      <div class="panel panel--soft">
-        <div class="section-pad">
-          <h2 class="heading">{{ section.settings.assessment_heading | escape }}</h2>
-          <p class="subtext section-copy">{{ section.settings.assessment_text | escape }}</p>
-          <div class="actions">
-            <a
-              class="button button--primary"
-              href="{% if section.settings.assessment_link != blank %}{{ section.settings.assessment_link }}{% else %}{{ assessment_page_url }}{% endif %}"
-            >
-              {{ section.settings.assessment_label | escape }}
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel" id="{{ booking_anchor_id }}">
+      <div class="panel" id="snooze-session-booking-{{ section.id }}">
         <div class="section-pad">
           <h2 class="heading">{{ section.settings.booking_heading | escape }}</h2>
           <p class="subtext section-copy">{{ section.settings.booking_text | escape }}</p>
@@ -407,38 +348,21 @@
         </div>
       </div>
 
-      <div class="panel">
-        <div class="section-pad">
-          <h2 class="heading">{{ section.settings.faq_heading | escape }}</h2>
-          <div class="faq">
-            {%- for block in faq_items -%}
-              <details {{ block.shopify_attributes }}>
-                <summary>{{ block.settings.question | escape }}</summary>
-                <div class="faq__answer">{{ block.settings.answer | escape }}</div>
-              </details>
-            {%- endfor -%}
+      {%- if faq_items.size > 0 -%}
+        <div class="panel">
+          <div class="section-pad">
+            <h2 class="heading">{{ section.settings.faq_heading | escape }}</h2>
+            <div class="faq">
+              {%- for block in faq_items -%}
+                <details {{ block.shopify_attributes }}>
+                  <summary>{{ block.settings.question | escape }}</summary>
+                  <div class="faq__answer">{{ block.settings.answer | escape }}</div>
+                </details>
+              {%- endfor -%}
+            </div>
           </div>
         </div>
-      </div>
-
-      <div class="band">
-        <h2 class="heading">{{ section.settings.final_heading | escape }}</h2>
-        <p class="subtext">{{ section.settings.final_text | escape }}</p>
-        <div class="actions">
-          <a
-            class="button"
-            href="{% if section.settings.final_primary_link != blank %}{{ section.settings.final_primary_link }}{% else %}{{ booking_anchor_href }}{% endif %}"
-          >
-            {{ section.settings.final_primary_label | escape }}
-          </a>
-          <a
-            class="button"
-            href="{% if section.settings.final_secondary_link != blank %}{{ section.settings.final_secondary_link }}{% else %}{{ assessment_page_url }}{% endif %}"
-          >
-            {{ section.settings.final_secondary_label | escape }}
-          </a>
-        </div>
-      </div>
+      {%- endif -%}
     </div>
   </div>
 </section>
@@ -550,56 +474,45 @@
   "tag": "section",
   "class": "section",
   "settings": [
-    { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "Book Your Snooze Session" },
-    { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Book A Snooze Session" },
-    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Try mattresses, bases, pillows, and bedding in a private, guided showroom experience." },
-    { "type": "text", "id": "primary_label", "label": "Primary CTA label", "default": "Book Your Snooze Session" },
-    { "type": "url", "id": "primary_link", "label": "Primary CTA link" },
-    { "type": "text", "id": "secondary_label", "label": "Secondary CTA label", "default": "Start Snooze Assessment" },
-    { "type": "url", "id": "secondary_link", "label": "Secondary CTA link" },
+    { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "BOOK YOUR SNOOZE SESSION" },
+    { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Book A Private Snooze Session" },
+    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Tell us how you sleep, choose a time, and visit the showroom with a clearer plan for what to test." },
+    { "type": "textarea", "id": "hero_helper_text", "label": "Hero helper text", "default": "Your booking includes a few quick sleep questions so Snoozer can help guide the visit." },
     { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
     { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
-    { "type": "text", "id": "visit_heading", "label": "Visit steps heading", "default": "What Happens During Your Visit" },
-    { "type": "text", "id": "different_heading", "label": "Why different heading", "default": "Simple, private, and guided." },
-    { "type": "textarea", "id": "different_text", "label": "Why different text", "default": "You will know where to start, what to test, and what to do next." },
-    { "type": "text", "id": "assessment_heading", "label": "Assessment heading", "default": "Start with your Snooze Assessment" },
-    { "type": "textarea", "id": "assessment_text", "label": "Assessment text", "default": "A few answers help Snoozer understand your comfort, support, and sleep-environment needs before your visit." },
-    { "type": "text", "id": "assessment_label", "label": "Assessment CTA label", "default": "Start Your Snooze Assessment" },
-    { "type": "url", "id": "assessment_link", "label": "Assessment CTA link" },
-    { "type": "text", "id": "booking_heading", "label": "Booking heading", "default": "Ready to schedule?" },
-    { "type": "textarea", "id": "booking_text", "label": "Booking text", "default": "Choose a time for your private Snooze Session below." },
+    { "type": "text", "id": "visit_heading", "label": "Booking flow heading", "default": "Your booking starts with how you sleep." },
+    { "type": "textarea", "id": "visit_text", "label": "Booking flow text", "default": "Before you choose a time, you’ll answer a few quick questions about comfort, support, and what you want to improve. That helps your Snooze Session feel focused from the start." },
+    { "type": "text", "id": "different_heading", "label": "Showroom heading", "default": "What to expect in the showroom" },
+    { "type": "textarea", "id": "different_text", "label": "Showroom text", "default": "" },
+    { "type": "text", "id": "booking_heading", "label": "Booking heading", "default": "Choose Your Snooze Session Time" },
+    { "type": "textarea", "id": "booking_text", "label": "Booking text", "default": "Use the scheduler below to answer a few quick sleep questions and reserve your private visit." },
     { "type": "text", "id": "calendly_url", "label": "Calendly URL", "default": "https://calendly.com/zohotyree/30min" },
     { "type": "text", "id": "faq_heading", "label": "FAQ heading", "default": "Frequently Asked Questions" },
-    { "type": "text", "id": "final_heading", "label": "Final CTA heading", "default": "Ready For Your Next Step?" },
-    { "type": "textarea", "id": "final_text", "label": "Final CTA text", "default": "Book your session or start with the assessment so Snoozer can help guide your visit." },
-    { "type": "text", "id": "final_primary_label", "label": "Final primary CTA label", "default": "Book A Snooze Session" },
-    { "type": "url", "id": "final_primary_link", "label": "Final primary CTA link" },
-    { "type": "text", "id": "final_secondary_label", "label": "Final secondary CTA label", "default": "Start Snooze Assessment" },
-    { "type": "url", "id": "final_secondary_link", "label": "Final secondary CTA link" }
+    { "type": "paragraph", "content": "This page keeps booking and prep in a single flow." }
   ],
   "blocks": [
     {
       "type": "visit_step",
       "name": "Visit step",
       "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "Private Visit" },
-        { "type": "textarea", "id": "text", "label": "Text", "default": "Explore without sales pressure." }
+        { "type": "text", "id": "title", "label": "Title", "default": "Share Your Sleep Needs" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Tell us what you’re shopping for and what you want to improve." }
       ]
     },
     {
       "type": "difference_card",
       "name": "Difference card",
       "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "Private appointment" },
-        { "type": "textarea", "id": "text", "label": "Text", "default": "Take your time in a calm showroom visit built around your schedule." }
+        { "type": "text", "id": "title", "label": "Title", "default": "Private Showroom" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Explore without a salesperson hovering over the decision." }
       ]
     },
     {
       "type": "faq_item",
       "name": "FAQ item",
       "settings": [
-        { "type": "text", "id": "question", "label": "Question", "default": "Do I need to complete the Snooze Assessment first?" },
-        { "type": "textarea", "id": "answer", "label": "Answer", "default": "It is recommended. The assessment helps Snoozer guide your session around your comfort, support, and sleep-environment needs." }
+        { "type": "text", "id": "question", "label": "Question", "default": "Do I need to complete a separate Snooze Assessment?" },
+        { "type": "textarea", "id": "answer", "label": "Answer", "default": "No. For this booking page, the key prep questions are built into the scheduling flow so your visit starts with direction." }
       ]
     }
   ],
@@ -610,64 +523,64 @@
         {
           "type": "visit_step",
           "settings": {
-            "title": "Private Visit",
-            "text": "Explore without sales pressure."
+            "title": "Share Your Sleep Needs",
+            "text": "Tell us what you’re shopping for and what you want to improve."
           }
         },
         {
           "type": "visit_step",
           "settings": {
-            "title": "Guided Testing",
+            "title": "Choose Your Time",
+            "text": "Pick a private showroom appointment that fits your schedule."
+          }
+        },
+        {
+          "type": "visit_step",
+          "settings": {
+            "title": "Arrive With Direction",
+            "text": "Use your answers to focus on the mattresses, bases, pillows, and bedding that matter most."
+          }
+        },
+        {
+          "type": "difference_card",
+          "settings": {
+            "title": "Private Showroom",
+            "text": "Explore without a salesperson hovering over the decision."
+          }
+        },
+        {
+          "type": "difference_card",
+          "settings": {
+            "title": "Guided Rest Testing",
             "text": "Try mattresses, bases, pillows, and bedding at your pace."
           }
         },
         {
-          "type": "visit_step",
-          "settings": {
-            "title": "Clear Next Step",
-            "text": "Leave with a better idea of what fits your sleep environment."
-          }
-        },
-        {
           "type": "difference_card",
           "settings": {
-            "title": "Private appointment",
-            "text": "Book focused time without the pressure of a traditional showroom."
-          }
-        },
-        {
-          "type": "difference_card",
-          "settings": {
-            "title": "Snoozer-guided support",
-            "text": "Use your assessment and guided prompts to know where to start."
-          }
-        },
-        {
-          "type": "difference_card",
-          "settings": {
-            "title": "Virtual help available",
-            "text": "Get support before, during, or after your visit if questions come up."
-          }
-        },
-        {
-          "type": "difference_card",
-          "settings": {
-            "title": "More than mattress shopping",
-            "text": "Explore the full sleep environment, including bases, pillows, and bedding."
+            "title": "Full SnoozePod View",
+            "text": "Think beyond the mattress and build the sleep environment around how you rest."
           }
         },
         {
           "type": "faq_item",
           "settings": {
-            "question": "Do I need to complete the Snooze Assessment first?",
-            "answer": "It is recommended. The assessment helps Snoozer guide your session around your comfort, support, and sleep-environment needs."
+            "question": "Do I need to complete a separate Snooze Assessment?",
+            "answer": "No. For this booking page, the key prep questions are built into the scheduling flow so your visit starts with direction."
           }
         },
         {
           "type": "faq_item",
           "settings": {
             "question": "How long is a Snooze Session?",
-            "answer": "The current booking slot is 30 minutes. That gives you focused time to test key products and understand your next step."
+            "answer": "Your available time is shown in the scheduler. Use the session to focus on the products that matter most to your sleep needs."
+          }
+        },
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "Is there sales pressure?",
+            "answer": "No. The showroom is designed to be private, calm, and guided without the pressure of a traditional mattress store."
           }
         },
         {
@@ -680,15 +593,8 @@
         {
           "type": "faq_item",
           "settings": {
-            "question": "Is there sales pressure?",
-            "answer": "No. The session is designed to be private, calm, and guided without the pressure of a traditional showroom."
-          }
-        },
-        {
-          "type": "faq_item",
-          "settings": {
-            "question": "Can I get help virtually?",
-            "answer": "Yes. Virtual support can help answer questions before, during, or after your visit."
+            "question": "Can I get help if I need it?",
+            "answer": "Yes. Snoozer-guided support and virtual support are available to help you understand your options."
           }
         }
       ]
