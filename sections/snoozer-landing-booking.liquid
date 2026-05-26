@@ -182,12 +182,24 @@
     border-radius: 24px;
     background: #ffffff;
     overflow: hidden;
+    line-height: 0;
   }
 
   .snoozer-landing-booking-{{ section.id }} .calendly-inline-widget {
+    display: block;
     width: 100%;
     min-width: 320px;
+    min-height: 700px;
     height: 700px;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .calendly-shell iframe {
+    display: block;
+    width: 100%;
+    min-width: 320px;
+    min-height: 700px !important;
+    height: 700px !important;
+    border: 0;
   }
 
   .snoozer-landing-booking-{{ section.id }} .faq {
@@ -277,7 +289,13 @@
     }
 
     .snoozer-landing-booking-{{ section.id }} .calendly-inline-widget {
+      min-height: 800px;
       height: 800px;
+    }
+
+    .snoozer-landing-booking-{{ section.id }} .calendly-shell iframe {
+      min-height: 800px !important;
+      height: 800px !important;
     }
   }
 {%- endstyle -%}
@@ -382,7 +400,8 @@
             <div
               id="CalendlyInlineWidget-{{ section.id }}"
               class="calendly-inline-widget"
-              data-calendly-url="{{ calendly_url | escape }}"
+              data-url="{{ calendly_url | escape }}"
+              style="min-width:320px;height:700px;"
             ></div>
           </div>
         </div>
@@ -427,36 +446,101 @@
 <script>
   (function () {
     var widgetId = 'CalendlyInlineWidget-{{ section.id }}';
-    var widgetRoot = document.getElementById(widgetId);
-    if (!widgetRoot) return;
+    var widgetRoot = null;
 
-    function mountCalendly() {
+    function getWidgetRoot() {
+      if (widgetRoot && document.body.contains(widgetRoot)) return widgetRoot;
+      widgetRoot = document.getElementById(widgetId);
+      return widgetRoot;
+    }
+
+    function applyWidgetSizing(root) {
+      if (!root) return;
+      var mobile = window.matchMedia('(max-width: 749px)').matches;
+      var nextHeight = mobile ? '800px' : '700px';
+      root.style.width = '100%';
+      root.style.minWidth = '320px';
+      root.style.minHeight = nextHeight;
+      root.style.height = nextHeight;
+    }
+
+    function mountCalendly(options) {
+      var root = getWidgetRoot();
+      if (!root) return;
+      applyWidgetSizing(root);
       if (!window.Calendly || typeof window.Calendly.initInlineWidget !== 'function') return;
-      if (widgetRoot.dataset.calendlyMounted === 'true') return;
-      widgetRoot.innerHTML = '';
-      window.Calendly.initInlineWidget({
-        url: widgetRoot.getAttribute('data-calendly-url'),
-        parentElement: widgetRoot
-      });
-      widgetRoot.dataset.calendlyMounted = 'true';
-    }
 
-    var existingScript = document.querySelector('script[data-calendly-widget-script="true"]');
-    if (existingScript) {
-      if (window.Calendly) {
-        mountCalendly();
-      } else {
-        existingScript.addEventListener('load', mountCalendly, { once: true });
+      var forceRemount = Boolean(options && options.force);
+      if (!forceRemount && root.querySelector('iframe')) {
+        root.dataset.calendlyMounted = 'true';
+        return;
       }
-      return;
+      if (!forceRemount && root.dataset.calendlyMounted === 'true') return;
+
+      root.innerHTML = '';
+      window.Calendly.initInlineWidget({
+        url: root.getAttribute('data-url'),
+        parentElement: root
+      });
+      root.dataset.calendlyMounted = 'true';
     }
 
-    var script = document.createElement('script');
-    script.src = 'https://assets.calendly.com/assets/external/widget.js';
-    script.async = true;
-    script.setAttribute('data-calendly-widget-script', 'true');
-    script.addEventListener('load', mountCalendly, { once: true });
-    document.head.appendChild(script);
+    function loadCalendlyScript() {
+      if (window.Calendly && typeof window.Calendly.initInlineWidget === 'function') {
+        return Promise.resolve(window.Calendly);
+      }
+
+      if (window.__mysnoozepodCalendlyLoader) {
+        return window.__mysnoozepodCalendlyLoader;
+      }
+
+      window.__mysnoozepodCalendlyLoader = new Promise(function (resolve, reject) {
+        var existingScript = document.querySelector('script[data-calendly-widget-script="true"]');
+        if (existingScript) {
+          if (window.Calendly && typeof window.Calendly.initInlineWidget === 'function') {
+            resolve(window.Calendly);
+            return;
+          }
+
+          existingScript.addEventListener('load', function () {
+            resolve(window.Calendly);
+          }, { once: true });
+          existingScript.addEventListener('error', reject, { once: true });
+          return;
+        }
+
+        var script = document.createElement('script');
+        script.src = 'https://assets.calendly.com/assets/external/widget.js';
+        script.async = true;
+        script.setAttribute('data-calendly-widget-script', 'true');
+        script.addEventListener('load', function () {
+          resolve(window.Calendly);
+        }, { once: true });
+        script.addEventListener('error', reject, { once: true });
+        document.head.appendChild(script);
+      });
+
+      return window.__mysnoozepodCalendlyLoader;
+    }
+
+    loadCalendlyScript().then(function () {
+      mountCalendly({ force: true });
+    }).catch(function () {});
+
+    window.addEventListener('resize', function () {
+      var root = getWidgetRoot();
+      if (!root) return;
+      applyWidgetSizing(root);
+    });
+
+    document.addEventListener('shopify:section:load', function (event) {
+      if (!event.target || !event.target.querySelector) return;
+      if (!event.target.querySelector('#' + widgetId)) return;
+      widgetRoot = event.target.querySelector('#' + widgetId);
+      loadCalendlyScript().then(function () {
+        mountCalendly({ force: true });
+      }).catch(function () {});
+    });
   })();
 </script>
 
