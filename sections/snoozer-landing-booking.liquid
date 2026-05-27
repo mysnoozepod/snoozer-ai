@@ -4,30 +4,37 @@
   if hero_alt == blank
     assign hero_alt = section.settings.hero_headline
   endif
-  assign visit_steps = section.blocks | where: 'type', 'visit_step'
-  assign difference_cards = section.blocks | where: 'type', 'difference_card'
-  assign faq_items = section.blocks | where: 'type', 'faq_item'
-  assign calendly_url = section.settings.calendly_url | strip
-  if calendly_url == blank
-    assign calendly_url = 'https://calendly.com/zohotyree/30min'
+
+  assign mini_calendly_url = section.settings.mini_calendly_url | strip
+  if mini_calendly_url == blank
+    assign mini_calendly_url = 'https://calendly.com/d/cypf-52b-v4v'
+  endif
+
+  assign booking_calendly_url = section.settings.calendly_url | strip
+  if booking_calendly_url == blank
+    assign booking_calendly_url = 'https://calendly.com/zohotyree/30min'
+  endif
+
+  assign hide_footer_newsletter = false
+  if request.page_type == 'page' and page.handle == 'book-a-snooze-session'
+    assign hide_footer_newsletter = true
   endif
 -%}
 
 {%- style -%}
   .snoozer-landing-booking-{{ section.id }} {
     max-width: 1180px;
-    margin: 16px auto 40px;
+    margin: 16px auto 28px;
     padding: 0 16px;
     color: #071942;
   }
 
   .snoozer-landing-booking-{{ section.id }} .landing-stack {
     display: grid;
-    gap: 16px;
+    gap: 14px;
   }
 
-  .snoozer-landing-booking-{{ section.id }} .panel,
-  .snoozer-landing-booking-{{ section.id }} .band {
+  .snoozer-landing-booking-{{ section.id }} .panel {
     border: 1px solid rgba(7, 25, 66, 0.08);
     border-radius: 28px;
     background: #ffffff;
@@ -103,7 +110,6 @@
     font-weight: 600;
   }
 
-  .snoozer-landing-booking-{{ section.id }} .section-pad,
   .snoozer-landing-booking-{{ section.id }} .section-pad {
     padding: 24px;
   }
@@ -115,44 +121,22 @@
     letter-spacing: -0.03em;
   }
 
-  .snoozer-landing-booking-{{ section.id }} .grid {
-    display: grid;
-    gap: 16px;
-    margin-top: 16px;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .grid--three,
-  .snoozer-landing-booking-{{ section.id }} .grid--difference {
-    grid-template-columns: 1fr;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .card {
-    height: 100%;
-    padding: 20px;
-    border: 1px solid rgba(7, 25, 66, 0.08);
-    border-radius: 22px;
-    background: #ffffff;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .card__title {
-    margin: 0;
-    font-size: 21px;
-    line-height: 1.15;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .card__text {
-    margin: 10px 0 0;
-    color: rgba(7, 25, 66, 0.76);
-    font-size: 16px;
-    line-height: 1.5;
-  }
-
   .snoozer-landing-booking-{{ section.id }} .section-copy {
     max-width: 720px;
   }
 
+  .snoozer-landing-booking-{{ section.id }} .section-label {
+    margin: 0 0 12px;
+    color: rgba(7, 25, 66, 0.6);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
   .snoozer-landing-booking-{{ section.id }} .calendly-shell {
-    margin-top: 20px;
+    margin-top: 18px;
     padding: 10px;
     border: 1px solid rgba(7, 25, 66, 0.08);
     border-radius: 24px;
@@ -178,45 +162,15 @@
     border: 0;
   }
 
-  .snoozer-landing-booking-{{ section.id }} .faq {
-    display: grid;
-    gap: 12px;
-    margin-top: 16px;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .faq details {
-    border: 1px solid rgba(7, 25, 66, 0.08);
-    border-radius: 18px;
-    background: #ffffff;
-    padding: 16px 18px;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .faq summary {
-    cursor: pointer;
-    list-style: none;
-    font-size: 18px;
-    font-weight: 700;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .faq summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .snoozer-landing-booking-{{ section.id }} .faq__answer {
-    margin-top: 12px;
-    color: rgba(7, 25, 66, 0.76);
-    font-size: 15px;
-    line-height: 1.55;
-  }
+  {%- if hide_footer_newsletter -%}
+    body.template-page #shopify-section-newsletter {
+      display: none !important;
+    }
+  {%- endif -%}
 
   @media screen and (min-width: 750px) {
     .snoozer-landing-booking-{{ section.id }} {
       padding: 0 24px;
-    }
-
-    .snoozer-landing-booking-{{ section.id }} .grid--three,
-    .snoozer-landing-booking-{{ section.id }} .grid--difference {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
@@ -243,7 +197,6 @@
       height: 100%;
     }
 
-    .snoozer-landing-booking-{{ section.id }} .section-pad,
     .snoozer-landing-booking-{{ section.id }} .section-pad {
       padding: 30px 32px;
     }
@@ -297,85 +250,52 @@
 
       <div class="panel">
         <div class="section-pad">
-          <h2 class="heading">{{ section.settings.visit_heading | escape }}</h2>
-          {%- if section.settings.visit_text != blank -%}
-            <p class="subtext section-copy">{{ section.settings.visit_text | escape }}</p>
-          {%- endif -%}
-          <div class="grid grid--three">
-            {%- for block in visit_steps -%}
-              <div class="card" {{ block.shopify_attributes }}>
-                <h3 class="card__title">{{ block.settings.title | escape }}</h3>
-                {%- if block.settings.text != blank -%}
-                  <p class="card__text">{{ block.settings.text | escape }}</p>
-                {%- endif -%}
-              </div>
-            {%- endfor -%}
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="section-pad">
-          <h2 class="heading">{{ section.settings.different_heading | escape }}</h2>
-          {%- if section.settings.different_text != blank -%}
-            <p class="subtext section-copy">{{ section.settings.different_text | escape }}</p>
-          {%- endif -%}
-          <div class="grid grid--difference">
-            {%- for block in difference_cards -%}
-              <div class="card" {{ block.shopify_attributes }}>
-                <h3 class="card__title">{{ block.settings.title | escape }}</h3>
-                {%- if block.settings.text != blank -%}
-                  <p class="card__text">{{ block.settings.text | escape }}</p>
-                {%- endif -%}
-              </div>
-            {%- endfor -%}
-          </div>
-        </div>
-      </div>
-
-      <div class="panel" id="snooze-session-booking-{{ section.id }}">
-        <div class="section-pad">
-          <h2 class="heading">{{ section.settings.booking_heading | escape }}</h2>
-          <p class="subtext section-copy">{{ section.settings.booking_text | escape }}</p>
+          <p class="section-label">Step 1</p>
+          <h2 class="heading">{{ section.settings.mini_heading | escape }}</h2>
+          <p class="subtext section-copy">{{ section.settings.mini_text | escape }}</p>
           <div class="calendly-shell">
             <div
-              id="CalendlyInlineWidget-{{ section.id }}"
+              id="CalendlyInlineWidgetMini-{{ section.id }}"
               class="calendly-inline-widget"
-              data-url="{{ calendly_url | escape }}"
+              data-url="{{ mini_calendly_url | escape }}"
               style="min-width:320px;height:700px;"
             ></div>
           </div>
         </div>
       </div>
 
-      {%- if faq_items.size > 0 -%}
-        <div class="panel">
-          <div class="section-pad">
-            <h2 class="heading">{{ section.settings.faq_heading | escape }}</h2>
-            <div class="faq">
-              {%- for block in faq_items -%}
-                <details {{ block.shopify_attributes }}>
-                  <summary>{{ block.settings.question | escape }}</summary>
-                  <div class="faq__answer">{{ block.settings.answer | escape }}</div>
-                </details>
-              {%- endfor -%}
-            </div>
+      <div class="panel" id="snooze-session-booking-{{ section.id }}">
+        <div class="section-pad">
+          <p class="section-label">Step 2</p>
+          <h2 class="heading">{{ section.settings.booking_heading | escape }}</h2>
+          <p class="subtext section-copy">{{ section.settings.booking_text | escape }}</p>
+          <div class="calendly-shell">
+            <div
+              id="CalendlyInlineWidgetBooking-{{ section.id }}"
+              class="calendly-inline-widget"
+              data-url="{{ booking_calendly_url | escape }}"
+              style="min-width:320px;height:700px;"
+            ></div>
           </div>
         </div>
-      {%- endif -%}
+      </div>
     </div>
   </div>
 </section>
 
 <script>
   (function () {
-    var widgetId = 'CalendlyInlineWidget-{{ section.id }}';
-    var widgetRoot = null;
+    var widgetIds = [
+      'CalendlyInlineWidgetMini-{{ section.id }}',
+      'CalendlyInlineWidgetBooking-{{ section.id }}'
+    ];
 
-    function getWidgetRoot() {
-      if (widgetRoot && document.body.contains(widgetRoot)) return widgetRoot;
-      widgetRoot = document.getElementById(widgetId);
-      return widgetRoot;
+    function getWidgetRoots() {
+      return widgetIds
+        .map(function (id) {
+          return document.getElementById(id);
+        })
+        .filter(Boolean);
     }
 
     function applyWidgetSizing(root) {
@@ -388,8 +308,7 @@
       root.style.height = nextHeight;
     }
 
-    function mountCalendly(options) {
-      var root = getWidgetRoot();
+    function mountCalendly(root, options) {
       if (!root) return;
       applyWidgetSizing(root);
       if (!window.Calendly || typeof window.Calendly.initInlineWidget !== 'function') return;
@@ -409,6 +328,12 @@
       root.dataset.calendlyMounted = 'true';
     }
 
+    function mountAllCalendly(options) {
+      getWidgetRoots().forEach(function (root) {
+        mountCalendly(root, options);
+      });
+    }
+
     function loadCalendlyScript() {
       if (window.Calendly && typeof window.Calendly.initInlineWidget === 'function') {
         return Promise.resolve(window.Calendly);
@@ -426,9 +351,13 @@
             return;
           }
 
-          existingScript.addEventListener('load', function () {
-            resolve(window.Calendly);
-          }, { once: true });
+          existingScript.addEventListener(
+            'load',
+            function () {
+              resolve(window.Calendly);
+            },
+            { once: true }
+          );
           existingScript.addEventListener('error', reject, { once: true });
           return;
         }
@@ -437,9 +366,13 @@
         script.src = 'https://assets.calendly.com/assets/external/widget.js';
         script.async = true;
         script.setAttribute('data-calendly-widget-script', 'true');
-        script.addEventListener('load', function () {
-          resolve(window.Calendly);
-        }, { once: true });
+        script.addEventListener(
+          'load',
+          function () {
+            resolve(window.Calendly);
+          },
+          { once: true }
+        );
         script.addEventListener('error', reject, { once: true });
         document.head.appendChild(script);
       });
@@ -447,23 +380,32 @@
       return window.__mysnoozepodCalendlyLoader;
     }
 
-    loadCalendlyScript().then(function () {
-      mountCalendly({ force: true });
-    }).catch(function () {});
+    loadCalendlyScript()
+      .then(function () {
+        mountAllCalendly({ force: true });
+      })
+      .catch(function () {});
 
     window.addEventListener('resize', function () {
-      var root = getWidgetRoot();
-      if (!root) return;
-      applyWidgetSizing(root);
+      getWidgetRoots().forEach(function (root) {
+        applyWidgetSizing(root);
+      });
     });
 
     document.addEventListener('shopify:section:load', function (event) {
       if (!event.target || !event.target.querySelector) return;
-      if (!event.target.querySelector('#' + widgetId)) return;
-      widgetRoot = event.target.querySelector('#' + widgetId);
-      loadCalendlyScript().then(function () {
-        mountCalendly({ force: true });
-      }).catch(function () {});
+
+      var containsBookingWidget = widgetIds.some(function (id) {
+        return event.target.querySelector('#' + id);
+      });
+
+      if (!containsBookingWidget) return;
+
+      loadCalendlyScript()
+        .then(function () {
+          mountAllCalendly({ force: true });
+        })
+        .catch(function () {});
     });
   })();
 </script>
@@ -476,128 +418,20 @@
   "settings": [
     { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "BOOK YOUR SNOOZE SESSION" },
     { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Book A Private Snooze Session" },
-    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Tell us how you sleep, choose a time, and visit the showroom with a clearer plan for what to test." },
-    { "type": "textarea", "id": "hero_helper_text", "label": "Hero helper text", "default": "Your booking includes a few quick sleep questions so Snoozer can help guide the visit." },
+    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Answer a few quick sleep questions, then choose a time to visit the showroom with a clearer plan for what to test." },
+    { "type": "textarea", "id": "hero_helper_text", "label": "Hero helper text", "default": "Start with the mini Snooze Assessment below, then book your private session." },
     { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
     { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
-    { "type": "text", "id": "visit_heading", "label": "Booking flow heading", "default": "Your booking starts with how you sleep." },
-    { "type": "textarea", "id": "visit_text", "label": "Booking flow text", "default": "Before you choose a time, you’ll answer a few quick questions about comfort, support, and what you want to improve. That helps your Snooze Session feel focused from the start." },
-    { "type": "text", "id": "different_heading", "label": "Showroom heading", "default": "What to expect in the showroom" },
-    { "type": "textarea", "id": "different_text", "label": "Showroom text", "default": "" },
+    { "type": "text", "id": "mini_heading", "label": "Mini assessment heading", "default": "Start With Your Mini Snooze Assessment" },
+    { "type": "textarea", "id": "mini_text", "label": "Mini assessment text", "default": "Answer a few quick questions so your showroom visit starts with direction." },
+    { "type": "text", "id": "mini_calendly_url", "label": "Mini assessment Calendly URL", "default": "https://calendly.com/d/cypf-52b-v4v" },
     { "type": "text", "id": "booking_heading", "label": "Booking heading", "default": "Choose Your Snooze Session Time" },
-    { "type": "textarea", "id": "booking_text", "label": "Booking text", "default": "Use the scheduler below to answer a few quick sleep questions and reserve your private visit." },
-    { "type": "text", "id": "calendly_url", "label": "Calendly URL", "default": "https://calendly.com/zohotyree/30min" },
-    { "type": "text", "id": "faq_heading", "label": "FAQ heading", "default": "Frequently Asked Questions" },
-    { "type": "paragraph", "content": "This page keeps booking and prep in a single flow." }
-  ],
-  "blocks": [
-    {
-      "type": "visit_step",
-      "name": "Visit step",
-      "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "Share Your Sleep Needs" },
-        { "type": "textarea", "id": "text", "label": "Text", "default": "Tell us what you’re shopping for and what you want to improve." }
-      ]
-    },
-    {
-      "type": "difference_card",
-      "name": "Difference card",
-      "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "Private Showroom" },
-        { "type": "textarea", "id": "text", "label": "Text", "default": "Explore without a salesperson hovering over the decision." }
-      ]
-    },
-    {
-      "type": "faq_item",
-      "name": "FAQ item",
-      "settings": [
-        { "type": "text", "id": "question", "label": "Question", "default": "Do I need to complete a separate Snooze Assessment?" },
-        { "type": "textarea", "id": "answer", "label": "Answer", "default": "No. For this booking page, the key prep questions are built into the scheduling flow so your visit starts with direction." }
-      ]
-    }
+    { "type": "textarea", "id": "booking_text", "label": "Booking text", "default": "After the mini assessment, choose a time for your private showroom visit." },
+    { "type": "text", "id": "calendly_url", "label": "Booking Calendly URL", "default": "https://calendly.com/zohotyree/30min" }
   ],
   "presets": [
     {
-      "name": "Landing booking",
-      "blocks": [
-        {
-          "type": "visit_step",
-          "settings": {
-            "title": "Share Your Sleep Needs",
-            "text": "Tell us what you’re shopping for and what you want to improve."
-          }
-        },
-        {
-          "type": "visit_step",
-          "settings": {
-            "title": "Choose Your Time",
-            "text": "Pick a private showroom appointment that fits your schedule."
-          }
-        },
-        {
-          "type": "visit_step",
-          "settings": {
-            "title": "Arrive With Direction",
-            "text": "Use your answers to focus on the mattresses, bases, pillows, and bedding that matter most."
-          }
-        },
-        {
-          "type": "difference_card",
-          "settings": {
-            "title": "Private Showroom",
-            "text": "Explore without a salesperson hovering over the decision."
-          }
-        },
-        {
-          "type": "difference_card",
-          "settings": {
-            "title": "Guided Rest Testing",
-            "text": "Try mattresses, bases, pillows, and bedding at your pace."
-          }
-        },
-        {
-          "type": "difference_card",
-          "settings": {
-            "title": "Full SnoozePod View",
-            "text": "Think beyond the mattress and build the sleep environment around how you rest."
-          }
-        },
-        {
-          "type": "faq_item",
-          "settings": {
-            "question": "Do I need to complete a separate Snooze Assessment?",
-            "answer": "No. For this booking page, the key prep questions are built into the scheduling flow so your visit starts with direction."
-          }
-        },
-        {
-          "type": "faq_item",
-          "settings": {
-            "question": "How long is a Snooze Session?",
-            "answer": "Your available time is shown in the scheduler. Use the session to focus on the products that matter most to your sleep needs."
-          }
-        },
-        {
-          "type": "faq_item",
-          "settings": {
-            "question": "Is there sales pressure?",
-            "answer": "No. The showroom is designed to be private, calm, and guided without the pressure of a traditional mattress store."
-          }
-        },
-        {
-          "type": "faq_item",
-          "settings": {
-            "question": "What can I try during the visit?",
-            "answer": "You can explore mattresses, bases, pillows, bedding, and other pieces that help complete your SnoozePod."
-          }
-        },
-        {
-          "type": "faq_item",
-          "settings": {
-            "question": "Can I get help if I need it?",
-            "answer": "Yes. Snoozer-guided support and virtual support are available to help you understand your options."
-          }
-        }
-      ]
+      "name": "Landing booking"
     }
   ]
 }
