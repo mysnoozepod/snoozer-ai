@@ -8,7 +8,10 @@
   assign booking_page_url = '/pages/book-a-snooze-session'
   assign mattresses_collection_url = '/collections/mattresses'
   assign adjustable_base_url = '/products/premium-motion-adjustable-base'
-  assign assessment_product_handles = '14-hybrid|12-dual-comfort-hybrid|12-all-foam-mattress|10-all-foam-mattress|premium-motion-adjustable-base' | split: '|'
+  assign bases_collection_url = '/collections/bases'
+  assign pillows_collection_url = '/collections/pillows'
+  assign bedding_collection_url = '/collections/bedding'
+  assign assessment_product_handles = '14-hybrid|12-dual-comfort-hybrid|12-all-foam-mattress|10-all-foam-mattress|premium-motion-adjustable-base|platform-base|storage-base' | split: '|'
   assign hide_footer_newsletter = false
   if request.page_type == 'page' and page.handle == 'snooze-assessment'
     assign hide_footer_newsletter = true
@@ -34,6 +37,9 @@
     data-booking-url="{{ booking_page_url }}"
     data-mattresses-url="{{ mattresses_collection_url }}"
     data-adjustable-base-url="{{ adjustable_base_url }}"
+    data-bases-collection-url="{{ bases_collection_url }}"
+    data-pillows-url="{{ pillows_collection_url }}"
+    data-bedding-url="{{ bedding_collection_url }}"
   >
     <script type="application/json" data-assessment-product-map>
       {%- assign emitted_products = 0 -%}
@@ -61,22 +67,6 @@
             <p class="snooze-assessment__eyebrow">{{ section.settings.hero_eyebrow | escape }}</p>
             <h1 class="snooze-assessment__title">{{ section.settings.hero_headline | escape }}</h1>
             <p class="snooze-assessment__text">{{ section.settings.hero_text | escape }}</p>
-
-            <div class="snooze-assessment__actions">
-              {%- if section.settings.primary_link != blank -%}
-                <a class="snooze-assessment__button snooze-assessment__button--primary" href="{{ section.settings.primary_link }}">
-                  {{ section.settings.primary_label | escape }}
-                </a>
-              {%- else -%}
-                <button
-                  type="button"
-                  class="snooze-assessment__button snooze-assessment__button--primary"
-                  data-assessment-jump
-                >
-                  {{ section.settings.primary_label | escape }}
-                </button>
-              {%- endif -%}
-            </div>
           </div>
 
           {%- if hero_image != blank -%}
@@ -97,8 +87,6 @@
 
       <div class="snooze-assessment__panel" data-assessment-app-anchor>
         <div class="snooze-assessment__section">
-          <h2 class="snooze-assessment__section-title">{{ section.settings.how_heading | escape }}</h2>
-
           <div class="snooze-assessment__app">
             <div class="snooze-assessment__question-shell">
               <div class="snooze-assessment__progress-row">
@@ -145,6 +133,7 @@
               <p class="snooze-assessment__result-copy" data-assessment-result-copy></p>
               <p class="snooze-assessment__section-subtext" data-assessment-result-summary></p>
               <div class="snooze-assessment__result-tags" data-assessment-result-tags></div>
+              <div class="snooze-assessment__direction-grid" data-assessment-result-directions></div>
               <div class="snooze-assessment__result-actions" data-assessment-result-actions></div>
             </div>
 
@@ -176,14 +165,11 @@
   "settings": [
     { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "SNOOZE ASSESSMENT" },
     { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Find your starting point." },
-    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Answer a few quick questions so Snoozer can narrow your mattress, base, and sleep setup direction." },
-    { "type": "text", "id": "primary_label", "label": "Primary CTA label", "default": "Start Assessment" },
-    { "type": "url", "id": "primary_link", "label": "Primary CTA link" },
+    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Answer the same guided questions used in the showroom flow so Snoozer can narrow your mattress, base, and sleep setup direction." },
     { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
     { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
-    { "type": "text", "id": "how_heading", "label": "Assessment heading", "default": "Start Assessment" },
-    { "type": "text", "id": "preview_heading", "label": "Results heading", "default": "Recommended starting points" },
-    { "type": "textarea", "id": "preview_text", "label": "Results text", "default": "Use these recommendations as your best next mattress and base direction." }
+    { "type": "text", "id": "preview_heading", "label": "Results heading", "default": "Recommended next steps" },
+    { "type": "textarea", "id": "preview_text", "label": "Results text", "default": "Start with the real mattress, base, and setup direction most aligned to your answers." }
   ],
   "presets": [
     {

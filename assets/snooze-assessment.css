@@ -248,6 +248,10 @@
   font-size: 15px;
 }
 
+.snooze-assessment__option-note--warning {
+  color: #9a5b00;
+}
+
 .snooze-assessment__option-grid {
   display: grid;
   gap: 12px;
@@ -382,6 +386,33 @@
   margin-top: 16px;
 }
 
+.snooze-assessment__direction-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.snooze-assessment__direction-card {
+  padding: 18px;
+  border-radius: 22px;
+  background: #ffffff;
+  border: 1px solid rgba(7, 25, 66, 0.08);
+}
+
+.snooze-assessment__direction-label {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.snooze-assessment__direction-text {
+  margin: 10px 0 0;
+  color: rgba(7, 25, 66, 0.76);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
 .snooze-assessment__recommendations {
   display: grid;
   gap: 16px;
@@ -414,6 +445,15 @@
   margin: 0;
   font-size: 22px;
   line-height: 1.15;
+}
+
+.snooze-assessment__recommendation-kind {
+  margin: 0;
+  color: rgba(7, 25, 66, 0.66);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .snooze-assessment__recommendation-copy {
@@ -457,6 +497,10 @@
 
   .snooze-assessment__section {
     padding: 30px 32px;
+  }
+
+  .snooze-assessment__direction-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .snooze-assessment__recommendations {

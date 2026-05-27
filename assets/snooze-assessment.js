@@ -1,33 +1,50 @@
 (function () {
-  const STORAGE_NAMESPACE = "snooze.assessment.page.v1";
+  const STORAGE_NAMESPACE = "snooze.assessment.page.v2";
   const SHARED_RESULTS_KEY = "snooze.recommendedProductHandles";
   const SHARED_ANSWERS_KEY = "snooze.assessment";
   const SHARED_SUMMARY_KEY = "snooze.assessmentSummary";
   const DEFAULT_SHOPPER_KEY = "snooze.assessmentShopperId";
+
+  const HANDLES = {
+    mattresses: {
+      dualComfort: "12-dual-comfort-hybrid",
+      hybrid14: "14-hybrid",
+      allFoam12: "12-all-foam-mattress",
+      allFoam10: "10-all-foam-mattress",
+    },
+    bases: {
+      adjustable: "premium-motion-adjustable-base",
+      storage: "storage-base",
+      platform: "platform-base",
+    },
+  };
+
+  const SIZE_OPTIONS = ["Twin", "Full", "Queen", "King"];
+  const BASE_OPTIONS = ["Mattress Only", "Platform Base", "Adjustable Base"];
+  const MOTION_OPTIONS = ["Standard Motion", "Half Split Motion", "Full Split Motion"];
+  const NO_MOTION_LABEL = "No Motion";
+
   const MOTION_DESCRIPTIONS = {
     "Standard Motion": "Both sides elevate together in sync.",
     "Half Split Motion": "Separate head adjustment with the feet moving together.",
     "Full Split Motion": "Each side moves independently at the head and foot.",
-    "No Motion": "A simpler mattress-only or non-adjustable setup.",
   };
+
   const PRODUCT_BLURBS = {
     "14-hybrid": "A stronger starting point if you want lift, airflow, and support together.",
     "12-dual-comfort-hybrid": "A better couple-friendly option when both sides need more flexibility.",
     "12-all-foam-mattress": "A contouring all-foam option when pressure relief matters most.",
     "10-all-foam-mattress": "A simpler value-first all-foam option for a steadier feel.",
-    "premium-motion-adjustable-base": "The base path to compare when elevation or split movement matters.",
+    "premium-motion-adjustable-base": "Compare elevation and motion flexibility alongside your mattress fit.",
+    "platform-base": "A simpler non-motion base path if you want a steadier foundation.",
+    "storage-base": "A storage base is worth comparing if you want a non-motion foundation with utility built in.",
   };
-  const DEFAULT_QUESTIONS = [
+
+  const FALLBACK_QUESTIONS = [
     {
       id: "size",
       text: "First up: what mattress size are you leaning toward?",
-      options: ["Twin", "Full", "Queen", "King"],
-      required: true,
-    },
-    {
-      id: "motionMode",
-      text: "What kind of motion setup sounds closest to what you want?",
-      options: ["Standard Motion", "Half Split Motion", "Full Split Motion", "No Motion"],
+      options: SIZE_OPTIONS,
       required: true,
     },
     {
@@ -38,8 +55,18 @@
     },
     {
       id: "sleepPosition",
-      text: "How do you mostly sleep?",
+      text: "How do you mostly sleep: on your side, back, stomach, or a mix?",
       options: ["Side", "Back", "Stomach", "Mix / Combination"],
+      required: true,
+    },
+    {
+      id: "motionSensitivity",
+      text: "How sensitive are you to movement in the bed?",
+      options: [
+        "Low — movement rarely bothers me",
+        "Medium — I notice it but can deal with it",
+        "High — I wake up easily from movement",
+      ],
       required: true,
     },
     {
@@ -55,19 +82,109 @@
       required: true,
     },
     {
-      id: "painPoints",
-      text: "Any pressure points or support issues you want the mattress to help with?",
-      options: ["Lower back", "Upper back", "Hips", "Shoulders", "Neck", "General pressure relief"],
-      multi: true,
+      id: "snore",
+      text: "Do you personally snore or use a CPAP / sleep apnea device?",
+      options: ["Yes", "No", "Not sure"],
       required: false,
     },
     {
-      id: "budget",
-      text: "What price range feels comfortable for your mattress or mattress + base?",
-      options: ["Under $1,500", "$1,500-$2,500", "$2,500-$3,500", "Over $3,500", "Not sure yet"],
+      id: "painPoints",
+      text: "Any back pain, pressure points, or other issues you hope the mattress can help with?",
+      options: [
+        "Lower back",
+        "Upper back",
+        "Hips",
+        "Shoulders",
+        "Neck",
+        "Sciatica",
+        "General pressure relief",
+        "Other / not listed",
+      ],
+      multi: true,
       required: false,
+      note: "Choose any that matter, then continue.",
+    },
+    {
+      id: "partnerSleepPosition",
+      text: "How does your partner mostly sleep: on their side, back, stomach, or a mix?",
+      options: ["Side", "Back", "Stomach", "Mix / Combination", "Not sure"],
+      required: false,
+      dependsOn: { question: "sleepPartner", value: "Yes" },
+    },
+    {
+      id: "partnerMotionSensitivity",
+      text: "How sensitive is your partner to movement in the bed?",
+      options: [
+        "Low — movement rarely bothers them",
+        "Medium — they notice it but can deal with it",
+        "High — they wake up easily from movement",
+        "Not sure",
+      ],
+      required: false,
+      dependsOn: { question: "sleepPartner", value: "Yes" },
+    },
+    {
+      id: "partnerTemperature",
+      text: "Does your partner usually sleep hot, cold, or neutral at night?",
+      options: ["Hot", "Cold", "Neutral", "Not sure"],
+      required: false,
+      dependsOn: { question: "sleepPartner", value: "Yes" },
+    },
+    {
+      id: "partnerFirmness",
+      text: "If your partner could pick their own feel, would they lean soft, medium, or firm?",
+      options: ["Soft", "Medium", "Firm", "Not sure"],
+      required: false,
+      dependsOn: { question: "sleepPartner", value: "Yes" },
+    },
+    {
+      id: "partnerPainPoints",
+      text: "Does your partner have any pain or pressure points they care about?",
+      options: [
+        "Lower back",
+        "Upper back",
+        "Hips",
+        "Shoulders",
+        "Neck",
+        "Sciatica",
+        "General pressure relief",
+        "Other / not listed",
+        "Not sure",
+      ],
+      multi: true,
+      required: false,
+      dependsOn: { question: "sleepPartner", value: "Yes" },
+    },
+    {
+      id: "partnerSnore",
+      text: "Does your partner snore or use a CPAP / sleep apnea device?",
+      options: ["Yes", "No", "Not sure"],
+      required: false,
+      dependsOn: { question: "sleepPartner", value: "Yes" },
     },
   ];
+
+  const CANONICAL_SIZE_QUESTION = {
+    id: "size",
+    text: "What size are you shopping for?",
+    options: SIZE_OPTIONS,
+    required: true,
+  };
+
+  const CANONICAL_BASE_QUESTION = {
+    id: "baseType",
+    text: "What kind of base setup do you want?",
+    options: BASE_OPTIONS,
+    required: true,
+  };
+
+  const CANONICAL_MOTION_QUESTION = {
+    id: "motionMode",
+    text: "Choose your motion style.",
+    options: MOTION_OPTIONS,
+    required: true,
+    dependsOn: { question: "baseType", value: "Adjustable Base" },
+  };
 
   function normalizeText(value) {
     return String(value || "")
@@ -77,6 +194,10 @@
 
   function normalizeKey(value) {
     return normalizeText(value).toLowerCase();
+  }
+
+  function lower(value) {
+    return normalizeKey(value);
   }
 
   function slugify(value) {
@@ -145,7 +266,12 @@
   function createShopperId(sectionId) {
     const existing = safeSessionGet(DEFAULT_SHOPPER_KEY);
     if (existing) return existing;
-    const generated = ["shopify-assessment", sectionId || "page", Date.now(), Math.random().toString(36).slice(2, 8)].join("-");
+    const generated = [
+      "shopify-assessment",
+      sectionId || "page",
+      Date.now(),
+      Math.random().toString(36).slice(2, 8),
+    ].join("-");
     safeSessionSet(DEFAULT_SHOPPER_KEY, generated);
     return generated;
   }
@@ -158,6 +284,139 @@
     return Boolean(question && question.required === true);
   }
 
+  function normalizeOptionList(options) {
+    return Array.isArray(options) ? options.map(normalizeText).filter(Boolean) : [];
+  }
+
+  function isBudgetQuestion(question) {
+    const id = normalizeKey(question && question.id);
+    const text = normalizeKey(question && question.text);
+    return (
+      id === "budget" ||
+      id === "budgetmax" ||
+      id === "priceceiling" ||
+      text.indexOf("budget") !== -1 ||
+      text.indexOf("price range") !== -1 ||
+      text.indexOf("price ceiling") !== -1
+    );
+  }
+
+  function isSizeQuestion(question) {
+    const id = normalizeKey(question && question.id);
+    const text = normalizeKey(question && question.text);
+    return id === "size" || text.indexOf("what size") !== -1 || text.indexOf("mattress size") !== -1;
+  }
+
+  function isBaseQuestion(question) {
+    const id = normalizeKey(question && question.id);
+    const text = normalizeKey(question && question.text);
+    return (
+      id === "basetype" ||
+      id === "base" ||
+      id === "baseselection" ||
+      id === "foundation" ||
+      text.indexOf("base setup") !== -1 ||
+      text.indexOf("platform base") !== -1 ||
+      text.indexOf("adjustable base") !== -1 ||
+      text.indexOf("mattress only") !== -1 ||
+      text.indexOf("no base") !== -1
+    );
+  }
+
+  function isMotionQuestion(question) {
+    const id = normalizeKey(question && question.id);
+    const text = normalizeKey(question && question.text);
+    return (
+      id === "motionmode" ||
+      id === "motion" ||
+      text.indexOf("motion style") !== -1 ||
+      text.indexOf("standard motion") !== -1 ||
+      text.indexOf("half split motion") !== -1 ||
+      text.indexOf("full split motion") !== -1
+    );
+  }
+
+  function canonicalizeQuestion(question) {
+    if (!question) return null;
+
+    const normalized = {
+      id: normalizeText(question.id),
+      text: normalizeText(question.text),
+      options: normalizeOptionList(question.options),
+      required: question.required === true,
+      multi: isMultiQuestion(question),
+      zohoType: normalizeText(question.zohoType),
+      dependsOn: question.dependsOn || null,
+      note: normalizeText(question.note || ""),
+    };
+
+    if (!normalized.id || !normalized.text || !normalized.options.length || isBudgetQuestion(normalized)) {
+      return null;
+    }
+
+    if (isSizeQuestion(normalized)) {
+      return {
+        ...normalized,
+        ...CANONICAL_SIZE_QUESTION,
+      };
+    }
+
+    if (isBaseQuestion(normalized)) {
+      return {
+        ...normalized,
+        ...CANONICAL_BASE_QUESTION,
+      };
+    }
+
+    if (isMotionQuestion(normalized)) {
+      return {
+        ...normalized,
+        ...CANONICAL_MOTION_QUESTION,
+      };
+    }
+
+    return normalized;
+  }
+
+  function buildQuestionFlow(rawQuestions) {
+    const source = (Array.isArray(rawQuestions) && rawQuestions.length ? rawQuestions : FALLBACK_QUESTIONS)
+      .map(canonicalizeQuestion)
+      .filter(Boolean);
+
+    let sizeQuestion = null;
+    let baseQuestion = null;
+    let motionQuestion = null;
+    const rest = [];
+
+    source.forEach(function (question) {
+      if (!sizeQuestion && question.id === "size") {
+        sizeQuestion = { ...CANONICAL_SIZE_QUESTION, ...question };
+        return;
+      }
+      if (!baseQuestion && question.id === "baseType") {
+        baseQuestion = { ...CANONICAL_BASE_QUESTION, ...question };
+        return;
+      }
+      if (!motionQuestion && question.id === "motionMode") {
+        motionQuestion = { ...CANONICAL_MOTION_QUESTION, ...question };
+        return;
+      }
+      if (question.id === "size" || question.id === "baseType" || question.id === "motionMode") {
+        return;
+      }
+      if (isSizeQuestion(question) || isBaseQuestion(question) || isMotionQuestion(question)) {
+        return;
+      }
+      rest.push(question);
+    });
+
+    return [
+      sizeQuestion || CANONICAL_SIZE_QUESTION,
+      baseQuestion || CANONICAL_BASE_QUESTION,
+      motionQuestion || CANONICAL_MOTION_QUESTION,
+    ].concat(rest);
+  }
+
   function dependsOnMatches(question, answers) {
     if (!question || !question.dependsOn) return true;
     const dependency = question.dependsOn;
@@ -165,33 +424,17 @@
     const expected = dependency.value;
 
     if (Array.isArray(current)) {
-      return current.includes(expected);
+      return current.indexOf(expected) !== -1;
     }
 
     return normalizeKey(current) === normalizeKey(expected);
   }
 
-  function buildQuestionFlow(rawQuestions) {
-    const source = Array.isArray(rawQuestions) && rawQuestions.length ? rawQuestions : DEFAULT_QUESTIONS;
-    return source
-      .map(function (question) {
-        return {
-          id: normalizeText(question.id),
-          text: normalizeText(question.text),
-          options: Array.isArray(question.options) ? question.options.map(normalizeText).filter(Boolean) : [],
-          required: question.required === true,
-          multi: isMultiQuestion(question),
-          dependsOn: question.dependsOn || null,
-          note: normalizeText(question.note || ""),
-        };
-      })
-      .filter(function (question) {
-        return question.id && question.text && question.options.length;
-      });
-  }
-
   function getVisibleQuestions(questions, answers) {
     return questions.filter(function (question) {
+      if (question.id === "motionMode") {
+        return normalizeText(answers.baseType) === "Adjustable Base";
+      }
       return dependsOnMatches(question, answers);
     });
   }
@@ -205,68 +448,403 @@
 
   function cleanAnswers(questions, answers) {
     const visible = getVisibleQuestions(questions, answers);
-    const keep = new Set(visible.map(function (question) { return question.id; }));
+    const keep = new Set(
+      visible
+        .filter(function (question) { return questionIsAnswered(question, answers[question.id]); })
+        .map(function (question) { return question.id; })
+    );
     const next = {};
 
     Object.keys(answers || {}).forEach(function (key) {
       if (!keep.has(key)) return;
       const question = visible.find(function (item) { return item.id === key; });
       const value = answers[key];
-      if (!questionIsAnswered(question, value)) return;
       next[key] = Array.isArray(value) ? value.slice() : value;
+      if (!questionIsAnswered(question, value)) {
+        delete next[key];
+      }
     });
+
+    if (normalizeText(next.baseType) !== "Adjustable Base") {
+      delete next.motionMode;
+    }
 
     return next;
   }
 
-  function buildSummary(answers) {
-    const parts = [];
-    if (answers.size) parts.push("Size: " + normalizeText(answers.size) + ".");
-    if (answers.motionMode) parts.push("Motion: " + normalizeText(answers.motionMode) + ".");
-    if (answers.sleepPosition) parts.push("Position: " + normalizeText(answers.sleepPosition) + ".");
-    if (answers.temperature) parts.push("Sleeps " + normalizeText(answers.temperature).toLowerCase() + ".");
-    if (answers.firmness) parts.push("Leans " + normalizeText(answers.firmness).toLowerCase() + ".");
-
-    const painPoints = Array.isArray(answers.painPoints) ? answers.painPoints.filter(Boolean) : [];
-    if (painPoints.length) {
-      parts.push("Focus areas: " + painPoints.slice(0, 3).join(", ") + ".");
+  function firstNonEmpty() {
+    for (let index = 0; index < arguments.length; index += 1) {
+      const value = normalizeText(arguments[index]);
+      if (value) return value;
     }
-
-    return parts.join(" ");
+    return "";
   }
 
-  function buildDirection(answers, hints) {
-    const direction = [];
-    const hintList = Array.isArray(hints) ? hints.filter(Boolean) : [];
-    const position = normalizeKey(answers.sleepPosition);
-    const temperature = normalizeKey(answers.temperature);
-    const firmness = normalizeKey(answers.firmness);
-    const motion = normalizeKey(answers.motionMode);
-
-    if (position.includes("side")) direction.push("pressure relief with enough support underneath");
-    else if (position.includes("back")) direction.push("steadier support through the middle");
-    else if (position.includes("stomach")) direction.push("support first so the bed does not feel too soft");
-    else direction.push("balanced support and feel");
-
-    if (temperature.includes("hot")) direction.push("better airflow");
-    if (firmness.includes("firm")) direction.push("a firmer comfort direction");
-    if (firmness.includes("soft")) direction.push("more cushioning");
-    if (motion.includes("split") || motion.includes("standard motion")) direction.push("motion/base flexibility");
-
-    if (!direction.length && hintList.length) {
-      return hintList.slice(0, 2).join(" and ");
-    }
-
-    return direction.slice(0, 3).join(", ");
+  function normalizeSize(size) {
+    const value = normalizeText(size);
+    return SIZE_OPTIONS.indexOf(value) !== -1 ? value : "";
   }
 
-  function buildResultCopy(answers, hints) {
-    const direction = buildDirection(answers, hints);
-    if (!direction) {
-      return "Based on your answers, Snoozer can point you toward a better starting mattress, base, and sleep setup.";
+  function normalizeFirmness(value) {
+    const normalized = lower(value);
+    if (normalized.indexOf("firm") !== -1) return "firm";
+    if (normalized.indexOf("soft") !== -1) return "soft";
+    if (normalized.indexOf("medium") !== -1) return "medium";
+    return "medium";
+  }
+
+  function normalizePosition(value) {
+    const normalized = lower(value);
+    if (normalized.indexOf("side") !== -1) return "side";
+    if (normalized.indexOf("back") !== -1) return "back";
+    if (normalized.indexOf("stomach") !== -1) return "stomach";
+    if (normalized.indexOf("comb") !== -1 || normalized.indexOf("mix") !== -1) return "combo";
+    return "side";
+  }
+
+  function normalizeMotionMode(value) {
+    const normalized = lower(value);
+    if (normalized.indexOf("full split") !== -1) return "Full Split Motion";
+    if (normalized.indexOf("half split") !== -1) return "Half Split Motion";
+    if (normalized.indexOf("standard") !== -1) return "Standard Motion";
+    if (normalized.indexOf("no motion") !== -1) return NO_MOTION_LABEL;
+    if (normalized.indexOf("split") !== -1) return "Half Split Motion";
+    return "";
+  }
+
+  function isYes(value) {
+    const normalized = lower(value);
+    return normalized === "yes" || normalized === "true" || normalized === "partner" || normalized === "shared" || normalized === "share";
+  }
+
+  function containsTerm(value, terms) {
+    const normalized = lower(value);
+    return terms.some(function (term) {
+      return normalized.indexOf(lower(term)) !== -1;
+    });
+  }
+
+  function mattressTypeFromHandle(handle) {
+    const normalized = lower(handle);
+    if (normalized === lower(HANDLES.mattresses.dualComfort) || (normalized.indexOf("dual") !== -1 && normalized.indexOf("comfort") !== -1)) return "dual12";
+    if (normalized === lower(HANDLES.mattresses.hybrid14) || (normalized.indexOf("hybrid") !== -1 && normalized.indexOf("14") !== -1)) return "hybrid14";
+    if (normalized === lower(HANDLES.mattresses.allFoam12) || (normalized.indexOf("foam") !== -1 && normalized.indexOf("12") !== -1)) return "foam12";
+    if (normalized === lower(HANDLES.mattresses.allFoam10) || (normalized.indexOf("foam") !== -1 && normalized.indexOf("10") !== -1)) return "foam10";
+    return "";
+  }
+
+  function mattressFamilyFromHandle(handle) {
+    const type = mattressTypeFromHandle(handle);
+    if (type === "dual12") return "dual";
+    if (type === "hybrid14") return "hybrid";
+    if (type === "foam12" || type === "foam10") return "foam";
+    return "unknown";
+  }
+
+  function mattressLabelFromHandle(handle) {
+    const normalized = lower(handle);
+    if (normalized === lower(HANDLES.mattresses.dualComfort)) return '12" Dual Comfort Hybrid';
+    if (normalized === lower(HANDLES.mattresses.hybrid14)) return '14" Hybrid';
+    if (normalized === lower(HANDLES.mattresses.allFoam12)) return '12" All Foam';
+    if (normalized === lower(HANDLES.mattresses.allFoam10)) return '10" All Foam';
+    return "Mattress";
+  }
+
+  function allowedMotionTypesForSize(size) {
+    const value = normalizeText(size);
+    if (value === "King") return ["standard", "half_split", "full_split"];
+    if (value === "Queen") return ["standard", "half_split"];
+    return ["standard"];
+  }
+
+  function motionTypeFromDisplay(motion) {
+    const normalized = lower(motion);
+    if (normalized.indexOf("full split") !== -1) return "full_split";
+    if (normalized.indexOf("half split") !== -1) return "half_split";
+    return "standard";
+  }
+
+  function isSplitMotionType(motionType) {
+    return motionType === "half_split" || motionType === "full_split";
+  }
+
+  function validateMotion(config) {
+    const size = lower(config && config.size);
+    const motionMode = lower(config && config.motionMode);
+    const warnings = [];
+    let forcedMattressHandle = null;
+
+    const isHalfSplit = motionMode.indexOf("half split") !== -1;
+    const isFullSplit = motionMode.indexOf("full split") !== -1;
+    const isAnySplit = isHalfSplit || isFullSplit;
+
+    if (isFullSplit && size !== "king") {
+      warnings.push("Full Split Motion is only available in King setups.");
     }
 
-    return "Based on your answers, Snoozer can point you toward a better starting mattress, base, and sleep setup.";
+    if (isHalfSplit && size !== "queen" && size !== "king") {
+      warnings.push("Half Split Motion is only available in Queen or King sizes.");
+    }
+
+    if (isAnySplit) {
+      forcedMattressHandle = HANDLES.mattresses.dualComfort;
+    }
+
+    return {
+      motionOk: warnings.length === 0,
+      warnings: warnings,
+      forcedMattressHandle: forcedMattressHandle,
+      isAnySplit: isAnySplit,
+      isHalfSplit: isHalfSplit,
+      isFullSplit: isFullSplit,
+    };
+  }
+
+  function choosePrimaryMattress(config) {
+    const firmness = lower(config && config.firmness);
+    const position = lower(config && config.position);
+
+    if (firmness === "firm" || position === "back" || position === "stomach") return HANDLES.mattresses.hybrid14;
+    if (position === "side") return HANDLES.mattresses.allFoam12;
+    return HANDLES.mattresses.hybrid14;
+  }
+
+  function buildShowroomPods() {
+    return [
+      {
+        podId: 1,
+        mattressHandle: HANDLES.mattresses.dualComfort,
+        baseHandle: HANDLES.bases.adjustable,
+        baseType: "adjustable",
+        motionType: "half_split",
+        hasAdjustableBase: true,
+        displayMattress: '12" Dual Comfort Hybrid',
+        displayedIn: {
+          size: "King",
+          baseLabel: "Adjustable Base",
+          motion: "Half Split Motion",
+        },
+      },
+      {
+        podId: 2,
+        mattressHandle: HANDLES.mattresses.dualComfort,
+        baseHandle: HANDLES.bases.adjustable,
+        baseType: "adjustable",
+        motionType: "full_split",
+        hasAdjustableBase: true,
+        displayMattress: '12" Dual Comfort Hybrid',
+        displayedIn: {
+          size: "King",
+          baseLabel: "Adjustable Base",
+          motion: "Full Split Motion",
+        },
+      },
+      {
+        podId: 3,
+        mattressHandle: HANDLES.mattresses.hybrid14,
+        baseHandle: HANDLES.bases.adjustable,
+        baseType: "adjustable",
+        motionType: "standard",
+        hasAdjustableBase: true,
+        displayMattress: '14" Hybrid',
+        displayedIn: {
+          size: "King",
+          baseLabel: "Adjustable Base",
+          motion: "Standard Motion",
+        },
+      },
+      {
+        podId: 4,
+        mattressHandle: HANDLES.mattresses.allFoam12,
+        baseHandle: HANDLES.bases.storage,
+        baseType: "storage",
+        motionType: "standard",
+        hasAdjustableBase: false,
+        displayMattress: '12" All Foam',
+        displayedIn: {
+          size: "Queen",
+          baseLabel: "Storage Base",
+          motion: NO_MOTION_LABEL,
+        },
+      },
+      {
+        podId: 5,
+        mattressHandle: HANDLES.mattresses.allFoam10,
+        baseHandle: HANDLES.bases.platform,
+        baseType: "platform",
+        motionType: "standard",
+        hasAdjustableBase: false,
+        displayMattress: '10" All Foam',
+        displayedIn: {
+          size: "Queen",
+          baseLabel: "Platform Base",
+          motion: NO_MOTION_LABEL,
+        },
+      },
+    ];
+  }
+
+  function fixtureSupportsPartnerNeed(pod) {
+    const mattressFamily = mattressFamilyFromHandle(pod && pod.mattressHandle);
+    const baseType = normalizeText((pod && pod.baseType) || "");
+    return mattressFamily === "dual" || baseType === "adjustable";
+  }
+
+  function scorePodForShopper(pod, shopper) {
+    let score = 0;
+    const reasons = [];
+
+    const mattressHandle = normalizeText(pod && pod.mattressHandle);
+    const mattressType = mattressTypeFromHandle(mattressHandle);
+    const mattressFamily = mattressFamilyFromHandle(mattressHandle);
+    const motionType = normalizeText((pod && pod.motionType) || motionTypeFromDisplay(pod && pod.displayedIn && pod.displayedIn.motion));
+    const podSize = normalizeText(pod && pod.displayedIn && pod.displayedIn.size);
+    const baseType = normalizeText((pod && pod.baseType) || "");
+    const adjustable = Boolean(pod && pod.hasAdjustableBase) || baseType === "adjustable";
+    const supportsPartner = fixtureSupportsPartnerNeed(pod);
+
+    if (mattressHandle === shopper.primaryMattressHandle) {
+      score += 100;
+      reasons.push("primary_mattress_exact");
+    } else if (mattressFamily === shopper.primaryMattressFamily) {
+      score += 55;
+      reasons.push("primary_mattress_family");
+    }
+
+    if (shopper.motionCheck.isFullSplit && motionType === "full_split") {
+      score += 70;
+      reasons.push("requested_full_split");
+    } else if (shopper.motionCheck.isHalfSplit && motionType === "half_split") {
+      score += 60;
+      reasons.push("requested_half_split");
+    } else if (!shopper.motionCheck.isAnySplit && shopper.requestedMotionMode === "Standard Motion" && motionType === "standard" && adjustable) {
+      score += 28;
+      reasons.push("requested_standard_motion");
+    }
+
+    if (shopper.motionCheck.isAnySplit && mattressFamily === "dual") {
+      score += 35;
+      reasons.push("split_requires_dual");
+    }
+
+    if (shopper.hasPartner && supportsPartner) {
+      score += 18;
+      reasons.push("partner_friendly");
+    }
+
+    if (shopper.position === "side" && mattressType === "foam12") {
+      score += 18;
+      reasons.push("side_sleeper_pressure_relief");
+    }
+
+    if ((shopper.position === "back" || shopper.position === "stomach") && mattressType === "hybrid14") {
+      score += 18;
+      reasons.push("back_or_stomach_support");
+    }
+
+    if (shopper.firmness === "firm" && mattressType === "hybrid14") {
+      score += 12;
+      reasons.push("firmness_firm_match");
+    }
+
+    if (shopper.firmness === "soft" && (mattressType === "foam12" || mattressType === "dual12")) {
+      score += 12;
+      reasons.push("firmness_soft_match");
+    }
+
+    if (shopper.size && podSize === shopper.size) {
+      score += 10;
+      reasons.push("fixture_size_match");
+    }
+
+    if (!shopper.motionCheck.isAnySplit && !shopper.hasPartner && !adjustable && mattressFamily === "foam") {
+      score += 8;
+      reasons.push("simple_non_motion_option");
+    }
+
+    return {
+      score: score,
+      scoreReasons: reasons,
+    };
+  }
+
+  function generateShowroomRecommendations(results) {
+    const size = normalizeSize(
+      firstNonEmpty(results && results.size, results && results.preferredSize)
+    );
+
+    const motionMode = normalizeMotionMode(
+      firstNonEmpty(results && results.motionMode, results && results.motion)
+    );
+
+    const firmness = normalizeFirmness(
+      firstNonEmpty(results && results.firmness, results && results.comfortPreference, "medium")
+    );
+
+    const position = normalizePosition(
+      firstNonEmpty(results && results.sleepPosition, results && results.position, results && results.primaryPosition, "side")
+    );
+
+    const hasPartner = isYes(
+      firstNonEmpty(results && results.sleepPartner, results && results.partner, results && results.shareBed)
+    );
+
+    const motionCheck = validateMotion({
+      size: size,
+      motionMode: motionMode,
+    });
+
+    const primaryMattressHandle =
+      motionCheck.forcedMattressHandle || choosePrimaryMattress({ firmness: firmness, position: position });
+
+    const shopperProfile = {
+      size: size,
+      requestedMotionMode: motionMode,
+      firmness: firmness,
+      position: position,
+      hasPartner: hasPartner,
+      motionCheck: motionCheck,
+      primaryMattressHandle: primaryMattressHandle,
+      primaryMattressFamily: mattressFamilyFromHandle(primaryMattressHandle),
+    };
+
+    const pods = buildShowroomPods()
+      .map(function (pod) {
+        const ranking = scorePodForShopper(pod, shopperProfile);
+        return {
+          ...pod,
+          diagnostics: {
+            score: ranking.score,
+            scoreReasons: ranking.scoreReasons,
+          },
+        };
+      })
+      .sort(function (a, b) {
+        if (b.diagnostics.score !== a.diagnostics.score) {
+          return b.diagnostics.score - a.diagnostics.score;
+        }
+        return Number(a.podId || 999) - Number(b.podId || 999);
+      })
+      .map(function (pod, index) {
+        return {
+          ...pod,
+          rank: index + 1,
+          recommended: index < 3,
+        };
+      });
+
+    return {
+      meta: {
+        size: size,
+        motionMode: motionMode,
+        firmness: firmness,
+        position: position,
+        hasPartner: hasPartner,
+        warnings: motionCheck.warnings,
+        primaryMattressHandle: primaryMattressHandle,
+      },
+      pods: pods,
+    };
   }
 
   function normalizeProductMap(rawMap) {
@@ -286,27 +864,322 @@
     return out;
   }
 
-  function getProductBlurb(handle) {
-    return PRODUCT_BLURBS[handle] || "A verified next step to compare from the current lineup.";
-  }
-
-  function serializeState(state) {
-    return JSON.stringify({
-      step: state.step,
-      answers: state.answers,
-      completed: state.completed,
-      result: state.result,
-      shopperId: state.shopperId,
+  function getMotionMeta(size) {
+    const allowed = allowedMotionTypesForSize(size);
+    return MOTION_OPTIONS.map(function (option) {
+      const key = option === "Full Split Motion" ? "full_split" : option === "Half Split Motion" ? "half_split" : "standard";
+      let disabledReason = "";
+      if (key === "half_split" && allowed.indexOf("half_split") === -1) {
+        disabledReason = "Available in Queen or King";
+      } else if (key === "full_split" && allowed.indexOf("full_split") === -1) {
+        disabledReason = "Available in King";
+      }
+      return {
+        label: option,
+        description: MOTION_DESCRIPTIONS[option],
+        disabled: Boolean(disabledReason),
+        disabledReason: disabledReason,
+      };
     });
   }
 
-  function openSnoozerPanel() {
-    const trigger = document.querySelector("[data-snoozer-anchor-trigger]");
-    if (!trigger) return;
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    window.setTimeout(function () {
-      trigger.click();
-    }, 220);
+  function buildAssessmentSummary(answers) {
+    const parts = [];
+
+    if (answers.size) parts.push("Size target: " + normalizeText(answers.size) + ".");
+    if (answers.baseType) parts.push("Base preference: " + normalizeText(answers.baseType) + ".");
+    if (answers.motionMode) parts.push("Motion preference: " + normalizeText(answers.motionMode) + ".");
+    if (answers.sleepPartner) parts.push("Shares the bed: " + normalizeText(answers.sleepPartner) + ".");
+    if (answers.sleepPosition) parts.push("Sleeps mostly on their " + normalizeText(answers.sleepPosition).toLowerCase() + ".");
+    if (answers.firmness) parts.push("Prefers a " + normalizeText(answers.firmness).toLowerCase() + " feel.");
+    if (answers.temperature) parts.push("Sleeps " + normalizeText(answers.temperature).toLowerCase() + ".");
+
+    const painPoints = Array.isArray(answers.painPoints) ? answers.painPoints.filter(Boolean) : [];
+    if (painPoints.length) {
+      parts.push("Pain or pressure focus: " + painPoints.join(", ") + ".");
+    }
+
+    return parts.join(" ");
+  }
+
+  function buildResultTags(answers, recommendation) {
+    const tags = [];
+    const meta = recommendation.meta || {};
+
+    if (meta.size) tags.push(meta.size);
+    if (meta.position === "side") tags.push("Side sleeper");
+    if (meta.position === "back") tags.push("Back sleeper");
+    if (meta.position === "stomach") tags.push("Stomach sleeper");
+    if (meta.position === "combo") tags.push("Combination sleeper");
+    if (meta.hasPartner) tags.push("Shared sleep");
+    if (meta.motionMode === "Half Split Motion") tags.push("Half split motion");
+    if (meta.motionMode === "Full Split Motion") tags.push("Full split motion");
+    if (meta.motionMode === "Standard Motion") tags.push("Standard motion");
+    if (normalizeKey(answers.temperature) === "hot") tags.push("Sleeps hot");
+    if (normalizeKey(answers.firmness) === "firm") tags.push("Firm feel");
+    if (normalizeKey(answers.firmness) === "soft") tags.push("Soft feel");
+
+    return tags.slice(0, 5);
+  }
+
+  function getTopRecommendedPod(recommendation) {
+    const pods = Array.isArray(recommendation && recommendation.pods) ? recommendation.pods : [];
+    return pods.find(function (pod) { return pod.recommended; }) || pods[0] || null;
+  }
+
+  function getTopRecommendedPods(recommendation) {
+    const pods = Array.isArray(recommendation && recommendation.pods) ? recommendation.pods : [];
+    return pods.filter(function (pod) { return pod.recommended; }).slice(0, 3);
+  }
+
+  function mattressDirectionText(handle) {
+    if (handle === HANDLES.mattresses.dualComfort) {
+      return 'Start with the 12" Dual Comfort Hybrid if shared sleep, split motion, or different comfort needs matter most.';
+    }
+    if (handle === HANDLES.mattresses.hybrid14) {
+      return 'Start with the 14" Hybrid if you need stronger support, lift, or a firmer overall direction.';
+    }
+    if (handle === HANDLES.mattresses.allFoam12) {
+      return 'Start with the 12" All Foam if pressure relief and deeper contouring matter most.';
+    }
+    if (handle === HANDLES.mattresses.allFoam10) {
+      return 'Start with the 10" All Foam if you want a simpler all-foam starting point.';
+    }
+    return "Start with the mattress direction that best matches your support and comfort needs.";
+  }
+
+  function resolveBaseHandle(answers, recommendation, routes) {
+    const baseType = normalizeText(answers.baseType);
+    const motionMode = normalizeMotionMode(answers.motionMode);
+    const snores = isYes(answers.snore) || isYes(answers.partnerSnore);
+
+    if (baseType === "Adjustable Base" || motionMode || snores) return HANDLES.bases.adjustable;
+    if (baseType === "Platform Base") return HANDLES.bases.platform;
+    if (baseType === "Mattress Only") return "";
+
+    const topPod = getTopRecommendedPod(recommendation);
+    const topBaseHandle = normalizeText(topPod && topPod.baseHandle);
+    if (topBaseHandle) return topBaseHandle;
+
+    return routes && routes.adjustableBase ? HANDLES.bases.adjustable : "";
+  }
+
+  function buildBaseDirection(answers, recommendation) {
+    const baseType = normalizeText(answers.baseType);
+    const motionMode = normalizeMotionMode(answers.motionMode);
+    const snores = isYes(answers.snore) || isYes(answers.partnerSnore);
+
+    if (baseType === "Adjustable Base" || motionMode || snores) {
+      return "An adjustable base is worth comparing here so you can test elevation, motion flexibility, and partner comfort in the same setup.";
+    }
+    if (baseType === "Platform Base") {
+      return "A platform base keeps the setup simpler if you do not need motion features.";
+    }
+    if (baseType === "Mattress Only") {
+      return "You can start mattress-first and add a base later if you decide you want more elevation or support flexibility.";
+    }
+
+    const topPod = getTopRecommendedPod(recommendation);
+    if (topPod && normalizeText(topPod.baseType) === "adjustable") {
+      return "An adjustable base is still worth comparing because it lines up with the strongest showroom test path from your answers.";
+    }
+
+    return "";
+  }
+
+  function buildPartnerDirection(answers, recommendation) {
+    const partner = isYes(answers.sleepPartner);
+    const motionMode = normalizeMotionMode(answers.motionMode);
+    const highMotionSensitivity =
+      containsTerm(answers.motionSensitivity, ["high", "wake up easily"]) ||
+      containsTerm(answers.partnerMotionSensitivity, ["high", "wake up easily"]);
+
+    if (partner && (motionMode === "Half Split Motion" || motionMode === "Full Split Motion")) {
+      return "Shared sleep and split motion make a Dual Comfort path more relevant because each side can stay closer to its own feel.";
+    }
+
+    if (partner && highMotionSensitivity) {
+      return "Shared sleep and motion sensitivity make motion control more important in your starting setup.";
+    }
+
+    if (partner) {
+      return "Because you share the bed, it helps to compare setups that keep motion and comfort differences easier to manage.";
+    }
+
+    if (motionMode === "Standard Motion") {
+      return "A standard adjustable setup lets you compare elevation without splitting the mattress.";
+    }
+
+    return "";
+  }
+
+  function buildAccessoryDirection(answers) {
+    const temperature = normalizeKey(answers.temperature);
+    const position = normalizeKey(answers.sleepPosition);
+    const painPoints = Array.isArray(answers.painPoints) ? answers.painPoints.map(normalizeKey) : [];
+
+    if (temperature === "hot") {
+      return "Cooling pillows and breathable bedding are worth comparing once the mattress direction feels right.";
+    }
+
+    if (position.indexOf("side") !== -1 || painPoints.indexOf("shoulders") !== -1 || painPoints.indexOf("neck") !== -1) {
+      return "Pillow height and pressure relief are worth comparing alongside the mattress so your shoulders and neck stay supported.";
+    }
+
+    return "Once the mattress direction is clear, round out the sleep setup with pillows and bedding that support how you rest.";
+  }
+
+  function buildResultDirections(answers, recommendation) {
+    const topPod = getTopRecommendedPod(recommendation);
+    const directions = [];
+
+    if (topPod && topPod.mattressHandle) {
+      directions.push({
+        label: "Mattress direction",
+        text: mattressDirectionText(topPod.mattressHandle),
+      });
+    }
+
+    const baseDirection = buildBaseDirection(answers, recommendation);
+    if (baseDirection) {
+      directions.push({
+        label: "Base direction",
+        text: baseDirection,
+      });
+    }
+
+    const partnerDirection = buildPartnerDirection(answers, recommendation);
+    if (partnerDirection) {
+      directions.push({
+        label: "Partner & motion",
+        text: partnerDirection,
+      });
+    }
+
+    directions.push({
+      label: "Pillows & accessories",
+      text: buildAccessoryDirection(answers),
+    });
+
+    return directions;
+  }
+
+  function createCollectionCard(key, title, url, blurb) {
+    if (!normalizeText(url)) return null;
+    return {
+      handle: key,
+      kind: "Collection",
+      title: title,
+      url: url,
+      image: "",
+      blurb: blurb,
+    };
+  }
+
+  function createProductCard(handle, kind, productMap) {
+    const product = productMap[handle];
+    if (!product) return null;
+    return {
+      handle: handle,
+      kind: kind,
+      title: product.title,
+      url: product.url,
+      image: product.image,
+      blurb: PRODUCT_BLURBS[handle] || "A strong next step from your assessment results.",
+    };
+  }
+
+  function buildRecommendedProducts(answers, recommendation, productMap, routes) {
+    const topPods = getTopRecommendedPods(recommendation);
+    const cards = [];
+    const seen = new Set();
+
+    function pushCard(card) {
+      if (!card || !card.url) return;
+      if (seen.has(card.handle)) return;
+      seen.add(card.handle);
+      cards.push(card);
+    }
+
+    topPods.forEach(function (pod) {
+      pushCard(createProductCard(normalizeText(pod.mattressHandle), "Mattress", productMap));
+    });
+
+    const baseHandle = resolveBaseHandle(answers, recommendation, routes);
+    if (baseHandle) {
+      const baseCard = createProductCard(baseHandle, "Base", productMap);
+      if (baseCard) {
+        pushCard(baseCard);
+      } else if (baseHandle === HANDLES.bases.adjustable) {
+        pushCard(
+          createCollectionCard(
+            "bases-collection",
+            "Adjustable Bases",
+            routes.basesCollection || routes.adjustableBase,
+            "Compare elevation and motion flexibility alongside your mattress fit."
+          )
+        );
+      }
+    }
+
+    const needsAccessoryCard =
+      normalizeKey(answers.temperature) === "hot" ||
+      normalizeKey(answers.sleepPosition) === "side" ||
+      (Array.isArray(answers.painPoints) && answers.painPoints.some(function (item) {
+        return containsTerm(item, ["shoulders", "neck"]);
+      }));
+
+    if (needsAccessoryCard) {
+      pushCard(
+        createCollectionCard(
+          "pillows-collection",
+          "Pillows",
+          routes.pillows,
+          "Finish the setup with pillows that support how you rest."
+        )
+      );
+    }
+
+    if (!cards.length) {
+      pushCard(
+        createCollectionCard(
+          "mattresses-collection",
+          "Mattresses",
+          routes.mattresses,
+          "Start with the mattress lineup that matches your assessment direction."
+        )
+      );
+    }
+
+    return cards.slice(0, 4);
+  }
+
+  function buildPrimaryAction(answers, recommendation, products, routes) {
+    const baseHandle = resolveBaseHandle(answers, recommendation, routes);
+    if (baseHandle) {
+      return {
+        label: "Shop Recommended Setup",
+        href: (products[0] && products[0].url) || routes.mattresses,
+      };
+    }
+
+    return {
+      label: "Shop Recommended Mattresses",
+      href: (products[0] && products[0].url) || routes.mattresses,
+    };
+  }
+
+  function buildResult(answers, recommendation, productMap, routes) {
+    const products = buildRecommendedProducts(answers, recommendation, productMap, routes);
+    return {
+      title: "Your sleep direction is ready.",
+      copy: "Based on your answers, Snoozer can point you toward a better starting mattress, base, and sleep setup.",
+      summary: buildAssessmentSummary(answers),
+      hints: buildResultTags(answers, recommendation),
+      directions: buildResultDirections(answers, recommendation),
+      recommendedProducts: products,
+      primaryAction: buildPrimaryAction(answers, recommendation, products, routes),
+    };
   }
 
   function initAssessment(root) {
@@ -318,7 +1191,10 @@
       assessment: normalizeText(root.getAttribute("data-assessment-url")) || "/pages/snooze-assessment",
       booking: normalizeText(root.getAttribute("data-booking-url")) || "/pages/book-a-snooze-session",
       mattresses: normalizeText(root.getAttribute("data-mattresses-url")) || "/collections/mattresses",
-      base: normalizeText(root.getAttribute("data-adjustable-base-url")) || "/products/premium-motion-adjustable-base",
+      adjustableBase: normalizeText(root.getAttribute("data-adjustable-base-url")) || "/products/premium-motion-adjustable-base",
+      basesCollection: normalizeText(root.getAttribute("data-bases-collection-url")) || "/collections/bases",
+      pillows: normalizeText(root.getAttribute("data-pillows-url")) || "/collections/pillows",
+      bedding: normalizeText(root.getAttribute("data-bedding-url")) || "/collections/bedding",
     };
 
     const productMapNode = root.querySelector("[data-assessment-product-map]");
@@ -327,8 +1203,6 @@
     );
 
     const els = {
-      heroJump: root.querySelector("[data-assessment-jump]"),
-      heroAsk: root.querySelector("[data-assessment-open-snoozer]"),
       appAnchor: root.querySelector("[data-assessment-app-anchor]"),
       progressBar: root.querySelector("[data-assessment-progress-bar]"),
       progressLabel: root.querySelector("[data-assessment-progress-label]"),
@@ -346,10 +1220,10 @@
       resultCopy: root.querySelector("[data-assessment-result-copy]"),
       resultSummary: root.querySelector("[data-assessment-result-summary]"),
       resultTags: root.querySelector("[data-assessment-result-tags]"),
+      resultDirections: root.querySelector("[data-assessment-result-directions]"),
       resultProducts: root.querySelector("[data-assessment-result-products]"),
       resultActions: root.querySelector("[data-assessment-result-actions]"),
       retakeButton: root.querySelector("[data-assessment-retake]"),
-      bottomAsk: root.querySelector("[data-assessment-bottom-open-snoozer]"),
     };
 
     const savedState = safeJsonParse(safeSessionGet(storageKey), null);
@@ -359,24 +1233,30 @@
       questions: [],
       step: Math.max(0, Number(savedState && savedState.step) || 0),
       answers: savedState && savedState.answers && typeof savedState.answers === "object" ? savedState.answers : {},
-      completed: Boolean(savedState && savedState.completed),
-      result: savedState && savedState.result && typeof savedState.result === "object" ? savedState.result : null,
+      completed: false,
+      result: null,
       shopperId: normalizeText(savedState && savedState.shopperId) || createShopperId(sectionId),
+      savedCompleted: Boolean(savedState && savedState.completed),
     };
 
     function persist() {
-      safeSessionSet(storageKey, serializeState(state));
-    }
-
-    function scrollToApp() {
-      if (!els.appAnchor) return;
-      els.appAnchor.scrollIntoView({ behavior: "smooth", block: "start" });
+      safeSessionSet(
+        storageKey,
+        JSON.stringify({
+          step: state.step,
+          answers: state.answers,
+          completed: state.completed,
+          result: state.result,
+          shopperId: state.shopperId,
+        })
+      );
     }
 
     function setStatus(message, isError) {
       if (!els.status || !els.error) return;
       els.status.hidden = true;
       els.error.hidden = true;
+
       if (!message) return;
 
       if (isError) {
@@ -388,27 +1268,52 @@
       }
     }
 
-    function renderOptions(question, visibleQuestions) {
+    function scrollToApp() {
+      if (!els.appAnchor) return;
+      els.appAnchor.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function scrollToResults() {
+      if (!els.result) return;
+      window.setTimeout(function () {
+        els.result.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
+
+    function renderOptions(question) {
       if (!els.optionGrid) return;
       els.optionGrid.innerHTML = "";
 
+      const motionMeta = question.id === "motionMode" ? getMotionMeta(state.answers.size) : [];
+
       question.options.forEach(function (option) {
         const normalizedOption = normalizeText(option);
+        const selected = isMultiQuestion(question)
+          ? Array.isArray(state.answers[question.id]) && state.answers[question.id].indexOf(normalizedOption) !== -1
+          : normalizeText(state.answers[question.id]) === normalizedOption;
+
         const button = document.createElement("button");
         button.type = "button";
         button.className = isMultiQuestion(question)
           ? "snooze-assessment__multi-option"
           : "snooze-assessment__option";
-
-        const selected = isMultiQuestion(question)
-          ? Array.isArray(state.answers[question.id]) && state.answers[question.id].includes(normalizedOption)
-          : normalizeText(state.answers[question.id]) === normalizedOption;
-
         if (selected) button.classList.add("is-selected");
         button.setAttribute("aria-pressed", selected ? "true" : "false");
 
-        const optionHead = document.createElement("div");
-        optionHead.className = "snooze-assessment__option-head";
+        let description = "";
+        let disabledReason = "";
+        let disabled = false;
+
+        if (question.id === "motionMode") {
+          const meta = motionMeta.find(function (item) { return item.label === normalizedOption; });
+          description = meta && meta.description ? meta.description : "";
+          disabledReason = meta && meta.disabledReason ? meta.disabledReason : "";
+          disabled = Boolean(meta && meta.disabled);
+          if (disabled) button.disabled = true;
+        }
+
+        const head = document.createElement("div");
+        head.className = "snooze-assessment__option-head";
 
         const label = document.createElement("span");
         label.className = "snooze-assessment__option-label";
@@ -418,14 +1323,9 @@
         badge.className = "snooze-assessment__option-badge";
         badge.textContent = selected ? "Selected" : isMultiQuestion(question) ? "Toggle" : "Choose";
 
-        optionHead.appendChild(label);
-        optionHead.appendChild(badge);
-        button.appendChild(optionHead);
-
-        const description =
-          question.id === "motionMode"
-            ? MOTION_DESCRIPTIONS[normalizedOption]
-            : "";
+        head.appendChild(label);
+        head.appendChild(badge);
+        button.appendChild(head);
 
         if (description) {
           const note = document.createElement("p");
@@ -434,10 +1334,19 @@
           button.appendChild(note);
         }
 
+        if (disabledReason) {
+          const disabledNote = document.createElement("p");
+          disabledNote.className = "snooze-assessment__option-note snooze-assessment__option-note--warning";
+          disabledNote.textContent = disabledReason;
+          button.appendChild(disabledNote);
+        }
+
         button.addEventListener("click", function () {
+          if (disabled) return;
+
           if (isMultiQuestion(question)) {
             const current = Array.isArray(state.answers[question.id]) ? state.answers[question.id].slice() : [];
-            const exists = current.includes(normalizedOption);
+            const exists = current.indexOf(normalizedOption) !== -1;
             state.answers[question.id] = exists
               ? current.filter(function (value) { return value !== normalizedOption; })
               : current.concat(normalizedOption);
@@ -447,19 +1356,19 @@
           }
 
           state.answers[question.id] = normalizedOption;
-          const cleaned = cleanAnswers(state.questions, state.answers);
-          state.answers = cleaned;
-          const nextVisible = getVisibleQuestions(state.questions, cleaned);
-          const currentIndex = nextVisible.findIndex(function (item) { return item.id === question.id; });
+          state.answers = cleanAnswers(state.questions, state.answers);
+
+          const visibleQuestions = getVisibleQuestions(state.questions, state.answers);
+          const currentIndex = visibleQuestions.findIndex(function (item) { return item.id === question.id; });
 
           persist();
 
-          if (currentIndex >= nextVisible.length - 1) {
+          if (currentIndex >= visibleQuestions.length - 1) {
             submitAssessment();
             return;
           }
 
-          state.step = Math.min(nextVisible.length - 1, currentIndex + 1);
+          state.step = Math.min(visibleQuestions.length - 1, currentIndex + 1);
           persist();
           render();
         });
@@ -480,15 +1389,41 @@
       }
     }
 
+    function renderResultDirections(result) {
+      if (!els.resultDirections) return;
+      els.resultDirections.innerHTML = "";
+
+      (Array.isArray(result.directions) ? result.directions : []).forEach(function (direction) {
+        const card = document.createElement("article");
+        card.className = "snooze-assessment__direction-card";
+
+        const label = document.createElement("h3");
+        label.className = "snooze-assessment__direction-label";
+        label.textContent = direction.label;
+        card.appendChild(label);
+
+        const text = document.createElement("p");
+        text.className = "snooze-assessment__direction-text";
+        text.textContent = direction.text;
+        card.appendChild(text);
+
+        els.resultDirections.appendChild(card);
+      });
+    }
+
     function renderResultActions(result) {
       if (!els.resultActions) return;
       els.resultActions.innerHTML = "";
 
-      const primaryProduct = Array.isArray(result.recommendedProducts) ? result.recommendedProducts[0] : null;
-      const actionConfig = [
+      const primary = result.primaryAction || {
+        label: "Shop Recommended Mattresses",
+        href: routes.mattresses,
+      };
+
+      [
         {
-          label: "Shop Recommended Mattresses",
-          href: primaryProduct && primaryProduct.url ? primaryProduct.url : routes.mattresses,
+          label: primary.label,
+          href: primary.href,
           primary: true,
         },
         {
@@ -496,9 +1431,7 @@
           href: routes.booking,
           primary: false,
         },
-      ];
-
-      actionConfig.forEach(function (action) {
+      ].forEach(function (action) {
         const link = document.createElement("a");
         link.className = action.primary
           ? "snooze-assessment__button snooze-assessment__button--primary"
@@ -507,7 +1440,6 @@
         link.textContent = action.label;
         els.resultActions.appendChild(link);
       });
-
     }
 
     function renderResultProducts(result) {
@@ -518,7 +1450,7 @@
       if (!products.length) {
         const empty = document.createElement("p");
         empty.className = "snooze-assessment__empty";
-        empty.textContent = "Your assessment is saved. Use the mattress lineup or book a Snooze Session for the next step.";
+        empty.textContent = "Start with the mattress lineup, then compare the base and accessories that fit your direction best.";
         els.resultProducts.appendChild(empty);
         return;
       }
@@ -539,6 +1471,11 @@
           article.appendChild(media);
         }
 
+        const kind = document.createElement("p");
+        kind.className = "snooze-assessment__recommendation-kind";
+        kind.textContent = product.kind;
+        article.appendChild(kind);
+
         const title = document.createElement("h3");
         title.className = "snooze-assessment__recommendation-title";
         title.textContent = product.title;
@@ -552,7 +1489,7 @@
         const link = document.createElement("a");
         link.className = "snooze-assessment__product-link";
         link.href = product.url;
-        link.textContent = "View product";
+        link.textContent = product.kind === "Collection" ? "View collection" : "View product";
         article.appendChild(link);
 
         els.resultProducts.appendChild(article);
@@ -562,18 +1499,19 @@
     function renderResult(result) {
       if (!els.result) return;
       els.result.hidden = false;
+
       if (els.resultTitle) {
-        els.resultTitle.textContent = "Your sleep direction is ready.";
+        els.resultTitle.textContent = result.title || "Your sleep direction is ready.";
       }
       if (els.resultCopy) {
-        els.resultCopy.textContent = result.copy;
+        els.resultCopy.textContent = result.copy || "";
       }
       if (els.resultSummary) {
-        els.resultSummary.textContent = result.summary;
+        els.resultSummary.textContent = result.summary || "";
       }
       if (els.resultTags) {
         els.resultTags.innerHTML = "";
-        (result.hints || []).slice(0, 4).forEach(function (hint) {
+        (result.hints || []).forEach(function (hint) {
           const pill = document.createElement("span");
           pill.className = "snooze-assessment__tag";
           pill.textContent = hint;
@@ -581,6 +1519,7 @@
         });
       }
 
+      renderResultDirections(result);
       renderResultProducts(result);
       renderResultActions(result);
     }
@@ -596,7 +1535,7 @@
       if (state.loading) {
         setStatus("Loading the Snooze Assessment...", false);
       } else if (state.submitting) {
-        setStatus("Saving your answers and building your next step...", false);
+        setStatus("Saving your answers and building your sleep direction...", false);
       } else if (!els.error.hidden) {
         // keep current error visible
       } else {
@@ -623,22 +1562,29 @@
         els.progressLabel.textContent = "Step " + (state.step + 1) + " of " + visibleQuestions.length;
       }
       if (els.questionEyebrow) {
-        const detail = completedCount ? completedCount + " answered" : "Start here";
-        els.questionEyebrow.textContent = detail;
+        els.questionEyebrow.textContent = "Question " + (state.step + 1) + " of " + visibleQuestions.length;
       }
       if (els.questionTitle) {
         els.questionTitle.textContent = current.text;
       }
       if (els.questionNote) {
-        const noteParts = [];
-        if (current.id === "motionMode") noteParts.push("This helps narrow your mattress and base direction.");
-        if (current.id === "budget") noteParts.push("A ballpark is enough here.");
-        if (current.id === "painPoints") noteParts.push("Choose any that matter, then continue.");
-        if (current.note) noteParts.push(current.note);
-        els.questionNote.textContent = noteParts.join(" ");
+        const notes = [];
+        if (current.id === "baseType") {
+          notes.push("This keeps the next mattress and base direction grounded in the same showroom flow.");
+        }
+        if (current.id === "motionMode") {
+          notes.push("Split motion changes what mattress and base combinations fit best.");
+        }
+        if (current.id === "painPoints") {
+          notes.push("Choose any that matter, then continue.");
+        }
+        if (current.note) {
+          notes.push(current.note);
+        }
+        els.questionNote.textContent = notes.join(" ");
       }
 
-      renderOptions(current, visibleQuestions);
+      renderOptions(current);
 
       if (els.backButton) {
         els.backButton.disabled = state.step === 0 || state.loading || state.submitting;
@@ -659,51 +1605,11 @@
       persist();
     }
 
-    function buildRecommendedProducts(answers, recommendationPayload) {
-      const products = Array.isArray(recommendationPayload && recommendationPayload.products)
-        ? recommendationPayload.products
-        : [];
-
-      const handles = products
-        .map(function (item) { return normalizeText(item && item.handle); })
-        .filter(Boolean);
-
-      if (normalizeKey(answers.motionMode) !== "no motion" && handles.indexOf("premium-motion-adjustable-base") === -1) {
-        handles.push("premium-motion-adjustable-base");
-      }
-
-      return handles
-        .map(function (handle) {
-          const product = productMap[handle];
-          if (!product) return null;
-          return {
-            handle: handle,
-            title: product.title,
-            url: product.url,
-            image: product.image,
-            blurb: getProductBlurb(handle),
-          };
-        })
-        .filter(Boolean)
-        .slice(0, 4);
-    }
-
-    function buildResult(answers, recommendationPayload) {
-      const hints = Array.isArray(recommendationPayload && recommendationPayload.hints)
-        ? recommendationPayload.hints.filter(Boolean)
-        : [];
-      return {
-        summary: buildSummary(answers),
-        copy: buildResultCopy(answers, hints),
-        hints: hints,
-        recommendedProducts: buildRecommendedProducts(answers, recommendationPayload),
-      };
-    }
-
     async function submitAssessment() {
       if (state.submitting || state.loading) return;
+
       state.submitting = true;
-      setStatus("Saving your answers and building your next step...", false);
+      setStatus("Saving your answers and building your sleep direction...", false);
       render();
 
       const answers = cleanAnswers(state.questions, state.answers);
@@ -722,14 +1628,8 @@
           return response.json();
         });
 
-        const recommendationPayload = await fetch(
-          buildApiUrl(root, "/recommendations/" + encodeURIComponent(state.shopperId))
-        ).then(function (response) {
-          if (!response.ok) throw new Error("Recommendations failed");
-          return response.json();
-        });
-
-        const result = buildResult(answers, recommendationPayload);
+        const recommendation = generateShowroomRecommendations(answers);
+        const result = buildResult(answers, recommendation, productMap, routes);
 
         state.answers = answers;
         state.result = result;
@@ -740,19 +1640,20 @@
         safeSessionSet(SHARED_SUMMARY_KEY, result.summary || "");
         safeSessionSet(
           SHARED_RESULTS_KEY,
-          JSON.stringify(result.recommendedProducts.map(function (product) { return product.handle; }))
+          JSON.stringify(
+            result.recommendedProducts
+              .filter(function (product) { return product.kind !== "Collection"; })
+              .map(function (product) { return product.handle; })
+              .filter(Boolean)
+          )
         );
 
         persist();
         render();
-        if (els.result) {
-          window.setTimeout(function () {
-            els.result.scrollIntoView({ behavior: "smooth", block: "start" });
-          }, 120);
-        }
+        scrollToResults();
       } catch (error) {
         state.submitting = false;
-        setStatus("We could not save the assessment right now. You can refresh and try again, or book a Snooze Session.", true);
+        setStatus("We could not save the assessment right now. Refresh and try again, or book a Snooze Session.", true);
         render();
       }
     }
@@ -765,34 +1666,22 @@
         });
 
         state.questions = buildQuestionFlow(payload && payload.questions);
-        state.loading = false;
-        persist();
-        render();
       } catch (error) {
-        state.questions = buildQuestionFlow(DEFAULT_QUESTIONS);
-        state.loading = false;
-        setStatus("The full question set is not loading right now, so I started the core assessment path instead.", false);
-        persist();
-        render();
+        state.questions = buildQuestionFlow(FALLBACK_QUESTIONS);
+        setStatus("The live question set is not loading right now, so I started the showroom assessment path instead.", false);
       }
-    }
 
-    if (els.heroJump) {
-      els.heroJump.addEventListener("click", function () {
-        scrollToApp();
-      });
-    }
+      state.answers = cleanAnswers(state.questions, state.answers);
+      state.loading = false;
 
-    if (els.heroAsk) {
-      els.heroAsk.addEventListener("click", function () {
-        openSnoozerPanel();
-      });
-    }
+      if (state.savedCompleted && Object.keys(state.answers).length) {
+        const recommendation = generateShowroomRecommendations(state.answers);
+        state.result = buildResult(state.answers, recommendation, productMap, routes);
+        state.completed = true;
+      }
 
-    if (els.bottomAsk) {
-      els.bottomAsk.addEventListener("click", function () {
-        openSnoozerPanel();
-      });
+      persist();
+      render();
     }
 
     if (els.backButton) {
@@ -811,12 +1700,14 @@
         if (!current || isRequired(current)) return;
 
         delete state.answers[current.id];
+
         if (state.step >= visibleQuestions.length - 1) {
           submitAssessment();
           return;
         }
 
         state.step += 1;
+        state.answers = cleanAnswers(state.questions, state.answers);
         persist();
         render();
       });
@@ -827,10 +1718,12 @@
         const visibleQuestions = getVisibleQuestions(state.questions, state.answers);
         const current = visibleQuestions[state.step];
         if (!current || !questionIsAnswered(current, state.answers[current.id])) return;
+
         if (state.step >= visibleQuestions.length - 1) {
           submitAssessment();
           return;
         }
+
         state.step += 1;
         persist();
         render();
@@ -841,6 +1734,7 @@
       els.retakeButton.addEventListener("click", function () {
         state.completed = false;
         state.result = null;
+        state.savedCompleted = false;
         state.step = 0;
         persist();
         render();
