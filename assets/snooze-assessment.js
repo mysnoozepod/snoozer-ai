@@ -263,10 +263,10 @@
   function buildResultCopy(answers, hints) {
     const direction = buildDirection(answers, hints);
     if (!direction) {
-      return "Your assessment now has enough detail to narrow the mattress, base, and next step without guessing.";
+      return "Based on your answers, Snoozer can point you toward a better starting mattress, base, and sleep setup.";
     }
 
-    return "Your answers lean toward " + direction + ". Start with these verified products, then book a Snooze Session or ask Snoozer if you want help comparing the final setup.";
+    return "Based on your answers, Snoozer can point you toward a better starting mattress, base, and sleep setup.";
   }
 
   function normalizeProductMap(rawMap) {
@@ -316,7 +316,7 @@
     const storageKey = STORAGE_NAMESPACE + "." + slugify(sectionId);
     const routes = {
       assessment: normalizeText(root.getAttribute("data-assessment-url")) || "/pages/snooze-assessment",
-      booking: normalizeText(root.getAttribute("data-booking-url")) || "/pages/booking-a-snooze-session",
+      booking: normalizeText(root.getAttribute("data-booking-url")) || "/pages/book-a-snooze-session",
       mattresses: normalizeText(root.getAttribute("data-mattresses-url")) || "/collections/mattresses",
       base: normalizeText(root.getAttribute("data-adjustable-base-url")) || "/products/premium-motion-adjustable-base",
     };
@@ -492,7 +492,7 @@
           primary: true,
         },
         {
-          label: "Book Your Snooze Session",
+          label: "Book A Snooze Session",
           href: routes.booking,
           primary: false,
         },
@@ -508,12 +508,6 @@
         els.resultActions.appendChild(link);
       });
 
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "snooze-assessment__button snooze-assessment__button--ghost";
-      button.textContent = "Ask Snoozer about this fit";
-      button.addEventListener("click", openSnoozerPanel);
-      els.resultActions.appendChild(button);
     }
 
     function renderResultProducts(result) {
@@ -524,7 +518,7 @@
       if (!products.length) {
         const empty = document.createElement("p");
         empty.className = "snooze-assessment__empty";
-        empty.textContent = "Your assessment is saved. Use the mattress lineup or Ask Snoozer if you want a tighter comparison.";
+        empty.textContent = "Your assessment is saved. Use the mattress lineup or book a Snooze Session for the next step.";
         els.resultProducts.appendChild(empty);
         return;
       }
@@ -569,7 +563,7 @@
       if (!els.result) return;
       els.result.hidden = false;
       if (els.resultTitle) {
-        els.resultTitle.textContent = "Your Snooze Assessment direction is ready.";
+        els.resultTitle.textContent = "Your sleep direction is ready.";
       }
       if (els.resultCopy) {
         els.resultCopy.textContent = result.copy;
@@ -629,7 +623,7 @@
         els.progressLabel.textContent = "Step " + (state.step + 1) + " of " + visibleQuestions.length;
       }
       if (els.questionEyebrow) {
-        const detail = completedCount ? completedCount + " answered" : "Under 2 minutes";
+        const detail = completedCount ? completedCount + " answered" : "Start here";
         els.questionEyebrow.textContent = detail;
       }
       if (els.questionTitle) {
@@ -637,7 +631,7 @@
       }
       if (els.questionNote) {
         const noteParts = [];
-        if (current.id === "motionMode") noteParts.push("This helps narrow mattress + base setup without changing your cart.");
+        if (current.id === "motionMode") noteParts.push("This helps narrow your mattress and base direction.");
         if (current.id === "budget") noteParts.push("A ballpark is enough here.");
         if (current.id === "painPoints") noteParts.push("Choose any that matter, then continue.");
         if (current.note) noteParts.push(current.note);
@@ -758,7 +752,7 @@
         }
       } catch (error) {
         state.submitting = false;
-        setStatus("We could not save the assessment right now. You can still book a Snooze Session or ask Snoozer for help.", true);
+        setStatus("We could not save the assessment right now. You can refresh and try again, or book a Snooze Session.", true);
         render();
       }
     }

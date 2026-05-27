@@ -4,18 +4,26 @@
   if hero_alt == blank
     assign hero_alt = section.settings.hero_headline
   endif
-  assign benefit_blocks = section.blocks | where: 'type', 'benefit'
-  assign step_blocks = section.blocks | where: 'type', 'step'
-  assign preview_blocks = section.blocks | where: 'type', 'preview_card'
   assign assessment_page_url = '/pages/snooze-assessment'
-  assign booking_page_url = '/pages/booking-a-snooze-session'
+  assign booking_page_url = '/pages/book-a-snooze-session'
   assign mattresses_collection_url = '/collections/mattresses'
   assign adjustable_base_url = '/products/premium-motion-adjustable-base'
   assign assessment_product_handles = '14-hybrid|12-dual-comfort-hybrid|12-all-foam-mattress|10-all-foam-mattress|premium-motion-adjustable-base' | split: '|'
+  assign hide_footer_newsletter = false
+  if request.page_type == 'page' and page.handle == 'snooze-assessment'
+    assign hide_footer_newsletter = true
+  endif
 -%}
 
 {{ 'snooze-assessment.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'snooze-assessment.js' | asset_url }}" defer></script>
+{%- if hide_footer_newsletter -%}
+  {%- style -%}
+    body.template-page #shopify-section-newsletter {
+      display: none !important;
+    }
+  {%- endstyle -%}
+{%- endif -%}
 
 <section class="section">
   <div
@@ -48,17 +56,11 @@
 
     <div class="snooze-assessment__stack">
       <div class="snooze-assessment__panel snooze-assessment__panel--soft">
-        <div class="snooze-assessment__hero">
+        <div class="snooze-assessment__hero{% if hero_image == blank %} snooze-assessment__hero--single{% endif %}">
           <div>
             <p class="snooze-assessment__eyebrow">{{ section.settings.hero_eyebrow | escape }}</p>
             <h1 class="snooze-assessment__title">{{ section.settings.hero_headline | escape }}</h1>
             <p class="snooze-assessment__text">{{ section.settings.hero_text | escape }}</p>
-
-            <div class="snooze-assessment__micro-list">
-              <span class="snooze-assessment__micro-pill">Under 2 minutes</span>
-              <span class="snooze-assessment__micro-pill">Guided mattress + base fit</span>
-              <span class="snooze-assessment__micro-pill">No account required</span>
-            </div>
 
             <div class="snooze-assessment__actions">
               {%- if section.settings.primary_link != blank -%}
@@ -72,16 +74,6 @@
                   data-assessment-jump
                 >
                   {{ section.settings.primary_label | escape }}
-                </button>
-              {%- endif -%}
-
-              {%- if section.settings.secondary_link != blank -%}
-                <a class="snooze-assessment__button" href="{{ section.settings.secondary_link }}">
-                  {{ section.settings.secondary_label | escape }}
-                </a>
-              {%- else -%}
-                <button type="button" class="snooze-assessment__button" data-assessment-open-snoozer>
-                  {{ section.settings.secondary_label | escape }}
                 </button>
               {%- endif -%}
             </div>
@@ -99,33 +91,13 @@
                   alt: hero_alt | escape
               }}
             </div>
-          {%- else -%}
-            <div class="snooze-assessment__visual-fallback">Guided mattress + base matching</div>
           {%- endif -%}
         </div>
       </div>
 
-      {%- if benefit_blocks.size > 0 -%}
-        <div class="snooze-assessment__panel">
-          <div class="snooze-assessment__section">
-            <div class="snooze-assessment__benefits">
-              {%- for block in benefit_blocks -%}
-                <div class="snooze-assessment__benefit" {{ block.shopify_attributes }}>
-                  <h2 class="snooze-assessment__benefit-title">{{ block.settings.title | escape }}</h2>
-                  <p class="snooze-assessment__benefit-text">{{ block.settings.text | escape }}</p>
-                </div>
-              {%- endfor -%}
-            </div>
-          </div>
-        </div>
-      {%- endif -%}
-
       <div class="snooze-assessment__panel" data-assessment-app-anchor>
         <div class="snooze-assessment__section">
           <h2 class="snooze-assessment__section-title">{{ section.settings.how_heading | escape }}</h2>
-          <p class="snooze-assessment__section-subtext">
-            This keeps the path simple: narrow your size, motion setup, and mattress direction first, then move into real products and next steps.
-          </p>
 
           <div class="snooze-assessment__app">
             <div class="snooze-assessment__question-shell">
@@ -136,16 +108,16 @@
                 <span class="snooze-assessment__progress-label" data-assessment-progress-label>Loading</span>
               </div>
 
-              <div class="snooze-assessment__question-block">
-                <div class="snooze-assessment__question-meta">
-                  <p class="snooze-assessment__micro" data-assessment-question-eyebrow>Under 2 minutes</p>
-                  <h3 class="snooze-assessment__question-title" data-assessment-question-title>
-                    Loading your Snooze Assessment...
-                  </h3>
-                  <p class="snooze-assessment__question-note" data-assessment-question-note>
-                    Snoozer is pulling the current assessment questions now.
-                  </p>
-                </div>
+                <div class="snooze-assessment__question-block">
+                  <div class="snooze-assessment__question-meta">
+                    <p class="snooze-assessment__micro" data-assessment-question-eyebrow>Start here</p>
+                    <h3 class="snooze-assessment__question-title" data-assessment-question-title>
+                      Loading your Snooze Assessment...
+                    </h3>
+                    <p class="snooze-assessment__question-note" data-assessment-question-note>
+                      Loading the current assessment questions now.
+                    </p>
+                  </div>
 
                 <div class="snooze-assessment__option-grid" data-assessment-options></div>
 
@@ -165,63 +137,11 @@
                 <div class="snooze-assessment__error" data-assessment-error hidden></div>
               </div>
             </div>
-
-            <div class="snooze-assessment__side-grid">
-              <div class="snooze-assessment__side-card">
-                <h3 class="snooze-assessment__side-title">What this will narrow</h3>
-                <p class="snooze-assessment__side-copy">
-                  Snoozer uses this page to narrow mattress feel, base setup, and the cleanest next step before you start bouncing between products.
-                </p>
-                <ul class="snooze-assessment__side-list">
-                  {%- if step_blocks.size > 0 -%}
-                    {%- for block in step_blocks limit: 3 -%}
-                      <li class="snooze-assessment__side-item" {{ block.shopify_attributes }}>
-                        <span class="snooze-assessment__side-index">{{ forloop.index }}</span>
-                        <div>
-                          <strong>{{ block.settings.title | escape }}</strong>
-                          {%- if block.settings.text != blank -%}
-                            <p class="snooze-assessment__side-copy">{{ block.settings.text | escape }}</p>
-                          {%- endif -%}
-                        </div>
-                      </li>
-                    {%- endfor -%}
-                  {%- else -%}
-                    <li class="snooze-assessment__side-item">
-                      <span class="snooze-assessment__side-index">1</span>
-                      <div>
-                        <strong>Size + motion first</strong>
-                        <p class="snooze-assessment__side-copy">That keeps split, adjustable, and couple setups from getting muddy later.</p>
-                      </div>
-                    </li>
-                    <li class="snooze-assessment__side-item">
-                      <span class="snooze-assessment__side-index">2</span>
-                      <div>
-                        <strong>Comfort direction second</strong>
-                        <p class="snooze-assessment__side-copy">Sleep position, pressure relief, heat, and support tell Snoozer where to start.</p>
-                      </div>
-                    </li>
-                    <li class="snooze-assessment__side-item">
-                      <span class="snooze-assessment__side-index">3</span>
-                      <div>
-                        <strong>Real next steps last</strong>
-                        <p class="snooze-assessment__side-copy">You finish with real product links, not a vague quiz result.</p>
-                      </div>
-                    </li>
-                  {%- endif -%}
-                </ul>
-              </div>
-
-              <div class="snooze-assessment__side-card">
-                <h3 class="snooze-assessment__side-title">{{ section.settings.strip_heading | escape }}</h3>
-                <p class="snooze-assessment__side-copy">{{ section.settings.strip_text | escape }}</p>
-              </div>
-            </div>
           </div>
 
           <div class="snooze-assessment__result" data-assessment-result hidden>
             <div class="snooze-assessment__result-panel">
-              <p class="snooze-assessment__micro">Snoozer says</p>
-              <h2 class="snooze-assessment__result-title" data-assessment-result-title>Your result is ready.</h2>
+              <h2 class="snooze-assessment__result-title" data-assessment-result-title>Your sleep direction is ready.</h2>
               <p class="snooze-assessment__result-copy" data-assessment-result-copy></p>
               <p class="snooze-assessment__section-subtext" data-assessment-result-summary></p>
               <div class="snooze-assessment__result-tags" data-assessment-result-tags></div>
@@ -230,7 +150,9 @@
 
             <div>
               <h3 class="snooze-assessment__side-title">{{ section.settings.preview_heading | escape }}</h3>
-              <p class="snooze-assessment__section-subtext">{{ section.settings.preview_text | escape }}</p>
+              {%- if section.settings.preview_text != blank -%}
+                <p class="snooze-assessment__section-subtext">{{ section.settings.preview_text | escape }}</p>
+              {%- endif -%}
               <div class="snooze-assessment__recommendations" data-assessment-result-products></div>
             </div>
 
@@ -238,63 +160,8 @@
               <button type="button" class="snooze-assessment__button snooze-assessment__button--ghost" data-assessment-retake>
                 Change answers
               </button>
-              <button type="button" class="snooze-assessment__button" data-assessment-bottom-open-snoozer>
-                Ask Snoozer
-              </button>
             </div>
           </div>
-        </div>
-      </div>
-
-      {%- if preview_blocks.size > 0 -%}
-        <div class="snooze-assessment__panel">
-          <div class="snooze-assessment__section">
-            <div class="snooze-assessment__benefits">
-              {%- for block in preview_blocks -%}
-                {%- assign preview_title = block.settings.title | downcase -%}
-                {%- assign preview_label = block.settings.link_label | downcase -%}
-                {%- assign preview_url = block.settings.link_url -%}
-                {%- if preview_url == blank -%}
-                  {%- if preview_title contains 'assessment' or preview_label contains 'assessment' -%}
-                    {%- assign preview_url = assessment_page_url -%}
-                  {%- elsif preview_title contains 'session' or preview_label contains 'session' -%}
-                    {%- assign preview_url = booking_page_url -%}
-                  {%- else -%}
-                    {%- assign preview_url = mattresses_collection_url -%}
-                  {%- endif -%}
-                {%- endif -%}
-                <div class="snooze-assessment__benefit" {{ block.shopify_attributes }}>
-                  <h3 class="snooze-assessment__benefit-title">{{ block.settings.title | escape }}</h3>
-                  <p class="snooze-assessment__benefit-text">{{ block.settings.text | escape }}</p>
-                  {%- if block.settings.link_label != blank -%}
-                    <div class="snooze-assessment__actions">
-                      <a class="snooze-assessment__button" href="{{ preview_url }}">
-                        {{ block.settings.link_label | escape }}
-                      </a>
-                    </div>
-                  {%- endif -%}
-                </div>
-              {%- endfor -%}
-            </div>
-          </div>
-        </div>
-      {%- endif -%}
-
-      <div class="snooze-assessment__band">
-        <h2 class="snooze-assessment__section-title">{{ section.settings.final_heading | escape }}</h2>
-        <p class="snooze-assessment__section-subtext">
-          If you would rather test the feel in person, book a Snooze Session next. If you want to keep narrowing online, start with the assessment and mattress lineup first.
-        </p>
-        <div class="snooze-assessment__actions">
-          <a
-            class="snooze-assessment__button"
-            href="{% if section.settings.final_link != blank %}{{ section.settings.final_link }}{% else %}{{ booking_page_url }}{% endif %}"
-          >
-            {{ section.settings.final_label | escape }}
-          </a>
-          <a class="snooze-assessment__button" href="{{ mattresses_collection_url }}">
-            Shop Mattresses
-          </a>
         </div>
       </div>
     </div>
@@ -307,65 +174,20 @@
   "tag": "section",
   "class": "section",
   "settings": [
-    { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "Snooze Assessment" },
-    { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Find the mattress, base, and sleep setup that fits how you actually rest." },
-    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "This short guided assessment helps Snoozer narrow the right mattress direction, motion setup, and next step without sending you through a product maze." },
-    { "type": "text", "id": "primary_label", "label": "Primary CTA label", "default": "Start Your Snooze Assessment" },
+    { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "SNOOZE ASSESSMENT" },
+    { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Find your starting point." },
+    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Answer a few quick questions so Snoozer can narrow your mattress, base, and sleep setup direction." },
+    { "type": "text", "id": "primary_label", "label": "Primary CTA label", "default": "Start Assessment" },
     { "type": "url", "id": "primary_link", "label": "Primary CTA link" },
-    { "type": "text", "id": "secondary_label", "label": "Secondary CTA label", "default": "Ask Snoozer" },
-    { "type": "url", "id": "secondary_link", "label": "Secondary CTA link" },
     { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
     { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
-    { "type": "text", "id": "how_heading", "label": "Assessment heading", "default": "Start your Snooze Assessment" },
-    { "type": "text", "id": "strip_heading", "label": "Guidance strip heading", "default": "Calm, guided, and built for real shopping decisions." },
-    { "type": "textarea", "id": "strip_text", "label": "Guidance strip text", "default": "No giant quiz wall. No placeholder products. Just a guided path into real mattress and base recommendations." },
-    { "type": "text", "id": "preview_heading", "label": "Results heading", "default": "Good starting points" },
-    { "type": "textarea", "id": "preview_text", "label": "Results text", "default": "These product links stay tied to the current verified handles in the Shopify theme." },
-    { "type": "text", "id": "final_heading", "label": "Final CTA heading", "default": "Need to feel it in person?" },
-    { "type": "text", "id": "final_label", "label": "Final CTA label", "default": "Book Your Snooze Session" },
-    { "type": "url", "id": "final_link", "label": "Final CTA link" }
-  ],
-  "blocks": [
-    {
-      "type": "benefit",
-      "name": "Benefit",
-      "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "Personalized Guidance" },
-        { "type": "textarea", "id": "text", "label": "Text", "default": "Built around how you sleep, what feels uncomfortable now, and whether motion or cooling matter most." }
-      ]
-    },
-    {
-      "type": "step",
-      "name": "Step",
-      "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "Pick your size and setup" },
-        { "type": "textarea", "id": "text", "label": "Text", "default": "Start by narrowing the physical setup before you compare comfort." }
-      ]
-    },
-    {
-      "type": "preview_card",
-      "name": "Preview card",
-      "settings": [
-        { "type": "text", "id": "title", "label": "Title", "default": "Book a Snooze Session" },
-        { "type": "textarea", "id": "text", "label": "Text", "default": "If you want to test the feel in person, use a private Snooze Session next." },
-        { "type": "text", "id": "link_label", "label": "Link label", "default": "Book Your Snooze Session" },
-        { "type": "url", "id": "link_url", "label": "Link URL" }
-      ]
-    }
+    { "type": "text", "id": "how_heading", "label": "Assessment heading", "default": "Start Assessment" },
+    { "type": "text", "id": "preview_heading", "label": "Results heading", "default": "Recommended starting points" },
+    { "type": "textarea", "id": "preview_text", "label": "Results text", "default": "Use these recommendations as your best next mattress and base direction." }
   ],
   "presets": [
     {
-      "name": "Landing assessment",
-      "blocks": [
-        { "type": "benefit", "settings": { "title": "Personalized Guidance", "text": "Built around your sleep position, comfort direction, and whether airflow or motion matter most." } },
-        { "type": "benefit", "settings": { "title": "Fewer dead ends", "text": "Narrow the path before you start bouncing across product pages." } },
-        { "type": "benefit", "settings": { "title": "Real next steps", "text": "Finish with real mattress, base, and session links instead of a vague quiz result." } },
-        { "type": "step", "settings": { "title": "Choose your size + setup", "text": "Lock in the size and motion path that actually fits how you sleep." } },
-        { "type": "step", "settings": { "title": "Narrow feel + comfort direction", "text": "Use support, pressure relief, heat, and partner needs to sharpen the mattress fit." } },
-        { "type": "step", "settings": { "title": "Move into real products", "text": "Finish with internal product links, a Snooze Session CTA, and Ask Snoozer if you need help comparing." } },
-        { "type": "preview_card", "settings": { "title": "Explore Mattresses", "text": "Shop the core mattress lineup once the guided path sharpens.", "link_label": "Shop Mattresses" } },
-        { "type": "preview_card", "settings": { "title": "Book a Snooze Session", "text": "Use the assessment first, then try the feel in person if you want a cleaner decision.", "link_label": "Book Your Snooze Session" } }
-      ]
+      "name": "Landing assessment"
     }
   ]
 }

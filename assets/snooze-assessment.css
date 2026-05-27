@@ -1,17 +1,16 @@
 .snooze-assessment {
   max-width: 1180px;
-  margin: 20px auto 48px;
+  margin: 16px auto 32px;
   padding: 0 16px;
   color: #071942;
 }
 
 .snooze-assessment__stack {
   display: grid;
-  gap: 20px;
+  gap: 16px;
 }
 
-.snooze-assessment__panel,
-.snooze-assessment__band {
+.snooze-assessment__panel {
   border: 1px solid rgba(7, 25, 66, 0.08);
   border-radius: 28px;
   background: #ffffff;
@@ -26,8 +25,12 @@
 
 .snooze-assessment__hero {
   display: grid;
-  gap: 24px;
+  gap: 20px;
   padding: 28px 24px;
+}
+
+.snooze-assessment__hero--single {
+  grid-template-columns: 1fr;
 }
 
 .snooze-assessment__eyebrow,
@@ -61,12 +64,11 @@
 }
 
 .snooze-assessment__text {
-  margin: 14px 0 0;
-  max-width: 48rem;
+  margin: 12px 0 0;
+  max-width: 52rem;
   font-size: 17px;
 }
 
-.snooze-assessment__micro-list,
 .snooze-assessment__hint-list,
 .snooze-assessment__result-tags,
 .snooze-assessment__recommendation-list {
@@ -75,11 +77,6 @@
   gap: 10px;
 }
 
-.snooze-assessment__micro-list {
-  margin-top: 18px;
-}
-
-.snooze-assessment__micro-pill,
 .snooze-assessment__hint-pill,
 .snooze-assessment__tag {
   display: inline-flex;
@@ -102,7 +99,7 @@
 }
 
 .snooze-assessment__actions {
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .snooze-assessment__button,
@@ -166,20 +163,7 @@
   object-fit: cover;
 }
 
-.snooze-assessment__visual-fallback {
-  display: flex;
-  align-items: flex-end;
-  padding: 22px;
-  background:
-    radial-gradient(circle at top right, rgba(44, 66, 120, 0.16), transparent 34%),
-    linear-gradient(180deg, #eaf0f8 0%, #dfe7f3 100%);
-  color: rgba(7, 25, 66, 0.76);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.snooze-assessment__section,
-.snooze-assessment__band {
+.snooze-assessment__section {
   padding: 24px;
 }
 
@@ -199,37 +183,15 @@
   line-height: 1.55;
 }
 
-.snooze-assessment__benefits {
+.snooze-assessment__app {
   display: grid;
   gap: 16px;
 }
 
-.snooze-assessment__benefit {
-  padding: 20px;
-  border-radius: 22px;
-  border: 1px solid rgba(7, 25, 66, 0.08);
-  background: #ffffff;
-}
-
-.snooze-assessment__benefit-title {
-  margin: 0;
-  font-size: 22px;
-  line-height: 1.15;
-}
-
-.snooze-assessment__benefit-text {
-  margin: 10px 0 0;
-  color: rgba(7, 25, 66, 0.76);
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.snooze-assessment__app {
-  display: grid;
-  gap: 20px;
-}
-
 .snooze-assessment__question-shell {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
   padding: 22px;
   border-radius: 24px;
   background: #f8fbff;
@@ -271,8 +233,8 @@
 
 .snooze-assessment__question-block {
   display: grid;
-  gap: 18px;
-  margin-top: 20px;
+  gap: 16px;
+  margin-top: 18px;
 }
 
 .snooze-assessment__question-meta {
@@ -363,43 +325,11 @@
   color: #1a66d2;
 }
 
-.snooze-assessment__side-grid {
-  display: grid;
-  gap: 16px;
-}
-
 .snooze-assessment__side-card {
   padding: 20px;
   border-radius: 22px;
   background: #ffffff;
   border: 1px solid rgba(7, 25, 66, 0.08);
-}
-
-.snooze-assessment__side-list {
-  display: grid;
-  gap: 12px;
-  padding: 0;
-  margin: 16px 0 0;
-  list-style: none;
-}
-
-.snooze-assessment__side-item {
-  display: grid;
-  grid-template-columns: 34px 1fr;
-  gap: 12px;
-}
-
-.snooze-assessment__side-index {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  background: #071942;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
 }
 
 .snooze-assessment__status,
@@ -421,8 +351,10 @@
 }
 
 .snooze-assessment__result {
+  max-width: 980px;
+  margin: 18px auto 0;
   display: grid;
-  gap: 20px;
+  gap: 18px;
 }
 
 .snooze-assessment__result[hidden] {
@@ -442,12 +374,12 @@
 
 .snooze-assessment__result-copy {
   margin: 10px 0 0;
-  max-width: 48rem;
+  max-width: 52rem;
   font-size: 16px;
 }
 
 .snooze-assessment__result-actions {
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 .snooze-assessment__recommendations {
@@ -491,28 +423,9 @@
   line-height: 1.55;
 }
 
-.snooze-assessment__band {
-  background: #071942;
-  color: #ffffff;
-}
-
-.snooze-assessment__band .snooze-assessment__section-title,
-.snooze-assessment__band .snooze-assessment__section-subtext {
-  color: #ffffff;
-}
-
-.snooze-assessment__band .snooze-assessment__button {
-  background: #ffffff;
-}
-
 @media screen and (min-width: 750px) {
   .snooze-assessment {
     padding: 0 24px;
-  }
-
-  .snooze-assessment__benefits,
-  .snooze-assessment__recommendations {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -528,32 +441,25 @@
     padding: 36px;
   }
 
+  .snooze-assessment__hero--single {
+    grid-template-columns: 1fr;
+  }
+
   .snooze-assessment__title {
     font-size: 52px;
   }
 
   .snooze-assessment__visual,
-  .snooze-assessment__visual-fallback,
   .snooze-assessment__visual img {
     min-height: 320px;
     height: 100%;
   }
 
-  .snooze-assessment__section,
-  .snooze-assessment__band {
+  .snooze-assessment__section {
     padding: 30px 32px;
   }
 
-  .snooze-assessment__benefits {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .snooze-assessment__app {
-    grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
-    align-items: start;
-  }
-
   .snooze-assessment__recommendations {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
