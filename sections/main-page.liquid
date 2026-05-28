@@ -1,4 +1,5 @@
 {{ 'section-main-page.css' | asset_url | stylesheet_tag }}
+{% comment %}Support pages use inline fallback content here to avoid missing snippet dependencies during theme sync and to preserve live compatibility shims in the active Shopify theme.{% endcomment %}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -28,18 +29,26 @@
     assign is_support_page = true
   endif
 
-  capture support_intro
-    render 'support-page-intro', page: page, page_handle: page_key
-  endcapture
-
-  capture page_body_markup
-    render 'support-page-body', page: page, page_handle: page_key
-  endcapture
-
-  assign page_body_markup = page_body_markup | strip
-
   assign page_eyebrow = blank
+  assign support_intro = blank
   if is_support_page
+    case page_key
+      when 'faqs'
+        assign support_intro = 'Find quick answers about the showroom, Snooze Sessions, support, shipping basics, and sleep trial guidance.'
+      when 'shipping-policy'
+        assign support_intro = 'Review order processing, delivery timing, large-item guidance, tracking communication, and how to reach support if something needs attention.'
+      when '90-day-sleep-trial'
+        assign support_intro = 'Understand how the sleep trial works, who it applies to, and how to request help if the fit is not right.'
+      when 'privacy-policy'
+        assign support_intro = 'Review how MySnoozePod handles personal information, site activity, and related privacy practices.'
+      when 'terms-of-service'
+        assign support_intro = 'Review the terms that govern use of MySnoozePod, purchases, and related services.'
+      when 'contact-us'
+        assign support_intro = 'Reach out for booking help, product questions, order updates, shipping support, or showroom guidance.'
+      when 'about-us'
+        assign support_intro = 'Learn how MySnoozePod combines a private showroom, Snoozer guidance, and a calmer way to shop for sleep.'
+    endcase
+
     case page_key
       when 'privacy-policy', 'terms-of-service'
         assign page_eyebrow = 'Policies'
@@ -49,6 +58,14 @@
         assign page_eyebrow = 'Support'
     endcase
   endif
+
+  assign cleaned_content = page.content
+  assign cleaned_content = cleaned_content | replace: 'Last updated: [Insert Date]', ''
+  assign cleaned_content = cleaned_content | replace: 'Last Updated: [Insert Date]', ''
+  assign cleaned_content = cleaned_content | replace: 'Effective Date: [Insert Date]', ''
+  assign cleaned_content = cleaned_content | replace: '[Insert Date]', ''
+  assign cleaned_content = cleaned_content | strip
+  assign cleaned_text = cleaned_content | strip_html | strip
 -%}
 
 <section class="support-page section-{{ section.id }}-padding{% if is_support_page %} support-page--policy{% endif %}">
@@ -67,9 +84,100 @@
       {%- endif -%}
     </div>
 
-    {%- if page_body_markup != blank -%}
+    {%- if is_support_page or cleaned_text != blank -%}
       <div class="support-page__card{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-        {{ page_body_markup }}
+        {%- case page_key -%}
+          {%- when 'faqs' -%}
+            <div class="support-page-faq" aria-label="Frequently asked questions">
+              <details class="support-page-faq__item" open>
+                <summary>What is MySnoozePod?</summary>
+                <div class="support-page-faq__answer">
+                  MySnoozePod is a guided way to shop for sleep. It combines a private showroom, Snoozer guidance, and a focus on the full sleep environment instead of only mattress browsing.
+                </div>
+              </details>
+              <details class="support-page-faq__item">
+                <summary>How does the unmanned showroom work?</summary>
+                <div class="support-page-faq__answer">
+                  The showroom is designed to feel calm and self-directed. You can move through the space with a clearer plan, and guided support is available when you need it.
+                </div>
+              </details>
+              <details class="support-page-faq__item">
+                <summary>What is a Snooze Session?</summary>
+                <div class="support-page-faq__answer">
+                  A Snooze Session is a private appointment that helps you test mattresses, bases, pillows, and bedding with more direction and less pressure.
+                </div>
+              </details>
+              <details class="support-page-faq__item">
+                <summary>Do I need an appointment?</summary>
+                <div class="support-page-faq__answer">
+                  A booking is recommended so your visit can stay private, guided, and focused on what matters most to your sleep needs.
+                </div>
+              </details>
+              <details class="support-page-faq__item">
+                <summary>Can I get virtual support?</summary>
+                <div class="support-page-faq__answer">
+                  Yes. Virtual support can help with booking questions, product direction, and next steps before or after a showroom visit.
+                </div>
+              </details>
+              <details class="support-page-faq__item">
+                <summary>What products can I try?</summary>
+                <div class="support-page-faq__answer">
+                  Depending on current availability, you may be able to explore mattresses, adjustable bases, pillows, bedding, and other products that help complete your SnoozePod.
+                </div>
+              </details>
+              <details class="support-page-faq__item">
+                <summary>How does the Snooze Assessment help?</summary>
+                <div class="support-page-faq__answer">
+                  The Snooze Assessment asks a few guided questions about comfort, support, sleep habits, and partner needs so Snoozer can narrow a stronger starting direction.
+                </div>
+              </details>
+              <details class="support-page-faq__item">
+                <summary>Where can I learn about shipping and delivery?</summary>
+                <div class="support-page-faq__answer">
+                  Our Shipping Policy covers order processing, delivery timing, tracking communication, and what to do if your order arrives with an issue.
+                </div>
+              </details>
+              <details class="support-page-faq__item">
+                <summary>Where can I learn about the sleep trial or support options?</summary>
+                <div class="support-page-faq__answer">
+                  The 90 Day Sleep Trial page explains trial basics, and the Contact Us page is the best place to reach out with booking, order, or support questions.
+                </div>
+              </details>
+            </div>
+
+          {%- when 'about-us' -%}
+            <div class="support-page-richtext rte">
+              <h2>A calmer way to shop for sleep.</h2>
+              <p>
+                MySnoozePod was built to make mattress shopping feel less pressured and more focused. Instead of pushing shoppers through a traditional showroom experience, we pair a private space with guided support so each visit can start with more clarity.
+              </p>
+
+              <h3>Built around the full sleep environment</h3>
+              <p>
+                We do not think in mattress-only terms. We think in sleep environment terms: mattresses, bases, pillows, bedding, and the details that shape how you rest, recover, and wake up.
+              </p>
+
+              <h3>How Snoozer fits in</h3>
+              <p>
+                Snoozer helps narrow a starting direction before and during the showroom journey. The goal is not to overwhelm you with choices. The goal is to help you understand what to test next and why it may fit.
+              </p>
+
+              <h3>Why the showroom feels different</h3>
+              <ul>
+                <li>Private visits that reduce pressure</li>
+                <li>Guided direction without hovering sales tactics</li>
+                <li>A clearer path from questions to real testing</li>
+                <li>A focus on sleep health and comfort, not just product specs</li>
+              </ul>
+            </div>
+
+          {%- else -%}
+            {%- if cleaned_text != blank -%}
+              <div class="support-page-richtext rte">
+                {{ cleaned_content }}
+              </div>
+            {%- endif -%}
+        {%- endcase -%}
       </div>
     {%- endif -%}
   </div>
