@@ -1,3 +1,4 @@
+{% comment %}Support page intro is inlined here so support/policy templates do not depend on synced snippet assets.{% endcomment %}
 {%- liquid
   assign support_handles = 'faqs,shipping-policy,90-day-sleep-trial,privacy-policy,terms-of-service,contact-us,about-us' | split: ','
   assign page_key = page.handle | handleize

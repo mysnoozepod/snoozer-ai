@@ -1,4 +1,5 @@
 {{ 'section-main-page.css' | asset_url | stylesheet_tag }}
+{% comment %}Support pages use inline fallback content here to avoid missing snippet dependencies during theme sync.{% endcomment %}
 
 {%- style -%}
   .section-{{ section.id }}-padding {

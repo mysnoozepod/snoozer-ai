@@ -115,6 +115,7 @@
   }
 {%- endstyle -%}
 
+{% comment %}Support page body fallback is inlined here so policy/support pages cannot fail on missing snippet assets.{% endcomment %}
 {%- liquid
   assign support_handles = 'faqs,shipping-policy,90-day-sleep-trial,privacy-policy,terms-of-service,contact-us,about-us' | split: ','
   assign page_key = page.handle | handleize
