@@ -3,8 +3,21 @@
   assign chip_2 = section.settings.chip_2 | strip
   assign chip_3 = section.settings.chip_3 | strip
   assign chip_4 = section.settings.chip_4 | strip
+  assign support_handles = 'faqs,shipping-policy,90-day-sleep-trial,privacy-policy,terms-of-service,contact-us,about-us' | split: ','
+  assign page_key = page.handle | handleize
+  assign page_title_key = page.title | handleize
+  if support_handles contains page_title_key
+    assign page_key = page_title_key
+  elsif page_key == blank
+    assign page_key = page_title_key
+  endif
+  assign is_support_page = false
+  if support_handles contains page_key
+    assign is_support_page = true
+  endif
 -%}
 
+{%- unless is_support_page -%}
 {%- style -%}
   .snoozer-page-guide-{{ section.id }} {
     max-width: 1480px;
@@ -186,6 +199,7 @@
     </div>
   </div>
 </section>
+{%- endunless -%}
 
 {% schema %}
 {

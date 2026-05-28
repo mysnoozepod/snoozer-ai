@@ -249,13 +249,13 @@
     },
     "contact": {
       "form": {
-        "title": "Contact form",
+        "title": "Contact support",
         "name": "Name",
         "email": "Email",
         "phone": "Phone number",
-        "comment": "Comment",
-        "send": "Send",
-        "post_success": "Thanks for contacting us. We'll get back to you as soon as possible.",
+        "comment": "How can we help?",
+        "send": "Send message",
+        "post_success": "Thanks. We received your message and will follow up as soon as we can.",
         "error_heading": "Please adjust the following:"
       }
     },

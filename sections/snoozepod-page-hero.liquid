@@ -1,14 +1,51 @@
 {%- liquid
+  assign support_handles = 'faqs,shipping-policy,90-day-sleep-trial,privacy-policy,terms-of-service,contact-us,about-us' | split: ','
+  assign page_key = page.handle | handleize
+  assign page_title_key = page.title | handleize
+  if support_handles contains page_title_key
+    assign page_key = page_title_key
+  elsif page_key == blank
+    assign page_key = page_title_key
+  endif
+  assign is_support_page = false
+  if support_handles contains page_key
+    assign is_support_page = true
+  endif
+
   assign hero_heading = section.settings.heading_override | strip
   if hero_heading == blank
     assign hero_heading = page.title
   endif
 
   assign hero_body = section.settings.body | strip
+  capture support_intro
+    render 'support-page-intro', page: page, page_handle: page_key
+  endcapture
+  assign support_intro = support_intro | strip
+  if is_support_page and support_intro != blank
+    assign hero_body = support_intro
+  endif
+
   assign hero_image = section.settings.image
+  if is_support_page
+    assign hero_image = blank
+  endif
+
   assign hero_alt = section.settings.image_alt | strip
   if hero_alt == blank
     assign hero_alt = hero_heading
+  endif
+
+  assign hero_eyebrow = section.settings.eyebrow | strip
+  if is_support_page
+    case page_key
+      when 'privacy-policy', 'terms-of-service'
+        assign hero_eyebrow = 'Policies'
+      when 'about-us'
+        assign hero_eyebrow = 'MySnoozePod'
+      else
+        assign hero_eyebrow = 'Support'
+    endcase
   endif
 -%}
 
@@ -19,6 +56,13 @@
     padding: 32px 24px;
     border-radius: 28px;
     background: #f5f7fb;
+  }
+
+  .snoozepod-page-hero-{{ section.id }}.snoozepod-page-hero--support {
+    max-width: 1040px;
+    margin: 20px auto 12px;
+    padding: 24px 20px;
+    border-radius: 28px;
   }
 
   .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__grid {
@@ -87,6 +131,12 @@
       border-radius: 36px;
     }
 
+    .snoozepod-page-hero-{{ section.id }}.snoozepod-page-hero--support {
+      margin: 32px auto 18px;
+      padding: 36px 40px;
+      border-radius: 32px;
+    }
+
     .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__grid {
       grid-template-columns: minmax(0, 52fr) minmax(0, 48fr);
       gap: 48px;
@@ -97,9 +147,18 @@
       line-height: 1.04;
     }
 
+    .snoozepod-page-hero-{{ section.id }}.snoozepod-page-hero--support .snoozepod-page-hero__heading {
+      font-size: 48px;
+    }
+
     .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__body {
       font-size: 20px;
       line-height: 1.55;
+    }
+
+    .snoozepod-page-hero-{{ section.id }}.snoozepod-page-hero--support .snoozepod-page-hero__body {
+      font-size: 18px;
+      line-height: 1.6;
     }
 
     .snoozepod-page-hero-{{ section.id }} .snoozepod-page-hero__media {
@@ -114,11 +173,11 @@
 {%- endstyle -%}
 
 <section class="section">
-  <div class="snoozepod-page-hero-{{ section.id }}">
+  <div class="snoozepod-page-hero-{{ section.id }}{% if is_support_page %} snoozepod-page-hero--support{% endif %}">
     <div class="snoozepod-page-hero__grid{% if hero_image == blank %} snoozepod-page-hero__grid--single{% endif %}">
       <div class="snoozepod-page-hero__copy">
-        {%- if section.settings.show_eyebrow and section.settings.eyebrow != blank -%}
-          <p class="snoozepod-page-hero__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- if section.settings.show_eyebrow and hero_eyebrow != blank -%}
+          <p class="snoozepod-page-hero__eyebrow">{{ hero_eyebrow | escape }}</p>
         {%- endif -%}
         <h1 class="snoozepod-page-hero__heading">{{ hero_heading | escape }}</h1>
         {%- if hero_body != blank -%}

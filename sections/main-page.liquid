@@ -14,14 +14,66 @@
   }
 {%- endstyle -%}
 
-<div class="page-width page-width--narrow section-{{ section.id }}-padding">
-  <h1 class="main-page-title page-title h0{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
-    {{ page.title | escape }}
-  </h1>
-  <div class="rte{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-    {{ page.content }}
+{%- liquid
+  assign support_handles = 'faqs,shipping-policy,90-day-sleep-trial,privacy-policy,terms-of-service,contact-us,about-us' | split: ','
+  assign page_key = page.handle | handleize
+  assign page_title_key = page.title | handleize
+  if support_handles contains page_title_key
+    assign page_key = page_title_key
+  elsif page_key == blank
+    assign page_key = page_title_key
+  endif
+  assign is_support_page = false
+  if support_handles contains page_key
+    assign is_support_page = true
+  endif
+
+  capture support_intro
+    render 'support-page-intro', page: page, page_handle: page_key
+  endcapture
+
+  capture page_body_markup
+    render 'support-page-body', page: page, page_handle: page_key
+  endcapture
+
+  assign page_body_markup = page_body_markup | strip
+
+  assign page_eyebrow = blank
+  if is_support_page
+    case page_key
+      when 'privacy-policy', 'terms-of-service'
+        assign page_eyebrow = 'Policies'
+      when 'about-us'
+        assign page_eyebrow = 'MySnoozePod'
+      else
+        assign page_eyebrow = 'Support'
+    endcase
+  endif
+-%}
+
+<section class="support-page section-{{ section.id }}-padding{% if is_support_page %} support-page--policy{% endif %}">
+  <div class="support-page__shell page-width">
+    <div class="support-page__hero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+      {%- if page_eyebrow != blank -%}
+        <p class="support-page__eyebrow">{{ page_eyebrow | escape }}</p>
+      {%- endif -%}
+      <h1 class="main-page-title page-title support-page__title h0">
+        {{ page.title | escape }}
+      </h1>
+      {%- if support_intro != blank -%}
+        <div class="support-page__intro rte">
+          <p>{{ support_intro | strip }}</p>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- if page_body_markup != blank -%}
+      <div class="support-page__card{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        {{ page_body_markup }}
+      </div>
+    {%- endif -%}
   </div>
-</div>
+</section>
 
 {% schema %}
 {
