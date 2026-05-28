@@ -62,6 +62,15 @@
 
 <footer class="footer color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
   {%- liquid
+    assign support_handles = 'faqs,shipping-policy,90-day-sleep-trial,privacy-policy,terms-of-service,contact-us,about-us' | split: ','
+    assign page_key = page.handle | handleize
+    assign page_title_key = page.title | handleize
+    if support_handles contains page_title_key
+      assign page_key = page_title_key
+    elsif page_key == blank
+      assign page_key = page_title_key
+    endif
+
     assign has_social_icons = true
     if settings.social_facebook_link == blank and settings.social_instagram_link == blank and settings.social_youtube_link == blank and settings.social_tiktok_link == blank and settings.social_twitter_link == blank and settings.social_pinterest_link == blank and settings.social_snapchat_link == blank and settings.social_tumblr_link == blank and settings.social_vimeo_link == blank
       assign has_social_icons = false
@@ -76,12 +85,17 @@
       assign show_checkout_trust = true
     endif
 
-    if section.blocks.size == 1 and section.blocks[0].type == 'brand_information' and brand_empty and has_social_icons == false and section.settings.newsletter_enable == false and section.settings.enable_follow_on_shop == false
+    assign show_page_newsletter = section.settings.newsletter_enable
+    if support_handles contains page_key
+      assign show_page_newsletter = false
+    endif
+
+    if section.blocks.size == 1 and section.blocks[0].type == 'brand_information' and brand_empty and has_social_icons == false and show_page_newsletter == false and section.settings.enable_follow_on_shop == false
       assign only_empty_brand = true
     endif
   -%}
   {%- if section.blocks.size > 0
-    or section.settings.newsletter_enable
+    or show_page_newsletter
     or section.settings.show_social
     and has_social_icons == true
     or section.settings.enable_follow_on_shop
@@ -203,7 +217,7 @@
             data-cascade
           {% endif %}
         >
-          {%- if section.settings.newsletter_enable -%}
+          {%- if show_page_newsletter -%}
             <div class="footer-block__newsletter">
               {%- if section.settings.newsletter_heading != blank -%}
                 <h2 class="footer-block__heading inline-richtext">{{ section.settings.newsletter_heading }}</h2>

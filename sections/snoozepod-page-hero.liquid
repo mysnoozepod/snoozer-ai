@@ -18,10 +18,23 @@
   endif
 
   assign hero_body = section.settings.body | strip
-  capture support_intro
-    render 'support-page-intro', page: page, page_handle: page_key
-  endcapture
-  assign support_intro = support_intro | strip
+  assign support_intro = blank
+  case page_key
+    when 'faqs'
+      assign support_intro = 'Find quick answers about the showroom, Snooze Sessions, support, shipping basics, and sleep trial guidance.'
+    when 'shipping-policy'
+      assign support_intro = 'Review order processing, delivery timing, large-item guidance, tracking communication, and how to reach support if something needs attention.'
+    when '90-day-sleep-trial'
+      assign support_intro = 'Understand how the sleep trial works, who it applies to, and how to request help if the fit is not right.'
+    when 'privacy-policy'
+      assign support_intro = 'Review how MySnoozePod handles personal information, site activity, and related privacy practices.'
+    when 'terms-of-service'
+      assign support_intro = 'Review the terms that govern use of MySnoozePod, purchases, and related services.'
+    when 'contact-us'
+      assign support_intro = 'Reach out for booking help, product questions, order updates, shipping support, or showroom guidance.'
+    when 'about-us'
+      assign support_intro = 'Learn how MySnoozePod combines a private showroom, Snoozer guidance, and a calmer way to shop for sleep.'
+  endcase
   if is_support_page and support_intro != blank
     assign hero_body = support_intro
   endif
