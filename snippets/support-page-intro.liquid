@@ -1,0 +1,33 @@
+{%- liquid
+  assign support_handles = 'faqs,shipping-policy,90-day-sleep-trial,privacy-policy,terms-of-service,contact-us,about-us' | split: ','
+  assign page_key = page_handle | default: page.handle | handleize
+  assign page_title_key = page.title | handleize
+  if support_handles contains page_title_key
+    assign page_key = page_title_key
+  elsif page_key == blank
+    assign page_key = page_title_key
+  endif
+
+  assign support_intro = blank
+  case page_key
+    when 'faqs'
+      assign support_intro = 'Find quick answers about the showroom, Snooze Sessions, support, shipping basics, and sleep trial guidance.'
+    when 'shipping-policy'
+      assign support_intro = 'Review order processing, delivery timing, large-item guidance, tracking communication, and how to reach support if something needs attention.'
+    when '90-day-sleep-trial'
+      assign support_intro = 'Understand how the sleep trial works, who it applies to, and how to request help if the fit is not right.'
+    when 'privacy-policy'
+      assign support_intro = 'Review how MySnoozePod handles personal information, site activity, and related privacy practices.'
+    when 'terms-of-service'
+      assign support_intro = 'Review the terms that govern use of MySnoozePod, purchases, and related services.'
+    when 'contact-us'
+      assign support_intro = 'Reach out for booking help, product questions, order updates, shipping support, or showroom guidance.'
+    when 'about-us'
+      assign support_intro = 'Learn how MySnoozePod combines a private showroom, Snoozer guidance, and a calmer way to shop for sleep.'
+  endcase
+
+  if support_intro == blank
+    assign support_intro = page.content | strip_html | strip | truncatewords: 28, ''
+  endif
+-%}
+{{- support_intro -}}

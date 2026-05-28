@@ -1,0 +1,15 @@
+{%- liquid
+  assign cleaned_content = page.content
+    | replace: 'Last updated: [Insert Date]', ''
+    | replace: 'Last Updated: [Insert Date]', ''
+    | replace: 'Effective Date: [Insert Date]', ''
+    | replace: '[Insert Date]', ''
+    | strip
+  assign cleaned_text = cleaned_content | strip_html | strip
+-%}
+
+{%- if cleaned_text != blank -%}
+  <div class="support-page-richtext rte">
+    {{ cleaned_content }}
+  </div>
+{%- endif -%}
