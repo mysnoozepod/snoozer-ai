@@ -1,15 +1,10 @@
-{%- liquid
-  assign cleaned_content = page.content
-    | replace: 'Last updated: [Insert Date]', ''
-    | replace: 'Last Updated: [Insert Date]', ''
-    | replace: 'Effective Date: [Insert Date]', ''
-    | replace: '[Insert Date]', ''
-    | strip
-  assign cleaned_text = cleaned_content | strip_html | strip
--%}
+{% comment %}
+  Compatibility fallback for older support/page sections.
+  Prevents stale support page templates from crashing if they still render this snippet.
+{% endcomment %}
 
-{%- if cleaned_text != blank -%}
+{% if page and page.content != blank %}
   <div class="support-page-richtext rte">
-    {{ cleaned_content }}
+    {{ page.content | replace: '[Insert Date]', '' }}
   </div>
-{%- endif -%}
+{% endif %}
