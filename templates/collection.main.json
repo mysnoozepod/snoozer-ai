@@ -1,27 +1,22 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "hero": {
       "type": "snoozepod-collection-hero",
       "settings": {
         "show_eyebrow": true,
-        "eyebrow": "SnoozePod Collection",
+        "eyebrow": "SNOOZEPOD COLLECTION",
         "heading_override": "",
         "body": "Explore sleep products built to support your full sleep environment.",
         "image_alt": ""
-      }
-    },
-    "guidance": {
-      "type": "snoozer-collection-guidance",
-      "settings": {
-        "heading": "Need help choosing?",
-        "body": "Ask Snoozer for help comparing comfort, support, materials, and fit.",
-        "chip_1": "I sleep hot",
-        "chip_2": "I need better support",
-        "chip_3": "Help me compare",
-        "chip_4": "Show me the best fit",
-        "cta_label": "Ask Snoozer",
-        "show_chips": true,
-        "show_avatar": true
       }
     },
     "product-grid": {
@@ -40,8 +35,8 @@
         "filter_type": "horizontal",
         "enable_sorting": true,
         "columns_mobile": "2",
-        "padding_top": 8,
-        "padding_bottom": 56
+        "padding_top": 0,
+        "padding_bottom": 40
       }
     },
     "education": {
@@ -75,28 +70,15 @@
         "tile_3"
       ],
       "settings": {
-        "eyebrow": "Sleep Environment Guide",
-        "heading": "How This Fits Your Sleep Environment",
-        "body": "Your SnoozePod is built from the pieces that shape how you rest: mattress, base, pillows, sheets, protection, and finishing details."
-      }
-    },
-    "final-cta": {
-      "type": "snoozepod-collection-cta",
-      "settings": {
-        "heading": "Build Around Better Sleep",
-        "body": "Explore this collection, then use Snoozer to connect the right pieces around your sleep needs.",
-        "primary_label": "Explore Products",
-        "primary_link": "#product-grid",
-        "secondary_label": "Ask Snoozer",
-        "show_secondary": true
+        "eyebrow": "",
+        "heading": "How to choose",
+        "body": ""
       }
     }
   },
   "order": [
     "hero",
-    "guidance",
     "product-grid",
-    "education",
-    "final-cta"
+    "education"
   ]
 }

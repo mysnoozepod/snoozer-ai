@@ -39,8 +39,8 @@
 {%- if template.suffix == 'snoozepod' or template.suffix == 'main' -%}
   {%- style -%}
     .snoozepod-collection-grid.section-{{ section.id }}-padding {
-      padding-top: 24px;
-      padding-bottom: 48px;
+      padding-top: 4px;
+      padding-bottom: 24px;
     }
 
     .snoozepod-collection-grid .page-width,
@@ -55,56 +55,74 @@
     }
 
     .snoozepod-collection-grid .product-grid {
-      gap: 18px;
+      gap: 12px;
     }
 
     .snoozepod-collection-grid .product-card-wrapper .card {
       height: 100%;
       overflow: hidden;
       border: 1px solid rgba(10, 25, 55, 0.10);
-      border-radius: 24px;
+      border-radius: 20px;
       background: #ffffff;
-      box-shadow: 0 12px 28px rgba(7, 25, 66, 0.06);
+      box-shadow: 0 10px 22px rgba(7, 25, 66, 0.05);
     }
 
     .snoozepod-collection-grid .product-card-wrapper .card__inner {
-      border-radius: 24px 24px 0 0;
+      border-radius: 20px 20px 0 0;
       background: #f7f8fb;
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .card__inner.ratio,
+    .snoozepod-collection-grid .product-card-wrapper .card.card--media {
+      --ratio-percent: 88% !important;
     }
 
     .snoozepod-collection-grid .product-card-wrapper .card__media,
     .snoozepod-collection-grid .product-card-wrapper .card--standard .card__media,
     .snoozepod-collection-grid .product-card-wrapper .card__media .media {
-      border-radius: 20px 20px 0 0;
+      border-radius: 18px 18px 0 0;
       background: linear-gradient(180deg, #faf8f3 0%, #f5f7fb 100%);
       overflow: hidden;
     }
 
     .snoozepod-collection-grid .product-card-wrapper .card__content {
-      padding: 18px;
-      gap: 14px;
-    }
-
-    .snoozepod-collection-grid .product-card-wrapper .card__information {
+      padding: 12px;
       gap: 10px;
     }
 
+    .snoozepod-collection-grid .product-card-wrapper .card__information {
+      gap: 6px;
+      padding: 0.3rem 0.2rem 0;
+    }
+
     .snoozepod-collection-grid .product-card-wrapper .card__heading {
-      font-size: 20px;
-      line-height: 1.18;
+      font-size: 17px;
+      line-height: 1.22;
       letter-spacing: -0.02em;
     }
 
     .snoozepod-collection-grid .product-card-wrapper .card-information,
     .snoozepod-collection-grid .product-card-wrapper .price,
     .snoozepod-collection-grid .product-card-wrapper .caption-with-letter-spacing {
-      font-size: 16px;
-      line-height: 1.4;
+      font-size: 14px;
+      line-height: 1.28;
     }
 
     .snoozepod-collection-grid .product-card-wrapper .quick-add__submit {
-      font-size: 15px;
+      min-height: 42px;
+      padding: 0.8rem 1.2rem;
+      border-radius: 999px;
+      font-size: 13px;
       line-height: 1.2;
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .price__regular,
+    .snoozepod-collection-grid .product-card-wrapper .price-item {
+      font-size: 14px;
+    }
+
+    .snoozepod-collection-grid .product-card-wrapper .button--secondary:after {
+      box-shadow: none;
     }
 
     @media screen and (min-width: 990px) {
@@ -122,25 +140,36 @@
       }
 
       .snoozepod-collection-grid .product-grid {
-        gap: 28px;
+        gap: 18px;
       }
 
       .snoozepod-collection-grid .product-card-wrapper .card__content {
-        padding: 24px;
+        padding: 14px 14px 16px;
       }
 
       .snoozepod-collection-grid .product-card-wrapper .card__heading {
-        font-size: 22px;
+        font-size: 18px;
       }
 
       .snoozepod-collection-grid .product-card-wrapper .card-information,
       .snoozepod-collection-grid .product-card-wrapper .price,
       .snoozepod-collection-grid .product-card-wrapper .caption-with-letter-spacing {
-        font-size: 17px;
+        font-size: 14px;
       }
 
       .snoozepod-collection-grid .product-card-wrapper .quick-add__submit {
-        font-size: 16px;
+        min-height: 44px;
+        font-size: 13px;
+      }
+
+      .snoozepod-collection-grid .product-card-wrapper .card__inner.ratio,
+      .snoozepod-collection-grid .product-card-wrapper .card.card--media {
+        --ratio-percent: 82% !important;
+      }
+
+      .snoozepod-collection-grid .product-card-wrapper .price__regular,
+      .snoozepod-collection-grid .product-card-wrapper .price-item {
+        font-size: 15px;
       }
     }
   {%- endstyle -%}
