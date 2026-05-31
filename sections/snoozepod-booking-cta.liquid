@@ -1,0 +1,139 @@
+{%- style -%}
+  .snoozepod-booking-cta-{{ section.id }} {
+    max-width: 1480px;
+    margin: 20px 16px 48px;
+  }
+
+  .snoozepod-booking-cta-{{ section.id }} .snoozepod-booking-cta__card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 32px 24px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #071942 0%, #2c4278 100%);
+    color: #ffffff;
+  }
+
+  .snoozepod-booking-cta-{{ section.id }} .snoozepod-booking-cta__heading {
+    margin: 0;
+    color: #ffffff;
+    font-size: 30px;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-booking-cta-{{ section.id }} .snoozepod-booking-cta__body {
+    margin: 14px 0 0;
+    max-width: 640px;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-booking-cta-{{ section.id }} .snoozepod-booking-cta__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 28px;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #071942;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozepod-booking-cta-{{ section.id }} {
+      margin-left: 24px;
+      margin-right: 24px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-booking-cta-{{ section.id }} {
+      margin: 40px auto 56px;
+      padding: 0 32px;
+    }
+
+    .snoozepod-booking-cta-{{ section.id }} .snoozepod-booking-cta__card {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 32px;
+      padding: 48px 64px;
+      border-radius: 36px;
+    }
+
+    .snoozepod-booking-cta-{{ section.id }} .snoozepod-booking-cta__heading {
+      font-size: 40px;
+    }
+
+    .snoozepod-booking-cta-{{ section.id }} .snoozepod-booking-cta__body {
+      font-size: 18px;
+    }
+
+    .snoozepod-booking-cta-{{ section.id }} .snoozepod-booking-cta__button {
+      width: auto;
+      min-width: 240px;
+      min-height: 56px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozepod-booking-cta-{{ section.id }}">
+    <div class="snoozepod-booking-cta__card">
+      <div class="snoozepod-booking-cta__copy">
+        <h2 class="snoozepod-booking-cta__heading">{{ section.settings.heading | escape }}</h2>
+        <p class="snoozepod-booking-cta__body">{{ section.settings.body | escape }}</p>
+      </div>
+
+      <a class="snoozepod-booking-cta__button" href="{{ section.settings.primary_link }}">
+        {{ section.settings.primary_label | escape }}
+      </a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Booking CTA",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Want to test this setup in person?"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Book a private Snooze Session and feel how this mattress fits with the rest of your sleep environment."
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Primary CTA label",
+      "default": "Book a Snooze Session"
+    },
+    {
+      "type": "url",
+      "id": "primary_link",
+      "label": "Primary CTA link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Booking CTA"
+    }
+  ]
+}
+{% endschema %}

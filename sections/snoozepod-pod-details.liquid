@@ -1,0 +1,245 @@
+{%- liquid
+  assign feel_heading = 'What to feel first'
+  assign feel_body = 'Start by noticing overall pressure relief, alignment, and how easy it is to settle in without chasing the right position.'
+  assign motion_heading = 'Partner and motion direction'
+  assign motion_body = 'Use the showroom to see whether this mattress should stay simple or move toward a more adjustable shared-sleep setup.'
+  assign base_heading = 'Base compatibility'
+  assign base_body = 'This mattress is designed to work best when paired to a matching foundation that supports its height, feel, and motion story.'
+  assign fit_heading = 'How to use this in the showroom'
+  assign fit_body = 'Use this mattress as a starting direction, then compare the right base, pillow, and support path before deciding.'
+
+  case product.handle
+    when '12-dual-comfort-hybrid'
+      assign feel_body = 'Start by noticing how each side can land differently while the hybrid support still feels stable through the center of the bed.'
+      assign motion_body = 'This is the strongest shared-sleep direction when you need split comfort or split motion to compare side by side.'
+      assign base_body = 'An adjustable base is the clearest fit here, especially when you want to test Half Split or Full Split motion.'
+      assign fit_body = 'Begin with split comfort, then compare motion and positioning before you decide how the full pod should be built.'
+    when '14-hybrid'
+      assign feel_body = 'Start by noticing lift, alignment, and whether the hybrid build keeps you supported without feeling overly hard.'
+      assign motion_body = 'This is a good standard-motion direction when you want shared support without moving fully into split-comfort territory.'
+      assign base_body = 'An adjustable base is the cleanest pairing when you want to test lift, posture changes, and recovery positioning.'
+      assign fit_body = 'Start with support and airflow, then compare whether adjustable positioning helps the mattress feel even more dialed in.'
+    when '12-all-foam-mattress'
+      assign feel_body = 'Start by noticing contour, pressure relief, and whether your shoulders and hips settle in without extra force.'
+      assign motion_body = 'This is often the calmer motion-transfer path when you want less surface movement between sleep partners.'
+      assign base_body = 'This mattress pairs cleanly with storage or adjustable foundations depending on whether you want simpler support or more positioning.'
+      assign fit_body = 'Start with pressure relief first, then decide whether the rest of the pod should stay simple or move toward more adjustment.'
+    when '10-all-foam-mattress'
+      assign feel_body = 'Start by noticing how the lower-profile foam direction feels under your shoulders, hips, and lower back without extra height.'
+      assign motion_body = 'This is the simpler no-motion path when you want a cleaner foundation and a more straightforward mattress starting point.'
+      assign base_body = 'A platform or storage foundation is usually the cleanest pairing when you want the pod to stay grounded and uncomplicated.'
+      assign fit_body = 'Use this as the simplest baseline, then decide whether you want to add height, adjustment, or more contour through the rest of the pod.'
+  endcase
+-%}
+
+{{ 'component-accordion.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .snoozepod-pod-details-{{ section.id }} {
+    max-width: 1480px;
+    margin: 20px 16px;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__card {
+    padding: 24px;
+    border-radius: 24px;
+    border: 1px solid rgba(7, 25, 66, 0.10);
+    background: #ffffff;
+    box-shadow: 0 20px 50px rgba(7, 25, 66, 0.05);
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__heading {
+    margin: 0;
+    color: #071942;
+    font-size: 28px;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__body {
+    margin: 12px 0 0;
+    max-width: 760px;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__stack {
+    margin-top: 24px;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__item {
+    border-top: 1px solid rgba(7, 25, 66, 0.08);
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__item:first-child {
+    border-top: 0;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__item-title {
+    margin: 0;
+    color: #071942;
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__caret {
+    flex: 0 0 auto;
+    color: rgba(7, 25, 66, 0.62);
+    transition: transform 180ms ease;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} details[open] .snoozepod-pod-details__caret {
+    transform: rotate(180deg);
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__content {
+    padding: 0 0 18px;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__content > *:first-child {
+    margin-top: 0;
+  }
+
+  .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__content > *:last-child {
+    margin-bottom: 0;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozepod-pod-details-{{ section.id }} {
+      margin-left: 24px;
+      margin-right: 24px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-pod-details-{{ section.id }} {
+      margin: 32px auto;
+      padding: 0 32px;
+    }
+
+    .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__card {
+      padding: 32px;
+      border-radius: 32px;
+    }
+
+    .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__heading {
+      font-size: 34px;
+    }
+
+    .snoozepod-pod-details-{{ section.id }} .snoozepod-pod-details__body {
+      font-size: 17px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozepod-pod-details-{{ section.id }}">
+    <div class="snoozepod-pod-details__card">
+      <h2 class="snoozepod-pod-details__heading">{{ section.settings.heading | escape }}</h2>
+      {%- if section.settings.body != blank -%}
+        <p class="snoozepod-pod-details__body">{{ section.settings.body | escape }}</p>
+      {%- endif -%}
+
+      <div class="snoozepod-pod-details__stack">
+        <details class="snoozepod-pod-details__item" open>
+          <summary>
+            <h3 class="snoozepod-pod-details__item-title">{{ feel_heading }}</h3>
+            <span class="snoozepod-pod-details__caret" aria-hidden="true">
+              {{ 'icon-caret.svg' | inline_asset_content }}
+            </span>
+          </summary>
+          <div class="snoozepod-pod-details__content">
+            <p>{{ feel_body }}</p>
+          </div>
+        </details>
+
+        <details class="snoozepod-pod-details__item">
+          <summary>
+            <h3 class="snoozepod-pod-details__item-title">{{ motion_heading }}</h3>
+            <span class="snoozepod-pod-details__caret" aria-hidden="true">
+              {{ 'icon-caret.svg' | inline_asset_content }}
+            </span>
+          </summary>
+          <div class="snoozepod-pod-details__content">
+            <p>{{ motion_body }}</p>
+          </div>
+        </details>
+
+        <details class="snoozepod-pod-details__item">
+          <summary>
+            <h3 class="snoozepod-pod-details__item-title">{{ base_heading }}</h3>
+            <span class="snoozepod-pod-details__caret" aria-hidden="true">
+              {{ 'icon-caret.svg' | inline_asset_content }}
+            </span>
+          </summary>
+          <div class="snoozepod-pod-details__content">
+            <p>{{ base_body }}</p>
+          </div>
+        </details>
+
+        <details class="snoozepod-pod-details__item">
+          <summary>
+            <h3 class="snoozepod-pod-details__item-title">{{ fit_heading }}</h3>
+            <span class="snoozepod-pod-details__caret" aria-hidden="true">
+              {{ 'icon-caret.svg' | inline_asset_content }}
+            </span>
+          </summary>
+          <div class="snoozepod-pod-details__content">
+            <p>{{ fit_body }}</p>
+            {%- if product.description != blank -%}
+              <div class="rte">
+                {{ product.description }}
+              </div>
+            {%- endif -%}
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Pod details",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Product Details"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Use the same showroom logic to understand how this mattress fits motion, support, and the rest of your sleep setup."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pod details"
+    }
+  ]
+}
+{% endschema %}

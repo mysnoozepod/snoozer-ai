@@ -1,0 +1,216 @@
+{%- liquid
+  assign base_title = 'Explore matching bases'
+  assign base_text = 'Start with the base direction that best supports how you want this mattress to feel in the showroom.'
+  assign base_link = '/collections/bases'
+  assign base_link_label = 'View bases'
+  assign protection_link = '/products/dri-tec-mattress-protector'
+
+  case product.handle
+    when '12-dual-comfort-hybrid'
+      assign base_title = 'Premium Motion Adjustable Base'
+      assign base_text = 'This mattress pairs best with adjustable positioning and split-motion testing when shared sleep is part of the story.'
+      assign base_link = '/products/premium-motion-adjustable-base'
+      assign base_link_label = 'View adjustable base'
+      assign protection_link = '/products/ver-tex-mattress-protector'
+    when '14-hybrid'
+      assign base_title = 'Premium Motion Adjustable Base'
+      assign base_text = 'Use adjustable positioning if you want to test lift, alignment, and recovery with the stronger hybrid support direction.'
+      assign base_link = '/products/premium-motion-adjustable-base'
+      assign base_link_label = 'View adjustable base'
+      assign protection_link = '/products/ver-tex-mattress-protector'
+    when '12-all-foam-mattress'
+      assign base_title = 'Storage Base'
+      assign base_text = 'This pod direction lines up cleanly with a storage base when you want pressure relief plus a more grounded foundation.'
+      assign base_link = '/products/storage-base'
+      assign base_link_label = 'View storage base'
+    when '10-all-foam-mattress'
+      assign base_title = 'Platform Base'
+      assign base_text = 'Keep this setup simple with a platform base that supports the lower-profile mattress direction shown in the showroom flow.'
+      assign base_link = '/products/platform-base'
+      assign base_link_label = 'View platform base'
+  endcase
+-%}
+
+{%- style -%}
+  .snoozepod-pod-pairing-{{ section.id }} {
+    max-width: 1480px;
+    margin: 20px 16px;
+  }
+
+  .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__card {
+    padding: 24px;
+    border-radius: 24px;
+    border: 1px solid rgba(7, 25, 66, 0.10);
+    background: #ffffff;
+    box-shadow: 0 20px 50px rgba(7, 25, 66, 0.05);
+  }
+
+  .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__heading {
+    margin: 0;
+    color: #071942;
+    font-size: 28px;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__body {
+    margin: 12px 0 0;
+    max-width: 760px;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__item {
+    height: 100%;
+    padding: 20px;
+    border-radius: 20px;
+    background: #f5f7fb;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+  }
+
+  .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__item-title {
+    margin: 0;
+    color: #071942;
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__item-text {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__item-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    color: #071942;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozepod-pod-pairing-{{ section.id }} {
+      margin-left: 24px;
+      margin-right: 24px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-pod-pairing-{{ section.id }} {
+      margin: 32px auto;
+      padding: 0 32px;
+    }
+
+    .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__card {
+      padding: 32px;
+      border-radius: 32px;
+    }
+
+    .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__heading {
+      font-size: 34px;
+    }
+
+    .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__body {
+      font-size: 17px;
+    }
+
+    .snoozepod-pod-pairing-{{ section.id }} .snoozepod-pod-pairing__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozepod-pod-pairing-{{ section.id }}">
+    <div class="snoozepod-pod-pairing__card">
+      <h2 class="snoozepod-pod-pairing__heading">{{ section.settings.heading | escape }}</h2>
+      <p class="snoozepod-pod-pairing__body">{{ section.settings.body | escape }}</p>
+
+      <div class="snoozepod-pod-pairing__grid">
+        <div class="snoozepod-pod-pairing__item">
+          <h3 class="snoozepod-pod-pairing__item-title">{{ base_title }}</h3>
+          <p class="snoozepod-pod-pairing__item-text">{{ base_text }}</p>
+          <a class="snoozepod-pod-pairing__item-link" href="{{ base_link }}">
+            {{ base_link_label }}
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+
+        <div class="snoozepod-pod-pairing__item">
+          <h3 class="snoozepod-pod-pairing__item-title">Layer in pillows</h3>
+          <p class="snoozepod-pod-pairing__item-text">
+            Use pillows to fine-tune alignment once the mattress feel is in the right range.
+          </p>
+          <a class="snoozepod-pod-pairing__item-link" href="/collections/pillows">
+            Explore pillows
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+
+        <div class="snoozepod-pod-pairing__item">
+          <h3 class="snoozepod-pod-pairing__item-title">Protect the surface</h3>
+          <p class="snoozepod-pod-pairing__item-text">
+            Add a protector that keeps the surface fresh without turning this into a completely different feel.
+          </p>
+          <a class="snoozepod-pod-pairing__item-link" href="{{ protection_link }}">
+            View protection
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+
+        <div class="snoozepod-pod-pairing__item">
+          <h3 class="snoozepod-pod-pairing__item-title">Finish with bedding</h3>
+          <p class="snoozepod-pod-pairing__item-text">
+            Complete the pod with sheets and layers that match the temperature and recovery story you want to build.
+          </p>
+          <a class="snoozepod-pod-pairing__item-link" href="/collections/bedding">
+            Explore bedding
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Pod pairing",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Build your SnoozePod around this mattress"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Start with the mattress, then layer in the base, pillow, protection, and bedding that support how you actually rest."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pod pairing"
+    }
+  ]
+}
+{% endschema %}

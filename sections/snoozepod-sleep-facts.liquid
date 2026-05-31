@@ -1,0 +1,225 @@
+{%- liquid
+  assign comfort_feel = 'Balanced comfort direction'
+  assign support_level = 'Best confirmed in showroom'
+  assign cooling = 'Best confirmed in showroom'
+  assign pressure_relief = 'Balanced pressure relief'
+  assign motion_control = 'Varies by base choice'
+  assign partner_fit = 'Works best when paired to your sleep style'
+  assign base_compatible = 'Compatible with most matching bases'
+  assign best_positions = 'Back, side, and combo sleepers'
+  assign showroom_priority = 'Start with overall feel and support'
+
+  case product.handle
+    when '12-dual-comfort-hybrid'
+      assign comfort_feel = 'Dual comfort options per side'
+      assign support_level = 'Adaptive hybrid support'
+      assign cooling = 'Balanced airflow through the build'
+      assign pressure_relief = 'Responsive comfort with shared support'
+      assign motion_control = 'Strongest when paired with split motion'
+      assign partner_fit = 'Best fit for shared sleep and split preferences'
+      assign base_compatible = 'Adjustable-ready, especially for split motion'
+      assign best_positions = 'Back, side, combo, and partner sleep'
+      assign showroom_priority = 'Test the split-comfort path first'
+    when '14-hybrid'
+      assign comfort_feel = 'Supportive hybrid feel'
+      assign support_level = 'Stronger alignment direction'
+      assign cooling = 'More airflow from the hybrid build'
+      assign pressure_relief = 'Balanced lift with cushioning'
+      assign motion_control = 'Stable with standard motion setups'
+      assign partner_fit = 'Good shared-surface support'
+      assign base_compatible = 'Adjustable-ready and easy to position'
+      assign best_positions = 'Back, stomach, and combo sleepers'
+      assign showroom_priority = 'Start with support and lift'
+    when '12-all-foam-mattress'
+      assign comfort_feel = 'Balanced foam contouring'
+      assign support_level = 'Gentler pressure-relief support'
+      assign cooling = 'Best confirmed in showroom'
+      assign pressure_relief = 'Higher pressure-relief priority'
+      assign motion_control = 'Calmer surface feel for motion transfer'
+      assign partner_fit = 'Good option when motion matters'
+      assign base_compatible = 'Pairs cleanly with storage or adjustable bases'
+      assign best_positions = 'Side and combo sleepers'
+      assign showroom_priority = 'Start with pressure relief and contour'
+    when '10-all-foam-mattress'
+      assign comfort_feel = 'Simpler foam profile'
+      assign support_level = 'Lower-profile support direction'
+      assign cooling = 'Best confirmed in showroom'
+      assign pressure_relief = 'Balanced relief without extra height'
+      assign motion_control = 'Good for simpler no-motion setups'
+      assign partner_fit = 'Straightforward shared-surface direction'
+      assign base_compatible = 'Pairs cleanly with platform or storage bases'
+      assign best_positions = 'Back and combo sleepers'
+      assign showroom_priority = 'Start with simple comfort and height'
+  endcase
+-%}
+
+{%- style -%}
+  .snoozepod-sleep-facts-{{ section.id }} {
+    max-width: 1480px;
+    margin: 20px 16px;
+  }
+
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__card {
+    padding: 24px;
+    border-radius: 24px;
+    border: 1px solid rgba(7, 25, 66, 0.10);
+    background: #ffffff;
+    box-shadow: 0 20px 50px rgba(7, 25, 66, 0.05);
+  }
+
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__heading {
+    margin: 0;
+    color: #071942;
+    font-size: 28px;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__body {
+    margin: 12px 0 0;
+    max-width: 760px;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__item {
+    padding: 16px;
+    border-radius: 18px;
+    background: #f5f7fb;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+  }
+
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__label {
+    margin: 0;
+    color: rgba(7, 25, 66, 0.56);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__value {
+    margin: 10px 0 0;
+    color: #071942;
+    font-size: 15px;
+    line-height: 1.45;
+    font-weight: 600;
+  }
+
+  @media screen and (min-width: 750px) {
+    .snoozepod-sleep-facts-{{ section.id }} {
+      margin-left: 24px;
+      margin-right: 24px;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .snoozepod-sleep-facts-{{ section.id }} {
+      margin: 32px auto;
+      padding: 0 32px;
+    }
+
+    .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__card {
+      padding: 32px;
+      border-radius: 32px;
+    }
+
+    .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__heading {
+      font-size: 34px;
+    }
+
+    .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__body {
+      font-size: 17px;
+    }
+
+    .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+  }
+{%- endstyle -%}
+
+<section class="section">
+  <div class="snoozepod-sleep-facts-{{ section.id }}">
+    <div class="snoozepod-sleep-facts__card">
+      <h2 class="snoozepod-sleep-facts__heading">{{ section.settings.heading | escape }}</h2>
+      {%- if section.settings.body != blank -%}
+        <p class="snoozepod-sleep-facts__body">{{ section.settings.body | escape }}</p>
+      {%- endif -%}
+
+      <div class="snoozepod-sleep-facts__grid">
+        <div class="snoozepod-sleep-facts__item">
+          <p class="snoozepod-sleep-facts__label">Comfort Feel</p>
+          <p class="snoozepod-sleep-facts__value">{{ comfort_feel }}</p>
+        </div>
+        <div class="snoozepod-sleep-facts__item">
+          <p class="snoozepod-sleep-facts__label">Support Level</p>
+          <p class="snoozepod-sleep-facts__value">{{ support_level }}</p>
+        </div>
+        <div class="snoozepod-sleep-facts__item">
+          <p class="snoozepod-sleep-facts__label">Cooling</p>
+          <p class="snoozepod-sleep-facts__value">{{ cooling }}</p>
+        </div>
+        <div class="snoozepod-sleep-facts__item">
+          <p class="snoozepod-sleep-facts__label">Pressure Relief</p>
+          <p class="snoozepod-sleep-facts__value">{{ pressure_relief }}</p>
+        </div>
+        <div class="snoozepod-sleep-facts__item">
+          <p class="snoozepod-sleep-facts__label">Motion Control</p>
+          <p class="snoozepod-sleep-facts__value">{{ motion_control }}</p>
+        </div>
+        <div class="snoozepod-sleep-facts__item">
+          <p class="snoozepod-sleep-facts__label">Partner Fit</p>
+          <p class="snoozepod-sleep-facts__value">{{ partner_fit }}</p>
+        </div>
+        <div class="snoozepod-sleep-facts__item">
+          <p class="snoozepod-sleep-facts__label">Base Compatible</p>
+          <p class="snoozepod-sleep-facts__value">{{ base_compatible }}</p>
+        </div>
+        <div class="snoozepod-sleep-facts__item">
+          <p class="snoozepod-sleep-facts__label">Best Positions</p>
+          <p class="snoozepod-sleep-facts__value">{{ best_positions }}</p>
+        </div>
+        <div class="snoozepod-sleep-facts__item">
+          <p class="snoozepod-sleep-facts__label">Showroom Priority</p>
+          <p class="snoozepod-sleep-facts__value">{{ showroom_priority }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Sleep facts",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Sleep Nutrition Facts"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "A quick showroom-style snapshot of how this mattress tends to fit the rest of your SnoozePod."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sleep facts"
+    }
+  ]
+}
+{% endschema %}
