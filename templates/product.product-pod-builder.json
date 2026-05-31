@@ -9,22 +9,11 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "main-product",
+    "hero": {
+      "type": "snoozepod-pod-builder-hero",
       "blocks": {
-        "vendor": {
-          "type": "text",
-          "settings": {
-            "text": "{{ product.vendor }}",
-            "text_style": "body"
-          }
-        },
         "title": {
           "type": "title",
-          "settings": {}
-        },
-        "rating": {
-          "type": "rating",
           "settings": {}
         },
         "price": {
@@ -38,76 +27,69 @@
             "swatch_shape": "circle"
           }
         },
-        "quantity_selector": {
-          "type": "quantity_selector",
-          "settings": {}
-        },
         "buy_buttons": {
           "type": "buy_buttons",
           "settings": {
-            "show_dynamic_checkout": true,
-            "show_gift_card_recipient": true
-          }
-        },
-        "description": {
-          "type": "description",
-          "settings": {}
-        },
-        "share": {
-          "type": "share",
-          "settings": {
-            "share_label": "Share"
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
           }
         }
       },
       "block_order": [
-        "vendor",
         "title",
-        "rating",
         "price",
         "variant_picker",
-        "quantity_selector",
-        "buy_buttons",
-        "description",
-        "share"
+        "buy_buttons"
       ],
       "settings": {
         "enable_sticky_info": true,
         "color_scheme": "scheme-1",
-        "media_size": "small",
+        "media_size": "medium",
         "constrain_to_viewport": true,
         "media_fit": "contain",
         "gallery_layout": "thumbnail_slider",
-        "media_position": "left",
         "image_zoom": "lightbox",
         "mobile_thumbnails": "hide",
         "hide_variants": true,
-        "enable_video_looping": false,
-        "padding_top": 60,
-        "padding_bottom": 60
+        "enable_video_looping": false
       }
     },
-    "related-products": {
-      "type": "related-products",
+    "facts": {
+      "type": "snoozepod-sleep-facts",
       "settings": {
-        "heading": "You may also like",
-        "heading_size": "h2",
-        "products_to_show": 4,
-        "columns_desktop": 4,
-        "color_scheme": "scheme-1",
-        "image_ratio": "portrait",
-        "image_shape": "default",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_rating": false,
-        "columns_mobile": "2",
-        "padding_top": 0,
-        "padding_bottom": 60
+        "heading": "Sleep Nutrition Facts",
+        "body": "A quick showroom-style snapshot of how this mattress tends to fit the rest of your SnoozePod."
+      }
+    },
+    "pairing": {
+      "type": "snoozepod-pod-pairing",
+      "settings": {
+        "heading": "Build your SnoozePod around this mattress",
+        "body": "Start with the mattress, then layer in the base, pillow, protection, and bedding that support how you actually rest."
+      }
+    },
+    "details": {
+      "type": "snoozepod-pod-details",
+      "settings": {
+        "heading": "Product Details",
+        "body": "Use the same showroom logic to understand how this mattress fits motion, support, and the rest of your sleep setup."
+      }
+    },
+    "booking": {
+      "type": "snoozepod-booking-cta",
+      "settings": {
+        "heading": "Want to test this setup in person?",
+        "body": "Book a private Snooze Session and feel how this mattress fits with the rest of your sleep environment.",
+        "primary_label": "Book a Snooze Session",
+        "primary_link": "/pages/book-a-snooze-session"
       }
     }
   },
   "order": [
-    "main",
-    "related-products"
+    "hero",
+    "facts",
+    "pairing",
+    "details",
+    "booking"
   ]
 }
