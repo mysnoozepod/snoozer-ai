@@ -1,0 +1,95 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "snoozepod-pod-builder-hero",
+      "blocks": {
+        "title": {
+          "type": "title",
+          "settings": {}
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "variant_picker": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button",
+            "swatch_shape": "circle"
+          }
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        }
+      },
+      "block_order": [
+        "title",
+        "price",
+        "variant_picker",
+        "buy_buttons"
+      ],
+      "settings": {
+        "enable_sticky_info": true,
+        "color_scheme": "scheme-1",
+        "media_size": "medium",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "gallery_layout": "thumbnail_slider",
+        "image_zoom": "lightbox",
+        "mobile_thumbnails": "hide",
+        "hide_variants": true,
+        "enable_video_looping": false
+      }
+    },
+    "facts": {
+      "type": "snoozepod-sleep-facts",
+      "settings": {
+        "heading": "Sleep Nutrition Facts",
+        "body": "A quick showroom-style snapshot of how this mattress tends to fit the rest of your SnoozePod."
+      }
+    },
+    "pairing": {
+      "type": "snoozepod-pod-pairing",
+      "settings": {
+        "heading": "Build your SnoozePod around this mattress",
+        "body": "Start with the mattress, then layer in the base, pillow, protection, and bedding that support how you actually rest."
+      }
+    },
+    "details": {
+      "type": "snoozepod-pod-details",
+      "settings": {
+        "heading": "Product Details",
+        "body": "Use the same showroom logic to understand how this mattress fits motion, support, and the rest of your sleep setup."
+      }
+    },
+    "booking": {
+      "type": "snoozepod-booking-cta",
+      "settings": {
+        "heading": "Want to test this setup in person?",
+        "body": "Book a private Snooze Session and feel how this mattress fits with the rest of your sleep environment.",
+        "primary_label": "Book a Snooze Session",
+        "primary_link": "/pages/book-a-snooze-session"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "facts",
+    "pairing",
+    "details",
+    "booking"
+  ]
+}
