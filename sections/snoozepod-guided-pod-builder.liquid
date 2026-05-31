@@ -1,0 +1,155 @@
+{{ 'snoozepod-pod-builder.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'snoozepod-pod-builder.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign size_option_index = 1
+  for option in product.options_with_values
+    assign option_name = option.name | downcase
+    if option_name contains 'size'
+      assign size_option_index = forloop.index
+      break
+    endif
+  endfor
+
+  assign builder_copy = 'Work through the same guided build flow used in the showroom so your mattress, base, motion, protection, pillow, and bedding direction stay connected.'
+-%}
+
+<section class="section">
+  <div
+    class="snoozepod-builder page-width"
+    data-snoozepod-builder
+    data-section-id="{{ section.id }}"
+    data-product-handle="{{ product.handle }}"
+    data-product-title="{{ product.title | escape }}"
+    data-product-type="{{ product.type | escape }}"
+    data-book-url="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}"
+    data-book-label="{{ section.settings.booking_label | default: 'Book a Snooze Session' | escape }}"
+    data-add-label="{{ section.settings.primary_label | default: 'Add current product to cart' | escape }}"
+    data-size-option-index="{{ size_option_index }}"
+  >
+    <script type="application/json" data-builder-product>
+      {
+        "selectedVariantId": {{ product.selected_or_first_available_variant.id | json }},
+        "variants": {{ product.variants | json }},
+        "options": {{ product.options_with_values | json }}
+      }
+    </script>
+
+    <div class="snoozepod-builder__shell">
+      <div class="snoozepod-builder__header-card">
+        <p class="snoozepod-builder__eyebrow">Build My Pod</p>
+        <h2 class="snoozepod-builder__heading">{{ section.settings.heading | escape }}</h2>
+        <p class="snoozepod-builder__intro">{{ builder_copy }}</p>
+      </div>
+
+      <div class="snoozepod-builder__progress" aria-hidden="true">
+        <span data-builder-progress></span>
+      </div>
+
+      <div class="snoozepod-builder__step-pills" data-builder-steps></div>
+
+      <div class="snoozepod-builder__layout">
+        <div class="snoozepod-builder__main">
+          <div class="snoozepod-builder__card">
+            <p class="snoozepod-builder__step-count" data-builder-step-count></p>
+            <h3 class="snoozepod-builder__step-title" data-builder-step-title></h3>
+            <p class="snoozepod-builder__step-copy" data-builder-step-copy></p>
+
+            <div class="snoozepod-builder__options" data-builder-options></div>
+
+            <div class="snoozepod-builder__review-note" data-builder-review-note hidden>
+              This adds the current product to cart and saves the rest as SnoozePod direction for your showroom visit or follow-up.
+            </div>
+
+            <form method="post" action="{{ routes.cart_add_url }}" class="snoozepod-builder__cart-form" data-builder-form hidden>
+              <input type="hidden" name="id" value="">
+              <input type="hidden" name="quantity" value="1">
+              <input type="hidden" name="properties[SnoozePod Size]" value="">
+              <input type="hidden" name="properties[SnoozePod Base Direction]" value="">
+              <input type="hidden" name="properties[SnoozePod Motion Direction]" value="">
+              <input type="hidden" name="properties[SnoozePod Protection Direction]" value="">
+              <input type="hidden" name="properties[SnoozePod Pillow Direction]" value="">
+              <input type="hidden" name="properties[SnoozePod Bedding Direction]" value="">
+              <button type="submit" class="button button--primary snoozepod-builder__add-button" data-builder-submit>
+                {{ section.settings.primary_label | escape }}
+              </button>
+            </form>
+
+            <div class="snoozepod-builder__action-row">
+              <button type="button" class="button button--secondary snoozepod-builder__back" data-builder-back>
+                Back
+              </button>
+              <button type="button" class="button button--primary snoozepod-builder__next" data-builder-next>
+                Next
+              </button>
+              <a class="button button--tertiary snoozepod-builder__book" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}" data-builder-book>
+                {{ section.settings.booking_label | escape }}
+              </a>
+            </div>
+
+            <button type="button" class="snoozepod-builder__reset" data-builder-reset>
+              Change Answers
+            </button>
+          </div>
+        </div>
+
+        <aside class="snoozepod-builder__summary-card">
+          <div class="snoozepod-builder__summary-top">
+            <p class="snoozepod-builder__summary-eyebrow">Your SnoozePod</p>
+            <h3 class="snoozepod-builder__summary-title">Live setup summary</h3>
+            <p class="snoozepod-builder__summary-copy">
+              As you choose size, base, motion, protection, pillow, and bedding, this summary stays in view.
+            </p>
+          </div>
+
+          <div class="snoozepod-builder__summary-price">
+            <span class="snoozepod-builder__summary-price-label">Current product price</span>
+            <strong data-builder-price>{{ product.selected_or_first_available_variant.price | money }}</strong>
+          </div>
+
+          <dl class="snoozepod-builder__summary-list" data-builder-summary></dl>
+
+          <div class="snoozepod-builder__direction-links" data-builder-links></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Pod builder flow",
+  "class": "section",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Build your SnoozePod step by step."
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Primary button label",
+      "default": "Add current product to cart"
+    },
+    {
+      "type": "text",
+      "id": "booking_label",
+      "label": "Booking label",
+      "default": "Book a Snooze Session"
+    },
+    {
+      "type": "url",
+      "id": "booking_link",
+      "label": "Booking link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pod builder flow"
+    }
+  ]
+}
+{% endschema %}
