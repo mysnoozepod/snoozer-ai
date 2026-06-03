@@ -106,13 +106,35 @@
     }
   }
 
-  function formatMoney(raw) {
-    const amount = Number(String(raw == null ? "" : raw).replace(/[^0-9.]/g, ""));
-    const safe = Number.isFinite(amount) ? amount : 0;
+  function normalizePriceCents(raw) {
+    if (raw == null || raw === "") return 0;
+
+    if (typeof raw === "number") {
+      return Number.isFinite(raw) ? raw : 0;
+    }
+
+    const text = String(raw).trim();
+    if (!text) return 0;
+
+    const cleaned = text.replace(/[^0-9.-]/g, "");
+    if (!cleaned) return 0;
+
+    const numeric = Number(cleaned);
+    if (!Number.isFinite(numeric)) return 0;
+
+    if (cleaned.includes(".")) {
+      return Math.round(numeric * 100);
+    }
+
+    return numeric;
+  }
+
+  function formatMoneyFromCents(raw) {
+    const amount = normalizePriceCents(raw) / 100;
     try {
-      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(safe);
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
     } catch (error) {
-      return "$" + safe.toFixed(2);
+      return "$" + amount.toFixed(2);
     }
   }
 
@@ -338,7 +360,7 @@
         .replaceAll("snoozepod-builder__summary-term", "snoozepod-builder__review-term")
         .replaceAll("snoozepod-builder__summary-value", "snoozepod-builder__review-value");
 
-      els.price.textContent = variant ? formatMoney(variant.price) : "Choose a size";
+      els.price.textContent = variant ? formatMoneyFromCents(variant.price) : "Choose a size";
     }
 
     function updateFormFields(variant) {
