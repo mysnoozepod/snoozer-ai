@@ -1,6 +1,4 @@
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
-{{ 'component-slider.css' | asset_url | stylesheet_tag }}
-{{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
 
 {%- liquid
   assign anchor_kind = 'mattress'
@@ -25,8 +23,21 @@
     assign anchor_copy = 'Start your SnoozePod with this product, then choose the size, base, motion, protection, pillow, and bedding around it.'
   endif
 
-  assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src'
-  assign first_3d_model = product.media | where: 'media_type', 'model' | first
+  assign image_media = product.media | where: 'media_type', 'image'
+  assign featured_media = product.selected_or_first_available_variant.featured_media
+  if featured_media and featured_media.media_type != 'image'
+    assign featured_media = nil
+  endif
+  if featured_media == nil
+    assign featured_media = image_media | first
+  endif
+
+  assign featured_preview = featured_media.preview_image
+  if featured_preview == blank
+    assign featured_preview = product.featured_image
+  endif
+
+  assign image_count = image_media.size
 -%}
 
 {%- style -%}
@@ -50,6 +61,65 @@
     border: 1px solid rgba(7, 25, 66, 0.10);
     background: #ffffff;
     box-shadow: 0 18px 44px rgba(7, 25, 66, 0.06);
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__media-card {
+    padding: 18px;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__media-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    border-radius: 18px;
+    background:
+      radial-gradient(circle at top right, rgba(44, 66, 120, 0.08), transparent 38%),
+      linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__main-image {
+    display: block;
+    width: 100%;
+    height: clamp(240px, 46vw, 460px);
+    object-fit: contain;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__thumb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 72px;
+    padding: 8px;
+    border: 1px solid rgba(7, 25, 66, 0.12);
+    border-radius: 16px;
+    background: #f8faff;
+    cursor: pointer;
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__thumb:hover,
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__thumb:focus-visible,
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__thumb.is-active {
+    border-color: rgba(7, 25, 66, 0.28);
+    box-shadow: 0 10px 24px rgba(7, 25, 66, 0.10);
+    transform: translateY(-1px);
+    outline: none;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__thumb img {
+    display: block;
+    width: 100%;
+    max-height: 72px;
+    object-fit: contain;
   }
 
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__fallback {
@@ -125,6 +195,10 @@
     .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__title {
       font-size: 40px;
     }
+
+    .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__media-stage {
+      min-height: 360px;
+    }
   }
 
   @media screen and (min-width: 990px) {
@@ -143,6 +217,10 @@
       border-radius: 30px;
     }
 
+    .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__media-card {
+      padding: 22px;
+    }
+
     .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__info-card {
       padding: 32px 34px;
     }
@@ -151,6 +229,15 @@
       max-width: 11ch;
       font-size: 48px;
     }
+
+    .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__main-image {
+      height: clamp(360px, 34vw, 520px);
+    }
+
+    .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__thumbs {
+      grid-template-columns: repeat(auto-fit, minmax(82px, 96px));
+      justify-content: flex-start;
+    }
   }
 {%- endstyle -%}
 
@@ -158,9 +245,53 @@
   <div class="snoozepod-pod-builder-hero-{{ section.id }}">
     <div class="snoozepod-pod-builder-hero__grid">
       <div class="snoozepod-pod-builder-hero__media-wrapper">
-        {%- if product.media.size > 0 -%}
-          <div class="snoozepod-pod-builder-hero__media-card product__media-wrapper">
-            {% render 'product-media-gallery', variant_images: variant_images %}
+        {%- if featured_preview != blank -%}
+          <div class="snoozepod-pod-builder-hero__media-card">
+            <div class="snoozepod-pod-builder-hero__media-stage">
+              <img
+                class="snoozepod-pod-builder-hero__main-image"
+                src="{{ featured_preview | image_url: width: 1400 }}"
+                alt="{{ featured_preview.alt | default: product.title | escape }}"
+                loading="eager"
+                width="{{ featured_preview.width | default: 1400 }}"
+                height="{{ featured_preview.height | default: 1400 }}"
+                data-pod-builder-main-image
+              >
+            </div>
+
+            {%- if image_count > 1 -%}
+              <div class="snoozepod-pod-builder-hero__thumbs" role="list" aria-label="Product images">
+                {%- for media in image_media -%}
+                  {%- assign preview = media.preview_image -%}
+                  {%- assign thumb_alt = preview.alt | default: product.title -%}
+                  {%- assign is_active = false -%}
+                  {%- if featured_media != blank and media.id == featured_media.id -%}
+                    {%- assign is_active = true -%}
+                  {%- elsif featured_media == blank and forloop.first -%}
+                    {%- assign is_active = true -%}
+                  {%- endif -%}
+                  <button
+                    type="button"
+                    class="snoozepod-pod-builder-hero__thumb{% if is_active %} is-active{% endif %}"
+                    data-pod-builder-thumb
+                    data-image-src="{{ preview | image_url: width: 1400 }}"
+                    data-image-alt="{{ preview.alt | default: product.title | escape }}"
+                    aria-current="{% if is_active %}true{% else %}false{% endif %}"
+                    aria-label="Show image {{ forloop.index }}"
+                  >
+                    {{
+                      preview
+                      | image_url: width: 220
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '72, 96, 144, 220',
+                        sizes: '72px',
+                        alt: thumb_alt
+                    }}
+                  </button>
+                {%- endfor -%}
+              </div>
+            {%- endif -%}
           </div>
         {%- else -%}
           <div class="snoozepod-pod-builder-hero__fallback">
@@ -190,24 +321,43 @@
       </div>
     </div>
 
-    {%- if product.media.size > 0 -%}
-      {% render 'product-media-modal', variant_images: variant_images %}
-      <script src="{{ 'product-modal.js' | asset_url }}" defer="defer"></script>
-      <script src="{{ 'media-gallery.js' | asset_url }}" defer="defer"></script>
-    {%- endif -%}
-
-    {%- if first_3d_model -%}
-      <script type="application/json" id="ProductJSON-{{ product.id }}">
-        {{ product.media | where: 'media_type', 'model' | json }}
-      </script>
-      <script src="{{ 'product-model.js' | asset_url }}" defer="defer"></script>
-    {%- endif -%}
-
     <script type="application/ld+json">
       {{ product | structured_data }}
     </script>
   </div>
 </section>
+
+<script>
+  (() => {
+    const root = document.querySelector('.snoozepod-pod-builder-hero-{{ section.id }}');
+    if (!root) return;
+
+    const mainImage = root.querySelector('[data-pod-builder-main-image]');
+    const thumbs = root.querySelectorAll('[data-pod-builder-thumb]');
+    if (!mainImage || !thumbs.length) return;
+
+    thumbs.forEach((thumb) => {
+      thumb.addEventListener('click', () => {
+        const nextSrc = thumb.dataset.imageSrc;
+        const nextAlt = thumb.dataset.imageAlt || mainImage.alt;
+
+        if (nextSrc) {
+          mainImage.src = nextSrc;
+        }
+
+        mainImage.alt = nextAlt;
+
+        thumbs.forEach((button) => {
+          button.classList.remove('is-active');
+          button.setAttribute('aria-current', 'false');
+        });
+
+        thumb.classList.add('is-active');
+        thumb.setAttribute('aria-current', 'true');
+      });
+    });
+  })();
+</script>
 
 {% schema %}
 {
