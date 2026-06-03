@@ -4,32 +4,28 @@
   assign type_downcase = product.type | downcase
   assign description_downcase = product.description | strip_html | downcase
 
-  assign comfort_feel = 'Balanced comfort direction'
-  assign support_level = 'Support direction depends on size and base pairing'
+  assign comfort = 'Balanced direction'
+  assign support = 'Support depends on size and base pairing'
   assign cooling = 'Best confirmed in showroom'
-  assign pressure_relief = 'Varies by selected setup'
-  assign motion_isolation = 'Varies by selected setup'
-  assign partner_stability = 'Best confirmed in showroom'
-  assign base_compatibility = 'Adjustable-ready direction'
-  assign best_use = 'Best confirmed in showroom'
-  assign showroom_test = 'Best confirmed in showroom'
+  assign pressure_relief = 'Varies with setup'
+  assign motion_fit = 'Depends on base and partner needs'
+  assign partner_fit = 'Best confirmed in showroom'
+  assign best_test = 'Compare in the showroom'
 
   if tags_downcase contains 'feel:soft' or title_downcase contains 'soft'
-    assign comfort_feel = 'Softer comfort direction'
+    assign comfort = 'Softer feel'
   elsif tags_downcase contains 'feel:medium-soft'
-    assign comfort_feel = 'Medium-soft comfort direction'
+    assign comfort = 'Medium-soft feel'
   elsif tags_downcase contains 'feel:medium-firm'
-    assign comfort_feel = 'Medium-firm comfort direction'
+    assign comfort = 'Medium-firm feel'
   elsif tags_downcase contains 'feel:custom' or title_downcase contains 'dual comfort'
-    assign comfort_feel = 'Custom comfort direction'
+    assign comfort = 'Split comfort direction'
   endif
 
   if tags_downcase contains 'type:hybrid' or type_downcase contains 'hybrid'
-    assign support_level = 'Adaptive hybrid support'
-    assign base_compatibility = 'Pairs cleanly with adjustable bases'
+    assign support = 'Adaptive hybrid support'
   elsif tags_downcase contains 'type:foam' or type_downcase contains 'foam'
-    assign support_level = 'Foam support with contouring'
-    assign base_compatibility = 'Works with platform, storage, or adjustable directions'
+    assign support = 'Contouring foam support'
   endif
 
   if tags_downcase contains 'feature:cooling' or description_downcase contains 'cool'
@@ -41,63 +37,47 @@
   endif
 
   if tags_downcase contains 'feature:motion-isolation' or tags_downcase contains 'feature:enhanced motion-isolation'
-    assign motion_isolation = 'Calmer motion transfer direction'
+    assign motion_fit = 'Calmer shared-surface direction'
   endif
 
   if tags_downcase contains 'good-for:couples' or title_downcase contains 'dual comfort'
-    assign partner_stability = 'Partner-focused direction'
-    assign showroom_test = 'Test shared comfort and motion first'
-  endif
-
-  if tags_downcase contains 'good-for:hot-sleepers'
-    assign best_use = 'Good first stop for hot sleepers'
-  elsif tags_downcase contains 'good-for: hip pain' or tags_downcase contains 'good-for:hip pain'
-    assign best_use = 'Worth testing for pressure-sensitive sleepers'
-  elsif tags_downcase contains 'good-for: back-pain'
-    assign best_use = 'Worth testing for alignment support'
+    assign partner_fit = 'Partner-focused direction'
+    assign best_test = 'Test shared comfort and motion first'
   endif
 
   case product.handle
     when '12-dual-comfort-hybrid'
-      assign comfort_feel = 'Dual comfort per side'
-      assign support_level = 'Hybrid support for shared sleep'
+      assign comfort = 'Split comfort per side'
+      assign support = 'Hybrid support for shared sleep'
       assign cooling = 'Balanced airflow through the build'
       assign pressure_relief = 'Responsive relief with partner flexibility'
-      assign motion_isolation = 'Split-motion ready direction'
-      assign partner_stability = 'Strongest for couples and split comfort'
-      assign base_compatibility = 'Best paired with adjustable split-ready bases'
-      assign best_use = 'Couples, split comfort, and shared sleep'
-      assign showroom_test = 'Start with comfort and motion side by side'
+      assign motion_fit = 'Split-motion ready direction'
+      assign partner_fit = 'Strongest for couples'
+      assign best_test = 'Start with comfort and motion side by side'
     when '14-hybrid'
-      assign comfort_feel = 'Supportive hybrid feel'
-      assign support_level = 'Stronger lift and alignment direction'
+      assign comfort = 'Supportive hybrid feel'
+      assign support = 'Stronger lift and alignment'
       assign cooling = 'Airflow-friendly hybrid direction'
       assign pressure_relief = 'Balanced lift with cushioning'
-      assign motion_isolation = 'Stable shared-surface direction'
-      assign partner_stability = 'Good for shared support without split comfort'
-      assign base_compatibility = 'Adjustable-ready direction'
-      assign best_use = 'Back, combo, and hot-sleeper comparisons'
-      assign showroom_test = 'Start with support and posture changes'
+      assign motion_fit = 'Stable shared-surface direction'
+      assign partner_fit = 'Good for shared support'
+      assign best_test = 'Start with support and posture changes'
     when '12-all-foam-mattress'
-      assign comfort_feel = 'Balanced foam contouring'
-      assign support_level = 'Contour-first foam support'
+      assign comfort = 'Balanced foam contouring'
+      assign support = 'Contour-first foam support'
       assign cooling = 'Best confirmed in showroom'
       assign pressure_relief = 'Higher pressure-relief priority'
-      assign motion_isolation = 'Calmer surface movement'
-      assign partner_stability = 'Good when motion matters'
-      assign base_compatibility = 'Pairs cleanly with storage or adjustable bases'
-      assign best_use = 'Side sleepers and pressure-sensitive rest'
-      assign showroom_test = 'Start with contour and pressure relief'
+      assign motion_fit = 'Calmer surface movement'
+      assign partner_fit = 'Good when motion matters'
+      assign best_test = 'Start with contour and pressure relief'
     when '10-all-foam-mattress'
-      assign comfort_feel = 'Simpler foam profile'
-      assign support_level = 'Lower-profile support direction'
+      assign comfort = 'Simpler foam profile'
+      assign support = 'Lower-profile support direction'
       assign cooling = 'Best confirmed in showroom'
       assign pressure_relief = 'Balanced relief without extra height'
-      assign motion_isolation = 'Good for simpler no-motion setups'
-      assign partner_stability = 'Straightforward shared-surface direction'
-      assign base_compatibility = 'Pairs cleanly with platform or storage bases'
-      assign best_use = 'Simple mattress-first pod builds'
-      assign showroom_test = 'Start with simple comfort and height'
+      assign motion_fit = 'Simple no-motion direction'
+      assign partner_fit = 'Straightforward shared-surface direction'
+      assign best_test = 'Start with simple comfort and height'
   endcase
 -%}
 
@@ -108,9 +88,10 @@
   }
 
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__card {
+    max-width: 760px;
     border-radius: 24px;
     border: 1px solid rgba(7, 25, 66, 0.10);
-    background: #fff;
+    background: #ffffff;
     box-shadow: 0 18px 44px rgba(7, 25, 66, 0.06);
     overflow: hidden;
   }
@@ -118,18 +99,18 @@
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__label-head {
     padding: 18px 22px 14px;
     background: #071942;
-    color: #fff;
+    color: #ffffff;
   }
 
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__label-head h2 {
     margin: 0;
-    font-size: 26px;
+    font-size: 24px;
     line-height: 1;
     letter-spacing: -0.03em;
   }
 
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__body {
-    padding: 0 22px 22px;
+    padding: 0 22px 18px;
   }
 
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__rule {
@@ -139,10 +120,11 @@
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__meta,
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__row,
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__footer {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 12px 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+    padding: 10px 0;
     border-top: 1px solid rgba(7, 25, 66, 0.12);
   }
 
@@ -153,7 +135,7 @@
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__name,
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__value {
     color: #071942;
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.4;
   }
 
@@ -162,13 +144,15 @@
     font-weight: 800;
   }
 
-  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__row {
-    align-items: baseline;
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__value {
+    text-align: right;
   }
 
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__footer {
-    font-size: 13px;
+    display: block;
     color: rgba(7, 25, 66, 0.78);
+    font-size: 13px;
+    font-weight: 600;
   }
 
   @media screen and (min-width: 750px) {
@@ -180,29 +164,41 @@
 
   @media screen and (min-width: 990px) {
     .snoozepod-sleep-facts-{{ section.id }} {
-      margin: 24px auto 32px;
+      margin: 22px auto 28px;
       padding: 0 32px;
     }
 
     .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__card {
-      border-radius: 30px;
+      border-radius: 28px;
     }
 
     .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__label-head {
-      padding: 22px 28px 18px;
+      padding: 20px 26px 16px;
     }
 
     .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__label-head h2 {
-      font-size: 30px;
+      font-size: 28px;
     }
 
     .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__body {
-      padding: 0 28px 26px;
+      padding: 0 26px 20px;
     }
 
     .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__name,
     .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__value {
-      font-size: 16px;
+      font-size: 15px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__meta,
+    .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__row {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+
+    .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__value {
+      text-align: left;
     }
   }
 {%- endstyle -%}
@@ -217,18 +213,18 @@
       <div class="snoozepod-sleep-facts__body">
         <div class="snoozepod-sleep-facts__rule"></div>
         <div class="snoozepod-sleep-facts__meta">
-          <div class="snoozepod-sleep-facts__name"><strong>Serving Size:</strong> 1 SnoozePod Setup</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Serving Size:</strong> 1 SnoozePod</div>
           <div class="snoozepod-sleep-facts__value"><strong>Primary Ingredient:</strong> {{ product.title | escape }}</div>
         </div>
         <div class="snoozepod-sleep-facts__rule"></div>
 
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Comfort Feel</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ comfort_feel }}</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Comfort</strong></div>
+          <div class="snoozepod-sleep-facts__value">{{ comfort }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Support Level</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ support_level }}</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Support</strong></div>
+          <div class="snoozepod-sleep-facts__value">{{ support }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
           <div class="snoozepod-sleep-facts__name"><strong>Cooling</strong></div>
@@ -239,30 +235,21 @@
           <div class="snoozepod-sleep-facts__value">{{ pressure_relief }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Motion Isolation</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ motion_isolation }}</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Motion Fit</strong></div>
+          <div class="snoozepod-sleep-facts__value">{{ motion_fit }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Partner Stability</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ partner_stability }}</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Partner Fit</strong></div>
+          <div class="snoozepod-sleep-facts__value">{{ partner_fit }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Base Compatibility</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ base_compatibility }}</div>
-        </div>
-        <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Best Use</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ best_use }}</div>
-        </div>
-        <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Showroom Test</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ showroom_test }}</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Best Test</strong></div>
+          <div class="snoozepod-sleep-facts__value">{{ best_test }}</div>
         </div>
 
         <div class="snoozepod-sleep-facts__rule"></div>
         <div class="snoozepod-sleep-facts__footer">
-          <span>Recommended Daily Rest: 7–9 hours</span>
-          <span>Varies by selected setup</span>
+          Recommended Daily Rest: 7-9 hours
         </div>
       </div>
     </div>

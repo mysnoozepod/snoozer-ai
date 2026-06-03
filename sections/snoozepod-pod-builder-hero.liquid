@@ -164,13 +164,6 @@
     line-height: 1.5;
   }
 
-  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__note {
-    margin: 14px 0 0;
-    color: rgba(7, 25, 66, 0.64);
-    font-size: 14px;
-    line-height: 1.45;
-  }
-
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__price {
     margin-top: 18px;
   }
@@ -305,9 +298,6 @@
           <p class="snoozepod-pod-builder-hero__eyebrow">Pod Builder</p>
           <h1 class="snoozepod-pod-builder-hero__title">{{ product.title | escape }}</h1>
           <p class="snoozepod-pod-builder-hero__copy">{{ anchor_copy }}</p>
-          <p class="snoozepod-pod-builder-hero__note">
-            This {{ anchor_kind }} is the anchor. The guided builder below handles size, base, motion, protection, pillow, and bedding direction in one flow.
-          </p>
 
           <div class="snoozepod-pod-builder-hero__price">
             {%- render 'price',
