@@ -2,82 +2,61 @@
   assign tags_downcase = product.tags | join: ',' | downcase
   assign title_downcase = product.title | downcase
   assign type_downcase = product.type | downcase
-  assign description_downcase = product.description | strip_html | downcase
+  assign comfort_feel = 'Balanced comfort feel'
+  assign support = 'Best confirmed in showroom'
+  assign best_for = 'Sleepers narrowing a full-room setup'
+  assign pressure_relief = 'Balanced pressure relief'
+  assign motion_setup = 'Compatible with selected base setup'
+  assign partner_fit = 'Best confirmed by selected size and motion choice'
+  assign showroom_test = 'Compare feel and support in person'
 
-  assign comfort = 'Balanced direction'
-  assign support = 'Support depends on size and base pairing'
-  assign cooling = 'Best confirmed in showroom'
-  assign pressure_relief = 'Varies with setup'
-  assign motion_fit = 'Depends on base and partner needs'
-  assign partner_fit = 'Best confirmed in showroom'
-  assign best_test = 'Compare in the showroom'
-
-  if tags_downcase contains 'feel:soft' or title_downcase contains 'soft'
-    assign comfort = 'Softer feel'
-  elsif tags_downcase contains 'feel:medium-soft'
-    assign comfort = 'Medium-soft feel'
-  elsif tags_downcase contains 'feel:medium-firm'
-    assign comfort = 'Medium-firm feel'
-  elsif tags_downcase contains 'feel:custom' or title_downcase contains 'dual comfort'
-    assign comfort = 'Split comfort direction'
-  endif
-
-  if tags_downcase contains 'type:hybrid' or type_downcase contains 'hybrid'
-    assign support = 'Adaptive hybrid support'
-  elsif tags_downcase contains 'type:foam' or type_downcase contains 'foam'
-    assign support = 'Contouring foam support'
-  endif
-
-  if tags_downcase contains 'feature:cooling' or description_downcase contains 'cool'
-    assign cooling = 'Cooling-friendly direction'
-  endif
-
-  if tags_downcase contains 'feature:pressure-relief' or description_downcase contains 'pressure'
-    assign pressure_relief = 'Higher pressure-relief priority'
-  endif
-
-  if tags_downcase contains 'feature:motion-isolation' or tags_downcase contains 'feature:enhanced motion-isolation'
-    assign motion_fit = 'Calmer shared-surface direction'
-  endif
-
-  if tags_downcase contains 'good-for:couples' or title_downcase contains 'dual comfort'
-    assign partner_fit = 'Partner-focused direction'
-    assign best_test = 'Test shared comfort and motion first'
+  if tags_downcase contains 'type:hybrid' or type_downcase contains 'hybrid' or title_downcase contains 'hybrid'
+    assign comfort_feel = 'Hybrid feel with more lift'
+    assign support = 'Coil-backed support with more pushback'
+    assign best_for = 'Sleepers wanting more lift and recovery'
+    assign pressure_relief = 'Balanced cushioning with stronger support'
+    assign showroom_test = 'Best confirmed against the all-foam options'
+  elsif tags_downcase contains 'type:foam' or type_downcase contains 'foam' or title_downcase contains 'foam'
+    assign comfort_feel = 'Foam contour feel'
+    assign support = 'Contour-first support'
+    assign best_for = 'Sleepers wanting a simpler contouring setup'
+    assign pressure_relief = 'Foam cushioning with quieter surface feel'
+    assign showroom_test = 'Best confirmed against the hybrid lineup'
   endif
 
   case product.handle
     when '12-dual-comfort-hybrid'
-      assign comfort = 'Split comfort per side'
-      assign support = 'Hybrid support for shared sleep'
-      assign cooling = 'Balanced airflow through the build'
-      assign pressure_relief = 'Responsive relief with partner flexibility'
-      assign motion_fit = 'Split-motion ready direction'
-      assign partner_fit = 'Strongest for couples'
-      assign best_test = 'Start with comfort and motion side by side'
+      assign comfort_feel = 'Hybrid comfort with split-feel flexibility'
+      assign support = 'Lift plus partner-specific comfort direction'
+      assign best_for = 'Couples, split-feel needs, and adjustable-base setups'
+      assign pressure_relief = 'Balanced cushioning with stronger support than all-foam'
+      assign motion_setup = 'Pairs well with Standard, Half Split, or Full Split by size'
+      assign partner_fit = 'Best match when partners want different comfort direction'
+      assign showroom_test = 'Best confirmed side by side with your partner'
     when '14-hybrid'
-      assign comfort = 'Supportive hybrid feel'
-      assign support = 'Stronger lift and alignment'
-      assign cooling = 'Airflow-friendly hybrid direction'
-      assign pressure_relief = 'Balanced lift with cushioning'
-      assign motion_fit = 'Stable shared-surface direction'
-      assign partner_fit = 'Good for shared support'
-      assign best_test = 'Start with support and posture changes'
+      assign comfort_feel = 'Most supportive hybrid feel'
+      assign support = 'Strongest lift and alignment direction in the lineup'
+      assign best_for = 'Back sleepers, larger builds, and shoppers wanting more pushback'
+      assign pressure_relief = 'Balanced relief with a firmer support curve'
+      assign motion_setup = 'Compatible with selected base setup'
+      assign partner_fit = 'Best confirmed by selected size and motion choice'
+      assign showroom_test = 'Compare against the 12" hybrid if you want less lift'
     when '12-all-foam-mattress'
-      assign comfort = 'Balanced foam contouring'
-      assign support = 'Contour-first foam support'
-      assign cooling = 'Best confirmed in showroom'
-      assign pressure_relief = 'Higher pressure-relief priority'
-      assign motion_fit = 'Calmer surface movement'
-      assign partner_fit = 'Good when motion matters'
-      assign best_test = 'Start with contour and pressure relief'
+      assign comfort_feel = 'Deeper foam contour'
+      assign support = 'Contour support with more comfort depth than 10"'
+      assign best_for = 'Pressure-relief focused setups and side-sleeper comfort'
+      assign pressure_relief = 'Higher foam cushioning than lower-profile builds'
+      assign motion_setup = 'Compatible with selected base setup'
+      assign partner_fit = 'Stronger when motion control matters'
+      assign showroom_test = 'Compare against the 10" foam and 12" dual comfort hybrid'
     when '10-all-foam-mattress'
-      assign comfort = 'Simpler foam profile'
-      assign support = 'Lower-profile support direction'
-      assign cooling = 'Best confirmed in showroom'
-      assign pressure_relief = 'Balanced relief without extra height'
-      assign motion_fit = 'Simple no-motion direction'
-      assign partner_fit = 'Straightforward shared-surface direction'
-      assign best_test = 'Start with simple comfort and height'
+      assign comfort_feel = 'Simpler foam feel'
+      assign support = 'Basic contour support'
+      assign best_for = 'Value setups, guest rooms, kids, lighter builds'
+      assign pressure_relief = 'Moderate foam cushioning'
+      assign motion_setup = 'Compatible with selected base setup'
+      assign partner_fit = 'Best confirmed by selected size and motion choice'
+      assign showroom_test = 'Compare against hybrid if you need more lift/support'
   endcase
 -%}
 
@@ -213,38 +192,38 @@
       <div class="snoozepod-sleep-facts__body">
         <div class="snoozepod-sleep-facts__rule"></div>
         <div class="snoozepod-sleep-facts__meta">
-          <div class="snoozepod-sleep-facts__name"><strong>Serving Size:</strong> 1 SnoozePod</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Serving Size:</strong> 1 SnoozePod Setup</div>
           <div class="snoozepod-sleep-facts__value"><strong>Primary Ingredient:</strong> {{ product.title | escape }}</div>
         </div>
         <div class="snoozepod-sleep-facts__rule"></div>
 
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Comfort</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ comfort }}</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Comfort Feel</strong></div>
+          <div class="snoozepod-sleep-facts__value">{{ comfort_feel }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
           <div class="snoozepod-sleep-facts__name"><strong>Support</strong></div>
           <div class="snoozepod-sleep-facts__value">{{ support }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Cooling</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ cooling }}</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Best For</strong></div>
+          <div class="snoozepod-sleep-facts__value">{{ best_for }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
           <div class="snoozepod-sleep-facts__name"><strong>Pressure Relief</strong></div>
           <div class="snoozepod-sleep-facts__value">{{ pressure_relief }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Motion Fit</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ motion_fit }}</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Motion Setup</strong></div>
+          <div class="snoozepod-sleep-facts__value">{{ motion_setup }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
           <div class="snoozepod-sleep-facts__name"><strong>Partner Fit</strong></div>
           <div class="snoozepod-sleep-facts__value">{{ partner_fit }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Best Test</strong></div>
-          <div class="snoozepod-sleep-facts__value">{{ best_test }}</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Showroom Test</strong></div>
+          <div class="snoozepod-sleep-facts__value">{{ showroom_test }}</div>
         </div>
 
         <div class="snoozepod-sleep-facts__rule"></div>

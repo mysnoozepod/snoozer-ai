@@ -16,7 +16,7 @@
     "builder": {
       "type": "snoozepod-guided-pod-builder",
       "settings": {
-        "heading": "Build your SnoozePod.",
+        "heading": "Build My Pod",
         "primary_label": "Add mattress to cart",
         "booking_label": "Book a Snooze Session",
         "booking_link": "/pages/book-a-snooze-session"

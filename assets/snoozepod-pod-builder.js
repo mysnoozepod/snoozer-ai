@@ -4,31 +4,31 @@
       key: "size",
       label: "Size",
       title: "Choose your size",
-      copy: "Pick the actual mattress size first. This replaces the normal Shopify variant selector."
+      copy: "Use the actual mattress size you want to build around."
     },
     {
       key: "base",
       label: "Base",
       title: "Choose your base",
-      copy: "Set the foundation direction before you move into motion or finish layers."
+      copy: "Choose the base direction for this setup first."
     },
     {
       key: "motion",
       label: "Motion",
       title: "Choose your motion setup",
-      copy: "Only adjustable-base setups need a motion path."
+      copy: "Motion only applies when you want an adjustable base."
     },
     {
       key: "protection",
       label: "Protection",
       title: "Choose protection",
-      copy: "Add the protection layer that best matches how you plan to use the mattress."
+      copy: "Add the protection layer that fits how you want to use the mattress."
     },
     {
       key: "pillow",
       label: "Pillow",
       title: "Choose pillow direction",
-      copy: "Pick the support direction you want to solve for first."
+      copy: "Choose the pillow direction you want to solve for first."
     },
     {
       key: "bedding",
@@ -45,17 +45,39 @@
   ];
 
   const BASE_OPTIONS = [
-    { value: "none", title: "No base", subtitle: "Keep this mattress as the only committed product for now." },
-    { value: "platform", title: "Platform base", subtitle: "A simple, supportive foundation." },
-    { value: "adjustable", title: "Adjustable base", subtitle: "Adds positioning and opens the motion step." },
-    { value: "not_sure", title: "Not sure yet", subtitle: "Keep moving and decide after testing in person." }
+    {
+      value: "platform_no_motion",
+      title: "Platform / no motion",
+      subtitle: "Keep the setup simple with a fixed base direction."
+    },
+    {
+      value: "adjustable",
+      title: "Adjustable base",
+      subtitle: "Open the motion step and build around positioning."
+    },
+    {
+      value: "not_sure",
+      title: "Not sure yet",
+      subtitle: "Keep moving and confirm the base direction in the showroom."
+    }
   ];
 
   const MOTION_OPTIONS = [
-    { value: "head_foot", title: "Head + foot adjustability", subtitle: "A standard adjustable setup." },
-    { value: "split", title: "Split setup / partner flexibility", subtitle: "Better for partner-specific movement." },
-    { value: "zero_gravity", title: "Zero gravity / pressure relief direction", subtitle: "Bias the setup toward relief and recovery." },
-    { value: "not_sure", title: "Not sure yet", subtitle: "Leave the motion path open for the showroom." }
+    {
+      value: "standard",
+      title: "Standard Motion",
+      subtitle: "One shared motion base setup."
+    },
+    {
+      value: "half_split",
+      title: "Half Split Motion",
+      subtitle: "Split flexibility when the size supports it."
+    },
+    {
+      value: "full_split",
+      title: "Full Split Motion",
+      subtitle: "Full split control when the size supports it."
+    }
   ];
 
   const PROTECTION_OPTIONS = [
@@ -80,13 +102,12 @@
   ];
 
   const LABELS = {
-    none: "No base",
-    platform: "Platform base",
+    platform_no_motion: "Platform / no motion",
     adjustable: "Adjustable base",
     not_sure: "Not sure yet",
-    head_foot: "Head + foot adjustability",
-    split: "Split setup / partner flexibility",
-    zero_gravity: "Zero gravity / pressure relief direction",
+    standard: "Standard Motion",
+    half_split: "Half Split Motion",
+    full_split: "Full Split Motion",
     protector: "Mattress protector",
     encasement: "Mattress encasement",
     cooling: "Cooling",
@@ -181,18 +202,50 @@
     });
   }
 
-  function summaryRows(state, productTitle) {
-    const rows = [
-      { term: "Mattress", value: productTitle || "Current mattress" },
-      { term: "Size", value: state.size || "Choose a size" },
-      { term: "Base", value: LABELS[state.base] || "Choose a base" },
-      { term: "Protection", value: LABELS[state.protection] || "Choose protection" },
-      { term: "Pillow", value: LABELS[state.pillow] || "Choose pillow direction" },
-      { term: "Bedding", value: LABELS[state.bedding] || "Choose bedding finish" }
-    ];
+  function allowedMotionOptionsForSize(size) {
+    const normalized = String(size || "").trim().toLowerCase();
+    if (normalized === "king") {
+      return MOTION_OPTIONS;
+    }
+    if (normalized === "queen") {
+      return MOTION_OPTIONS.filter(function (option) {
+        return option.value !== "full_split";
+      });
+    }
+    return MOTION_OPTIONS.filter(function (option) {
+      return option.value === "standard";
+    });
+  }
 
-    if (state.base === "adjustable") {
-      rows.splice(3, 0, { term: "Motion", value: LABELS[state.motion] || "Choose motion setup" });
+  function summaryRows(state, productTitle) {
+    const rows = [{ term: "Mattress", value: productTitle || "Current mattress" }];
+
+    if (state.size) {
+      rows.push({ term: "Size", value: state.size });
+    }
+
+    if (state.base) {
+      rows.push({ term: "Base", value: LABELS[state.base] || state.base });
+    }
+
+    if (state.base === "adjustable" && state.motion) {
+      rows.push({ term: "Motion", value: LABELS[state.motion] || state.motion });
+    }
+
+    if (state.protection) {
+      rows.push({ term: "Protection", value: LABELS[state.protection] || state.protection });
+    }
+
+    if (state.pillow) {
+      rows.push({ term: "Pillow", value: LABELS[state.pillow] || state.pillow });
+    }
+
+    if (state.bedding) {
+      rows.push({ term: "Bedding", value: LABELS[state.bedding] || state.bedding });
+    }
+
+    if (rows.length === 1) {
+      rows.push({ term: "Start here", value: "Choose your size to begin." });
     }
 
     return rows;
@@ -265,7 +318,7 @@
         case "base":
           return BASE_OPTIONS;
         case "motion":
-          return MOTION_OPTIONS;
+          return allowedMotionOptionsForSize(state.size);
         case "protection":
           return PROTECTION_OPTIONS;
         case "pillow":
@@ -287,6 +340,14 @@
         state.motion = "";
         if (state.currentStep === "motion") {
           state.currentStep = "protection";
+        }
+      }
+      if (stepKey === "size") {
+        const allowedMotionValues = allowedMotionOptionsForSize(value).map(function (option) {
+          return option.value;
+        });
+        if (state.motion && allowedMotionValues.indexOf(state.motion) === -1) {
+          state.motion = "";
         }
       }
     }
