@@ -10,113 +10,118 @@
       key: "base",
       label: "Base",
       title: "Choose your base",
-      copy: "Choose the base direction for this setup first."
+      copy: "Choose the real base product you want in this setup."
     },
     {
       key: "motion",
       label: "Motion",
       title: "Choose your motion setup",
-      copy: "Motion only applies when you want an adjustable base."
+      copy: "Motion only applies when you choose an adjustable base."
     },
     {
       key: "protection",
       label: "Protection",
-      title: "Choose protection",
-      copy: "Add the protection layer that fits how you want to use the mattress."
+      title: "Choose mattress protection",
+      copy: "Choose the real protection product you want to add, or skip it for now."
     },
     {
       key: "pillow",
       label: "Pillow",
-      title: "Choose pillow direction",
-      copy: "Choose the pillow direction you want to solve for first."
+      title: "Choose your pillow",
+      copy: "Choose the real pillow product you want to build around."
     },
     {
       key: "bedding",
       label: "Bedding",
-      title: "Choose bedding finish",
-      copy: "Finish the pod with the bedding direction you want to test in person."
+      title: "Choose your bedding",
+      copy: "Choose the real bedding layer you want to finish the pod with."
     },
     {
       key: "review",
       label: "Review",
       title: "Review your SnoozePod",
-      copy: "Check the full setup before you add the mattress to cart."
-    }
-  ];
-
-  const BASE_OPTIONS = [
-    {
-      value: "platform_no_motion",
-      title: "Platform / no motion",
-      subtitle: "Keep the setup simple with a fixed base direction."
-    },
-    {
-      value: "adjustable",
-      title: "Adjustable base",
-      subtitle: "Open the motion step and build around positioning."
-    },
-    {
-      value: "not_sure",
-      title: "Not sure yet",
-      subtitle: "Keep moving and confirm the base direction in the showroom."
+      copy: "Check the selected products before you add the setup to cart."
     }
   ];
 
   const MOTION_OPTIONS = [
     {
-      value: "standard",
+      key: "standard",
       title: "Standard Motion",
+      summaryLabel: "Standard Motion",
       subtitle: "One shared motion base setup."
     },
     {
-      value: "half_split",
+      key: "half_split",
       title: "Half Split Motion",
+      summaryLabel: "Half Split Motion",
       subtitle: "Split flexibility when the size supports it."
     },
     {
-      value: "full_split",
+      key: "full_split",
       title: "Full Split Motion",
+      summaryLabel: "Full Split Motion",
       subtitle: "Full split control when the size supports it."
     }
   ];
 
-  const PROTECTION_OPTIONS = [
-    { value: "protector", title: "Mattress protector", subtitle: "A simple top-layer protection choice." },
-    { value: "encasement", title: "Mattress encasement", subtitle: "A fuller wrap when you want more coverage." },
-    { value: "not_sure", title: "Not sure yet", subtitle: "Choose this if you want to compare in person." }
-  ];
-
-  const PILLOW_OPTIONS = [
-    { value: "cooling", title: "Cooling", subtitle: "Focus on airflow and temperature control." },
-    { value: "shoulder_support", title: "Shoulder support", subtitle: "Prioritize side-sleeper relief and loft." },
-    { value: "neck_alignment", title: "Neck alignment", subtitle: "Focus on cleaner head and neck positioning." },
-    { value: "adjustable_fill", title: "Adjustable feel", subtitle: "Keep the loft and support feel more flexible." },
-    { value: "not_sure", title: "Not sure yet", subtitle: "Save the pillow call for later." }
-  ];
-
-  const BEDDING_OPTIONS = [
-    { value: "cooling_sheets", title: "Cooling sheets", subtitle: "Push the pod toward cooler sleep." },
-    { value: "soft_cotton", title: "Soft cotton feel", subtitle: "Keep the finish classic and soft." },
-    { value: "full_bedding", title: "Full bedding layer", subtitle: "Think beyond sheets and finish the bed." },
-    { value: "not_sure", title: "Not sure yet", subtitle: "Leave the final bedding choice open." }
-  ];
-
-  const LABELS = {
-    platform_no_motion: "Platform / no motion",
-    adjustable: "Adjustable base",
-    not_sure: "Not sure yet",
-    standard: "Standard Motion",
-    half_split: "Half Split Motion",
-    full_split: "Full Split Motion",
-    protector: "Mattress protector",
-    encasement: "Mattress encasement",
-    cooling: "Cooling",
-    shoulder_support: "Shoulder support",
-    neck_alignment: "Neck alignment",
-    adjustable_fill: "Adjustable feel",
-    cooling_sheets: "Cooling sheets",
-    soft_cotton: "Soft cotton feel",
-    full_bedding: "Full bedding layer"
+  const SYSTEM_OPTIONS = {
+    base: [
+      {
+        key: "no_base",
+        title: "No base / already have one",
+        summaryLabel: "No base / already have one",
+        subtitle: "Continue without adding a base product."
+      },
+      {
+        key: "not_sure",
+        title: "Not sure yet",
+        summaryLabel: "Not sure yet",
+        subtitle: "Leave the base open and confirm it in the showroom."
+      }
+    ],
+    protection: [
+      {
+        key: "skip_protection",
+        title: "Skip protection for now",
+        summaryLabel: "Skip protection for now",
+        subtitle: "Keep the setup focused on the mattress for now."
+      },
+      {
+        key: "not_sure",
+        title: "Not sure yet",
+        summaryLabel: "Not sure yet",
+        subtitle: "Compare protection options in person later."
+      }
+    ],
+    pillow: [
+      {
+        key: "skip_pillow",
+        title: "Skip pillow for now",
+        summaryLabel: "Skip pillow for now",
+        subtitle: "Leave pillows out of this pass."
+      },
+      {
+        key: "not_sure",
+        title: "Not sure yet",
+        summaryLabel: "Not sure yet",
+        subtitle: "Try the pillows in the showroom first."
+      }
+    ],
+    bedding: [
+      {
+        key: "skip_bedding",
+        title: "Skip bedding for now",
+        summaryLabel: "Skip bedding for now",
+        subtitle: "Leave bedding out of this pass."
+      },
+      {
+        key: "not_sure",
+        title: "Not sure yet",
+        summaryLabel: "Not sure yet",
+        subtitle: "Compare bedding finishes in person later."
+      }
+    ]
   };
 
   function parseJson(text, fallback) {
@@ -168,6 +173,13 @@
       .replace(/'/g, "&#39;");
   }
 
+  function normalizeText(value) {
+    return String(value == null ? "" : value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  }
+
   function uniqueSizeOptions(variants, sizeOptionIndex) {
     const seen = new Set();
     const list = [];
@@ -176,10 +188,13 @@
       const optionKey = "option" + sizeOptionIndex;
       const value = String(variant && variant[optionKey] ? variant[optionKey] : "").trim();
       if (!value || seen.has(value)) return;
+
       seen.add(value);
       list.push({
-        value: value,
+        key: value,
+        kind: "size",
         title: value,
+        summaryLabel: value,
         subtitle: variant && variant.available ? "Available now." : "Check availability before you commit."
       });
     });
@@ -196,52 +211,181 @@
     );
   }
 
-  function visibleSteps(state) {
-    return STEPS.filter(function (step) {
-      return step.key !== "motion" || state.base === "adjustable";
+  function normalizeSizeKey(size) {
+    const value = normalizeText(size);
+    if (value === "split king") return "split king";
+    if (value === "cal king" || value === "california king") return "cal king";
+    if (value === "twin xl" || value === "twin x l") return "twin xl";
+    return value;
+  }
+
+  function sizeAliases(size) {
+    switch (normalizeSizeKey(size)) {
+      case "twin":
+        return ["twin"];
+      case "twin xl":
+        return ["twin xl", "twin/twin xl", "twin x l"];
+      case "full":
+        return ["full", "double"];
+      case "queen":
+        return ["queen", "queen 2pc", "queen two pc"];
+      case "king":
+        return ["king", "king 2pc", "king two pc"];
+      case "split king":
+        return ["split king", "king 2pc", "king"];
+      case "cal king":
+        return ["cal king", "california king", "cal king 2pc"];
+      default:
+        return [normalizeText(size)];
+    }
+  }
+
+  function variantTextParts(variant) {
+    return [variant && variant.title, variant && variant.option1, variant && variant.option2, variant && variant.option3]
+      .filter(Boolean)
+      .map(normalizeText);
+  }
+
+  function variantMatchScore(variant, size) {
+    const aliases = sizeAliases(size);
+    const parts = variantTextParts(variant);
+    let score = 0;
+
+    aliases.forEach((alias, aliasIndex) => {
+      parts.forEach((part) => {
+        if (part === alias) {
+          score = Math.max(score, aliasIndex === 0 ? 4 : 3);
+        } else if (part.includes(alias) || alias.includes(part)) {
+          score = Math.max(score, 2);
+        }
+      });
     });
+
+    return score;
+  }
+
+  function firstAvailableVariant(variants) {
+    return (
+      variants.find(function (variant) {
+        return variant && variant.available !== false;
+      }) ||
+      variants[0] ||
+      null
+    );
+  }
+
+  function resolveAddonVariant(productOption, size) {
+    if (!productOption || productOption.kind !== "product") return null;
+    const variants = Array.isArray(productOption.variants) ? productOption.variants : [];
+    if (!variants.length) return null;
+    if (!size) return firstAvailableVariant(variants);
+
+    let bestVariant = null;
+    let bestScore = 0;
+
+    variants.forEach(function (variant) {
+      if (!variant) return;
+      const score = variantMatchScore(variant, size);
+      if (score > bestScore) {
+        bestScore = score;
+        bestVariant = variant;
+      }
+    });
+
+    if (bestVariant) {
+      return bestVariant;
+    }
+
+    return firstAvailableVariant(variants);
   }
 
   function allowedMotionOptionsForSize(size) {
-    const normalized = String(size || "").trim().toLowerCase();
-    if (normalized === "king") {
+    const normalized = normalizeSizeKey(size);
+    if (normalized === "king" || normalized === "split king") {
       return MOTION_OPTIONS;
     }
     if (normalized === "queen") {
       return MOTION_OPTIONS.filter(function (option) {
-        return option.value !== "full_split";
+        return option.key !== "full_split";
       });
     }
     return MOTION_OPTIONS.filter(function (option) {
-      return option.value === "standard";
+      return option.key === "standard";
     });
   }
 
-  function summaryRows(state, productTitle) {
+  function readCatalog(root, key) {
+    const node = root.querySelector('[data-builder-catalog="' + key + '"]');
+    return parseJson(node ? node.textContent : "[]", []);
+  }
+
+  function getSelectedOption(stepKey, state, catalogs, sizeOptions) {
+    const selectedKey = state[stepKey];
+    if (!selectedKey) return null;
+    return getStepOptions(stepKey, state, catalogs, sizeOptions).find(function (option) {
+      return option.key === selectedKey;
+    }) || null;
+  }
+
+  function isAdjustableBaseSelection(state, catalogs, sizeOptions) {
+    const baseOption = getSelectedOption("base", state, catalogs, sizeOptions);
+    return Boolean(baseOption && baseOption.kind === "product" && baseOption.isAdjustable);
+  }
+
+  function visibleSteps(state, catalogs, sizeOptions) {
+    return STEPS.filter(function (step) {
+      return step.key !== "motion" || isAdjustableBaseSelection(state, catalogs, sizeOptions);
+    });
+  }
+
+  function getStepOptions(stepKey, state, catalogs, sizeOptions) {
+    switch (stepKey) {
+      case "size":
+        return sizeOptions;
+      case "base":
+        return (catalogs.base || []).concat(SYSTEM_OPTIONS.base);
+      case "motion":
+        return allowedMotionOptionsForSize(state.size);
+      case "protection":
+        return (catalogs.protection || []).concat(SYSTEM_OPTIONS.protection);
+      case "pillow":
+        return (catalogs.pillow || []).concat(SYSTEM_OPTIONS.pillow);
+      case "bedding":
+        return (catalogs.bedding || []).concat(SYSTEM_OPTIONS.bedding);
+      default:
+        return [];
+    }
+  }
+
+  function summaryRows(state, productTitle, catalogs, sizeOptions) {
     const rows = [{ term: "Mattress", value: productTitle || "Current mattress" }];
 
     if (state.size) {
       rows.push({ term: "Size", value: state.size });
     }
 
-    if (state.base) {
-      rows.push({ term: "Base", value: LABELS[state.base] || state.base });
-    }
+    ["base", "protection", "pillow", "bedding"].forEach(function (stepKey) {
+      const option = getSelectedOption(stepKey, state, catalogs, sizeOptions);
+      if (!option) return;
 
-    if (state.base === "adjustable" && state.motion) {
-      rows.push({ term: "Motion", value: LABELS[state.motion] || state.motion });
-    }
+      const termMap = {
+        base: "Base",
+        protection: "Protection",
+        pillow: "Pillow",
+        bedding: "Bedding"
+      };
 
-    if (state.protection) {
-      rows.push({ term: "Protection", value: LABELS[state.protection] || state.protection });
-    }
+      rows.push({
+        term: termMap[stepKey],
+        value: option.summaryLabel || option.title
+      });
+    });
 
-    if (state.pillow) {
-      rows.push({ term: "Pillow", value: LABELS[state.pillow] || state.pillow });
-    }
-
-    if (state.bedding) {
-      rows.push({ term: "Bedding", value: LABELS[state.bedding] || state.bedding });
+    if (isAdjustableBaseSelection(state, catalogs, sizeOptions)) {
+      const motionOption = getSelectedOption("motion", state, catalogs, sizeOptions);
+      if (motionOption) {
+        rows.splice(3, 0, { term: "Motion", value: motionOption.summaryLabel || motionOption.title });
+      }
     }
 
     if (rows.length === 1) {
@@ -249,6 +393,141 @@
     }
 
     return rows;
+  }
+
+  function calculateAddonSelections(state, catalogs, sizeOptions) {
+    return ["base", "protection", "pillow", "bedding"].reduce(function (acc, stepKey) {
+      const option = getSelectedOption(stepKey, state, catalogs, sizeOptions);
+      if (!option || option.kind !== "product") return acc;
+
+      const variant = resolveAddonVariant(option, state.size);
+      if (!variant) return acc;
+
+      acc.push({
+        stepKey: stepKey,
+        option: option,
+        variant: variant
+      });
+      return acc;
+    }, []);
+  }
+
+  function calculateEstimatedTotalCents(mattressVariant, addonSelections) {
+    let total = mattressVariant ? normalizePriceCents(mattressVariant.price) : 0;
+    addonSelections.forEach(function (selection) {
+      total += normalizePriceCents(selection.variant && selection.variant.price);
+    });
+    return total;
+  }
+
+  function renderProductOption(option, selected, state) {
+    const matchedVariant = resolveAddonVariant(option, state.size);
+    const priceText = matchedVariant
+      ? formatMoneyFromCents(matchedVariant.price)
+      : formatMoneyFromCents(option.price);
+
+    const variantLabel = matchedVariant && matchedVariant.title && matchedVariant.title !== "Default Title"
+      ? matchedVariant.title
+      : "";
+
+    return (
+      '<button type="button" class="snoozepod-builder__option snoozepod-builder__option--product' +
+      (selected ? " is-selected" : "") +
+      '" data-builder-option data-step="' +
+      escapeHtml(option.stepKey) +
+      '" data-value="' +
+      escapeHtml(option.key) +
+      '">' +
+      '<span class="snoozepod-builder__option-media">' +
+      (option.image
+        ? '<img src="' + escapeHtml(option.image) + '" alt="' + escapeHtml(option.imageAlt || option.title) + '" loading="lazy">'
+        : '<span class="snoozepod-builder__option-media-fallback">' + escapeHtml(option.title) + "</span>") +
+      "</span>" +
+      '<span class="snoozepod-builder__option-copy snoozepod-builder__option-copy--product">' +
+      '<span class="snoozepod-builder__option-main">' +
+      '<span class="snoozepod-builder__option-meta">' +
+      (option.typeLabel ? '<span class="snoozepod-builder__option-type">' + escapeHtml(option.typeLabel) + "</span>" : "") +
+      '<span class="snoozepod-builder__option-price">' + escapeHtml(priceText) + "</span>" +
+      "</span>" +
+      '<span class="snoozepod-builder__option-title">' + escapeHtml(option.title) + "</span>" +
+      (variantLabel ? '<span class="snoozepod-builder__option-subtitle">' + escapeHtml(variantLabel) + "</span>" : "") +
+      "</span>" +
+      '<span class="snoozepod-builder__option-check" aria-hidden="true"></span>' +
+      "</span></button>"
+    );
+  }
+
+  function renderSystemOption(option, selected, stepKey) {
+    return (
+      '<button type="button" class="snoozepod-builder__option' +
+      (selected ? " is-selected" : "") +
+      '" data-builder-option data-step="' +
+      escapeHtml(stepKey) +
+      '" data-value="' +
+      escapeHtml(option.key) +
+      '">' +
+      '<span class="snoozepod-builder__option-copy">' +
+      '<span><span class="snoozepod-builder__option-title">' +
+      escapeHtml(option.title) +
+      '</span><span class="snoozepod-builder__option-subtitle">' +
+      escapeHtml(option.subtitle || "") +
+      '</span></span><span class="snoozepod-builder__option-check" aria-hidden="true"></span></span></button>'
+    );
+  }
+
+  function buildCartItems(mattressVariant, state, catalogs, sizeOptions) {
+    const items = [];
+    if (!mattressVariant || !mattressVariant.id) return items;
+
+    items.push({
+      id: Number(mattressVariant.id),
+      quantity: 1,
+      properties: {
+        "SnoozePod Size": state.size || "",
+        "SnoozePod Base Direction": (getSelectedOption("base", state, catalogs, sizeOptions) || {}).summaryLabel || "",
+        "SnoozePod Motion Direction": isAdjustableBaseSelection(state, catalogs, sizeOptions)
+          ? ((getSelectedOption("motion", state, catalogs, sizeOptions) || {}).summaryLabel || "")
+          : "",
+        "SnoozePod Protection Direction": (getSelectedOption("protection", state, catalogs, sizeOptions) || {}).summaryLabel || "",
+        "SnoozePod Pillow Direction": (getSelectedOption("pillow", state, catalogs, sizeOptions) || {}).summaryLabel || "",
+        "SnoozePod Bedding Direction": (getSelectedOption("bedding", state, catalogs, sizeOptions) || {}).summaryLabel || ""
+      }
+    });
+
+    calculateAddonSelections(state, catalogs, sizeOptions).forEach(function (selection) {
+      if (!selection.variant || !selection.variant.id) return;
+      items.push({
+        id: Number(selection.variant.id),
+        quantity: 1
+      });
+    });
+
+    return items;
+  }
+
+  function updateSleepFacts(state, catalogs, sizeOptions) {
+    const motionEl = document.querySelector("[data-sleep-fact-motion]");
+    if (!motionEl) return;
+
+    const baseOption = getSelectedOption("base", state, catalogs, sizeOptions);
+    const motionOption = getSelectedOption("motion", state, catalogs, sizeOptions);
+
+    if (!baseOption) {
+      motionEl.textContent = "Compatible with selected base setup";
+      return;
+    }
+
+    if (baseOption.kind !== "product") {
+      motionEl.textContent = baseOption.summaryLabel || baseOption.title;
+      return;
+    }
+
+    if (baseOption.isAdjustable && motionOption) {
+      motionEl.textContent = baseOption.title + " with " + (motionOption.summaryLabel || motionOption.title);
+      return;
+    }
+
+    motionEl.textContent = baseOption.title;
   }
 
   function initBuilder(root) {
@@ -267,7 +546,20 @@
       }) || variants[0] || null;
     const initialSize =
       String(initialVariant && initialVariant["option" + sizeOptionIndex] ? initialVariant["option" + sizeOptionIndex] : "").trim() ||
-      (sizeOptions[0] ? sizeOptions[0].value : "");
+      (sizeOptions[0] ? sizeOptions[0].key : "");
+
+    const catalogs = {
+      base: readCatalog(root, "base"),
+      protection: readCatalog(root, "protection"),
+      pillow: readCatalog(root, "pillow"),
+      bedding: readCatalog(root, "bedding")
+    };
+
+    Object.keys(catalogs).forEach(function (stepKey) {
+      catalogs[stepKey] = (catalogs[stepKey] || []).map(function (item) {
+        return Object.assign({}, item, { stepKey: stepKey, kind: item.kind || "product" });
+      });
+    });
 
     const els = {
       progress: root.querySelector("[data-builder-progress]"),
@@ -311,40 +603,19 @@
       bedding: ""
     };
 
-    function optionSetForStep(stepKey) {
-      switch (stepKey) {
-        case "size":
-          return sizeOptions;
-        case "base":
-          return BASE_OPTIONS;
-        case "motion":
-          return allowedMotionOptionsForSize(state.size);
-        case "protection":
-          return PROTECTION_OPTIONS;
-        case "pillow":
-          return PILLOW_OPTIONS;
-        case "bedding":
-          return BEDDING_OPTIONS;
-        default:
-          return [];
-      }
-    }
-
-    function stepValue(stepKey) {
-      return state[stepKey] || "";
-    }
-
     function setStepValue(stepKey, value) {
       state[stepKey] = value;
-      if (stepKey === "base" && value !== "adjustable") {
+
+      if (stepKey === "base" && !isAdjustableBaseSelection(state, catalogs, sizeOptions)) {
         state.motion = "";
         if (state.currentStep === "motion") {
           state.currentStep = "protection";
         }
       }
+
       if (stepKey === "size") {
         const allowedMotionValues = allowedMotionOptionsForSize(value).map(function (option) {
-          return option.value;
+          return option.key;
         });
         if (state.motion && allowedMotionValues.indexOf(state.motion) === -1) {
           state.motion = "";
@@ -354,7 +625,7 @@
 
     function canProceed(stepKey) {
       if (stepKey === "review") return true;
-      return Boolean(stepValue(stepKey));
+      return Boolean(state[stepKey]);
     }
 
     function renderStepPills(stepList) {
@@ -378,31 +649,44 @@
         return;
       }
 
-      const options = optionSetForStep(step.key);
-      els.options.innerHTML = options
+      const options = getStepOptions(step.key, state, catalogs, sizeOptions);
+      const realProductCount = options.filter(function (option) {
+        return option.kind === "product";
+      }).length;
+
+      let markup = "";
+      if (["base", "protection", "pillow", "bedding"].indexOf(step.key) > -1 && realProductCount === 0) {
+        markup += '<div class="snoozepod-builder__catalog-empty">No products found for this step yet.</div>';
+      }
+
+      markup += options
         .map(function (option) {
-          const selected = stepValue(step.key) === option.value;
-          return (
-            '<button type="button" class="snoozepod-builder__option' +
-            (selected ? " is-selected" : "") +
-            '" data-builder-option data-step="' +
-            escapeHtml(step.key) +
-            '" data-value="' +
-            escapeHtml(option.value) +
-            '">' +
-            '<span class="snoozepod-builder__option-copy">' +
-            '<span><span class="snoozepod-builder__option-title">' +
-            escapeHtml(option.title) +
-            "</span><span class=\"snoozepod-builder__option-subtitle\">" +
-            escapeHtml(option.subtitle || "") +
-            '</span></span><span class="snoozepod-builder__option-check" aria-hidden="true"></span></span></button>'
-          );
+          const selected = state[step.key] === option.key;
+          if (option.kind === "product") {
+            return renderProductOption(option, selected, state);
+          }
+          return renderSystemOption(option, selected, step.key);
         })
         .join("");
+
+      els.options.innerHTML = markup;
     }
 
-    function renderSummary(productTitle, variant) {
-      const rows = summaryRows(state, productTitle);
+    function updateFormFields(mattressVariant) {
+      if (!formFields) return;
+      formFields.id.value = mattressVariant && mattressVariant.id ? String(mattressVariant.id) : "";
+      formFields.size.value = state.size || "";
+      formFields.base.value = ((getSelectedOption("base", state, catalogs, sizeOptions) || {}).summaryLabel || "");
+      formFields.motion.value = isAdjustableBaseSelection(state, catalogs, sizeOptions)
+        ? (((getSelectedOption("motion", state, catalogs, sizeOptions) || {}).summaryLabel || ""))
+        : "";
+      formFields.protection.value = ((getSelectedOption("protection", state, catalogs, sizeOptions) || {}).summaryLabel || "");
+      formFields.pillow.value = ((getSelectedOption("pillow", state, catalogs, sizeOptions) || {}).summaryLabel || "");
+      formFields.bedding.value = ((getSelectedOption("bedding", state, catalogs, sizeOptions) || {}).summaryLabel || "");
+    }
+
+    function renderSummary(productTitle, mattressVariant) {
+      const rows = summaryRows(state, productTitle, catalogs, sizeOptions);
       const markup = rows
         .map(function (row) {
           return (
@@ -421,29 +705,19 @@
         .replaceAll("snoozepod-builder__summary-term", "snoozepod-builder__review-term")
         .replaceAll("snoozepod-builder__summary-value", "snoozepod-builder__review-value");
 
-      els.price.textContent = variant ? formatMoneyFromCents(variant.price) : "Choose a size";
-    }
-
-    function updateFormFields(variant) {
-      if (!formFields) return;
-      formFields.id.value = variant && variant.id ? String(variant.id) : "";
-      formFields.size.value = state.size || "";
-      formFields.base.value = LABELS[state.base] || "";
-      formFields.motion.value = state.base === "adjustable" ? LABELS[state.motion] || "" : "";
-      formFields.protection.value = LABELS[state.protection] || "";
-      formFields.pillow.value = LABELS[state.pillow] || "";
-      formFields.bedding.value = LABELS[state.bedding] || "";
+      const totalCents = calculateEstimatedTotalCents(mattressVariant, calculateAddonSelections(state, catalogs, sizeOptions));
+      els.price.textContent = mattressVariant ? formatMoneyFromCents(totalCents) : "Choose a size";
     }
 
     function render() {
-      const stepList = visibleSteps(state);
+      const stepList = visibleSteps(state, catalogs, sizeOptions);
       if (!stepList.some(function (step) { return step.key === state.currentStep; })) {
         state.currentStep = stepList[0].key;
       }
 
       const currentIndex = stepList.findIndex(function (step) { return step.key === state.currentStep; });
       const currentStep = stepList[currentIndex];
-      const variant = findVariantForSize(variants, state.size, sizeOptionIndex);
+      const mattressVariant = findVariantForSize(variants, state.size, sizeOptionIndex);
       const reviewing = currentStep.key === "review";
 
       els.progress.style.width = (((currentIndex + 1) / stepList.length) * 100) + "%";
@@ -454,8 +728,9 @@
 
       renderStepPills(stepList);
       renderOptions(currentStep);
-      renderSummary(root.dataset.productTitle, variant);
-      updateFormFields(variant);
+      renderSummary(root.dataset.productTitle, mattressVariant);
+      updateFormFields(mattressVariant);
+      updateSleepFacts(state, catalogs, sizeOptions);
 
       els.review.hidden = !reviewing;
       els.form.hidden = !reviewing;
@@ -471,9 +746,9 @@
       }
 
       if (els.submit) {
-        const unavailable = !variant || variant.available === false;
+        const unavailable = !mattressVariant || mattressVariant.available === false;
         els.submit.disabled = unavailable;
-        els.submit.textContent = unavailable ? "Selected size unavailable" : (root.dataset.addLabel || "Add mattress to cart");
+        els.submit.textContent = unavailable ? "Selected size unavailable" : (root.dataset.addLabel || "Add SnoozePod to cart");
       }
     }
 
@@ -486,7 +761,7 @@
       }
 
       if (event.target.closest("[data-builder-back]")) {
-        const stepList = visibleSteps(state);
+        const stepList = visibleSteps(state, catalogs, sizeOptions);
         const currentIndex = stepList.findIndex(function (step) { return step.key === state.currentStep; });
         if (currentIndex > 0) {
           state.currentStep = stepList[currentIndex - 1].key;
@@ -496,7 +771,7 @@
       }
 
       if (event.target.closest("[data-builder-next]")) {
-        const stepList = visibleSteps(state);
+        const stepList = visibleSteps(state, catalogs, sizeOptions);
         const currentIndex = stepList.findIndex(function (step) { return step.key === state.currentStep; });
         const currentStep = stepList[currentIndex];
         if (!canProceed(currentStep.key)) return;
@@ -518,6 +793,50 @@
         render();
       }
     });
+
+    if (els.form) {
+      els.form.addEventListener("submit", async function (event) {
+        const mattressVariant = findVariantForSize(variants, state.size, sizeOptionIndex);
+        if (!mattressVariant || !window.fetch) return;
+
+        event.preventDefault();
+
+        const items = buildCartItems(mattressVariant, state, catalogs, sizeOptions);
+        if (!items.length) {
+          HTMLFormElement.prototype.submit.call(els.form);
+          return;
+        }
+
+        const originalLabel = els.submit ? els.submit.textContent : "";
+        if (els.submit) {
+          els.submit.disabled = true;
+          els.submit.textContent = "Adding...";
+        }
+
+        try {
+          const response = await fetch((window.Shopify && Shopify.routes && Shopify.routes.root ? Shopify.routes.root : "/") + "cart/add.js", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json"
+            },
+            body: JSON.stringify({ items: items })
+          });
+
+          if (!response.ok) {
+            throw new Error("Cart add failed");
+          }
+
+          window.location.href = (window.Shopify && Shopify.routes && Shopify.routes.cart_url) || "/cart";
+        } catch (error) {
+          if (els.submit) {
+            els.submit.disabled = false;
+            els.submit.textContent = originalLabel;
+          }
+          HTMLFormElement.prototype.submit.call(els.form);
+        }
+      });
+    }
 
     render();
   }
