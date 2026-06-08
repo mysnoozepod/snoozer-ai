@@ -627,6 +627,34 @@ function normalizeIncomingContext(ctx = {}) {
   return context;
 }
 
+function summarizeCanonicalRecommendationForPrompt(context = {}) {
+  const canonical = isObject(context?.canonicalRecommendation) ? context.canonicalRecommendation : null;
+  if (!canonical) return "";
+
+  const summary = {
+    manifestVersion: safeStringContent(canonical.manifestVersion || ""),
+    normalizedAssessment: isObject(canonical.normalizedAssessment)
+      ? canonical.normalizedAssessment
+      : {},
+    topPodId: safeStringContent(canonical.topPodId || ""),
+    topPodIds: Array.isArray(canonical.topPodIds) ? canonical.topPodIds : [],
+    primaryMattressHandle: safeStringContent(canonical.primaryMattressHandle || ""),
+    baseHandle: canonical.baseHandle == null ? null : safeStringContent(canonical.baseHandle || ""),
+    motionKey:
+      safeStringContent(canonical.motionKey || canonical.normalizedAssessment?.motionKey || ""),
+    motionLabel:
+      safeStringContent(canonical.motionLabel || canonical.normalizedAssessment?.motionLabel || ""),
+    reasonKeys: Array.isArray(canonical.reasonKeys) ? canonical.reasonKeys : [],
+    warnings: Array.isArray(canonical.warnings) ? canonical.warnings : [],
+  };
+
+  try {
+    return JSON.stringify(summary);
+  } catch {
+    return "";
+  }
+}
+
 function resolveHandleFromContext(message = "", context = {}) {
   const explore = Array.isArray(context?.explore) ? context.explore : [];
 
@@ -2148,6 +2176,16 @@ async function modelPath(userMessage, { reqId, thread_id, mode, context, intent,
     } catch {
       // ignore
     }
+  }
+
+  const canonicalRecommendationSummary = summarizeCanonicalRecommendationForPrompt(context);
+  if (canonicalRecommendationSummary) {
+    systemContextLines.push(
+      "",
+      "CANONICAL RECOMMENDATION (SOURCE OF TRUTH - DO NOT OVERRIDE):",
+      canonicalRecommendationSummary.slice(0, 1800),
+      "Use these exact pod, mattress, base, motion, reason, and warning values when explaining results."
+    );
   }
 
   const messages = [

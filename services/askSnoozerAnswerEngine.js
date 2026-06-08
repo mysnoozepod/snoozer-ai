@@ -1648,6 +1648,172 @@ function buildFallbackReply() {
   };
 }
 
+const CANONICAL_REASON_LABELS = Object.freeze({
+  split_requires_dual: "split-motion support",
+  firmness_prefers_hybrid: "hybrid support preference",
+  back_or_stomach_support: "back or stomach sleeper support",
+  side_pressure_relief: "side pressure relief",
+  default_support: "balanced support",
+  motion_requires_adjustable: "motion setup compatibility",
+  requested_adjustable_base: "your adjustable-base choice",
+  requested_storage_base: "your storage-base choice",
+  requested_platform_base: "your platform-base choice",
+  requested_no_base: "your no-base choice",
+  primary_mattress_exact: "exact mattress match",
+  primary_mattress_family: "same mattress family match",
+  requested_full_split: "your full-split motion choice",
+  requested_half_split: "your half-split motion choice",
+  requested_standard_motion: "your standard motion choice",
+  partner_friendly: "partner-friendly setup",
+  side_sleeper_pressure_relief: "side-sleeper pressure relief",
+  firmness_firm_match: "firm comfort match",
+  firmness_soft_match: "soft comfort match",
+  fixture_size_match: "size match",
+  simple_non_motion_option: "simple no-motion setup",
+});
+
+function queryLooksLikeRecommendationQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "what do you recommend") ||
+    includesTerm(normalizedQuery, "recommend for me") ||
+    includesTerm(normalizedQuery, "what should i try first") ||
+    includesTerm(normalizedQuery, "what should i try") ||
+    includesTerm(normalizedQuery, "explain my results") ||
+    includesTerm(normalizedQuery, "explain the results") ||
+    includesTerm(normalizedQuery, "why this pod") ||
+    includesTerm(normalizedQuery, "why this snoozepod") ||
+    includesTerm(normalizedQuery, "which mattress fits me") ||
+    includesTerm(normalizedQuery, "which mattress is right for me") ||
+    includesTerm(normalizedQuery, "which mattress fits us") ||
+    includesTerm(normalizedQuery, "what mattress fits me") ||
+    includesTerm(normalizedQuery, "what mattress should i try") ||
+    includesTerm(normalizedQuery, "what pod should i try") ||
+    includesTerm(normalizedQuery, "what should i try first")
+  );
+}
+
+function formatCanonicalReasonLabels(reasonKeys = []) {
+  const labels = Array.from(
+    new Set(
+      (Array.isArray(reasonKeys) ? reasonKeys : [])
+        .map((reasonKey) => CANONICAL_REASON_LABELS[String(reasonKey || "").trim()] || "")
+        .filter(Boolean)
+    )
+  );
+
+  if (!labels.length) return "";
+  if (labels.length === 1) return labels[0];
+  if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
+  return `${labels.slice(0, 2).join(", ")}, and ${labels[2]}`;
+}
+
+function buildCanonicalRecommendationReply({ query = "", canonicalRecommendation = null } = {}) {
+  const canonical =
+    canonicalRecommendation && typeof canonicalRecommendation === "object"
+      ? canonicalRecommendation
+      : null;
+
+  if (!canonical?.topPodId || !canonical?.primaryMattressHandle) {
+    return { reply: "", grounded: false, reason: "missing_canonical_recommendation" };
+  }
+
+  if (!queryLooksLikeRecommendationQuestion(query)) {
+    return { reply: "", grounded: false, reason: "query_not_recommendation_specific" };
+  }
+
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  const topPodId = String(canonical.topPodId || "").trim();
+  const topPodName =
+    cleanAnswerText(canonical.topPodName || "") || (topPodId ? `SnoozePod ${topPodId}` : "your top SnoozePod");
+  const nextPodNames = Array.isArray(canonical.topPodIds)
+    ? canonical.topPodIds
+        .slice(1, 3)
+        .map((podId) => `SnoozePod ${String(podId || "").trim()}`)
+        .filter(Boolean)
+    : [];
+  const mattressTitle =
+    cleanAnswerText(canonical.primaryMattressTitle || "") ||
+    cleanAnswerText(canonical.primaryMattressHandle || "") ||
+    "your matched mattress";
+  const baseTitle =
+    canonical.baseHandle == null
+      ? "No Base"
+      : cleanAnswerText(canonical.baseTitle || "") ||
+        cleanAnswerText(canonical.baseHandle || "") ||
+        "your matched base";
+  const motionLabel =
+    cleanAnswerText(canonical.motionLabel || "") ||
+    cleanAnswerText(canonical.normalizedAssessment?.motionLabel || "") ||
+    cleanAnswerText(canonical.motionKey || "") ||
+    "No Motion";
+  const reasonSummary = formatCanonicalReasonLabels(canonical.reasonKeys);
+  const warningSummary = Array.isArray(canonical.warnings) ? canonical.warnings.filter(Boolean)[0] || "" : "";
+
+  let reply = "";
+
+  if (
+    includesTerm(normalizedQuery, "why this pod") ||
+    includesTerm(normalizedQuery, "why this snoozepod")
+  ) {
+    reply = reasonSummary
+      ? `${topPodName} is first because it matches ${reasonSummary}. It uses ${mattressTitle} with ${baseTitle} and ${motionLabel}.`
+      : `${topPodName} is first in your canonical results. It uses ${mattressTitle} with ${baseTitle} and ${motionLabel}.`;
+  } else if (
+    includesTerm(normalizedQuery, "which mattress fits me") ||
+    includesTerm(normalizedQuery, "which mattress is right for me") ||
+    includesTerm(normalizedQuery, "which mattress fits us") ||
+    includesTerm(normalizedQuery, "what mattress fits me") ||
+    includesTerm(normalizedQuery, "what mattress should i try")
+  ) {
+    reply = reasonSummary
+      ? `Your matched mattress is ${mattressTitle}. It pairs with ${baseTitle} and ${motionLabel}, and ${topPodName} is the first setup to try because of ${reasonSummary}.`
+      : `Your matched mattress is ${mattressTitle}. It pairs with ${baseTitle} and ${motionLabel}, and ${topPodName} is the first setup to try.`;
+  } else if (
+    includesTerm(normalizedQuery, "explain my results") ||
+    includesTerm(normalizedQuery, "explain the results")
+  ) {
+    const rankCopy = nextPodNames.length
+      ? `Your current order starts with ${topPodName}, then ${nextPodNames.join(", then ")}.`
+      : `${topPodName} is your first setup to try.`;
+    reply = reasonSummary
+      ? `${rankCopy} The core match is ${mattressTitle} with ${baseTitle} and ${motionLabel} because of ${reasonSummary}.`
+      : `${rankCopy} The core match is ${mattressTitle} with ${baseTitle} and ${motionLabel}.`;
+  } else if (
+    includesTerm(normalizedQuery, "what should i try first") ||
+    includesTerm(normalizedQuery, "what should i try") ||
+    includesTerm(normalizedQuery, "what pod should i try")
+  ) {
+    reply = reasonSummary
+      ? `Start with ${topPodName} first. It uses ${mattressTitle} with ${baseTitle} and ${motionLabel}, and it ranked first because of ${reasonSummary}.`
+      : `Start with ${topPodName} first. It uses ${mattressTitle} with ${baseTitle} and ${motionLabel}.`;
+  } else {
+    reply = reasonSummary
+      ? `I recommend ${topPodName} first. The match is ${mattressTitle} with ${baseTitle} and ${motionLabel} because of ${reasonSummary}.`
+      : `I recommend ${topPodName} first. The match is ${mattressTitle} with ${baseTitle} and ${motionLabel}.`;
+  }
+
+  if (warningSummary) {
+    reply = `${reply} Note: ${cleanAnswerText(warningSummary)}`;
+  }
+
+  return {
+    reply,
+    grounded: true,
+    sourceType: "canonical_recommendation",
+    sourceKey: topPodId,
+    strategy: "canonical_recommendation",
+    facts: [
+      topPodName,
+      mattressTitle,
+      baseTitle,
+      motionLabel,
+      reasonSummary,
+      warningSummary,
+    ].filter(Boolean),
+  };
+}
+
 function buildAskSnoozerAnswer({
   query = "",
   intent = "",
@@ -1656,6 +1822,7 @@ function buildAskSnoozerAnswer({
   sources = [],
   products = [],
   productContext = null,
+  canonicalRecommendation = null,
   actions = [],
   pages = [],
   collections = [],
@@ -1694,6 +1861,29 @@ function buildAskSnoozerAnswer({
       extracted_facts: [],
       needs_handoff: false,
       reason: "needs_product_clarification",
+      chips_override: null,
+    };
+  }
+
+  const canonicalReply = buildCanonicalRecommendationReply({
+    query,
+    canonicalRecommendation,
+  });
+
+  if (canonicalReply.grounded) {
+    return {
+      reply: clampReply(canonicalReply.reply),
+      answer_grounded: true,
+      answer_source_type: canonicalReply.sourceType || "canonical_recommendation",
+      answer_source_key: canonicalReply.sourceKey || "",
+      answer_facts_count: Array.isArray(canonicalReply.facts) ? canonicalReply.facts.length : 0,
+      matched_preview: previewText(
+        Array.isArray(canonicalReply.facts) ? canonicalReply.facts.join(" ") : canonicalReply.reply
+      ),
+      answer_strategy: canonicalReply.strategy || "canonical_recommendation",
+      extracted_facts: Array.isArray(canonicalReply.facts) ? canonicalReply.facts : [],
+      needs_handoff: false,
+      reason: "",
       chips_override: null,
     };
   }

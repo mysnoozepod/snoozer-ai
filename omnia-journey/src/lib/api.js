@@ -1392,6 +1392,14 @@ export const getRecommendations = async (shopperId = "guest") => {
   return unwrap(raw);
 };
 
+export const resolveRecommendations = async (payload = {}) => {
+  const raw = await retryableRequest("/recommendations/resolve", {
+    method: "POST",
+    body: payload,
+  });
+  return unwrap(raw);
+};
+
 export const triggerIotScene = (payload) =>
   (async () =>
     unwrap(
@@ -1440,6 +1448,7 @@ export const api = {
   // crm + integrations
   trackCRMEvent,
   getRecommendations,
+  resolveRecommendations,
   triggerIotScene,
 };
 

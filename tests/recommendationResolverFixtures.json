@@ -1,0 +1,109 @@
+[
+  {
+    "id": "solo_side_soft_no_motion",
+    "input": {
+      "source": "test",
+      "assessment": {
+        "size": "Queen",
+        "motionMode": "No Motion",
+        "firmness": "Soft",
+        "sleepPosition": "Side",
+        "sleepPartner": "No",
+        "baseType": "No Base",
+        "temperature": "Hot"
+      }
+    },
+    "expected": {
+      "topPodId": "4",
+      "topPodIds": ["4", "5", "1"],
+      "primaryMattressHandle": "12-all-foam-mattress",
+      "baseHandle": null,
+      "motionKey": "none"
+    }
+  },
+  {
+    "id": "solo_back_firm_standard_motion",
+    "input": {
+      "source": "test",
+      "assessment": {
+        "size": "King",
+        "motionMode": "Standard Motion",
+        "firmness": "Firm",
+        "sleepPosition": "Back",
+        "sleepPartner": "No",
+        "baseType": "Adjustable Base",
+        "painPoints": ["Lower Back"]
+      }
+    },
+    "expected": {
+      "topPodId": "3",
+      "topPodIds": ["3", "1", "2"],
+      "primaryMattressHandle": "14-hybrid",
+      "baseHandle": "premium-motion-adjustable-base",
+      "motionKey": "standard"
+    }
+  },
+  {
+    "id": "couple_half_split_queen",
+    "input": {
+      "source": "test",
+      "assessment": {
+        "size": "Queen",
+        "motionMode": "Half Split Motion",
+        "firmness": "Medium",
+        "sleepPosition": "Side",
+        "sleepPartner": "Yes",
+        "baseType": "Adjustable Base"
+      }
+    },
+    "expected": {
+      "topPodId": "1",
+      "topPodIds": ["1", "2", "4"],
+      "primaryMattressHandle": "12-dual-comfort-hybrid",
+      "baseHandle": "premium-motion-adjustable-base",
+      "motionKey": "half_split"
+    }
+  },
+  {
+    "id": "couple_full_split_king",
+    "input": {
+      "source": "test",
+      "assessment": {
+        "size": "King",
+        "motionMode": "Full Split Motion",
+        "firmness": "Medium",
+        "sleepPosition": "Combo",
+        "sleepPartner": "Yes",
+        "baseType": "Adjustable Base"
+      }
+    },
+    "expected": {
+      "topPodId": "2",
+      "topPodIds": ["2", "1", "3"],
+      "primaryMattressHandle": "12-dual-comfort-hybrid",
+      "baseHandle": "premium-motion-adjustable-base",
+      "motionKey": "full_split"
+    }
+  },
+  {
+    "id": "mattress_only_stomach_sleeper",
+    "input": {
+      "source": "test",
+      "assessment": {
+        "size": "Full",
+        "motionMode": "No Motion",
+        "firmness": "Medium",
+        "sleepPosition": "Stomach",
+        "sleepPartner": "No",
+        "baseType": "Mattress Only"
+      }
+    },
+    "expected": {
+      "topPodId": "3",
+      "topPodIds": ["3", "4", "5"],
+      "primaryMattressHandle": "14-hybrid",
+      "baseHandle": null,
+      "motionKey": "none"
+    }
+  }
+]

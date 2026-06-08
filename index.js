@@ -48,6 +48,13 @@ try {
   console.log("âš ï¸ recommendations service not loaded (ok).");
 }
 
+let recommendationResolver = null;
+try {
+  recommendationResolver = require("./services/recommendationResolver");
+} catch (error) {
+  console.log("âš ï¸ recommendation resolver not loaded (ok).", error.message);
+}
+
 let shopifySvc = null;
 try {
   shopifySvc = require("./services/shopify");
@@ -3674,6 +3681,139 @@ async function getSeedRecommendations(shopperId) {
   return { products: [], hints: tags.slice(0, 4), source: "assessment" };
 }
 
+function uniqueStrings(values = []) {
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+function sanitizeCanonicalProductSummary(product) {
+  if (!isObject(product)) return null;
+  const handle = String(product.handle || "").trim();
+  if (!handle) return null;
+  return {
+    handle,
+    title: String(product.title || "").trim() || handle,
+    catalogType: String(product.catalogType || "").trim() || "",
+    family: String(product.family || "").trim() || "",
+    shopifyPath: String(product.shopifyPath || "").trim() || "",
+  };
+}
+
+function buildAskSnoozerCanonicalContext(resolved) {
+  if (!isObject(resolved)) return null;
+
+  const recommendation = isObject(resolved.recommendation) ? resolved.recommendation : {};
+  const normalizedAssessment = isObject(resolved.normalizedAssessment)
+    ? { ...resolved.normalizedAssessment }
+    : {};
+  const topPodId = String(recommendation.topPodId || "").trim();
+  const topPodIds = uniqueStrings(Array.isArray(recommendation.topPodIds) ? recommendation.topPodIds : []);
+  const topPod =
+    Array.isArray(resolved.pods) && topPodId
+      ? resolved.pods.find((pod) => String(pod?.podId || "").trim() === topPodId) || null
+      : null;
+
+  const productIndex = {};
+  for (const product of Array.isArray(resolved.products) ? resolved.products : []) {
+    const sanitized = sanitizeCanonicalProductSummary(product);
+    if (sanitized) productIndex[sanitized.handle] = sanitized;
+  }
+
+  const primaryMattressHandle = String(recommendation.primaryMattressHandle || "").trim();
+  const baseHandleRaw = recommendation.baseHandle;
+  const baseHandle = baseHandleRaw == null ? null : String(baseHandleRaw || "").trim() || null;
+
+  return {
+    manifestVersion: String(resolved.manifestVersion || "").trim() || null,
+    normalizedAssessment,
+    topPodId: topPodId || null,
+    topPodIds,
+    topPodName: String(topPod?.name || "").trim() || topPodId || "",
+    primaryMattressHandle: primaryMattressHandle || null,
+    primaryMattressTitle: productIndex[primaryMattressHandle]?.title || primaryMattressHandle || "",
+    baseHandle,
+    baseTitle:
+      baseHandle == null ? "Mattress Only" : productIndex[baseHandle]?.title || baseHandle || "",
+    motionKey:
+      String(normalizedAssessment.motionKey || recommendation.motionKey || "").trim() || null,
+    motionLabel:
+      String(normalizedAssessment.motionLabel || recommendation.motionLabel || "").trim() || null,
+    reasonKeys: uniqueStrings(Array.isArray(recommendation.reasonKeys) ? recommendation.reasonKeys : []),
+    warnings: uniqueStrings(
+      []
+        .concat(Array.isArray(recommendation.warnings) ? recommendation.warnings : [])
+        .concat(Array.isArray(normalizedAssessment.warnings) ? normalizedAssessment.warnings : [])
+    ),
+    topPod: topPod
+      ? {
+          podId: String(topPod.podId || "").trim() || null,
+          name: String(topPod.name || "").trim() || "",
+          mattressHandle: String(topPod.mattressHandle || "").trim() || null,
+          baseHandle: String(topPod.baseHandle || "").trim() || null,
+          baseTypeKey: String(topPod.baseTypeKey || "").trim() || "",
+          defaultMotionKey: String(topPod.defaultMotionKey || "").trim() || "",
+          tags: Array.isArray(topPod.tags) ? uniqueStrings(topPod.tags) : [],
+        }
+      : null,
+    products: productIndex,
+  };
+}
+
+function pickAskSnoozerAssessmentInput({ payload, context, storedAssessment } = {}) {
+  const candidates = [
+    payload?.assessment,
+    isObject(payload?.answers) ? { answers: payload.answers } : null,
+    context?.assessment,
+    isObject(context?.answers) ? { answers: context.answers } : null,
+    storedAssessment,
+  ];
+
+  for (const candidate of candidates) {
+    if (!isObject(candidate)) continue;
+    if (isObject(candidate.answers)) return candidate;
+    if (Object.keys(candidate).length) return candidate;
+  }
+
+  return null;
+}
+
+function attachCanonicalRecommendationContext(context = {}, canonicalRecommendation = null) {
+  const next = isObject(context) ? { ...context } : {};
+  if (!isObject(canonicalRecommendation)) return next;
+
+  next.canonicalRecommendation = canonicalRecommendation;
+  next.progress = isObject(next.progress) ? { ...next.progress } : {};
+  next.progress.assessmentCompleted = true;
+
+  const handles = uniqueStrings([
+    ...(Array.isArray(next.recommendedProductHandles) ? next.recommendedProductHandles : []),
+    canonicalRecommendation.primaryMattressHandle,
+    canonicalRecommendation.baseHandle,
+    canonicalRecommendation.topPod?.mattressHandle,
+    canonicalRecommendation.topPod?.baseHandle,
+  ]);
+
+  if (handles.length) next.recommendedProductHandles = handles;
+  return next;
+}
+
+function maybeBuildAskSnoozerCanonicalAnswer(query, context) {
+  const canonicalRecommendation = isObject(context?.canonicalRecommendation)
+    ? context.canonicalRecommendation
+    : null;
+  if (!canonicalRecommendation) return null;
+
+  const answer = buildAskSnoozerAnswer({
+    query,
+    canonicalRecommendation,
+  });
+
+  if (!answer?.answer_grounded || answer.answer_strategy !== "canonical_recommendation") {
+    return null;
+  }
+
+  return answer;
+}
+
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // IoT Scene Trigger (publish to IoT Core if configured)
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -4623,11 +4763,12 @@ async function handle(event = {}) {
     context.shopperId = shopperId;
     context.sessionId = effectiveSessionId;
 
-    // 3) Attach assessment only (NO recs in pod mode)
+    // 3) Attach assessment and canonical recommendation context
+    let storedAssessment = null;
     try {
       if (shopperId) {
-        const assess = await getAssessmentResult(shopperId);
-        if (assess) context.assessment = assess;
+        storedAssessment = await getAssessmentResult(shopperId);
+        if (storedAssessment) context.assessment = storedAssessment;
 
         const m = String(mode || "").toLowerCase();
         const allowRecs = m !== "pod";
@@ -4662,6 +4803,47 @@ async function handle(event = {}) {
           }
         } else {
           context.recommendationHints = [];
+        }
+      }
+
+      const assessmentInput = pickAskSnoozerAssessmentInput({
+        payload,
+        context,
+        storedAssessment,
+      });
+
+      if (
+        assessmentInput &&
+        recommendationResolver &&
+        typeof recommendationResolver.resolveRecommendation === "function"
+      ) {
+        try {
+          const resolved = await recommendationResolver.resolveRecommendation({
+            assessment: assessmentInput,
+            includeProducts: true,
+            includePods: true,
+            source: "ask_snoozer",
+          });
+          const canonicalContext = buildAskSnoozerCanonicalContext(resolved);
+          if (canonicalContext) {
+            context = attachCanonicalRecommendationContext(context, canonicalContext);
+            log("ask-snoozer.canonical", "resolved", {
+              traceId,
+              sessionId: effectiveSessionId,
+              shopperId,
+              topPodId: canonicalContext.topPodId || null,
+              primaryMattressHandle: canonicalContext.primaryMattressHandle || null,
+              baseHandle: canonicalContext.baseHandle || null,
+              motionKey: canonicalContext.motionKey || null,
+            });
+          }
+        } catch (canonicalErr) {
+          log("ask-snoozer.canonical.error", canonicalErr.message, {
+            traceId,
+            sessionId: effectiveSessionId,
+            shopperId,
+            code: canonicalErr?.code || null,
+          });
         }
       }
     } catch (ctxErr) {
@@ -4734,6 +4916,100 @@ async function handle(event = {}) {
       }
     }
 
+    const canonicalAnswer = maybeBuildAskSnoozerCanonicalAnswer(msg, context);
+    if (canonicalAnswer) {
+      const latencyMs = Date.now() - startedAt;
+
+      if (sco && typeof sco === "object") {
+        try {
+          const merged = deepMerge(sco, context);
+          await saveSessionContext(effectiveSessionId, merged);
+          sco = merged;
+          log("session.autosave", "canonical_context", { traceId, effectiveSessionId });
+        } catch (e) {
+          log("session.autosave.error", e.message, { traceId, effectiveSessionId });
+        }
+      }
+
+      const mergedContext =
+        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model: "canonical_recommendation",
+        text: canonicalAnswer.reply || "",
+        context: mergedContext,
+        products: [],
+        actions: [],
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      });
+
+      env.reply = canonicalAnswer.reply || env.message?.text || "";
+      env.thread_id = effectiveSessionId;
+      env.status = "completed";
+      env.sessionId = effectiveSessionId;
+      env.meta = {
+        path: "deterministic",
+        answer_strategy: canonicalAnswer.answer_strategy || "canonical_recommendation",
+        answer_grounded: Boolean(canonicalAnswer.answer_grounded),
+        answer_source_type: canonicalAnswer.answer_source_type || "canonical_recommendation",
+        answer_source_key: canonicalAnswer.answer_source_key || null,
+        answer_facts_count: Number(canonicalAnswer.answer_facts_count || 0),
+        matched_preview: canonicalAnswer.matched_preview || "",
+        extracted_facts: Array.isArray(canonicalAnswer.extracted_facts)
+          ? canonicalAnswer.extracted_facts
+          : [],
+        reason: canonicalAnswer.reason || "",
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      };
+
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+
+      logContractResponse(normalized);
+
+      log("ask-snoozer.canonical", "answered", {
+        traceId,
+        sessionId: effectiveSessionId,
+        shopperId,
+        topPodId: context?.canonicalRecommendation?.topPodId || null,
+        primaryMattressHandle: context?.canonicalRecommendation?.primaryMattressHandle || null,
+        baseHandle: context?.canonicalRecommendation?.baseHandle || null,
+        motionKey: context?.canonicalRecommendation?.motionKey || null,
+        totalMs: latencyMs,
+      });
+
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context: mergedContext,
+          payload,
+          defaultSpeech: env.reply || env.message?.text || "I'm here.",
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+    }
+
     // 4) Call Snoozer
     try {
       const { getSnoozerResponse } = require("./services/openai");
@@ -4779,12 +5055,13 @@ async function handle(event = {}) {
         }
       }
 
-      const mergedContext =
-        sco && typeof sco === "object"
-          ? sco
-          : aiResult && aiResult.context && typeof aiResult.context === "object"
-            ? aiResult.context
-            : context;
+      let mergedContext = context;
+      if (sco && typeof sco === "object") {
+        mergedContext = deepMerge(sco, context);
+      }
+      if (aiResult && aiResult.context && typeof aiResult.context === "object") {
+        mergedContext = deepMerge(mergedContext, aiResult.context);
+      }
 
       const rawMessage = debug ? (aiResult?.raw || aiResult) : null;
 
@@ -4973,6 +5250,28 @@ async function handle(event = {}) {
     }
 
     return response(event, 200, recs);
+  }
+
+  if (method === "POST" && routePath === "/recommendations/resolve") {
+    if (!recommendationResolver || typeof recommendationResolver.resolveRecommendation !== "function") {
+      return response(event, 500, {
+        ok: false,
+        code: "E_RECOMMENDATION_RESOLVER_UNAVAILABLE",
+        message: "Recommendation resolver unavailable.",
+      });
+    }
+
+    try {
+      const body = safeJsonBody(event);
+      const resolved = await recommendationResolver.resolveRecommendation(body || {});
+      return response(event, 200, resolved);
+    } catch (error) {
+      return response(event, Number(error.statusCode || 500), {
+        ok: false,
+        code: error.code || "E_RECOMMENDATION_RESOLVE",
+        message: error.message || "Unable to resolve recommendations.",
+      });
+    }
   }
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ IoT Scene Trigger

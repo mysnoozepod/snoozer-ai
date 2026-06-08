@@ -1,0 +1,118 @@
+[
+  {
+    "id": "solo_side_soft_no_motion",
+    "input": {
+      "size": "Queen",
+      "motionMode": "No Motion",
+      "firmness": "Soft",
+      "sleepPosition": "Side",
+      "sleepPartner": "No",
+      "baseType": "No Base"
+    }
+  },
+  {
+    "id": "solo_back_firm_standard_motion",
+    "input": {
+      "size": "King",
+      "motionMode": "Standard Motion",
+      "firmness": "Firm",
+      "sleepPosition": "Back",
+      "sleepPartner": "No",
+      "baseType": "Adjustable Base"
+    }
+  },
+  {
+    "id": "stomach_firm_mattress_only",
+    "input": {
+      "size": "Full",
+      "motionMode": "No Motion",
+      "firmness": "Firm",
+      "sleepPosition": "Stomach",
+      "sleepPartner": "No",
+      "baseType": "Mattress Only"
+    }
+  },
+  {
+    "id": "hot_sleeper_cooling_priority",
+    "input": {
+      "size": "Queen",
+      "motionMode": "No Motion",
+      "firmness": "Medium",
+      "sleepPosition": "Side",
+      "sleepPartner": "No",
+      "baseType": "No Base",
+      "temperature": "Hot"
+    }
+  },
+  {
+    "id": "couple_same_firmness_queen_half_split",
+    "input": {
+      "size": "Queen",
+      "motionMode": "Half Split Motion",
+      "firmness": "Medium",
+      "sleepPosition": "Side",
+      "sleepPartner": "Yes",
+      "baseType": "Adjustable Base",
+      "partnerFirmnessMatch": true
+    }
+  },
+  {
+    "id": "couple_different_firmness_queen_half_split",
+    "input": {
+      "size": "Queen",
+      "motionMode": "Half Split Motion",
+      "firmness": "Medium",
+      "sleepPosition": "Side",
+      "sleepPartner": "Yes",
+      "baseType": "Adjustable Base",
+      "partnerFirmnessMatch": false,
+      "dualComfortNeedsDifferent": true
+    }
+  },
+  {
+    "id": "couple_different_firmness_king_full_split",
+    "input": {
+      "size": "King",
+      "motionMode": "Full Split Motion",
+      "firmness": "Medium",
+      "sleepPosition": "Combo",
+      "sleepPartner": "Yes",
+      "baseType": "Adjustable Base",
+      "partnerFirmnessMatch": false,
+      "dualComfortNeedsDifferent": true
+    }
+  },
+  {
+    "id": "invalid_full_split_queen_request",
+    "input": {
+      "size": "Queen",
+      "motionMode": "Full Split Motion",
+      "firmness": "Medium",
+      "sleepPosition": "Side",
+      "sleepPartner": "Yes",
+      "baseType": "Adjustable Base"
+    }
+  },
+  {
+    "id": "adjustable_base_standard_motion",
+    "input": {
+      "size": "Queen",
+      "motionMode": "Standard Motion",
+      "firmness": "Medium",
+      "sleepPosition": "Back",
+      "sleepPartner": "No",
+      "baseType": "Adjustable Base"
+    }
+  },
+  {
+    "id": "platform_no_adjustable_shopper",
+    "input": {
+      "size": "Queen",
+      "motionMode": "No Motion",
+      "firmness": "Medium",
+      "sleepPosition": "Back",
+      "sleepPartner": "No",
+      "baseType": "Platform Base"
+    }
+  }
+]

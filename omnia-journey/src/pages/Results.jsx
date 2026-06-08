@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import useRewards from "@/lib/useRewards";
 import { generateShowroomRecommendations } from "@/lib/utils/recommendations";
+import {
+  getResultsRecommendations,
+  isCanonicalRecommendationsEnabled,
+} from "@/lib/utils/resultsRecommendations";
 import { api } from "@/lib/api";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import { ImageOff, Volume2, ArrowRight, Star } from "lucide-react";
@@ -11,6 +15,11 @@ import { ImageOff, Volume2, ArrowRight, Star } from "lucide-react";
 const BRAND = {
   primary: "#1A66D2",
 };
+
+const USE_CANONICAL_RECOMMENDATIONS = isCanonicalRecommendationsEnabled(
+  import.meta.env.VITE_USE_CANONICAL_RECOMMENDATIONS,
+  { defaultValue: true }
+);
 
 function safeGet(key) {
   try {
@@ -480,11 +489,14 @@ export default function Results() {
       setLoading(true);
 
       try {
-        const generated = await generateShowroomRecommendations(answers);
-        const safeGenerated = {
-          ...(generated || {}),
-          pods: Array.isArray(generated?.pods) ? generated.pods : [],
-        };
+        const { recommendations } = await getResultsRecommendations({
+          answers,
+          useCanonical: USE_CANONICAL_RECOMMENDATIONS,
+          resolveCanonical: (payload) => api.resolveRecommendations(payload),
+          generateLocal: generateShowroomRecommendations,
+          logger: console,
+        });
+        const safeGenerated = recommendations || { pods: [] };
 
         safeSetJson("snooze.recommendations", safeGenerated || {});
 

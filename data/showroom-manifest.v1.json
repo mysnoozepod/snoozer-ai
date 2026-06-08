@@ -1,0 +1,439 @@
+{
+  "version": "2026-06-07.1",
+  "updatedAt": "2026-06-07T00:00:00.000Z",
+  "assessmentSchema": {
+    "sizes": ["Twin", "Twin XL", "Full", "Queen", "King"],
+    "positions": ["side", "back", "stomach", "combo"],
+    "firmnesses": ["soft", "medium", "firm"],
+    "baseTypes": [
+      { "key": "none", "label": "No Base" },
+      { "key": "adjustable", "label": "Adjustable Base" },
+      { "key": "platform", "label": "Platform Base" },
+      { "key": "storage", "label": "Storage Base" }
+    ],
+    "motionModes": [
+      {
+        "key": "none",
+        "label": "No Motion",
+        "allowedSizes": ["Twin", "Twin XL", "Full", "Queen", "King"],
+        "requiresBaseType": null,
+        "requiresDualComfort": false
+      },
+      {
+        "key": "standard",
+        "label": "Standard Motion",
+        "allowedSizes": ["Twin", "Twin XL", "Full", "Queen", "King"],
+        "requiresBaseType": "adjustable",
+        "requiresDualComfort": false
+      },
+      {
+        "key": "half_split",
+        "label": "Half Split Motion",
+        "allowedSizes": ["Queen", "King"],
+        "requiresBaseType": "adjustable",
+        "requiresDualComfort": true
+      },
+      {
+        "key": "full_split",
+        "label": "Full Split Motion",
+        "allowedSizes": ["King"],
+        "requiresBaseType": "adjustable",
+        "requiresDualComfort": true
+      }
+    ],
+    "aliases": {
+      "size": {
+        "twinxl": "Twin XL",
+        "twin xl": "Twin XL"
+      },
+      "position": {
+        "combination": "combo",
+        "mix / combination": "combo",
+        "mixed": "combo"
+      },
+      "firmness": {
+        "medium soft": "soft",
+        "medium firm": "firm"
+      },
+      "baseType": {
+        "mattress only": "none",
+        "no base": "none",
+        "adjustable base": "adjustable",
+        "platform base": "platform",
+        "storage base": "storage"
+      },
+      "motionMode": {
+        "no motion": "none",
+        "standard": "standard",
+        "standard motion": "standard",
+        "half split": "half_split",
+        "half split motion": "half_split",
+        "full split": "full_split",
+        "full split motion": "full_split",
+        "split motion": "half_split"
+      }
+    }
+  },
+  "products": [
+    {
+      "handle": "12-dual-comfort-hybrid",
+      "catalogType": "mattress",
+      "family": "dual",
+      "title": "12\" Dual Comfort Hybrid",
+      "active": true,
+      "recommendable": true,
+      "podBuilderEligible": true,
+      "shopifyPath": "/products/12-dual-comfort-hybrid",
+      "priceSource": "shopify_live",
+      "attributes": {
+        "dualComfort": true,
+        "supportsSplitMotion": true,
+        "preferredForPartnerSleep": true,
+        "cooling": true
+      }
+    },
+    {
+      "handle": "14-hybrid",
+      "catalogType": "mattress",
+      "family": "hybrid",
+      "title": "14\" Hybrid",
+      "active": true,
+      "recommendable": true,
+      "podBuilderEligible": true,
+      "shopifyPath": "/products/14-hybrid",
+      "priceSource": "shopify_live",
+      "attributes": {
+        "dualComfort": false,
+        "supportsSplitMotion": false,
+        "preferredForPartnerSleep": false,
+        "cooling": true
+      }
+    },
+    {
+      "handle": "12-all-foam-mattress",
+      "catalogType": "mattress",
+      "family": "foam",
+      "title": "12\" All Foam Mattress",
+      "active": true,
+      "recommendable": true,
+      "podBuilderEligible": true,
+      "shopifyPath": "/products/12-all-foam-mattress",
+      "priceSource": "shopify_live",
+      "attributes": {
+        "dualComfort": false,
+        "supportsSplitMotion": false,
+        "preferredForPartnerSleep": false,
+        "cooling": false
+      }
+    },
+    {
+      "handle": "10-all-foam-mattress",
+      "catalogType": "mattress",
+      "family": "foam",
+      "title": "10\" All Foam Mattress",
+      "active": true,
+      "recommendable": true,
+      "podBuilderEligible": true,
+      "shopifyPath": "/products/10-all-foam-mattress",
+      "priceSource": "shopify_live",
+      "attributes": {
+        "dualComfort": false,
+        "supportsSplitMotion": false,
+        "preferredForPartnerSleep": false,
+        "cooling": false
+      }
+    },
+    {
+      "handle": "premium-motion-adjustable-base",
+      "catalogType": "base",
+      "family": "adjustable",
+      "title": "Premium Motion Adjustable Base",
+      "active": true,
+      "recommendable": true,
+      "podBuilderEligible": true,
+      "shopifyPath": "/products/premium-motion-adjustable-base",
+      "priceSource": "shopify_live",
+      "attributes": {
+        "supportsMotion": true,
+        "supportsSplitMotion": true
+      }
+    },
+    {
+      "handle": "storage-base",
+      "catalogType": "base",
+      "family": "storage",
+      "title": "Storage Base",
+      "active": true,
+      "recommendable": true,
+      "podBuilderEligible": true,
+      "shopifyPath": "/products/storage-base",
+      "priceSource": "shopify_live",
+      "attributes": {
+        "supportsMotion": false,
+        "supportsSplitMotion": false
+      }
+    },
+    {
+      "handle": "platform-base",
+      "catalogType": "base",
+      "family": "platform",
+      "title": "Platform Base",
+      "active": true,
+      "recommendable": true,
+      "podBuilderEligible": true,
+      "shopifyPath": "/products/platform-base",
+      "priceSource": "shopify_live",
+      "attributes": {
+        "supportsMotion": false,
+        "supportsSplitMotion": false
+      }
+    }
+  ],
+  "pods": [
+    {
+      "podId": "1",
+      "name": "SnoozePod 1",
+      "active": true,
+      "mattressHandle": "12-dual-comfort-hybrid",
+      "baseHandle": "premium-motion-adjustable-base",
+      "baseTypeKey": "adjustable",
+      "defaultSize": "King",
+      "defaultMotionKey": "half_split",
+      "hasAdjustableBase": true,
+      "displayedIn": {
+        "size": "King",
+        "baseLabel": "Adjustable Base",
+        "motionLabel": "Half Split Motion",
+        "dualComfort": { "left": "Medium Firm", "right": "Medium Soft" }
+      },
+      "eligibility": {
+        "sizes": ["Twin", "Twin XL", "Full", "Queen", "King"],
+        "baseTypeKeys": ["adjustable", "platform", "storage", "none"],
+        "motionKeys": ["none", "standard", "half_split", "full_split"]
+      },
+      "tags": ["dual_comfort", "adjustable", "partner_friendly", "split_ready", "soft_firm_mix"]
+    },
+    {
+      "podId": "2",
+      "name": "SnoozePod 2",
+      "active": true,
+      "mattressHandle": "12-dual-comfort-hybrid",
+      "baseHandle": "premium-motion-adjustable-base",
+      "baseTypeKey": "adjustable",
+      "defaultSize": "King",
+      "defaultMotionKey": "full_split",
+      "hasAdjustableBase": true,
+      "displayedIn": {
+        "size": "King",
+        "baseLabel": "Adjustable Base",
+        "motionLabel": "Full Split Motion",
+        "dualComfort": { "left": "Soft", "right": "Firm" }
+      },
+      "eligibility": {
+        "sizes": ["Twin", "Twin XL", "Full", "Queen", "King"],
+        "baseTypeKeys": ["adjustable", "platform", "storage", "none"],
+        "motionKeys": ["none", "standard", "half_split", "full_split"]
+      },
+      "tags": ["dual_comfort", "adjustable", "partner_friendly", "split_ready", "full_split"]
+    },
+    {
+      "podId": "3",
+      "name": "SnoozePod 3",
+      "active": true,
+      "mattressHandle": "14-hybrid",
+      "baseHandle": "premium-motion-adjustable-base",
+      "baseTypeKey": "adjustable",
+      "defaultSize": "King",
+      "defaultMotionKey": "standard",
+      "hasAdjustableBase": true,
+      "displayedIn": {
+        "size": "King",
+        "baseLabel": "Adjustable Base",
+        "motionLabel": "Standard Motion"
+      },
+      "eligibility": {
+        "sizes": ["Twin", "Twin XL", "Full", "Queen", "King"],
+        "baseTypeKeys": ["adjustable", "platform", "storage", "none"],
+        "motionKeys": ["none", "standard", "half_split", "full_split"]
+      },
+      "tags": ["hybrid_support", "adjustable", "support", "cooling"]
+    },
+    {
+      "podId": "4",
+      "name": "SnoozePod 4",
+      "active": true,
+      "mattressHandle": "12-all-foam-mattress",
+      "baseHandle": "storage-base",
+      "baseTypeKey": "storage",
+      "defaultSize": "Queen",
+      "defaultMotionKey": "none",
+      "hasAdjustableBase": false,
+      "displayedIn": {
+        "size": "Queen",
+        "baseLabel": "Storage Base",
+        "motionLabel": "No Motion"
+      },
+      "eligibility": {
+        "sizes": ["Twin", "Twin XL", "Full", "Queen", "King"],
+        "baseTypeKeys": ["storage", "platform", "none", "adjustable"],
+        "motionKeys": ["none", "standard"]
+      },
+      "tags": ["foam", "pressure_relief", "storage", "no_motion", "simple"]
+    },
+    {
+      "podId": "5",
+      "name": "SnoozePod 5",
+      "active": true,
+      "mattressHandle": "10-all-foam-mattress",
+      "baseHandle": "platform-base",
+      "baseTypeKey": "platform",
+      "defaultSize": "Queen",
+      "defaultMotionKey": "none",
+      "hasAdjustableBase": false,
+      "displayedIn": {
+        "size": "Queen",
+        "baseLabel": "Platform Base",
+        "motionLabel": "No Motion"
+      },
+      "eligibility": {
+        "sizes": ["Twin", "Twin XL", "Full", "Queen", "King"],
+        "baseTypeKeys": ["platform", "storage", "none", "adjustable"],
+        "motionKeys": ["none", "standard"]
+      },
+      "tags": ["foam", "platform", "no_motion", "simple"]
+    }
+  ],
+  "recommendationRules": {
+    "recommendedCount": 3,
+    "primaryMattressRules": [
+      {
+        "when": { "motionKey": ["half_split", "full_split"] },
+        "pickHandle": "12-dual-comfort-hybrid",
+        "reasonKey": "split_requires_dual"
+      },
+      {
+        "when": { "firmness": ["firm"] },
+        "pickHandle": "14-hybrid",
+        "reasonKey": "firmness_prefers_hybrid"
+      },
+      {
+        "when": { "position": ["back", "stomach"] },
+        "pickHandle": "14-hybrid",
+        "reasonKey": "back_or_stomach_support"
+      },
+      {
+        "when": { "position": ["side"] },
+        "pickHandle": "12-all-foam-mattress",
+        "reasonKey": "side_pressure_relief"
+      },
+      {
+        "defaultHandle": "14-hybrid",
+        "reasonKey": "default_support"
+      }
+    ],
+    "baseRules": [
+      {
+        "when": { "motionKey": ["standard", "half_split", "full_split"] },
+        "pickHandle": "premium-motion-adjustable-base",
+        "reasonKey": "motion_requires_adjustable"
+      },
+      {
+        "when": { "baseType": ["adjustable"] },
+        "pickHandle": "premium-motion-adjustable-base",
+        "reasonKey": "requested_adjustable_base"
+      },
+      {
+        "when": { "baseType": ["storage"] },
+        "pickHandle": "storage-base",
+        "reasonKey": "requested_storage_base"
+      },
+      {
+        "when": { "baseType": ["platform"] },
+        "pickHandle": "platform-base",
+        "reasonKey": "requested_platform_base"
+      },
+      {
+        "when": { "baseType": ["none"] },
+        "pickHandle": null,
+        "reasonKey": "requested_no_base"
+      }
+    ],
+    "podScoreBoosts": [
+      {
+        "reasonKey": "primary_mattress_exact",
+        "points": 100,
+        "match": { "mattressHandle": "$primaryMattressHandle" }
+      },
+      {
+        "reasonKey": "primary_mattress_family",
+        "points": 55,
+        "match": { "mattressFamily": "$primaryMattressFamily" }
+      },
+      {
+        "when": { "motionKey": ["full_split"] },
+        "reasonKey": "requested_full_split",
+        "points": 70,
+        "match": { "motionKey": ["full_split"] }
+      },
+      {
+        "when": { "motionKey": ["half_split"] },
+        "reasonKey": "requested_half_split",
+        "points": 60,
+        "match": { "motionKey": ["half_split"] }
+      },
+      {
+        "when": { "motionKey": ["standard"] },
+        "reasonKey": "requested_standard_motion",
+        "points": 28,
+        "match": { "motionKey": ["standard"], "hasAdjustableBase": true }
+      },
+      {
+        "when": { "motionKey": ["half_split", "full_split"] },
+        "reasonKey": "split_requires_dual",
+        "points": 35,
+        "match": { "tagsAny": ["dual_comfort"] }
+      },
+      {
+        "when": { "hasPartner": [true] },
+        "reasonKey": "partner_friendly",
+        "points": 18,
+        "match": { "tagsAny": ["partner_friendly", "adjustable"] }
+      },
+      {
+        "when": { "position": ["side"] },
+        "reasonKey": "side_sleeper_pressure_relief",
+        "points": 18,
+        "match": { "mattressFamily": ["foam"] }
+      },
+      {
+        "when": { "position": ["back", "stomach"] },
+        "reasonKey": "back_or_stomach_support",
+        "points": 18,
+        "match": { "mattressFamily": ["hybrid"] }
+      },
+      {
+        "when": { "firmness": ["firm"] },
+        "reasonKey": "firmness_firm_match",
+        "points": 12,
+        "match": { "mattressFamily": ["hybrid"] }
+      },
+      {
+        "when": { "firmness": ["soft"] },
+        "reasonKey": "firmness_soft_match",
+        "points": 12,
+        "match": { "mattressFamily": ["foam", "dual"] }
+      },
+      {
+        "reasonKey": "fixture_size_match",
+        "points": 10,
+        "match": { "displayedSize": "$size" }
+      },
+      {
+        "when": { "motionKey": ["none"], "hasPartner": [false] },
+        "reasonKey": "simple_non_motion_option",
+        "points": 8,
+        "match": { "hasAdjustableBase": false, "mattressFamily": ["foam"] }
+      }
+    ]
+  }
+}

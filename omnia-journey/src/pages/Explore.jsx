@@ -370,7 +370,9 @@ export default function Explore() {
     const inStore = activePod.inStore || activePod.displayedIn || {};
     const size = pickDisplayedSize(inStore.size, selectedSize);
 
-    const baseLabel = computeDisplayedBaseLabel(activePod.baseHandle);
+    const baseLabel =
+      String(inStore.baseLabel || "").trim() ||
+      computeDisplayedBaseLabel(activePod.baseHandle || activePod.fixtureBaseHandle);
 
     const motionLabel = computeDisplayedMotionLabel(
       inStore.motionMode || inStore.motion,
