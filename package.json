@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "node index.js",
+    "package:lambda": "tar -a -cf snoozer-backend.zip index.js package.json package-lock.json data handlers routes services utils node_modules faqs.json knowledge_base.json products.json searchProducts.js",
     "package:with-deps": "rm -f build.zip && npm ci && zip -r build.zip . -x \".git/*\" -x \"*.log\" -x \"build.zip\"",
     "package:without-deps": "rm -f build.zip && zip -r build.zip . -x \"node_modules/*\" -x \".git/*\" -x \"*.log\" -x \"build.zip\" && echo \"⚠️ Remember: use a Lambda Layer for node_modules if you ship this zip.\""
   },
