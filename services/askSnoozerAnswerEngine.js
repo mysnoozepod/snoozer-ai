@@ -984,13 +984,13 @@ function buildProductSpecificReply({
     let comparisonReply = `${cleanAnswerText(first.title || "")} and ${cleanAnswerText(second.title || "")} are good products to compare.`;
 
     if (firstProfile.isFoam && secondProfile.isHybrid) {
-      comparisonReply = `${cleanAnswerText(first.title || "")} is the simpler contouring option. ${cleanAnswerText(second.title || "")} is the stronger starting point if you want more lift, airflow, and support.`;
+      comparisonReply = `${cleanAnswerText(first.title || "")} gives you a closer contouring foam feel. ${cleanAnswerText(second.title || "")} adds more lift, airflow, and bounce.`;
     } else if (firstProfile.isHybrid && secondProfile.isFoam) {
-      comparisonReply = `${cleanAnswerText(first.title || "")} is the stronger starting point if you want more lift, airflow, and support. ${cleanAnswerText(second.title || "")} is the simpler contouring option.`;
+      comparisonReply = `${cleanAnswerText(first.title || "")} adds more lift, airflow, and bounce. ${cleanAnswerText(second.title || "")} gives you a closer contouring foam feel.`;
     } else if (firstProfile.isDualComfort && secondProfile.isHybrid) {
-      comparisonReply = `${cleanAnswerText(first.title || "")} gives you more flexibility across both sides. ${cleanAnswerText(second.title || "")} is the cleaner pick if you want a softer hybrid with airflow and support.`;
+      comparisonReply = `${cleanAnswerText(first.title || "")} is the better side-to-side comparison when two sleepers want different feels. ${cleanAnswerText(second.title || "")} is the cleaner shared-feel hybrid comparison if you want airflow and lift.`;
     } else if (firstProfile.isHybrid && secondProfile.isDualComfort) {
-      comparisonReply = `${cleanAnswerText(first.title || "")} is the stronger airflow-and-support starting point. ${cleanAnswerText(second.title || "")} is better when two sleepers want more flexibility side to side.`;
+      comparisonReply = `${cleanAnswerText(first.title || "")} is the cleaner shared-feel hybrid comparison if you want airflow and lift. ${cleanAnswerText(second.title || "")} is better when two sleepers want more flexibility side to side.`;
     }
 
     return {
@@ -1009,7 +1009,7 @@ function buildProductSpecificReply({
     return {
       reply: joinUniqueSentences([
         adjustableFact?.text
-          ? `Yes - ${primaryTitle} is described as pairing well with an adjustable base.`
+          ? `Yes - ${primaryTitle} is described as pairing well with an adjustable base. Check the size and base setup together before you decide.`
           : `${primaryTitle} can be a reasonable adjustable-base starting point, but compare the size and base setup before you decide.`,
         splitFact?.text
           ? "If you want split movement, make sure the mattress size and base setup match."
@@ -1029,8 +1029,8 @@ function buildProductSpecificReply({
   if (queryLooksLikeCouplesQuestion(normalizedQuery)) {
     return {
       reply: primaryProfile.isDualComfort
-        ? `${primaryTitle} is one of the better couple-friendly options because it can support different feels on each side without splitting the mattress.`
-        : `${primaryTitle} is a stronger starting point for couples if motion isolation or shared comfort is the priority.`,
+        ? `${primaryTitle} is the best first look when two sleepers want different feels on each side. It is the more couple-friendly path without turning the bed into two separate mattresses.`
+        : `${primaryTitle} is worth comparing for shared comfort, but I would still put a more couple-friendly dual-comfort option beside it if you and your partner want different feels.`,
       grounded: true,
       sourceType,
       sourceKey,
@@ -1042,8 +1042,8 @@ function buildProductSpecificReply({
   if (queryLooksLikeHotSleeperQuestion(normalizedQuery) || intent === "sleep_hot") {
     return {
       reply: primaryProfile.isHybrid || primaryProfile.isDualComfort
-        ? `${primaryTitle} is a stronger starting point if you want airflow with support. If cooling is the priority, compare it against the other breathable options before deciding.`
-        : `${primaryTitle} can still be worth comparing, but it is better to weigh it against the more breathable options if cooling is your priority.`,
+        ? `${primaryTitle} is a good cooling-first comparison if you want more airflow without giving up support.`
+        : `${primaryTitle} can still work, but I would compare it against the more breathable options first if cooling is your top priority.`,
       grounded: true,
       sourceType,
       sourceKey,
@@ -1056,8 +1056,8 @@ function buildProductSpecificReply({
     return {
       reply:
         primaryProfile.isHybrid || primaryProfile.isDualComfort
-          ? `${primaryTitle} is a better starting point for side sleepers if you want pressure relief with support underneath. Compare it if shoulder and hip pressure matter most.`
-          : `${primaryTitle} can work well for side sleepers if you want more contouring and pressure relief around the shoulders and hips.`,
+          ? `${primaryTitle} is a good first try if you want shoulder and hip relief without losing support underneath you.`
+          : `${primaryTitle} can work well if you want a closer contouring feel around the shoulders and hips.`,
       grounded: true,
       sourceType,
       sourceKey,
@@ -1069,8 +1069,8 @@ function buildProductSpecificReply({
   if (queryLooksLikeBackSupportQuestion(normalizedQuery) || intent === "back_pain" || intent === "firm_support") {
     return {
       reply: primaryProfile.isHybrid
-        ? `${primaryTitle} is a stronger starting point if you want support with pressure relief underneath. Compare it if you want support without an overly hard feel.`
-        : `${primaryTitle} can be a solid support-and-pressure-relief starting point, especially if you do not want the bed to feel overly firm.`,
+        ? `${primaryTitle} is a solid support-and-pressure-relief first try if you want lift without a flat hard feel.`
+        : `${primaryTitle} is worth comparing if you want a steadier support-and-pressure-relief feel without making the bed harsh.`,
       grounded: true,
       sourceType,
       sourceKey,
@@ -1507,27 +1507,27 @@ function buildProductReply({ intent = "", products = [] } = {}) {
   switch (String(intent || "").trim()) {
     case "sleep_hot":
       return {
-        reply: "Start with breathable support that will not trap heat. These picks lean toward airflow while still giving you pressure relief.",
+        reply: "If you sleep hot, start with the beds that keep more airflow around you, then decide how much contouring you want.",
         grounded: true,
       };
     case "firm_support":
       return {
-        reply: "Start with support first, then decide how soft or firm you want the bed. These options are stronger starting points if you do not want the mattress to feel too soft.",
+        reply: "Start with alignment first, then choose how much cushioning you want on top.",
         grounded: true,
       };
     case "back_pain":
       return {
-        reply: "Start with support first and pressure relief second. These options are stronger starting points when you want the bed to hold you up without feeling harsh.",
+        reply: "Start with a support-and-pressure-relief balance so the bed holds you up without feeling punishing.",
         grounded: true,
       };
     case "product_question":
       return {
-        reply: "Start with the verified details for this mattress, then compare size, support, and base setup before you decide.",
+        reply: "Start with the details on this mattress, then compare size, support, and base setup before you decide.",
         grounded: true,
       };
     case "couple_conflict":
       return {
-        reply: "If you and your partner like different feels, start with options built to balance both sides. Dual-comfort designs should be prioritized here.",
+        reply: "If you and your partner want different feels, start with the dual-comfort path first because it is usually the more couple-friendly answer.",
         grounded: true,
       };
     case "compare_mattresses":
@@ -1537,7 +1537,7 @@ function buildProductReply({ intent = "", products = [] } = {}) {
       };
     case "budget_value":
       return {
-        reply: "For value, start with the simplest verified mattress options and confirm the right size before deciding.",
+        reply: "If value matters most, start with the simpler mattress paths and confirm the right size first.",
         grounded: true,
       };
     case "queen_size":
@@ -1548,7 +1548,7 @@ function buildProductReply({ intent = "", products = [] } = {}) {
     case "size_help":
     case "bundle_price":
       return {
-        reply: "Start with verified size matches first, then compare support and how soft or firm you want the bed.",
+        reply: "Start with the size that actually fits your room and sleep setup, then compare feel and support inside that size.",
         grounded: true,
       };
     case "snoring":
@@ -1558,7 +1558,7 @@ function buildProductReply({ intent = "", products = [] } = {}) {
       };
     case "accessory_help":
       return {
-        reply: "Start with the verified accessories that match how you sleep. Compare support, cooling, and setup needs before you add extras.",
+        reply: "Start with the accessories that solve a real need, then leave the extras out until the mattress and base feel right.",
         grounded: true,
       };
     default:

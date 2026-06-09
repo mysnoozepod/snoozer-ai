@@ -124,6 +124,9 @@
     ]
   };
 
+  const SHARED_ASSESSMENT_KEY = "snooze.assessment";
+  const SHARED_SHOPPER_KEY = "snooze.assessmentShopperId";
+
   function parseJson(text, fallback) {
     try {
       return JSON.parse(text);
@@ -178,6 +181,49 @@
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, " ")
       .trim();
+  }
+
+  function safeSessionGet(key) {
+    try {
+      return window.sessionStorage.getItem(key);
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function normalizeApiBase(value) {
+    return String(value == null ? "" : value)
+      .trim()
+      .replace(/\/+$/, "");
+  }
+
+  function getApiBase(root) {
+    const globalConfig = window.MySnoozePod || {};
+    const docValue = document.documentElement && document.documentElement.getAttribute
+      ? document.documentElement.getAttribute("data-snoozer-api-base")
+      : "";
+    const rootValue = root && root.getAttribute ? root.getAttribute("data-builder-api-base") : "";
+    const candidates = [
+      rootValue,
+      globalConfig.apiBase,
+      globalConfig.api_base,
+      window.__SNOOZER_API_BASE__,
+      docValue
+    ];
+
+    for (let index = 0; index < candidates.length; index += 1) {
+      const normalized = normalizeApiBase(candidates[index]);
+      if (normalized) return normalized;
+    }
+
+    return "";
+  }
+
+  function buildApiUrl(root, path) {
+    const base = getApiBase(root);
+    if (!base) return "";
+    if (/^https?:\/\//i.test(path)) return String(path);
+    return base + (String(path || "").charAt(0) === "/" ? path : "/" + path);
   }
 
   function uniqueSizeOptions(variants, sizeOptionIndex) {
@@ -297,6 +343,284 @@
     }
 
     return firstAvailableVariant(variants);
+  }
+
+  function findCatalogOptionByKey(stepKey, key, catalogs, sizeOptions) {
+    if (!key) return null;
+    return getStepOptions(stepKey, { size: sizeOptions && sizeOptions[0] ? sizeOptions[0].key : "" }, catalogs, sizeOptions)
+      .find(function (option) {
+        return option && option.key === key;
+      }) || null;
+  }
+
+  function findBaseOptionByKey(key, catalogs, sizeOptions) {
+    return findCatalogOptionByKey("base", key, catalogs, sizeOptions);
+  }
+
+  function findCatalogHandleOption(catalogItems, handle) {
+    const wanted = normalizeText(handle);
+    return (catalogItems || []).find(function (item) {
+      return normalizeText(item && item.handle) === wanted;
+    }) || null;
+  }
+
+  function findFirstAdjustableBaseOption(catalogs) {
+    return (catalogs.base || []).find(function (item) {
+      return Boolean(item && item.kind === "product" && item.isAdjustable);
+    }) || null;
+  }
+
+  function getSharedAssessmentAnswers() {
+    const raw = safeSessionGet(SHARED_ASSESSMENT_KEY);
+    return raw ? parseJson(raw, null) : null;
+  }
+
+  function getSharedAssessmentShopperId() {
+    return String(safeSessionGet(SHARED_SHOPPER_KEY) || "").trim();
+  }
+
+  function normalizeMotionSelectionKey(value) {
+    const normalized = normalizeText(value);
+    if (!normalized || normalized === normalizeText("No Motion")) return "";
+    if (normalized === "standard motion" || normalized === "standard") return "standard";
+    if (normalized === "half split motion" || normalized === "half split" || normalized === "half split motion ") return "half_split";
+    if (normalized === "full split motion" || normalized === "full split") return "full_split";
+    if (normalized === "half split motion queen") return "half_split";
+    return "";
+  }
+
+  function motionSummaryLabelForKey(key) {
+    const match = MOTION_OPTIONS.find(function (option) {
+      return option.key === key;
+    });
+    return match ? (match.summaryLabel || match.title) : "";
+  }
+
+  function normalizeMotionSelectionForSize(key, size) {
+    const normalizedKey = normalizeMotionSelectionKey(key);
+    if (!normalizedKey) {
+      return {
+        key: "",
+        label: "",
+        warning: "",
+      };
+    }
+
+    const allowedKeys = allowedMotionOptionsForSize(size).map(function (option) {
+      return option.key;
+    });
+
+    if (allowedKeys.indexOf(normalizedKey) > -1) {
+      return {
+        key: normalizedKey,
+        label: motionSummaryLabelForKey(normalizedKey),
+        warning: "",
+      };
+    }
+
+    if (normalizedKey === "full_split" && normalizeSizeKey(size) === "queen") {
+      return {
+        key: "half_split",
+        label: motionSummaryLabelForKey("half_split"),
+        warning: "Full Split Motion is only available in King, so this was normalized to Half Split Motion for Queen.",
+      };
+    }
+
+    return {
+      key: allowedKeys[0] || "",
+      label: motionSummaryLabelForKey(allowedKeys[0] || ""),
+      warning: "",
+    };
+  }
+
+  function findMatchingSizeOption(sizeOptions, size) {
+    const wanted = normalizeSizeKey(size);
+    if (!wanted) return null;
+
+    return (sizeOptions || []).find(function (option) {
+      return normalizeSizeKey(option && option.key) === wanted;
+    }) || null;
+  }
+
+  function resolveBuilderBaseSelection(assessment, catalogs, canonicalRecommendation) {
+    const warnings = [];
+    const canonical = canonicalRecommendation || {};
+    const normalizedBaseType = normalizeText(
+      canonical.normalizedAssessment && canonical.normalizedAssessment.baseType
+        ? canonical.normalizedAssessment.baseType
+        : assessment && assessment.baseType
+    );
+    const explicitBaseHandle = Object.prototype.hasOwnProperty.call(canonical, "baseHandle")
+      ? String(canonical.baseHandle || "").trim()
+      : "";
+
+    if (Object.prototype.hasOwnProperty.call(canonical, "baseHandle") && canonical.baseHandle == null) {
+      return {
+        key: "no_base",
+        label: "No base / already have one",
+        warnings: warnings,
+      };
+    }
+
+    if (
+      normalizedBaseType === "mattress only" ||
+      normalizedBaseType === "no base" ||
+      normalizedBaseType === "no base already have one"
+    ) {
+      return {
+        key: "no_base",
+        label: "No base / already have one",
+        warnings: warnings,
+      };
+    }
+
+    if (explicitBaseHandle) {
+      const explicitMatch = findCatalogHandleOption(catalogs.base, explicitBaseHandle);
+      if (explicitMatch) {
+        return {
+          key: explicitMatch.key,
+          label: explicitMatch.summaryLabel || explicitMatch.title,
+          warnings: warnings,
+        };
+      }
+    }
+
+    if (normalizedBaseType === "platform base") {
+      const platformMatch = findCatalogHandleOption(catalogs.base, "platform-base");
+      if (platformMatch) {
+        return {
+          key: platformMatch.key,
+          label: platformMatch.summaryLabel || platformMatch.title,
+          warnings: warnings,
+        };
+      }
+      warnings.push("Your saved assessment pointed to a Platform Base, but that base is not available in this builder catalog.");
+      return { key: "", label: "Platform Base", warnings: warnings };
+    }
+
+    if (normalizedBaseType === "storage base") {
+      const storageMatch = findCatalogHandleOption(catalogs.base, "storage-base");
+      if (storageMatch) {
+        return {
+          key: storageMatch.key,
+          label: storageMatch.summaryLabel || storageMatch.title,
+          warnings: warnings,
+        };
+      }
+      warnings.push("Your saved assessment pointed to a Storage Base, but that base is not available in this builder catalog.");
+      return { key: "", label: "Storage Base", warnings: warnings };
+    }
+
+    if (normalizedBaseType === "adjustable base") {
+      const adjustableMatch = explicitBaseHandle
+        ? findCatalogHandleOption(catalogs.base, explicitBaseHandle)
+        : findFirstAdjustableBaseOption(catalogs);
+      if (adjustableMatch) {
+        return {
+          key: adjustableMatch.key,
+          label: adjustableMatch.summaryLabel || adjustableMatch.title,
+          warnings: warnings,
+        };
+      }
+      warnings.push("Your saved assessment pointed to an Adjustable Base, but no adjustable base is available in this builder catalog.");
+    }
+
+    return { key: "", label: "", warnings: warnings };
+  }
+
+  function buildBuilderPlanFromAssessment(assessment, catalogs, sizeOptions, canonicalRecommendation, sourceLabel) {
+    if (!assessment) return null;
+
+    const canonical = canonicalRecommendation || {};
+    const warnings = [];
+    const requestedSize = String(
+      canonical.normalizedAssessment && canonical.normalizedAssessment.size
+        ? canonical.normalizedAssessment.size
+        : assessment.size || ""
+    ).trim();
+    const sizeMatch = findMatchingSizeOption(sizeOptions, requestedSize);
+    if (requestedSize && !sizeMatch) {
+      warnings.push(requestedSize + " is not available on this product page, so the current size was left in place.");
+    }
+
+    const baseSelection = resolveBuilderBaseSelection(assessment, catalogs, canonical);
+    Array.prototype.push.apply(warnings, baseSelection.warnings || []);
+    const baseOption = findBaseOptionByKey(baseSelection.key, catalogs, sizeOptions);
+    const baseIsAdjustable = Boolean(baseOption && baseOption.kind === "product" && baseOption.isAdjustable);
+    const motionInput =
+      canonical.motionKey ||
+      (canonical.normalizedAssessment && canonical.normalizedAssessment.motionLabel) ||
+      (assessment && assessment.motionMode) ||
+      "";
+    const motionSelection = baseIsAdjustable
+      ? normalizeMotionSelectionForSize(motionInput, sizeMatch ? sizeMatch.key : requestedSize)
+      : { key: "", label: "", warning: "" };
+
+    if (motionSelection.warning) {
+      warnings.push(motionSelection.warning);
+    }
+
+    return {
+      source: sourceLabel || "shared_assessment",
+      requestedSize: requestedSize,
+      size: sizeMatch ? sizeMatch.key : "",
+      baseKey: baseSelection.key,
+      baseLabel: baseSelection.label,
+      motionKey: motionSelection.key,
+      motionLabel: motionSelection.label,
+      warnings: warnings.filter(Boolean),
+      canonicalRecommendation: canonicalRecommendation || null,
+    };
+  }
+
+  async function resolveBuilderPlan(root, catalogs, sizeOptions) {
+    const assessment = getSharedAssessmentAnswers();
+    if (!assessment) return null;
+
+    const localPlan = buildBuilderPlanFromAssessment(
+      assessment,
+      catalogs,
+      sizeOptions,
+      null,
+      "shared_assessment"
+    );
+    const apiUrl = buildApiUrl(root, "/recommendations/resolve");
+    if (!apiUrl || !window.fetch) {
+      return localPlan;
+    }
+
+    try {
+      const response = await window.fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          shopperId: getSharedAssessmentShopperId() || null,
+          assessment: assessment,
+          source: "shopify_pod_builder",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Canonical builder resolve failed");
+      }
+
+      const payload = await response.json();
+      const canonicalRecommendation = payload && payload.recommendation ? payload.recommendation : null;
+      const canonicalPlan = buildBuilderPlanFromAssessment(
+        assessment,
+        catalogs,
+        sizeOptions,
+        canonicalRecommendation,
+        "canonical_resolver"
+      );
+
+      return canonicalPlan || localPlan;
+    } catch (error) {
+      console.warn("[snoozepod-builder] canonical plan unavailable, using saved assessment defaults", error);
+      return localPlan;
+    }
   }
 
   function allowedMotionOptionsForSize(size) {
@@ -600,7 +924,10 @@
       motion: "",
       protection: "",
       pillow: "",
-      bedding: ""
+      bedding: "",
+      hasManualInput: false,
+      builderPlan: null,
+      guidance: null
     };
 
     function setStepValue(stepKey, value) {
@@ -626,6 +953,80 @@
     function canProceed(stepKey) {
       if (stepKey === "review") return true;
       return Boolean(state[stepKey]);
+    }
+
+    function buildStepGuidance(stepKey) {
+      const guidance = state.guidance;
+      if (!guidance) return "";
+
+      if (stepKey === "size" && guidance.size) {
+        return "Assessment match: " + guidance.size + ".";
+      }
+
+      if (stepKey === "size" && guidance.sizeWarning) {
+        return guidance.sizeWarning;
+      }
+
+      if (stepKey === "base" && guidance.baseLabel) {
+        return "Assessment match: " + guidance.baseLabel + ".";
+      }
+
+      if (stepKey === "base" && guidance.baseWarning) {
+        return guidance.baseWarning;
+      }
+
+      if (stepKey === "motion") {
+        if (guidance.motionWarning) {
+          return guidance.motionWarning;
+        }
+        if (guidance.motionLabel) {
+          return "Assessment match: " + guidance.motionLabel + ".";
+        }
+      }
+
+      return "";
+    }
+
+    function applyBuilderPlan(plan) {
+      if (!plan) return;
+
+      state.builderPlan = plan;
+      state.guidance = {
+        size: plan.size || "",
+        baseLabel: plan.baseLabel || "",
+        motionLabel: plan.motionLabel || "",
+        sizeWarning: Array.isArray(plan.warnings)
+          ? plan.warnings.find(function (warning) {
+              return normalizeText(warning).indexOf("size") > -1 || normalizeText(warning).indexOf("product page") > -1;
+            }) || ""
+          : "",
+        baseWarning: Array.isArray(plan.warnings)
+          ? plan.warnings.find(function (warning) {
+              return normalizeText(warning).indexOf("base") > -1;
+            }) || ""
+          : "",
+        motionWarning: Array.isArray(plan.warnings)
+          ? plan.warnings.find(function (warning) {
+              return normalizeText(warning).indexOf("motion") > -1 || normalizeText(warning).indexOf("full split") > -1;
+            }) || ""
+          : "",
+      };
+
+      if (state.hasManualInput) {
+        return;
+      }
+
+      if (plan.size && state.size === initialSize) {
+        setStepValue("size", plan.size);
+      }
+
+      if (plan.baseKey && !state.base) {
+        setStepValue("base", plan.baseKey);
+      }
+
+      if (plan.motionKey && !state.motion && isAdjustableBaseSelection(state, catalogs, sizeOptions)) {
+        setStepValue("motion", plan.motionKey);
+      }
     }
 
     function renderStepPills(stepList) {
@@ -724,7 +1125,7 @@
       els.stepCount.textContent = "Step " + (currentIndex + 1) + " of " + stepList.length;
       els.stepLabel.textContent = currentStep.label;
       els.stepTitle.textContent = currentStep.title;
-      els.stepCopy.textContent = currentStep.copy;
+      els.stepCopy.textContent = [currentStep.copy, buildStepGuidance(currentStep.key)].filter(Boolean).join(" ");
 
       renderStepPills(stepList);
       renderOptions(currentStep);
@@ -755,6 +1156,7 @@
     root.addEventListener("click", function (event) {
       const optionButton = event.target.closest("[data-builder-option]");
       if (optionButton) {
+        state.hasManualInput = true;
         setStepValue(optionButton.getAttribute("data-step"), optionButton.getAttribute("data-value"));
         render();
         return;
@@ -790,6 +1192,10 @@
         state.protection = "";
         state.pillow = "";
         state.bedding = "";
+        state.hasManualInput = false;
+        if (state.builderPlan) {
+          applyBuilderPlan(state.builderPlan);
+        }
         render();
       }
     });
@@ -839,6 +1245,11 @@
     }
 
     render();
+    resolveBuilderPlan(root, catalogs, sizeOptions).then(function (plan) {
+      if (!plan) return;
+      applyBuilderPlan(plan);
+      render();
+    });
   }
 
   function initAll() {

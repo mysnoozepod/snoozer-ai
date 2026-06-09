@@ -54,17 +54,34 @@ const SUPPLEMENTAL_SOURCE_CANDIDATES = Object.freeze({
     ],
   }),
   split_education: Object.freeze({
-    knowledge: ["products/mattress/dual-comfort-12.md"],
+    knowledge: [
+      "products/mattress/12-dual-comfort-hybrid.md",
+      "products/mattress/dual-comfort-12.md",
+    ],
     skill: [],
   }),
 });
 
-const PRODUCT_DOC_KEY_BY_HANDLE = Object.freeze({
-  "10-all-foam-mattress": "products/mattress/all-foam-10.md",
-  "12-all-foam-mattress": "products/mattress/all-foam-12.md",
-  "12-dual-comfort-hybrid": "products/mattress/dual-comfort-12.md",
-  "14-hybrid": "products/mattress/hybrid-14.md",
-  "premium-motion-adjustable-base": "products/bases/premium-motion-base.md",
+const PRODUCT_DOC_KEYS_BY_HANDLE = Object.freeze({
+  "10-all-foam-mattress": Object.freeze([
+    "products/mattress/10-all-foam-mattress.md",
+    "products/mattress/all-foam-10.md",
+  ]),
+  "12-all-foam-mattress": Object.freeze([
+    "products/mattress/12-all-foam-mattress.md",
+    "products/mattress/all-foam-12.md",
+  ]),
+  "12-dual-comfort-hybrid": Object.freeze([
+    "products/mattress/12-dual-comfort-hybrid.md",
+    "products/mattress/dual-comfort-12.md",
+  ]),
+  "14-hybrid": Object.freeze([
+    "products/mattress/14-hybrid.md",
+    "products/mattress/hybrid-14.md",
+  ]),
+  "premium-motion-adjustable-base": Object.freeze([
+    "products/bases/premium-motion-base.md",
+  ]),
 });
 
 const SPLIT_EDUCATION_TERMS = Object.freeze([
@@ -318,7 +335,8 @@ function extractProductHandleFromPath(pathValue = "") {
 
 function getAskSnoozerProductDocKey(handle = "") {
   const normalized = String(handle || "").trim().toLowerCase();
-  return PRODUCT_DOC_KEY_BY_HANDLE[normalized] || "";
+  const keys = PRODUCT_DOC_KEYS_BY_HANDLE[normalized];
+  return Array.isArray(keys) && keys.length ? keys[0] : "";
 }
 
 function inferAskSnoozerProductDocCategory(handle = "") {
@@ -356,8 +374,8 @@ function getAskSnoozerProductDocKeys(handle = "") {
   const normalized = String(handle || "").trim().toLowerCase();
   if (!normalized) return [];
 
-  const directKey = getAskSnoozerProductDocKey(normalized);
-  if (directKey) return [directKey];
+  const directKeys = PRODUCT_DOC_KEYS_BY_HANDLE[normalized];
+  if (Array.isArray(directKeys) && directKeys.length) return directKeys.slice();
 
   const inferredCategory = inferAskSnoozerProductDocCategory(normalized);
   if (!inferredCategory) return [];
@@ -1147,6 +1165,8 @@ async function resolveAskSnoozerSupplementalSources({
 module.exports = {
   classifyAskSnoozerPolicySubtype,
   cleanShopperText,
+  getAskSnoozerProductDocKey,
+  getAskSnoozerProductDocKeys,
   normalizeMarkdown,
   resolveAskSnoozerPolicyAnswer,
   resolveAskSnoozerPolicySources,

@@ -1066,7 +1066,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   sleep_hot: {
     reply:
-      "Start with breathable comfort and support that will not trap heat.",
+      "If you sleep hot, start with airflow first, then compare how much contouring and support you want.",
     chips: [
       { label: "Compare foam vs hybrid", value: "compare foam vs hybrid" },
       { label: "I need firm support", value: "I need firm support" },
@@ -1078,7 +1078,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   firm_support: {
     reply:
-      "Start with support first, then decide how soft or firm you want the bed.",
+      "Start with alignment first, then choose how much cushioning you want on top.",
     chips: [
       { label: "I have back pain", value: "I have back pain" },
       { label: "Compare mattresses", value: "compare foam vs hybrid" },
@@ -1090,7 +1090,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   back_pain: {
     reply:
-      "For back discomfort, prioritize neutral alignment and pressure relief.",
+      "For back discomfort, compare support and pressure relief together rather than chasing the firmest bed.",
     chips: [
       { label: "I need firm support", value: "I need firm support" },
       { label: "I sleep hot", value: "I sleep hot" },
@@ -1114,7 +1114,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   compare_mattresses: {
     reply:
-      "Foam usually gives deeper contouring. Hybrid usually adds more lift, airflow, and bounce.",
+      "Foam usually hugs closer. Hybrid usually adds more lift, airflow, and bounce.",
     chips: [
       { label: "I sleep hot", value: "I sleep hot" },
       { label: "I need firm support", value: "I need firm support" },
@@ -1158,7 +1158,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   product_question: {
     reply:
-      "Use the current product details as the anchor, then compare size, support, and setup before you decide.",
+      "Use the current product as the anchor, then compare feel, support, and setup around it.",
     chips: HUD_ASK_PRODUCT_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
@@ -1166,7 +1166,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   couple_conflict: {
     reply:
-      "Different comfort needs are exactly where dual-comfort options matter.",
+      "Different comfort needs are where dual-comfort options earn the first look.",
     chips: [
       { label: "Take Snooze Assessment", value: "take snooze assessment" },
       { label: "Book Your Snooze Session", value: "book snooze session" },
@@ -1178,7 +1178,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   bundle_price: {
     reply:
-      "I can price the mattress and adjustable base separately, then give you a pre-checkout subtotal when both prices are verified.",
+      "I can price the mattress and base separately, then give you a safe pre-checkout subtotal when both live prices are available.",
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
@@ -1198,7 +1198,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   accessory_help: {
     reply:
-      "I can help you fill out the setup with verified accessories once the products are there to compare.",
+      "I can help you finish the setup once the core mattress and base direction is clear.",
     chips: [
       { label: "Do you sell pillows?", value: "do you sell pillows" },
       { label: "What accessories do I need?", value: "what accessories do I need" },
@@ -1210,7 +1210,7 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   budget_value: {
     reply:
-      "For value, start with the simplest verified mattress options and confirm the right size before deciding.",
+      "If value matters most, start with the simpler mattress paths and confirm the right size first.",
     chips: HUD_ASK_BUDGET_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
@@ -1225,14 +1225,14 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   queen_size: {
-    reply: "These verified Queen options are a better place to compare feel and support first.",
+    reply: "Start with the Queen options first, then compare feel and support inside that size.",
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   king_size: {
-    reply: "These verified King options are a better place to compare feel and support first.",
+    reply: "Start with the King options first, then compare feel and support inside that size.",
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
@@ -1240,21 +1240,21 @@ const HUD_ASK_INTENT_CONFIG = Object.freeze({
   },
   split_king: {
     reply:
-      "Split king usually depends on matching two compatible sides with the right base setup.",
+      "Split King is usually about matching the mattress and base so each side works the way you want.",
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   twin_xl: {
-    reply: "These verified Twin XL options are a better place to compare feel and support first.",
+    reply: "Start with the Twin XL options first, then compare feel and support inside that size.",
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
     pages: [HUD_ASK_PAGE_BOOKING],
   },
   full_size: {
-    reply: "These verified Full-size options are a better place to compare feel and support first.",
+    reply: "Start with the Full options first, then compare feel and support inside that size.",
     chips: HUD_ASK_SIZE_CHIPS,
     actions: [HUD_ASK_ACTION_ASSESSMENT],
     collections: [HUD_ASK_COLLECTION_MATTRESSES],
@@ -1481,7 +1481,7 @@ function cloneHudAskProducts(products = []) {
 function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
   if (pageType === "collection") {
     if (intent === "budget_value") {
-      return "While you browse, start with the simplest verified mattress options and confirm the size you need.";
+      return "While you browse, start with the simpler mattress paths and confirm the size you need.";
     }
 
     if (isHudAskSizeIntent(intent)) {
@@ -1489,16 +1489,16 @@ function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
     }
 
     if (intent === "couple_conflict") {
-      return "While you browse, start with flexible comfort options that can support two different preferences.";
+      return "While you browse, start with the dual-comfort path if two sleepers want different feels.";
     }
 
     switch (intent) {
       case "sleep_hot":
-        return "While you browse, focus on breathable materials and the support feel that stays comfortable through the night.";
+        return "While you browse, focus on airflow first, then compare how much contouring and support you want.";
       case "firm_support":
-        return "As you browse, look for support and alignment without making the bed feel rigid.";
+        return "As you browse, look for alignment first without making the bed feel rigid.";
       case "back_pain":
-        return "As you browse, focus on support, pressure relief, and keeping your spine neutral.";
+        return "As you browse, compare support and pressure relief together so the bed does not feel punishing.";
       case "snoring":
         return "If elevation matters, compare the mattress feel first, then pair it with the right base.";
       case "compare_mattresses":
@@ -1514,7 +1514,7 @@ function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
 
   if (pageType === "product") {
     if (intent === "budget_value") {
-      return "Use this page to compare verified size options, support, and overall value before you decide.";
+      return "Use this page to compare size, support, and overall value before you decide.";
     }
 
     if (isHudAskSizeIntent(intent)) {
@@ -1522,16 +1522,16 @@ function buildHudAskReplyForContext({ intent, pageType, path, baseReply }) {
     }
 
     if (intent === "couple_conflict") {
-      return "Use this page to compare whether the setup can support different comfort preferences on each side.";
+      return "Use this page to compare whether this setup can really handle different comfort preferences side to side.";
     }
 
     switch (intent) {
       case "sleep_hot":
-        return "Use this page to check comfort materials, airflow, and support details. The Snooze Assessment can help confirm fit.";
+        return "Use this page to check airflow, feel, and support details. The Snooze Assessment can confirm whether it fits how you sleep.";
       case "firm_support":
-        return "Use this page to check support feel, comfort details, and overall fit. The Snooze Assessment can help confirm fit.";
+        return "Use this page to check support feel, cushioning, and overall fit. The Snooze Assessment can confirm whether it fits how you sleep.";
       case "back_pain":
-        return "Use this page to check support, pressure relief, and comfort details. The Snooze Assessment can help confirm fit.";
+        return "Use this page to check support and pressure relief together. The Snooze Assessment can confirm whether it fits how you sleep.";
       case "snoring":
         return "Use this page to check comfort details first. If elevation matters, pair that with the right base.";
       case "compare_mattresses":
@@ -1726,30 +1726,30 @@ function resolveHudAskReplyOverride({
   if (hasProducts) {
     switch (intent) {
       case "sleep_hot":
-        return "Start with breathable support that will not trap heat. These picks lean toward airflow while still giving you pressure relief.";
+        return "If you sleep hot, start with the more breathable comparisons first, then decide how much contouring you want.";
       case "firm_support":
-        return "Start with support first, then decide how soft or firm you want the bed. These are stronger starting points if you do not want the mattress to feel too soft.";
+        return "Start with alignment first, then decide how much cushioning you want on top.";
       case "back_pain":
-        return "For back discomfort, prioritize neutral alignment and pressure relief. These options are better starting points when support matters as much as comfort.";
+        return "For back discomfort, compare support and pressure relief together so the bed does not feel flat or punishing.";
       case "couple_conflict":
-        return "Different comfort needs are exactly where dual-comfort options matter. Start with beds that can balance support without forcing one feel on both sleepers.";
+        return "Different comfort needs are where the dual-comfort path deserves the first look instead of forcing one feel on both sleepers.";
       case "compare_mattresses":
-        return "Foam usually gives deeper contouring. Hybrid usually adds more lift, airflow, and bounce, so these are good starting points to compare.";
+        return "Foam usually hugs closer. Hybrid usually adds more lift, airflow, and bounce, so compare those feel differences first.";
       case "budget_value":
-        return "For value, start with the simplest verified mattress options and confirm the right size before deciding.";
+        return "If value matters most, start with the simpler mattress paths and confirm the right size first.";
       case "size_help":
         return sizeLabel
-          ? `These verified ${sizeLabel} options are a better place to compare feel and support without guessing on size.`
+          ? `Start with the ${sizeLabel} options so you can compare feel and support without guessing on size.`
           : "Start by confirming the size you need, then compare feel and support inside that size.";
       case "queen_size":
       case "king_size":
       case "twin_xl":
       case "full_size":
         return sizeLabel
-          ? `These verified ${sizeLabel} options are a better place to compare feel and support first.`
-          : "These verified size options are a better place to compare feel and support first.";
+          ? `Start with the ${sizeLabel} options first, then compare feel and support inside that size.`
+          : "Start with the right size first, then compare feel and support inside it.";
       case "split_king":
-        return "Split king usually depends on matching two compatible sides with the right base setup. These verified options help you compare that path safely.";
+        return "Split King usually comes down to matching the mattress and base so each side works the way you want.";
       case "snoring":
         return "Elevation may help some sleepers feel more comfortable. Start with the adjustable-base path rather than guessing at a mattress alone.";
       default:
@@ -2573,7 +2573,7 @@ function resolveHudAskCandidateHandles({
 
     const merged = normalizeHudAskHandleList(
       namedHandles.concat(
-        safeCurrentHandle && normalizedPageType === "product" ? [safeCurrentHandle] : [],
+        safeCurrentHandle && normalizedPageType === "product" && prefersCurrentProduct ? [safeCurrentHandle] : [],
         couplePriority,
         mattressHandles
       )
@@ -2687,11 +2687,42 @@ function resolveHudAskCandidateHandles({
     return mergedScored.slice(0, 3);
   }
 
-  if (normalizedPageType === "product" && safeCurrentHandle) {
+  if (normalizedPageType === "product" && safeCurrentHandle && prefersCurrentProduct) {
     return moveHudAskHandleToFront(mergedScored, safeCurrentHandle).slice(0, 3);
   }
 
   return mergedScored.slice(0, 3);
+}
+
+function shouldHudAskPreferCanonicalProductOrdering(intent = "") {
+  return [
+    "sleep_hot",
+    "firm_support",
+    "back_pain",
+    "couple_conflict",
+    "compare_mattresses",
+    "product_question",
+    "budget_value",
+    "size_help",
+    "bundle_price",
+    "snoring",
+  ].includes(String(intent || "").trim());
+}
+
+function resolveHudAskCanonicalPriorityHandles({
+  canonicalRecommendation = null,
+  intent = "",
+} = {}) {
+  if (!isObject(canonicalRecommendation) || !shouldHudAskPreferCanonicalProductOrdering(intent)) {
+    return [];
+  }
+
+  const handles = [canonicalRecommendation.primaryMattressHandle];
+  if (intent === "snoring" || intent === "bundle_price" || intent === "product_question") {
+    handles.push(canonicalRecommendation.baseHandle);
+  }
+
+  return normalizeHudAskHandleList(handles);
 }
 
 function findHudAskVariantForSize(product, sizeLabel) {
@@ -2772,7 +2803,7 @@ function buildHudAskProductReason({
   const sizePrefix = sizeLabel ? `${sizeLabel} ` : "";
 
   if (budgetQuery && sizeLabel) {
-    return `One of the more accessible ${sizePrefix.toLowerCase()}options to compare first.`.replace(
+    return `One of the easier ${sizePrefix.toLowerCase()}starting points if you want to keep the setup simpler.`.replace(
       /\s+/g,
       " "
     );
@@ -2780,19 +2811,19 @@ function buildHudAskProductReason({
 
   if (intent === "budget_value") {
     return sizeLabel
-      ? `A verified ${sizeLabel} option to compare early if value is the priority.`
-      : "One of the simpler verified mattress options to compare first if value matters most.";
+      ? `A simpler ${sizeLabel} path to compare early if value is the priority.`
+      : "One of the simpler mattress paths to compare first if value matters most.";
   }
 
   if (intent === "bundle_price") {
     if (lower.includes("adjustable") && lower.includes("base")) {
       return sizeLabel
-        ? `A verified ${sizeLabel} adjustable-base match so you can total the setup safely.`
-        : "A verified adjustable-base match so you can total the setup safely.";
+        ? `A ${sizeLabel} adjustable-base match so you can total the setup safely.`
+        : "An adjustable-base match so you can total the setup safely.";
     }
     return sizeLabel
-      ? `A verified ${sizeLabel} mattress match for bundle pricing and setup comparison.`
-      : "A verified mattress match so you can total the setup with a base.";
+      ? `A ${sizeLabel} mattress match for bundle pricing and setup comparison.`
+      : "A mattress match so you can total the setup with a base.";
   }
 
   if (intent === "split_king") {
@@ -2801,42 +2832,42 @@ function buildHudAskProductReason({
 
   if (intent === "couple_conflict") {
     if (lower.includes("dual-comfort")) {
-      return "A strong option to compare when two sleepers want different comfort on each side.";
+      return "The best couple-friendly first look when two sleepers want different comfort on each side.";
     }
-    return "Worth comparing if you want a second option around a two-sleeper comfort decision.";
+    return "A useful contrast if you want to compare a shared-feel option against the dual-comfort path.";
   }
 
   if (intent === "product_question") {
     if (lower.includes("adjustable") && lower.includes("base")) {
-      return "A verified base match to compare with the current mattress setup.";
+      return "A base match to compare with the current mattress setup.";
     }
     if (lower.includes("dual-comfort")) {
-      return "Worth comparing when you want split comfort, cooling, or more flexibility for two sleepers.";
+      return "Worth comparing when you want different comfort side to side without splitting the mattress.";
     }
     if (lower.includes("hybrid")) {
-      return "Worth comparing if you want airflow, support, and a more lifted feel.";
+      return "Worth comparing if you want more airflow, support, and a lifted feel.";
     }
     if (lower.includes("foam")) {
-      return "Worth comparing if you want a more contouring feel and stronger motion isolation.";
+      return "Worth comparing if you want closer contouring and stronger motion isolation.";
     }
     return "A good product-specific starting point to compare next.";
   }
 
   if (intent === "accessory_help") {
     if (lower.includes("pillow")) {
-      return "A verified pillow option to compare for cooling, loft, or support feel.";
+      return "A pillow option to compare for cooling, loft, or support feel.";
     }
     if (lower.includes("protector") || lower.includes("encasement")) {
-      return "A verified protector option to compare if you want a cleaner, lower-maintenance setup.";
+      return "A protector option to compare if you want a cleaner, lower-maintenance setup.";
     }
     if (lower.includes("sheet") || lower.includes("comforter") || lower.includes("bedding")) {
-      return "A verified bedding option to compare if you want to complete the setup around the mattress.";
+      return "A bedding option to compare if you want to complete the setup around the mattress.";
     }
-    return "A verified accessory option to compare as you build out the setup.";
+    return "An accessory option to compare as you build out the setup.";
   }
 
   if (isHudAskSpecificSizeIntent(intent) && sizeLabel) {
-    return `Verified in ${sizeLabel} so you can compare feel and support in the size you need.`;
+    return `Available in ${sizeLabel} so you can compare feel and support in the size you need.`;
   }
 
   if (isCurrent) {
@@ -2846,28 +2877,28 @@ function buildHudAskProductReason({
   switch (intent) {
     case "sleep_hot":
       if (lower.includes("hybrid") && !lower.includes("dual-comfort")) {
-        return "A breathable hybrid starting point if you want airflow with steady support.";
+        return "A cooling-first hybrid comparison if you want more airflow with steady support.";
       }
       if (lower.includes("dual-comfort")) {
-        return "A balanced hybrid option to compare if you want airflow and flexibility.";
+        return "A cooling-friendly comparison when you also want more flexibility side to side.";
       }
-      return "A contouring option to compare while you weigh cooling against closer body contact.";
+      return "A contouring option to compare if you still want to weigh cooling against closer body contact.";
     case "firm_support":
       if (lower.includes("hybrid") && !lower.includes("dual-comfort")) {
-        return "A support-first option to compare if alignment is your priority.";
+        return "A support-forward option to compare if alignment is your priority.";
       }
       if (lower.startsWith("10-")) {
         return "A firmer all-foam option to compare against the hybrid feel.";
       }
-      return "A steadier comfort option to compare while you focus on support.";
+      return "A steadier feel to compare while you focus on support.";
     case "back_pain":
       if (lower.includes("hybrid") && !lower.includes("dual-comfort")) {
-        return "A strong support-first option to compare for neutral alignment.";
+        return "A support-and-pressure-relief option to compare for neutral alignment.";
       }
       if (lower.includes("dual-comfort")) {
-        return "A balanced option to compare for support with pressure relief.";
+        return "A balanced support-and-pressure-relief option to compare.";
       }
-      return "Worth comparing if you want pressure relief without losing support.";
+      return "Worth comparing if you want support-and-pressure-relief without losing steady support.";
     case "snoring":
       return "An adjustable base lets you compare elevation with your mattress feel.";
     case "compare_mattresses":
@@ -2929,6 +2960,7 @@ async function resolveHudAskProducts({
   pageType,
   traceId,
   currentProductHandle = "",
+  canonicalRecommendation = null,
 } = {}) {
   if (!shopifySvc?.fetchProductsByHandles) {
     return {
@@ -3055,8 +3087,14 @@ async function resolveHudAskProducts({
       catalogHasHandle,
       currentProductHandle: safeCurrentHandle,
     });
+    const prioritizedHandles = normalizeHudAskHandleList(
+      resolveHudAskCanonicalPriorityHandles({
+        canonicalRecommendation,
+        intent,
+      }).concat(candidateHandles)
+    );
 
-    if (!candidateHandles.length) {
+    if (!prioritizedHandles.length) {
       return {
         products: [],
         catalogSource: catalogResult?.value ? "s3_catalog" : "fallback_catalog",
@@ -3072,7 +3110,7 @@ async function resolveHudAskProducts({
     }
 
     const productsResponse = await withTimeout(
-      shopifySvc.fetchProductsByHandles({ handles: candidateHandles, lite: false }),
+      shopifySvc.fetchProductsByHandles({ handles: prioritizedHandles, lite: false }),
       SHOPIFY_TIMEOUT_MS,
       "HUD_ASK_PRODUCT_TIMEOUT",
       "Timed out loading HUD ask products"
@@ -3085,7 +3123,7 @@ async function resolveHudAskProducts({
         .map((item) => [String(item.handle).trim().toLowerCase(), item])
     );
 
-    const enriched = candidateHandles
+    const enriched = prioritizedHandles
       .map((handle, index) => {
         const product = productsByHandle.get(String(handle || "").trim().toLowerCase());
         if (!product || !product.handle || !product.id) return null;
@@ -4199,6 +4237,7 @@ async function handle(event = {}) {
         pageType,
         traceId,
         currentProductHandle,
+        canonicalRecommendation,
       });
       let products = Array.isArray(productResolution?.products) ? productResolution.products : [];
       if (!products.length && canonicalRecommendation) {
