@@ -521,6 +521,51 @@ function queryLooksLikeBundlePriceQuestion(query = "") {
       includesTerm(normalizedQuery, "with a base") ||
       includesTerm(normalizedQuery, "add a base") ||
       includesTerm(normalizedQuery, "add a queen adjustable base")
+      )
+  );
+}
+
+function queryUsesCurrentProductContext(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  if (!normalizedQuery) return false;
+
+  if (
+    [
+      "this mattress",
+      "this bed",
+      "this one",
+      "this product",
+      "does this",
+      "is this",
+      "can this",
+      "that mattress",
+      "that bed",
+      "that one",
+      "that product",
+      "does that",
+      "is that",
+      "can that",
+      "does it",
+      "is it",
+      "can it",
+      "will it",
+      "how much is it",
+      "how much is that",
+      "what sizes does it come in",
+      "what size does it come in",
+      "what sizes does that come in",
+      "what size does that come in",
+      "does it come in",
+      "does that come in",
+    ].some((term) => normalizedQuery.includes(term))
+  ) {
+    return true;
+  }
+
+  return (
+    /\b(?:this|that|it)\b/.test(normalizedQuery) &&
+    /\b(?:come in|size|sizes|price|cost|how much|good for|work with|support|cooling|couples|hot sleepers|back support)\b/.test(
+      normalizedQuery
     )
   );
 }
@@ -851,16 +896,25 @@ function buildProductSpecificReply({
   const entries = Array.isArray(productContext?.entries) ? productContext.entries.filter(Boolean) : [];
   const sizeLabel = cleanAnswerText(productContext?.sizeLabel || "");
   const currentHandle = String(productContext?.currentProductHandle || "").trim().toLowerCase();
-  const primary =
-    entries.find((entry) => String(entry?.handle || "").trim().toLowerCase() === currentHandle) ||
-    entries[0] ||
-    null;
+  const currentEntry =
+    entries.find((entry) => String(entry?.handle || "").trim().toLowerCase() === currentHandle) || null;
+  const shouldAnchorCurrentProduct =
+    Boolean(currentEntry) &&
+    (
+      intent === "product_question" ||
+      queryUsesCurrentProductContext(normalizedQuery) ||
+      queryLooksLikePriceQuestion(normalizedQuery) ||
+      queryLooksLikeSpecificSizeAvailability(normalizedQuery) ||
+      queryLooksLikeSizeListQuestion(normalizedQuery)
+    );
+  const primary = (shouldAnchorCurrentProduct ? currentEntry : null) || entries[0] || null;
 
   if (!primary) {
     return { reply: "", grounded: false, reason: "no_product_context" };
   }
 
   const primaryTitle = cleanAnswerText(primary.title || primary.label || "");
+  const currentTitle = cleanAnswerText(currentEntry?.title || currentEntry?.label || "");
   const primaryProfile = inferProductProfile(primary.handle);
   const primarySizes = extractAvailableSizes(primary);
   const sourceType = productContext?.answerSourceType || "shopify_product";
@@ -1026,11 +1080,23 @@ function buildProductSpecificReply({
     };
   }
 
-  if (queryLooksLikeCouplesQuestion(normalizedQuery)) {
+  if (intent === "couple_conflict" || queryLooksLikeCouplesQuestion(normalizedQuery)) {
+    const comparePrefix =
+      currentEntry &&
+      primary &&
+      String(currentEntry.handle || "").trim().toLowerCase() !== String(primary.handle || "").trim().toLowerCase()
+        ? `This page is ${currentTitle}, but based on what you said, I would compare ${primaryTitle} first.`
+        : "";
     return {
       reply: primaryProfile.isDualComfort
-        ? `${primaryTitle} is the best first look when two sleepers want different feels on each side. It is the more couple-friendly path without turning the bed into two separate mattresses.`
-        : `${primaryTitle} is worth comparing for shared comfort, but I would still put a more couple-friendly dual-comfort option beside it if you and your partner want different feels.`,
+        ? joinUniqueSentences([
+            comparePrefix,
+            `${primaryTitle} is the best first look when two sleepers want different feels on each side. It is the more couple-friendly path without turning the bed into two separate mattresses.`,
+          ])
+        : joinUniqueSentences([
+            comparePrefix,
+            `${primaryTitle} is worth comparing for shared comfort, but I would still put a more couple-friendly dual-comfort option beside it if you and your partner want different feels.`,
+          ]),
       grounded: true,
       sourceType,
       sourceKey,
