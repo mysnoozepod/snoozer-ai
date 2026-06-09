@@ -883,12 +883,34 @@
     });
   }
 
-  function buildAssessmentSummary(answers) {
+  function hasOwn(object, key) {
+    return Boolean(object) && Object.prototype.hasOwnProperty.call(object, key);
+  }
+
+  function getResolvedRecommendationMotionMode(answers, recommendation) {
+    const recommendationMode = normalizeMotionMode(recommendation && recommendation.meta && recommendation.meta.motionMode);
+    return recommendationMode || normalizeMotionMode(answers.motionMode);
+  }
+
+  function getResolvedRecommendationBaseType(answers, recommendation) {
+    return normalizeText(
+      (recommendation && recommendation.meta && recommendation.meta.baseType) || answers.baseType
+    );
+  }
+
+  function getExplicitRecommendationBaseHandle(recommendation) {
+    if (!hasOwn(recommendation && recommendation.meta, "baseHandle")) return null;
+    return recommendation.meta.baseHandle == null ? "" : normalizeText(recommendation.meta.baseHandle);
+  }
+
+  function buildAssessmentSummary(answers, recommendation) {
     const parts = [];
+    const resolvedBaseType = getResolvedRecommendationBaseType(answers, recommendation);
+    const resolvedMotionMode = getResolvedRecommendationMotionMode(answers, recommendation);
 
     if (answers.size) parts.push("Size target: " + normalizeText(answers.size) + ".");
-    if (answers.baseType) parts.push("Base preference: " + normalizeText(answers.baseType) + ".");
-    if (answers.motionMode) parts.push("Motion preference: " + normalizeText(answers.motionMode) + ".");
+    if (resolvedBaseType) parts.push("Base preference: " + resolvedBaseType + ".");
+    if (resolvedMotionMode) parts.push("Motion preference: " + resolvedMotionMode + ".");
     if (answers.sleepPartner) parts.push("Shares the bed: " + normalizeText(answers.sleepPartner) + ".");
     if (answers.sleepPosition) parts.push("Sleeps mostly on their " + normalizeText(answers.sleepPosition).toLowerCase() + ".");
     if (answers.firmness) parts.push("Prefers a " + normalizeText(answers.firmness).toLowerCase() + " feel.");
@@ -949,12 +971,16 @@
   }
 
   function resolveBaseHandle(answers, recommendation, routes) {
-    const baseType = normalizeText(answers.baseType);
-    const motionMode = normalizeMotionMode(answers.motionMode);
+    const explicitBaseHandle = getExplicitRecommendationBaseHandle(recommendation);
+    if (explicitBaseHandle !== null) return explicitBaseHandle;
+
+    const baseType = getResolvedRecommendationBaseType(answers, recommendation);
+    const motionMode = getResolvedRecommendationMotionMode(answers, recommendation);
     const snores = isYes(answers.snore) || isYes(answers.partnerSnore);
 
     if (baseType === "Adjustable Base" || motionMode || snores) return HANDLES.bases.adjustable;
     if (baseType === "Platform Base") return HANDLES.bases.platform;
+    if (baseType === "Storage Base") return HANDLES.bases.storage;
     if (baseType === "Mattress Only") return "";
 
     const topPod = getTopRecommendedPod(recommendation);
@@ -965,10 +991,20 @@
   }
 
   function buildBaseDirection(answers, recommendation) {
-    const baseType = normalizeText(answers.baseType);
-    const motionMode = normalizeMotionMode(answers.motionMode);
+    const explicitBaseHandle = getExplicitRecommendationBaseHandle(recommendation);
+    const baseType = getResolvedRecommendationBaseType(answers, recommendation);
+    const motionMode = getResolvedRecommendationMotionMode(answers, recommendation);
     const snores = isYes(answers.snore) || isYes(answers.partnerSnore);
 
+    if (explicitBaseHandle === "") {
+      return "You can start mattress-first and add a base later if you decide you want more elevation or support flexibility.";
+    }
+    if (explicitBaseHandle === HANDLES.bases.platform || baseType === "Platform Base") {
+      return "A platform base keeps the setup simpler if you do not need motion features.";
+    }
+    if (explicitBaseHandle === HANDLES.bases.storage || baseType === "Storage Base") {
+      return "A storage base keeps the setup non-motion while adding built-in utility if that foundation style fits your room.";
+    }
     if (baseType === "Adjustable Base" || motionMode || snores) {
       return "An adjustable base is worth comparing here so you can test elevation, motion flexibility, and partner comfort in the same setup.";
     }
@@ -989,7 +1025,7 @@
 
   function buildPartnerDirection(answers, recommendation) {
     const partner = isYes(answers.sleepPartner);
-    const motionMode = normalizeMotionMode(answers.motionMode);
+    const motionMode = getResolvedRecommendationMotionMode(answers, recommendation);
     const highMotionSensitivity =
       containsTerm(answers.motionSensitivity, ["high", "wake up easily"]) ||
       containsTerm(answers.partnerMotionSensitivity, ["high", "wake up easily"]);
@@ -1174,12 +1210,141 @@
     return {
       title: "Your sleep direction is ready.",
       copy: "Based on your answers, Snoozer can point you toward a better starting mattress, base, and sleep setup.",
-      summary: buildAssessmentSummary(answers),
+      summary: buildAssessmentSummary(answers, recommendation),
       hints: buildResultTags(answers, recommendation),
       directions: buildResultDirections(answers, recommendation),
       recommendedProducts: products,
       primaryAction: buildPrimaryAction(answers, recommendation, products, routes),
     };
+  }
+
+  function baseTypeLabelFromCanonicalKey(value) {
+    const normalized = lower(value);
+    if (normalized === "adjustable") return "Adjustable Base";
+    if (normalized === "platform") return "Platform Base";
+    if (normalized === "storage") return "Storage Base";
+    return "Mattress Only";
+  }
+
+  function motionLabelFromCanonicalKey(value) {
+    const normalized = lower(value);
+    if (normalized === "full_split") return "Full Split Motion";
+    if (normalized === "half_split") return "Half Split Motion";
+    if (normalized === "standard") return "Standard Motion";
+    return NO_MOTION_LABEL;
+  }
+
+  function adaptCanonicalRecommendation(resolved) {
+    const normalizedAssessment = resolved && resolved.normalizedAssessment ? resolved.normalizedAssessment : {};
+    const recommendation = resolved && resolved.recommendation ? resolved.recommendation : {};
+    const pods = Array.isArray(resolved && resolved.pods) ? resolved.pods : [];
+
+    return {
+      meta: {
+        size: normalizeText(normalizedAssessment.size),
+        motionMode:
+          normalizeText(normalizedAssessment.motionLabel) ||
+          motionLabelFromCanonicalKey(normalizedAssessment.motionKey),
+        firmness: normalizeText(normalizedAssessment.firmness),
+        position: normalizeText(normalizedAssessment.position),
+        hasPartner: Boolean(normalizedAssessment.hasPartner),
+        warnings: Array.isArray(normalizedAssessment.warnings)
+          ? normalizedAssessment.warnings.slice()
+          : Array.isArray(recommendation.warnings)
+            ? recommendation.warnings.slice()
+            : [],
+        primaryMattressHandle: normalizeText(recommendation.primaryMattressHandle),
+        baseHandle: recommendation.baseHandle == null ? null : normalizeText(recommendation.baseHandle),
+        baseType:
+          normalizeText(normalizedAssessment.baseTypeLabel) ||
+          baseTypeLabelFromCanonicalKey(normalizedAssessment.baseType),
+        manifestVersion: normalizeText(resolved && resolved.manifestVersion),
+        reasonKeys: Array.isArray(recommendation.reasonKeys) ? recommendation.reasonKeys.slice() : [],
+        source: "canonical_resolver",
+      },
+      pods: pods.map(function (pod, index) {
+        return {
+          podId: normalizeText(pod && pod.podId) || String(index + 1),
+          mattressHandle: normalizeText(pod && pod.mattressHandle),
+          baseHandle: normalizeText(pod && pod.baseHandle),
+          baseType: normalizeText(pod && pod.baseTypeKey),
+          motionType: normalizeText(pod && pod.defaultMotionKey),
+          hasAdjustableBase: Boolean(pod && pod.hasAdjustableBase),
+          displayMattress: mattressLabelFromHandle(pod && pod.mattressHandle),
+          displayedIn: {
+            size: normalizeText((pod && pod.displayedIn && pod.displayedIn.size) || normalizedAssessment.size),
+            baseLabel:
+              normalizeText(pod && pod.displayedIn && pod.displayedIn.baseLabel) ||
+              baseTypeLabelFromCanonicalKey(pod && pod.baseTypeKey),
+            motion:
+              normalizeText(pod && pod.displayedIn && pod.displayedIn.motion) ||
+              motionLabelFromCanonicalKey(pod && pod.defaultMotionKey),
+          },
+          diagnostics: {
+            score: Number(pod && pod.score) || 0,
+            scoreReasons: Array.isArray(pod && pod.reasonKeys) ? pod.reasonKeys.slice() : [],
+          },
+          rank: Number(pod && pod.rank) || index + 1,
+          recommended: pod ? pod.recommended === true : index < 3,
+        };
+      }),
+    };
+  }
+
+  function buildLocalShowroomResult(answers, productMap, routes) {
+    const recommendation = generateShowroomRecommendations(answers);
+    return {
+      recommendation: recommendation,
+      result: buildResult(answers, recommendation, productMap, routes),
+      source: "local_fallback",
+      fallbackUsed: true,
+    };
+  }
+
+  async function resolveAssessmentRecommendationResult(root, answers, shopperId, productMap, routes) {
+    try {
+      const resolved = await fetch(buildApiUrl(root, "/recommendations/resolve"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shopperId: shopperId,
+          assessment: answers,
+          includeProducts: true,
+          includePods: true,
+          source: "shopify_assessment_page",
+        }),
+      }).then(function (response) {
+        if (!response.ok) throw new Error("Canonical recommendations failed");
+        return response.json();
+      });
+
+      const recommendation = adaptCanonicalRecommendation(resolved);
+      return {
+        recommendation: recommendation,
+        result: buildResult(answers, recommendation, productMap, routes),
+        resolved: resolved,
+        source: "canonical_resolver",
+        fallbackUsed: false,
+      };
+    } catch (error) {
+      console.warn("[snooze-assessment] canonical recommendations unavailable, using local fallback", error);
+      return buildLocalShowroomResult(answers, productMap, routes);
+    }
+  }
+
+  async function saveAssessmentAnswers(root, shopperId, answers) {
+    return fetch(buildApiUrl(root, "/assessment"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        shopperId: shopperId,
+        origin: "shopify_assessment_page",
+        answers: answers,
+      }),
+    }).then(function (response) {
+      if (!response.ok) throw new Error("Assessment save failed");
+      return response.json();
+    });
   }
 
   function initAssessment(root) {
@@ -1615,21 +1780,15 @@
       const answers = cleanAnswers(state.questions, state.answers);
 
       try {
-        await fetch(buildApiUrl(root, "/assessment"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            shopperId: state.shopperId,
-            origin: "shopify_assessment_page",
-            answers: answers,
-          }),
-        }).then(function (response) {
-          if (!response.ok) throw new Error("Assessment save failed");
-          return response.json();
-        });
-
-        const recommendation = generateShowroomRecommendations(answers);
-        const result = buildResult(answers, recommendation, productMap, routes);
+        await saveAssessmentAnswers(root, state.shopperId, answers);
+        const resolved = await resolveAssessmentRecommendationResult(
+          root,
+          answers,
+          state.shopperId,
+          productMap,
+          routes
+        );
+        const result = resolved.result;
 
         state.answers = answers;
         state.result = result;
@@ -1675,8 +1834,14 @@
       state.loading = false;
 
       if (state.savedCompleted && Object.keys(state.answers).length) {
-        const recommendation = generateShowroomRecommendations(state.answers);
-        state.result = buildResult(state.answers, recommendation, productMap, routes);
+        const resolved = await resolveAssessmentRecommendationResult(
+          root,
+          state.answers,
+          state.shopperId,
+          productMap,
+          routes
+        );
+        state.result = resolved.result;
         state.completed = true;
       }
 

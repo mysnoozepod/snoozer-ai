@@ -80,6 +80,7 @@ const {
   parseAskSnoozerSizeLabel,
 } = require("./services/askSnoozerIntents");
 const {
+  resolveAskSnoozerPolicyAnswer,
   resolveAskSnoozerPolicySources,
   resolveAskSnoozerSupplementalSources,
 } = require("./services/askSnoozerPolicy");
@@ -1856,6 +1857,7 @@ async function resolveHudAskAnswerStrategy({
   traceId = "",
   products = [],
   productResolution = null,
+  canonicalRecommendation = null,
 } = {}) {
   const intentGroup = String(classification?.intent_group || "").trim() || "fallback_unclear";
   const config = resolveHudAskContextualConfig({
@@ -1930,6 +1932,7 @@ async function resolveHudAskAnswerStrategy({
     sources,
     products,
     productContext: productResolution,
+    canonicalRecommendation,
     actions: config.actions,
     pages: config.pages,
     collections: config.collections,
@@ -1961,6 +1964,13 @@ async function resolveHudAskAnswerStrategy({
       policy_key: policyKey || null,
       policy_retrieved: policyRetrieved,
       policy_answer_grounded: intentGroup === "policy_support" ? Boolean(answer.answer_grounded) : null,
+      canonical_top_pod_id: canonicalRecommendation?.topPodId || null,
+      canonical_primary_mattress_handle: canonicalRecommendation?.primaryMattressHandle || null,
+      canonical_base_handle:
+        Object.prototype.hasOwnProperty.call(canonicalRecommendation || {}, "baseHandle")
+          ? canonicalRecommendation.baseHandle
+          : null,
+      canonical_motion_key: canonicalRecommendation?.motionKey || null,
       answer_grounded: Boolean(answer.answer_grounded),
       answer_source_type: answer.answer_source_type || "fallback",
       answer_source_key: answer.answer_source_key || null,
@@ -3245,6 +3255,96 @@ async function resolveHudAskProducts({
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Polly helpers
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+async function resolveHudAskCanonicalProducts({
+  canonicalRecommendation = null,
+  intent = "",
+  currentProductHandle = "",
+  traceId = "",
+} = {}) {
+  if (!isObject(canonicalRecommendation) || !shopifySvc?.fetchProductsByHandles) {
+    return [];
+  }
+
+  const sizeLabel = String(canonicalRecommendation?.normalizedAssessment?.size || "").trim();
+  const handles = uniqueStrings([
+    canonicalRecommendation.primaryMattressHandle,
+    canonicalRecommendation.baseHandle,
+  ]).slice(0, 3);
+
+  if (!handles.length) return [];
+
+  try {
+    const productsResponse = await withTimeout(
+      shopifySvc.fetchProductsByHandles({ handles, lite: false }),
+      SHOPIFY_TIMEOUT_MS,
+      "HUD_ASK_PRODUCT_TIMEOUT",
+      "Timed out loading HUD ask canonical products"
+    );
+    const fetchedItems = Array.isArray(productsResponse?.items) ? productsResponse.items : [];
+    const productsByHandle = new Map(
+      fetchedItems
+        .filter((item) => item?.handle && item?.id)
+        .map((item) => [String(item.handle).trim().toLowerCase(), item])
+    );
+
+    return handles
+      .map((handle) => {
+        const product = productsByHandle.get(String(handle || "").trim().toLowerCase());
+        if (!product) return null;
+
+        let chosenVariant = sizeLabel ? findHudAskVariantForSize(product, sizeLabel) : null;
+        if (!chosenVariant) {
+          chosenVariant =
+            findHudAskVariantById(product, product.firstAvailableVariantId || product.variantId) ||
+            (Array.isArray(product.variants)
+              ? product.variants.find((variant) => variant?.available) || product.variants[0]
+              : null);
+        }
+
+        const variantId = String(
+          chosenVariant?.id || product.firstAvailableVariantId || product.variantId || ""
+        ).trim();
+        if (!variantId) return null;
+
+        const productHandle = String(product.handle || "").trim();
+        return {
+          type: "product",
+          label: String(product.title || "").trim(),
+          title: String(product.title || "").trim(),
+          handle: productHandle,
+          href: `/products/${productHandle}`,
+          product_id: String(product.id || "").trim(),
+          variant_id: variantId,
+          variant_title:
+            String(chosenVariant?.title || "").trim() === "Default Title"
+              ? ""
+              : String(chosenVariant?.title || "").trim(),
+          reason: buildHudAskProductReason({
+            intent,
+            handle: productHandle,
+            currentProductHandle,
+            sizeLabel,
+            budgetQuery: false,
+          }),
+          tags: buildHudAskProductTags({
+            intent,
+            handle: productHandle,
+            sizeLabel,
+          }),
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 3);
+  } catch (error) {
+    log("hud.ask.canonical.products.error", error.message, {
+      traceId,
+      intent,
+      handles,
+    });
+    return [];
+  }
+}
+
 function normalizePollyEngine(engine) {
   const e = String(engine || "").toLowerCase().trim();
   if (e === "generative") return "generative";
@@ -3796,6 +3896,67 @@ function attachCanonicalRecommendationContext(context = {}, canonicalRecommendat
   return next;
 }
 
+async function resolveCanonicalRecommendationContext({
+  payload = null,
+  context = null,
+  storedAssessment = null,
+  shopperId = "",
+  sessionId = "",
+  allowSessionLookup = false,
+  source = "manual",
+  traceId = "",
+} = {}) {
+  const safePayload = isObject(payload) ? payload : {};
+  let assessmentSource = storedAssessment && isObject(storedAssessment) ? storedAssessment : null;
+
+  if (!assessmentSource && shopperId) {
+    try {
+      assessmentSource = await getAssessmentResult(shopperId);
+    } catch (error) {
+      log("canonical.context.assessment.error", error.message, {
+        traceId,
+        shopperId,
+        sessionId: sessionId || null,
+      });
+    }
+  }
+
+  if (!assessmentSource && allowSessionLookup && sessionId) {
+    try {
+      const sessionItem = await getSessionItem(sessionId);
+      assessmentSource = sessionItem?.context?.assessment || null;
+    } catch (error) {
+      log("canonical.context.session.error", error.message, {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId,
+      });
+    }
+  }
+
+  const assessmentInput = pickAskSnoozerAssessmentInput({
+    payload: safePayload,
+    context,
+    storedAssessment: assessmentSource,
+  });
+
+  if (
+    !assessmentInput ||
+    !recommendationResolver ||
+    typeof recommendationResolver.resolveRecommendation !== "function"
+  ) {
+    return null;
+  }
+
+  const resolved = await recommendationResolver.resolveRecommendation({
+    assessment: assessmentInput,
+    includeProducts: true,
+    includePods: true,
+    source,
+  });
+  return buildAskSnoozerCanonicalContext(resolved);
+}
+
 function maybeBuildAskSnoozerCanonicalAnswer(query, context) {
   const canonicalRecommendation = isObject(context?.canonicalRecommendation)
     ? context.canonicalRecommendation
@@ -3812,6 +3973,117 @@ function maybeBuildAskSnoozerCanonicalAnswer(query, context) {
   }
 
   return answer;
+}
+
+function normalizeAskSnoozerContextPath(value = "") {
+  return String(value || "").trim() || "/";
+}
+
+function buildAskSnoozerClassification(query = "", context = {}) {
+  return classifyAskSnoozerIntent(query, {
+    path: normalizeAskSnoozerContextPath(context?.path),
+    page_type: String(context?.page_type || context?.pageType || "unknown").trim() || "unknown",
+    surface: String(context?.surface || "ask_snoozer").trim() || "ask_snoozer",
+  });
+}
+
+function looksLikeAskSnoozerSupportQuestion(query = "") {
+  const normalized = String(query || "").trim().toLowerCase();
+  if (!normalized) return false;
+
+  return [
+    "contact support",
+    "contact customer support",
+    "contact customer service",
+    "contact snoozer",
+    "support email",
+    "support phone",
+    "customer service",
+    "customer support",
+    "email support",
+    "phone number",
+    "how do i contact",
+    "how can i contact",
+    "how do i reach",
+    "how can i reach",
+    "talk to someone",
+    "speak to someone",
+    "help with my order",
+    "need help with my order",
+  ].some((term) => normalized.includes(term));
+}
+
+function buildAskSnoozerSupportReply(query = "") {
+  const normalized = String(query || "").trim().toLowerCase();
+
+  if (
+    normalized.includes("email") ||
+    normalized.includes("phone") ||
+    normalized.includes("contact")
+  ) {
+    return "For order or account help, use the store contact or support path shown on the site so the team can verify your details. If you want product guidance, I can help here or point you to a Snooze Session.";
+  }
+
+  return "If you need order or account support, use the store contact path shown on the site so the team can verify the details. If you want product guidance, I can help here or point you to a Snooze Session.";
+}
+
+async function maybeBuildAskSnoozerDeterministicFaqAnswer({
+  query = "",
+  context = {},
+  traceId = "",
+} = {}) {
+  const classification = buildAskSnoozerClassification(query, context);
+  const intent = String(classification?.intent || "").trim();
+  const intentGroup = String(classification?.intent_group || "").trim();
+
+  if (intentGroup === "policy_support") {
+    const policy = await resolveAskSnoozerPolicyAnswer({
+      query,
+      traceId,
+      timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
+    });
+    return {
+      classification,
+      reply: policy.reply || "",
+      answer_grounded: Boolean(policy.answerGrounded || policy.retrieved),
+      answer_source_type: policy.sourceKind || policy.source || "fallback",
+      answer_source_key: policy.key || "",
+      answer_facts_count: policy.retrieved ? 1 : 0,
+      matched_preview: policy.matchedPreview || "",
+      answer_strategy: policy.answerGrounded ? "source_summary" : "safe_fallback",
+      extracted_facts: [],
+      reason: policy.answerGrounded ? "" : "policy_fallback",
+      chips_override: Array.isArray(policy.chips) ? policy.chips : [],
+    };
+  }
+
+  if (intentGroup === "booking_handoff") {
+    return buildAskSnoozerAnswer({
+      query,
+      intent,
+      intent_group: intentGroup,
+      actions: [{ label: "Book A Snooze Session", href: HUD_SAFE_PAGE_ROUTES.booking }],
+      pages: [{ label: "Book A Snooze Session", href: HUD_SAFE_PAGE_ROUTES.booking }],
+    });
+  }
+
+  if (looksLikeAskSnoozerSupportQuestion(query)) {
+    return {
+      classification,
+      reply: buildAskSnoozerSupportReply(query),
+      answer_grounded: false,
+      answer_source_type: "deterministic_support",
+      answer_source_key: "contact_support",
+      answer_facts_count: 0,
+      matched_preview: "",
+      answer_strategy: "safe_fallback",
+      extracted_facts: [],
+      reason: "support_fallback",
+      chips_override: [],
+    };
+  }
+
+  return null;
 }
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -3891,6 +4163,28 @@ async function handle(event = {}) {
         thread_id: body?.thread_id,
         sessionId: body?.session_id,
       });
+      const shopperId =
+        String(body?.shopperId || body?.shopper_id || body?.context?.shopperId || "").trim() || "";
+      const hudContext = isObject(body?.context) ? body.context : {};
+      let canonicalRecommendation = null;
+      try {
+        canonicalRecommendation = await resolveCanonicalRecommendationContext({
+          payload: body,
+          context: hudContext,
+          shopperId,
+          sessionId: threadId,
+          allowSessionLookup: Boolean(body?.thread_id || body?.session_id),
+          source: "hud_ask",
+          traceId,
+        });
+      } catch (error) {
+        log("hud.ask.canonical.error", error.message, {
+          traceId,
+          threadId,
+          shopperId: shopperId || null,
+          code: error?.code || null,
+        });
+      }
       const classification = classifyAskSnoozerIntent(query, {
         path: pathValue,
         page_type: pageType,
@@ -3906,7 +4200,19 @@ async function handle(event = {}) {
         traceId,
         currentProductHandle,
       });
-      const products = Array.isArray(productResolution?.products) ? productResolution.products : [];
+      let products = Array.isArray(productResolution?.products) ? productResolution.products : [];
+      if (!products.length && canonicalRecommendation) {
+        const canonicalProducts = await resolveHudAskCanonicalProducts({
+          canonicalRecommendation,
+          intent,
+          currentProductHandle:
+            productResolution?.currentProductHandle || currentProductHandle || "",
+          traceId,
+        });
+        if (canonicalProducts.length) {
+          products = canonicalProducts;
+        }
+      }
       const answerStrategy = await resolveHudAskAnswerStrategy({
         classification,
         intent,
@@ -3916,6 +4222,7 @@ async function handle(event = {}) {
         traceId,
         products,
         productResolution,
+        canonicalRecommendation,
       });
       const payload = buildHudAskPayload({
         classification,
@@ -3935,10 +4242,12 @@ async function handle(event = {}) {
       log("hud.ask", "ok", {
         traceId,
         threadId,
+        shopperId: shopperId || null,
         intent,
         intentGroup: classification.intent_group || null,
         policySubtype: payload.policy_subtype || null,
         policySource: payload.meta?.policy_source || null,
+        canonicalTopPodId: payload.meta?.canonical_top_pod_id || null,
         confidence: classification.confidence || null,
         confidenceLabel: classification.confidence_label || null,
         path: pathValue,
@@ -4806,37 +5115,29 @@ async function handle(event = {}) {
         }
       }
 
-      const assessmentInput = pickAskSnoozerAssessmentInput({
+      const canonicalContext = await resolveCanonicalRecommendationContext({
         payload,
         context,
         storedAssessment,
+        shopperId,
+        sessionId: effectiveSessionId,
+        allowSessionLookup: false,
+        source: "ask_snoozer",
+        traceId,
       });
 
-      if (
-        assessmentInput &&
-        recommendationResolver &&
-        typeof recommendationResolver.resolveRecommendation === "function"
-      ) {
+      if (canonicalContext) {
         try {
-          const resolved = await recommendationResolver.resolveRecommendation({
-            assessment: assessmentInput,
-            includeProducts: true,
-            includePods: true,
-            source: "ask_snoozer",
+          context = attachCanonicalRecommendationContext(context, canonicalContext);
+          log("ask-snoozer.canonical", "resolved", {
+            traceId,
+            sessionId: effectiveSessionId,
+            shopperId,
+            topPodId: canonicalContext.topPodId || null,
+            primaryMattressHandle: canonicalContext.primaryMattressHandle || null,
+            baseHandle: canonicalContext.baseHandle || null,
+            motionKey: canonicalContext.motionKey || null,
           });
-          const canonicalContext = buildAskSnoozerCanonicalContext(resolved);
-          if (canonicalContext) {
-            context = attachCanonicalRecommendationContext(context, canonicalContext);
-            log("ask-snoozer.canonical", "resolved", {
-              traceId,
-              sessionId: effectiveSessionId,
-              shopperId,
-              topPodId: canonicalContext.topPodId || null,
-              primaryMattressHandle: canonicalContext.primaryMattressHandle || null,
-              baseHandle: canonicalContext.baseHandle || null,
-              motionKey: canonicalContext.motionKey || null,
-            });
-          }
         } catch (canonicalErr) {
           log("ask-snoozer.canonical.error", canonicalErr.message, {
             traceId,
@@ -4992,6 +5293,88 @@ async function handle(event = {}) {
         primaryMattressHandle: context?.canonicalRecommendation?.primaryMattressHandle || null,
         baseHandle: context?.canonicalRecommendation?.baseHandle || null,
         motionKey: context?.canonicalRecommendation?.motionKey || null,
+        totalMs: latencyMs,
+      });
+
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context: mergedContext,
+          payload,
+          defaultSpeech: env.reply || env.message?.text || "I'm here.",
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+    }
+
+    const deterministicFaqAnswer = await maybeBuildAskSnoozerDeterministicFaqAnswer({
+      query: msg,
+      context,
+      traceId,
+    });
+    if (deterministicFaqAnswer) {
+      const latencyMs = Date.now() - startedAt;
+      const mergedContext =
+        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model: "deterministic_faq",
+        text: deterministicFaqAnswer.reply || "",
+        context: mergedContext,
+        products: [],
+        actions: [],
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      });
+
+      env.reply = deterministicFaqAnswer.reply || env.message?.text || "";
+      env.thread_id = effectiveSessionId;
+      env.status = "completed";
+      env.sessionId = effectiveSessionId;
+      env.meta = {
+        path: "deterministic",
+        answer_strategy: deterministicFaqAnswer.answer_strategy || "safe_fallback",
+        answer_grounded: Boolean(deterministicFaqAnswer.answer_grounded),
+        answer_source_type: deterministicFaqAnswer.answer_source_type || "fallback",
+        answer_source_key: deterministicFaqAnswer.answer_source_key || null,
+        answer_facts_count: Number(deterministicFaqAnswer.answer_facts_count || 0),
+        matched_preview: deterministicFaqAnswer.matched_preview || "",
+        extracted_facts: Array.isArray(deterministicFaqAnswer.extracted_facts)
+          ? deterministicFaqAnswer.extracted_facts
+          : [],
+        reason: deterministicFaqAnswer.reason || "",
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      };
+
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+
+      logContractResponse(normalized);
+      log("ask-snoozer.faq", "answered", {
+        traceId,
+        sessionId: effectiveSessionId,
+        shopperId,
+        intent: buildAskSnoozerClassification(msg, context)?.intent || null,
+        intentGroup: buildAskSnoozerClassification(msg, context)?.intent_group || null,
         totalMs: latencyMs,
       });
 
