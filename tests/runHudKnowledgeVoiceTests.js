@@ -6,6 +6,7 @@ const shopifySvc = require("../services/shopify");
 const {
   getAskSnoozerProductDocKeys,
 } = require("../services/askSnoozerPolicy");
+const { BANNED_SNOOZER_PHRASES } = require("../services/snoozerVoice");
 
 const originalFetchProductsByHandles = shopifySvc.fetchProductsByHandles;
 
@@ -83,6 +84,16 @@ function restoreShopify() {
   shopifySvc.fetchProductsByHandles = originalFetchProductsByHandles;
 }
 
+function assertNoBannedPhrases(text, label) {
+  const normalized = String(text || "").toLowerCase();
+  for (const phrase of BANNED_SNOOZER_PHRASES) {
+    assert(
+      !normalized.includes(String(phrase).toLowerCase()),
+      `${label} should not include banned phrase: ${phrase}`
+    );
+  }
+}
+
 async function invokeHudAsk(body) {
   const { lambdaHandler } = require("../index");
   return parseBody(await lambdaHandler(buildEvent(body)));
@@ -126,8 +137,11 @@ async function testCoupleConflictPrefersDualComfort() {
   assert.strictEqual(body.status, "ok");
   assert(Array.isArray(body.products) && body.products.length > 0, "expected HUD product cards");
   assert.strictEqual(body.products[0].handle, "12-dual-comfort-hybrid");
-  assert(!/stronger starting point/i.test(String(body.reply || "")));
-  assert(!/\bverified\b/i.test(String(body.reply || "")));
+  assert(/dual comfort/i.test(String(body.reply || "")), "couple conflict reply should mention Dual Comfort");
+  assert(/different bodies|force one mattress feel/i.test(String(body.reply || "")), "couple conflict reply should explain the fit conflict");
+  assert(/queen or king/i.test(String(body.reply || "")), "couple conflict reply should ask for Queen or King");
+  assert(String(body.reply || "").length <= 220, "couple conflict reply should stay concise");
+  assertNoBannedPhrases(body.reply, "couple conflict reply");
 }
 
 async function testCanonicalProductChoiceBeatsGenericHybridBias() {
@@ -152,8 +166,38 @@ async function testCanonicalProductChoiceBeatsGenericHybridBias() {
   assert.strictEqual(body.meta && body.meta.canonical_primary_mattress_handle, "12-all-foam-mattress");
   assert(Array.isArray(body.products) && body.products.length > 0, "expected HUD product cards");
   assert.strictEqual(body.products[0].handle, "12-all-foam-mattress");
-  assert(!/stronger starting point/i.test(String(body.reply || "")));
-  assert(!/\bverified\b/i.test(String(body.reply || "")));
+  assertNoBannedPhrases(body.reply, "hot-sleeper reply");
+}
+
+async function testHotSleeperVoice() {
+  const body = await invokeHudAsk({
+    query: "I sleep hot",
+    path: "/collections/mattresses",
+    page_type: "collection",
+  });
+
+  assert.strictEqual(body.status, "ok");
+  assert(/airflow|heat/i.test(String(body.reply || "")), "hot-sleeper reply should mention airflow or heat");
+  assert(!/\bcools you|will keep you cool|guaranteed cooling\b/i.test(String(body.reply || "")), "hot-sleeper reply should not overclaim cooling");
+  assert(/side, back, or stomach|assessment/i.test(String(body.reply || "")), "hot-sleeper reply should ask the next useful question or point toward assessment");
+  assert(String(body.reply || "").length <= 220, "hot-sleeper reply should stay concise");
+  assertNoBannedPhrases(body.reply, "hot-sleeper voice reply");
+}
+
+async function testCompareFoamVsHybridVoice() {
+  const body = await invokeHudAsk({
+    query: "compare foam vs hybrid",
+    path: "/collections/mattresses",
+    page_type: "collection",
+  });
+
+  assert.strictEqual(body.status, "ok");
+  assert(/foam/i.test(String(body.reply || "")), "compare reply should mention foam");
+  assert(/hybrid/i.test(String(body.reply || "")), "compare reply should mention hybrid");
+  assert(/airflow|breathable|bounce/i.test(String(body.reply || "")), "compare reply should describe hybrid in plain English");
+  assert(/contour|motion/i.test(String(body.reply || "")), "compare reply should describe foam in plain English");
+  assert(String(body.reply || "").length <= 220, "compare reply should stay concise");
+  assertNoBannedPhrases(body.reply, "compare reply");
 }
 
 async function main() {
@@ -162,6 +206,8 @@ async function main() {
     testKnowledgeHandleMappings();
     await testCoupleConflictPrefersDualComfort();
     await testCanonicalProductChoiceBeatsGenericHybridBias();
+    await testHotSleeperVoice();
+    await testCompareFoamVsHybridVoice();
     console.log("All HUD knowledge and voice tests passed.");
   } finally {
     restoreShopify();

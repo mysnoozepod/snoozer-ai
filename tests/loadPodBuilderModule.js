@@ -16,6 +16,7 @@ module.exports = {
   SYSTEM_OPTIONS,
   allowedMotionOptionsForSize,
   buildApiUrl,
+  buildBuilderGuidanceText,
   buildBuilderPlanFromAssessment,
   getApiBase,
   normalizeMotionSelectionForSize,

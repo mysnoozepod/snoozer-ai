@@ -1,4 +1,14 @@
 (function () {
+  const sharedVoice = typeof require === "function"
+    ? (function loadSharedVoice() {
+        try {
+          return require("../services/snoozerVoice");
+        } catch (error) {
+          return null;
+        }
+      })()
+    : null;
+
   const STORAGE_NAMESPACE = "snooze.assessment.page.v2";
   const SHARED_RESULTS_KEY = "snooze.recommendedProductHandles";
   const SHARED_ANSWERS_KEY = "snooze.assessment";
@@ -31,13 +41,13 @@
   };
 
   const PRODUCT_BLURBS = {
-    "14-hybrid": "A stronger starting point if you want lift, airflow, and support together.",
-    "12-dual-comfort-hybrid": "A better couple-friendly option when both sides need more flexibility.",
-    "12-all-foam-mattress": "A contouring all-foam option when pressure relief matters most.",
-    "10-all-foam-mattress": "A simpler value-first all-foam option for a steadier feel.",
-    "premium-motion-adjustable-base": "Compare elevation and motion flexibility alongside your mattress fit.",
-    "platform-base": "A simpler non-motion base path if you want a steadier foundation.",
-    "storage-base": "A storage base is worth comparing if you want a non-motion foundation with utility built in.",
+    "14-hybrid": "Good if you want more lift, airflow, and a sturdier feel.",
+    "12-dual-comfort-hybrid": "Best when two sleepers want different comfort feels without splitting the mattress.",
+    "12-all-foam-mattress": "Good if you want deeper contour and calmer motion.",
+    "10-all-foam-mattress": "A simpler all-foam route if you want to keep the setup straightforward.",
+    "premium-motion-adjustable-base": "Useful when elevation matters and you want to compare motion on purpose.",
+    "platform-base": "Keeps the setup simple if you do not want motion.",
+    "storage-base": "A non-motion base route with storage built in.",
   };
 
   const FALLBACK_QUESTIONS = [
@@ -194,6 +204,55 @@
 
   function normalizeKey(value) {
     return normalizeText(value).toLowerCase();
+  }
+
+  function buildVoiceReply(scenario, options) {
+    if (sharedVoice && typeof sharedVoice.buildSnoozerVoiceReply === "function") {
+      return sharedVoice.buildSnoozerVoiceReply(scenario, options || {});
+    }
+
+    if (scenario === "couple_conflict") {
+      return 'Got it - I would not force one mattress feel to solve two different bodies. I would compare 12" Dual Comfort Hybrid first.';
+    }
+    if (scenario === "no_base") {
+      return "If you chose mattress only, keep the mattress match clean and leave the base out for now.";
+    }
+    if (scenario === "platform_base") {
+      return "Platform Base keeps the setup simple and off the motion path.";
+    }
+    if (scenario === "adjustable_base") {
+      return "If elevation matters, choose the adjustable path on purpose instead of treating it like an add-on.";
+    }
+    if (scenario === "sleep_hot") {
+      return "If you sleep hot, start with airflow and avoid the setups that trap more heat around you.";
+    }
+    if (scenario === "side_sleeping") {
+      return "Side sleepers usually need enough give at the shoulder and hip without losing support.";
+    }
+    if (scenario === "firm_support") {
+      return "Start with support first, then tune comfort on top.";
+    }
+    return "Tell me how you sleep and what setup you want, and I can narrow the right direction.";
+  }
+
+  function buildCanonicalVoice(options) {
+    if (sharedVoice && typeof sharedVoice.buildCanonicalRecommendationVoice === "function") {
+      return sharedVoice.buildCanonicalRecommendationVoice(options || {});
+    }
+
+    return "Your first match is ready.";
+  }
+
+  function topPodName(topPod) {
+    return topPod && topPod.podId ? "SnoozePod " + topPod.podId : "your first match";
+  }
+
+  function joinVoiceReasons(parts) {
+    const filtered = parts.filter(Boolean);
+    if (!filtered.length) return "";
+    if (filtered.length === 1) return filtered[0];
+    if (filtered.length === 2) return filtered[0] + " and " + filtered[1];
+    return filtered.slice(0, filtered.length - 1).join(", ") + ", and " + filtered[filtered.length - 1];
   }
 
   function lower(value) {
@@ -579,11 +638,11 @@
     const isAnySplit = isHalfSplit || isFullSplit;
 
     if (isFullSplit && size !== "king") {
-      warnings.push("Full Split Motion is only available in King setups.");
+      warnings.push("Full Split is a King-only motion setup.");
     }
 
     if (isHalfSplit && size !== "queen" && size !== "king") {
-      warnings.push("Half Split Motion is only available in Queen or King sizes.");
+      warnings.push("Half Split Motion only opens up in Queen or King.");
     }
 
     if (isAnySplit) {
@@ -904,24 +963,44 @@
   }
 
   function buildAssessmentSummary(answers, recommendation) {
-    const parts = [];
+    const topPod = getTopRecommendedPod(recommendation);
+    const podLabel = topPodName(topPod);
+    const mattressTitle =
+      normalizeText(topPod && topPod.displayMattress) ||
+      mattressLabelFromHandle(topPod && topPod.mattressHandle) ||
+      "your matched mattress";
     const resolvedBaseType = getResolvedRecommendationBaseType(answers, recommendation);
     const resolvedMotionMode = getResolvedRecommendationMotionMode(answers, recommendation);
+    const reasons = [];
 
-    if (answers.size) parts.push("Size target: " + normalizeText(answers.size) + ".");
-    if (resolvedBaseType) parts.push("Base preference: " + resolvedBaseType + ".");
-    if (resolvedMotionMode) parts.push("Motion preference: " + resolvedMotionMode + ".");
-    if (answers.sleepPartner) parts.push("Shares the bed: " + normalizeText(answers.sleepPartner) + ".");
-    if (answers.sleepPosition) parts.push("Sleeps mostly on their " + normalizeText(answers.sleepPosition).toLowerCase() + ".");
-    if (answers.firmness) parts.push("Prefers a " + normalizeText(answers.firmness).toLowerCase() + " feel.");
-    if (answers.temperature) parts.push("Sleeps " + normalizeText(answers.temperature).toLowerCase() + ".");
-
-    const painPoints = Array.isArray(answers.painPoints) ? answers.painPoints.filter(Boolean) : [];
-    if (painPoints.length) {
-      parts.push("Pain or pressure focus: " + painPoints.join(", ") + ".");
+    if (normalizeKey(answers.sleepPosition).indexOf("side") !== -1) {
+      reasons.push("you sleep on your side");
+    } else if (normalizeKey(answers.sleepPosition).indexOf("back") !== -1) {
+      reasons.push("you sleep on your back");
+    } else if (normalizeKey(answers.sleepPosition).indexOf("stomach") !== -1) {
+      reasons.push("you sleep on your stomach");
     }
 
-    return parts.join(" ");
+    if (normalizeKey(answers.firmness) === "soft") reasons.push("you leaned softer");
+    if (normalizeKey(answers.firmness) === "firm") reasons.push("you wanted more support");
+    if (normalizeKey(answers.temperature) === "hot") reasons.push("you sleep warm");
+    if (resolvedBaseType === "Mattress Only") reasons.push("you did not ask for a base");
+    if (resolvedBaseType === "Platform Base") reasons.push("you wanted a platform-base setup");
+    if (normalizeKey(answers.sleepPartner) === "yes") reasons.push("you are sharing the bed");
+
+    return buildCanonicalVoice({
+      mode: "recommend",
+      topPodName: podLabel,
+      mattressTitle: mattressTitle,
+      baseTitle: resolvedBaseType || "Mattress Only",
+      motionLabel: resolvedMotionMode || NO_MOTION_LABEL,
+      reasonSummary: joinVoiceReasons(reasons),
+      warningSummary:
+        Array.isArray(recommendation && recommendation.meta && recommendation.meta.warnings)
+          ? recommendation.meta.warnings[0] || ""
+          : "",
+      maxChars: 320,
+    });
   }
 
   function buildResultTags(answers, recommendation) {
@@ -956,18 +1035,24 @@
 
   function mattressDirectionText(handle) {
     if (handle === HANDLES.mattresses.dualComfort) {
-      return 'Start with the 12" Dual Comfort Hybrid if shared sleep, split motion, or different comfort needs matter most.';
+      return buildVoiceReply("couple_conflict", {
+        primaryTitle: '12" Dual Comfort Hybrid',
+      });
     }
     if (handle === HANDLES.mattresses.hybrid14) {
-      return 'Start with the 14" Hybrid if you need stronger support, lift, or a firmer overall direction.';
+      return buildVoiceReply("firm_support", {
+        primaryTitle: '14" Hybrid',
+      });
     }
     if (handle === HANDLES.mattresses.allFoam12) {
-      return 'Start with the 12" All Foam if pressure relief and deeper contouring matter most.';
+      return buildVoiceReply("side_sleeping", {
+        primaryTitle: '12" All Foam Mattress',
+      });
     }
     if (handle === HANDLES.mattresses.allFoam10) {
-      return 'Start with the 10" All Foam if you want a simpler all-foam starting point.';
+      return 'Got it - 10" All Foam is the simpler all-foam route if you want to keep the setup straightforward.';
     }
-    return "Start with the mattress direction that best matches your support and comfort needs.";
+    return "Start with the mattress that matches how you sleep first, then tune the rest of the setup around it.";
   }
 
   function resolveBaseHandle(answers, recommendation, routes) {
@@ -997,27 +1082,27 @@
     const snores = isYes(answers.snore) || isYes(answers.partnerSnore);
 
     if (explicitBaseHandle === "") {
-      return "You can start mattress-first and add a base later if you decide you want more elevation or support flexibility.";
+      return buildVoiceReply("no_base");
     }
     if (explicitBaseHandle === HANDLES.bases.platform || baseType === "Platform Base") {
-      return "A platform base keeps the setup simpler if you do not need motion features.";
+      return buildVoiceReply("platform_base");
     }
     if (explicitBaseHandle === HANDLES.bases.storage || baseType === "Storage Base") {
-      return "A storage base keeps the setup non-motion while adding built-in utility if that foundation style fits your room.";
+      return "Storage Base keeps you on a non-motion path while adding utility if that foundation style fits your room.";
     }
     if (baseType === "Adjustable Base" || motionMode || snores) {
-      return "An adjustable base is worth comparing here so you can test elevation, motion flexibility, and partner comfort in the same setup.";
+      return buildVoiceReply("adjustable_base");
     }
     if (baseType === "Platform Base") {
-      return "A platform base keeps the setup simpler if you do not need motion features.";
+      return buildVoiceReply("platform_base");
     }
     if (baseType === "Mattress Only") {
-      return "You can start mattress-first and add a base later if you decide you want more elevation or support flexibility.";
+      return buildVoiceReply("no_base");
     }
 
     const topPod = getTopRecommendedPod(recommendation);
     if (topPod && normalizeText(topPod.baseType) === "adjustable") {
-      return "An adjustable base is still worth comparing because it lines up with the strongest showroom test path from your answers.";
+      return buildVoiceReply("adjustable_base");
     }
 
     return "";
@@ -1031,19 +1116,19 @@
       containsTerm(answers.partnerMotionSensitivity, ["high", "wake up easily"]);
 
     if (partner && (motionMode === "Half Split Motion" || motionMode === "Full Split Motion")) {
-      return "Shared sleep and split motion make a Dual Comfort path more relevant because each side can stay closer to its own feel.";
+      return 'Got it - if two sleepers want different movement or comfort, I would keep Dual Comfort in the conversation instead of forcing one feel to cover both of you.';
     }
 
     if (partner && highMotionSensitivity) {
-      return "Shared sleep and motion sensitivity make motion control more important in your starting setup.";
+      return "Since one of you notices movement more, keep motion control in the conversation while you compare feels.";
     }
 
     if (partner) {
-      return "Because you share the bed, it helps to compare setups that keep motion and comfort differences easier to manage.";
+      return "Because you share the bed, compare comfort compromise and motion control together instead of treating them as separate problems.";
     }
 
     if (motionMode === "Standard Motion") {
-      return "A standard adjustable setup lets you compare elevation without splitting the mattress.";
+      return "Standard Motion is the simpler adjustable path if you want elevation without splitting the bed.";
     }
 
     return "";
@@ -1055,14 +1140,16 @@
     const painPoints = Array.isArray(answers.painPoints) ? answers.painPoints.map(normalizeKey) : [];
 
     if (temperature === "hot") {
-      return "Cooling pillows and breathable bedding are worth comparing once the mattress direction feels right.";
+      return buildVoiceReply("sleep_hot", {
+        askSleepPosition: false,
+      });
     }
 
     if (position.indexOf("side") !== -1 || painPoints.indexOf("shoulders") !== -1 || painPoints.indexOf("neck") !== -1) {
-      return "Pillow height and pressure relief are worth comparing alongside the mattress so your shoulders and neck stay supported.";
+      return "Once the mattress feels right, compare pillow height next so your shoulders and neck are not doing the extra work.";
     }
 
-    return "Once the mattress direction is clear, round out the sleep setup with pillows and bedding that support how you rest.";
+    return "Once the mattress direction is clear, finish the setup with pillows and bedding that match how you actually sleep.";
   }
 
   function buildResultDirections(answers, recommendation) {
@@ -1209,7 +1296,7 @@
     const products = buildRecommendedProducts(answers, recommendation, productMap, routes);
     return {
       title: "Your sleep direction is ready.",
-      copy: "Based on your answers, Snoozer can point you toward a better starting mattress, base, and sleep setup.",
+      copy: "Here is the setup I would start with from your answers, then the next pieces worth comparing.",
       summary: buildAssessmentSummary(answers, recommendation),
       hints: buildResultTags(answers, recommendation),
       directions: buildResultDirections(answers, recommendation),

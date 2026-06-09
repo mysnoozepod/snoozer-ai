@@ -1,4 +1,14 @@
 (function () {
+  const sharedVoice = typeof require === "function"
+    ? (function loadSharedVoice() {
+        try {
+          return require("../services/snoozerVoice");
+        } catch (error) {
+          return null;
+        }
+      })()
+    : null;
+
   const STEPS = [
     {
       key: "size",
@@ -181,6 +191,71 @@
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, " ")
       .trim();
+  }
+
+  function buildVoiceReply(scenario, options) {
+    if (sharedVoice && typeof sharedVoice.buildSnoozerVoiceReply === "function") {
+      return sharedVoice.buildSnoozerVoiceReply(scenario, options || {});
+    }
+
+    if (scenario === "no_base") {
+      return "If your assessment stayed mattress-only, keep the build clean and leave the base out for now.";
+    }
+    if (scenario === "platform_base") {
+      return "Platform Base keeps this build simple and off the motion path.";
+    }
+    if (scenario === "adjustable_base") {
+      return "If elevation matters, choose the adjustable path on purpose before you worry about the extras.";
+    }
+    if (scenario === "split_motion") {
+      return "Queen usually points to Half Split, while Full Split stays King-only.";
+    }
+    return "Use the assessment match as your starting direction.";
+  }
+
+  function buildBuilderGuidanceText(stepKey, guidance) {
+    if (!guidance) return "";
+
+    if (stepKey === "size" && guidance.sizeWarning) {
+      return guidance.sizeWarning;
+    }
+    if (stepKey === "size" && guidance.size) {
+      return "Assessment match: stay with " + guidance.size + ".";
+    }
+
+    if (stepKey === "base" && guidance.baseWarning) {
+      return guidance.baseWarning;
+    }
+    if (stepKey === "base" && guidance.baseKey === "no_base") {
+      return buildVoiceReply("no_base");
+    }
+    if (stepKey === "base" && guidance.baseKey === "platform-base") {
+      return buildVoiceReply("platform_base");
+    }
+    if (stepKey === "base" && normalizeText(guidance.baseLabel).indexOf("adjustable") > -1) {
+      return buildVoiceReply("adjustable_base");
+    }
+    if (stepKey === "base" && guidance.baseLabel) {
+      return "Assessment match: " + guidance.baseLabel + ".";
+    }
+
+    if (stepKey === "motion" && guidance.motionWarning) {
+      return guidance.motionWarning;
+    }
+    if (stepKey === "motion" && guidance.motionKey === "half_split") {
+      return "Half Split is the right split-motion path when Queen is in play or you want shared foot movement.";
+    }
+    if (stepKey === "motion" && guidance.motionKey === "full_split") {
+      return "Full Split stays King-only and gives each side more independent movement.";
+    }
+    if (stepKey === "motion" && guidance.motionKey === "standard") {
+      return "Standard Motion keeps the adjustable setup simpler when you want both sides moving together.";
+    }
+    if (stepKey === "motion" && guidance.motionLabel) {
+      return "Assessment match: " + guidance.motionLabel + ".";
+    }
+
+    return "";
   }
 
   function safeSessionGet(key) {
@@ -422,7 +497,7 @@
       return {
         key: "half_split",
         label: motionSummaryLabelForKey("half_split"),
-        warning: "Full Split Motion is only available in King, so this was normalized to Half Split Motion for Queen.",
+        warning: "Full Split is a King-only setup. For Queen, the right split-motion path is Half Split Motion.",
       };
     }
 
@@ -494,7 +569,7 @@
           warnings: warnings,
         };
       }
-      warnings.push("Your saved assessment pointed to a Platform Base, but that base is not available in this builder catalog.");
+      warnings.push("Your assessment pointed to Platform Base, but this builder does not carry that base on the current product page.");
       return { key: "", label: "Platform Base", warnings: warnings };
     }
 
@@ -507,7 +582,7 @@
           warnings: warnings,
         };
       }
-      warnings.push("Your saved assessment pointed to a Storage Base, but that base is not available in this builder catalog.");
+      warnings.push("Your assessment pointed to Storage Base, but this builder does not carry that base on the current product page.");
       return { key: "", label: "Storage Base", warnings: warnings };
     }
 
@@ -522,7 +597,7 @@
           warnings: warnings,
         };
       }
-      warnings.push("Your saved assessment pointed to an Adjustable Base, but no adjustable base is available in this builder catalog.");
+      warnings.push("Your assessment pointed to an Adjustable Base, but this builder does not carry an adjustable base on the current product page.");
     }
 
     return { key: "", label: "", warnings: warnings };
@@ -540,7 +615,7 @@
     ).trim();
     const sizeMatch = findMatchingSizeOption(sizeOptions, requestedSize);
     if (requestedSize && !sizeMatch) {
-      warnings.push(requestedSize + " is not available on this product page, so the current size was left in place.");
+      warnings.push(requestedSize + " is not available on this product page, so I left the size unchanged here.");
     }
 
     const baseSelection = resolveBuilderBaseSelection(assessment, catalogs, canonical);
@@ -956,35 +1031,7 @@
     }
 
     function buildStepGuidance(stepKey) {
-      const guidance = state.guidance;
-      if (!guidance) return "";
-
-      if (stepKey === "size" && guidance.size) {
-        return "Assessment match: " + guidance.size + ".";
-      }
-
-      if (stepKey === "size" && guidance.sizeWarning) {
-        return guidance.sizeWarning;
-      }
-
-      if (stepKey === "base" && guidance.baseLabel) {
-        return "Assessment match: " + guidance.baseLabel + ".";
-      }
-
-      if (stepKey === "base" && guidance.baseWarning) {
-        return guidance.baseWarning;
-      }
-
-      if (stepKey === "motion") {
-        if (guidance.motionWarning) {
-          return guidance.motionWarning;
-        }
-        if (guidance.motionLabel) {
-          return "Assessment match: " + guidance.motionLabel + ".";
-        }
-      }
-
-      return "";
+      return buildBuilderGuidanceText(stepKey, state.guidance);
     }
 
     function applyBuilderPlan(plan) {
@@ -993,7 +1040,9 @@
       state.builderPlan = plan;
       state.guidance = {
         size: plan.size || "",
+        baseKey: plan.baseKey || "",
         baseLabel: plan.baseLabel || "",
+        motionKey: plan.motionKey || "",
         motionLabel: plan.motionLabel || "",
         sizeWarning: Array.isArray(plan.warnings)
           ? plan.warnings.find(function (warning) {

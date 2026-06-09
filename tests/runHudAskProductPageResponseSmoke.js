@@ -3,6 +3,7 @@
 const assert = require("assert");
 const manifest = require("../data/showroom-manifest.v1.json");
 const shopifySvc = require("../services/shopify");
+const { BANNED_SNOOZER_PHRASES } = require("../services/snoozerVoice");
 
 const originalFetchProductsByHandles = shopifySvc.fetchProductsByHandles;
 
@@ -90,6 +91,16 @@ function printCase(caseId, body) {
   console.log(JSON.stringify(body, null, 2));
 }
 
+function assertNoBannedPhrases(text, label) {
+  const normalized = String(text || "").toLowerCase();
+  for (const phrase of BANNED_SNOOZER_PHRASES) {
+    assert(
+      !normalized.includes(String(phrase).toLowerCase()),
+      `${label} should not include banned phrase: ${phrase}`
+    );
+  }
+}
+
 async function runCase(caseId, payload) {
   const body = await invokeHudAsk(payload);
   printCase(caseId, body);
@@ -116,9 +127,19 @@ async function main() {
       "product-page couple conflict reply should tell the shopper to compare Dual Comfort first"
     );
     assert(
+      /do not force one mattress feel|don't force one mattress feel|different bodies/i.test(String(productCoupleConflict.reply || "")),
+      "product-page couple conflict reply should explain that one firmness should not solve two different bodies"
+    );
+    assert(
+      /queen or king/i.test(String(productCoupleConflict.reply || "")),
+      "product-page couple conflict reply should ask Queen or King when the shopper has not given a usable size"
+    );
+    assert(
       !/I can still guide you\. Try one of these starting points\./i.test(String(productCoupleConflict.reply || "")),
       "grounded product-page couple conflict reply should not use the generic fallback"
     );
+    assert(productCoupleConflict.reply.length <= 220, "product-page couple conflict reply should stay concise");
+    assertNoBannedPhrases(productCoupleConflict.reply, "product-page couple conflict reply");
 
     const homepageCoupleConflict = await runCase("homepage-couple-conflict", {
       query: "I like firmer, my wife likes softer",
@@ -131,6 +152,11 @@ async function main() {
       "12-dual-comfort-hybrid",
       "homepage couple conflict should keep Dual Comfort as the answer source"
     );
+    assert(
+      /queen or king/i.test(String(homepageCoupleConflict.reply || "")),
+      "homepage couple conflict should ask Queen or King when size is still unknown"
+    );
+    assertNoBannedPhrases(homepageCoupleConflict.reply, "homepage couple conflict reply");
 
     const productBackPain = await runCase("product-page-back-pain", {
       query: "my back hurts",
@@ -146,6 +172,12 @@ async function main() {
       !/I can still guide you\. Try one of these starting points\./i.test(String(productBackPain.reply || "")),
       "grounded back-pain reply should not use the generic fallback"
     );
+    assert(
+      /support first/i.test(String(productBackPain.reply || "")),
+      "back-pain product-page reply should lead with support first"
+    );
+    assert(productBackPain.reply.length <= 220, "back-pain reply should stay concise");
+    assertNoBannedPhrases(productBackPain.reply, "back-pain reply");
 
     console.log("\nAll /hud/ask product-page response smoke tests passed.");
   } finally {

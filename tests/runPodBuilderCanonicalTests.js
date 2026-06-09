@@ -99,6 +99,15 @@ function testExplicitNoBaseWins() {
   assert.strictEqual(plan.size, "Queen");
   assert.strictEqual(plan.baseKey, "no_base");
   assert.strictEqual(plan.motionKey, "");
+  assert(
+    /leave the base out|mattress-only/i.test(
+      moduleUnderTest.buildBuilderGuidanceText("base", {
+        baseKey: plan.baseKey,
+        baseLabel: plan.baseLabel,
+      })
+    ),
+    "no-base guidance should sound natural"
+  );
 }
 
 function testPlatformBaseMapsToHandle() {
@@ -117,6 +126,15 @@ function testPlatformBaseMapsToHandle() {
 
   assert.strictEqual(plan.baseKey, "platform-base");
   assert.strictEqual(plan.baseLabel, "Platform Base");
+  assert(
+    /simple|steady foundation|motion path/i.test(
+      moduleUnderTest.buildBuilderGuidanceText("base", {
+        baseKey: plan.baseKey,
+        baseLabel: plan.baseLabel,
+      })
+    ),
+    "platform-base guidance should explain the simple non-motion path"
+  );
 }
 
 function testQueenFullSplitNormalizesToHalfSplit() {
@@ -135,7 +153,17 @@ function testQueenFullSplitNormalizesToHalfSplit() {
 
   assert.strictEqual(plan.baseKey, "premium-motion-adjustable-base");
   assert.strictEqual(plan.motionKey, "half_split");
-  assert(plan.warnings.some((warning) => /Full Split Motion is only available in King/i.test(warning)));
+  assert(plan.warnings.some((warning) => /King-only|Half Split Motion/i.test(warning)));
+  assert(
+    /King-only|Half Split/i.test(
+      moduleUnderTest.buildBuilderGuidanceText("motion", {
+        motionKey: plan.motionKey,
+        motionLabel: plan.motionLabel,
+        motionWarning: plan.warnings[0] || "",
+      })
+    ),
+    "motion guidance should explain the Queen to Half Split normalization"
+  );
 }
 
 function testKingFullSplitStaysFullSplit() {
@@ -154,6 +182,15 @@ function testKingFullSplitStaysFullSplit() {
 
   assert.strictEqual(plan.motionKey, "full_split");
   assert.strictEqual(plan.motionLabel, "Full Split Motion");
+  assert(
+    /King-only|independent movement/i.test(
+      moduleUnderTest.buildBuilderGuidanceText("motion", {
+        motionKey: plan.motionKey,
+        motionLabel: plan.motionLabel,
+      })
+    ),
+    "full-split guidance should explain the King-only path"
+  );
 }
 
 async function testCanonicalResolvePreferredWithFallback() {

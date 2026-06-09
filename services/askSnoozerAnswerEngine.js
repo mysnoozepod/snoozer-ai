@@ -5,6 +5,10 @@ const {
   stripFrontMatter,
 } = require("./askSnoozerPolicy");
 const { HUD_SAFE_PAGE_ROUTES } = require("./askSnoozerRoutes");
+const {
+  buildCanonicalRecommendationVoice,
+  buildSnoozerVoiceReply,
+} = require("./snoozerVoice");
 
 const MAX_REPLY_CHARS = 205;
 const MAX_FACTS = 3;
@@ -1035,16 +1039,39 @@ function buildProductSpecificReply({
     const [first, second] = entries;
     const firstProfile = inferProductProfile(first.handle);
     const secondProfile = inferProductProfile(second.handle);
-    let comparisonReply = `${cleanAnswerText(first.title || "")} and ${cleanAnswerText(second.title || "")} are good products to compare.`;
+    let comparisonReply = buildSnoozerVoiceReply("foam_vs_hybrid", {
+      firstTitle: cleanAnswerText(first.title || ""),
+      secondTitle: cleanAnswerText(second.title || ""),
+    });
 
     if (firstProfile.isFoam && secondProfile.isHybrid) {
-      comparisonReply = `${cleanAnswerText(first.title || "")} gives you a closer contouring foam feel. ${cleanAnswerText(second.title || "")} adds more lift, airflow, and bounce.`;
+      comparisonReply = buildSnoozerVoiceReply("foam_vs_hybrid", {
+        firstTitle: cleanAnswerText(first.title || ""),
+        secondTitle: cleanAnswerText(second.title || ""),
+      });
     } else if (firstProfile.isHybrid && secondProfile.isFoam) {
-      comparisonReply = `${cleanAnswerText(first.title || "")} adds more lift, airflow, and bounce. ${cleanAnswerText(second.title || "")} gives you a closer contouring foam feel.`;
+      comparisonReply = buildSnoozerVoiceReply("foam_vs_hybrid", {
+        firstTitle: cleanAnswerText(second.title || ""),
+        secondTitle: cleanAnswerText(first.title || ""),
+      });
     } else if (firstProfile.isDualComfort && secondProfile.isHybrid) {
-      comparisonReply = `${cleanAnswerText(first.title || "")} is the better side-to-side comparison when two sleepers want different feels. ${cleanAnswerText(second.title || "")} is the cleaner shared-feel hybrid comparison if you want airflow and lift.`;
+      comparisonReply = joinUniqueSentences([
+        buildSnoozerVoiceReply("couple_conflict", {
+          primaryTitle: cleanAnswerText(first.title || ""),
+          sizeLabel,
+          maxChars: 150,
+        }),
+        `${cleanAnswerText(second.title || "")} is the cleaner shared-feel hybrid comparison if you want lift and airflow.`,
+      ]);
     } else if (firstProfile.isHybrid && secondProfile.isDualComfort) {
-      comparisonReply = `${cleanAnswerText(first.title || "")} is the cleaner shared-feel hybrid comparison if you want airflow and lift. ${cleanAnswerText(second.title || "")} is better when two sleepers want more flexibility side to side.`;
+      comparisonReply = joinUniqueSentences([
+        `${cleanAnswerText(first.title || "")} is the cleaner shared-feel hybrid comparison if you want lift and airflow.`,
+        buildSnoozerVoiceReply("couple_conflict", {
+          primaryTitle: cleanAnswerText(second.title || ""),
+          sizeLabel,
+          maxChars: 150,
+        }),
+      ]);
     }
 
     return {
@@ -1061,14 +1088,21 @@ function buildProductSpecificReply({
     const adjustableFact = findFact(facts, ["pairs well with an adjustable base", "adjustable base", "adjustable bases"]);
     const splitFact = findFact(facts, ["two twin xl bases", "split king", "independent control"]);
     return {
-      reply: joinUniqueSentences([
-        adjustableFact?.text
-          ? `Yes - ${primaryTitle} is described as pairing well with an adjustable base. Check the size and base setup together before you decide.`
-          : `${primaryTitle} can be a reasonable adjustable-base starting point, but compare the size and base setup before you decide.`,
-        splitFact?.text
-          ? "If you want split movement, make sure the mattress size and base setup match."
-          : "",
-      ]),
+      reply: splitFact?.text
+        ? joinUniqueSentences([
+            buildSnoozerVoiceReply("adjustable_base", {
+              primaryTitle,
+              askSize: !sizeLabel,
+            }),
+            buildSnoozerVoiceReply("split_motion", {
+              sizeLabel,
+              maxChars: 130,
+            }),
+          ])
+        : buildSnoozerVoiceReply("adjustable_base", {
+            primaryTitle,
+            askSize: !sizeLabel,
+          }),
       grounded: true,
       sourceType: adjustableFact?.source_type || sourceType,
       sourceKey: adjustableFact?.source_key || sourceKey,
@@ -1081,22 +1115,12 @@ function buildProductSpecificReply({
   }
 
   if (intent === "couple_conflict" || queryLooksLikeCouplesQuestion(normalizedQuery)) {
-    const comparePrefix =
-      currentEntry &&
-      primary &&
-      String(currentEntry.handle || "").trim().toLowerCase() !== String(primary.handle || "").trim().toLowerCase()
-        ? `This page is ${currentTitle}, but based on what you said, I would compare ${primaryTitle} first.`
-        : "";
     return {
-      reply: primaryProfile.isDualComfort
-        ? joinUniqueSentences([
-            comparePrefix,
-            `${primaryTitle} is the best first look when two sleepers want different feels on each side. It is the more couple-friendly path without turning the bed into two separate mattresses.`,
-          ])
-        : joinUniqueSentences([
-            comparePrefix,
-            `${primaryTitle} is worth comparing for shared comfort, but I would still put a more couple-friendly dual-comfort option beside it if you and your partner want different feels.`,
-          ]),
+      reply: buildSnoozerVoiceReply("couple_conflict", {
+        primaryTitle,
+        currentTitle,
+        sizeLabel,
+      }),
       grounded: true,
       sourceType,
       sourceKey,
@@ -1107,9 +1131,10 @@ function buildProductSpecificReply({
 
   if (queryLooksLikeHotSleeperQuestion(normalizedQuery) || intent === "sleep_hot") {
     return {
-      reply: primaryProfile.isHybrid || primaryProfile.isDualComfort
-        ? `${primaryTitle} is a good cooling-first comparison if you want more airflow without giving up support.`
-        : `${primaryTitle} can still work, but I would compare it against the more breathable options first if cooling is your top priority.`,
+      reply: buildSnoozerVoiceReply("sleep_hot", {
+        primaryTitle,
+        askSleepPosition: true,
+      }),
       grounded: true,
       sourceType,
       sourceKey,
@@ -1120,10 +1145,9 @@ function buildProductSpecificReply({
 
   if (queryLooksLikeSideSleeperQuestion(normalizedQuery)) {
     return {
-      reply:
-        primaryProfile.isHybrid || primaryProfile.isDualComfort
-          ? `${primaryTitle} is a good first try if you want shoulder and hip relief without losing support underneath you.`
-          : `${primaryTitle} can work well if you want a closer contouring feel around the shoulders and hips.`,
+      reply: buildSnoozerVoiceReply("side_sleeping", {
+        primaryTitle,
+      }),
       grounded: true,
       sourceType,
       sourceKey,
@@ -1134,9 +1158,13 @@ function buildProductSpecificReply({
 
   if (queryLooksLikeBackSupportQuestion(normalizedQuery) || intent === "back_pain" || intent === "firm_support") {
     return {
-      reply: primaryProfile.isHybrid
-        ? `${primaryTitle} is a solid support-and-pressure-relief first try if you want lift without a flat hard feel.`
-        : `${primaryTitle} is worth comparing if you want a steadier support-and-pressure-relief feel without making the bed harsh.`,
+      reply: intent === "firm_support"
+        ? buildSnoozerVoiceReply("firm_support", {
+            primaryTitle,
+          })
+        : buildSnoozerVoiceReply("back_pain", {
+            primaryTitle,
+          }),
       grounded: true,
       sourceType,
       sourceKey,
@@ -1148,11 +1176,21 @@ function buildProductSpecificReply({
   if (queryLooksLikeDifferenceQuestion(normalizedQuery)) {
     let differenceReply = `${primaryTitle} is worth comparing if you want a clearer feel and feature difference before you decide.`;
     if (primaryProfile.isDualComfort) {
-      differenceReply = `${primaryTitle} stands out because it lets you choose different comfort levels on each side while keeping one mattress. It is a better couple-friendly option when flexibility matters.`;
+      differenceReply = buildSnoozerVoiceReply("couple_conflict", {
+        primaryTitle,
+        sizeLabel,
+        maxChars: 170,
+      });
     } else if (primaryProfile.isHybrid) {
-      differenceReply = `${primaryTitle} stands out because it adds more lift, airflow, and support than a simpler all-foam setup.`;
+      differenceReply = buildSnoozerVoiceReply("foam_vs_hybrid", {
+        secondTitle: primaryTitle,
+        maxChars: 180,
+      });
     } else if (primaryProfile.isFoam) {
-      differenceReply = `${primaryTitle} stands out if you want a simpler contouring all-foam feel with stronger motion isolation.`;
+      differenceReply = buildSnoozerVoiceReply("foam_vs_hybrid", {
+        firstTitle: primaryTitle,
+        maxChars: 180,
+      });
     }
 
     return {
@@ -1168,13 +1206,19 @@ function buildProductSpecificReply({
   if (queryLooksLikeFirmnessQuestion(normalizedQuery)) {
     let firmnessReply = `${primaryTitle} is worth comparing if firmness is your main filter.`;
     if (primaryProfile.isDualComfort) {
-      firmnessReply = `${primaryTitle} gives you multiple comfort options, so you can compare Soft, Medium Soft, Medium Firm, and Firm without leaving the product line.`;
+      firmnessReply = buildSnoozerVoiceReply("couple_conflict", {
+        primaryTitle,
+        currentTitle,
+        sizeLabel,
+      });
     } else if (primaryProfile.isHybrid) {
-      firmnessReply = `${primaryTitle} leans softer than a firm support-first mattress, so compare it if you want cushioning with structure underneath.`;
+      firmnessReply = buildSnoozerVoiceReply("firm_support", {
+        primaryTitle,
+      });
     } else if (primaryProfile.isBudgetFoam) {
-      firmnessReply = `${primaryTitle} is the firmer all-foam starting point in this lineup if you want a steadier feel.`;
+      firmnessReply = `${primaryTitle} is the cleaner all-foam route if you want a steadier, simpler feel without jumping to motion or split options.`;
     } else if (primaryProfile.isFoam) {
-      firmnessReply = `${primaryTitle} leans more cushioned than firm, so compare it if you want extra pressure relief and a softer feel.`;
+      firmnessReply = `${primaryTitle} leans softer and closer-contouring, so I would compare it if you want more give instead of a firmer lifted feel.`;
     }
 
     return {
@@ -1189,7 +1233,10 @@ function buildProductSpecificReply({
 
   if (intent === "product_question" || currentHandle) {
     return {
-      reply: `${primaryTitle} is a good product to compare from the current page context. Use the size and feature details here to confirm fit before you decide.`,
+      reply: joinUniqueSentences([
+        "Got it - use the current page context as one comparison point, not the whole answer",
+        `${primaryTitle} is worth checking against your size, support, and base setup before you decide.`,
+      ]),
       grounded: true,
       sourceType,
       sourceKey,
@@ -1551,9 +1598,7 @@ function buildSourceGuidedReply({ query = "", intent = "", intentGroup = "", fac
 
     return {
       reply: joinUniqueSentences([
-        splitFact?.text
-          ? "A split or half-split setup can let each side feel different without turning the mattress into two separate pieces."
-          : "A split or half-split setup is usually about giving each side more independence.",
+        buildSnoozerVoiceReply("split_motion", {}),
         adjustableFact?.text
           ? "If you also want different comfort or movement on each side, check adjustable-base compatibility too."
           : "Couples usually look at it when they want different comfort or movement on each side.",
@@ -1573,32 +1618,37 @@ function buildProductReply({ intent = "", products = [] } = {}) {
   switch (String(intent || "").trim()) {
     case "sleep_hot":
       return {
-        reply: "If you sleep hot, start with the beds that keep more airflow around you, then decide how much contouring you want.",
+        reply: buildSnoozerVoiceReply("sleep_hot", {
+          askSleepPosition: true,
+        }),
         grounded: true,
       };
     case "firm_support":
       return {
-        reply: "Start with alignment first, then choose how much cushioning you want on top.",
+        reply: buildSnoozerVoiceReply("firm_support"),
         grounded: true,
       };
     case "back_pain":
       return {
-        reply: "Start with a support-and-pressure-relief balance so the bed holds you up without feeling punishing.",
+        reply: buildSnoozerVoiceReply("back_pain"),
         grounded: true,
       };
     case "product_question":
       return {
-        reply: "Start with the details on this mattress, then compare size, support, and base setup before you decide.",
+        reply: joinUniqueSentences([
+          "Got it - start with the details on the mattress you are viewing",
+          "Then compare size, support, and base setup before you decide.",
+        ]),
         grounded: true,
       };
     case "couple_conflict":
       return {
-        reply: "If you and your partner want different feels, start with the dual-comfort path first because it is usually the more couple-friendly answer.",
+        reply: buildSnoozerVoiceReply("couple_conflict"),
         grounded: true,
       };
     case "compare_mattresses":
       return {
-        reply: "Foam usually gives deeper contouring. Hybrid usually adds more lift, airflow, and bounce, so these are good options to compare.",
+        reply: buildSnoozerVoiceReply("foam_vs_hybrid"),
         grounded: true,
       };
     case "budget_value":
@@ -1619,7 +1669,7 @@ function buildProductReply({ intent = "", products = [] } = {}) {
       };
     case "snoring":
       return {
-        reply: "Start with the adjustable-base path rather than guessing at a mattress alone. Elevation can change how the whole setup feels.",
+        reply: buildSnoozerVoiceReply("adjustable_base"),
         grounded: true,
       };
     case "accessory_help":
@@ -1629,7 +1679,7 @@ function buildProductReply({ intent = "", products = [] } = {}) {
       };
     default:
       return {
-        reply: "These are solid next options to compare based on what you asked.",
+        reply: buildSnoozerVoiceReply("fallback"),
         grounded: true,
       };
   }
@@ -1708,7 +1758,7 @@ function buildHandoffReply({ intentGroup = "", facts = [] } = {}) {
 
 function buildFallbackReply() {
   return {
-    reply: "I can still guide you. Try one of these starting points.",
+    reply: buildSnoozerVoiceReply("fallback"),
     grounded: false,
     reason: "ambiguous_query",
   };
@@ -1770,8 +1820,7 @@ function formatCanonicalReasonLabels(reasonKeys = []) {
 
   if (!labels.length) return "";
   if (labels.length === 1) return labels[0];
-  if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
-  return `${labels.slice(0, 2).join(", ")}, and ${labels[2]}`;
+  return `${labels[0]} and ${labels[1]}`;
 }
 
 function buildCanonicalRecommendationReply({ query = "", canonicalRecommendation = null } = {}) {
@@ -1816,15 +1865,13 @@ function buildCanonicalRecommendationReply({ query = "", canonicalRecommendation
   const reasonSummary = formatCanonicalReasonLabels(canonical.reasonKeys);
   const warningSummary = Array.isArray(canonical.warnings) ? canonical.warnings.filter(Boolean)[0] || "" : "";
 
-  let reply = "";
+  let mode = "recommend";
 
   if (
     includesTerm(normalizedQuery, "why this pod") ||
     includesTerm(normalizedQuery, "why this snoozepod")
   ) {
-    reply = reasonSummary
-      ? `${topPodName} is first because it matches ${reasonSummary}. It uses ${mattressTitle} with ${baseTitle} and ${motionLabel}.`
-      : `${topPodName} is first in your canonical results. It uses ${mattressTitle} with ${baseTitle} and ${motionLabel}.`;
+    mode = "why_pod";
   } else if (
     includesTerm(normalizedQuery, "which mattress fits me") ||
     includesTerm(normalizedQuery, "which mattress is right for me") ||
@@ -1832,36 +1879,31 @@ function buildCanonicalRecommendationReply({ query = "", canonicalRecommendation
     includesTerm(normalizedQuery, "what mattress fits me") ||
     includesTerm(normalizedQuery, "what mattress should i try")
   ) {
-    reply = reasonSummary
-      ? `Your matched mattress is ${mattressTitle}. It pairs with ${baseTitle} and ${motionLabel}, and ${topPodName} is the first setup to try because of ${reasonSummary}.`
-      : `Your matched mattress is ${mattressTitle}. It pairs with ${baseTitle} and ${motionLabel}, and ${topPodName} is the first setup to try.`;
+    mode = "which_mattress";
   } else if (
     includesTerm(normalizedQuery, "explain my results") ||
     includesTerm(normalizedQuery, "explain the results")
   ) {
-    const rankCopy = nextPodNames.length
-      ? `Your current order starts with ${topPodName}, then ${nextPodNames.join(", then ")}.`
-      : `${topPodName} is your first setup to try.`;
-    reply = reasonSummary
-      ? `${rankCopy} The core match is ${mattressTitle} with ${baseTitle} and ${motionLabel} because of ${reasonSummary}.`
-      : `${rankCopy} The core match is ${mattressTitle} with ${baseTitle} and ${motionLabel}.`;
+    mode = "explain_results";
   } else if (
     includesTerm(normalizedQuery, "what should i try first") ||
     includesTerm(normalizedQuery, "what should i try") ||
     includesTerm(normalizedQuery, "what pod should i try")
   ) {
-    reply = reasonSummary
-      ? `Start with ${topPodName} first. It uses ${mattressTitle} with ${baseTitle} and ${motionLabel}, and it ranked first because of ${reasonSummary}.`
-      : `Start with ${topPodName} first. It uses ${mattressTitle} with ${baseTitle} and ${motionLabel}.`;
-  } else {
-    reply = reasonSummary
-      ? `I recommend ${topPodName} first. The match is ${mattressTitle} with ${baseTitle} and ${motionLabel} because of ${reasonSummary}.`
-      : `I recommend ${topPodName} first. The match is ${mattressTitle} with ${baseTitle} and ${motionLabel}.`;
+    mode = "what_try_first";
   }
 
-  if (warningSummary) {
-    reply = `${reply} Note: ${cleanAnswerText(warningSummary)}`;
-  }
+  const reply = buildCanonicalRecommendationVoice({
+    mode,
+    topPodName,
+    mattressTitle,
+    baseTitle,
+    motionLabel,
+    reasonSummary,
+    nextPodNames,
+    warningSummary: cleanAnswerText(warningSummary),
+    maxChars: 320,
+  });
 
   return {
     reply,

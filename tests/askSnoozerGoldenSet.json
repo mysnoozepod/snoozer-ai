@@ -1309,7 +1309,7 @@
       "answer_source_any_of": ["s3_knowledge", "local_knowledge"],
       "answer_facts_count_min": 1,
       "products": { "min": 0, "max": 0 },
-      "must_include": ["half-split", "adjustable-base"],
+      "must_include": ["half split", "adjustable base"],
       "must_not_include": ["guaranteed", "always available"]
     }
   },
@@ -1326,7 +1326,7 @@
       "answer_source_any_of": ["s3_knowledge", "local_knowledge"],
       "answer_facts_count_min": 1,
       "products": { "min": 0, "max": 0 },
-      "must_include": ["split", "adjustable-base"]
+      "must_include": ["split", "adjustable base"]
     }
   },
   {
@@ -1355,7 +1355,7 @@
       "answer_source_any_of": ["s3_knowledge", "local_knowledge"],
       "answer_facts_count_min": 1,
       "products": { "min": 0, "max": 0 },
-      "must_include": ["split", "comfort"]
+      "must_include": ["split", "comfort", "adjustable base"]
     }
   },
   {
@@ -1960,7 +1960,7 @@
       "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
       "answer_facts_count_min": 1,
       "products": { "min": 1, "max": 1, "preferred_first_handle": "10-all-foam-mattress" },
-      "must_include": ["support-and-pressure-relief"],
+      "must_include": ["support first"],
       "must_not_include": ["cure", "heal", "treat"]
     }
   },
@@ -2282,7 +2282,7 @@
       "accepted_intents": ["fallback", "default"],
       "confidence_label_min": "low",
       "products": { "min": 0, "max": 0 },
-      "must_include": ["starting points"]
+      "must_include": ["how you sleep", "motion or no base"]
     }
   },
   {

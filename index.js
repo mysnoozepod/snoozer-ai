@@ -2832,7 +2832,7 @@ function buildHudAskProductReason({
 
   if (intent === "couple_conflict") {
     if (lower.includes("dual-comfort")) {
-      return "The best couple-friendly first look when two sleepers want different comfort on each side.";
+      return "The cleaner couple path when two sleepers want different comfort on each side.";
     }
     return "A useful contrast if you want to compare a shared-feel option against the dual-comfort path.";
   }
@@ -2877,12 +2877,12 @@ function buildHudAskProductReason({
   switch (intent) {
     case "sleep_hot":
       if (lower.includes("hybrid") && !lower.includes("dual-comfort")) {
-        return "A cooling-first hybrid comparison if you want more airflow with steady support.";
+        return "A breathable comparison if you want more airflow with steady support.";
       }
       if (lower.includes("dual-comfort")) {
-        return "A cooling-friendly comparison when you also want more flexibility side to side.";
+        return "A breathable comparison when you also want more flexibility side to side.";
       }
-      return "A contouring option to compare if you still want to weigh cooling against closer body contact.";
+      return "A contouring option to compare if you still want to weigh airflow against a closer foam feel.";
     case "firm_support":
       if (lower.includes("hybrid") && !lower.includes("dual-comfort")) {
         return "A support-forward option to compare if alignment is your priority.";
@@ -2893,12 +2893,12 @@ function buildHudAskProductReason({
       return "A steadier feel to compare while you focus on support.";
     case "back_pain":
       if (lower.includes("hybrid") && !lower.includes("dual-comfort")) {
-        return "A support-and-pressure-relief option to compare for neutral alignment.";
+        return "A support-first comparison if you want lift with some cushion.";
       }
       if (lower.includes("dual-comfort")) {
-        return "A balanced support-and-pressure-relief option to compare.";
+        return "A balanced support option to compare when side-to-side comfort matters too.";
       }
-      return "Worth comparing if you want support-and-pressure-relief without losing steady support.";
+      return "Worth comparing if you want support without forcing the bed to feel overly firm.";
     case "snoring":
       return "An adjustable base lets you compare elevation with your mattress feel.";
     case "compare_mattresses":

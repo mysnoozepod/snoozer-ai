@@ -10,6 +10,7 @@ const {
 } = require("@aws-sdk/lib-dynamodb");
 const { resolveRecommendation } = require("../services/recommendationResolver");
 const openai = require("../services/openai");
+const { BANNED_SNOOZER_PHRASES } = require("../services/snoozerVoice");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
@@ -131,6 +132,16 @@ function getProductTitle(resolved, handle) {
   return resolved.products.find((product) => product.handle === handle)?.title || handle || "";
 }
 
+function assertNoBannedPhrases(text, label) {
+  const normalized = String(text || "").toLowerCase();
+  for (const phrase of BANNED_SNOOZER_PHRASES) {
+    assert(
+      !normalized.includes(String(phrase).toLowerCase()),
+      `${label} should not include banned phrase: ${phrase}`
+    );
+  }
+}
+
 async function invokeAskSnoozer(body) {
   const { lambdaHandler } = require("../index");
   return parseBody(await lambdaHandler(buildEvent(body)));
@@ -232,6 +243,8 @@ async function testCanonicalRecommendationAnswer() {
     body.reply.includes(resolved.normalizedAssessment.motionLabel),
     "reply should mention the canonical motion label"
   );
+  assert(/^Got it -/i.test(String(body.reply || "")), "recommendation reply should use the sharper voice opener");
+  assertNoBannedPhrases(body.reply, "canonical recommendation reply");
 }
 
 async function testCanonicalExplanationAnswer() {
@@ -279,6 +292,7 @@ async function testCanonicalExplanationAnswer() {
     body.reply.includes(resolved.normalizedAssessment.motionLabel),
     "explanation reply should mention the canonical motion label"
   );
+  assertNoBannedPhrases(body.reply, "canonical explanation reply");
 }
 
 async function testCanonicalContextPassedToOpenAi() {

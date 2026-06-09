@@ -3,6 +3,17 @@
 const assert = require("assert");
 const { resolveRecommendation } = require("../services/recommendationResolver");
 const { loadShopifyAssessmentModule } = require("./loadShopifyAssessmentModule");
+const { BANNED_SNOOZER_PHRASES } = require("../services/snoozerVoice");
+
+function assertNoBannedPhrases(text, label) {
+  const normalized = String(text || "").toLowerCase();
+  for (const phrase of BANNED_SNOOZER_PHRASES) {
+    assert(
+      !normalized.includes(String(phrase).toLowerCase()),
+      `${label} should not include banned phrase: ${phrase}`
+    );
+  }
+}
 
 function createRoot() {
   return {
@@ -154,6 +165,15 @@ async function testCanonicalAssessmentFlow() {
     HANDLES.mattresses.allFoam12,
     "canonical result should lead with the matched mattress"
   );
+  assert(/SnoozePod 4/i.test(String(resolved.result.summary || "")), "canonical summary should name the first pod");
+  assert(/12" All Foam/i.test(String(resolved.result.summary || "")), "canonical summary should name the matched mattress");
+  assert(/Mattress Only|No Base/i.test(String(resolved.result.summary || "")), "canonical summary should preserve explicit no-base intent");
+  assertNoBannedPhrases(resolved.result.summary, "canonical assessment summary");
+  assertNoBannedPhrases(resolved.result.recommendedProducts[0].blurb, "canonical mattress blurb");
+  assert(
+    resolved.result.directions.some((item) => /leave the base out|mattress-only/i.test(String(item && item.text || ""))),
+    "canonical directions should explain the mattress-only path naturally"
+  );
 }
 
 async function testCanonicalAssessmentFallback() {
@@ -200,6 +220,7 @@ async function testCanonicalAssessmentFallback() {
     Array.isArray(resolved.result.recommendedProducts) && resolved.result.recommendedProducts.length > 0,
     "fallback should still return the current result shape"
   );
+  assertNoBannedPhrases(resolved.result.summary, "fallback assessment summary");
 }
 
 async function main() {
