@@ -289,6 +289,75 @@
       'CalendlyInlineWidgetMini-{{ section.id }}',
       'CalendlyInlineWidgetBooking-{{ section.id }}'
     ];
+    var snoozeCodeKeys = [
+      'snoozeCode',
+      'snoozer_snooze_code',
+      'snooze.accessCode',
+      'snoozer_access_code',
+      'snoozer_shopper_id',
+      'snooze.shopperId'
+    ];
+
+    function normalizeText(value) {
+      return String(value || '').trim();
+    }
+
+    function safeStorageGet(storage, key) {
+      try {
+        return storage && typeof storage.getItem === 'function' ? storage.getItem(key) || '' : '';
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function firstStoredValue(keys) {
+      for (var index = 0; index < keys.length; index += 1) {
+        var key = keys[index];
+        var value =
+          normalizeText(safeStorageGet(window.sessionStorage, key)) ||
+          normalizeText(safeStorageGet(window.localStorage, key));
+        if (value) return value;
+      }
+      return '';
+    }
+
+    function readStoredSnoozeCode() {
+      var fromQuery = '';
+
+      try {
+        var params = new URLSearchParams(window.location.search || '');
+        fromQuery = normalizeText(
+          params.get('snoozeCode') ||
+          params.get('accessCode') ||
+          params.get('shopperId') ||
+          params.get('utm_content')
+        );
+      } catch (error) {}
+
+      return fromQuery || firstStoredValue(snoozeCodeKeys);
+    }
+
+    function withSnoozeCode(url, snoozeCode) {
+      var currentUrl = normalizeText(url);
+      var normalizedCode = normalizeText(snoozeCode);
+      if (!currentUrl || !normalizedCode) return currentUrl;
+
+      try {
+        var parsedUrl = new URL(currentUrl, window.location.origin);
+        if (!parsedUrl.searchParams.get('snoozeCode')) {
+          parsedUrl.searchParams.set('snoozeCode', normalizedCode);
+        }
+        if (!parsedUrl.searchParams.get('accessCode')) {
+          parsedUrl.searchParams.set('accessCode', normalizedCode);
+        }
+        if (!parsedUrl.searchParams.get('utm_content')) {
+          parsedUrl.searchParams.set('utm_content', normalizedCode);
+        }
+        return parsedUrl.toString();
+      } catch (error) {
+        return currentUrl;
+      }
+    }
 
     function getWidgetRoots() {
       return widgetIds
@@ -312,6 +381,13 @@
       if (!root) return;
       applyWidgetSizing(root);
       if (!window.Calendly || typeof window.Calendly.initInlineWidget !== 'function') return;
+      var hydratedUrl = withSnoozeCode(
+        root.getAttribute('data-url'),
+        readStoredSnoozeCode()
+      );
+      if (hydratedUrl) {
+        root.setAttribute('data-url', hydratedUrl);
+      }
 
       var forceRemount = Boolean(options && options.force);
       if (!forceRemount && root.querySelector('iframe')) {

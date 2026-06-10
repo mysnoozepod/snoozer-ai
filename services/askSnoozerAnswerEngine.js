@@ -1788,6 +1788,153 @@ const CANONICAL_REASON_LABELS = Object.freeze({
   simple_non_motion_option: "simple no-motion setup",
 });
 
+function queryLooksLikeBookedSessionQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "what is my session today") ||
+    includesTerm(normalizedQuery, "when is my session") ||
+    includesTerm(normalizedQuery, "what did i book") ||
+    includesTerm(normalizedQuery, "what is my booking") ||
+    includesTerm(normalizedQuery, "do i have a session") ||
+    includesTerm(normalizedQuery, "am i booked")
+  );
+}
+
+function queryLooksLikeShowroomStartQuestion(query = "") {
+  const normalizedQuery = normalizeAskSnoozerText(query);
+  return (
+    includesTerm(normalizedQuery, "where should i start") ||
+    includesTerm(normalizedQuery, "what should i try first") ||
+    includesTerm(normalizedQuery, "what should i try") ||
+    includesTerm(normalizedQuery, "where do i start")
+  );
+}
+
+function formatSessionDateTime(value, timezone = "") {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: timezone || undefined,
+    }).format(date);
+  } catch {
+    return date.toISOString();
+  }
+}
+
+function buildSessionPrepReply({ query = "", context = null, canonicalRecommendation = null } = {}) {
+  const safeContext = context && typeof context === "object" ? context : {};
+  const sessionPrep =
+    safeContext.sessionPrep && typeof safeContext.sessionPrep === "object"
+      ? safeContext.sessionPrep
+      : null;
+  const bookingStatus = cleanAnswerText(safeContext.bookingStatus || "");
+  const bookingStartTime = cleanAnswerText(safeContext.bookingStartTime || "");
+  const bookingTimezone = cleanAnswerText(safeContext.bookingTimezone || "");
+  const bookingLocation =
+    cleanAnswerText(safeContext.bookingLocation || safeContext.bookingLocationType || "");
+  const canonical =
+    canonicalRecommendation && typeof canonicalRecommendation === "object"
+      ? canonicalRecommendation
+      : safeContext.canonicalRecommendation && typeof safeContext.canonicalRecommendation === "object"
+        ? safeContext.canonicalRecommendation
+        : null;
+
+  if (
+    !queryLooksLikeBookedSessionQuestion(query) &&
+    !queryLooksLikeShowroomStartQuestion(query)
+  ) {
+    return { reply: "", grounded: false, reason: "query_not_session_specific" };
+  }
+
+  if (queryLooksLikeBookedSessionQuestion(query)) {
+    if (bookingStatus === "canceled") {
+      return {
+        reply: joinUniqueSentences([
+          "That Snooze Session shows as canceled right now.",
+          sessionPrep?.showroomStartingPoint || canonical?.topPodId
+            ? "If you still want guidance, I can walk you through the best place to start."
+            : "",
+        ]),
+        grounded: true,
+        sourceType: "session_prep",
+        sourceKey: "booking_status",
+        strategy: "session_prep",
+        facts: ["canceled", sessionPrep?.showroomStartingPoint || ""].filter(Boolean),
+      };
+    }
+
+    if (bookingStatus === "scheduled" || bookingStartTime) {
+      const when = formatSessionDateTime(bookingStartTime, bookingTimezone);
+      const openingFact =
+        when && bookingLocation
+          ? `Your Snooze Session is scheduled for ${when} and ${bookingLocation}.`
+          : when
+            ? `Your Snooze Session is scheduled for ${when}.`
+            : bookingLocation
+              ? `Your Snooze Session is scheduled and set for ${bookingLocation}.`
+              : "Your Snooze Session is scheduled.";
+
+      return {
+        reply: joinUniqueSentences([
+          openingFact,
+          sessionPrep?.showroomStartingPoint ||
+            sessionPrep?.comfortSummary ||
+            (canonical?.topPodId ? `Start with SnoozePod ${canonical.topPodId} first.` : ""),
+        ]),
+        grounded: true,
+        sourceType: "session_prep",
+        sourceKey: sessionPrep?.recommendedStartingPod || canonical?.topPodId || "booking_status",
+        strategy: "session_prep",
+        facts: [
+          bookingStatus || "scheduled",
+          when,
+          bookingLocation,
+          sessionPrep?.showroomStartingPoint || "",
+          sessionPrep?.comfortSummary || "",
+        ].filter(Boolean),
+      };
+    }
+  }
+
+  if (queryLooksLikeShowroomStartQuestion(query)) {
+    const startingPod =
+      cleanAnswerText(sessionPrep?.recommendedStartingPod || canonical?.topPodId || "");
+    const startReply =
+      cleanAnswerText(sessionPrep?.showroomStartingPoint) ||
+      (startingPod ? `Start with SnoozePod ${startingPod} first.` : "");
+
+    if (startReply) {
+      return {
+        reply: joinUniqueSentences([
+          startReply,
+          cleanAnswerText(sessionPrep?.questionsToAsk?.[0]) ||
+            cleanAnswerText(sessionPrep?.comfortSummary),
+        ]),
+        grounded: true,
+        sourceType: "session_prep",
+        sourceKey: startingPod || "session_prep",
+        strategy: "session_prep",
+        facts: [
+          startReply,
+          cleanAnswerText(sessionPrep?.comfortSummary),
+          cleanAnswerText(sessionPrep?.questionsToAsk?.[0]),
+        ].filter(Boolean),
+      };
+    }
+  }
+
+  return { reply: "", grounded: false, reason: "missing_session_prep" };
+}
+
 function queryLooksLikeRecommendationQuestion(query = "") {
   const normalizedQuery = normalizeAskSnoozerText(query);
   return (
@@ -1969,6 +2116,32 @@ function buildAskSnoozerAnswer({
       extracted_facts: [],
       needs_handoff: false,
       reason: "needs_product_clarification",
+      chips_override: null,
+    };
+  }
+
+  const sessionPrepReply = buildSessionPrepReply({
+    query,
+    context,
+    canonicalRecommendation,
+  });
+
+  if (sessionPrepReply.grounded) {
+    return {
+      reply: clampReply(sessionPrepReply.reply),
+      answer_grounded: true,
+      answer_source_type: sessionPrepReply.sourceType || "session_prep",
+      answer_source_key: sessionPrepReply.sourceKey || "session_prep",
+      answer_facts_count: Array.isArray(sessionPrepReply.facts) ? sessionPrepReply.facts.length : 0,
+      matched_preview: previewText(
+        Array.isArray(sessionPrepReply.facts) && sessionPrepReply.facts.length
+          ? sessionPrepReply.facts.join(" ")
+          : sessionPrepReply.reply
+      ),
+      answer_strategy: sessionPrepReply.strategy || "session_prep",
+      extracted_facts: Array.isArray(sessionPrepReply.facts) ? sessionPrepReply.facts : [],
+      needs_handoff: false,
+      reason: "",
       chips_override: null,
     };
   }

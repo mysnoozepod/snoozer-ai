@@ -13,6 +13,15 @@ const OPTIONAL_PROFILE_FIELD_ENVS = {
   sourceSurface: "ZOHO_FIELD_SOURCE_SURFACE",
   lastIntent: "ZOHO_FIELD_LAST_INTENT",
   lastInteractionAt: "ZOHO_FIELD_LAST_INTERACTION_AT",
+  bookingStatus: "ZOHO_FIELD_BOOKING_STATUS",
+  bookingSource: "ZOHO_FIELD_BOOKING_SOURCE",
+  bookingStartTime: "ZOHO_FIELD_BOOKING_START_TIME",
+  bookingEndTime: "ZOHO_FIELD_BOOKING_END_TIME",
+  bookingTimezone: "ZOHO_FIELD_BOOKING_TIMEZONE",
+  bookingLocationType: "ZOHO_FIELD_BOOKING_LOCATION_TYPE",
+  bookingLocation: "ZOHO_FIELD_BOOKING_LOCATION",
+  sessionPrepStatus: "ZOHO_FIELD_SESSION_PREP_STATUS",
+  recommendedStartingPod: "ZOHO_FIELD_RECOMMENDED_STARTING_POD",
 };
 
 function isObject(value) {

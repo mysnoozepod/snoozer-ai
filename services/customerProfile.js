@@ -134,10 +134,13 @@ function extractCanonicalProfileFields(canonicalRecommendation) {
 
   const normalizedAssessment = cloneObject(canonicalRecommendation.normalizedAssessment);
   const topPodId = cleanString(canonicalRecommendation.topPodId) || null;
+  const topPodName = cleanString(canonicalRecommendation.topPodName) || null;
   const topPodIds = uniqueStrings(
     Array.isArray(canonicalRecommendation.topPodIds) ? canonicalRecommendation.topPodIds : []
   );
   const primaryMattressHandle = cleanString(canonicalRecommendation.primaryMattressHandle) || null;
+  const primaryMattressTitle =
+    cleanString(canonicalRecommendation.primaryMattressTitle) || null;
   const baseHandle =
     canonicalRecommendation.baseHandle == null
       ? null
@@ -171,9 +174,12 @@ function extractCanonicalProfileFields(canonicalRecommendation) {
       manifestVersion: cleanString(canonicalRecommendation.manifestVersion) || undefined,
       normalizedAssessment: normalizedAssessment || undefined,
       topPodId,
+      topPodName,
       topPodIds,
       primaryMattressHandle,
+      primaryMattressTitle,
       baseHandle,
+      baseTitle: cleanString(canonicalRecommendation.baseTitle) || undefined,
       motionKey,
       motionLabel,
       reasonKeys,
@@ -253,6 +259,14 @@ function mergeCustomerProfile(previousProfile = {}, patch = {}) {
         : {};
       const nextCanonical = isObject(value) ? value : {};
       merged[key] = { ...cloneObject(previousCanonical), ...cloneObject(nextCanonical) };
+      continue;
+    }
+
+    if (key === "sessionPrep" && isObject(value)) {
+      merged[key] = {
+        ...(isObject(previous.sessionPrep) ? cloneObject(previous.sessionPrep) : {}),
+        ...cloneObject(value),
+      };
       continue;
     }
 
@@ -357,6 +371,20 @@ function buildCustomerProfilePatch(input = {}) {
     podId: cleanString(input.podId || input.topPodIdHint) || undefined,
     mode: cleanString(input.mode) || undefined,
     bookingStatus: cleanString(input.bookingStatus) || undefined,
+    bookingSource: cleanString(input.bookingSource) || undefined,
+    bookingEventUri: cleanString(input.bookingEventUri) || undefined,
+    bookingInviteeUri: cleanString(input.bookingInviteeUri) || undefined,
+    bookingStartTime: cleanString(input.bookingStartTime) || undefined,
+    bookingEndTime: cleanString(input.bookingEndTime) || undefined,
+    bookingTimezone: cleanString(input.bookingTimezone) || undefined,
+    bookingLocationType: cleanString(input.bookingLocationType) || undefined,
+    bookingLocation: cleanString(input.bookingLocation) || undefined,
+    bookingCreatedAt: cleanString(input.bookingCreatedAt) || undefined,
+    bookingCanceledAt: cleanString(input.bookingCanceledAt) || undefined,
+    bookingEventType: cleanString(input.bookingEventType) || undefined,
+    bookingEventName: cleanString(input.bookingEventName) || undefined,
+    sessionPrep: isObject(input.sessionPrep) ? cloneObject(input.sessionPrep) : undefined,
+    sessionPrepStatus: cleanString(input.sessionPrepStatus || input.sessionPrep?.status) || undefined,
     lastInteractionAt: interactionAt,
     createdAt,
     updatedAt,
@@ -565,6 +593,16 @@ function extractProfileZohoMaterialFields(profileOrPatch = {}) {
     lastIntent: cleanString(profile.lastIntent) || null,
     lastIntentGroup: cleanString(profile.lastIntentGroup) || null,
     podId: cleanString(profile.podId) || null,
+    bookingStatus: cleanString(profile.bookingStatus) || null,
+    bookingSource: cleanString(profile.bookingSource) || null,
+    bookingStartTime: cleanString(profile.bookingStartTime) || null,
+    bookingEndTime: cleanString(profile.bookingEndTime) || null,
+    bookingTimezone: cleanString(profile.bookingTimezone) || null,
+    bookingLocationType: cleanString(profile.bookingLocationType) || null,
+    bookingLocation: cleanString(profile.bookingLocation) || null,
+    sessionPrepStatus: cleanString(profile.sessionPrepStatus || profile.sessionPrep?.status) || null,
+    recommendedStartingPod:
+      cleanString(profile.sessionPrep?.recommendedStartingPod || profile.topPodId) || null,
   };
 }
 

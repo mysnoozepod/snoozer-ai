@@ -62,6 +62,13 @@ try {
   console.log("Ã¢Å¡Â Ã¯Â¸Â customerProfile service not loaded (ok).", error.message);
 }
 
+let bookingSessionService = null;
+try {
+  bookingSessionService = require("./services/bookingSession");
+} catch (error) {
+  console.log("âš ï¸ bookingSession service not loaded (ok).", error.message);
+}
+
 let shopifySvc = null;
 try {
   shopifySvc = require("./services/shopify");
@@ -1886,6 +1893,7 @@ async function resolveHudAskAnswerStrategy({
   products = [],
   productResolution = null,
   canonicalRecommendation = null,
+  context = null,
 } = {}) {
   const intentGroup = String(classification?.intent_group || "").trim() || "fallback_unclear";
   const config = resolveHudAskContextualConfig({
@@ -1953,10 +1961,12 @@ async function resolveHudAskAnswerStrategy({
     query,
     intent,
     intent_group: intentGroup,
-    context: {
-      path,
-      page_type: pageType,
-    },
+    context: isObject(context)
+      ? context
+      : {
+          path,
+          page_type: pageType,
+        },
     sources,
     products,
     productContext: productResolution,
@@ -3962,6 +3972,88 @@ function attachCanonicalRecommendationContext(context = {}, canonicalRecommendat
   return next;
 }
 
+function cloneJsonValue(value) {
+  return isObject(value) || Array.isArray(value) ? JSON.parse(JSON.stringify(value)) : value;
+}
+
+function buildStoredProfileContext(profile = {}) {
+  if (!isObject(profile)) return {};
+
+  const next = {};
+
+  if (isObject(profile.assessmentAnswers)) {
+    next.assessment = cloneJsonValue(profile.assessmentAnswers);
+  }
+
+  if (isObject(profile.canonicalRecommendation)) {
+    next.canonicalRecommendation = cloneJsonValue(profile.canonicalRecommendation);
+  }
+
+  if (isObject(profile.sessionPrep)) {
+    next.sessionPrep = cloneJsonValue(profile.sessionPrep);
+  }
+
+  const simpleFields = {
+    bookingStatus: cleanIdentityValue(profile?.bookingStatus),
+    bookingSource: cleanIdentityValue(profile?.bookingSource),
+    bookingStartTime: cleanIdentityValue(profile?.bookingStartTime),
+    bookingEndTime: cleanIdentityValue(profile?.bookingEndTime),
+    bookingTimezone: cleanIdentityValue(profile?.bookingTimezone),
+    bookingLocationType: cleanIdentityValue(profile?.bookingLocationType),
+    bookingLocation: cleanIdentityValue(profile?.bookingLocation),
+    bookingEventName: cleanIdentityValue(profile?.bookingEventName),
+    bookingEventType: cleanIdentityValue(profile?.bookingEventType),
+  };
+
+  for (const [key, value] of Object.entries(simpleFields)) {
+    if (value) next[key] = value;
+  }
+
+  return next;
+}
+
+function attachStoredProfileContext(context = {}, profile = {}) {
+  const next = isObject(context) ? { ...context } : {};
+  const profileContext = buildStoredProfileContext(profile);
+
+  if (!next.assessment && isObject(profileContext.assessment)) {
+    next.assessment = profileContext.assessment;
+  }
+
+  if (!next.canonicalRecommendation && isObject(profileContext.canonicalRecommendation)) {
+    const enriched = attachCanonicalRecommendationContext(next, profileContext.canonicalRecommendation);
+    if (Array.isArray(enriched?.recommendedProductHandles)) {
+      next.recommendedProductHandles = enriched.recommendedProductHandles;
+    }
+    next.canonicalRecommendation = enriched.canonicalRecommendation;
+    next.progress = enriched.progress;
+  }
+
+  if (!next.sessionPrep && isObject(profileContext.sessionPrep)) {
+    next.sessionPrep = profileContext.sessionPrep;
+  }
+
+  const simpleFields = [
+    "bookingStatus",
+    "bookingSource",
+    "bookingStartTime",
+    "bookingEndTime",
+    "bookingTimezone",
+    "bookingLocationType",
+    "bookingLocation",
+    "bookingEventName",
+    "bookingEventType",
+  ];
+
+  for (const field of simpleFields) {
+    if (!next[field] && profileContext[field]) {
+      next[field] = profileContext[field];
+    }
+  }
+
+  return next;
+}
+
 async function safeUpsertCustomerProfile(patchInput = {}, meta = {}) {
   if (
     !customerProfileService ||
@@ -4677,14 +4769,26 @@ function maybeBuildAskSnoozerCanonicalAnswer(query, context) {
   const canonicalRecommendation = isObject(context?.canonicalRecommendation)
     ? context.canonicalRecommendation
     : null;
-  if (!canonicalRecommendation) return null;
+  if (
+    !canonicalRecommendation &&
+    !isObject(context?.sessionPrep) &&
+    !cleanIdentityValue(context?.bookingStatus)
+  ) {
+    return null;
+  }
 
   const answer = buildAskSnoozerAnswer({
     query,
     canonicalRecommendation,
+    context,
   });
 
-  if (!answer?.answer_grounded || answer.answer_strategy !== "canonical_recommendation") {
+  if (
+    !answer?.answer_grounded ||
+    !["canonical_recommendation", "session_prep"].includes(
+      String(answer.answer_strategy || "").trim()
+    )
+  ) {
     return null;
   }
 
@@ -4933,6 +5037,20 @@ async function handle(event = {}) {
         { traceId, route: "/hud/ask" }
       );
       const previousHudProfile = previousHudProfileResult?.profile || null;
+      const hudAnswerContext = attachStoredProfileContext(
+        {
+          ...hudContext,
+          path: pathValue,
+          page_type: pageType,
+          pageType,
+          surface,
+          bookingStatus: body?.bookingStatus || hudContext?.bookingStatus || "",
+        },
+        previousHudProfile
+      );
+      if (!canonicalRecommendation && isObject(hudAnswerContext?.canonicalRecommendation)) {
+        canonicalRecommendation = hudAnswerContext.canonicalRecommendation;
+      }
       const productResolution = await resolveHudAskProducts({
         classification,
         intent,
@@ -4966,6 +5084,7 @@ async function handle(event = {}) {
         products,
         productResolution,
         canonicalRecommendation,
+        context: hudAnswerContext,
       });
       const hudProfilePatch =
         customerProfileService &&
@@ -6185,6 +6304,57 @@ async function handle(event = {}) {
   }
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Shopify RPC passthroughs
+  if (
+    method === "POST" &&
+    (routePath === "/booking/calendly-webhook" || routePath === "/calendly/webhook")
+  ) {
+    if (
+      !bookingSessionService ||
+      typeof bookingSessionService.upsertBookingSession !== "function"
+    ) {
+      return response(event, 500, {
+        ok: false,
+        code: "E_BOOKING_WEBHOOK_UNAVAILABLE",
+        message: "Booking webhook unavailable.",
+      });
+    }
+
+    try {
+      const body = safeJsonBody(event);
+      const result = await bookingSessionService.upsertBookingSession(body || {}, {
+        route: routePath,
+        log: (src, msg, extra) => log(src, msg, extra),
+      });
+
+      return response(event, 200, {
+        ok: true,
+        shopperId: result?.identity?.shopperId || null,
+        snoozeCode:
+          result?.identity?.snoozeCode || result?.identity?.accessCode || null,
+        accessCode:
+          result?.identity?.accessCode || result?.identity?.snoozeCode || null,
+        profileId: result?.identity?.profileId || null,
+        identityType: result?.identity?.identityType || null,
+        eventType: result?.booking?.eventType || null,
+        bookingStatus: result?.profilePatch?.bookingStatus || null,
+        sessionPrepStatus: result?.sessionPrep?.status || null,
+        skipped: Boolean(result?.skipped),
+        reason: result?.reason || null,
+      });
+    } catch (error) {
+      log("booking.webhook.error", error.message, {
+        traceId,
+        route: routePath,
+        code: error?.code || null,
+      });
+      return response(event, Number(error.statusCode || 500), {
+        ok: false,
+        code: error?.code || "E_BOOKING_WEBHOOK",
+        message: error?.message || "Booking webhook failed.",
+      });
+    }
+  }
+
   if (method === "POST" && routePath === "/shopify/listProducts") {
     return await withTimeout(
       shopify.listProducts(event),
@@ -6496,6 +6666,13 @@ async function handle(event = {}) {
       { traceId, route: "/ask-snoozer" }
     );
     const previousAskProfile = previousAskProfileResult?.profile || null;
+    context = attachStoredProfileContext(
+      {
+        ...context,
+        bookingStatus: payload?.bookingStatus || context?.bookingStatus || "",
+      },
+      previousAskProfile
+    );
 
     const askProfilePatch =
       customerProfileService &&
