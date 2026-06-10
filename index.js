@@ -3959,9 +3959,6 @@ async function safeUpsertCustomerProfile(patchInput = {}, meta = {}) {
     const result = await customerProfileService.upsertCustomerProfile(patch);
 
     if (result?.skipped) {
-      if (result.reason === "CUSTOMER_PROFILE_TABLE_NOT_CONFIGURED") {
-        return result;
-      }
       log("customer.profile.skip", result.reason || "SKIPPED", {
         traceId: meta.traceId || null,
         route: meta.route || null,
