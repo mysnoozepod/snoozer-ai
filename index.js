@@ -55,6 +55,13 @@ try {
   console.log("âš ï¸ recommendation resolver not loaded (ok).", error.message);
 }
 
+let customerProfileService = null;
+try {
+  customerProfileService = require("./services/customerProfile");
+} catch (error) {
+  console.log("Ã¢Å¡Â Ã¯Â¸Â customerProfile service not loaded (ok).", error.message);
+}
+
 let shopifySvc = null;
 try {
   shopifySvc = require("./services/shopify");
@@ -3934,6 +3941,64 @@ function attachCanonicalRecommendationContext(context = {}, canonicalRecommendat
   return next;
 }
 
+async function safeUpsertCustomerProfile(patchInput = {}, meta = {}) {
+  if (
+    !customerProfileService ||
+    typeof customerProfileService.buildCustomerProfilePatch !== "function" ||
+    typeof customerProfileService.upsertCustomerProfile !== "function"
+  ) {
+    return {
+      ok: false,
+      skipped: true,
+      reason: "CUSTOMER_PROFILE_SERVICE_UNAVAILABLE",
+    };
+  }
+
+  try {
+    const patch = customerProfileService.buildCustomerProfilePatch(patchInput);
+    const result = await customerProfileService.upsertCustomerProfile(patch);
+
+    if (result?.skipped) {
+      if (result.reason === "CUSTOMER_PROFILE_TABLE_NOT_CONFIGURED") {
+        return result;
+      }
+      log("customer.profile.skip", result.reason || "SKIPPED", {
+        traceId: meta.traceId || null,
+        route: meta.route || null,
+        shopperId: patch.shopperId || null,
+        sessionId: patch.sessionId || patch.threadId || null,
+      });
+      return result;
+    }
+
+    log("customer.profile", "upserted", {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      profileId: result?.profileId || null,
+      shopperId: patch.shopperId || null,
+      sessionId: patch.sessionId || patch.threadId || null,
+      topPodId: patch.topPodId || null,
+      lastIntent: patch.lastIntent || null,
+      sourceSurface: patch.sourceSurface || null,
+    });
+
+    return result;
+  } catch (error) {
+    log("customer.profile.error", error.message, {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      shopperId: patchInput?.shopperId || null,
+      sessionId: patchInput?.sessionId || patchInput?.threadId || null,
+      code: error?.code || null,
+    });
+    return {
+      ok: false,
+      skipped: true,
+      reason: "CUSTOMER_PROFILE_UPSERT_FAILED",
+    };
+  }
+}
+
 async function resolveCanonicalRecommendationContext({
   payload = null,
   context = null,
@@ -4229,6 +4294,26 @@ async function handle(event = {}) {
         surface,
       });
       const intent = classification.intent;
+      await safeUpsertCustomerProfile(
+        {
+          shopperId,
+          sessionId: threadId,
+          threadId,
+          sourceSurface: surface,
+          lastIntent: intent,
+          assessment: hudContext?.assessment || body?.assessment || body?.answers || null,
+          canonicalRecommendation,
+          customer: hudContext?.customer || null,
+          email: body?.email || hudContext?.email || "",
+          phone: body?.phone || hudContext?.phone || "",
+          preferredName: body?.preferredName || hudContext?.preferredName || "",
+          contactPreference: body?.contactPreference || hudContext?.contactPreference || "",
+          consent: hudContext?.consent || null,
+          leadStage: body?.leadStage || hudContext?.leadStage || "",
+          bookingStatus: body?.bookingStatus || hudContext?.bookingStatus || "",
+        },
+        { traceId, route: "/hud/ask" }
+      );
       const productResolution = await resolveHudAskProducts({
         classification,
         intent,
@@ -4848,6 +4933,33 @@ async function handle(event = {}) {
 
     await saveAssessmentResult(shopperId, answers || {});
 
+    let assessmentCanonicalRecommendation = null;
+    try {
+      assessmentCanonicalRecommendation = await resolveCanonicalRecommendationContext({
+        payload: { answers: answers || {} },
+        storedAssessment: { answers: answers || {} },
+        shopperId,
+        allowSessionLookup: false,
+        source: "assessment_profile",
+        traceId,
+      });
+    } catch (error) {
+      log("assessment.profile.canonical.error", error.message, { traceId, shopperId });
+    }
+
+    await safeUpsertCustomerProfile(
+      {
+        shopperId,
+        origin: origin || "assessment_api",
+        sourceSurface: origin || "assessment_api",
+        lastIntent: "assessment_submit",
+        leadStage: "assessment_completed",
+        assessmentAnswers: answers || {},
+        canonicalRecommendation: assessmentCanonicalRecommendation,
+      },
+      { traceId, route: "/assessment" }
+    );
+
     if (
       typeof buildSnoozeProfile === "function" &&
       typeof mapProfileToZohoFields === "function" &&
@@ -5189,6 +5301,35 @@ async function handle(event = {}) {
     } catch (ctxErr) {
       log("ask-snoozer.context.error", ctxErr.message, { traceId, shopperId });
     }
+
+    const profileAssessmentInput = pickAskSnoozerAssessmentInput({
+      payload,
+      context,
+      storedAssessment,
+    });
+    const askSnoozerClassification = buildAskSnoozerClassification(msg, context);
+
+    await safeUpsertCustomerProfile(
+      {
+        shopperId,
+        sessionId: effectiveSessionId,
+        threadId: effectiveSessionId,
+        sourceSurface: payload.source || (mode ? `ask_snoozer:${mode}` : "ask_snoozer"),
+        lastIntent: askSnoozerClassification?.intent || "unknown",
+        assessment: profileAssessmentInput,
+        canonicalRecommendation: context?.canonicalRecommendation || null,
+        customer: context?.customer || null,
+        email: payload?.email || context?.customer?.email || "",
+        phone: payload?.phone || context?.customer?.phone || "",
+        preferredName: payload?.preferredName || context?.customer?.preferredName || "",
+        contactPreference:
+          payload?.contactPreference || context?.customer?.contactPreference || "",
+        consent: context?.customer?.consent || null,
+        leadStage: payload?.leadStage || context?.leadStage || "",
+        bookingStatus: payload?.bookingStatus || context?.bookingStatus || "",
+      },
+      { traceId, route: "/ask-snoozer" }
+    );
 
     // 3.5) STRICT POD ANCHOR: fail fast if pod mode lacks anchors
     if (STRICT_POD_ANCHOR && String(mode || "").toLowerCase() === "pod") {
