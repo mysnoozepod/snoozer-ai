@@ -893,6 +893,13 @@ try {
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Path + Body helpers
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+let syncCustomerProfileToZoho = null;
+try {
+  ({ syncCustomerProfileToZoho } = require("./services/customerProfileZohoSync"));
+} catch (e) {
+  console.log("Ã¢Å¡Â Ã¯Â¸Â customerProfileZohoSync service not loaded.", e.message);
+}
+
 function normalizePath(event) {
   const raw = event.rawPath || event.path || "/";
   const stage = event.requestContext?.stage;
@@ -4944,20 +4951,49 @@ async function handle(event = {}) {
       log("assessment.profile.canonical.error", error.message, { traceId, shopperId });
     }
 
-    await safeUpsertCustomerProfile(
-      {
-        shopperId,
-        origin: origin || "assessment_api",
-        sourceSurface: origin || "assessment_api",
-        lastIntent: "assessment_submit",
-        leadStage: "assessment_completed",
-        assessmentAnswers: answers || {},
-        canonicalRecommendation: assessmentCanonicalRecommendation,
-      },
-      { traceId, route: "/assessment" }
-    );
+    const customerProfilePatch =
+      customerProfileService &&
+      typeof customerProfileService.buildCustomerProfilePatch === "function"
+        ? customerProfileService.buildCustomerProfilePatch({
+            shopperId,
+            origin: origin || "assessment_api",
+            sourceSurface: origin || "assessment_api",
+            lastIntent: "assessment_submit",
+            leadStage: "assessment_completed",
+            assessmentAnswers: answers || {},
+            canonicalRecommendation: assessmentCanonicalRecommendation,
+          })
+        : {
+            shopperId,
+            origin: origin || "assessment_api",
+            sourceSurface: origin || "assessment_api",
+            lastIntent: "assessment_submit",
+            leadStage: "assessment_completed",
+            assessmentAnswers: answers || {},
+            canonicalRecommendation: assessmentCanonicalRecommendation,
+          };
 
-    if (
+    await safeUpsertCustomerProfile(customerProfilePatch, { traceId, route: "/assessment" });
+
+    if (typeof syncCustomerProfileToZoho === "function") {
+      try {
+        const zohoSync = await syncCustomerProfileToZoho(customerProfilePatch);
+        log(
+          "assessment.zoho.sync",
+          zohoSync?.ok ? "ok" : zohoSync?.skipped ? "skipped" : "failed",
+          {
+            traceId,
+            shopperId,
+            reason: zohoSync?.reason || null,
+            operation: zohoSync?.operation || null,
+            code: zohoSync?.code || null,
+            contactId: zohoSync?.contactId || null,
+          }
+        );
+      } catch (e) {
+        log("assessment.zoho.error", e.message, { traceId, shopperId });
+      }
+    } else if (
       typeof buildSnoozeProfile === "function" &&
       typeof mapProfileToZohoFields === "function" &&
       typeof upsertContactByShopperId === "function"
@@ -4972,14 +5008,16 @@ async function handle(event = {}) {
         const zohoFields = mapProfileToZohoFields(profile) || {};
         if (Object.keys(zohoFields).length) {
           const zohoResp = await upsertContactByShopperId(shopperId, zohoFields);
-          log("assessment.zoho.upsert", "ok", {
+          log("assessment.zoho.fallback", zohoResp?.ok ? "ok" : zohoResp?.skipped ? "skipped" : "failed", {
             traceId,
             shopperId,
-            code: zohoResp?.code,
-            contactId: zohoResp?.details?.id,
+            reason: zohoResp?.reason || null,
+            operation: zohoResp?.operation || null,
+            code: zohoResp?.code || null,
+            contactId: zohoResp?.contactId || zohoResp?.details?.id || null,
           });
         } else {
-          log("assessment.zoho.upsert", "skip_empty_profile", { traceId, shopperId });
+          log("assessment.zoho.fallback", "skip_empty_profile", { traceId, shopperId });
         }
       } catch (e) {
         log("assessment.zoho.error", e.message, { traceId, shopperId });
