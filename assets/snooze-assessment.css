@@ -382,6 +382,57 @@
   font-size: 16px;
 }
 
+.snooze-assessment__code-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 22px;
+  background: #ffffff;
+  border: 1px solid rgba(7, 25, 66, 0.08);
+}
+
+.snooze-assessment__code-card[hidden] {
+  display: none;
+}
+
+.snooze-assessment__code-card-copy {
+  min-width: 0;
+  flex: 1 1 24rem;
+}
+
+.snooze-assessment__code-eyebrow {
+  margin: 0;
+  color: rgba(7, 25, 66, 0.66);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.snooze-assessment__code-value {
+  margin: 8px 0 0;
+  color: #071942;
+  font-size: clamp(26px, 5vw, 34px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.08em;
+}
+
+.snooze-assessment__code-note {
+  margin: 10px 0 0;
+  color: rgba(7, 25, 66, 0.76);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.snooze-assessment__code-copy-button {
+  min-width: 10.8rem;
+}
+
 .snooze-assessment__result-actions {
   margin-top: 16px;
 }

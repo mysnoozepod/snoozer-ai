@@ -183,6 +183,98 @@
     display: none;
   }
 
+  .header__snooze-code-entry {
+    display: none;
+  }
+
+  .header__snooze-code-form {
+    display: none;
+  }
+
+  .header__snooze-code-label {
+    margin: 0;
+    color: #071a44;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .header__snooze-code-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .header__snooze-code-input {
+    width: 10.8rem;
+    min-height: 4.2rem;
+    padding: 0 1.4rem;
+    border: 0.1rem solid #cbd5e1;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #071a44;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .header__snooze-code-input::placeholder {
+    color: rgba(7, 26, 68, 0.46);
+  }
+
+  .header__snooze-code-input:focus-visible {
+    outline: 0.2rem solid rgba(30, 92, 196, 0.24);
+    outline-offset: 0.2rem;
+  }
+
+  .header__snooze-code-button {
+    min-height: 4.2rem;
+    padding: 0 1.5rem;
+    border: 0.1rem solid #071a44;
+    border-radius: 999px;
+    background: #071a44;
+    color: #ffffff;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+  }
+
+  .header__snooze-code-button:hover {
+    transform: translateY(-0.1rem);
+    box-shadow: 0 0.8rem 1.8rem rgba(7, 26, 68, 0.14);
+  }
+
+  .header__snooze-code-button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .header__snooze-code-status {
+    min-height: 1.4rem;
+    margin: 0;
+    color: rgba(7, 26, 68, 0.66);
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.18rem;
+    line-height: 1.3;
+  }
+
+  .header__snooze-code-status.is-success {
+    color: #124394;
+  }
+
+  .header__snooze-code-status.is-error {
+    color: #991b1b;
+  }
+
   .header__snoozer-entry {
     display: none;
   }
@@ -719,6 +811,18 @@
       transform: translate(0.4rem, -5.8rem);
     }
 
+    .header__snooze-code-entry {
+      display: flex;
+      align-items: center;
+    }
+
+    .header__snooze-code-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      width: 18.8rem;
+    }
+
     .header__icon--account {
       padding: 0.8rem;
     }
@@ -1108,6 +1212,32 @@
         <span class="header__utility-separator small-hide medium-hide" aria-hidden="true"></span>
 
         <div class="header__action-group">
+          <div class="header__snooze-code-entry small-hide medium-hide">
+            <form class="header__snooze-code-form" data-snooze-checkin-form>
+              <label class="header__snooze-code-label" for="HeaderSnoozeCode-{{ section.id }}">Snooze Code</label>
+              <div class="header__snooze-code-controls">
+                <input
+                  id="HeaderSnoozeCode-{{ section.id }}"
+                  class="header__snooze-code-input"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  placeholder="Enter code"
+                  aria-label="Enter Snooze Code"
+                  data-snooze-checkin-input
+                >
+                <button
+                  type="submit"
+                  class="header__snooze-code-button"
+                  data-snooze-checkin-submit
+                >
+                  Unlock
+                </button>
+              </div>
+              <p class="header__snooze-code-status" data-snooze-checkin-status aria-live="polite"></p>
+            </form>
+          </div>
+
           <a
             href="{%- if customer -%}{{ routes.account_url }}{%- else -%}{{ routes.account_login_url }}{%- endif -%}"
             class="header__icon header__icon--account header__utility-link link focus-inset"
@@ -1612,6 +1742,14 @@
       }
     }
 
+    function safeStorageSet(storage, key, value) {
+      try {
+        storage.setItem(key, value);
+      } catch (error) {
+        // ignore
+      }
+    }
+
     function getStoredSnoozeIdentity() {
       let snoozeCode = '';
       let shopperId = '';
@@ -1657,6 +1795,69 @@
             ? shopperId
             : ''
       };
+    }
+
+    function persistStoredSnoozeIdentity(identity) {
+      const normalizedCode = normalizeText(
+        identity && (identity.snoozeCode || identity.accessCode || identity.shopperId)
+      );
+      const normalizedShopperId = normalizeText(identity && identity.shopperId) || normalizedCode;
+
+      if (!normalizedCode || !normalizedShopperId) return;
+
+      safeStorageSet(window.sessionStorage, 'snoozeCode', normalizedCode);
+      safeStorageSet(window.localStorage, 'snoozeCode', normalizedCode);
+      safeStorageSet(window.sessionStorage, 'snoozer_snooze_code', normalizedCode);
+      safeStorageSet(window.localStorage, 'snoozer_snooze_code', normalizedCode);
+      safeStorageSet(window.sessionStorage, 'snooze.accessCode', normalizedCode);
+      safeStorageSet(window.localStorage, 'snooze.accessCode', normalizedCode);
+      safeStorageSet(window.sessionStorage, 'snoozer_access_code', normalizedCode);
+      safeStorageSet(window.localStorage, 'snoozer_access_code', normalizedCode);
+      safeStorageSet(window.sessionStorage, 'snooze.shopperId', normalizedShopperId);
+      safeStorageSet(window.localStorage, 'snooze.shopperId', normalizedShopperId);
+      safeStorageSet(window.sessionStorage, 'snooze.assessmentShopperId', normalizedShopperId);
+      safeStorageSet(window.sessionStorage, 'snoozer_shopper_id', normalizedShopperId);
+      safeStorageSet(window.localStorage, 'snoozer_shopper_id', normalizedShopperId);
+    }
+
+    function normalizeCheckInPayload(rawPayload) {
+      const payload = rawPayload && rawPayload.data && typeof rawPayload.data === 'object'
+        ? rawPayload.data
+        : rawPayload && typeof rawPayload === 'object'
+          ? rawPayload
+          : {};
+
+      return {
+        ok: payload.ok === true,
+        shopperId: normalizeText(payload.shopperId),
+        snoozeCode: normalizeText(payload.snoozeCode || payload.accessCode || payload.shopperId),
+        accessCode: normalizeText(payload.accessCode || payload.snoozeCode || payload.shopperId),
+        profileId: normalizeText(payload.profileId),
+        code: normalizeText(payload.code),
+        message: normalizeText(payload.message),
+      };
+    }
+
+    function setCheckInStatus(form, message, isError) {
+      const status = form && form.querySelector('[data-snooze-checkin-status]');
+      if (!status) return;
+
+      status.textContent = normalizeText(message);
+      status.classList.toggle('is-error', Boolean(isError && message));
+      status.classList.toggle('is-success', Boolean(!isError && message));
+    }
+
+    function syncCheckInForms(identity) {
+      const code = normalizeText(
+        identity && (identity.snoozeCode || identity.accessCode || identity.shopperId)
+      );
+
+      document.querySelectorAll('[data-snooze-checkin-form]').forEach((form) => {
+        const input = form.querySelector('[data-snooze-checkin-input]');
+        if (input && code) {
+          input.value = code;
+        }
+      });
     }
 
     function setShellBusy(shell, isBusy) {
@@ -2186,6 +2387,70 @@
       openShell(visibleShell);
     }
 
+    async function submitSnoozeCodeCheckIn(form) {
+      if (!form || form.dataset.busy === 'true') return;
+
+      const input = form.querySelector('[data-snooze-checkin-input]');
+      const submit = form.querySelector('[data-snooze-checkin-submit]');
+      const rawCode = normalizeText(input && input.value);
+
+      if (!rawCode) {
+        setCheckInStatus(form, 'Enter your Snooze Code', true);
+        if (input) input.focus();
+        return;
+      }
+
+      const storedIdentity = getStoredSnoozeIdentity();
+      const sessionId = getSessionId();
+      form.dataset.busy = 'true';
+      setCheckInStatus(form, 'Unlocking Snooze Profile...', false);
+
+      if (input) input.disabled = true;
+      if (submit) submit.disabled = true;
+
+      try {
+        const response = await fetch(buildApiUrl('/identity/check-in'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            snoozeCode: rawCode,
+            accessCode: rawCode,
+            shopperId: storedIdentity.shopperId || undefined,
+            sourceSurface: 'shopify_header_checkin',
+            sessionId: sessionId,
+            threadId: sessionId
+          })
+        });
+
+        const normalizedPayload = normalizeCheckInPayload(
+          await response.json().catch(() => null)
+        );
+
+        if (!response.ok || !normalizedPayload.ok || !normalizedPayload.snoozeCode) {
+          setCheckInStatus(
+            form,
+            normalizedPayload.code === 'SNOOZE_CODE_NOT_FOUND'
+              ? 'Code not found'
+              : 'Code not found',
+            true
+          );
+          return;
+        }
+
+        persistStoredSnoozeIdentity(normalizedPayload);
+        syncCheckInForms(normalizedPayload);
+        setCheckInStatus(form, 'Snooze Profile unlocked', false);
+      } catch (error) {
+        setCheckInStatus(form, 'Code not found', true);
+      } finally {
+        form.dataset.busy = 'false';
+        if (input) input.disabled = false;
+        if (submit) submit.disabled = false;
+      }
+    }
+
     window.MySnoozePod = window.MySnoozePod || {};
     window.MySnoozePod.openSnoozer = openVisibleShell;
 
@@ -2263,6 +2528,14 @@
       form.addEventListener('submit', (event) => {
         event.preventDefault();
         submitLiveQuery(shell, input.value);
+      });
+    });
+
+    document.querySelectorAll('[data-snooze-checkin-form]').forEach((form) => {
+      syncCheckInForms(getStoredSnoozeIdentity());
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submitSnoozeCodeCheckIn(form);
       });
     });
   })();

@@ -127,7 +127,7 @@ async function testCanonicalAssessmentFlow() {
   const productMap = createProductMap(HANDLES);
   const routes = createRoutes();
 
-  await saveAssessmentAnswers(createRoot(), "shopper-1", assessment);
+  await saveAssessmentAnswers(createRoot(), { shopperId: "shopper-1" }, assessment);
   const resolved = await resolveAssessmentRecommendationResult(
     createRoot(),
     assessment,

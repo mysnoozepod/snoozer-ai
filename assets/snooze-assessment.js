@@ -375,12 +375,11 @@
   }
 
   function persistAssessmentIdentity(identity) {
-    const shopperId = normalizeText(identity && identity.shopperId);
-    const snoozeCode = normalizeText(
-      (identity && (identity.snoozeCode || identity.accessCode)) || ""
-    );
-    const sourceShopperId = normalizeText(identity && identity.sourceShopperId);
-    const sessionId = normalizeText(identity && identity.sessionId);
+    const normalizedIdentity = extractAssessmentIdentity(identity);
+    const shopperId = normalizedIdentity.shopperId;
+    const snoozeCode = normalizedIdentity.snoozeCode;
+    const sourceShopperId = normalizedIdentity.sourceShopperId;
+    const sessionId = normalizedIdentity.sessionId;
 
     if (shopperId) {
       safeSessionSet(DEFAULT_SHOPPER_KEY, shopperId);
@@ -409,6 +408,104 @@
     if (sessionId) {
       safeSessionSet(ASSESSMENT_SESSION_KEY, sessionId);
     }
+  }
+
+  function isLikelySnoozeCode(value) {
+    return /^\d{4}$|^\d{6}$/.test(normalizeText(value));
+  }
+
+  function extractAssessmentIdentity(identity) {
+    const shopperId = normalizeText(identity && identity.shopperId);
+    const explicitCode = normalizeText(
+      (identity && (identity.snoozeCode || identity.accessCode)) || ""
+    );
+    const snoozeCode = explicitCode || (isLikelySnoozeCode(shopperId) ? shopperId : "");
+
+    return {
+      shopperId: snoozeCode || shopperId,
+      snoozeCode: snoozeCode || "",
+      accessCode: snoozeCode || "",
+      profileId: normalizeText(identity && identity.profileId),
+      identityType: normalizeText(identity && identity.identityType),
+      isNewCode: Boolean(identity && identity.isNewCode),
+      sourceShopperId: normalizeText(identity && identity.sourceShopperId),
+      sessionId: normalizeText(identity && identity.sessionId),
+    };
+  }
+
+  function applyAssessmentSaveIdentity(currentIdentity, payloadIdentity) {
+    const current = extractAssessmentIdentity(currentIdentity);
+    const incoming = extractAssessmentIdentity(payloadIdentity);
+    const shopperId = incoming.shopperId || current.shopperId;
+    const snoozeCode =
+      incoming.snoozeCode ||
+      current.snoozeCode ||
+      (isLikelySnoozeCode(shopperId) ? shopperId : "");
+    const sourceShopperId =
+      incoming.sourceShopperId ||
+      current.sourceShopperId ||
+      (current.shopperId && current.shopperId !== shopperId ? current.shopperId : "");
+
+    return {
+      shopperId: shopperId || "",
+      snoozeCode: snoozeCode || "",
+      accessCode: snoozeCode || "",
+      profileId: incoming.profileId || current.profileId || "",
+      identityType: incoming.identityType || current.identityType || "",
+      isNewCode:
+        typeof payloadIdentity === "object" && payloadIdentity
+          ? Boolean(payloadIdentity.isNewCode)
+          : Boolean(current.isNewCode),
+      sourceShopperId: sourceShopperId || "",
+      sessionId: incoming.sessionId || current.sessionId || "",
+    };
+  }
+
+  function buildSnoozeCodeCardData(identity) {
+    const normalizedIdentity = extractAssessmentIdentity(identity);
+    if (!normalizedIdentity.snoozeCode) return null;
+
+    return {
+      title: "Your Snooze Code",
+      code: normalizedIdentity.snoozeCode,
+      helperText:
+        "Use this code to unlock your recommendations, rewards, and Snooze Session prep.",
+      copyLabel: "Copy",
+      copiedLabel: "Copied",
+    };
+  }
+
+  function copyTextToClipboard(text) {
+    const normalized = normalizeText(text);
+    if (!normalized) return Promise.reject(new Error("Missing text"));
+
+    if (
+      window.navigator &&
+      window.navigator.clipboard &&
+      typeof window.navigator.clipboard.writeText === "function"
+    ) {
+      return window.navigator.clipboard.writeText(normalized);
+    }
+
+    return new Promise(function (resolve, reject) {
+      try {
+        const fallback = document.createElement("textarea");
+        fallback.value = normalized;
+        fallback.setAttribute("readonly", "readonly");
+        fallback.style.position = "fixed";
+        fallback.style.opacity = "0";
+        fallback.style.pointerEvents = "none";
+        document.body.appendChild(fallback);
+        fallback.focus();
+        fallback.select();
+        const didCopy = document.execCommand("copy");
+        document.body.removeChild(fallback);
+        if (!didCopy) throw new Error("Copy command failed");
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   function normalizeApiBase(value) {
@@ -1609,6 +1706,9 @@
       resultCopy: root.querySelector("[data-assessment-result-copy]"),
       resultSummary: root.querySelector("[data-assessment-result-summary]"),
       resultTags: root.querySelector("[data-assessment-result-tags]"),
+      resultSnoozeCard: root.querySelector("[data-assessment-snooze-card]"),
+      resultSnoozeCodeValue: root.querySelector("[data-assessment-snooze-code-value]"),
+      resultSnoozeCodeCopy: root.querySelector("[data-assessment-snooze-code-copy]"),
       resultDirections: root.querySelector("[data-assessment-result-directions]"),
       resultProducts: root.querySelector("[data-assessment-result-products]"),
       resultActions: root.querySelector("[data-assessment-result-actions]"),
@@ -1896,6 +1996,35 @@
       });
     }
 
+    function renderSnoozeCodeCard(identity) {
+      if (!els.resultSnoozeCard) return;
+
+      const cardData = buildSnoozeCodeCardData(identity);
+      els.resultSnoozeCard.hidden = !cardData;
+
+      if (!cardData) {
+        if (els.resultSnoozeCodeValue) {
+          els.resultSnoozeCodeValue.textContent = "";
+        }
+        if (els.resultSnoozeCodeCopy) {
+          els.resultSnoozeCodeCopy.textContent = "Copy";
+          els.resultSnoozeCodeCopy.disabled = true;
+          delete els.resultSnoozeCodeCopy.dataset.snoozeCode;
+        }
+        return;
+      }
+
+      if (els.resultSnoozeCodeValue) {
+        els.resultSnoozeCodeValue.textContent = cardData.code;
+      }
+
+      if (els.resultSnoozeCodeCopy) {
+        els.resultSnoozeCodeCopy.textContent = cardData.copyLabel;
+        els.resultSnoozeCodeCopy.disabled = false;
+        els.resultSnoozeCodeCopy.dataset.snoozeCode = cardData.code;
+      }
+    }
+
     function renderResult(result) {
       if (!els.result) return;
       els.result.hidden = false;
@@ -1919,6 +2048,11 @@
         });
       }
 
+      renderSnoozeCodeCard({
+        shopperId: state.shopperId,
+        snoozeCode: state.snoozeCode,
+        accessCode: state.accessCode,
+      });
       renderResultDirections(result);
       renderResultProducts(result);
       renderResultActions(result);
@@ -2015,7 +2149,6 @@
       const answers = cleanAnswers(state.questions, state.answers);
 
       try {
-        const previousShopperId = state.shopperId;
         const savedPayload = await saveAssessmentAnswers(root, {
           shopperId: state.shopperId,
           snoozeCode: state.snoozeCode,
@@ -2029,24 +2162,23 @@
             : savedPayload && typeof savedPayload === "object"
               ? savedPayload
               : {};
+        const nextIdentity = applyAssessmentSaveIdentity(
+          {
+            shopperId: state.shopperId,
+            snoozeCode: state.snoozeCode,
+            accessCode: state.accessCode,
+            sourceShopperId: state.sourceShopperId,
+            sessionId: state.sessionId,
+          },
+          savedData
+        );
 
-        if (normalizeText(savedData.shopperId)) {
-          state.shopperId = normalizeText(savedData.shopperId);
-        }
-        if (normalizeText(savedData.snoozeCode || savedData.accessCode)) {
-          state.snoozeCode = normalizeText(savedData.snoozeCode || savedData.accessCode);
-          state.accessCode = state.snoozeCode;
-        }
-        if (previousShopperId && previousShopperId !== state.shopperId) {
-          state.sourceShopperId = previousShopperId;
-        }
-        persistAssessmentIdentity({
-          shopperId: state.shopperId,
-          snoozeCode: state.snoozeCode,
-          accessCode: state.accessCode,
-          sourceShopperId: state.sourceShopperId,
-          sessionId: state.sessionId,
-        });
+        state.shopperId = nextIdentity.shopperId;
+        state.snoozeCode = nextIdentity.snoozeCode;
+        state.accessCode = nextIdentity.accessCode;
+        state.sourceShopperId = nextIdentity.sourceShopperId;
+        state.sessionId = nextIdentity.sessionId || state.sessionId;
+        persistAssessmentIdentity(nextIdentity);
 
         const resolved = await resolveAssessmentRecommendationResult(
           root,
@@ -2171,6 +2303,31 @@
         persist();
         render();
         scrollToApp();
+      });
+    }
+
+    if (els.resultSnoozeCodeCopy) {
+      els.resultSnoozeCodeCopy.addEventListener("click", function () {
+        const code = normalizeText(els.resultSnoozeCodeCopy.dataset.snoozeCode);
+        if (!code) return;
+
+        copyTextToClipboard(code)
+          .then(function () {
+            els.resultSnoozeCodeCopy.textContent = "Copied";
+            window.setTimeout(function () {
+              if (els.resultSnoozeCodeCopy) {
+                els.resultSnoozeCodeCopy.textContent = "Copy";
+              }
+            }, 1600);
+          })
+          .catch(function () {
+            els.resultSnoozeCodeCopy.textContent = "Copy unavailable";
+            window.setTimeout(function () {
+              if (els.resultSnoozeCodeCopy) {
+                els.resultSnoozeCodeCopy.textContent = "Copy";
+              }
+            }, 2000);
+          });
       });
     }
 
