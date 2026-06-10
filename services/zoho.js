@@ -399,6 +399,25 @@ async function upsertContactByShopperId(shopperId, contactFields = {}) {
     });
   }
 
+  if (lookup.duplicateDetected && !contactId) {
+    logZohoEvent("zoho.contact.upsert.skipped", {
+      shopperId: normalizedShopperId,
+      reason: "DUPLICATE_CONTACT_AMBIGUOUS",
+      matchCount: lookup.matchCount,
+    });
+    return {
+      ok: false,
+      skipped: true,
+      reason: "DUPLICATE_CONTACT_AMBIGUOUS",
+      operation,
+      shopperId: normalizedShopperId,
+      contactId: null,
+      code: null,
+      duplicateDetected: true,
+      matchCount: lookup.matchCount,
+    };
+  }
+
   logZohoEvent(
     isUpdate ? "zoho.contact.update.attempt" : "zoho.contact.create.attempt",
     {

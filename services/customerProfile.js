@@ -1,5 +1,5 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocumentClient, UpdateCommand } = require("@aws-sdk/lib-dynamodb");
+const { DynamoDBDocumentClient, GetCommand, UpdateCommand } = require("@aws-sdk/lib-dynamodb");
 
 const REGION = process.env.AWS_REGION || "us-east-1";
 
@@ -7,12 +7,49 @@ const ddbDoc = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }
   marshallOptions: { removeUndefinedValues: true },
 });
 
+const LEAD_STAGE_ORDER = Object.freeze([
+  "new",
+  "browsing",
+  "assessment_started",
+  "assessment_completed",
+  "session_interested",
+  "purchase_interested",
+  "booked",
+  "purchased",
+]);
+
+const HIGH_VALUE_INTENTS = Object.freeze([
+  "couple_conflict",
+  "back_pain",
+  "sleep_hot",
+  "firm_support",
+  "compare_mattresses",
+  "booking_help",
+  "cart_confidence",
+  "bundle_price",
+  "size_help",
+]);
+
+const LOW_VALUE_INTENT_GROUPS = Object.freeze(["fallback_unclear", "policy_support"]);
+const SESSION_INTEREST_INTENTS = Object.freeze(["booking_help"]);
+const PURCHASE_INTEREST_INTENTS = Object.freeze(["cart_confidence", "bundle_price"]);
+const PROFILE_ARRAY_FIELDS = Object.freeze([
+  "topPodIds",
+  "reasonKeys",
+  "recommendedProductHandles",
+]);
+
+const LEAD_STAGE_RANK = LEAD_STAGE_ORDER.reduce(function reduceRank(acc, stage, index) {
+  acc[stage] = index;
+  return acc;
+}, {});
+
 function isObject(value) {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
 
 function cleanString(value) {
-  const next = String(value || "").trim();
+  const next = String(value == null ? "" : value).trim();
   return next || "";
 }
 
@@ -30,7 +67,7 @@ function ttlEpochSeconds(days = 90) {
 }
 
 function cloneObject(value) {
-  return isObject(value) ? JSON.parse(JSON.stringify(value)) : null;
+  return isObject(value) || Array.isArray(value) ? JSON.parse(JSON.stringify(value)) : value;
 }
 
 function normalizeAssessmentAnswers(input = {}) {
@@ -103,11 +140,14 @@ function extractCanonicalProfileFields(canonicalRecommendation) {
       ? null
       : cleanString(canonicalRecommendation.baseHandle) || null;
   const motionKey =
-    cleanString(canonicalRecommendation.motionKey || canonicalRecommendation.normalizedAssessment?.motionKey) ||
-    null;
+    cleanString(
+      canonicalRecommendation.motionKey ||
+        canonicalRecommendation.normalizedAssessment?.motionKey
+    ) || null;
   const motionLabel =
     cleanString(
-      canonicalRecommendation.motionLabel || canonicalRecommendation.normalizedAssessment?.motionLabel
+      canonicalRecommendation.motionLabel ||
+        canonicalRecommendation.normalizedAssessment?.motionLabel
     ) || null;
   const reasonKeys = uniqueStrings(
     Array.isArray(canonicalRecommendation.reasonKeys) ? canonicalRecommendation.reasonKeys : []
@@ -145,6 +185,90 @@ function extractCanonicalProfileFields(canonicalRecommendation) {
   };
 }
 
+function normalizeLeadStage(value) {
+  const stage = cleanString(value).toLowerCase();
+  return LEAD_STAGE_RANK[stage] >= 0 ? stage : "";
+}
+
+function resolveLeadStage(currentStage = "", candidateStage = "") {
+  const current = normalizeLeadStage(currentStage);
+  const candidate = normalizeLeadStage(candidateStage);
+
+  if (!current && !candidate) return undefined;
+  if (!current) return candidate || undefined;
+  if (!candidate) return current || undefined;
+
+  return LEAD_STAGE_RANK[candidate] >= LEAD_STAGE_RANK[current] ? candidate : current;
+}
+
+function deriveInteractionLeadStage({
+  previousProfile = null,
+  explicitLeadStage = "",
+  lastIntent = "",
+  lastIntentGroup = "",
+  hasAssessment = false,
+  hasCanonical = false,
+} = {}) {
+  const currentStage = cleanString(previousProfile?.leadStage);
+  const explicit = cleanString(explicitLeadStage);
+  if (explicit) return resolveLeadStage(currentStage, explicit);
+
+  const intent = cleanString(lastIntent);
+  const intentGroup = cleanString(lastIntentGroup);
+
+  if (SESSION_INTEREST_INTENTS.includes(intent) || intentGroup === "booking_handoff") {
+    return resolveLeadStage(currentStage, "session_interested");
+  }
+
+  if (PURCHASE_INTEREST_INTENTS.includes(intent) || intentGroup === "cart_confidence") {
+    return resolveLeadStage(currentStage, "purchase_interested");
+  }
+
+  if (hasAssessment || hasCanonical || intent || intentGroup) {
+    return resolveLeadStage(currentStage, "browsing");
+  }
+
+  return resolveLeadStage(currentStage, "");
+}
+
+function mergeCustomerProfile(previousProfile = {}, patch = {}) {
+  const previous = isObject(previousProfile) ? previousProfile : {};
+  const nextPatch = isObject(patch) ? patch : {};
+  const merged = { ...cloneObject(previous) };
+
+  for (const [key, value] of Object.entries(nextPatch)) {
+    if (typeof value === "undefined") continue;
+
+    if (PROFILE_ARRAY_FIELDS.includes(key)) {
+      merged[key] = uniqueStrings([].concat(previous[key] || []).concat(value || []));
+      continue;
+    }
+
+    if (key === "canonicalRecommendation") {
+      const previousCanonical = isObject(previous.canonicalRecommendation)
+        ? previous.canonicalRecommendation
+        : {};
+      const nextCanonical = isObject(value) ? value : {};
+      merged[key] = { ...cloneObject(previousCanonical), ...cloneObject(nextCanonical) };
+      continue;
+    }
+
+    if (key === "normalizedAssessment" && isObject(value)) {
+      merged[key] = {
+        ...(isObject(previous.normalizedAssessment)
+          ? cloneObject(previous.normalizedAssessment)
+          : {}),
+        ...cloneObject(value),
+      };
+      continue;
+    }
+
+    merged[key] = cloneObject(value);
+  }
+
+  return merged;
+}
+
 function getCustomerProfileKey(patch = {}) {
   const shopperId = cleanString(patch.shopperId);
   if (shopperId) return { profileId: `shopper#${shopperId}` };
@@ -164,6 +288,9 @@ function buildCustomerProfilePatch(input = {}) {
   const assessmentAnswers = normalizeAssessmentAnswers(input);
   const canonicalFields = extractCanonicalProfileFields(input.canonicalRecommendation);
   const contactInfo = extractContactInfo(input);
+  const recommendedProductHandles = uniqueStrings(
+    Array.isArray(input.recommendedProductHandles) ? input.recommendedProductHandles : []
+  );
 
   return {
     shopperId: cleanString(input.shopperId) || undefined,
@@ -186,14 +313,84 @@ function buildCustomerProfilePatch(input = {}) {
     leadStage: cleanString(input.leadStage) || undefined,
     sourceSurface: cleanString(input.sourceSurface || input.surface || input.origin) || undefined,
     lastIntent: cleanString(input.lastIntent || input.intent) || undefined,
-    lastInteractionAt: interactionAt,
+    lastIntentGroup: cleanString(input.lastIntentGroup || input.intentGroup) || undefined,
+    lastQuery: cleanString(input.lastQuery || input.query || input.message) || undefined,
+    lastPath: cleanString(input.lastPath || input.path) || undefined,
+    lastPageType: cleanString(input.lastPageType || input.pageType || input.page_type) || undefined,
+    currentProductHandle: cleanString(input.currentProductHandle) || undefined,
+    recommendedProductHandles: recommendedProductHandles.length
+      ? recommendedProductHandles
+      : undefined,
+    podId: cleanString(input.podId || input.topPodIdHint) || undefined,
+    mode: cleanString(input.mode) || undefined,
     bookingStatus: cleanString(input.bookingStatus) || undefined,
+    lastInteractionAt: interactionAt,
     createdAt,
     updatedAt,
-    ttl: Number.isFinite(Number(input.ttl)) && Number(input.ttl) > 0
-      ? Number(input.ttl)
-      : ttlEpochSeconds(profileTtlDays),
+    ttl:
+      Number.isFinite(Number(input.ttl)) && Number(input.ttl) > 0
+        ? Number(input.ttl)
+        : ttlEpochSeconds(profileTtlDays),
   };
+}
+
+function buildHudProfilePatch(input = {}) {
+  const previousProfile = isObject(input.previousProfile) ? input.previousProfile : {};
+  const productHandles = uniqueStrings(
+    []
+      .concat(Array.isArray(input.recommendedProductHandles) ? input.recommendedProductHandles : [])
+      .concat(
+        Array.isArray(input.products)
+          ? input.products.map((product) => product && product.handle)
+          : []
+      )
+      .concat(Array.isArray(previousProfile.recommendedProductHandles) ? previousProfile.recommendedProductHandles : [])
+  );
+
+  const leadStage = deriveInteractionLeadStage({
+    previousProfile,
+    explicitLeadStage: input.leadStage,
+    lastIntent: input.lastIntent,
+    lastIntentGroup: input.lastIntentGroup,
+    hasAssessment: Boolean(normalizeAssessmentAnswers(input)),
+    hasCanonical: Boolean(input.canonicalRecommendation),
+  });
+
+  return buildCustomerProfilePatch({
+    ...input,
+    leadStage,
+    recommendedProductHandles: productHandles,
+    currentProductHandle:
+      cleanString(input.currentProductHandle) ||
+      cleanString(input.productResolution?.currentProductHandle),
+  });
+}
+
+function buildAskSnoozerProfilePatch(input = {}) {
+  const previousProfile = isObject(input.previousProfile) ? input.previousProfile : {};
+  const productHandles = uniqueStrings(
+    []
+      .concat(Array.isArray(input.recommendedProductHandles) ? input.recommendedProductHandles : [])
+      .concat(Array.isArray(input.context?.recommendedProductHandles) ? input.context.recommendedProductHandles : [])
+      .concat(Array.isArray(previousProfile.recommendedProductHandles) ? previousProfile.recommendedProductHandles : [])
+  );
+
+  const leadStage = deriveInteractionLeadStage({
+    previousProfile,
+    explicitLeadStage: input.leadStage,
+    lastIntent: input.lastIntent,
+    lastIntentGroup: input.lastIntentGroup,
+    hasAssessment: Boolean(normalizeAssessmentAnswers(input)),
+    hasCanonical: Boolean(input.canonicalRecommendation),
+  });
+
+  return buildCustomerProfilePatch({
+    ...input,
+    leadStage,
+    recommendedProductHandles: productHandles,
+    podId: cleanString(input.podId || input.context?.podId || input.context?.selectedPodId) || undefined,
+    sourceSurface: cleanString(input.sourceSurface) || "ask_snoozer",
+  });
 }
 
 function getProfileTableName(options = {}) {
@@ -228,6 +425,47 @@ function buildUpdateExpression(patch = {}) {
     UpdateExpression: `SET ${expressionParts.join(", ")}`,
     ExpressionAttributeNames,
     ExpressionAttributeValues,
+  };
+}
+
+async function getCustomerProfile(input = {}, options = {}) {
+  const TableName = getProfileTableName(options);
+  if (!TableName) {
+    return {
+      ok: false,
+      skipped: true,
+      reason: "CUSTOMER_PROFILE_TABLE_NOT_CONFIGURED",
+      profile: null,
+      profileId: null,
+    };
+  }
+
+  const Key =
+    typeof input === "string"
+      ? { profileId: cleanString(input) }
+      : cleanString(input?.profileId)
+        ? { profileId: cleanString(input.profileId) }
+        : getCustomerProfileKey(input);
+
+  if (!cleanString(Key?.profileId)) {
+    return {
+      ok: false,
+      skipped: true,
+      reason: "CUSTOMER_PROFILE_KEY_MISSING",
+      profile: null,
+      profileId: null,
+    };
+  }
+
+  const client = options.ddbDoc || ddbDoc;
+  const out = await client.send(new GetCommand({ TableName, Key }));
+
+  return {
+    ok: true,
+    skipped: false,
+    reason: null,
+    profile: out.Item || null,
+    profileId: Key.profileId,
   };
 }
 
@@ -271,9 +509,176 @@ async function upsertCustomerProfile(patch, options = {}) {
   };
 }
 
+function extractProfileZohoMaterialFields(profileOrPatch = {}) {
+  const profile = isObject(profileOrPatch) ? profileOrPatch : {};
+  return {
+    shopperId: cleanString(profile.shopperId) || null,
+    preferredName: cleanString(profile.preferredName) || null,
+    email: cleanString(profile.email) || null,
+    phone: cleanString(profile.phone) || null,
+    assessmentAnswers: normalizeAssessmentAnswers(profile) || null,
+    topPodId: cleanString(profile.topPodId) || null,
+    topPodIds: uniqueStrings(Array.isArray(profile.topPodIds) ? profile.topPodIds : []),
+    primaryMattressHandle: cleanString(profile.primaryMattressHandle) || null,
+    baseHandle:
+      profile.baseHandle == null ? null : cleanString(profile.baseHandle) || null,
+    motionKey: cleanString(profile.motionKey) || null,
+    reasonKeys: uniqueStrings(Array.isArray(profile.reasonKeys) ? profile.reasonKeys : []),
+    recommendedProductHandles: uniqueStrings(
+      Array.isArray(profile.recommendedProductHandles) ? profile.recommendedProductHandles : []
+    ),
+    leadStage: normalizeLeadStage(profile.leadStage) || null,
+    sourceSurface: cleanString(profile.sourceSurface) || null,
+    lastIntent: cleanString(profile.lastIntent) || null,
+    lastIntentGroup: cleanString(profile.lastIntentGroup) || null,
+    podId: cleanString(profile.podId) || null,
+  };
+}
+
+function valuesDiffer(left, right) {
+  return JSON.stringify(left) !== JSON.stringify(right);
+}
+
+function shouldSyncProfileToZoho(previousProfile = null, nextPatch = {}, context = {}) {
+  if (context?.syncPolicyDisabled) {
+    return {
+      shouldSync: false,
+      skipped: true,
+      reason: "SYNC_POLICY_DISABLED",
+      nextProfile: mergeCustomerProfile(previousProfile, nextPatch),
+      changedFields: [],
+    };
+  }
+
+  const previous = isObject(previousProfile) ? previousProfile : {};
+  const patch = isObject(nextPatch) ? nextPatch : {};
+  const nextProfile = mergeCustomerProfile(previous, patch);
+  const shopperId = cleanString(nextProfile.shopperId);
+  const sessionId = cleanString(nextProfile.sessionId || nextProfile.threadId);
+
+  if (!shopperId) {
+    return {
+      shouldSync: false,
+      skipped: true,
+      reason: sessionId ? "SESSION_ONLY_PROFILE" : "NO_SHOPPER_ID",
+      nextProfile,
+      changedFields: [],
+    };
+  }
+
+  const previousMaterial = extractProfileZohoMaterialFields(previous);
+  const nextMaterial = extractProfileZohoMaterialFields(nextProfile);
+  const changedFields = Object.keys(nextMaterial).filter((key) =>
+    valuesDiffer(previousMaterial[key], nextMaterial[key])
+  );
+
+  const currentStage = normalizeLeadStage(previousMaterial.leadStage);
+  const nextStage = normalizeLeadStage(nextMaterial.leadStage);
+  const leadStageAdvanced =
+    Boolean(nextStage) &&
+    nextStage !== currentStage &&
+    resolveLeadStage(currentStage, nextStage) === nextStage;
+
+  const contactChanged = ["preferredName", "email", "phone"].some((key) =>
+    valuesDiffer(previousMaterial[key], nextMaterial[key])
+  );
+
+  const recommendationChanged = [
+    "assessmentAnswers",
+    "topPodId",
+    "topPodIds",
+    "primaryMattressHandle",
+    "baseHandle",
+    "motionKey",
+    "reasonKeys",
+    "recommendedProductHandles",
+    "podId",
+  ].some((key) => valuesDiffer(previousMaterial[key], nextMaterial[key]));
+
+  const highValueIntent =
+    HIGH_VALUE_INTENTS.includes(nextMaterial.lastIntent || "") ||
+    HIGH_VALUE_INTENTS.includes(cleanString(context.lastIntent)) ||
+    HIGH_VALUE_INTENTS.includes(cleanString(nextProfile.lastIntent));
+
+  const lowValueIntentGroup = LOW_VALUE_INTENT_GROUPS.includes(nextMaterial.lastIntentGroup || "");
+  const intentChanged = valuesDiffer(previousMaterial.lastIntent, nextMaterial.lastIntent);
+  const hasAssessmentSignals = Boolean(
+    nextMaterial.assessmentAnswers ||
+      nextMaterial.topPodId ||
+      nextMaterial.primaryMattressHandle ||
+      nextMaterial.baseHandle ||
+      nextMaterial.motionKey
+  );
+
+  if (leadStageAdvanced) {
+    return {
+      shouldSync: true,
+      skipped: false,
+      reason: "LEAD_STAGE_ADVANCED",
+      nextProfile,
+      changedFields,
+    };
+  }
+
+  if (contactChanged) {
+    return {
+      shouldSync: true,
+      skipped: false,
+      reason: "CONTACT_INFO_CHANGED",
+      nextProfile,
+      changedFields,
+    };
+  }
+
+  if (recommendationChanged && (highValueIntent || hasAssessmentSignals)) {
+    return {
+      shouldSync: true,
+      skipped: false,
+      reason: "PROFILE_SIGNALS_CHANGED",
+      nextProfile,
+      changedFields,
+    };
+  }
+
+  if (highValueIntent && intentChanged && (hasAssessmentSignals || nextMaterial.recommendedProductHandles.length)) {
+    return {
+      shouldSync: true,
+      skipped: false,
+      reason: "HIGH_VALUE_INTENT_CHANGED",
+      nextProfile,
+      changedFields,
+    };
+  }
+
+  if (lowValueIntentGroup) {
+    return {
+      shouldSync: false,
+      skipped: true,
+      reason: "LOW_VALUE_INTENT",
+      nextProfile,
+      changedFields,
+    };
+  }
+
+  return {
+    shouldSync: false,
+    skipped: true,
+    reason: "NO_MATERIAL_ZOHO_CHANGE",
+    nextProfile,
+    changedFields,
+  };
+}
+
 module.exports = {
+  buildAskSnoozerProfilePatch,
   buildCustomerProfilePatch,
+  buildHudProfilePatch,
   extractCanonicalProfileFields,
-  upsertCustomerProfile,
+  extractProfileZohoMaterialFields,
+  getCustomerProfile,
   getCustomerProfileKey,
+  mergeCustomerProfile,
+  resolveLeadStage,
+  shouldSyncProfileToZoho,
+  upsertCustomerProfile,
 };

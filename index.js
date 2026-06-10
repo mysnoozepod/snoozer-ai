@@ -4003,6 +4003,175 @@ async function safeUpsertCustomerProfile(patchInput = {}, meta = {}) {
   }
 }
 
+async function safeGetCustomerProfile(profileInput = {}, meta = {}) {
+  if (
+    !customerProfileService ||
+    typeof customerProfileService.getCustomerProfile !== "function"
+  ) {
+    return {
+      ok: false,
+      skipped: true,
+      reason: "CUSTOMER_PROFILE_SERVICE_UNAVAILABLE",
+      profile: null,
+      profileId: null,
+    };
+  }
+
+  try {
+    return await customerProfileService.getCustomerProfile(profileInput);
+  } catch (error) {
+    log("customer.profile.read.error", error.message, {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      shopperId: profileInput?.shopperId || null,
+      sessionId: profileInput?.sessionId || profileInput?.threadId || null,
+      code: error?.code || null,
+    });
+    return {
+      ok: false,
+      skipped: true,
+      reason: "CUSTOMER_PROFILE_READ_FAILED",
+      profile: null,
+      profileId: null,
+    };
+  }
+}
+
+function logProfileRouteOutcome(channel, result = {}, meta = {}) {
+  const eventBase = `customer.profile.${channel}`;
+  const payload = {
+    traceId: meta.traceId || null,
+    route: meta.route || null,
+    shopperId: meta.shopperId || null,
+    sessionId: meta.sessionId || null,
+    profileId: result?.profileId || null,
+    reason: result?.reason || null,
+  };
+
+  if (result?.ok && !result?.skipped) {
+    log(`${eventBase}.upserted`, "ok", payload);
+    return;
+  }
+
+  if (result?.reason === "CUSTOMER_PROFILE_UPSERT_FAILED") {
+    log(`${eventBase}.error`, result.reason, payload);
+    return;
+  }
+
+  log(`${eventBase}.skipped`, result?.reason || "SKIPPED", payload);
+}
+
+async function maybeSyncProfileToZohoForInteraction({
+  channel = "ask",
+  traceId = "",
+  route = "",
+  previousProfile = null,
+  nextPatch = {},
+  policyContext = {},
+} = {}) {
+  if (
+    !customerProfileService ||
+    typeof customerProfileService.shouldSyncProfileToZoho !== "function" ||
+    typeof customerProfileService.mergeCustomerProfile !== "function"
+  ) {
+    log(`customer.profile.zoho.${channel}.skipped`, "SYNC_POLICY_DISABLED", {
+      traceId,
+      route,
+      reason: "SYNC_POLICY_DISABLED",
+      shopperId: nextPatch?.shopperId || null,
+      sessionId: nextPatch?.sessionId || nextPatch?.threadId || null,
+    });
+    return {
+      ok: false,
+      skipped: true,
+      reason: "SYNC_POLICY_DISABLED",
+    };
+  }
+
+  const policy = customerProfileService.shouldSyncProfileToZoho(
+    previousProfile,
+    nextPatch,
+    policyContext
+  );
+
+  if (!policy?.shouldSync) {
+    log(`customer.profile.zoho.${channel}.skipped`, policy?.reason || "NO_MATERIAL_ZOHO_CHANGE", {
+      traceId,
+      route,
+      reason: policy?.reason || "NO_MATERIAL_ZOHO_CHANGE",
+      shopperId: nextPatch?.shopperId || null,
+      sessionId: nextPatch?.sessionId || nextPatch?.threadId || null,
+      changedFields: Array.isArray(policy?.changedFields) ? policy.changedFields : [],
+    });
+    return {
+      ok: false,
+      skipped: true,
+      reason: policy?.reason || "NO_MATERIAL_ZOHO_CHANGE",
+    };
+  }
+
+  if (typeof syncCustomerProfileToZoho !== "function") {
+    log(`customer.profile.zoho.${channel}.skipped`, "SYNC_POLICY_DISABLED", {
+      traceId,
+      route,
+      reason: "SYNC_POLICY_DISABLED",
+      shopperId: nextPatch?.shopperId || null,
+      sessionId: nextPatch?.sessionId || nextPatch?.threadId || null,
+    });
+    return {
+      ok: false,
+      skipped: true,
+      reason: "SYNC_POLICY_DISABLED",
+    };
+  }
+
+  const profileForSync = policy?.nextProfile
+    ? policy.nextProfile
+    : customerProfileService.mergeCustomerProfile(previousProfile, nextPatch);
+
+  try {
+    const result = await syncCustomerProfileToZoho(profileForSync);
+    if (result?.ok) {
+      log(`customer.profile.zoho.${channel}.synced`, "ok", {
+        traceId,
+        route,
+        shopperId: result.shopperId || nextPatch?.shopperId || null,
+        operation: result.operation || null,
+        contactId: result.contactId || null,
+        code: result.code || null,
+        reason: policy?.reason || null,
+        changedFields: Array.isArray(policy?.changedFields) ? policy.changedFields : [],
+      });
+      return result;
+    }
+
+    log(`customer.profile.zoho.${channel}.skipped`, result?.reason || "ZOHO_SYNC_SKIPPED", {
+      traceId,
+      route,
+      shopperId: result?.shopperId || nextPatch?.shopperId || null,
+      operation: result?.operation || null,
+      contactId: result?.contactId || null,
+      code: result?.code || null,
+      reason: result?.reason || "ZOHO_SYNC_SKIPPED",
+      changedFields: Array.isArray(policy?.changedFields) ? policy.changedFields : [],
+    });
+    return result;
+  } catch (error) {
+    log(`customer.profile.zoho.${channel}.error`, error.message, {
+      traceId,
+      route,
+      shopperId: nextPatch?.shopperId || null,
+      sessionId: nextPatch?.sessionId || nextPatch?.threadId || null,
+      code: error?.code || null,
+    });
+    return {
+      ok: false,
+      skipped: true,
+      reason: "ZOHO_SYNC_FAILED",
+    };
+  }
+}
+
 async function resolveCanonicalRecommendationContext({
   payload = null,
   context = null,
@@ -4298,26 +4467,15 @@ async function handle(event = {}) {
         surface,
       });
       const intent = classification.intent;
-      await safeUpsertCustomerProfile(
+      const previousHudProfileResult = await safeGetCustomerProfile(
         {
           shopperId,
           sessionId: threadId,
           threadId,
-          sourceSurface: surface,
-          lastIntent: intent,
-          assessment: hudContext?.assessment || body?.assessment || body?.answers || null,
-          canonicalRecommendation,
-          customer: hudContext?.customer || null,
-          email: body?.email || hudContext?.email || "",
-          phone: body?.phone || hudContext?.phone || "",
-          preferredName: body?.preferredName || hudContext?.preferredName || "",
-          contactPreference: body?.contactPreference || hudContext?.contactPreference || "",
-          consent: hudContext?.consent || null,
-          leadStage: body?.leadStage || hudContext?.leadStage || "",
-          bookingStatus: body?.bookingStatus || hudContext?.bookingStatus || "",
         },
         { traceId, route: "/hud/ask" }
       );
+      const previousHudProfile = previousHudProfileResult?.profile || null;
       const productResolution = await resolveHudAskProducts({
         classification,
         intent,
@@ -4351,6 +4509,82 @@ async function handle(event = {}) {
         products,
         productResolution,
         canonicalRecommendation,
+      });
+      const hudProfilePatch =
+        customerProfileService &&
+        typeof customerProfileService.buildHudProfilePatch === "function"
+          ? customerProfileService.buildHudProfilePatch({
+              previousProfile: previousHudProfile,
+              shopperId,
+              sessionId: threadId,
+              threadId,
+              sourceSurface: surface,
+              lastIntent: intent,
+              lastIntentGroup: classification.intent_group || "",
+              query,
+              path: pathValue,
+              pageType,
+              currentProductHandle:
+                productResolution?.currentProductHandle || currentProductHandle || "",
+              products,
+              canonicalRecommendation,
+              assessment: hudContext?.assessment || body?.assessment || body?.answers || null,
+              customer: hudContext?.customer || null,
+              email: body?.email || hudContext?.email || "",
+              phone: body?.phone || hudContext?.phone || "",
+              preferredName: body?.preferredName || hudContext?.preferredName || "",
+              contactPreference: body?.contactPreference || hudContext?.contactPreference || "",
+              consent: hudContext?.consent || null,
+              leadStage: body?.leadStage || hudContext?.leadStage || "",
+              bookingStatus: body?.bookingStatus || hudContext?.bookingStatus || "",
+            })
+          : {
+              shopperId,
+              sessionId: threadId,
+              threadId,
+              sourceSurface: surface,
+              lastIntent: intent,
+              lastIntentGroup: classification.intent_group || "",
+              lastQuery: query,
+              lastPath: pathValue,
+              lastPageType: pageType,
+              currentProductHandle:
+                productResolution?.currentProductHandle || currentProductHandle || "",
+              recommendedProductHandles: Array.isArray(products)
+                ? products.map((product) => product?.handle).filter(Boolean)
+                : [],
+              canonicalRecommendation,
+              assessment: hudContext?.assessment || body?.assessment || body?.answers || null,
+              customer: hudContext?.customer || null,
+              email: body?.email || hudContext?.email || "",
+              phone: body?.phone || hudContext?.phone || "",
+              preferredName: body?.preferredName || hudContext?.preferredName || "",
+              contactPreference: body?.contactPreference || hudContext?.contactPreference || "",
+              consent: hudContext?.consent || null,
+              leadStage: body?.leadStage || hudContext?.leadStage || "",
+              bookingStatus: body?.bookingStatus || hudContext?.bookingStatus || "",
+            };
+      const hudProfileUpsertResult = await safeUpsertCustomerProfile(hudProfilePatch, {
+        traceId,
+        route: "/hud/ask",
+      });
+      logProfileRouteOutcome("hud", hudProfileUpsertResult, {
+        traceId,
+        route: "/hud/ask",
+        shopperId: shopperId || null,
+        sessionId: threadId || null,
+      });
+      await maybeSyncProfileToZohoForInteraction({
+        channel: "hud",
+        traceId,
+        route: "/hud/ask",
+        previousProfile: previousHudProfile,
+        nextPatch: hudProfilePatch,
+        policyContext: {
+          route: "/hud/ask",
+          lastIntent: intent,
+          lastIntentGroup: classification.intent_group || "",
+        },
       });
       const payload = buildHudAskPayload({
         classification,
@@ -5343,28 +5577,102 @@ async function handle(event = {}) {
       storedAssessment,
     });
     const askSnoozerClassification = buildAskSnoozerClassification(msg, context);
-
-    await safeUpsertCustomerProfile(
+    const previousAskProfileResult = await safeGetCustomerProfile(
       {
         shopperId,
         sessionId: effectiveSessionId,
         threadId: effectiveSessionId,
-        sourceSurface: payload.source || (mode ? `ask_snoozer:${mode}` : "ask_snoozer"),
-        lastIntent: askSnoozerClassification?.intent || "unknown",
-        assessment: profileAssessmentInput,
-        canonicalRecommendation: context?.canonicalRecommendation || null,
-        customer: context?.customer || null,
-        email: payload?.email || context?.customer?.email || "",
-        phone: payload?.phone || context?.customer?.phone || "",
-        preferredName: payload?.preferredName || context?.customer?.preferredName || "",
-        contactPreference:
-          payload?.contactPreference || context?.customer?.contactPreference || "",
-        consent: context?.customer?.consent || null,
-        leadStage: payload?.leadStage || context?.leadStage || "",
-        bookingStatus: payload?.bookingStatus || context?.bookingStatus || "",
       },
       { traceId, route: "/ask-snoozer" }
     );
+    const previousAskProfile = previousAskProfileResult?.profile || null;
+
+    const askProfilePatch =
+      customerProfileService &&
+      typeof customerProfileService.buildAskSnoozerProfilePatch === "function"
+        ? customerProfileService.buildAskSnoozerProfilePatch({
+            previousProfile: previousAskProfile,
+            shopperId,
+            sessionId: effectiveSessionId,
+            threadId: effectiveSessionId,
+            mode: mode || "",
+            sourceSurface:
+              payload.source ||
+              context?.session?.source ||
+              context?.source ||
+              "ask_snoozer",
+            lastIntent: askSnoozerClassification?.intent || "unknown",
+            lastIntentGroup: askSnoozerClassification?.intent_group || "",
+            message: msg,
+            assessment: profileAssessmentInput,
+            canonicalRecommendation: context?.canonicalRecommendation || null,
+            customer: context?.customer || null,
+            email: payload?.email || context?.customer?.email || "",
+            phone: payload?.phone || context?.customer?.phone || "",
+            preferredName: payload?.preferredName || context?.customer?.preferredName || "",
+            contactPreference:
+              payload?.contactPreference || context?.customer?.contactPreference || "",
+            consent: context?.customer?.consent || null,
+            leadStage: payload?.leadStage || context?.leadStage || "",
+            bookingStatus: payload?.bookingStatus || context?.bookingStatus || "",
+            podId: context?.podId || payload?.podId || "",
+            recommendedProductHandles: Array.isArray(context?.recommendedProductHandles)
+              ? context.recommendedProductHandles
+              : [],
+            context,
+          })
+        : {
+            shopperId,
+            sessionId: effectiveSessionId,
+            threadId: effectiveSessionId,
+            mode: mode || "",
+            sourceSurface:
+              payload.source ||
+              context?.session?.source ||
+              context?.source ||
+              "ask_snoozer",
+            lastIntent: askSnoozerClassification?.intent || "unknown",
+            lastIntentGroup: askSnoozerClassification?.intent_group || "",
+            lastQuery: msg,
+            assessment: profileAssessmentInput,
+            canonicalRecommendation: context?.canonicalRecommendation || null,
+            customer: context?.customer || null,
+            email: payload?.email || context?.customer?.email || "",
+            phone: payload?.phone || context?.customer?.phone || "",
+            preferredName: payload?.preferredName || context?.customer?.preferredName || "",
+            contactPreference:
+              payload?.contactPreference || context?.customer?.contactPreference || "",
+            consent: context?.customer?.consent || null,
+            leadStage: payload?.leadStage || context?.leadStage || "",
+            bookingStatus: payload?.bookingStatus || context?.bookingStatus || "",
+            podId: context?.podId || payload?.podId || "",
+            recommendedProductHandles: Array.isArray(context?.recommendedProductHandles)
+              ? context.recommendedProductHandles
+              : [],
+          };
+
+    const askProfileUpsertResult = await safeUpsertCustomerProfile(askProfilePatch, {
+      traceId,
+      route: "/ask-snoozer",
+    });
+    logProfileRouteOutcome("ask", askProfileUpsertResult, {
+      traceId,
+      route: "/ask-snoozer",
+      shopperId: shopperId || null,
+      sessionId: effectiveSessionId || null,
+    });
+    await maybeSyncProfileToZohoForInteraction({
+      channel: "ask",
+      traceId,
+      route: "/ask-snoozer",
+      previousProfile: previousAskProfile,
+      nextPatch: askProfilePatch,
+      policyContext: {
+        route: "/ask-snoozer",
+        lastIntent: askSnoozerClassification?.intent || "",
+        lastIntentGroup: askSnoozerClassification?.intent_group || "",
+      },
+    });
 
     // 3.5) STRICT POD ANCHOR: fail fast if pod mode lacks anchors
     if (STRICT_POD_ANCHOR && String(mode || "").toLowerCase() === "pod") {
