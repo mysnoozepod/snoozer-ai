@@ -9,6 +9,27 @@ const {
   buildErrorResponse,
 } = require("../services/responseBuilder");
 
+let snoozeIdentity = null;
+try {
+  snoozeIdentity = require("../services/snoozeIdentity");
+} catch (e) {
+  console.log("⚠️ Snooze identity service not loaded for rewards:", e.message);
+}
+
+let customerProfileService = null;
+try {
+  customerProfileService = require("../services/customerProfile");
+} catch (e) {
+  console.log("⚠️ customerProfile service not loaded for rewards:", e.message);
+}
+
+let syncCustomerProfileToZoho = null;
+try {
+  ({ syncCustomerProfileToZoho } = require("../services/customerProfileZohoSync"));
+} catch (e) {
+  console.log("⚠️ customerProfileZohoSync service not loaded for rewards:", e.message);
+}
+
 // Optional Shopify price rules
 let shopify;
 try {
@@ -85,6 +106,131 @@ function getTraceId(event = {}) {
   );
 }
 
+function cleanString(value) {
+  return String(value == null ? "" : value).trim();
+}
+
+async function getProfileById(profileId) {
+  if (!customerProfileService || typeof customerProfileService.getCustomerProfile !== "function") {
+    return null;
+  }
+
+  const result = await customerProfileService.getCustomerProfile({ profileId });
+  return result?.profile || null;
+}
+
+function buildRewardsIdentityContext(identity = {}) {
+  const shopperId = cleanString(identity?.shopperId);
+  const snoozeCode = cleanString(identity?.snoozeCode || shopperId);
+  return {
+    shopperId: shopperId || null,
+    snoozeCode: snoozeCode || null,
+    accessCode: snoozeCode || null,
+    profileId:
+      cleanString(identity?.profileId) ||
+      (shopperId ? `shopper#${shopperId}` : null),
+    identityType: cleanString(identity?.identityType) || null,
+    identitySource: cleanString(identity?.identitySource) || null,
+    sourceShopperId: cleanString(identity?.sourceShopperId) || null,
+    aliases: Array.isArray(identity?.aliases) ? identity.aliases : [],
+    isNewCode: Boolean(identity?.isNewCode),
+  };
+}
+
+async function resolveRewardsIdentity(input = {}, options = {}) {
+  const fallbackShopperId = cleanString(
+    input?.snoozeCode || input?.accessCode || input?.shopperId || input?.shopper_id
+  );
+
+  if (!snoozeIdentity || typeof snoozeIdentity.resolveCanonicalIdentity !== "function") {
+    return buildRewardsIdentityContext({
+      shopperId: fallbackShopperId || null,
+      snoozeCode: fallbackShopperId || null,
+      accessCode: fallbackShopperId || null,
+      profileId: fallbackShopperId ? `shopper#${fallbackShopperId}` : null,
+      identityType: fallbackShopperId ? "snooze_code" : "anonymous",
+    });
+  }
+
+  const baseIdentity = await snoozeIdentity.resolveCanonicalIdentity(input, {
+    getProfileById,
+  });
+
+  let finalIdentity = baseIdentity;
+  if (
+    options.allowIssue === true &&
+    typeof snoozeIdentity.issueSnoozeCode === "function" &&
+    snoozeIdentity.shouldIssueSnoozeCode({
+      ...input,
+      reason: options.reason,
+      identity: baseIdentity,
+    })
+  ) {
+    finalIdentity = await snoozeIdentity.issueSnoozeCode(
+      {
+        ...input,
+        reason: options.reason,
+        identity: baseIdentity,
+      },
+      { getProfileById }
+    );
+  }
+
+  return buildRewardsIdentityContext(finalIdentity);
+}
+
+async function persistRewardsIdentity(identity = {}, options = {}) {
+  const shopperId = cleanString(identity?.shopperId);
+  if (!shopperId) return;
+  if (!customerProfileService || typeof customerProfileService.upsertCustomerProfile !== "function") return;
+
+  const patchInput = {
+    profileId: cleanString(identity?.profileId) || `shopper#${shopperId}`,
+    shopperId,
+    snoozeCode: cleanString(identity?.snoozeCode) || shopperId,
+    accessCode: cleanString(identity?.accessCode) || shopperId,
+    identityType: cleanString(identity?.identityType) || "snooze_code",
+    identitySource: cleanString(identity?.identitySource) || "rewards",
+    sourceSurface: cleanString(options?.sourceSurface) || "rewards",
+    lastIntent: cleanString(options?.lastIntent) || "rewards_activity",
+    leadStage: cleanString(options?.leadStage) || undefined,
+    sourceShopperId: cleanString(identity?.sourceShopperId) || undefined,
+    identityAliases: Array.isArray(identity?.aliases) ? identity.aliases : [],
+    previousShopperIds: cleanString(identity?.sourceShopperId)
+      ? [identity.sourceShopperId]
+      : [],
+  };
+
+  const patch = customerProfileService.buildCustomerProfilePatch(patchInput);
+  await customerProfileService.upsertCustomerProfile(patch);
+
+  if (
+    snoozeIdentity &&
+    typeof snoozeIdentity.buildAliasProfilePatches === "function"
+  ) {
+    const aliasPatches = snoozeIdentity.buildAliasProfilePatches(identity, {
+      sourceSurface: patch.sourceSurface,
+      lastIntent: patch.lastIntent,
+      leadStage: patch.leadStage,
+      sourceShopperId: patch.sourceShopperId,
+    });
+
+    for (const aliasPatch of aliasPatches) {
+      await customerProfileService.upsertCustomerProfile(aliasPatch);
+    }
+  }
+
+  if (typeof syncCustomerProfileToZoho === "function") {
+    try {
+      await syncCustomerProfileToZoho(patch);
+    } catch (error) {
+      console.error("⚠️ rewards.identity.zoho.error:", error.message, {
+        shopperId,
+      });
+    }
+  }
+}
+
 // ─────────────────────────────────────────────
 // Consistent HTTP response (CORS will be
 // finalized in index.js lambdaHandler)
@@ -155,8 +301,10 @@ async function getRewardsBalance(event = {}) {
   const t0 = Date.now();
   const requestId = getTraceId(event);
 
-  const shopperId =
+  const requestedShopperId =
     event.pathParameters?.shopperId || event.path?.split("/").pop() || null;
+  const identity = await resolveRewardsIdentity({ shopperId: requestedShopperId });
+  const shopperId = identity?.shopperId || null;
 
   if (!shopperId) {
     const env = buildErrorResponse({
@@ -183,6 +331,7 @@ async function getRewardsBalance(event = {}) {
       products: [],
       context: {
         shopperId,
+        identity,
         sessionId: null,
         zone: null,
         assessment: null,
@@ -220,9 +369,13 @@ async function earnRewards(event = {}) {
   const requestId = getTraceId(event);
   const body = parseBody(event);
 
-  const shopperId = body.shopperId || body.shopper_id || null;
-  const points = Number(body.points);
   const reason = body.reason || "Milestone";
+  const identity = await resolveRewardsIdentity(body, {
+    allowIssue: cleanString(reason).toLowerCase() === "rewards_signup",
+    reason: cleanString(reason).toLowerCase(),
+  });
+  const shopperId = identity?.shopperId || null;
+  const points = Number(body.points);
 
   if (!shopperId || !Number.isFinite(points)) {
     const env = buildErrorResponse({
@@ -241,6 +394,10 @@ async function earnRewards(event = {}) {
     const result = await earnPoints({ shopperId, points, reason });
 
     const tier = getLevel(result.balance);
+    await persistRewardsIdentity(identity, {
+      sourceSurface: "rewards",
+      lastIntent: cleanString(reason).toLowerCase() === "rewards_signup" ? "rewards_signup" : "rewards_earn",
+    });
 
     // Best-effort CRM sync; do NOT block rewards on Zoho
     await syncRewardsToZoho({
@@ -260,6 +417,7 @@ async function earnRewards(event = {}) {
       products: [],
       context: {
         shopperId,
+        identity,
         sessionId: null,
         zone: null,
         assessment: null,
@@ -356,7 +514,8 @@ async function redeemRewards(event = {}) {
   const requestId = getTraceId(event);
   const body = parseBody(event);
 
-  const shopperId = body.shopperId || body.shopper_id || null;
+  const identity = await resolveRewardsIdentity(body);
+  const shopperId = identity?.shopperId || null;
   const rewardId = body.rewardId || body.reward_id || null;
   const idempotencyKey = body.idempotencyKey || body.idem || null;
 
@@ -374,6 +533,10 @@ async function redeemRewards(event = {}) {
   try {
     const res = await redeemReward({ shopperId, rewardId, idempotencyKey });
     const tier = getLevel(res.balance);
+    await persistRewardsIdentity(identity, {
+      sourceSurface: "rewards",
+      lastIntent: "rewards_redeem",
+    });
 
     // Best-effort CRM sync; do NOT block redemption on Zoho
     await syncRewardsToZoho({
@@ -393,6 +556,7 @@ async function redeemRewards(event = {}) {
       products: [],
       context: {
         shopperId,
+        identity,
         sessionId: null,
         zone: null,
         assessment: null,

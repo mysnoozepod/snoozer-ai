@@ -69,6 +69,20 @@ try {
   console.log("Ã¢Å¡Â Ã¯Â¸Â shopify service not loaded (ok).");
 }
 
+let snoozeIdentityService = null;
+try {
+  snoozeIdentityService = require("./services/snoozeIdentity");
+} catch (error) {
+  console.log("⚠️ snoozeIdentity service not loaded (ok).", error.message);
+}
+
+let rewardsService = null;
+try {
+  rewardsService = require("./services/rewards");
+} catch (error) {
+  console.log("⚠️ rewards service not loaded (ok).", error.message);
+}
+
 let openaiSvc = null;
 function getOpenAiSvc() {
   if (openaiSvc) return openaiSvc;
@@ -4061,6 +4075,29 @@ function logProfileRouteOutcome(channel, result = {}, meta = {}) {
   log(`${eventBase}.skipped`, result?.reason || "SKIPPED", payload);
 }
 
+function logIdentityProfileOutcome(route, result = {}, identity = {}, meta = {}) {
+  const payload = {
+    traceId: meta.traceId || null,
+    route,
+    shopperId: cleanIdentityValue(identity?.shopperId) || null,
+    snoozeCode: cleanIdentityValue(identity?.snoozeCode) || null,
+    profileId: cleanIdentityValue(identity?.profileId) || null,
+    identityType: cleanIdentityValue(identity?.identityType) || null,
+  };
+
+  if (result?.ok && !result?.skipped) {
+    log("customer.profile.identity.upserted", "ok", payload);
+    return;
+  }
+
+  if (result?.reason === "CUSTOMER_PROFILE_UPSERT_FAILED") {
+    log("customer.profile.identity.error", result.reason, payload);
+    return;
+  }
+
+  log("customer.profile.identity.skipped", result?.reason || "SKIPPED", payload);
+}
+
 async function maybeSyncProfileToZohoForInteraction({
   channel = "ask",
   traceId = "",
@@ -4170,6 +4207,409 @@ async function maybeSyncProfileToZohoForInteraction({
       reason: "ZOHO_SYNC_FAILED",
     };
   }
+}
+
+const SNOOZE_CODE_LEAD_STAGE_BY_REASON = Object.freeze({
+  assessment_completed: "assessment_completed",
+  save_results: "assessment_completed",
+  rewards_signup: "browsing",
+  showroom_walkin: "browsing",
+  booking_started: "session_interested",
+  manual_create: "new",
+});
+
+function cleanIdentityValue(value) {
+  return String(value == null ? "" : value).trim();
+}
+
+function resolveIdentityLeadStage(reason = "", currentStage = "") {
+  const normalizedReason = cleanIdentityValue(reason).toLowerCase();
+  const candidateStage = SNOOZE_CODE_LEAD_STAGE_BY_REASON[normalizedReason] || "";
+
+  if (
+    customerProfileService &&
+    typeof customerProfileService.resolveLeadStage === "function"
+  ) {
+    return customerProfileService.resolveLeadStage(currentStage, candidateStage);
+  }
+
+  return candidateStage || cleanIdentityValue(currentStage) || undefined;
+}
+
+function isCanonicalSnoozeIdentity(identity = {}) {
+  if (
+    !snoozeIdentityService ||
+    typeof snoozeIdentityService.isLikelySnoozeCode !== "function"
+  ) {
+    return /^\d{4}$|^\d{6}$/.test(cleanIdentityValue(identity?.shopperId));
+  }
+
+  return Boolean(
+    snoozeIdentityService.isLikelySnoozeCode(
+      identity?.snoozeCode || identity?.accessCode || identity?.shopperId
+    )
+  );
+}
+
+async function getProfileByIdForIdentity(profileId = "", meta = {}) {
+  const result = await safeGetCustomerProfile(
+    { profileId: cleanIdentityValue(profileId) },
+    meta
+  );
+  return result?.profile || null;
+}
+
+function buildFallbackIdentity(input = {}) {
+  const shopperId = cleanIdentityValue(
+    input?.snoozeCode ||
+      input?.accessCode ||
+      input?.shopperId ||
+      input?.context?.shopperId
+  );
+  const sessionId = cleanIdentityValue(input?.sessionId || input?.threadId);
+  const canonicalLike = /^\d{4}$|^\d{6}$/.test(shopperId);
+
+  return {
+    shopperId: shopperId || null,
+    snoozeCode: canonicalLike ? shopperId : null,
+    accessCode: canonicalLike ? shopperId : null,
+    profileId: shopperId
+      ? `shopper#${shopperId}`
+      : sessionId
+        ? `session#${sessionId}`
+        : null,
+    identityType: canonicalLike
+      ? "snooze_code"
+      : shopperId
+        ? "temporary_shopper_id"
+        : "session",
+    identitySource: shopperId ? "shopperId" : "sessionId",
+    isTemporary: !canonicalLike,
+    sourceShopperId: canonicalLike ? null : shopperId || null,
+    aliases: [],
+    sessionId: sessionId || null,
+    threadId: cleanIdentityValue(input?.threadId || input?.sessionId) || null,
+    visitorId: cleanIdentityValue(input?.visitorId) || null,
+  };
+}
+
+async function safeResolveSnoozeIdentity(input = {}, meta = {}) {
+  if (
+    !snoozeIdentityService ||
+    typeof snoozeIdentityService.resolveCanonicalIdentity !== "function"
+  ) {
+    return buildFallbackIdentity(input);
+  }
+
+  try {
+    const identity = await snoozeIdentityService.resolveCanonicalIdentity(input, {
+      getProfileById: async (profileId) =>
+        await getProfileByIdForIdentity(profileId, meta),
+    });
+
+    log("snooze.identity.resolved", "ok", {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      sourceSurface: input?.sourceSurface || input?.origin || null,
+      incomingShopperId: cleanIdentityValue(input?.shopperId) || null,
+      sourceShopperId: identity?.sourceShopperId || null,
+      canonicalShopperId: identity?.shopperId || null,
+      snoozeCode: identity?.snoozeCode || null,
+      profileId: identity?.profileId || null,
+      identityType: identity?.identityType || null,
+      identitySource: identity?.identitySource || null,
+      isTemporary: Boolean(identity?.isTemporary),
+      aliasCount: Array.isArray(identity?.aliases) ? identity.aliases.length : 0,
+      reason: cleanIdentityValue(input?.reason) || null,
+    });
+
+    if (cleanIdentityValue(identity?.identitySource).startsWith("stored_")) {
+      log("snooze.identity.alias_detected", "stored_alias", {
+        traceId: meta.traceId || null,
+        route: meta.route || null,
+        incomingShopperId: cleanIdentityValue(input?.shopperId) || null,
+        canonicalShopperId: identity?.shopperId || null,
+        profileId: identity?.profileId || null,
+        aliasCount: Array.isArray(identity?.aliases) ? identity.aliases.length : 0,
+      });
+    } else if (identity?.isTemporary) {
+      log("snooze.identity.temporary", "temporary", {
+        traceId: meta.traceId || null,
+        route: meta.route || null,
+        incomingShopperId: cleanIdentityValue(input?.shopperId) || null,
+        sourceShopperId: identity?.sourceShopperId || null,
+        profileId: identity?.profileId || null,
+        identityType: identity?.identityType || null,
+      });
+    }
+
+    return identity;
+  } catch (error) {
+    log("snooze.identity.resolve.error", error.message, {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      incomingShopperId: cleanIdentityValue(input?.shopperId) || null,
+      code: error?.code || null,
+    });
+    return buildFallbackIdentity(input);
+  }
+}
+
+async function safeIssueSnoozeCode(input = {}, meta = {}) {
+  if (
+    !snoozeIdentityService ||
+    typeof snoozeIdentityService.issueSnoozeCode !== "function"
+  ) {
+    return input?.identity || buildFallbackIdentity(input);
+  }
+
+  try {
+    const identity = await snoozeIdentityService.issueSnoozeCode(input, {
+      getProfileById: async (profileId) =>
+        await getProfileByIdForIdentity(profileId, meta),
+    });
+
+    if (identity?.isNewCode) {
+      log("snooze.identity.issued", "ok", {
+        traceId: meta.traceId || null,
+        route: meta.route || null,
+        sourceSurface: input?.sourceSurface || input?.origin || null,
+        incomingShopperId: cleanIdentityValue(input?.shopperId) || null,
+        sourceShopperId: identity?.sourceShopperId || null,
+        canonicalShopperId: identity?.shopperId || null,
+        snoozeCode: identity?.snoozeCode || null,
+        profileId: identity?.profileId || null,
+        identityType: identity?.identityType || null,
+        identitySource: identity?.identitySource || null,
+        aliasCount: Array.isArray(identity?.aliases) ? identity.aliases.length : 0,
+        reason: cleanIdentityValue(input?.reason) || null,
+      });
+    }
+
+    return identity;
+  } catch (error) {
+    log("snooze.identity.issue.error", error.message, {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      incomingShopperId: cleanIdentityValue(input?.shopperId) || null,
+      reason: cleanIdentityValue(input?.reason) || null,
+      code: error?.code || null,
+    });
+    return input?.identity || buildFallbackIdentity(input);
+  }
+}
+
+function buildIdentityProfilePatch(identity = {}, input = {}) {
+  const aliases = Array.isArray(identity?.aliases) ? identity.aliases : [];
+  const sourceShopperId = cleanIdentityValue(
+    input?.sourceShopperId || identity?.sourceShopperId
+  );
+
+  return {
+    profileId: cleanIdentityValue(identity?.profileId) || undefined,
+    shopperId: cleanIdentityValue(identity?.shopperId) || undefined,
+    snoozeCode: cleanIdentityValue(identity?.snoozeCode) || undefined,
+    accessCode: cleanIdentityValue(identity?.accessCode) || undefined,
+    sessionId:
+      cleanIdentityValue(input?.sessionId || identity?.sessionId) || undefined,
+    threadId:
+      cleanIdentityValue(input?.threadId || identity?.threadId) || undefined,
+    visitorId:
+      cleanIdentityValue(input?.visitorId || identity?.visitorId) || undefined,
+    identityType: cleanIdentityValue(identity?.identityType) || undefined,
+    identitySource: cleanIdentityValue(identity?.identitySource) || undefined,
+    isTemporary:
+      typeof identity?.isTemporary === "boolean" ? identity.isTemporary : undefined,
+    sourceShopperId: sourceShopperId || undefined,
+    identityAliases: aliases,
+    previousShopperIds: sourceShopperId ? [sourceShopperId] : [],
+  };
+}
+
+async function safeUpsertIdentityAliases(identity = {}, input = {}, meta = {}) {
+  if (
+    !snoozeIdentityService ||
+    typeof snoozeIdentityService.buildAliasProfilePatches !== "function" ||
+    !isCanonicalSnoozeIdentity(identity)
+  ) {
+    return [];
+  }
+
+  const aliasPatches = snoozeIdentityService.buildAliasProfilePatches(identity, input);
+  const results = [];
+
+  for (const aliasPatch of aliasPatches) {
+    const result = await safeUpsertCustomerProfile(aliasPatch, meta);
+    results.push(result);
+  }
+
+  return results;
+}
+
+async function safeMarkIdentityMerge(sourceProfileId = "", identity = {}, meta = {}) {
+  const normalizedSourceProfileId = cleanIdentityValue(sourceProfileId);
+  const canonicalProfileId = cleanIdentityValue(identity?.profileId);
+  if (!normalizedSourceProfileId || !canonicalProfileId || normalizedSourceProfileId === canonicalProfileId) {
+    log("snooze.identity.merge.skipped", "no_source_profile", {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      profileId: normalizedSourceProfileId || null,
+      canonicalProfileId: canonicalProfileId || null,
+    });
+    return;
+  }
+
+  const result = await safeUpsertCustomerProfile(
+    {
+      profileId: normalizedSourceProfileId,
+      mergedIntoProfileId: canonicalProfileId,
+      mergedIntoShopperId: cleanIdentityValue(identity?.shopperId) || undefined,
+      mergedAt: new Date().toISOString(),
+      sourceSurface: cleanIdentityValue(meta.sourceSurface) || undefined,
+      lastIntent: cleanIdentityValue(meta.reason) || "identity_merge",
+    },
+    meta
+  );
+
+  if (result?.ok) {
+    log("snooze.identity.merged", "ok", {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      profileId: normalizedSourceProfileId,
+      canonicalProfileId,
+      canonicalShopperId: cleanIdentityValue(identity?.shopperId) || null,
+      reason: cleanIdentityValue(meta.reason) || null,
+    });
+  } else {
+    log("snooze.identity.merge.skipped", result?.reason || "merge_skipped", {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      profileId: normalizedSourceProfileId,
+      canonicalProfileId,
+      canonicalShopperId: cleanIdentityValue(identity?.shopperId) || null,
+      reason: result?.reason || cleanIdentityValue(meta.reason) || null,
+    });
+  }
+}
+
+async function maybeSyncIdentityProfileToZoho(profile = {}, meta = {}) {
+  if (!isCanonicalSnoozeIdentity(profile)) {
+    log("customer.profile.zoho.identity.skipped", "NO_CANONICAL_SNOOZE_CODE", {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      shopperId: cleanIdentityValue(profile?.shopperId) || null,
+      reason: "NO_CANONICAL_SNOOZE_CODE",
+    });
+    return {
+      ok: false,
+      skipped: true,
+      reason: "NO_CANONICAL_SNOOZE_CODE",
+    };
+  }
+
+  if (typeof syncCustomerProfileToZoho !== "function") {
+    log("customer.profile.zoho.identity.skipped", "ZOHO_NOT_CONFIGURED", {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      shopperId: cleanIdentityValue(profile?.shopperId) || null,
+      reason: "ZOHO_NOT_CONFIGURED",
+    });
+    return {
+      ok: false,
+      skipped: true,
+      reason: "ZOHO_NOT_CONFIGURED",
+    };
+  }
+
+  try {
+    const result = await syncCustomerProfileToZoho(profile);
+    const eventName = result?.ok
+      ? "customer.profile.zoho.identity.synced"
+      : "customer.profile.zoho.identity.skipped";
+    log(eventName, result?.ok ? "ok" : result?.reason || "ZOHO_SYNC_SKIPPED", {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      shopperId: cleanIdentityValue(profile?.shopperId) || null,
+      reason: result?.reason || null,
+      operation: result?.operation || null,
+      code: result?.code || null,
+      contactId: result?.contactId || null,
+    });
+    return result;
+  } catch (error) {
+    log("customer.profile.zoho.identity.error", error.message, {
+      traceId: meta.traceId || null,
+      route: meta.route || null,
+      shopperId: cleanIdentityValue(profile?.shopperId) || null,
+      code: error?.code || null,
+    });
+    return {
+      ok: false,
+      skipped: true,
+      reason: "ZOHO_SYNC_FAILED",
+    };
+  }
+}
+
+async function buildCheckInSummary(profile = {}, sourceSurface = "") {
+  const shopperId = cleanIdentityValue(profile?.shopperId);
+  let rewardsSummary = null;
+
+  if (
+    shopperId &&
+    rewardsService &&
+    typeof rewardsService.getBalance === "function"
+  ) {
+    try {
+      const balance = await rewardsService.getBalance(shopperId);
+      rewardsSummary = {
+        balance: Number(balance?.balance || 0),
+        updatedAt: balance?.updatedAt || null,
+      };
+    } catch {
+      rewardsSummary = null;
+    }
+  }
+
+  return {
+    ok: true,
+    shopperId: shopperId || null,
+    snoozeCode:
+      cleanIdentityValue(profile?.snoozeCode || profile?.accessCode || shopperId) || null,
+    profileId: cleanIdentityValue(profile?.profileId) || `shopper#${shopperId}`,
+    leadStage: cleanIdentityValue(profile?.leadStage) || null,
+    rewardsSummary,
+    recommendationSummary: profile?.canonicalRecommendation
+      ? {
+          manifestVersion: profile.canonicalRecommendation.manifestVersion || null,
+          topPodId: profile.canonicalRecommendation.topPodId || profile.topPodId || null,
+          topPodIds: Array.isArray(profile.canonicalRecommendation.topPodIds)
+            ? profile.canonicalRecommendation.topPodIds
+            : Array.isArray(profile.topPodIds)
+              ? profile.topPodIds
+              : [],
+          primaryMattressHandle:
+            profile.canonicalRecommendation.primaryMattressHandle ||
+            profile.primaryMattressHandle ||
+            null,
+          baseHandle:
+            profile.canonicalRecommendation.baseHandle != null
+              ? profile.canonicalRecommendation.baseHandle
+              : profile.baseHandle != null
+                ? profile.baseHandle
+                : null,
+          motionKey:
+            profile.canonicalRecommendation.motionKey || profile.motionKey || null,
+          reasonKeys: Array.isArray(profile.canonicalRecommendation.reasonKeys)
+            ? profile.canonicalRecommendation.reasonKeys
+            : Array.isArray(profile.reasonKeys)
+              ? profile.reasonKeys
+              : [],
+        }
+      : null,
+    bookingStatus: cleanIdentityValue(profile?.bookingStatus) || null,
+    sourceSurface: cleanIdentityValue(sourceSurface || profile?.sourceSurface) || null,
+  };
 }
 
 async function resolveCanonicalRecommendationContext({
@@ -4439,9 +4879,25 @@ async function handle(event = {}) {
         thread_id: body?.thread_id,
         sessionId: body?.session_id,
       });
-      const shopperId =
-        String(body?.shopperId || body?.shopper_id || body?.context?.shopperId || "").trim() || "";
       const hudContext = isObject(body?.context) ? body.context : {};
+      const incomingHudShopperId =
+        String(body?.shopperId || body?.shopper_id || body?.context?.shopperId || "").trim() || "";
+      const hudIdentity = await safeResolveSnoozeIdentity(
+        {
+          shopperId: incomingHudShopperId,
+          snoozeCode: body?.snoozeCode || body?.code || hudContext?.snoozeCode || "",
+          accessCode: body?.accessCode || hudContext?.accessCode || "",
+          sourceShopperId: body?.sourceShopperId || hudContext?.sourceShopperId || "",
+          visitorId: body?.visitorId || hudContext?.visitorId || "",
+          sessionId: threadId,
+          threadId,
+          context: hudContext,
+          sourceSurface: surface,
+          reason: "hud_ask",
+        },
+        { traceId, route: "/hud/ask" }
+      );
+      const shopperId = cleanIdentityValue(hudIdentity?.shopperId) || "";
       let canonicalRecommendation = null;
       try {
         canonicalRecommendation = await resolveCanonicalRecommendationContext({
@@ -4469,9 +4925,10 @@ async function handle(event = {}) {
       const intent = classification.intent;
       const previousHudProfileResult = await safeGetCustomerProfile(
         {
-          shopperId,
-          sessionId: threadId,
-          threadId,
+          profileId: hudIdentity?.profileId || undefined,
+          shopperId: shopperId || undefined,
+          sessionId: threadId || undefined,
+          threadId: threadId || undefined,
         },
         { traceId, route: "/hud/ask" }
       );
@@ -4515,6 +4972,15 @@ async function handle(event = {}) {
         typeof customerProfileService.buildHudProfilePatch === "function"
           ? customerProfileService.buildHudProfilePatch({
               previousProfile: previousHudProfile,
+              ...buildIdentityProfilePatch(hudIdentity, {
+                sourceShopperId:
+                  body?.sourceShopperId ||
+                  hudContext?.sourceShopperId ||
+                  incomingHudShopperId,
+                sessionId: threadId,
+                threadId,
+                visitorId: body?.visitorId || hudContext?.visitorId || "",
+              }),
               shopperId,
               sessionId: threadId,
               threadId,
@@ -4539,6 +5005,15 @@ async function handle(event = {}) {
               bookingStatus: body?.bookingStatus || hudContext?.bookingStatus || "",
             })
           : {
+              ...buildIdentityProfilePatch(hudIdentity, {
+                sourceShopperId:
+                  body?.sourceShopperId ||
+                  hudContext?.sourceShopperId ||
+                  incomingHudShopperId,
+                sessionId: threadId,
+                threadId,
+                visitorId: body?.visitorId || hudContext?.visitorId || "",
+              }),
               shopperId,
               sessionId: threadId,
               threadId,
@@ -4574,6 +5049,22 @@ async function handle(event = {}) {
         shopperId: shopperId || null,
         sessionId: threadId || null,
       });
+      await safeUpsertIdentityAliases(
+        hudIdentity,
+        {
+          sourceShopperId:
+            body?.sourceShopperId ||
+            hudContext?.sourceShopperId ||
+            incomingHudShopperId,
+          visitorId: body?.visitorId || hudContext?.visitorId || "",
+          sessionId: threadId,
+          threadId,
+          sourceSurface: surface,
+          lastIntent: intent,
+          leadStage: hudProfilePatch?.leadStage || "",
+        },
+        { traceId, route: "/hud/ask" }
+      );
       await maybeSyncProfileToZohoForInteraction({
         channel: "hud",
         traceId,
@@ -4597,7 +5088,14 @@ async function handle(event = {}) {
         products,
         replyOverride: answerStrategy?.replyOverride || "",
         chipsOverride: answerStrategy?.chipsOverride || null,
-        metaExtra: answerStrategy?.metaExtra || null,
+        metaExtra: {
+          ...(answerStrategy?.metaExtra && typeof answerStrategy.metaExtra === "object"
+            ? answerStrategy.metaExtra
+            : {}),
+          snooze_code_present: isCanonicalSnoozeIdentity(hudIdentity),
+          identity_type: hudIdentity?.identityType || null,
+          profile_id: hudIdentity?.profileId || null,
+        },
         policySubtype: answerStrategy?.policySubtype || classification?.policy_subtype || "",
       });
 
@@ -5154,6 +5652,309 @@ async function handle(event = {}) {
   }
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Assessment (legacy endpoints)
+  if (method === "POST" && routePath === "/identity/snooze-code") {
+    const body = safeJsonBody(event);
+    const reason = cleanIdentityValue(body?.reason).toLowerCase();
+    const sourceSurface = cleanIdentityValue(body?.sourceSurface) || "identity_api";
+    const identitySessionId = deriveEffectiveThreadId(event, {
+      sessionId: body?.sessionId,
+      thread_id: body?.threadId,
+    });
+
+    const resolvedIdentity = await safeResolveSnoozeIdentity(
+      {
+        shopperId: body?.shopperId,
+        snoozeCode: body?.snoozeCode || body?.code || "",
+        accessCode: body?.accessCode || "",
+        sourceShopperId: body?.sourceShopperId || body?.shopperId || "",
+        visitorId: body?.visitorId || "",
+        sessionId: identitySessionId,
+        threadId: identitySessionId,
+        sourceSurface,
+        reason,
+        assessment: body?.assessment || body?.answers || null,
+        canonicalRecommendation: body?.canonicalRecommendation || null,
+        contact: body?.contact || null,
+      },
+      { traceId, route: "/identity/snooze-code" }
+    );
+
+    const finalIdentity = await safeIssueSnoozeCode(
+      {
+        shopperId: body?.shopperId,
+        snoozeCode: body?.snoozeCode || body?.code || "",
+        accessCode: body?.accessCode || "",
+        sourceShopperId: body?.sourceShopperId || body?.shopperId || "",
+        visitorId: body?.visitorId || "",
+        sessionId: identitySessionId,
+        threadId: identitySessionId,
+        sourceSurface,
+        reason,
+        identity: resolvedIdentity,
+        assessment: body?.assessment || body?.answers || null,
+        canonicalRecommendation: body?.canonicalRecommendation || null,
+        contact: body?.contact || null,
+      },
+      { traceId, route: "/identity/snooze-code" }
+    );
+
+    if (!isCanonicalSnoozeIdentity(finalIdentity)) {
+      return response(event, 200, {
+        ok: false,
+        code: "SNOOZE_CODE_NOT_QUALIFIED",
+        message: "Snooze Code not issued.",
+        shopperId: resolvedIdentity?.shopperId || null,
+        snoozeCode: null,
+        accessCode: null,
+        profileId: resolvedIdentity?.profileId || null,
+        identityType: resolvedIdentity?.identityType || null,
+        isNewCode: false,
+        aliases: Array.isArray(resolvedIdentity?.aliases) ? resolvedIdentity.aliases : [],
+        leadStage: resolveIdentityLeadStage(reason) || null,
+      });
+    }
+
+    let identityCanonicalRecommendation = body?.canonicalRecommendation || null;
+    if (!identityCanonicalRecommendation && body?.assessment) {
+      try {
+        identityCanonicalRecommendation = await resolveCanonicalRecommendationContext({
+          payload: { answers: body.assessment },
+          storedAssessment: { answers: body.assessment },
+          shopperId: finalIdentity.shopperId,
+          allowSessionLookup: false,
+          source: "identity_snooze_code",
+          traceId,
+        });
+      } catch (error) {
+        log("snooze.identity.canonical.error", error.message, {
+          traceId,
+          route: "/identity/snooze-code",
+          shopperId: finalIdentity.shopperId || null,
+          code: error?.code || null,
+        });
+      }
+    }
+
+    const identityPatch = customerProfileService &&
+      typeof customerProfileService.buildCustomerProfilePatch === "function"
+      ? customerProfileService.buildCustomerProfilePatch({
+          ...buildIdentityProfilePatch(finalIdentity, {
+            sourceShopperId: body?.sourceShopperId || body?.shopperId || "",
+            visitorId: body?.visitorId || "",
+            sessionId: identitySessionId,
+            threadId: identitySessionId,
+          }),
+          contact: body?.contact || null,
+          assessmentAnswers: body?.assessment || body?.answers || null,
+          canonicalRecommendation: identityCanonicalRecommendation,
+          sourceSurface,
+          lastIntent: "snooze_code_issue",
+          leadStage: resolveIdentityLeadStage(reason),
+        })
+      : {
+          ...buildIdentityProfilePatch(finalIdentity, {
+            sourceShopperId: body?.sourceShopperId || body?.shopperId || "",
+            visitorId: body?.visitorId || "",
+            sessionId: identitySessionId,
+            threadId: identitySessionId,
+          }),
+          contact: body?.contact || null,
+          assessmentAnswers: body?.assessment || body?.answers || null,
+          canonicalRecommendation: identityCanonicalRecommendation,
+          sourceSurface,
+          lastIntent: "snooze_code_issue",
+          leadStage: resolveIdentityLeadStage(reason),
+        };
+
+    const identityProfileResult = await safeUpsertCustomerProfile(identityPatch, {
+      traceId,
+      route: "/identity/snooze-code",
+    });
+
+    logIdentityProfileOutcome(
+      "/identity/snooze-code",
+      identityProfileResult,
+      finalIdentity,
+      { traceId }
+    );
+
+    await safeUpsertIdentityAliases(
+      finalIdentity,
+      {
+        sourceShopperId: body?.sourceShopperId || body?.shopperId || "",
+        visitorId: body?.visitorId || "",
+        sessionId: identitySessionId,
+        threadId: identitySessionId,
+        sourceSurface,
+        lastIntent: "snooze_code_issue",
+        leadStage: identityPatch?.leadStage || "",
+      },
+      { traceId, route: "/identity/snooze-code" }
+    );
+
+    if (
+      finalIdentity?.isNewCode &&
+      cleanIdentityValue(resolvedIdentity?.profileId) &&
+      resolvedIdentity.profileId !== finalIdentity.profileId
+    ) {
+      await safeMarkIdentityMerge(resolvedIdentity.profileId, finalIdentity, {
+        traceId,
+        route: "/identity/snooze-code",
+        reason,
+        sourceSurface,
+      });
+    }
+
+    await maybeSyncIdentityProfileToZoho(identityPatch, {
+      traceId,
+      route: "/identity/snooze-code",
+    });
+
+    return response(event, 200, {
+      ok: true,
+      shopperId: finalIdentity.shopperId || null,
+      snoozeCode: finalIdentity.snoozeCode || null,
+      accessCode: finalIdentity.accessCode || null,
+      profileId: finalIdentity.profileId || null,
+      identityType: finalIdentity.identityType || null,
+      identitySource: finalIdentity.identitySource || null,
+      isNewCode: Boolean(finalIdentity?.isNewCode),
+      aliases: Array.isArray(finalIdentity?.aliases) ? finalIdentity.aliases : [],
+      leadStage: identityPatch?.leadStage || null,
+      message: finalIdentity?.message || "Snooze Code ready.",
+    });
+  }
+
+  if (method === "POST" && routePath === "/identity/check-in") {
+    const body = safeJsonBody(event);
+    const sourceSurface = cleanIdentityValue(body?.sourceSurface) || "identity_checkin";
+    const identitySessionId = deriveEffectiveThreadId(event, {
+      sessionId: body?.sessionId,
+      thread_id: body?.threadId,
+    });
+    const resolvedIdentity = await safeResolveSnoozeIdentity(
+      {
+        shopperId: body?.shopperId,
+        snoozeCode: body?.snoozeCode || body?.code || "",
+        accessCode: body?.accessCode || "",
+        visitorId: body?.visitorId || "",
+        sessionId: identitySessionId,
+        threadId: identitySessionId,
+        sourceSurface,
+        reason: "manual_create",
+      },
+      { traceId, route: "/identity/check-in" }
+    );
+
+    if (!isCanonicalSnoozeIdentity(resolvedIdentity)) {
+      log("snooze.identity.checkin.not_found", "not_found", {
+        traceId,
+        route: "/identity/check-in",
+        sourceSurface,
+        incomingShopperId: cleanIdentityValue(body?.shopperId) || null,
+        snoozeCode:
+          cleanIdentityValue(body?.snoozeCode || body?.accessCode || body?.code) || null,
+      });
+      return response(event, 200, {
+        ok: false,
+        code: "SNOOZE_CODE_NOT_FOUND",
+        message: "Snooze Code not found.",
+      });
+    }
+
+    const canonicalProfileResult = await safeGetCustomerProfile(
+      {
+        profileId: resolvedIdentity.profileId,
+        shopperId: resolvedIdentity.shopperId,
+      },
+      { traceId, route: "/identity/check-in" }
+    );
+    const canonicalProfile = canonicalProfileResult?.profile || null;
+
+    if (!canonicalProfile) {
+      log("snooze.identity.checkin.not_found", "not_found", {
+        traceId,
+        route: "/identity/check-in",
+        sourceSurface,
+        incomingShopperId: cleanIdentityValue(body?.shopperId) || null,
+        snoozeCode: resolvedIdentity.snoozeCode || null,
+        profileId: resolvedIdentity.profileId || null,
+      });
+      return response(event, 200, {
+        ok: false,
+        code: "SNOOZE_CODE_NOT_FOUND",
+        message: "Snooze Code not found.",
+      });
+    }
+
+    const checkInPatch = {
+      ...buildIdentityProfilePatch(resolvedIdentity, {
+        sessionId: identitySessionId,
+        threadId: identitySessionId,
+        visitorId: body?.visitorId || "",
+      }),
+      sourceSurface,
+      lastIntent: "snooze_code_checkin",
+      leadStage: resolveIdentityLeadStage(
+        "manual_create",
+        canonicalProfile?.leadStage || ""
+      ),
+      bookingStatus: cleanIdentityValue(canonicalProfile?.bookingStatus) || undefined,
+    };
+
+    const checkInProfileResult = await safeUpsertCustomerProfile(checkInPatch, {
+      traceId,
+      route: "/identity/check-in",
+    });
+
+    logIdentityProfileOutcome(
+      "/identity/check-in",
+      checkInProfileResult,
+      resolvedIdentity,
+      { traceId }
+    );
+
+    await safeUpsertIdentityAliases(
+      resolvedIdentity,
+      {
+        visitorId: body?.visitorId || "",
+        sessionId: identitySessionId,
+        threadId: identitySessionId,
+        sourceSurface,
+        lastIntent: "snooze_code_checkin",
+        leadStage: checkInPatch?.leadStage || "",
+      },
+      { traceId, route: "/identity/check-in" }
+    );
+
+    log("customer.profile.zoho.identity.skipped", "NO_MATERIAL_ZOHO_CHANGE", {
+      traceId,
+      route: "/identity/check-in",
+      shopperId: resolvedIdentity.shopperId || null,
+      reason: "NO_MATERIAL_ZOHO_CHANGE",
+    });
+
+    const summary = await buildCheckInSummary(
+      customerProfileService &&
+        typeof customerProfileService.mergeCustomerProfile === "function"
+        ? customerProfileService.mergeCustomerProfile(canonicalProfile, checkInPatch)
+        : { ...canonicalProfile, ...checkInPatch },
+      sourceSurface
+    );
+
+    log("snooze.identity.checkin.ok", "ok", {
+      traceId,
+      route: "/identity/check-in",
+      sourceSurface,
+      canonicalShopperId: resolvedIdentity.shopperId || null,
+      snoozeCode: resolvedIdentity.snoozeCode || null,
+      profileId: resolvedIdentity.profileId || null,
+      leadStage: summary.leadStage || null,
+    });
+
+    return response(event, 200, summary);
+  }
+
   if (method === "GET" && routePath === "/assessment-questions") {
     const loaded = await loadAssessmentQuestions();
     return response(event, 200, loaded.data, {
@@ -5164,17 +5965,72 @@ async function handle(event = {}) {
   }
 
   if (method === "POST" && routePath === "/assessment") {
-    const { shopperId, answers, origin } = safeJsonBody(event);
-    if (!shopperId) {
+    const body = safeJsonBody(event);
+    const incomingShopperId = cleanIdentityValue(body?.shopperId);
+    const answers = body?.answers || {};
+    const origin = body?.origin;
+    const identitySessionId = deriveEffectiveThreadId(event, {
+      sessionId: body?.sessionId,
+      thread_id: body?.threadId,
+    });
+
+    if (
+      !incomingShopperId &&
+      !cleanIdentityValue(body?.snoozeCode) &&
+      !cleanIdentityValue(body?.accessCode)
+    ) {
       return response(event, 400, { message: "shopperId required" });
     }
+
+    const resolvedAssessmentIdentity = await safeResolveSnoozeIdentity(
+      {
+        shopperId: incomingShopperId,
+        snoozeCode: body?.snoozeCode || body?.code || "",
+        accessCode: body?.accessCode || "",
+        sourceShopperId: body?.sourceShopperId || incomingShopperId,
+        visitorId: body?.visitorId || "",
+        sessionId: identitySessionId,
+        threadId: identitySessionId,
+        sourceSurface: origin || "assessment_api",
+        reason: "assessment_completed",
+      },
+      { traceId, route: "/assessment" }
+    );
+
+    const issuedAssessmentIdentity = await safeIssueSnoozeCode(
+      {
+        shopperId: incomingShopperId,
+        snoozeCode: body?.snoozeCode || body?.code || "",
+        accessCode: body?.accessCode || "",
+        sourceShopperId: body?.sourceShopperId || incomingShopperId,
+        visitorId: body?.visitorId || "",
+        sessionId: identitySessionId,
+        threadId: identitySessionId,
+        sourceSurface: origin || "assessment_api",
+        reason: "assessment_completed",
+        identity: resolvedAssessmentIdentity,
+      },
+      { traceId, route: "/assessment" }
+    );
+
+    const finalAssessmentIdentity =
+      issuedAssessmentIdentity && isCanonicalSnoozeIdentity(issuedAssessmentIdentity)
+        ? issuedAssessmentIdentity
+        : resolvedAssessmentIdentity;
+    const shopperId = cleanIdentityValue(
+      finalAssessmentIdentity?.shopperId || incomingShopperId
+    );
 
     await saveAssessmentResult(shopperId, answers || {});
 
     let assessmentCanonicalRecommendation = null;
     try {
       assessmentCanonicalRecommendation = await resolveCanonicalRecommendationContext({
-        payload: { answers: answers || {} },
+        payload: {
+          answers: answers || {},
+          snoozeCode: finalAssessmentIdentity?.snoozeCode || null,
+          accessCode: finalAssessmentIdentity?.accessCode || null,
+        },
         storedAssessment: { answers: answers || {} },
         shopperId,
         allowSessionLookup: false,
@@ -5189,78 +6045,101 @@ async function handle(event = {}) {
       customerProfileService &&
       typeof customerProfileService.buildCustomerProfilePatch === "function"
         ? customerProfileService.buildCustomerProfilePatch({
+            ...buildIdentityProfilePatch(finalAssessmentIdentity, {
+              sourceShopperId: body?.sourceShopperId || incomingShopperId,
+              sessionId: identitySessionId,
+              threadId: identitySessionId,
+              visitorId: body?.visitorId || "",
+            }),
             shopperId,
             origin: origin || "assessment_api",
             sourceSurface: origin || "assessment_api",
             lastIntent: "assessment_submit",
-            leadStage: "assessment_completed",
+            leadStage: resolveIdentityLeadStage("assessment_completed"),
             assessmentAnswers: answers || {},
             canonicalRecommendation: assessmentCanonicalRecommendation,
           })
         : {
+            ...buildIdentityProfilePatch(finalAssessmentIdentity, {
+              sourceShopperId: body?.sourceShopperId || incomingShopperId,
+              sessionId: identitySessionId,
+              threadId: identitySessionId,
+              visitorId: body?.visitorId || "",
+            }),
             shopperId,
             origin: origin || "assessment_api",
             sourceSurface: origin || "assessment_api",
             lastIntent: "assessment_submit",
-            leadStage: "assessment_completed",
+            leadStage: resolveIdentityLeadStage("assessment_completed"),
             assessmentAnswers: answers || {},
             canonicalRecommendation: assessmentCanonicalRecommendation,
           };
 
-    await safeUpsertCustomerProfile(customerProfilePatch, { traceId, route: "/assessment" });
+    const assessmentProfileResult = await safeUpsertCustomerProfile(customerProfilePatch, {
+      traceId,
+      route: "/assessment",
+    });
+    logIdentityProfileOutcome(
+      "/assessment",
+      assessmentProfileResult,
+      {
+        shopperId,
+        snoozeCode: finalAssessmentIdentity?.snoozeCode || null,
+        profileId: finalAssessmentIdentity?.profileId || null,
+        identityType: finalAssessmentIdentity?.identityType || null,
+      },
+      { traceId }
+    );
 
-    if (typeof syncCustomerProfileToZoho === "function") {
-      try {
-        const zohoSync = await syncCustomerProfileToZoho(customerProfilePatch);
-        log(
-          "assessment.zoho.sync",
-          zohoSync?.ok ? "ok" : zohoSync?.skipped ? "skipped" : "failed",
-          {
-            traceId,
-            shopperId,
-            reason: zohoSync?.reason || null,
-            operation: zohoSync?.operation || null,
-            code: zohoSync?.code || null,
-            contactId: zohoSync?.contactId || null,
-          }
-        );
-      } catch (e) {
-        log("assessment.zoho.error", e.message, { traceId, shopperId });
-      }
-    } else if (
-      typeof buildSnoozeProfile === "function" &&
-      typeof mapProfileToZohoFields === "function" &&
-      typeof upsertContactByShopperId === "function"
+    await safeUpsertIdentityAliases(
+      finalAssessmentIdentity,
+      {
+        sourceShopperId: body?.sourceShopperId || incomingShopperId,
+        visitorId: body?.visitorId || "",
+        sessionId: identitySessionId,
+        threadId: identitySessionId,
+        sourceSurface: origin || "assessment_api",
+        lastIntent: "assessment_submit",
+        leadStage: customerProfilePatch?.leadStage || "",
+      },
+      { traceId, route: "/assessment" }
+    );
+
+    if (
+      issuedAssessmentIdentity?.isNewCode &&
+      cleanIdentityValue(resolvedAssessmentIdentity?.profileId) &&
+      resolvedAssessmentIdentity.profileId !== finalAssessmentIdentity?.profileId
     ) {
-      try {
-        const profile = buildSnoozeProfile({
-          shopperId,
-          origin: origin || "assessment_api",
-          answers: answers || {},
-        });
-
-        const zohoFields = mapProfileToZohoFields(profile) || {};
-        if (Object.keys(zohoFields).length) {
-          const zohoResp = await upsertContactByShopperId(shopperId, zohoFields);
-          log("assessment.zoho.fallback", zohoResp?.ok ? "ok" : zohoResp?.skipped ? "skipped" : "failed", {
-            traceId,
-            shopperId,
-            reason: zohoResp?.reason || null,
-            operation: zohoResp?.operation || null,
-            code: zohoResp?.code || null,
-            contactId: zohoResp?.contactId || zohoResp?.details?.id || null,
-          });
-        } else {
-          log("assessment.zoho.fallback", "skip_empty_profile", { traceId, shopperId });
-        }
-      } catch (e) {
-        log("assessment.zoho.error", e.message, { traceId, shopperId });
-      }
+      await safeMarkIdentityMerge(resolvedAssessmentIdentity.profileId, finalAssessmentIdentity, {
+        traceId,
+        route: "/assessment",
+        reason: "assessment_completed",
+        sourceSurface: origin || "assessment_api",
+      });
     } else {
-      log("assessment.zoho.disabled", "missing_services", { traceId, shopperId });
+      log("snooze.identity.merge.skipped", "alias_only", {
+        traceId,
+        route: "/assessment",
+        profileId: resolvedAssessmentIdentity?.profileId || null,
+        canonicalProfileId: finalAssessmentIdentity?.profileId || null,
+        reason: "alias_only",
+      });
     }
 
-    return response(event, 200, { ok: true });
+    await maybeSyncIdentityProfileToZoho(customerProfilePatch, {
+      traceId,
+      route: "/assessment",
+    });
+
+    return response(event, 200, {
+      ok: true,
+      shopperId,
+      snoozeCode: finalAssessmentIdentity?.snoozeCode || null,
+      accessCode: finalAssessmentIdentity?.accessCode || null,
+      profileId: finalAssessmentIdentity?.profileId || null,
+      identityType: finalAssessmentIdentity?.identityType || null,
+      isNewCode: Boolean(issuedAssessmentIdentity?.isNewCode),
+    });
   }
 
   if (method === "GET" && routePath.startsWith("/assessment/")) {
@@ -5393,9 +6272,36 @@ async function handle(event = {}) {
 
     const msg = payload.message || payload.prompt || payload.text || "";
     const mode = payload.mode || undefined;
-    const shopperId = payload.shopperId || null;
-
     const effectiveSessionId = deriveEffectiveThreadId(event, payload);
+    const askSourceSurface =
+      payload.source ||
+      payload?.context?.session?.source ||
+      payload?.context?.source ||
+      "ask_snoozer";
+    const incomingAskShopperId = cleanIdentityValue(payload?.shopperId);
+    const askIdentity = await safeResolveSnoozeIdentity(
+      {
+        shopperId: incomingAskShopperId,
+        snoozeCode:
+          payload?.snoozeCode ||
+          payload?.code ||
+          payload?.context?.snoozeCode ||
+          "",
+        accessCode: payload?.accessCode || payload?.context?.accessCode || "",
+        sourceShopperId:
+          payload?.sourceShopperId ||
+          payload?.context?.sourceShopperId ||
+          incomingAskShopperId,
+        visitorId: payload?.visitorId || payload?.context?.visitorId || "",
+        sessionId: effectiveSessionId,
+        threadId: effectiveSessionId,
+        context: payload?.context || {},
+        sourceSurface: askSourceSurface,
+        reason: "ask_snoozer",
+      },
+      { traceId, route: "/ask-snoozer" }
+    );
+    const shopperId = askIdentity?.shopperId || null;
 
     log("ask-snoozer.route", "session", {
       traceId,
@@ -5490,6 +6396,9 @@ async function handle(event = {}) {
 
     // Always stamp these top-level
     context.shopperId = shopperId;
+    context.snoozeCode = askIdentity?.snoozeCode || context?.snoozeCode || null;
+    context.accessCode = askIdentity?.accessCode || context?.accessCode || null;
+    context.profileId = askIdentity?.profileId || context?.profileId || null;
     context.sessionId = effectiveSessionId;
 
     // 3) Attach assessment and canonical recommendation context
@@ -5579,9 +6488,10 @@ async function handle(event = {}) {
     const askSnoozerClassification = buildAskSnoozerClassification(msg, context);
     const previousAskProfileResult = await safeGetCustomerProfile(
       {
-        shopperId,
-        sessionId: effectiveSessionId,
-        threadId: effectiveSessionId,
+        profileId: askIdentity?.profileId || undefined,
+        shopperId: shopperId || undefined,
+        sessionId: effectiveSessionId || undefined,
+        threadId: effectiveSessionId || undefined,
       },
       { traceId, route: "/ask-snoozer" }
     );
@@ -5592,15 +6502,20 @@ async function handle(event = {}) {
       typeof customerProfileService.buildAskSnoozerProfilePatch === "function"
         ? customerProfileService.buildAskSnoozerProfilePatch({
             previousProfile: previousAskProfile,
+            ...buildIdentityProfilePatch(askIdentity, {
+              sourceShopperId:
+                payload?.sourceShopperId ||
+                payload?.context?.sourceShopperId ||
+                incomingAskShopperId,
+              sessionId: effectiveSessionId,
+              threadId: effectiveSessionId,
+              visitorId: payload?.visitorId || payload?.context?.visitorId || "",
+            }),
             shopperId,
             sessionId: effectiveSessionId,
             threadId: effectiveSessionId,
             mode: mode || "",
-            sourceSurface:
-              payload.source ||
-              context?.session?.source ||
-              context?.source ||
-              "ask_snoozer",
+            sourceSurface: askSourceSurface,
             lastIntent: askSnoozerClassification?.intent || "unknown",
             lastIntentGroup: askSnoozerClassification?.intent_group || "",
             message: msg,
@@ -5622,15 +6537,20 @@ async function handle(event = {}) {
             context,
           })
         : {
+            ...buildIdentityProfilePatch(askIdentity, {
+              sourceShopperId:
+                payload?.sourceShopperId ||
+                payload?.context?.sourceShopperId ||
+                incomingAskShopperId,
+              sessionId: effectiveSessionId,
+              threadId: effectiveSessionId,
+              visitorId: payload?.visitorId || payload?.context?.visitorId || "",
+            }),
             shopperId,
             sessionId: effectiveSessionId,
             threadId: effectiveSessionId,
             mode: mode || "",
-            sourceSurface:
-              payload.source ||
-              context?.session?.source ||
-              context?.source ||
-              "ask_snoozer",
+            sourceSurface: askSourceSurface,
             lastIntent: askSnoozerClassification?.intent || "unknown",
             lastIntentGroup: askSnoozerClassification?.intent_group || "",
             lastQuery: msg,
@@ -5661,6 +6581,22 @@ async function handle(event = {}) {
       shopperId: shopperId || null,
       sessionId: effectiveSessionId || null,
     });
+    await safeUpsertIdentityAliases(
+      askIdentity,
+      {
+        sourceShopperId:
+          payload?.sourceShopperId ||
+          payload?.context?.sourceShopperId ||
+          incomingAskShopperId,
+        visitorId: payload?.visitorId || payload?.context?.visitorId || "",
+        sessionId: effectiveSessionId,
+        threadId: effectiveSessionId,
+        sourceSurface: askSourceSurface,
+        lastIntent: askSnoozerClassification?.intent || "",
+        leadStage: askProfilePatch?.leadStage || "",
+      },
+      { traceId, route: "/ask-snoozer" }
+    );
     await maybeSyncProfileToZohoForInteraction({
       channel: "ask",
       traceId,

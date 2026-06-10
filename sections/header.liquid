@@ -1604,6 +1604,61 @@
       }
     }
 
+    function safeStorageGet(storage, key) {
+      try {
+        return normalizeText(storage.getItem(key));
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function getStoredSnoozeIdentity() {
+      let snoozeCode = '';
+      let shopperId = '';
+
+      try {
+        const params = new URLSearchParams(window.location.search || '');
+        snoozeCode = normalizeText(
+          params.get('snoozeCode') ||
+          params.get('accessCode') ||
+          params.get('code')
+        );
+        shopperId = normalizeText(params.get('shopperId'));
+      } catch (error) {
+        // ignore
+      }
+
+      const sessionStorage = window.sessionStorage;
+      const localStorage = window.localStorage;
+
+      snoozeCode = snoozeCode ||
+        safeStorageGet(sessionStorage, 'snooze.accessCode') ||
+        safeStorageGet(localStorage, 'snooze.accessCode') ||
+        safeStorageGet(sessionStorage, 'snoozeCode') ||
+        safeStorageGet(localStorage, 'snoozeCode') ||
+        safeStorageGet(sessionStorage, 'snoozer_access_code') ||
+        safeStorageGet(localStorage, 'snoozer_access_code') ||
+        safeStorageGet(sessionStorage, 'snoozer_snooze_code') ||
+        safeStorageGet(localStorage, 'snoozer_snooze_code');
+
+      shopperId = shopperId ||
+        safeStorageGet(sessionStorage, 'snooze.shopperId') ||
+        safeStorageGet(localStorage, 'snooze.shopperId') ||
+        safeStorageGet(sessionStorage, 'snoozer_shopper_id') ||
+        safeStorageGet(localStorage, 'snoozer_shopper_id') ||
+        safeStorageGet(sessionStorage, 'snooze.assessmentShopperId');
+
+      return {
+        snoozeCode: snoozeCode || '',
+        accessCode: snoozeCode || '',
+        shopperId: snoozeCode || shopperId || '',
+        sourceShopperId:
+          shopperId && snoozeCode && shopperId !== snoozeCode
+            ? shopperId
+            : ''
+      };
+    }
+
     function setShellBusy(shell, isBusy) {
       if (!shell) return;
 
@@ -2032,6 +2087,7 @@
       }, HUD_ASK_TIMEOUT_MS);
 
       try {
+        const storedIdentity = getStoredSnoozeIdentity();
         const response = await fetch(buildApiUrl('/hud/ask'), {
           method: 'POST',
           headers: {
@@ -2042,7 +2098,11 @@
             path: window.location && window.location.pathname ? window.location.pathname : '/',
             page_type: getPageType(),
             surface: 'shopify_header',
-            session_id: getSessionId()
+            session_id: getSessionId(),
+            shopperId: storedIdentity.shopperId || undefined,
+            snoozeCode: storedIdentity.snoozeCode || undefined,
+            accessCode: storedIdentity.accessCode || undefined,
+            sourceShopperId: storedIdentity.sourceShopperId || undefined
           }),
           signal: controller ? controller.signal : undefined
         });

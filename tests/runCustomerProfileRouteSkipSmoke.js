@@ -112,14 +112,24 @@ async function main() {
     });
     assert.strictEqual(askBody.ok, true, "/ask-snoozer should still succeed");
 
-    const skipLines = captured.filter(
-      (line) =>
-        line.includes("\"src\":\"customer.profile.skip\"") &&
-        line.includes("CUSTOMER_PROFILE_TABLE_NOT_CONFIGURED")
+    const routeSkipLines = captured.filter((line) =>
+      (
+        line.includes("\"src\":\"customer.profile.identity.skipped\"") ||
+        line.includes("\"src\":\"customer.profile.hud.skipped\"") ||
+        line.includes("\"src\":\"customer.profile.ask.skipped\"")
+      ) && line.includes("CUSTOMER_PROFILE_TABLE_NOT_CONFIGURED")
     );
-    const errorLines = captured.filter((line) => line.includes("\"src\":\"customer.profile.error\""));
+    const errorLines = captured.filter(
+      (line) =>
+        line.includes("\"src\":\"customer.profile.error\"") ||
+        line.includes("\"src\":\"customer.profile.identity.error\"")
+    );
 
-    assert.strictEqual(skipLines.length, 3, "all three routes should log a skipped profile upsert");
+    assert.strictEqual(
+      routeSkipLines.length,
+      3,
+      "assessment, /hud/ask, and /ask-snoozer should each log a skipped profile outcome"
+    );
     assert.strictEqual(errorLines.length, 0, "missing table config should not log profile errors");
 
     console.log("Customer profile route skip smoke passed.");

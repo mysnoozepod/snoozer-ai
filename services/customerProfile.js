@@ -37,6 +37,9 @@ const PROFILE_ARRAY_FIELDS = Object.freeze([
   "topPodIds",
   "reasonKeys",
   "recommendedProductHandles",
+  "identityAliases",
+  "previousProfileIds",
+  "previousShopperIds",
 ]);
 
 const LEAD_STAGE_RANK = LEAD_STAGE_ORDER.reduce(function reduceRank(acc, stage, index) {
@@ -270,6 +273,9 @@ function mergeCustomerProfile(previousProfile = {}, patch = {}) {
 }
 
 function getCustomerProfileKey(patch = {}) {
+  const explicitProfileId = cleanString(patch.profileId);
+  if (explicitProfileId) return { profileId: explicitProfileId };
+
   const shopperId = cleanString(patch.shopperId);
   if (shopperId) return { profileId: `shopper#${shopperId}` };
 
@@ -291,11 +297,38 @@ function buildCustomerProfilePatch(input = {}) {
   const recommendedProductHandles = uniqueStrings(
     Array.isArray(input.recommendedProductHandles) ? input.recommendedProductHandles : []
   );
+  const identityAliases = uniqueStrings(
+    Array.isArray(input.identityAliases) ? input.identityAliases : []
+  );
+  const previousProfileIds = uniqueStrings(
+    Array.isArray(input.previousProfileIds) ? input.previousProfileIds : []
+  );
+  const previousShopperIds = uniqueStrings(
+    Array.isArray(input.previousShopperIds) ? input.previousShopperIds : []
+  );
 
   return {
+    profileId: cleanString(input.profileId) || undefined,
     shopperId: cleanString(input.shopperId) || undefined,
+    snoozeCode: cleanString(input.snoozeCode) || undefined,
+    accessCode: cleanString(input.accessCode) || undefined,
     sessionId: cleanString(input.sessionId) || undefined,
     threadId: cleanString(input.threadId) || undefined,
+    visitorId: cleanString(input.visitorId) || undefined,
+    identityType: cleanString(input.identityType) || undefined,
+    identitySource: cleanString(input.identitySource) || undefined,
+    isTemporary: typeof input.isTemporary === "boolean" ? input.isTemporary : undefined,
+    sourceShopperId: cleanString(input.sourceShopperId) || undefined,
+    aliasKind: cleanString(input.aliasKind) || undefined,
+    aliasValue: cleanString(input.aliasValue) || undefined,
+    aliasOfShopperId: cleanString(input.aliasOfShopperId) || undefined,
+    aliasOfProfileId: cleanString(input.aliasOfProfileId) || undefined,
+    mergedIntoProfileId: cleanString(input.mergedIntoProfileId) || undefined,
+    mergedIntoShopperId: cleanString(input.mergedIntoShopperId) || undefined,
+    mergedAt: cleanString(input.mergedAt) || undefined,
+    identityAliases: identityAliases.length ? identityAliases : undefined,
+    previousProfileIds: previousProfileIds.length ? previousProfileIds : undefined,
+    previousShopperIds: previousShopperIds.length ? previousShopperIds : undefined,
     preferredName: contactInfo.preferredName,
     email: contactInfo.email,
     phone: contactInfo.phone,

@@ -14,6 +14,18 @@
   const SHARED_ANSWERS_KEY = "snooze.assessment";
   const SHARED_SUMMARY_KEY = "snooze.assessmentSummary";
   const DEFAULT_SHOPPER_KEY = "snooze.assessmentShopperId";
+  const ASSESSMENT_SESSION_KEY = "snooze.assessmentSessionId";
+  const STORED_SNOOZE_CODE_KEYS = [
+    "snoozeCode",
+    "snoozer_snooze_code",
+    "snooze.accessCode",
+    "snoozer_access_code",
+  ];
+  const STORED_SHOPPER_ID_KEYS = [
+    "snooze.shopperId",
+    "snoozer_shopper_id",
+    DEFAULT_SHOPPER_KEY,
+  ];
 
   const HANDLES = {
     mattresses: {
@@ -286,6 +298,116 @@
       window.sessionStorage.setItem(key, value);
     } catch {
       // ignore
+    }
+  }
+
+  function safeLocalGet(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch {
+      return "";
+    }
+  }
+
+  function safeLocalSet(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch {
+      // ignore
+    }
+  }
+
+  function firstStoredValue(keys) {
+    for (let index = 0; index < keys.length; index += 1) {
+      const fromSession = normalizeText(safeSessionGet(keys[index]));
+      if (fromSession) return fromSession;
+      const fromLocal = normalizeText(safeLocalGet(keys[index]));
+      if (fromLocal) return fromLocal;
+    }
+    return "";
+  }
+
+  function readUrlIdentity() {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      return {
+        snoozeCode: normalizeText(
+          params.get("snoozeCode") ||
+            params.get("accessCode") ||
+            params.get("code")
+        ),
+        shopperId: normalizeText(params.get("shopperId")),
+      };
+    } catch {
+      return { snoozeCode: "", shopperId: "" };
+    }
+  }
+
+  function getPersistedAssessmentIdentity(savedState, sectionId) {
+    const urlIdentity = readUrlIdentity();
+    const storedCode = urlIdentity.snoozeCode || firstStoredValue(STORED_SNOOZE_CODE_KEYS);
+    const storedShopperId =
+      urlIdentity.shopperId ||
+      firstStoredValue(STORED_SHOPPER_ID_KEYS) ||
+      normalizeText(savedState && savedState.shopperId);
+    const canonicalShopperId = storedCode || storedShopperId;
+    const generatedFallback = createShopperId(sectionId);
+
+    return {
+      snoozeCode: storedCode || "",
+      accessCode: storedCode || "",
+      shopperId: canonicalShopperId || generatedFallback,
+      sourceShopperId:
+        canonicalShopperId &&
+        storedShopperId &&
+        storedShopperId !== canonicalShopperId
+          ? storedShopperId
+          : "",
+      sessionId:
+        normalizeText(savedState && savedState.sessionId) ||
+        normalizeText(safeSessionGet(ASSESSMENT_SESSION_KEY)) ||
+        [
+          "assessment",
+          Date.now().toString(36),
+          Math.random().toString(36).slice(2, 8),
+        ].join("_"),
+    };
+  }
+
+  function persistAssessmentIdentity(identity) {
+    const shopperId = normalizeText(identity && identity.shopperId);
+    const snoozeCode = normalizeText(
+      (identity && (identity.snoozeCode || identity.accessCode)) || ""
+    );
+    const sourceShopperId = normalizeText(identity && identity.sourceShopperId);
+    const sessionId = normalizeText(identity && identity.sessionId);
+
+    if (shopperId) {
+      safeSessionSet(DEFAULT_SHOPPER_KEY, shopperId);
+      safeSessionSet("snooze.shopperId", shopperId);
+      safeLocalSet("snooze.shopperId", shopperId);
+      safeSessionSet("snoozer_shopper_id", shopperId);
+      safeLocalSet("snoozer_shopper_id", shopperId);
+    }
+
+    if (snoozeCode) {
+      safeSessionSet("snooze.accessCode", snoozeCode);
+      safeLocalSet("snooze.accessCode", snoozeCode);
+      safeSessionSet("snoozer_access_code", snoozeCode);
+      safeLocalSet("snoozer_access_code", snoozeCode);
+      safeSessionSet("snoozeCode", snoozeCode);
+      safeLocalSet("snoozeCode", snoozeCode);
+      safeSessionSet("snoozer_snooze_code", snoozeCode);
+      safeLocalSet("snoozer_snooze_code", snoozeCode);
+    }
+
+    if (sourceShopperId && sourceShopperId !== shopperId) {
+      safeSessionSet("snooze.tempShopperId", sourceShopperId);
+      safeLocalSet("snooze.tempShopperId", sourceShopperId);
+    }
+
+    if (sessionId) {
+      safeSessionSet(ASSESSMENT_SESSION_KEY, sessionId);
     }
   }
 
@@ -1419,12 +1541,27 @@
     }
   }
 
-  async function saveAssessmentAnswers(root, shopperId, answers) {
+  async function saveAssessmentAnswers(root, identity, answers) {
+    const canonicalShopperId = normalizeText(identity && identity.shopperId);
+    const snoozeCode = normalizeText(
+      identity && (identity.snoozeCode || identity.accessCode)
+    );
+    const sourceShopperId = normalizeText(identity && identity.sourceShopperId);
+    const sessionId = normalizeText(identity && identity.sessionId);
+
     return fetch(buildApiUrl(root, "/assessment"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        shopperId: shopperId,
+        shopperId: canonicalShopperId,
+        snoozeCode: snoozeCode || undefined,
+        accessCode: snoozeCode || undefined,
+        sourceShopperId:
+          sourceShopperId && sourceShopperId !== canonicalShopperId
+            ? sourceShopperId
+            : undefined,
+        sessionId: sessionId || undefined,
+        threadId: sessionId || undefined,
         origin: "shopify_assessment_page",
         answers: answers,
       }),
@@ -1479,6 +1616,9 @@
     };
 
     const savedState = safeJsonParse(safeSessionGet(storageKey), null);
+    const persistedIdentity = getPersistedAssessmentIdentity(savedState, sectionId);
+    persistAssessmentIdentity(persistedIdentity);
+
     const state = {
       loading: true,
       submitting: false,
@@ -1487,7 +1627,11 @@
       answers: savedState && savedState.answers && typeof savedState.answers === "object" ? savedState.answers : {},
       completed: false,
       result: null,
-      shopperId: normalizeText(savedState && savedState.shopperId) || createShopperId(sectionId),
+      shopperId: persistedIdentity.shopperId,
+      snoozeCode: persistedIdentity.snoozeCode,
+      accessCode: persistedIdentity.accessCode,
+      sourceShopperId: persistedIdentity.sourceShopperId,
+      sessionId: persistedIdentity.sessionId,
       savedCompleted: Boolean(savedState && savedState.completed),
     };
 
@@ -1500,6 +1644,10 @@
           completed: state.completed,
           result: state.result,
           shopperId: state.shopperId,
+          snoozeCode: state.snoozeCode,
+          accessCode: state.accessCode,
+          sourceShopperId: state.sourceShopperId,
+          sessionId: state.sessionId,
         })
       );
     }
@@ -1867,7 +2015,39 @@
       const answers = cleanAnswers(state.questions, state.answers);
 
       try {
-        await saveAssessmentAnswers(root, state.shopperId, answers);
+        const previousShopperId = state.shopperId;
+        const savedPayload = await saveAssessmentAnswers(root, {
+          shopperId: state.shopperId,
+          snoozeCode: state.snoozeCode,
+          accessCode: state.accessCode,
+          sourceShopperId: state.sourceShopperId || state.shopperId,
+          sessionId: state.sessionId,
+        }, answers);
+        const savedData =
+          savedPayload && savedPayload.data && typeof savedPayload.data === "object"
+            ? savedPayload.data
+            : savedPayload && typeof savedPayload === "object"
+              ? savedPayload
+              : {};
+
+        if (normalizeText(savedData.shopperId)) {
+          state.shopperId = normalizeText(savedData.shopperId);
+        }
+        if (normalizeText(savedData.snoozeCode || savedData.accessCode)) {
+          state.snoozeCode = normalizeText(savedData.snoozeCode || savedData.accessCode);
+          state.accessCode = state.snoozeCode;
+        }
+        if (previousShopperId && previousShopperId !== state.shopperId) {
+          state.sourceShopperId = previousShopperId;
+        }
+        persistAssessmentIdentity({
+          shopperId: state.shopperId,
+          snoozeCode: state.snoozeCode,
+          accessCode: state.accessCode,
+          sourceShopperId: state.sourceShopperId,
+          sessionId: state.sessionId,
+        });
+
         const resolved = await resolveAssessmentRecommendationResult(
           root,
           answers,

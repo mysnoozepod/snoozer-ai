@@ -374,7 +374,7 @@ async function testAssessmentRemainsStableIfZohoSyncFails() {
     assert.strictEqual(response.statusCode, 200, "assessment should stay 200 if Zoho sync throws");
     assert.strictEqual(body.ok, true, "assessment body should stay successful");
     assert(
-      captured.some((line) => line.includes("\"src\":\"assessment.zoho.error\"")),
+      captured.some((line) => line.includes("\"src\":\"customer.profile.zoho.identity.error\"")),
       "assessment should log Zoho sync failures"
     );
   } finally {
