@@ -281,9 +281,7 @@
     data-section-id="{{ section.id }}"
     data-product-handle="{{ product.handle }}"
     data-product-title="{{ product.title | escape }}"
-    data-book-url="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}"
-    data-book-label="{{ section.settings.booking_label | default: 'Book a Snooze Session' | escape }}"
-    data-add-label="{{ section.settings.primary_label | default: 'Add mattress to cart' | escape }}"
+    data-add-label="{{ section.settings.primary_label | default: 'Add to Cart' | escape }}"
     data-size-option-index="{{ size_option_index }}"
   >
     <script type="application/json" data-builder-product>
@@ -328,7 +326,7 @@
 
           <div class="snoozepod-builder__review" data-builder-review hidden>
             <div class="snoozepod-builder__review-card">
-              <h4 class="snoozepod-builder__review-title">Review your SnoozePod</h4>
+              <h4 class="snoozepod-builder__review-title">Review Build</h4>
               <dl class="snoozepod-builder__review-list" data-builder-review-list></dl>
             </div>
             <p class="snoozepod-builder__review-note">
@@ -360,9 +358,6 @@
           </div>
 
           <div class="snoozepod-builder__final-actions" data-builder-final-actions hidden>
-            <a class="button button--secondary snoozepod-builder__book" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}" data-builder-book>
-              {{ section.settings.booking_label | escape }}
-            </a>
             <button type="button" class="snoozepod-builder__reset" data-builder-reset>
               Change Answers
             </button>
@@ -405,18 +400,7 @@
       "type": "text",
       "id": "primary_label",
       "label": "Primary button label",
-      "default": "Add SnoozePod to cart"
-    },
-    {
-      "type": "text",
-      "id": "booking_label",
-      "label": "Booking label",
-      "default": "Book a Snooze Session"
-    },
-    {
-      "type": "url",
-      "id": "booking_link",
-      "label": "Booking link"
+      "default": "Add to Cart"
     }
   ],
   "presets": [

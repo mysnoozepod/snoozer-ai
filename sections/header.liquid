@@ -30,6 +30,11 @@
     display: flex;
   }
 
+  .header-wrapper {
+    position: relative;
+    z-index: 60;
+  }
+
   .list-menu {
     list-style: none;
     padding: 0;
@@ -374,14 +379,34 @@
     background: #ffffff;
   }
 
-  .header__snoozer-text {
+  .header__snoozer-copy {
+    display: flex;
     flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .header__snoozer-text {
     min-width: 0;
     font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
     font-size: 1.45rem;
     font-weight: 600;
     line-height: 1.25;
     color: #243247;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header__snoozer-hint {
+    display: none;
+    margin: 0;
+    color: rgba(36, 50, 71, 0.68);
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.14rem;
+    font-weight: 500;
+    line-height: 1.25;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -406,6 +431,8 @@
 
   .header__nav-row {
     border-top: 0.1rem solid rgba(var(--color-text-primary), 0.08);
+    position: relative;
+    z-index: 95;
   }
 
   .header__nav-row .header__menu-item {
@@ -424,6 +451,64 @@
   .header__nav-row .header__menu-item svg {
     width: 1.4rem;
     height: 1.4rem;
+  }
+
+  .header__nav-row header-menu,
+  .header__nav-row .mega-menu,
+  .header__nav-row details {
+    position: relative;
+  }
+
+  .header__nav-row details[open] {
+    z-index: 140;
+  }
+
+  .header__nav-row .header__submenu,
+  .header__nav-row .mega-menu__content {
+    background: #ffffff !important;
+    background-image: none !important;
+    border: 0.1rem solid rgba(7, 26, 68, 0.12);
+    border-radius: 1.6rem;
+    box-shadow: 0 1.8rem 3.6rem rgba(7, 26, 68, 0.14);
+    color: #071a44;
+    overflow: hidden;
+    z-index: 140;
+  }
+
+  .header__nav-row .header__submenu {
+    min-width: 26rem;
+    padding: 0.8rem 0;
+  }
+
+  .header__nav-row .header__submenu .header__menu-item,
+  .header__nav-row .mega-menu__link {
+    display: flex;
+    align-items: center;
+    min-height: auto;
+    color: #071a44;
+    text-decoration: none;
+  }
+
+  .header__nav-row .header__submenu .header__menu-item {
+    padding: 1rem 1.6rem;
+  }
+
+  .header__nav-row .header__submenu .header__menu-item:hover,
+  .header__nav-row .header__submenu .header__menu-item:focus-visible,
+  .header__nav-row .mega-menu__link:hover,
+  .header__nav-row .mega-menu__link:focus-visible {
+    background: #f6f8fc;
+    color: #071942;
+    outline: none;
+  }
+
+  .header__nav-row .mega-menu__content {
+    padding: 1.8rem 2rem;
+  }
+
+  .header__nav-row .mega-menu__list {
+    gap: 1.6rem 2.4rem;
+    padding: 0;
   }
 
   .header__snoozer-row .header__snoozer-pill {
@@ -735,10 +820,10 @@
 
   @media screen and (min-width: 990px) {
     .header__main {
-      grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr) auto;
+      grid-template-columns: minmax(24rem, 26rem) minmax(52rem, 58rem) minmax(34rem, 1fr);
       gap: 1.6rem;
-      min-height: 9.4rem;
-      padding: 1.2rem 0 1rem;
+      min-height: 9rem;
+      padding: 0.9rem 0;
       align-items: center;
     }
 
@@ -752,12 +837,12 @@
     }
 
     .header__heading-logo-wrapper {
-      max-width: 20rem;
+      max-width: 22rem;
       justify-content: flex-start;
     }
 
     .header__heading-logo {
-      max-width: 20rem;
+      max-width: 22rem;
     }
 
     .header__snoozer-entry {
@@ -768,9 +853,9 @@
       justify-self: center;
       position: relative;
       overflow: visible;
-      width: min(100%, 56rem);
+      width: min(100%, 58rem);
       min-width: 0;
-      max-width: 56rem;
+      max-width: 58rem;
       margin-top: 0;
       margin-bottom: 0;
       transform: none;
@@ -779,10 +864,10 @@
 
     .header__snoozer-entry .header__snoozer-pill {
       width: 100%;
-      max-width: 56rem;
-      height: 5.6rem;
-      min-height: 5.6rem;
-      padding: 0 1.8rem;
+      max-width: 58rem;
+      height: 5.8rem;
+      min-height: 5.8rem;
+      padding: 0 2rem;
       box-shadow: none;
     }
 
@@ -792,7 +877,13 @@
     }
 
     .header__snoozer-entry .header__snoozer-text {
-      font-size: 1.72rem;
+      font-size: 1.74rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .header__snoozer-entry .header__snoozer-hint {
+      display: block;
     }
 
     .header__snoozer-entry .header__snoozer-panel {
@@ -800,7 +891,7 @@
       background: #ffffff;
       border-color: rgba(7, 26, 68, 0.14);
       box-shadow: 0 3.2rem 7.2rem rgba(7, 26, 68, 0.18), 0 0.8rem 2rem rgba(7, 26, 68, 0.08);
-      z-index: 120;
+      z-index: 145;
     }
 
     .header__icons {
@@ -934,6 +1025,15 @@
       flex-wrap: nowrap;
     }
 
+    .header__nav-row .header__submenu {
+      top: calc(100% + 0.8rem);
+      left: 0;
+    }
+
+    .header__nav-row .mega-menu__content {
+      top: calc(100% + 0.8rem);
+    }
+
     .header__snoozer-row {
       display: none;
     }
@@ -945,12 +1045,29 @@
 
   @media screen and (min-width: 990px) and (max-width: 1240px) {
     .header__main {
-      grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr) auto;
-      gap: 1.2rem;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1rem 1.2rem;
+      min-height: auto;
+      padding: 1rem 0 1.1rem;
+    }
+
+    .header__branding {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .header__icons {
+      grid-column: 2;
+      grid-row: 1;
     }
 
     .header__snoozer-entry {
-      max-width: 52rem;
+      grid-column: 1 / -1;
+      grid-row: 2;
+      justify-self: center;
+      width: min(88%, 64rem);
+      max-width: 64rem;
+      margin-top: 0.2rem;
     }
 
     .header__store-meta {
@@ -1129,7 +1246,7 @@
         aria-label="Ask Snoozer anything about your sleep"
         aria-expanded="false"
         aria-controls="HeaderSnoozerPanelDesktop-{{ section.id }}"
-      >
+        >
         <img
           src="{{ 'snoozer-avatar.png' | asset_url }}"
           alt="Snoozer avatar"
@@ -1138,7 +1255,10 @@
           width="36"
           height="36"
         >
-        <span class="header__snoozer-text">Ask Snoozer</span>
+        <span class="header__snoozer-copy">
+          <span class="header__snoozer-text">Ask Snoozer</span>
+          <span class="header__snoozer-hint">Comfort, cooling, support, or visit help</span>
+        </span>
         <span class="header__snoozer-arrow" aria-hidden="true">
           <span class="svg-wrapper">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
         </span>
@@ -1176,7 +1296,10 @@
           width="36"
           height="36"
         >
-        <span class="header__snoozer-text">Ask Snoozer</span>
+        <span class="header__snoozer-copy">
+          <span class="header__snoozer-text">Ask Snoozer</span>
+          <span class="header__snoozer-hint">Comfort, cooling, support, or visit help</span>
+        </span>
         <span class="header__snoozer-arrow" aria-hidden="true">
           <span class="svg-wrapper">{{ 'icon-arrow.svg' | inline_asset_content }}</span>
         </span>

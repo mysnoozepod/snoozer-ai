@@ -32,24 +32,24 @@
       key: "protection",
       label: "Protection",
       title: "Choose mattress protection",
-      copy: "Add protection now or leave it out of this pass."
+      copy: "Choose from a short recommended set, or leave protection out of this pass."
     },
     {
       key: "pillow",
       label: "Pillow",
       title: "Choose your pillow",
-      copy: "Add the pillow you want or skip it for now."
+      copy: "Choose from a short recommended set, or skip pillows for now."
     },
     {
       key: "bedding",
       label: "Bedding",
       title: "Choose your bedding",
-      copy: "Finish with bedding or leave it out for now."
+      copy: "Finish with a short recommended set, or leave bedding out for now."
     },
     {
       key: "review",
       label: "Review",
-      title: "Review your SnoozePod",
+      title: "Review Build",
       copy: "Check your selections before you add this setup to cart."
     }
   ];
@@ -132,6 +132,12 @@
         subtitle: "Compare bedding finishes in person later."
       }
     ]
+  };
+
+  const ADDON_STEP_LIMITS = {
+    protection: 3,
+    pillow: 3,
+    bedding: 3
   };
 
   const SHARED_ASSESSMENT_KEY = "snooze.assessment";
@@ -739,6 +745,24 @@
     });
   }
 
+  function limitCatalogStepOptions(stepKey, options, state) {
+    const max = ADDON_STEP_LIMITS[stepKey];
+    if (!max || !Array.isArray(options) || options.length <= max) return options;
+
+    const limited = options.slice(0, max);
+    const selectedKey = state && state[stepKey] ? state[stepKey] : "";
+    if (!selectedKey || limited.some(function (option) { return option.key === selectedKey; })) {
+      return limited;
+    }
+
+    const selectedOption = options.find(function (option) {
+      return option.key === selectedKey;
+    });
+
+    if (!selectedOption) return limited;
+    return limited.slice(0, Math.max(0, max - 1)).concat(selectedOption);
+  }
+
   function getStepOptions(stepKey, state, catalogs, sizeOptions) {
     switch (stepKey) {
       case "size":
@@ -748,11 +772,11 @@
       case "motion":
         return allowedMotionOptionsForSize(state.size);
       case "protection":
-        return (catalogs.protection || []).concat(SYSTEM_OPTIONS.protection);
+        return limitCatalogStepOptions("protection", catalogs.protection || [], state).concat(SYSTEM_OPTIONS.protection);
       case "pillow":
-        return (catalogs.pillow || []).concat(SYSTEM_OPTIONS.pillow);
+        return limitCatalogStepOptions("pillow", catalogs.pillow || [], state).concat(SYSTEM_OPTIONS.pillow);
       case "bedding":
-        return (catalogs.bedding || []).concat(SYSTEM_OPTIONS.bedding);
+        return limitCatalogStepOptions("bedding", catalogs.bedding || [], state).concat(SYSTEM_OPTIONS.bedding);
       default:
         return [];
     }
@@ -1194,7 +1218,7 @@
       if (!reviewing) {
         const nextStep = stepList[currentIndex + 1];
         els.next.disabled = !canProceed(currentStep.key);
-        els.next.textContent = nextStep && nextStep.key === "review" ? "Review your SnoozePod" : "Next";
+        els.next.textContent = nextStep && nextStep.key === "review" ? "Review Build" : "Next";
       }
 
       if (els.submit) {

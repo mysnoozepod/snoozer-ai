@@ -17,9 +17,7 @@
       "type": "snoozepod-guided-pod-builder",
       "settings": {
         "heading": "Build this SnoozePod",
-        "primary_label": "Add SnoozePod to cart",
-        "booking_label": "Book a Snooze Session",
-        "booking_link": "/pages/book-a-snooze-session"
+        "primary_label": "Add to Cart"
       }
     },
     "facts": {

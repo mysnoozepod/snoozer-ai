@@ -368,16 +368,11 @@
 }
 
 .snoozepod-builder__final-actions {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   margin-top: 14px;
-}
-
-.snoozepod-builder__book.button--secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
 }
 
 .snoozepod-builder__reset {
@@ -390,7 +385,6 @@
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
-  justify-self: flex-start;
 }
 
 .snoozepod-builder__summary-price {
@@ -477,12 +471,7 @@
 
   .snoozepod-builder__summary-card {
     position: sticky;
-    top: 20px;
-  }
-
-  .snoozepod-builder__final-actions {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
+    top: 12px;
   }
 
   .snoozepod-builder__summary-list {
