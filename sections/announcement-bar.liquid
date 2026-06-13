@@ -1,6 +1,45 @@
 {{ 'component-slideshow.css' | asset_url | stylesheet_tag }}
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
 
+<style>
+  @media screen and (min-width: 990px) {
+    .utility-bar,
+    .utility-bar .page-width {
+      min-height: 3.8rem;
+    }
+
+    .announcement-bar__link,
+    .announcement-bar__announcement,
+    .announcement-bar__message {
+      min-height: 3.8rem;
+    }
+
+    .announcement-bar__link,
+    .announcement-bar__announcement {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    .announcement-bar__message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 0.7rem 0;
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
+
+    .announcement-bar__message span {
+      display: inline-block;
+      max-width: 100%;
+    }
+  }
+</style>
+
 {%- liquid
   assign social_icons = true
   if settings.social_facebook_link == blank and settings.social_instagram_link == blank and settings.social_youtube_link == blank and settings.social_tiktok_link == blank and settings.social_twitter_link == blank and settings.social_pinterest_link == blank and settings.social_snapchat_link == blank and settings.social_tumblr_link == blank and settings.social_vimeo_link == blank

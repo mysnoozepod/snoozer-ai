@@ -2,25 +2,29 @@
 
 {%- liquid
   assign anchor_kind = 'mattress'
-  assign anchor_copy = product.description | strip_html | strip_newlines | replace: '  ', ' ' | strip | truncate: 170
+  assign hero_label = 'Mattress'
+  assign product_summary = product.description | strip_html | strip_newlines | replace: '  ', ' ' | strip | truncate: 150
+  assign starter_copy = 'Start with this mattress, then choose the size, base, and comfort options around it.'
 
   if product.type contains 'Base' or product.type contains 'base' or product.handle contains 'base'
     assign anchor_kind = 'base'
+    assign hero_label = 'Base'
+    assign starter_copy = 'Start with this base, then choose the size and comfort options around it.'
   endif
 
   case product.handle
     when '12-dual-comfort-hybrid'
-      assign anchor_copy = 'Start your SnoozePod with this shared-sleep hybrid, then choose the size, base, motion, protection, pillow, and bedding around it.'
+      assign product_summary = 'Hybrid comfort with split-feel flexibility for shared sleep setups.'
     when '14-hybrid'
-      assign anchor_copy = 'Start your SnoozePod with this supportive hybrid, then choose the size, base, motion, protection, pillow, and bedding around it.'
+      assign product_summary = 'Supportive hybrid lift for shoppers who want stronger pushback and recovery.'
     when '12-all-foam-mattress'
-      assign anchor_copy = 'Start your SnoozePod with this contouring foam mattress, then choose the size, base, motion, protection, pillow, and bedding around it.'
+      assign product_summary = 'Deeper all-foam contour with more comfort depth than the 10-inch profile.'
     when '10-all-foam-mattress'
-      assign anchor_copy = 'Start your SnoozePod with this simpler foam mattress, then choose the size, base, motion, protection, pillow, and bedding around it.'
+      assign product_summary = 'Simpler all-foam contour with basic support for a cleaner starting point.'
   endcase
 
-  if anchor_copy == blank
-    assign anchor_copy = 'Start your SnoozePod with this product, then choose the size, base, motion, protection, pillow, and bedding around it.'
+  if product_summary == blank
+    assign product_summary = 'Start with this product as the foundation of your SnoozePod build.'
   endif
 
   assign image_media = product.media | where: 'media_type', 'image'
@@ -42,14 +46,14 @@
 
 {%- style -%}
   .snoozepod-pod-builder-hero-{{ section.id }} {
-    max-width: 1480px;
-    margin: 16px 16px 10px;
+    max-width: 1380px;
+    margin: 12px 16px 8px;
   }
 
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 16px;
     align-items: start;
   }
 
@@ -64,14 +68,14 @@
   }
 
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__media-card {
-    padding: 16px;
+    padding: 14px;
   }
 
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__media-stage {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 220px;
+    min-height: 240px;
     border-radius: 18px;
     background:
       radial-gradient(circle at top right, rgba(44, 66, 120, 0.08), transparent 38%),
@@ -81,7 +85,7 @@
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__main-image {
     display: block;
     width: 100%;
-    height: clamp(220px, 36vw, 360px);
+    height: clamp(240px, 48vw, 360px);
     object-fit: contain;
   }
 
@@ -97,7 +101,7 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 72px;
+    min-height: 76px;
     padding: 8px;
     border: 1px solid rgba(7, 25, 66, 0.12);
     border-radius: 16px;
@@ -118,7 +122,7 @@
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__thumb img {
     display: block;
     width: 100%;
-    max-height: 72px;
+    max-height: 76px;
     object-fit: contain;
   }
 
@@ -137,6 +141,8 @@
   }
 
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__info-card {
+    display: grid;
+    gap: 0;
     padding: 20px;
   }
 
@@ -165,7 +171,7 @@
   }
 
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__price {
-    margin-top: 14px;
+    margin-top: 12px;
   }
 
   .snoozepod-pod-builder-hero-{{ section.id }} .price {
@@ -175,8 +181,64 @@
   .snoozepod-pod-builder-hero-{{ section.id }} .price--large .price-item,
   .snoozepod-pod-builder-hero-{{ section.id }} .price__regular .price-item--regular,
   .snoozepod-pod-builder-hero-{{ section.id }} .price__sale .price-item--sale {
-    font-size: 22px;
+    font-size: 24px;
     line-height: 1.2;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__actions .button {
+    width: 100%;
+    min-height: 52px;
+    justify-content: center;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__reassurance {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.64);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__starter {
+    margin-top: 18px;
+    padding: 18px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 20px;
+    background: #f7f9fc;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__starter-title {
+    margin: 0;
+    color: #071942;
+    font-size: 24px;
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__starter-copy {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.78);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__starter-helper {
+    display: block;
+    margin-top: 10px;
+    color: rgba(7, 25, 66, 0.62);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  @media screen and (max-width: 989px) {
+    .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__info-wrapper {
+      order: -1;
+    }
   }
 
   @media screen and (min-width: 750px) {
@@ -196,13 +258,13 @@
 
   @media screen and (min-width: 990px) {
     .snoozepod-pod-builder-hero-{{ section.id }} {
-      margin: 20px auto 12px;
+      margin: 18px auto 12px;
       padding: 0 32px;
     }
 
     .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__grid {
-      grid-template-columns: minmax(0, 50fr) minmax(0, 50fr);
-      gap: 24px;
+      grid-template-columns: minmax(0, 0.52fr) minmax(0, 0.48fr);
+      gap: 20px;
     }
 
     .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__media-card,
@@ -211,25 +273,36 @@
     }
 
     .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__media-card {
-      padding: 18px;
+      padding: 16px;
     }
 
     .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__info-card {
-      padding: 24px 28px;
+      padding: 34px 36px;
     }
 
     .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__title {
       max-width: 11ch;
-      font-size: 40px;
+      font-size: 42px;
     }
 
     .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__main-image {
-      height: clamp(280px, 28vw, 400px);
+      height: clamp(360px, 34vw, 460px);
     }
 
     .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__thumbs {
-      grid-template-columns: repeat(auto-fit, minmax(82px, 96px));
+      grid-template-columns: repeat(auto-fit, minmax(80px, 92px));
       justify-content: flex-start;
+    }
+
+    .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__actions .button {
+      width: auto;
+      min-width: 220px;
+      min-height: 54px;
+    }
+
+    .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__starter {
+      margin-top: 22px;
+      padding: 22px 24px;
     }
   }
 {%- endstyle -%}
@@ -295,9 +368,9 @@
 
       <div class="snoozepod-pod-builder-hero__info-wrapper">
         <div class="snoozepod-pod-builder-hero__info-card">
-          <p class="snoozepod-pod-builder-hero__eyebrow">Pod Builder</p>
+          <p class="snoozepod-pod-builder-hero__eyebrow">{{ hero_label }}</p>
           <h1 class="snoozepod-pod-builder-hero__title">{{ product.title | escape }}</h1>
-          <p class="snoozepod-pod-builder-hero__copy">{{ anchor_copy }}</p>
+          <p class="snoozepod-pod-builder-hero__copy">{{ product_summary }}</p>
 
           <div class="snoozepod-pod-builder-hero__price">
             {%- render 'price',
@@ -307,6 +380,17 @@
               price_class: 'price--large'
             -%}
           </div>
+
+          <div class="snoozepod-pod-builder-hero__starter">
+            <h2 class="snoozepod-pod-builder-hero__starter-title">Build this SnoozePod</h2>
+            <p class="snoozepod-pod-builder-hero__starter-copy">{{ starter_copy }}</p>
+            <div class="snoozepod-pod-builder-hero__actions">
+              <a class="button button--primary" href="#pod-builder">Start Building</a>
+            </div>
+            <span class="snoozepod-pod-builder-hero__starter-helper">Your choices update before checkout.</span>
+          </div>
+
+          <p class="snoozepod-pod-builder-hero__reassurance">Review every selection before anything is added to cart.</p>
         </div>
       </div>
     </div>

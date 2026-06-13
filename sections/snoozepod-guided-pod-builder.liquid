@@ -276,6 +276,7 @@
 <section class="section">
   <div
     class="snoozepod-builder page-width"
+    id="pod-builder"
     data-snoozepod-builder
     data-section-id="{{ section.id }}"
     data-product-handle="{{ product.handle }}"
@@ -300,10 +301,10 @@
     <div class="snoozepod-builder__shell">
       <div class="snoozepod-builder__header">
         <div>
-          <p class="snoozepod-builder__eyebrow">Build My Pod</p>
+          <p class="snoozepod-builder__eyebrow">Guided build</p>
           <h2 class="snoozepod-builder__heading">{{ section.settings.heading | escape }}</h2>
           <p class="snoozepod-builder__intro">
-            Move through the same core build steps used in the showroom.
+            Choose your size, base, and comfort options before checkout.
           </p>
         </div>
         <div class="snoozepod-builder__step-chip" data-builder-step-count></div>
@@ -372,11 +373,11 @@
           <div class="snoozepod-builder__summary-head">
             <div>
               <p class="snoozepod-builder__summary-eyebrow">Current build</p>
-              <h3 class="snoozepod-builder__summary-title">Your SnoozePod</h3>
+              <h3 class="snoozepod-builder__summary-title">Pod summary</h3>
             </div>
 
             <div class="snoozepod-builder__summary-price">
-              <span class="snoozepod-builder__summary-price-label">Estimated total</span>
+              <span class="snoozepod-builder__summary-price-label">Running total</span>
               <strong data-builder-price>{{ product.selected_or_first_available_variant.price | money }}</strong>
             </div>
           </div>
@@ -398,7 +399,7 @@
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Build My Pod"
+      "default": "Build this SnoozePod"
     },
     {
       "type": "text",

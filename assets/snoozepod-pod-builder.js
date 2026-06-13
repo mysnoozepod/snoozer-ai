@@ -14,43 +14,43 @@
       key: "size",
       label: "Size",
       title: "Choose your size",
-      copy: "Use the actual mattress size you want to build around."
+      copy: "Pick the mattress size for the rest of this build."
     },
     {
       key: "base",
       label: "Base",
       title: "Choose your base",
-      copy: "Choose the real base product you want in this setup."
+      copy: "Choose the base you want in this setup."
     },
     {
       key: "motion",
       label: "Motion",
       title: "Choose your motion setup",
-      copy: "Motion only applies when you choose an adjustable base."
+      copy: "Only choose motion when you want an adjustable base."
     },
     {
       key: "protection",
       label: "Protection",
       title: "Choose mattress protection",
-      copy: "Choose the real protection product you want to add, or skip it for now."
+      copy: "Add protection now or leave it out of this pass."
     },
     {
       key: "pillow",
       label: "Pillow",
       title: "Choose your pillow",
-      copy: "Choose the real pillow product you want to build around."
+      copy: "Add the pillow you want or skip it for now."
     },
     {
       key: "bedding",
       label: "Bedding",
       title: "Choose your bedding",
-      copy: "Choose the real bedding layer you want to finish the pod with."
+      copy: "Finish with bedding or leave it out for now."
     },
     {
       key: "review",
       label: "Review",
       title: "Review your SnoozePod",
-      copy: "Check the selected products before you add the setup to cart."
+      copy: "Check your selections before you add this setup to cart."
     }
   ];
 
@@ -316,7 +316,9 @@
         kind: "size",
         title: value,
         summaryLabel: value,
-        subtitle: variant && variant.available ? "Available now." : "Check availability before you commit."
+        subtitle: variant && variant.available
+          ? "Build around this mattress size."
+          : "Build around this size and confirm availability before checkout."
       });
     });
 
