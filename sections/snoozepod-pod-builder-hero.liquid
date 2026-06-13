@@ -1,15 +1,19 @@
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'snoozepod-pod-builder.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'snoozepod-pod-builder.js' | asset_url }}" defer></script>
 
 {%- liquid
   assign anchor_kind = 'mattress'
   assign hero_label = 'Mattress'
   assign product_summary = product.description | strip_html | strip_newlines | replace: '  ', ' ' | strip | truncate: 150
   assign starter_copy = 'Start with this mattress, then choose the size, base, and comfort options around it.'
+  assign builder_intro_copy = 'Choose your size, base, and add-on path here. Your selected build total updates before checkout.'
 
   if product.type contains 'Base' or product.type contains 'base' or product.handle contains 'base'
     assign anchor_kind = 'base'
     assign hero_label = 'Base'
     assign starter_copy = 'Start with this base, then choose the size and comfort options around it.'
+    assign builder_intro_copy = 'Choose your size and support options here. Your selected build total updates before checkout.'
   endif
 
   case product.handle
@@ -174,6 +178,15 @@
     margin-top: 12px;
   }
 
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__price-label {
+    margin: 0 0 0.6rem;
+    color: rgba(7, 25, 66, 0.56);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
   .snoozepod-pod-builder-hero-{{ section.id }} .price {
     color: #071942;
   }
@@ -198,10 +211,14 @@
   }
 
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__reassurance {
-    margin: 10px 0 0;
+    margin: 14px 0 0;
     color: rgba(7, 25, 66, 0.64);
     font-size: 13px;
     line-height: 1.45;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__inline-builder {
+    margin-top: 18px;
   }
 
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__starter {
@@ -373,6 +390,7 @@
           <p class="snoozepod-pod-builder-hero__copy">{{ product_summary }}</p>
 
           <div class="snoozepod-pod-builder-hero__price">
+            <p class="snoozepod-pod-builder-hero__price-label">Mattress price</p>
             {%- render 'price',
               product: product,
               use_variant: true,
@@ -381,13 +399,15 @@
             -%}
           </div>
 
-          <div class="snoozepod-pod-builder-hero__starter">
-            <h2 class="snoozepod-pod-builder-hero__starter-title">Build this SnoozePod</h2>
-            <p class="snoozepod-pod-builder-hero__starter-copy">{{ starter_copy }}</p>
-            <div class="snoozepod-pod-builder-hero__actions">
-              <a class="button button--primary" href="#pod-builder">Start Building</a>
-            </div>
-            <span class="snoozepod-pod-builder-hero__starter-helper">Your choices update before checkout.</span>
+          <div class="snoozepod-pod-builder-hero__inline-builder">
+            {%- render 'snoozepod-guided-pod-builder-core',
+              builder_id: section.id,
+              builder_anchor_id: 'pod-builder',
+              builder_heading: 'Build this SnoozePod',
+              builder_intro: builder_intro_copy,
+              builder_primary_label: 'Add Selected Build to Cart',
+              builder_context: 'inline'
+            -%}
           </div>
 
           <p class="snoozepod-pod-builder-hero__reassurance">Review every selection before anything is added to cart.</p>

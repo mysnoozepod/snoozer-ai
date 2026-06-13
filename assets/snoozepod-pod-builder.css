@@ -4,10 +4,6 @@
   scroll-margin-top: 14rem;
 }
 
-.snoozepod-builder .page-width {
-  max-width: 1380px;
-}
-
 .snoozepod-builder__shell {
   max-width: 1380px;
   margin: 0 auto;
@@ -407,6 +403,47 @@
   gap: 12px;
 }
 
+.snoozepod-builder--inline {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+.snoozepod-builder--inline .snoozepod-builder__shell {
+  max-width: none;
+  padding: 0;
+}
+
+.snoozepod-builder--inline .snoozepod-builder__header,
+.snoozepod-builder--inline .snoozepod-builder__question-card,
+.snoozepod-builder--inline .snoozepod-builder__summary-card {
+  border-radius: 20px;
+  box-shadow: none;
+}
+
+.snoozepod-builder--inline .snoozepod-builder__header,
+.snoozepod-builder--inline .snoozepod-builder__question-card,
+.snoozepod-builder--inline .snoozepod-builder__summary-card {
+  padding: 18px;
+}
+
+.snoozepod-builder--inline .snoozepod-builder__layout {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.snoozepod-builder--inline .snoozepod-builder__options,
+.snoozepod-builder--inline .snoozepod-builder__summary-list {
+  grid-template-columns: 1fr;
+}
+
+.snoozepod-builder--inline .snoozepod-builder__summary-card {
+  position: static;
+}
+
+.snoozepod-builder--inline .snoozepod-builder__summary-price strong {
+  font-size: 20px;
+}
+
 @media screen and (min-width: 750px) {
   .snoozepod-builder__shell {
     padding-left: 24px;
@@ -429,6 +466,16 @@
 
   .snoozepod-builder__nav > * {
     flex: 0 0 auto;
+  }
+
+  .snoozepod-builder--inline .snoozepod-builder__shell {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .snoozepod-builder--inline .snoozepod-builder__options,
+  .snoozepod-builder--inline .snoozepod-builder__summary-list {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -480,5 +527,22 @@
 
   .snoozepod-builder__option-media {
     min-height: 150px;
+  }
+
+  .snoozepod-builder--inline .snoozepod-builder__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .snoozepod-builder--inline .snoozepod-builder__header {
+    padding: 20px 22px;
+  }
+
+  .snoozepod-builder--inline .snoozepod-builder__question-card,
+  .snoozepod-builder--inline .snoozepod-builder__summary-card {
+    padding: 20px 22px;
+  }
+
+  .snoozepod-builder--inline .snoozepod-builder__summary-list {
+    grid-template-columns: 1fr;
   }
 }

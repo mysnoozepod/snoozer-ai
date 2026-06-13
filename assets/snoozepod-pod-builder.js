@@ -32,19 +32,19 @@
       key: "protection",
       label: "Protection",
       title: "Choose mattress protection",
-      copy: "Choose from a short recommended set, or leave protection out of this pass."
+      copy: "Choose the recommended protector for this build, or skip it for now."
     },
     {
       key: "pillow",
       label: "Pillow",
       title: "Choose your pillow",
-      copy: "Choose from a short recommended set, or skip pillows for now."
+      copy: "Choose the recommended pillow for this build, or skip pillows for now."
     },
     {
       key: "bedding",
       label: "Bedding",
       title: "Choose your bedding",
-      copy: "Finish with a short recommended set, or leave bedding out for now."
+      copy: "Choose the recommended bedding set for this build, or leave bedding out for now."
     },
     {
       key: "review",
@@ -96,12 +96,6 @@
         title: "Skip protection for now",
         summaryLabel: "Skip protection for now",
         subtitle: "Keep the setup focused on the mattress for now."
-      },
-      {
-        key: "not_sure",
-        title: "Not sure yet",
-        summaryLabel: "Not sure yet",
-        subtitle: "Compare protection options in person later."
       }
     ],
     pillow: [
@@ -110,12 +104,6 @@
         title: "Skip pillow for now",
         summaryLabel: "Skip pillow for now",
         subtitle: "Leave pillows out of this pass."
-      },
-      {
-        key: "not_sure",
-        title: "Not sure yet",
-        summaryLabel: "Not sure yet",
-        subtitle: "Try the pillows in the showroom first."
       }
     ],
     bedding: [
@@ -124,20 +112,14 @@
         title: "Skip bedding for now",
         summaryLabel: "Skip bedding for now",
         subtitle: "Leave bedding out of this pass."
-      },
-      {
-        key: "not_sure",
-        title: "Not sure yet",
-        summaryLabel: "Not sure yet",
-        subtitle: "Compare bedding finishes in person later."
       }
     ]
   };
 
   const ADDON_STEP_LIMITS = {
-    protection: 3,
-    pillow: 3,
-    bedding: 3
+    protection: 1,
+    pillow: 1,
+    bedding: 1
   };
 
   const SHARED_ASSESSMENT_KEY = "snooze.assessment";

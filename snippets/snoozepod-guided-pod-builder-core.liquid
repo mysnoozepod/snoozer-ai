@@ -1,0 +1,385 @@
+{%- liquid
+  assign builder_id = builder_id | default: section.id
+  assign builder_anchor_id = builder_anchor_id | default: 'pod-builder'
+  assign builder_heading = builder_heading | default: section.settings.heading | default: 'Build this SnoozePod'
+  assign builder_intro = builder_intro | default: 'Choose your size, base, and comfort options before checkout.'
+  assign builder_primary_label = builder_primary_label | default: section.settings.primary_label | default: 'Add to Cart'
+  assign builder_context = builder_context | default: 'standalone'
+
+  assign size_option_index = 1
+  for option in product.options_with_values
+    assign option_name = option.name | downcase
+    if option_name contains 'size'
+      assign size_option_index = forloop.index
+      break
+    endif
+  endfor
+
+  assign base_catalog = ''
+  assign base_seen_handles = '|'
+  assign base_collection_handles = 'adjustable-bases,bases' | split: ','
+  for collection_handle in base_collection_handles
+    assign source_collection = collections[collection_handle]
+    if source_collection != blank
+      for source_product in source_collection.products
+        assign product_token = '|' | append: source_product.handle | append: '|'
+        unless base_seen_handles contains product_token
+          assign base_seen_handles = base_seen_handles | append: source_product.handle | append: '|'
+          assign base_type_label = source_product.type
+          assign base_is_adjustable = false
+          if source_product.tags contains 'base:adjustable' or source_product.handle contains 'adjustable'
+            assign base_is_adjustable = true
+            assign base_type_label = 'Adjustable base'
+          elsif base_type_label == blank
+            assign base_type_label = 'Base'
+          endif
+          capture base_catalog
+            echo base_catalog
+            echo '{"kind":"product","key":'
+            echo source_product.handle | json
+            echo ',"handle":'
+            echo source_product.handle | json
+            echo ',"title":'
+            echo source_product.title | json
+            echo ',"summaryLabel":'
+            echo source_product.title | json
+            echo ',"url":'
+            echo source_product.url | json
+            echo ',"typeLabel":'
+            echo base_type_label | json
+            echo ',"isAdjustable":'
+            echo base_is_adjustable | json
+            echo ',"image":'
+            if source_product.featured_image
+              echo source_product.featured_image | image_url: width: 560 | json
+            else
+              echo 'null'
+            endif
+            echo ',"imageAlt":'
+            if source_product.featured_image and source_product.featured_image.alt != blank
+              echo source_product.featured_image.alt | json
+            else
+              echo source_product.title | json
+            endif
+            echo ',"price":'
+            echo source_product.selected_or_first_available_variant.price | json
+            echo ',"variants":'
+            echo source_product.variants | json
+            echo '},'
+          endcapture
+        endunless
+      endfor
+    endif
+  endfor
+  assign base_catalog = base_catalog | remove_last: ','
+
+  assign protection_catalog = ''
+  assign protection_seen_handles = '|'
+  assign protection_collection = collections['mattress-protectors']
+  if protection_collection != blank
+    for source_product in protection_collection.products
+      assign product_token = '|' | append: source_product.handle | append: '|'
+      unless protection_seen_handles contains product_token
+        assign protection_seen_handles = protection_seen_handles | append: source_product.handle | append: '|'
+        capture protection_catalog
+          echo protection_catalog
+          echo '{"kind":"product","key":'
+          echo source_product.handle | json
+          echo ',"handle":'
+          echo source_product.handle | json
+          echo ',"title":'
+          echo source_product.title | json
+          echo ',"summaryLabel":'
+          echo source_product.title | json
+          echo ',"url":'
+          echo source_product.url | json
+          echo ',"typeLabel":"Mattress Protector","isAdjustable":false,"image":'
+          if source_product.featured_image
+            echo source_product.featured_image | image_url: width: 560 | json
+          else
+            echo 'null'
+          endif
+          echo ',"imageAlt":'
+          if source_product.featured_image and source_product.featured_image.alt != blank
+            echo source_product.featured_image.alt | json
+          else
+            echo source_product.title | json
+          endif
+          echo ',"price":'
+          echo source_product.selected_or_first_available_variant.price | json
+          echo ',"variants":'
+          echo source_product.variants | json
+          echo '},'
+        endcapture
+      endunless
+    endfor
+  endif
+  if protection_catalog == blank
+    assign protector_handles = 'icetech-mattress-protector,mattress-encasement,mattress-pad,smooth-mattress-protector,terry-mattress-protector,dri-tec-mattress-protector,ver-tex-mattress-protector' | split: ','
+    for protector_handle in protector_handles
+      assign source_product = all_products[protector_handle]
+      if source_product != blank
+        capture protection_catalog
+          echo protection_catalog
+          echo '{"kind":"product","key":'
+          echo source_product.handle | json
+          echo ',"handle":'
+          echo source_product.handle | json
+          echo ',"title":'
+          echo source_product.title | json
+          echo ',"summaryLabel":'
+          echo source_product.title | json
+          echo ',"url":'
+          echo source_product.url | json
+          echo ',"typeLabel":"Mattress Protector","isAdjustable":false,"image":'
+          if source_product.featured_image
+            echo source_product.featured_image | image_url: width: 560 | json
+          else
+            echo 'null'
+          endif
+          echo ',"imageAlt":'
+          if source_product.featured_image and source_product.featured_image.alt != blank
+            echo source_product.featured_image.alt | json
+          else
+            echo source_product.title | json
+          endif
+          echo ',"price":'
+          echo source_product.selected_or_first_available_variant.price | json
+          echo ',"variants":'
+          echo source_product.variants | json
+          echo '},'
+        endcapture
+      endif
+    endfor
+  endif
+  assign protection_catalog = protection_catalog | remove_last: ','
+
+  assign pillow_catalog = ''
+  assign pillow_seen_handles = '|'
+  assign pillow_collection_handles = 'shoulder-pillows,zoned-pillows,gel-dough-pillows,latex-pillows,filled-pillows,pillows' | split: ','
+  for collection_handle in pillow_collection_handles
+    assign source_collection = collections[collection_handle]
+    if source_collection != blank
+      for source_product in source_collection.products
+        assign product_token = '|' | append: source_product.handle | append: '|'
+        unless pillow_seen_handles contains product_token
+          assign pillow_seen_handles = pillow_seen_handles | append: source_product.handle | append: '|'
+          assign pillow_type_label = source_product.type
+          if source_product.tags contains 'Shoulder Pillow'
+            assign pillow_type_label = 'Shoulder Pillow'
+          elsif source_product.tags contains 'Zoned Pillow'
+            assign pillow_type_label = 'Zoned Pillow'
+          elsif source_product.tags contains 'Latex Pillow'
+            assign pillow_type_label = 'Latex Pillow'
+          elsif source_product.tags contains 'Gel Pillow'
+            assign pillow_type_label = 'Gel Pillow'
+          elsif source_product.tags contains 'Filled Pillow'
+            assign pillow_type_label = 'Filled Pillow'
+          elsif source_product.tags contains 'Travel Pillow'
+            assign pillow_type_label = 'Travel Pillow'
+          endif
+          if pillow_type_label == blank
+            assign pillow_type_label = 'Pillow'
+          endif
+          capture pillow_catalog
+            echo pillow_catalog
+            echo '{"kind":"product","key":'
+            echo source_product.handle | json
+            echo ',"handle":'
+            echo source_product.handle | json
+            echo ',"title":'
+            echo source_product.title | json
+            echo ',"summaryLabel":'
+            echo source_product.title | json
+            echo ',"url":'
+            echo source_product.url | json
+            echo ',"typeLabel":'
+            echo pillow_type_label | json
+            echo ',"isAdjustable":false,"image":'
+            if source_product.featured_image
+              echo source_product.featured_image | image_url: width: 560 | json
+            else
+              echo 'null'
+            endif
+            echo ',"imageAlt":'
+            if source_product.featured_image and source_product.featured_image.alt != blank
+              echo source_product.featured_image.alt | json
+            else
+              echo source_product.title | json
+            endif
+            echo ',"price":'
+            echo source_product.selected_or_first_available_variant.price | json
+            echo ',"variants":'
+            echo source_product.variants | json
+            echo '},'
+          endcapture
+        endunless
+      endfor
+    endif
+  endfor
+  assign pillow_catalog = pillow_catalog | remove_last: ','
+
+  assign bedding_catalog = ''
+  assign bedding_seen_handles = '|'
+  assign bedding_collection_handles = 'sheet-sets,bedding' | split: ','
+  for collection_handle in bedding_collection_handles
+    assign source_collection = collections[collection_handle]
+    if source_collection != blank
+      for source_product in source_collection.products
+        assign product_token = '|' | append: source_product.handle | append: '|'
+        unless bedding_seen_handles contains product_token
+          assign bedding_seen_handles = bedding_seen_handles | append: source_product.handle | append: '|'
+          assign bedding_type_label = source_product.type
+          if source_product.tags contains 'Sheet Set'
+            assign bedding_type_label = 'Sheet Set'
+          elsif source_product.tags contains 'Bedding'
+            assign bedding_type_label = 'Bedding'
+          endif
+          if bedding_type_label == blank
+            assign bedding_type_label = 'Bedding'
+          endif
+          capture bedding_catalog
+            echo bedding_catalog
+            echo '{"kind":"product","key":'
+            echo source_product.handle | json
+            echo ',"handle":'
+            echo source_product.handle | json
+            echo ',"title":'
+            echo source_product.title | json
+            echo ',"summaryLabel":'
+            echo source_product.title | json
+            echo ',"url":'
+            echo source_product.url | json
+            echo ',"typeLabel":'
+            echo bedding_type_label | json
+            echo ',"isAdjustable":false,"image":'
+            if source_product.featured_image
+              echo source_product.featured_image | image_url: width: 560 | json
+            else
+              echo 'null'
+            endif
+            echo ',"imageAlt":'
+            if source_product.featured_image and source_product.featured_image.alt != blank
+              echo source_product.featured_image.alt | json
+            else
+              echo source_product.title | json
+            endif
+            echo ',"price":'
+            echo source_product.selected_or_first_available_variant.price | json
+            echo ',"variants":'
+            echo source_product.variants | json
+            echo '},'
+          endcapture
+        endunless
+      endfor
+    endif
+  endfor
+  assign bedding_catalog = bedding_catalog | remove_last: ','
+-%}
+
+<div
+  class="snoozepod-builder{% if builder_context == 'inline' %} snoozepod-builder--inline{% endif %}"
+  id="{{ builder_anchor_id }}"
+  data-snoozepod-builder
+  data-section-id="{{ builder_id }}"
+  data-product-handle="{{ product.handle }}"
+  data-product-title="{{ product.title | escape }}"
+  data-add-label="{{ builder_primary_label | escape }}"
+  data-size-option-index="{{ size_option_index }}"
+>
+  <script type="application/json" data-builder-product>
+    {
+      "selectedVariantId": {{ product.selected_or_first_available_variant.id | json }},
+      "variants": {{ product.variants | json }},
+      "options": {{ product.options_with_values | json }}
+    }
+  </script>
+  <script type="application/json" data-builder-catalog="base">[{{ base_catalog }}]</script>
+  <script type="application/json" data-builder-catalog="protection">[{{ protection_catalog }}]</script>
+  <script type="application/json" data-builder-catalog="pillow">[{{ pillow_catalog }}]</script>
+  <script type="application/json" data-builder-catalog="bedding">[{{ bedding_catalog }}]</script>
+
+  <div class="snoozepod-builder__shell">
+    <div class="snoozepod-builder__header">
+      <div>
+        <p class="snoozepod-builder__eyebrow">Guided build</p>
+        <h2 class="snoozepod-builder__heading">{{ builder_heading | escape }}</h2>
+        <p class="snoozepod-builder__intro">{{ builder_intro | escape }}</p>
+      </div>
+      <div class="snoozepod-builder__step-chip" data-builder-step-count></div>
+    </div>
+
+    <div class="snoozepod-builder__progress" aria-hidden="true">
+      <span data-builder-progress></span>
+    </div>
+
+    <div class="snoozepod-builder__layout">
+      <div class="snoozepod-builder__question-card">
+        <div class="snoozepod-builder__step-pills" data-builder-steps></div>
+
+        <div class="snoozepod-builder__question-head">
+          <p class="snoozepod-builder__step-label" data-builder-step-label></p>
+          <h3 class="snoozepod-builder__step-title" data-builder-step-title></h3>
+          <p class="snoozepod-builder__step-copy" data-builder-step-copy></p>
+        </div>
+
+        <div class="snoozepod-builder__options" data-builder-options></div>
+
+        <div class="snoozepod-builder__review" data-builder-review hidden>
+          <div class="snoozepod-builder__review-card">
+            <h4 class="snoozepod-builder__review-title">Review Build</h4>
+            <dl class="snoozepod-builder__review-list" data-builder-review-list></dl>
+          </div>
+          <p class="snoozepod-builder__review-note">
+            Selected products add to cart. Skip choices stay out of the cart.
+          </p>
+        </div>
+
+        <form method="post" action="{{ routes.cart_add_url }}" class="snoozepod-builder__cart-form" data-builder-form hidden>
+          <input type="hidden" name="id" value="">
+          <input type="hidden" name="quantity" value="1">
+          <input type="hidden" name="properties[SnoozePod Size]" value="">
+          <input type="hidden" name="properties[SnoozePod Base Direction]" value="">
+          <input type="hidden" name="properties[SnoozePod Motion Direction]" value="">
+          <input type="hidden" name="properties[SnoozePod Protection Direction]" value="">
+          <input type="hidden" name="properties[SnoozePod Pillow Direction]" value="">
+          <input type="hidden" name="properties[SnoozePod Bedding Direction]" value="">
+          <button type="submit" class="button button--primary snoozepod-builder__submit" data-builder-submit>
+            {{ builder_primary_label | escape }}
+          </button>
+        </form>
+
+        <div class="snoozepod-builder__nav">
+          <button type="button" class="button button--secondary snoozepod-builder__back" data-builder-back>
+            Back
+          </button>
+          <button type="button" class="button button--primary snoozepod-builder__next" data-builder-next>
+            Next
+          </button>
+        </div>
+
+        <div class="snoozepod-builder__final-actions" data-builder-final-actions hidden>
+          <button type="button" class="snoozepod-builder__reset" data-builder-reset>
+            Change Answers
+          </button>
+        </div>
+      </div>
+
+      <div class="snoozepod-builder__summary-card">
+        <div class="snoozepod-builder__summary-head">
+          <div>
+            <p class="snoozepod-builder__summary-eyebrow">Selected build</p>
+            <h3 class="snoozepod-builder__summary-title">Choices + total</h3>
+          </div>
+
+          <div class="snoozepod-builder__summary-price">
+            <span class="snoozepod-builder__summary-price-label">Build total</span>
+            <strong data-builder-price>{{ product.selected_or_first_available_variant.price | money }}</strong>
+          </div>
+        </div>
+
+        <dl class="snoozepod-builder__summary-list" data-builder-summary></dl>
+      </div>
+    </div>
+  </div>
+</div>

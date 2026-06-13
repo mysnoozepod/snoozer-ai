@@ -125,11 +125,27 @@
     color: #ffffff;
   }
 
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__eyebrow {
+    margin: 0 0 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__label-head h2 {
     margin: 0;
     font-size: 24px;
     line-height: 1;
     letter-spacing: -0.03em;
+  }
+
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__lead {
+    margin: 0.9rem 0 0;
+    color: rgba(255, 255, 255, 0.84);
+    font-size: 14px;
+    line-height: 1.4;
   }
 
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__body {
@@ -141,8 +157,7 @@
   }
 
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__meta,
-  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__row,
-  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__footer {
+  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 14px;
@@ -169,13 +184,6 @@
 
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__value {
     text-align: right;
-  }
-
-  .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__footer {
-    display: block;
-    color: rgba(7, 25, 66, 0.78);
-    font-size: 13px;
-    font-weight: 600;
   }
 
   .snoozepod-sleep-facts-{{ section.id }} .snoozepod-sleep-facts__comparison {
@@ -353,27 +361,29 @@
   <div class="snoozepod-sleep-facts-{{ section.id }}">
     <div class="snoozepod-sleep-facts__card">
       <div class="snoozepod-sleep-facts__label-head">
-        <h2>SLEEP NUTRITION FACTS</h2>
+        <p class="snoozepod-sleep-facts__eyebrow">Mattress at a glance</p>
+        <h2>Benefit table</h2>
+        <p class="snoozepod-sleep-facts__lead">Simple comparison points for this mattress before you build the rest of the setup around it.</p>
       </div>
 
       <div class="snoozepod-sleep-facts__body">
         <div class="snoozepod-sleep-facts__rule"></div>
         <div class="snoozepod-sleep-facts__meta">
-          <div class="snoozepod-sleep-facts__name"><strong>Serving Size:</strong> 1 SnoozePod Setup</div>
-          <div class="snoozepod-sleep-facts__value"><strong>Primary Ingredient:</strong> {{ product.title | escape }}</div>
+          <div class="snoozepod-sleep-facts__name"><strong>Mattress</strong></div>
+          <div class="snoozepod-sleep-facts__value">{{ product.title | escape }}</div>
         </div>
         <div class="snoozepod-sleep-facts__rule"></div>
 
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Comfort Feel</strong></div>
+          <div class="snoozepod-sleep-facts__name"><strong>Feel</strong></div>
           <div class="snoozepod-sleep-facts__value">{{ comfort_feel }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Support</strong></div>
+          <div class="snoozepod-sleep-facts__name"><strong>Support direction</strong></div>
           <div class="snoozepod-sleep-facts__value">{{ support }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Best For</strong></div>
+          <div class="snoozepod-sleep-facts__name"><strong>Best match</strong></div>
           <div class="snoozepod-sleep-facts__value">{{ best_for }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
@@ -381,21 +391,16 @@
           <div class="snoozepod-sleep-facts__value">{{ pressure_relief }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Motion Setup</strong></div>
+          <div class="snoozepod-sleep-facts__name"><strong>Base + motion fit</strong></div>
           <div class="snoozepod-sleep-facts__value" data-sleep-fact-motion>{{ motion_setup }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Partner Fit</strong></div>
+          <div class="snoozepod-sleep-facts__name"><strong>Partner setup</strong></div>
           <div class="snoozepod-sleep-facts__value">{{ partner_fit }}</div>
         </div>
         <div class="snoozepod-sleep-facts__row">
-          <div class="snoozepod-sleep-facts__name"><strong>Showroom Test</strong></div>
+          <div class="snoozepod-sleep-facts__name"><strong>Showroom compare</strong></div>
           <div class="snoozepod-sleep-facts__value">{{ showroom_test }}</div>
-        </div>
-
-        <div class="snoozepod-sleep-facts__rule"></div>
-        <div class="snoozepod-sleep-facts__footer">
-          Recommended Daily Rest: 7-9 hours
         </div>
       </div>
     </div>
@@ -404,7 +409,7 @@
       <div class="snoozepod-sleep-facts__comparison">
         <div class="snoozepod-sleep-facts__comparison-head">
           <h2 class="snoozepod-sleep-facts__comparison-title">Compare this with</h2>
-          <p class="snoozepod-sleep-facts__comparison-copy">A few nearby SnoozePod options worth checking beside this setup.</p>
+          <p class="snoozepod-sleep-facts__comparison-copy">A few nearby mattress options worth checking beside this one.</p>
         </div>
 
         <div class="snoozepod-sleep-facts__comparison-grid">

@@ -22,36 +22,30 @@
       }
     },
     "value-strip": {
-      "type": "multicolumn",
+      "type": "snoozepod-trust-strip",
       "blocks": {
         "value-1": {
-          "type": "column",
+          "type": "trust_item",
           "settings": {
             "icon": "map_pin",
             "title": "Shop Your Way",
-            "text": "<p>Online or through a private showroom visit.</p>",
-            "link_label": "",
-            "link": "shopify://pages/book-a-snooze-session"
+            "short_text": "Online or through a private showroom visit."
           }
         },
         "value-2": {
-          "type": "column",
+          "type": "trust_item",
           "settings": {
             "icon": "question_mark",
-            "title": "Get Guided Answers",
-            "text": "<p>Ask Snoozer for help with comfort, support, cooling, and fit.</p>",
-            "link_label": "",
-            "link": ""
+            "title": "Get Clear Guidance",
+            "short_text": "Use the header HUD to narrow comfort, support, cooling, and fit."
           }
         },
         "value-3": {
-          "type": "column",
+          "type": "trust_item",
           "settings": {
             "icon": "box",
             "title": "Build Your SnoozePod",
-            "text": "<p>Bring mattress, base, pillows, and bedding into one clear plan.</p>",
-            "link_label": "",
-            "link": ""
+            "short_text": "Bring mattress, base, pillows, and bedding into one cleaner plan."
           }
         }
       },
@@ -61,20 +55,9 @@
         "value-3"
       ],
       "settings": {
-        "title": "",
-        "heading_size": "h2",
-        "image_width": "third",
-        "image_ratio": "adapt",
-        "columns_desktop": 3,
-        "column_alignment": "center",
-        "background_style": "none",
-        "button_label": "",
-        "button_link": "",
         "color_scheme": "scheme-1",
-        "columns_mobile": "1",
-        "swipe_on_mobile": false,
-        "padding_top": 48,
-        "padding_bottom": 40
+        "padding_top": 20,
+        "padding_bottom": 20
       }
     },
     "featured_collection_666q7i": {
@@ -216,56 +199,11 @@
         "padding_bottom": 4
       }
     },
-    "snoozer_guidance_panel_J4mzcT": {
-      "type": "snoozer-guidance-panel",
-      "blocks": {
-        "prompt_1": {
-          "type": "prompt_chip",
-          "settings": {
-            "label": "I sleep hot"
-          }
-        },
-        "prompt_2": {
-          "type": "prompt_chip",
-          "settings": {
-            "label": "I need better support"
-          }
-        },
-        "prompt_3": {
-          "type": "prompt_chip",
-          "settings": {
-            "label": "I want less pressure"
-          }
-        },
-        "prompt_4": {
-          "type": "prompt_chip",
-          "settings": {
-            "label": "Help me compare options"
-          }
-        }
-      },
-      "block_order": [
-        "prompt_1",
-        "prompt_2",
-        "prompt_3",
-        "prompt_4"
-      ],
-      "settings": {
-        "heading": "Need Help Narrowing It Down?",
-        "subheading": "Ask Snoozer about comfort, support, cooling, bases, pillows, or what to test during your visit.",
-        "cta_label": "Ask Snoozer",
-        "cta_link": "",
-        "use_snoozer_trigger": true,
-        "color_scheme": "scheme-1",
-        "padding_top": 0,
-        "padding_bottom": 4
-      }
-    },
     "snoozepod_final_build_cta_K8nqLs": {
       "type": "snoozepod-final-build-cta",
       "settings": {
         "heading": "Build Your SnoozePod",
-        "subheading": "Create a calmer sleep environment around how you rest, recover, cool down, and wake up.",
+        "subheading": "Choose a mattress direction, base path, and finishing focus before you dive into the full build.",
         "primary_cta_label": "Start Building Your Sleep Environment",
         "primary_cta_link": "",
         "secondary_cta_label": "Plan It With Snoozer",
@@ -320,8 +258,8 @@
       ],
       "settings": {
         "color_scheme": "scheme-1",
-        "padding_top": 0,
-        "padding_bottom": 4
+        "padding_top": 20,
+        "padding_bottom": 24
       }
     }
   },
@@ -331,7 +269,6 @@
     "featured_collection_666q7i",
     "image_with_text_wUxjfL",
     "snoozepod_environment_GYx7gN",
-    "snoozer_guidance_panel_J4mzcT",
     "snoozepod_final_build_cta_K8nqLs",
     "snoozepod_trust_strip_F6kqDr"
   ]

@@ -4,89 +4,210 @@
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
-  .snoozepod-final-cta-{{ section.id }} {
-    width: min(100%, var(--content-max));
+  .snoozepod-starter-builder-{{ section.id }} {
+    width: min(100%, var(--wide-content-max));
     margin: 0 auto;
     padding-left: var(--page-padding-mobile);
     padding-right: var(--page-padding-mobile);
   }
 
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__card {
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__card {
     position: relative;
     overflow: hidden;
-    padding: 24px;
-    border-radius: var(--radius-xl);
+    padding: 22px;
+    border: 1px solid rgba(7, 25, 66, 0.1);
+    border-radius: 28px;
     background:
-      linear-gradient(135deg, rgba(7, 26, 68, 0.96) 0%, rgba(17, 36, 88, 0.92) 58%, rgba(32, 58, 128, 0.92) 100%);
-    color: #ffffff;
+      radial-gradient(circle at top right, rgba(44, 66, 120, 0.08), transparent 36%),
+      linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+    box-shadow: 0 18px 44px rgba(7, 25, 66, 0.06);
   }
 
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 42%);
-    pointer-events: none;
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__grid {
+    display: grid;
+    gap: 18px;
   }
 
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__media {
-    position: absolute;
-    inset: 0;
-    opacity: 0.2;
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__eyebrow {
+    margin: 0 0 10px;
+    color: rgba(7, 25, 66, 0.58);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
   }
 
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__content {
-    position: relative;
-    z-index: 1;
-  }
-
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__heading {
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__heading {
     margin: 0;
-    color: #ffffff;
+    color: #071942;
     font-size: 28px;
-    line-height: 1.05;
+    line-height: 1.04;
     letter-spacing: -0.03em;
   }
 
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__subheading {
-    margin: var(--sp-3) 0 0;
-    max-width: 56rem;
-    color: rgba(255, 255, 255, 0.86);
-    font-size: var(--body-mobile);
-    line-height: 1.4;
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__subheading {
+    margin: 12px 0 0;
+    max-width: 62rem;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 15px;
+    line-height: 1.5;
   }
 
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions {
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__steps {
     display: grid;
-    gap: var(--sp-3);
-    margin-top: var(--sp-5);
+    gap: 14px;
+    margin-top: 18px;
   }
 
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button {
-    width: 100%;
-    min-height: var(--button-height-mobile);
-    border-radius: var(--button-radius);
-    justify-content: center;
-    font-size: var(--body-mobile);
-    font-weight: 600;
-  }
-
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button--primary {
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__step {
+    padding: 16px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 22px;
     background: #ffffff;
-    color: rgb(var(--color-primary-navy));
-    border-color: #ffffff;
   }
 
-  .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button--secondary {
-    background: transparent;
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__step-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #edf4ff;
+    color: #124394;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__step-title {
+    margin: 12px 0 0;
+    color: #071942;
+    font-size: 20px;
+    line-height: 1.15;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__step-copy {
+    margin: 8px 0 0;
+    color: rgba(7, 25, 66, 0.72);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__option-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 16px;
+    border: 1px solid rgba(7, 25, 66, 0.12);
+    border-radius: 999px;
+    background: #f8fafd;
+    color: #071942;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__option:hover,
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__option:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(7, 25, 66, 0.24);
+    box-shadow: 0 12px 24px rgba(7, 25, 66, 0.08);
+    outline: none;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__option.is-selected {
+    background: #071942;
+    border-color: #071942;
     color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.7);
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary {
+    padding: 18px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 24px;
+    background: #ffffff;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-title {
+    margin: 0;
+    color: #071942;
+    font-size: 24px;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-copy {
+    margin: 10px 0 0;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-list {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0 0;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-row {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 18px;
+    background: #f8fafd;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-label {
+    color: rgba(7, 25, 66, 0.56);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-value {
+    color: #071942;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__recommendation {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: #edf4ff;
+    color: #071942;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__actions .button {
+    width: 100%;
+    min-height: 52px;
+    justify-content: center;
+    border-radius: 999px;
   }
 
   @media screen and (min-width: 750px) {
@@ -95,135 +216,252 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
 
-    .snoozepod-final-cta-{{ section.id }} {
+    .snoozepod-starter-builder-{{ section.id }} {
       padding-left: var(--page-padding-tablet);
       padding-right: var(--page-padding-tablet);
     }
   }
 
   @media screen and (min-width: 990px) {
-    .snoozepod-final-cta-{{ section.id }} {
-      width: min(100%, var(--wide-content-max));
+    .snoozepod-starter-builder-{{ section.id }} {
       padding-left: 64px;
       padding-right: 64px;
     }
 
-    body.template-index #MainContent .snoozepod-final-cta-section.section {
-      margin-top: 0;
+    .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__card {
+      padding: 34px 36px;
     }
 
-    .section-{{ section.id }}-padding {
-      padding-top: 44px !important;
-      padding-bottom: 48px !important;
+    .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__grid {
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 22px;
+      align-items: start;
     }
 
-    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__card {
-      display: flex;
-      align-items: center;
-      min-height: 0;
-      max-height: none;
-      padding: 36px 40px;
-      border-radius: 28px;
+    .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__heading {
+      font-size: 36px;
     }
 
-    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__heading {
-      max-width: 620px;
-      font-size: 34px;
-      line-height: 1.02;
+    .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary {
+      position: sticky;
+      top: 12px;
     }
 
-    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__subheading {
-      max-width: 620px;
-      margin-top: 12px;
-      font-size: var(--body-desktop);
-    }
-
-    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: start;
-      margin-top: 20px;
-    }
-
-    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button {
-      width: auto;
-      min-height: 54px;
-      font-size: var(--body-desktop);
-    }
-
-    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button--primary {
-      min-width: 280px;
-    }
-
-    .snoozepod-final-cta-{{ section.id }} .snoozepod-final-cta__actions .button--secondary {
-      min-width: 240px;
+    .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   @media screen and (min-width: 1440px) {
-    .snoozepod-final-cta-{{ section.id }} {
+    .snoozepod-starter-builder-{{ section.id }} {
       padding-left: 72px;
       padding-right: 72px;
     }
   }
 {%- endstyle -%}
 
-<section class="section color-{{ section.settings.color_scheme }} gradient snoozepod-final-cta-section">
+<section class="section color-{{ section.settings.color_scheme }} gradient">
   <div class="section-{{ section.id }}-padding">
-    <div class="snoozepod-final-cta-{{ section.id }}">
-      <div class="snoozepod-final-cta__card">
-        {%- if section.settings.background_image != blank -%}
-          <div class="snoozepod-final-cta__media" aria-hidden="true">
-            {{
-              section.settings.background_image
-              | image_url: width: 1600
-              | image_tag:
-                widths: '480, 720, 960, 1280, 1600',
-                sizes: '100vw',
-                loading: 'lazy',
-                alt: ''
-            }}
+    <div class="snoozepod-starter-builder-{{ section.id }}">
+      <div class="snoozepod-starter-builder__card" data-starter-builder>
+        <div class="snoozepod-starter-builder__grid">
+          <div>
+            <p class="snoozepod-starter-builder__eyebrow">3-step starter builder</p>
+            <h2 class="snoozepod-starter-builder__heading">{{ section.settings.heading | escape }}</h2>
+            <p class="snoozepod-starter-builder__subheading">{{ section.settings.subheading | escape }}</p>
+
+            <div class="snoozepod-starter-builder__steps">
+              <div class="snoozepod-starter-builder__step">
+                <span class="snoozepod-starter-builder__step-count">Step 1</span>
+                <h3 class="snoozepod-starter-builder__step-title">Choose your mattress direction</h3>
+                <p class="snoozepod-starter-builder__step-copy">Start with the feel and support direction that sounds closest to what you want to test first.</p>
+                <div class="snoozepod-starter-builder__option-list" role="list">
+                  <button type="button" class="snoozepod-starter-builder__option is-selected" data-step="mattress" data-value="foam">Foam contour</button>
+                  <button type="button" class="snoozepod-starter-builder__option" data-step="mattress" data-value="balanced">Balanced hybrid</button>
+                  <button type="button" class="snoozepod-starter-builder__option" data-step="mattress" data-value="lift">Stronger lift</button>
+                </div>
+              </div>
+
+              <div class="snoozepod-starter-builder__step">
+                <span class="snoozepod-starter-builder__step-count">Step 2</span>
+                <h3 class="snoozepod-starter-builder__step-title">Pick your base path</h3>
+                <p class="snoozepod-starter-builder__step-copy">Decide whether you want to keep the setup simple or build around a base from the start.</p>
+                <div class="snoozepod-starter-builder__option-list" role="list">
+                  <button type="button" class="snoozepod-starter-builder__option is-selected" data-step="base" data-value="none">Mattress only</button>
+                  <button type="button" class="snoozepod-starter-builder__option" data-step="base" data-value="platform">Platform / simple base</button>
+                  <button type="button" class="snoozepod-starter-builder__option" data-step="base" data-value="adjustable">Adjustable base path</button>
+                </div>
+              </div>
+
+              <div class="snoozepod-starter-builder__step">
+                <span class="snoozepod-starter-builder__step-count">Step 3</span>
+                <h3 class="snoozepod-starter-builder__step-title">Choose how far to finish the room</h3>
+                <p class="snoozepod-starter-builder__step-copy">Keep it mattress-focused or move toward a fuller sleep-environment plan.</p>
+                <div class="snoozepod-starter-builder__option-list" role="list">
+                  <button type="button" class="snoozepod-starter-builder__option is-selected" data-step="finish" data-value="simple">Keep it simple</button>
+                  <button type="button" class="snoozepod-starter-builder__option" data-step="finish" data-value="pillows">Add pillow guidance</button>
+                  <button type="button" class="snoozepod-starter-builder__option" data-step="finish" data-value="full">Complete the full SnoozePod</button>
+                </div>
+              </div>
+            </div>
           </div>
-        {%- endif -%}
-        <div class="snoozepod-final-cta__content">
-          {%- if section.settings.heading != blank -%}
-            <h2 class="snoozepod-final-cta__heading">{{ section.settings.heading | escape }}</h2>
-          {%- endif -%}
-          {%- if section.settings.subheading != blank -%}
-            <p class="snoozepod-final-cta__subheading">{{ section.settings.subheading | escape }}</p>
-          {%- endif -%}
-          <div class="snoozepod-final-cta__actions">
-            {%- if section.settings.primary_cta_label != blank -%}
-              <a
-                class="button button--primary"
-                href="{% if section.settings.primary_cta_link != blank %}{{ section.settings.primary_cta_link }}{% else %}{{ routes.collections_url }}{% endif %}"
-              >
-                {{ section.settings.primary_cta_label | escape }}
-              </a>
-            {%- endif -%}
-            {%- if section.settings.secondary_cta_label != blank -%}
-              {%- if section.settings.use_snoozer_trigger_secondary or section.settings.secondary_cta_link == blank -%}
-                <button
-                  type="button"
-                  class="button button--secondary"
-                  data-snoozer-trigger
-                  data-snoozer-source="final-build-cta"
-                >
-                  {{ section.settings.secondary_cta_label | escape }}
-                </button>
-              {%- else -%}
-                <a class="button button--secondary" href="{{ section.settings.secondary_cta_link }}">
-                  {{ section.settings.secondary_cta_label | escape }}
-                </a>
-              {%- endif -%}
-            {%- endif -%}
-          </div>
+
+          <aside class="snoozepod-starter-builder__summary">
+            <p class="snoozepod-starter-builder__eyebrow">Your starting path</p>
+            <h3 class="snoozepod-starter-builder__summary-title">Build summary</h3>
+            <p class="snoozepod-starter-builder__summary-copy">Use this as your clean starting point, then refine the details on the product page.</p>
+
+            <div class="snoozepod-starter-builder__summary-list">
+              <div class="snoozepod-starter-builder__summary-row">
+                <span class="snoozepod-starter-builder__summary-label">Mattress</span>
+                <span class="snoozepod-starter-builder__summary-value" data-summary-mattress>Foam contour</span>
+              </div>
+              <div class="snoozepod-starter-builder__summary-row">
+                <span class="snoozepod-starter-builder__summary-label">Base path</span>
+                <span class="snoozepod-starter-builder__summary-value" data-summary-base>Mattress only</span>
+              </div>
+              <div class="snoozepod-starter-builder__summary-row">
+                <span class="snoozepod-starter-builder__summary-label">Finish</span>
+                <span class="snoozepod-starter-builder__summary-value" data-summary-finish>Keep it simple</span>
+              </div>
+            </div>
+
+            <div class="snoozepod-starter-builder__recommendation" data-builder-recommendation>
+              Start with the 12" All Foam Mattress when you want a more contouring feel and a simpler mattress-first setup.
+            </div>
+
+            <div class="snoozepod-starter-builder__actions">
+              <a class="button button--primary" href="/products/12-all-foam-mattress" data-builder-primary>See matching mattress</a>
+              <a class="button button--secondary" href="/collections/mattresses" data-builder-secondary>Shop mattresses</a>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<script>
+  (() => {
+    const root = document.querySelector('#shopify-section-{{ section.id }} [data-starter-builder]');
+    if (!root) return;
+
+    const copy = {
+      mattress: {
+        foam: {
+          label: 'Foam contour',
+          recommendation: 'Start with the 12" All Foam Mattress when you want a more contouring feel and a simpler mattress-first setup.',
+          primaryHref: '/products/12-all-foam-mattress',
+          primaryLabel: 'See the 12" All Foam Mattress'
+        },
+        balanced: {
+          label: 'Balanced hybrid',
+          recommendation: 'Start with the 12" Dual Comfort Hybrid when you want a more balanced hybrid feel and flexibility for shared sleep setups.',
+          primaryHref: '/products/12-dual-comfort-hybrid',
+          primaryLabel: 'See the 12" Dual Comfort Hybrid'
+        },
+        lift: {
+          label: 'Stronger lift',
+          recommendation: 'Start with the 14" Hybrid when you want stronger pushback, more lift, and a firmer support direction.',
+          primaryHref: '/products/14-hybrid',
+          primaryLabel: 'See the 14" Hybrid'
+        }
+      },
+      base: {
+        none: {
+          label: 'Mattress only',
+          recommendation: 'Keep the first pass focused on the mattress if you already have a base or want to confirm feel first.'
+        },
+        platform: {
+          label: 'Platform / simple base',
+          recommendation: 'Add a simple base path when you want a cleaner setup without moving into adjustable features.'
+        },
+        adjustable: {
+          label: 'Adjustable base path',
+          recommendation: 'Build around an adjustable base when elevation, recovery, or split-motion planning matters.'
+        }
+      },
+      finish: {
+        simple: {
+          label: 'Keep it simple',
+          recommendation: 'Stay focused on the mattress first, then layer in the rest only after the feel is right.'
+        },
+        pillows: {
+          label: 'Add pillow guidance',
+          recommendation: 'Add pillow guidance next so your neck and shoulder support stay aligned with the mattress choice.'
+        },
+        full: {
+          label: 'Complete the full SnoozePod',
+          recommendation: 'Plan the mattress, base, pillows, and bedding together when you want the full sleep-environment path.'
+        }
+      }
+    };
+
+    const state = {
+      mattress: 'foam',
+      base: 'none',
+      finish: 'simple'
+    };
+
+    const summaryMattress = root.querySelector('[data-summary-mattress]');
+    const summaryBase = root.querySelector('[data-summary-base]');
+    const summaryFinish = root.querySelector('[data-summary-finish]');
+    const recommendation = root.querySelector('[data-builder-recommendation]');
+    const primary = root.querySelector('[data-builder-primary]');
+    const secondary = root.querySelector('[data-builder-secondary]');
+
+    function secondaryActionForState() {
+      if (state.finish === 'pillows') {
+        return { href: '/collections/pillows', label: 'Explore pillows' };
+      }
+      if (state.base === 'platform' || state.base === 'adjustable') {
+        return { href: '/collections/bases', label: 'Explore bases' };
+      }
+      if (state.finish === 'full') {
+        return { href: '/collections/mattresses', label: 'Build the full setup' };
+      }
+      return { href: '/collections/mattresses', label: 'Shop mattresses' };
+    }
+
+    function render() {
+      summaryMattress.textContent = copy.mattress[state.mattress].label;
+      summaryBase.textContent = copy.base[state.base].label;
+      summaryFinish.textContent = copy.finish[state.finish].label;
+
+      recommendation.textContent = [
+        copy.mattress[state.mattress].recommendation,
+        copy.base[state.base].recommendation,
+        copy.finish[state.finish].recommendation
+      ].join(' ');
+
+      primary.href = copy.mattress[state.mattress].primaryHref;
+      primary.textContent = copy.mattress[state.mattress].primaryLabel;
+
+      const secondaryAction = secondaryActionForState();
+      secondary.href = secondaryAction.href;
+      secondary.textContent = secondaryAction.label;
+    }
+
+    root.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-step][data-value]');
+      if (!button) return;
+
+      const step = button.getAttribute('data-step');
+      const value = button.getAttribute('data-value');
+      if (!step || !value) return;
+
+      state[step] = value;
+
+      root.querySelectorAll('[data-step="' + step + '"]').forEach((option) => {
+        option.classList.toggle('is-selected', option === button);
+      });
+
+      render();
+    });
+
+    render();
+  })();
+</script>
 
 {% schema %}
 {
@@ -244,7 +482,7 @@
       "type": "textarea",
       "id": "subheading",
       "label": "Subheading",
-      "default": "Create a sleep environment built around how you rest, recover, cool down, and wake up."
+      "default": "Choose a mattress direction, base path, and finishing focus before you dive into the full build."
     },
     {
       "type": "image_picker",

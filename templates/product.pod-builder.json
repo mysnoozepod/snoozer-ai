@@ -13,13 +13,6 @@
       "type": "snoozepod-pod-builder-hero",
       "settings": {}
     },
-    "builder": {
-      "type": "snoozepod-guided-pod-builder",
-      "settings": {
-        "heading": "Build this SnoozePod",
-        "primary_label": "Add to Cart"
-      }
-    },
     "facts": {
       "type": "snoozepod-sleep-facts",
       "settings": {}
@@ -36,7 +29,6 @@
   },
   "order": [
     "hero",
-    "builder",
     "facts",
     "booking"
   ]

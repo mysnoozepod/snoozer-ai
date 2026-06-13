@@ -4,11 +4,6 @@
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
-  /* Tighten the final CTA -> trust transition on mobile without changing desktop rhythm. */
-  #shopify-section-{{ section.id }} .section-{{ section.id }}-padding {
-    padding-top: calc(var(--spacing-sections-mobile) - 24px) !important;
-  }
-
   .snoozepod-trust-strip-{{ section.id }} {
     width: min(100%, var(--content-max));
     margin: 0 auto;
@@ -89,16 +84,6 @@
       width: min(100%, var(--wide-content-max));
       padding-left: 64px;
       padding-right: 64px;
-    }
-
-    body.template-index #MainContent .snoozepod-trust-strip-section.section {
-      margin-top: 0;
-      margin-bottom: 0;
-    }
-
-    .section-{{ section.id }}-padding {
-      padding-top: 64px !important;
-      padding-bottom: 64px !important;
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__panel {
