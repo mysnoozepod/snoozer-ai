@@ -1,213 +1,725 @@
+{%- liquid
+  assign mattress_catalog = ''
+  assign mattress_handles = '10-all-foam-mattress|12-all-foam-mattress|12-dual-comfort-hybrid|14-hybrid' | split: '|'
+  for handle in mattress_handles
+    assign source_product = all_products[handle]
+    if source_product != blank
+      assign descriptor = ''
+      case handle
+        when '10-all-foam-mattress'
+          assign descriptor = 'Pressure Relief / Motion Isolation'
+        when '12-all-foam-mattress'
+          assign descriptor = 'Plush Comfort / Pressure Relief'
+        when '12-dual-comfort-hybrid'
+          assign descriptor = 'Dual Comfort / Balanced Support'
+        when '14-hybrid'
+          assign descriptor = 'Cooling Support / Hybrid Feel'
+      endcase
+
+      capture mattress_catalog
+        echo mattress_catalog
+        echo '{"kind":"product","handle":'
+        echo source_product.handle | json
+        echo ',"title":'
+        echo source_product.title | json
+        echo ',"url":'
+        echo source_product.url | json
+        echo ',"descriptor":'
+        echo descriptor | json
+        echo ',"available":'
+        echo source_product.available | json
+        echo ',"priceMin":'
+        echo source_product.price_min | json
+        echo ',"image":'
+        if source_product.featured_image
+          echo source_product.featured_image | image_url: width: 900 | json
+        else
+          echo 'null'
+        endif
+        echo ',"imageAlt":'
+        if source_product.featured_image and source_product.featured_image.alt != blank
+          echo source_product.featured_image.alt | json
+        else
+          echo source_product.title | json
+        endif
+        echo ',"variants":'
+        echo source_product.variants | json
+        echo '},'
+      endcapture
+    endif
+  endfor
+  assign mattress_catalog = mattress_catalog | remove_last: ','
+
+  assign base_catalog = ''
+  assign base_handles = 'platform-base|storage-base|premium-motion-adjustable-base' | split: '|'
+  for handle in base_handles
+    assign source_product = all_products[handle]
+    if source_product != blank
+      assign type_label = source_product.type
+      assign is_adjustable = false
+      if source_product.handle contains 'adjustable' or source_product.tags contains 'base:adjustable'
+        assign is_adjustable = true
+        assign type_label = 'Adjustable base'
+      elsif type_label == blank
+        assign type_label = 'Base'
+      endif
+
+      capture base_catalog
+        echo base_catalog
+        echo '{"kind":"product","handle":'
+        echo source_product.handle | json
+        echo ',"title":'
+        echo source_product.title | json
+        echo ',"url":'
+        echo source_product.url | json
+        echo ',"typeLabel":'
+        echo type_label | json
+        echo ',"available":'
+        echo source_product.available | json
+        echo ',"isAdjustable":'
+        echo is_adjustable | json
+        echo ',"priceMin":'
+        echo source_product.price_min | json
+        echo ',"image":'
+        if source_product.featured_image
+          echo source_product.featured_image | image_url: width: 900 | json
+        else
+          echo 'null'
+        endif
+        echo ',"imageAlt":'
+        if source_product.featured_image and source_product.featured_image.alt != blank
+          echo source_product.featured_image.alt | json
+        else
+          echo source_product.title | json
+        endif
+        echo ',"variants":'
+        echo source_product.variants | json
+        echo '},'
+      endcapture
+    endif
+  endfor
+  assign base_catalog = base_catalog | remove_last: ','
+-%}
+
 {%- style -%}
   .section-{{ section.id }}-padding {
     padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} {
+  .snoozepod-visual-builder-{{ section.id }} {
     width: min(100%, var(--wide-content-max));
     margin: 0 auto;
     padding-left: var(--page-padding-mobile);
     padding-right: var(--page-padding-mobile);
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__card {
-    position: relative;
-    overflow: hidden;
-    padding: 22px;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__frame {
+    padding: 24px 18px;
     border: 1px solid rgba(7, 25, 66, 0.1);
-    border-radius: 28px;
+    border-radius: 30px;
     background:
-      radial-gradient(circle at top right, rgba(44, 66, 120, 0.08), transparent 36%),
+      radial-gradient(circle at top right, rgba(44, 66, 120, 0.08), transparent 30%),
       linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
-    box-shadow: 0 18px 44px rgba(7, 25, 66, 0.06);
+    box-shadow: 0 18px 42px rgba(7, 25, 66, 0.06);
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__grid {
-    display: grid;
-    gap: 18px;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__eyebrow {
-    margin: 0 0 10px;
-    color: rgba(7, 25, 66, 0.58);
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__eyebrow,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-label,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__summary-label,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__price-label,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__row-term {
+    margin: 0;
+    color: rgba(7, 25, 66, 0.56);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.16em;
     text-transform: uppercase;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__heading {
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__heading,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-title,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__summary-title {
     margin: 0;
     color: #071942;
-    font-size: 28px;
     line-height: 1.04;
     letter-spacing: -0.03em;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__subheading {
-    margin: 12px 0 0;
-    max-width: 62rem;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__heading {
+    font-size: 30px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__subheading,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-copy,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-note,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__next-action {
+    margin: 0;
     color: rgba(7, 25, 66, 0.76);
     font-size: 15px;
     line-height: 1.5;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__steps {
-    display: grid;
-    gap: 14px;
-    margin-top: 18px;
-  }
-
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__step {
-    padding: 16px;
-    border: 1px solid rgba(7, 25, 66, 0.08);
-    border-radius: 22px;
-    background: #ffffff;
-  }
-
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__step-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    min-height: 32px;
-    padding: 0 10px;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-chip {
+    align-self: flex-start;
+    padding: 9px 13px;
     border-radius: 999px;
-    background: #edf4ff;
-    color: #124394;
+    background: #eef3fb;
+    color: #071942;
     font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__step-title {
-    margin: 12px 0 0;
-    color: #071942;
-    font-size: 20px;
-    line-height: 1.15;
-  }
-
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__step-copy {
-    margin: 8px 0 0;
-    color: rgba(7, 25, 66, 0.72);
-    font-size: 14px;
-    line-height: 1.45;
-  }
-
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__option-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 14px;
-  }
-
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__option {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 42px;
-    padding: 0 16px;
-    border: 1px solid rgba(7, 25, 66, 0.12);
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__progress {
+    margin-top: 16px;
+    height: 5px;
     border-radius: 999px;
-    background: #f8fafd;
-    color: #071942;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.2;
-    cursor: pointer;
-    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+    background: rgba(7, 25, 66, 0.08);
+    overflow: hidden;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__option:hover,
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__option:focus-visible {
-    transform: translateY(-1px);
-    border-color: rgba(7, 25, 66, 0.24);
-    box-shadow: 0 12px 24px rgba(7, 25, 66, 0.08);
-    outline: none;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__progress span {
+    display: block;
+    width: 20%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #071942 0%, #2c4278 100%);
+    transition: width 180ms ease;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__option.is-selected {
-    background: #071942;
-    border-color: #071942;
-    color: #ffffff;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__layout {
+    display: grid;
+    gap: 18px;
+    margin-top: 18px;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary {
-    padding: 18px;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__main,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__summary {
+    padding: 20px;
     border: 1px solid rgba(7, 25, 66, 0.08);
     border-radius: 24px;
     background: #ffffff;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-title {
-    margin: 0;
-    color: #071942;
-    font-size: 24px;
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-  }
-
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-copy {
-    margin: 10px 0 0;
-    color: rgba(7, 25, 66, 0.76);
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-list {
-    display: grid;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-pills {
+    display: flex;
+    flex-wrap: wrap;
     gap: 10px;
-    margin: 16px 0 0;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-row {
-    display: grid;
-    gap: 4px;
-    padding: 12px 14px;
-    border: 1px solid rgba(7, 25, 66, 0.08);
-    border-radius: 18px;
-    background: #f8fafd;
-  }
-
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-label {
-    color: rgba(7, 25, 66, 0.56);
-    font-size: 11px;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-pill {
+    padding: 8px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(7, 25, 66, 0.1);
+    background: #ffffff;
+    color: rgba(7, 25, 66, 0.64);
+    font-size: 10px;
     font-weight: 800;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary-value {
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-pill.is-active {
+    border-color: #071942;
+    background: #071942;
+    color: #ffffff;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-pill.is-complete {
+    background: #eef3fb;
     color: #071942;
-    font-size: 15px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-head {
+    margin-top: 18px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-title {
+    margin-top: 6px;
+    font-size: 28px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__step-copy {
+    margin-top: 10px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border-radius: 22px;
+    border: 1px solid rgba(7, 25, 66, 0.1);
+    background: #f8fafd;
+    color: #071942;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option:hover,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(7, 25, 66, 0.22);
+    box-shadow: 0 14px 28px rgba(7, 25, 66, 0.08);
+    outline: none;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option.is-selected {
+    border-color: rgba(7, 25, 66, 0.5);
+    background: rgba(44, 66, 120, 0.08);
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option-check {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(7, 25, 66, 0.22);
+    background: #ffffff;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option.is-selected .snoozepod-visual-builder__option-check {
+    border-color: #071942;
+    background: #071942;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option.is-selected .snoozepod-visual-builder__option-check::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 999px;
+    background: #ffffff;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__media,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__size-visual,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-visual {
+    min-height: 148px;
+    border-radius: 18px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    background: linear-gradient(180deg, #ffffff 0%, #eef3fb 100%);
+    overflow: hidden;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__media-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    color: rgba(7, 25, 66, 0.56);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__size-visual,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__size-bed {
+    display: block;
+    width: calc(124px * var(--bed-scale, 1));
+    max-width: 100%;
+    height: 54px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #dce7f8 0%, #bdd0ee 100%);
+    box-shadow: 0 14px 24px rgba(7, 25, 66, 0.12);
+    position: relative;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__size-bed::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    top: 10px;
+    height: 18px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__size-bed::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(7, 25, 66, 0.1);
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-stage {
+    display: grid;
+    gap: 12px;
+    justify-items: center;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-bed {
+    width: 128px;
+    height: 52px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #dce7f8 0%, #bdd0ee 100%);
+    position: relative;
+    box-shadow: 0 14px 24px rgba(7, 25, 66, 0.12);
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-bed::before,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-bed::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: rgba(7, 25, 66, 0.22);
+    opacity: 0;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-bed::before {
+    left: 50%;
+    transform: translateX(-1px);
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-bed::after {
+    left: 34%;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-visual--half_split .snoozepod-visual-builder__motion-bed::before,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-visual--full_split .snoozepod-visual-builder__motion-bed::before {
+    opacity: 1;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-visual--full_split .snoozepod-visual-builder__motion-bed::after {
+    opacity: 1;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__motion-caption {
+    color: rgba(7, 25, 66, 0.62);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option-body {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    color: rgba(7, 25, 66, 0.62);
+    font-size: 12px;
     font-weight: 700;
     line-height: 1.35;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__recommendation {
-    margin-top: 16px;
-    padding: 14px 16px;
-    border-radius: 18px;
-    background: #edf4ff;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option-title {
+    display: block;
     color: #071942;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.5;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.15;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__actions {
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option-copy {
+    display: block;
+    color: rgba(7, 25, 66, 0.76);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__option-note {
+    display: block;
+    color: rgba(7, 25, 66, 0.56);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__catalog-empty {
+    padding: 16px 18px;
+    border-radius: 18px;
+    border: 1px dashed rgba(7, 25, 66, 0.18);
+    background: #f8fafd;
+    color: rgba(7, 25, 66, 0.7);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review {
+    margin-top: 18px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-grid {
+    display: grid;
+    gap: 12px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-card {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    border-radius: 20px;
+    background: #f8fafd;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-media {
+    width: 84px;
+    height: 84px;
+    border-radius: 16px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    background: linear-gradient(180deg, #ffffff 0%, #eef3fb 100%);
+    overflow: hidden;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-media .snoozepod-visual-builder__motion-visual {
+    min-height: 100%;
+    border: 0;
+    background: transparent;
+    padding: 0;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-media .snoozepod-visual-builder__motion-bed {
+    width: 64px;
+    height: 30px;
+    border-radius: 14px;
+    box-shadow: 0 8px 16px rgba(7, 25, 66, 0.12);
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-media .snoozepod-visual-builder__motion-caption {
+    display: none;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-copy {
+    display: grid;
+    gap: 4px;
+    align-content: center;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-list,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__summary-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-list {
+    margin-top: 14px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__row {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    background: #ffffff;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__row-value {
+    margin: 0;
+    color: #071942;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__nav > * {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__nav .button,
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__primary {
+    min-height: 48px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__preview {
+    display: grid;
+    gap: 12px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__preview-empty {
+    display: grid;
+    gap: 10px;
+    min-height: 132px;
+    padding: 18px;
+    border-radius: 20px;
+    border: 1px dashed rgba(7, 25, 66, 0.18);
+    background: linear-gradient(180deg, #ffffff 0%, #eef3fb 100%);
+    align-content: center;
+    color: rgba(7, 25, 66, 0.72);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__preview-pillars {
+    display: flex;
+    gap: 10px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__preview-pillars span {
+    display: block;
+    flex: 1 1 0;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(7, 25, 66, 0.1);
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__preview-card {
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    background: #f8fafd;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__preview-media {
+    width: 74px;
+    height: 74px;
+    border-radius: 16px;
+    border: 1px solid rgba(7, 25, 66, 0.08);
+    background: linear-gradient(180deg, #ffffff 0%, #eef3fb 100%);
+    overflow: hidden;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__preview-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__preview-copy {
+    display: grid;
+    gap: 4px;
+    align-content: center;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__summary-head {
+    margin-top: 18px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__summary-title {
+    margin-top: 6px;
+    font-size: 24px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__price {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(7, 25, 66, 0.08);
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__price strong {
+    display: block;
+    margin-top: 4px;
+    color: #071942;
+    font-size: 19px;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__next-action {
+    margin-top: 16px;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__actions {
     display: grid;
     gap: 10px;
     margin-top: 18px;
   }
 
-  .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__actions .button {
-    width: 100%;
-    min-height: 52px;
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__primary {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    border-radius: 999px;
+    width: 100%;
+    text-decoration: none;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__primary.is-disabled {
+    pointer-events: none;
+    opacity: 0.45;
+  }
+
+  .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__reset {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: rgba(7, 25, 66, 0.62);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    justify-self: start;
   }
 
   @media screen and (min-width: 750px) {
@@ -216,44 +728,64 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
 
-    .snoozepod-starter-builder-{{ section.id }} {
+    .snoozepod-visual-builder-{{ section.id }} {
       padding-left: var(--page-padding-tablet);
       padding-right: var(--page-padding-tablet);
+    }
+
+    .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__frame {
+      padding: 28px 24px;
+    }
+
+    .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__nav > * {
+      flex: 0 0 auto;
     }
   }
 
   @media screen and (min-width: 990px) {
-    .snoozepod-starter-builder-{{ section.id }} {
+    .snoozepod-visual-builder-{{ section.id }} {
       padding-left: 64px;
       padding-right: 64px;
     }
 
-    .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__card {
-      padding: 34px 36px;
+    .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__frame {
+      padding: 34px 30px;
     }
 
-    .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__grid {
-      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
-      gap: 22px;
+    .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__layout {
+      grid-template-columns: minmax(0, 1.34fr) minmax(320px, 0.76fr);
+      gap: 20px;
       align-items: start;
     }
 
-    .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__heading {
-      font-size: 36px;
+    .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__main,
+    .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__summary {
+      padding: 24px;
+      border-radius: 28px;
     }
 
-    .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__summary {
+    .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__summary {
       position: sticky;
       top: 12px;
     }
 
-    .snoozepod-starter-builder-{{ section.id }} .snoozepod-starter-builder__actions {
+    .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__heading {
+      font-size: 36px;
+    }
+
+    .snoozepod-visual-builder-{{ section.id }} .snoozepod-visual-builder__review-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   @media screen and (min-width: 1440px) {
-    .snoozepod-starter-builder-{{ section.id }} {
+    .snoozepod-visual-builder-{{ section.id }} {
       padding-left: 72px;
       padding-right: 72px;
     }
@@ -262,77 +794,70 @@
 
 <section class="section color-{{ section.settings.color_scheme }} gradient">
   <div class="section-{{ section.id }}-padding">
-    <div class="snoozepod-starter-builder-{{ section.id }}">
-      <div class="snoozepod-starter-builder__card" data-starter-builder>
-        <div class="snoozepod-starter-builder__grid">
+    <div class="snoozepod-visual-builder-{{ section.id }}">
+      <div class="snoozepod-visual-builder__frame" data-visual-builder>
+        <script type="application/json" data-visual-builder-mattresses>[{{ mattress_catalog }}]</script>
+        <script type="application/json" data-visual-builder-bases>[{{ base_catalog }}]</script>
+
+        <div class="snoozepod-visual-builder__header">
           <div>
-            <p class="snoozepod-starter-builder__eyebrow">3-step starter builder</p>
-            <h2 class="snoozepod-starter-builder__heading">{{ section.settings.heading | escape }}</h2>
-            <p class="snoozepod-starter-builder__subheading">{{ section.settings.subheading | escape }}</p>
+            <p class="snoozepod-visual-builder__eyebrow">Visual guided build</p>
+            <h2 class="snoozepod-visual-builder__heading">{{ section.settings.heading | escape }}</h2>
+            <p class="snoozepod-visual-builder__subheading">{{ section.settings.subheading | escape }}</p>
+          </div>
+          <div class="snoozepod-visual-builder__step-chip" data-vb-step-count>Step 1 of 4</div>
+        </div>
 
-            <div class="snoozepod-starter-builder__steps">
-              <div class="snoozepod-starter-builder__step">
-                <span class="snoozepod-starter-builder__step-count">Step 1</span>
-                <h3 class="snoozepod-starter-builder__step-title">Choose your mattress direction</h3>
-                <p class="snoozepod-starter-builder__step-copy">Start with the feel and support direction that sounds closest to what you want to test first.</p>
-                <div class="snoozepod-starter-builder__option-list" role="list">
-                  <button type="button" class="snoozepod-starter-builder__option is-selected" data-step="mattress" data-value="foam">Foam contour</button>
-                  <button type="button" class="snoozepod-starter-builder__option" data-step="mattress" data-value="balanced">Balanced hybrid</button>
-                  <button type="button" class="snoozepod-starter-builder__option" data-step="mattress" data-value="lift">Stronger lift</button>
-                </div>
-              </div>
+        <div class="snoozepod-visual-builder__progress" aria-hidden="true">
+          <span data-vb-progress></span>
+        </div>
 
-              <div class="snoozepod-starter-builder__step">
-                <span class="snoozepod-starter-builder__step-count">Step 2</span>
-                <h3 class="snoozepod-starter-builder__step-title">Pick your base path</h3>
-                <p class="snoozepod-starter-builder__step-copy">Decide whether you want to keep the setup simple or build around a base from the start.</p>
-                <div class="snoozepod-starter-builder__option-list" role="list">
-                  <button type="button" class="snoozepod-starter-builder__option is-selected" data-step="base" data-value="none">Mattress only</button>
-                  <button type="button" class="snoozepod-starter-builder__option" data-step="base" data-value="platform">Platform / simple base</button>
-                  <button type="button" class="snoozepod-starter-builder__option" data-step="base" data-value="adjustable">Adjustable base path</button>
-                </div>
-              </div>
+        <div class="snoozepod-visual-builder__layout">
+          <div class="snoozepod-visual-builder__main">
+            <div class="snoozepod-visual-builder__step-pills" data-vb-steps></div>
 
-              <div class="snoozepod-starter-builder__step">
-                <span class="snoozepod-starter-builder__step-count">Step 3</span>
-                <h3 class="snoozepod-starter-builder__step-title">Choose how far to finish the room</h3>
-                <p class="snoozepod-starter-builder__step-copy">Keep it mattress-focused or move toward a fuller sleep-environment plan.</p>
-                <div class="snoozepod-starter-builder__option-list" role="list">
-                  <button type="button" class="snoozepod-starter-builder__option is-selected" data-step="finish" data-value="simple">Keep it simple</button>
-                  <button type="button" class="snoozepod-starter-builder__option" data-step="finish" data-value="pillows">Add pillow guidance</button>
-                  <button type="button" class="snoozepod-starter-builder__option" data-step="finish" data-value="full">Complete the full SnoozePod</button>
-                </div>
-              </div>
+            <div class="snoozepod-visual-builder__step-head">
+              <p class="snoozepod-visual-builder__step-label" data-vb-step-label></p>
+              <h3 class="snoozepod-visual-builder__step-title" data-vb-step-title></h3>
+              <p class="snoozepod-visual-builder__step-copy" data-vb-step-copy></p>
+            </div>
+
+            <div class="snoozepod-visual-builder__options" data-vb-options></div>
+
+            <div class="snoozepod-visual-builder__review" data-vb-review hidden>
+              <div class="snoozepod-visual-builder__review-grid" data-vb-review-grid></div>
+              <dl class="snoozepod-visual-builder__review-list" data-vb-review-list></dl>
+              <p class="snoozepod-visual-builder__review-note" data-vb-review-note></p>
+            </div>
+
+            <div class="snoozepod-visual-builder__nav">
+              <button type="button" class="button button--secondary" data-vb-back>Back</button>
+              <button type="button" class="button button--primary" data-vb-next>Next</button>
             </div>
           </div>
 
-          <aside class="snoozepod-starter-builder__summary">
-            <p class="snoozepod-starter-builder__eyebrow">Your starting path</p>
-            <h3 class="snoozepod-starter-builder__summary-title">Build summary</h3>
-            <p class="snoozepod-starter-builder__summary-copy">Use this as your clean starting point, then refine the details on the product page.</p>
+          <aside class="snoozepod-visual-builder__summary">
+            <div class="snoozepod-visual-builder__preview" data-vb-preview></div>
 
-            <div class="snoozepod-starter-builder__summary-list">
-              <div class="snoozepod-starter-builder__summary-row">
-                <span class="snoozepod-starter-builder__summary-label">Mattress</span>
-                <span class="snoozepod-starter-builder__summary-value" data-summary-mattress>Foam contour</span>
-              </div>
-              <div class="snoozepod-starter-builder__summary-row">
-                <span class="snoozepod-starter-builder__summary-label">Base path</span>
-                <span class="snoozepod-starter-builder__summary-value" data-summary-base>Mattress only</span>
-              </div>
-              <div class="snoozepod-starter-builder__summary-row">
-                <span class="snoozepod-starter-builder__summary-label">Finish</span>
-                <span class="snoozepod-starter-builder__summary-value" data-summary-finish>Keep it simple</span>
-              </div>
+            <div class="snoozepod-visual-builder__summary-head">
+              <p class="snoozepod-visual-builder__summary-label">Selected build</p>
+              <h3 class="snoozepod-visual-builder__summary-title">Choices + pricing</h3>
             </div>
 
-            <div class="snoozepod-starter-builder__recommendation" data-builder-recommendation>
-              Start with the 12" All Foam Mattress when you want a more contouring feel and a simpler mattress-first setup.
+            <dl class="snoozepod-visual-builder__summary-list" data-vb-summary></dl>
+
+            <div class="snoozepod-visual-builder__price">
+              <span class="snoozepod-visual-builder__price-label" data-vb-price-label>Estimated total</span>
+              <strong data-vb-price>Select products to see pricing</strong>
             </div>
 
-            <div class="snoozepod-starter-builder__actions">
-              <a class="button button--primary" href="/products/12-all-foam-mattress" data-builder-primary>See matching mattress</a>
-              <a class="button button--secondary" href="/collections/mattresses" data-builder-secondary>Shop mattresses</a>
+            <p class="snoozepod-visual-builder__next-action" data-vb-next-action>Choose a size to start the build.</p>
+
+            <div class="snoozepod-visual-builder__actions">
+              <a class="button button--primary snoozepod-visual-builder__primary is-disabled" href="#" aria-disabled="true" data-vb-primary>
+                Continue to Mattress
+              </a>
+              <button type="button" class="snoozepod-visual-builder__reset" data-vb-reset>Start Over</button>
             </div>
           </aside>
         </div>
@@ -343,120 +868,845 @@
 
 <script>
   (() => {
-    const root = document.querySelector('#shopify-section-{{ section.id }} [data-starter-builder]');
-    if (!root) return;
+    const root = document.querySelector('#shopify-section-{{ section.id }} [data-visual-builder]');
+    if (!root || root.dataset.builderReady === 'true') return;
+    root.dataset.builderReady = 'true';
 
-    const copy = {
-      mattress: {
-        foam: {
-          label: 'Foam contour',
-          recommendation: 'Start with the 12" All Foam Mattress when you want a more contouring feel and a simpler mattress-first setup.',
-          primaryHref: '/products/12-all-foam-mattress',
-          primaryLabel: 'See the 12" All Foam Mattress'
-        },
-        balanced: {
-          label: 'Balanced hybrid',
-          recommendation: 'Start with the 12" Dual Comfort Hybrid when you want a more balanced hybrid feel and flexibility for shared sleep setups.',
-          primaryHref: '/products/12-dual-comfort-hybrid',
-          primaryLabel: 'See the 12" Dual Comfort Hybrid'
-        },
-        lift: {
-          label: 'Stronger lift',
-          recommendation: 'Start with the 14" Hybrid when you want stronger pushback, more lift, and a firmer support direction.',
-          primaryHref: '/products/14-hybrid',
-          primaryLabel: 'See the 14" Hybrid'
-        }
-      },
-      base: {
-        none: {
-          label: 'Mattress only',
-          recommendation: 'Keep the first pass focused on the mattress if you already have a base or want to confirm feel first.'
-        },
-        platform: {
-          label: 'Platform / simple base',
-          recommendation: 'Add a simple base path when you want a cleaner setup without moving into adjustable features.'
-        },
-        adjustable: {
-          label: 'Adjustable base path',
-          recommendation: 'Build around an adjustable base when elevation, recovery, or split-motion planning matters.'
-        }
-      },
-      finish: {
-        simple: {
-          label: 'Keep it simple',
-          recommendation: 'Stay focused on the mattress first, then layer in the rest only after the feel is right.'
-        },
-        pillows: {
-          label: 'Add pillow guidance',
-          recommendation: 'Add pillow guidance next so your neck and shoulder support stay aligned with the mattress choice.'
-        },
-        full: {
-          label: 'Complete the full SnoozePod',
-          recommendation: 'Plan the mattress, base, pillows, and bedding together when you want the full sleep-environment path.'
-        }
-      }
+    const STEP_COPY = {
+      size: 'Start with the mattress size so compatible bases and prices stay in sync.',
+      base: 'Choose mattress only, or add a base with real product imagery before you move on.',
+      motion: 'Motion only appears when you choose the adjustable base path.',
+      mattress: 'Compare the mattress lineup with actual product visuals in the size you chose.',
+      review: 'Carry the selected size into the mattress page, then confirm the rest inside the inline builder.'
     };
+
+    const STEPS = [
+      { key: 'size', label: 'Size', title: 'Choose your size' },
+      { key: 'base', label: 'Base', title: 'Choose your base' },
+      { key: 'motion', label: 'Motion', title: 'Choose your motion setup' },
+      { key: 'mattress', label: 'Mattress', title: 'Choose your mattress' },
+      { key: 'review', label: 'Review', title: 'Review your build' }
+    ];
+
+    const SIZE_ORDER = ['Twin', 'Twin XL', 'Full', 'Queen', 'King', 'Split King', 'Cal King'];
+    const SIZE_SCALE = {
+      twin: 0.7,
+      'twin xl': 0.72,
+      full: 0.84,
+      queen: 1,
+      king: 1.16,
+      'split king': 1.16,
+      'cal king': 1.12
+    };
+
+    const MOTION_OPTIONS = [
+      { key: 'standard', title: 'Standard', subtitle: 'Single motion setup for one surface.', caption: 'Unified' },
+      { key: 'half_split', title: 'Half Split', subtitle: 'Split flexibility when the chosen size supports it.', caption: 'Shared split' },
+      { key: 'full_split', title: 'Full Split', subtitle: 'Independent split movement when the chosen size allows it.', caption: 'Independent' }
+    ];
+
+    const mattresses = parseJson(readJson(root, '[data-visual-builder-mattresses]'), []);
+    const baseProducts = parseJson(readJson(root, '[data-visual-builder-bases]'), []);
+    const supportedSizes = collectSupportedSizes(mattresses);
 
     const state = {
-      mattress: 'foam',
-      base: 'none',
-      finish: 'simple'
+      currentStep: 'size',
+      size: '',
+      base: '',
+      motion: '',
+      mattress: ''
     };
 
-    const summaryMattress = root.querySelector('[data-summary-mattress]');
-    const summaryBase = root.querySelector('[data-summary-base]');
-    const summaryFinish = root.querySelector('[data-summary-finish]');
-    const recommendation = root.querySelector('[data-builder-recommendation]');
-    const primary = root.querySelector('[data-builder-primary]');
-    const secondary = root.querySelector('[data-builder-secondary]');
+    const els = {
+      stepCount: root.querySelector('[data-vb-step-count]'),
+      progress: root.querySelector('[data-vb-progress]'),
+      steps: root.querySelector('[data-vb-steps]'),
+      stepLabel: root.querySelector('[data-vb-step-label]'),
+      stepTitle: root.querySelector('[data-vb-step-title]'),
+      stepCopy: root.querySelector('[data-vb-step-copy]'),
+      options: root.querySelector('[data-vb-options]'),
+      review: root.querySelector('[data-vb-review]'),
+      reviewGrid: root.querySelector('[data-vb-review-grid]'),
+      reviewList: root.querySelector('[data-vb-review-list]'),
+      reviewNote: root.querySelector('[data-vb-review-note]'),
+      summary: root.querySelector('[data-vb-summary]'),
+      preview: root.querySelector('[data-vb-preview]'),
+      priceLabel: root.querySelector('[data-vb-price-label]'),
+      price: root.querySelector('[data-vb-price]'),
+      nextAction: root.querySelector('[data-vb-next-action]'),
+      primary: root.querySelector('[data-vb-primary]'),
+      back: root.querySelector('[data-vb-back]'),
+      next: root.querySelector('[data-vb-next]'),
+      reset: root.querySelector('[data-vb-reset]')
+    };
 
-    function secondaryActionForState() {
-      if (state.finish === 'pillows') {
-        return { href: '/collections/pillows', label: 'Explore pillows' };
+    function readJson(scope, selector) {
+      const node = scope.querySelector(selector);
+      return node ? node.textContent : '[]';
+    }
+
+    function parseJson(text, fallback) {
+      try {
+        return JSON.parse(text);
+      } catch (error) {
+        return fallback;
       }
-      if (state.base === 'platform' || state.base === 'adjustable') {
-        return { href: '/collections/bases', label: 'Explore bases' };
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function normalizeText(value) {
+      return String(value == null ? '' : value)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+    }
+
+    function normalizeSizeKey(size) {
+      const value = normalizeText(size);
+      if (value === 'twin x l') return 'twin xl';
+      if (value === 'california king' || value === 'cal king') return 'cal king';
+      return value;
+    }
+
+    function sizeAliases(size) {
+      switch (normalizeSizeKey(size)) {
+        case 'twin':
+          return ['twin'];
+        case 'twin xl':
+          return ['twin xl', 'twin x l'];
+        case 'full':
+          return ['full', 'double'];
+        case 'queen':
+          return ['queen', 'queen 2pc', 'queen two pc'];
+        case 'king':
+          return ['king', 'king 2pc', 'king two pc'];
+        case 'split king':
+          return ['split king', 'king 2pc'];
+        case 'cal king':
+          return ['cal king', 'california king', 'cal king 2pc'];
+        default:
+          return [normalizeSizeKey(size)];
       }
-      if (state.finish === 'full') {
-        return { href: '/collections/mattresses', label: 'Build the full setup' };
+    }
+
+    function motionAliases(key) {
+      if (key === 'half_split') return ['half split', 'split head'];
+      if (key === 'full_split') return ['full split'];
+      return ['standard', 'one piece', 'single'];
+    }
+
+    function variantTextParts(variant) {
+      return [variant && variant.title, variant && variant.option1, variant && variant.option2, variant && variant.option3]
+        .filter(Boolean)
+        .map(normalizeText);
+    }
+
+    function variantMatchScore(variant, size) {
+      const aliases = sizeAliases(size);
+      const parts = variantTextParts(variant);
+      let score = 0;
+
+      aliases.forEach((alias, aliasIndex) => {
+        parts.forEach((part) => {
+          if (part === alias) {
+            score = Math.max(score, aliasIndex === 0 ? 4 : 3);
+          } else if (part.includes(alias) || alias.includes(part)) {
+            score = Math.max(score, 2);
+          }
+        });
+      });
+
+      return score;
+    }
+
+    function motionMatchScore(variant, key) {
+      const aliases = motionAliases(key);
+      const parts = variantTextParts(variant);
+      let score = 0;
+      aliases.forEach((alias) => {
+        parts.forEach((part) => {
+          if (part === alias) score = Math.max(score, 3);
+          else if (part.includes(alias) || alias.includes(part)) score = Math.max(score, 2);
+        });
+      });
+      return score;
+    }
+
+    function parsePriceCents(value) {
+      if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+      const cleaned = String(value == null ? '' : value).replace(/[^0-9.-]/g, '');
+      if (!cleaned) return 0;
+      const numeric = Number(cleaned);
+      if (!Number.isFinite(numeric)) return 0;
+      return cleaned.includes('.') ? Math.round(numeric * 100) : numeric;
+    }
+
+    function formatMoney(cents) {
+      const amount = parsePriceCents(cents) / 100;
+      try {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+      } catch (error) {
+        return '$' + amount.toFixed(2);
       }
-      return { href: '/collections/mattresses', label: 'Shop mattresses' };
+    }
+
+    function firstAvailableVariant(product) {
+      const variants = Array.isArray(product && product.variants) ? product.variants : [];
+      return variants.find((variant) => variant && variant.available !== false) || variants[0] || null;
+    }
+
+    function findVariantForSize(product, size) {
+      if (!product || !size) return null;
+      const variants = Array.isArray(product.variants) ? product.variants : [];
+      let best = null;
+      let bestScore = 0;
+
+      variants.forEach((variant) => {
+        const score = variantMatchScore(variant, size);
+        if (!score) return;
+
+        const rank = score + (variant && variant.available !== false ? 0.5 : 0);
+        if (!best || rank > bestScore) {
+          best = variant;
+          bestScore = rank;
+        }
+      });
+
+      return best;
+    }
+
+    function resolveBaseVariant(product, size, motionKey) {
+      const sizeVariant = findVariantForSize(product, size);
+      if (!product || !product.isAdjustable || !sizeVariant || !motionKey) {
+        return { variant: sizeVariant, exactMotionMatch: Boolean(sizeVariant) };
+      }
+
+      const variants = Array.isArray(product.variants) ? product.variants : [];
+      let best = null;
+      let bestScore = 0;
+
+      variants.forEach((variant) => {
+        const sizeScore = variantMatchScore(variant, size);
+        const motionScore = motionMatchScore(variant, motionKey);
+        if (!sizeScore || !motionScore) return;
+
+        const rank = sizeScore + motionScore + (variant && variant.available !== false ? 0.5 : 0);
+        if (!best || rank > bestScore) {
+          best = variant;
+          bestScore = rank;
+        }
+      });
+
+      return {
+        variant: best || sizeVariant,
+        exactMotionMatch: Boolean(best)
+      };
+    }
+
+    function findCanonicalSizeFromVariant(variant) {
+      const parts = variantTextParts(variant);
+      for (let index = 0; index < SIZE_ORDER.length; index += 1) {
+        const size = SIZE_ORDER[index];
+        const aliases = sizeAliases(size);
+        const matched = aliases.some((alias) => {
+          return parts.some((part) => part === alias || part.includes(alias) || alias.includes(part));
+        });
+        if (matched) return size;
+      }
+      return '';
+    }
+
+    function collectSupportedSizes(products) {
+      const seen = new Set();
+      const found = [];
+
+      (products || []).forEach((product) => {
+        (product.variants || []).forEach((variant) => {
+          const size = findCanonicalSizeFromVariant(variant);
+          if (!size || seen.has(size)) return;
+          seen.add(size);
+          found.push(size);
+        });
+      });
+
+      const ordered = SIZE_ORDER.filter((size) => seen.has(size));
+      found.forEach((size) => {
+        if (ordered.indexOf(size) === -1) ordered.push(size);
+      });
+
+      return ordered;
+    }
+
+    function allowedMotionOptionsForSize(size) {
+      const normalized = normalizeSizeKey(size);
+      if (normalized === 'king' || normalized === 'split king') return MOTION_OPTIONS;
+      if (normalized === 'queen') {
+        return MOTION_OPTIONS.filter((option) => option.key !== 'full_split');
+      }
+      return MOTION_OPTIONS.filter((option) => option.key === 'standard');
+    }
+
+    function visibleSteps() {
+      return STEPS.filter((step) => step.key !== 'motion' || isAdjustableBaseSelection());
+    }
+
+    function isAdjustableBaseSelection() {
+      const base = getSelectedBaseProduct();
+      return Boolean(base && base.isAdjustable);
+    }
+
+    function getSelectedBaseProduct() {
+      return baseProducts.find((product) => product.handle === state.base) || null;
+    }
+
+    function getSelectedMattressProduct() {
+      return mattresses.find((product) => product.handle === state.mattress) || null;
+    }
+
+    function getSelectedMotion() {
+      return MOTION_OPTIONS.find((option) => option.key === state.motion) || null;
+    }
+
+    function sizeScale(size) {
+      return SIZE_SCALE[normalizeSizeKey(size)] || 1;
+    }
+
+    function baseOptions() {
+      return [
+        {
+          kind: 'system',
+          handle: 'mattress-only',
+          title: 'Mattress only',
+          descriptor: 'Skip the base for now and stay focused on the mattress.',
+          available: true
+        }
+      ].concat(baseProducts);
+    }
+
+    function mattressOptionsForSize() {
+      return mattresses.map((product) => {
+        const variant = findVariantForSize(product, state.size);
+        return Object.assign({}, product, {
+          matchedVariant: variant,
+          unavailableForSize: !variant
+        });
+      });
+    }
+
+    function canProceed(stepKey) {
+      if (stepKey === 'review') return true;
+      if (stepKey === 'size') return Boolean(state.size);
+      if (stepKey === 'base') return Boolean(state.base);
+      if (stepKey === 'motion') return Boolean(state.motion);
+      if (stepKey === 'mattress') return Boolean(state.mattress);
+      return false;
+    }
+
+    function summaryRows() {
+      const mattressProduct = getSelectedMattressProduct();
+      const mattressVariant = mattressProduct ? findVariantForSize(mattressProduct, state.size) : null;
+      const baseProduct = getSelectedBaseProduct();
+      const baseVariantResult = baseProduct ? resolveBaseVariant(baseProduct, state.size, state.motion) : null;
+      const motionOption = getSelectedMotion();
+      const rows = [
+        { term: 'Size', value: state.size || 'Choose size' },
+        {
+          term: 'Base',
+        value: !state.base
+            ? 'Choose base'
+            : state.base === 'mattress-only'
+              ? 'Mattress only'
+              : baseProduct
+                ? baseProduct.title + basePriceSuffix(baseProduct, baseVariantResult)
+                : 'Choose base'
+        }
+      ];
+
+      if (isAdjustableBaseSelection()) {
+        rows.push({
+          term: 'Motion',
+          value: motionOption ? motionOption.title : 'Choose motion'
+        });
+      }
+
+      rows.push({
+        term: 'Mattress',
+        value: mattressProduct
+          ? mattressProduct.title + (mattressVariant ? ' / ' + formatMoney(mattressVariant.price) : priceMinSuffix(mattressProduct))
+          : 'Choose mattress'
+      });
+
+      return rows;
+    }
+
+    function priceMinSuffix(product) {
+      const cents = parsePriceCents(product && product.priceMin);
+      return cents ? ' / From ' + formatMoney(cents) : '';
+    }
+
+    function basePriceSuffix(product, resolved) {
+      if (!product) return '';
+      if (product.isAdjustable) {
+        return parsePriceCents(product.priceMin) ? ' / From ' + formatMoney(product.priceMin) : '';
+      }
+      if (resolved && resolved.variant) {
+        return ' / ' + formatMoney(resolved.variant.price);
+      }
+      return priceMinSuffix(product);
+    }
+
+    function previewCards() {
+      const cards = [];
+      const baseProduct = getSelectedBaseProduct();
+      const mattressProduct = getSelectedMattressProduct();
+
+      if (mattressProduct) {
+        cards.push({
+          label: 'Mattress',
+          title: mattressProduct.title,
+          copy: mattressProduct.descriptor || 'Selected for the chosen size.',
+          image: mattressProduct.image,
+          imageAlt: mattressProduct.imageAlt || mattressProduct.title
+        });
+      }
+
+      if (baseProduct) {
+        cards.push({
+          label: 'Base',
+          title: baseProduct.title,
+          copy: baseProduct.typeLabel || 'Selected base',
+          image: baseProduct.image,
+          imageAlt: baseProduct.imageAlt || baseProduct.title
+        });
+      }
+
+      return cards;
+    }
+
+    function reviewCards() {
+      const cards = previewCards();
+      if (isAdjustableBaseSelection() && state.motion) {
+        const motionOption = getSelectedMotion();
+        cards.push({
+          label: 'Motion',
+          title: motionOption ? motionOption.title : 'Motion',
+          copy: motionOption ? motionOption.subtitle : 'Selected motion direction.',
+          image: '',
+          imageAlt: ''
+        });
+      }
+      return cards;
+    }
+
+    function priceState() {
+      const mattressProduct = getSelectedMattressProduct();
+      const mattressVariant = mattressProduct ? findVariantForSize(mattressProduct, state.size) : null;
+      const baseProduct = getSelectedBaseProduct();
+      const baseResult = baseProduct ? resolveBaseVariant(baseProduct, state.size, state.motion) : null;
+
+      if (!mattressProduct || !mattressVariant) {
+        return {
+          label: 'Estimated total',
+          value: 'Select a mattress to see pricing',
+          exact: false
+        };
+      }
+
+      if (!baseProduct) {
+        return {
+          label: 'Estimated total',
+          value: formatMoney(mattressVariant.price),
+          exact: true
+        };
+      }
+
+      if (baseProduct.isAdjustable) {
+        return {
+          label: 'Selected prices',
+          value: formatMoney(mattressVariant.price) + ' mattress + adjustable base pricing confirmed on the product page',
+          exact: false
+        };
+      }
+
+      if (!baseResult || !baseResult.variant) {
+        return {
+          label: 'Selected prices',
+          value: formatMoney(mattressVariant.price) + ' mattress + base pricing confirmed on the product page',
+          exact: false
+        };
+      }
+
+      return {
+        label: 'Estimated total',
+        value: formatMoney(parsePriceCents(mattressVariant.price) + parsePriceCents(baseResult.variant.price)),
+        exact: true
+      };
+    }
+
+    function nextActionText(stepKey) {
+      if (!state.size) return 'Choose a size to start the build.';
+      if (stepKey === 'size') return 'Next: choose the base path.';
+      if (!state.base) return 'Choose a base before you continue.';
+      if (stepKey === 'base' && isAdjustableBaseSelection()) return 'Next: choose the motion setup.';
+      if (isAdjustableBaseSelection() && !state.motion) return 'Choose the motion setup before you continue.';
+      if (!state.mattress) return 'Choose a mattress to unlock the review step.';
+      if (stepKey === 'review') {
+        return 'Size carries into the mattress page. Base and motion are confirmed there inside the inline builder.';
+      }
+      return 'Review the build, then continue into the mattress page.';
+    }
+
+    function primaryLinkState() {
+      const mattressProduct = getSelectedMattressProduct();
+      const mattressVariant = mattressProduct ? findVariantForSize(mattressProduct, state.size) : null;
+      if (!mattressProduct || !mattressVariant || state.currentStep !== 'review') {
+        return {
+          href: '#',
+          label: 'Continue to Mattress',
+          enabled: false
+        };
+      }
+
+      return {
+        href: mattressProduct.url + '?variant=' + encodeURIComponent(String(mattressVariant.id)) + '#pod-builder',
+        label: 'Continue to ' + mattressProduct.title,
+        enabled: true
+      };
+    }
+
+    function renderStepPills(stepList) {
+      const currentIndex = stepList.findIndex((step) => step.key === state.currentStep);
+      els.steps.innerHTML = stepList.map((step, index) => {
+        const classes = ['snoozepod-visual-builder__step-pill'];
+        if (step.key === state.currentStep) classes.push('is-active');
+        else if (index < currentIndex) classes.push('is-complete');
+        return '<span class="' + classes.join(' ') + '">' + escapeHtml(step.label) + '</span>';
+      }).join('');
+    }
+
+    function renderSizeOptions() {
+      return supportedSizes.map((size) => {
+        const selected = state.size === size;
+        return (
+          '<button type="button" class="snoozepod-visual-builder__option snoozepod-visual-builder__option--size' +
+          (selected ? ' is-selected' : '') +
+          '" data-builder-option data-step="size" data-value="' + escapeHtml(size) + '">' +
+          '<span class="snoozepod-visual-builder__size-visual"><span class="snoozepod-visual-builder__size-bed" style="--bed-scale:' + sizeScale(size) + ';"></span></span>' +
+          '<span class="snoozepod-visual-builder__option-body">' +
+          '<span class="snoozepod-visual-builder__option-title">' + escapeHtml(size) + '</span>' +
+          '<span class="snoozepod-visual-builder__option-copy">Carry this size into mattress and base pricing.</span>' +
+          '</span>' +
+          '<span class="snoozepod-visual-builder__option-check" aria-hidden="true"></span>' +
+          '</button>'
+        );
+      }).join('');
+    }
+
+    function renderBaseOptions() {
+      return baseOptions().map((option) => {
+        const selected = state.base === option.handle;
+        const isSystem = option.kind === 'system';
+        const mediaMarkup = isSystem
+          ? '<span class="snoozepod-visual-builder__size-visual"><span class="snoozepod-visual-builder__size-bed" style="--bed-scale:0.92;"></span></span>'
+          : (
+              '<span class="snoozepod-visual-builder__media">' +
+              (option.image
+                ? '<img src="' + escapeHtml(option.image) + '" alt="' + escapeHtml(option.imageAlt || option.title) + '" loading="lazy">'
+                : '<span class="snoozepod-visual-builder__media-fallback">' + escapeHtml(option.title) + '</span>') +
+              '</span>'
+            );
+        const priceText = !isSystem && parsePriceCents(option.priceMin) ? 'From ' + formatMoney(option.priceMin) : '';
+        const descriptor = isSystem ? option.descriptor : (option.typeLabel || 'Base');
+
+        return (
+          '<button type="button" class="snoozepod-visual-builder__option' + (selected ? ' is-selected' : '') + '" data-builder-option data-step="base" data-value="' + escapeHtml(option.handle) + '">' +
+          mediaMarkup +
+          '<span class="snoozepod-visual-builder__option-body">' +
+          '<span class="snoozepod-visual-builder__option-meta">' +
+          (descriptor ? '<span>' + escapeHtml(descriptor) + '</span>' : '') +
+          (priceText ? '<span>' + escapeHtml(priceText) + '</span>' : '') +
+          '</span>' +
+          '<span class="snoozepod-visual-builder__option-title">' + escapeHtml(option.title) + '</span>' +
+          '<span class="snoozepod-visual-builder__option-copy">' + escapeHtml(isSystem ? option.descriptor : 'Use this base path with the selected mattress size.') + '</span>' +
+          '</span>' +
+          '<span class="snoozepod-visual-builder__option-check" aria-hidden="true"></span>' +
+          '</button>'
+        );
+      }).join('');
+    }
+
+    function renderMotionOptions() {
+      const allowedKeys = allowedMotionOptionsForSize(state.size).map((option) => option.key);
+      return MOTION_OPTIONS.map((option) => {
+        const selected = state.motion === option.key;
+        const disabled = allowedKeys.indexOf(option.key) === -1;
+        return (
+          '<button type="button" class="snoozepod-visual-builder__option' +
+          (selected ? ' is-selected' : '') +
+          (disabled ? ' is-disabled' : '') +
+          '" data-builder-option data-step="motion" data-value="' + escapeHtml(option.key) + '"' +
+          (disabled ? ' aria-disabled="true"' : '') +
+          '>' +
+          '<span class="snoozepod-visual-builder__motion-visual snoozepod-visual-builder__motion-visual--' + escapeHtml(option.key) + '">' +
+          '<span class="snoozepod-visual-builder__motion-stage">' +
+          '<span class="snoozepod-visual-builder__motion-bed"></span>' +
+          '<span class="snoozepod-visual-builder__motion-caption">' + escapeHtml(option.caption) + '</span>' +
+          '</span></span>' +
+          '<span class="snoozepod-visual-builder__option-body">' +
+          '<span class="snoozepod-visual-builder__option-title">' + escapeHtml(option.title) + '</span>' +
+          '<span class="snoozepod-visual-builder__option-copy">' + escapeHtml(option.subtitle) + '</span>' +
+          (disabled ? '<span class="snoozepod-visual-builder__option-note">Unavailable for the selected size.</span>' : '') +
+          '</span>' +
+          '<span class="snoozepod-visual-builder__option-check" aria-hidden="true"></span>' +
+          '</button>'
+        );
+      }).join('');
+    }
+
+    function renderMattressOptions() {
+      const options = mattressOptionsForSize();
+      const availableCount = options.filter((option) => !option.unavailableForSize).length;
+      if (!availableCount) {
+        return '<div class="snoozepod-visual-builder__catalog-empty">No mattresses are available for the chosen size yet.</div>';
+      }
+
+      return options.map((option) => {
+        const selected = state.mattress === option.handle;
+        const disabled = option.unavailableForSize || option.available === false;
+        const priceText = option.matchedVariant ? formatMoney(option.matchedVariant.price) : ('From ' + formatMoney(option.priceMin));
+
+        return (
+          '<button type="button" class="snoozepod-visual-builder__option' +
+          (selected ? ' is-selected' : '') +
+          (disabled ? ' is-disabled' : '') +
+          '" data-builder-option data-step="mattress" data-value="' + escapeHtml(option.handle) + '"' +
+          (disabled ? ' aria-disabled="true"' : '') +
+          '>' +
+          '<span class="snoozepod-visual-builder__media">' +
+          (option.image
+            ? '<img src="' + escapeHtml(option.image) + '" alt="' + escapeHtml(option.imageAlt || option.title) + '" loading="lazy">'
+            : '<span class="snoozepod-visual-builder__media-fallback">' + escapeHtml(option.title) + '</span>') +
+          '</span>' +
+          '<span class="snoozepod-visual-builder__option-body">' +
+          '<span class="snoozepod-visual-builder__option-meta">' +
+          '<span>' + escapeHtml(priceText) + '</span>' +
+          '</span>' +
+          '<span class="snoozepod-visual-builder__option-title">' + escapeHtml(option.title) + '</span>' +
+          '<span class="snoozepod-visual-builder__option-copy">' + escapeHtml(option.descriptor || 'Compare this mattress in the selected size.') + '</span>' +
+          (disabled ? '<span class="snoozepod-visual-builder__option-note">Unavailable in ' + escapeHtml(state.size) + '.</span>' : '') +
+          '</span>' +
+          '<span class="snoozepod-visual-builder__option-check" aria-hidden="true"></span>' +
+          '</button>'
+        );
+      }).join('');
+    }
+
+    function renderOptions(stepKey) {
+      if (stepKey === 'size') {
+        els.options.innerHTML = renderSizeOptions();
+        return;
+      }
+      if (stepKey === 'base') {
+        els.options.innerHTML = renderBaseOptions();
+        return;
+      }
+      if (stepKey === 'motion') {
+        els.options.innerHTML = renderMotionOptions();
+        return;
+      }
+      if (stepKey === 'mattress') {
+        els.options.innerHTML = renderMattressOptions();
+        return;
+      }
+      els.options.innerHTML = '';
+    }
+
+    function renderPreview() {
+      const cards = previewCards();
+      if (!cards.length) {
+        els.preview.innerHTML =
+          '<div class="snoozepod-visual-builder__preview-empty">' +
+          '<div class="snoozepod-visual-builder__preview-pillars"><span></span><span></span><span></span></div>' +
+          '<div>Choose a size, base, and mattress to build a visual summary here.</div>' +
+          '</div>';
+        return;
+      }
+
+      els.preview.innerHTML = cards.map((card) => {
+        return (
+          '<div class="snoozepod-visual-builder__preview-card">' +
+          '<div class="snoozepod-visual-builder__preview-media">' +
+          (card.image
+            ? '<img src="' + escapeHtml(card.image) + '" alt="' + escapeHtml(card.imageAlt || card.title) + '" loading="lazy">'
+            : '<span class="snoozepod-visual-builder__media-fallback">' + escapeHtml(card.label) + '</span>') +
+          '</div>' +
+          '<div class="snoozepod-visual-builder__preview-copy">' +
+          '<span class="snoozepod-visual-builder__summary-label">' + escapeHtml(card.label) + '</span>' +
+          '<span class="snoozepod-visual-builder__option-title">' + escapeHtml(card.title) + '</span>' +
+          '<span class="snoozepod-visual-builder__option-copy">' + escapeHtml(card.copy) + '</span>' +
+          '</div></div>'
+        );
+      }).join('');
+    }
+
+    function renderSummary() {
+      const rows = summaryRows();
+      els.summary.innerHTML = rows.map((row) => {
+        return (
+          '<div class="snoozepod-visual-builder__row">' +
+          '<dt class="snoozepod-visual-builder__row-term">' + escapeHtml(row.term) + '</dt>' +
+          '<dd class="snoozepod-visual-builder__row-value">' + escapeHtml(row.value) + '</dd>' +
+          '</div>'
+        );
+      }).join('');
+
+      els.reviewList.innerHTML = els.summary.innerHTML;
+    }
+
+    function renderReview() {
+      const cards = reviewCards();
+      els.reviewGrid.innerHTML = cards.map((card) => {
+        const isMotionCard = !card.image;
+        return (
+          '<div class="snoozepod-visual-builder__review-card">' +
+          '<div class="snoozepod-visual-builder__review-media">' +
+          (isMotionCard
+            ? '<div class="snoozepod-visual-builder__motion-visual snoozepod-visual-builder__motion-visual--' + escapeHtml(state.motion || 'standard') + '">' +
+              '<span class="snoozepod-visual-builder__motion-stage"><span class="snoozepod-visual-builder__motion-bed"></span></span></div>'
+            : '<img src="' + escapeHtml(card.image) + '" alt="' + escapeHtml(card.imageAlt || card.title) + '" loading="lazy">') +
+          '</div>' +
+          '<div class="snoozepod-visual-builder__review-copy">' +
+          '<span class="snoozepod-visual-builder__summary-label">' + escapeHtml(card.label) + '</span>' +
+          '<span class="snoozepod-visual-builder__option-title">' + escapeHtml(card.title) + '</span>' +
+          '<span class="snoozepod-visual-builder__option-copy">' + escapeHtml(card.copy) + '</span>' +
+          '</div></div>'
+        );
+      }).join('');
+
+      els.reviewNote.textContent = 'Size is preserved in the mattress link below. Base and motion are confirmed on the mattress page inside the inline builder.';
+    }
+
+    function renderPricing() {
+      const pricing = priceState();
+      els.priceLabel.textContent = pricing.label;
+      els.price.textContent = pricing.value;
+    }
+
+    function renderPrimaryAction() {
+      const primary = primaryLinkState();
+      els.primary.textContent = primary.label;
+      els.primary.href = primary.href;
+      els.primary.classList.toggle('is-disabled', !primary.enabled);
+      els.primary.setAttribute('aria-disabled', primary.enabled ? 'false' : 'true');
+    }
+
+    function setValue(stepKey, value) {
+      state[stepKey] = value;
+
+      if (stepKey === 'size') {
+        const mattressProduct = getSelectedMattressProduct();
+        if (mattressProduct && !findVariantForSize(mattressProduct, value)) {
+          state.mattress = '';
+        }
+
+        const allowedMotionKeys = allowedMotionOptionsForSize(value).map((option) => option.key);
+        if (state.motion && allowedMotionKeys.indexOf(state.motion) === -1) {
+          state.motion = '';
+        }
+      }
+
+      if (stepKey === 'base' && !isAdjustableBaseSelection()) {
+        state.motion = '';
+        if (state.currentStep === 'motion') {
+          state.currentStep = 'mattress';
+        }
+      }
     }
 
     function render() {
-      summaryMattress.textContent = copy.mattress[state.mattress].label;
-      summaryBase.textContent = copy.base[state.base].label;
-      summaryFinish.textContent = copy.finish[state.finish].label;
+      const stepList = visibleSteps();
+      if (!stepList.some((step) => step.key === state.currentStep)) {
+        state.currentStep = stepList[0].key;
+      }
 
-      recommendation.textContent = [
-        copy.mattress[state.mattress].recommendation,
-        copy.base[state.base].recommendation,
-        copy.finish[state.finish].recommendation
-      ].join(' ');
+      const currentIndex = stepList.findIndex((step) => step.key === state.currentStep);
+      const currentStep = stepList[currentIndex];
 
-      primary.href = copy.mattress[state.mattress].primaryHref;
-      primary.textContent = copy.mattress[state.mattress].primaryLabel;
+      els.stepCount.textContent = 'Step ' + (currentIndex + 1) + ' of ' + stepList.length;
+      els.progress.style.width = (((currentIndex + 1) / stepList.length) * 100) + '%';
+      els.stepLabel.textContent = currentStep.label;
+      els.stepTitle.textContent = currentStep.title;
+      els.stepCopy.textContent = STEP_COPY[currentStep.key];
+      els.nextAction.textContent = nextActionText(currentStep.key);
 
-      const secondaryAction = secondaryActionForState();
-      secondary.href = secondaryAction.href;
-      secondary.textContent = secondaryAction.label;
+      renderStepPills(stepList);
+      renderOptions(currentStep.key);
+      renderPreview();
+      renderSummary();
+      renderReview();
+      renderPricing();
+      renderPrimaryAction();
+
+      const reviewing = currentStep.key === 'review';
+      els.review.hidden = !reviewing;
+      els.options.hidden = reviewing;
+      els.next.hidden = reviewing;
+      els.back.disabled = currentIndex === 0;
+
+      if (!reviewing) {
+        const nextStep = stepList[currentIndex + 1];
+        els.next.disabled = !canProceed(currentStep.key);
+        els.next.textContent = nextStep && nextStep.key === 'review' ? 'Review Build' : 'Next';
+      }
     }
 
     root.addEventListener('click', (event) => {
-      const button = event.target.closest('[data-step][data-value]');
-      if (!button) return;
+      const optionButton = event.target.closest('[data-builder-option]');
+      if (optionButton) {
+        if (optionButton.classList.contains('is-disabled')) return;
+        setValue(optionButton.getAttribute('data-step'), optionButton.getAttribute('data-value'));
+        render();
+        return;
+      }
 
-      const step = button.getAttribute('data-step');
-      const value = button.getAttribute('data-value');
-      if (!step || !value) return;
+      if (event.target.closest('[data-vb-back]')) {
+        const stepList = visibleSteps();
+        const currentIndex = stepList.findIndex((step) => step.key === state.currentStep);
+        if (currentIndex > 0) {
+          state.currentStep = stepList[currentIndex - 1].key;
+          render();
+        }
+        return;
+      }
 
-      state[step] = value;
+      if (event.target.closest('[data-vb-next]')) {
+        const stepList = visibleSteps();
+        const currentIndex = stepList.findIndex((step) => step.key === state.currentStep);
+        const currentStep = stepList[currentIndex];
+        if (!canProceed(currentStep.key)) return;
+        if (stepList[currentIndex + 1]) {
+          state.currentStep = stepList[currentIndex + 1].key;
+          render();
+        }
+        return;
+      }
 
-      root.querySelectorAll('[data-step="' + step + '"]').forEach((option) => {
-        option.classList.toggle('is-selected', option === button);
-      });
-
-      render();
+      if (event.target.closest('[data-vb-reset]')) {
+        state.currentStep = 'size';
+        state.size = '';
+        state.base = '';
+        state.motion = '';
+        state.mattress = '';
+        render();
+      }
     });
 
     render();
@@ -482,40 +1732,7 @@
       "type": "textarea",
       "id": "subheading",
       "label": "Subheading",
-      "default": "Choose a mattress direction, base path, and finishing focus before you dive into the full build."
-    },
-    {
-      "type": "image_picker",
-      "id": "background_image",
-      "label": "Background image"
-    },
-    {
-      "type": "text",
-      "id": "primary_cta_label",
-      "label": "Primary CTA label",
-      "default": "Start Building Your Sleep Environment"
-    },
-    {
-      "type": "url",
-      "id": "primary_cta_link",
-      "label": "Primary CTA link"
-    },
-    {
-      "type": "text",
-      "id": "secondary_cta_label",
-      "label": "Secondary CTA label",
-      "default": "Plan It With Snoozer"
-    },
-    {
-      "type": "url",
-      "id": "secondary_cta_link",
-      "label": "Secondary CTA link"
-    },
-    {
-      "type": "checkbox",
-      "id": "use_snoozer_trigger_secondary",
-      "label": "Use Snoozer trigger for secondary CTA",
-      "default": true
+      "default": "Choose size, base, motion, and mattress visuals first, then continue into the mattress page with the right size already selected."
     },
     {
       "type": "color_scheme",
@@ -545,7 +1762,7 @@
       "step": 4,
       "unit": "px",
       "label": "Bottom padding",
-      "default": 48
+      "default": 40
     }
   ],
   "presets": [

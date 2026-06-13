@@ -1,18 +1,38 @@
+{%- liquid
+  assign desktop_columns = section.blocks.size
+  if desktop_columns > 4
+    assign desktop_columns = 4
+  endif
+
+  assign mobile_padding_top = section.settings.padding_top | times: 0.75 | round: 0
+  assign desktop_padding_top = section.settings.padding_top
+  if section.settings.pull_up
+    assign mobile_padding_top = 0
+    assign desktop_padding_top = 0
+  endif
+-%}
+
 {%- style -%}
   .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-top: {{ mobile_padding_top }}px;
     padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
   }
 
   .snoozepod-trust-strip-{{ section.id }} {
     width: min(100%, var(--content-max));
     margin: 0 auto;
+    position: relative;
+    z-index: 2;
     padding-left: var(--page-padding-mobile);
     padding-right: var(--page-padding-mobile);
   }
 
+  .snoozepod-trust-strip-{{ section.id }}.snoozepod-trust-strip--pull-up {
+    margin-top: -18px;
+  }
+
   .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__panel {
-    padding: var(--card-padding-mobile);
+    padding: 20px 18px;
     border: var(--card-border);
     border-radius: var(--radius-lg);
     background: #ffffff;
@@ -21,8 +41,8 @@
 
   .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--sp-3);
+    grid-template-columns: 1fr;
+    gap: 14px;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -30,14 +50,14 @@
 
   .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item {
     display: grid;
-    grid-template-columns: 3.6rem minmax(0, 1fr);
-    gap: var(--sp-2);
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 12px;
     align-items: start;
   }
 
   .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__icon {
-    width: 3.6rem;
-    height: 3.6rem;
+    width: 40px;
+    height: 40px;
     border-radius: var(--radius-pill);
     display: inline-flex;
     align-items: center;
@@ -69,13 +89,17 @@
 
   @media screen and (min-width: 750px) {
     .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding_top }}px;
+      padding-top: {{ desktop_padding_top }}px;
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
 
     .snoozepod-trust-strip-{{ section.id }} {
       padding-left: var(--page-padding-tablet);
       padding-right: var(--page-padding-tablet);
+    }
+
+    .snoozepod-trust-strip-{{ section.id }}.snoozepod-trust-strip--pull-up {
+      margin-top: -28px;
     }
   }
 
@@ -87,22 +111,22 @@
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__panel {
-      padding: 28px 32px;
+      padding: 22px 26px;
       border-radius: 24px;
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat({{ desktop_columns }}, minmax(0, 1fr));
       gap: 0;
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__item {
       position: relative;
-      grid-template-columns: 48px minmax(0, 1fr);
-      gap: 16px;
-      align-items: center;
-      padding-left: 24px;
-      padding-right: 24px;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      padding-left: 20px;
+      padding-right: 20px;
       border-right: 0;
     }
 
@@ -119,8 +143,8 @@
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__icon {
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
     }
 
     .snoozepod-trust-strip-{{ section.id }} .snoozepod-trust-strip__icon .svg-wrapper,
@@ -140,7 +164,7 @@
 
 <section class="section color-{{ section.settings.color_scheme }} gradient snoozepod-trust-strip-section">
   <div class="section-{{ section.id }}-padding">
-    <div class="snoozepod-trust-strip-{{ section.id }}">
+    <div class="snoozepod-trust-strip-{{ section.id }}{% if section.settings.pull_up %} snoozepod-trust-strip--pull-up{% endif %}">
       <div class="snoozepod-trust-strip__panel">
         <ul class="snoozepod-trust-strip__grid" role="list">
           {%- for block in section.blocks -%}
@@ -184,6 +208,12 @@
     {
       "type": "header",
       "content": "Section padding"
+    },
+    {
+      "type": "checkbox",
+      "id": "pull_up",
+      "label": "Pull section closer to previous section",
+      "default": false
     },
     {
       "type": "range",

@@ -210,14 +210,14 @@
   .header__snooze-code-controls {
     display: flex;
     align-items: center;
-    gap: 1.2rem;
+    gap: 1rem;
     flex-wrap: nowrap;
   }
 
   .header__snooze-code-input {
-    width: 16rem;
-    min-height: 4.6rem;
-    padding: 0 1.6rem;
+    width: 15.8rem;
+    min-height: 4.5rem;
+    padding: 0 1.5rem;
     border: 0.1rem solid #cbd5e1;
     border-radius: 999px;
     background: #ffffff;
@@ -238,9 +238,9 @@
   }
 
   .header__snooze-code-button {
-    min-width: 11rem;
-    min-height: 4.6rem;
-    padding: 0 1.6rem;
+    min-width: 10.8rem;
+    min-height: 4.5rem;
+    padding: 0 1.5rem;
     border: 0.1rem solid #071a44;
     border-radius: 999px;
     background: #071a44;
@@ -921,7 +921,7 @@
     .header__snooze-code-entry {
       display: flex;
       align-items: center;
-      margin-right: 1.2rem;
+      margin-right: 1rem;
     }
 
     .header__snooze-code-form {
@@ -1064,7 +1064,7 @@
     }
 
     .header__snooze-code-entry {
-      margin-right: 0.8rem;
+      margin-right: 0.6rem;
     }
   }
 
@@ -1350,7 +1350,7 @@
         <div class="header__action-group">
           <div class="header__snooze-code-entry small-hide medium-hide">
             <form class="header__snooze-code-form" data-snooze-checkin-form>
-              <label class="header__snooze-code-label" for="HeaderSnoozeCode-{{ section.id }}">SNOOZE CODE</label>
+              <label class="visually-hidden" for="HeaderSnoozeCode-{{ section.id }}">Snooze Code</label>
               <div class="header__snooze-code-controls">
                 <input
                   id="HeaderSnoozeCode-{{ section.id }}"
@@ -1358,8 +1358,8 @@
                   type="text"
                   inputmode="numeric"
                   autocomplete="off"
-                  placeholder="Enter code"
-                  aria-label="Enter Snooze Code"
+                  placeholder="Snooze Code"
+                  aria-label="Snooze Code"
                   data-snooze-checkin-input
                 >
                 <button
