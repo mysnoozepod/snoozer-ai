@@ -65,7 +65,7 @@
       ],
       "settings": {
         "heading": "Explore The Next Step",
-        "body": "Use these cards to highlight the most important ideas, actions, or support points for this page."
+        "body": "Use these cards to guide the next step, whether you want support, a private visit, or a more complete sleep setup."
       }
     },
     "final_cta": {
@@ -74,7 +74,7 @@
         "heading": "Ready For Your Next Step?",
         "body": "Use Snoozer to keep building around your sleep health and wellness journey.",
         "primary_label": "Ask Snoozer",
-        "secondary_label": "Book A Snooze Session",
+        "secondary_label": "Book a Snooze Session",
         "show_secondary": true
       }
     }

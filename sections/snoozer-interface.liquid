@@ -1,70 +1,59 @@
-<div id="snoozer-interface" class="snoozer-container">
-   <h2>Welcome to MySnoozePod</h2>
-   <p>Your personal AI Sleep Consultant is here to help you.</p>
-   <input type="text" id="snoozer-input" placeholder="Ask Snoozer anything..." />
-   <button id="snoozer-send">Send</button>
-   <div id="snoozer-response"></div>
-</div>
+{% comment %}
+  Dormant prototype only.
+  Do not place this section on customer-facing pages.
+  The live Snoozer experience is handled in the header HUD and dedicated landing surfaces.
+{% endcomment %}
 
-<style>
-   .snoozer-container {
-       text-align: center;
-       padding: 20px;
-       background-color: #f4f4f4;
-       border-radius: 10px;
-       margin: 30px auto;
-       width: 60%;
-   }
+{% if request.design_mode %}
+  <div class="snoozer-interface-note">
+    <p class="snoozer-interface-note__eyebrow">Internal Only</p>
+    <h2 class="snoozer-interface-note__title">Dormant Snoozer prototype</h2>
+    <p class="snoozer-interface-note__copy">
+      This section is not connected to the live Snoozer flow and should stay off customer-facing pages.
+    </p>
+  </div>
 
-   #snoozer-input {
-       padding: 10px;
-       width: 80%;
-       border-radius: 5px;
-       border: 1px solid #ccc;
-   }
+  <style>
+    .snoozer-interface-note {
+      max-width: 760px;
+      margin: 24px auto;
+      padding: 24px;
+      border: 1px dashed rgba(7, 25, 66, 0.2);
+      border-radius: 20px;
+      background: #f5f7fb;
+      color: #071942;
+      text-align: left;
+    }
 
-   #snoozer-send {
-       padding: 10px 20px;
-       background-color: #007bff;
-       color: white;
-       border: none;
-       border-radius: 5px;
-       cursor: pointer;
-       margin-left: 10px;
-   }
+    .snoozer-interface-note__eyebrow {
+      margin: 0 0 10px;
+      color: rgba(7, 25, 66, 0.64);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
 
-   #snoozer-response {
-       margin-top: 20px;
-       padding: 10px;
-       background-color: #e9ecef;
-       border-radius: 5px;
-   }
-</style>
+    .snoozer-interface-note__title {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
 
-<script>
-   document.getElementById('snoozer-send').addEventListener('click', function() {
-       var input = document.getElementById('snoozer-input').value;
-       if (input) {
-           // Call to your Snoozer API for AI interaction
-           fetch('https://your-snoozer-backend-api.com/ask', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({ question: input })
-           })
-           .then(response => response.json())
-           .then(data => {
-               document.getElementById('snoozer-response').innerText = data.response;
-           })
-           .catch(error => {
-               document.getElementById('snoozer-response').innerText = 'Sorry, something went wrong.';
-           });
-       }
-   });
-</script>
+    .snoozer-interface-note__copy {
+      margin: 12px 0 0;
+      color: rgba(7, 25, 66, 0.78);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+  </style>
+{% endif %}
 
 {% schema %}
   {
-    "name": "Snoozer Interface",
+    "name": "Snoozer Interface (Dormant)",
     "settings": []
   }
 {% endschema %}

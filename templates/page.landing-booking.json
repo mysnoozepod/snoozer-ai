@@ -12,17 +12,17 @@
     "main": {
       "type": "snoozer-landing-booking",
       "settings": {
-        "hero_eyebrow": "BOOK YOUR SNOOZE SESSION",
-        "hero_headline": "Book A Private Snooze Session",
-        "hero_text": "Answer a few quick sleep questions, then choose a time to visit the showroom with a clearer plan for what to test.",
-        "hero_helper_text": "Start with the mini Snooze Assessment below, then book your private session.",
+        "hero_eyebrow": "PRIVATE SNOOZE SESSION",
+        "hero_headline": "Plan Your Private Snooze Session",
+        "hero_text": "Start with a brief guided sleep check-in, then choose a time to visit with clearer direction on what to test.",
+        "hero_helper_text": "Complete the mini assessment first, save your Snooze Code, then choose your showroom visit time.",
         "hero_image": "shopify://shop_images/ChatGPT_Image_Apr_28_2026_03_23_05_AM.png",
         "hero_image_alt": "",
-        "mini_heading": "Start With Your Mini Snooze Assessment",
-        "mini_text": "Answer a few quick questions so your showroom visit starts with direction.",
+        "mini_heading": "Complete Your Mini Snooze Assessment",
+        "mini_text": "Answer a few guided questions so your visit starts with context, not guesswork.",
         "mini_calendly_url": "https://calendly.com/d/cypf-52b-v4v",
-        "booking_heading": "Choose Your Snooze Session Time",
-        "booking_text": "After the mini assessment, choose a time for your private showroom visit.",
+        "booking_heading": "Choose Your Visit Time",
+        "booking_text": "Once your Snooze Code is saved, pick the private session time that fits your schedule.",
         "calendly_url": "https://calendly.com/zohotyree/30min"
       }
     }

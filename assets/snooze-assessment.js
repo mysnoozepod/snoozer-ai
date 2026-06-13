@@ -1927,7 +1927,7 @@
           primary: true,
         },
         {
-          label: "Book A Snooze Session",
+          label: "Book a Snooze Session",
           href: routes.booking,
           primary: false,
         },

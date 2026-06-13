@@ -79,28 +79,28 @@
           "type": "detail_item",
           "settings": {
             "heading": "Comfort",
-            "text": "Add a short explanation of how this product feels and who it suits."
+            "text": "Compare cushioning, pressure relief, and overall feel based on how you like the surface to respond."
           }
         },
         "support": {
           "type": "detail_item",
           "settings": {
             "heading": "Support",
-            "text": "Explain the level of support, alignment, and response it offers."
+            "text": "Focus on alignment, stability, and how well the build supports the areas that carry the most pressure."
           }
         },
         "materials": {
           "type": "detail_item",
           "settings": {
             "heading": "Materials",
-            "text": "List the materials or construction details that shape performance."
+            "text": "Construction details help explain airflow, durability, responsiveness, and the feel you notice first."
           }
         },
         "best-for": {
           "type": "detail_item",
           "settings": {
             "heading": "Best For",
-            "text": "Highlight the sleep positions or needs this product can serve well."
+            "text": "Use this to compare sleep positions, comfort preferences, and the kinds of needs this product may suit best."
           }
         }
       },
@@ -111,8 +111,8 @@
         "best-for"
       ],
       "settings": {
-        "heading": "Product details",
-        "body": "Use these details to compare comfort, support, materials, and fit."
+        "heading": "What to compare",
+        "body": "Review the feel, support, materials, and fit that shape how this product performs."
       }
     },
     "pairing": {
@@ -122,7 +122,7 @@
           "type": "pairing_card",
           "settings": {
             "title": "Bases",
-            "text": "Add a base that supports the way this product should perform.",
+            "text": "Pair this with a base that supports the feel, support, and recovery features you want most.",
             "link_label": "Explore"
           }
         },
@@ -130,7 +130,7 @@
           "type": "pairing_card",
           "settings": {
             "title": "Pillows",
-            "text": "Balance comfort and alignment with the right pillow options.",
+            "text": "Balance alignment and comfort with the right pillow for your sleep position.",
             "link_label": "Explore"
           }
         },
@@ -146,7 +146,7 @@
           "type": "pairing_card",
           "settings": {
             "title": "Protection",
-            "text": "Keep the surface fresh while protecting long-term comfort.",
+            "text": "Keep the surface fresher while protecting long-term comfort and performance.",
             "link_label": "Explore"
           }
         }
@@ -186,7 +186,7 @@
         "heading": "Ready To Build Your Sleep Environment?",
         "body": "Use Snoozer to connect this product to the rest of your sleep needs.",
         "primary_label": "Ask Snoozer",
-        "secondary_label": "Book A Snooze Session",
+        "secondary_label": "Book a Snooze Session",
         "show_secondary": true
       }
     }

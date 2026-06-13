@@ -13,7 +13,7 @@
       "type": "snooze-hero",
       "settings": {
         "heading": "Find The Right Mattress Without The Guesswork",
-        "subtext": "Shop online or visit our unmanned showroom for a calmer way to choose your sleep environment.",
+        "subtext": "Shop online or visit by appointment for a calmer way to choose your sleep environment.",
         "primary_cta_label": "Take The Snooze Assessment",
         "primary_cta_link": "shopify://pages/snooze-assessment",
         "secondary_cta_label": "Shop Mattresses",
@@ -28,8 +28,8 @@
           "type": "column",
           "settings": {
             "icon": "map_pin",
-            "title": "Shop Anywhere",
-            "text": "<p>Online or in our unmanned showroom.</p>",
+            "title": "Shop Your Way",
+            "text": "<p>Online or through a private showroom visit.</p>",
             "link_label": "",
             "link": "shopify://pages/book-a-snooze-session"
           }
@@ -38,8 +38,8 @@
           "type": "column",
           "settings": {
             "icon": "question_mark",
-            "title": "Get Answers Fast",
-            "text": "<p>Ask Snoozer when you need help choosing.</p>",
+            "title": "Get Guided Answers",
+            "text": "<p>Ask Snoozer for help with comfort, support, cooling, and fit.</p>",
             "link_label": "",
             "link": ""
           }
@@ -49,7 +49,7 @@
           "settings": {
             "icon": "box",
             "title": "Build Your SnoozePod",
-            "text": "<p>Pair your mattress with bases, pillows, and bedding.</p>",
+            "text": "<p>Bring mattress, base, pillows, and bedding into one clear plan.</p>",
             "link_label": "",
             "link": ""
           }
@@ -92,21 +92,21 @@
         "heading_PLPUkK": {
           "type": "heading",
           "settings": {
-            "heading": "Try It In A Showroom Without The Sales Pressure",
+            "heading": "Try It In A Private Showroom Visit",
             "heading_size": "h1"
           }
         },
         "text_rk3Mw6": {
           "type": "text",
           "settings": {
-            "text": "<p>Book a private Snooze Session and experience mattresses, bases, pillows, and bedding at your pace.</p><ul><li>Private, low-pressure experience</li><li>Snoozer-guided support</li><li>Virtual support available</li></ul>",
+            "text": "<p>Book a private Snooze Session to compare mattresses, bases, pillows, and bedding at your own pace.</p><ul><li>Private visit by appointment</li><li>Guided starting point from Snoozer</li><li>Virtual follow-up when you need it</li></ul>",
             "text_style": "body"
           }
         },
         "button_H8Rdhw": {
           "type": "button",
           "settings": {
-            "button_label": "Book Your Snooze Session",
+            "button_label": "Plan Your Snooze Session",
             "button_link": "shopify://pages/book-a-snooze-session",
             "button_style_secondary": false
           }
@@ -251,9 +251,9 @@
         "prompt_4"
       ],
       "settings": {
-        "heading": "Have A Sleep Question?",
-        "subheading": "Ask Snoozer about comfort, support, cooling, bases, pillows, or preparing for your showroom visit.",
-        "cta_label": "Start With A Question",
+        "heading": "Need Help Narrowing It Down?",
+        "subheading": "Ask Snoozer about comfort, support, cooling, bases, pillows, or what to test during your visit.",
+        "cta_label": "Ask Snoozer",
         "cta_link": "",
         "use_snoozer_trigger": true,
         "color_scheme": "scheme-1",
@@ -265,7 +265,7 @@
       "type": "snoozepod-final-build-cta",
       "settings": {
         "heading": "Build Your SnoozePod",
-        "subheading": "Create a sleep environment built around how you rest, recover, cool down, and wake up.",
+        "subheading": "Create a calmer sleep environment around how you rest, recover, cool down, and wake up.",
         "primary_cta_label": "Start Building Your Sleep Environment",
         "primary_cta_link": "",
         "secondary_cta_label": "Plan It With Snoozer",
@@ -283,8 +283,8 @@
           "type": "trust_item",
           "settings": {
             "icon": "map_pin",
-            "title": "Unmanned showroom",
-            "short_text": "Private, low-pressure shopping."
+            "title": "Private showroom visits",
+            "short_text": "Shop at your own pace."
           }
         },
         "trust_2": {
@@ -292,15 +292,15 @@
           "settings": {
             "icon": "question_mark",
             "title": "Virtual support",
-            "short_text": "Get help online."
+            "short_text": "Keep guidance going online."
           }
         },
         "trust_3": {
           "type": "trust_item",
           "settings": {
             "icon": "stopwatch",
-            "title": "Private sessions",
-            "short_text": "Try products at your pace."
+            "title": "Guided sessions",
+            "short_text": "Compare products with a clear starting point."
           }
         },
         "trust_4": {

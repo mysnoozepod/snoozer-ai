@@ -195,29 +195,29 @@
     margin: 0;
     color: #071a44;
     font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 1.08rem;
+    font-size: 1rem;
     font-weight: 700;
     line-height: 1.2;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
   .header__snooze-code-controls {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
   }
 
   .header__snooze-code-input {
-    width: 10.8rem;
-    min-height: 4.2rem;
-    padding: 0 1.4rem;
+    width: 11.4rem;
+    min-height: 4rem;
+    padding: 0 1.2rem;
     border: 0.1rem solid #cbd5e1;
     border-radius: 999px;
     background: #ffffff;
     color: #071a44;
     font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 1.4rem;
+    font-size: 1.32rem;
     font-weight: 600;
     line-height: 1;
   }
@@ -232,14 +232,14 @@
   }
 
   .header__snooze-code-button {
-    min-height: 4.2rem;
-    padding: 0 1.5rem;
+    min-height: 4rem;
+    padding: 0 1.2rem;
     border: 0.1rem solid #071a44;
     border-radius: 999px;
     background: #071a44;
     color: #ffffff;
     font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 1.35rem;
+    font-size: 1.22rem;
     font-weight: 700;
     line-height: 1;
     cursor: pointer;
@@ -259,12 +259,12 @@
   }
 
   .header__snooze-code-status {
-    min-height: 1.4rem;
+    min-height: 1.5rem;
     margin: 0;
     color: rgba(7, 26, 68, 0.66);
     font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
-    font-size: 1.18rem;
-    line-height: 1.3;
+    font-size: 1.1rem;
+    line-height: 1.35;
   }
 
   .header__snooze-code-status.is-success {
@@ -819,8 +819,8 @@
     .header__snooze-code-form {
       display: flex;
       flex-direction: column;
-      gap: 0.35rem;
-      width: 18.8rem;
+      gap: 0.4rem;
+      width: 19.6rem;
     }
 
     .header__icon--account {
@@ -973,8 +973,8 @@
 {%- assign snoozer_assessment_url = '/pages/snooze-assessment' -%}
 {%- assign snoozer_mattresses_url = '/collections/mattresses' -%}
 {%- assign snoozer_bases_url = '/products/premium-motion-adjustable-base' -%}
-{%- assign snoozer_booking_url = '/pages/booking-a-snooze-session' -%}
-{%- assign snoozer_expectations_url = '/pages/booking-a-snooze-session' -%}
+{%- assign snoozer_booking_url = '/pages/book-a-snooze-session' -%}
+{%- assign snoozer_expectations_url = '/pages/book-a-snooze-session' -%}
 
 <div class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
   {%- liquid
@@ -1032,7 +1032,7 @@
     <div class="header__snoozer-panel-head">
       <div>
         <p class="header__snoozer-kicker">Snoozer</p>
-        <p class="header__snoozer-support">Tell me what you need help with.</p>
+        <p class="header__snoozer-support">Tell me how you sleep and what feels off.</p>
       </div>
       <button type="button" class="header__snoozer-close large-up-hide" data-snoozer-close aria-label="Close Ask Snoozer panel">
         <span aria-hidden="true">&times;</span>
@@ -1044,24 +1044,24 @@
         class="header__snoozer-input"
         data-snoozer-input
         autocomplete="off"
-        placeholder="Ask about comfort, cooling, or support"
+        placeholder="Ask about comfort, cooling, support, or your visit"
         aria-label="Tell Snoozer what you need help with"
       >
-      <button type="submit" class="header__snoozer-submit">Guide Me</button>
+      <button type="submit" class="header__snoozer-submit">Get Guidance</button>
     </form>
     <div class="header__snoozer-chip-zone">
-      <p class="header__snoozer-section-label">Quick starts</p>
+      <p class="header__snoozer-section-label">Good places to start</p>
       <div class="header__snoozer-chip-list" data-snoozer-chip-list aria-label="Suggested Snoozer prompts">
-        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Cooling and airflow matter most here. I can help narrow the right feel.">I sleep hot</button>
-        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Firm support can help with alignment, but comfort still matters.">I need firm support</button>
-        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Snoring can be affected by sleep position and elevation. Start with your sleep setup.">I snore</button>
-        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Compare by feel, support, cooling, and adjustability - not just price.">I want to compare mattresses</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Cooling and airflow matter most here. I can help narrow the right feel and setup.">I sleep hot</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Better support should help alignment without making comfort feel rigid.">I need better support</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Sleep position and gentle elevation can both help when snoring is part of the picture.">I snore</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Compare feel, support, cooling, and adjustability before you compare price.">Help me compare mattresses</button>
       </div>
     </div>
     <div class="header__snoozer-response-card">
       <p class="header__snoozer-response-kicker">Snoozer says</p>
       <p class="header__snoozer-last-query" data-snoozer-last-query hidden></p>
-      <p class="header__snoozer-response" data-snoozer-response aria-live="polite">Start with how you sleep. I'll guide you from there.</p>
+      <p class="header__snoozer-response" data-snoozer-response aria-live="polite">Start with how you sleep now. I'll help narrow the best next step.</p>
     </div>
     <div class="header__snoozer-results" data-snoozer-results>
       <p class="header__snoozer-section-label" data-snoozer-results-label>Good starting points</p>
@@ -1075,8 +1075,8 @@
           <span class="header__snoozer-action-copy">Compare feel, support, and cooling.</span>
         </a>
         <a href="{{ snoozer_booking_url }}" class="header__snoozer-action">
-          <span class="header__snoozer-action-label">Book Snooze Session</span>
-          <span class="header__snoozer-action-copy">Test your fit in person.</span>
+          <span class="header__snoozer-action-label">Book a Snooze Session</span>
+          <span class="header__snoozer-action-copy">Visit with a clearer starting point.</span>
         </a>
       </div>
     </div>
@@ -1205,7 +1205,7 @@
           </span>
           <div class="header__store-copy">
             <span class="header__store-title">Open By Appointment</span>
-            <span class="header__store-text">Showroom + Virtual Support</span>
+            <span class="header__store-text">Private Showroom + Virtual Support</span>
           </div>
         </div>
 
@@ -1231,7 +1231,7 @@
                   class="header__snooze-code-button"
                   data-snooze-checkin-submit
                 >
-                  Unlock
+                  Check In
                 </button>
               </div>
               <p class="header__snooze-code-status" data-snooze-checkin-status aria-live="polite"></p>
@@ -1355,11 +1355,11 @@
     if (window.__mysnoozepodSnoozerTriggerBound) return;
     window.__mysnoozepodSnoozerTriggerBound = true;
 
-    const defaultResponse = "Start with how you sleep. I'll guide you from there.";
-    const fallbackResponse = "I can still guide you. Try one of these starting points.";
-    const loadingResponse = "Snoozer is checking that for you…";
-    const defaultInputPlaceholder = "Ask about comfort, cooling, or support";
-    const followUpInputPlaceholder = "Ask another sleep question…";
+    const defaultResponse = "Start with how you sleep now. I'll help narrow the best next step.";
+    const fallbackResponse = "I can still help. Try one of these guided starting points.";
+    const loadingResponse = "Snoozer is checking that for you...";
+    const defaultInputPlaceholder = "Ask about comfort, cooling, support, or your visit";
+    const followUpInputPlaceholder = "Ask another sleep question...";
     const shells = Array.from(document.querySelectorAll('[data-snoozer-shell]'));
     const header = document.querySelector('.header');
     const requestPageType = {{ request.page_type | json }};
@@ -1374,9 +1374,10 @@
       expectations: {{ snoozer_expectations_url | json }}
     };
     const routeAliases = {
-      '/pages/book-your-snooze-session': routes.booking
+      '/pages/book-your-snooze-session': routes.booking,
+      '/pages/booking-a-snooze-session': routes.booking
     };
-    const knownDeadHrefs = ['/pages/book-your-snooze-session', '#'];
+    const knownDeadHrefs = ['#'];
     const knownStaticHrefs = [
       routes.assessment,
       routes.mattresses,
@@ -1386,15 +1387,15 @@
     ].filter(Boolean);
     const liveFallbackChips = [
       { label: 'I sleep hot', value: 'I sleep hot' },
-      { label: 'I need firm support', value: 'I need firm support' },
-      { label: 'Help me compare mattresses', value: 'compare foam vs hybrid' },
+      { label: 'I need better support', value: 'I need better support' },
+      { label: 'Help me compare mattresses', value: 'help me compare mattresses' },
       { label: 'Take Snooze Assessment', value: 'take snooze assessment' }
     ];
     const defaultChips = [
       { label: 'I sleep hot', state: 'sleep_hot' },
-      { label: 'I need firm support', state: 'firm_support' },
+      { label: 'I need better support', state: 'firm_support' },
       { label: 'I snore', state: 'snoring_elevation' },
-      { label: 'I want to compare mattresses', state: 'compare_mattresses' }
+      { label: 'Help me compare mattresses', state: 'compare_mattresses' }
     ];
     const defaultCards = [
       {
@@ -1409,8 +1410,8 @@
         href: routes.mattresses
       },
       {
-        label: 'Book Snooze Session',
-        copy: 'Test your fit in person.',
+        label: 'Book a Snooze Session',
+        copy: 'Visit with a clearer starting point.',
         href: routes.booking
       }
     ];
@@ -1466,7 +1467,7 @@
             placeholder: true
           },
           {
-            label: 'Book Snooze Session',
+            label: 'Book a Snooze Session',
             copy: 'Test firmness before deciding.',
             href: routes.booking
           }
@@ -1477,7 +1478,7 @@
         chips: [
           { label: 'Show adjustable bases', state: 'snoring_elevation' },
           { label: 'Learn about elevation', state: 'snoring_elevation' },
-          { label: 'Book Snooze Session', state: 'booking_help' }
+          { label: 'Book a Snooze Session', state: 'booking_help' }
         ],
         cards: [
           {
@@ -1486,7 +1487,7 @@
             href: routes.bases
           },
           {
-            label: 'Book Snooze Session',
+            label: 'Book a Snooze Session',
             copy: 'Try elevation in person.',
             href: routes.booking
           },
@@ -1518,7 +1519,7 @@
             placeholder: true
           },
           {
-            label: 'Book Snooze Session',
+            label: 'Book a Snooze Session',
             copy: 'Test your top options.',
             href: routes.booking
           }
@@ -1544,14 +1545,14 @@
             href: routes.mattresses
           },
           {
-            label: 'Book Snooze Session',
+            label: 'Book a Snooze Session',
             copy: 'Get guided in-person testing.',
             href: routes.booking
           }
         ]
       },
       booking_help: {
-        response: 'You can book a Snooze Session to test your fit in the showroom or get guided virtually.',
+        response: 'You can book a private Snooze Session to test your fit in the showroom or continue virtually.',
         chips: [
           { label: 'Book in showroom', state: 'booking_help' },
           { label: 'Virtual support', state: 'booking_help' },
@@ -1559,7 +1560,7 @@
         ],
         cards: [
           {
-            label: 'Book Snooze Session',
+            label: 'Book a Snooze Session',
             copy: 'Reserve guided test time.',
             href: routes.booking
           },
@@ -1889,7 +1890,7 @@
       const label = normalizeText(card && card.label);
 
       if (href === routes.assessment) return 'Start with your sleep profile.';
-      if (href === routes.booking) return 'Test your fit in person.';
+      if (href === routes.booking) return 'Visit with a clearer starting point.';
       if (href === routes.bases || handle === 'premium-motion-adjustable-base') {
         return 'Explore elevation and motion.';
       }
@@ -1902,7 +1903,7 @@
       }
 
       if (type === 'page' && /book/i.test(label)) {
-        return 'Test your fit in person.';
+        return 'Visit with a clearer starting point.';
       }
 
       return 'Start here.';
@@ -1959,7 +1960,7 @@
         ],
         pages: [
           {
-            label: 'Book Your Snooze Session',
+            label: 'Book a Snooze Session',
             href: routes.booking
           }
         ],
@@ -2403,7 +2404,7 @@
       const storedIdentity = getStoredSnoozeIdentity();
       const sessionId = getSessionId();
       form.dataset.busy = 'true';
-      setCheckInStatus(form, 'Unlocking Snooze Profile...', false);
+      setCheckInStatus(form, 'Checking in to your Snooze Profile...', false);
 
       if (input) input.disabled = true;
       if (submit) submit.disabled = true;

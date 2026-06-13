@@ -17,7 +17,7 @@
         "announcement-bar-0": {
           "type": "announcement",
           "settings": {
-            "text": "Book a Snooze Session in our unmanned showroom or virtually. Book Now →",
+            "text": "Book a private Snooze Session in our showroom or virtually. Book now ->",
             "link": "/pages/book-a-snooze-session"
           }
         }

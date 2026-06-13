@@ -24,14 +24,19 @@
 {%- style -%}
   .snoozer-landing-booking-{{ section.id }} {
     max-width: 1180px;
-    margin: 16px auto 28px;
+    margin: 16px auto 24px;
     padding: 0 16px;
     color: #071942;
   }
 
   .snoozer-landing-booking-{{ section.id }} .landing-stack {
     display: grid;
-    gap: 14px;
+    gap: 12px;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .booking-grid {
+    display: grid;
+    gap: 12px;
   }
 
   .snoozer-landing-booking-{{ section.id }} .panel {
@@ -111,12 +116,12 @@
   }
 
   .snoozer-landing-booking-{{ section.id }} .section-pad {
-    padding: 24px;
+    padding: 22px;
   }
 
   .snoozer-landing-booking-{{ section.id }} .heading {
     margin: 0;
-    font-size: 28px;
+    font-size: 26px;
     line-height: 1.1;
     letter-spacing: -0.03em;
   }
@@ -136,8 +141,8 @@
   }
 
   .snoozer-landing-booking-{{ section.id }} .calendly-shell {
-    margin-top: 18px;
-    padding: 10px;
+    margin-top: 16px;
+    padding: 8px;
     border: 1px solid rgba(7, 25, 66, 0.08);
     border-radius: 24px;
     background: #ffffff;
@@ -149,16 +154,16 @@
     display: block;
     width: 100%;
     min-width: 320px;
-    min-height: 700px;
-    height: 700px;
+    min-height: 620px;
+    height: 620px;
   }
 
   .snoozer-landing-booking-{{ section.id }} .calendly-shell iframe {
     display: block;
     width: 100%;
     min-width: 320px;
-    min-height: 700px !important;
-    height: 700px !important;
+    min-height: 620px !important;
+    height: 620px !important;
     border: 0;
   }
 
@@ -198,19 +203,23 @@
     }
 
     .snoozer-landing-booking-{{ section.id }} .section-pad {
-      padding: 30px 32px;
+      padding: 28px 30px;
+    }
+
+    .snoozer-landing-booking-{{ section.id }} .booking-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   @media screen and (max-width: 749px) {
     .snoozer-landing-booking-{{ section.id }} .calendly-inline-widget {
-      min-height: 800px;
-      height: 800px;
+      min-height: 700px;
+      height: 700px;
     }
 
     .snoozer-landing-booking-{{ section.id }} .calendly-shell iframe {
-      min-height: 800px !important;
-      height: 800px !important;
+      min-height: 700px !important;
+      height: 700px !important;
     }
   }
 {%- endstyle -%}
@@ -248,34 +257,36 @@
         </div>
       </div>
 
-      <div class="panel">
-        <div class="section-pad">
-          <p class="section-label">Step 1</p>
-          <h2 class="heading">{{ section.settings.mini_heading | escape }}</h2>
-          <p class="subtext section-copy">{{ section.settings.mini_text | escape }}</p>
-          <div class="calendly-shell">
-            <div
-              id="CalendlyInlineWidgetMini-{{ section.id }}"
-              class="calendly-inline-widget"
-              data-url="{{ mini_calendly_url | escape }}"
-              style="min-width:320px;height:700px;"
-            ></div>
+      <div class="booking-grid">
+        <div class="panel">
+          <div class="section-pad">
+            <p class="section-label">Step 1</p>
+            <h2 class="heading">{{ section.settings.mini_heading | escape }}</h2>
+            <p class="subtext section-copy">{{ section.settings.mini_text | escape }}</p>
+            <div class="calendly-shell">
+              <div
+                id="CalendlyInlineWidgetMini-{{ section.id }}"
+                class="calendly-inline-widget"
+                data-url="{{ mini_calendly_url | escape }}"
+                style="min-width:320px;height:620px;"
+              ></div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="panel" id="snooze-session-booking-{{ section.id }}">
-        <div class="section-pad">
-          <p class="section-label">Step 2</p>
-          <h2 class="heading">{{ section.settings.booking_heading | escape }}</h2>
-          <p class="subtext section-copy">{{ section.settings.booking_text | escape }}</p>
-          <div class="calendly-shell">
-            <div
-              id="CalendlyInlineWidgetBooking-{{ section.id }}"
-              class="calendly-inline-widget"
-              data-url="{{ booking_calendly_url | escape }}"
-              style="min-width:320px;height:700px;"
-            ></div>
+        <div class="panel" id="snooze-session-booking-{{ section.id }}">
+          <div class="section-pad">
+            <p class="section-label">Step 2</p>
+            <h2 class="heading">{{ section.settings.booking_heading | escape }}</h2>
+            <p class="subtext section-copy">{{ section.settings.booking_text | escape }}</p>
+            <div class="calendly-shell">
+              <div
+                id="CalendlyInlineWidgetBooking-{{ section.id }}"
+                class="calendly-inline-widget"
+                data-url="{{ booking_calendly_url | escape }}"
+                style="min-width:320px;height:620px;"
+              ></div>
+            </div>
           </div>
         </div>
       </div>
@@ -492,17 +503,17 @@
   "tag": "section",
   "class": "section",
   "settings": [
-    { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "BOOK YOUR SNOOZE SESSION" },
-    { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Book A Private Snooze Session" },
-    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Answer a few quick sleep questions, then choose a time to visit the showroom with a clearer plan for what to test." },
-    { "type": "textarea", "id": "hero_helper_text", "label": "Hero helper text", "default": "Start with the mini Snooze Assessment below, then book your private session." },
+    { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "PRIVATE SNOOZE SESSION" },
+    { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Plan Your Private Snooze Session" },
+    { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Start with a brief guided sleep check-in, then choose a time to visit with clearer direction on what to test." },
+    { "type": "textarea", "id": "hero_helper_text", "label": "Hero helper text", "default": "Complete the mini assessment first, save your Snooze Code, then choose your showroom visit time." },
     { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
     { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
-    { "type": "text", "id": "mini_heading", "label": "Mini assessment heading", "default": "Start With Your Mini Snooze Assessment" },
-    { "type": "textarea", "id": "mini_text", "label": "Mini assessment text", "default": "Answer a few quick questions so your showroom visit starts with direction." },
+    { "type": "text", "id": "mini_heading", "label": "Mini assessment heading", "default": "Complete Your Mini Snooze Assessment" },
+    { "type": "textarea", "id": "mini_text", "label": "Mini assessment text", "default": "Answer a few guided questions so your visit starts with context, not guesswork." },
     { "type": "text", "id": "mini_calendly_url", "label": "Mini assessment Calendly URL", "default": "https://calendly.com/d/cypf-52b-v4v" },
-    { "type": "text", "id": "booking_heading", "label": "Booking heading", "default": "Choose Your Snooze Session Time" },
-    { "type": "textarea", "id": "booking_text", "label": "Booking text", "default": "After the mini assessment, choose a time for your private showroom visit." },
+    { "type": "text", "id": "booking_heading", "label": "Booking heading", "default": "Choose Your Visit Time" },
+    { "type": "textarea", "id": "booking_text", "label": "Booking text", "default": "Once your Snooze Code is saved, pick the private session time that fits your schedule." },
     { "type": "text", "id": "calendly_url", "label": "Booking Calendly URL", "default": "https://calendly.com/zohotyree/30min" }
   ],
   "presets": [

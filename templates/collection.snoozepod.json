@@ -13,13 +13,13 @@
     "guidance": {
       "type": "snoozer-collection-guidance",
       "settings": {
-        "heading": "Have A Sleep Question?",
-        "body": "Ask Snoozer about comfort, support, cooling, bases, pillows, or preparing for your showroom visit.",
+        "heading": "Need Help Narrowing It Down?",
+        "body": "Ask Snoozer about comfort, support, cooling, and what to compare next.",
         "chip_1": "I sleep hot",
         "chip_2": "I need better support",
         "chip_3": "I want less pressure",
         "chip_4": "Help me compare options",
-        "cta_label": "Start With A Question",
+        "cta_label": "Ask Snoozer",
         "show_chips": true,
         "show_avatar": true
       }
