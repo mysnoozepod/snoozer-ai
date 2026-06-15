@@ -12,7 +12,7 @@ import {
   HelpCircle,
   ImageOff,
   Headphones,
-  Info,
+  Sparkles,
 } from "lucide-react";
 
 import { api } from "@/lib/api";
@@ -867,7 +867,7 @@ function FooterAction({ icon: Icon, label, onClick, tone = "plain" }) {
       type="button"
       onClick={onClick}
       className={[
-        "inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-extrabold shadow-sm transition",
+        "inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-extrabold shadow-sm transition",
         cls,
       ].join(" ")}
     >
@@ -2790,34 +2790,42 @@ export default function Pod() {
 
       {!loading && activePod ? (
         <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur">
-          <div className="mx-auto flex max-w-[1500px] flex-col gap-3 px-4 py-3 lg:px-6 md:flex-row md:items-center md:justify-between">
+          <div className="mx-auto flex max-w-[1280px] flex-col gap-3 px-4 py-2.5 lg:px-6 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
               <div className="text-sm font-extrabold text-gray-900">{title}</div>
-              <div className="mt-1 text-sm text-gray-600">{footerStageLabel}</div>
+              <div className="mt-0.5 text-sm text-gray-600">{footerStageLabel}</div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 md:flex md:flex-wrap">
+            <div className="grid grid-cols-2 gap-2.5 md:flex md:flex-wrap">
               <FooterAction
                 icon={Headphones}
-                label="Talk to a Human"
+                label="Talk to Human"
                 onClick={() => {
                   noteUserInteraction?.();
                   setCueType("tip");
-                  setCue("A sleep expert can help you from here.");
+                  setCue("Ask the showroom team for in-store help when you're ready.");
                 }}
               />
 
               <FooterAction
-                icon={ShoppingCart}
-                label="View Cart"
+                icon={MessageSquare}
+                label="Ask Snoozer"
+                onClick={() => {
+                  noteUserInteraction?.();
+                  void cancelPodVoice();
+                  navigate("/ask-snoozer", { state: { from: `/pod/${pid}` } });
+                }}
+              />
+
+              <FooterAction
+                icon={Sparkles}
+                label="My Rewards"
                 onClick={() => {
                   noteUserInteraction?.();
                   void cancelPodVoice();
                   navigate("/snoozepod");
                 }}
               />
-
-              <FooterAction icon={Info} label="Learn About This Pod" onClick={goToDetailsStage} />
 
               <FooterAction
                 icon={CreditCard}
