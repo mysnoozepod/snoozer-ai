@@ -14,14 +14,15 @@ import Faqs from "./pages/Faqs.jsx";
 import Financing from "./pages/Financing.jsx";
 import Assessment from "./pages/Assessment.jsx";
 import Results from "./pages/Results.jsx";
+import AskSnoozer from "./pages/AskSnoozer.jsx";
 
-// ✅ Pod experience route
+// âœ… Pod experience route
 import Pod from "./pages/Pod.jsx";
 
-// ✅ SnoozePod plan page route
+// âœ… SnoozePod plan page route
 import SnoozePod from "./pages/SnoozePod.jsx";
 
-// ✅ Single source of truth: CartContext lives in src/lib
+// âœ… Single source of truth: CartContext lives in src/lib
 import { CartProvider } from "./lib/CartContext.jsx";
 import { api } from "./lib/api.js";
 
@@ -49,7 +50,7 @@ function NotFound() {
     <div style={{ padding: 24, textAlign: "center" }}>
       <h2 style={{ marginBottom: 8 }}>Page not found</h2>
       <p style={{ marginBottom: 16, opacity: 0.8 }}>
-        Either the link is wrong or the kiosk gods are bored.
+        The page may have moved, or the link may be incomplete.
       </p>
       <a href="/welcome">Back to Welcome</a>
     </div>
@@ -102,18 +103,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                   element={<Navigate to="/pod/1" replace />}
                 />
 
-                {/* Legacy Ask Snoozer route -> Section 1 flow */}
-                <Route
-                  path="ask-snoozer"
-                  element={<Navigate to="/what-to-expect" replace />}
-                />
+                <Route path="ask-snoozer" element={<AskSnoozer />} />
 
                 {/* Cart + Checkout */}
                 <Route path="cart" element={<Cart />} />
                 <Route path="checkout/guest" element={<Checkout />} />
                 <Route path="checkout/:id" element={<Checkout />} />
 
-                {/* Product detail — accepts either handle or numeric ID */}
+                {/* Product detail â€” accepts either handle or numeric ID */}
                 <Route path="products/:slug" element={<ProductDetail />} />
 
                 {/* Catch-all */}

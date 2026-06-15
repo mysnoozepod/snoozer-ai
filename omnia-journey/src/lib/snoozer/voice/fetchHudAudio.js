@@ -1,4 +1,3 @@
-const API_BASE = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
 const AUDIO_CACHE = new Map();
 const AUDIO_CACHE_MAX = 48;
 const HUD_AUDIO_TIMEOUT_MS = Number(import.meta.env.VITE_HUD_AUDIO_TIMEOUT_MS || 2000);
@@ -15,9 +14,18 @@ const hudAudioBreaker = {
   openUntil: 0,
 };
 
+function resolveApiBase() {
+  let apiBase = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
+  if (apiBase && !/\/(prod|staging|dev)$/i.test(apiBase)) {
+    apiBase += "/prod";
+  }
+  return apiBase;
+}
+
 function toApiUrl(path) {
   const cleanPath = String(path || "").startsWith("/") ? path : `/${path}`;
-  return API_BASE ? `${API_BASE}${cleanPath}` : cleanPath;
+  const apiBase = resolveApiBase();
+  return apiBase ? `${apiBase}${cleanPath}` : cleanPath;
 }
 
 function nowMs() {
@@ -81,7 +89,8 @@ function getHudAudioTimeoutMs(job) {
 }
 
 function base64ToBlob(base64, contentType = "audio/mpeg") {
-  const binary = window.atob(base64);
+  const clean = String(base64 || "").replace(/^data:[^;]+;base64,/, "");
+  const binary = window.atob(clean);
   const len = binary.length;
   const bytes = new Uint8Array(len);
 
@@ -90,6 +99,59 @@ function base64ToBlob(base64, contentType = "audio/mpeg") {
   }
 
   return new Blob([bytes], { type: contentType });
+}
+
+function normalizeTtsPayload(payload) {
+  const root =
+    payload?.data && typeof payload.data === "object" ? payload.data : payload || {};
+
+  const audioUrl = [
+    root?.audioUrl,
+    root?.url,
+    root?.signedUrl,
+    root?.s3Url,
+    root?.fileUrl,
+  ]
+    .map((value) => String(value || "").trim())
+    .find(Boolean);
+
+  const audioBase64 = [
+    root?.audioBase64,
+    root?.base64,
+    root?.audioContent,
+    root?.audio,
+  ]
+    .map((value) => String(value || "").trim())
+    .find(Boolean);
+
+  const contentType = [
+    root?.contentType,
+    root?.mimeType,
+    root?.content_type,
+    "audio/mpeg",
+  ]
+    .map((value) => String(value || "").trim())
+    .find(Boolean);
+
+  const error = [
+    root?.error,
+    root?.message,
+    root?.error?.message,
+  ]
+    .map((value) => String(value || "").trim())
+    .find(Boolean);
+
+  return {
+    ok: Boolean(root?.ok !== false && (audioUrl || audioBase64 || !error)),
+    audioUrl: audioUrl || null,
+    audioBase64: audioBase64 || null,
+    contentType: contentType || "audio/mpeg",
+    cacheHit: Boolean(root?.cacheHit),
+    error: error || null,
+    durationMs: Number.isFinite(Number(root?.durationMs))
+      ? Number(root.durationMs)
+      : null,
+  };
 }
 
 function setCachedAudio(key, value) {
@@ -164,26 +226,60 @@ async function fetchAndDecodeHudAudio(job) {
       signal: controller.signal,
     });
 
-    const payload = await response.json().catch(() => null);
     const retrievalMs =
       (typeof performance !== "undefined" && typeof performance.now === "function"
         ? performance.now()
         : Date.now()) - startedAt;
+    const responseContentType = String(response.headers.get("content-type") || "").trim();
 
     if (!response.ok) {
+      const payload = responseContentType.includes("application/json")
+        ? await response.json().catch(() => null)
+        : await response.text().catch(() => null);
       markAudioFailure(`http_${response.status}`, {
         openBreaker: response.status >= 500 || response.status === 429,
+        retrievalMs,
+      });
+      if (payload) {
+        console.warn("[hud.audio] backend error payload", payload);
+      }
+      return null;
+    }
+
+    if (
+      responseContentType.startsWith("audio/") ||
+      responseContentType.includes("application/octet-stream")
+    ) {
+      const blob = await response.blob();
+      if (!blob?.size) {
+        markAudioFailure("empty_audio_blob", {
+          openBreaker: false,
+          retrievalMs,
+        });
+        return null;
+      }
+
+      return {
+        audioUrl: null,
+        blob,
+        contentType: blob.type || responseContentType || "audio/mpeg",
+        durationMs: null,
+        cleanup: null,
+      };
+    }
+
+    const payload = await response.json().catch(() => null);
+    const normalized = normalizeTtsPayload(payload);
+
+    if (!normalized.ok) {
+      markAudioFailure(normalized.error || "tts_error", {
+        openBreaker: false,
         retrievalMs,
       });
       return null;
     }
 
-    const data = payload?.data && typeof payload.data === "object" ? payload.data : payload;
-
-    const audioBase64 =
-      typeof data?.audioBase64 === "string" ? data.audioBase64.trim() : "";
-
-    if (!audioBase64) {
+    if (!normalized.audioUrl && !normalized.audioBase64) {
       markAudioFailure("missing_audio_payload", {
         openBreaker: false,
         retrievalMs,
@@ -191,17 +287,22 @@ async function fetchAndDecodeHudAudio(job) {
       return null;
     }
 
-    const contentType =
-      typeof data?.contentType === "string" && data.contentType.trim()
-        ? data.contentType.trim()
-        : "audio/mpeg";
+    if (normalized.audioUrl) {
+      return {
+        audioUrl: normalized.audioUrl,
+        blob: null,
+        contentType: normalized.contentType,
+        durationMs: normalized.durationMs,
+        cleanup: () => {},
+      };
+    }
 
     return {
-      blob: base64ToBlob(audioBase64, contentType),
-      contentType,
-      durationMs: Number.isFinite(Number(data?.durationMs))
-        ? Number(data.durationMs)
-        : null,
+      audioUrl: null,
+      blob: base64ToBlob(normalized.audioBase64, normalized.contentType),
+      contentType: normalized.contentType,
+      durationMs: normalized.durationMs,
+      cleanup: null,
     };
   } catch (error) {
     const retrievalMs =
@@ -241,6 +342,17 @@ export async function fetchHudAudio(job) {
   }
 
   const resolved = await Promise.resolve(cached).catch(() => null);
+
+  if (resolved?.audioUrl) {
+    markAudioSuccess();
+    setCachedAudio(cacheKey, Promise.resolve(resolved));
+    return {
+      audioUrl: resolved.audioUrl,
+      durationMs: resolved.durationMs,
+      cacheKey,
+      cleanup: typeof resolved.cleanup === "function" ? resolved.cleanup : () => {},
+    };
+  }
 
   if (!resolved?.blob) {
     AUDIO_CACHE.delete(cacheKey);
