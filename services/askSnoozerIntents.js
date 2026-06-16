@@ -656,7 +656,9 @@ function looksLikeProductQuestion(text, pageType) {
 function parseAskSnoozerSizeLabel(value) {
   const text = normalizeAskSnoozerText(value);
   const sizeMatchers = [
+    ["split california king", "Split Cal King"],
     ["split cal king", "Split Cal King"],
+    ["california king", "Cal King"],
     ["half split king", "Half Split King"],
     ["split king", "Split King"],
     ["cal king", "Cal King"],

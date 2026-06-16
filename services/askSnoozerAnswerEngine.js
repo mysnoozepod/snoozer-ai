@@ -981,11 +981,41 @@ function buildProductSpecificReply({
   if (queryLooksLikePriceQuestion(normalizedQuery)) {
     const pricedEntries = entries.filter((entry) => Number.isFinite(Number(entry?.variantPrice)));
     const bestPriceEntry = pricedEntries[0] || primary;
+    const multipleMatches = pricedEntries.length > 1 && !currentHandle;
+    const explicitSize = Boolean(sizeLabel);
+    const productNames = Array.from(
+      new Set(
+        pricedEntries
+          .map((entry) => cleanAnswerText(entry?.title || entry?.label || ""))
+          .filter(Boolean)
+      )
+    );
+
+    if (!queryLooksLikeCheapestQuestion(normalizedQuery) && multipleMatches && productNames.length > 1) {
+      return {
+        reply: `I can check the live price, but I still need the mattress model. Do you mean ${productNames.slice(0, 2).join(" or ")}?`,
+        grounded: true,
+        sourceType,
+        sourceKey,
+        facts: productNames.slice(0, 2).map((name) => `${name} is a current Shopify pricing candidate.`),
+        strategy: "needs_product_clarification",
+      };
+    }
+
+    if (!explicitSize && primarySizes.length > 1) {
+      return {
+        reply: `${primaryTitle} comes in ${formatSizeList(primarySizes)}. Which size do you want me to price live?`,
+        grounded: true,
+        sourceType,
+        sourceKey,
+        facts: [`${primaryTitle} sizes: ${primarySizes.join(", ")}`],
+        strategy: "needs_product_clarification",
+      };
+    }
+
     const price = formatCurrencyValue(bestPriceEntry?.variantPrice, bestPriceEntry?.currencyCode || "USD");
     const title = cleanAnswerText(bestPriceEntry?.title || "");
     const variantTitle = cleanAnswerText(bestPriceEntry?.matchedSizeLabel || sizeLabel || bestPriceEntry?.variantTitle || "");
-    const multipleMatches = pricedEntries.length > 1 && !currentHandle;
-    const explicitSize = Boolean(sizeLabel);
 
     if (price) {
       if (queryLooksLikeCheapestQuestion(normalizedQuery)) {
@@ -2096,8 +2126,14 @@ function buildAskSnoozerAnswer({
           ? 8
           : intentGroup === "assessment_handoff"
             ? 6
-            : MAX_FACTS,
+          : MAX_FACTS,
   });
+  const isCommercePricingPolicy =
+    intentGroup === "policy_support" && policySubtype === "pricing";
+  const supportsProductCommerceReplies =
+    ["product_fit", "product_compare", "size_price", "couple_conflict", "base_elevation", "accessory_help"].includes(
+      intentGroup
+    ) || isCommercePricingPolicy;
 
   if (productContext?.needsProductClarification) {
     const clarificationReply = buildProductClarificationReply({
@@ -2169,7 +2205,7 @@ function buildAskSnoozerAnswer({
     };
   }
 
-  if (intentGroup === "policy_support") {
+  if (intentGroup === "policy_support" && !isCommercePricingPolicy) {
     const policyReply = buildPolicyReply({
       query,
       policySubtype,
@@ -2213,7 +2249,7 @@ function buildAskSnoozerAnswer({
   }
 
   if (
-    ["product_fit", "product_compare", "size_price", "couple_conflict", "base_elevation", "accessory_help"].includes(intentGroup) &&
+    supportsProductCommerceReplies &&
     selected.facts.length &&
     queryLooksLikeSplitEducation(query) &&
     !queryLooksLikePriceQuestion(query) &&
@@ -2243,11 +2279,7 @@ function buildAskSnoozerAnswer({
     }
   }
 
-  if (
-    ["product_fit", "product_compare", "size_price", "couple_conflict", "base_elevation", "accessory_help"].includes(intentGroup) &&
-    Array.isArray(products) &&
-    products.length
-  ) {
+  if (supportsProductCommerceReplies && Array.isArray(products) && products.length) {
     if (intentGroup === "accessory_help") {
       const accessoryReply = buildAccessoryReply({
         query,

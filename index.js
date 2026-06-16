@@ -1324,6 +1324,8 @@ function normalizeHudAskText(value) {
   return String(value || "")
     .trim()
     .toLowerCase()
+    .replace(/\bhybris\b/g, "hybrid")
+    .replace(/\bhyrbid\b/g, "hybrid")
     .replace(/\s+/g, " ");
 }
 
@@ -1909,7 +1911,7 @@ async function resolveHudAskAnswerStrategy({
   let policyKey = null;
   let policyRetrieved = false;
 
-  if (intentGroup === "policy_support") {
+  if (intentGroup === "policy_support" && policySubtype !== "pricing") {
     const resolved = await resolveAskSnoozerPolicySources({
       query,
       traceId,
@@ -2277,6 +2279,11 @@ const HUD_ASK_HANDLE_ALIAS_MAP = Object.freeze({
   "12-dual-comfort-hybrid": Object.freeze([
     { text: "12 dual comfort hybrid", score: 12 },
     { text: "12 dual comfort", score: 11 },
+    { text: "12 hybrid", score: 10 },
+    { text: '12" hybrid', score: 10 },
+    { text: "12 inch hybrid", score: 10 },
+    { text: "12-inch hybrid", score: 10 },
+    { text: "hybrid 12", score: 9 },
     { text: '12" dual comfort', score: 11 },
     { text: "12 inch dual comfort", score: 11 },
     { text: "12-inch dual comfort", score: 11 },
@@ -4799,6 +4806,108 @@ function normalizeAskSnoozerContextPath(value = "") {
   return String(value || "").trim() || "/";
 }
 
+const ASK_SNOOZER_COMMERCE_INTENT_GROUPS = new Set([
+  "size_price",
+  "product_fit",
+  "product_compare",
+  "couple_conflict",
+  "base_elevation",
+  "accessory_help",
+]);
+
+function resolveAskSnoozerCommerceScope(query = "") {
+  const normalizedQuery = normalizeHudAskText(query);
+  const mentionsBase =
+    normalizedQuery.includes("adjustable base") ||
+    normalizedQuery.includes("motion base") ||
+    /\bbase\b/.test(normalizedQuery);
+  const mentionsMattress =
+    normalizedQuery.includes("mattress") ||
+    normalizedQuery.includes("hybrid") ||
+    normalizedQuery.includes("foam") ||
+    normalizedQuery.includes("dual comfort");
+  const mentionsPod =
+    normalizedQuery.includes("full pod") ||
+    normalizedQuery.includes("snoozepod") ||
+    normalizedQuery.includes("pod price") ||
+    normalizedQuery.includes("mattress + base") ||
+    normalizedQuery.includes("mattress and base") ||
+    normalizedQuery.includes("mattress plus base");
+
+  if (mentionsPod || (mentionsBase && mentionsMattress)) return "full_pod";
+  if (mentionsBase && !mentionsMattress) return "base_only";
+  if (mentionsMattress) return "mattress_only";
+  return "unclear";
+}
+
+function resolveAskSnoozerCommerceResolverIntent(classification = null, query = "") {
+  const intent = String(classification?.intent || "").trim();
+  const intentGroup = String(classification?.intent_group || "").trim();
+  const policySubtype = String(classification?.policy_subtype || "").trim();
+  const scope = resolveAskSnoozerCommerceScope(query);
+  const isPricingPolicy = intentGroup === "policy_support" && policySubtype === "pricing";
+  const isPriceShapedSizeIntent =
+    intentGroup === "size_price" &&
+    (normalizeHudAskText(query).includes("price") ||
+      normalizeHudAskText(query).includes("cost") ||
+      normalizeHudAskText(query).includes("how much"));
+
+  if (!isPricingPolicy && !isPriceShapedSizeIntent) {
+    return intent || "fallback";
+  }
+
+  if (scope === "full_pod") return "bundle_price";
+  if (scope === "base_only") return "snoring";
+  return "budget_value";
+}
+
+function resolveAskSnoozerCommerceMetaIntent({
+  classification = null,
+  query = "",
+  answerStrategy = null,
+} = {}) {
+  const normalizedQuery = normalizeHudAskText(query);
+  const answerType =
+    String(answerStrategy?.metaExtra?.answer_strategy || answerStrategy?.answer_strategy || "").trim() ||
+    "";
+  if (
+    answerType === "verified_size_availability" ||
+    normalizedQuery.includes("availability") ||
+    normalizedQuery.includes("available") ||
+    normalizedQuery.includes("in stock")
+  ) {
+    return "availability";
+  }
+  if (
+    String(classification?.policy_subtype || "").trim() === "pricing" ||
+    answerType === "verified_price" ||
+    answerType === "verified_bundle_price"
+  ) {
+    return "pricing";
+  }
+  return String(classification?.intent || "").trim() || "commerce";
+}
+
+function isAskSnoozerCommerceClassification(classification = null) {
+  const intentGroup = String(classification?.intent_group || "").trim();
+  const policySubtype = String(classification?.policy_subtype || "").trim();
+  return (
+    ASK_SNOOZER_COMMERCE_INTENT_GROUPS.has(intentGroup) ||
+    (intentGroup === "policy_support" && policySubtype === "pricing")
+  );
+}
+
+function shouldUseAskSnoozerCommerceAnswer(answerStrategy = null) {
+  const strategy =
+    String(answerStrategy?.metaExtra?.answer_strategy || answerStrategy?.answer_strategy || "").trim() ||
+    "safe_fallback";
+  if (strategy === "safe_fallback") return false;
+  return Boolean(answerStrategy?.replyOverride) && (
+    Boolean(answerStrategy?.metaExtra?.answer_grounded) ||
+    strategy === "needs_product_clarification"
+  );
+}
+
 function buildAskSnoozerClassification(query = "", context = {}) {
   return classifyAskSnoozerIntent(query, {
     path: normalizeAskSnoozerContextPath(context?.path),
@@ -4845,6 +4954,174 @@ function buildAskSnoozerSupportReply(query = "") {
   }
 
   return "If you need order or account support, use the store contact path shown on the site so the team can verify the details. If you want product guidance, I can help here or point you to a Snooze Session.";
+}
+
+async function maybeBuildAskSnoozerCommerceAnswer({
+  query = "",
+  context = {},
+  traceId = "",
+  classification = null,
+} = {}) {
+  const resolvedClassification = classification || buildAskSnoozerClassification(query, context);
+  if (!isAskSnoozerCommerceClassification(resolvedClassification)) {
+    return null;
+  }
+
+  const intent = resolveAskSnoozerCommerceResolverIntent(resolvedClassification, query);
+  const path = normalizeAskSnoozerContextPath(context?.path);
+  const pageType =
+    String(context?.page_type || context?.pageType || "unknown").trim() || "unknown";
+  const canonicalRecommendation = isObject(context?.canonicalRecommendation)
+    ? context.canonicalRecommendation
+    : null;
+  const currentProductHandle = String(context?.currentProductHandle || "").trim();
+  const requestedSize =
+    String(resolvedClassification?.size_label || "").trim() || resolveHudAskRequestedSizeLabel(intent, query);
+  const scope = resolveAskSnoozerCommerceScope(query);
+  const metaIntent = resolveAskSnoozerCommerceMetaIntent({
+    classification: resolvedClassification,
+    query,
+  });
+  log("ask-snoozer.commerce.intent", "detected", {
+    traceId,
+    intent: metaIntent,
+    rawIntent: resolvedClassification?.intent || null,
+    intentGroup: resolvedClassification?.intent_group || null,
+    scope,
+    requestedSize: requestedSize || null,
+    source: "commerce",
+  });
+  log("ask-snoozer.commerce.shopify.start", "resolve_products", {
+    traceId,
+    intent: metaIntent,
+    resolverIntent: intent,
+    scope,
+    requestedSize: requestedSize || null,
+    currentProductHandle: currentProductHandle || null,
+    source: "shopify",
+  });
+  const productResolution = await resolveHudAskProducts({
+    classification: resolvedClassification,
+    intent,
+    query,
+    path,
+    pageType,
+    traceId,
+    currentProductHandle,
+    canonicalRecommendation,
+  });
+
+  let products = Array.isArray(productResolution?.products) ? productResolution.products : [];
+  if (!products.length && canonicalRecommendation) {
+    const canonicalProducts = await resolveHudAskCanonicalProducts({
+      canonicalRecommendation,
+      intent,
+      currentProductHandle:
+        productResolution?.currentProductHandle || currentProductHandle || "",
+      traceId,
+    });
+    if (canonicalProducts.length) {
+      products = canonicalProducts;
+    }
+  }
+
+  const entries = Array.isArray(productResolution?.entries) ? productResolution.entries : [];
+  const resolvedProductHandle =
+    products.find((product) => !String(product?.handle || "").trim().toLowerCase().includes("adjustable-base"))?.handle || null;
+  const resolvedBaseHandle =
+    products.find((product) => String(product?.handle || "").trim().toLowerCase().includes("adjustable-base"))?.handle || null;
+  const variantMatched = entries.some((entry) => String(entry?.variantId || "").trim());
+  const shopifyPriceFound = entries.some((entry) => Number.isFinite(Number(entry?.variantPrice)));
+  log("ask-snoozer.commerce.resolve", "products_resolved", {
+    traceId,
+    intent: metaIntent,
+    resolverIntent: intent,
+    scope,
+    requestedSize: requestedSize || null,
+    resolvedProductHandle,
+    resolvedBaseHandle,
+    variantMatched,
+    shopifyPriceFound,
+    source: "shopify",
+  });
+  log("ask-snoozer.commerce.shopify.result", "completed", {
+    traceId,
+    intent: metaIntent,
+    resolverIntent: intent,
+    scope,
+    requestedSize: requestedSize || null,
+    resolvedProductHandle,
+    resolvedBaseHandle,
+    variantMatched,
+    shopifyPriceFound,
+    source: "shopify",
+  });
+
+  const answerStrategy = await resolveHudAskAnswerStrategy({
+    classification: resolvedClassification,
+    intent,
+    query,
+    path,
+    pageType,
+    traceId,
+    products,
+    productResolution,
+    canonicalRecommendation,
+    context,
+  });
+
+  if (!shouldUseAskSnoozerCommerceAnswer(answerStrategy)) {
+    log("ask-snoozer.commerce.fallback", "no_deterministic_answer", {
+      traceId,
+      intent: metaIntent,
+      resolverIntent: intent,
+      scope,
+      requestedSize: requestedSize || null,
+      resolvedProductHandle,
+      resolvedBaseHandle,
+      variantMatched,
+      shopifyPriceFound,
+      source: "commerce",
+      fallbackUsed: true,
+      reason:
+        answerStrategy?.metaExtra?.answer_strategy ||
+        answerStrategy?.answer_strategy ||
+        "no_commerce_answer",
+    });
+    return null;
+  }
+
+  log("ask-snoozer.commerce.answer", "resolved", {
+    traceId,
+    intent: metaIntent,
+    resolverIntent: intent,
+    scope,
+    requestedSize: requestedSize || null,
+    resolvedProductHandle,
+    resolvedBaseHandle,
+    variantMatched,
+    shopifyPriceFound,
+    source: "shopify",
+    fallbackUsed: false,
+    answerStrategy:
+      answerStrategy?.metaExtra?.answer_strategy ||
+      answerStrategy?.answer_strategy ||
+      null,
+  });
+
+  return {
+    classification: resolvedClassification,
+    metaIntent,
+    scope,
+    requestedSize,
+    resolvedProductHandle,
+    resolvedBaseHandle,
+    variantMatched,
+    shopifyPriceFound,
+    products,
+    productResolution,
+    ...answerStrategy,
+  };
 }
 
 async function maybeBuildAskSnoozerDeterministicFaqAnswer({
@@ -6947,6 +7224,113 @@ async function handle(event = {}) {
       return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
     }
 
+    const deterministicCommerceAnswer = await maybeBuildAskSnoozerCommerceAnswer({
+      query: msg,
+      context,
+      traceId,
+      classification: askSnoozerClassification,
+    });
+    if (deterministicCommerceAnswer) {
+      const latencyMs = Date.now() - startedAt;
+      const mergedContext =
+        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model: "deterministic_commerce",
+        text: deterministicCommerceAnswer.replyOverride || "",
+        context: mergedContext,
+        products: Array.isArray(deterministicCommerceAnswer.products)
+          ? deterministicCommerceAnswer.products
+          : [],
+        actions: [],
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      });
+
+      env.reply = deterministicCommerceAnswer.replyOverride || env.message?.text || "";
+      env.thread_id = effectiveSessionId;
+      env.status = "answered";
+      env.sessionId = effectiveSessionId;
+      env.meta = {
+        path: "deterministic_commerce",
+        source: {
+          kind: "shopify",
+          shopifyProducts: Array.isArray(deterministicCommerceAnswer.products)
+            ? deterministicCommerceAnswer.products.length
+            : 0,
+        },
+        source_label: "shopify",
+        intent: deterministicCommerceAnswer.metaIntent || deterministicCommerceAnswer.classification?.intent || null,
+        intent_group: deterministicCommerceAnswer.classification?.intent_group || null,
+        policy_subtype: deterministicCommerceAnswer.classification?.policy_subtype || "",
+        scope: deterministicCommerceAnswer.scope || null,
+        requested_size: deterministicCommerceAnswer.requestedSize || null,
+        resolved_product_handle: deterministicCommerceAnswer.resolvedProductHandle || null,
+        resolved_base_handle: deterministicCommerceAnswer.resolvedBaseHandle || null,
+        shopify_price_found: Boolean(deterministicCommerceAnswer.shopifyPriceFound),
+        retrievalMs: 0,
+        modelMs: 0,
+        totalMs: latencyMs,
+        fallbackUsed: false,
+        ...(isObject(deterministicCommerceAnswer.metaExtra)
+          ? deterministicCommerceAnswer.metaExtra
+          : {}),
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      };
+
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+
+      logContractResponse(normalized);
+      log("ask-snoozer.commerce", "answered", {
+        traceId,
+        sessionId: effectiveSessionId,
+        shopperId,
+        intent: deterministicCommerceAnswer.metaIntent || deterministicCommerceAnswer.classification?.intent || null,
+        intentGroup: deterministicCommerceAnswer.classification?.intent_group || null,
+        scope: deterministicCommerceAnswer.scope || null,
+        requestedSize: deterministicCommerceAnswer.requestedSize || null,
+        answerStrategy: env.meta?.answer_strategy || null,
+        answerSourceType: env.meta?.answer_source_type || null,
+        answerSourceKey: env.meta?.answer_source_key || null,
+        source: "shopify",
+        fallbackUsed: false,
+        handles: Array.isArray(deterministicCommerceAnswer.products)
+          ? deterministicCommerceAnswer.products.map((product) => product.handle).filter(Boolean)
+          : [],
+        totalMs: latencyMs,
+      });
+
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context: mergedContext,
+          payload,
+          defaultSpeech: env.reply || env.message?.text || "I'm here.",
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+    }
+
     const deterministicFaqAnswer = await maybeBuildAskSnoozerDeterministicFaqAnswer({
       query: msg,
       context,
@@ -7054,6 +7438,11 @@ async function handle(event = {}) {
       if (!modelStep.ok) throw modelStep.error;
 
       const aiResult = modelStep.value;
+      const aiMetrics = isObject(aiResult?.meta?.metrics) ? aiResult.meta.metrics : null;
+      const fallbackUsed = Boolean(
+        aiMetrics?.fallbackUsed ??
+          aiResult?.meta?.fallbackUsed
+      );
 
       // 5) Persist contextPatch into SCO
       const rawPatch =
@@ -7102,11 +7491,15 @@ async function handle(event = {}) {
       env.status = aiResult?.status || "completed";
       env.meta = {
         ...(aiResult?.meta || {}),
+        retrievalMs: safeNumber(aiMetrics?.retrievalMs ?? aiResult?.meta?.retrievalMs, 0),
+        modelMs,
+        totalMs: latencyMs,
+        fallbackUsed,
         metrics: {
-          retrievalMs: safeNumber(aiResult?.meta?.retrievalMs, 0),
+          retrievalMs: safeNumber(aiMetrics?.retrievalMs ?? aiResult?.meta?.retrievalMs, 0),
           modelMs,
           totalMs: latencyMs,
-          fallbackUsed: false,
+          fallbackUsed,
         },
       };
 
@@ -7150,7 +7543,7 @@ async function handle(event = {}) {
         retrievalMs: env.meta?.metrics?.retrievalMs || 0,
         modelMs,
         totalMs: latencyMs,
-        fallbackUsed: false,
+        fallbackUsed,
         timeoutMs: MODEL_TIMEOUT_MS,
         path: env.meta?.path || null,
       });
