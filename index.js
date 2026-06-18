@@ -112,6 +112,13 @@ const {
   resolveAskSnoozerPolicySources,
   resolveAskSnoozerSupplementalSources,
 } = require("./services/askSnoozerPolicy");
+const {
+  buildAskSnoozerClarificationReply,
+  buildAskSnoozerFallbackReply,
+  buildAskSnoozerMissingRecommendationReply,
+  routeAskSnoozerQuestion,
+  resolveAskSnoozerCommerceResponse,
+} = require("./services/askSnoozerQualityGate");
 const { buildAskSnoozerAnswer } = require("./services/askSnoozerAnswerEngine");
 const {
   HUD_SAFE_PAGE_ROUTES,
@@ -4772,6 +4779,43 @@ async function resolveCanonicalRecommendationContext({
   return buildAskSnoozerCanonicalContext(resolved);
 }
 
+function buildAskSnoozerQualityGateObject(decision = null, overrides = {}) {
+  const safeDecision = isObject(decision) ? decision : {};
+  const safeSlots = isObject(safeDecision.slots) ? safeDecision.slots : {};
+  const safeOverrides = isObject(overrides) ? overrides : {};
+  const sourceOfTruth =
+    String(safeOverrides.sourceOfTruth || safeDecision.sourceOfTruth || "fallback").trim() ||
+    "fallback";
+
+  return {
+    intentGroup: String(safeDecision.intentGroup || "fallback").trim() || "fallback",
+    intent: String(safeDecision.intent || "fallback").trim() || "fallback",
+    confidence:
+      typeof safeDecision.confidence === "number" && Number.isFinite(safeDecision.confidence)
+        ? safeDecision.confidence
+        : 0,
+    slots: safeSlots,
+    missingSlots: Array.isArray(safeOverrides.missingSlots)
+      ? safeOverrides.missingSlots
+      : Array.isArray(safeDecision.missingSlots)
+        ? safeDecision.missingSlots
+        : [],
+    sourceOfTruth,
+    shouldUseOpenAI: Boolean(
+      safeOverrides.shouldUseOpenAI ?? safeDecision.shouldUseOpenAI
+    ),
+    shouldAskClarifyingQuestion: Boolean(
+      safeOverrides.shouldAskClarifyingQuestion ?? safeDecision.shouldAskClarifyingQuestion
+    ),
+    answerType:
+      String(safeOverrides.answerType || safeDecision.answerType || "fallback").trim() || "fallback",
+    factsResolved: Boolean(safeOverrides.factsResolved),
+    fallbackUsed: Boolean(safeOverrides.fallbackUsed),
+    reason: String(safeOverrides.reason || "").trim() || "",
+    knowledgeKeys: Array.isArray(safeDecision.knowledgeKeys) ? safeDecision.knowledgeKeys : [],
+  };
+}
+
 function maybeBuildAskSnoozerCanonicalAnswer(query, context) {
   const canonicalRecommendation = isObject(context?.canonicalRecommendation)
     ? context.canonicalRecommendation
@@ -4939,6 +4983,11 @@ function looksLikeAskSnoozerSupportQuestion(query = "") {
     "speak to someone",
     "help with my order",
     "need help with my order",
+    "help during my session",
+    "need help during my session",
+    "help during the session",
+    "need help during the session",
+    "help at my session",
   ].some((term) => normalized.includes(term));
 }
 
@@ -5132,27 +5181,6 @@ async function maybeBuildAskSnoozerDeterministicFaqAnswer({
   const classification = buildAskSnoozerClassification(query, context);
   const intent = String(classification?.intent || "").trim();
   const intentGroup = String(classification?.intent_group || "").trim();
-
-  if (intentGroup === "policy_support") {
-    const policy = await resolveAskSnoozerPolicyAnswer({
-      query,
-      traceId,
-      timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
-    });
-    return {
-      classification,
-      reply: policy.reply || "",
-      answer_grounded: Boolean(policy.answerGrounded || policy.retrieved),
-      answer_source_type: policy.sourceKind || policy.source || "fallback",
-      answer_source_key: policy.key || "",
-      answer_facts_count: policy.retrieved ? 1 : 0,
-      matched_preview: policy.matchedPreview || "",
-      answer_strategy: policy.answerGrounded ? "source_summary" : "safe_fallback",
-      extracted_facts: [],
-      reason: policy.answerGrounded ? "" : "policy_fallback",
-      chips_override: Array.isArray(policy.chips) ? policy.chips : [],
-    };
-  }
 
   if (intentGroup === "booking_handoff") {
     return buildAskSnoozerAnswer({
@@ -7130,6 +7158,38 @@ async function handle(event = {}) {
       }
     }
 
+    const askSnoozerDecision = routeAskSnoozerQuestion({
+      query: msg,
+      context,
+      classification: askSnoozerClassification,
+    });
+    log("ask-snoozer.router.decision", "routed", {
+      traceId,
+      shopperId: shopperId || null,
+      sessionId: effectiveSessionId,
+      intentGroup: askSnoozerDecision.intentGroup,
+      intent: askSnoozerDecision.intent,
+      confidence: askSnoozerDecision.confidence,
+      sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+      shouldUseOpenAI: askSnoozerDecision.shouldUseOpenAI,
+      shouldAskClarifyingQuestion: askSnoozerDecision.shouldAskClarifyingQuestion,
+      reason: null,
+    });
+    log("ask-snoozer.slots.extracted", "slots", {
+      traceId,
+      shopperId: shopperId || null,
+      sessionId: effectiveSessionId,
+      intentGroup: askSnoozerDecision.intentGroup,
+      intent: askSnoozerDecision.intent,
+      confidence: askSnoozerDecision.confidence,
+      slots: askSnoozerDecision.slots,
+      missingSlots: askSnoozerDecision.missingSlots,
+      sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+      factsResolved: false,
+      fallbackUsed: false,
+      reason: null,
+    });
+
     const canonicalAnswer = maybeBuildAskSnoozerCanonicalAnswer(msg, context);
     if (canonicalAnswer) {
       const latencyMs = Date.now() - startedAt;
@@ -7180,6 +7240,17 @@ async function handle(event = {}) {
           ? canonicalAnswer.extracted_facts
           : [],
         reason: canonicalAnswer.reason || "",
+        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+          answerType:
+            canonicalAnswer.answer_strategy === "session_prep"
+              ? "session_guidance"
+              : "product_answer",
+          sourceOfTruth:
+            canonicalAnswer.answer_strategy === "session_prep" ? "session_prep" : "canon",
+          factsResolved: Boolean(canonicalAnswer.answer_grounded),
+          fallbackUsed: false,
+          reason: canonicalAnswer.reason || "",
+        }),
         metrics: {
           retrievalMs: 0,
           modelMs: 0,
@@ -7208,6 +7279,21 @@ async function handle(event = {}) {
         motionKey: context?.canonicalRecommendation?.motionKey || null,
         totalMs: latencyMs,
       });
+      log("ask-snoozer.fulfillment.result", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth:
+          canonicalAnswer.answer_strategy === "session_prep" ? "session_prep" : "canon",
+        factsResolved: Boolean(canonicalAnswer.answer_grounded),
+        missingSlots: [],
+        fallbackUsed: false,
+        reason: canonicalAnswer.reason || "",
+      });
 
       if (wantHud) {
         const hud = await buildHudFromAny(normalized, {
@@ -7224,12 +7310,507 @@ async function handle(event = {}) {
       return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
     }
 
-    const deterministicCommerceAnswer = await maybeBuildAskSnoozerCommerceAnswer({
-      query: msg,
-      context,
-      traceId,
-      classification: askSnoozerClassification,
-    });
+    if (
+      askSnoozerDecision.intentGroup === "recommendation" &&
+      !isObject(context?.canonicalRecommendation)
+    ) {
+      const latencyMs = Date.now() - startedAt;
+      const mergedContext =
+        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+      const reply = buildAskSnoozerMissingRecommendationReply();
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model: "deterministic_recommendation_fallback",
+        text: reply,
+        context: mergedContext,
+        products: [],
+        actions: [],
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      });
+
+      env.reply = reply;
+      env.thread_id = effectiveSessionId;
+      env.status = "completed";
+      env.sessionId = effectiveSessionId;
+      env.meta = {
+        path: "deterministic_recommendation_fallback",
+        answer_strategy: "missing_assessment",
+        answer_grounded: false,
+        answer_source_type: "fallback",
+        answer_source_key: null,
+        answer_facts_count: 0,
+        matched_preview: "",
+        extracted_facts: [],
+        reason: "missing_assessment",
+        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+          answerType: "fallback",
+          sourceOfTruth: "fallback",
+          factsResolved: false,
+          fallbackUsed: false,
+          missingSlots: ["assessment"],
+          reason: "missing_assessment",
+        }),
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      };
+
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+
+      logContractResponse(normalized);
+      log("ask-snoozer.fulfillment.result", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: "fallback",
+        factsResolved: false,
+        missingSlots: ["assessment"],
+        fallbackUsed: false,
+        reason: "missing_assessment",
+      });
+
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context: mergedContext,
+          payload,
+          defaultSpeech: reply,
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+    }
+
+    if (askSnoozerDecision.intentGroup === "policy") {
+      const latencyMs = Date.now() - startedAt;
+      log("ask-snoozer.fulfillment.start", "policy", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+        factsResolved: false,
+        missingSlots: askSnoozerDecision.missingSlots,
+        fallbackUsed: false,
+        reason: null,
+      });
+      const policy = await resolveAskSnoozerPolicyAnswer({
+        query: msg,
+        traceId,
+        timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
+      });
+      const mergedContext =
+        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+
+      if (!policy?.retrieved) {
+        log("ask-snoozer.knowledge.missing", "policy_source_missing", {
+          traceId,
+          shopperId: shopperId || null,
+          sessionId: effectiveSessionId,
+          intentGroup: askSnoozerDecision.intentGroup,
+          intent: askSnoozerDecision.intent,
+          confidence: askSnoozerDecision.confidence,
+          slots: askSnoozerDecision.slots,
+          sourceOfTruth: "s3_policy",
+          factsResolved: false,
+          missingSlots: askSnoozerDecision.missingSlots,
+          fallbackUsed: true,
+          reason: "policy_source_missing",
+          knowledgeKeys: askSnoozerDecision.knowledgeKeys,
+        });
+      }
+
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model: "policy_source_of_truth",
+        text: policy.reply || "",
+        context: mergedContext,
+        products: [],
+        actions: [],
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: !policy?.retrieved,
+        },
+      });
+
+      env.reply = policy.reply || env.message?.text || "";
+      env.thread_id = effectiveSessionId;
+      env.status = policy?.retrieved ? "completed" : "completed_with_fallback";
+      env.sessionId = effectiveSessionId;
+      env.meta = {
+        path: "deterministic_policy",
+        answer_strategy: policy?.answerGrounded ? "policy_source_summary" : "safe_missing_source",
+        answer_grounded: Boolean(policy?.answerGrounded || policy?.retrieved),
+        answer_source_type: policy?.sourceKind || policy?.source || "fallback",
+        answer_source_key: policy?.key || null,
+        answer_facts_count: policy?.retrieved ? 1 : 0,
+        matched_preview: policy?.matchedPreview || "",
+        extracted_facts: [],
+        reason: policy?.retrieved ? "" : "policy_source_missing",
+        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+          answerType: "policy_answer",
+          sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
+          factsResolved: Boolean(policy?.answerGrounded || policy?.retrieved),
+          fallbackUsed: !policy?.retrieved,
+          reason: policy?.retrieved ? "" : "policy_source_missing",
+        }),
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: !policy?.retrieved,
+        },
+      };
+
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+
+      logContractResponse(normalized);
+      log("ask-snoozer.policy.answer", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
+        factsResolved: Boolean(policy?.answerGrounded || policy?.retrieved),
+        missingSlots: askSnoozerDecision.missingSlots,
+        fallbackUsed: !policy?.retrieved,
+        reason: policy?.retrieved ? "" : "policy_source_missing",
+      });
+      log("ask-snoozer.fulfillment.result", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
+        factsResolved: Boolean(policy?.answerGrounded || policy?.retrieved),
+        missingSlots: askSnoozerDecision.missingSlots,
+        fallbackUsed: !policy?.retrieved,
+        reason: policy?.retrieved ? "" : "policy_source_missing",
+      });
+
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context: mergedContext,
+          payload,
+          defaultSpeech: env.reply || env.message?.text || "I'm here.",
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+    }
+
+    if (
+      askSnoozerDecision.shouldAskClarifyingQuestion &&
+      ["commerce", "policy"].includes(askSnoozerDecision.intentGroup)
+    ) {
+      const latencyMs = Date.now() - startedAt;
+      const mergedContext =
+        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+      const reply = buildAskSnoozerClarificationReply(askSnoozerDecision);
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model: "deterministic_clarification",
+        text: reply,
+        context: mergedContext,
+        products: [],
+        actions: [],
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      });
+
+      env.reply = reply;
+      env.thread_id = effectiveSessionId;
+      env.status = "completed";
+      env.sessionId = effectiveSessionId;
+      env.meta = {
+        path: "deterministic_clarification",
+        answer_strategy: "needs_clarification",
+        answer_grounded: false,
+        answer_source_type: "clarification",
+        answer_source_key: null,
+        answer_facts_count: 0,
+        matched_preview: "",
+        extracted_facts: [],
+        reason: "missing_slots",
+        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+          answerType: "clarification",
+          sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+          factsResolved: false,
+          fallbackUsed: false,
+          reason: "missing_slots",
+        }),
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      };
+
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+
+      logContractResponse(normalized);
+      log("ask-snoozer.clarification", "missing_slots", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+        factsResolved: false,
+        missingSlots: askSnoozerDecision.missingSlots,
+        fallbackUsed: false,
+        reason: "missing_slots",
+      });
+
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context: mergedContext,
+          payload,
+          defaultSpeech: reply,
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+    }
+
+    if (askSnoozerDecision.intentGroup === "commerce") {
+      log("ask-snoozer.fulfillment.start", "commerce", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+        factsResolved: false,
+        missingSlots: askSnoozerDecision.missingSlots,
+        fallbackUsed: false,
+        reason: null,
+      });
+      const commerceResolution = await resolveAskSnoozerCommerceResponse({
+        query: msg,
+        decision: askSnoozerDecision,
+        fetchProductsByHandles: shopifySvc?.fetchProductsByHandles,
+      });
+      const latencyMs = Date.now() - startedAt;
+      const mergedContext =
+        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+      const products = Array.isArray(commerceResolution?.products)
+        ? commerceResolution.products.map((entry) => ({
+            type: "product",
+            label: entry?.title || entry?.handle || "",
+            title: entry?.title || entry?.handle || "",
+            handle: entry?.handle || "",
+            href: entry?.href || "",
+            product_id: String(entry?.product?.id || "").trim() || undefined,
+            variant_id: entry?.variantId || undefined,
+            variant_title: entry?.variantTitle || undefined,
+          }))
+        : [];
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model:
+          commerceResolution?.answerType === "clarification"
+            ? "deterministic_clarification"
+            : "deterministic_commerce",
+        text: commerceResolution?.reply || "",
+        context: mergedContext,
+        products,
+        actions: [],
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
+        },
+      });
+
+      env.reply = commerceResolution?.reply || env.message?.text || "";
+      env.thread_id = effectiveSessionId;
+      env.status = commerceResolution?.fallbackUsed ? "completed_with_fallback" : "answered";
+      env.sessionId = effectiveSessionId;
+      env.meta = {
+        path:
+          commerceResolution?.answerType === "clarification"
+            ? "deterministic_clarification"
+            : "deterministic_commerce",
+        source: {
+          kind: "shopify",
+          shopifyProducts: products.length,
+        },
+        source_label: "shopify",
+        intent: askSnoozerDecision.intent,
+        intent_group: askSnoozerDecision.intentGroup,
+        policy_subtype: askSnoozerClassification?.policy_subtype || "",
+        scope: askSnoozerDecision.slots?.scope || null,
+        requested_size: askSnoozerDecision.slots?.size || null,
+        resolved_product_handle: commerceResolution?.resolvedProductHandle || null,
+        resolved_base_handle: commerceResolution?.resolvedBaseHandle || null,
+        shopify_price_found: Boolean(commerceResolution?.factsResolved),
+        answer_strategy:
+          commerceResolution?.answerType === "clarification"
+            ? "needs_clarification"
+            : commerceResolution?.factsResolved
+              ? "verified_price"
+              : "safe_fallback",
+        answer_grounded: Boolean(commerceResolution?.factsResolved),
+        answer_source_type: commerceResolution?.sourceOfTruth || "fallback",
+        answer_source_key:
+          commerceResolution?.resolvedProductHandle ||
+          commerceResolution?.resolvedBaseHandle ||
+          null,
+        answer_facts_count: commerceResolution?.factsResolved ? Math.max(1, products.length) : 0,
+        matched_preview: "",
+        extracted_facts: [],
+        reason: commerceResolution?.reason || "",
+        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+          answerType: commerceResolution?.answerType || "fallback",
+          sourceOfTruth: commerceResolution?.sourceOfTruth || "fallback",
+          factsResolved: Boolean(commerceResolution?.factsResolved),
+          fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
+          missingSlots: Array.isArray(commerceResolution?.missingSlots)
+            ? commerceResolution.missingSlots
+            : askSnoozerDecision.missingSlots,
+          reason: commerceResolution?.reason || "",
+        }),
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
+        },
+      };
+
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+
+      logContractResponse(normalized);
+      log("ask-snoozer.commerce.answer", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: commerceResolution?.sourceOfTruth || "fallback",
+        factsResolved: Boolean(commerceResolution?.factsResolved),
+        missingSlots: Array.isArray(commerceResolution?.missingSlots)
+          ? commerceResolution.missingSlots
+          : askSnoozerDecision.missingSlots,
+        fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
+        reason: commerceResolution?.reason || "",
+      });
+      log("ask-snoozer.fulfillment.result", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: commerceResolution?.sourceOfTruth || "fallback",
+        factsResolved: Boolean(commerceResolution?.factsResolved),
+        missingSlots: Array.isArray(commerceResolution?.missingSlots)
+          ? commerceResolution.missingSlots
+          : askSnoozerDecision.missingSlots,
+        fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
+        reason: commerceResolution?.reason || "",
+      });
+
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context: mergedContext,
+          payload,
+          defaultSpeech: env.reply || env.message?.text || "I'm here.",
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+    }
+
+    const deterministicCommerceAnswer =
+      askSnoozerDecision.intentGroup === "product_education"
+        ? await maybeBuildAskSnoozerCommerceAnswer({
+            query: msg,
+            context,
+            traceId,
+            classification: askSnoozerDecision.classification || askSnoozerClassification,
+          })
+        : null;
     if (deterministicCommerceAnswer) {
       const latencyMs = Date.now() - startedAt;
       const mergedContext =
@@ -7280,6 +7861,25 @@ async function handle(event = {}) {
         ...(isObject(deterministicCommerceAnswer.metaExtra)
           ? deterministicCommerceAnswer.metaExtra
           : {}),
+        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+          answerType:
+            String(
+              deterministicCommerceAnswer?.metaExtra?.answer_strategy ||
+                deterministicCommerceAnswer?.answer_strategy ||
+                ""
+            ).trim() === "needs_product_clarification"
+              ? "clarification"
+              : "product_answer",
+          sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+          factsResolved: Boolean(
+            deterministicCommerceAnswer?.metaExtra?.answer_grounded
+          ),
+          fallbackUsed: false,
+          reason:
+            deterministicCommerceAnswer?.metaExtra?.reason ||
+            deterministicCommerceAnswer?.reason ||
+            "",
+        }),
         metrics: {
           retrievalMs: 0,
           modelMs: 0,
@@ -7314,6 +7914,25 @@ async function handle(event = {}) {
           ? deterministicCommerceAnswer.products.map((product) => product.handle).filter(Boolean)
           : [],
         totalMs: latencyMs,
+      });
+      log("ask-snoozer.fulfillment.result", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+        factsResolved: Boolean(
+          deterministicCommerceAnswer?.metaExtra?.answer_grounded
+        ),
+        missingSlots: [],
+        fallbackUsed: false,
+        reason:
+          deterministicCommerceAnswer?.metaExtra?.reason ||
+          deterministicCommerceAnswer?.reason ||
+          "",
       });
 
       if (wantHud) {
@@ -7372,6 +7991,18 @@ async function handle(event = {}) {
           ? deterministicFaqAnswer.extracted_facts
           : [],
         reason: deterministicFaqAnswer.reason || "",
+        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+          answerType:
+            askSnoozerDecision.intentGroup === "support"
+              ? "fallback"
+              : askSnoozerDecision.intentGroup === "session_guidance"
+                ? "session_guidance"
+                : "fallback",
+          sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+          factsResolved: Boolean(deterministicFaqAnswer.answer_grounded),
+          fallbackUsed: false,
+          reason: deterministicFaqAnswer.reason || "",
+        }),
         metrics: {
           retrievalMs: 0,
           modelMs: 0,
@@ -7397,6 +8028,20 @@ async function handle(event = {}) {
         intentGroup: buildAskSnoozerClassification(msg, context)?.intent_group || null,
         totalMs: latencyMs,
       });
+      log("ask-snoozer.fulfillment.result", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+        factsResolved: Boolean(deterministicFaqAnswer.answer_grounded),
+        missingSlots: askSnoozerDecision.missingSlots,
+        fallbackUsed: false,
+        reason: deterministicFaqAnswer.reason || "",
+      });
 
       if (wantHud) {
         const hud = await buildHudFromAny(normalized, {
@@ -7405,6 +8050,95 @@ async function handle(event = {}) {
           context: mergedContext,
           payload,
           defaultSpeech: env.reply || env.message?.text || "I'm here.",
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+    }
+
+    if (!askSnoozerDecision.shouldUseOpenAI) {
+      const latencyMs = Date.now() - startedAt;
+      const mergedContext =
+        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+      const reply = buildAskSnoozerFallbackReply();
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model: "deterministic_fallback",
+        text: reply,
+        context: mergedContext,
+        products: [],
+        actions: [],
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      });
+
+      env.reply = reply;
+      env.thread_id = effectiveSessionId;
+      env.status = "completed";
+      env.sessionId = effectiveSessionId;
+      env.meta = {
+        path: "deterministic_fallback",
+        answer_strategy: "safe_fallback",
+        answer_grounded: false,
+        answer_source_type: "fallback",
+        answer_source_key: null,
+        answer_facts_count: 0,
+        matched_preview: "",
+        extracted_facts: [],
+        reason: "fallback_guard",
+        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+          answerType: "fallback",
+          sourceOfTruth: "fallback",
+          factsResolved: false,
+          fallbackUsed: false,
+          reason: "fallback_guard",
+        }),
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      };
+
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+
+      logContractResponse(normalized);
+      log("ask-snoozer.fulfillment.result", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: "fallback",
+        factsResolved: false,
+        missingSlots: askSnoozerDecision.missingSlots,
+        fallbackUsed: false,
+        reason: "fallback_guard",
+      });
+
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context: mergedContext,
+          payload,
+          defaultSpeech: reply,
           traceId,
         });
         return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
@@ -7491,6 +8225,13 @@ async function handle(event = {}) {
       env.status = aiResult?.status || "completed";
       env.meta = {
         ...(aiResult?.meta || {}),
+        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+          answerType: "fallback",
+          sourceOfTruth: "openai",
+          factsResolved: false,
+          fallbackUsed,
+          reason: fallbackUsed ? "openai_fallback" : "openai",
+        }),
         retrievalMs: safeNumber(aiMetrics?.retrievalMs ?? aiResult?.meta?.retrievalMs, 0),
         modelMs,
         totalMs: latencyMs,
@@ -7547,6 +8288,20 @@ async function handle(event = {}) {
         timeoutMs: MODEL_TIMEOUT_MS,
         path: env.meta?.path || null,
       });
+      log("ask-snoozer.fulfillment.result", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth: "openai",
+        factsResolved: false,
+        missingSlots: askSnoozerDecision.missingSlots,
+        fallbackUsed,
+        reason: fallbackUsed ? "openai_fallback" : "openai",
+      });
 
       if (wantHud) {
         const hud = await buildHudFromAny(normalized, {
@@ -7594,6 +8349,13 @@ async function handle(event = {}) {
           },
           meta: {
             ...(errorBody.meta || {}),
+            qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+              answerType: "fallback",
+              sourceOfTruth: "fallback",
+              factsResolved: false,
+              fallbackUsed: true,
+              reason: isTimeout ? "timeout_fallback" : "ask_snoozer_failed",
+            }),
             metrics: {
               retrievalMs: 0,
               modelMs: isTimeout ? MODEL_TIMEOUT_MS : 0,
@@ -7624,6 +8386,22 @@ async function handle(event = {}) {
         timeoutMs: isTimeout ? MODEL_TIMEOUT_MS : null,
         path: "fallback",
       });
+      if (isTimeout) {
+        log("ask-snoozer.timeout.fallback", "timeout_fallback", {
+          traceId,
+          shopperId: shopperId || null,
+          sessionId: effectiveSessionId,
+          intentGroup: askSnoozerDecision.intentGroup,
+          intent: askSnoozerDecision.intent,
+          confidence: askSnoozerDecision.confidence,
+          slots: askSnoozerDecision.slots,
+          sourceOfTruth: "fallback",
+          factsResolved: false,
+          missingSlots: askSnoozerDecision.missingSlots,
+          fallbackUsed: true,
+          reason: "timeout_fallback",
+        });
+      }
 
       if (wantHud) {
         const hud = await buildHudFromAny(normalized, {

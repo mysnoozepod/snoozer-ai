@@ -1,0 +1,108 @@
+{
+  "version": "2026-06-17.1",
+  "updatedAt": "2026-06-17T00:00:00.000Z",
+  "policies": {
+    "sleep_trial": {
+      "required": true,
+      "bucket": "knowledge",
+      "sourceKind": "policy",
+      "sourceKeys": ["policies/returns.md", "faq/returns.md"]
+    },
+    "return_policy": {
+      "required": true,
+      "bucket": "knowledge",
+      "sourceKind": "policy",
+      "sourceKeys": ["policies/returns.md", "faq/returns.md"]
+    },
+    "delivery": {
+      "required": true,
+      "bucket": "knowledge",
+      "sourceKind": "policy",
+      "sourceKeys": ["policies/delivery.md", "faq/delivery.md"]
+    },
+    "warranty": {
+      "required": true,
+      "bucket": "knowledge",
+      "sourceKind": "policy",
+      "sourceKeys": ["policies/warranty.md", "faq/warranty.md"]
+    },
+    "financing": {
+      "required": true,
+      "bucket": "prompt",
+      "sourceKind": "skill",
+      "sourceKeys": ["skills/financing.md"]
+    },
+    "pricing_guidance": {
+      "required": false,
+      "bucket": "prompt",
+      "sourceKind": "skill",
+      "sourceKeys": ["skills/pricing.md"]
+    },
+    "privacy": {
+      "required": true,
+      "bucket": "knowledge",
+      "sourceKind": "policy",
+      "sourceKeys": ["policies/privacy.md"]
+    }
+  },
+  "sessionGuidance": {
+    "where_to_start": {
+      "required": false,
+      "bucket": "prompt",
+      "sourceKind": "skill",
+      "sourceKeys": ["skills/where_to_start.md", "skills/help_me_choose.md"]
+    },
+    "booking_help": {
+      "required": false,
+      "bucket": "prompt",
+      "sourceKind": "skill",
+      "sourceKeys": ["skills/help_me_choose.md"]
+    }
+  },
+  "products": {
+    "10-all-foam-mattress": {
+      "required": true,
+      "bucket": "knowledge",
+      "sourceKind": "product",
+      "sourceKeys": ["products/mattress/all-foam-10.md", "products/mattress/10-all-foam-mattress.md"]
+    },
+    "12-all-foam-mattress": {
+      "required": true,
+      "bucket": "knowledge",
+      "sourceKind": "product",
+      "sourceKeys": ["products/mattress/all-foam-12.md", "products/mattress/12-all-foam-mattress.md"]
+    },
+    "12-dual-comfort-hybrid": {
+      "required": true,
+      "bucket": "knowledge",
+      "sourceKind": "product",
+      "sourceKeys": ["products/mattress/dual-comfort-12.md", "products/mattress/12-dual-comfort-hybrid.md"]
+    },
+    "14-hybrid": {
+      "required": true,
+      "bucket": "knowledge",
+      "sourceKind": "product",
+      "sourceKeys": ["products/mattress/hybrid-14.md", "products/mattress/14-hybrid.md"]
+    }
+  },
+  "bases": {
+    "premium-motion-adjustable-base": {
+      "required": true,
+      "bucket": "knowledge",
+      "sourceKind": "product",
+      "sourceKeys": ["products/bases/premium-motion-base.md", "products/bases/motion-bases.md"]
+    },
+    "platform-base": {
+      "required": false,
+      "bucket": "knowledge",
+      "sourceKind": "product",
+      "sourceKeys": []
+    },
+    "storage-base": {
+      "required": false,
+      "bucket": "knowledge",
+      "sourceKind": "product",
+      "sourceKeys": []
+    }
+  }
+}

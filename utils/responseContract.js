@@ -216,6 +216,12 @@ function normalizeSnoozerResponse(raw, opts = {}) {
     safe?.raw?.model,
     null
   );
+  const qualityGate =
+    isObj(safe?.meta?.qualityGate)
+      ? safe.meta.qualityGate
+      : isObj(safe?.metadata?.qualityGate)
+      ? safe.metadata.qualityGate
+      : null;
 
   const source = (() => {
     const src = isObj(safe?.metadata?.source)
@@ -268,6 +274,7 @@ function normalizeSnoozerResponse(raw, opts = {}) {
       model,
       source,
       metrics,
+      ...(qualityGate ? { qualityGate } : {}),
     },
   };
 }

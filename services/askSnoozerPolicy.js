@@ -11,6 +11,8 @@ const KNOWLEDGE_BUCKET = process.env.S3_KNOWLEDGE_BUCKET || "snoozer-knowledge-p
 const KNOWLEDGE_LOCAL_ROOT = path.join(__dirname, "..", "s3 files", "snoozerknowledgeprod");
 const PROMPT_LOCAL_ROOT = path.join(__dirname, "..", "s3 files", "snoozerpromptsprod");
 const DEFAULT_TIMEOUT_MS = Number(process.env.S3_RETRIEVAL_TIMEOUT_MS || 300);
+const PREFER_LOCAL_KNOWLEDGE =
+  String(process.env.ASK_SNOOZER_PREFER_LOCAL_KNOWLEDGE || "").trim() === "1";
 
 const localMirrorCache = new Map();
 const remoteKnowledgeMissCache = new Set();
@@ -860,6 +862,17 @@ async function loadKnowledgeCandidates(keys, options = {}) {
   const timeoutMs = Number(options.timeoutMs) || DEFAULT_TIMEOUT_MS;
 
   for (const key of keys) {
+    if (PREFER_LOCAL_KNOWLEDGE) {
+      const preferredLocal = readLocalMirror(KNOWLEDGE_LOCAL_ROOT, key);
+      if (preferredLocal?.value) {
+        return {
+          raw: preferredLocal.value,
+          source: "local_policy",
+          key: preferredLocal.key || key,
+        };
+      }
+    }
+
     if (
       openaiHelpers &&
       typeof openaiHelpers.getObjectText === "function" &&
@@ -893,6 +906,17 @@ async function loadPromptCandidates(keys, options = {}) {
   const reqId = String(options.traceId || "").trim() || undefined;
 
   for (const key of keys) {
+    if (PREFER_LOCAL_KNOWLEDGE) {
+      const preferredLocal = readLocalMirror(PROMPT_LOCAL_ROOT, key);
+      if (preferredLocal?.value) {
+        return {
+          raw: preferredLocal.value,
+          source: "local_skill",
+          key: preferredLocal.key || key,
+        };
+      }
+    }
+
     if (!remotePromptMissCache.has(key)) {
       const loaded = await loadPromptFromS3(key, { reqId });
       if (loaded) {
