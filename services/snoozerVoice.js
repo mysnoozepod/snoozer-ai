@@ -10,6 +10,7 @@ const BANNED_SNOOZER_PHRASES = Object.freeze([
 
 function cleanVoiceText(value) {
   return String(value == null ? "" : value)
+    .replace(/(\d+)\s*"/g, "$1-inch")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -153,11 +154,11 @@ function buildAdjustableBaseVoice({
 } = {}) {
   return joinVoiceSentences(
     [
-      "If elevation matters, choose the adjustable base setup on purpose instead of leaving it as an afterthought",
+      "Elevation can help some sleepers feel more comfortable when snoring is a concern",
       primaryTitle
-        ? `${primaryTitle} is worth checking with the exact base setup and size you want`
-        : "The mattress and base need to make sense together, especially once motion gets involved",
-      askSize ? "Are you shopping Queen or King" : "",
+        ? `${primaryTitle} is worth comparing with an adjustable base so you can raise your head and upper body on purpose`
+        : "An adjustable base lets you raise your head and upper body, which is worth comparing during your Snooze Session",
+      askSize ? "Are you shopping Queen or King?" : "That is worth trying during your Snooze Session.",
     ],
     3,
     maxChars

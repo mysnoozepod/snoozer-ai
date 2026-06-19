@@ -132,6 +132,12 @@ function getProductTitle(resolved, handle) {
   return resolved.products.find((product) => product.handle === handle)?.title || handle || "";
 }
 
+function normalizeCustomerFacingTitle(value) {
+  return String(value || "")
+    .replace(/(\d+)\s*"/g, "$1-inch")
+    .trim();
+}
+
 function assertNoBannedPhrases(text, label) {
   const normalized = String(text || "").toLowerCase();
   for (const phrase of BANNED_SNOOZER_PHRASES) {
@@ -226,7 +232,9 @@ async function testCanonicalRecommendationAnswer() {
     "canonical recommendation should return the canonical deterministic model marker"
   );
 
-  const mattressTitle = getProductTitle(resolved, resolved.recommendation.primaryMattressHandle);
+  const mattressTitle = normalizeCustomerFacingTitle(
+    getProductTitle(resolved, resolved.recommendation.primaryMattressHandle)
+  );
   assert(
     body.reply.includes(topPod?.name || ""),
     "reply should mention the canonical top pod name"

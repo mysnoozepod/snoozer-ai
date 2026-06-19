@@ -1,6 +1,13 @@
 const { loadShowroomManifest } = require("./showroomManifest");
 const { getKnowledgeManifestEntry } = require("./knowledgeManifest");
 const {
+  buildClarificationReply,
+  buildFallbackReply,
+  buildMissingRecommendationReply,
+  buildNoGuessReply,
+  presentCommerceResponse,
+} = require("./askSnoozerResponsePresenter");
+const {
   classifyAskSnoozerIntent,
   classifyAskSnoozerPolicySubtype,
   normalizeAskSnoozerText,
@@ -209,7 +216,7 @@ function resolvePolicyTopic(query = "", policySubtype = "") {
 
   switch (String(policySubtype || "").trim()) {
     case "returns":
-      return normalized.includes("trial") ? "sleep_trial" : "return_policy";
+      return "return_policy";
     case "delivery":
       return "delivery";
     case "warranty":
@@ -308,11 +315,6 @@ function isProductEducationQuery(text = "", classification = null) {
 function isNonsenseFallback(text = "") {
   const normalized = normalizeAskSnoozerText(text);
   return NOUNLESS_QUERY_TERMS.filter((term) => normalized.includes(term)).length >= 2;
-}
-
-function titleForHandle(handle = "") {
-  const product = getProductMap().get(String(handle || "").trim());
-  return String(product?.title || handle || "").trim();
 }
 
 function buildCandidateProductHandles({
@@ -546,46 +548,15 @@ function routeAskSnoozerQuestion({
 }
 
 function buildAskSnoozerClarificationReply(decision = {}) {
-  const slots = isObject(decision?.slots) ? decision.slots : {};
-  const missingSlots = Array.isArray(decision?.missingSlots) ? decision.missingSlots : [];
-  const candidateHandles = Array.isArray(slots.candidateProductHandles) ? slots.candidateProductHandles : [];
-  const candidateTitles = candidateHandles.map((handle) => titleForHandle(handle)).filter(Boolean);
-
-  if (missingSlots.includes("baseHandle") && ["mattress_plus_base", "full_pod"].includes(slots.scope)) {
-    const sizeText = slots.size ? `${slots.size.toLowerCase()} ` : "";
-    const splitOptions =
-      slots.size === "King"
-        ? "platform base, storage base, standard motion, half split motion, or full split motion"
-        : slots.size === "Queen"
-          ? "platform base, storage base, standard motion, or half split motion"
-          : "platform base, storage base, or standard motion";
-    return `Do you want the ${splitOptions} setup with that ${sizeText}mattress?`.replace(/\s+/g, " ");
-  }
-
-  if (missingSlots.includes("productHandle")) {
-    if (candidateTitles.length >= 2) {
-      return `Do you mean ${candidateTitles.slice(0, 3).join(", ").replace(/, ([^,]+)$/, ", or $1")} ?`.replace(/\s+/g, " ");
-    }
-    return "Which mattress do you want me to check live: 14-inch Hybrid, 12-inch Dual Comfort Hybrid, 12-inch All Foam, or 10-inch All Foam?";
-  }
-
-  if (missingSlots.includes("size")) {
-    return "What size do you want me to check live: Twin XL, Full, Queen, or King?";
-  }
-
-  if (missingSlots.includes("policyTopic")) {
-    return "Do you want the sleep trial, returns, delivery, financing, warranty, or privacy details?";
-  }
-
-  return "Tell me the mattress, base, or policy detail you want to narrow first, and I will keep it precise.";
+  return buildClarificationReply(decision);
 }
 
 function buildAskSnoozerFallbackReply() {
-  return "I can help with mattress fit, live pricing, delivery, sleep trial, or booking a Snooze Session. Tell me which one you want to narrow first.";
+  return buildFallbackReply();
 }
 
 function buildAskSnoozerMissingRecommendationReply() {
-  return "I can recommend a setup once I have your assessment or a few basics like size, sleep position, firmness, partner, and base preference.";
+  return buildMissingRecommendationReply();
 }
 
 function normalizeSizeKey(value = "") {
@@ -618,20 +589,6 @@ function findVariantForSize(product = null, sizeLabel = "") {
       });
     }) || null
   );
-}
-
-function formatCurrency(amount, currencyCode = "USD") {
-  const numeric = Number(amount);
-  if (!Number.isFinite(numeric)) return "";
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: String(currencyCode || "USD").trim() || "USD",
-      maximumFractionDigits: 0,
-    }).format(numeric);
-  } catch {
-    return `$${Math.round(numeric)}`;
-  }
 }
 
 function inferVariantPrice(variant = null, product = null) {
@@ -701,7 +658,7 @@ async function resolveAskSnoozerCommerceResponse({
       fallbackUsed: true,
       missingSlots: ["shopify"],
       confidence: Number(decision?.confidence || 0),
-      reply: "I do not have live Shopify pricing wired into this backend path right now.",
+      reply: buildNoGuessReply("pricing"),
       reason: "shopify_unavailable",
       products: [],
     };
@@ -783,17 +740,29 @@ async function resolveAskSnoozerCommerceResponse({
         fallbackUsed: true,
         missingSlots: [],
         confidence: Number(decision?.confidence || 0),
-        reply: "I found the request path, but I could not verify that product in the live Shopify data.",
+        reply: buildNoGuessReply("pricing"),
         reason: "product_not_found",
         products: [],
       };
     }
     const availabilityReply =
       primaryEntry.available === true
-        ? `Yes. ${primaryEntry.title} is showing available in the current live Shopify data${slots.size ? ` for ${slots.size}` : ""}.`
+        ? presentCommerceResponse({
+            decision,
+            resolution: {
+              ...decision,
+              ...{ products: [primaryEntry], reason: "availability", size: slots.size || null },
+            },
+          })
         : primaryEntry.available === false
-          ? `I do not see ${primaryEntry.title} as available right now${slots.size ? ` in ${slots.size}` : ""}.`
-          : `I found ${primaryEntry.title}, but I could not verify live availability from this response.`;
+          ? presentCommerceResponse({
+              decision,
+              resolution: {
+                ...decision,
+                ...{ products: [primaryEntry], reason: "availability", size: slots.size || null },
+              },
+            })
+          : buildNoGuessReply("pricing");
 
     return {
       ok: true,
@@ -840,7 +809,7 @@ async function resolveAskSnoozerCommerceResponse({
         fallbackUsed: true,
         missingSlots: [],
         confidence: Number(decision?.confidence || 0),
-        reply: "I found the mattress and base, but I could not verify every live price needed for that setup.",
+        reply: buildNoGuessReply("pricing"),
         reason: "bundle_price_missing",
         products: [mattressEntry, baseEntry].filter(Boolean),
       };
@@ -855,7 +824,15 @@ async function resolveAskSnoozerCommerceResponse({
       fallbackUsed: false,
       missingSlots: [],
       confidence: Number(decision?.confidence || 0),
-      reply: `${slots.size || "Matching"} mattress + base price: ${mattressEntry.title} ${formatCurrency(mattressEntry.price, mattressEntry.currencyCode)}. ${baseEntry.title} ${formatCurrency(baseEntry.price, baseEntry.currencyCode)}. Estimated product total before taxes, discounts, or delivery: ${formatCurrency(subtotal, mattressEntry.currencyCode || baseEntry.currencyCode)}.`,
+      reply: presentCommerceResponse({
+        decision,
+        resolution: {
+          products: [mattressEntry, baseEntry],
+          reason: "bundle_price_resolved",
+          itemizedTotal: subtotal,
+          size: slots.size || null,
+        },
+      }),
       reason: "bundle_price_resolved",
       products: [mattressEntry, baseEntry],
       resolvedProductHandle: mattressEntry.handle,
@@ -875,7 +852,7 @@ async function resolveAskSnoozerCommerceResponse({
       fallbackUsed: true,
       missingSlots: [],
       confidence: Number(decision?.confidence || 0),
-      reply: "I found the pricing path, but I could not verify that exact product in the live Shopify data.",
+      reply: buildNoGuessReply("pricing"),
       reason: "single_price_missing_product",
       products: [],
     };
@@ -890,7 +867,7 @@ async function resolveAskSnoozerCommerceResponse({
       fallbackUsed: true,
       missingSlots: [],
       confidence: Number(decision?.confidence || 0),
-      reply: "I found the product, but I could not verify the live price for that exact setup.",
+      reply: buildNoGuessReply("pricing"),
       reason: "single_price_missing_variant",
       products: [primaryEntry],
     };
@@ -904,7 +881,14 @@ async function resolveAskSnoozerCommerceResponse({
     fallbackUsed: false,
     missingSlots: [],
     confidence: Number(decision?.confidence || 0),
-    reply: `The current ${slots.size ? `${slots.size} ` : ""}price I found for ${primaryEntry.title} is ${formatCurrency(primaryEntry.price, primaryEntry.currencyCode)}. That is based on live Shopify pricing.`,
+    reply: presentCommerceResponse({
+      decision,
+      resolution: {
+        products: [primaryEntry],
+        reason: "single_price_resolved",
+        size: slots.size || null,
+      },
+    }),
     reason: "single_price_resolved",
     products: [primaryEntry],
     resolvedProductHandle: primaryEntry.handle,

@@ -12,6 +12,7 @@
     "calendly:webhooks:list": "node scripts/calendlyWebhookSetup.js",
     "calendly:webhooks:create": "node scripts/calendlyWebhookSetup.js --create",
     "test:ask-snoozer": "node scripts/runAskSnoozerGoldenTests.js",
+    "test:ask-snoozer-copy": "node scripts/runAskSnoozerGoldenTests.js --copy-only",
     "validate:ask-snoozer-knowledge": "node scripts/validateAskSnoozerKnowledgeManifest.js",
     "package:lambda": "tar -a -cf snoozer-backend.zip index.js package.json package-lock.json data handlers routes services utils node_modules faqs.json knowledge_base.json products.json searchProducts.js",
     "package:with-deps": "rm -f build.zip && npm ci && zip -r build.zip . -x \".git/*\" -x \"*.log\" -x \"build.zip\"",

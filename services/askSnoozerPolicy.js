@@ -3,6 +3,11 @@ const path = require("path");
 
 const { loadPromptFromS3 } = require("./promptLoader");
 const {
+  buildNoGuessReply,
+  buildPolicyLaneLead,
+  joinReplyParts,
+} = require("./askSnoozerResponsePresenter");
+const {
   classifyAskSnoozerPolicySubtype,
   normalizeAskSnoozerText,
 } = require("./askSnoozerIntents");
@@ -524,17 +529,17 @@ function resolveBrandFactRecords(query = "") {
 function buildFallbackPolicyReply(policySubtype) {
   switch (String(policySubtype || "").trim()) {
     case "returns":
-      return "Return options can vary by item and order details. Check the return terms before you decide so you know exactly what applies.";
+      return buildNoGuessReply("return_policy");
     case "delivery":
-      return "Delivery details can vary by order, area, and setup needs. Check the current delivery information before you place the order.";
+      return buildNoGuessReply("delivery");
     case "warranty":
-      return "Warranty coverage depends on the product and the claim details. Review the current warranty terms so you know exactly what is covered.";
+      return buildNoGuessReply("warranty");
     case "financing":
-      return "Financing options may be available, but exact offers and approval terms can change. Check the current financing details before you decide.";
+      return buildNoGuessReply("financing");
     case "pricing":
-      return "Pricing can depend on the product, size, and delivery setup. Check the current details before you make the final call.";
+      return buildNoGuessReply("pricing");
     default:
-      return "Policy details can affect timing, fees, or coverage, so check the current terms before you decide.";
+      return buildNoGuessReply("detail");
   }
 }
 
@@ -562,7 +567,7 @@ function buildReturnsReply(raw, query) {
     const detail = nonReturnable || overview;
     if (detail) {
       return buildGroundedResult(
-        "The current return policy says motion bases, adjustable frames, bedding, pillows, and accessories are final sale once opened or delivered. The 100-night return window applies to mattress purchases only.",
+        "Motion bases, adjustable frames, bedding, pillows, and accessories are final sale once opened or delivered. The 100-night sleep trial applies to mattress purchases only.",
         detail,
         { fallback: buildFallbackPolicyReply("returns") }
       );
@@ -575,22 +580,26 @@ function buildReturnsReply(raw, query) {
       (normalizedQuery.includes("how long") || normalizedQuery.includes("when"))
     ) {
       return buildGroundedResult(
-        "The current return policy says mattress refunds are usually processed within 3 to 5 business days after pickup. The original payment method is used unless something else is arranged.",
+        "Refunds are usually processed within 3 to 5 business days after pickup, and the original payment method is used unless something else is arranged.",
         refundSection,
-        { fallback: "I do not see the exact refund timing in the current policy text. Check the return policy before you decide." }
+        { fallback: buildFallbackPolicyReply("returns") }
       );
     }
 
     if (overview || refundSection) {
       return buildGroundedResult(
-        "According to the current return policy, mattresses come with a 100-night sleep trial and can be returned or exchanged once within that window. Refunds are usually processed within 3 to 5 business days after pickup.",
+        joinReplyParts([
+          "Our sleep trial is handled through the return policy.",
+          "Mattresses come with a 100-night sleep trial and can be returned or exchanged one time within that window.",
+          "Refunds are usually processed within 3 to 5 business days after pickup.",
+        ]),
         `${overview}\n${refundSection}`.trim(),
         { fallback: buildFallbackPolicyReply("returns") }
       );
     }
 
     return buildUngroundedResult(
-      "I do not see the exact refund timing in the current policy text. Check the return policy before you decide.",
+      buildFallbackPolicyReply("returns"),
       { fallback: buildFallbackPolicyReply("returns") }
     );
   }
@@ -598,7 +607,11 @@ function buildReturnsReply(raw, query) {
   if (normalizedQuery.includes("dont like") || normalizedQuery.includes("don't like")) {
     if (overview || eligibility) {
       return buildGroundedResult(
-        "According to the current return policy, mattresses come with a 100-night sleep trial and can be returned or exchanged once within that window. The mattress needs to stay in good condition.",
+        joinReplyParts([
+          "Yes - that falls under the return policy.",
+          "Mattresses come with a 100-night sleep trial and can be returned or exchanged one time within that window.",
+          "The mattress needs to stay in good condition.",
+        ]),
         `${overview}\n${eligibility}`.trim(),
         { fallback: buildFallbackPolicyReply("returns") }
       );
@@ -607,14 +620,18 @@ function buildReturnsReply(raw, query) {
 
   if (overview || startReturn) {
     return buildGroundedResult(
-      "According to the current return policy, mattresses come with a 100-night sleep trial and can be returned or exchanged once within that window. If you need to start a return, Snoozer or the store can help arrange pickup.",
+      joinReplyParts([
+        buildPolicyLaneLead({ query, policyTopic: "return_policy" }),
+        "Mattresses come with a 100-night sleep trial and can be returned or exchanged one time within that window.",
+        "If you need to start a return, Snoozer or the store can help arrange pickup.",
+      ]),
       `${overview}\n${startReturn}`.trim(),
       { fallback: buildFallbackPolicyReply("returns") }
     );
   }
 
   return buildUngroundedResult(
-    "I do not see that exact return detail in the current policy text. Check the return policy before deciding.",
+    buildFallbackPolicyReply("returns"),
     { fallback: buildFallbackPolicyReply("returns") }
   );
 }
@@ -648,7 +665,7 @@ function buildDeliveryReply(raw, query) {
     const setupDetail = options || extractFaqSection(raw, ["do you offer setup", "will you remove my old mattress"]);
     if (setupDetail) {
       return buildGroundedResult(
-        "The delivery policy says you can add in-room setup, assembly, and packaging removal, and old mattress removal is available on request.",
+        "You can add in-room setup, assembly, and packaging removal, and old mattress removal is available on request.",
         setupDetail,
         { fallback: buildFallbackPolicyReply("delivery") }
       );
@@ -675,14 +692,14 @@ function buildDeliveryReply(raw, query) {
 
   if (overview || options) {
     return buildGroundedResult(
-      "The current delivery policy says orders are delivered through trusted local carriers, with standard delivery usually running 3 to 7 business days. White-glove setup and old mattress removal can also be added when needed.",
+      "Orders are delivered through trusted local carriers, with standard delivery usually running 3 to 7 business days. White-glove setup and old mattress removal can also be added when needed.",
       `${overview}\n${options}`.trim(),
       { fallback: buildFallbackPolicyReply("delivery") }
     );
   }
 
   return buildUngroundedResult(
-    "I do not see that exact delivery detail in the current policy text. Check the delivery policy before deciding.",
+    buildFallbackPolicyReply("delivery"),
     { fallback: buildFallbackPolicyReply("delivery") }
   );
 }
@@ -697,7 +714,7 @@ function buildWarrantyReply(raw, query) {
   if (hasAnyQueryTerm(normalizedQuery, ["adjustable base", "motion base", "base"])) {
     if (motionBaseBullets.length > 0) {
       return buildGroundedResult(
-        "The current warranty says motion bases carry a 10-year limited warranty. The first year includes full coverage, and later coverage is limited to parts.",
+        "Motion bases carry a 10-year limited warranty. The first year includes full coverage, and later coverage is limited to parts.",
         motionBaseBullets.join(" "),
         { fallback: buildFallbackPolicyReply("warranty") }
       );
@@ -749,7 +766,7 @@ function buildWarrantyReply(raw, query) {
   }
 
   return buildUngroundedResult(
-    "I do not see that exact warranty detail in the current policy text. Check the warranty page before deciding.",
+    buildFallbackPolicyReply("warranty"),
     { fallback: buildFallbackPolicyReply("warranty") }
   );
 }
@@ -765,7 +782,7 @@ function buildFinancingReply(raw, query) {
     !/no money down/i.test(groundedBlock)
   ) {
     return buildGroundedResult(
-      "I do not see an exact no-money-down promise in the current financing guidance. It does say monthly payment options and 0% APR plans may be available for qualified customers.",
+      "I do not see an exact no-money-down promise in the approved financing detail. Monthly payment options and 0% APR plans may still be available for qualified customers.",
       groundedBlock,
       { fallback: buildFallbackPolicyReply("financing") }
     );
@@ -773,7 +790,7 @@ function buildFinancingReply(raw, query) {
 
   if (normalizedQuery.includes("monthly")) {
     return buildGroundedResult(
-      "The current financing guidance says monthly payment options are available, and some shoppers may qualify for 0% APR plans. Check the exact approval terms and minimum purchase before you decide.",
+      "Monthly payment options may be available, and some shoppers may qualify for 0% APR plans. Exact approval terms and minimum purchase requirements come from the financing provider.",
       groundedBlock,
       { fallback: buildFallbackPolicyReply("financing") }
     );
@@ -781,14 +798,14 @@ function buildFinancingReply(raw, query) {
 
   if (replySection || keyFacts) {
     return buildGroundedResult(
-      "The current financing guidance says flexible monthly payment options are available, including 0% APR plans for qualified customers. Check the exact approval terms before you decide.",
+      "Flexible monthly payment options may be available, including 0% APR plans for qualified customers. Exact approval terms come from the financing provider.",
       groundedBlock,
       { fallback: buildFallbackPolicyReply("financing") }
     );
   }
 
   return buildUngroundedResult(
-    "I do not see that exact financing detail in the current guidance. Check the financing information before you decide.",
+    buildFallbackPolicyReply("financing"),
     { fallback: buildFallbackPolicyReply("financing") }
   );
 }
@@ -804,7 +821,7 @@ function buildPricingReply(raw) {
   }
 
   return buildUngroundedResult(
-    "I do not see that exact pricing detail in the current guidance. Check the latest pricing before you decide.",
+    buildFallbackPolicyReply("pricing"),
     { fallback: buildFallbackPolicyReply("pricing") }
   );
 }
@@ -823,7 +840,7 @@ function buildGeneralPolicyReply(raw) {
   }
 
   return buildUngroundedResult(
-    "I do not see that exact policy detail in the current text. Check the policy page before deciding.",
+    buildFallbackPolicyReply("detail"),
     { fallback: buildFallbackPolicyReply("general_policy") }
   );
 }

@@ -1,13 +1,7 @@
 {
-  "version": "2026-06-17.1",
-  "updatedAt": "2026-06-17T00:00:00.000Z",
+  "version": "2026-06-18.1",
+  "updatedAt": "2026-06-18T00:00:00.000Z",
   "policies": {
-    "sleep_trial": {
-      "required": true,
-      "bucket": "knowledge",
-      "sourceKind": "policy",
-      "sourceKeys": ["policies/returns.md", "faq/returns.md"]
-    },
     "return_policy": {
       "required": true,
       "bucket": "knowledge",

@@ -16,6 +16,37 @@ const originalFetchProductsByHandles = shopifySvc.fetchProductsByHandles;
 const sessionStore = new Map();
 const resultsStore = new Map();
 const openAiCalls = [];
+const COPY_ONLY = process.argv.includes("--copy-only");
+const FORBIDDEN_INTERNAL_PHRASES = Object.freeze([
+  "live shopify",
+  "shopify pricing",
+  "based on shopify",
+  "i found",
+  "current policy text",
+  "policy text",
+  "s3",
+  "sourceoftruth",
+  "deterministic",
+  "backend",
+  "variant matched",
+  "retrieval",
+  "openai",
+  "model",
+]);
+
+function escapeRegExp(value) {
+  return String(value == null ? "" : value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function replyContainsToken(reply, token) {
+  const normalizedReply = String(reply || "").toLowerCase();
+  const normalizedToken = String(token || "").toLowerCase().trim();
+  if (!normalizedToken) return false;
+  if (/^[a-z0-9]+$/i.test(normalizedToken)) {
+    return new RegExp(`\\b${escapeRegExp(normalizedToken)}\\b`, "i").test(normalizedReply);
+  }
+  return normalizedReply.includes(normalizedToken);
+}
 
 const PRODUCT_FIXTURES = Object.freeze({
   "14-hybrid": {
@@ -78,10 +109,10 @@ const PRODUCT_FIXTURES = Object.freeze({
     handle: "platform-base",
     title: "Platform Base",
     available: true,
-    priceRange: { min: 699, currencyCode: "USD" },
+    priceRange: { min: 1299, currencyCode: "USD" },
     variants: [
-      { id: "gid://shopify/ProductVariant/platform-queen", title: "Queen", price: 699, currencyCode: "USD", available: true, selectedOptions: [{ name: "Size", value: "Queen" }] },
-      { id: "gid://shopify/ProductVariant/platform-king", title: "King", price: 899, currencyCode: "USD", available: true, selectedOptions: [{ name: "Size", value: "King" }] },
+      { id: "gid://shopify/ProductVariant/platform-queen", title: "Queen", price: 1299, currencyCode: "USD", available: true, selectedOptions: [{ name: "Size", value: "Queen" }] },
+      { id: "gid://shopify/ProductVariant/platform-king", title: "King", price: 1299, currencyCode: "USD", available: true, selectedOptions: [{ name: "Size", value: "King" }] },
     ],
   },
   "storage-base": {
@@ -264,8 +295,24 @@ async function runCase(testCase) {
   if (Array.isArray(testCase.expected.replyIncludes)) {
     for (const token of testCase.expected.replyIncludes) {
       checks.push({
-        ok: String(actual.reply || "").toLowerCase().includes(String(token).toLowerCase()),
+        ok: replyContainsToken(actual.reply || "", token),
         reason: `expected reply to include "${token}"`,
+      });
+    }
+  }
+  if (Array.isArray(testCase.expected.replyExcludes)) {
+    for (const token of testCase.expected.replyExcludes) {
+      checks.push({
+        ok: !replyContainsToken(actual.reply || "", token),
+        reason: `expected reply not to include "${token}"`,
+      });
+    }
+  }
+  if (testCase.expected.enforceForbiddenPhraseList === true) {
+    for (const token of FORBIDDEN_INTERNAL_PHRASES) {
+      checks.push({
+        ok: !replyContainsToken(actual.reply || "", token),
+        reason: `expected reply not to include forbidden phrase "${token}"`,
       });
     }
   }
@@ -315,7 +362,9 @@ async function main() {
         intentGroup: "commerce",
         sourceOfTruth: "shopify",
         slots: { scope: "mattress_only", size: "Queen", productHandle: "14-hybrid" },
-        replyIncludes: ['14" Hybrid', "$2,899"],
+        replyIncludes: ["The Queen 14-inch Hybrid mattress is $2,899", "before taxes, delivery, or any active discounts"],
+        replyExcludes: ["Shopify", "I found", "current"],
+        enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
     },
@@ -327,7 +376,9 @@ async function main() {
         intentGroup: "commerce",
         sourceOfTruth: "shopify",
         slots: { scope: "mattress_plus_base", size: "Queen", productHandle: "14-hybrid", baseHandle: "platform-base" },
-        replyIncludes: ["Platform Base", "$699", "$3,598"],
+        replyIncludes: ["comes to $4,198", "Mattress: $2,899", "Base: $1,299"],
+        replyExcludes: ["Shopify", "I found", "live"],
+        enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
     },
@@ -345,7 +396,9 @@ async function main() {
         intentGroup: "commerce",
         sourceOfTruth: "shopify",
         slots: { size: "Queen", productHandle: "12-all-foam-mattress" },
-        replyIncludes: ['12" All Foam Mattress'],
+        replyIncludes: ["12-inch All Foam Mattress"],
+        replyExcludes: ["Shopify", "I found", "current"],
+        enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
     },
@@ -360,7 +413,9 @@ async function main() {
         intentGroup: "commerce",
         sourceOfTruth: "shopify",
         slots: { scope: "mattress_only", size: "Queen", productHandle: "12-dual-comfort-hybrid" },
-        replyIncludes: ['12" Dual Comfort Hybrid', "$3,199"],
+        replyIncludes: ["12-inch Dual Comfort Hybrid mattress", "$3,199"],
+        replyExcludes: ["Shopify", "I found", "current"],
+        enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
     },
@@ -373,6 +428,8 @@ async function main() {
         sourceOfTruth: "shopify",
         slots: { scope: "full_pod", size: "Queen" },
         replyIncludes: ["cheapest mattress-only option", "cheapest full setup"],
+        replyExcludes: ["Shopify", "I found", "live"],
+        enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
     },
@@ -383,8 +440,10 @@ async function main() {
       expected: {
         intentGroup: "policy",
         sourceOfTruth: "s3_policy",
-        slots: { policyTopic: "sleep_trial" },
-        replyIncludes: ["sleep trial"],
+        slots: { policyTopic: "return_policy" },
+        replyIncludes: ["sleep trial", "return policy"],
+        replyExcludes: ["policy text", "current policy text", "check the return policy before deciding"],
+        enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
     },
@@ -397,6 +456,8 @@ async function main() {
         sourceOfTruth: "s3_policy",
         slots: { policyTopic: "return_policy" },
         replyIncludes: ["return", "trial"],
+        replyExcludes: ["current policy text", "check the return policy before deciding"],
+        enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
     },
@@ -409,6 +470,7 @@ async function main() {
         sourceOfTruth: "fallback",
         slots: {},
         replyIncludes: ["contact", "support"],
+        replyExcludes: ["backend", "deterministic"],
         noOpenAi: true,
       },
     },
@@ -420,7 +482,9 @@ async function main() {
         intentGroup: "product_education",
         sourceOfTruth: "s3_product",
         slots: {},
-        replyIncludes: ["adjustable base"],
+        replyIncludes: ["adjustable base", "Snooze Session"],
+        replyExcludes: ["$", "cure", "treat", "guarantee"],
+        enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
     },
@@ -440,7 +504,8 @@ async function main() {
         intentGroup: "product_education",
         sourceOfTruth: "s3_product",
         slots: { productHandle: "14-hybrid" },
-        replyIncludes: ['14" Hybrid'],
+        replyIncludes: ["14-inch Hybrid"],
+        replyExcludes: ["Shopify", "I found", "current"],
         noOpenAi: true,
       },
     },
@@ -463,28 +528,41 @@ async function main() {
         sourceOfTruth: "session_prep",
         slots: { sessionTopic: "where_to_start" },
         replyIncludes: ["SnoozePod 3", "Start with SnoozePod 3"],
+        replyExcludes: ["backend", "retrieval"],
         noOpenAi: true,
       },
     },
     {
       id: "fallback_random_nonsense",
-      prompt: "asdf random nonsense banana base moon policy",
-      body: { message: "asdf random nonsense banana base moon policy", sessionId: "golden-12" },
+      prompt: "asdf banana mattress moon policy checkout thing",
+      body: { message: "asdf banana mattress moon policy checkout thing", sessionId: "golden-12" },
       expected: {
         intentGroup: "fallback",
         sourceOfTruth: "fallback",
         slots: {},
-        replyIncludes: ["live pricing", "sleep trial"],
+        replyIncludes: ["pricing", "returns"],
+        replyExcludes: ["live pricing", "backend", "Shopify", "OpenAI"],
+        enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
     },
   ];
+  const casesToRun = COPY_ONLY
+    ? cases.filter((testCase) => [
+        "commerce_queen_14_hybrid_mattress_only",
+        "commerce_queen_14_hybrid_platform_bundle",
+        "policy_sleep_trial",
+        "policy_return_if_i_do_not_like_it",
+        "education_snoring",
+        "fallback_random_nonsense",
+      ].includes(testCase.id))
+    : cases;
 
   const rows = [];
   let failed = 0;
 
   try {
-    for (const testCase of cases) {
+    for (const testCase of casesToRun) {
       const row = await runCase(testCase);
       rows.push({
         id: row.id,
@@ -513,7 +591,7 @@ async function main() {
     return;
   }
 
-  console.log(`All ${cases.length} Ask Snoozer golden tests passed.`);
+  console.log(`All ${casesToRun.length} Ask Snoozer golden tests passed${COPY_ONLY ? " (copy-only mode)" : ""}.`);
 }
 
 main().catch((error) => {
