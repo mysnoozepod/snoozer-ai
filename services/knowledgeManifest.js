@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { S3Client, HeadObjectCommand } = require("@aws-sdk/client-s3");
 
+const { getLocalMirrorCandidates } = require("./knowledgeKeyAliases");
 const { loadShowroomManifest } = require("./showroomManifest");
 
 const KNOWLEDGE_MANIFEST_PATH = path.join(__dirname, "..", "data", "knowledgeManifest.json");
@@ -126,6 +127,23 @@ function getLocalAbsolutePath(bucketType = "knowledge", sourceKey = "") {
   return path.join(root, String(sourceKey || "").replace(/^\/+/, ""));
 }
 
+function findLocalMirrorMatch(bucketType = "knowledge", sourceKey = "") {
+  const root = LOCAL_ROOTS[bucketType];
+  if (!root || !sourceKey) return null;
+
+  for (const candidate of getLocalMirrorCandidates(bucketType, sourceKey)) {
+    const absolute = path.join(root, candidate);
+    if (fs.existsSync(absolute)) {
+      return {
+        key: candidate,
+        absolute,
+      };
+    }
+  }
+
+  return null;
+}
+
 function flattenManifestEntries(manifest) {
   const items = [];
   for (const [sectionName, section] of Object.entries(manifest)) {
@@ -162,8 +180,16 @@ async function validateKnowledgeManifestSources(options = {}) {
   for (const item of flattenManifestEntries(manifest)) {
     const { sectionName, entryKey, entry } = item;
     const sourceKeys = Array.isArray(entry.sourceKeys) ? entry.sourceKeys : [];
-    const localFound = sourceKeys.filter((sourceKey) => fs.existsSync(getLocalAbsolutePath(entry.bucket, sourceKey)));
-    const localMissing = sourceKeys.filter((sourceKey) => !localFound.includes(sourceKey));
+    const localFound = [];
+    const localMissing = [];
+    for (const sourceKey of sourceKeys) {
+      const match = findLocalMirrorMatch(entry.bucket, sourceKey);
+      if (match) {
+        localFound.push(match.key || sourceKey);
+      } else {
+        localMissing.push(sourceKey);
+      }
+    }
     const showroomProduct = sectionName === "products" || sectionName === "bases"
       ? showroomProducts.get(entryKey) || null
       : null;

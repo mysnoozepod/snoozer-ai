@@ -98,11 +98,11 @@ const MAX_CTX_FILES = Number(process.env.MAX_CTX_FILES || 4);
 const MAX_CTX_BYTES = Number(process.env.MAX_CTX_BYTES || 10000);
 const MAX_HISTORY_TURNS = Number(process.env.MAX_HISTORY_TURNS || 3);
 const POD_PRODUCT_DOC_KEY_BY_HANDLE = Object.freeze({
-  "10-all-foam-mattress": "products/mattress/all-foam-10.md",
-  "12-all-foam-mattress": "products/mattress/all-foam-12.md",
-  "12-dual-comfort-hybrid": "products/mattress/dual-comfort-12.md",
-  "14-hybrid": "products/mattress/hybrid-14.md",
-  "premium-motion-adjustable-base": "products/bases/premium-motion-base.md",
+  "10-all-foam-mattress": "products/mattress/10-all-foam-mattress.md",
+  "12-all-foam-mattress": "products/mattress/12-all-foam-mattress.md",
+  "12-dual-comfort-hybrid": "products/mattress/12-dual-comfort-hybrid.md",
+  "14-hybrid": "products/mattress/14-hybrid.md",
+  "premium-motion-adjustable-base": "products/bases/premium-motion-adjustable-base.md",
 });
 
 // Hard cap for payload

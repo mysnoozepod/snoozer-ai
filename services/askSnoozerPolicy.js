@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
+const { getLocalMirrorCandidates } = require("./knowledgeKeyAliases");
 const { loadPromptFromS3 } = require("./promptLoader");
 const {
   buildNoGuessReply,
@@ -26,23 +27,23 @@ const remotePromptMissCache = new Set();
 const POLICY_KEY_CANDIDATES = Object.freeze({
   returns: Object.freeze({
     policy: ["policies/returns.md", "faq/returns.md"],
-    skill: ["skills/returns.md", "skill/returns.md"],
+    skill: ["skills/returns.md"],
   }),
   delivery: Object.freeze({
-    policy: ["policies/delivery-policy.md", "policies/delivery.md"],
-    skill: ["skills/delivery.md", "skill/delivery.md"],
+    policy: ["policies/delivery-policy.md", "faq/delivery.md"],
+    skill: ["skills/delivery.md"],
   }),
   warranty: Object.freeze({
     policy: ["policies/warranty.md", "faq/warranty.md"],
-    skill: ["skills/warranty.md", "skill/warranty.md"],
+    skill: ["skills/warranty.md"],
   }),
   financing: Object.freeze({
     policy: [],
-    skill: ["skills/financing.md", "skill/financing.md"],
+    skill: ["skills/financing.md"],
   }),
   pricing: Object.freeze({
     policy: [],
-    skill: ["skills/pricing.md", "skill/pricing.md"],
+    skill: ["skills/pricing.md"],
   }),
   general_policy: Object.freeze({
     policy: ["faq/general.md"],
@@ -55,40 +56,24 @@ const SUPPLEMENTAL_SOURCE_CANDIDATES = Object.freeze({
     knowledge: [],
     skill: [
       "skills/help_me_choose.md",
-      "skill/help_me_choose.md",
       "skills/where_to_start.md",
-      "skill/where_to_start.md",
     ],
   }),
   split_education: Object.freeze({
-    knowledge: [
-      "products/mattress/12-dual-comfort-hybrid.md",
-      "products/mattress/dual-comfort-12.md",
-    ],
+    knowledge: ["products/mattress/12-dual-comfort-hybrid.md"],
     skill: [],
   }),
 });
 
 const PRODUCT_DOC_KEYS_BY_HANDLE = Object.freeze({
-  "10-all-foam-mattress": Object.freeze([
-    "products/mattress/10-all-foam-mattress.md",
-    "products/mattress/all-foam-10.md",
-  ]),
-  "12-all-foam-mattress": Object.freeze([
-    "products/mattress/12-all-foam-mattress.md",
-    "products/mattress/all-foam-12.md",
-  ]),
-  "12-dual-comfort-hybrid": Object.freeze([
-    "products/mattress/12-dual-comfort-hybrid.md",
-    "products/mattress/dual-comfort-12.md",
-  ]),
-  "14-hybrid": Object.freeze([
-    "products/mattress/14-hybrid.md",
-    "products/mattress/hybrid-14.md",
-  ]),
+  "10-all-foam-mattress": Object.freeze(["products/mattress/10-all-foam-mattress.md"]),
+  "12-all-foam-mattress": Object.freeze(["products/mattress/12-all-foam-mattress.md"]),
+  "12-dual-comfort-hybrid": Object.freeze(["products/mattress/12-dual-comfort-hybrid.md"]),
+  "14-hybrid": Object.freeze(["products/mattress/14-hybrid.md"]),
   "premium-motion-adjustable-base": Object.freeze([
-    "products/bases/premium-motion-base.md",
+    "products/bases/premium-motion-adjustable-base.md",
   ]),
+  "platform-base": Object.freeze(["products/bases/platform-base.md"]),
 });
 
 const SPLIT_EDUCATION_TERMS = Object.freeze([
@@ -850,24 +835,17 @@ function readLocalMirror(root, key) {
   const cacheKey = `${root}:${normalizedKey}`;
   if (localMirrorCache.has(cacheKey)) return localMirrorCache.get(cacheKey);
 
-  const candidates = [normalizedKey];
-  if (normalizedKey.startsWith("skill/")) {
-    candidates.push(normalizedKey.replace(/^skill\//, "skills/"));
-  }
-  if (normalizedKey.startsWith("skills/")) {
-    candidates.push(normalizedKey.replace(/^skills\//, "skill/"));
-  }
-  if (normalizedKey === "policies/delivery-policy.md") {
-    candidates.push("policies/delivery.md");
-  }
+  const bucketType = root === PROMPT_LOCAL_ROOT ? "prompt" : "knowledge";
+  const candidates = getLocalMirrorCandidates(bucketType, normalizedKey);
 
   for (const candidate of candidates) {
     const absolute = path.join(root, candidate);
     if (!fs.existsSync(absolute)) continue;
     const raw = fs.readFileSync(absolute, "utf8");
     const normalized = normalizeMarkdown(raw);
-    localMirrorCache.set(cacheKey, { value: normalized, key: candidate });
-    return { value: normalized, key: candidate };
+    const resolved = { value: normalized, key: normalizedKey, resolvedKey: candidate };
+    localMirrorCache.set(cacheKey, resolved);
+    return resolved;
   }
 
   localMirrorCache.set(cacheKey, null);

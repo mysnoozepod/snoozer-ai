@@ -116,6 +116,14 @@ function testKnowledgeHandleMappings() {
     getAskSnoozerProductDocKeys("10-all-foam-mattress")[0],
     "products/mattress/10-all-foam-mattress.md"
   );
+  assert.strictEqual(
+    getAskSnoozerProductDocKeys("premium-motion-adjustable-base")[0],
+    "products/bases/premium-motion-adjustable-base.md"
+  );
+  assert.strictEqual(
+    getAskSnoozerProductDocKeys("platform-base")[0],
+    "products/bases/platform-base.md"
+  );
 }
 
 async function testCoupleConflictPrefersDualComfort() {

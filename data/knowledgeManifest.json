@@ -1,6 +1,6 @@
 {
-  "version": "2026-06-18.1",
-  "updatedAt": "2026-06-18T00:00:00.000Z",
+  "version": "2026-06-21.1",
+  "updatedAt": "2026-06-21T00:00:00.000Z",
   "policies": {
     "return_policy": {
       "required": true,
@@ -12,7 +12,7 @@
       "required": true,
       "bucket": "knowledge",
       "sourceKind": "policy",
-      "sourceKeys": ["policies/delivery.md", "faq/delivery.md"]
+      "sourceKeys": ["policies/delivery-policy.md", "faq/delivery.md"]
     },
     "warranty": {
       "required": true,
@@ -58,25 +58,25 @@
       "required": true,
       "bucket": "knowledge",
       "sourceKind": "product",
-      "sourceKeys": ["products/mattress/all-foam-10.md", "products/mattress/10-all-foam-mattress.md"]
+      "sourceKeys": ["products/mattress/10-all-foam-mattress.md"]
     },
     "12-all-foam-mattress": {
       "required": true,
       "bucket": "knowledge",
       "sourceKind": "product",
-      "sourceKeys": ["products/mattress/all-foam-12.md", "products/mattress/12-all-foam-mattress.md"]
+      "sourceKeys": ["products/mattress/12-all-foam-mattress.md"]
     },
     "12-dual-comfort-hybrid": {
       "required": true,
       "bucket": "knowledge",
       "sourceKind": "product",
-      "sourceKeys": ["products/mattress/dual-comfort-12.md", "products/mattress/12-dual-comfort-hybrid.md"]
+      "sourceKeys": ["products/mattress/12-dual-comfort-hybrid.md"]
     },
     "14-hybrid": {
       "required": true,
       "bucket": "knowledge",
       "sourceKind": "product",
-      "sourceKeys": ["products/mattress/hybrid-14.md", "products/mattress/14-hybrid.md"]
+      "sourceKeys": ["products/mattress/14-hybrid.md"]
     }
   },
   "bases": {
@@ -84,13 +84,13 @@
       "required": true,
       "bucket": "knowledge",
       "sourceKind": "product",
-      "sourceKeys": ["products/bases/premium-motion-base.md", "products/bases/motion-bases.md"]
+      "sourceKeys": ["products/bases/premium-motion-adjustable-base.md"]
     },
     "platform-base": {
       "required": false,
       "bucket": "knowledge",
       "sourceKind": "product",
-      "sourceKeys": []
+      "sourceKeys": ["products/bases/platform-base.md"]
     },
     "storage-base": {
       "required": false,
