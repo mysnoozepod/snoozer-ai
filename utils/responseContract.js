@@ -192,6 +192,10 @@ function normalizeSnoozerResponse(raw, opts = {}) {
       .trim();
 
     if (s === "error" || s === "failed" || s === "fail") return "error";
+    if (s === "answered") return "answered";
+    if (s === "fallback" || s === "completed_with_fallback") return "fallback";
+    if (s === "blocked") return "blocked";
+    if (s === "needs_human") return "needs_human";
     if (safe.ok === false) return "error";
     if (safe.error) return "error";
     return "completed";

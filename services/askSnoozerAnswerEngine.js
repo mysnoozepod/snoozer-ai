@@ -8,6 +8,7 @@ const { HUD_SAFE_PAGE_ROUTES } = require("./askSnoozerRoutes");
 const {
   buildCanonicalRecommendationVoice,
   buildSnoozerVoiceReply,
+  cleanVoiceText,
 } = require("./snoozerVoice");
 
 const MAX_REPLY_CHARS = 205;
@@ -438,7 +439,9 @@ function queryLooksLikeAdjustableBaseQuestion(query = "") {
   return (
     includesTerm(normalizedQuery, "adjustable base") ||
     includesTerm(normalizedQuery, "adjustable bed") ||
-    includesTerm(normalizedQuery, "work with an adjustable base")
+    includesTerm(normalizedQuery, "work with an adjustable base") ||
+    includesTerm(normalizedQuery, "what base works with this") ||
+    includesTerm(normalizedQuery, "what base works with it")
   );
 }
 
@@ -1836,7 +1839,14 @@ function queryLooksLikeShowroomStartQuestion(query = "") {
     includesTerm(normalizedQuery, "where should i start") ||
     includesTerm(normalizedQuery, "what should i try first") ||
     includesTerm(normalizedQuery, "what should i try") ||
-    includesTerm(normalizedQuery, "where do i start")
+    includesTerm(normalizedQuery, "where do i start") ||
+    includesTerm(normalizedQuery, "which pod should i try first") ||
+    includesTerm(normalizedQuery, "what pod should i start with") ||
+    includesTerm(normalizedQuery, "which bed should i test first") ||
+    includesTerm(normalizedQuery, "what should i lie on first") ||
+    includesTerm(normalizedQuery, "what do i do first in the showroom") ||
+    includesTerm(normalizedQuery, "where do i begin") ||
+    includesTerm(normalizedQuery, "where should i begin")
   );
 }
 
@@ -1858,6 +1868,32 @@ function formatSessionDateTime(value, timezone = "") {
   } catch {
     return date.toISOString();
   }
+}
+
+function buildCanonicalSetupSentence(canonicalRecommendation = null) {
+  const canonical =
+    canonicalRecommendation && typeof canonicalRecommendation === "object"
+      ? canonicalRecommendation
+      : null;
+  if (!canonical?.primaryMattressHandle) return "";
+
+  const mattressTitle =
+    cleanVoiceText(canonical.primaryMattressTitle || "") ||
+    cleanVoiceText(canonical.primaryMattressHandle || "") ||
+    "your matched mattress";
+  const baseTitle =
+    canonical.baseHandle == null
+      ? "No Base"
+      : cleanVoiceText(canonical.baseTitle || "") ||
+        cleanVoiceText(canonical.baseHandle || "") ||
+        "your matched base";
+  const motionLabel =
+    cleanVoiceText(canonical.motionLabel || "") ||
+    cleanVoiceText(canonical.normalizedAssessment?.motionLabel || "") ||
+    cleanVoiceText(canonical.motionKey || "") ||
+    "No Motion";
+
+  return `That setup is ${mattressTitle} with ${baseTitle} and ${motionLabel}`;
 }
 
 function buildSessionPrepReply({ query = "", context = null, canonicalRecommendation = null } = {}) {
@@ -1941,11 +1977,13 @@ function buildSessionPrepReply({ query = "", context = null, canonicalRecommenda
     const startReply =
       cleanAnswerText(sessionPrep?.showroomStartingPoint) ||
       (startingPod ? `Start with SnoozePod ${startingPod} first.` : "");
+    const canonicalSetupSentence = buildCanonicalSetupSentence(canonical);
 
     if (startReply) {
       return {
         reply: joinUniqueSentences([
           startReply,
+          canonicalSetupSentence,
           cleanAnswerText(sessionPrep?.questionsToAsk?.[0]) ||
             cleanAnswerText(sessionPrep?.comfortSummary),
         ]),
@@ -1955,6 +1993,7 @@ function buildSessionPrepReply({ query = "", context = null, canonicalRecommenda
         strategy: "session_prep",
         facts: [
           startReply,
+          canonicalSetupSentence,
           cleanAnswerText(sessionPrep?.comfortSummary),
           cleanAnswerText(sessionPrep?.questionsToAsk?.[0]),
         ].filter(Boolean),
@@ -1982,7 +2021,11 @@ function queryLooksLikeRecommendationQuestion(query = "") {
     includesTerm(normalizedQuery, "what mattress fits me") ||
     includesTerm(normalizedQuery, "what mattress should i try") ||
     includesTerm(normalizedQuery, "what pod should i try") ||
-    includesTerm(normalizedQuery, "what should i try first")
+    includesTerm(normalizedQuery, "what should i try first") ||
+    includesTerm(normalizedQuery, "which pod should i try first") ||
+    includesTerm(normalizedQuery, "what pod should i start with") ||
+    includesTerm(normalizedQuery, "what did snoozer recommend") ||
+    includesTerm(normalizedQuery, "explain my recommendation")
   );
 }
 
@@ -2059,13 +2102,18 @@ function buildCanonicalRecommendationReply({ query = "", canonicalRecommendation
     mode = "which_mattress";
   } else if (
     includesTerm(normalizedQuery, "explain my results") ||
-    includesTerm(normalizedQuery, "explain the results")
+    includesTerm(normalizedQuery, "explain the results") ||
+    includesTerm(normalizedQuery, "explain my recommendation")
   ) {
     mode = "explain_results";
   } else if (
     includesTerm(normalizedQuery, "what should i try first") ||
     includesTerm(normalizedQuery, "what should i try") ||
-    includesTerm(normalizedQuery, "what pod should i try")
+    includesTerm(normalizedQuery, "what pod should i try") ||
+    includesTerm(normalizedQuery, "which pod should i try first") ||
+    includesTerm(normalizedQuery, "what pod should i start with") ||
+    includesTerm(normalizedQuery, "which bed should i test first") ||
+    includesTerm(normalizedQuery, "what should i lie on first")
   ) {
     mode = "what_try_first";
   }

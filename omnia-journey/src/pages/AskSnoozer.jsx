@@ -71,6 +71,7 @@ export default function AskSnoozer() {
   const [pending, setPending] = useState(false);
   const [lastFailedPrompt, setLastFailedPrompt] = useState("");
   const [lastAssistantMeta, setLastAssistantMeta] = useState(null);
+  const [failedRecommendationImages, setFailedRecommendationImages] = useState({});
 
   const snoozer = useSnoozer();
   const sayHud = snoozer?.sayHud;
@@ -416,51 +417,63 @@ export default function AskSnoozer() {
                       Array.isArray(message.recommendations) &&
                       message.recommendations.length ? (
                         <div className="mt-4 grid gap-3 md:grid-cols-2">
-                          {message.recommendations.map((item) => (
-                            <button
-                              key={`${message.id}-${item.id}`}
-                              type="button"
-                              onClick={() => {
-                                noteUserInteraction?.();
-                                if (item.url?.startsWith("/")) {
-                                  navigate(item.url);
-                                } else if (item.url) {
-                                  window.open(item.url, "_blank", "noopener,noreferrer");
-                                }
-                              }}
-                              className="flex items-start gap-3 rounded-[22px] border border-slate-200 bg-slate-50/70 p-3 text-left transition hover:border-slate-300 hover:bg-slate-50"
-                            >
-                              <div className="h-14 w-14 overflow-hidden rounded-2xl bg-white">
-                                {item.imageUrl ? (
-                                  <img
-                                    src={item.imageUrl}
-                                    alt={item.title}
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                                    {item.type}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="text-sm font-bold text-slate-900">
-                                  {item.title}
+                          {message.recommendations.map((item) => {
+                            const cardKey = `${message.id}-${item.id}`;
+                            const showImage =
+                              Boolean(item.imageUrl) && !failedRecommendationImages[cardKey];
+
+                            return (
+                              <button
+                                key={cardKey}
+                                type="button"
+                                onClick={() => {
+                                  noteUserInteraction?.();
+                                  if (item.url?.startsWith("/")) {
+                                    navigate(item.url);
+                                  } else if (item.url) {
+                                    window.open(item.url, "_blank", "noopener,noreferrer");
+                                  }
+                                }}
+                                className="flex items-start gap-3 rounded-[22px] border border-slate-200 bg-slate-50/70 p-3 text-left transition hover:border-slate-300 hover:bg-slate-50"
+                              >
+                                <div className="h-14 w-14 overflow-hidden rounded-2xl bg-white">
+                                  {showImage ? (
+                                    <img
+                                      src={item.imageUrl}
+                                      alt={item.title}
+                                      onError={() =>
+                                        setFailedRecommendationImages((current) => ({
+                                          ...current,
+                                          [cardKey]: true,
+                                        }))
+                                      }
+                                      className="h-full w-full object-contain p-1"
+                                    />
+                                  ) : (
+                                    <div className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                                      {item.type}
+                                    </div>
+                                  )}
                                 </div>
-                                {item.subtitle ? (
-                                  <div className="mt-1 text-xs leading-5 text-slate-500">
-                                    {item.subtitle}
+                                <div className="min-w-0 flex-1">
+                                  <div className="text-sm font-bold text-slate-900">
+                                    {item.title}
                                   </div>
-                                ) : null}
-                                {item.url ? (
-                                  <div className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#16315F]">
-                                    View
-                                    <ExternalLink className="h-3.5 w-3.5" />
-                                  </div>
-                                ) : null}
-                              </div>
-                            </button>
-                          ))}
+                                  {item.subtitle ? (
+                                    <div className="mt-1 text-xs leading-5 text-slate-500">
+                                      {item.subtitle}
+                                    </div>
+                                  ) : null}
+                                  {item.url ? (
+                                    <div className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#16315F]">
+                                      View
+                                      <ExternalLink className="h-3.5 w-3.5" />
+                                    </div>
+                                  ) : null}
+                                </div>
+                              </button>
+                            );
+                          })}
                         </div>
                       ) : null}
 

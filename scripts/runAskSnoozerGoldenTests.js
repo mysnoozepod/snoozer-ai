@@ -271,6 +271,12 @@ async function runCase(testCase) {
     slots: qualityGate.slots || {},
     reply: payload.reply || "",
     answerType: qualityGate.answerType || null,
+    shouldUseOpenAI: Boolean(qualityGate.shouldUseOpenAI),
+    factsResolved: Boolean(qualityGate.factsResolved),
+    fallbackUsed: Boolean(qualityGate.fallbackUsed),
+    missingSlots: Array.isArray(qualityGate.missingSlots) ? qualityGate.missingSlots : [],
+    model: payload?.metadata?.model || null,
+    productsCount: Array.isArray(payload?.products) ? payload.products.length : 0,
   };
 
   const checks = [];
@@ -285,6 +291,52 @@ async function runCase(testCase) {
       ok: actual.sourceOfTruth === testCase.expected.sourceOfTruth,
       reason: `expected sourceOfTruth=${testCase.expected.sourceOfTruth}, got ${actual.sourceOfTruth}`,
     });
+  }
+  if (typeof testCase.expected.shouldUseOpenAI === "boolean") {
+    checks.push({
+      ok: actual.shouldUseOpenAI === testCase.expected.shouldUseOpenAI,
+      reason: `expected shouldUseOpenAI=${testCase.expected.shouldUseOpenAI}, got ${actual.shouldUseOpenAI}`,
+    });
+  }
+  if (typeof testCase.expected.factsResolved === "boolean") {
+    checks.push({
+      ok: actual.factsResolved === testCase.expected.factsResolved,
+      reason: `expected factsResolved=${testCase.expected.factsResolved}, got ${actual.factsResolved}`,
+    });
+  }
+  if (typeof testCase.expected.fallbackUsed === "boolean") {
+    checks.push({
+      ok: actual.fallbackUsed === testCase.expected.fallbackUsed,
+      reason: `expected fallbackUsed=${testCase.expected.fallbackUsed}, got ${actual.fallbackUsed}`,
+    });
+  }
+  if (typeof testCase.expected.model === "string") {
+    checks.push({
+      ok: actual.model === testCase.expected.model,
+      reason: `expected model=${testCase.expected.model}, got ${actual.model}`,
+    });
+  }
+  if (testCase.expected.products && typeof testCase.expected.products === "object") {
+    if (typeof testCase.expected.products.min === "number") {
+      checks.push({
+        ok: actual.productsCount >= testCase.expected.products.min,
+        reason: `expected productsCount >= ${testCase.expected.products.min}, got ${actual.productsCount}`,
+      });
+    }
+    if (typeof testCase.expected.products.max === "number") {
+      checks.push({
+        ok: actual.productsCount <= testCase.expected.products.max,
+        reason: `expected productsCount <= ${testCase.expected.products.max}, got ${actual.productsCount}`,
+      });
+    }
+  }
+  if (Array.isArray(testCase.expected.missingSlotsIncludes)) {
+    for (const slotKey of testCase.expected.missingSlotsIncludes) {
+      checks.push({
+        ok: actual.missingSlots.includes(slotKey),
+        reason: `expected missingSlots to include "${slotKey}"`,
+      });
+    }
   }
   for (const [slotKey, slotValue] of Object.entries(testCase.expected.slots || {})) {
     checks.push({
@@ -333,6 +385,11 @@ async function runCase(testCase) {
     actualIntentGroup: actual.intentGroup,
     actualSourceOfTruth: actual.sourceOfTruth,
     actualSlots: actual.slots,
+    actualShouldUseOpenAI: actual.shouldUseOpenAI,
+    actualFactsResolved: actual.factsResolved,
+    actualFallbackUsed: actual.fallbackUsed,
+    actualModel: actual.model,
+    actualProductsCount: actual.productsCount,
     pass: failedChecks.length === 0,
     reason: failedChecks.map((check) => check.reason).join(" | "),
   };
@@ -355,12 +412,49 @@ async function main() {
 
   const cases = [
     {
+      id: "recommendation_starting_pod",
+      prompt: "Which pod should I try first?",
+      body: {
+        message: "Which pod should I try first?",
+        sessionId: "golden-start-1",
+        context: {
+          canonicalRecommendation: {
+            ...canonicalRecommendation,
+            topPodId: "3",
+            topPodIds: ["3", "2", "4"],
+            primaryMattressHandle: "14-hybrid",
+            primaryMattressTitle: '14" Hybrid',
+            baseHandle: "platform-base",
+            baseTitle: "Platform Base",
+            motionKey: "none",
+            motionLabel: "No Motion",
+          },
+        },
+      },
+      expected: {
+        intentGroup: "recommendation",
+        sourceOfTruth: "session_prep",
+        shouldUseOpenAI: false,
+        factsResolved: true,
+        fallbackUsed: false,
+        model: "deterministic_session_guidance",
+        slots: {},
+        replyIncludes: ["SnoozePod 3", "14-inch Hybrid", "Platform Base"],
+        replyExcludes: ["OpenAI", "timeout", "Shopify"],
+        products: { min: 0, max: 0 },
+        enforceForbiddenPhraseList: true,
+        noOpenAi: true,
+      },
+    },
+    {
       id: "commerce_queen_14_hybrid_mattress_only",
       prompt: "How much is the queen 14 hybrid mattress only?",
       body: { message: "How much is the queen 14 hybrid mattress only?", sessionId: "golden-1" },
       expected: {
         intentGroup: "commerce",
         sourceOfTruth: "shopify",
+        shouldUseOpenAI: false,
+        factsResolved: true,
         slots: { scope: "mattress_only", size: "Queen", productHandle: "14-hybrid" },
         replyIncludes: ["The Queen 14-inch Hybrid mattress is $2,899", "before taxes, delivery, or any active discounts"],
         replyExcludes: ["Shopify", "I found", "current"],
@@ -375,6 +469,8 @@ async function main() {
       expected: {
         intentGroup: "commerce",
         sourceOfTruth: "shopify",
+        shouldUseOpenAI: false,
+        factsResolved: true,
         slots: { scope: "mattress_plus_base", size: "Queen", productHandle: "14-hybrid", baseHandle: "platform-base" },
         replyIncludes: ["comes to $4,198", "Mattress: $2,899", "Base: $1,299"],
         replyExcludes: ["Shopify", "I found", "live"],
@@ -395,9 +491,33 @@ async function main() {
       expected: {
         intentGroup: "commerce",
         sourceOfTruth: "shopify",
+        shouldUseOpenAI: false,
+        factsResolved: true,
+        fallbackUsed: false,
+        model: "deterministic_commerce",
         slots: { size: "Queen", productHandle: "12-all-foam-mattress" },
-        replyIncludes: ["12-inch All Foam Mattress"],
+        replyIncludes: ["12-inch All Foam Mattress", "$2,199"],
         replyExcludes: ["Shopify", "I found", "current"],
+        enforceForbiddenPhraseList: true,
+        noOpenAi: true,
+      },
+    },
+    {
+      id: "commerce_ambiguous_queen_size",
+      prompt: "How much is queen size?",
+      body: { message: "How much is queen size?", sessionId: "golden-ambiguous-1" },
+      expected: {
+        intentGroup: "commerce",
+        sourceOfTruth: "shopify",
+        shouldUseOpenAI: false,
+        factsResolved: false,
+        fallbackUsed: false,
+        model: "deterministic_clarification",
+        missingSlotsIncludes: ["productHandle"],
+        slots: { size: "Queen" },
+        replyIncludes: ["Which mattress do you mean"],
+        replyExcludes: ["Shopify", "$"],
+        products: { min: 0, max: 0 },
         enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
@@ -440,6 +560,7 @@ async function main() {
       expected: {
         intentGroup: "policy",
         sourceOfTruth: "s3_policy",
+        shouldUseOpenAI: false,
         slots: { policyTopic: "return_policy" },
         replyIncludes: ["sleep trial", "return policy"],
         replyExcludes: ["policy text", "current policy text", "check the return policy before deciding"],
@@ -454,6 +575,7 @@ async function main() {
       expected: {
         intentGroup: "policy",
         sourceOfTruth: "s3_policy",
+        shouldUseOpenAI: false,
         slots: { policyTopic: "return_policy" },
         replyIncludes: ["return", "trial"],
         replyExcludes: ["current policy text", "check the return policy before deciding"],
@@ -481,9 +603,14 @@ async function main() {
       expected: {
         intentGroup: "product_education",
         sourceOfTruth: "s3_product",
+        shouldUseOpenAI: false,
+        factsResolved: true,
+        fallbackUsed: false,
+        model: "deterministic_product_education",
         slots: {},
         replyIncludes: ["adjustable base", "Snooze Session"],
         replyExcludes: ["$", "cure", "treat", "guarantee"],
+        products: { min: 0, max: 0 },
         enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
@@ -503,9 +630,46 @@ async function main() {
       expected: {
         intentGroup: "product_education",
         sourceOfTruth: "s3_product",
+        shouldUseOpenAI: false,
+        factsResolved: true,
         slots: { productHandle: "14-hybrid" },
         replyIncludes: ["14-inch Hybrid"],
         replyExcludes: ["Shopify", "I found", "current"],
+        products: { min: 0, max: 0 },
+        noOpenAi: true,
+      },
+    },
+    {
+      id: "education_base_guidance_current_context",
+      prompt: "What base works with this?",
+      body: {
+        message: "What base works with this?",
+        sessionId: "golden-base-1",
+        context: {
+          path: "/products/14-hybrid",
+          page_type: "product",
+          currentProductHandle: "14-hybrid",
+          canonicalRecommendation: {
+            ...canonicalRecommendation,
+            primaryMattressHandle: "14-hybrid",
+            primaryMattressTitle: '14" Hybrid',
+            baseHandle: "platform-base",
+            baseTitle: "Platform Base",
+          },
+        },
+      },
+      expected: {
+        intentGroup: "product_education",
+        sourceOfTruth: "canonical_profile",
+        shouldUseOpenAI: false,
+        factsResolved: true,
+        fallbackUsed: false,
+        model: "deterministic_product_education",
+        slots: { productHandle: "14-hybrid" },
+        replyIncludes: ["Platform Base", "14-inch Hybrid", "motion base options"],
+        replyExcludes: ["Shopify", "$", "add to cart"],
+        products: { min: 0, max: 0 },
+        enforceForbiddenPhraseList: true,
         noOpenAi: true,
       },
     },
@@ -526,6 +690,9 @@ async function main() {
       expected: {
         intentGroup: "session_guidance",
         sourceOfTruth: "session_prep",
+        shouldUseOpenAI: false,
+        factsResolved: true,
+        model: "deterministic_session_guidance",
         slots: { sessionTopic: "where_to_start" },
         replyIncludes: ["SnoozePod 3", "Start with SnoozePod 3"],
         replyExcludes: ["backend", "retrieval"],
@@ -539,6 +706,9 @@ async function main() {
       expected: {
         intentGroup: "fallback",
         sourceOfTruth: "fallback",
+        shouldUseOpenAI: false,
+        factsResolved: false,
+        products: { min: 0, max: 0 },
         slots: {},
         replyIncludes: ["pricing", "returns"],
         replyExcludes: ["live pricing", "backend", "Shopify", "OpenAI"],
@@ -549,11 +719,14 @@ async function main() {
   ];
   const casesToRun = COPY_ONLY
     ? cases.filter((testCase) => [
+        "recommendation_starting_pod",
         "commerce_queen_14_hybrid_mattress_only",
         "commerce_queen_14_hybrid_platform_bundle",
+        "commerce_ambiguous_queen_size",
         "policy_sleep_trial",
         "policy_return_if_i_do_not_like_it",
         "education_snoring",
+        "education_base_guidance_current_context",
         "fallback_random_nonsense",
       ].includes(testCase.id))
     : cases;
@@ -573,6 +746,11 @@ async function main() {
         actualIntentGroup: row.actualIntentGroup,
         actualSourceOfTruth: row.actualSourceOfTruth,
         actualSlots: JSON.stringify(row.actualSlots),
+        shouldUseOpenAI: row.actualShouldUseOpenAI,
+        factsResolved: row.actualFactsResolved,
+        fallbackUsed: row.actualFallbackUsed,
+        model: row.actualModel,
+        products: row.actualProductsCount,
         result: row.pass ? "PASS" : "FAIL",
         reason: row.reason,
       });

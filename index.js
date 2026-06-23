@@ -126,6 +126,7 @@ const {
   HUD_HREF_ALIASES,
   canonicalizeHudHref,
 } = require("./services/askSnoozerRoutes");
+const { loadShowroomManifest } = require("./services/showroomManifest");
 
 let getHudScriptPayload = null;
 try {
@@ -5005,6 +5006,336 @@ function buildAskSnoozerSupportReply(query = "") {
   return "If you need order or account support, use the store contact path shown on the site so the team can verify the details. If you want product guidance, I can help here or point you to a Snooze Session.";
 }
 
+const ASK_SNOOZER_EXPLICIT_COMMERCE_TERMS = Object.freeze([
+  "price",
+  "cost",
+  "how much",
+  "buy",
+  "purchase",
+  "checkout",
+  "cart",
+  "add to cart",
+  "available",
+  "availability",
+  "in stock",
+  "compare price",
+  "cheapest",
+  "lowest price",
+  "payment",
+  "finance",
+  "financing",
+  "build",
+]);
+
+const ASK_SNOOZER_BASE_GUIDANCE_TERMS = Object.freeze([
+  "what base works with this",
+  "what base works with it",
+  "which base works with this",
+  "which base works with it",
+  "what base should i use",
+  "which base should i use",
+]);
+
+function getAskSnoozerShowroomProductMap() {
+  const manifest = loadShowroomManifest();
+  const products = Array.isArray(manifest?.products) ? manifest.products : [];
+  return new Map(products.map((product) => [String(product?.handle || "").trim(), product]));
+}
+
+function getAskSnoozerShowroomProduct(handle = "") {
+  return getAskSnoozerShowroomProductMap().get(String(handle || "").trim()) || null;
+}
+
+function extractAskSnoozerCurrentProductHandle(context = {}) {
+  const explicit = String(context?.currentProductHandle || "").trim();
+  if (explicit) return explicit;
+  const rawPath = String(context?.path || "").trim();
+  const match = rawPath.match(/^\/products\/([^/?#]+)/i);
+  return match ? String(match[1] || "").trim() : "";
+}
+
+function queryExplicitlyRequestsAskSnoozerCommerce(query = "") {
+  const normalized = normalizeHudAskText(query);
+  return ASK_SNOOZER_EXPLICIT_COMMERCE_TERMS.some((term) =>
+    normalized.includes(normalizeHudAskText(term))
+  );
+}
+
+function queryLooksLikeAskSnoozerBaseGuidance(query = "") {
+  const normalized = normalizeHudAskText(query);
+  return ASK_SNOOZER_BASE_GUIDANCE_TERMS.some((term) =>
+    normalized.includes(normalizeHudAskText(term))
+  );
+}
+
+function buildAskSnoozerStubProducts(handles = []) {
+  return Array.from(
+    new Set(
+      (Array.isArray(handles) ? handles : [])
+        .map((handle) => String(handle || "").trim())
+        .filter(Boolean)
+    )
+  )
+    .map((handle) => {
+      const product = getAskSnoozerShowroomProduct(handle);
+      if (!product) return null;
+      return {
+        handle,
+        title: String(product.title || handle).trim(),
+        label: String(product.title || handle).trim(),
+        href: String(product.shopifyPath || `/products/${handle}`).trim(),
+      };
+    })
+    .filter(Boolean);
+}
+
+function formatAskSnoozerCustomerTitle(value = "") {
+  return String(value || "")
+    .replace(/(\d+)\s*"/g, "$1-inch")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildAskSnoozerGuidanceHandles({
+  classification = null,
+  canonicalRecommendation = null,
+  currentProductHandle = "",
+} = {}) {
+  const handles = [];
+  const intentGroup = String(classification?.intent_group || "").trim();
+
+  if (currentProductHandle) handles.push(currentProductHandle);
+  if (canonicalRecommendation?.primaryMattressHandle) {
+    handles.push(canonicalRecommendation.primaryMattressHandle);
+  }
+  if (canonicalRecommendation?.baseHandle) {
+    handles.push(canonicalRecommendation.baseHandle);
+  }
+
+  if (intentGroup === "base_elevation") {
+    handles.push(canonicalRecommendation?.baseHandle || "premium-motion-adjustable-base");
+  } else if (intentGroup === "product_compare") {
+    handles.push("12-all-foam-mattress", "14-hybrid");
+  } else if (intentGroup === "couple_conflict") {
+    handles.push("12-dual-comfort-hybrid", "14-hybrid");
+  } else if (intentGroup === "product_fit") {
+    handles.push("14-hybrid");
+  }
+
+  return Array.from(new Set(handles.map((handle) => String(handle || "").trim()).filter(Boolean)));
+}
+
+function buildAskSnoozerBaseGuidanceAnswer({
+  query = "",
+  context = {},
+  canonicalRecommendation = null,
+} = {}) {
+  if (!queryLooksLikeAskSnoozerBaseGuidance(query)) return null;
+
+  const currentProductHandle = extractAskSnoozerCurrentProductHandle(context);
+  const currentProduct = getAskSnoozerShowroomProduct(currentProductHandle);
+  const mattressHandle =
+    String(
+      canonicalRecommendation?.primaryMattressHandle ||
+        (currentProduct?.catalogType === "mattress" ? currentProductHandle : "")
+    ).trim() || "";
+  const mattressTitle = formatAskSnoozerCustomerTitle(
+    canonicalRecommendation?.primaryMattressTitle ||
+      getAskSnoozerShowroomProduct(mattressHandle)?.title ||
+      currentProduct?.title ||
+      ""
+  );
+  const baseHandle =
+    Object.prototype.hasOwnProperty.call(canonicalRecommendation || {}, "baseHandle")
+      ? canonicalRecommendation.baseHandle
+      : null;
+
+  if (!mattressHandle && !mattressTitle) {
+    return {
+      reply:
+        "Which mattress do you mean - the 14-inch Hybrid, 12-inch Dual Comfort Hybrid, or 12-inch All Foam?",
+      answer_grounded: false,
+      answer_source_type: "clarification",
+      answer_source_key: null,
+      answer_facts_count: 0,
+      matched_preview: "",
+      extracted_facts: [],
+      answer_strategy: "needs_product_clarification",
+      reason: "needs_product_clarification",
+      chips_override: null,
+      products: [],
+    };
+  }
+
+  if (baseHandle === "platform-base") {
+    return {
+      reply: `The Platform Base works as the simple non-motion option with ${mattressTitle || "your recommended mattress"}. If you want head or foot elevation, compare the motion base options during your Snooze Session.`,
+      answer_grounded: true,
+      answer_source_type: "canonical_profile",
+      answer_source_key: "platform-base",
+      answer_facts_count: 2,
+      matched_preview: `Platform Base ${mattressTitle || "recommended mattress"} non-motion option`,
+      extracted_facts: [
+        "Platform Base is the simple non-motion option.",
+        "Motion bases are the next comparison if elevation matters.",
+      ],
+      answer_strategy: "base_guidance",
+      reason: "base_guidance_resolved",
+      chips_override: null,
+      products: [],
+    };
+  }
+
+  if (baseHandle === "premium-motion-adjustable-base") {
+    return {
+      reply: `The Premium Motion Adjustable Base is the stronger fit with ${mattressTitle || "your recommended mattress"} if you want head or foot elevation. If you want the simpler non-motion route, compare the Platform Base too.`,
+      answer_grounded: true,
+      answer_source_type: "canonical_profile",
+      answer_source_key: "premium-motion-adjustable-base",
+      answer_facts_count: 2,
+      matched_preview: `Premium Motion Adjustable Base ${mattressTitle || "recommended mattress"} elevation option`,
+      extracted_facts: [
+        "Premium Motion Adjustable Base adds head and foot elevation.",
+        "Platform Base stays the simpler non-motion comparison.",
+      ],
+      answer_strategy: "base_guidance",
+      reason: "base_guidance_resolved",
+      chips_override: null,
+      products: [],
+    };
+  }
+
+  if (baseHandle == null) {
+    return {
+      reply: `If you want to keep ${mattressTitle || "the mattress match"} simple, start mattress-only and leave the base out for now. If elevation matters later, compare the motion base options during your Snooze Session.`,
+      answer_grounded: true,
+      answer_source_type: "canonical_profile",
+      answer_source_key: mattressHandle || null,
+      answer_facts_count: 2,
+      matched_preview: `${mattressTitle || "mattress match"} no-base guidance`,
+      extracted_facts: [
+        "Current recommendation keeps the base out.",
+        "Motion bases are the next comparison if elevation matters later.",
+      ],
+      answer_strategy: "base_guidance",
+      reason: "base_guidance_resolved",
+      chips_override: null,
+      products: [],
+    };
+  }
+
+  return {
+    reply: `The Platform Base is the simple non-motion option with ${mattressTitle || "this mattress"}. If you want head or foot elevation, compare the motion base options during your Snooze Session.`,
+    answer_grounded: true,
+    answer_source_type: mattressHandle ? "s3_product" : "canonical_profile",
+    answer_source_key: baseHandle || mattressHandle || null,
+    answer_facts_count: 2,
+    matched_preview: `${mattressTitle || "mattress"} base guidance`,
+    extracted_facts: [
+      "Platform Base is the simple non-motion option.",
+      "Motion bases are worth comparing if elevation matters.",
+    ],
+    answer_strategy: "base_guidance",
+    reason: "base_guidance_resolved",
+    chips_override: null,
+    products: [],
+  };
+}
+
+async function maybeBuildAskSnoozerDeterministicGuidanceAnswer({
+  query = "",
+  context = {},
+  traceId = "",
+  decision = null,
+  classification = null,
+} = {}) {
+  const resolvedClassification = classification || buildAskSnoozerClassification(query, context);
+  const resolvedDecision = isObject(decision) ? decision : null;
+  if (String(resolvedDecision?.intentGroup || "").trim() !== "product_education") {
+    return null;
+  }
+  if (queryExplicitlyRequestsAskSnoozerCommerce(query)) {
+    return null;
+  }
+
+  const canonicalRecommendation = isObject(context?.canonicalRecommendation)
+    ? context.canonicalRecommendation
+    : null;
+
+  const baseGuidance = buildAskSnoozerBaseGuidanceAnswer({
+    query,
+    context,
+    canonicalRecommendation,
+  });
+  if (baseGuidance) {
+    return {
+      classification: resolvedClassification,
+      ...baseGuidance,
+    };
+  }
+
+  const currentProductHandle = extractAskSnoozerCurrentProductHandle(context);
+  const stubProducts = buildAskSnoozerStubProducts(
+    buildAskSnoozerGuidanceHandles({
+      classification: resolvedClassification,
+      canonicalRecommendation,
+      currentProductHandle,
+    })
+  );
+
+  const supplemental = await resolveAskSnoozerSupplementalSources({
+    classification: resolvedClassification,
+    query,
+    path: normalizeAskSnoozerContextPath(context?.path),
+    products: stubProducts,
+    traceId,
+    timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
+  });
+
+  const answer = buildAskSnoozerAnswer({
+    query,
+    intent: String(resolvedClassification?.intent || "").trim(),
+    intent_group: String(resolvedClassification?.intent_group || "").trim(),
+    context,
+    sources: Array.isArray(supplemental?.sources) ? supplemental.sources : [],
+    products: stubProducts,
+    productContext: {
+      entries: stubProducts.map((product) => ({
+        handle: product.handle,
+        title: product.title,
+        label: product.label,
+      })),
+      currentProductHandle,
+      sizeLabel:
+        String(
+          resolvedClassification?.size_label ||
+            parseAskSnoozerSizeLabel(query) ||
+            canonicalRecommendation?.normalizedAssessment?.size ||
+            ""
+        ).trim() || "",
+      answerSourceType: currentProductHandle ? "s3_product" : "canonical_profile",
+    },
+    canonicalRecommendation,
+  });
+
+  if (!answer?.reply) return null;
+
+  return {
+    classification: resolvedClassification,
+    reply: answer.reply,
+    answer_grounded: Boolean(answer.answer_grounded),
+    answer_source_type: answer.answer_source_type || (currentProductHandle ? "s3_product" : "canonical_profile"),
+    answer_source_key: answer.answer_source_key || currentProductHandle || canonicalRecommendation?.primaryMattressHandle || null,
+    answer_facts_count: Number(answer.answer_facts_count || 0),
+    matched_preview: answer.matched_preview || "",
+    extracted_facts: Array.isArray(answer.extracted_facts) ? answer.extracted_facts : [],
+    answer_strategy: answer.answer_strategy || "source_summary",
+    reason: answer.reason || (answer.answer_grounded ? "product_education_resolved" : "no_source"),
+    chips_override: Array.isArray(answer.chips_override) ? answer.chips_override : null,
+    products: [],
+  };
+}
+
 async function maybeBuildAskSnoozerCommerceAnswer({
   query = "",
   context = {},
@@ -7211,7 +7542,10 @@ async function handle(event = {}) {
       const env = buildSuccessResponse({
         requestId: traceId,
         latencyMs,
-        model: "canonical_recommendation",
+        model:
+          canonicalAnswer.answer_strategy === "session_prep"
+            ? "deterministic_session_guidance"
+            : "canonical_recommendation",
         text: canonicalAnswer.reply || "",
         context: mergedContext,
         products: [],
@@ -7246,7 +7580,9 @@ async function handle(event = {}) {
               ? "session_guidance"
               : "product_answer",
           sourceOfTruth:
-            canonicalAnswer.answer_strategy === "session_prep" ? "session_prep" : "canon",
+            canonicalAnswer.answer_strategy === "session_prep"
+              ? "session_prep"
+              : "canonical_profile",
           factsResolved: Boolean(canonicalAnswer.answer_grounded),
           fallbackUsed: false,
           reason: canonicalAnswer.reason || "",
@@ -7288,7 +7624,9 @@ async function handle(event = {}) {
         confidence: askSnoozerDecision.confidence,
         slots: askSnoozerDecision.slots,
         sourceOfTruth:
-          canonicalAnswer.answer_strategy === "session_prep" ? "session_prep" : "canon",
+          canonicalAnswer.answer_strategy === "session_prep"
+            ? "session_prep"
+            : "canonical_profile",
         factsResolved: Boolean(canonicalAnswer.answer_grounded),
         missingSlots: [],
         fallbackUsed: false,
@@ -7448,7 +7786,11 @@ async function handle(event = {}) {
       const env = buildSuccessResponse({
         requestId: traceId,
         latencyMs,
-        model: "policy_source_of_truth",
+        model: !policy?.retrieved
+          ? "deterministic_policy_gap"
+          : policy?.answerGrounded
+            ? "policy_source_of_truth"
+            : "policy_source_of_truth_with_gap",
         text: policy.reply || "",
         context: mergedContext,
         products: [],
@@ -7463,24 +7805,34 @@ async function handle(event = {}) {
 
       env.reply = policy.reply || env.message?.text || "";
       env.thread_id = effectiveSessionId;
-      env.status = policy?.retrieved ? "completed" : "completed_with_fallback";
+      env.status = policy?.retrieved
+        ? (policy?.answerGrounded ? "completed" : "fallback")
+        : "fallback";
       env.sessionId = effectiveSessionId;
       env.meta = {
         path: "deterministic_policy",
-        answer_strategy: policy?.answerGrounded ? "policy_source_summary" : "safe_missing_source",
-        answer_grounded: Boolean(policy?.answerGrounded || policy?.retrieved),
+        answer_strategy: policy?.answerGrounded
+          ? "policy_source_summary"
+          : !policy?.retrieved
+            ? "safe_missing_source"
+            : "approved_policy_detail_missing",
+        answer_grounded: Boolean(policy?.answerGrounded),
         answer_source_type: policy?.sourceKind || policy?.source || "fallback",
         answer_source_key: policy?.key || null,
-        answer_facts_count: policy?.retrieved ? 1 : 0,
+        answer_facts_count: policy?.answerGrounded ? 1 : 0,
         matched_preview: policy?.matchedPreview || "",
         extracted_facts: [],
-        reason: policy?.retrieved ? "" : "policy_source_missing",
+        reason:
+          policy?.reason ||
+          (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
         qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
           answerType: "policy_answer",
           sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
-          factsResolved: Boolean(policy?.answerGrounded || policy?.retrieved),
+          factsResolved: Boolean(policy?.answerGrounded),
           fallbackUsed: !policy?.retrieved,
-          reason: policy?.retrieved ? "" : "policy_source_missing",
+          reason:
+            policy?.reason ||
+            (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
         }),
         metrics: {
           retrievalMs: 0,
@@ -7508,10 +7860,12 @@ async function handle(event = {}) {
         confidence: askSnoozerDecision.confidence,
         slots: askSnoozerDecision.slots,
         sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
-        factsResolved: Boolean(policy?.answerGrounded || policy?.retrieved),
+        factsResolved: Boolean(policy?.answerGrounded),
         missingSlots: askSnoozerDecision.missingSlots,
         fallbackUsed: !policy?.retrieved,
-        reason: policy?.retrieved ? "" : "policy_source_missing",
+        reason:
+          policy?.reason ||
+          (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
       });
       log("ask-snoozer.fulfillment.result", "resolved", {
         traceId,
@@ -7522,10 +7876,12 @@ async function handle(event = {}) {
         confidence: askSnoozerDecision.confidence,
         slots: askSnoozerDecision.slots,
         sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
-        factsResolved: Boolean(policy?.answerGrounded || policy?.retrieved),
+        factsResolved: Boolean(policy?.answerGrounded),
         missingSlots: askSnoozerDecision.missingSlots,
         fallbackUsed: !policy?.retrieved,
-        reason: policy?.retrieved ? "" : "policy_source_missing",
+        reason:
+          policy?.reason ||
+          (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
       });
 
       if (wantHud) {
@@ -7802,8 +8158,144 @@ async function handle(event = {}) {
       return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
     }
 
-    const deterministicCommerceAnswer =
+    const deterministicGuidanceAnswer =
       askSnoozerDecision.intentGroup === "product_education"
+        ? await maybeBuildAskSnoozerDeterministicGuidanceAnswer({
+            query: msg,
+            context,
+            traceId,
+            decision: askSnoozerDecision,
+            classification: askSnoozerDecision.classification || askSnoozerClassification,
+          })
+        : null;
+    if (deterministicGuidanceAnswer) {
+      const latencyMs = Date.now() - startedAt;
+      const mergedContext =
+        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+      const answerType =
+        String(deterministicGuidanceAnswer?.answer_strategy || "").trim() ===
+        "needs_product_clarification"
+          ? "clarification"
+          : "product_answer";
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model:
+          answerType === "clarification"
+            ? "deterministic_clarification"
+            : "deterministic_product_education",
+        text: deterministicGuidanceAnswer.reply || "",
+        context: mergedContext,
+        products: [],
+        actions: [],
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      });
+
+      env.reply = deterministicGuidanceAnswer.reply || env.message?.text || "";
+      env.thread_id = effectiveSessionId;
+      env.status =
+        answerType === "clarification"
+          ? "completed"
+          : deterministicGuidanceAnswer.answer_grounded
+            ? "answered"
+            : "fallback";
+      env.sessionId = effectiveSessionId;
+      env.meta = {
+        path:
+          answerType === "clarification"
+            ? "deterministic_clarification"
+            : "deterministic_product_education",
+        answer_strategy:
+          deterministicGuidanceAnswer.answer_strategy || "source_summary",
+        answer_grounded: Boolean(deterministicGuidanceAnswer.answer_grounded),
+        answer_source_type:
+          deterministicGuidanceAnswer.answer_source_type || "s3_product",
+        answer_source_key: deterministicGuidanceAnswer.answer_source_key || null,
+        answer_facts_count: Number(deterministicGuidanceAnswer.answer_facts_count || 0),
+        matched_preview: deterministicGuidanceAnswer.matched_preview || "",
+        extracted_facts: Array.isArray(deterministicGuidanceAnswer.extracted_facts)
+          ? deterministicGuidanceAnswer.extracted_facts
+          : [],
+        reason: deterministicGuidanceAnswer.reason || "",
+        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
+          answerType,
+          sourceOfTruth:
+            deterministicGuidanceAnswer.answer_source_type === "canonical_profile"
+              ? "canonical_profile"
+              : askSnoozerDecision.sourceOfTruth,
+          factsResolved: Boolean(deterministicGuidanceAnswer.answer_grounded),
+          fallbackUsed: false,
+          reason: deterministicGuidanceAnswer.reason || "",
+        }),
+        metrics: {
+          retrievalMs: 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: false,
+        },
+      };
+
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+
+      logContractResponse(normalized);
+      log("ask-snoozer.product-education", "answered", {
+        traceId,
+        sessionId: effectiveSessionId,
+        shopperId,
+        intent: deterministicGuidanceAnswer.classification?.intent || null,
+        intentGroup: deterministicGuidanceAnswer.classification?.intent_group || null,
+        answerStrategy: env.meta?.answer_strategy || null,
+        answerSourceType: env.meta?.answer_source_type || null,
+        answerSourceKey: env.meta?.answer_source_key || null,
+        totalMs: latencyMs,
+      });
+      log("ask-snoozer.fulfillment.result", "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        intentGroup: askSnoozerDecision.intentGroup,
+        intent: askSnoozerDecision.intent,
+        confidence: askSnoozerDecision.confidence,
+        slots: askSnoozerDecision.slots,
+        sourceOfTruth:
+          deterministicGuidanceAnswer.answer_source_type === "canonical_profile"
+            ? "canonical_profile"
+            : askSnoozerDecision.sourceOfTruth,
+        factsResolved: Boolean(deterministicGuidanceAnswer.answer_grounded),
+        missingSlots: [],
+        fallbackUsed: false,
+        reason: deterministicGuidanceAnswer.reason || "",
+      });
+
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context: mergedContext,
+          payload,
+          defaultSpeech: env.reply || env.message?.text || "I'm here.",
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+    }
+
+    const deterministicCommerceAnswer =
+      askSnoozerDecision.intentGroup === "product_education" &&
+      queryExplicitlyRequestsAskSnoozerCommerce(msg)
         ? await maybeBuildAskSnoozerCommerceAnswer({
             query: msg,
             context,

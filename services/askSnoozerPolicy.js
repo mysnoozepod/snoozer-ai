@@ -528,13 +528,33 @@ function buildFallbackPolicyReply(policySubtype) {
   }
 }
 
+function buildPolicyGapResult(policySubtype, reason = "approved_policy_detail_missing") {
+  const fallback = buildFallbackPolicyReply(policySubtype);
+  return buildUngroundedResult(fallback, {
+    fallback,
+    reason,
+  });
+}
+
 function buildReturnsReply(raw, query) {
   const normalizedQuery = normalizeAskSnoozerText(query);
-  const overview = extractSection(raw, ["Overview"]);
-  const eligibility = extractSection(raw, ["Eligibility"]);
-  const nonReturnable = extractSection(raw, ["Non-Returnable Items"]);
-  const refundSection = extractSection(raw, ["Refund Process"]);
-  const startReturn = extractSection(raw, ["How to Start a Return"]);
+  const overview =
+    extractSection(raw, ["Overview"]) ||
+    extractFaqSection(raw, ["what's your return policy", "what is your return policy"]);
+  const eligibility =
+    extractSection(raw, ["Eligibility"]) ||
+    extractFaqSection(raw, ["when does the 100-night trial start", "which items are not returnable"]);
+  const nonReturnable =
+    extractSection(raw, ["Non-Returnable Items"]) ||
+    extractFaqSection(raw, ["which items are not returnable"]);
+  const refundSection =
+    extractSection(raw, ["Refund Process"]) ||
+    extractFaqSection(raw, ["how long do refunds take", "are there fees for returns or exchanges"]);
+  const startReturn =
+    extractSection(raw, ["How to Start a Return"]) ||
+    extractFaqSection(raw, ["how do i start a return", "do i need to re-box or ship the mattress myself"]);
+  const exchangeSection = extractFaqSection(raw, ["can i exchange instead of returning"]);
+  const trialStartSection = extractFaqSection(raw, ["when does the 100-night trial start"]);
 
   if (
     hasAnyQueryTerm(normalizedQuery, [
@@ -554,7 +574,10 @@ function buildReturnsReply(raw, query) {
       return buildGroundedResult(
         "Motion bases, adjustable frames, bedding, pillows, and accessories are final sale once opened or delivered. The 100-night sleep trial applies to mattress purchases only.",
         detail,
-        { fallback: buildFallbackPolicyReply("returns") }
+        {
+          fallback: buildFallbackPolicyReply("returns"),
+          reason: "policy_answer_resolved",
+        }
       );
     }
   }
@@ -567,7 +590,10 @@ function buildReturnsReply(raw, query) {
       return buildGroundedResult(
         "Refunds are usually processed within 3 to 5 business days after pickup, and the original payment method is used unless something else is arranged.",
         refundSection,
-        { fallback: buildFallbackPolicyReply("returns") }
+        {
+          fallback: buildFallbackPolicyReply("returns"),
+          reason: "policy_answer_resolved",
+        }
       );
     }
 
@@ -579,46 +605,49 @@ function buildReturnsReply(raw, query) {
           "Refunds are usually processed within 3 to 5 business days after pickup.",
         ]),
         `${overview}\n${refundSection}`.trim(),
-        { fallback: buildFallbackPolicyReply("returns") }
+        {
+          fallback: buildFallbackPolicyReply("returns"),
+          reason: "policy_answer_resolved",
+        }
       );
     }
 
-    return buildUngroundedResult(
-      buildFallbackPolicyReply("returns"),
-      { fallback: buildFallbackPolicyReply("returns") }
-    );
+    return buildPolicyGapResult("returns");
   }
 
   if (normalizedQuery.includes("dont like") || normalizedQuery.includes("don't like")) {
-    if (overview || eligibility) {
+    if (overview || eligibility || exchangeSection || trialStartSection) {
       return buildGroundedResult(
         joinReplyParts([
           "Yes - that falls under the return policy.",
           "Mattresses come with a 100-night sleep trial and can be returned or exchanged one time within that window.",
           "The mattress needs to stay in good condition.",
         ]),
-        `${overview}\n${eligibility}`.trim(),
-        { fallback: buildFallbackPolicyReply("returns") }
+        `${overview}\n${eligibility}\n${exchangeSection}\n${trialStartSection}`.trim(),
+        {
+          fallback: buildFallbackPolicyReply("returns"),
+          reason: "policy_answer_resolved",
+        }
       );
     }
   }
 
-  if (overview || startReturn) {
+  if (overview || startReturn || exchangeSection || trialStartSection) {
     return buildGroundedResult(
       joinReplyParts([
         buildPolicyLaneLead({ query, policyTopic: "return_policy" }),
         "Mattresses come with a 100-night sleep trial and can be returned or exchanged one time within that window.",
         "If you need to start a return, Snoozer or the store can help arrange pickup.",
       ]),
-      `${overview}\n${startReturn}`.trim(),
-      { fallback: buildFallbackPolicyReply("returns") }
+      `${overview}\n${startReturn}\n${exchangeSection}\n${trialStartSection}`.trim(),
+      {
+        fallback: buildFallbackPolicyReply("returns"),
+        reason: "policy_answer_resolved",
+      }
     );
   }
 
-  return buildUngroundedResult(
-    buildFallbackPolicyReply("returns"),
-    { fallback: buildFallbackPolicyReply("returns") }
-  );
+  return buildPolicyGapResult("returns");
 }
 
 function buildDeliveryReply(raw, query) {
@@ -974,14 +1003,17 @@ async function resolveAskSnoozerPolicyAnswer({ query = "", traceId = "", timeout
   const policySubtype = classifyAskSnoozerPolicySubtype(query);
   const keys = POLICY_KEY_CANDIDATES[policySubtype] || POLICY_KEY_CANDIDATES.general_policy;
 
-  const policyMatch = (await loadAllKnowledgeCandidates(keys.policy, { timeoutMs, traceId }))[0] || null;
-  if (policyMatch?.raw) {
+  const policyMatches = await loadAllKnowledgeCandidates(keys.policy, { timeoutMs, traceId });
+  const attempts = [];
+
+  for (const policyMatch of policyMatches) {
+    if (!policyMatch?.raw) continue;
     const grounded = buildReplyFromRetrievedContent({
       policySubtype,
       raw: policyMatch.raw,
       query,
     });
-    return {
+    const attempt = {
       policySubtype,
       reply: grounded.reply,
       chips: [],
@@ -992,7 +1024,10 @@ async function resolveAskSnoozerPolicyAnswer({ query = "", traceId = "", timeout
       matched: Boolean(grounded.matched),
       answerGrounded: Boolean(grounded.answerGrounded),
       matchedPreview: grounded.matchedPreview || "",
+      reason: grounded.reason || (grounded.answerGrounded ? "policy_answer_resolved" : ""),
     };
+    attempts.push(attempt);
+    if (attempt.answerGrounded) return attempt;
   }
 
   const skillMatch = await loadPromptCandidates(keys.skill, { timeoutMs, traceId });
@@ -1013,6 +1048,16 @@ async function resolveAskSnoozerPolicyAnswer({ query = "", traceId = "", timeout
       matched: Boolean(grounded.matched),
       answerGrounded: Boolean(grounded.answerGrounded),
       matchedPreview: grounded.matchedPreview || "",
+      reason: grounded.reason || (grounded.answerGrounded ? "policy_answer_resolved" : ""),
+    };
+  }
+
+  if (attempts.length) {
+    const firstAttempt = attempts[0];
+    return {
+      ...firstAttempt,
+      answerGrounded: false,
+      reason: firstAttempt.reason || "approved_policy_detail_missing",
     };
   }
 
@@ -1027,6 +1072,7 @@ async function resolveAskSnoozerPolicyAnswer({ query = "", traceId = "", timeout
     matched: false,
     answerGrounded: false,
     matchedPreview: "",
+    reason: "policy_source_missing",
   };
 }
 

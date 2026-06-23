@@ -22,14 +22,27 @@ const RECOMMENDATION_TERMS = Object.freeze([
   "which mattress should i get",
   "why this pod",
   "explain my results",
+  "explain my recommendation",
+  "what did snoozer recommend",
   "what should i try first",
+  "which pod should i try first",
+  "what pod should i start with",
+  "which bed should i test first",
+  "what should i lie on first",
   "recommend a mattress",
 ]);
 
 const SESSION_GUIDANCE_TERMS = Object.freeze([
   "where should i start",
+  "where should i begin",
+  "where do i begin",
   "what should i try first",
+  "which pod should i try first",
+  "what pod should i start with",
+  "which bed should i test first",
+  "what should i lie on first",
   "what should i test first",
+  "what do i do first in the showroom",
   "how should i start",
   "during my session",
   "during the session",
@@ -60,14 +73,44 @@ const COMMERCE_TERMS = Object.freeze([
   "price",
   "pricing",
   "cost",
+  "compare price",
+  "buy",
+  "purchase",
+  "build",
+  "checkout",
+  "cart",
+  "add to cart",
   "available",
   "availability",
   "in stock",
   "cheapest",
   "lowest price",
   "budget",
+  "payment",
+  "finance",
+  "financing",
   "monthly payment",
   "monthly payments",
+]);
+
+const HARD_COMMERCE_OVERRIDE_TERMS = Object.freeze([
+  "how much",
+  "price",
+  "pricing",
+  "cost",
+  "compare price",
+  "buy",
+  "purchase",
+  "build",
+  "checkout",
+  "cart",
+  "add to cart",
+  "available",
+  "availability",
+  "in stock",
+  "cheapest",
+  "lowest price",
+  "budget",
 ]);
 
 const EDUCATION_TERMS = Object.freeze([
@@ -290,9 +333,12 @@ function isSupportQuery(text = "") {
 
 function isCommerceQuery(text = "", classification = null) {
   const normalized = normalizeAskSnoozerText(text);
-  if (includesAny(normalized, COMMERCE_TERMS)) return true;
   const intentGroup = String(classification?.intent_group || "").trim();
   const policySubtype = String(classification?.policy_subtype || "").trim();
+  if (intentGroup === "policy_support" && policySubtype && policySubtype !== "pricing") {
+    return includesAny(normalized, HARD_COMMERCE_OVERRIDE_TERMS);
+  }
+  if (includesAny(normalized, COMMERCE_TERMS)) return true;
   return (
     intentGroup === "size_price" ||
     (intentGroup === "policy_support" && policySubtype === "pricing")
@@ -420,7 +466,7 @@ function resolveSourceOfTruth({
 } = {}) {
   if (intentGroup === "policy") return "s3_policy";
   if (intentGroup === "recommendation") {
-    return isObject(context?.canonicalRecommendation) ? "canon" : "fallback";
+    return isObject(context?.canonicalRecommendation) ? "canonical_profile" : "fallback";
   }
   if (intentGroup === "session_guidance") return "session_prep";
   if (intentGroup === "commerce") return "shopify";
@@ -476,7 +522,11 @@ function routeAskSnoozerQuestion({
     intentGroup = "fallback";
   } else if (
     isSessionGuidanceQuery(normalized) &&
-    (isObject(context?.sessionPrep) || String(context?.bookingStatus || "").trim())
+    (
+      isObject(context?.sessionPrep) ||
+      String(context?.bookingStatus || "").trim() ||
+      isObject(context?.canonicalRecommendation)
+    )
   ) {
     intentGroup = "session_guidance";
   } else if (isSupportQuery(normalized) || includesAny(normalized, BOOKING_SUPPORT_TERMS)) {

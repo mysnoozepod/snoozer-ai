@@ -303,7 +303,7 @@ async function testCanonicalExplanationAnswer() {
   assertNoBannedPhrases(body.reply, "canonical explanation reply");
 }
 
-async function testCanonicalContextPassedToOpenAi() {
+async function testCanonicalContextPassedToDeterministicCommerce() {
   resetStores();
   const assessment = {
     size: "Queen",
@@ -327,27 +327,31 @@ async function testCanonicalContextPassedToOpenAi() {
     },
   });
 
-  assert.strictEqual(openAiCalls.length, 1, "non-recommendation query should still call OpenAI path");
-  assert.strictEqual(body.reply, "mocked fallback: show my cart", "mock OpenAI reply should pass through");
+  assert.strictEqual(openAiCalls.length, 0, "cart-style guidance should stay off the OpenAI path");
+  assert.match(
+    String(body.reply || ""),
+    /which mattress (do you mean|are you asking about)/i,
+    "cart-style guidance should ask for the missing mattress instead of guessing"
+  );
   assert.strictEqual(
-    openAiCalls[0]?.options?.context?.canonicalRecommendation?.topPodId,
+    body.context?.canonicalRecommendation?.topPodId,
     resolved.recommendation.topPodId,
-    "OpenAI context should receive canonical topPodId"
+    "deterministic commerce should preserve canonical topPodId in response context"
   );
   assert.strictEqual(
-    openAiCalls[0]?.options?.context?.canonicalRecommendation?.primaryMattressHandle,
+    body.context?.canonicalRecommendation?.primaryMattressHandle,
     resolved.recommendation.primaryMattressHandle,
-    "OpenAI context should receive canonical primaryMattressHandle"
+    "deterministic commerce should preserve canonical primaryMattressHandle in response context"
   );
   assert.strictEqual(
-    openAiCalls[0]?.options?.context?.canonicalRecommendation?.baseHandle,
+    body.context?.canonicalRecommendation?.baseHandle,
     resolved.recommendation.baseHandle,
-    "OpenAI context should receive canonical baseHandle"
+    "deterministic commerce should preserve canonical baseHandle in response context"
   );
   assert.strictEqual(
-    openAiCalls[0]?.options?.context?.canonicalRecommendation?.motionKey,
+    body.context?.canonicalRecommendation?.motionKey,
     resolved.normalizedAssessment.motionKey,
-    "OpenAI context should receive canonical motionKey"
+    "deterministic commerce should preserve canonical motionKey in response context"
   );
 }
 
@@ -375,7 +379,7 @@ async function main() {
   const tests = [
     ["canonical_recommendation_answer", testCanonicalRecommendationAnswer],
     ["canonical_explanation_answer", testCanonicalExplanationAnswer],
-    ["canonical_context_passed_to_openai", testCanonicalContextPassedToOpenAi],
+    ["canonical_context_passed_to_deterministic_commerce", testCanonicalContextPassedToDeterministicCommerce],
     ["no_assessment_fallback", testNoAssessmentFallback],
   ];
 

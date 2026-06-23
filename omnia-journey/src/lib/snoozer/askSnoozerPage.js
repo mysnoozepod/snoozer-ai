@@ -298,6 +298,15 @@ function normalizeRecommendationType(value) {
   return "page";
 }
 
+function normalizeRecommendationImageUrl(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return null;
+  if (/^(https?:)?\/\//i.test(text)) return text;
+  if (text.startsWith("/")) return text;
+  if (/^data:image\//i.test(text)) return text;
+  return null;
+}
+
 function normalizeRecommendation(item) {
   if (!item || typeof item !== "object") return null;
 
@@ -323,14 +332,16 @@ function normalizeRecommendation(item) {
       item.vendor,
     ]) || null,
     url: url || null,
-    imageUrl: firstNonEmptyString([
-      item.imageUrl,
-      item.image,
-      item.featuredImage?.url,
-      item.featuredImage?.src,
-      item.images?.[0]?.url,
-      item.images?.[0]?.src,
-    ]) || null,
+    imageUrl: normalizeRecommendationImageUrl(
+      firstNonEmptyString([
+        item.imageUrl,
+        item.image,
+        item.featuredImage?.url,
+        item.featuredImage?.src,
+        item.images?.[0]?.url,
+        item.images?.[0]?.src,
+      ])
+    ),
   };
 }
 
