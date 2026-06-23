@@ -278,6 +278,20 @@ function extractBookingIdentity(input = {}) {
   };
 }
 
+function hasBookingIdentityEvidence(booking = {}, bookingIdentity = {}) {
+  return Boolean(
+    cleanString(bookingIdentity?.shopperId) ||
+      cleanString(bookingIdentity?.snoozeCode) ||
+      cleanString(bookingIdentity?.accessCode) ||
+      cleanString(bookingIdentity?.inviteeUri) ||
+      cleanString(bookingIdentity?.eventUri) ||
+      cleanString(bookingIdentity?.email) ||
+      cleanString(bookingIdentity?.phone) ||
+      cleanString(booking?.name) ||
+      cleanString(booking?.startTime)
+  );
+}
+
 function getDependencies(options = {}) {
   return {
     customerProfileGet:
@@ -365,12 +379,19 @@ function canonicalCodeFromProfile(profile = {}) {
 function buildResolvedIdentityFromProfile(profile = {}, meta = {}) {
   const snoozeCode = canonicalCodeFromProfile(profile);
   if (!snoozeCode) return null;
+  const canonicalProfileId =
+    cleanString(profile.aliasOfProfileId) ||
+    (cleanString(profile.aliasOfShopperId)
+      ? `shopper#${cleanString(profile.aliasOfShopperId)}`
+      : "") ||
+    cleanString(profile.profileId) ||
+    `shopper#${snoozeCode}`;
 
   return {
     shopperId: snoozeCode,
     snoozeCode,
     accessCode: snoozeCode,
-    profileId: cleanString(profile.profileId) || `shopper#${snoozeCode}`,
+    profileId: canonicalProfileId,
     identityType: "snooze_code",
     identitySource: cleanString(meta.identitySource) || "stored_alias",
     isTemporary: false,
@@ -441,7 +462,8 @@ async function resolveBookingIdentity(input, options = {}) {
   let issuedIdentity = null;
   if (
     booking.eventType === "invitee.created" &&
-    (!resolvedIdentity || resolvedIdentity.isTemporary)
+    (!resolvedIdentity || resolvedIdentity.isTemporary) &&
+    hasBookingIdentityEvidence(booking, bookingIdentity)
   ) {
     issuedIdentity = await deps.issueSnoozeCode(
       {
@@ -599,6 +621,20 @@ function buildSessionPrep(profileOrPatch, bookingContext = {}) {
   const motionKey = cleanString(profile.motionKey || canonical?.motionKey);
   const motionLabel =
     cleanString(canonical?.motionLabel || canonical?.normalizedAssessment?.motionLabel || motionKey);
+  const bookingStatus = cleanString(bookingContext.bookingStatus) || "scheduled";
+  const commonFields = {
+    shopperId: cleanString(bookingContext.shopperId || profile.shopperId) || null,
+    profileId: cleanString(bookingContext.profileId || profile.profileId) || null,
+    snoozeCode:
+      cleanString(
+        bookingContext.snoozeCode || profile.snoozeCode || profile.accessCode || profile.shopperId
+      ) || null,
+    bookingEventUri: cleanString(bookingContext.bookingEventUri) || null,
+    bookingInviteeUri: cleanString(bookingContext.bookingInviteeUri) || null,
+    bookingStartTime: cleanString(bookingContext.bookingStartTime) || null,
+    bookingEndTime: cleanString(bookingContext.bookingEndTime) || null,
+    updatedAt: nowIso(),
+  };
   const partnerNotes = [];
 
   if (normalizeLower(assessment?.sleepPartner) === "yes") {
@@ -627,21 +663,32 @@ function buildSessionPrep(profileOrPatch, bookingContext = {}) {
   }
 
   if (!topPodId || !primaryMattressHandle) {
+    const openConcerns = determineRiskFlags(assessment || {}, canonical || {}, bookingContext);
+    const sessionInstructions = uniqueStrings(
+      questionsToAsk.concat("Complete the Snooze Assessment before the visit.")
+    );
     return {
+      ...commonFields,
       status: "needs_assessment",
       generatedAt: nowIso(),
       source: cleanString(bookingContext.source) || "booking_webhook",
       recommendedStartingPod: null,
       recommendedPodIds: topPodIds,
       primaryMattressHandle: primaryMattressHandle || null,
+      startingMattressHandle: primaryMattressHandle || null,
       baseHandle: baseHandle == null ? null : cleanString(baseHandle) || null,
       motionKey: motionKey || null,
+      motionLabel: motionLabel || null,
       comfortSummary:
+        "This booking is attached to a Snooze Code, but a fresh assessment is still needed before the visit is fully prepped.",
+      customerFitSummary:
         "This booking is attached to a Snooze Code, but a fresh assessment is still needed before the visit is fully prepped.",
       showroomStartingPoint: "Start with the Snooze Assessment before the visit so the showroom path is grounded.",
       podsToTry: topPodIds,
-      questionsToAsk: uniqueStrings(questionsToAsk.concat("Complete the Snooze Assessment before the visit.")),
-      riskFlags: determineRiskFlags(assessment || {}, canonical || {}, bookingContext),
+      questionsToAsk: sessionInstructions,
+      sessionInstructions,
+      riskFlags: openConcerns,
+      openConcerns,
       partnerNotes,
       budgetNotes: cleanString(assessment?.budget) || null,
       staffNotes: "",
@@ -656,28 +703,67 @@ function buildSessionPrep(profileOrPatch, bookingContext = {}) {
     ? `Start with ${podName}, then compare ${secondaryPods.join(" and ")}.`
     : `Start with ${podName} first.`;
   const comfortSummary = buildComfortSummary({ canonicalRecommendation: canonical || profile, lookups });
+  const openConcerns = determineRiskFlags(assessment || {}, canonical || {}, bookingContext);
+  const sessionInstructions = uniqueStrings(questionsToAsk);
   const snoozerOpeningContext = [
-    bookingContext.bookingStatus === "scheduled"
+    bookingStatus === "scheduled"
       ? "A Snooze Session is booked."
       : "A Snooze Session profile exists.",
     showroomStartingPoint,
     comfortSummary,
   ].filter(Boolean).join(" ");
 
+  if (bookingStatus === "canceled") {
+    return {
+      ...commonFields,
+      status: "canceled",
+      generatedAt: nowIso(),
+      source: cleanString(bookingContext.source) || "booking_webhook",
+      recommendedStartingPod: topPodId,
+      recommendedPodIds: topPodIds,
+      primaryMattressHandle,
+      startingMattressHandle: primaryMattressHandle,
+      baseHandle: baseHandle == null ? null : cleanString(baseHandle) || null,
+      motionKey: motionKey || null,
+      motionLabel: motionLabel || null,
+      comfortSummary,
+      customerFitSummary: comfortSummary,
+      showroomStartingPoint,
+      podsToTry: topPodIds,
+      questionsToAsk: sessionInstructions,
+      sessionInstructions: [
+        "This Snooze Session was canceled, so rebook before using this plan on the showroom floor.",
+      ].concat(sessionInstructions),
+      riskFlags: openConcerns,
+      openConcerns,
+      partnerNotes,
+      budgetNotes: cleanString(assessment?.budget) || null,
+      staffNotes: "",
+      snoozerOpeningContext:
+        "This Snooze Session was canceled. Rebook the visit before using the saved showroom plan.",
+    };
+  }
+
   return {
+    ...commonFields,
     status: "ready",
     generatedAt: nowIso(),
     source: cleanString(bookingContext.source) || "booking_webhook",
     recommendedStartingPod: topPodId,
     recommendedPodIds: topPodIds,
     primaryMattressHandle,
+    startingMattressHandle: primaryMattressHandle,
     baseHandle: baseHandle == null ? null : cleanString(baseHandle) || null,
     motionKey: motionKey || null,
+    motionLabel: motionLabel || null,
     comfortSummary,
+    customerFitSummary: comfortSummary,
     showroomStartingPoint,
     podsToTry: topPodIds,
-    questionsToAsk: uniqueStrings(questionsToAsk),
-    riskFlags: determineRiskFlags(assessment || {}, canonical || {}, bookingContext),
+    questionsToAsk: sessionInstructions,
+    sessionInstructions,
+    riskFlags: openConcerns,
+    openConcerns,
     partnerNotes,
     budgetNotes: cleanString(assessment?.budget) || null,
     staffNotes: "",
@@ -929,6 +1015,18 @@ async function upsertBookingSession(input, options = {}) {
         source: "booking_webhook",
         bookingStatus,
         bookingLocationType: booking.locationType,
+        shopperId: cleanString(resolvedIdentity.shopperId) || null,
+        profileId: cleanString(resolvedIdentity.profileId) || null,
+        snoozeCode:
+          cleanString(
+            resolvedIdentity.snoozeCode ||
+              resolvedIdentity.accessCode ||
+              resolvedIdentity.shopperId
+          ) || null,
+        bookingEventUri: cleanString(booking.eventUri) || null,
+        bookingInviteeUri: cleanString(booking.inviteeUri) || null,
+        bookingStartTime: cleanString(booking.startTime) || null,
+        bookingEndTime: cleanString(booking.endTime) || null,
       }
     );
 

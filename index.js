@@ -4715,6 +4715,10 @@ async function buildCheckInSummary(profile = {}, sourceSurface = "") {
         }
       : null,
     bookingStatus: cleanIdentityValue(profile?.bookingStatus) || null,
+    sessionPrepStatus:
+      cleanIdentityValue(profile?.sessionPrepStatus || profile?.sessionPrep?.status) || null,
+    sessionPrep:
+      isObject(profile?.sessionPrep) ? cloneJsonValue(profile.sessionPrep) : null,
     sourceSurface: cleanIdentityValue(sourceSurface || profile?.sourceSurface) || null,
   };
 }
