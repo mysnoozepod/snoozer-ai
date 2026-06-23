@@ -1,5 +1,6 @@
 const customerProfile = require("./customerProfile");
 const customerProfileZohoSync = require("./customerProfileZohoSync");
+const calendlyWebhookIdempotency = require("./calendlyWebhookIdempotency");
 const recommendationResolver = require("./recommendationResolver");
 const snoozeIdentity = require("./snoozeIdentity");
 const { loadShowroomManifest } = require("./showroomManifest");
@@ -26,6 +27,60 @@ function clone(value) {
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+function summarizeWebhookResult(result = {}) {
+  return {
+    ok: Boolean(result?.ok),
+    skipped: Boolean(result?.skipped),
+    reason: cleanString(result?.reason) || null,
+    bookingStatus: cleanString(result?.profilePatch?.bookingStatus) || null,
+    sessionPrepStatus: cleanString(result?.sessionPrep?.status) || null,
+    shopperId: cleanString(result?.identity?.shopperId) || null,
+    profileId: cleanString(result?.identity?.profileId) || null,
+  };
+}
+
+function hasWebhookClaimEvidence(booking = {}) {
+  const eventType = cleanString(booking?.eventType);
+  const eventUri = cleanString(booking?.eventUri);
+  const inviteeUri = cleanString(booking?.inviteeUri);
+  const startTime = cleanString(booking?.startTime);
+  const email = cleanString(booking?.email);
+  const name = cleanString(booking?.name);
+
+  if (!eventType) return false;
+  if (!(eventUri || inviteeUri)) return false;
+
+  return Boolean(startTime || email || name);
+}
+
+function logIdempotency(logger, booking = {}, claim = {}, extra = {}) {
+  if (typeof logger !== "function") return;
+
+  const derived = isObject(claim?.derived) ? claim.derived : {};
+  const record = isObject(claim?.record) ? claim.record : {};
+
+  logger(
+    "booking.webhook.idempotency",
+    cleanString(claim?.reason || claim?.idempotencyStatus) || "idempotency",
+    {
+      provider: "calendly",
+      eventType: cleanString(booking?.eventType) || null,
+      idempotencyKeyHash:
+        cleanString(record?.idempotencyKeyHash || derived?.keyHash) || null,
+      idempotencyStatus:
+        cleanString(claim?.idempotencyStatus || record?.status) || null,
+      shopperId: cleanString(extra?.shopperId || record?.shopperId) || null,
+      profileId: cleanString(extra?.profileId || record?.profileId) || null,
+      bookingId:
+        cleanString(extra?.bookingId || record?.bookingId || booking?.eventUri || booking?.inviteeUri) ||
+        null,
+      duplicate: Boolean(claim?.duplicate),
+      mutationSkipped: Boolean(extra?.mutationSkipped),
+      reason: cleanString(extra?.reason || claim?.reason) || null,
+    }
+  );
 }
 
 function normalizeEmail(value) {
@@ -318,6 +373,22 @@ function getDependencies(options = {}) {
       typeof options.issueSnoozeCode === "function"
         ? options.issueSnoozeCode
         : snoozeIdentity.issueSnoozeCode,
+    claimCalendlyWebhook:
+      typeof options.claimCalendlyWebhook === "function"
+        ? options.claimCalendlyWebhook
+        : calendlyWebhookIdempotency.claimCalendlyWebhook,
+    markCalendlyWebhookProcessed:
+      typeof options.markCalendlyWebhookProcessed === "function"
+        ? options.markCalendlyWebhookProcessed
+        : calendlyWebhookIdempotency.markCalendlyWebhookProcessed,
+    markCalendlyWebhookFailed:
+      typeof options.markCalendlyWebhookFailed === "function"
+        ? options.markCalendlyWebhookFailed
+        : calendlyWebhookIdempotency.markCalendlyWebhookFailed,
+    deriveCalendlyIdempotencyKey:
+      typeof options.deriveCalendlyIdempotencyKey === "function"
+        ? options.deriveCalendlyIdempotencyKey
+        : calendlyWebhookIdempotency.deriveCalendlyIdempotencyKey,
     resolveRecommendation:
       typeof options.resolveRecommendation === "function"
         ? options.resolveRecommendation
@@ -922,6 +993,7 @@ async function upsertBookingSession(input, options = {}) {
   const booking = asNormalizedBookingPayload(input);
   const deps = getDependencies(options);
   const logger = typeof options.log === "function" ? options.log : () => {};
+  let idempotencyClaim = null;
 
   logger("booking.webhook.received", "received", {
     route: cleanString(options.route) || null,
@@ -933,282 +1005,430 @@ async function upsertBookingSession(input, options = {}) {
     contactPhonePresent: Boolean(booking.phone),
   });
 
-  const identityResolution = await resolveBookingIdentity(booking, options);
-  const resolvedIdentity = identityResolution.identity;
-  const bookingStatus = booking.eventType === "invitee.canceled" ? "canceled" : "scheduled";
-
-  if (!resolvedIdentity || !cleanString(resolvedIdentity.shopperId)) {
-    logger("booking.profile.error", "BOOKING_IDENTITY_UNRESOLVED", {
-      route: cleanString(options.route) || null,
-      eventType: booking.eventType || null,
-      sourceSurface: "calendly_booking",
-      bookingStatus,
-      incomingShopperId: cleanString(identityResolution.extractedIdentity?.shopperId) || null,
-      canonicalShopperId: null,
-      snoozeCode: null,
-      profileId: null,
-      bookingStartTime: booking.startTime || null,
-      contactEmailPresent: Boolean(booking.email),
-      contactPhonePresent: Boolean(booking.phone),
-      reason: "BOOKING_IDENTITY_UNRESOLVED",
-    });
-
-    return {
-      ok: true,
-      skipped: true,
-      reason: "BOOKING_IDENTITY_UNRESOLVED",
-      booking,
-      identity: null,
-      profilePatch: null,
-      sessionPrep: null,
-      zoho: { ok: false, skipped: true, reason: "BOOKING_IDENTITY_UNRESOLVED" },
-    };
-  }
-
-  logger(
-    identityResolution.issuedIdentity?.isNewCode ? "booking.identity.issued" : "booking.identity.resolved",
-    "ok",
-    {
-      route: cleanString(options.route) || null,
-      eventType: booking.eventType || null,
-      sourceSurface: "calendly_booking",
-      incomingShopperId: cleanString(identityResolution.extractedIdentity?.shopperId) || null,
-      canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
-      snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
-      profileId: cleanString(resolvedIdentity.profileId) || null,
-      bookingStatus,
-      bookingStartTime: booking.startTime || null,
-      contactEmailPresent: Boolean(booking.email),
-      contactPhonePresent: Boolean(booking.phone),
-      reason: identityResolution.issuedIdentity?.isNewCode ? "booking_started" : "existing_identity",
-    }
-  );
-
-  let canonicalRecommendation = null;
   try {
-    canonicalRecommendation = await materializeCanonicalRecommendation(
-      identityResolution.existingProfile || {},
-      options
-    );
-  } catch (error) {
-    logger("session.prep.error", error.message, {
-      route: cleanString(options.route) || null,
-      eventType: booking.eventType || null,
-      sourceSurface: "calendly_booking",
-      canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
-      snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
-      profileId: cleanString(resolvedIdentity.profileId) || null,
-      bookingStatus,
-      bookingStartTime: booking.startTime || null,
-      reason: "CANONICAL_RECOMMENDATION_RESOLVE_FAILED",
-    });
-  }
-
-  let sessionPrep = null;
-  try {
-    sessionPrep = buildSessionPrep(
-      {
-        ...(isObject(identityResolution.existingProfile) ? identityResolution.existingProfile : {}),
-        canonicalRecommendation: canonicalRecommendation || identityResolution.existingProfile?.canonicalRecommendation || null,
-      },
-      {
-        source: "booking_webhook",
-        bookingStatus,
-        bookingLocationType: booking.locationType,
-        shopperId: cleanString(resolvedIdentity.shopperId) || null,
-        profileId: cleanString(resolvedIdentity.profileId) || null,
-        snoozeCode:
-          cleanString(
-            resolvedIdentity.snoozeCode ||
-              resolvedIdentity.accessCode ||
-              resolvedIdentity.shopperId
-          ) || null,
-        bookingEventUri: cleanString(booking.eventUri) || null,
-        bookingInviteeUri: cleanString(booking.inviteeUri) || null,
-        bookingStartTime: cleanString(booking.startTime) || null,
-        bookingEndTime: cleanString(booking.endTime) || null,
-      }
-    );
-
-    if (sessionPrep) {
-      logger("session.prep.generated", "ok", {
-        route: cleanString(options.route) || null,
-        eventType: booking.eventType || null,
-        sourceSurface: "calendly_booking",
-        canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
-        snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
-        profileId: cleanString(resolvedIdentity.profileId) || null,
-        bookingStatus,
-        bookingStartTime: booking.startTime || null,
-        reason: cleanString(sessionPrep.status) || "ready",
-      });
-    } else {
-      logger("session.prep.skipped", "SESSION_PREP_UNAVAILABLE", {
-        route: cleanString(options.route) || null,
-        eventType: booking.eventType || null,
-        sourceSurface: "calendly_booking",
-        canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
-        snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
-        profileId: cleanString(resolvedIdentity.profileId) || null,
-        bookingStatus,
-        bookingStartTime: booking.startTime || null,
-        reason: "SESSION_PREP_UNAVAILABLE",
-      });
-    }
-  } catch (error) {
-    logger("session.prep.error", error.message, {
-      route: cleanString(options.route) || null,
-      eventType: booking.eventType || null,
-      sourceSurface: "calendly_booking",
-      canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
-      snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
-      profileId: cleanString(resolvedIdentity.profileId) || null,
-      bookingStatus,
-      bookingStartTime: booking.startTime || null,
-      reason: "SESSION_PREP_BUILD_FAILED",
-    });
-  }
-
-  const profilePatch = buildBookingProfilePatch({
-    booking,
-    identity: resolvedIdentity,
-    existingProfile: identityResolution.existingProfile || {},
-    canonicalRecommendation,
-    sessionPrep,
-    bookingStatus,
-  });
-
-  const upsertResult = await deps.customerProfileUpsert(
-    deps.buildCustomerProfilePatch(profilePatch)
-  );
-
-  if (upsertResult?.ok && !upsertResult?.skipped) {
-    logger("booking.profile.upserted", "ok", {
-      route: cleanString(options.route) || null,
-      eventType: booking.eventType || null,
-      sourceSurface: "calendly_booking",
-      incomingShopperId: cleanString(identityResolution.extractedIdentity?.shopperId) || null,
-      canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
-      snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
-      profileId: cleanString(upsertResult.profileId || resolvedIdentity.profileId) || null,
-      bookingStatus,
-      bookingStartTime: booking.startTime || null,
-      contactEmailPresent: Boolean(booking.email),
-      contactPhonePresent: Boolean(booking.phone),
-      operation: "upsert",
-      reason: null,
-    });
-  } else {
-    logger("booking.profile.error", upsertResult?.reason || "CUSTOMER_PROFILE_UPSERT_FAILED", {
-      route: cleanString(options.route) || null,
-      eventType: booking.eventType || null,
-      sourceSurface: "calendly_booking",
-      incomingShopperId: cleanString(identityResolution.extractedIdentity?.shopperId) || null,
-      canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
-      snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
-      profileId: cleanString(resolvedIdentity.profileId) || null,
-      bookingStatus,
-      bookingStartTime: booking.startTime || null,
-      contactEmailPresent: Boolean(booking.email),
-      contactPhonePresent: Boolean(booking.phone),
-      operation: "upsert",
-      reason: upsertResult?.reason || "CUSTOMER_PROFILE_UPSERT_FAILED",
-    });
-  }
-
-  const aliasPatches = buildBookingAliasPatches(resolvedIdentity, booking, profilePatch);
-  for (const aliasPatch of aliasPatches) {
-    try {
-      await deps.customerProfileUpsert(deps.buildCustomerProfilePatch(aliasPatch));
-    } catch {
-      // profile writes must not break booking flow
-    }
-  }
-
-  if (
-    identityResolution.issuedIdentity?.isNewCode &&
-    cleanString(identityResolution.resolvedIdentity?.profileId) &&
-    cleanString(identityResolution.resolvedIdentity?.profileId) !== cleanString(resolvedIdentity.profileId)
-  ) {
-    try {
-      await deps.customerProfileUpsert(
-        deps.buildCustomerProfilePatch({
-          profileId: identityResolution.resolvedIdentity.profileId,
-          mergedIntoProfileId: cleanString(resolvedIdentity.profileId) || undefined,
-          mergedIntoShopperId: cleanString(resolvedIdentity.shopperId) || undefined,
-          mergedAt: nowIso(),
-          sourceSurface: "calendly_booking",
-          lastIntent: "booking_scheduled",
-        })
+    if (hasWebhookClaimEvidence(booking)) {
+      const derived = deps.deriveCalendlyIdempotencyKey(booking);
+      idempotencyClaim = await deps.claimCalendlyWebhook(
+        {
+          ...booking,
+          derived,
+          reason: "initial_claim",
+        },
+        options
       );
-    } catch {
-      // merge markers are best-effort
+      logIdempotency(logger, booking, idempotencyClaim, {
+        mutationSkipped: Boolean(idempotencyClaim?.duplicate),
+      });
+
+      if (idempotencyClaim?.duplicate) {
+        return {
+          ok: true,
+          skipped: true,
+          duplicate: true,
+          reason: idempotencyClaim.reason || "WEBHOOK_ALREADY_PROCESSED",
+          booking,
+          identity:
+            cleanString(idempotencyClaim?.record?.shopperId) ||
+            cleanString(idempotencyClaim?.record?.profileId)
+              ? {
+                  shopperId: cleanString(idempotencyClaim?.record?.shopperId) || null,
+                  snoozeCode: cleanString(idempotencyClaim?.record?.shopperId) || null,
+                  accessCode: cleanString(idempotencyClaim?.record?.shopperId) || null,
+                  profileId: cleanString(idempotencyClaim?.record?.profileId) || null,
+                  identityType: cleanString(idempotencyClaim?.record?.shopperId)
+                    ? "snooze_code"
+                    : null,
+                }
+              : null,
+          profilePatch: null,
+          sessionPrep: null,
+          zoho: {
+            ok: true,
+            skipped: true,
+            reason: idempotencyClaim.reason || "WEBHOOK_ALREADY_PROCESSED",
+          },
+          idempotency: idempotencyClaim,
+        };
+      }
     }
-  }
 
-  let zohoResult = {
-    ok: false,
-    skipped: true,
-    reason: "ZOHO_NOT_CONFIGURED",
-  };
+    const identityResolution = await resolveBookingIdentity(booking, options);
+    const resolvedIdentity = identityResolution.identity;
+    const bookingStatus = booking.eventType === "invitee.canceled" ? "canceled" : "scheduled";
 
-  try {
-    const profileForSync = deps.buildCustomerProfilePatch(profilePatch);
-    zohoResult = await deps.syncCustomerProfileToZoho(profileForSync);
-    logger(
-      zohoResult?.ok ? "booking.zoho.synced" : "booking.zoho.skipped",
-      zohoResult?.ok ? "ok" : zohoResult?.reason || "ZOHO_SYNC_SKIPPED",
-      {
+    if (!resolvedIdentity || !cleanString(resolvedIdentity.shopperId)) {
+      logger("booking.profile.error", "BOOKING_IDENTITY_UNRESOLVED", {
         route: cleanString(options.route) || null,
         eventType: booking.eventType || null,
         sourceSurface: "calendly_booking",
-        canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
-        snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
-        profileId: cleanString(resolvedIdentity.profileId) || null,
         bookingStatus,
+        incomingShopperId: cleanString(identityResolution.extractedIdentity?.shopperId) || null,
+        canonicalShopperId: null,
+        snoozeCode: null,
+        profileId: null,
         bookingStartTime: booking.startTime || null,
-        operation: zohoResult?.operation || null,
-        reason: zohoResult?.reason || null,
         contactEmailPresent: Boolean(booking.email),
         contactPhonePresent: Boolean(booking.phone),
+        reason: "BOOKING_IDENTITY_UNRESOLVED",
+      });
+
+      const skippedResult = {
+        ok: true,
+        skipped: true,
+        reason: "BOOKING_IDENTITY_UNRESOLVED",
+        booking,
+        identity: null,
+        profilePatch: null,
+        sessionPrep: null,
+        zoho: { ok: false, skipped: true, reason: "BOOKING_IDENTITY_UNRESOLVED" },
+        idempotency: idempotencyClaim,
+      };
+
+      if (idempotencyClaim?.claimed) {
+        const processedRecord = await deps.markCalendlyWebhookProcessed(
+          {
+            sessionId: idempotencyClaim?.record?.sessionId,
+            keyHash: idempotencyClaim?.record?.idempotencyKeyHash,
+            bookingId: cleanString(booking.eventUri || booking.inviteeUri) || null,
+            reason: skippedResult.reason,
+            resultSummary: summarizeWebhookResult(skippedResult),
+          },
+          options
+        );
+        idempotencyClaim = {
+          ...idempotencyClaim,
+          record: processedRecord || idempotencyClaim.record,
+          idempotencyStatus: "processed",
+        };
+        skippedResult.idempotency = idempotencyClaim;
+        logIdempotency(logger, booking, idempotencyClaim, {
+          mutationSkipped: true,
+          reason: skippedResult.reason,
+        });
+      }
+
+      return skippedResult;
+    }
+
+    logger(
+      identityResolution.issuedIdentity?.isNewCode ? "booking.identity.issued" : "booking.identity.resolved",
+      "ok",
+      {
+        route: cleanString(options.route) || null,
+        eventType: booking.eventType || null,
+        sourceSurface: "calendly_booking",
+        incomingShopperId: cleanString(identityResolution.extractedIdentity?.shopperId) || null,
+        canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
+        snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
+        profileId: cleanString(resolvedIdentity.profileId) || null,
+        bookingStatus,
+        bookingStartTime: booking.startTime || null,
+        contactEmailPresent: Boolean(booking.email),
+        contactPhonePresent: Boolean(booking.phone),
+        reason: identityResolution.issuedIdentity?.isNewCode ? "booking_started" : "existing_identity",
       }
     );
-  } catch (error) {
-    logger("booking.zoho.error", error.message, {
-      route: cleanString(options.route) || null,
-      eventType: booking.eventType || null,
-      sourceSurface: "calendly_booking",
-      canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
-      snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
-      profileId: cleanString(resolvedIdentity.profileId) || null,
+
+    let canonicalRecommendation = null;
+    try {
+      canonicalRecommendation = await materializeCanonicalRecommendation(
+        identityResolution.existingProfile || {},
+        options
+      );
+    } catch (error) {
+      logger("session.prep.error", error.message, {
+        route: cleanString(options.route) || null,
+        eventType: booking.eventType || null,
+        sourceSurface: "calendly_booking",
+        canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
+        snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
+        profileId: cleanString(resolvedIdentity.profileId) || null,
+        bookingStatus,
+        bookingStartTime: booking.startTime || null,
+        reason: "CANONICAL_RECOMMENDATION_RESOLVE_FAILED",
+      });
+    }
+
+    let sessionPrep = null;
+    try {
+      sessionPrep = buildSessionPrep(
+        {
+          ...(isObject(identityResolution.existingProfile) ? identityResolution.existingProfile : {}),
+          canonicalRecommendation:
+            canonicalRecommendation || identityResolution.existingProfile?.canonicalRecommendation || null,
+        },
+        {
+          source: "booking_webhook",
+          bookingStatus,
+          bookingLocationType: booking.locationType,
+          shopperId: cleanString(resolvedIdentity.shopperId) || null,
+          profileId: cleanString(resolvedIdentity.profileId) || null,
+          snoozeCode:
+            cleanString(
+              resolvedIdentity.snoozeCode ||
+                resolvedIdentity.accessCode ||
+                resolvedIdentity.shopperId
+            ) || null,
+          bookingEventUri: cleanString(booking.eventUri) || null,
+          bookingInviteeUri: cleanString(booking.inviteeUri) || null,
+          bookingStartTime: cleanString(booking.startTime) || null,
+          bookingEndTime: cleanString(booking.endTime) || null,
+        }
+      );
+
+      if (sessionPrep) {
+        logger("session.prep.generated", "ok", {
+          route: cleanString(options.route) || null,
+          eventType: booking.eventType || null,
+          sourceSurface: "calendly_booking",
+          canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
+          snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
+          profileId: cleanString(resolvedIdentity.profileId) || null,
+          bookingStatus,
+          bookingStartTime: booking.startTime || null,
+          reason: cleanString(sessionPrep.status) || "ready",
+        });
+      } else {
+        logger("session.prep.skipped", "SESSION_PREP_UNAVAILABLE", {
+          route: cleanString(options.route) || null,
+          eventType: booking.eventType || null,
+          sourceSurface: "calendly_booking",
+          canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
+          snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
+          profileId: cleanString(resolvedIdentity.profileId) || null,
+          bookingStatus,
+          bookingStartTime: booking.startTime || null,
+          reason: "SESSION_PREP_UNAVAILABLE",
+        });
+      }
+    } catch (error) {
+      logger("session.prep.error", error.message, {
+        route: cleanString(options.route) || null,
+        eventType: booking.eventType || null,
+        sourceSurface: "calendly_booking",
+        canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
+        snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
+        profileId: cleanString(resolvedIdentity.profileId) || null,
+        bookingStatus,
+        bookingStartTime: booking.startTime || null,
+        reason: "SESSION_PREP_BUILD_FAILED",
+      });
+    }
+
+    const profilePatch = buildBookingProfilePatch({
+      booking,
+      identity: resolvedIdentity,
+      existingProfile: identityResolution.existingProfile || {},
+      canonicalRecommendation,
+      sessionPrep,
       bookingStatus,
-      bookingStartTime: booking.startTime || null,
-      contactEmailPresent: Boolean(booking.email),
-      contactPhonePresent: Boolean(booking.phone),
-      reason: "ZOHO_SYNC_FAILED",
     });
-    zohoResult = {
+
+    const upsertResult = await deps.customerProfileUpsert(
+      deps.buildCustomerProfilePatch(profilePatch)
+    );
+
+    if (upsertResult?.ok && !upsertResult?.skipped) {
+      logger("booking.profile.upserted", "ok", {
+        route: cleanString(options.route) || null,
+        eventType: booking.eventType || null,
+        sourceSurface: "calendly_booking",
+        incomingShopperId: cleanString(identityResolution.extractedIdentity?.shopperId) || null,
+        canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
+        snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
+        profileId: cleanString(upsertResult.profileId || resolvedIdentity.profileId) || null,
+        bookingStatus,
+        bookingStartTime: booking.startTime || null,
+        contactEmailPresent: Boolean(booking.email),
+        contactPhonePresent: Boolean(booking.phone),
+        operation: "upsert",
+        reason: null,
+      });
+    } else {
+      logger("booking.profile.error", upsertResult?.reason || "CUSTOMER_PROFILE_UPSERT_FAILED", {
+        route: cleanString(options.route) || null,
+        eventType: booking.eventType || null,
+        sourceSurface: "calendly_booking",
+        incomingShopperId: cleanString(identityResolution.extractedIdentity?.shopperId) || null,
+        canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
+        snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
+        profileId: cleanString(resolvedIdentity.profileId) || null,
+        bookingStatus,
+        bookingStartTime: booking.startTime || null,
+        contactEmailPresent: Boolean(booking.email),
+        contactPhonePresent: Boolean(booking.phone),
+        operation: "upsert",
+        reason: upsertResult?.reason || "CUSTOMER_PROFILE_UPSERT_FAILED",
+      });
+    }
+
+    const aliasPatches = buildBookingAliasPatches(resolvedIdentity, booking, profilePatch);
+    for (const aliasPatch of aliasPatches) {
+      try {
+        await deps.customerProfileUpsert(deps.buildCustomerProfilePatch(aliasPatch));
+      } catch {
+        // profile writes must not break booking flow
+      }
+    }
+
+    if (
+      identityResolution.issuedIdentity?.isNewCode &&
+      cleanString(identityResolution.resolvedIdentity?.profileId) &&
+      cleanString(identityResolution.resolvedIdentity?.profileId) !== cleanString(resolvedIdentity.profileId)
+    ) {
+      try {
+        await deps.customerProfileUpsert(
+          deps.buildCustomerProfilePatch({
+            profileId: identityResolution.resolvedIdentity.profileId,
+            mergedIntoProfileId: cleanString(resolvedIdentity.profileId) || undefined,
+            mergedIntoShopperId: cleanString(resolvedIdentity.shopperId) || undefined,
+            mergedAt: nowIso(),
+            sourceSurface: "calendly_booking",
+            lastIntent: "booking_scheduled",
+          })
+        );
+      } catch {
+        // merge markers are best-effort
+      }
+    }
+
+    let zohoResult = {
       ok: false,
       skipped: true,
-      reason: "ZOHO_SYNC_FAILED",
+      reason: "ZOHO_NOT_CONFIGURED",
     };
-  }
 
-  return {
-    ok: true,
-    skipped: false,
-    booking,
-    identity: resolvedIdentity,
-    extractedIdentity: identityResolution.extractedIdentity,
-    resolvedIdentity: identityResolution.resolvedIdentity,
-    issuedIdentity: identityResolution.issuedIdentity,
-    existingProfile: identityResolution.existingProfile || null,
-    profilePatch,
-    sessionPrep,
-    canonicalRecommendation,
-    upsertResult,
-    zoho: zohoResult,
-  };
+    try {
+      const profileForSync = deps.buildCustomerProfilePatch(profilePatch);
+      zohoResult = await deps.syncCustomerProfileToZoho(profileForSync);
+      logger(
+        zohoResult?.ok ? "booking.zoho.synced" : "booking.zoho.skipped",
+        zohoResult?.ok ? "ok" : zohoResult?.reason || "ZOHO_SYNC_SKIPPED",
+        {
+          route: cleanString(options.route) || null,
+          eventType: booking.eventType || null,
+          sourceSurface: "calendly_booking",
+          canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
+          snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
+          profileId: cleanString(resolvedIdentity.profileId) || null,
+          bookingStatus,
+          bookingStartTime: booking.startTime || null,
+          operation: zohoResult?.operation || null,
+          reason: zohoResult?.reason || null,
+          contactEmailPresent: Boolean(booking.email),
+          contactPhonePresent: Boolean(booking.phone),
+        }
+      );
+    } catch (error) {
+      logger("booking.zoho.error", error.message, {
+        route: cleanString(options.route) || null,
+        eventType: booking.eventType || null,
+        sourceSurface: "calendly_booking",
+        canonicalShopperId: cleanString(resolvedIdentity.shopperId) || null,
+        snoozeCode: cleanString(resolvedIdentity.snoozeCode || resolvedIdentity.shopperId) || null,
+        profileId: cleanString(resolvedIdentity.profileId) || null,
+        bookingStatus,
+        bookingStartTime: booking.startTime || null,
+        contactEmailPresent: Boolean(booking.email),
+        contactPhonePresent: Boolean(booking.phone),
+        reason: "ZOHO_SYNC_FAILED",
+      });
+      zohoResult = {
+        ok: false,
+        skipped: true,
+        reason: "ZOHO_SYNC_FAILED",
+      };
+    }
+
+    const result = {
+      ok: true,
+      skipped: false,
+      booking,
+      identity: resolvedIdentity,
+      extractedIdentity: identityResolution.extractedIdentity,
+      resolvedIdentity: identityResolution.resolvedIdentity,
+      issuedIdentity: identityResolution.issuedIdentity,
+      existingProfile: identityResolution.existingProfile || null,
+      profilePatch,
+      sessionPrep,
+      canonicalRecommendation,
+      upsertResult,
+      zoho: zohoResult,
+      idempotency: idempotencyClaim,
+    };
+
+    if (idempotencyClaim?.claimed) {
+      const processedRecord = await deps.markCalendlyWebhookProcessed(
+        {
+          sessionId: idempotencyClaim?.record?.sessionId,
+          keyHash: idempotencyClaim?.record?.idempotencyKeyHash,
+          shopperId: cleanString(resolvedIdentity?.shopperId) || null,
+          profileId: cleanString(resolvedIdentity?.profileId) || null,
+          bookingId: cleanString(booking.eventUri || booking.inviteeUri) || null,
+          reason: "processed",
+          resultSummary: summarizeWebhookResult(result),
+        },
+        options
+      );
+      idempotencyClaim = {
+        ...idempotencyClaim,
+        record: processedRecord || idempotencyClaim.record,
+        idempotencyStatus: "processed",
+      };
+      result.idempotency = idempotencyClaim;
+      logIdempotency(logger, booking, idempotencyClaim, {
+        shopperId: resolvedIdentity?.shopperId,
+        profileId: resolvedIdentity?.profileId,
+        mutationSkipped: false,
+        reason: "processed",
+      });
+    }
+
+    return result;
+  } catch (error) {
+    if (idempotencyClaim?.claimed) {
+      try {
+        const failedRecord = await deps.markCalendlyWebhookFailed(
+          {
+            sessionId: idempotencyClaim?.record?.sessionId,
+            keyHash: idempotencyClaim?.record?.idempotencyKeyHash,
+            reason: cleanString(error?.code || error?.message) || "processing_failed",
+            resultSummary: {
+              ok: false,
+              code: cleanString(error?.code) || null,
+              message: cleanString(error?.message) || null,
+            },
+          },
+          options
+        );
+        idempotencyClaim = {
+          ...idempotencyClaim,
+          record: failedRecord || idempotencyClaim.record,
+          idempotencyStatus: "failed",
+        };
+        logIdempotency(logger, booking, idempotencyClaim, {
+          mutationSkipped: true,
+          reason: cleanString(error?.code || error?.message) || "processing_failed",
+        });
+      } catch (ledgerError) {
+        logger("booking.webhook.idempotency", "WEBHOOK_FAILURE_MARK_FAILED", {
+          provider: "calendly",
+          eventType: booking?.eventType || null,
+          idempotencyKeyHash:
+            cleanString(
+              idempotencyClaim?.record?.idempotencyKeyHash ||
+                idempotencyClaim?.derived?.keyHash
+            ) || null,
+          idempotencyStatus: "failed_mark_error",
+          duplicate: false,
+          mutationSkipped: true,
+          reason: cleanString(ledgerError?.message) || "WEBHOOK_FAILURE_MARK_FAILED",
+        });
+      }
+    }
+
+    throw error;
+  }
 }
 
 module.exports = {

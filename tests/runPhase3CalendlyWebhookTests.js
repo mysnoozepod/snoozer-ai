@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 
 const assert = require("assert");
+const {
+  GetCommand,
+  PutCommand,
+  UpdateCommand,
+} = require("@aws-sdk/lib-dynamodb");
 
 const bookingSession = require("../services/bookingSession");
+const calendlyWebhookIdempotency = require("../services/calendlyWebhookIdempotency");
 const customerProfile = require("../services/customerProfile");
 const { resolveRecommendation } = require("../services/recommendationResolver");
 
@@ -66,6 +72,109 @@ function buildExistingProfile({ shopperId, assessmentAnswers, canonicalRecommend
   });
 }
 
+function createLedgerClient() {
+  const store = new Map();
+
+  return {
+    async send(command) {
+      const input = command.input || {};
+      const key = input.Key || {};
+      const sessionId = String(key.sessionId || input.Item?.sessionId || "").trim();
+
+      if (command instanceof GetCommand) {
+        return { Item: clone(store.get(sessionId) || null) };
+      }
+
+      if (command instanceof PutCommand) {
+        if (store.has(sessionId)) {
+          const error = new Error("Conditional request failed");
+          error.name = "ConditionalCheckFailedException";
+          error.code = "ConditionalCheckFailedException";
+          throw error;
+        }
+        store.set(sessionId, clone(input.Item));
+        return {};
+      }
+
+      if (command instanceof UpdateCommand) {
+        const existing = clone(store.get(sessionId) || {});
+        const values = input.ExpressionAttributeValues || {};
+
+        if (Object.prototype.hasOwnProperty.call(values, ":processing")) {
+          existing.status = values[":processing"];
+        }
+        if (Object.prototype.hasOwnProperty.call(values, ":processed")) {
+          existing.status = values[":processed"];
+        }
+        if (
+          Object.prototype.hasOwnProperty.call(values, ":failed") &&
+          String(input.UpdateExpression || "").includes("#status = :failed")
+        ) {
+          existing.status = values[":failed"];
+        }
+        if (Object.prototype.hasOwnProperty.call(values, ":lastAttemptAt")) {
+          existing.lastAttemptAt = values[":lastAttemptAt"];
+        }
+        if (Object.prototype.hasOwnProperty.call(values, ":attemptCount")) {
+          existing.attemptCount = values[":attemptCount"];
+        }
+        if (Object.prototype.hasOwnProperty.call(values, ":reason")) {
+          existing.reason = values[":reason"];
+        }
+        if (Object.prototype.hasOwnProperty.call(values, ":failedAt")) {
+          existing.failedAt = values[":failedAt"];
+        }
+        if (Object.prototype.hasOwnProperty.call(values, ":processedAt")) {
+          existing.processedAt = values[":processedAt"];
+        }
+        if (Object.prototype.hasOwnProperty.call(values, ":shopperId")) {
+          existing.shopperId = values[":shopperId"];
+        }
+        if (Object.prototype.hasOwnProperty.call(values, ":profileId")) {
+          existing.profileId = values[":profileId"];
+        }
+        if (Object.prototype.hasOwnProperty.call(values, ":bookingId")) {
+          existing.bookingId = values[":bookingId"];
+        }
+        if (Object.prototype.hasOwnProperty.call(values, ":resultSummary")) {
+          existing.resultSummary = clone(values[":resultSummary"]);
+        }
+
+        store.set(sessionId, existing);
+        return {};
+      }
+
+      return {};
+    },
+  };
+}
+
+function withIdempotencyOptions(options = {}) {
+  const ddbDoc = createLedgerClient();
+  return {
+    ...options,
+    ddbDoc,
+    tableName: "snoozer_sessions_test",
+    claimCalendlyWebhook: async (input, runtimeOptions) =>
+      calendlyWebhookIdempotency.claimCalendlyWebhook(input, {
+        ddbDoc,
+        tableName: runtimeOptions.tableName,
+      }),
+    markCalendlyWebhookProcessed: async (input, runtimeOptions) =>
+      calendlyWebhookIdempotency.markCalendlyWebhookProcessed(input, {
+        ddbDoc,
+        tableName: runtimeOptions.tableName,
+      }),
+    markCalendlyWebhookFailed: async (input, runtimeOptions) =>
+      calendlyWebhookIdempotency.markCalendlyWebhookFailed(input, {
+        ddbDoc,
+        tableName: runtimeOptions.tableName,
+      }),
+    deriveCalendlyIdempotencyKey:
+      calendlyWebhookIdempotency.deriveCalendlyIdempotencyKey,
+  };
+}
+
 async function testExistingCodeBookingUsesCanonicalProfile1234() {
   const assessment = {
     size: "Queen",
@@ -106,7 +215,7 @@ async function testExistingCodeBookingUsesCanonicalProfile1234() {
         },
       },
     },
-    {
+    withIdempotencyOptions({
       route: "/booking/calendly-webhook",
       log: function noop() {},
       getProfileById: async (profileId) => harness.getProfileById(profileId),
@@ -122,7 +231,7 @@ async function testExistingCodeBookingUsesCanonicalProfile1234() {
           contactId: "zoho-phase3-existing",
         };
       },
-    }
+    })
   );
 
   assert.strictEqual(result.ok, true, "existing-code booking should succeed");
@@ -154,7 +263,7 @@ async function testNoCodeBookingIssuesNewCodeWhenPayloadIsLegitimate() {
         },
       },
     },
-    {
+    withIdempotencyOptions({
       route: "/booking/calendly-webhook",
       log: function noop() {},
       getProfileById: async (profileId) => harness.getProfileById(profileId),
@@ -177,7 +286,7 @@ async function testNoCodeBookingIssuesNewCodeWhenPayloadIsLegitimate() {
         shopperId: profile.shopperId,
         contactId: "zoho-phase3-no-code",
       }),
-    }
+    })
   );
 
   assert.strictEqual(result.ok, true, "no-code booking should still succeed");
@@ -195,7 +304,7 @@ async function testMalformedInviteeCreatedDoesNotIssueCode() {
       event: "invitee.created",
       payload: {},
     },
-    {
+    withIdempotencyOptions({
       route: "/booking/calendly-webhook",
       log: function noop() {},
       getProfileById: async (profileId) => harness.getProfileById(profileId),
@@ -214,7 +323,7 @@ async function testMalformedInviteeCreatedDoesNotIssueCode() {
           isNewCode: true,
         };
       },
-    }
+    })
   );
 
   assert.strictEqual(result.ok, true, "malformed payload should return a safe response");
@@ -272,7 +381,7 @@ async function testCanceledBookingMarksSessionPrepCanceled() {
         },
       },
     },
-    {
+    withIdempotencyOptions({
       route: "/booking/calendly-webhook",
       log: function noop() {},
       getProfileById: async (profileId) => harness.getProfileById(profileId),
@@ -285,7 +394,7 @@ async function testCanceledBookingMarksSessionPrepCanceled() {
         shopperId: profile.shopperId,
         contactId: "zoho-phase3-cancel",
       }),
-    }
+    })
   );
 
   assert.strictEqual(result.ok, true, "canceled booking should still succeed");
@@ -339,7 +448,7 @@ async function testDuplicateWebhookDeliveryDoesNotCreateCompetingProfiles() {
     },
   };
 
-  const options = {
+  const options = withIdempotencyOptions({
     route: "/booking/calendly-webhook",
     log: function noop() {},
     getProfileById: async (profileId) => harness.getProfileById(profileId),
@@ -352,7 +461,7 @@ async function testDuplicateWebhookDeliveryDoesNotCreateCompetingProfiles() {
       shopperId: profile.shopperId,
       contactId: "zoho-phase3-dup",
     }),
-  };
+  });
 
   const first = await bookingSession.upsertBookingSession(payload, options);
   const profileCountAfterFirst = harness.store.size;
