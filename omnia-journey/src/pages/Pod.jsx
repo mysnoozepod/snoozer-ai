@@ -3,8 +3,6 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  ShoppingCart,
-  CreditCard,
   Timer,
   MessageSquare,
   BedDouble,
@@ -12,12 +10,37 @@ import {
   HelpCircle,
   ImageOff,
   Headphones,
-  Sparkles,
 } from "lucide-react";
 
 import { api } from "@/lib/api";
-import PodBuilder from "@/components/PodBuilder";
-import { generateShowroomRecommendations } from "@/lib/utils/recommendations";
+import PodBuilder, {
+  buildDefaultSelections,
+  money,
+  monthlyEstimate,
+  parseVariantPrice,
+  pickFeaturedImage,
+  pickVariantForSize,
+  subtitleForBase,
+  subtitleForSize,
+} from "@/components/PodBuilder";
+import {
+  ShowroomBrandMark,
+  ShowroomCartBadge,
+  ShowroomEyebrow,
+  ShowroomFactPill,
+  ShowroomFooterAction,
+  ShowroomFooterDock,
+  ShowroomFrame,
+  ShowroomModeButton,
+  ShowroomPageShell,
+  ShowroomPanel,
+  ShowroomTopRail,
+} from "@/components/showroom/ShowroomPrimitives";
+import {
+  BASE_OPTIONS_UI,
+  generateShowroomRecommendations,
+  getBaseHandleForType,
+} from "@/lib/utils/recommendations";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 
@@ -234,12 +257,12 @@ function buildWhyThisPodReason(painSignals = []) {
 
 function buildWhyThisPodSentence(painSignals = []) {
   const reason = buildWhyThisPodReason(painSignals);
-  return `Because during your Snooze Assessment, you said ${reason} was important.`;
+  return `This pod matches your comfort profile around ${reason}.`;
 }
 
 function buildHeaderPersonalization(painSignals = []) {
   const reason = buildWhyThisPodReason(painSignals);
-  return `Recommended for you because you mentioned ${reason} during your Snooze Assessment.`;
+  return `Start by noticing ${reason}, then compare from there.`;
 }
 
 function buildNotIdealFor(painSignals = []) {
@@ -257,7 +280,7 @@ function buildDetailBullets({ mattressTitle, benefits, painSignals, isRecommende
   const items = [];
 
   if (mattressTitle) items.push(`${mattressTitle}`);
-  if (isRecommended) items.push(`Recommended #${rank || "1"} match from your assessment`);
+  if (isRecommended) items.push(`Top ${rank || "1"} match from your assessment`);
   if (benefits?.length) items.push(...benefits.slice(0, 3));
   if (painSignals?.length) {
     const labels = painSignals
@@ -285,7 +308,7 @@ function buildPodDetailsVoice({ title, mattressHeroTitle, benefits, isRecommende
   return [
     `${title}.`,
     `${mattressHeroTitle}.`,
-    isRecommended ? `Recommended #${rank || "1"}.` : "Selected for you.",
+    isRecommended ? `Top ${rank || "1"} match.` : "Selected for you.",
     benefits?.[0] || "Review the match details.",
   ]
     .filter(Boolean)
@@ -307,6 +330,22 @@ function normalizeText(value) {
 
 function lowerText(value) {
   return normalizeText(value).toLowerCase();
+}
+
+function startCase(value) {
+  return normalizeText(value).replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+}
+
+function humanizeHandleLabel(value) {
+  const raw = normalizeText(value);
+  if (!raw) return "";
+
+  return raw
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\d+\b/g, (match) => match)
+    .replace(/\b[a-z]/g, (letter) => letter.toUpperCase())
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function stripHtml(value) {
@@ -367,6 +406,26 @@ function detectMattressTruth({ mattressProduct, activePod, baseProduct }) {
   };
 }
 
+function formatBaseChoiceLabel(baseType, baseProduct) {
+  if (baseType === "none") return "Mattress Only";
+  const match = Array.isArray(BASE_OPTIONS_UI)
+    ? BASE_OPTIONS_UI.find((option) => option?.value === baseType)
+    : null;
+  return normalizeText(baseProduct?.title || match?.label || humanizeHandleLabel(baseType) || "Base");
+}
+
+function formatFeatureLabelForFamily(family) {
+  if (family === "dual") return "Dual Comfort";
+  if (family === "hybrid") return "Hybrid";
+  if (family === "foam") return "All Foam";
+  return "Balanced";
+}
+
+function inferHeightLabel(mattressTitle = "") {
+  const match = String(mattressTitle || "").match(/(\d{1,2}")/);
+  return match ? `${match[1]} Height` : "Mattress Height";
+}
+
 function buildPodReasonContext(pod, recommendationMeta = {}) {
   return {
     hasPartner: recommendationMeta?.hasPartner === true,
@@ -394,9 +453,9 @@ function getPodReasonVariant(reasonKey, ctx) {
         ? "its Dual Comfort setup is a strong fit for shared sleep"
         : "it gives you a more partner-friendly setup to test";
     case "primary_mattress_exact":
-      return "it matches the mattress style Snoozer would test first for you";
+      return "it matches the mattress style your assessment points to first";
     case "primary_mattress_family":
-      return "it stays close to the mattress style Snoozer matched to your assessment";
+      return "it stays close to the mattress style that matched your assessment";
     case "side_sleeper_pressure_relief":
       return "it may give you the pressure relief side sleepers often notice first";
     case "back_or_stomach_support":
@@ -464,7 +523,7 @@ function pickPreferredReasonKeys(reasonKeys = []) {
 
 function buildPodBuildVoice({ title, mattressTitle, isDualComfort }) {
   return [
-    `Let's finish your SnoozePod.`,
+    `Let's build ${title}.`,
     mattressTitle
       ? `We will keep ${mattressTitle} as the mattress on this pod.`
       : "We will keep the mattress already on this pod.",
@@ -490,12 +549,6 @@ function getRestStepScriptKey(stepId) {
   return "";
 }
 
-function stageButtonClass(active) {
-  return active
-    ? "border-indigo-300 bg-indigo-50 text-indigo-900"
-    : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50";
-}
-
 function formatDuration(totalSeconds) {
   const total = Math.max(0, Number(totalSeconds) || 0);
   const minutes = Math.floor(total / 60);
@@ -503,6 +556,67 @@ function formatDuration(totalSeconds) {
   if (!minutes) return `${seconds}s`;
   if (!seconds) return `${minutes} min`;
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatRestCountdown(totalSeconds) {
+  const total = Math.max(0, Number(totalSeconds) || 0);
+  const minutes = Math.floor(total / 60);
+  const seconds = total % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function labelRestStep(step = {}) {
+  const id = lowerText(step?.id);
+
+  if (id.startsWith("head-up")) return "Head Up";
+  if (id.startsWith("zero-g")) return "Zero Gravity";
+  if (id.startsWith("flat-return")) return "Flat";
+  if (id.startsWith("flat-normal")) return "Settle In";
+  if (id.startsWith("flat-focus")) return "Notice Support";
+  if (id.startsWith("flat-second")) return "Try Another Position";
+  if (id.startsWith("final-compare")) return "Final Check";
+  if (id.startsWith("reset")) return "Reset + Compare";
+
+  return normalizeText(step?.cue || step?.title || "Next Step");
+}
+
+function buildRestComfortMeters(activeStepIndex = 0) {
+  const presets = [
+    [72, 46, 54, 58],
+    [78, 40, 50, 66],
+    [69, 52, 58, 62],
+    [75, 44, 48, 68],
+    [71, 50, 56, 70],
+  ];
+
+  const values = presets[Math.max(0, Math.min(activeStepIndex, presets.length - 1))];
+
+  return [
+    {
+      label: "Lower Back Support",
+      left: "Not Supported",
+      right: "Fully Supported",
+      value: values[0],
+    },
+    {
+      label: "Shoulder Pressure",
+      left: "High Pressure",
+      right: "No Pressure",
+      value: values[1],
+    },
+    {
+      label: "Hip Pressure",
+      left: "High Pressure",
+      right: "No Pressure",
+      value: values[2],
+    },
+    {
+      label: "Overall Comfort",
+      left: "Not Comfortable",
+      right: "Very Comfortable",
+      value: values[3],
+    },
+  ];
 }
 
 const REST_GUIDE_IMAGES = {
@@ -548,7 +662,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 120,
       cue: "Lie in your normal sleep position",
       title: "Rest Test",
-      body: "Lie down in your normal sleep position and let your body settle into the mattress.",
+      body: "Lie in your normal sleep position and let your body settle in.",
       voice: "Lie down in your normal sleep position and let your body settle in.",
       startCta: "Start Timer",
       doneCta: "Next",
@@ -558,7 +672,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 120,
       cue: `Notice ${focusReason}`,
       title: "Rest Test",
-      body: `Stay here and notice how this mattress feels around the areas that matter most to you. Pay close attention to ${focusReason}.`,
+      body: `Stay here and pay close attention to ${focusReason}.`,
       voice: `Stay here and pay close attention to ${focusReason}.`,
       startCta: "Start Timer",
       doneCta: "Next",
@@ -568,7 +682,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 120,
       cue: "Try another position",
       title: "Rest Test",
-      body: "Roll into another natural sleep position and notice how the support changes there.",
+      body: "Try another natural position and notice what changes.",
       voice: "Roll into another natural sleep position and notice how the support changes.",
       startCta: "Start Timer",
       doneCta: "Next",
@@ -581,7 +695,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 60,
       cue: "Try Head Up",
       title: "Rest Test",
-      body: "Now raise the adjustable base to Head Up. Notice whether this position makes breathing feel easier and may help reduce snoring.",
+      body: "Raise the base to Head Up and notice how the position feels.",
       voice:
         "Now raise the adjustable base to Head Up and notice whether breathing feels easier.",
       startCta: "Start Timer",
@@ -592,7 +706,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 60,
       cue: "Try Zero Gravity",
       title: "Rest Test",
-      body: "Now try Zero Gravity. This is a popular preset because many shoppers feel pressure relief through the lower back, hips, and legs.",
+      body: "Try Zero Gravity and notice pressure relief through your lower back, hips, and legs.",
       voice:
         "Now try Zero Gravity and notice the pressure relief through your lower back, hips, and legs.",
       startCta: "Start Timer",
@@ -603,7 +717,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 60,
       cue: "Return Flat",
       title: "Rest Test",
-      body: "Now as the mattress returns to the flat position, notice how the pressure changes in your lower back. You may even feel the need to shift around to get comfortable again.",
+      body: "Return to flat and notice how the pressure changes again.",
       voice:
         "Now as the mattress returns to the flat position, notice how the pressure changes in your lower back and whether you feel the need to shift around again.",
       startCta: "Start Timer",
@@ -617,7 +731,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 60,
       cue: "Take one more moment",
       title: "Rest Test",
-      body: "Take one more quiet moment before deciding. Notice pressure relief, alignment, and overall support.",
+      body: "Take one more quiet moment before deciding.",
       voice:
         "Take one more quiet moment before deciding and notice pressure relief, alignment, and overall support.",
       startCta: "Start Timer",
@@ -631,7 +745,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 180,
       cue: "Lie in your normal sleep position",
       title: "Rest Test",
-      body: "Lie down in your normal sleep position and give your body time to settle naturally into the mattress.",
+      body: "Lie in your normal sleep position and give your body more time to settle.",
       voice:
         "Lie down in your normal sleep position and give your body time to settle naturally into the mattress.",
       startCta: "Start Timer",
@@ -642,7 +756,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 180,
       cue: "Try another position",
       title: "Rest Test",
-      body: "Now roll into another natural sleep position and compare how the pressure relief and support feel there.",
+      body: "Try another natural position and compare the feel there.",
       voice:
         "Now roll into another natural sleep position and compare how the pressure relief and support feel there.",
       startCta: "Start Timer",
@@ -656,7 +770,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 180,
       cue: "Try Head Up",
       title: "Rest Test",
-      body: "Raise the adjustable base to Head Up. Stay there for a few minutes and notice whether this angle feels easier for breathing and snoring relief.",
+      body: "Raise the base to Head Up and stay there long enough to settle in.",
       voice:
         "Raise the adjustable base to Head Up and notice whether this angle feels easier for breathing and snoring relief.",
       startCta: "Start Timer",
@@ -667,7 +781,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 180,
       cue: "Try Zero Gravity",
       title: "Rest Test",
-      body: "Now move into Zero Gravity. This is one of the most popular presets because many shoppers feel better pressure relief and weight distribution here.",
+      body: "Move into Zero Gravity and notice pressure relief and weight distribution.",
       voice:
         "Now move into Zero Gravity and notice the pressure relief and weight distribution here.",
       startCta: "Start Timer",
@@ -678,7 +792,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 180,
       cue: "Return Flat",
       title: "Rest Test",
-      body: "Now as the mattress returns to the flat position, notice how the pressure changes in your lower back. You may even feel the need to shift around to get comfortable again.",
+      body: "Return to flat and notice how the pressure changes again.",
       voice:
         "Now as the mattress returns to the flat position, notice how the pressure changes in your lower back and whether you feel the need to shift around again.",
       startCta: "Start Timer",
@@ -692,7 +806,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 240,
       cue: "Reset and compare",
       title: "Rest Test",
-      body: `Reset, roll once, and take a little longer to notice pressure relief, alignment, and ${focusReason}.`,
+      body: `Reset, roll once, and take a little longer to notice ${focusReason}.`,
       voice: `Reset, roll once, and take a little longer to notice pressure relief, alignment, and ${focusReason}.`,
       startCta: "Start Timer",
       doneCta: "Next",
@@ -702,7 +816,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       seconds: 60,
       cue: "Take one more moment",
       title: "Rest Test",
-      body: "Take one final quiet moment before deciding how this mattress feels overall.",
+      body: "Take one final quiet moment before you decide.",
       voice: "Take one final quiet moment before deciding how this mattress feels overall.",
       startCta: "Start Timer",
       doneCta: "Final Reflection",
@@ -714,8 +828,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       id: "quick",
       title: "7-Minute Rest Test",
       totalSeconds: 420,
-      rationale:
-        "Sleep experts recommend spending several minutes in your usual sleep positions so your body can settle and you can notice pressure relief, alignment, and support.",
+      rationale: "Quick comfort check.",
       steps: isAdjustableBase
         ? [...quickFlat.slice(0, 2), ...quickAdjustable]
         : [...quickFlat, ...quickNonAdjustableTail],
@@ -724,8 +837,7 @@ function buildRestTestFlows({ isAdjustableBase, whyThisPodReason }) {
       id: "deep",
       title: "15-Minute Rest Test",
       totalSeconds: 900,
-      rationale:
-        "A longer rest test gives your body more time to settle so you can compare support, pressure relief, and overall comfort more honestly.",
+      rationale: "More time to settle in.",
       steps: isAdjustableBase
         ? [...deepFlat, ...deepAdjustable]
         : [...deepFlat, ...deepNonAdjustableTail],
@@ -840,52 +952,8 @@ function inferMotionVisualFromHandle(handle = "", baseTitle = "") {
   };
 }
 
-function StageButton({ active, icon: Icon, label, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        "inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-extrabold transition",
-        stageButtonClass(active),
-      ].join(" ")}
-    >
-      {Icon ? <Icon className="h-4 w-4" /> : null}
-      {label}
-    </button>
-  );
-}
-
-function FooterAction({ icon: Icon, label, onClick, tone = "plain" }) {
-  const cls =
-    tone === "primary"
-      ? "border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700"
-      : "border-gray-200 bg-white text-gray-900 hover:bg-gray-50";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        "inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-extrabold shadow-sm transition",
-        cls,
-      ].join(" ")}
-    >
-      {Icon ? <Icon className="h-4 w-4" /> : null}
-      {label}
-    </button>
-  );
-}
-
 function ResponsiveImage({ src, alt, className, imgClassName }) {
-  const candidates = useMemo(() => {
-    const fromProp = normalizeImageCandidates(src);
-    const withFallback = [...fromProp];
-    if (!withFallback.includes(PUBLIC_ASSETS.noImage)) {
-      withFallback.push(PUBLIC_ASSETS.noImage);
-    }
-    return withFallback;
-  }, [src]);
+  const candidates = useMemo(() => normalizeImageCandidates(src), [src]);
 
   const [index, setIndex] = useState(0);
 
@@ -902,15 +970,12 @@ function ResponsiveImage({ src, alt, className, imgClassName }) {
     });
   };
 
-  const exhausted =
-    !activeSrc || (activeSrc === PUBLIC_ASSETS.noImage && index === candidates.length - 1);
-
-  if (exhausted && activeSrc !== PUBLIC_ASSETS.noImage) {
+  if (!activeSrc) {
     return (
       <div className={className}>
-        <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-500">
-          <ImageOff className="h-6 w-6 text-gray-400" />
-          <span className="text-sm font-medium">Image unavailable</span>
+        <div className="flex h-full w-full items-center justify-center rounded-[24px] bg-[radial-gradient(circle_at_top,_rgba(84,120,255,0.18),_transparent_55%),linear-gradient(180deg,#f6f9ff_0%,#eef3ff_100%)] text-[#2f57e8]">
+          <ImageOff className="h-8 w-8 opacity-80" aria-hidden="true" />
+          <span className="sr-only">{alt || "Product preview"}</span>
         </div>
       </div>
     );
@@ -941,9 +1006,9 @@ function WhyChosenCard({
   onActionSelect,
 }) {
   return (
-    <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-      <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">
-        {detailsMode ? "Learn About This Pod" : "Why Snoozer Picked This Pod"}
+    <ShowroomPanel className="p-5 md:p-6" tone="frost">
+      <div className="text-sm font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+        {detailsMode ? "Learn About This Pod" : "Why This Pod Fits"}
       </div>
 
       <div className="mt-3 grid gap-4 md:grid-cols-[auto_minmax(0,1fr)] md:items-start">
@@ -956,14 +1021,14 @@ function WhyChosenCard({
         />
 
         <div className="min-w-0">
-          <div className="text-xl font-extrabold leading-tight text-gray-900 md:text-2xl">
+          <div className="text-2xl font-extrabold leading-tight text-slate-900 md:text-[2rem]">
             {detailsMode
-              ? "Tap the part you want Snoozer to explain"
+              ? "Choose what you want to understand."
               : isRecommended
-                ? `Recommended #${rank || "1"} for you`
-                : "Selected for you"}
+                ? "Start here, then compare from there."
+                : "A strong pod to compare."}
           </div>
-          <div className="mt-2 text-base leading-7 text-gray-700">
+          <div className="mt-2 text-base leading-7 text-slate-700 md:text-[1.05rem]">
             {detailsMode ? detailsIntro || sentence : sentence}
           </div>
 
@@ -992,120 +1057,434 @@ function WhyChosenCard({
           ) : null}
         </div>
       </div>
-    </div>
+    </ShowroomPanel>
   );
 }
 
 function OnThisPodCard({ title, image }) {
   return (
-    <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-      <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">
+    <ShowroomPanel className="p-5 md:p-6" tone="soft">
+      <div className="text-sm font-black uppercase tracking-[0.18em] text-[#2f57e8]">
         On This Pod
       </div>
 
-      <div className="mt-2 text-2xl font-extrabold leading-tight text-gray-900 md:text-3xl">
+      <div className="mt-2 text-2xl font-extrabold leading-tight text-slate-900 md:text-3xl">
         {title}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-3xl border bg-gray-50">
+      <div className="mt-4 overflow-hidden rounded-[28px] border border-white/75 bg-white/95 shadow-inner">
         <ResponsiveImage
-          src={[image, PUBLIC_ASSETS.noImage]}
+          src={image}
           alt={title}
-          className="aspect-[4/3] xl:aspect-[5/4]"
-          imgClassName="h-full w-full object-contain"
+          className="aspect-[5/4]"
+          imgClassName="h-full w-full object-contain p-3"
         />
+      </div>
+    </ShowroomPanel>
+  );
+}
+
+function RestMeterRow({ label, left, right, value = 50 }) {
+  const clamped = Math.max(0, Math.min(100, Number(value) || 0));
+
+  return (
+    <div className="space-y-1.5 rounded-[18px] border border-white/80 bg-white/92 px-3.5 py-3 shadow-sm">
+      <div className="text-sm font-extrabold text-slate-900">{label}</div>
+      <div className="relative h-2 rounded-full bg-[#dfe7ff]">
+        <div className="absolute inset-y-0 left-0 rounded-full bg-[#9fb6ff]" style={{ width: "100%" }} />
+        <div
+          className="absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full border-4 border-white bg-[#2f57e8] shadow"
+          style={{ left: `calc(${clamped}% - 10px)` }}
+        />
+      </div>
+      <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+        <span>{left}</span>
+        <span>{right}</span>
       </div>
     </div>
   );
 }
 
-function RestTestVisualCard({ title, image, caption }) {
+function RestTestVisualCard({ title, image, caption, items = [], meters = [] }) {
   return (
-    <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-      <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">
-        Snoozer Guide
+    <ShowroomPanel className="p-4 md:p-5" tone="soft">
+      <div className="text-xs font-black uppercase tracking-[0.2em] text-[#2f57e8]">
+        Live Comfort Check-In
       </div>
 
-      <div className="mt-2 text-2xl font-extrabold leading-tight text-gray-900 md:text-3xl">
+      <div className="mt-2 text-[1.55rem] font-extrabold leading-tight text-slate-900 md:text-[1.8rem]">
         {title}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-3xl border bg-gray-50">
+      <div className="mt-3 overflow-hidden rounded-[24px] border border-white/75 bg-white/95 shadow-inner">
         <ResponsiveImage
           src={image}
           alt={title}
-          className="aspect-[4/3] xl:aspect-[5/4]"
+          className="aspect-[16/10]"
           imgClassName="h-full w-full object-cover"
         />
       </div>
 
-      <div className="mt-3 text-base leading-7 text-gray-700">{caption}</div>
-    </div>
+      <div className="mt-3 text-sm leading-6 text-slate-700">{caption}</div>
+
+      {meters.length ? (
+        <div className="mt-3 space-y-2.5">
+          {meters.map((meter) => (
+            <RestMeterRow key={meter.label} {...meter} />
+          ))}
+        </div>
+      ) : items.length ? (
+        <ul className="mt-3 space-y-2 text-sm leading-6 text-gray-700">
+          {items.map((item) => (
+            <li key={item} className="flex gap-2">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </ShowroomPanel>
   );
 }
 
-function BuildVisualCard({ title, image, caption, eyebrow = "Setup Preview" }) {
+function BuildVisualCard({
+  title,
+  image,
+  caption,
+  eyebrow = "Setup Preview",
+  items = [],
+  nextAction = "",
+}) {
   return (
-    <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-      <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">
+    <ShowroomPanel className="p-5 md:p-6" tone="soft">
+      <div className="text-sm font-black uppercase tracking-[0.18em] text-[#2f57e8]">
         {eyebrow}
       </div>
 
-      <div className="mt-2 text-2xl font-extrabold leading-tight text-gray-900 md:text-3xl">
+      <div className="mt-2 text-2xl font-extrabold leading-tight text-slate-900 md:text-3xl">
         {title}
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-3xl border bg-gray-50">
+      <div className="mt-4 overflow-hidden rounded-[28px] border border-white/75 bg-white/95 shadow-inner">
         <ResponsiveImage
           src={image}
           alt={title}
-          className="aspect-[4/3] xl:aspect-[5/4]"
-          imgClassName="h-full w-full object-contain"
+          className="aspect-[16/10]"
+          imgClassName="h-full w-full object-contain p-3"
         />
       </div>
 
-      <div className="mt-3 text-base leading-7 text-gray-700">{caption}</div>
-    </div>
+      <div className="mt-3 text-base leading-7 text-slate-700">{caption}</div>
+
+      {items.length ? (
+        <ul className="mt-4 space-y-2 text-sm leading-6 text-gray-700">
+          {items.map((item) => (
+            <li key={item} className="flex gap-2">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {nextAction ? (
+        <div className="mt-4 rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-900">
+          {nextAction}
+        </div>
+      ) : null}
+    </ShowroomPanel>
   );
 }
 
 function DetailCard({ title, items = [] }) {
   return (
-    <div className="h-full rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-      <div className="text-lg font-extrabold text-gray-900 md:text-xl">{title}</div>
+    <ShowroomPanel className="h-full p-5 md:p-6" tone="frost">
+      <div className="text-lg font-extrabold text-slate-900 md:text-xl">{title}</div>
       <div className="mt-3 space-y-2.5">
         {items.map((item) => (
-          <div key={item} className="text-base leading-7 text-gray-700">
+          <div key={item} className="text-base leading-7 text-slate-700">
             {item}
           </div>
         ))}
       </div>
-    </div>
+    </ShowroomPanel>
   );
 }
 
 function DetailBodyCard({ title, body, itemsTitle = "", items = [] }) {
   return (
-    <div className="h-full rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-      <div className="text-lg font-extrabold text-gray-900 md:text-xl">{title}</div>
+    <ShowroomPanel className="h-full p-5 md:p-6" tone="frost">
+      <div className="text-lg font-extrabold text-slate-900 md:text-xl">{title}</div>
 
-      {body ? <div className="mt-3 text-base leading-7 text-gray-700">{body}</div> : null}
+      {body ? <div className="mt-3 text-base leading-7 text-slate-700">{body}</div> : null}
 
       {items.length ? (
         <div className="mt-4 space-y-2.5">
-          {itemsTitle ? (
-            <div className="text-sm font-extrabold uppercase tracking-[0.12em] text-gray-500">
-              {itemsTitle}
-            </div>
-          ) : null}
+          {itemsTitle ? <ShowroomEyebrow className="text-xs">{itemsTitle}</ShowroomEyebrow> : null}
           {items.map((item) => (
-            <div key={item} className="text-base text-gray-700">
+            <div key={item} className="text-base text-slate-700">
               {item}
             </div>
           ))}
         </div>
       ) : null}
+    </ShowroomPanel>
+  );
+}
+
+function DashboardInfoRow({ icon: Icon, title, body }) {
+  return (
+    <div className="flex items-start gap-2.5 rounded-[18px] border border-white/70 bg-white/78 px-3 py-2 shadow-sm">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[#2f57e8]">
+        {Icon ? <Icon className="h-4 w-4" /> : null}
+      </div>
+
+      <div className="min-w-0">
+        <div className="text-[0.95rem] font-extrabold leading-tight text-slate-900">{title}</div>
+        <div className="mt-1 text-[0.84rem] leading-5 text-slate-700">{body}</div>
+      </div>
     </div>
+  );
+}
+
+function DefaultWhyPodFitsCard({ title, intro, items = [] }) {
+  return (
+    <ShowroomPanel className="h-full p-3.5" tone="frost">
+      <ShowroomEyebrow>Why This Pod Fits</ShowroomEyebrow>
+
+      <div className="mt-2.5 grid gap-3 md:grid-cols-[64px_minmax(0,1fr)] md:items-start">
+        <img
+          src={PUBLIC_ASSETS.snoozerAvatar}
+          alt="Snoozer"
+          className="h-14 w-14 shrink-0 rounded-full object-cover md:h-16 md:w-16"
+          loading="lazy"
+          decoding="async"
+        />
+
+        <div className="min-w-0">
+          <div className="text-[1.26rem] font-extrabold leading-[1.04] tracking-tight text-slate-900 md:text-[1.42rem]">
+            {title}
+          </div>
+          <div className="mt-1.5 max-w-xl text-[0.9rem] leading-5 text-slate-700">
+            {intro}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-2.5 space-y-2">
+        {items.map((item) => (
+          <DashboardInfoRow
+            key={`${item.title}-${item.body}`}
+            icon={item.icon || CheckCircle2}
+            title={item.title}
+            body={item.body}
+          />
+        ))}
+      </div>
+    </ShowroomPanel>
+  );
+}
+
+function DefaultTestingGuideCard({
+  items = [],
+  flowOptions = [],
+  onChooseMode,
+  hasAdjustableBase = false,
+}) {
+  return (
+    <ShowroomPanel className="h-full p-3.5" tone="frost">
+      <ShowroomEyebrow>Testing Guide</ShowroomEyebrow>
+
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-2.5">
+        <div>
+          <div className="text-[1.26rem] font-extrabold leading-[1.04] tracking-tight text-slate-900 md:text-[1.42rem]">
+            How to test this pod
+          </div>
+          <div className="mt-1.5 max-w-xl text-[0.9rem] leading-5 text-slate-700">
+            Test this first. Compare next.
+          </div>
+        </div>
+
+        <div className="rounded-[18px] border border-indigo-100 bg-indigo-50/80 px-3 py-2 text-[11px] font-semibold text-indigo-900 md:max-w-[210px]">
+          {hasAdjustableBase
+            ? "Includes adjustable positions."
+            : "Focused on flat-position testing."}
+        </div>
+      </div>
+
+      <div className="mt-2.5 grid gap-2.5 md:grid-cols-[minmax(0,1fr)_170px]">
+        <div className="space-y-2.5">
+          {items.map((item) => (
+            <DashboardInfoRow
+              key={`${item.title}-${item.body}`}
+              icon={item.icon || Timer}
+              title={item.title}
+              body={item.body}
+            />
+          ))}
+
+          <div className="rounded-[18px] border border-slate-200 bg-white/80 px-3 py-2 text-[0.84rem] font-semibold text-slate-700">
+            Compare one pod at a time.
+          </div>
+        </div>
+
+        {flowOptions.length ? (
+          <div className="space-y-2">
+            {flowOptions.map((flow) => (
+              <button
+                key={flow.id}
+                type="button"
+                onClick={() => onChooseMode?.(flow.id)}
+                className="w-full rounded-[20px] border border-slate-200 bg-white px-3 py-2.5 text-left shadow-sm transition hover:border-indigo-200 hover:bg-slate-50"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[0.88rem] font-extrabold text-slate-900">{flow.title}</div>
+                  <div className="rounded-full bg-indigo-50 px-2 py-1 text-[11px] font-extrabold text-indigo-800">
+                    {formatDuration(flow.totalSeconds)}
+                  </div>
+                </div>
+
+                <div className="mt-1 text-[11px] leading-4 text-slate-600">
+                  {lowerText(flow.id).includes("quick")
+                    ? "Quick comfort check."
+                    : "More time to settle in."}
+                </div>
+
+                <div className="mt-2 text-xs font-bold uppercase tracking-[0.16em] text-[#2f57e8]">
+                  Start this test
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </ShowroomPanel>
+  );
+}
+
+function ScoreDots({ value = 3, total = 5 }) {
+  const safeValue = Math.max(0, Math.min(total, Number(value) || 0));
+  return (
+    <div className="mt-1 flex items-center gap-1">
+      {Array.from({ length: total }).map((_, index) => (
+        <span
+          key={index}
+          className={[
+            "h-2 w-2 rounded-full border border-[#b9c8f6]",
+            index < safeValue ? "bg-[#233dc0]" : "bg-white",
+          ].join(" ")}
+        />
+      ))}
+    </div>
+  );
+}
+
+function HeroFeatureChip({ title, value = 3, subtitle = "", image, compact = false }) {
+  return (
+    <div
+      className={[
+        "rounded-[18px] border border-[#dbe5ff] bg-white/94 px-2.5 py-2 shadow-sm",
+        compact ? "min-w-[118px]" : "min-w-[142px]",
+      ].join(" ")}
+    >
+      <div className="flex items-center gap-2">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[12px] bg-[#eef3ff]">
+          {image ? (
+            <img src={image} alt="" className="h-5 w-5 object-contain" loading="lazy" decoding="async" />
+          ) : (
+            <CheckCircle2 className="h-4 w-4 text-[#2f57e8]" />
+          )}
+        </div>
+        <div className="min-w-0">
+          <div className="text-[0.86rem] font-extrabold leading-tight text-slate-900">{title}</div>
+          {subtitle ? <div className="mt-0.5 text-[0.72rem] font-semibold text-slate-500">{subtitle}</div> : null}
+        </div>
+      </div>
+      <ScoreDots value={value} />
+    </div>
+  );
+}
+
+function SetupSummaryCard({
+  step,
+  label,
+  value,
+  subtitle = "",
+  image,
+  imageFit = "contain",
+  onChange,
+}) {
+  return (
+    <div className="rounded-[24px] border border-[#e0e8fb] bg-white px-4 py-4 shadow-sm">
+      <div className="flex items-center gap-2 text-sm font-black text-slate-900">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">
+          {step}
+        </span>
+        <span>{label}</span>
+      </div>
+
+      <div className="mt-4 flex gap-4">
+        <div className="flex h-[92px] w-[92px] shrink-0 items-center justify-center overflow-hidden rounded-[22px] border border-[#e3eafc] bg-[#fbfcff]">
+          {image ? (
+            <img
+              src={image}
+              alt=""
+              className={imageFit === "cover" ? "h-full w-full object-cover" : "h-full w-full object-contain p-2"}
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <BedDouble className="h-8 w-8 text-[#2f57e8]" />
+          )}
+        </div>
+
+        <div className="min-w-0">
+          <div className="text-[1.1rem] font-extrabold leading-tight text-slate-900">{value}</div>
+          {subtitle ? <div className="mt-1.5 text-[0.95rem] leading-6 text-slate-600">{subtitle}</div> : null}
+          {onChange ? (
+            <button
+              type="button"
+              onClick={onChange}
+              className="mt-3 inline-flex items-center gap-2 text-sm font-extrabold text-[#2f57e8]"
+            >
+              Change
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SetupPricingCard({ label, value }) {
+  return (
+    <div className="rounded-[22px] border border-[#dbe5ff] bg-white px-4 py-4 text-right shadow-sm">
+      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">{label}</div>
+      <div className="mt-1.5 text-[1.85rem] font-black tracking-tight text-slate-900">{value}</div>
+    </div>
+  );
+}
+
+function SetupValueNote({ title, body }) {
+  return (
+    <div className="flex items-center gap-3 rounded-[18px] border border-[#e0e8fb] bg-white px-3 py-2.5 shadow-sm">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">
+        <CheckCircle2 className="h-4 w-4" />
+      </div>
+      <div className="min-w-0">
+        <div className="text-[0.9rem] font-extrabold leading-tight text-slate-900">{title}</div>
+        <div className="mt-0.5 text-[0.78rem] leading-4 text-slate-500">{body}</div>
+      </div>
+    </div>
+  );
+}
+
+function LearnAtGlanceCard({ title, body }) {
+  return (
+    <ShowroomPanel className="p-4" tone="frost">
+      <ShowroomEyebrow className="text-[11px]">{title}</ShowroomEyebrow>
+      <div className="mt-2 text-[1.08rem] font-extrabold leading-tight text-slate-900">{body}</div>
+    </ShowroomPanel>
   );
 }
 
@@ -1130,55 +1509,53 @@ function GuidedRestTest({
 }) {
   if (!activeMode) {
     return (
-      <div className="rounded-3xl border bg-white shadow-sm">
-        <div className="border-b bg-slate-50 px-5 py-4 md:px-6 md:py-5">
-          <div className="text-xl font-extrabold text-gray-900 md:text-2xl">Rest Test</div>
+      <ShowroomPanel className="overflow-hidden" tone="frost">
+        <div className="border-b border-slate-200/80 bg-slate-50/80 px-5 py-4 md:px-6 md:py-5">
+          <div className="text-xl font-extrabold text-slate-900 md:text-2xl">Rest Test</div>
         </div>
 
-        <div className="p-5 md:p-6">
-          <div className="max-w-3xl text-lg leading-8 text-gray-800 md:text-xl">
-            Choose a rest test length to begin.
+      <div className="p-5 md:p-6">
+          <div className="max-w-3xl text-base leading-7 text-slate-800 md:text-lg">
+            Choose a test length.
           </div>
 
-          <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             {Object.values(flowOptions).map((flow) => (
               <button
                 key={flow.id}
                 type="button"
                 onClick={() => onChooseMode(flow.id)}
-                className="rounded-3xl border bg-white p-5 text-left shadow-sm transition hover:bg-gray-50"
+                className="rounded-[24px] border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-indigo-100 hover:bg-gray-50"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-xl font-extrabold text-gray-900">{flow.title}</div>
+                  <div className="text-lg font-extrabold text-gray-900">{flow.title}</div>
                   <div className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-extrabold text-indigo-800">
                     {formatDuration(flow.totalSeconds)}
                   </div>
                 </div>
 
-                <div className="mt-3 text-base leading-7 text-gray-700">{flow.rationale}</div>
+                <div className="mt-2.5 text-sm leading-6 text-gray-700">{flow.rationale}</div>
 
-                <div className="mt-4 text-sm font-semibold text-gray-500">
-                  {hasAdjustableBase
-                    ? "Includes flat positions and adjustable routine when available on this pod."
-                    : "Includes flat-position testing only on this pod."}
+                <div className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#2f57e8]">
+                  {hasAdjustableBase ? "Includes adjustable positions." : "Mattress-only testing."}
                 </div>
               </button>
             ))}
           </div>
         </div>
-      </div>
+      </ShowroomPanel>
     );
   }
 
   if (completionStage === REST_COMPLETION_STAGES.reflection) {
     return (
-      <div className="rounded-3xl border bg-white shadow-sm">
-        <div className="border-b bg-slate-50 px-5 py-4 md:px-6 md:py-5">
-          <div className="text-xl font-extrabold text-gray-900 md:text-2xl">Rest Test</div>
+      <ShowroomPanel className="overflow-hidden" tone="frost">
+        <div className="border-b border-slate-200/80 bg-slate-50/80 px-5 py-4 md:px-6 md:py-5">
+          <div className="text-xl font-extrabold text-slate-900 md:text-2xl">Rest Test</div>
         </div>
 
         <div className="p-5 md:p-6">
-          <div className="text-lg font-semibold text-gray-700">What stood out most?</div>
+          <div className="text-lg font-semibold text-slate-700">What stood out most?</div>
 
           <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
             {REST_REFLECTION_OPTIONS.map((option) => {
@@ -1198,7 +1575,7 @@ function GuidedRestTest({
             })}
           </div>
         </div>
-      </div>
+      </ShowroomPanel>
     );
   }
 
@@ -1208,13 +1585,13 @@ function GuidedRestTest({
     const primaryActionModeId = activeMode?.id === "quick" ? "deep" : activeMode?.id || "deep";
 
     return (
-      <div className="rounded-3xl border bg-white shadow-sm">
-        <div className="border-b bg-slate-50 px-5 py-4 md:px-6 md:py-5">
-          <div className="text-xl font-extrabold text-gray-900 md:text-2xl">Rest Test</div>
+      <ShowroomPanel className="overflow-hidden" tone="frost">
+        <div className="border-b border-slate-200/80 bg-slate-50/80 px-5 py-4 md:px-6 md:py-5">
+          <div className="text-xl font-extrabold text-slate-900 md:text-2xl">Rest Test</div>
         </div>
 
         <div className="p-5 md:p-6">
-          <div className="text-lg font-semibold text-gray-700">You finished the {activeMode?.title}.</div>
+          <div className="text-lg font-semibold text-slate-700">You finished the {activeMode?.title}.</div>
 
           {reflectionChoice ? (
             <div className="mt-3 rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-900">
@@ -1256,7 +1633,7 @@ function GuidedRestTest({
             </button>
           </div>
         </div>
-      </div>
+      </ShowroomPanel>
     );
   }
 
@@ -1264,53 +1641,96 @@ function GuidedRestTest({
   const currentNumber = activeStepIndex + 1;
   const isDone = timerRemaining <= 0;
   const isRunning = !!timerRunning;
+  const progressSteps = (activeMode?.steps || []).map((step, index) => ({
+    id: step.id || index,
+    label: labelRestStep(step),
+    active: index === activeStepIndex,
+    complete: index < activeStepIndex || isDone,
+  }));
+  const visibleProgressSteps = progressSteps.slice(0, 3);
+  const comfortMeters = buildRestComfortMeters(activeStepIndex);
 
   let primaryLabel = activeStep?.startCta || "Start Timer";
   if (isRunning) primaryLabel = "Next Now";
   if (isDone) primaryLabel = activeStep?.doneCta || "Next";
 
   return (
-    <div className="rounded-3xl border bg-white shadow-sm">
-      <div className="border-b bg-slate-50 px-5 py-4 md:px-6 md:py-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xl font-extrabold text-gray-900 md:text-2xl">
-            {activeStep?.title}
-          </div>
-
-          <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-extrabold text-gray-700 shadow-sm">
-            <Timer className="h-4 w-4 text-indigo-700" />
-            {formatDuration(timerRemaining)}
-          </div>
-        </div>
-
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-sm font-semibold text-gray-500">
-          <span>{activeMode?.title}</span>
-          <span>•</span>
-          <span>
-            Step {currentNumber} of {totalSteps}
-          </span>
-        </div>
-      </div>
-
+    <ShowroomPanel className="overflow-hidden" tone="frost">
       <div className="p-5 md:p-6">
-        <div className="max-w-3xl text-lg leading-8 text-gray-800 md:text-xl">
-          {activeStep?.body}
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(240px,1.05fr)]">
+          <div className="min-w-0">
+            <div className="text-xs font-black uppercase tracking-[0.2em] text-[#2f57e8]">
+              Test in Progress
+            </div>
+            <div className="mt-1 text-[3.6rem] font-black leading-none tracking-tight text-slate-900 md:text-[4.2rem]">
+              {formatRestCountdown(timerRemaining)}
+            </div>
+            <div className="mt-1 text-sm font-semibold text-slate-500">
+              Time remaining in this position
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <div className="h-2 overflow-hidden rounded-full bg-[#dfe7ff]">
+                <div
+                  className="h-full rounded-full bg-[#2f57e8] transition-all"
+                  style={{
+                    width: `${Math.max(12, (currentNumber / Math.max(totalSteps, 1)) * 100)}%`,
+                  }}
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {visibleProgressSteps.map((step, index) => (
+                  <div key={step.id} className="text-center">
+                    <div
+                      className={[
+                        "mx-auto flex h-14 w-14 items-center justify-center rounded-full border text-xs font-black shadow-sm transition",
+                        step.active
+                          ? "border-indigo-200 bg-indigo-50 text-[#2f57e8]"
+                          : step.complete
+                            ? "border-indigo-100 bg-white text-[#2f57e8]"
+                            : "border-slate-200 bg-white text-slate-400",
+                      ].join(" ")}
+                    >
+                      {index + 1}
+                    </div>
+                    <div className="mt-2 text-xs font-extrabold text-slate-700">{step.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-[24px] border border-white/80 bg-white/92 p-4 shadow-sm">
+              <div className="text-xs font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+                Current Position
+              </div>
+              <div className="mt-1 text-[1.75rem] font-black tracking-tight text-slate-900">
+                {labelRestStep(activeStep)}
+              </div>
+              <div className="mt-2 text-sm leading-6 text-slate-600">{activeStep?.body}</div>
+              <div className="mt-3 rounded-[18px] bg-[#f5f8ff] px-3.5 py-2.5 text-xs font-semibold text-slate-500">
+                {isRunning
+                  ? "Lie in your normal sleep position. Notice support, pressure, and comfort."
+                  : isDone
+                    ? "This step is complete."
+                    : "Timer starts when you are ready."}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {comfortMeters.map((meter) => (
+              <RestMeterRow key={meter.label} {...meter} />
+            ))}
+          </div>
         </div>
 
-        <div className="mt-5 text-sm font-semibold text-gray-500">
-          {isRunning
-            ? "You can move on early at any time."
-            : isDone
-              ? "This step is complete."
-              : "Timer starts when you are ready."}
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mt-5 flex flex-wrap gap-3">
           {!isRunning && !isDone ? (
             <button
               type="button"
               onClick={onStartTimer}
-              className="rounded-2xl bg-indigo-600 px-7 py-3.5 text-lg font-extrabold text-white hover:bg-indigo-700"
+              className="rounded-[20px] bg-indigo-600 px-6 py-3.5 text-base font-extrabold text-white hover:bg-indigo-700"
             >
               {primaryLabel}
             </button>
@@ -1318,7 +1738,7 @@ function GuidedRestTest({
             <button
               type="button"
               onClick={onAdvanceStep}
-              className="rounded-2xl bg-indigo-600 px-7 py-3.5 text-lg font-extrabold text-white hover:bg-indigo-700"
+              className="rounded-[20px] bg-indigo-600 px-6 py-3.5 text-base font-extrabold text-white hover:bg-indigo-700"
             >
               {primaryLabel}
             </button>
@@ -1327,16 +1747,15 @@ function GuidedRestTest({
           <button
             type="button"
             onClick={onSkipStep}
-            className="rounded-2xl border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 hover:bg-gray-50"
+            className="rounded-[20px] border bg-white px-5 py-3.5 text-sm font-extrabold text-gray-900 hover:bg-gray-50"
           >
             Skip Step
           </button>
         </div>
       </div>
-    </div>
+    </ShowroomPanel>
   );
 }
-
 export default function Pod() {
   const { podId } = useParams();
   const navigate = useNavigate();
@@ -1347,7 +1766,12 @@ export default function Pod() {
   const storagePrefix = useMemo(() => `snooze.pod.${pid}`, [pid]);
 
   const plan = useStore((s) => (Array.isArray(s.snoozepod) ? s.snoozepod : []));
-  const snoozepodCount = useMemo(() => plan.length, [plan]);
+  const snoozepodCount = useMemo(
+    () => plan.reduce((sum, item) => sum + Math.max(0, Number(item?.quantity) || 0), 0),
+    [plan]
+  );
+  const [cartNotice, setCartNotice] = useState("");
+  const [cartPulse, setCartPulse] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [recs, setRecs] = useState(null);
@@ -1358,49 +1782,35 @@ export default function Pod() {
 
   const [selectedMattressHandle, setSelectedMattressHandle] = useState(undefined);
   const [selectedBaseHandle, setSelectedBaseHandle] = useState(undefined);
+  const [buildPreviewData, setBuildPreviewData] = useState(null);
+  const [buildSelectionState, setBuildSelectionState] = useState(null);
 
   const [cue, setCue] = useState("Rest Test");
   const [cueType, setCueType] = useState("tip");
 
-  const [buildStepKey, setBuildStepKey] = useState(() => {
-    const saved = safeGet(`${storagePrefix}.buildStepKey`);
-    return saved ? String(saved) || "size" : "size";
-  });
+  const [buildStepKey, setBuildStepKey] = useState("mattress");
 
-  const [openStage, setOpenStage] = useState(() => {
-    const saved = safeGet(`${storagePrefix}.openStage`);
-    return saved ? String(saved) || "rest" : "rest";
-  });
+  const [openStage, setOpenStage] = useState("rest");
 
-  const [testComplete, setTestComplete] = useState(
-    () => safeGet(`${storagePrefix}.testComplete`) === "1"
-  );
-  const [feelChoice, setFeelChoice] = useState(() => safeGet(`${storagePrefix}.feelChoice`) || "");
-  const [restCompletionStage, setRestCompletionStage] = useState(() =>
-    normalizeRestCompletionStage(safeGet(`${storagePrefix}.restCompletionStage`))
-  );
-  const [detailsActionId, setDetailsActionId] = useState(
-    () => safeGet(`${storagePrefix}.detailsActionId`) || DEFAULT_DETAILS_ACTION_ID
-  );
+  const [testComplete, setTestComplete] = useState(false);
+  const [feelChoice, setFeelChoice] = useState("");
+  const [restCompletionStage, setRestCompletionStage] = useState("");
+  const [detailsActionId, setDetailsActionId] = useState(DEFAULT_DETAILS_ACTION_ID);
   const [showCheckoutOptions, setShowCheckoutOptions] = useState(false);
 
-  const [restModeId, setRestModeId] = useState(() => safeGet(`${storagePrefix}.restModeId`) || "");
-  const [restStepIndex, setRestStepIndex] = useState(() => {
-    const raw = safeGet(`${storagePrefix}.restStepIndex`);
-    const n = Number(raw);
-    return Number.isFinite(n) && n >= 0 ? n : 0;
-  });
-  const [timerRemaining, setTimerRemaining] = useState(() => {
-    const raw = safeGet(`${storagePrefix}.timerRemaining`);
-    const n = Number(raw);
-    return Number.isFinite(n) && n >= 0 ? n : 0;
-  });
+  const [restModeId, setRestModeId] = useState("");
+  const [restStepIndex, setRestStepIndex] = useState(0);
+  const [timerRemaining, setTimerRemaining] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [restPanelPhase, setRestPanelPhase] = useState("normal");
+  const [showRestChooser, setShowRestChooser] = useState(false);
 
   const lastPodVoiceKeyRef = useRef("");
   const lastRestVoiceKeyRef = useRef("");
   const restAdvanceTimeoutRef = useRef(null);
+  const cartFeedbackTimeoutRef = useRef(null);
+  const lastCartCountRef = useRef(snoozepodCount);
+  const stagePanelRef = useRef(null);
 
   const clearTimer = (ref) => {
     if (ref.current) {
@@ -1414,7 +1824,7 @@ export default function Pod() {
     [storagePrefix, openStage]
   );
   useEffect(
-    () => safeSet(`${storagePrefix}.buildStepKey`, buildStepKey || "size"),
+    () => safeSet(`${storagePrefix}.buildStepKey`, buildStepKey || "mattress"),
     [storagePrefix, buildStepKey]
   );
   useEffect(
@@ -1454,8 +1864,28 @@ export default function Pod() {
       window.__SNOOZE_DISABLE_WIDGET = prev;
       document.body.classList.remove("no-global-chat");
       clearTimer(restAdvanceTimeoutRef);
+      clearTimer(cartFeedbackTimeoutRef);
     };
   }, []);
+
+  const showCartFeedback = useCallback((message = "Added to cart") => {
+    clearTimer(cartFeedbackTimeoutRef);
+    setCartNotice(message);
+    setCartPulse(true);
+    cartFeedbackTimeoutRef.current = window.setTimeout(() => {
+      setCartNotice("");
+      setCartPulse(false);
+      cartFeedbackTimeoutRef.current = null;
+    }, 2200);
+  }, []);
+
+  useEffect(() => {
+    if (snoozepodCount > lastCartCountRef.current) {
+      showCartFeedback("Added to cart");
+    }
+
+    lastCartCountRef.current = snoozepodCount;
+  }, [snoozepodCount, showCartFeedback]);
 
   const shopperId = useMemo(() => {
     try {
@@ -1616,53 +2046,24 @@ export default function Pod() {
     setActivePod(sanitizedFound || null);
     setSelectedMattressHandle(undefined);
     setSelectedBaseHandle(undefined);
+    setBuildPreviewData(null);
+    setBuildSelectionState(null);
     setShowCheckoutOptions(false);
 
-    const savedOpenStage = safeGet(`${storagePrefix}.openStage`);
-    const savedBuildStepKey = safeGet(`${storagePrefix}.buildStepKey`) || "size";
-    const savedTestComplete = safeGet(`${storagePrefix}.testComplete`) === "1";
-    const savedFeelChoice = safeGet(`${storagePrefix}.feelChoice`) || "";
-    const savedRestCompletionStage = normalizeRestCompletionStage(
-      safeGet(`${storagePrefix}.restCompletionStage`)
-    );
-    const savedDetailsActionId =
-      safeGet(`${storagePrefix}.detailsActionId`) || DEFAULT_DETAILS_ACTION_ID;
-    const savedRestModeId = safeGet(`${storagePrefix}.restModeId`) || "";
-    const savedRestStepIndex = Number(safeGet(`${storagePrefix}.restStepIndex`));
-    const savedTimerRemaining = Number(safeGet(`${storagePrefix}.timerRemaining`));
-
-    setOpenStage(savedOpenStage ? String(savedOpenStage) || "rest" : "rest");
-    setBuildStepKey(savedBuildStepKey);
-    setTestComplete(savedTestComplete);
-    setFeelChoice(savedFeelChoice);
-    setRestCompletionStage(
-      savedRestCompletionStage ||
-        (savedTestComplete ? REST_COMPLETION_STAGES.actions : "")
-    );
-    setDetailsActionId(savedDetailsActionId || DEFAULT_DETAILS_ACTION_ID);
-    setRestModeId(savedRestModeId);
-    setRestStepIndex(Number.isFinite(savedRestStepIndex) && savedRestStepIndex >= 0 ? savedRestStepIndex : 0);
-    setTimerRemaining(
-      Number.isFinite(savedTimerRemaining) && savedTimerRemaining >= 0 ? savedTimerRemaining : 0
-    );
+    setOpenStage("rest");
+    setBuildStepKey("mattress");
+    setTestComplete(false);
+    setFeelChoice("");
+    setRestCompletionStage("");
+    setDetailsActionId(DEFAULT_DETAILS_ACTION_ID);
+    setRestModeId("");
+    setRestStepIndex(0);
+    setTimerRemaining(0);
     setTimerRunning(false);
     setRestPanelPhase("normal");
-
-    if (savedTestComplete) {
-      setCueType("success");
-      setCue(savedFeelChoice ? `Rest Test • ${savedFeelChoice}` : "Rest Test complete");
-    } else if (savedRestModeId) {
-      setCueType("tip");
-      setCue("Rest Test in progress");
-    } else {
-      setCueType("tip");
-      setCue("Choose your Rest Test");
-    }
-
-    if (savedTestComplete && savedRestCompletionStage === REST_COMPLETION_STAGES.reflection) {
-      setCueType("tip");
-      setCue("Final reflection");
-    }
+    setShowRestChooser(false);
+    setCueType("tip");
+    setCue("Choose your Rest Test");
   }, [recs, pid, storagePrefix]);
 
   const effectiveMattressHandle = useMemo(() => {
@@ -1738,7 +2139,8 @@ export default function Pod() {
     setBuildStepKey(key);
   }, []);
 
-  const title = activePod?.title || `SnoozePod ${pid}`;
+  const podLabel = `SnoozePod ${pid}`;
+  const title = activePod?.title || podLabel;
   const isRecommended = !!activePod?.recommended;
   const rank = Number(activePod?.rank || 0);
 
@@ -1769,6 +2171,20 @@ export default function Pod() {
     return activeRestFlow.steps[restStepIndex] || null;
   }, [activeRestFlow, restStepIndex]);
 
+  useEffect(() => {
+    if (openStage !== "rest") return;
+    if (!activeRestFlow && !restCompletionStage) return;
+
+    const node = stagePanelRef.current;
+    if (!node) return;
+
+    const id = window.setTimeout(() => {
+      node.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+
+    return () => window.clearTimeout(id);
+  }, [openStage, activeRestFlow, restCompletionStage]);
+
   const recommendationMeta = recs?.meta || {};
 
   const detailReasonKeys = useMemo(
@@ -1788,6 +2204,9 @@ export default function Pod() {
     () => detectMattressTruth({ mattressProduct, activePod, baseProduct }),
     [mattressProduct, activePod, baseProduct]
   );
+  const mattressDisplayTitle = /mattress/i.test(mattressTruth.mattressTitle || mattressHeroTitle)
+    ? (mattressTruth.mattressTitle || mattressHeroTitle)
+    : `${mattressTruth.mattressTitle || mattressHeroTitle} Mattress`;
 
   const shopperDetailContext = useMemo(() => {
     const focusAreas = painSignals
@@ -1838,13 +2257,101 @@ export default function Pod() {
     };
   }, [painSignals, recommendationMeta, assessment, detailReasonKeys]);
 
+  const defaultBuildSelections = useMemo(
+    () =>
+      buildDefaultSelections({
+        assessment,
+        pod: activePod,
+        supportsSplitMotion: mattressTruth.isDualComfort,
+        isDualComfort: mattressTruth.isDualComfort,
+      }),
+    [assessment, activePod, mattressTruth.isDualComfort]
+  );
+
+  useEffect(() => {
+    if (!activePod) return;
+
+    const defaultBaseHandle =
+      defaultBuildSelections.baseType === "none"
+        ? null
+        : getBaseHandleForType(defaultBuildSelections.baseType) || null;
+
+    setSelectedBaseHandle((prev) => (prev === undefined ? defaultBaseHandle : prev));
+  }, [activePod, defaultBuildSelections.baseType]);
+
+  const defaultMattressVariant = useMemo(
+    () => pickVariantForSize(mattressProduct, defaultBuildSelections.size),
+    [mattressProduct, defaultBuildSelections.size]
+  );
+  const defaultBaseVariant = useMemo(
+    () =>
+      defaultBuildSelections.baseType !== "none"
+        ? pickVariantForSize(baseProduct, defaultBuildSelections.size)
+        : null,
+    [baseProduct, defaultBuildSelections.baseType, defaultBuildSelections.size]
+  );
+  const defaultPreviewTotal = useMemo(
+    () =>
+      parseVariantPrice(defaultMattressVariant) +
+      (defaultBuildSelections.baseType !== "none" ? parseVariantPrice(defaultBaseVariant) : 0),
+    [defaultMattressVariant, defaultBuildSelections.baseType, defaultBaseVariant]
+  );
+
+  const setupSummaryState = useMemo(() => {
+    if (buildSelectionState) {
+      return {
+        ...buildSelectionState,
+        monthlyLabel: money(buildSelectionState.monthly),
+        totalLabel: money(buildSelectionState.previewTotal),
+      };
+    }
+
+    const baseType = defaultBuildSelections.baseType;
+    return {
+      size: defaultBuildSelections.size,
+      baseType,
+      motionType: defaultBuildSelections.motionType,
+      mattressLabel: mattressTruth.mattressTitle || mattressHeroTitle,
+      selectedBaseLabel: formatBaseChoiceLabel(baseType, baseProduct),
+      selectedMotionLabel:
+        baseType === "adjustable"
+          ? lowerText(defaultBuildSelections.motionType).includes("full")
+            ? "Full Split Motion"
+            : lowerText(defaultBuildSelections.motionType).includes("half")
+              ? "Half Split Motion"
+              : "Standard Motion"
+          : "No Motion",
+      mattressImage: pickFeaturedImage(mattressProduct),
+      baseImage: pickFeaturedImage(baseProduct),
+      sizeSubtitle: subtitleForSize(defaultBuildSelections.size),
+      baseSubtitle:
+        baseType === "adjustable"
+          ? "Adjustable support."
+          : subtitleForBase(baseType),
+      wantsBase: baseType !== "none",
+      showMotion: baseType === "adjustable",
+      monthly: monthlyEstimate(defaultPreviewTotal),
+      previewTotal: defaultPreviewTotal,
+      monthlyLabel: money(monthlyEstimate(defaultPreviewTotal)),
+      totalLabel: money(defaultPreviewTotal),
+    };
+  }, [
+    baseProduct,
+    buildSelectionState,
+    defaultBuildSelections,
+    defaultPreviewTotal,
+    mattressProduct,
+    mattressTruth.mattressTitle,
+    mattressHeroTitle,
+  ]);
+
   const detailsQuickActionIntro = useMemo(() => {
     const summary = pickPreferredReasonKeys(detailReasonKeys)
       .map((key) => getPodReasonVariant(key, detailReasonContext))
       .find(Boolean);
 
     const reasonLine = summary || getPodFallbackReason(detailReasonContext);
-    return `Snoozer matched this pod because ${reasonLine}. Tap the guide you want next.`;
+    return `This is a strong first test because ${reasonLine}. Choose what you want to understand.`;
   }, [detailReasonKeys, detailReasonContext]);
 
   const detailsContentByAction = useMemo(() => {
@@ -1915,7 +2422,7 @@ export default function Pod() {
         ? "The long-term strength here comes from the support core doing the heavy lifting while the comfort layers handle pressure relief up top."
         : "The long-term strength here comes from the support layers underneath keeping the feel more consistent while the top layers handle comfort.";
 
-    const chooseBody = `Snoozer put this pod in front of you because ${topReason}.`;
+    const chooseBody = `This is a strong first test because ${topReason}.`;
 
     return {
       feel: {
@@ -1924,7 +2431,7 @@ export default function Pod() {
         body: feelBody,
         primaryTitle: "What to notice first",
         primaryItems: [positionNotice, firmnessNotice, focusLine].filter(Boolean),
-        secondaryTitle: "Why that matters for you",
+        secondaryTitle: "Why it matters for your sleep",
         secondaryItems: [coolingNotice, partnerNotice].filter(Boolean),
         voiceScript: [feelBody, positionNotice, focusLine || firmnessNotice].filter(Boolean).join(" "),
         cue: "How it feels",
@@ -1946,7 +2453,7 @@ export default function Pod() {
             ? `This pod is paired with ${mattressTruth.baseTitle}, so you can also judge the mattress through head-up and Zero Gravity positions.`
             : "",
         ].filter(Boolean),
-        secondaryTitle: "Why that matters for you",
+        secondaryTitle: "Why it matters for your sleep",
         secondaryItems: [
           partnerNotice,
           shopperDetailContext.sleepsHot && mattressTruth.hasCooling
@@ -1973,7 +2480,7 @@ export default function Pod() {
             ? "Because this pod is shown with an adjustable base, you can also judge how stable the mattress stays through movement and position changes."
             : "",
         ].filter(Boolean),
-        secondaryTitle: "What to pay attention to",
+        secondaryTitle: "What to notice when you lie down",
         secondaryItems: [
           "Ask yourself whether the bed still feels composed when you move, roll, or change positions.",
           shopperDetailContext.hasPartner
@@ -1988,13 +2495,13 @@ export default function Pod() {
         id: "choose",
         title: "Why choose this",
         body: chooseBody,
-        primaryTitle: "What Snoozer saw in your assessment",
+        primaryTitle: "What matched in your assessment",
         primaryItems: [
-          isRecommended ? `This is currently one of the first pods Snoozer wants you to test.` : "",
+          isRecommended ? "Start here, then compare from there." : "",
           ...reasonBullets,
           focusLine,
         ].filter(Boolean),
-        secondaryTitle: "Why it could matter more to you than a generic browse",
+        secondaryTitle: "Why it matters for your sleep",
         secondaryItems: [
           partnerNotice,
           coolingNotice,
@@ -2134,6 +2641,7 @@ export default function Pod() {
     clearTimer(restAdvanceTimeoutRef);
     await cancelPodVoice();
 
+    setShowRestChooser(true);
     setRestModeId("");
     setRestStepIndex(0);
     setTimerRemaining(0);
@@ -2158,6 +2666,7 @@ export default function Pod() {
       clearTimer(restAdvanceTimeoutRef);
       await cancelPodVoice();
 
+      setShowRestChooser(true);
       setRestModeId(modeId);
       setRestStepIndex(0);
       setTimerRemaining(firstStep.seconds);
@@ -2316,34 +2825,110 @@ export default function Pod() {
     [activeRestFlow, cancelPodVoice, noteUserInteraction, speakPod]
   );
 
+  const learnQuickCards = useMemo(() => {
+    const firmnessValue = String(
+      recommendationMeta?.firmness || assessment?.firmness || assessment?.comfort || assessment?.feel || "Medium"
+    ).trim();
+    return [
+      {
+        title: "Feel",
+        body: `${firmnessValue || "Medium"} feel.`,
+      },
+      {
+        title: "Support",
+        body:
+          mattressTruth.family === "hybrid"
+            ? "Hybrid support."
+            : mattressTruth.family === "dual"
+              ? "Dual Comfort Hybrid support."
+              : mattressTruth.family === "foam"
+                ? "All-foam support."
+                : "Balanced support.",
+      },
+      {
+        title: "Pressure Relief",
+        body: lowerText(benefits.join(" ")).includes("pressure")
+          ? "Built to ease shoulder and hip pressure."
+          : "Built to stay comfortable through pressure points.",
+      },
+      {
+        title: "Best For",
+        body: isRecommended ? "A balanced first test." : "A strong compare point.",
+      },
+    ];
+  }, [recommendationMeta?.firmness, assessment, mattressTruth.family, benefits, isRecommended]);
+
+  const goToDetailsStage = useCallback(async () => {
+    setShowRestChooser(false);
+    await activateDetailsAction(DEFAULT_DETAILS_ACTION_ID, { ensureDetailsStage: true });
+  }, [activateDetailsAction]);
+
+  const goToBuildStage = useCallback(async (nextStepKey = "mattress") => {
+    noteUserInteraction?.();
+    await cancelPodVoice();
+    setShowRestChooser(false);
+    setOpenStage("build");
+    setBuildStepKey(String(nextStepKey || "mattress"));
+    setCueType("success");
+    setCue(`Build ${podLabel}`);
+    setRestPanelPhase("normal");
+    void speakForStage("build");
+  }, [cancelPodVoice, speakForStage, noteUserInteraction, podLabel]);
+
+  const goToRestStage = useCallback(() => {
+    noteUserInteraction?.();
+    void cancelPodVoice();
+    setOpenStage("rest");
+    setShowRestChooser(true);
+    setCueType("tip");
+    setCue(
+      restCompletionStage === REST_COMPLETION_STAGES.reflection
+        ? "Final reflection"
+        : restCompletionStage === REST_COMPLETION_STAGES.actions
+          ? feelChoice || "Rest Test complete"
+          : restModeId
+            ? "Rest Test in progress"
+            : "Choose your Rest Test"
+    );
+    setRestPanelPhase("normal");
+  }, [cancelPodVoice, restModeId, restCompletionStage, feelChoice, noteUserInteraction]);
+
   const stageContent = useMemo(() => {
     if (openStage === "details") {
-      const hasSecondary = Boolean(activeDetailsContent?.secondaryItems?.length);
-
       return (
-        <div
-          className={[
-            "grid gap-4",
-            hasSecondary ? "xl:grid-cols-[minmax(0,1.16fr)_minmax(320px,0.84fr)]" : "",
-          ].join(" ")}
-        >
-          <div className="min-w-0">
-            <DetailBodyCard
-              title={activeDetailsContent?.title || "Learn About This Pod"}
-              body={activeDetailsContent?.body || detailsQuickActionIntro}
-              itemsTitle={activeDetailsContent?.primaryTitle || ""}
-              items={activeDetailsContent?.primaryItems || []}
-            />
+        <div className="space-y-4">
+          <ShowroomPanel className="p-4 md:p-5" tone="frost">
+            <ShowroomEyebrow>Learn About This Mattress</ShowroomEyebrow>
+            <div className="mt-2 text-[1.9rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-[2.3rem]">
+              {mattressDisplayTitle}
+            </div>
+            <div className="mt-1.5 text-[0.96rem] font-semibold text-slate-600">
+              {`${mattressDisplayTitle} at ${title}`}
+            </div>
+          </ShowroomPanel>
+
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {learnQuickCards.map((card) => (
+              <LearnAtGlanceCard key={card.title} title={card.title} body={card.body} />
+            ))}
           </div>
 
-          {hasSecondary ? (
-            <div className="min-w-0">
-              <DetailCard
-                title={activeDetailsContent.secondaryTitle || "Why that matters for you"}
-                items={activeDetailsContent.secondaryItems}
-              />
-            </div>
-          ) : null}
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={goToRestStage}
+              className="rounded-[18px] bg-[#1A66D2] px-5 py-3 text-sm font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.2)] transition hover:bg-[#1550A0]"
+            >
+              Start Rest Test
+            </button>
+            <button
+              type="button"
+              onClick={() => void goToBuildStage("mattress")}
+              className="rounded-[18px] border border-[#d8e3ff] bg-white px-5 py-3 text-sm font-black text-slate-900 transition hover:bg-slate-50"
+            >
+              Build This Setup
+            </button>
+          </div>
         </div>
       );
     }
@@ -2357,16 +2942,21 @@ export default function Pod() {
           baseProduct={baseProduct}
           onSelectionHandlesChange={onSelectionHandlesChange}
           onBuildStepChange={onBuildStepChange}
+          onPreviewChange={setBuildPreviewData}
+          onStateChange={setBuildSelectionState}
           onCue={(nextText, nextType = "tip") => {
             setCueType(nextType);
             setCue(nextText);
 
             if (typeof nextText === "string" && nextText.toLowerCase().includes("added to cart")) {
+              showCartFeedback("Added to cart");
               setShowCheckoutOptions(true);
             }
           }}
-          primaryCtaLabel="Add to Cart"
+          primaryCtaLabel="Add This Setup"
           onViewSnoozePod={() => navigate("/snoozepod")}
+          onViewResults={() => navigate("/results")}
+          requestedStepKey={buildStepKey}
         />
       );
     }
@@ -2389,9 +2979,11 @@ export default function Pod() {
         onBuildPod={async () => {
           noteUserInteraction?.();
           await cancelPodVoice();
+          setShowRestChooser(false);
           setOpenStage("build");
+          setBuildStepKey("mattress");
           setCueType("success");
-          setCue("Finish Your SnoozePod");
+          setCue(`Build ${podLabel}`);
           setRestPanelPhase("normal");
           void speakForStage("build");
         }}
@@ -2402,14 +2994,17 @@ export default function Pod() {
     );
   }, [
     openStage,
-    activeDetailsContent,
-    detailsQuickActionIntro,
+    mattressTruth.mattressTitle,
+    learnQuickCards,
+    title,
     assessment,
     mattressProduct,
     baseProduct,
     onSelectionHandlesChange,
     onBuildStepChange,
+    setBuildSelectionState,
     navigate,
+    showCartFeedback,
     restFlows,
     activeRestFlow,
     activeRestStep,
@@ -2428,56 +3023,211 @@ export default function Pod() {
     hasAdjustableBase,
     noteUserInteraction,
     cancelPodVoice,
+    goToRestStage,
+    goToBuildStage,
+    buildStepKey,
+    podLabel,
   ]);
 
-  const stageSubtitle = useMemo(() => {
-    if (openStage === "build") {
-      return "Finish your SnoozePod by choosing the size, base, motion, and comfort setup that feels right, then review everything before adding it to your cart.";
-    }
-    if (openStage === "details") {
-      return "Use the guides above to hear how this pod feels, what is inside, why it lasts, and why Snoozer matched it to you.";
-    }
-    return headerPersonalization;
-  }, [openStage, headerPersonalization]);
-
   const footerStageLabel = useMemo(() => {
-    if (openStage === "details") return "Learn About This Pod";
-    if (openStage === "build") return "Customize Your Pod";
+    if (openStage === "details") return "Learn";
+    if (openStage === "build") return "Build";
     if (restCompletionStage === REST_COMPLETION_STAGES.reflection) return "Final reflection";
     if (testComplete) return "Rest Test complete";
     return "Rest Test";
   }, [openStage, restCompletionStage, testComplete]);
 
-  const goToDetailsStage = useCallback(async () => {
-    await activateDetailsAction(DEFAULT_DETAILS_ACTION_ID, { ensureDetailsStage: true });
-  }, [activateDetailsAction]);
+  const heroEyebrow = "Pod Experience";
 
-  const goToBuildStage = useCallback(async () => {
-    noteUserInteraction?.();
-    await cancelPodVoice();
-    setOpenStage("build");
-    setCueType("success");
-    setCue("Finish Your SnoozePod");
-    setRestPanelPhase("normal");
-    void speakForStage("build");
-  }, [cancelPodVoice, speakForStage, noteUserInteraction]);
+  const heroSummary = "Test it. Learn it. Build your setup.";
 
-  const goToRestStage = useCallback(() => {
-    noteUserInteraction?.();
-    void cancelPodVoice();
-    setOpenStage("rest");
-    setCueType("tip");
-    setCue(
-      restCompletionStage === REST_COMPLETION_STAGES.reflection
-        ? "Final reflection"
-        : restCompletionStage === REST_COMPLETION_STAGES.actions
-          ? feelChoice || "Rest Test complete"
-          : restModeId
-            ? "Rest Test in progress"
-            : "Choose your Rest Test"
+  const heroFeatureChips = useMemo(() => {
+    const firmnessValue = String(
+      recommendationMeta?.firmness || assessment?.firmness || assessment?.comfort || assessment?.feel || ""
+    ).trim();
+    const pressureTitle =
+      lowerText(benefits.join(" ")).includes("pressure") || lowerText(whyThisPodReason).includes("pressure")
+        ? "Pressure Relief"
+        : "Balanced Comfort";
+    const supportTitle = lowerText(whyThisPodReason).includes("back")
+      ? "Lower Back Support"
+      : "Support";
+
+    return [
+      {
+        title: firmnessValue ? `${startCase(firmnessValue)} Feel` : "Balanced Feel",
+        value:
+          lowerText(firmnessValue).includes("firm") ? 4 : lowerText(firmnessValue).includes("soft") ? 2 : 3,
+      },
+      {
+        title: pressureTitle,
+        value: lowerText(pressureTitle).includes("pressure") ? 4 : 3,
+      },
+      {
+        title: supportTitle,
+        value: lowerText(supportTitle).includes("back") ? 4 : 3,
+      },
+      {
+        title: inferHeightLabel(mattressTruth.mattressTitle),
+        value: 5,
+      },
+      {
+        title: formatFeatureLabelForFamily(mattressTruth.family),
+        value: mattressTruth.family === "dual" || mattressTruth.family === "hybrid" ? 4 : 3,
+      },
+    ];
+  }, [recommendationMeta?.firmness, assessment, benefits, whyThisPodReason, mattressTruth]);
+
+  const heroBadgeLabel = isRecommended ? "Best First Match" : "Strong Compare Pod";
+  const showHeroFeatureChips = openStage !== "build";
+  const isBuildStage = openStage === "build";
+
+  const isDefaultPodDashboard =
+    openStage === "rest" &&
+    !showRestChooser &&
+    !activeRestFlow &&
+    !restCompletionStage &&
+    !testComplete;
+  const showSetupOverview = isDefaultPodDashboard || openStage === "build";
+
+  const summaryBaseSubtitle = useMemo(() => {
+    if (setupSummaryState.showMotion) return setupSummaryState.selectedMotionLabel;
+    return setupSummaryState.baseSubtitle || subtitleForBase(setupSummaryState.baseType);
+  }, [setupSummaryState]);
+
+  const summaryValueNotes = useMemo(
+    () => [
+      { title: "Delivery options", body: "Review delivery and setup when you're ready." },
+      { title: "Warranty support", body: "Coverage details stay available while you compare." },
+      { title: "Sleep trial info", body: "Trial questions can be answered before checkout." },
+      { title: "Built for compare", body: "Test this setup first, then compare your next pod." },
+    ],
+    []
+  );
+
+  const dashboardReasonItems = useMemo(() => {
+    const rows = [];
+    const lowerReasonSet = new Set(detailReasonKeys.map((key) => lowerText(key)));
+    const firmnessValue = lowerText(
+      recommendationMeta?.firmness || assessment?.firmness || assessment?.comfort || assessment?.feel
     );
-    setRestPanelPhase("normal");
-  }, [cancelPodVoice, restModeId, restCompletionStage, feelChoice, noteUserInteraction]);
+
+    const pushRow = (title, body, icon = CheckCircle2) => {
+      if (!title || !body) return;
+      if (rows.some((item) => item.title === title)) return;
+      rows.push({ title, body, icon });
+    };
+
+    if (
+      lowerReasonSet.has("back_or_stomach_support") ||
+      lowerText(benefits[0]).includes("back")
+    ) {
+      pushRow(
+        "Lower back support match",
+        "Designed to keep your lower back more supported while you settle into the bed.",
+        BedDouble
+      );
+    }
+
+    if (
+      lowerReasonSet.has("side_sleeper_pressure_relief") ||
+      lowerText(benefits.join(" ")).includes("pressure")
+    ) {
+      pushRow(
+        "Pressure-relief focus",
+        "Worth noticing first around your shoulders and hips as you relax into your normal position.",
+        CheckCircle2
+      );
+    }
+
+    if (firmnessValue) {
+      pushRow(
+        `${firmnessValue.charAt(0).toUpperCase() + firmnessValue.slice(1)}-feel match`,
+        `This pod stays close to the ${firmnessValue} feel you selected in the assessment.`,
+        MessageSquare
+      );
+    }
+
+    if (shopperDetailContext.sleepsHot) {
+      pushRow(
+        "Cooling-aware test",
+        "Give it a few quiet minutes and notice whether the surface settles temperature more comfortably.",
+        Timer
+      );
+    }
+
+    if (shopperDetailContext.hasPartner || mattressTruth.isDualComfort) {
+      pushRow(
+        "Great compare point",
+        "A useful pod to evaluate first before you compare shared-sleep comfort or motion with the next option.",
+        CheckCircle2
+      );
+    }
+
+    pushRow(
+      "Strong all-around fit",
+      "A balanced first stop that helps you learn quickly what your body wants before the next pod.",
+      CheckCircle2
+    );
+
+    return rows.slice(0, 2);
+  }, [
+    detailReasonKeys,
+    benefits,
+    recommendationMeta?.firmness,
+    assessment,
+    shopperDetailContext.sleepsHot,
+    shopperDetailContext.hasPartner,
+    mattressTruth.isDualComfort,
+  ]);
+
+  const dashboardTestingItems = useMemo(
+    () => [
+      {
+        title: "Rest for 5 to 10 minutes",
+        body: "Give your body time to settle and adjust.",
+        icon: Timer,
+      },
+      {
+        title: "Try your usual positions",
+        body: "Back, side, and stomach positions tell you quickly what this pod does best.",
+        icon: BedDouble,
+      },
+    ],
+    []
+  );
+
+  const dashboardTestingModes = useMemo(
+    () => Object.values(restFlows || {}).filter(Boolean).slice(0, 2),
+    [restFlows]
+  );
+
+  const defaultPanelContent = useMemo(
+    () => (
+      <div className="grid h-full gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.98fr)]">
+        <DefaultWhyPodFitsCard
+          title="Start here, then compare."
+          intro={`Try ${mattressDisplayTitle} at ${title}, then compare your next pod once you know what your body likes.`}
+          items={dashboardReasonItems}
+        />
+        <DefaultTestingGuideCard
+          items={dashboardTestingItems}
+          flowOptions={dashboardTestingModes}
+          onChooseMode={handleChooseRestMode}
+          hasAdjustableBase={hasAdjustableBase}
+        />
+      </div>
+    ),
+    [
+      mattressDisplayTitle,
+      title,
+      dashboardReasonItems,
+      dashboardTestingItems,
+      dashboardTestingModes,
+      handleChooseRestMode,
+      hasAdjustableBase,
+    ]
+  );
 
   const restPanelImage = useMemo(() => {
     if (openStage !== "rest") return [];
@@ -2503,346 +3253,322 @@ export default function Pod() {
 
   const restPanelTitle = useMemo(() => {
     if (openStage !== "rest") return "";
-
-    if (restPanelPhase === "transition") return "Next Step";
-    if (!activeRestFlow) return "Choose Your Rest Test";
-    if (restCompletionStage === REST_COMPLETION_STAGES.reflection) {
-      return "Final Reflection";
-    }
-    if (restCompletionStage === REST_COMPLETION_STAGES.actions) {
-      return "Next Actions";
-    }
-    if (timerRunning) return activeRestStep?.cue || "Rest Test Active";
-    return activeRestFlow?.title || "Rest Test";
-  }, [openStage, restPanelPhase, activeRestFlow, restCompletionStage, activeRestStep, timerRunning]);
+    return "How to test this pod";
+  }, [openStage]);
 
   const restPanelCaption = useMemo(() => {
     if (openStage !== "rest") return "";
 
     if (restPanelPhase === "transition") {
-      return "Move into the next position when you are ready.";
+      return "Move into the next step when you are ready.";
     }
 
     if (!activeRestFlow) {
-      return "Choose either the 7-minute or 15-minute rest test to begin.";
+      return "Choose the 7-minute or 15-minute test, then stay with one pod at a time.";
     }
 
     if (restCompletionStage === REST_COMPLETION_STAGES.reflection) {
-      return "Choose the one thing that stood out most during this rest test.";
+      return "Choose the one thing that stood out most.";
     }
 
     if (restCompletionStage === REST_COMPLETION_STAGES.actions) {
-      return "Choose what to do next without losing your place on this pod.";
+      return "Choose what to do next.";
     }
 
     if (timerRunning) {
       return activeRestStep?.body || "Follow the current step and notice how the mattress feels.";
     }
 
-    return "Review the step, then start the timer when you are ready.";
+    return activeRestStep?.body || activeRestFlow?.rationale || "Review the next step, then start when you are ready.";
   }, [openStage, restPanelPhase, activeRestFlow, restCompletionStage, activeRestStep, timerRunning]);
+
+  const restPanelItems = useMemo(
+    () => [
+      "Lie in your normal sleep position.",
+      "Notice support, pressure, and comfort.",
+      "Compare one pod at a time.",
+    ],
+    []
+  );
 
   const buildPanelVisual = useMemo(() => {
     const baseImage = pickProductImage(baseProduct);
     const motionVisual = inferMotionVisualFromHandle(effectiveBaseHandle, baseProduct?.title || "");
     const step = String(buildStepKey || "size");
+    const previewItems = Array.isArray(buildPreviewData?.items) ? buildPreviewData.items : [];
 
     if (step === "base") {
       return {
-        title: BUILD_VISUALS.base.title,
+        title: buildPreviewData?.title || BUILD_VISUALS.base.title,
         image: [baseImage, mattressImage, PUBLIC_ASSETS.standardMotion],
-        caption: BUILD_VISUALS.base.caption,
+        caption: buildPreviewData?.caption || BUILD_VISUALS.base.caption,
+        items: previewItems,
+        nextAction: buildPreviewData?.nextAction || "",
       };
     }
 
     if (step === "motion") {
       return {
-        title: BUILD_VISUALS.motion.title,
+        title: buildPreviewData?.title || BUILD_VISUALS.motion.title,
         image: motionVisual.image,
-        caption: motionVisual.caption || BUILD_VISUALS.motion.caption,
+        caption: buildPreviewData?.caption || motionVisual.caption || BUILD_VISUALS.motion.caption,
+        items: previewItems,
+        nextAction: buildPreviewData?.nextAction || "",
       };
     }
 
     if (step === "dual") {
       return {
-        title: BUILD_VISUALS.dual.title,
-        image: [mattressImage, PUBLIC_ASSETS.noImage],
-        caption: BUILD_VISUALS.dual.caption,
+        title: buildPreviewData?.title || BUILD_VISUALS.dual.title,
+        image: mattressImage ? [mattressImage] : [],
+        caption: buildPreviewData?.caption || BUILD_VISUALS.dual.caption,
+        items: previewItems,
+        nextAction: buildPreviewData?.nextAction || "",
       };
     }
 
     if (step === "review" || step === "mattress") {
       return {
-        title: BUILD_VISUALS.review.title,
+        title: buildPreviewData?.title || BUILD_VISUALS.review.title,
         image: [mattressImage, baseImage, PUBLIC_ASSETS.sizeDimensions],
-        caption: BUILD_VISUALS.review.caption,
+        caption: buildPreviewData?.caption || BUILD_VISUALS.review.caption,
+        items: previewItems,
+        nextAction: buildPreviewData?.nextAction || "",
       };
     }
 
     return {
       ...BUILD_VISUALS.size,
+      title: buildPreviewData?.title || BUILD_VISUALS.size.title,
       image: [PUBLIC_ASSETS.sizeDimensions],
+      caption: buildPreviewData?.caption || BUILD_VISUALS.size.caption,
+      items: previewItems,
+      nextAction: buildPreviewData?.nextAction || "",
     };
-  }, [buildStepKey, baseProduct, effectiveBaseHandle, mattressImage]);
+  }, [buildStepKey, baseProduct, effectiveBaseHandle, mattressImage, buildPreviewData]);
 
-  const rightPanelContent = useMemo(() => {
-    if (openStage === "rest") {
+  const restPanelMeters = useMemo(() => {
+    if (openStage !== "rest" || !activeRestFlow) return [];
+    return buildRestComfortMeters(restStepIndex);
+  }, [openStage, activeRestFlow, restStepIndex]);
+
+  const activePanelContent = useMemo(() => {
+    if (loading || !activePod) {
       return (
-        <RestTestVisualCard
-          title={restPanelTitle}
-          image={restPanelImage}
-          caption={restPanelCaption}
-        />
+        <ShowroomPanel className="h-full p-6 md:p-8">
+          <div className="py-6 text-center text-slate-500">Preparing this pod</div>
+        </ShowroomPanel>
       );
     }
 
-    if (openStage === "build") {
-      return (
-        <BuildVisualCard
-          title={buildPanelVisual.title}
-          image={buildPanelVisual.image}
-          caption={buildPanelVisual.caption}
-        />
-      );
+    if (isDefaultPodDashboard) {
+      return defaultPanelContent;
     }
 
-    return <OnThisPodCard title={mattressHeroTitle} image={mattressImage} />;
-  }, [
-    openStage,
-    restPanelTitle,
-    restPanelImage,
-    restPanelCaption,
-    buildPanelVisual,
-    mattressHeroTitle,
-    mattressImage,
-  ]);
-
-  const showInlineStagePanel = !loading && !!activePod;
+    return stageContent;
+  }, [loading, activePod, isDefaultPodDashboard, defaultPanelContent, openStage, stageContent]);
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-[#E8ECF5] to-white pb-28 pt-4 md:pt-5">
-      <div className="mx-auto max-w-[1500px] px-4 lg:px-6">
-        <div className="mb-3 flex items-center justify-between gap-3">
+    <ShowroomPageShell className="flex min-h-screen flex-col overflow-x-hidden pb-3">
+      <ShowroomTopRail className="shrink-0 items-center">
+        <ShowroomBrandMark />
+        <div className="flex flex-col items-end gap-2">
+          <ShowroomCartBadge
+            count={snoozepodCount}
+            quiet
+            className={cartPulse ? "scale-[1.01] border-indigo-300 ring-4 ring-indigo-100" : ""}
+            onClick={() => {
+              noteUserInteraction?.();
+              navigate("/snoozepod");
+            }}
+          />
+
+          {cartNotice ? (
+            <div className="rounded-2xl border border-indigo-100 bg-white/95 px-3 py-2 text-sm font-semibold text-indigo-900 shadow-sm backdrop-blur">
+              {cartNotice}
+            </div>
+          ) : null}
+        </div>
+      </ShowroomTopRail>
+
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-2 pt-2 md:px-6">
+        <div className="mb-2.5 flex shrink-0 items-center gap-3">
           <button
             type="button"
             onClick={() => {
               noteUserInteraction?.();
               navigate("/results");
             }}
-            className="inline-flex items-center gap-3 rounded-2xl border bg-white px-5 py-3 text-base font-extrabold text-gray-900 shadow-sm transition hover:shadow"
+            className="inline-flex items-center gap-3 rounded-[18px] border border-white/80 bg-white/94 px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:shadow"
           >
             <ArrowLeft className="h-5 w-5" />
-            Back
+            Back to results
           </button>
+        </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              noteUserInteraction?.();
-              navigate("/snoozepod");
-            }}
-            className="inline-flex items-center gap-3 rounded-2xl border bg-white px-5 py-3 shadow-sm transition hover:shadow"
-            title="View cart"
+        <ShowroomFrame
+          className={[
+            "flex flex-1 flex-col",
+            isBuildStage ? "p-2.5 md:p-3" : "p-3 md:p-3.5",
+          ].join(" ")}
+        >
+          <div
+            className={[
+              "grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)] lg:items-stretch",
+              isBuildStage ? "gap-2.5" : "",
+            ].join(" ")}
           >
-            <ShoppingCart className="h-5 w-5 text-indigo-700" />
-            <div className="text-left leading-tight">
-              <div className="text-xs font-semibold text-gray-500">Cart</div>
-              <div className="text-base font-extrabold text-gray-900">
-                {snoozepodCount} item{snoozepodCount === 1 ? "" : "s"}
+            <div className="min-w-0">
+              <ShowroomEyebrow>{heroEyebrow}</ShowroomEyebrow>
+              <div className="mt-1.5 text-[0.96rem] font-extrabold tracking-tight text-[#2f57e8] md:text-[1.08rem]">
+                {title}
               </div>
-            </div>
-          </button>
-        </div>
 
-        <div className="space-y-4">
-          <div className="rounded-[32px] border border-white/60 bg-white shadow-2xl">
-            <div className="p-4 md:p-5">
-              <div className="rounded-[28px] border border-indigo-100 bg-gradient-to-r from-[#EEF4FF] to-white p-4 shadow-sm md:p-5">
-                <div className="min-w-0">
-                  <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 md:text-5xl">
-                    {title}
-                  </h1>
+              <h1
+                className={[
+                  "mt-1.5 font-black leading-[0.96] tracking-tight text-slate-900",
+                  isBuildStage
+                    ? "text-[1.82rem] md:text-[2.05rem] lg:text-[2.2rem]"
+                    : "text-[1.95rem] md:text-[2.3rem] lg:text-[2.55rem]",
+                ].join(" ")}
+              >
+                {mattressDisplayTitle}
+              </h1>
 
-                  <p className="mt-2.5 max-w-5xl text-base text-gray-700 md:text-lg">
-                    {stageSubtitle}
-                  </p>
+              <p
+                className={[
+                  "max-w-3xl text-slate-700",
+                  isBuildStage ? "mt-1 text-[0.86rem] leading-5 md:text-[0.92rem]" : "mt-1.5 text-[0.92rem] leading-5 md:text-[0.98rem]",
+                ].join(" ")}
+              >
+                {heroSummary}
+              </p>
 
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <StageButton
-                      active={openStage === "rest"}
-                      icon={Timer}
-                      label="Rest Test"
-                      onClick={goToRestStage}
-                    />
-                    <StageButton
-                      active={openStage === "details"}
-                      icon={MessageSquare}
-                      label="Learn About This Pod"
-                      onClick={goToDetailsStage}
-                    />
-                    <StageButton
-                      active={openStage === "build"}
-                      icon={BedDouble}
-                      label="Customize Your Pod"
-                      onClick={goToBuildStage}
-                    />
+              <div
+                className={[
+                  "grid gap-2 rounded-[24px] border border-[#dfe7ff] bg-white/90 p-1.5 md:grid-cols-3",
+                  isBuildStage ? "mt-2.5" : "mt-3",
+                ].join(" ")}
+              >
+                <ShowroomModeButton
+                  active={openStage === "rest"}
+                  icon={Timer}
+                  label="Rest Test"
+                  onClick={goToRestStage}
+                  className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
+                />
+                <ShowroomModeButton
+                  active={openStage === "details"}
+                  icon={MessageSquare}
+                  label="Learn"
+                  onClick={goToDetailsStage}
+                  className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
+                />
+                <ShowroomModeButton
+                  active={openStage === "build"}
+                  icon={BedDouble}
+                  label="Build"
+                  onClick={() => void goToBuildStage(buildStepKey || "mattress")}
+                  className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
+                />
+              </div>
+
+                {(voiceState?.blocked || voiceState?.error) && (
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    {voiceState?.blocked ? (
+                      <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                        Audio may require a tap
+                      </span>
+                    ) : null}
+
+                    {voiceState?.error ? (
+                      <span className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                        Audio unavailable
+                      </span>
+                    ) : null}
                   </div>
+                )}
 
-                  {(voiceState?.blocked || voiceState?.error) && (
-                    <div className="mt-3 flex flex-wrap gap-3">
-                      {voiceState?.blocked ? (
-                        <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                          Audio may require a tap
-                        </span>
-                      ) : null}
-
-                      {voiceState?.error ? (
-                        <span className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
-                          Audio unavailable
-                        </span>
-                      ) : null}
-                    </div>
-                  )}
+              {showHeroFeatureChips ? (
+                <div className="mt-2.5 flex gap-2 overflow-x-auto border-t border-slate-200/80 pb-1 pt-2">
+                  {heroFeatureChips.slice(0, 4).map((chip) => (
+                    <HeroFeatureChip key={chip.title} title={chip.title} value={chip.value} compact />
+                  ))}
                 </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.34fr)_minmax(360px,0.96fr)] xl:items-start">
-                <div className="min-w-0 space-y-4">
-                  {openStage !== "build" ? (
-                    <WhyChosenCard
-                      isRecommended={isRecommended}
-                      rank={rank}
-                      sentence={whyThisPodSentence}
-                      detailsMode={openStage === "details"}
-                      detailsIntro={detailsQuickActionIntro}
-                      actions={DETAILS_ACTIONS}
-                      activeActionId={detailsActionId}
-                      onActionSelect={(actionId) =>
-                        void activateDetailsAction(actionId, { ensureDetailsStage: true })
-                      }
-                    />
-                  ) : null}
-
-                  {showInlineStagePanel ? (
-                    <div className="overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-xl">
-                      <div className="p-0">{stageContent}</div>
-                    </div>
-                  ) : (
-                    <div className="rounded-[32px] border border-white/60 bg-white p-6 shadow-xl">
-                      <div className="py-6 text-center text-gray-500">Preparing this pod</div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="min-w-0 space-y-4">{rightPanelContent}</div>
-              </div>
+              ) : null}
             </div>
-          </div>
 
-          {showCheckoutOptions ? (
-            <div className="rounded-3xl border bg-white p-6 shadow-sm md:p-8">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded-3xl border bg-gray-50 p-6">
-                  <div className="text-lg font-extrabold text-gray-900">Checkout Kiosk</div>
-                  <div className="mt-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        noteUserInteraction?.();
-                        void cancelPodVoice();
-                        navigate("/snoozepod");
-                      }}
-                      className="rounded-2xl bg-indigo-600 px-6 py-4 text-base font-extrabold text-white hover:bg-indigo-700"
-                    >
-                      Go to Checkout
-                    </button>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border bg-gray-50 p-6">
-                  <div className="text-lg font-extrabold text-gray-900">Continue on Phone</div>
-                  <div className="mt-4">
-                    {safeGet("snooze.shopify.checkoutUrl") || safeGet("snooze.checkoutUrl") ? (
-                      <a
-                        href={safeGet("snooze.shopify.checkoutUrl") || safeGet("snooze.checkoutUrl")}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex rounded-2xl border bg-white px-6 py-4 text-base font-extrabold text-gray-900 hover:bg-gray-50"
-                        onClick={() => {
-                          noteUserInteraction?.();
-                          void cancelPodVoice();
-                        }}
-                      >
-                        Open Checkout
-                      </a>
-                    ) : (
-                      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">
-                        Checkout link pending
-                      </div>
-                    )}
-                  </div>
-                </div>
+            <ShowroomPanel className="relative overflow-hidden p-2 md:p-2.5" tone="soft">
+              <div className="overflow-hidden rounded-[30px] border border-white/80 bg-white shadow-inner">
+                <ResponsiveImage
+                  src={mattressImage}
+                  alt={mattressDisplayTitle}
+                  className={openStage === "build" ? "aspect-[16/5.35]" : "aspect-[16/7.2]"}
+                  imgClassName="h-full w-full object-cover"
+                />
               </div>
+
+                <div className="pointer-events-none absolute left-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/85 bg-white/94 px-3.5 py-2 text-xs font-extrabold text-[#2848c7] shadow-lg md:text-sm">
+                  <CheckCircle2 className="h-4 w-4" />
+                  {heroBadgeLabel}
+                </div>
+
+                {!isBuildStage ? (
+                  <button
+                    type="button"
+                    onClick={goToDetailsStage}
+                    className="absolute bottom-5 right-5 inline-flex items-center gap-2 rounded-full border border-white/85 bg-white/95 px-4 py-2.5 text-sm font-extrabold text-[#2f57e8] shadow-lg transition hover:shadow-xl"
+                  >
+                    View Details
+                  </button>
+                ) : null}
+              </ShowroomPanel>
             </div>
-          ) : null}
-        </div>
+
+            <div
+              ref={stagePanelRef}
+              className={[
+                isBuildStage ? "mt-2 flex-1" : "mt-3 flex-1",
+                "overflow-visible",
+              ].join(" ")}
+            >
+              {activePanelContent}
+            </div>
+          </ShowroomFrame>
       </div>
 
       {!loading && activePod ? (
-        <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur">
-          <div className="mx-auto flex max-w-[1280px] flex-col gap-3 px-4 py-2.5 lg:px-6 md:flex-row md:items-center md:justify-between">
-            <div className="min-w-0">
-              <div className="text-sm font-extrabold text-gray-900">{title}</div>
-              <div className="mt-0.5 text-sm text-gray-600">{footerStageLabel}</div>
-            </div>
+        <ShowroomFooterDock
+          sticky={false}
+          className="mt-3 px-4 md:px-6"
+          label="You're at"
+          sublabel={`${title} / ${footerStageLabel}`}
+        >
+          <ShowroomFooterAction
+            icon={MessageSquare}
+            label="Ask Snoozer"
+            className="md:min-w-[124px]"
+            onClick={() => {
+              noteUserInteraction?.();
+              void cancelPodVoice();
+              navigate("/ask-snoozer", { state: { from: `/pod/${pid}` } });
+            }}
+          />
 
-            <div className="grid grid-cols-2 gap-2.5 md:flex md:flex-wrap">
-              <FooterAction
-                icon={Headphones}
-                label="Talk to Human"
-                onClick={() => {
-                  noteUserInteraction?.();
-                  setCueType("tip");
-                  setCue("Ask the showroom team for in-store help when you're ready.");
-                }}
-              />
-
-              <FooterAction
-                icon={MessageSquare}
-                label="Ask Snoozer"
-                onClick={() => {
-                  noteUserInteraction?.();
-                  void cancelPodVoice();
-                  navigate("/ask-snoozer", { state: { from: `/pod/${pid}` } });
-                }}
-              />
-
-              <FooterAction
-                icon={Sparkles}
-                label="My Rewards"
-                onClick={() => {
-                  noteUserInteraction?.();
-                  void cancelPodVoice();
-                  navigate("/snoozepod");
-                }}
-              />
-
-              <FooterAction
-                icon={CreditCard}
-                label="Checkout"
-                tone="primary"
-                onClick={() => {
-                  noteUserInteraction?.();
-                  void cancelPodVoice();
-                  setShowCheckoutOptions(true);
-                  setCueType("success");
-                  setCue("Ready for checkout");
-                }}
-              />
-            </div>
-          </div>
-        </div>
+          <ShowroomFooterAction
+            icon={Headphones}
+            label="Talk to Human"
+            className="md:min-w-[124px]"
+            onClick={() => {
+              noteUserInteraction?.();
+              setCueType("tip");
+              setCue("Ask the showroom team for in-store help when you're ready.");
+            }}
+          />
+        </ShowroomFooterDock>
       ) : null}
-    </section>
+    </ShowroomPageShell>
   );
 }
+
+

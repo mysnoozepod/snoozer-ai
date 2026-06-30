@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArrowRight,
+  BedDouble,
+  CheckCircle2,
+  ImageOff,
+  Ruler,
+  SlidersHorizontal,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/useStore";
 import {
@@ -14,7 +22,7 @@ function lower(value) {
   return String(value || "").toLowerCase().trim();
 }
 
-function money(value) {
+export function money(value) {
   const amount = Number(value);
   const safe = Number.isFinite(amount) ? amount : 0;
 
@@ -29,7 +37,7 @@ function money(value) {
   }
 }
 
-function monthlyEstimate(total) {
+export function monthlyEstimate(total) {
   const value = Number(total);
   return (Number.isFinite(value) ? value : 0) / 12;
 }
@@ -43,7 +51,7 @@ function sanitizeImageUrl(value) {
   return "";
 }
 
-function pickFeaturedImage(product) {
+export function pickFeaturedImage(product) {
   const candidates = [
     product?.imageUrl,
     product?.image,
@@ -61,7 +69,7 @@ function pickFeaturedImage(product) {
     if (src) return src;
   }
 
-  return "/no-image.svg";
+  return "";
 }
 
 function normalizeVariants(product) {
@@ -72,7 +80,7 @@ function normalizeVariants(product) {
   return [];
 }
 
-function parseVariantPrice(variant) {
+export function parseVariantPrice(variant) {
   const amount =
     variant?.price?.amount ??
     variant?.priceV2?.amount ??
@@ -92,7 +100,7 @@ function variantMatchesSize(variant, size) {
   return selectedOptions.some((option) => lower(option?.value) === target);
 }
 
-function pickVariantForSize(product, size) {
+export function pickVariantForSize(product, size) {
   const variants = normalizeVariants(product);
   if (!variants.length) return null;
   return variants.find((variant) => variantMatchesSize(variant, size)) || variants[0] || null;
@@ -120,7 +128,7 @@ function isSplitMotion(motionType) {
   return motionType === "half_split" || motionType === "full_split";
 }
 
-function inferBaseTypeFromPod(pod) {
+export function inferBaseTypeFromPod(pod) {
   const handle = lower(pod?.baseHandle);
   const label = lower(pod?.displayedIn?.baseLabel);
   const motion = lower(pod?.displayedIn?.motion);
@@ -138,7 +146,7 @@ function inferBaseTypeFromPod(pod) {
   return "none";
 }
 
-function inferMotionTypeFromPod(pod) {
+export function inferMotionTypeFromPod(pod) {
   const motion = lower(pod?.displayedIn?.motion);
   if (motion.includes("full split")) return "full_split";
   if (motion.includes("half split")) return "half_split";
@@ -159,6 +167,11 @@ function inferMattressTypeFromPod(pod) {
 function storageKeyForPod(pod) {
   const id = String(pod?.podId ?? pod?.id ?? "unknown").trim() || "unknown";
   return `snooze.podBuilder.${id}`;
+}
+
+function podLabelFor(pod) {
+  const id = String(pod?.podId ?? pod?.id ?? "").trim();
+  return id ? `SnoozePod ${id}` : "SnoozePod";
 }
 
 function readSavedBuild(pod) {
@@ -290,7 +303,7 @@ function resolveMotionSelection(candidate, allowedMotion) {
   return allowed[0] || "standard";
 }
 
-function buildDefaultSelections({ assessment, pod, supportsSplitMotion, isDualComfort }) {
+export function buildDefaultSelections({ assessment, pod, supportsSplitMotion, isDualComfort }) {
   const context = buildAssessmentPreferenceContext(assessment);
   const sizeFromAssessment = context.size;
   const baseFromAssessment = context.baseType;
@@ -377,15 +390,15 @@ function ChoiceCard({ title, subtitle, active, disabled = false, onClick }) {
       disabled={disabled}
       onClick={onClick}
       className={[
-        "w-full rounded-3xl border p-5 text-left shadow-sm transition md:p-6",
+        "w-full rounded-[24px] border p-4 text-left shadow-sm transition",
         disabled ? "cursor-not-allowed opacity-50" : "hover:-translate-y-0.5 hover:shadow-md",
         active ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white",
       ].join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-lg font-extrabold text-gray-900">{title}</div>
-          {subtitle ? <div className="mt-2 text-sm text-gray-600">{subtitle}</div> : null}
+          <div className="text-base font-extrabold text-gray-900 md:text-[1.05rem]">{title}</div>
+          {subtitle ? <div className="mt-1.5 text-sm text-gray-600">{subtitle}</div> : null}
         </div>
         <div
           className={[
@@ -400,7 +413,7 @@ function ChoiceCard({ title, subtitle, active, disabled = false, onClick }) {
   );
 }
 
-function subtitleForSize(option) {
+export function subtitleForSize(option) {
   switch (option) {
     case "Twin":
       return "A clean fit for compact spaces.";
@@ -417,7 +430,7 @@ function subtitleForSize(option) {
   }
 }
 
-function subtitleForBase(option) {
+export function subtitleForBase(option) {
   switch (option) {
     case "none":
       return "Keep the focus on the mattress feel.";
@@ -445,6 +458,147 @@ function subtitleForMotion(option) {
   }
 }
 
+function normalizeBuildStepCandidate(value) {
+  const normalized = lower(value);
+  if (!normalized) return "";
+  if (normalized === "motion") return "base";
+  if (normalized === "dual" || normalized === "comfort") return "mattress";
+  if (normalized === "mattress" || normalized === "base" || normalized === "size" || normalized === "review") {
+    return normalized;
+  }
+  return "";
+}
+
+function BuilderFallbackArt({ icon: Icon = BedDouble }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center rounded-[18px] bg-[radial-gradient(circle_at_top,_rgba(84,120,255,0.18),_transparent_55%),linear-gradient(180deg,#f6f9ff_0%,#eef3ff_100%)] text-[#2f57e8]">
+      <Icon className="h-8 w-8 opacity-90" />
+    </div>
+  );
+}
+
+function BuilderMediaPreview({
+  src,
+  alt,
+  icon: Icon = BedDouble,
+  className = "",
+  imgClassName = "h-full w-full object-cover",
+}) {
+  const safeSrc = sanitizeImageUrl(src);
+
+  return (
+    <div className={className}>
+      {safeSrc ? (
+        <img src={safeSrc} alt={alt} className={imgClassName} loading="lazy" decoding="async" />
+      ) : (
+        <BuilderFallbackArt icon={Icon} />
+      )}
+    </div>
+  );
+}
+
+function BuilderStepButton({ step, index, active, unlocked, onClick }) {
+  const Icon = step.icon;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!unlocked}
+      className={[
+        "flex w-full items-center gap-2.5 rounded-[18px] border px-3 py-2.5 text-left transition",
+        active
+          ? "border-indigo-200 bg-indigo-50 text-[#1f40c7] shadow-[0_12px_28px_rgba(47,87,232,0.12)]"
+          : unlocked
+            ? "border-slate-200 bg-white text-slate-800 hover:border-indigo-100 hover:bg-slate-50"
+            : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400",
+      ].join(" ")}
+      >
+        <div
+          className={[
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[0.74rem] font-black",
+            active
+              ? "border-indigo-200 bg-white text-[#2f57e8]"
+              : unlocked
+                ? "border-slate-200 bg-slate-50 text-slate-600"
+                : "border-slate-200 bg-white text-slate-400",
+        ].join(" ")}
+      >
+        {index + 1}
+      </div>
+
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        {Icon ? <Icon className="h-3.5 w-3.5 shrink-0" /> : null}
+        <span className="truncate text-[0.82rem] font-extrabold">{step.label}</span>
+      </div>
+    </button>
+  );
+}
+
+function BuilderSelectionCard({
+  step,
+  label,
+  value,
+  subtitle = "",
+  image,
+  icon: Icon = BedDouble,
+  imageFit = "contain",
+  onChange,
+}) {
+  return (
+    <div className="rounded-[22px] border border-[#dfe7ff] bg-white/96 px-3 py-2.5 shadow-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[0.74rem] font-black text-[#2f57e8]">
+            {step}
+          </div>
+          <div className="truncate text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+            {label}
+          </div>
+        </div>
+
+        {onChange ? (
+          <button
+            type="button"
+            onClick={onChange}
+            className="shrink-0 text-xs font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
+          >
+            Change
+          </button>
+        ) : null}
+      </div>
+
+      <div className="mt-2.5 flex min-h-[66px] items-center gap-3">
+        <div className="flex h-[60px] w-[60px] shrink-0 overflow-hidden rounded-[16px] border border-[#e5ebff] bg-[#fbfcff]">
+          <BuilderMediaPreview
+            src={image}
+            alt={value}
+            icon={Icon}
+            className="h-full w-full"
+            imgClassName={
+              imageFit === "cover" ? "h-full w-full object-cover" : "h-full w-full object-contain p-2"
+            }
+          />
+        </div>
+
+        <div className="min-w-0">
+          <div className="text-[0.96rem] font-extrabold leading-tight text-slate-900">{value}</div>
+          {subtitle ? <div className="mt-1 text-[0.8rem] leading-5 text-slate-600">{subtitle}</div> : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BuilderMetricCard({ label, value }) {
+  return (
+    <div className="rounded-[20px] border border-[#dbe5ff] bg-white px-3.5 py-3.5 shadow-sm">
+      <div className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">{label}</div>
+      <div className="mt-1 text-[1.55rem] font-black tracking-tight text-slate-900">{value}</div>
+    </div>
+  );
+}
+
 export default function PodBuilder({
   pod,
   assessment,
@@ -453,8 +607,12 @@ export default function PodBuilder({
   onCue,
   onSelectionHandlesChange,
   onBuildStepChange,
+  onPreviewChange,
+  onStateChange,
   primaryCtaLabel = "Add to Cart",
   onViewSnoozePod,
+  onViewResults,
+  requestedStepKey,
 }) {
   const addToSnoozePod = useStore((state) => state.addToSnoozePod);
   const getSnoozePodSubtotal = useStore((state) => state.getSnoozePodSubtotal);
@@ -499,21 +657,30 @@ export default function PodBuilder({
 
   const showMotion = baseType === "adjustable";
   const wantsBase = baseType !== "none";
-  const steps = useMemo(() => {
-    const list = [
-      { key: "size", label: "Size" },
-      { key: "base", label: "Base" },
-    ];
-    if (showMotion) list.push({ key: "motion", label: "Motion" });
-    if (isDualComfort) list.push({ key: "dual", label: "Comfort" });
-    list.push({ key: "review", label: "Review" });
-    return list;
-  }, [showMotion, isDualComfort]);
+  const steps = useMemo(
+    () => [
+      { key: "mattress", label: "Mattress", icon: BedDouble },
+      { key: "base", label: "Base", icon: SlidersHorizontal },
+      { key: "size", label: "Size", icon: Ruler },
+      { key: "review", label: "Review", icon: CheckCircle2 },
+    ],
+    []
+  );
+
+  const requestedNormalizedStepKey = useMemo(
+    () => normalizeBuildStepCandidate(requestedStepKey),
+    [requestedStepKey]
+  );
 
   const [stepKey, setStepKey] = useState(() => {
-    const candidate = String(compatibleSavedBuild?.stepKey || "size").trim();
-    return steps.some((step) => step.key === candidate) ? candidate : "size";
+    if (steps.some((step) => step.key === requestedNormalizedStepKey)) {
+      return requestedNormalizedStepKey;
+    }
+
+    const candidate = normalizeBuildStepCandidate(compatibleSavedBuild?.stepKey);
+    return steps.some((step) => step.key === candidate) ? candidate : "mattress";
   });
+  const appliedRequestedStepRef = useRef(requestedNormalizedStepKey || "mattress");
 
   const allowedMotion = useMemo(
     () => allowedMotionTypesForSelection(size, supportsSplitMotion),
@@ -534,8 +701,17 @@ export default function PodBuilder({
 
   useEffect(() => {
     if (steps.some((step) => step.key === stepKey)) return;
-    setStepKey(isDualComfort ? "dual" : "review");
-  }, [steps, stepKey, isDualComfort]);
+    setStepKey("review");
+  }, [steps, stepKey]);
+
+  useEffect(() => {
+    if (!requestedNormalizedStepKey) return;
+    if (appliedRequestedStepRef.current === requestedNormalizedStepKey) return;
+    appliedRequestedStepRef.current = requestedNormalizedStepKey;
+    if (!steps.some((step) => step.key === requestedNormalizedStepKey)) return;
+    if (requestedNormalizedStepKey === stepKey) return;
+    setStepKey(requestedNormalizedStepKey);
+  }, [requestedNormalizedStepKey, stepKey, steps]);
 
   useEffect(() => {
     onBuildStepChange?.(stepKey);
@@ -582,49 +758,205 @@ export default function PodBuilder({
     baseType === "none" ? "Mattress Only" : labelFor(BASE_OPTIONS_UI, baseType, "Mattress Only");
   const selectedMotionLabel = labelFor(MOTION_TYPES_UI, motionType, "Standard");
   const mattressLabel = mattressProduct?.title || pod?.displayMattress || pod?.subtitle || "Mattress";
+  const podLabel = useMemo(() => podLabelFor(pod), [pod]);
+  const availableMotionLabel = useMemo(
+    () => allowedMotion.map((value) => labelFor(MOTION_TYPES_UI, value, value)).join(", "),
+    [allowedMotion]
+  );
   const currentStepIndex = Math.max(0, steps.findIndex((step) => step.key === stepKey));
   const nextStep = steps[currentStepIndex + 1] || null;
   const canGoBack = currentStepIndex > 0;
+  const mattressImage = pickFeaturedImage(mattressProduct);
+  const selectedBaseImage = pickFeaturedImage(baseProduct);
+  const canAdd = Boolean(mattressMerchId) && (!wantsBase || Boolean(baseMerchId)) && (!isDualComfort || Boolean(dcLeft && dcRight));
+  const selectionSummary = useMemo(
+    () => [
+      `Mattress: ${mattressLabel}`,
+      `Base: ${selectedBaseLabel}`,
+      `Size: ${size || "Not selected"}`,
+      showMotion ? `Motion: ${selectedMotionLabel}` : "Motion: No Motion",
+      isDualComfort ? `Comfort: ${dcLeft || "Not selected"} / ${dcRight || "Not selected"}` : "",
+    ].filter(Boolean),
+    [mattressLabel, selectedBaseLabel, size, showMotion, selectedMotionLabel, isDualComfort, dcLeft, dcRight]
+  );
   const currentStepMeta = useMemo(() => {
-    if (stepKey === "size") {
+    if (stepKey === "mattress") {
       return {
-        eyebrow: "Choose your size",
-        title: "Pick the size that feels right for your room and sleep setup.",
+        eyebrow: "Step 1",
+        title: "Mattress",
+        description: isDualComfort
+          ? "This pod's mattress is fixed. If you want different left and right comfort, set it here."
+          : "This pod's mattress is fixed. Use the results screen if you want to compare a different mattress.",
       };
     }
     if (stepKey === "base") {
       return {
-        eyebrow: "Choose your base",
-        title: "Decide how you want this SnoozePod set up underneath.",
+        eyebrow: "Step 2",
+        title: "Choose your base.",
+        description: showMotion
+          ? "Adjustable is selected, so motion stays right here as a sub-choice."
+          : "Choose the base you want under this mattress.",
       };
     }
-    if (stepKey === "motion") {
+    if (stepKey === "size") {
       return {
-        eyebrow: "Choose your motion",
-        title: "Pick the motion setup that fits the way you want to rest.",
-      };
-    }
-    if (stepKey === "dual") {
-      return {
-        eyebrow: "Choose your comfort setup",
-        title: "Set the feel on each side so the bed matches the way you want it to sleep.",
+        eyebrow: "Step 3",
+        title: "Choose your size.",
+        description: "Choose the size you want to price and add.",
       };
     }
     return {
-      eyebrow: "Your SnoozePod",
-      title: "Review your setup before adding it to your cart.",
+      eyebrow: "Step 4",
+      title: "Review your setup.",
+      description: "Check the setup, then add it when you're ready.",
     };
-  }, [stepKey]);
+  }, [stepKey, isDualComfort, showMotion]);
   const canProceed =
-    stepKey === "size"
-      ? Boolean(size)
+    stepKey === "mattress"
+      ? !isDualComfort || Boolean(dcLeft && dcRight)
       : stepKey === "base"
-        ? Boolean(baseType)
-        : stepKey === "motion"
-          ? Boolean(motionType)
-          : stepKey === "dual"
-            ? Boolean(dcLeft && dcRight)
-            : Boolean(mattressMerchId) && (!wantsBase || Boolean(baseMerchId));
+        ? Boolean(baseType) && (!showMotion || Boolean(motionType))
+        : stepKey === "size"
+      ? Boolean(size)
+        : canAdd;
+
+  useEffect(() => {
+    if (!onPreviewChange) return;
+
+    const preview = (() => {
+      if (stepKey === "mattress") {
+        return {
+          title: mattressLabel,
+          caption: isDualComfort
+            ? "This pod's mattress is fixed, but you can set left and right comfort before you add it."
+            : "This pod's mattress is fixed. Compare another pod if you want a different mattress.",
+          items: [
+            `Mattress: ${mattressLabel}`,
+            isDualComfort ? `Comfort: ${dcLeft || "Not selected"} / ${dcRight || "Not selected"}` : "",
+            `Location: ${podLabel}`,
+          ].filter(Boolean),
+          nextAction: "Next: Choose your base",
+        };
+      }
+
+      if (stepKey === "base") {
+        return {
+          title: selectedBaseLabel,
+          caption: wantsBase
+            ? `${selectedBaseLabel} is selected for this setup.`
+            : "Mattress only is selected right now.",
+          items: [
+            `Base: ${selectedBaseLabel}`,
+            showMotion ? `Motion: ${selectedMotionLabel}` : "Motion: No Motion",
+            size ? `Size: ${size}` : "",
+            size && supportsSplitMotion ? `Available motion for ${size}: ${availableMotionLabel}.` : "",
+          ].filter(Boolean),
+          nextAction: "Next: Choose your size",
+        };
+      }
+
+      if (stepKey === "size") {
+        return {
+          title: size ? `${size} setup` : "Choose your size",
+          caption: size ? `Selected size: ${size}.` : "Choose a size to begin.",
+          items: [
+            size ? `Size: ${size}` : "Choose a size to begin.",
+            size ? subtitleForSize(size) : "",
+            supportsSplitMotion && size
+              ? `Available motion with ${size}: ${availableMotionLabel}.`
+              : "",
+          ].filter(Boolean),
+          nextAction: "Next: Review your setup",
+        };
+      }
+
+      return {
+        title: `Review ${podLabel}`,
+        caption: "Ready to review this setup before you add it to cart.",
+        items: [
+          ...selectionSummary,
+          `Estimated monthly: ${money(monthly)}/mo`,
+          `Estimated total: ${money(previewTotal)}`,
+        ],
+        nextAction: primaryCtaLabel,
+      };
+    })();
+
+    onPreviewChange(preview);
+  }, [
+    onPreviewChange,
+    stepKey,
+    size,
+    supportsSplitMotion,
+    availableMotionLabel,
+    selectedBaseLabel,
+    wantsBase,
+    showMotion,
+    selectedMotionLabel,
+    isDualComfort,
+    dcLeft,
+    dcRight,
+    podLabel,
+    mattressLabel,
+    monthly,
+    previewTotal,
+    primaryCtaLabel,
+    selectionSummary,
+    mattressMerchId,
+  ]);
+
+  useEffect(() => {
+    if (!onStateChange) return;
+
+    onStateChange({
+      podLabel,
+      stepKey,
+      size,
+      baseType,
+      motionType,
+      dcLeft,
+      dcRight,
+      mattressLabel,
+      fixedMattressHandle,
+      selectedBaseHandle,
+      selectedBaseLabel,
+      selectedMotionLabel,
+      sizeSubtitle: subtitleForSize(size),
+      baseSubtitle: subtitleForBase(baseType),
+      mattressImage,
+      baseImage: selectedBaseImage,
+      wantsBase,
+      showMotion,
+      isDualComfort,
+      canProceed,
+      canAdd,
+      monthly,
+      previewTotal,
+    });
+  }, [
+    onStateChange,
+    podLabel,
+    stepKey,
+    size,
+    baseType,
+    motionType,
+    dcLeft,
+    dcRight,
+    mattressLabel,
+    fixedMattressHandle,
+    selectedBaseHandle,
+    selectedBaseLabel,
+    selectedMotionLabel,
+    mattressImage,
+    selectedBaseImage,
+    wantsBase,
+    showMotion,
+    isDualComfort,
+    canProceed,
+    canAdd,
+    monthly,
+    previewTotal,
+  ]);
 
   const goNext = useCallback(() => {
     if (!nextStep || !canProceed) return;
@@ -643,7 +975,7 @@ export default function PodBuilder({
     setMotionType(defaults.motionType);
     setDcLeft(defaults.dcLeft);
     setDcRight(defaults.dcRight);
-    setStepKey("size");
+    setStepKey("mattress");
     onCue?.("Your setup has been reset.", "tip");
   }, [defaults, onCue]);
 
@@ -653,7 +985,7 @@ export default function PodBuilder({
       return;
     }
 
-    const podLabel = String(pod?.podId ?? pod?.id ?? "").trim();
+    const podIdValue = String(pod?.podId ?? pod?.id ?? "").trim();
 
     addToSnoozePod({
       merchandiseId: mattressMerchId,
@@ -672,7 +1004,7 @@ export default function PodBuilder({
               { key: "Right Feel", value: dcRight },
             ]
           : []),
-        ...(podLabel ? [{ key: "SnoozePod", value: `SnoozePod ${podLabel}` }] : []),
+        ...(podIdValue ? [{ key: "SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
       ],
     });
 
@@ -688,12 +1020,12 @@ export default function PodBuilder({
           { key: "Size", value: size },
           { key: "Base", value: selectedBaseLabel },
           ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
-          ...(podLabel ? [{ key: "SnoozePod", value: `SnoozePod ${podLabel}` }] : []),
+          ...(podIdValue ? [{ key: "SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
         ],
       });
     }
 
-    onCue?.(`Added to cart: ${size} ${mattressLabel}${wantsBase ? ` with ${selectedBaseLabel}` : ""}.`, "success");
+    onCue?.("Added to cart.", "success");
   }, [
     addToSnoozePod,
     baseMerchId,
@@ -719,130 +1051,54 @@ export default function PodBuilder({
   ]);
 
   const viewCart = useCallback(() => {
-    onCue?.(`Cart: ${money(getSnoozePodSubtotal?.() ?? 0)}.`, "tip");
+    onCue?.(`SnoozePod total: ${money(getSnoozePodSubtotal?.() ?? 0)}.`, "tip");
     onViewSnoozePod?.();
   }, [getSnoozePodSubtotal, onCue, onViewSnoozePod]);
 
-  return (
-    <div className="space-y-5 p-5 md:p-6">
-      <div className="rounded-[32px] border bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-6 shadow-sm">
-        <div className="rounded-3xl bg-white/90 px-6 py-7 text-center shadow-sm md:px-8">
-          <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-            Finish Your SnoozePod
-          </div>
-          <div className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 md:text-5xl">
-            Choose your size, base, and comfort setup.
-          </div>
-          <div className="mx-auto mt-3 max-w-3xl text-base leading-7 text-gray-700 md:text-lg">
-            Then review everything before adding it to your cart.
-          </div>
-        </div>
-
-        <div className="mt-5 flex flex-wrap gap-2 rounded-3xl border border-white/70 bg-white/85 p-3 shadow-sm">
-          {steps.map((step, index) => {
-            const clickable = index <= currentStepIndex;
-            return (
-              <button
-                key={step.key}
-                type="button"
-                disabled={!clickable}
-                onClick={() => clickable && setStepKey(step.key)}
-                className={[
-                  "rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] transition",
-                  step.key === stepKey
-                    ? "border-indigo-600 bg-indigo-600 text-white"
-                    : clickable
-                      ? "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                      : "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400",
-                ].join(" ")}
-              >
-                {step.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
-          <div className="rounded-2xl border bg-white px-4 py-3 text-right shadow-sm">
-            <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-              Estimated Monthly
-            </div>
-            <div className="mt-1 text-xl font-extrabold text-indigo-950">{money(monthly)}</div>
-          </div>
-
-          <div className="rounded-2xl border bg-white px-4 py-3 text-right shadow-sm">
-            <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-              Estimated Total
-            </div>
-            <div className="mt-1 text-xl font-extrabold text-gray-900">{money(previewTotal)}</div>
-          </div>
-        </div>
-      </div>
-
-      {stepKey !== "review" ? (
-        <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
-          <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-            Step {currentStepIndex + 1} of {steps.length}
-          </div>
-          <div className="mt-2 text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl">
-            {currentStepMeta.title}
-          </div>
-          <div className="mt-2 text-sm font-semibold uppercase tracking-[0.14em] text-gray-400">
-            {currentStepMeta.eyebrow}
-          </div>
-
-          {stepKey === "size" ? (
-            <div className="mt-5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
-              {SIZE_OPTIONS.map((option) => (
-                <ChoiceCard
-                  key={option}
-                  title={option}
-                  subtitle={subtitleForSize(option)}
-                  active={size === option}
-                  onClick={() => setSize(option)}
+  const renderCurrentStep = () => {
+    if (stepKey === "mattress") {
+      return (
+        <div className="space-y-4">
+          <div className="rounded-[24px] border border-[#e2e9fb] bg-white px-4 py-4 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex h-[88px] w-[88px] shrink-0 overflow-hidden rounded-[22px] border border-[#e3eafc] bg-[#fbfcff]">
+                <BuilderMediaPreview
+                  src={mattressImage}
+                  alt={mattressLabel}
+                  icon={BedDouble}
+                  className="h-full w-full"
+                  imgClassName="h-full w-full object-cover"
                 />
-              ))}
-            </div>
-          ) : null}
+              </div>
 
-          {stepKey === "base" ? (
-            <div className="mt-5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
-              {BASE_OPTIONS_UI.map((option) => (
-                <ChoiceCard
-                  key={option.value}
-                  title={option.value === "none" ? "Mattress Only" : option.label}
-                  subtitle={subtitleForBase(option.value)}
-                  active={baseType === option.value}
-                  onClick={() => setBaseType(option.value)}
-                />
-              ))}
-            </div>
-          ) : null}
+              <div className="min-w-0">
+                <div className="text-[1.08rem] font-extrabold leading-tight text-slate-900">{mattressLabel}</div>
+                <div className="mt-1.5 text-sm leading-6 text-slate-600">
+                  This mattress is fixed to {podLabel}. Use another pod if you want to compare a
+                  different mattress family.
+                </div>
 
-          {stepKey === "motion" && showMotion ? (
-            <div className="mt-5 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(190px,1fr))]">
-              {MOTION_TYPES_UI.map((option) => {
-                const allowed = allowedMotion.includes(option.value);
-                return (
-                  <ChoiceCard
-                    key={option.value}
-                    title={option.label}
-                    subtitle={allowed ? subtitleForMotion(option.value) : "Not available with this size."}
-                    active={motionType === option.value}
-                    disabled={!allowed}
-                    onClick={() => allowed && setMotionType(option.value)}
-                  />
-                );
-              })}
+                {onViewResults ? (
+                  <button
+                    type="button"
+                    onClick={onViewResults}
+                    className="mt-3 inline-flex items-center gap-2 text-sm font-extrabold text-[#2f57e8]"
+                  >
+                    Compare other pods
+                  </button>
+                ) : null}
+              </div>
             </div>
-          ) : null}
+          </div>
 
-          {stepKey === "dual" && isDualComfort ? (
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <div className="rounded-3xl border bg-slate-50 p-5">
-                <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">Left Side</div>
-                <div className="mt-2 text-base text-gray-600">Choose the feel you want on this side.</div>
-                <div className="mt-4 grid gap-3">
+          {isDualComfort ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-[24px] border border-[#e2e9fb] bg-white px-4 py-4 shadow-sm">
+                <div className="text-[0.78rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  Left Side
+                </div>
+                <div className="mt-2 text-sm text-slate-600">Choose the feel you want on one side.</div>
+                <div className="mt-3 grid gap-3">
                   {DUAL_COMFORT_OPTIONS.map((option) => (
                     <ChoiceCard
                       key={`left-${option}`}
@@ -854,10 +1110,12 @@ export default function PodBuilder({
                 </div>
               </div>
 
-              <div className="rounded-3xl border bg-slate-50 p-5">
-                <div className="text-sm font-extrabold uppercase tracking-[0.16em] text-gray-500">Right Side</div>
-                <div className="mt-2 text-base text-gray-600">Set the feel you want on the other side.</div>
-                <div className="mt-4 grid gap-3">
+              <div className="rounded-[24px] border border-[#e2e9fb] bg-white px-4 py-4 shadow-sm">
+                <div className="text-[0.78rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  Right Side
+                </div>
+                <div className="mt-2 text-sm text-slate-600">Choose the feel you want on the other side.</div>
+                <div className="mt-3 grid gap-3">
                   {DUAL_COMFORT_OPTIONS.map((option) => (
                     <ChoiceCard
                       key={`right-${option}`}
@@ -869,161 +1127,240 @@ export default function PodBuilder({
                 </div>
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div className="rounded-[22px] border border-indigo-100 bg-indigo-50/80 px-4 py-3 text-sm font-semibold text-indigo-900">
+              Motion becomes available only when you choose an adjustable base.
+            </div>
+          )}
+        </div>
+      );
+    }
 
-          <div className="mt-5 flex flex-wrap gap-3">
+    if (stepKey === "base") {
+      return (
+        <div className="space-y-4">
+          <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+            {BASE_OPTIONS_UI.map((option) => (
+              <ChoiceCard
+                key={option.value}
+                title={option.value === "none" ? "Mattress Only" : option.label}
+                subtitle={subtitleForBase(option.value)}
+                active={baseType === option.value}
+                onClick={() => setBaseType(option.value)}
+              />
+            ))}
+          </div>
+
+          {showMotion ? (
+            <div className="rounded-[24px] border border-[#e2e9fb] bg-white px-4 py-4 shadow-sm">
+              <div className="flex items-center gap-2 text-[0.78rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                <SlidersHorizontal className="h-4 w-4 text-[#2f57e8]" />
+                Motion
+              </div>
+              <div className="mt-2 text-sm text-slate-600">
+                Choose the motion style that works with this adjustable base and size.
+              </div>
+
+              <div className="mt-3 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+                {MOTION_TYPES_UI.map((option) => {
+                  const allowed = allowedMotion.includes(option.value);
+                  return (
+                    <ChoiceCard
+                      key={option.value}
+                      title={option.label}
+                      subtitle={allowed ? subtitleForMotion(option.value) : "Not available with this size."}
+                      active={motionType === option.value}
+                      disabled={!allowed}
+                      onClick={() => allowed && setMotionType(option.value)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+              Choose Adjustable Base if you want motion options.
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (stepKey === "size") {
+      return (
+        <div className="space-y-4">
+          <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(148px,1fr))]">
+            {SIZE_OPTIONS.map((option) => (
+              <ChoiceCard
+                key={option}
+                title={option}
+                subtitle={subtitleForSize(option)}
+                active={size === option}
+                onClick={() => setSize(option)}
+              />
+            ))}
+          </div>
+
+          {showMotion ? (
+            <div className="rounded-[22px] border border-indigo-100 bg-indigo-50/80 px-4 py-3 text-sm font-semibold text-indigo-900">
+              Motion available with {size}: {availableMotionLabel}.
+            </div>
+          ) : null}
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        <div className="rounded-[24px] border border-[#e2e9fb] bg-white px-4 py-4 shadow-sm">
+          <div className="text-[0.78rem] font-black uppercase tracking-[0.16em] text-slate-500">
+            Review your setup
+          </div>
+          <div className="mt-3 space-y-2.5">
+            {selectionSummary.map((item) => (
+              <div key={item} className="flex gap-2 text-sm leading-6 text-slate-700">
+                <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#2f57e8]" />
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[22px] border border-indigo-100 bg-indigo-50/80 px-4 py-3 text-sm font-semibold text-indigo-900">
+          Add this setup now, or open the cart and compare it against your next pod.
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="w-full">
+      <div className="grid gap-2.5 lg:grid-cols-[minmax(226px,0.9fr)_minmax(250px,1.04fr)_252px] lg:items-start">
+        <div className="flex flex-col rounded-[24px] border border-white/80 bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]">
+          <div className="shrink-0">
+            <div className="text-[0.74rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+              Build This Setup
+            </div>
+            <div className="mt-1 text-[1.28rem] font-extrabold tracking-tight text-slate-900">
+              {currentStepMeta.title}
+            </div>
+            <div className="mt-1 text-[0.85rem] leading-5 text-slate-600">{currentStepMeta.description}</div>
+          </div>
+
+          <div className="mt-3 grid shrink-0 grid-cols-2 gap-2">
+            {steps.map((step, index) => (
+              <BuilderStepButton
+                key={step.key}
+                step={step}
+                index={index}
+                active={step.key === stepKey}
+                unlocked
+                onClick={() => setStepKey(step.key)}
+              />
+            ))}
+          </div>
+
+          <div className="mt-3 flex-1 pr-1">{renderCurrentStep()}</div>
+
+          <div className="mt-3 flex shrink-0 flex-wrap gap-2">
             <Button
               variant="outline"
               onClick={goBack}
               disabled={!canGoBack}
-              className="rounded-2xl px-5 py-6 text-base font-extrabold"
+              className="rounded-[16px] px-4 py-3 text-sm font-extrabold"
             >
               Back
             </Button>
             <Button
               onClick={goNext}
-              disabled={!canProceed}
-              className="rounded-2xl px-6 py-6 text-base font-extrabold"
+              disabled={!nextStep || !canProceed}
+              className="rounded-[16px] px-4 py-3 text-sm font-extrabold"
             >
-              {nextStep?.key === "review" ? "Review Your Setup" : "Next"}
+              {nextStep ? `Next: ${nextStep.label}` : "Review your setup"}
             </Button>
           </div>
         </div>
-      ) : null}
 
-      {stepKey === "review" ? (
-        <div className="space-y-4">
-          <div className="rounded-[32px] border bg-white p-5 shadow-sm md:p-6">
-            <div className="grid gap-4 xl:grid-cols-[minmax(280px,0.78fr)_minmax(0,1.22fr)] xl:items-start">
-              <div className="rounded-3xl border bg-slate-50 p-5">
-                <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-                  Mattress
-                </div>
-                <div className="mt-4 flex gap-4">
-                  <img
-                    src={pickFeaturedImage(mattressProduct)}
-                    alt={mattressLabel}
-                    className="h-28 w-28 rounded-3xl border bg-white object-cover"
-                    onError={(event) => {
-                      event.currentTarget.src = "/no-image.svg";
-                    }}
-                  />
-                  <div className="min-w-0">
-                    <div className="text-xl font-extrabold text-gray-900">{mattressLabel}</div>
-                    <div className="mt-2 text-sm leading-6 text-gray-600">
-                      Your size, base, motion, and comfort choices finish the setup around this
-                      mattress.
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <div className="grid auto-rows-fr gap-2.5">
+          <BuilderSelectionCard
+            step={1}
+            label="Mattress"
+            value={mattressLabel}
+            subtitle={
+              isDualComfort
+                ? `Comfort: ${dcLeft || "Not selected"} / ${dcRight || "Not selected"}`
+                : "Fixed to this pod"
+            }
+            image={mattressImage}
+            icon={BedDouble}
+            imageFit="cover"
+            onChange={onViewResults}
+          />
+          <BuilderSelectionCard
+            step={2}
+            label="Base"
+            value={selectedBaseLabel}
+            subtitle={showMotion ? `${selectedMotionLabel} motion` : subtitleForBase(baseType)}
+            image={selectedBaseImage}
+            icon={SlidersHorizontal}
+            onChange={() => setStepKey("base")}
+          />
+          <BuilderSelectionCard
+            step={3}
+            label="Size"
+            value={size || "Choose your size"}
+            subtitle={subtitleForSize(size)}
+            image=""
+            icon={Ruler}
+            onChange={() => setStepKey("size")}
+          />
+        </div>
 
-              <div className="rounded-3xl border bg-slate-50 p-5">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="text-2xl font-extrabold tracking-tight text-gray-900 md:text-3xl">
-                      Review Your Setup
-                    </div>
-                    <div className="mt-2 max-w-2xl text-sm leading-6 text-gray-600 md:text-base">
-                      Take one last look before adding this SnoozePod to your cart.
-                    </div>
-                  </div>
+        <div className="flex flex-col rounded-[24px] border border-white/80 bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]">
+          <div className="text-[0.74rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+            Pricing
+          </div>
 
-                  <div className="flex flex-wrap justify-end gap-3">
-                    <div className="rounded-2xl bg-white px-4 py-3 text-right shadow-sm">
-                      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-                        Estimated Monthly
-                      </div>
-                      <div className="mt-1 text-xl font-extrabold text-indigo-950">{money(monthly)}</div>
-                    </div>
+          <div className="mt-2.5 grid gap-2.5">
+            <BuilderMetricCard label="Estimated monthly" value={`${money(monthly)}/mo`} />
+            <BuilderMetricCard label="Estimated total" value={money(previewTotal)} />
+          </div>
 
-                    <div className="rounded-2xl bg-white px-4 py-3 text-right shadow-sm">
-                      <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-                        Estimated Total
-                      </div>
-                      <div className="mt-1 text-xl font-extrabold text-gray-900">{money(previewTotal)}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-3xl border bg-slate-50 p-5">
-              <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
-                <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
-                  <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-                    Mattress
-                  </div>
-                  <div className="mt-1 text-lg font-extrabold text-gray-900">{mattressLabel}</div>
-                </div>
-                <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
-                  <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-                    Size
-                  </div>
-                  <div className="mt-1 text-lg font-extrabold text-gray-900">{size}</div>
-                </div>
-                <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
-                  <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-                    Base
-                  </div>
-                  <div className="mt-1 text-lg font-extrabold text-gray-900">{selectedBaseLabel}</div>
-                </div>
-                <div className="rounded-2xl bg-white px-4 py-3 shadow-sm">
-                  <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-                    Motion
-                  </div>
-                  <div className="mt-1 text-lg font-extrabold text-gray-900">
-                    {showMotion ? selectedMotionLabel : "No Motion"}
-                  </div>
-                </div>
-                {isDualComfort ? (
-                  <div className="rounded-2xl bg-white px-4 py-3 shadow-sm sm:[grid-column:span_2/span_2] xl:[grid-column:auto]">
-                    <div className="text-xs font-extrabold uppercase tracking-[0.16em] text-gray-500">
-                      Comfort Setup
-                    </div>
-                    <div className="mt-1 text-lg font-extrabold text-gray-900">{dcLeft} / {dcRight}</div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="mt-4 border-t border-slate-200 pt-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <Button
-                  variant="outline"
-                  onClick={goBack}
-                  disabled={!canGoBack}
-                  className="rounded-2xl px-5 py-6 text-base font-extrabold"
-                >
-                  Back
-                </Button>
-                <Button
-                  onClick={addToPlan}
-                  disabled={!canProceed}
-                  className="rounded-2xl px-6 py-6 text-base font-extrabold"
-                >
-                  {primaryCtaLabel}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={viewCart}
-                  className="rounded-2xl px-5 py-6 text-base font-extrabold"
-                >
-                  View Cart
-                </Button>
-              </div>
-
-              <button
-                type="button"
-                onClick={resetBuild}
-                className="mt-4 text-sm font-extrabold text-gray-500 underline-offset-4 hover:text-gray-800 hover:underline"
-              >
-                Start Over
-              </button>
+          <div className="mt-2.5 rounded-[20px] border border-slate-200 bg-slate-50 px-3.5 py-3 text-[0.84rem] text-slate-700">
+            <div className="font-extrabold text-slate-900">{podLabel}</div>
+            <div className="mt-1">
+              {showMotion ? selectedMotionLabel : "No Motion"} / {wantsBase ? selectedBaseLabel : "Mattress Only"}
             </div>
           </div>
+
+          <div className="mt-auto space-y-2.5 pt-3">
+            <Button
+              onClick={addToPlan}
+              disabled={!canAdd}
+              className="min-h-[56px] w-full rounded-[18px] px-5 text-[0.96rem] font-extrabold"
+            >
+              <span>{primaryCtaLabel}</span>
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={viewCart}
+              className="min-h-[46px] w-full rounded-[16px] px-5 text-sm font-extrabold"
+            >
+              Open Cart
+            </Button>
+
+            <button
+              type="button"
+              onClick={resetBuild}
+              className="w-full text-center text-sm font-extrabold text-slate-500 underline-offset-4 hover:text-slate-800 hover:underline"
+            >
+              Start Over
+            </button>
+          </div>
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }
