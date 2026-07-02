@@ -1616,39 +1616,39 @@ function RestCountdownRing({ remainingSeconds, totalSeconds }) {
   const safeTotal = Math.max(1, Number(totalSeconds) || 1);
   const safeRemaining = Math.max(0, Number(remainingSeconds) || 0);
   const progress = safeRemaining / safeTotal;
-  const radius = 122;
+  const radius = 108;
   const circumference = 2 * Math.PI * radius;
   const strokeOffset = circumference * (1 - progress);
 
   return (
-    <div className="relative flex h-[256px] w-[256px] items-center justify-center md:h-[272px] md:w-[272px]">
-      <svg className="h-full w-full -rotate-90" viewBox="0 0 280 280" aria-hidden="true">
+    <div className="relative flex h-[220px] w-[220px] items-center justify-center md:h-[236px] md:w-[236px]">
+      <svg className="h-full w-full -rotate-90" viewBox="0 0 248 248" aria-hidden="true">
         <circle
-          cx="140"
-          cy="140"
+          cx="124"
+          cy="124"
           r={radius}
           fill="none"
           stroke="rgba(219,229,255,0.92)"
-          strokeWidth="12"
+          strokeWidth="10"
         />
         <circle
-          cx="140"
-          cy="140"
+          cx="124"
+          cy="124"
           r={radius}
           fill="none"
           stroke="#355ff1"
           strokeLinecap="round"
-          strokeWidth="12"
+          strokeWidth="10"
           strokeDasharray={circumference}
           strokeDashoffset={strokeOffset}
         />
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-[4.1rem] font-black leading-none tracking-tight text-slate-900 md:text-[4.45rem]">
+        <div className="text-[3.45rem] font-black leading-none tracking-tight text-slate-900 md:text-[3.85rem]">
           {formatRestCountdown(safeRemaining)}
         </div>
-        <div className="mt-2 text-[0.95rem] font-medium text-slate-500">remaining</div>
+        <div className="mt-1.5 text-[0.9rem] font-medium text-slate-500">remaining</div>
       </div>
     </div>
   );
@@ -1659,24 +1659,24 @@ function RestLengthCard({ title, subtitle, durationLabel, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full cursor-pointer flex-col rounded-[28px] border border-white/85 bg-white/96 p-6 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd8b0] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[220px]"
+      className="group flex w-full cursor-pointer flex-col rounded-[26px] border border-white/85 bg-white/96 p-5 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd8b0] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[196px] md:p-6"
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)]">
-          <Timer className="h-10 w-10 text-[#355ff1]" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)] md:h-[72px] md:w-[72px]">
+          <Timer className="h-8 w-8 text-[#355ff1] md:h-9 md:w-9" />
         </div>
 
-        <div className="rounded-full bg-[#edf2ff] px-5 py-2 text-[1.02rem] font-black text-[#355ff1]">
+        <div className="rounded-full bg-[#edf2ff] px-4 py-1.5 text-[0.94rem] font-black text-[#355ff1] md:px-5 md:py-2 md:text-[1rem]">
           {durationLabel}
         </div>
       </div>
 
-      <div className="mt-6 text-[2rem] font-black leading-none tracking-tight text-slate-900 md:text-[2.2rem]">
+      <div className="mt-5 text-[1.72rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.95rem]">
         {title}
       </div>
-      <div className="mt-3 text-[1.18rem] text-slate-600">{subtitle}</div>
+      <div className="mt-2.5 text-[1rem] text-slate-600 md:text-[1.08rem]">{subtitle}</div>
 
-      <div className="mt-auto rounded-[18px] bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] px-6 py-4 text-center text-[1.12rem] font-black text-white shadow-[0_18px_36px_rgba(255,143,31,0.26)] transition group-hover:scale-[1.01]">
+      <div className="mt-auto rounded-[16px] bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] px-6 py-3.5 text-center text-[1rem] font-black text-white shadow-[0_18px_36px_rgba(255,143,31,0.26)] transition group-hover:scale-[1.01] md:text-[1.08rem]">
         Start Test <ArrowRight className="ml-2 inline h-5 w-5" />
       </div>
     </button>
@@ -1710,20 +1710,20 @@ function RestRatingCard({ option, selected = false, onClick }) {
       onClick={onClick}
       aria-pressed={selected}
       className={[
-        "flex min-h-[184px] cursor-pointer flex-col rounded-[26px] border px-5 py-5 text-center transition duration-200 hover:-translate-y-0.5",
+        "flex min-h-[150px] cursor-pointer flex-col rounded-[24px] border px-4 py-4 text-center transition duration-200 hover:-translate-y-0.5 md:min-h-[164px] md:px-5 md:py-5",
         toneClasses,
       ].join(" ")}
     >
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white/82 shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
-        {Icon ? <Icon className={["h-10 w-10", iconTone].join(" ")} /> : null}
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/82 shadow-[0_10px_24px_rgba(45,71,136,0.08)] md:h-18 md:w-18">
+        {Icon ? <Icon className={["h-8 w-8 md:h-9 md:w-9", iconTone].join(" ")} /> : null}
       </div>
 
-      <div className="mt-5 text-[1.2rem] font-black leading-tight text-slate-900">
+      <div className="mt-4 text-[1rem] font-black leading-tight text-slate-900 md:mt-5 md:text-[1.14rem]">
         {option.label}
       </div>
 
       {selected ? (
-        <div className="mt-4 text-[0.9rem] font-extrabold uppercase tracking-[0.18em] text-[#2f57e8]">
+        <div className="mt-3 text-[0.8rem] font-extrabold uppercase tracking-[0.18em] text-[#2f57e8] md:mt-4">
           Selected
         </div>
       ) : null}
@@ -1756,14 +1756,14 @@ function GuidedRestTest({
 }) {
   if (!activeMode) {
     return (
-      <ShowroomPanel className="overflow-hidden p-6 md:p-8" tone="frost">
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
+      <ShowroomPanel className="overflow-hidden p-5 md:p-6" tone="frost">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_290px] xl:items-start">
           <div className="min-w-0">
-            <div className="text-[2.6rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[3.25rem]">
+            <div className="text-[2.2rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[2.7rem]">
               How long do you want to test?
             </div>
 
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
               <RestLengthCard
                 title="7-Minute Test"
                 subtitle="Quick check"
@@ -1779,12 +1779,12 @@ function GuidedRestTest({
             </div>
           </div>
 
-          <ShowroomPanel className="rounded-[28px] p-5" tone="soft">
-            <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8] shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
-                <Smile className="h-8 w-8" />
+          <ShowroomPanel className="rounded-[24px] p-4 md:p-5" tone="soft">
+            <div className="flex items-start gap-3.5">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8] shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
+                <Smile className="h-7 w-7" />
               </div>
-              <div className="text-[1.12rem] leading-8 text-slate-700">
+              <div className="text-[0.98rem] leading-7 text-slate-700">
                 Start with 7 minutes for a quick check, or choose 15 for more time to settle in.
               </div>
             </div>
@@ -1800,53 +1800,49 @@ function GuidedRestTest({
     const primaryActionModeId = activeMode?.id === "quick" ? "deep" : activeMode?.id || "deep";
 
     return (
-      <ShowroomPanel className="overflow-hidden" tone="frost">
-        <div className="border-b border-slate-200/80 bg-slate-50/80 px-5 py-4 md:px-6 md:py-5">
-          <div className="text-xl font-extrabold text-slate-900 md:text-2xl">Rest Test</div>
+      <ShowroomPanel className="overflow-hidden p-5 md:p-6" tone="frost">
+        <div className="text-[2rem] font-black leading-tight tracking-tight text-slate-900 md:text-[2.35rem]">
+          You finished the {activeMode?.title}.
         </div>
 
-        <div className="p-5 md:p-6">
-          <div className="text-lg font-semibold text-slate-700">You finished the {activeMode?.title}.</div>
-
-          {reflectionChoice ? (
-            <div className="mt-3 rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-900">
-              Reflection saved: {reflectionChoice}
-            </div>
-          ) : null}
-
-          <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => onChooseMode(primaryActionModeId)}
-              className="rounded-2xl bg-indigo-600 px-5 py-3.5 text-base font-extrabold text-white hover:bg-indigo-700"
-            >
-              {primaryActionLabel}
-            </button>
-
-            <button
-              type="button"
-              onClick={onViewDetails}
-              className="rounded-2xl border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 hover:bg-gray-50"
-            >
-              Learn About This Pod
-            </button>
-
-            <button
-              type="button"
-              onClick={onBuildPod}
-              className="rounded-2xl border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 hover:bg-gray-50"
-            >
-              Customize Your Pod
-            </button>
-
-            <button
-              type="button"
-              onClick={onResetTest}
-              className="rounded-2xl border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 hover:bg-gray-50"
-            >
-              Back to Rest Test Options
-            </button>
+        {reflectionChoice ? (
+          <div className="mt-3 rounded-[20px] border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-900">
+            Reflection saved: {reflectionChoice}
           </div>
+        ) : null}
+
+        <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => onChooseMode(primaryActionModeId)}
+            className="rounded-[20px] bg-indigo-600 px-5 py-3.5 text-base font-extrabold text-white transition hover:bg-indigo-700"
+          >
+            {primaryActionLabel}
+          </button>
+
+          <button
+            type="button"
+            onClick={onViewDetails}
+            className="rounded-[20px] border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 transition hover:bg-gray-50"
+          >
+            Learn About This Pod
+          </button>
+
+          <button
+            type="button"
+            onClick={onBuildPod}
+            className="rounded-[20px] border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 transition hover:bg-gray-50"
+          >
+            Customize Your Pod
+          </button>
+
+          <button
+            type="button"
+            onClick={onResetTest}
+            className="rounded-[20px] border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 transition hover:bg-gray-50"
+          >
+            Back to Rest Test Options
+          </button>
         </div>
       </ShowroomPanel>
     );
@@ -1862,12 +1858,12 @@ function GuidedRestTest({
   const canConfirmRating = Boolean(ratingSelected);
 
   return (
-    <ShowroomPanel className="overflow-hidden p-6 md:p-8" tone="frost">
-      <div className="text-[2.5rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[3.15rem]">
+    <ShowroomPanel className="overflow-hidden p-5 md:p-6" tone="frost">
+      <div className="text-[2.1rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[2.55rem]">
         {activeTitle}
       </div>
 
-      <div className="mt-6 grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)_360px] xl:items-start">
+      <div className="mt-4 grid gap-4 xl:grid-cols-[240px_minmax(0,1fr)_290px] xl:items-start">
         <div className="flex justify-center xl:justify-start">
           <RestCountdownRing
             remainingSeconds={timerRemaining}
@@ -1875,7 +1871,7 @@ function GuidedRestTest({
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-3">
           {REST_REFLECTION_OPTIONS.map((option) => (
             <RestRatingCard
               key={option.id}
@@ -1886,14 +1882,14 @@ function GuidedRestTest({
           ))}
         </div>
 
-        <ShowroomPanel className="rounded-[28px] p-5" tone="soft">
-          <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8] shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
-              <Smile className="h-8 w-8" />
+        <ShowroomPanel className="rounded-[24px] p-4 md:p-5" tone="soft">
+          <div className="flex items-start gap-3.5">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8] shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
+              <Smile className="h-7 w-7" />
             </div>
             <div>
-              <div className="text-[1.35rem] font-black text-[#355ff1]">What to do now</div>
-              <div className="mt-2 text-[1.1rem] leading-8 text-slate-700">
+              <div className="text-[1.12rem] font-black text-[#355ff1] md:text-[1.2rem]">What to do now</div>
+              <div className="mt-1.5 text-[0.98rem] leading-7 text-slate-700">
                 Relax into the mattress and notice comfort, support, and pressure relief.
               </div>
             </div>
@@ -1901,11 +1897,11 @@ function GuidedRestTest({
         </ShowroomPanel>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-3">
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={onPauseTimer}
-          className="inline-flex min-h-[56px] min-w-[240px] items-center justify-center gap-3 rounded-[18px] border border-[#dbe5ff] bg-white px-6 text-[1.04rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
+          className="inline-flex min-h-[52px] min-w-[220px] items-center justify-center gap-3 rounded-[18px] border border-[#dbe5ff] bg-white px-5 text-[0.98rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
         >
           <Pause className="h-5 w-5" />
           {pauseLabel}
@@ -1914,7 +1910,7 @@ function GuidedRestTest({
         <button
           type="button"
           onClick={onResetTest}
-          className="inline-flex min-h-[56px] min-w-[240px] items-center justify-center gap-3 rounded-[18px] border border-[#ffd7d7] bg-white px-6 text-[1.04rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
+          className="inline-flex min-h-[52px] min-w-[220px] items-center justify-center gap-3 rounded-[18px] border border-[#ffd7d7] bg-white px-5 text-[0.98rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
         >
           <X className="h-5 w-5" />
           End Test
@@ -1924,7 +1920,7 @@ function GuidedRestTest({
           <button
             type="button"
             onClick={onSwitchToLongerMode}
-            className="inline-flex min-h-[56px] flex-1 items-center justify-center gap-2 rounded-[18px] border border-[#dbe5ff] bg-[#f8faff] px-5 text-[1rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[320px] xl:flex-none"
+            className="inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-[18px] border border-[#dbe5ff] bg-[#f8faff] px-5 text-[0.96rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[280px] xl:flex-none"
           >
             Need more time? Switch to 15 min
             <ArrowRight className="h-4 w-4" />
@@ -1940,7 +1936,7 @@ function GuidedRestTest({
         }}
         disabled={!canConfirmRating}
         className={[
-          "mt-5 inline-flex min-h-[74px] w-full items-center justify-center gap-4 rounded-[20px] px-6 text-[1.6rem] font-black text-white shadow-[0_22px_44px_rgba(255,143,31,0.26)] transition",
+          "mt-4 inline-flex min-h-[66px] w-full items-center justify-center gap-4 rounded-[20px] px-6 text-[1.28rem] font-black text-white shadow-[0_22px_44px_rgba(255,143,31,0.26)] transition md:text-[1.42rem]",
           canConfirmRating
             ? "bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] hover:scale-[1.005]"
             : "cursor-not-allowed bg-[#ffcda7]/80 text-white/80",
@@ -3354,6 +3350,7 @@ export default function Pod() {
     !activeRestFlow &&
     !restCompletionStage &&
     !testComplete;
+  const isRestTaskStage = openStage === "rest" && !isDefaultPodDashboard;
   const activeStageEyebrow = useMemo(() => {
     if (openStage === "details") return "Learn";
     if (openStage === "build") return "Build";
@@ -3634,66 +3631,124 @@ export default function Pod() {
         {isDefaultPodDashboard ? (
           <ShowroomFrame className="p-3 md:p-4">{podHomeContent}</ShowroomFrame>
         ) : (
-          <ShowroomFrame className="flex flex-1 flex-col p-3 md:p-4">
-            <ShowroomPanel className="overflow-hidden p-0" tone="soft">
-              <div className="grid gap-0 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
-                <div className="flex min-h-[240px] flex-col justify-center px-6 py-6 md:min-h-[270px] md:px-8 md:py-7">
-                  <ShowroomEyebrow className="text-[0.9rem] tracking-[0.26em]">
-                    {activeStageEyebrow}
-                  </ShowroomEyebrow>
+          <ShowroomFrame className={["flex flex-1 flex-col", isRestTaskStage ? "p-2.5 md:p-3" : "p-3 md:p-4"].join(" ")}>
+            <ShowroomPanel className={["overflow-hidden", isRestTaskStage ? "p-0" : "p-0"].join(" ")} tone="soft">
+              {isRestTaskStage ? (
+                <div className="grid items-stretch gap-0 md:grid-cols-[minmax(0,1fr)_240px] xl:grid-cols-[minmax(0,1fr)_290px]">
+                  <div className="flex min-h-[150px] flex-col justify-center px-5 py-4 md:min-h-[164px] md:px-6 md:py-4.5">
+                    <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">
+                      {activeStageEyebrow}
+                    </ShowroomEyebrow>
 
-                  <div className="mt-4 text-[1.65rem] font-black tracking-tight text-[#2f57e8] md:text-[1.95rem]">
-                    {title}
-                  </div>
+                    <div className="mt-2 text-[1.35rem] font-black tracking-tight text-[#2f57e8] md:text-[1.55rem]">
+                      {title}
+                    </div>
 
-                  <h1 className="mt-4 max-w-[12ch] text-[2.7rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[3.3rem] lg:text-[4rem]">
-                    {mattressDisplayTitle}
-                  </h1>
+                    <h1 className="mt-2 max-w-[12ch] text-[2rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[2.45rem] xl:text-[2.75rem]">
+                      {mattressDisplayTitle}
+                    </h1>
 
-                  <div className="mt-5 flex flex-wrap items-center gap-4">
-                    {isRecommended ? (
-                      <div className="inline-flex items-center gap-3 rounded-full border border-[#d6e4ff] bg-white/96 px-4 py-3 text-[1.02rem] font-black text-[#2f57e8] shadow-[0_16px_32px_rgba(47,87,232,0.12)]">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2f57e8] text-white">
-                          <CheckCircle2 className="h-5 w-5" />
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      {isRecommended ? (
+                        <div className="inline-flex items-center gap-2 rounded-full border border-[#d6e4ff] bg-white/96 px-3 py-2 text-[0.9rem] font-black text-[#2f57e8] shadow-[0_12px_26px_rgba(47,87,232,0.12)]">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2f57e8] text-white">
+                            <CheckCircle2 className="h-4 w-4" />
+                          </div>
+                          Best First Match
                         </div>
-                        Best First Match
+                      ) : null}
+
+                      <div className="text-[0.96rem] font-medium text-slate-600 md:text-[1rem]">
+                        {activeStageHelper}
+                      </div>
+                    </div>
+
+                    {voiceState?.blocked || voiceState?.error ? (
+                      <div className="mt-3 flex flex-wrap gap-2.5">
+                        {voiceState?.blocked ? (
+                          <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-800">
+                            Audio may require a tap
+                          </span>
+                        ) : null}
+                        {voiceState?.error ? (
+                          <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-semibold text-red-700">
+                            Audio unavailable
+                          </span>
+                        ) : null}
                       </div>
                     ) : null}
-
-                    <div className="text-[1.1rem] font-medium text-slate-600">
-                      {activeStageHelper}
-                    </div>
                   </div>
 
-                  {voiceState?.blocked || voiceState?.error ? (
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      {voiceState?.blocked ? (
-                        <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                          Audio may require a tap
-                        </span>
-                      ) : null}
-                      {voiceState?.error ? (
-                        <span className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
-                          Audio unavailable
-                        </span>
-                      ) : null}
-                    </div>
-                  ) : null}
+                  <div className="relative min-h-[126px] border-t border-white/70 md:border-l md:border-t-0 md:min-h-[150px]">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
+                    <ResponsiveImage
+                      src={mattressImage}
+                      alt={mattressDisplayTitle}
+                      className="h-full min-h-[126px] w-full md:min-h-[150px]"
+                      imgClassName="h-full w-full object-cover"
+                    />
+                  </div>
                 </div>
+              ) : (
+                <div className="grid gap-0 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
+                  <div className="flex min-h-[240px] flex-col justify-center px-6 py-6 md:min-h-[270px] md:px-8 md:py-7">
+                    <ShowroomEyebrow className="text-[0.9rem] tracking-[0.26em]">
+                      {activeStageEyebrow}
+                    </ShowroomEyebrow>
 
-                <div className="relative min-h-[220px] border-t border-white/70 xl:border-l xl:border-t-0">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
-                  <ResponsiveImage
-                    src={mattressImage}
-                    alt={mattressDisplayTitle}
-                    className="h-full min-h-[220px] w-full md:min-h-[260px]"
-                    imgClassName="h-full w-full object-cover"
-                  />
+                    <div className="mt-4 text-[1.65rem] font-black tracking-tight text-[#2f57e8] md:text-[1.95rem]">
+                      {title}
+                    </div>
+
+                    <h1 className="mt-4 max-w-[12ch] text-[2.7rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[3.3rem] lg:text-[4rem]">
+                      {mattressDisplayTitle}
+                    </h1>
+
+                    <div className="mt-5 flex flex-wrap items-center gap-4">
+                      {isRecommended ? (
+                        <div className="inline-flex items-center gap-3 rounded-full border border-[#d6e4ff] bg-white/96 px-4 py-3 text-[1.02rem] font-black text-[#2f57e8] shadow-[0_16px_32px_rgba(47,87,232,0.12)]">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2f57e8] text-white">
+                            <CheckCircle2 className="h-5 w-5" />
+                          </div>
+                          Best First Match
+                        </div>
+                      ) : null}
+
+                      <div className="text-[1.1rem] font-medium text-slate-600">
+                        {activeStageHelper}
+                      </div>
+                    </div>
+
+                    {voiceState?.blocked || voiceState?.error ? (
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        {voiceState?.blocked ? (
+                          <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                            Audio may require a tap
+                          </span>
+                        ) : null}
+                        {voiceState?.error ? (
+                          <span className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                            Audio unavailable
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="relative min-h-[220px] border-t border-white/70 xl:border-l xl:border-t-0">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
+                    <ResponsiveImage
+                      src={mattressImage}
+                      alt={mattressDisplayTitle}
+                      className="h-full min-h-[220px] w-full md:min-h-[260px]"
+                      imgClassName="h-full w-full object-cover"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </ShowroomPanel>
 
-            <div ref={stagePanelRef} className="mt-4 flex-1 overflow-visible">
+            <div ref={stagePanelRef} className={["flex-1 overflow-visible", isRestTaskStage ? "mt-3" : "mt-4"].join(" ")}>
               {activePanelContent}
             </div>
           </ShowroomFrame>
