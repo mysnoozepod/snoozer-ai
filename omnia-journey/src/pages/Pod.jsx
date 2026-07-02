@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
+  ArrowRight,
+  BookOpen,
   Timer,
   MessageSquare,
   BedDouble,
@@ -10,6 +12,7 @@ import {
   HelpCircle,
   ImageOff,
   Headphones,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import { api } from "@/lib/api";
@@ -27,14 +30,11 @@ import {
   ShowroomBrandMark,
   ShowroomCartBadge,
   ShowroomEyebrow,
-  ShowroomFactPill,
   ShowroomFooterAction,
-  ShowroomFooterDock,
   ShowroomFrame,
   ShowroomModeButton,
   ShowroomPageShell,
   ShowroomPanel,
-  ShowroomTopRail,
 } from "@/components/showroom/ShowroomPrimitives";
 import {
   BASE_OPTIONS_UI,
@@ -1488,6 +1488,55 @@ function LearnAtGlanceCard({ title, body }) {
   );
 }
 
+function PodHomeActionCard({
+  icon: Icon,
+  title,
+  microcopy,
+  accent = "blue",
+  onClick,
+}) {
+  const barClass =
+    accent === "orange"
+      ? "bg-[linear-gradient(90deg,#ff9f1c_0%,#ff8a1e_100%)]"
+      : "bg-[linear-gradient(90deg,#2f57e8_0%,#1f7cff_100%)]";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex h-full min-h-[260px] flex-col rounded-[30px] border border-white/85 bg-[radial-gradient(circle_at_top,_rgba(84,120,255,0.08),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,255,0.98))] p-6 text-left shadow-[0_18px_46px_rgba(39,69,134,0.12)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[286px] md:p-7"
+    >
+      <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/90 bg-white/96 shadow-[0_16px_32px_rgba(45,71,136,0.12)]">
+        {Icon ? (
+          <Icon
+            className={[
+              "h-10 w-10",
+              accent === "orange" ? "text-[#ff8f1f]" : "text-[#2f57e8]",
+            ].join(" ")}
+          />
+        ) : null}
+      </div>
+
+      <div className="mt-7 text-[2rem] font-black leading-none tracking-tight text-slate-900 md:text-[2.2rem]">
+        {title}
+      </div>
+
+      <div className="mt-3 text-[1.08rem] font-semibold text-[#2f57e8] md:text-[1.12rem]">
+        {microcopy}
+      </div>
+
+      <div
+        className={[
+          "mt-auto flex h-14 items-center justify-center rounded-full text-white shadow-[0_18px_34px_rgba(47,87,232,0.24)] transition group-hover:scale-[1.01]",
+          barClass,
+        ].join(" ")}
+      >
+        <ArrowRight className="h-7 w-7" />
+      </div>
+    </button>
+  );
+}
+
 function GuidedRestTest({
   flowOptions,
   activeMode,
@@ -2893,6 +2942,23 @@ export default function Pod() {
     setRestPanelPhase("normal");
   }, [cancelPodVoice, restModeId, restCompletionStage, feelChoice, noteUserInteraction]);
 
+  const goToPodHome = useCallback(async () => {
+    noteUserInteraction?.();
+    await cancelPodVoice();
+    setOpenStage("rest");
+    setShowRestChooser(false);
+    setRestModeId("");
+    setRestStepIndex(0);
+    setTimerRemaining(0);
+    setTimerRunning(false);
+    setRestCompletionStage("");
+    setFeelChoice("");
+    setTestComplete(false);
+    setRestPanelPhase("normal");
+    setCueType("tip");
+    setCue(`Explore ${podLabel}`);
+  }, [cancelPodVoice, noteUserInteraction, podLabel]);
+
   const stageContent = useMemo(() => {
     if (openStage === "details") {
       return (
@@ -3202,30 +3268,110 @@ export default function Pod() {
     [restFlows]
   );
 
-  const defaultPanelContent = useMemo(
+  const podHomeContent = useMemo(
     () => (
-      <div className="grid h-full gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.98fr)]">
-        <DefaultWhyPodFitsCard
-          title="Start here, then compare."
-          intro={`Try ${mattressDisplayTitle} at ${title}, then compare your next pod once you know what your body likes.`}
-          items={dashboardReasonItems}
-        />
-        <DefaultTestingGuideCard
-          items={dashboardTestingItems}
-          flowOptions={dashboardTestingModes}
-          onChooseMode={handleChooseRestMode}
-          hasAdjustableBase={hasAdjustableBase}
-        />
+      <div className="space-y-5 md:space-y-6">
+        <ShowroomPanel className="overflow-hidden p-0" tone="soft">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,0.86fr)_minmax(380px,1.14fr)]">
+            <div className="flex min-h-[260px] flex-col justify-center px-6 py-7 md:min-h-[300px] md:px-8 md:py-8 lg:px-10">
+              <ShowroomEyebrow className="text-[0.9rem] tracking-[0.26em]">
+                Pod Home
+              </ShowroomEyebrow>
+
+              <div className="mt-4 text-[1.6rem] font-black tracking-tight text-[#2f57e8] md:text-[2rem]">
+                {title}
+              </div>
+
+              <h1 className="mt-4 max-w-[12ch] text-[2.6rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[3.4rem] lg:text-[4.1rem]">
+                {mattressDisplayTitle}
+              </h1>
+
+              {isRecommended ? (
+                <div className="mt-6 inline-flex w-fit items-center gap-3 rounded-full border border-[#d6e4ff] bg-white/96 px-4 py-3 text-[1.02rem] font-black text-[#2f57e8] shadow-[0_16px_32px_rgba(47,87,232,0.12)]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2f57e8] text-white">
+                    <CheckCircle2 className="h-5 w-5" />
+                  </div>
+                  Best First Match
+                </div>
+              ) : null}
+
+              <div className="mt-5 text-[1rem] font-medium text-slate-600 md:text-[1.06rem]">
+                {heroSummary}
+              </div>
+            </div>
+
+            <div className="relative min-h-[280px] border-t border-white/70 lg:min-h-[360px] lg:border-l lg:border-t-0">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
+              <ResponsiveImage
+                src={mattressImage}
+                alt={mattressDisplayTitle}
+                className="h-full min-h-[280px] w-full lg:min-h-[360px]"
+                imgClassName="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+        </ShowroomPanel>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <PodHomeActionCard
+            icon={Timer}
+            title="Rest Test"
+            microcopy="Start Test"
+            onClick={goToRestStage}
+          />
+          <PodHomeActionCard
+            icon={BookOpen}
+            title="Learn"
+            microcopy="Why it fits"
+            accent="orange"
+            onClick={goToDetailsStage}
+          />
+          <PodHomeActionCard
+            icon={SlidersHorizontal}
+            title="Build"
+            microcopy="Build setup"
+            onClick={() => void goToBuildStage("mattress")}
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+          <ShowroomFooterAction
+            icon={MessageSquare}
+            label="Ask Snoozer"
+            className="min-h-[56px] min-w-[220px] rounded-full bg-white/96 px-8 text-[1.02rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
+            onClick={() => {
+              noteUserInteraction?.();
+              void cancelPodVoice();
+              navigate("/ask-snoozer", { state: { from: `/pod/${pid}` } });
+            }}
+          />
+
+          <ShowroomFooterAction
+            icon={Headphones}
+            label="Talk to Human"
+            className="min-h-[56px] min-w-[220px] rounded-full bg-white/96 px-8 text-[1.02rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
+            onClick={() => {
+              noteUserInteraction?.();
+              setCueType("tip");
+              setCue("Ask the showroom team for in-store help when you're ready.");
+            }}
+          />
+        </div>
       </div>
     ),
     [
-      mattressDisplayTitle,
       title,
-      dashboardReasonItems,
-      dashboardTestingItems,
-      dashboardTestingModes,
-      handleChooseRestMode,
-      hasAdjustableBase,
+      mattressDisplayTitle,
+      isRecommended,
+      heroSummary,
+      mattressImage,
+      goToRestStage,
+      goToDetailsStage,
+      goToBuildStage,
+      noteUserInteraction,
+      cancelPodVoice,
+      navigate,
+      pid,
     ]
   );
 
@@ -3362,151 +3508,166 @@ export default function Pod() {
     }
 
     if (isDefaultPodDashboard) {
-      return defaultPanelContent;
+      return podHomeContent;
     }
 
     return stageContent;
-  }, [loading, activePod, isDefaultPodDashboard, defaultPanelContent, openStage, stageContent]);
+  }, [loading, activePod, isDefaultPodDashboard, podHomeContent, stageContent]);
 
   return (
     <ShowroomPageShell className="flex min-h-screen flex-col overflow-x-hidden pb-3">
-      <ShowroomTopRail className="shrink-0 items-center">
-        <ShowroomBrandMark />
-        <div className="flex flex-col items-end gap-2">
-          <ShowroomCartBadge
-            count={snoozepodCount}
-            quiet
-            className={cartPulse ? "scale-[1.01] border-indigo-300 ring-4 ring-indigo-100" : ""}
-            onClick={() => {
-              noteUserInteraction?.();
-              navigate("/snoozepod");
-            }}
-          />
-
-          {cartNotice ? (
-            <div className="rounded-2xl border border-indigo-100 bg-white/95 px-3 py-2 text-sm font-semibold text-indigo-900 shadow-sm backdrop-blur">
-              {cartNotice}
-            </div>
-          ) : null}
-        </div>
-      </ShowroomTopRail>
-
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-2 pt-2 md:px-6">
-        <div className="mb-2.5 flex shrink-0 items-center gap-3">
+      <div className="mx-auto w-full max-w-[1380px] px-4 pt-3 md:px-6 md:pt-4">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[30px] border border-white/80 bg-white/94 px-4 py-3 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-4">
           <button
             type="button"
             onClick={() => {
               noteUserInteraction?.();
               navigate("/results");
             }}
-            className="inline-flex items-center gap-3 rounded-[18px] border border-white/80 bg-white/94 px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:shadow"
+            className="justify-self-start inline-flex items-center gap-3 rounded-[18px] border border-transparent bg-transparent px-2 py-2 text-sm font-extrabold text-slate-900 transition hover:text-[#2f57e8]"
           >
             <ArrowLeft className="h-5 w-5" />
             Back to results
           </button>
-        </div>
 
-        <ShowroomFrame
-          className={[
-            "flex flex-1 flex-col",
-            isBuildStage ? "p-2.5 md:p-3" : "p-3 md:p-3.5",
-          ].join(" ")}
-        >
-          <div
+          <ShowroomBrandMark
+            className="justify-self-center"
+            imageClassName="w-[190px] md:w-[240px]"
+          />
+
+          <div className="justify-self-end flex flex-col items-end gap-2">
+            <ShowroomCartBadge
+              count={snoozepodCount}
+              quiet
+              className={cartPulse ? "scale-[1.01] border-indigo-300 ring-4 ring-indigo-100" : ""}
+              onClick={() => {
+                noteUserInteraction?.();
+                navigate("/snoozepod");
+              }}
+            />
+
+            {cartNotice ? (
+              <div className="rounded-2xl border border-indigo-100 bg-white/95 px-3 py-2 text-sm font-semibold text-indigo-900 shadow-sm backdrop-blur">
+                {cartNotice}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-2 pt-4 md:px-6">
+        {isDefaultPodDashboard ? (
+          <ShowroomFrame className="p-3 md:p-4">{podHomeContent}</ShowroomFrame>
+        ) : (
+          <ShowroomFrame
             className={[
-              "grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)] lg:items-stretch",
-              isBuildStage ? "gap-2.5" : "",
+              "flex flex-1 flex-col",
+              isBuildStage ? "p-2.5 md:p-3" : "p-3 md:p-3.5",
             ].join(" ")}
           >
-            <div className="min-w-0">
-              <ShowroomEyebrow>{heroEyebrow}</ShowroomEyebrow>
-              <div className="mt-1.5 text-[0.96rem] font-extrabold tracking-tight text-[#2f57e8] md:text-[1.08rem]">
-                {title}
-              </div>
-
-              <h1
-                className={[
-                  "mt-1.5 font-black leading-[0.96] tracking-tight text-slate-900",
-                  isBuildStage
-                    ? "text-[1.82rem] md:text-[2.05rem] lg:text-[2.2rem]"
-                    : "text-[1.95rem] md:text-[2.3rem] lg:text-[2.55rem]",
-                ].join(" ")}
-              >
-                {mattressDisplayTitle}
-              </h1>
-
-              <p
-                className={[
-                  "max-w-3xl text-slate-700",
-                  isBuildStage ? "mt-1 text-[0.86rem] leading-5 md:text-[0.92rem]" : "mt-1.5 text-[0.92rem] leading-5 md:text-[0.98rem]",
-                ].join(" ")}
-              >
-                {heroSummary}
-              </p>
-
-              <div
-                className={[
-                  "grid gap-2 rounded-[24px] border border-[#dfe7ff] bg-white/90 p-1.5 md:grid-cols-3",
-                  isBuildStage ? "mt-2.5" : "mt-3",
-                ].join(" ")}
-              >
-                <ShowroomModeButton
-                  active={openStage === "rest"}
-                  icon={Timer}
-                  label="Rest Test"
-                  onClick={goToRestStage}
-                  className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
-                />
-                <ShowroomModeButton
-                  active={openStage === "details"}
-                  icon={MessageSquare}
-                  label="Learn"
-                  onClick={goToDetailsStage}
-                  className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
-                />
-                <ShowroomModeButton
-                  active={openStage === "build"}
-                  icon={BedDouble}
-                  label="Build"
-                  onClick={() => void goToBuildStage(buildStepKey || "mattress")}
-                  className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
-                />
-              </div>
-
-                {(voiceState?.blocked || voiceState?.error) && (
-                  <div className="mt-3 flex flex-wrap gap-3">
-                    {voiceState?.blocked ? (
-                      <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                        Audio may require a tap
-                      </span>
-                    ) : null}
-
-                    {voiceState?.error ? (
-                      <span className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
-                        Audio unavailable
-                      </span>
-                    ) : null}
-                  </div>
-                )}
-
-              {showHeroFeatureChips ? (
-                <div className="mt-2.5 flex gap-2 overflow-x-auto border-t border-slate-200/80 pb-1 pt-2">
-                  {heroFeatureChips.slice(0, 4).map((chip) => (
-                    <HeroFeatureChip key={chip.title} title={chip.title} value={chip.value} compact />
-                  ))}
+            <div
+              className={[
+                "grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)] lg:items-stretch",
+                isBuildStage ? "gap-2.5" : "",
+              ].join(" ")}
+            >
+              <div className="min-w-0">
+                <ShowroomEyebrow>{heroEyebrow}</ShowroomEyebrow>
+                <div className="mt-1.5 text-[0.96rem] font-extrabold tracking-tight text-[#2f57e8] md:text-[1.08rem]">
+                  {title}
                 </div>
-              ) : null}
-            </div>
 
-            <ShowroomPanel className="relative overflow-hidden p-2 md:p-2.5" tone="soft">
-              <div className="overflow-hidden rounded-[30px] border border-white/80 bg-white shadow-inner">
-                <ResponsiveImage
-                  src={mattressImage}
-                  alt={mattressDisplayTitle}
-                  className={openStage === "build" ? "aspect-[16/5.35]" : "aspect-[16/7.2]"}
-                  imgClassName="h-full w-full object-cover"
-                />
+                <h1
+                  className={[
+                    "mt-1.5 font-black leading-[0.96] tracking-tight text-slate-900",
+                    isBuildStage
+                      ? "text-[1.82rem] md:text-[2.05rem] lg:text-[2.2rem]"
+                      : "text-[1.95rem] md:text-[2.3rem] lg:text-[2.55rem]",
+                  ].join(" ")}
+                >
+                  {mattressDisplayTitle}
+                </h1>
+
+                <p
+                  className={[
+                    "max-w-3xl text-slate-700",
+                    isBuildStage
+                      ? "mt-1 text-[0.86rem] leading-5 md:text-[0.92rem]"
+                      : "mt-1.5 text-[0.92rem] leading-5 md:text-[0.98rem]",
+                  ].join(" ")}
+                >
+                  {heroSummary}
+                </p>
+
+                <div
+                  className={[
+                    "grid gap-2 rounded-[24px] border border-[#dfe7ff] bg-white/90 p-1.5 md:grid-cols-3",
+                    isBuildStage ? "mt-2.5" : "mt-3",
+                  ].join(" ")}
+                >
+                  <ShowroomModeButton
+                    active={openStage === "rest"}
+                    icon={Timer}
+                    label="Rest Test"
+                    onClick={goToRestStage}
+                    className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
+                  />
+                  <ShowroomModeButton
+                    active={openStage === "details"}
+                    icon={MessageSquare}
+                    label="Learn"
+                    onClick={goToDetailsStage}
+                    className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
+                  />
+                  <ShowroomModeButton
+                    active={openStage === "build"}
+                    icon={BedDouble}
+                    label="Build"
+                    onClick={() => void goToBuildStage(buildStepKey || "mattress")}
+                    className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
+                  />
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void goToPodHome()}
+                    className="rounded-full border border-[#d6e4ff] bg-white/94 px-4 py-2 text-sm font-extrabold text-[#2f57e8] shadow-sm transition hover:bg-slate-50"
+                  >
+                    Back to Pod Home
+                  </button>
+
+                  {voiceState?.blocked ? (
+                    <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                      Audio may require a tap
+                    </span>
+                  ) : null}
+
+                  {voiceState?.error ? (
+                    <span className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                      Audio unavailable
+                    </span>
+                  ) : null}
+                </div>
+
+                {showHeroFeatureChips ? (
+                  <div className="mt-2.5 flex gap-2 overflow-x-auto border-t border-slate-200/80 pb-1 pt-2">
+                    {heroFeatureChips.slice(0, 4).map((chip) => (
+                      <HeroFeatureChip key={chip.title} title={chip.title} value={chip.value} compact />
+                    ))}
+                  </div>
+                ) : null}
               </div>
+
+              <ShowroomPanel className="relative overflow-hidden p-2 md:p-2.5" tone="soft">
+                <div className="overflow-hidden rounded-[30px] border border-white/80 bg-white shadow-inner">
+                  <ResponsiveImage
+                    src={mattressImage}
+                    alt={mattressDisplayTitle}
+                    className={openStage === "build" ? "aspect-[16/5.35]" : "aspect-[16/7.2]"}
+                    imgClassName="h-full w-full object-cover"
+                  />
+                </div>
 
                 <div className="pointer-events-none absolute left-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/85 bg-white/94 px-3.5 py-2 text-xs font-extrabold text-[#2848c7] shadow-lg md:text-sm">
                   <CheckCircle2 className="h-4 w-4" />
@@ -3535,19 +3696,16 @@ export default function Pod() {
               {activePanelContent}
             </div>
           </ShowroomFrame>
+        )}
       </div>
 
       {!loading && activePod ? (
-        <ShowroomFooterDock
-          sticky={false}
-          className="mt-3 px-4 md:px-6"
-          label="You're at"
-          sublabel={`${title} / ${footerStageLabel}`}
-        >
+        !isDefaultPodDashboard ? (
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-3 px-4 md:px-6">
           <ShowroomFooterAction
             icon={MessageSquare}
             label="Ask Snoozer"
-            className="md:min-w-[124px]"
+            className="min-h-[52px] min-w-[220px] rounded-full bg-white/96 px-8 text-[1rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
             onClick={() => {
               noteUserInteraction?.();
               void cancelPodVoice();
@@ -3558,14 +3716,15 @@ export default function Pod() {
           <ShowroomFooterAction
             icon={Headphones}
             label="Talk to Human"
-            className="md:min-w-[124px]"
+            className="min-h-[52px] min-w-[220px] rounded-full bg-white/96 px-8 text-[1rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
             onClick={() => {
               noteUserInteraction?.();
               setCueType("tip");
               setCue("Ask the showroom team for in-store help when you're ready.");
             }}
           />
-        </ShowroomFooterDock>
+        </div>
+        ) : null
       ) : null}
     </ShowroomPageShell>
   );
