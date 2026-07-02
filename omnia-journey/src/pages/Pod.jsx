@@ -5,14 +5,20 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
+  House,
   Timer,
   MessageSquare,
   BedDouble,
   CheckCircle2,
   HelpCircle,
+  Heart,
   ImageOff,
   Headphones,
+  Pause,
+  Scale,
+  Smile,
   SlidersHorizontal,
+  X,
 } from "lucide-react";
 
 import { api } from "@/lib/api";
@@ -32,7 +38,6 @@ import {
   ShowroomEyebrow,
   ShowroomFooterAction,
   ShowroomFrame,
-  ShowroomModeButton,
   ShowroomPageShell,
   ShowroomPanel,
 } from "@/components/showroom/ShowroomPrimitives";
@@ -101,7 +106,11 @@ function pickFirstVariantId(fullProduct) {
 function stripLegacyPodImageFields(pod) {
   if (!pod || typeof pod !== "object") return pod;
 
+  const fallbackImageUrl = pickPodFallbackImage(pod);
   const next = { ...pod };
+  if (fallbackImageUrl && !next.fallbackImageUrl) {
+    next.fallbackImageUrl = fallbackImageUrl;
+  }
   delete next.image;
   delete next.imageUrl;
   delete next.image_url;
@@ -549,6 +558,35 @@ function getRestStepScriptKey(stepId) {
   return "";
 }
 
+function pickPodFallbackImage(pod) {
+  const candidates = [
+    pod?.fallbackImageUrl,
+    pod?.mattressImageUrl,
+    pod?.mattressImage,
+    pod?.imageUrl,
+    pod?.image,
+    pod?.image_url,
+    pod?.mattress_image,
+    pod?.featuredImage?.url,
+    pod?.featuredImage?.src,
+    pod?.images?.[0]?.url,
+    pod?.images?.[0]?.src,
+    pod?.product?.imageUrl,
+    pod?.product?.image,
+    pod?.product?.featuredImage?.url,
+    pod?.product?.featuredImage?.src,
+    pod?.product?.images?.[0]?.url,
+    pod?.product?.images?.[0]?.src,
+  ];
+
+  for (const candidate of candidates) {
+    const url = sanitizeImageUrl(candidate);
+    if (url) return url;
+  }
+
+  return "";
+}
+
 function formatDuration(totalSeconds) {
   const total = Math.max(0, Number(totalSeconds) || 0);
   const minutes = Math.floor(total / 60);
@@ -852,24 +890,22 @@ const REST_COMPLETION_STAGES = {
 
 const REST_REFLECTION_OPTIONS = [
   {
-    id: "pressure_relief",
-    label: "Pressure relief felt good",
-    icon: CheckCircle2,
+    id: "love_it",
+    label: "I love the way this feels",
+    icon: Heart,
+    tone: "blue",
   },
   {
-    id: "support",
-    label: "Support felt good",
-    icon: BedDouble,
+    id: "compare_it",
+    label: "I might like it, but need to compare it",
+    icon: Scale,
+    tone: "orange",
   },
   {
-    id: "not_sure",
-    label: "Not sure yet",
-    icon: HelpCircle,
-  },
-  {
-    id: "compare_pod",
-    label: "Want to compare another pod",
-    icon: MessageSquare,
+    id: "not_for_me",
+    label: "Not for me",
+    icon: X,
+    tone: "red",
   },
 ];
 
@@ -882,7 +918,7 @@ function normalizeRestCompletionStage(value) {
 
 function buildRestReflectionVoice(modeTitle) {
   const title = String(modeTitle || "Rest Test").trim();
-  return `${title} complete. What stood out most?`;
+  return `${title} complete. Choose the rating that fits best, then select I'm Ready to Rate This Pod.`;
 }
 
 function buildRestActionsVoice(modeId, reflectionLabel = "") {
@@ -1499,29 +1535,43 @@ function PodHomeActionCard({
     accent === "orange"
       ? "bg-[linear-gradient(90deg,#ff9f1c_0%,#ff8a1e_100%)]"
       : "bg-[linear-gradient(90deg,#2f57e8_0%,#1f7cff_100%)]";
+  const rootClass =
+    accent === "orange"
+      ? "bg-[radial-gradient(circle_at_top,_rgba(255,158,66,0.16),_transparent_56%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(255,248,241,0.98))] shadow-[0_20px_52px_rgba(255,143,31,0.14)]"
+      : accent === "soft"
+        ? "bg-[radial-gradient(circle_at_top,_rgba(84,120,255,0.06),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,251,255,0.98))] shadow-[0_18px_46px_rgba(39,69,134,0.1)]"
+        : "bg-[radial-gradient(circle_at_top,_rgba(84,120,255,0.08),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,255,0.98))] shadow-[0_18px_46px_rgba(39,69,134,0.12)]";
+  const iconTone =
+    accent === "orange"
+      ? "text-[#ff8f1f]"
+      : accent === "soft"
+        ? "text-[#5a71c8]"
+        : "text-[#2f57e8]";
+  const microcopyTone =
+    accent === "orange"
+      ? "text-[#ff8f1f]"
+      : accent === "soft"
+        ? "text-slate-500"
+        : "text-[#2f57e8]";
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex h-full min-h-[260px] flex-col rounded-[30px] border border-white/85 bg-[radial-gradient(circle_at_top,_rgba(84,120,255,0.08),_transparent_55%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,255,0.98))] p-6 text-left shadow-[0_18px_46px_rgba(39,69,134,0.12)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[286px] md:p-7"
+      className={[
+        "group flex h-full min-h-[260px] flex-col rounded-[30px] border border-white/85 p-6 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[286px] md:p-7",
+        rootClass,
+      ].join(" ")}
     >
       <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/90 bg-white/96 shadow-[0_16px_32px_rgba(45,71,136,0.12)]">
-        {Icon ? (
-          <Icon
-            className={[
-              "h-10 w-10",
-              accent === "orange" ? "text-[#ff8f1f]" : "text-[#2f57e8]",
-            ].join(" ")}
-          />
-        ) : null}
+        {Icon ? <Icon className={["h-10 w-10", iconTone].join(" ")} /> : null}
       </div>
 
       <div className="mt-7 text-[2rem] font-black leading-none tracking-tight text-slate-900 md:text-[2.2rem]">
         {title}
       </div>
 
-      <div className="mt-3 text-[1.08rem] font-semibold text-[#2f57e8] md:text-[1.12rem]">
+      <div className={["mt-3 text-[1.08rem] font-semibold md:text-[1.12rem]", microcopyTone].join(" ")}>
         {microcopy}
       </div>
 
@@ -1537,6 +1587,150 @@ function PodHomeActionCard({
   );
 }
 
+function ExperienceFooterButton({
+  icon: Icon,
+  label,
+  onClick,
+  accent = "default",
+}) {
+  const accentClass =
+    accent === "orange"
+      ? "text-[#ff8f1f]"
+      : accent === "blue"
+        ? "text-[#2f57e8]"
+        : "text-slate-900";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex min-h-[54px] items-center justify-center gap-3 rounded-[22px] border border-white/85 bg-white/96 px-5 text-sm font-extrabold text-slate-900 shadow-[0_14px_34px_rgba(45,71,136,0.1)] transition hover:-translate-y-0.5 hover:bg-slate-50 md:min-w-[164px]"
+    >
+      {Icon ? <Icon className={["h-5 w-5 shrink-0", accentClass].join(" ")} /> : null}
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function RestCountdownRing({ remainingSeconds, totalSeconds }) {
+  const safeTotal = Math.max(1, Number(totalSeconds) || 1);
+  const safeRemaining = Math.max(0, Number(remainingSeconds) || 0);
+  const progress = safeRemaining / safeTotal;
+  const radius = 122;
+  const circumference = 2 * Math.PI * radius;
+  const strokeOffset = circumference * (1 - progress);
+
+  return (
+    <div className="relative flex h-[256px] w-[256px] items-center justify-center md:h-[272px] md:w-[272px]">
+      <svg className="h-full w-full -rotate-90" viewBox="0 0 280 280" aria-hidden="true">
+        <circle
+          cx="140"
+          cy="140"
+          r={radius}
+          fill="none"
+          stroke="rgba(219,229,255,0.92)"
+          strokeWidth="12"
+        />
+        <circle
+          cx="140"
+          cy="140"
+          r={radius}
+          fill="none"
+          stroke="#355ff1"
+          strokeLinecap="round"
+          strokeWidth="12"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeOffset}
+        />
+      </svg>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="text-[4.1rem] font-black leading-none tracking-tight text-slate-900 md:text-[4.45rem]">
+          {formatRestCountdown(safeRemaining)}
+        </div>
+        <div className="mt-2 text-[0.95rem] font-medium text-slate-500">remaining</div>
+      </div>
+    </div>
+  );
+}
+
+function RestLengthCard({ title, subtitle, durationLabel, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex w-full cursor-pointer flex-col rounded-[28px] border border-white/85 bg-white/96 p-6 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd8b0] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[220px]"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)]">
+          <Timer className="h-10 w-10 text-[#355ff1]" />
+        </div>
+
+        <div className="rounded-full bg-[#edf2ff] px-5 py-2 text-[1.02rem] font-black text-[#355ff1]">
+          {durationLabel}
+        </div>
+      </div>
+
+      <div className="mt-6 text-[2rem] font-black leading-none tracking-tight text-slate-900 md:text-[2.2rem]">
+        {title}
+      </div>
+      <div className="mt-3 text-[1.18rem] text-slate-600">{subtitle}</div>
+
+      <div className="mt-auto rounded-[18px] bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] px-6 py-4 text-center text-[1.12rem] font-black text-white shadow-[0_18px_36px_rgba(255,143,31,0.26)] transition group-hover:scale-[1.01]">
+        Start Test <ArrowRight className="ml-2 inline h-5 w-5" />
+      </div>
+    </button>
+  );
+}
+
+function RestRatingCard({ option, selected = false, onClick }) {
+  const Icon = option.icon;
+  const toneClasses =
+    option.tone === "orange"
+      ? selected
+        ? "border-[#ffbe85] bg-[#fff5eb] text-[#d76a09] shadow-[0_18px_34px_rgba(255,143,31,0.18)]"
+        : "border-[#ffdcb9] bg-white text-slate-900 hover:bg-[#fff9f2]"
+      : option.tone === "red"
+        ? selected
+          ? "border-[#ffc8c8] bg-[#fff3f3] text-[#d84545] shadow-[0_18px_34px_rgba(220,80,80,0.12)]"
+          : "border-[#ffd7d7] bg-white text-slate-900 hover:bg-[#fff8f8]"
+        : selected
+          ? "border-[#b8cbff] bg-[#eef3ff] text-[#2f57e8] shadow-[0_18px_34px_rgba(47,87,232,0.16)]"
+          : "border-[#d6e4ff] bg-white text-slate-900 hover:bg-[#f7faff]";
+  const iconTone =
+    option.tone === "orange"
+      ? "text-[#ff8f1f]"
+      : option.tone === "red"
+        ? "text-[#ef5b5b]"
+        : "text-[#355ff1]";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={[
+        "flex min-h-[184px] cursor-pointer flex-col rounded-[26px] border px-5 py-5 text-center transition duration-200 hover:-translate-y-0.5",
+        toneClasses,
+      ].join(" ")}
+    >
+      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white/82 shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
+        {Icon ? <Icon className={["h-10 w-10", iconTone].join(" ")} /> : null}
+      </div>
+
+      <div className="mt-5 text-[1.2rem] font-black leading-tight text-slate-900">
+        {option.label}
+      </div>
+
+      {selected ? (
+        <div className="mt-4 text-[0.9rem] font-extrabold uppercase tracking-[0.18em] text-[#2f57e8]">
+          Selected
+        </div>
+      ) : null}
+    </button>
+  );
+}
+
 function GuidedRestTest({
   flowOptions,
   activeMode,
@@ -1546,83 +1740,55 @@ function GuidedRestTest({
   timerRunning,
   onChooseMode,
   onStartTimer,
+  onPauseTimer,
   onAdvanceStep,
   onSkipStep,
   onResetTest,
+  onChooseReflection,
   onSelectReflection,
   onViewDetails,
   onBuildPod,
+  onSwitchToLongerMode,
   completionStage,
   reflectionChoice,
+  testComplete = false,
   hasAdjustableBase,
 }) {
   if (!activeMode) {
     return (
-      <ShowroomPanel className="overflow-hidden" tone="frost">
-        <div className="border-b border-slate-200/80 bg-slate-50/80 px-5 py-4 md:px-6 md:py-5">
-          <div className="text-xl font-extrabold text-slate-900 md:text-2xl">Rest Test</div>
-        </div>
+      <ShowroomPanel className="overflow-hidden p-6 md:p-8" tone="frost">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
+          <div className="min-w-0">
+            <div className="text-[2.6rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[3.25rem]">
+              How long do you want to test?
+            </div>
 
-      <div className="p-5 md:p-6">
-          <div className="max-w-3xl text-base leading-7 text-slate-800 md:text-lg">
-            Choose a test length.
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <RestLengthCard
+                title="7-Minute Test"
+                subtitle="Quick check"
+                durationLabel="7 min"
+                onClick={() => onChooseMode("quick")}
+              />
+              <RestLengthCard
+                title="15-Minute Test"
+                subtitle="More time to settle in"
+                durationLabel="15 min"
+                onClick={() => onChooseMode("deep")}
+              />
+            </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            {Object.values(flowOptions).map((flow) => (
-              <button
-                key={flow.id}
-                type="button"
-                onClick={() => onChooseMode(flow.id)}
-                className="rounded-[24px] border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-indigo-100 hover:bg-gray-50"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-lg font-extrabold text-gray-900">{flow.title}</div>
-                  <div className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-extrabold text-indigo-800">
-                    {formatDuration(flow.totalSeconds)}
-                  </div>
-                </div>
-
-                <div className="mt-2.5 text-sm leading-6 text-gray-700">{flow.rationale}</div>
-
-                <div className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#2f57e8]">
-                  {hasAdjustableBase ? "Includes adjustable positions." : "Mattress-only testing."}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </ShowroomPanel>
-    );
-  }
-
-  if (completionStage === REST_COMPLETION_STAGES.reflection) {
-    return (
-      <ShowroomPanel className="overflow-hidden" tone="frost">
-        <div className="border-b border-slate-200/80 bg-slate-50/80 px-5 py-4 md:px-6 md:py-5">
-          <div className="text-xl font-extrabold text-slate-900 md:text-2xl">Rest Test</div>
-        </div>
-
-        <div className="p-5 md:p-6">
-          <div className="text-lg font-semibold text-slate-700">What stood out most?</div>
-
-          <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
-            {REST_REFLECTION_OPTIONS.map((option) => {
-              const Icon = option.icon;
-
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => onSelectReflection(option.id)}
-                  className="inline-flex items-center gap-3 rounded-2xl border bg-white px-5 py-4 text-left text-base font-extrabold text-gray-900 hover:bg-gray-50"
-                >
-                  <Icon className="h-5 w-5 shrink-0 text-indigo-700" />
-                  <span>{option.label}</span>
-                </button>
-              );
-            })}
-          </div>
+          <ShowroomPanel className="rounded-[28px] p-5" tone="soft">
+            <div className="flex items-start gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8] shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
+                <Smile className="h-8 w-8" />
+              </div>
+              <div className="text-[1.12rem] leading-8 text-slate-700">
+                Start with 7 minutes for a quick check, or choose 15 for more time to settle in.
+              </div>
+            </div>
+          </ShowroomPanel>
         </div>
       </ShowroomPanel>
     );
@@ -1686,122 +1852,103 @@ function GuidedRestTest({
     );
   }
 
-  const totalSteps = activeMode?.steps?.length || 0;
-  const currentNumber = activeStepIndex + 1;
-  const isDone = timerRemaining <= 0;
-  const isRunning = !!timerRunning;
-  const progressSteps = (activeMode?.steps || []).map((step, index) => ({
-    id: step.id || index,
-    label: labelRestStep(step),
-    active: index === activeStepIndex,
-    complete: index < activeStepIndex || isDone,
-  }));
-  const visibleProgressSteps = progressSteps.slice(0, 3);
-  const comfortMeters = buildRestComfortMeters(activeStepIndex);
-
-  let primaryLabel = activeStep?.startCta || "Start Timer";
-  if (isRunning) primaryLabel = "Next Now";
-  if (isDone) primaryLabel = activeStep?.doneCta || "Next";
+  const stepTotalSeconds = Math.max(1, Number(activeStep?.seconds) || 1);
+  const ratingSelected =
+    REST_REFLECTION_OPTIONS.find((option) => option.label === reflectionChoice) || null;
+  const activeTitle =
+    activeMode?.id === "deep" ? "15-Minute Test in Progress" : "7-Minute Test in Progress";
+  const pauseLabel = timerRunning ? "Pause Test" : "Resume Test";
+  const showLongerModeSwitch = activeMode?.id === "quick";
+  const canConfirmRating = Boolean(ratingSelected);
 
   return (
-    <ShowroomPanel className="overflow-hidden" tone="frost">
-      <div className="p-5 md:p-6">
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,0.95fr)_minmax(240px,1.05fr)]">
-          <div className="min-w-0">
-            <div className="text-xs font-black uppercase tracking-[0.2em] text-[#2f57e8]">
-              Test in Progress
-            </div>
-            <div className="mt-1 text-[3.6rem] font-black leading-none tracking-tight text-slate-900 md:text-[4.2rem]">
-              {formatRestCountdown(timerRemaining)}
-            </div>
-            <div className="mt-1 text-sm font-semibold text-slate-500">
-              Time remaining in this position
-            </div>
+    <ShowroomPanel className="overflow-hidden p-6 md:p-8" tone="frost">
+      <div className="text-[2.5rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[3.15rem]">
+        {activeTitle}
+      </div>
 
-            <div className="mt-4 space-y-3">
-              <div className="h-2 overflow-hidden rounded-full bg-[#dfe7ff]">
-                <div
-                  className="h-full rounded-full bg-[#2f57e8] transition-all"
-                  style={{
-                    width: `${Math.max(12, (currentNumber / Math.max(totalSteps, 1)) * 100)}%`,
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                {visibleProgressSteps.map((step, index) => (
-                  <div key={step.id} className="text-center">
-                    <div
-                      className={[
-                        "mx-auto flex h-14 w-14 items-center justify-center rounded-full border text-xs font-black shadow-sm transition",
-                        step.active
-                          ? "border-indigo-200 bg-indigo-50 text-[#2f57e8]"
-                          : step.complete
-                            ? "border-indigo-100 bg-white text-[#2f57e8]"
-                            : "border-slate-200 bg-white text-slate-400",
-                      ].join(" ")}
-                    >
-                      {index + 1}
-                    </div>
-                    <div className="mt-2 text-xs font-extrabold text-slate-700">{step.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-[24px] border border-white/80 bg-white/92 p-4 shadow-sm">
-              <div className="text-xs font-black uppercase tracking-[0.18em] text-[#2f57e8]">
-                Current Position
-              </div>
-              <div className="mt-1 text-[1.75rem] font-black tracking-tight text-slate-900">
-                {labelRestStep(activeStep)}
-              </div>
-              <div className="mt-2 text-sm leading-6 text-slate-600">{activeStep?.body}</div>
-              <div className="mt-3 rounded-[18px] bg-[#f5f8ff] px-3.5 py-2.5 text-xs font-semibold text-slate-500">
-                {isRunning
-                  ? "Lie in your normal sleep position. Notice support, pressure, and comfort."
-                  : isDone
-                    ? "This step is complete."
-                    : "Timer starts when you are ready."}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {comfortMeters.map((meter) => (
-              <RestMeterRow key={meter.label} {...meter} />
-            ))}
-          </div>
+      <div className="mt-6 grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)_360px] xl:items-start">
+        <div className="flex justify-center xl:justify-start">
+          <RestCountdownRing
+            remainingSeconds={timerRemaining}
+            totalSeconds={stepTotalSeconds}
+          />
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
-          {!isRunning && !isDone ? (
-            <button
-              type="button"
-              onClick={onStartTimer}
-              className="rounded-[20px] bg-indigo-600 px-6 py-3.5 text-base font-extrabold text-white hover:bg-indigo-700"
-            >
-              {primaryLabel}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onAdvanceStep}
-              className="rounded-[20px] bg-indigo-600 px-6 py-3.5 text-base font-extrabold text-white hover:bg-indigo-700"
-            >
-              {primaryLabel}
-            </button>
-          )}
+        <div className="grid gap-4 md:grid-cols-3">
+          {REST_REFLECTION_OPTIONS.map((option) => (
+            <RestRatingCard
+              key={option.id}
+              option={option}
+              selected={ratingSelected?.id === option.id}
+              onClick={() => onChooseReflection(option.id)}
+            />
+          ))}
+        </div>
 
+        <ShowroomPanel className="rounded-[28px] p-5" tone="soft">
+          <div className="flex items-start gap-4">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8] shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
+              <Smile className="h-8 w-8" />
+            </div>
+            <div>
+              <div className="text-[1.35rem] font-black text-[#355ff1]">What to do now</div>
+              <div className="mt-2 text-[1.1rem] leading-8 text-slate-700">
+                Relax into the mattress and notice comfort, support, and pressure relief.
+              </div>
+            </div>
+          </div>
+        </ShowroomPanel>
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={onPauseTimer}
+          className="inline-flex min-h-[56px] min-w-[240px] items-center justify-center gap-3 rounded-[18px] border border-[#dbe5ff] bg-white px-6 text-[1.04rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
+        >
+          <Pause className="h-5 w-5" />
+          {pauseLabel}
+        </button>
+
+        <button
+          type="button"
+          onClick={onResetTest}
+          className="inline-flex min-h-[56px] min-w-[240px] items-center justify-center gap-3 rounded-[18px] border border-[#ffd7d7] bg-white px-6 text-[1.04rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
+        >
+          <X className="h-5 w-5" />
+          End Test
+        </button>
+
+        {showLongerModeSwitch ? (
           <button
             type="button"
-            onClick={onSkipStep}
-            className="rounded-[20px] border bg-white px-5 py-3.5 text-sm font-extrabold text-gray-900 hover:bg-gray-50"
+            onClick={onSwitchToLongerMode}
+            className="inline-flex min-h-[56px] flex-1 items-center justify-center gap-2 rounded-[18px] border border-[#dbe5ff] bg-[#f8faff] px-5 text-[1rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[320px] xl:flex-none"
           >
-            Skip Step
+            Need more time? Switch to 15 min
+            <ArrowRight className="h-4 w-4" />
           </button>
-        </div>
+        ) : null}
       </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          if (!canConfirmRating || !ratingSelected) return;
+          onSelectReflection(ratingSelected.id);
+        }}
+        disabled={!canConfirmRating}
+        className={[
+          "mt-5 inline-flex min-h-[74px] w-full items-center justify-center gap-4 rounded-[20px] px-6 text-[1.6rem] font-black text-white shadow-[0_22px_44px_rgba(255,143,31,0.26)] transition",
+          canConfirmRating
+            ? "bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] hover:scale-[1.005]"
+            : "cursor-not-allowed bg-[#ffcda7]/80 text-white/80",
+        ].join(" ")}
+      >
+        I'm Ready to Rate This Pod
+        <ArrowRight className="h-7 w-7" />
+      </button>
     </ShowroomPanel>
   );
 }
@@ -1828,6 +1975,7 @@ export default function Pod() {
 
   const [mattressProduct, setMattressProduct] = useState(null);
   const [baseProduct, setBaseProduct] = useState(null);
+  const [mattressImageFallback, setMattressImageFallback] = useState("");
 
   const [selectedMattressHandle, setSelectedMattressHandle] = useState(undefined);
   const [selectedBaseHandle, setSelectedBaseHandle] = useState(undefined);
@@ -2097,6 +2245,7 @@ export default function Pod() {
     setSelectedBaseHandle(undefined);
     setBuildPreviewData(null);
     setBuildSelectionState(null);
+    setMattressImageFallback(sanitizedFound?.fallbackImageUrl || "");
     setShowCheckoutOptions(false);
 
     setOpenStage("rest");
@@ -2164,6 +2313,50 @@ export default function Pod() {
     };
   }, [effectiveMattressHandle, effectiveBaseHandle]);
 
+  useEffect(() => {
+    let alive = true;
+
+    if (activePod?.fallbackImageUrl) {
+      setMattressImageFallback(activePod.fallbackImageUrl);
+      return () => {
+        alive = false;
+      };
+    }
+
+    if (!effectiveMattressHandle) {
+      setMattressImageFallback("");
+      return () => {
+        alive = false;
+      };
+    }
+
+    (async () => {
+      try {
+        const index = await api.getProductsIndexByHandle({ limit: 250, lite: true });
+        if (!alive) return;
+
+        const indexedImage = pickProductImage(index?.[effectiveMattressHandle]);
+        if (indexedImage) {
+          setMattressImageFallback(indexedImage);
+          return;
+        }
+
+        const fullProduct = await api.getProductById(effectiveMattressHandle);
+        if (!alive) return;
+
+        setMattressImageFallback(pickProductImage(fullProduct));
+      } catch {
+        if (alive) {
+          setMattressImageFallback("");
+        }
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [effectiveMattressHandle, activePod?.fallbackImageUrl]);
+
   const onSelectionHandlesChange = useCallback((next = {}) => {
     const hasM = Object.prototype.hasOwnProperty.call(next || {}, "mattressHandle");
     const hasB = Object.prototype.hasOwnProperty.call(next || {}, "baseHandle");
@@ -2193,7 +2386,10 @@ export default function Pod() {
   const isRecommended = !!activePod?.recommended;
   const rank = Number(activePod?.rank || 0);
 
-  const mattressImage = useMemo(() => pickProductImage(mattressProduct), [mattressProduct]);
+  const mattressImage = useMemo(
+    () => pickProductImage(mattressProduct) || mattressImageFallback || activePod?.fallbackImageUrl || "",
+    [mattressProduct, mattressImageFallback, activePod?.fallbackImageUrl]
+  );
   const mattressHeroTitle = mattressProduct?.title || activePod?.subtitle || "Mattress";
 
   const hasAdjustableBase = useMemo(
@@ -2594,14 +2790,6 @@ export default function Pod() {
     return () => window.clearInterval(id);
   }, [timerRunning, timerRemaining]);
 
-  useEffect(() => {
-    if (timerRunning && timerRemaining <= 0) {
-      setTimerRunning(false);
-      setCueType("tip");
-      setCue("Timer complete");
-    }
-  }, [timerRunning, timerRemaining]);
-
   const speakForStage = useCallback(
     (id) => {
       if (id === "rest") {
@@ -2719,12 +2907,12 @@ export default function Pod() {
       setRestModeId(modeId);
       setRestStepIndex(0);
       setTimerRemaining(firstStep.seconds);
-      setTimerRunning(false);
+      setTimerRunning(true);
       setTestComplete(false);
       setFeelChoice("");
       setRestCompletionStage("");
       setCueType("tip");
-      setCue(flow.title);
+      setCue(firstStep.cue || flow.title);
       setRestPanelPhase("normal");
       lastRestVoiceKeyRef.current = "";
       speakPod(`${flow.title}. ${firstStep.voice || firstStep.body}`, {
@@ -2751,6 +2939,36 @@ export default function Pod() {
     setRestPanelPhase("normal");
   }, [activeRestStep, timerRunning, timerRemaining, noteUserInteraction]);
 
+  const handlePauseRestTimer = useCallback(() => {
+    noteUserInteraction?.();
+
+    if (!activeRestFlow || testComplete) return;
+    if (timerRemaining <= 0) return;
+
+    setTimerRunning((prev) => {
+      const next = !prev;
+      setCueType("tip");
+      setCue(next ? activeRestStep?.cue || "Timer running" : "Rest Test paused");
+      return next;
+    });
+    setRestPanelPhase("normal");
+  }, [activeRestFlow, testComplete, timerRemaining, activeRestStep, noteUserInteraction]);
+
+  const handleChooseRestFeedback = useCallback(
+    (choiceId) => {
+      noteUserInteraction?.();
+
+      const choice = REST_REFLECTION_OPTIONS.find((option) => option.id === choiceId) || null;
+      if (!choice) return;
+
+      setFeelChoice(choice.label);
+      setCueType("success");
+      setCue(choice.label);
+      setRestPanelPhase("normal");
+    },
+    [noteUserInteraction]
+  );
+
   const completeRestRoutine = useCallback(
     (flow) => {
       if (!flow) return;
@@ -2758,10 +2976,9 @@ export default function Pod() {
       setTimerRemaining(0);
       setTimerRunning(false);
       setTestComplete(true);
-      setFeelChoice("");
-      setRestCompletionStage(REST_COMPLETION_STAGES.reflection);
+      setRestCompletionStage("");
       setCueType("tip");
-      setCue("Final reflection");
+      setCue("I'm Ready to Rate This Pod");
       setRestPanelPhase("normal");
       lastRestVoiceKeyRef.current = "";
 
@@ -2813,6 +3030,33 @@ export default function Pod() {
     [cancelPodVoice, completeRestRoutine, speakPod]
   );
 
+  useEffect(() => {
+    if (!timerRunning || timerRemaining > 0 || !activeRestFlow) return;
+
+    const nextIndex = restStepIndex + 1;
+    const nextStep = activeRestFlow.steps[nextIndex] || null;
+
+    if (!nextStep) {
+      completeRestRoutine(activeRestFlow);
+      return;
+    }
+
+    runRestTransition({
+      flow: activeRestFlow,
+      nextIndex,
+      nextStep,
+      nextCue: nextStep.cue || activeRestFlow.title,
+      voiceText: nextStep.voice || nextStep.body || "",
+    });
+  }, [
+    timerRunning,
+    timerRemaining,
+    activeRestFlow,
+    restStepIndex,
+    completeRestRoutine,
+    runRestTransition,
+  ]);
+
   const handleAdvanceRestStep = useCallback(() => {
     noteUserInteraction?.();
 
@@ -2860,7 +3104,7 @@ export default function Pod() {
       setTestComplete(true);
       setRestCompletionStage(REST_COMPLETION_STAGES.actions);
       setTimerRunning(false);
-      setCueType(choiceId === "compare_pod" ? "tip" : choiceId === "not_sure" ? "tip" : "success");
+      setCueType(choiceId === "not_for_me" ? "tip" : "success");
       setCue(choice.label);
       setRestPanelPhase("normal");
 
@@ -3037,9 +3281,11 @@ export default function Pod() {
         timerRunning={timerRunning}
         onChooseMode={handleChooseRestMode}
         onStartTimer={handleStartTimer}
+        onPauseTimer={handlePauseRestTimer}
         onAdvanceStep={handleAdvanceRestStep}
         onSkipStep={handleSkipRestStep}
         onResetTest={resetRestTest}
+        onChooseReflection={handleChooseRestFeedback}
         onSelectReflection={handleSelectRestReflection}
         onViewDetails={() => void activateDetailsAction(DEFAULT_DETAILS_ACTION_ID, { ensureDetailsStage: true })}
         onBuildPod={async () => {
@@ -3055,6 +3301,8 @@ export default function Pod() {
         }}
         completionStage={restCompletionStage}
         reflectionChoice={feelChoice}
+        onSwitchToLongerMode={() => handleChooseRestMode("deep")}
+        testComplete={testComplete}
         hasAdjustableBase={hasAdjustableBase}
       />
     );
@@ -3079,13 +3327,16 @@ export default function Pod() {
     timerRunning,
     handleChooseRestMode,
     handleStartTimer,
+    handlePauseRestTimer,
     handleAdvanceRestStep,
     handleSkipRestStep,
     resetRestTest,
+    handleChooseRestFeedback,
     handleSelectRestReflection,
     activateDetailsAction,
     restCompletionStage,
     feelChoice,
+    testComplete,
     hasAdjustableBase,
     noteUserInteraction,
     cancelPodVoice,
@@ -3095,58 +3346,7 @@ export default function Pod() {
     podLabel,
   ]);
 
-  const footerStageLabel = useMemo(() => {
-    if (openStage === "details") return "Learn";
-    if (openStage === "build") return "Build";
-    if (restCompletionStage === REST_COMPLETION_STAGES.reflection) return "Final reflection";
-    if (testComplete) return "Rest Test complete";
-    return "Rest Test";
-  }, [openStage, restCompletionStage, testComplete]);
-
-  const heroEyebrow = "Pod Experience";
-
-  const heroSummary = "Test it. Learn it. Build your setup.";
-
-  const heroFeatureChips = useMemo(() => {
-    const firmnessValue = String(
-      recommendationMeta?.firmness || assessment?.firmness || assessment?.comfort || assessment?.feel || ""
-    ).trim();
-    const pressureTitle =
-      lowerText(benefits.join(" ")).includes("pressure") || lowerText(whyThisPodReason).includes("pressure")
-        ? "Pressure Relief"
-        : "Balanced Comfort";
-    const supportTitle = lowerText(whyThisPodReason).includes("back")
-      ? "Lower Back Support"
-      : "Support";
-
-    return [
-      {
-        title: firmnessValue ? `${startCase(firmnessValue)} Feel` : "Balanced Feel",
-        value:
-          lowerText(firmnessValue).includes("firm") ? 4 : lowerText(firmnessValue).includes("soft") ? 2 : 3,
-      },
-      {
-        title: pressureTitle,
-        value: lowerText(pressureTitle).includes("pressure") ? 4 : 3,
-      },
-      {
-        title: supportTitle,
-        value: lowerText(supportTitle).includes("back") ? 4 : 3,
-      },
-      {
-        title: inferHeightLabel(mattressTruth.mattressTitle),
-        value: 5,
-      },
-      {
-        title: formatFeatureLabelForFamily(mattressTruth.family),
-        value: mattressTruth.family === "dual" || mattressTruth.family === "hybrid" ? 4 : 3,
-      },
-    ];
-  }, [recommendationMeta?.firmness, assessment, benefits, whyThisPodReason, mattressTruth]);
-
-  const heroBadgeLabel = isRecommended ? "Best First Match" : "Strong Compare Pod";
-  const showHeroFeatureChips = openStage !== "build";
-  const isBuildStage = openStage === "build";
+  const heroSummary = "Start here, then compare.";
 
   const isDefaultPodDashboard =
     openStage === "rest" &&
@@ -3154,22 +3354,19 @@ export default function Pod() {
     !activeRestFlow &&
     !restCompletionStage &&
     !testComplete;
-  const showSetupOverview = isDefaultPodDashboard || openStage === "build";
+  const activeStageEyebrow = useMemo(() => {
+    if (openStage === "details") return "Learn";
+    if (openStage === "build") return "Build";
+    return "Rest Test";
+  }, [openStage]);
 
-  const summaryBaseSubtitle = useMemo(() => {
-    if (setupSummaryState.showMotion) return setupSummaryState.selectedMotionLabel;
-    return setupSummaryState.baseSubtitle || subtitleForBase(setupSummaryState.baseType);
-  }, [setupSummaryState]);
-
-  const summaryValueNotes = useMemo(
-    () => [
-      { title: "Delivery options", body: "Review delivery and setup when you're ready." },
-      { title: "Warranty support", body: "Coverage details stay available while you compare." },
-      { title: "Sleep trial info", body: "Trial questions can be answered before checkout." },
-      { title: "Built for compare", body: "Test this setup first, then compare your next pod." },
-    ],
-    []
-  );
+  const activeStageHelper = useMemo(() => {
+    if (openStage === "details") return "Why it fits.";
+    if (openStage === "build") return "Choose your setup.";
+    if (restCompletionStage === REST_COMPLETION_STAGES.actions) return "Choose your next step.";
+    if (activeRestFlow) return "Stay with one pod at a time.";
+    return "Choose your test.";
+  }, [openStage, restCompletionStage, activeRestFlow]);
 
   const dashboardReasonItems = useMemo(() => {
     const rows = [];
@@ -3316,20 +3513,21 @@ export default function Pod() {
           <PodHomeActionCard
             icon={Timer}
             title="Rest Test"
-            microcopy="Start Test"
+            microcopy="Start here"
+            accent="orange"
             onClick={goToRestStage}
           />
           <PodHomeActionCard
             icon={BookOpen}
             title="Learn"
             microcopy="Why it fits"
-            accent="orange"
+            accent="soft"
             onClick={goToDetailsStage}
           />
           <PodHomeActionCard
             icon={SlidersHorizontal}
             title="Build"
-            microcopy="Build setup"
+            microcopy="Choose setup"
             onClick={() => void goToBuildStage("mattress")}
           />
         </div>
@@ -3374,129 +3572,6 @@ export default function Pod() {
       pid,
     ]
   );
-
-  const restPanelImage = useMemo(() => {
-    if (openStage !== "rest") return [];
-
-    if (restPanelPhase === "transition") {
-      return REST_GUIDE_IMAGES.transition;
-    }
-
-    if (!activeRestFlow) {
-      return REST_GUIDE_IMAGES.choice;
-    }
-
-    if (restCompletionStage) {
-      return REST_GUIDE_IMAGES.active;
-    }
-
-    if (timerRunning) {
-      return REST_GUIDE_IMAGES.active;
-    }
-
-    return REST_GUIDE_IMAGES.choice;
-  }, [openStage, restPanelPhase, activeRestFlow, restCompletionStage, timerRunning]);
-
-  const restPanelTitle = useMemo(() => {
-    if (openStage !== "rest") return "";
-    return "How to test this pod";
-  }, [openStage]);
-
-  const restPanelCaption = useMemo(() => {
-    if (openStage !== "rest") return "";
-
-    if (restPanelPhase === "transition") {
-      return "Move into the next step when you are ready.";
-    }
-
-    if (!activeRestFlow) {
-      return "Choose the 7-minute or 15-minute test, then stay with one pod at a time.";
-    }
-
-    if (restCompletionStage === REST_COMPLETION_STAGES.reflection) {
-      return "Choose the one thing that stood out most.";
-    }
-
-    if (restCompletionStage === REST_COMPLETION_STAGES.actions) {
-      return "Choose what to do next.";
-    }
-
-    if (timerRunning) {
-      return activeRestStep?.body || "Follow the current step and notice how the mattress feels.";
-    }
-
-    return activeRestStep?.body || activeRestFlow?.rationale || "Review the next step, then start when you are ready.";
-  }, [openStage, restPanelPhase, activeRestFlow, restCompletionStage, activeRestStep, timerRunning]);
-
-  const restPanelItems = useMemo(
-    () => [
-      "Lie in your normal sleep position.",
-      "Notice support, pressure, and comfort.",
-      "Compare one pod at a time.",
-    ],
-    []
-  );
-
-  const buildPanelVisual = useMemo(() => {
-    const baseImage = pickProductImage(baseProduct);
-    const motionVisual = inferMotionVisualFromHandle(effectiveBaseHandle, baseProduct?.title || "");
-    const step = String(buildStepKey || "size");
-    const previewItems = Array.isArray(buildPreviewData?.items) ? buildPreviewData.items : [];
-
-    if (step === "base") {
-      return {
-        title: buildPreviewData?.title || BUILD_VISUALS.base.title,
-        image: [baseImage, mattressImage, PUBLIC_ASSETS.standardMotion],
-        caption: buildPreviewData?.caption || BUILD_VISUALS.base.caption,
-        items: previewItems,
-        nextAction: buildPreviewData?.nextAction || "",
-      };
-    }
-
-    if (step === "motion") {
-      return {
-        title: buildPreviewData?.title || BUILD_VISUALS.motion.title,
-        image: motionVisual.image,
-        caption: buildPreviewData?.caption || motionVisual.caption || BUILD_VISUALS.motion.caption,
-        items: previewItems,
-        nextAction: buildPreviewData?.nextAction || "",
-      };
-    }
-
-    if (step === "dual") {
-      return {
-        title: buildPreviewData?.title || BUILD_VISUALS.dual.title,
-        image: mattressImage ? [mattressImage] : [],
-        caption: buildPreviewData?.caption || BUILD_VISUALS.dual.caption,
-        items: previewItems,
-        nextAction: buildPreviewData?.nextAction || "",
-      };
-    }
-
-    if (step === "review" || step === "mattress") {
-      return {
-        title: buildPreviewData?.title || BUILD_VISUALS.review.title,
-        image: [mattressImage, baseImage, PUBLIC_ASSETS.sizeDimensions],
-        caption: buildPreviewData?.caption || BUILD_VISUALS.review.caption,
-        items: previewItems,
-        nextAction: buildPreviewData?.nextAction || "",
-      };
-    }
-
-    return {
-      ...BUILD_VISUALS.size,
-      title: buildPreviewData?.title || BUILD_VISUALS.size.title,
-      image: [PUBLIC_ASSETS.sizeDimensions],
-      caption: buildPreviewData?.caption || BUILD_VISUALS.size.caption,
-      items: previewItems,
-      nextAction: buildPreviewData?.nextAction || "",
-    };
-  }, [buildStepKey, baseProduct, effectiveBaseHandle, mattressImage, buildPreviewData]);
-
-  const restPanelMeters = useMemo(() => {
-    if (openStage !== "rest" || !activeRestFlow) return [];
-    return buildRestComfortMeters(restStepIndex);
-  }, [openStage, activeRestFlow, restStepIndex]);
 
   const activePanelContent = useMemo(() => {
     if (loading || !activePod) {
@@ -3559,140 +3634,66 @@ export default function Pod() {
         {isDefaultPodDashboard ? (
           <ShowroomFrame className="p-3 md:p-4">{podHomeContent}</ShowroomFrame>
         ) : (
-          <ShowroomFrame
-            className={[
-              "flex flex-1 flex-col",
-              isBuildStage ? "p-2.5 md:p-3" : "p-3 md:p-3.5",
-            ].join(" ")}
-          >
-            <div
-              className={[
-                "grid shrink-0 gap-3 lg:grid-cols-[minmax(0,1.18fr)_minmax(320px,0.82fr)] lg:items-stretch",
-                isBuildStage ? "gap-2.5" : "",
-              ].join(" ")}
-            >
-              <div className="min-w-0">
-                <ShowroomEyebrow>{heroEyebrow}</ShowroomEyebrow>
-                <div className="mt-1.5 text-[0.96rem] font-extrabold tracking-tight text-[#2f57e8] md:text-[1.08rem]">
-                  {title}
-                </div>
+          <ShowroomFrame className="flex flex-1 flex-col p-3 md:p-4">
+            <ShowroomPanel className="overflow-hidden p-0" tone="soft">
+              <div className="grid gap-0 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
+                <div className="flex min-h-[240px] flex-col justify-center px-6 py-6 md:min-h-[270px] md:px-8 md:py-7">
+                  <ShowroomEyebrow className="text-[0.9rem] tracking-[0.26em]">
+                    {activeStageEyebrow}
+                  </ShowroomEyebrow>
 
-                <h1
-                  className={[
-                    "mt-1.5 font-black leading-[0.96] tracking-tight text-slate-900",
-                    isBuildStage
-                      ? "text-[1.82rem] md:text-[2.05rem] lg:text-[2.2rem]"
-                      : "text-[1.95rem] md:text-[2.3rem] lg:text-[2.55rem]",
-                  ].join(" ")}
-                >
-                  {mattressDisplayTitle}
-                </h1>
-
-                <p
-                  className={[
-                    "max-w-3xl text-slate-700",
-                    isBuildStage
-                      ? "mt-1 text-[0.86rem] leading-5 md:text-[0.92rem]"
-                      : "mt-1.5 text-[0.92rem] leading-5 md:text-[0.98rem]",
-                  ].join(" ")}
-                >
-                  {heroSummary}
-                </p>
-
-                <div
-                  className={[
-                    "grid gap-2 rounded-[24px] border border-[#dfe7ff] bg-white/90 p-1.5 md:grid-cols-3",
-                    isBuildStage ? "mt-2.5" : "mt-3",
-                  ].join(" ")}
-                >
-                  <ShowroomModeButton
-                    active={openStage === "rest"}
-                    icon={Timer}
-                    label="Rest Test"
-                    onClick={goToRestStage}
-                    className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
-                  />
-                  <ShowroomModeButton
-                    active={openStage === "details"}
-                    icon={MessageSquare}
-                    label="Learn"
-                    onClick={goToDetailsStage}
-                    className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
-                  />
-                  <ShowroomModeButton
-                    active={openStage === "build"}
-                    icon={BedDouble}
-                    label="Build"
-                    onClick={() => void goToBuildStage(buildStepKey || "mattress")}
-                    className={isBuildStage ? "w-full rounded-[18px] py-2 text-[0.88rem]" : "w-full rounded-[18px] py-2.5 text-[0.92rem]"}
-                  />
-                </div>
-
-                <div className="mt-3 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => void goToPodHome()}
-                    className="rounded-full border border-[#d6e4ff] bg-white/94 px-4 py-2 text-sm font-extrabold text-[#2f57e8] shadow-sm transition hover:bg-slate-50"
-                  >
-                    Back to Pod Home
-                  </button>
-
-                  {voiceState?.blocked ? (
-                    <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                      Audio may require a tap
-                    </span>
-                  ) : null}
-
-                  {voiceState?.error ? (
-                    <span className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
-                      Audio unavailable
-                    </span>
-                  ) : null}
-                </div>
-
-                {showHeroFeatureChips ? (
-                  <div className="mt-2.5 flex gap-2 overflow-x-auto border-t border-slate-200/80 pb-1 pt-2">
-                    {heroFeatureChips.slice(0, 4).map((chip) => (
-                      <HeroFeatureChip key={chip.title} title={chip.title} value={chip.value} compact />
-                    ))}
+                  <div className="mt-4 text-[1.65rem] font-black tracking-tight text-[#2f57e8] md:text-[1.95rem]">
+                    {title}
                   </div>
-                ) : null}
-              </div>
 
-              <ShowroomPanel className="relative overflow-hidden p-2 md:p-2.5" tone="soft">
-                <div className="overflow-hidden rounded-[30px] border border-white/80 bg-white shadow-inner">
+                  <h1 className="mt-4 max-w-[12ch] text-[2.7rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[3.3rem] lg:text-[4rem]">
+                    {mattressDisplayTitle}
+                  </h1>
+
+                  <div className="mt-5 flex flex-wrap items-center gap-4">
+                    {isRecommended ? (
+                      <div className="inline-flex items-center gap-3 rounded-full border border-[#d6e4ff] bg-white/96 px-4 py-3 text-[1.02rem] font-black text-[#2f57e8] shadow-[0_16px_32px_rgba(47,87,232,0.12)]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2f57e8] text-white">
+                          <CheckCircle2 className="h-5 w-5" />
+                        </div>
+                        Best First Match
+                      </div>
+                    ) : null}
+
+                    <div className="text-[1.1rem] font-medium text-slate-600">
+                      {activeStageHelper}
+                    </div>
+                  </div>
+
+                  {voiceState?.blocked || voiceState?.error ? (
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      {voiceState?.blocked ? (
+                        <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                          Audio may require a tap
+                        </span>
+                      ) : null}
+                      {voiceState?.error ? (
+                        <span className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                          Audio unavailable
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="relative min-h-[220px] border-t border-white/70 xl:border-l xl:border-t-0">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
                   <ResponsiveImage
                     src={mattressImage}
                     alt={mattressDisplayTitle}
-                    className={openStage === "build" ? "aspect-[16/5.35]" : "aspect-[16/7.2]"}
+                    className="h-full min-h-[220px] w-full md:min-h-[260px]"
                     imgClassName="h-full w-full object-cover"
                   />
                 </div>
+              </div>
+            </ShowroomPanel>
 
-                <div className="pointer-events-none absolute left-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/85 bg-white/94 px-3.5 py-2 text-xs font-extrabold text-[#2848c7] shadow-lg md:text-sm">
-                  <CheckCircle2 className="h-4 w-4" />
-                  {heroBadgeLabel}
-                </div>
-
-                {!isBuildStage ? (
-                  <button
-                    type="button"
-                    onClick={goToDetailsStage}
-                    className="absolute bottom-5 right-5 inline-flex items-center gap-2 rounded-full border border-white/85 bg-white/95 px-4 py-2.5 text-sm font-extrabold text-[#2f57e8] shadow-lg transition hover:shadow-xl"
-                  >
-                    View Details
-                  </button>
-                ) : null}
-              </ShowroomPanel>
-            </div>
-
-            <div
-              ref={stagePanelRef}
-              className={[
-                isBuildStage ? "mt-2 flex-1" : "mt-3 flex-1",
-                "overflow-visible",
-              ].join(" ")}
-            >
+            <div ref={stagePanelRef} className="mt-4 flex-1 overflow-visible">
               {activePanelContent}
             </div>
           </ShowroomFrame>
@@ -3701,29 +3702,67 @@ export default function Pod() {
 
       {!loading && activePod ? (
         !isDefaultPodDashboard ? (
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-3 px-4 md:px-6">
-          <ShowroomFooterAction
-            icon={MessageSquare}
-            label="Ask Snoozer"
-            className="min-h-[52px] min-w-[220px] rounded-full bg-white/96 px-8 text-[1rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
-            onClick={() => {
-              noteUserInteraction?.();
-              void cancelPodVoice();
-              navigate("/ask-snoozer", { state: { from: `/pod/${pid}` } });
-            }}
-          />
+          <div className="mx-auto mt-3 w-full max-w-[1380px] px-4 pb-3 md:px-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[28px] border border-white/85 bg-white/96 px-3 py-3 shadow-[0_18px_40px_rgba(40,63,126,0.12)]">
+              <div className="flex flex-wrap items-center gap-3">
+                <ExperienceFooterButton
+                  icon={House}
+                  label="Pod Home"
+                  accent="blue"
+                  onClick={() => void goToPodHome()}
+                />
 
-          <ShowroomFooterAction
-            icon={Headphones}
-            label="Talk to Human"
-            className="min-h-[52px] min-w-[220px] rounded-full bg-white/96 px-8 text-[1rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
-            onClick={() => {
-              noteUserInteraction?.();
-              setCueType("tip");
-              setCue("Ask the showroom team for in-store help when you're ready.");
-            }}
-          />
-        </div>
+                {openStage !== "rest" ? (
+                  <ExperienceFooterButton
+                    icon={Timer}
+                    label="Rest Test"
+                    accent="blue"
+                    onClick={goToRestStage}
+                  />
+                ) : null}
+
+                {openStage !== "details" ? (
+                  <ExperienceFooterButton
+                    icon={BookOpen}
+                    label="Learn"
+                    accent="blue"
+                    onClick={goToDetailsStage}
+                  />
+                ) : null}
+
+                {openStage !== "build" ? (
+                  <ExperienceFooterButton
+                    icon={SlidersHorizontal}
+                    label="Build"
+                    accent="blue"
+                    onClick={() => void goToBuildStage("mattress")}
+                  />
+                ) : null}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <ExperienceFooterButton
+                  icon={MessageSquare}
+                  label="Ask Snoozer"
+                  onClick={() => {
+                    noteUserInteraction?.();
+                    void cancelPodVoice();
+                    navigate("/ask-snoozer", { state: { from: `/pod/${pid}` } });
+                  }}
+                />
+
+                <ExperienceFooterButton
+                  icon={Headphones}
+                  label="Talk to Human"
+                  onClick={() => {
+                    noteUserInteraction?.();
+                    setCueType("tip");
+                    setCue("Ask the showroom team for in-store help when you're ready.");
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         ) : null
       ) : null}
     </ShowroomPageShell>
