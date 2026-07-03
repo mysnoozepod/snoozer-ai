@@ -1634,7 +1634,12 @@ function PodRouteHeroHeader({
       data-pod-route-header="true"
       className="grid items-stretch gap-0 overflow-hidden md:h-[212px] md:grid-cols-[minmax(0,1fr)_260px] lg:grid-cols-[minmax(0,54%)_minmax(0,46%)]"
     >
-      <div className="flex min-h-[150px] flex-col justify-center px-5 py-4 md:min-h-0 md:px-6 md:py-4.5">
+      <div
+        className={[
+          "relative flex min-h-[150px] flex-col justify-center px-5 py-4 md:min-h-0 md:px-6 md:py-4.5",
+          coachBubble ? "md:pr-[270px] lg:pr-[292px]" : "",
+        ].join(" ")}
+      >
         {eyebrow ? (
           <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">{eyebrow}</ShowroomEyebrow>
         ) : null}
@@ -1677,6 +1682,12 @@ function PodRouteHeroHeader({
             ) : null}
           </div>
         ) : null}
+
+        {coachBubble ? (
+          <div className="mt-3 md:absolute md:right-5 md:top-1/2 md:mt-0 md:max-w-[238px] md:-translate-y-1/2 lg:right-6 lg:max-w-[252px] xl:max-w-[268px]">
+            <SnoozerCoachBubble copy={coachBubble} />
+          </div>
+        ) : null}
       </div>
 
       <div className="relative min-h-[126px] overflow-hidden border-t border-white/70 md:min-h-0 md:border-l md:border-t-0">
@@ -1687,11 +1698,6 @@ function PodRouteHeroHeader({
           className="h-full min-h-[126px] w-full md:min-h-0"
           imgClassName="h-full w-full object-cover"
         />
-        {coachBubble ? (
-          <div className="px-3 pb-3 pt-0 md:absolute md:bottom-3 md:left-3 md:right-auto md:max-w-[260px] md:p-0">
-            <SnoozerCoachBubble copy={coachBubble} />
-          </div>
-        ) : null}
       </div>
     </div>
   );
