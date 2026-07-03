@@ -1,33 +1,57 @@
 # Missed Event Test Log
 
-Purpose: Tracks cases where the system failed to emit or recognize an event that should have occurred.
+## Purpose
 
-## Operating Guardrails
-- Production-grade equipment only.
-- Controlled rollout.
-- No checkout, cart, Shopify pricing, product handle, or variant ID changes.
-- No polling-based UI.
-- Sensor failure cannot break the shopper journey.
-- Pressure mapping only applies to the two non-adjustable-base pods.
-- No medical claims.
-- Event contract first.
-- Codi implements only after Ty approves the Codi Handoff Packet.
+This log tracks missed events.
 
-## Test Entry
-- Test date:
-- Store:
-- Zone:
-- Missed event type:
-- Expected event:
-- Actual result:
-- Severity:
+A missed event happens when real showroom activity occurs but the sensor does not report it.
 
-## Root Cause Notes
-- Likely cause:
-- Detection gap:
-- Containment plan:
+Missed events reduce trust in the Sensor Operating Layer and may prevent Snoozer from responding at the right time.
 
-## Follow-Up
-- Owner:
-- Retest date:
-- Status:
+## Test Goal
+
+Find situations where sensors fail to detect real activity.
+
+Examples:
+
+- Shopper lies on a pod but no occupied event is created.
+- Shopper leaves a pod but no vacated event is created.
+- Shopper enters a zone but no entered event is created.
+- Help request is pressed but no event is created.
+- Device silently fails without fault or heartbeat warning.
+
+## Test Table
+
+| Date | Tester | Zone ID | Device ID | Real Action | Expected Event | Actual Result | Likely Cause | Severity | Fix / Next Step |
+|---|---|---|---|---|---|---|---|---|---|
+| TBD | Langston | pod-1 | pod-1-edge-01 | Lie on Pod 1 | occupied | TBD | TBD | Low/Medium/High | TBD |
+
+## Severity Guide
+
+### Low
+
+The miss affects reporting only.
+
+### Medium
+
+The miss prevents useful guidance or weakens operator awareness.
+
+### High
+
+The miss affects help requests, critical guidance, or reliability standards.
+
+## Common Fixes
+
+Possible fixes include:
+
+- Better sensor placement
+- Different sensor type
+- Stronger signal processing
+- Device replacement
+- Stability rule adjustment
+- Zone redesign
+- Fallback path
+
+## Final Rule
+
+A sensor that frequently misses obvious activity is not production-ready.

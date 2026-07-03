@@ -1,38 +1,73 @@
 # Sensor Backend Prompt Draft
 
-Purpose: Captures the future architecture direction for a later implementation phase after approval is complete.
+## Purpose
 
-## Operating Guardrails
-- Production-grade equipment only.
-- Controlled rollout.
-- No checkout, cart, Shopify pricing, product handle, or variant ID changes.
-- No polling-based UI.
-- Sensor failure cannot break the shopper journey.
-- Pressure mapping only applies to the two non-adjustable-base pods.
-- No medical claims.
-- Event contract first.
-- Codi implements only after Ty approves the Codi Handoff Packet.
+This is a draft prompt for future Codi implementation.
 
-## Future Architecture Note
-```text
-Sensor / edge controller
--> AWS IoT Core MQTT over TLS
--> IoT Rule
--> Node.js 20 Lambda validator / normalizer
--> DynamoDB ZoneState + ZoneEvents
--> WebSocket push
--> React Showroom App / Snoozer HUD / Operator View
-```
+This prompt is not ready to run until Ty approves the Codi Handoff Packet.
 
-## Future Build Rules
-- This future build must use WebSocket push, not polling.
-- Event contract must be finalized before implementation starts.
-- Sensor failure must degrade safely without breaking the shopper journey.
-- No checkout, cart, Shopify pricing, product handle, or variant ID changes are allowed in this workstream.
+## Future Codi Prompt Draft
 
-## Prompt Draft Inputs
-- Approved scope:
-- Approved schema:
-- Approved devices:
-- Success criteria:
-- Open architecture questions:
+Codi, build the first Sensor Operating Layer proof for MySnoozePod.
+
+This is a one-zone proof only. Do not build the full showroom sensor system yet.
+
+Target zone:
+
+- zoneId: pod-1
+- deviceId: pod-1-edge-01
+- zoneType: pod
+
+Approved event types for this proof:
+
+- occupied
+- vacated
+- heartbeat
+- fault
+
+Architecture:
+
+Sensor / edge controller  
+→ AWS IoT Core MQTT over TLS  
+→ IoT Rule  
+→ Node.js 20 Lambda validator / normalizer  
+→ DynamoDB ZoneState + ZoneEvents  
+→ WebSocket push  
+→ React Showroom App / Snoozer HUD / Operator View
+
+Rules:
+
+- Use Node.js 20 for Lambda.
+- Validate all incoming ZoneEvent messages.
+- Reject malformed events.
+- Store latest state in ZoneState.
+- Store append-only history in ZoneEvents.
+- Push live updates through WebSocket.
+- Do not use polling.
+- Do not touch Shopify pricing.
+- Do not touch Shopify availability.
+- Do not touch product handles.
+- Do not touch variant IDs.
+- Do not touch cart logic.
+- Do not touch checkout logic.
+- Do not break the existing showroom journey.
+- Sensor failure must degrade gracefully.
+
+Starter ZoneEvent:
+
+```json
+{
+  "eventId": "evt_20260703_abc123",
+  "env": "dev",
+  "storeId": "severn-pilot",
+  "deviceId": "pod-1-edge-01",
+  "zoneId": "pod-1",
+  "zoneType": "pod",
+  "eventType": "occupied",
+  "value": true,
+  "confidence": 0.94,
+  "sessionId": null,
+  "snoozeCode": null,
+  "timestamp": "2026-07-03T13:10:00.000Z",
+  "firmwareVersion": "1.0.0"
+}

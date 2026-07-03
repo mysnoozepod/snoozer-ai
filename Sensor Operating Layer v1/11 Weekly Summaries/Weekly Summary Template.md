@@ -1,37 +1,86 @@
 # Weekly Summary Template
 
-Purpose: Provides a standard weekly update format for the Sensor Operating Layer v1 workstream.
+## Purpose
 
-## Operating Guardrails
-- Production-grade equipment only.
-- Controlled rollout.
-- No checkout, cart, Shopify pricing, product handle, or variant ID changes.
-- No polling-based UI.
-- Sensor failure cannot break the shopper journey.
-- Pressure mapping only applies to the two non-adjustable-base pods.
-- No medical claims.
-- Event contract first.
-- Codi implements only after Ty approves the Codi Handoff Packet.
+This template gives Care a consistent way to summarize sensor progress each week.
 
-## Weekly Snapshot
-- Week ending:
-- Overall status:
-- Biggest win:
-- Biggest risk:
+The goal is to keep Ty, Care, Langston, and Codi aligned.
 
-## Progress This Week
-- Mission and rules:
-- Zone map:
-- Devices:
-- Events and triggers:
-- Testing:
+## Week
 
-## Next Week
-- Priority 1:
-- Priority 2:
-- Decisions needed:
+Week of:
+
+## Overall Status
+
+Choose one:
+
+- On track
+- Needs review
+- Blocked
+- Deferred
+- Ready for Ty review
+- Ready for Codi handoff
+
+## What Changed This Week
+
+- TBD
+- TBD
+- TBD
+
+## What Langston Tested
+
+| Test Area | Result | Notes |
+|---|---|---|
+| Zone awareness | TBD | TBD |
+| False positives | TBD | TBD |
+| Missed events | TBD | TBD |
+| Rest Test triggers | TBD | TBD |
+| Equipment handling | TBD | TBD |
+
+## What Care Documented
+
+| File | Update | Status |
+|---|---|---|
+| Zone Dictionary | TBD | TBD |
+| Device Matrix | TBD | TBD |
+| Event Dictionary | TBD | TBD |
+| Trigger Map | TBD | TBD |
+| Test Logs | TBD | TBD |
+| Codi Handoff Packet | TBD | TBD |
+
+## Biggest Useful Finding
+
+TBD
+
+## Biggest Risk
+
+TBD
+
+## Decisions Needed From Ty
+
+| Decision | Why It Matters | Needed By |
+|---|---|---|
+| TBD | TBD | TBD |
+
+## Ready for Codi?
+
+Choose one:
+
+- No
+- Almost
+- Yes, documentation only
+- Yes, implementation-ready
+
+Reason:
+
+TBD
+
+## Next Focus
+
+- TBD
+- TBD
+- TBD
 
 ## Notes
-- Owner:
-- Links:
-- Open questions:
+
+TBD
