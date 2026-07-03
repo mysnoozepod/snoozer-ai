@@ -1524,6 +1524,73 @@ function LearnAtGlanceCard({ title, body }) {
   );
 }
 
+function PodRouteHeroHeader({
+  eyebrow,
+  podTitle,
+  mattressTitle,
+  helperText,
+  isRecommended = false,
+  mattressImage,
+  voiceState,
+}) {
+  return (
+    <div
+      data-pod-route-header="true"
+      className="grid items-stretch gap-0 md:grid-cols-[minmax(0,1fr)_240px] xl:grid-cols-[minmax(0,1fr)_290px]"
+    >
+      <div className="flex min-h-[150px] flex-col justify-center px-5 py-4 md:min-h-[164px] md:px-6 md:py-4.5">
+        <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">{eyebrow}</ShowroomEyebrow>
+
+        <div className="mt-2 text-[1.35rem] font-black tracking-tight text-[#2f57e8] md:text-[1.55rem]">
+          {podTitle}
+        </div>
+
+        <h1 className="mt-2 max-w-[12ch] text-[2rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[2.45rem] xl:text-[2.75rem]">
+          {mattressTitle}
+        </h1>
+
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          {isRecommended ? (
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#d6e4ff] bg-white/96 px-3 py-2 text-[0.9rem] font-black text-[#2f57e8] shadow-[0_12px_26px_rgba(47,87,232,0.12)]">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2f57e8] text-white">
+                <CheckCircle2 className="h-4 w-4" />
+              </div>
+              Best First Match
+            </div>
+          ) : null}
+
+          <div className="text-[0.96rem] font-medium text-slate-600 md:text-[1rem]">{helperText}</div>
+        </div>
+
+        {voiceState?.blocked || voiceState?.error ? (
+          <div className="mt-3 flex flex-wrap gap-2.5">
+            {voiceState?.blocked ? (
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-800">
+                Audio may require a tap
+              </span>
+            ) : null}
+            {voiceState?.error ? (
+              <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-semibold text-red-700">
+                Audio unavailable
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="relative min-h-[126px] border-t border-white/70 md:border-l md:border-t-0 md:min-h-[150px]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
+        <ResponsiveImage
+          src={mattressImage}
+          alt={mattressTitle}
+          className="h-full min-h-[126px] w-full md:min-h-[150px]"
+          imgClassName="h-full w-full object-cover"
+        />
+      </div>
+    </div>
+  );
+}
+
 function PodHomeActionCard({
   icon: Icon,
   title,
@@ -1559,29 +1626,29 @@ function PodHomeActionCard({
       type="button"
       onClick={onClick}
       className={[
-        "group flex h-full min-h-[260px] flex-col rounded-[30px] border border-white/85 p-6 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[286px] md:p-7",
+        "group flex h-full min-h-[188px] flex-col rounded-[30px] border border-white/85 p-5 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[206px] md:p-5.5",
         rootClass,
       ].join(" ")}
     >
-      <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/90 bg-white/96 shadow-[0_16px_32px_rgba(45,71,136,0.12)]">
-        {Icon ? <Icon className={["h-10 w-10", iconTone].join(" ")} /> : null}
+      <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/90 bg-white/96 shadow-[0_16px_32px_rgba(45,71,136,0.12)] md:h-[68px] md:w-[68px]">
+        {Icon ? <Icon className={["h-8 w-8 md:h-9 md:w-9", iconTone].join(" ")} /> : null}
       </div>
 
-      <div className="mt-7 text-[2rem] font-black leading-none tracking-tight text-slate-900 md:text-[2.2rem]">
+      <div className="mt-5 text-[1.7rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.85rem]">
         {title}
       </div>
 
-      <div className={["mt-3 text-[1.08rem] font-semibold md:text-[1.12rem]", microcopyTone].join(" ")}>
+      <div className={["mt-2 text-[0.98rem] font-semibold md:text-[1.02rem]", microcopyTone].join(" ")}>
         {microcopy}
       </div>
 
       <div
         className={[
-          "mt-auto flex h-14 items-center justify-center rounded-full text-white shadow-[0_18px_34px_rgba(47,87,232,0.24)] transition group-hover:scale-[1.01]",
+          "mt-auto flex h-12 items-center justify-center rounded-full text-white shadow-[0_18px_34px_rgba(47,87,232,0.24)] transition group-hover:scale-[1.01] md:h-[52px]",
           barClass,
         ].join(" ")}
       >
-        <ArrowRight className="h-7 w-7" />
+        <ArrowRight className="h-6 w-6" />
       </div>
     </button>
   );
@@ -1604,7 +1671,7 @@ function ExperienceFooterButton({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex min-h-[54px] items-center justify-center gap-3 rounded-[22px] border border-white/85 bg-white/96 px-5 text-sm font-extrabold text-slate-900 shadow-[0_14px_34px_rgba(45,71,136,0.1)] transition hover:-translate-y-0.5 hover:bg-slate-50 md:min-w-[164px]"
+      className="inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-[18px] border border-white/85 bg-white/96 px-4 text-[0.9rem] font-extrabold text-slate-900 shadow-[0_14px_34px_rgba(45,71,136,0.1)] transition hover:-translate-y-0.5 hover:bg-slate-50 md:min-w-[138px]"
     >
       {Icon ? <Icon className={["h-5 w-5 shrink-0", accentClass].join(" ")} /> : null}
       <span>{label}</span>
@@ -1659,25 +1726,25 @@ function RestLengthCard({ title, subtitle, durationLabel, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full cursor-pointer flex-col rounded-[26px] border border-white/85 bg-white/96 p-5 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd8b0] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[196px] md:p-6"
+      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-3.5 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd8b0] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[154px] md:p-4"
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)] md:h-[72px] md:w-[72px]">
-          <Timer className="h-8 w-8 text-[#355ff1] md:h-9 md:w-9" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)] md:h-[54px] md:w-[54px]">
+          <Timer className="h-6 w-6 text-[#355ff1] md:h-7 md:w-7" />
         </div>
 
-        <div className="rounded-full bg-[#edf2ff] px-4 py-1.5 text-[0.94rem] font-black text-[#355ff1] md:px-5 md:py-2 md:text-[1rem]">
+        <div className="rounded-full bg-[#edf2ff] px-3 py-1 text-[0.84rem] font-black text-[#355ff1] md:px-4 md:text-[0.9rem]">
           {durationLabel}
         </div>
       </div>
 
-      <div className="mt-5 text-[1.72rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.95rem]">
+      <div className="mt-3 text-[1.28rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.46rem]">
         {title}
       </div>
-      <div className="mt-2.5 text-[1rem] text-slate-600 md:text-[1.08rem]">{subtitle}</div>
+      <div className="mt-1.5 text-[0.88rem] text-slate-600 md:text-[0.94rem]">{subtitle}</div>
 
-      <div className="mt-auto rounded-[16px] bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] px-6 py-3.5 text-center text-[1rem] font-black text-white shadow-[0_18px_36px_rgba(255,143,31,0.26)] transition group-hover:scale-[1.01] md:text-[1.08rem]">
-        Start Test <ArrowRight className="ml-2 inline h-5 w-5" />
+      <div className="mt-auto rounded-[14px] bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] px-4 py-2.5 text-center text-[0.9rem] font-black text-white shadow-[0_18px_36px_rgba(255,143,31,0.26)] transition group-hover:scale-[1.01] md:text-[0.96rem]">
+        Start Test <ArrowRight className="ml-2 inline h-4 w-4" />
       </div>
     </button>
   );
@@ -1756,14 +1823,14 @@ function GuidedRestTest({
 }) {
   if (!activeMode) {
     return (
-      <ShowroomPanel className="overflow-hidden p-5 md:p-6" tone="frost">
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_290px] xl:items-start">
+      <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="frost">
+        <div className="grid gap-2.5 xl:grid-cols-[minmax(0,1fr)_230px] xl:items-start">
           <div className="min-w-0">
-            <div className="text-[2.2rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[2.7rem]">
+            <div className="text-[1.75rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[2rem]">
               How long do you want to test?
             </div>
 
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
+            <div className="mt-3 grid gap-2 md:grid-cols-2">
               <RestLengthCard
                 title="7-Minute Test"
                 subtitle="Quick check"
@@ -1779,12 +1846,12 @@ function GuidedRestTest({
             </div>
           </div>
 
-          <ShowroomPanel className="rounded-[24px] p-4 md:p-5" tone="soft">
-            <div className="flex items-start gap-3.5">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8] shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
-                <Smile className="h-7 w-7" />
+          <ShowroomPanel className="rounded-[20px] p-3 md:p-3.5" tone="soft">
+            <div className="flex items-start gap-2.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8] shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
+                <Smile className="h-5.5 w-5.5" />
               </div>
-              <div className="text-[0.98rem] leading-7 text-slate-700">
+              <div className="text-[0.86rem] leading-5.5 text-slate-700">
                 Start with 7 minutes for a quick check, or choose 15 for more time to settle in.
               </div>
             </div>
@@ -3464,49 +3531,20 @@ export default function Pod() {
 
   const podHomeContent = useMemo(
     () => (
-      <div className="space-y-5 md:space-y-6">
+      <div className="space-y-3.5 md:space-y-4">
         <ShowroomPanel className="overflow-hidden p-0" tone="soft">
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,0.86fr)_minmax(380px,1.14fr)]">
-            <div className="flex min-h-[260px] flex-col justify-center px-6 py-7 md:min-h-[300px] md:px-8 md:py-8 lg:px-10">
-              <ShowroomEyebrow className="text-[0.9rem] tracking-[0.26em]">
-                Pod Home
-              </ShowroomEyebrow>
-
-              <div className="mt-4 text-[1.6rem] font-black tracking-tight text-[#2f57e8] md:text-[2rem]">
-                {title}
-              </div>
-
-              <h1 className="mt-4 max-w-[12ch] text-[2.6rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[3.4rem] lg:text-[4.1rem]">
-                {mattressDisplayTitle}
-              </h1>
-
-              {isRecommended ? (
-                <div className="mt-6 inline-flex w-fit items-center gap-3 rounded-full border border-[#d6e4ff] bg-white/96 px-4 py-3 text-[1.02rem] font-black text-[#2f57e8] shadow-[0_16px_32px_rgba(47,87,232,0.12)]">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2f57e8] text-white">
-                    <CheckCircle2 className="h-5 w-5" />
-                  </div>
-                  Best First Match
-                </div>
-              ) : null}
-
-              <div className="mt-5 text-[1rem] font-medium text-slate-600 md:text-[1.06rem]">
-                {heroSummary}
-              </div>
-            </div>
-
-            <div className="relative min-h-[280px] border-t border-white/70 lg:min-h-[360px] lg:border-l lg:border-t-0">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
-              <ResponsiveImage
-                src={mattressImage}
-                alt={mattressDisplayTitle}
-                className="h-full min-h-[280px] w-full lg:min-h-[360px]"
-                imgClassName="h-full w-full object-cover"
-              />
-            </div>
-          </div>
+          <PodRouteHeroHeader
+            eyebrow="Pod Home"
+            podTitle={title}
+            mattressTitle={mattressDisplayTitle}
+            helperText={heroSummary}
+            isRecommended={isRecommended}
+            mattressImage={mattressImage}
+            voiceState={voiceState}
+          />
         </ShowroomPanel>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-3">
           <PodHomeActionCard
             icon={Timer}
             title="Rest Test"
@@ -3529,11 +3567,11 @@ export default function Pod() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-0.5">
           <ShowroomFooterAction
             icon={MessageSquare}
             label="Ask Snoozer"
-            className="min-h-[56px] min-w-[220px] rounded-full bg-white/96 px-8 text-[1.02rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
+            className="min-h-[48px] min-w-[200px] rounded-full bg-white/96 px-7 text-[0.98rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
             onClick={() => {
               noteUserInteraction?.();
               void cancelPodVoice();
@@ -3544,7 +3582,7 @@ export default function Pod() {
           <ShowroomFooterAction
             icon={Headphones}
             label="Talk to Human"
-            className="min-h-[56px] min-w-[220px] rounded-full bg-white/96 px-8 text-[1.02rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
+            className="min-h-[48px] min-w-[200px] rounded-full bg-white/96 px-7 text-[0.98rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
             onClick={() => {
               noteUserInteraction?.();
               setCueType("tip");
@@ -3587,7 +3625,7 @@ export default function Pod() {
   }, [loading, activePod, isDefaultPodDashboard, podHomeContent, stageContent]);
 
   return (
-    <ShowroomPageShell className="flex min-h-screen flex-col overflow-x-hidden pb-3">
+    <ShowroomPageShell className="flex min-h-screen flex-col overflow-x-hidden pb-0">
       <div className="mx-auto w-full max-w-[1380px] px-4 pt-3 md:px-6 md:pt-4">
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[30px] border border-white/80 bg-white/94 px-4 py-3 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-4">
           <button
@@ -3627,68 +3665,22 @@ export default function Pod() {
         </div>
       </div>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-2 pt-4 md:px-6">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-1 pt-3 md:px-6 md:pt-4">
         {isDefaultPodDashboard ? (
-          <ShowroomFrame className="p-3 md:p-4">{podHomeContent}</ShowroomFrame>
+          <ShowroomFrame className="p-2.5 md:p-3">{podHomeContent}</ShowroomFrame>
         ) : (
           <ShowroomFrame className={["flex flex-1 flex-col", isRestTaskStage ? "p-2.5 md:p-3" : "p-3 md:p-4"].join(" ")}>
             <ShowroomPanel className={["overflow-hidden", isRestTaskStage ? "p-0" : "p-0"].join(" ")} tone="soft">
               {isRestTaskStage ? (
-                <div className="grid items-stretch gap-0 md:grid-cols-[minmax(0,1fr)_240px] xl:grid-cols-[minmax(0,1fr)_290px]">
-                  <div className="flex min-h-[150px] flex-col justify-center px-5 py-4 md:min-h-[164px] md:px-6 md:py-4.5">
-                    <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">
-                      {activeStageEyebrow}
-                    </ShowroomEyebrow>
-
-                    <div className="mt-2 text-[1.35rem] font-black tracking-tight text-[#2f57e8] md:text-[1.55rem]">
-                      {title}
-                    </div>
-
-                    <h1 className="mt-2 max-w-[12ch] text-[2rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[2.45rem] xl:text-[2.75rem]">
-                      {mattressDisplayTitle}
-                    </h1>
-
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                      {isRecommended ? (
-                        <div className="inline-flex items-center gap-2 rounded-full border border-[#d6e4ff] bg-white/96 px-3 py-2 text-[0.9rem] font-black text-[#2f57e8] shadow-[0_12px_26px_rgba(47,87,232,0.12)]">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2f57e8] text-white">
-                            <CheckCircle2 className="h-4 w-4" />
-                          </div>
-                          Best First Match
-                        </div>
-                      ) : null}
-
-                      <div className="text-[0.96rem] font-medium text-slate-600 md:text-[1rem]">
-                        {activeStageHelper}
-                      </div>
-                    </div>
-
-                    {voiceState?.blocked || voiceState?.error ? (
-                      <div className="mt-3 flex flex-wrap gap-2.5">
-                        {voiceState?.blocked ? (
-                          <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-800">
-                            Audio may require a tap
-                          </span>
-                        ) : null}
-                        {voiceState?.error ? (
-                          <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-semibold text-red-700">
-                            Audio unavailable
-                          </span>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="relative min-h-[126px] border-t border-white/70 md:border-l md:border-t-0 md:min-h-[150px]">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
-                    <ResponsiveImage
-                      src={mattressImage}
-                      alt={mattressDisplayTitle}
-                      className="h-full min-h-[126px] w-full md:min-h-[150px]"
-                      imgClassName="h-full w-full object-cover"
-                    />
-                  </div>
-                </div>
+                <PodRouteHeroHeader
+                  eyebrow={activeStageEyebrow}
+                  podTitle={title}
+                  mattressTitle={mattressDisplayTitle}
+                  helperText={activeStageHelper}
+                  isRecommended={isRecommended}
+                  mattressImage={mattressImage}
+                  voiceState={voiceState}
+                />
               ) : (
                 <div className="grid gap-0 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
                   <div className="flex min-h-[240px] flex-col justify-center px-6 py-6 md:min-h-[270px] md:px-8 md:py-7">
@@ -3757,9 +3749,9 @@ export default function Pod() {
 
       {!loading && activePod ? (
         !isDefaultPodDashboard ? (
-          <div className="mx-auto mt-3 w-full max-w-[1380px] px-4 pb-3 md:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[28px] border border-white/85 bg-white/96 px-3 py-3 shadow-[0_18px_40px_rgba(40,63,126,0.12)]">
-              <div className="flex flex-wrap items-center gap-3">
+          <div className="mx-auto mt-0 w-full max-w-[1380px] px-4 pb-0 md:px-6">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-[22px] border border-white/85 bg-white/96 px-3 py-2 shadow-[0_18px_40px_rgba(40,63,126,0.12)]">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <ExperienceFooterButton
                   icon={House}
                   label="Pod Home"
@@ -3795,7 +3787,7 @@ export default function Pod() {
                 ) : null}
               </div>
 
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <ExperienceFooterButton
                   icon={MessageSquare}
                   label="Ask Snoozer"
