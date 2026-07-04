@@ -420,8 +420,8 @@ function BuilderOptionButton({ title, subtitle, active, disabled = false, onClic
       disabled={disabled}
       onClick={onClick}
       className={[
-        "w-full rounded-[18px] border px-3 py-2.5 text-left shadow-sm transition",
-        compact ? "min-h-[52px]" : "min-h-[88px]",
+        "w-full rounded-[18px] border px-3 py-2 text-left shadow-sm transition",
+        compact ? "min-h-[46px]" : "min-h-[82px]",
         disabled ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 opacity-60" : "hover:-translate-y-0.5 hover:shadow-md",
         active ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white",
       ].join(" ")}
@@ -431,7 +431,7 @@ function BuilderOptionButton({ title, subtitle, active, disabled = false, onClic
           <div
             className={[
               "font-extrabold leading-tight text-gray-900",
-              compact ? "text-[0.9rem]" : "text-[0.98rem]",
+              compact ? "text-[0.84rem]" : "text-[0.98rem]",
             ].join(" ")}
           >
             {title}
@@ -440,7 +440,7 @@ function BuilderOptionButton({ title, subtitle, active, disabled = false, onClic
             <div
               className={[
                 "text-gray-600",
-                compact ? "mt-0.5 text-[0.68rem] leading-4" : "mt-1 text-[0.8rem] leading-5",
+                compact ? "mt-0.5 text-[0.64rem] leading-[0.9rem]" : "mt-1 text-[0.8rem] leading-5",
               ].join(" ")}
             >
               {subtitle}
@@ -1283,10 +1283,10 @@ export default function PodBuilder({
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col">
       <div className="min-h-0 flex-1">
-        <div className="grid min-h-0 gap-3 xl:h-full xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.02fr)_minmax(0,0.96fr)] xl:items-start">
+        <div className="grid min-h-0 gap-2.5 xl:h-full xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.02fr)_minmax(0,0.96fr)] xl:items-start">
           <div
             className={[
-              "flex min-h-0 flex-col rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+              "flex min-h-0 flex-col rounded-[22px] border bg-white/96 p-2.5 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
               stepKey === "size" ? "border-indigo-200" : "border-white/80",
             ].join(" ")}
           >
@@ -1296,10 +1296,10 @@ export default function PodBuilder({
                   1
                 </div>
                 <div>
-                  <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
                     Choose Size
                   </div>
-                  <div className="mt-0.5 text-[1.05rem] font-extrabold text-slate-900">
+                  <div className="mt-0.5 text-[0.98rem] font-extrabold text-slate-900">
                     {size || "Choose your size"}
                   </div>
                 </div>
@@ -1307,7 +1307,7 @@ export default function PodBuilder({
               {sizeReady ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
             </div>
 
-            <div className="mt-3 grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(96px,1fr))]">
+            <div className="mt-2.5 grid gap-1.5 [grid-template-columns:repeat(auto-fit,minmax(92px,1fr))]">
               {SIZE_OPTIONS.map((option) => (
                 <BuilderOptionButton
                   key={option}
@@ -1326,7 +1326,7 @@ export default function PodBuilder({
 
           <div
             className={[
-              "flex min-h-0 flex-col rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+              "flex min-h-0 flex-col rounded-[22px] border bg-white/96 p-2.5 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
               stepKey === "base" ? "border-indigo-200" : "border-white/80",
             ].join(" ")}
           >
@@ -1336,10 +1336,10 @@ export default function PodBuilder({
                   2
                 </div>
                 <div>
-                  <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
                     Choose Base
                   </div>
-                  <div className="mt-0.5 text-[1.05rem] font-extrabold text-slate-900">
+                  <div className="mt-0.5 text-[0.98rem] font-extrabold text-slate-900">
                     {selectedBaseLabel}
                   </div>
                 </div>
@@ -1347,7 +1347,7 @@ export default function PodBuilder({
               {baseReady ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
             </div>
 
-            <div className="mt-3 grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(132px,1fr))]">
+            <div className="mt-2.5 grid gap-1.5 [grid-template-columns:repeat(auto-fit,minmax(122px,1fr))]">
               {BASE_OPTIONS_UI.map((option) => (
                 <BuilderOptionButton
                   key={option.value}
@@ -1364,11 +1364,11 @@ export default function PodBuilder({
             </div>
 
             {showMotion ? (
-              <div className="mt-2.5 rounded-[20px] border border-[#e2e9fb] bg-[#f8faff] px-3 py-2.5 shadow-sm">
-                <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+              <div className="mt-2 rounded-[18px] border border-[#e2e9fb] bg-[#f8faff] px-2.5 py-2 shadow-sm">
+                <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
                   Motion
                 </div>
-                <div className="mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="mt-1.5 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
                   {MOTION_TYPES_UI.map((option) => {
                     const allowed = allowedMotion.includes(option.value);
                     return (
@@ -1394,7 +1394,7 @@ export default function PodBuilder({
                 </div>
               </div>
             ) : (
-              <div className="mt-3 rounded-[18px] border border-slate-200 bg-slate-50 px-3 py-2.5 text-[0.82rem] font-semibold text-slate-700">
+              <div className="mt-2.5 rounded-[16px] border border-slate-200 bg-slate-50 px-2.5 py-2 text-[0.76rem] font-semibold text-slate-700">
                 Choose Adjustable Base to unlock motion choices.
               </div>
             )}
@@ -1402,7 +1402,7 @@ export default function PodBuilder({
 
           <div
             className={[
-              "flex min-h-0 flex-col rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+              "flex min-h-0 flex-col rounded-[22px] border bg-white/96 p-2.5 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
               stepKey === "review" ? "border-indigo-200" : "border-white/80",
             ].join(" ")}
           >
@@ -1412,10 +1412,10 @@ export default function PodBuilder({
                   3
                 </div>
                 <div>
-                  <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
                     Review & Add
                   </div>
-                  <div className="mt-0.5 text-[1.05rem] font-extrabold text-slate-900">
+                  <div className="mt-0.5 text-[0.98rem] font-extrabold text-slate-900">
                     {podLabel}
                   </div>
                 </div>
@@ -1423,9 +1423,9 @@ export default function PodBuilder({
               {canAdd ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
             </div>
 
-            <div className="mt-3 rounded-[20px] border border-[#e2e9fb] bg-white px-3 py-2.5 shadow-sm">
+            <div className="mt-2.5 rounded-[18px] border border-[#e2e9fb] bg-white px-2.5 py-2 shadow-sm">
               <div className="flex items-start gap-3">
-                <div className="flex h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[16px] border border-[#e3eafc] bg-[#fbfcff]">
+                <div className="flex h-[48px] w-[48px] shrink-0 overflow-hidden rounded-[14px] border border-[#e3eafc] bg-[#fbfcff]">
                   <BuilderMediaPreview
                     src={mattressImage}
                     alt={mattressLabel}
@@ -1436,20 +1436,20 @@ export default function PodBuilder({
                 </div>
 
                 <div className="min-w-0">
-                  <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
                     Fixed Mattress
                   </div>
-                  <div className="mt-0.5 text-[0.9rem] font-extrabold leading-tight text-slate-900">
+                  <div className="mt-0.5 text-[0.86rem] font-extrabold leading-tight text-slate-900">
                     {mattressLabel}
                   </div>
-                  <div className="mt-0.5 text-[0.75rem] leading-5 text-slate-600">
+                  <div className="mt-0.5 text-[0.72rem] leading-[1.1rem] text-slate-600">
                     Locked to {podLabel}. Compare another pod if you want a different mattress family.
                   </div>
                   {onViewResults ? (
                     <button
                       type="button"
                       onClick={onViewResults}
-                      className="mt-1.5 inline-flex items-center gap-2 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
+                      className="mt-1 inline-flex items-center gap-2 text-[0.64rem] font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
                     >
                       Compare other pods
                     </button>
@@ -1459,13 +1459,13 @@ export default function PodBuilder({
             </div>
 
             {isDualComfort ? (
-              <div className="mt-3 rounded-[20px] border border-[#e2e9fb] bg-[#f8faff] px-3 py-2.5 shadow-sm">
-                <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+              <div className="mt-2.5 rounded-[18px] border border-[#e2e9fb] bg-[#f8faff] px-2.5 py-2 shadow-sm">
+                <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
                   Comfort Sides
                 </div>
-                <div className="mt-2 grid gap-2 md:grid-cols-2">
+                <div className="mt-1.5 grid gap-1.5 md:grid-cols-2">
                   <div className="space-y-2">
-                    <div className="text-[0.78rem] font-extrabold text-slate-700">Left Side</div>
+                    <div className="text-[0.72rem] font-extrabold text-slate-700">Left Side</div>
                     {DUAL_COMFORT_OPTIONS.map((option) => (
                       <BuilderOptionButton
                         key={`left-${option}`}
@@ -1480,7 +1480,7 @@ export default function PodBuilder({
                     ))}
                   </div>
                   <div className="space-y-2">
-                    <div className="text-[0.78rem] font-extrabold text-slate-700">Right Side</div>
+                    <div className="text-[0.72rem] font-extrabold text-slate-700">Right Side</div>
                     {DUAL_COMFORT_OPTIONS.map((option) => (
                       <BuilderOptionButton
                         key={`right-${option}`}
@@ -1498,57 +1498,57 @@ export default function PodBuilder({
               </div>
             ) : null}
 
-            <div className="mt-3 rounded-[18px] border border-[#dbe5ff] bg-white/96 px-3 py-2.5 shadow-sm">
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-2.5 rounded-[16px] border border-[#dbe5ff] bg-white/96 px-2.5 py-2 shadow-sm">
+              <div className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-4">
                 <div>
-                  <div className="text-[0.66rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                  <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
                     Size
                   </div>
-                  <div className="mt-0.5 text-[0.88rem] font-extrabold text-slate-900">
+                  <div className="mt-0.5 text-[0.84rem] font-extrabold text-slate-900">
                     {size || "Choose"}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-[0.66rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                  <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
                     Base
                   </div>
-                  <div className="mt-0.5 text-[0.88rem] font-extrabold text-slate-900">
+                  <div className="mt-0.5 text-[0.84rem] font-extrabold text-slate-900">
                     {selectedBaseLabel}
                   </div>
-                  <div className="text-[0.72rem] text-slate-600">
+                  <div className="text-[0.68rem] text-slate-600">
                     {showMotion ? selectedMotionLabel : "No Motion"}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-[0.66rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                  <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
                     Monthly
                   </div>
-                  <div className="mt-0.5 text-[0.88rem] font-extrabold text-slate-900">
+                  <div className="mt-0.5 text-[0.84rem] font-extrabold text-slate-900">
                     {money(monthly)}/mo
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-[0.66rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                  <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
                     Total
                   </div>
-                  <div className="mt-0.5 text-[0.88rem] font-extrabold text-slate-900">
+                  <div className="mt-0.5 text-[0.84rem] font-extrabold text-slate-900">
                     {money(previewTotal)}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-3 space-y-2">
+            <div className="mt-2.5 space-y-1.5">
               <Button
                 onClick={() => {
                   setStepKey("review");
                   addToPlan();
                 }}
                 disabled={!canAdd}
-                className="min-h-[42px] w-full rounded-[18px] px-5 text-[0.9rem] font-extrabold"
+                className="min-h-[38px] w-full rounded-[16px] px-5 text-[0.84rem] font-extrabold"
               >
                 <span>{primaryCtaLabel}</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -1558,7 +1558,7 @@ export default function PodBuilder({
                 <button
                   type="button"
                   onClick={viewCart}
-                  className="text-[0.76rem] font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
+                  className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
                 >
                   Open Cart
                 </button>
@@ -1566,7 +1566,7 @@ export default function PodBuilder({
                 <button
                   type="button"
                   onClick={resetBuild}
-                  className="text-[0.76rem] font-extrabold uppercase tracking-[0.14em] text-slate-500"
+                  className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-slate-500"
                 >
                   Start Over
                 </button>

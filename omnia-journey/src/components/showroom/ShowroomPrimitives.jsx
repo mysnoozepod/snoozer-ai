@@ -174,18 +174,18 @@ export function ShowroomCartBadge({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-2.5 rounded-[22px] border bg-white/96 px-3.5 py-2.5 text-left shadow-[0_16px_38px_rgba(47,72,137,0.14)] backdrop-blur transition hover:shadow-[0_20px_44px_rgba(47,72,137,0.18)]",
+        "inline-flex items-center gap-2 rounded-[20px] border bg-white/96 px-3 py-2 text-left shadow-[0_14px_32px_rgba(47,72,137,0.14)] backdrop-blur transition hover:shadow-[0_18px_40px_rgba(47,72,137,0.18)]",
         quiet ? "border-white/70" : "border-indigo-100/90",
         className
       )}
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eef3ff]">
+      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#eef3ff]">
         <svg
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.85"
-          className="h-5 w-5 text-[#2f57e8]"
+          className="h-[1.125rem] w-[1.125rem] text-[#2f57e8]"
           aria-hidden="true"
         >
           <circle cx="9" cy="20" r="1.25" />
@@ -196,7 +196,7 @@ export function ShowroomCartBadge({
 
       <div className="leading-tight">
         <div className="text-[11px] font-semibold text-slate-500">{label}</div>
-        <div className="mt-0.5 text-base font-black text-slate-900">
+        <div className="mt-0.5 text-[0.95rem] font-black text-slate-900">
           {count} item{count === 1 ? "" : "s"}
         </div>
       </div>
