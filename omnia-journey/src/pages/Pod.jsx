@@ -1566,7 +1566,7 @@ function HeaderBadge({ label, tone = "soft" }) {
   return (
     <div
       className={[
-        "inline-flex items-center rounded-full border px-3 py-1.5 text-[0.76rem] font-extrabold uppercase tracking-[0.12em] shadow-[0_10px_24px_rgba(40,63,126,0.08)]",
+        "inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.1em] shadow-[0_10px_24px_rgba(40,63,126,0.08)] md:px-3",
         toneClass,
       ].join(" ")}
     >
@@ -1579,15 +1579,15 @@ function SnoozerCoachBubble({ copy }) {
   if (!copy) return null;
 
   return (
-    <div className="mt-2.5 flex max-w-[320px] items-start gap-2.5 rounded-[18px] border border-white/85 bg-white/96 px-3 py-2.5 shadow-[0_14px_28px_rgba(40,63,126,0.12)] md:mt-0">
+    <div className="mt-2 flex max-w-[220px] items-start gap-2 rounded-[18px] border border-white/85 bg-white/96 px-2.5 py-2 shadow-[0_14px_28px_rgba(40,63,126,0.12)] md:mt-0">
       <img
         src={PUBLIC_ASSETS.snoozerAvatar}
         alt="Snoozer"
-        className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-[#eef3ff]"
+        className="h-8 w-8 shrink-0 rounded-full object-cover ring-2 ring-[#eef3ff]"
         loading="eager"
         decoding="async"
       />
-      <div className="min-w-0 text-[0.82rem] font-medium leading-5 text-slate-700">{copy}</div>
+      <div className="min-w-0 text-[0.8rem] font-medium leading-[1.35] text-slate-700">{copy}</div>
     </div>
   );
 }
@@ -1609,29 +1609,29 @@ function PodRouteHeroHeader({
     <div
       data-pod-route-header="true"
       className={[
-        "grid items-stretch gap-0 overflow-hidden md:h-[154px]",
+        "grid items-stretch gap-0 overflow-hidden md:h-[146px]",
         hasCoachBubble
-          ? "md:grid-cols-[minmax(0,0.98fr)_200px_272px] lg:grid-cols-[minmax(0,1fr)_212px_296px]"
-          : "md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
+          ? "md:grid-cols-[minmax(0,0.94fr)_184px_254px] lg:grid-cols-[minmax(0,0.98fr)_192px_276px]"
+          : "md:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]",
       ].join(" ")}
     >
       <div
-        className="relative flex min-h-[114px] flex-col justify-center px-5 py-3 md:min-h-0 md:px-6 md:py-2"
+        className="relative flex min-h-[104px] flex-col justify-center px-5 py-3 md:min-h-0 md:px-5.5 md:py-2"
       >
         {eyebrow ? (
           <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">{eyebrow}</ShowroomEyebrow>
         ) : null}
 
-        <div className={[eyebrow ? "mt-1.5" : "mt-0", "text-[1.2rem] font-black tracking-tight text-[#2f57e8] md:text-[1.28rem]"].join(" ")}>
+        <div className={[eyebrow ? "mt-1.5" : "mt-0", "text-[1.14rem] font-black tracking-tight text-[#2f57e8] md:text-[1.22rem]"].join(" ")}>
           {podTitle}
         </div>
 
-        <h1 className="mt-1 max-w-[10.5ch] text-[1.72rem] font-black leading-[0.94] tracking-tight text-slate-900 md:text-[1.84rem] xl:text-[2rem]">
+        <h1 className="mt-1 max-w-[10.2ch] text-[1.64rem] font-black leading-[0.94] tracking-tight text-slate-900 md:text-[1.72rem] xl:text-[1.86rem]">
           {mattressTitle}
         </h1>
 
         {badges.length ? (
-          <div className="mt-2.5 flex items-center gap-1.5 overflow-hidden md:flex-nowrap">
+          <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {badges.map((badge) => (
               <HeaderBadge key={`${badge.label}-${badge.tone || "soft"}`} label={badge.label} tone={badge.tone} />
             ))}
@@ -1669,8 +1669,8 @@ function PodRouteHeroHeader({
       </div>
 
       {hasCoachBubble ? (
-        <div className="hidden border-l border-white/70 bg-[radial-gradient(circle_at_left_center,_rgba(236,242,255,0.95),_rgba(236,242,255,0.72)_32%,_transparent_82%)] px-2.5 py-2.5 md:flex md:items-center md:justify-center">
-          <div className="w-full max-w-[214px]">
+        <div className="hidden border-l border-white/70 bg-[radial-gradient(circle_at_left_center,_rgba(236,242,255,0.95),_rgba(236,242,255,0.72)_32%,_transparent_82%)] px-2 py-2 md:flex md:items-center md:justify-center">
+          <div className="w-full max-w-[190px]">
             <SnoozerCoachBubble copy={coachBubble} />
           </div>
         </div>
@@ -1724,7 +1724,7 @@ function PodHomeActionCard({
       type="button"
       onClick={onClick}
       className={[
-        "group flex h-full min-h-[154px] flex-col rounded-[28px] border border-white/85 p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[166px] md:p-4",
+        "group flex h-full min-h-[142px] flex-col rounded-[28px] border border-white/85 p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[152px] md:p-4",
         rootClass,
       ].join(" ")}
     >
@@ -1786,7 +1786,7 @@ function RestCountdownRing({ remainingSeconds, totalSeconds }) {
   const strokeOffset = circumference * (1 - progress);
 
   return (
-    <div className="relative flex h-[184px] w-[184px] items-center justify-center md:h-[196px] md:w-[196px]">
+    <div className="relative flex h-[154px] w-[154px] items-center justify-center md:h-[164px] md:w-[164px]">
       <svg className="h-full w-full -rotate-90" viewBox="0 0 248 248" aria-hidden="true">
         <circle
           cx="124"
@@ -1810,7 +1810,7 @@ function RestCountdownRing({ remainingSeconds, totalSeconds }) {
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-[2.85rem] font-black leading-none tracking-tight text-slate-900 md:text-[3.1rem]">
+        <div className="text-[2.3rem] font-black leading-none tracking-tight text-slate-900 md:text-[2.55rem]">
           {formatRestCountdown(safeRemaining)}
         </div>
         <div className="mt-1 text-[0.82rem] font-medium text-slate-500">remaining</div>
@@ -1824,7 +1824,7 @@ function RestLengthCard({ title, subtitle, durationLabel, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-3 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd8b0] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[136px] md:p-3.5"
+      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-3 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd8b0] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[124px] md:p-3"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)] md:h-[46px] md:w-[46px]">
@@ -1836,12 +1836,12 @@ function RestLengthCard({ title, subtitle, durationLabel, onClick }) {
         </div>
       </div>
 
-      <div className="mt-2.5 text-[1.18rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.28rem]">
+      <div className="mt-2 text-[1.1rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.18rem]">
         {title}
       </div>
       <div className="mt-1 text-[0.84rem] text-slate-600 md:text-[0.88rem]">{subtitle}</div>
 
-      <div className="mt-auto rounded-[14px] bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] px-4 py-2 text-center text-[0.86rem] font-black text-white shadow-[0_18px_36px_rgba(255,143,31,0.26)] transition group-hover:scale-[1.01] md:text-[0.92rem]">
+      <div className="mt-auto rounded-[14px] bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] px-4 py-2 text-center text-[0.84rem] font-black text-white shadow-[0_18px_36px_rgba(255,143,31,0.26)] transition group-hover:scale-[1.01] md:text-[0.9rem]">
         Start Test <ArrowRight className="ml-2 inline h-4 w-4" />
       </div>
     </button>
@@ -1896,14 +1896,32 @@ function RestRatingCard({ option, selected = false, onClick }) {
   );
 }
 
-function RestInstructionCard({ title, body, icon: Icon = CheckCircle2, accent = "blue" }) {
+function RestInstructionCard({
+  id,
+  title,
+  body,
+  icon: Icon = CheckCircle2,
+  accent = "blue",
+  selected = false,
+  onClick,
+}) {
   const accentClass =
     accent === "orange"
       ? "border-[#ffe0bf] bg-[#fff7ef] text-[#ff8f1f]"
       : "border-[#dbe5ff] bg-white text-[#355ff1]";
 
   return (
-    <div className="rounded-[20px] border border-white/80 bg-white/96 p-3 shadow-[0_14px_30px_rgba(45,71,136,0.08)]">
+    <button
+      type="button"
+      onClick={() => onClick?.(id)}
+      aria-pressed={selected}
+      className={[
+        "rounded-[20px] border bg-white/96 p-3 text-left shadow-[0_14px_30px_rgba(45,71,136,0.08)] transition hover:-translate-y-0.5",
+        selected
+          ? "border-[#b8cbff] bg-[#f7faff] shadow-[0_20px_40px_rgba(47,87,232,0.16)]"
+          : "border-white/80 hover:border-[#d6e4ff]",
+      ].join(" ")}
+    >
       <div className="flex items-start gap-3">
         <div className={["flex h-9 w-9 shrink-0 items-center justify-center rounded-full border", accentClass].join(" ")}>
           {Icon ? <Icon className="h-4 w-4" /> : null}
@@ -1913,34 +1931,46 @@ function RestInstructionCard({ title, body, icon: Icon = CheckCircle2, accent = 
           <div className="mt-1 text-[0.8rem] leading-[1.2rem] text-slate-600">{body}</div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
 function buildActiveRestInstructionCards({ hasAdjustableBase }) {
   return [
     {
+      id: "back",
       title: "Try Your Back",
       body: "Lie flat and notice lower-back support.",
+      focusTitle: "Try your back",
+      focusBody: "Lie flat and notice lower-back support through the middle of the mattress.",
       icon: BedDouble,
       accent: "blue",
     },
     {
+      id: "side",
       title: "Try Your Side",
       body: "Check shoulder and hip pressure.",
+      focusTitle: "Try your side",
+      focusBody: "Pay attention to shoulder and hip pressure relief while you settle in.",
       icon: CheckCircle2,
       accent: "blue",
     },
     hasAdjustableBase
       ? {
+          id: "motion",
           title: "Try Motion",
           body: "Try Zero Gravity, Snore, or Head Up.",
+          focusTitle: "Try motion",
+          focusBody: "Use the adjustable positions and notice whether support or pressure relief changes.",
           icon: SlidersHorizontal,
           accent: "orange",
         }
       : {
+          id: "relax",
           title: "Relax & Notice",
           body: "Let your body settle and notice pressure points.",
+          focusTitle: "Relax and notice",
+          focusBody: "Stay still for a moment and notice comfort, pressure points, and overall support.",
           icon: Heart,
           accent: "orange",
         },
@@ -1970,6 +2000,9 @@ function GuidedRestTest({
   reflectionChoice,
   testComplete = false,
   hasAdjustableBase,
+  selectedInstructionId,
+  onSelectInstruction,
+  onEndAndRate,
 }) {
   if (!activeMode) {
     return (
@@ -2054,6 +2087,13 @@ function GuidedRestTest({
   const pauseLabel = timerRunning ? "Pause Test" : "Resume Test";
   const showLongerModeSwitch = activeMode?.id === "quick";
   const instructionCards = buildActiveRestInstructionCards({ hasAdjustableBase });
+  const selectedInstruction =
+    instructionCards.find((card) => card.id === selectedInstructionId) || null;
+  const currentFocusTitle = selectedInstruction?.focusTitle || activeStep?.cue || "Keep settling in";
+  const currentFocusBody =
+    selectedInstruction?.focusBody ||
+    activeStep?.body ||
+    "Stay in the position and notice comfort, support, and pressure relief.";
 
   if (completionStage === REST_COMPLETION_STAGES.reflection) {
     return (
@@ -2078,11 +2118,11 @@ function GuidedRestTest({
 
   return (
     <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="frost">
-      <div className="text-[1.7rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[1.9rem]">
+      <div className="text-[1.55rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[1.72rem]">
         {activeTitle}
       </div>
 
-      <div className="mt-2.5 grid gap-2.5 xl:grid-cols-[196px_minmax(0,1fr)] xl:items-start">
+      <div className="mt-2.5 grid gap-2.5 xl:grid-cols-[168px_minmax(0,1fr)] xl:items-start">
         <div className="flex justify-center xl:justify-start">
           <RestCountdownRing
             remainingSeconds={timerRemaining}
@@ -2095,17 +2135,22 @@ function GuidedRestTest({
             <div className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
               Current Focus
             </div>
-            <div className="mt-1 text-[1rem] font-black text-slate-900">
-              {activeStep?.cue || "Keep settling in"}
+            <div className="mt-1 text-[0.96rem] font-black text-slate-900">
+              {currentFocusTitle}
             </div>
             <div className="mt-1 text-[0.82rem] leading-[1.2rem] text-slate-600">
-              {activeStep?.body || "Stay in the position and notice comfort, support, and pressure relief."}
+              {currentFocusBody}
             </div>
           </div>
 
           <div className="grid gap-2.5 md:grid-cols-3">
             {instructionCards.map((card) => (
-              <RestInstructionCard key={card.title} {...card} />
+              <RestInstructionCard
+                key={card.id}
+                {...card}
+                selected={card.id === selectedInstructionId}
+                onClick={onSelectInstruction}
+              />
             ))}
           </div>
         </div>
@@ -2123,11 +2168,11 @@ function GuidedRestTest({
 
         <button
           type="button"
-          onClick={onResetTest}
+          onClick={onEndAndRate}
           className="inline-flex min-h-[42px] min-w-[164px] items-center justify-center gap-2.5 rounded-[16px] border border-[#ffd7d7] bg-white px-4 text-[0.86rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
         >
           <X className="h-4 w-4" />
-          End Test
+          End & Rate
         </button>
 
         {showLongerModeSwitch ? (
@@ -2191,6 +2236,7 @@ export default function Pod() {
   const [restStepIndex, setRestStepIndex] = useState(0);
   const [timerRemaining, setTimerRemaining] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [selectedRestInstructionId, setSelectedRestInstructionId] = useState("");
   const [restPanelPhase, setRestPanelPhase] = useState("normal");
   const [showRestChooser, setShowRestChooser] = useState(false);
 
@@ -3127,6 +3173,7 @@ export default function Pod() {
     setRestStepIndex(0);
     setTimerRemaining(0);
     setTimerRunning(false);
+    setSelectedRestInstructionId("");
     setTestComplete(false);
     setFeelChoice("");
     setRestCompletionStage("");
@@ -3152,6 +3199,7 @@ export default function Pod() {
       setRestStepIndex(0);
       setTimerRemaining(firstStep.seconds);
       setTimerRunning(true);
+      setSelectedRestInstructionId("");
       setTestComplete(false);
       setFeelChoice("");
       setRestCompletionStage("");
@@ -3198,6 +3246,25 @@ export default function Pod() {
     setRestPanelPhase("normal");
   }, [activeRestFlow, testComplete, timerRemaining, activeRestStep, noteUserInteraction]);
 
+  const handleSelectRestInstruction = useCallback(
+    (instructionId) => {
+      if (!instructionId) return;
+
+      noteUserInteraction?.();
+      setSelectedRestInstructionId(String(instructionId));
+
+      const selectedCard = buildActiveRestInstructionCards({ hasAdjustableBase }).find(
+        (card) => card.id === instructionId
+      );
+
+      if (selectedCard) {
+        setCueType("tip");
+        setCue(selectedCard.focusTitle || selectedCard.title);
+      }
+    },
+    [hasAdjustableBase, noteUserInteraction]
+  );
+
   const handleChooseRestFeedback = useCallback(
     (choiceId) => {
       noteUserInteraction?.();
@@ -3219,6 +3286,7 @@ export default function Pod() {
 
       setTimerRemaining(0);
       setTimerRunning(false);
+      setSelectedRestInstructionId("");
       setTestComplete(true);
       setRestCompletionStage(REST_COMPLETION_STAGES.reflection);
       setCueType("tip");
@@ -3255,6 +3323,7 @@ export default function Pod() {
 
         setRestStepIndex(nextIndex);
         setTimerRemaining(nextStep.seconds);
+        setSelectedRestInstructionId("");
         setCueType("tip");
         setCue(nextCue || nextStep.cue || "Next step");
         setRestPanelPhase("normal");
@@ -3335,6 +3404,23 @@ export default function Pod() {
     });
   }, [activeRestFlow, restStepIndex, runRestTransition, noteUserInteraction]);
 
+  const handleEndAndRate = useCallback(async () => {
+    noteUserInteraction?.();
+    clearTimer(restAdvanceTimeoutRef);
+    await cancelPodVoice();
+
+    if (!activeRestFlow) {
+      setTimerRunning(false);
+      setTimerRemaining(0);
+      setRestCompletionStage(REST_COMPLETION_STAGES.reflection);
+      setCueType("tip");
+      setCue("How did this pod feel?");
+      return;
+    }
+
+    completeRestRoutine(activeRestFlow);
+  }, [activeRestFlow, cancelPodVoice, completeRestRoutine, noteUserInteraction]);
+
   const handleSelectRestReflection = useCallback(
     async (choiceId) => {
       noteUserInteraction?.();
@@ -3348,6 +3434,7 @@ export default function Pod() {
       setTestComplete(true);
       setRestCompletionStage(REST_COMPLETION_STAGES.actions);
       setTimerRunning(false);
+      setSelectedRestInstructionId("");
       setCueType(choiceId === "not_for_me" ? "tip" : "success");
       setCue(choice.label);
       setRestPanelPhase("normal");
@@ -3483,6 +3570,7 @@ export default function Pod() {
     setRestStepIndex(0);
     setTimerRemaining(0);
     setTimerRunning(false);
+    setSelectedRestInstructionId("");
     setRestCompletionStage("");
     setFeelChoice("");
     setTestComplete(false);
@@ -3494,16 +3582,16 @@ export default function Pod() {
   const stageContent = useMemo(() => {
     if (openStage === "details") {
       return (
-        <div className="space-y-3">
-          <div className="grid gap-3 xl:grid-cols-3">
-            <ShowroomPanel className="p-4 md:p-5" tone="frost">
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="grid min-h-0 gap-3 xl:flex-1 xl:grid-cols-3">
+            <ShowroomPanel className="flex min-h-0 flex-col p-4 md:p-4.5" tone="frost">
               <div className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
                 Specs
               </div>
               <div className="mt-2 text-[1.2rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.3rem]">
                 What's Inside
               </div>
-              <div className="mt-3 space-y-2.5">
+              <div className="mt-3 min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1">
                 {learnSpecsItems.map((item) => (
                   <div key={item} className="flex gap-2 text-[0.92rem] leading-6 text-slate-700">
                     <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#2f57e8]" />
@@ -3513,7 +3601,7 @@ export default function Pod() {
               </div>
             </ShowroomPanel>
 
-            <ShowroomPanel className="p-4 md:p-5" tone="frost">
+            <ShowroomPanel className="flex min-h-0 flex-col p-4 md:p-4.5" tone="frost">
               <div className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
                 Pricing
               </div>
@@ -3521,16 +3609,18 @@ export default function Pod() {
                 Mattress Only
               </div>
               {learnPricingRows.length ? (
-                <div className="mt-3 grid gap-2">
-                  {learnPricingRows.map((row) => (
-                    <div
-                      key={row.size}
-                      className="flex items-center justify-between rounded-[18px] border border-[#dbe5ff] bg-white/96 px-3 py-2.5 shadow-sm"
-                    >
-                      <div className="text-[0.92rem] font-extrabold text-slate-900">{row.size}</div>
-                      <div className="text-[0.92rem] font-black text-[#2f57e8]">{row.price}</div>
-                    </div>
-                  ))}
+                <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1">
+                  <div className="grid gap-2">
+                    {learnPricingRows.map((row) => (
+                      <div
+                        key={row.size}
+                        className="flex items-center justify-between rounded-[18px] border border-[#dbe5ff] bg-white/96 px-3 py-2.5 shadow-sm"
+                      >
+                        <div className="text-[0.92rem] font-extrabold text-slate-900">{row.size}</div>
+                        <div className="text-[0.92rem] font-black text-[#2f57e8]">{row.price}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="mt-3 rounded-[18px] border border-dashed border-[#dbe5ff] bg-white/90 px-3.5 py-4 text-[0.88rem] leading-6 text-slate-600">
@@ -3539,14 +3629,14 @@ export default function Pod() {
               )}
             </ShowroomPanel>
 
-            <ShowroomPanel className="p-4 md:p-5" tone="frost">
+            <ShowroomPanel className="flex min-h-0 flex-col p-4 md:p-4.5" tone="frost">
               <div className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
                 Why It Fits You
               </div>
               <div className="mt-2 text-[1.2rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.3rem]">
                 Why this mattress may fit
               </div>
-              <div className="mt-3 space-y-2.5">
+              <div className="mt-3 min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1">
                 {learnFitItems.map((item) => (
                   <div key={item} className="flex gap-2 text-[0.92rem] leading-6 text-slate-700">
                     <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#2f57e8]" />
@@ -3639,6 +3729,9 @@ export default function Pod() {
         onSwitchToLongerMode={() => handleChooseRestMode("deep")}
         testComplete={testComplete}
         hasAdjustableBase={hasAdjustableBase}
+        selectedInstructionId={selectedRestInstructionId}
+        onSelectInstruction={handleSelectRestInstruction}
+        onEndAndRate={handleEndAndRate}
       />
     );
   }, [
@@ -3664,6 +3757,8 @@ export default function Pod() {
     handlePauseRestTimer,
     handleAdvanceRestStep,
     handleSkipRestStep,
+    handleSelectRestInstruction,
+    handleEndAndRate,
     resetRestTest,
     handleChooseRestFeedback,
     handleSelectRestReflection,
@@ -3672,6 +3767,7 @@ export default function Pod() {
     feelChoice,
     testComplete,
     hasAdjustableBase,
+    selectedRestInstructionId,
     noteUserInteraction,
     cancelPodVoice,
     buildStepKey,
@@ -3810,7 +3906,7 @@ export default function Pod() {
 
   const podHomeContent = useMemo(
     () => (
-      <div className="flex h-full min-h-0 flex-col gap-3 md:gap-3.5">
+      <div className="flex h-full min-h-0 flex-col gap-4">
         <ShowroomPanel className="shrink-0 overflow-hidden p-0" tone="soft">
           <PodRouteHeroHeader
             eyebrow=""

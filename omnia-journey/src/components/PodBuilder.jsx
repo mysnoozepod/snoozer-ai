@@ -420,20 +420,27 @@ function BuilderOptionButton({ title, subtitle, active, disabled = false, onClic
       disabled={disabled}
       onClick={onClick}
       className={[
-        "w-full rounded-[18px] border px-3 py-3 text-left shadow-sm transition",
-        compact ? "min-h-[58px]" : "min-h-[88px]",
+        "w-full rounded-[18px] border px-3 py-2.5 text-left shadow-sm transition",
+        compact ? "min-h-[52px]" : "min-h-[88px]",
         disabled ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 opacity-60" : "hover:-translate-y-0.5 hover:shadow-md",
         active ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white",
       ].join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[0.98rem] font-extrabold leading-tight text-gray-900">{title}</div>
+          <div
+            className={[
+              "font-extrabold leading-tight text-gray-900",
+              compact ? "text-[0.9rem]" : "text-[0.98rem]",
+            ].join(" ")}
+          >
+            {title}
+          </div>
           {subtitle ? (
             <div
               className={[
                 "text-gray-600",
-                compact ? "mt-0.5 text-[0.74rem] leading-4.5" : "mt-1 text-[0.8rem] leading-5",
+                compact ? "mt-0.5 text-[0.68rem] leading-4" : "mt-1 text-[0.8rem] leading-5",
               ].join(" ")}
             >
               {subtitle}
@@ -496,6 +503,26 @@ function subtitleForMotion(option) {
     default:
       return "";
   }
+}
+
+function titleForMotion(option) {
+  switch (option) {
+    case "standard":
+      return "Standard Motion";
+    case "half_split":
+      return "Half Split";
+    case "full_split":
+      return "Full Split / Split King";
+    default:
+      return labelFor(MOTION_TYPES_UI, option, "Motion");
+  }
+}
+
+function disabledReasonForMotion(option, size, supportsSplitMotion) {
+  if (!supportsSplitMotion) return "Needs split-capable mattress.";
+  if (option === "full_split") return "King only.";
+  if (option === "half_split") return "Queen or King only.";
+  return `Unavailable with ${size || "this size"}.`;
 }
 
 function normalizeBuildStepCandidate(value) {
@@ -796,11 +823,11 @@ export default function PodBuilder({
 
   const selectedBaseLabel =
     baseType === "none" ? "Mattress Only" : labelFor(BASE_OPTIONS_UI, baseType, "Mattress Only");
-  const selectedMotionLabel = labelFor(MOTION_TYPES_UI, motionType, "Standard");
+  const selectedMotionLabel = titleForMotion(motionType);
   const mattressLabel = mattressProduct?.title || pod?.displayMattress || pod?.subtitle || "Mattress";
   const podLabel = useMemo(() => podLabelFor(pod), [pod]);
   const availableMotionLabel = useMemo(
-    () => allowedMotion.map((value) => labelFor(MOTION_TYPES_UI, value, value)).join(", "),
+    () => allowedMotion.map((value) => titleForMotion(value)).join(", "),
     [allowedMotion]
   );
   const currentStepIndex = Math.max(0, steps.findIndex((step) => step.key === stepKey));
@@ -1183,8 +1210,12 @@ export default function PodBuilder({
                   return (
                     <ChoiceCard
                       key={option.value}
-                      title={option.label}
-                      subtitle={allowed ? subtitleForMotion(option.value) : "Not available with this size."}
+                      title={titleForMotion(option.value)}
+                      subtitle={
+                        allowed
+                          ? subtitleForMotion(option.value)
+                          : disabledReasonForMotion(option.value, size, supportsSplitMotion)
+                      }
                       active={motionType === option.value}
                       disabled={!allowed}
                       onClick={() => allowed && setMotionType(option.value)}
@@ -1195,7 +1226,7 @@ export default function PodBuilder({
             </div>
           ) : (
             <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
-              Choose Adjustable Base if you want motion options.
+              Choose Adjustable Base to unlock motion choices.
             </div>
           )}
         </div>
@@ -1250,12 +1281,12 @@ export default function PodBuilder({
   };
 
   return (
-    <div className="w-full">
-      <div>
-        <div className="grid gap-3 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.02fr)_minmax(0,0.96fr)] xl:items-start">
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      <div className="min-h-0 flex-1">
+        <div className="grid min-h-0 gap-3 xl:h-full xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.02fr)_minmax(0,0.96fr)] xl:items-start">
           <div
             className={[
-              "rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+              "flex min-h-0 flex-col rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
               stepKey === "size" ? "border-indigo-200" : "border-white/80",
             ].join(" ")}
           >
@@ -1295,7 +1326,7 @@ export default function PodBuilder({
 
           <div
             className={[
-              "rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+              "flex min-h-0 flex-col rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
               stepKey === "base" ? "border-indigo-200" : "border-white/80",
             ].join(" ")}
           >
@@ -1333,18 +1364,22 @@ export default function PodBuilder({
             </div>
 
             {showMotion ? (
-              <div className="mt-3 rounded-[20px] border border-[#e2e9fb] bg-[#f8faff] px-3 py-2.5 shadow-sm">
+              <div className="mt-2.5 rounded-[20px] border border-[#e2e9fb] bg-[#f8faff] px-3 py-2.5 shadow-sm">
                 <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
                   Motion
                 </div>
-                <div className="mt-2 grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(148px,1fr))]">
+                <div className="mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
                   {MOTION_TYPES_UI.map((option) => {
                     const allowed = allowedMotion.includes(option.value);
                     return (
                       <BuilderOptionButton
                         key={option.value}
-                        title={option.label}
-                        subtitle={allowed ? "" : "Unavailable"}
+                        title={titleForMotion(option.value)}
+                        subtitle={
+                          allowed
+                            ? subtitleForMotion(option.value)
+                            : disabledReasonForMotion(option.value, size, supportsSplitMotion)
+                        }
                         active={motionType === option.value}
                         disabled={!allowed}
                         compact
@@ -1360,14 +1395,14 @@ export default function PodBuilder({
               </div>
             ) : (
               <div className="mt-3 rounded-[18px] border border-slate-200 bg-slate-50 px-3 py-2.5 text-[0.82rem] font-semibold text-slate-700">
-                Choose Adjustable Base if you want motion options.
+                Choose Adjustable Base to unlock motion choices.
               </div>
             )}
           </div>
 
           <div
             className={[
-              "rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+              "flex min-h-0 flex-col rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
               stepKey === "review" ? "border-indigo-200" : "border-white/80",
             ].join(" ")}
           >
@@ -1482,7 +1517,7 @@ export default function PodBuilder({
                     {selectedBaseLabel}
                   </div>
                   <div className="text-[0.72rem] text-slate-600">
-                    {showMotion ? `${selectedMotionLabel} motion` : "No Motion"}
+                    {showMotion ? selectedMotionLabel : "No Motion"}
                   </div>
                 </div>
 
