@@ -3919,7 +3919,7 @@ export default function Pod() {
 
       <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-4 pb-0 pt-1.5 md:px-6 md:pt-2">
         {isDefaultPodDashboard ? (
-          <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-hidden p-1.5 md:p-2">
+          <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-1.5 md:p-2">
             {podHomeContent}
           </ShowroomFrame>
         ) : (
@@ -3938,7 +3938,13 @@ export default function Pod() {
               />
             </ShowroomPanel>
 
-            <div ref={stagePanelRef} className={["mt-2 flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "" : "md:mt-2.5"].join(" ")}>
+            <div
+              ref={stagePanelRef}
+              className={[
+                "mt-2 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-1 pb-1",
+                isRestTaskStage ? "" : "md:mt-2.5",
+              ].join(" ")}
+            >
               {activePanelContent}
             </div>
           </ShowroomFrame>
