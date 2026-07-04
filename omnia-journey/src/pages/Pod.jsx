@@ -3865,7 +3865,7 @@ export default function Pod() {
   }, [loading, activePod, isDefaultPodDashboard, podHomeContent, stageContent]);
 
   return (
-    <ShowroomPageShell className="flex min-h-screen flex-col overflow-x-hidden pb-0">
+    <ShowroomPageShell className="flex h-screen flex-col overflow-hidden pb-0">
       <div className="mx-auto w-full max-w-[1380px] px-4 pt-1.5 md:px-6 md:pt-2.5">
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[28px] border border-white/80 bg-white/94 px-4 py-2 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-2.5">
           <button
