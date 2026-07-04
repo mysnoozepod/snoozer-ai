@@ -1579,15 +1579,15 @@ function SnoozerCoachBubble({ copy }) {
   if (!copy) return null;
 
   return (
-    <div className="mt-3 flex max-w-[370px] items-start gap-3 rounded-[20px] border border-white/85 bg-white/96 px-3.5 py-3 shadow-[0_16px_32px_rgba(40,63,126,0.12)] md:mt-0">
+    <div className="mt-2.5 flex max-w-[320px] items-start gap-2.5 rounded-[18px] border border-white/85 bg-white/96 px-3 py-2.5 shadow-[0_14px_28px_rgba(40,63,126,0.12)] md:mt-0">
       <img
         src={PUBLIC_ASSETS.snoozerAvatar}
         alt="Snoozer"
-        className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-[#eef3ff]"
+        className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-[#eef3ff]"
         loading="eager"
         decoding="async"
       />
-      <div className="min-w-0 text-[0.88rem] font-medium leading-5.5 text-slate-700">{copy}</div>
+      <div className="min-w-0 text-[0.82rem] font-medium leading-5 text-slate-700">{copy}</div>
     </div>
   );
 }
@@ -1609,41 +1609,41 @@ function PodRouteHeroHeader({
     <div
       data-pod-route-header="true"
       className={[
-        "grid items-stretch gap-0 overflow-hidden md:h-[174px]",
+        "grid items-stretch gap-0 overflow-hidden md:h-[154px]",
         hasCoachBubble
-          ? "md:grid-cols-[minmax(0,0.92fr)_240px_300px] lg:grid-cols-[minmax(0,0.98fr)_250px_340px]"
-          : "md:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]",
+          ? "md:grid-cols-[minmax(0,0.98fr)_200px_272px] lg:grid-cols-[minmax(0,1fr)_212px_296px]"
+          : "md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
       ].join(" ")}
     >
       <div
-        className="relative flex min-h-[136px] flex-col justify-center px-5 py-3 md:min-h-0 md:px-6 md:py-2.5"
+        className="relative flex min-h-[114px] flex-col justify-center px-5 py-3 md:min-h-0 md:px-6 md:py-2"
       >
         {eyebrow ? (
           <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">{eyebrow}</ShowroomEyebrow>
         ) : null}
 
-        <div className={[eyebrow ? "mt-2" : "mt-0", "text-[1.32rem] font-black tracking-tight text-[#2f57e8] md:text-[1.42rem]"].join(" ")}>
+        <div className={[eyebrow ? "mt-1.5" : "mt-0", "text-[1.2rem] font-black tracking-tight text-[#2f57e8] md:text-[1.28rem]"].join(" ")}>
           {podTitle}
         </div>
 
-        <h1 className="mt-1 max-w-[10.5ch] text-[1.88rem] font-black leading-[0.94] tracking-tight text-slate-900 md:text-[1.98rem] xl:text-[2.14rem]">
+        <h1 className="mt-1 max-w-[10.5ch] text-[1.72rem] font-black leading-[0.94] tracking-tight text-slate-900 md:text-[1.84rem] xl:text-[2rem]">
           {mattressTitle}
         </h1>
 
         {badges.length ? (
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="mt-2.5 flex items-center gap-1.5 overflow-hidden md:flex-nowrap">
             {badges.map((badge) => (
               <HeaderBadge key={`${badge.label}-${badge.tone || "soft"}`} label={badge.label} tone={badge.tone} />
             ))}
           </div>
         ) : isRecommended ? (
-          <div className="mt-3">
+          <div className="mt-2.5">
             <HeaderBadge label="Best First Match" tone="primary" />
           </div>
         ) : null}
 
         {helperText ? (
-          <div className="mt-3 text-[0.96rem] font-medium text-slate-600 md:text-[1rem]">{helperText}</div>
+          <div className="mt-2 text-[0.9rem] font-medium text-slate-600 md:text-[0.95rem]">{helperText}</div>
         ) : null}
 
         {voiceState?.blocked || voiceState?.error ? (
@@ -1662,26 +1662,26 @@ function PodRouteHeroHeader({
         ) : null}
 
         {coachBubble ? (
-          <div className="mt-3 md:hidden">
+          <div className="mt-2.5 md:hidden">
             <SnoozerCoachBubble copy={coachBubble} />
           </div>
         ) : null}
       </div>
 
       {hasCoachBubble ? (
-        <div className="hidden border-l border-white/70 bg-[radial-gradient(circle_at_left_center,_rgba(236,242,255,0.95),_rgba(236,242,255,0.72)_32%,_transparent_82%)] px-3 py-3 md:flex md:items-center md:justify-center">
-          <div className="w-full max-w-[238px]">
+        <div className="hidden border-l border-white/70 bg-[radial-gradient(circle_at_left_center,_rgba(236,242,255,0.95),_rgba(236,242,255,0.72)_32%,_transparent_82%)] px-2.5 py-2.5 md:flex md:items-center md:justify-center">
+          <div className="w-full max-w-[214px]">
             <SnoozerCoachBubble copy={coachBubble} />
           </div>
         </div>
       ) : null}
 
-      <div className="relative min-h-[112px] overflow-hidden border-t border-white/70 md:min-h-0 md:border-l md:border-t-0">
+      <div className="relative min-h-[108px] overflow-hidden border-t border-white/70 md:min-h-0 md:border-l md:border-t-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
         <ResponsiveImage
           src={mattressImage}
           alt={mattressTitle}
-          className="h-full min-h-[112px] w-full md:min-h-0"
+          className="h-full min-h-[108px] w-full md:min-h-0"
           imgClassName="h-full w-full object-cover object-center"
         />
       </div>
@@ -1724,29 +1724,29 @@ function PodHomeActionCard({
       type="button"
       onClick={onClick}
       className={[
-        "group flex h-full min-h-[188px] flex-col rounded-[30px] border border-white/85 p-5 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[206px] md:p-5.5",
+        "group flex h-full min-h-[154px] flex-col rounded-[28px] border border-white/85 p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[166px] md:p-4",
         rootClass,
       ].join(" ")}
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/90 bg-white/96 shadow-[0_16px_32px_rgba(45,71,136,0.12)] md:h-[68px] md:w-[68px]">
-        {Icon ? <Icon className={["h-8 w-8 md:h-9 md:w-9", iconTone].join(" ")} /> : null}
+      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/90 bg-white/96 shadow-[0_16px_32px_rgba(45,71,136,0.12)] md:h-[56px] md:w-[56px]">
+        {Icon ? <Icon className={["h-6 w-6 md:h-7 md:w-7", iconTone].join(" ")} /> : null}
       </div>
 
-      <div className="mt-5 text-[1.7rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.85rem]">
+      <div className="mt-3.5 text-[1.38rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.52rem]">
         {title}
       </div>
 
-      <div className={["mt-2 text-[0.98rem] font-semibold md:text-[1.02rem]", microcopyTone].join(" ")}>
+      <div className={["mt-1.5 text-[0.9rem] font-semibold md:text-[0.94rem]", microcopyTone].join(" ")}>
         {microcopy}
       </div>
 
       <div
         className={[
-          "mt-auto flex h-12 items-center justify-center rounded-full text-white shadow-[0_18px_34px_rgba(47,87,232,0.24)] transition group-hover:scale-[1.01] md:h-[52px]",
+          "mt-auto flex h-10 items-center justify-center rounded-full text-white shadow-[0_18px_34px_rgba(47,87,232,0.24)] transition group-hover:scale-[1.01] md:h-[44px]",
           barClass,
         ].join(" ")}
       >
-        <ArrowRight className="h-6 w-6" />
+        <ArrowRight className="h-5 w-5" />
       </div>
     </button>
   );
@@ -1769,9 +1769,9 @@ function ExperienceFooterButton({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-[18px] border border-white/85 bg-white/96 px-4 text-[0.9rem] font-extrabold text-slate-900 shadow-[0_14px_34px_rgba(45,71,136,0.1)] transition hover:-translate-y-0.5 hover:bg-slate-50 md:min-w-[138px]"
+      className="inline-flex min-h-[40px] items-center justify-center gap-2.5 rounded-[16px] border border-white/85 bg-white/96 px-3.5 text-[0.86rem] font-extrabold text-slate-900 shadow-[0_14px_34px_rgba(45,71,136,0.1)] transition hover:-translate-y-0.5 hover:bg-slate-50 md:min-w-[126px]"
     >
-      {Icon ? <Icon className={["h-5 w-5 shrink-0", accentClass].join(" ")} /> : null}
+      {Icon ? <Icon className={["h-4 w-4 shrink-0", accentClass].join(" ")} /> : null}
       <span>{label}</span>
     </button>
   );
@@ -1786,7 +1786,7 @@ function RestCountdownRing({ remainingSeconds, totalSeconds }) {
   const strokeOffset = circumference * (1 - progress);
 
   return (
-    <div className="relative flex h-[220px] w-[220px] items-center justify-center md:h-[236px] md:w-[236px]">
+    <div className="relative flex h-[184px] w-[184px] items-center justify-center md:h-[196px] md:w-[196px]">
       <svg className="h-full w-full -rotate-90" viewBox="0 0 248 248" aria-hidden="true">
         <circle
           cx="124"
@@ -1810,10 +1810,10 @@ function RestCountdownRing({ remainingSeconds, totalSeconds }) {
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-[3.45rem] font-black leading-none tracking-tight text-slate-900 md:text-[3.85rem]">
+        <div className="text-[2.85rem] font-black leading-none tracking-tight text-slate-900 md:text-[3.1rem]">
           {formatRestCountdown(safeRemaining)}
         </div>
-        <div className="mt-1.5 text-[0.9rem] font-medium text-slate-500">remaining</div>
+        <div className="mt-1 text-[0.82rem] font-medium text-slate-500">remaining</div>
       </div>
     </div>
   );
@@ -1824,24 +1824,24 @@ function RestLengthCard({ title, subtitle, durationLabel, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-3.5 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd8b0] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[154px] md:p-4"
+      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-3 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd8b0] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[136px] md:p-3.5"
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)] md:h-[54px] md:w-[54px]">
-          <Timer className="h-6 w-6 text-[#355ff1] md:h-7 md:w-7" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)] md:h-[46px] md:w-[46px]">
+          <Timer className="h-5 w-5 text-[#355ff1] md:h-6 md:w-6" />
         </div>
 
-        <div className="rounded-full bg-[#edf2ff] px-3 py-1 text-[0.84rem] font-black text-[#355ff1] md:px-4 md:text-[0.9rem]">
+        <div className="rounded-full bg-[#edf2ff] px-3 py-1 text-[0.8rem] font-black text-[#355ff1] md:px-3.5 md:text-[0.84rem]">
           {durationLabel}
         </div>
       </div>
 
-      <div className="mt-3 text-[1.28rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.46rem]">
+      <div className="mt-2.5 text-[1.18rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.28rem]">
         {title}
       </div>
-      <div className="mt-1.5 text-[0.88rem] text-slate-600 md:text-[0.94rem]">{subtitle}</div>
+      <div className="mt-1 text-[0.84rem] text-slate-600 md:text-[0.88rem]">{subtitle}</div>
 
-      <div className="mt-auto rounded-[14px] bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] px-4 py-2.5 text-center text-[0.9rem] font-black text-white shadow-[0_18px_36px_rgba(255,143,31,0.26)] transition group-hover:scale-[1.01] md:text-[0.96rem]">
+      <div className="mt-auto rounded-[14px] bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] px-4 py-2 text-center text-[0.86rem] font-black text-white shadow-[0_18px_36px_rgba(255,143,31,0.26)] transition group-hover:scale-[1.01] md:text-[0.92rem]">
         Start Test <ArrowRight className="ml-2 inline h-4 w-4" />
       </div>
     </button>
@@ -1903,14 +1903,14 @@ function RestInstructionCard({ title, body, icon: Icon = CheckCircle2, accent = 
       : "border-[#dbe5ff] bg-white text-[#355ff1]";
 
   return (
-    <div className="rounded-[22px] border border-white/80 bg-white/96 p-3.5 shadow-[0_14px_30px_rgba(45,71,136,0.08)]">
+    <div className="rounded-[20px] border border-white/80 bg-white/96 p-3 shadow-[0_14px_30px_rgba(45,71,136,0.08)]">
       <div className="flex items-start gap-3">
-        <div className={["flex h-10 w-10 shrink-0 items-center justify-center rounded-full border", accentClass].join(" ")}>
-          {Icon ? <Icon className="h-4.5 w-4.5" /> : null}
+        <div className={["flex h-9 w-9 shrink-0 items-center justify-center rounded-full border", accentClass].join(" ")}>
+          {Icon ? <Icon className="h-4 w-4" /> : null}
         </div>
         <div className="min-w-0">
-          <div className="text-[0.98rem] font-black leading-tight text-slate-900">{title}</div>
-          <div className="mt-1 text-[0.84rem] leading-5 text-slate-600">{body}</div>
+          <div className="text-[0.92rem] font-black leading-tight text-slate-900">{title}</div>
+          <div className="mt-1 text-[0.8rem] leading-[1.2rem] text-slate-600">{body}</div>
         </div>
       </div>
     </div>
@@ -1973,13 +1973,13 @@ function GuidedRestTest({
 }) {
   if (!activeMode) {
     return (
-      <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="frost">
+      <ShowroomPanel className="overflow-hidden p-3 md:p-3.5" tone="frost">
         <div className="min-w-0">
-          <div className="text-[1.75rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[2rem]">
+          <div className="text-[1.55rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[1.72rem]">
             How long do you want to test?
           </div>
 
-          <div className="mt-3 grid gap-2 md:grid-cols-2">
+          <div className="mt-2.5 grid gap-2 md:grid-cols-2">
             <RestLengthCard
               title="7-Minute Test"
               subtitle="Quick check"
@@ -2000,8 +2000,8 @@ function GuidedRestTest({
 
   if (completionStage === REST_COMPLETION_STAGES.actions) {
     return (
-      <ShowroomPanel className="overflow-hidden p-4 md:p-5" tone="frost">
-        <div className="text-[2rem] font-black leading-tight tracking-tight text-slate-900 md:text-[2.35rem]">
+      <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="frost">
+        <div className="text-[1.82rem] font-black leading-tight tracking-tight text-slate-900 md:text-[2rem]">
           Rest Test saved
         </div>
 
@@ -2011,11 +2011,11 @@ function GuidedRestTest({
           </div>
         ) : null}
 
-        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="mt-3 grid grid-cols-1 gap-2.5 md:grid-cols-3">
           <button
             type="button"
             onClick={onCompareAnotherPod}
-            className="rounded-[18px] bg-indigo-600 px-4 py-3 text-[0.96rem] font-extrabold text-white transition hover:bg-indigo-700"
+            className="rounded-[18px] bg-indigo-600 px-4 py-2.5 text-[0.9rem] font-extrabold text-white transition hover:bg-indigo-700"
           >
             Compare Another Pod
           </button>
@@ -2023,7 +2023,7 @@ function GuidedRestTest({
           <button
             type="button"
             onClick={onViewDetails}
-            className="rounded-[18px] border bg-white px-4 py-3 text-[0.96rem] font-extrabold text-gray-900 transition hover:bg-gray-50"
+            className="rounded-[18px] border bg-white px-4 py-2.5 text-[0.9rem] font-extrabold text-gray-900 transition hover:bg-gray-50"
           >
             Learn About This Pod
           </button>
@@ -2031,7 +2031,7 @@ function GuidedRestTest({
           <button
             type="button"
             onClick={onBuildPod}
-            className="rounded-[18px] border bg-white px-4 py-3 text-[0.96rem] font-extrabold text-gray-900 transition hover:bg-gray-50"
+            className="rounded-[18px] border bg-white px-4 py-2.5 text-[0.9rem] font-extrabold text-gray-900 transition hover:bg-gray-50"
           >
             Build This Setup
           </button>
@@ -2057,12 +2057,12 @@ function GuidedRestTest({
 
   if (completionStage === REST_COMPLETION_STAGES.reflection) {
     return (
-      <ShowroomPanel className="overflow-hidden p-4 md:p-5" tone="frost">
-        <div className="text-[1.95rem] font-black leading-tight tracking-tight text-slate-900 md:text-[2.25rem]">
+      <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="frost">
+        <div className="text-[1.72rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.95rem]">
           How did this pod feel?
         </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-3 grid gap-2.5 md:grid-cols-3">
           {REST_REFLECTION_OPTIONS.map((option) => (
             <RestRatingCard
               key={option.id}
@@ -2077,12 +2077,12 @@ function GuidedRestTest({
   }
 
   return (
-    <ShowroomPanel className="overflow-hidden p-4 md:p-5" tone="frost">
-      <div className="text-[1.9rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[2.2rem]">
+    <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="frost">
+      <div className="text-[1.7rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[1.9rem]">
         {activeTitle}
       </div>
 
-      <div className="mt-3 grid gap-3 xl:grid-cols-[220px_minmax(0,1fr)] xl:items-start">
+      <div className="mt-2.5 grid gap-2.5 xl:grid-cols-[196px_minmax(0,1fr)] xl:items-start">
         <div className="flex justify-center xl:justify-start">
           <RestCountdownRing
             remainingSeconds={timerRemaining}
@@ -2090,20 +2090,20 @@ function GuidedRestTest({
           />
         </div>
 
-        <div className="space-y-3">
-          <div className="rounded-[20px] border border-[#dbe5ff] bg-white/96 px-4 py-3 shadow-sm">
+        <div className="space-y-2.5">
+          <div className="rounded-[18px] border border-[#dbe5ff] bg-white/96 px-3.5 py-2.5 shadow-sm">
             <div className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
               Current Focus
             </div>
-            <div className="mt-1 text-[1.08rem] font-black text-slate-900">
+            <div className="mt-1 text-[1rem] font-black text-slate-900">
               {activeStep?.cue || "Keep settling in"}
             </div>
-            <div className="mt-1 text-[0.88rem] leading-5 text-slate-600">
+            <div className="mt-1 text-[0.82rem] leading-[1.2rem] text-slate-600">
               {activeStep?.body || "Stay in the position and notice comfort, support, and pressure relief."}
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-2.5 md:grid-cols-3">
             {instructionCards.map((card) => (
               <RestInstructionCard key={card.title} {...card} />
             ))}
@@ -2111,22 +2111,22 @@ function GuidedRestTest({
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-3">
+      <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
         <button
           type="button"
           onClick={onPauseTimer}
-          className="inline-flex min-h-[48px] min-w-[190px] items-center justify-center gap-3 rounded-[16px] border border-[#dbe5ff] bg-white px-4 text-[0.92rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
+          className="inline-flex min-h-[42px] min-w-[164px] items-center justify-center gap-2.5 rounded-[16px] border border-[#dbe5ff] bg-white px-4 text-[0.86rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
         >
-          <Pause className="h-5 w-5" />
+          <Pause className="h-4 w-4" />
           {pauseLabel}
         </button>
 
         <button
           type="button"
           onClick={onResetTest}
-          className="inline-flex min-h-[48px] min-w-[190px] items-center justify-center gap-3 rounded-[16px] border border-[#ffd7d7] bg-white px-4 text-[0.92rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
+          className="inline-flex min-h-[42px] min-w-[164px] items-center justify-center gap-2.5 rounded-[16px] border border-[#ffd7d7] bg-white px-4 text-[0.86rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
           End Test
         </button>
 
@@ -2134,7 +2134,7 @@ function GuidedRestTest({
           <button
             type="button"
             onClick={onSwitchToLongerMode}
-            className="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-[16px] border border-[#dbe5ff] bg-[#f8faff] px-4 text-[0.9rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[250px] xl:flex-none"
+            className="inline-flex min-h-[42px] flex-1 items-center justify-center gap-2 rounded-[16px] border border-[#dbe5ff] bg-[#f8faff] px-4 text-[0.82rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[220px] xl:flex-none"
           >
             Need more time? Switch to 15 min
             <ArrowRight className="h-4 w-4" />
@@ -2680,6 +2680,18 @@ export default function Pod() {
 
     return items.slice(0, 4);
   }, [isRecommended, mattressTruth.family, benefits, whyThisPodReason]);
+  const podHomeBadges = useMemo(() => {
+    const prioritized = headerBadges.filter(
+      (badge) => badge.label === "Best First Match" || /feel$/i.test(badge.label)
+    );
+
+    if (prioritized.length >= 2) return prioritized.slice(0, 2);
+    if (prioritized.length === 1) {
+      const fallback = headerBadges.find((badge) => badge.label !== prioritized[0].label);
+      return fallback ? [prioritized[0], fallback] : prioritized;
+    }
+    return headerBadges.slice(0, 2);
+  }, [headerBadges]);
   const restCoachCopy =
     "Start with 7 minutes for a quick check, or choose 15 if you want more time to settle in.";
 
@@ -3798,8 +3810,8 @@ export default function Pod() {
 
   const podHomeContent = useMemo(
     () => (
-      <div className="space-y-3.5 md:space-y-4">
-        <ShowroomPanel className="overflow-hidden p-0" tone="soft">
+      <div className="flex h-full min-h-0 flex-col gap-3 md:gap-3.5">
+        <ShowroomPanel className="shrink-0 overflow-hidden p-0" tone="soft">
           <PodRouteHeroHeader
             eyebrow=""
             podTitle={title}
@@ -3808,11 +3820,11 @@ export default function Pod() {
             isRecommended={isRecommended}
             mattressImage={mattressImage}
             voiceState={voiceState}
-            badges={headerBadges}
+            badges={podHomeBadges}
           />
         </ShowroomPanel>
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid min-h-0 flex-1 auto-rows-fr gap-3 md:grid-cols-3">
           <PodHomeActionCard
             icon={Timer}
             title="Rest Test"
@@ -3841,7 +3853,7 @@ export default function Pod() {
       mattressDisplayTitle,
       isRecommended,
       mattressImage,
-      headerBadges,
+      podHomeBadges,
       goToRestStage,
       goToDetailsStage,
       goToBuildStage,
@@ -3865,8 +3877,8 @@ export default function Pod() {
   }, [loading, activePod, isDefaultPodDashboard, podHomeContent, stageContent]);
 
   return (
-    <ShowroomPageShell className="flex h-screen flex-col overflow-hidden pb-0">
-      <div className="mx-auto w-full max-w-[1380px] px-4 pt-1.5 md:px-6 md:pt-2.5">
+    <ShowroomPageShell className="flex flex-col overflow-hidden pb-0">
+      <div className="mx-auto w-full max-w-[1380px] shrink-0 px-4 pt-1 md:px-6 md:pt-2">
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[28px] border border-white/80 bg-white/94 px-4 py-2 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-2.5">
           <button
             type="button"
@@ -3905,12 +3917,14 @@ export default function Pod() {
         </div>
       </div>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-0 pt-1.5 md:px-6 md:pt-2.5">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-4 pb-0 pt-1.5 md:px-6 md:pt-2">
         {isDefaultPodDashboard ? (
-          <ShowroomFrame className="p-1.5 md:p-2">{podHomeContent}</ShowroomFrame>
+          <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-hidden p-1.5 md:p-2">
+            {podHomeContent}
+          </ShowroomFrame>
         ) : (
-          <ShowroomFrame className={["flex flex-1 flex-col", isRestTaskStage ? "p-1.5 md:p-2" : "p-2 md:p-2.5"].join(" ")}>
-            <ShowroomPanel className={["overflow-hidden", isRestTaskStage ? "p-0" : "p-0"].join(" ")} tone="soft">
+          <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-1.5 md:p-2" : "p-2 md:p-2.5"].join(" ")}>
+            <ShowroomPanel className="shrink-0 overflow-hidden p-0" tone="soft">
               <PodRouteHeroHeader
                 eyebrow=""
                 podTitle={title}
@@ -3924,7 +3938,7 @@ export default function Pod() {
               />
             </ShowroomPanel>
 
-            <div ref={stagePanelRef} className={["flex-1 overflow-visible", isRestTaskStage ? "mt-2" : "mt-2.5"].join(" ")}>
+            <div ref={stagePanelRef} className={["mt-2 flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "" : "md:mt-2.5"].join(" ")}>
               {activePanelContent}
             </div>
           </ShowroomFrame>
@@ -3932,8 +3946,8 @@ export default function Pod() {
       </div>
 
       {!loading && activePod ? (
-          <div className="mx-auto mt-0 w-full max-w-[1380px] px-4 pb-0 md:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-[22px] border border-white/85 bg-white/96 px-3 py-2 shadow-[0_18px_40px_rgba(40,63,126,0.12)]">
+          <div className="mx-auto mt-0 w-full max-w-[1380px] shrink-0 px-4 pb-2 pt-2 md:px-6 md:pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-[20px] border border-white/85 bg-white/96 px-3 py-1.5 shadow-[0_18px_40px_rgba(40,63,126,0.12)]">
               <div className="flex flex-wrap items-center gap-2.5">
                 <ExperienceFooterButton
                   icon={House}
