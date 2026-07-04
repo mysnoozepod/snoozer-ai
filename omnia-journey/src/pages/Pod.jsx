@@ -36,7 +36,6 @@ import {
   ShowroomBrandMark,
   ShowroomCartBadge,
   ShowroomEyebrow,
-  ShowroomFooterAction,
   ShowroomFrame,
   ShowroomPageShell,
   ShowroomPanel,
@@ -45,6 +44,7 @@ import {
   BASE_OPTIONS_UI,
   generateShowroomRecommendations,
   getBaseHandleForType,
+  SIZE_OPTIONS,
 } from "@/lib/utils/recommendations";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
@@ -340,14 +340,7 @@ function buildPodRestVoice({ title, mattressHeroTitle, painSignals }) {
 }
 
 function buildPodDetailsVoice({ title, mattressHeroTitle, benefits, isRecommended, rank }) {
-  return [
-    `${title}.`,
-    `${mattressHeroTitle}.`,
-    isRecommended ? `Top ${rank || "1"} match.` : "Selected for you.",
-    benefits?.[0] || "Review the match details.",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  return "Let's look at the features and benefits of this mattress so you can understand why it may fit your sleep needs.";
 }
 
 const DETAILS_ACTIONS = [
@@ -573,17 +566,7 @@ function pickPreferredReasonKeys(reasonKeys = []) {
 }
 
 function buildPodBuildVoice({ title, mattressTitle, isDualComfort }) {
-  return [
-    `Let's build ${title}.`,
-    mattressTitle
-      ? `We will keep ${mattressTitle} as the mattress on this pod.`
-      : "We will keep the mattress already on this pod.",
-    isDualComfort
-      ? "Choose your size, base, motion setup, and comfort on each side, then review everything before you add it to your cart."
-      : "Choose your size, base, and motion setup if you want it, then review everything before you add it to your cart.",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  return "Now choose your size and base. I'll keep the mattress matched to this pod and update your monthly estimate as you build.";
 }
 
 function buildPodCheckoutVoice() {
@@ -947,13 +930,13 @@ const REST_COMPLETION_STAGES = {
 const REST_REFLECTION_OPTIONS = [
   {
     id: "love_it",
-    label: "I love the way this feels",
+    label: "Loved it",
     icon: Heart,
     tone: "blue",
   },
   {
     id: "compare_it",
-    label: "I might like it, but need to compare it",
+    label: "Maybe — compare next",
     icon: Scale,
     tone: "orange",
   },
@@ -973,23 +956,14 @@ function normalizeRestCompletionStage(value) {
 }
 
 function buildRestReflectionVoice(modeTitle) {
-  const title = String(modeTitle || "Rest Test").trim();
-  return `${title} complete. Choose the rating that fits best, then select I'm Ready to Rate This Pod.`;
+  return "Rest test complete. How did this pod feel?";
 }
 
 function buildRestActionsVoice(modeId, reflectionLabel = "") {
   const intro = reflectionLabel ? `Thanks. ${reflectionLabel}. ` : "";
-
-  if (modeId === "quick") {
-    return (
-      intro +
-      "Next, you can try the 15-minute rest test, learn about this pod, customize your pod, or go back to rest test options."
-    );
-  }
-
   return (
     intro +
-    "Next, you can retake the 15-minute rest test, learn about this pod, customize your pod, or go back to rest test options."
+    "Rest Test saved. You can compare another pod, learn about this pod, build this setup, or go back to rest test options."
   );
 }
 
@@ -1629,26 +1603,30 @@ function PodRouteHeroHeader({
   badges = [],
   coachBubble = "",
 }) {
+  const hasCoachBubble = Boolean(coachBubble);
+
   return (
     <div
       data-pod-route-header="true"
-      className="grid items-stretch gap-0 overflow-hidden md:h-[212px] md:grid-cols-[minmax(0,1fr)_260px] lg:grid-cols-[minmax(0,54%)_minmax(0,46%)]"
+      className={[
+        "grid items-stretch gap-0 overflow-hidden md:h-[174px]",
+        hasCoachBubble
+          ? "md:grid-cols-[minmax(0,0.92fr)_240px_300px] lg:grid-cols-[minmax(0,0.98fr)_250px_340px]"
+          : "md:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]",
+      ].join(" ")}
     >
       <div
-        className={[
-          "relative flex min-h-[150px] flex-col justify-center px-5 py-4 md:min-h-0 md:px-6 md:py-4.5",
-          coachBubble ? "md:pr-[270px] lg:pr-[292px]" : "",
-        ].join(" ")}
+        className="relative flex min-h-[136px] flex-col justify-center px-5 py-3 md:min-h-0 md:px-6 md:py-2.5"
       >
         {eyebrow ? (
           <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">{eyebrow}</ShowroomEyebrow>
         ) : null}
 
-        <div className={[eyebrow ? "mt-2" : "mt-0", "text-[1.35rem] font-black tracking-tight text-[#2f57e8] md:text-[1.55rem]"].join(" ")}>
+        <div className={[eyebrow ? "mt-2" : "mt-0", "text-[1.32rem] font-black tracking-tight text-[#2f57e8] md:text-[1.42rem]"].join(" ")}>
           {podTitle}
         </div>
 
-        <h1 className="mt-2 max-w-[11ch] text-[2rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[2.35rem] xl:text-[2.62rem]">
+        <h1 className="mt-1 max-w-[10.5ch] text-[1.88rem] font-black leading-[0.94] tracking-tight text-slate-900 md:text-[1.98rem] xl:text-[2.14rem]">
           {mattressTitle}
         </h1>
 
@@ -1684,19 +1662,27 @@ function PodRouteHeroHeader({
         ) : null}
 
         {coachBubble ? (
-          <div className="mt-3 md:absolute md:right-5 md:top-1/2 md:mt-0 md:max-w-[238px] md:-translate-y-1/2 lg:right-6 lg:max-w-[252px] xl:max-w-[268px]">
+          <div className="mt-3 md:hidden">
             <SnoozerCoachBubble copy={coachBubble} />
           </div>
         ) : null}
       </div>
 
-      <div className="relative min-h-[126px] overflow-hidden border-t border-white/70 md:min-h-0 md:border-l md:border-t-0">
+      {hasCoachBubble ? (
+        <div className="hidden border-l border-white/70 bg-[radial-gradient(circle_at_left_center,_rgba(236,242,255,0.95),_rgba(236,242,255,0.72)_32%,_transparent_82%)] px-3 py-3 md:flex md:items-center md:justify-center">
+          <div className="w-full max-w-[238px]">
+            <SnoozerCoachBubble copy={coachBubble} />
+          </div>
+        </div>
+      ) : null}
+
+      <div className="relative min-h-[112px] overflow-hidden border-t border-white/70 md:min-h-0 md:border-l md:border-t-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
         <ResponsiveImage
           src={mattressImage}
           alt={mattressTitle}
-          className="h-full min-h-[126px] w-full md:min-h-0"
-          imgClassName="h-full w-full object-cover"
+          className="h-full min-h-[112px] w-full md:min-h-0"
+          imgClassName="h-full w-full object-cover object-center"
         />
       </div>
     </div>
@@ -1910,6 +1896,57 @@ function RestRatingCard({ option, selected = false, onClick }) {
   );
 }
 
+function RestInstructionCard({ title, body, icon: Icon = CheckCircle2, accent = "blue" }) {
+  const accentClass =
+    accent === "orange"
+      ? "border-[#ffe0bf] bg-[#fff7ef] text-[#ff8f1f]"
+      : "border-[#dbe5ff] bg-white text-[#355ff1]";
+
+  return (
+    <div className="rounded-[22px] border border-white/80 bg-white/96 p-3.5 shadow-[0_14px_30px_rgba(45,71,136,0.08)]">
+      <div className="flex items-start gap-3">
+        <div className={["flex h-10 w-10 shrink-0 items-center justify-center rounded-full border", accentClass].join(" ")}>
+          {Icon ? <Icon className="h-4.5 w-4.5" /> : null}
+        </div>
+        <div className="min-w-0">
+          <div className="text-[0.98rem] font-black leading-tight text-slate-900">{title}</div>
+          <div className="mt-1 text-[0.84rem] leading-5 text-slate-600">{body}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function buildActiveRestInstructionCards({ hasAdjustableBase }) {
+  return [
+    {
+      title: "Try Your Back",
+      body: "Lie flat and notice lower-back support.",
+      icon: BedDouble,
+      accent: "blue",
+    },
+    {
+      title: "Try Your Side",
+      body: "Check shoulder and hip pressure.",
+      icon: CheckCircle2,
+      accent: "blue",
+    },
+    hasAdjustableBase
+      ? {
+          title: "Try Motion",
+          body: "Try Zero Gravity, Snore, or Head Up.",
+          icon: SlidersHorizontal,
+          accent: "orange",
+        }
+      : {
+          title: "Relax & Notice",
+          body: "Let your body settle and notice pressure points.",
+          icon: Heart,
+          accent: "orange",
+        },
+  ];
+}
+
 function GuidedRestTest({
   flowOptions,
   activeMode,
@@ -1927,6 +1964,7 @@ function GuidedRestTest({
   onSelectReflection,
   onViewDetails,
   onBuildPod,
+  onCompareAnotherPod,
   onSwitchToLongerMode,
   completionStage,
   reflectionChoice,
@@ -1961,35 +1999,31 @@ function GuidedRestTest({
   }
 
   if (completionStage === REST_COMPLETION_STAGES.actions) {
-    const primaryActionLabel =
-      activeMode?.id === "quick" ? "Try 15-Minute Rest Test" : "Retake 15-Minute Rest Test";
-    const primaryActionModeId = activeMode?.id === "quick" ? "deep" : activeMode?.id || "deep";
-
     return (
-      <ShowroomPanel className="overflow-hidden p-5 md:p-6" tone="frost">
+      <ShowroomPanel className="overflow-hidden p-4 md:p-5" tone="frost">
         <div className="text-[2rem] font-black leading-tight tracking-tight text-slate-900 md:text-[2.35rem]">
-          You finished the {activeMode?.title}.
+          Rest Test saved
         </div>
 
         {reflectionChoice ? (
-          <div className="mt-3 rounded-[20px] border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-900">
-            Reflection saved: {reflectionChoice}
+          <div className="mt-3 rounded-[18px] border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-900">
+            Saved rating: {reflectionChoice}
           </div>
         ) : null}
 
-        <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
           <button
             type="button"
-            onClick={() => onChooseMode(primaryActionModeId)}
-            className="rounded-[20px] bg-indigo-600 px-5 py-3.5 text-base font-extrabold text-white transition hover:bg-indigo-700"
+            onClick={onCompareAnotherPod}
+            className="rounded-[18px] bg-indigo-600 px-4 py-3 text-[0.96rem] font-extrabold text-white transition hover:bg-indigo-700"
           >
-            {primaryActionLabel}
+            Compare Another Pod
           </button>
 
           <button
             type="button"
             onClick={onViewDetails}
-            className="rounded-[20px] border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 transition hover:bg-gray-50"
+            className="rounded-[18px] border bg-white px-4 py-3 text-[0.96rem] font-extrabold text-gray-900 transition hover:bg-gray-50"
           >
             Learn About This Pod
           </button>
@@ -1997,39 +2031,58 @@ function GuidedRestTest({
           <button
             type="button"
             onClick={onBuildPod}
-            className="rounded-[20px] border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 transition hover:bg-gray-50"
+            className="rounded-[18px] border bg-white px-4 py-3 text-[0.96rem] font-extrabold text-gray-900 transition hover:bg-gray-50"
           >
-            Customize Your Pod
-          </button>
-
-          <button
-            type="button"
-            onClick={onResetTest}
-            className="rounded-[20px] border bg-white px-5 py-3.5 text-base font-extrabold text-gray-900 transition hover:bg-gray-50"
-          >
-            Back to Rest Test Options
+            Build This Setup
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={onResetTest}
+          className="mt-3 inline-flex items-center gap-2 text-sm font-extrabold text-slate-500 transition hover:text-slate-900"
+        >
+          Back to Rest Test Options
+        </button>
       </ShowroomPanel>
     );
   }
 
   const stepTotalSeconds = Math.max(1, Number(activeStep?.seconds) || 1);
-  const ratingSelected =
-    REST_REFLECTION_OPTIONS.find((option) => option.label === reflectionChoice) || null;
   const activeTitle =
     activeMode?.id === "deep" ? "15-Minute Test in Progress" : "7-Minute Test in Progress";
   const pauseLabel = timerRunning ? "Pause Test" : "Resume Test";
   const showLongerModeSwitch = activeMode?.id === "quick";
-  const canConfirmRating = Boolean(ratingSelected);
+  const instructionCards = buildActiveRestInstructionCards({ hasAdjustableBase });
+
+  if (completionStage === REST_COMPLETION_STAGES.reflection) {
+    return (
+      <ShowroomPanel className="overflow-hidden p-4 md:p-5" tone="frost">
+        <div className="text-[1.95rem] font-black leading-tight tracking-tight text-slate-900 md:text-[2.25rem]">
+          How did this pod feel?
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {REST_REFLECTION_OPTIONS.map((option) => (
+            <RestRatingCard
+              key={option.id}
+              option={option}
+              selected={false}
+              onClick={() => onSelectReflection(option.id)}
+            />
+          ))}
+        </div>
+      </ShowroomPanel>
+    );
+  }
 
   return (
-    <ShowroomPanel className="overflow-hidden p-5 md:p-6" tone="frost">
-      <div className="text-[2.1rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[2.55rem]">
+    <ShowroomPanel className="overflow-hidden p-4 md:p-5" tone="frost">
+      <div className="text-[1.9rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[2.2rem]">
         {activeTitle}
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[240px_minmax(0,1fr)_290px] xl:items-start">
+      <div className="mt-3 grid gap-3 xl:grid-cols-[220px_minmax(0,1fr)] xl:items-start">
         <div className="flex justify-center xl:justify-start">
           <RestCountdownRing
             remainingSeconds={timerRemaining}
@@ -2037,37 +2090,32 @@ function GuidedRestTest({
           />
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3">
-          {REST_REFLECTION_OPTIONS.map((option) => (
-            <RestRatingCard
-              key={option.id}
-              option={option}
-              selected={ratingSelected?.id === option.id}
-              onClick={() => onChooseReflection(option.id)}
-            />
-          ))}
-        </div>
-
-        <ShowroomPanel className="rounded-[24px] p-4 md:p-5" tone="soft">
-          <div className="flex items-start gap-3.5">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8] shadow-[0_10px_24px_rgba(45,71,136,0.08)]">
-              <Smile className="h-7 w-7" />
+        <div className="space-y-3">
+          <div className="rounded-[20px] border border-[#dbe5ff] bg-white/96 px-4 py-3 shadow-sm">
+            <div className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+              Current Focus
             </div>
-            <div>
-              <div className="text-[1.12rem] font-black text-[#355ff1] md:text-[1.2rem]">What to do now</div>
-              <div className="mt-1.5 text-[0.98rem] leading-7 text-slate-700">
-                Relax into the mattress and notice comfort, support, and pressure relief.
-              </div>
+            <div className="mt-1 text-[1.08rem] font-black text-slate-900">
+              {activeStep?.cue || "Keep settling in"}
+            </div>
+            <div className="mt-1 text-[0.88rem] leading-5 text-slate-600">
+              {activeStep?.body || "Stay in the position and notice comfort, support, and pressure relief."}
             </div>
           </div>
-        </ShowroomPanel>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            {instructionCards.map((card) => (
+              <RestInstructionCard key={card.title} {...card} />
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
+      <div className="mt-3 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={onPauseTimer}
-          className="inline-flex min-h-[52px] min-w-[220px] items-center justify-center gap-3 rounded-[18px] border border-[#dbe5ff] bg-white px-5 text-[0.98rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
+          className="inline-flex min-h-[48px] min-w-[190px] items-center justify-center gap-3 rounded-[16px] border border-[#dbe5ff] bg-white px-4 text-[0.92rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
         >
           <Pause className="h-5 w-5" />
           {pauseLabel}
@@ -2076,7 +2124,7 @@ function GuidedRestTest({
         <button
           type="button"
           onClick={onResetTest}
-          className="inline-flex min-h-[52px] min-w-[220px] items-center justify-center gap-3 rounded-[18px] border border-[#ffd7d7] bg-white px-5 text-[0.98rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
+          className="inline-flex min-h-[48px] min-w-[190px] items-center justify-center gap-3 rounded-[16px] border border-[#ffd7d7] bg-white px-4 text-[0.92rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
         >
           <X className="h-5 w-5" />
           End Test
@@ -2086,31 +2134,13 @@ function GuidedRestTest({
           <button
             type="button"
             onClick={onSwitchToLongerMode}
-            className="inline-flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-[18px] border border-[#dbe5ff] bg-[#f8faff] px-5 text-[0.96rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[280px] xl:flex-none"
+            className="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-[16px] border border-[#dbe5ff] bg-[#f8faff] px-4 text-[0.9rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[250px] xl:flex-none"
           >
             Need more time? Switch to 15 min
             <ArrowRight className="h-4 w-4" />
           </button>
         ) : null}
       </div>
-
-      <button
-        type="button"
-        onClick={() => {
-          if (!canConfirmRating || !ratingSelected) return;
-          onSelectReflection(ratingSelected.id);
-        }}
-        disabled={!canConfirmRating}
-        className={[
-          "mt-4 inline-flex min-h-[66px] w-full items-center justify-center gap-4 rounded-[20px] px-6 text-[1.28rem] font-black text-white shadow-[0_22px_44px_rgba(255,143,31,0.26)] transition md:text-[1.42rem]",
-          canConfirmRating
-            ? "bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] hover:scale-[1.005]"
-            : "cursor-not-allowed bg-[#ffcda7]/80 text-white/80",
-        ].join(" ")}
-      >
-        I'm Ready to Rate This Pod
-        <ArrowRight className="h-7 w-7" />
-      </button>
     </ShowroomPanel>
   );
 }
@@ -2147,7 +2177,7 @@ export default function Pod() {
   const [cue, setCue] = useState("Rest Test");
   const [cueType, setCueType] = useState("tip");
 
-  const [buildStepKey, setBuildStepKey] = useState("mattress");
+  const [buildStepKey, setBuildStepKey] = useState("size");
 
   const [openStage, setOpenStage] = useState("rest");
 
@@ -2183,7 +2213,7 @@ export default function Pod() {
     [storagePrefix, openStage]
   );
   useEffect(
-    () => safeSet(`${storagePrefix}.buildStepKey`, buildStepKey || "mattress"),
+    () => safeSet(`${storagePrefix}.buildStepKey`, buildStepKey || "size"),
     [storagePrefix, buildStepKey]
   );
   useEffect(
@@ -2411,7 +2441,7 @@ export default function Pod() {
     setShowCheckoutOptions(false);
 
     setOpenStage("rest");
-    setBuildStepKey("mattress");
+    setBuildStepKey("size");
     setTestComplete(false);
     setFeelChoice("");
     setRestCompletionStage("");
@@ -3048,6 +3078,8 @@ export default function Pod() {
       const nextId = normalizeText(actionId) || DEFAULT_DETAILS_ACTION_ID;
       const content =
         detailsContentByAction[nextId] || detailsContentByAction[DEFAULT_DETAILS_ACTION_ID] || null;
+      const detailsIntroVoice =
+        "Let's look at the features and benefits of this mattress so you can understand why it may fit your sleep needs.";
 
       noteUserInteraction?.();
       await cancelPodVoice();
@@ -3061,14 +3093,14 @@ export default function Pod() {
       setCue(content?.cue || "Learn About This Pod");
       setRestPanelPhase("normal");
 
-      if (!content?.voiceScript) return;
+      if (!content?.voiceScript && !ensureDetailsStage) return;
 
-      void speakPod(content.voiceScript, {
+      void speakPod(ensureDetailsStage ? detailsIntroVoice : content.voiceScript, {
         actionType: "view_details",
         calm: true,
         force: true,
-        scriptKey: content.scriptKey || `pod.details.${nextId}`,
-        key: `details-action::${pid}::${nextId}`,
+        scriptKey: ensureDetailsStage ? "pod.details.learn_intro" : content.scriptKey || `pod.details.${nextId}`,
+        key: ensureDetailsStage ? `details-stage::${pid}` : `details-action::${pid}::${nextId}`,
       });
     },
     [detailsContentByAction, noteUserInteraction, cancelPodVoice, speakPod, pid]
@@ -3176,9 +3208,9 @@ export default function Pod() {
       setTimerRemaining(0);
       setTimerRunning(false);
       setTestComplete(true);
-      setRestCompletionStage("");
+      setRestCompletionStage(REST_COMPLETION_STAGES.reflection);
       setCueType("tip");
-      setCue("I'm Ready to Rate This Pod");
+      setCue("How did this pod feel?");
       setRestPanelPhase("normal");
       lastRestVoiceKeyRef.current = "";
 
@@ -3318,50 +3350,94 @@ export default function Pod() {
     [activeRestFlow, cancelPodVoice, noteUserInteraction, speakPod]
   );
 
-  const learnQuickCards = useMemo(() => {
+  const learnSpecsItems = useMemo(() => {
     const firmnessValue = String(
       recommendationMeta?.firmness || assessment?.firmness || assessment?.comfort || assessment?.feel || "Medium"
     ).trim();
-    return [
-      {
-        title: "Feel",
-        body: `${firmnessValue || "Medium"} feel.`,
-      },
-      {
-        title: "Support",
-        body:
-          mattressTruth.family === "hybrid"
-            ? "Hybrid support."
-            : mattressTruth.family === "dual"
-              ? "Dual Comfort Hybrid support."
-              : mattressTruth.family === "foam"
-                ? "All-foam support."
-                : "Balanced support.",
-      },
-      {
-        title: "Pressure Relief",
-        body: lowerText(benefits.join(" ")).includes("pressure")
-          ? "Built to ease shoulder and hip pressure."
-          : "Built to stay comfortable through pressure points.",
-      },
-      {
-        title: "Best For",
-        body: isRecommended ? "A balanced first test." : "A strong compare point.",
-      },
+    const items = [
+      `Feel: ${firmnessValue || "Medium"}.`,
+      `Construction: ${
+        mattressTruth.family === "dual"
+          ? "Dual Comfort Hybrid"
+          : mattressTruth.family === "hybrid"
+            ? "Hybrid"
+            : mattressTruth.family === "foam"
+              ? "All-foam"
+              : "Balanced comfort build"
+      }.`,
+      `Height: ${inferHeightLabel(mattressTruth.mattressTitle || mattressDisplayTitle)}.`,
+      mattressTruth.hasCoils
+        ? "Support core: coil-supported design for a steadier, more lifted feel."
+        : "Support core: foam support layers for a quieter, more even feel.",
+      mattressTruth.hasCooling
+        ? "Cooling cues: breathable or cooling-focused materials appear in the current product data."
+        : "Comfort cues: designed to balance support and pressure relief through a full showroom test.",
     ];
-  }, [recommendationMeta?.firmness, assessment, mattressTruth.family, benefits, isRecommended]);
+    return items.filter(Boolean).slice(0, 5);
+  }, [recommendationMeta?.firmness, assessment, mattressTruth, mattressDisplayTitle]);
+
+  const learnPricingRows = useMemo(() => {
+    return SIZE_OPTIONS.map((option) => {
+      const variant = pickVariantForSize(mattressProduct, option);
+      const price = parseVariantPrice(variant);
+      return {
+        size: option,
+        price: price > 0 ? money(price) : "Unavailable",
+      };
+    }).filter((row) => row.price !== "Unavailable");
+  }, [mattressProduct]);
+
+  const learnFitItems = useMemo(() => {
+    const items = [];
+
+    if (shopperDetailContext.position === "side") {
+      items.push("Side-sleeper fit: pay closest attention to shoulder and hip pressure relief.");
+    } else if (shopperDetailContext.position === "back") {
+      items.push("Back-sleeper fit: notice whether your lower back feels supported and aligned.");
+    } else if (shopperDetailContext.position === "stomach") {
+      items.push("Stomach-sleeper fit: check whether the surface keeps your midsection from dipping too far.");
+    }
+
+    if (shopperDetailContext.sleepsHot) {
+      items.push(
+        mattressTruth.hasCooling
+          ? "Hot-sleeper fit: this mattress shows cooling cues worth noticing after a few quiet minutes."
+          : "Hot-sleeper fit: use this pod to judge temperature comfort once you have settled in."
+      );
+    }
+
+    if (shopperDetailContext.hasPartner) {
+      items.push(
+        mattressTruth.isDualComfort
+          ? "Couples fit: the Dual Comfort setup gives you a stronger compare point for shared sleep."
+          : "Couples fit: pay attention to surface stability and motion when one sleeper moves."
+      );
+    }
+
+    if (!items.length && benefits.length) {
+      items.push(`${benefits[0].charAt(0).toUpperCase()}${benefits[0].slice(1)}.`);
+    }
+
+    items.push(
+      lowerText(whyThisPodReason).includes("back")
+        ? "Support language here is about comfort and alignment, not medical treatment."
+        : `Match reason: ${whyThisPodSentence}`
+    );
+
+    return items.filter(Boolean).slice(0, 4);
+  }, [shopperDetailContext, mattressTruth, benefits, whyThisPodReason, whyThisPodSentence]);
 
   const goToDetailsStage = useCallback(async () => {
     setShowRestChooser(false);
     await activateDetailsAction(DEFAULT_DETAILS_ACTION_ID, { ensureDetailsStage: true });
   }, [activateDetailsAction]);
 
-  const goToBuildStage = useCallback(async (nextStepKey = "mattress") => {
+  const goToBuildStage = useCallback(async (nextStepKey = "size") => {
     noteUserInteraction?.();
     await cancelPodVoice();
     setShowRestChooser(false);
     setOpenStage("build");
-    setBuildStepKey(String(nextStepKey || "mattress"));
+    setBuildStepKey(String(nextStepKey || "size"));
     setCueType("success");
     setCue(`Build ${podLabel}`);
     setRestPanelPhase("normal");
@@ -3406,38 +3482,84 @@ export default function Pod() {
   const stageContent = useMemo(() => {
     if (openStage === "details") {
       return (
-        <div className="space-y-4">
-          <ShowroomPanel className="p-4 md:p-5" tone="frost">
-            <ShowroomEyebrow>Learn About This Mattress</ShowroomEyebrow>
-            <div className="mt-2 text-[1.9rem] font-extrabold leading-tight tracking-tight text-slate-900 md:text-[2.3rem]">
-              {mattressDisplayTitle}
-            </div>
-            <div className="mt-1.5 text-[0.96rem] font-semibold text-slate-600">
-              {`${mattressDisplayTitle} at ${title}`}
-            </div>
-          </ShowroomPanel>
+        <div className="space-y-3">
+          <div className="grid gap-3 xl:grid-cols-3">
+            <ShowroomPanel className="p-4 md:p-5" tone="frost">
+              <div className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+                Specs
+              </div>
+              <div className="mt-2 text-[1.2rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.3rem]">
+                What's Inside
+              </div>
+              <div className="mt-3 space-y-2.5">
+                {learnSpecsItems.map((item) => (
+                  <div key={item} className="flex gap-2 text-[0.92rem] leading-6 text-slate-700">
+                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#2f57e8]" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </ShowroomPanel>
 
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {learnQuickCards.map((card) => (
-              <LearnAtGlanceCard key={card.title} title={card.title} body={card.body} />
-            ))}
-          </div>
+            <ShowroomPanel className="p-4 md:p-5" tone="frost">
+              <div className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+                Pricing
+              </div>
+              <div className="mt-2 text-[1.2rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.3rem]">
+                Mattress Only
+              </div>
+              {learnPricingRows.length ? (
+                <div className="mt-3 grid gap-2">
+                  {learnPricingRows.map((row) => (
+                    <div
+                      key={row.size}
+                      className="flex items-center justify-between rounded-[18px] border border-[#dbe5ff] bg-white/96 px-3 py-2.5 shadow-sm"
+                    >
+                      <div className="text-[0.92rem] font-extrabold text-slate-900">{row.size}</div>
+                      <div className="text-[0.92rem] font-black text-[#2f57e8]">{row.price}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-3 rounded-[18px] border border-dashed border-[#dbe5ff] bg-white/90 px-3.5 py-4 text-[0.88rem] leading-6 text-slate-600">
+                  Mattress-only pricing will appear here when the current product pricing finishes loading.
+                </div>
+              )}
+            </ShowroomPanel>
 
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={goToRestStage}
-              className="rounded-[18px] bg-[#1A66D2] px-5 py-3 text-sm font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.2)] transition hover:bg-[#1550A0]"
-            >
-              Start Rest Test
-            </button>
-            <button
-              type="button"
-              onClick={() => void goToBuildStage("mattress")}
-              className="rounded-[18px] border border-[#d8e3ff] bg-white px-5 py-3 text-sm font-black text-slate-900 transition hover:bg-slate-50"
-            >
-              Build This Setup
-            </button>
+            <ShowroomPanel className="p-4 md:p-5" tone="frost">
+              <div className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+                Why It Fits You
+              </div>
+              <div className="mt-2 text-[1.2rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.3rem]">
+                Why this mattress may fit
+              </div>
+              <div className="mt-3 space-y-2.5">
+                {learnFitItems.map((item) => (
+                  <div key={item} className="flex gap-2 text-[0.92rem] leading-6 text-slate-700">
+                    <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#2f57e8]" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  noteUserInteraction?.();
+                  void cancelPodVoice();
+                  navigate("/ask-snoozer", {
+                    state: {
+                      from: `/pod/${pid}`,
+                      starter: `Tell me more about ${mattressDisplayTitle}.`,
+                    },
+                  });
+                }}
+                className="mt-4 w-full rounded-[18px] border border-[#dbe5ff] bg-white px-4 py-3 text-sm font-black text-[#2f57e8] shadow-sm transition hover:bg-slate-50"
+              >
+                Ask Snoozer About This Mattress
+              </button>
+            </ShowroomPanel>
           </div>
         </div>
       );
@@ -3493,12 +3615,13 @@ export default function Pod() {
           await cancelPodVoice();
           setShowRestChooser(false);
           setOpenStage("build");
-          setBuildStepKey("mattress");
+          setBuildStepKey("size");
           setCueType("success");
           setCue(`Build ${podLabel}`);
           setRestPanelPhase("normal");
           void speakForStage("build");
         }}
+        onCompareAnotherPod={() => navigate("/results")}
         completionStage={restCompletionStage}
         reflectionChoice={feelChoice}
         onSwitchToLongerMode={() => handleChooseRestMode("deep")}
@@ -3509,7 +3632,6 @@ export default function Pod() {
   }, [
     openStage,
     mattressTruth.mattressTitle,
-    learnQuickCards,
     title,
     assessment,
     mattressProduct,
@@ -3540,10 +3662,13 @@ export default function Pod() {
     hasAdjustableBase,
     noteUserInteraction,
     cancelPodVoice,
-    goToRestStage,
-    goToBuildStage,
     buildStepKey,
     podLabel,
+    pid,
+    mattressDisplayTitle,
+    learnSpecsItems,
+    learnPricingRows,
+    learnFitItems,
   ]);
 
   const isDefaultPodDashboard =
@@ -3566,8 +3691,9 @@ export default function Pod() {
   }, [openStage]);
 
   const activeStageHelper = useMemo(() => {
-    if (openStage === "details") return "Why it fits.";
-    if (openStage === "build") return "Choose your setup.";
+    if (openStage === "details") return "Specs, pricing, and fit.";
+    if (openStage === "build") return "Choose size, base, and review.";
+    if (restCompletionStage === REST_COMPLETION_STAGES.reflection) return "Tell us how it felt.";
     if (restCompletionStage === REST_COMPLETION_STAGES.actions) return "Choose your next step.";
     if (activeRestFlow) return "Stay with one pod at a time.";
     return "Choose your test.";
@@ -3705,31 +3831,7 @@ export default function Pod() {
             icon={SlidersHorizontal}
             title="Build"
             microcopy="Choose setup"
-            onClick={() => void goToBuildStage("mattress")}
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-0.5">
-          <ShowroomFooterAction
-            icon={MessageSquare}
-            label="Ask Snoozer"
-            className="min-h-[48px] min-w-[200px] rounded-full bg-white/96 px-7 text-[0.98rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
-            onClick={() => {
-              noteUserInteraction?.();
-              void cancelPodVoice();
-              navigate("/ask-snoozer", { state: { from: `/pod/${pid}` } });
-            }}
-          />
-
-          <ShowroomFooterAction
-            icon={Headphones}
-            label="Talk to Human"
-            className="min-h-[48px] min-w-[200px] rounded-full bg-white/96 px-7 text-[0.98rem] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
-            onClick={() => {
-              noteUserInteraction?.();
-              setCueType("tip");
-              setCue("Ask the showroom team for in-store help when you're ready.");
-            }}
+            onClick={() => void goToBuildStage("size")}
           />
         </div>
       </div>
@@ -3743,10 +3845,6 @@ export default function Pod() {
       goToRestStage,
       goToDetailsStage,
       goToBuildStage,
-      noteUserInteraction,
-      cancelPodVoice,
-      navigate,
-      pid,
     ]
   );
 
@@ -3768,8 +3866,8 @@ export default function Pod() {
 
   return (
     <ShowroomPageShell className="flex min-h-screen flex-col overflow-x-hidden pb-0">
-      <div className="mx-auto w-full max-w-[1380px] px-4 pt-3 md:px-6 md:pt-4">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[30px] border border-white/80 bg-white/94 px-4 py-3 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-4">
+      <div className="mx-auto w-full max-w-[1380px] px-4 pt-1.5 md:px-6 md:pt-2.5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[28px] border border-white/80 bg-white/94 px-4 py-2 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-2.5">
           <button
             type="button"
             onClick={() => {
@@ -3807,84 +3905,26 @@ export default function Pod() {
         </div>
       </div>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-1 pt-3 md:px-6 md:pt-4">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-0 pt-1.5 md:px-6 md:pt-2.5">
         {isDefaultPodDashboard ? (
-          <ShowroomFrame className="p-2.5 md:p-3">{podHomeContent}</ShowroomFrame>
+          <ShowroomFrame className="p-1.5 md:p-2">{podHomeContent}</ShowroomFrame>
         ) : (
-          <ShowroomFrame className={["flex flex-1 flex-col", isRestTaskStage ? "p-2.5 md:p-3" : "p-3 md:p-4"].join(" ")}>
+          <ShowroomFrame className={["flex flex-1 flex-col", isRestTaskStage ? "p-1.5 md:p-2" : "p-2 md:p-2.5"].join(" ")}>
             <ShowroomPanel className={["overflow-hidden", isRestTaskStage ? "p-0" : "p-0"].join(" ")} tone="soft">
-              {isRestTaskStage ? (
-                <PodRouteHeroHeader
-                  eyebrow=""
-                  podTitle={title}
-                  mattressTitle={mattressDisplayTitle}
-                  helperText={isRestSelectionStage ? "" : activeStageHelper}
-                  isRecommended={isRecommended}
-                  mattressImage={mattressImage}
-                  voiceState={voiceState}
-                  badges={headerBadges.slice(0, isRecommended ? 2 : 1)}
-                  coachBubble={isRestSelectionStage ? restCoachCopy : ""}
-                />
-              ) : (
-                <div className="grid gap-0 xl:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
-                  <div className="flex min-h-[240px] flex-col justify-center px-6 py-6 md:min-h-[270px] md:px-8 md:py-7">
-                    <ShowroomEyebrow className="text-[0.9rem] tracking-[0.26em]">
-                      {activeStageEyebrow}
-                    </ShowroomEyebrow>
-
-                    <div className="mt-4 text-[1.65rem] font-black tracking-tight text-[#2f57e8] md:text-[1.95rem]">
-                      {title}
-                    </div>
-
-                    <h1 className="mt-4 max-w-[12ch] text-[2.7rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[3.3rem] lg:text-[4rem]">
-                      {mattressDisplayTitle}
-                    </h1>
-
-                    <div className="mt-5 flex flex-wrap items-center gap-4">
-                      {isRecommended ? (
-                        <div className="inline-flex items-center gap-3 rounded-full border border-[#d6e4ff] bg-white/96 px-4 py-3 text-[1.02rem] font-black text-[#2f57e8] shadow-[0_16px_32px_rgba(47,87,232,0.12)]">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2f57e8] text-white">
-                            <CheckCircle2 className="h-5 w-5" />
-                          </div>
-                          Best First Match
-                        </div>
-                      ) : null}
-
-                      <div className="text-[1.1rem] font-medium text-slate-600">
-                        {activeStageHelper}
-                      </div>
-                    </div>
-
-                    {voiceState?.blocked || voiceState?.error ? (
-                      <div className="mt-4 flex flex-wrap gap-3">
-                        {voiceState?.blocked ? (
-                          <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
-                            Audio may require a tap
-                          </span>
-                        ) : null}
-                        {voiceState?.error ? (
-                          <span className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
-                            Audio unavailable
-                          </span>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="relative min-h-[220px] border-t border-white/70 xl:border-l xl:border-t-0">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
-                    <ResponsiveImage
-                      src={mattressImage}
-                      alt={mattressDisplayTitle}
-                      className="h-full min-h-[220px] w-full md:min-h-[260px]"
-                      imgClassName="h-full w-full object-cover"
-                    />
-                  </div>
-                </div>
-              )}
+              <PodRouteHeroHeader
+                eyebrow=""
+                podTitle={title}
+                mattressTitle={mattressDisplayTitle}
+                helperText=""
+                isRecommended={isRecommended}
+                mattressImage={mattressImage}
+                voiceState={voiceState}
+                badges={openStage === "details" || openStage === "build" ? headerBadges : headerBadges.slice(0, isRecommended ? 2 : 1)}
+                coachBubble={isRestSelectionStage ? restCoachCopy : ""}
+              />
             </ShowroomPanel>
 
-            <div ref={stagePanelRef} className={["flex-1 overflow-visible", isRestTaskStage ? "mt-3" : "mt-4"].join(" ")}>
+            <div ref={stagePanelRef} className={["flex-1 overflow-visible", isRestTaskStage ? "mt-2" : "mt-2.5"].join(" ")}>
               {activePanelContent}
             </div>
           </ShowroomFrame>
@@ -3892,7 +3932,6 @@ export default function Pod() {
       </div>
 
       {!loading && activePod ? (
-        !isDefaultPodDashboard ? (
           <div className="mx-auto mt-0 w-full max-w-[1380px] px-4 pb-0 md:px-6">
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-[22px] border border-white/85 bg-white/96 px-3 py-2 shadow-[0_18px_40px_rgba(40,63,126,0.12)]">
               <div className="flex flex-wrap items-center gap-2.5">
@@ -3926,7 +3965,7 @@ export default function Pod() {
                     icon={SlidersHorizontal}
                     label="Build"
                     accent="blue"
-                    onClick={() => void goToBuildStage("mattress")}
+                    onClick={() => void goToBuildStage("size")}
                   />
                 ) : null}
               </div>
@@ -3954,7 +3993,6 @@ export default function Pod() {
               </div>
             </div>
           </div>
-        ) : null
       ) : null}
     </ShowroomPageShell>
   );

@@ -413,6 +413,46 @@ function ChoiceCard({ title, subtitle, active, disabled = false, onClick }) {
   );
 }
 
+function BuilderOptionButton({ title, subtitle, active, disabled = false, onClick, compact = false }) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={[
+        "w-full rounded-[18px] border px-3 py-3 text-left shadow-sm transition",
+        compact ? "min-h-[58px]" : "min-h-[88px]",
+        disabled ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 opacity-60" : "hover:-translate-y-0.5 hover:shadow-md",
+        active ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white",
+      ].join(" ")}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[0.98rem] font-extrabold leading-tight text-gray-900">{title}</div>
+          {subtitle ? (
+            <div
+              className={[
+                "text-gray-600",
+                compact ? "mt-0.5 text-[0.74rem] leading-4.5" : "mt-1 text-[0.8rem] leading-5",
+              ].join(" ")}
+            >
+              {subtitle}
+            </div>
+          ) : null}
+        </div>
+        <div
+          className={[
+            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
+            active ? "border-indigo-600 bg-indigo-600" : "border-gray-300 bg-white",
+          ].join(" ")}
+        >
+          {active ? <div className="h-2 w-2 rounded-full bg-white" /> : null}
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export function subtitleForSize(option) {
   switch (option) {
     case "Twin":
@@ -462,8 +502,9 @@ function normalizeBuildStepCandidate(value) {
   const normalized = lower(value);
   if (!normalized) return "";
   if (normalized === "motion") return "base";
-  if (normalized === "dual" || normalized === "comfort") return "mattress";
-  if (normalized === "mattress" || normalized === "base" || normalized === "size" || normalized === "review") {
+  if (normalized === "dual" || normalized === "comfort") return "review";
+  if (normalized === "mattress") return "size";
+  if (normalized === "base" || normalized === "size" || normalized === "review") {
     return normalized;
   }
   return "";
@@ -659,9 +700,8 @@ export default function PodBuilder({
   const wantsBase = baseType !== "none";
   const steps = useMemo(
     () => [
-      { key: "mattress", label: "Mattress", icon: BedDouble },
-      { key: "base", label: "Base", icon: SlidersHorizontal },
       { key: "size", label: "Size", icon: Ruler },
+      { key: "base", label: "Base", icon: SlidersHorizontal },
       { key: "review", label: "Review", icon: CheckCircle2 },
     ],
     []
@@ -678,9 +718,9 @@ export default function PodBuilder({
     }
 
     const candidate = normalizeBuildStepCandidate(compatibleSavedBuild?.stepKey);
-    return steps.some((step) => step.key === candidate) ? candidate : "mattress";
+    return steps.some((step) => step.key === candidate) ? candidate : "size";
   });
-  const appliedRequestedStepRef = useRef(requestedNormalizedStepKey || "mattress");
+  const appliedRequestedStepRef = useRef(requestedNormalizedStepKey || "size");
 
   const allowedMotion = useMemo(
     () => allowedMotionTypesForSelection(size, supportsSplitMotion),
@@ -779,14 +819,14 @@ export default function PodBuilder({
     ].filter(Boolean),
     [mattressLabel, selectedBaseLabel, size, showMotion, selectedMotionLabel, isDualComfort, dcLeft, dcRight]
   );
+  const sizeReady = Boolean(size);
+  const baseReady = Boolean(baseType) && (!showMotion || Boolean(motionType));
   const currentStepMeta = useMemo(() => {
-    if (stepKey === "mattress") {
+    if (stepKey === "size") {
       return {
         eyebrow: "Step 1",
-        title: "Mattress",
-        description: isDualComfort
-          ? "This pod's mattress is fixed. If you want different left and right comfort, set it here."
-          : "This pod's mattress is fixed. Use the results screen if you want to compare a different mattress.",
+        title: "Choose your size.",
+        description: "Choose the size you want to price and add.",
       };
     }
     if (stepKey === "base") {
@@ -798,42 +838,33 @@ export default function PodBuilder({
           : "Choose the base you want under this mattress.",
       };
     }
-    if (stepKey === "size") {
-      return {
-        eyebrow: "Step 3",
-        title: "Choose your size.",
-        description: "Choose the size you want to price and add.",
-      };
-    }
     return {
-      eyebrow: "Step 4",
-      title: "Review your setup.",
+      eyebrow: "Step 3",
+      title: "Review & add.",
       description: "Check the setup, then add it when you're ready.",
     };
   }, [stepKey, isDualComfort, showMotion]);
   const canProceed =
-    stepKey === "mattress"
-      ? !isDualComfort || Boolean(dcLeft && dcRight)
+    stepKey === "size"
+      ? Boolean(size)
       : stepKey === "base"
         ? Boolean(baseType) && (!showMotion || Boolean(motionType))
-        : stepKey === "size"
-      ? Boolean(size)
         : canAdd;
 
   useEffect(() => {
     if (!onPreviewChange) return;
 
     const preview = (() => {
-      if (stepKey === "mattress") {
+      if (stepKey === "size") {
         return {
-          title: mattressLabel,
-          caption: isDualComfort
-            ? "This pod's mattress is fixed, but you can set left and right comfort before you add it."
-            : "This pod's mattress is fixed. Compare another pod if you want a different mattress.",
+          title: size ? `${size} setup` : "Choose your size",
+          caption: size ? `Selected size: ${size}.` : "Choose a size to begin.",
           items: [
-            `Mattress: ${mattressLabel}`,
-            isDualComfort ? `Comfort: ${dcLeft || "Not selected"} / ${dcRight || "Not selected"}` : "",
-            `Location: ${podLabel}`,
+            size ? `Size: ${size}` : "Choose a size to begin.",
+            size ? subtitleForSize(size) : "",
+            supportsSplitMotion && size
+              ? `Available motion with ${size}: ${availableMotionLabel}.`
+              : "",
           ].filter(Boolean),
           nextAction: "Next: Choose your base",
         };
@@ -850,21 +881,6 @@ export default function PodBuilder({
             showMotion ? `Motion: ${selectedMotionLabel}` : "Motion: No Motion",
             size ? `Size: ${size}` : "",
             size && supportsSplitMotion ? `Available motion for ${size}: ${availableMotionLabel}.` : "",
-          ].filter(Boolean),
-          nextAction: "Next: Choose your size",
-        };
-      }
-
-      if (stepKey === "size") {
-        return {
-          title: size ? `${size} setup` : "Choose your size",
-          caption: size ? `Selected size: ${size}.` : "Choose a size to begin.",
-          items: [
-            size ? `Size: ${size}` : "Choose a size to begin.",
-            size ? subtitleForSize(size) : "",
-            supportsSplitMotion && size
-              ? `Available motion with ${size}: ${availableMotionLabel}.`
-              : "",
           ].filter(Boolean),
           nextAction: "Next: Review your setup",
         };
@@ -975,7 +991,7 @@ export default function PodBuilder({
     setMotionType(defaults.motionType);
     setDcLeft(defaults.dcLeft);
     setDcRight(defaults.dcRight);
-    setStepKey("mattress");
+    setStepKey("size");
     onCue?.("Your setup has been reset.", "tip");
   }, [defaults, onCue]);
 
@@ -1235,129 +1251,292 @@ export default function PodBuilder({
 
   return (
     <div className="w-full">
-      <div className="grid gap-2.5 lg:grid-cols-[minmax(226px,0.9fr)_minmax(250px,1.04fr)_252px] lg:items-start">
-        <div className="flex flex-col rounded-[24px] border border-white/80 bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]">
-          <div className="shrink-0">
-            <div className="text-[0.74rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
-              Build This Setup
+      <div>
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.02fr)_minmax(0,0.96fr)] xl:items-start">
+          <div
+            className={[
+              "rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+              stepKey === "size" ? "border-indigo-200" : "border-white/80",
+            ].join(" ")}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eef3ff] text-[0.82rem] font-black text-[#2f57e8]">
+                  1
+                </div>
+                <div>
+                  <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                    Choose Size
+                  </div>
+                  <div className="mt-0.5 text-[1.05rem] font-extrabold text-slate-900">
+                    {size || "Choose your size"}
+                  </div>
+                </div>
+              </div>
+              {sizeReady ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
             </div>
-            <div className="mt-1 text-[1.28rem] font-extrabold tracking-tight text-slate-900">
-              {currentStepMeta.title}
-            </div>
-            <div className="mt-1 text-[0.85rem] leading-5 text-slate-600">{currentStepMeta.description}</div>
-          </div>
 
-          <div className="mt-3 grid shrink-0 grid-cols-2 gap-2">
-            {steps.map((step, index) => (
-              <BuilderStepButton
-                key={step.key}
-                step={step}
-                index={index}
-                active={step.key === stepKey}
-                unlocked
-                onClick={() => setStepKey(step.key)}
-              />
-            ))}
-          </div>
-
-          <div className="mt-3 flex-1 pr-1">{renderCurrentStep()}</div>
-
-          <div className="mt-3 flex shrink-0 flex-wrap gap-2">
-            <Button
-              variant="outline"
-              onClick={goBack}
-              disabled={!canGoBack}
-              className="rounded-[16px] px-4 py-3 text-sm font-extrabold"
-            >
-              Back
-            </Button>
-            <Button
-              onClick={goNext}
-              disabled={!nextStep || !canProceed}
-              className="rounded-[16px] px-4 py-3 text-sm font-extrabold"
-            >
-              {nextStep ? `Next: ${nextStep.label}` : "Review your setup"}
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid auto-rows-fr gap-2.5">
-          <BuilderSelectionCard
-            step={1}
-            label="Mattress"
-            value={mattressLabel}
-            subtitle={
-              isDualComfort
-                ? `Comfort: ${dcLeft || "Not selected"} / ${dcRight || "Not selected"}`
-                : "Fixed to this pod"
-            }
-            image={mattressImage}
-            icon={BedDouble}
-            imageFit="cover"
-            onChange={onViewResults}
-          />
-          <BuilderSelectionCard
-            step={2}
-            label="Base"
-            value={selectedBaseLabel}
-            subtitle={showMotion ? `${selectedMotionLabel} motion` : subtitleForBase(baseType)}
-            image={selectedBaseImage}
-            icon={SlidersHorizontal}
-            onChange={() => setStepKey("base")}
-          />
-          <BuilderSelectionCard
-            step={3}
-            label="Size"
-            value={size || "Choose your size"}
-            subtitle={subtitleForSize(size)}
-            image=""
-            icon={Ruler}
-            onChange={() => setStepKey("size")}
-          />
-        </div>
-
-        <div className="flex flex-col rounded-[24px] border border-white/80 bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]">
-          <div className="text-[0.74rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
-            Pricing
-          </div>
-
-          <div className="mt-2.5 grid gap-2.5">
-            <BuilderMetricCard label="Estimated monthly" value={`${money(monthly)}/mo`} />
-            <BuilderMetricCard label="Estimated total" value={money(previewTotal)} />
-          </div>
-
-          <div className="mt-2.5 rounded-[20px] border border-slate-200 bg-slate-50 px-3.5 py-3 text-[0.84rem] text-slate-700">
-            <div className="font-extrabold text-slate-900">{podLabel}</div>
-            <div className="mt-1">
-              {showMotion ? selectedMotionLabel : "No Motion"} / {wantsBase ? selectedBaseLabel : "Mattress Only"}
+            <div className="mt-3 grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(96px,1fr))]">
+              {SIZE_OPTIONS.map((option) => (
+                <BuilderOptionButton
+                  key={option}
+                  title={option}
+                  subtitle=""
+                  active={size === option}
+                  compact
+                  onClick={() => {
+                    setStepKey("size");
+                    setSize(option);
+                  }}
+                />
+              ))}
             </div>
           </div>
 
-          <div className="mt-auto space-y-2.5 pt-3">
-            <Button
-              onClick={addToPlan}
-              disabled={!canAdd}
-              className="min-h-[56px] w-full rounded-[18px] px-5 text-[0.96rem] font-extrabold"
-            >
-              <span>{primaryCtaLabel}</span>
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+          <div
+            className={[
+              "rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+              stepKey === "base" ? "border-indigo-200" : "border-white/80",
+            ].join(" ")}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eef3ff] text-[0.82rem] font-black text-[#2f57e8]">
+                  2
+                </div>
+                <div>
+                  <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                    Choose Base
+                  </div>
+                  <div className="mt-0.5 text-[1.05rem] font-extrabold text-slate-900">
+                    {selectedBaseLabel}
+                  </div>
+                </div>
+              </div>
+              {baseReady ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
+            </div>
 
-            <Button
-              variant="outline"
-              onClick={viewCart}
-              className="min-h-[46px] w-full rounded-[16px] px-5 text-sm font-extrabold"
-            >
-              Open Cart
-            </Button>
+            <div className="mt-3 grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(132px,1fr))]">
+              {BASE_OPTIONS_UI.map((option) => (
+                <BuilderOptionButton
+                  key={option.value}
+                  title={option.value === "none" ? "Mattress Only" : option.label}
+                  subtitle=""
+                  active={baseType === option.value}
+                  compact
+                  onClick={() => {
+                    setStepKey("base");
+                    setBaseType(option.value);
+                  }}
+                />
+              ))}
+            </div>
 
-            <button
-              type="button"
-              onClick={resetBuild}
-              className="w-full text-center text-sm font-extrabold text-slate-500 underline-offset-4 hover:text-slate-800 hover:underline"
-            >
-              Start Over
-            </button>
+            {showMotion ? (
+              <div className="mt-3 rounded-[20px] border border-[#e2e9fb] bg-[#f8faff] px-3 py-2.5 shadow-sm">
+                <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  Motion
+                </div>
+                <div className="mt-2 grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(148px,1fr))]">
+                  {MOTION_TYPES_UI.map((option) => {
+                    const allowed = allowedMotion.includes(option.value);
+                    return (
+                      <BuilderOptionButton
+                        key={option.value}
+                        title={option.label}
+                        subtitle={allowed ? "" : "Unavailable"}
+                        active={motionType === option.value}
+                        disabled={!allowed}
+                        compact
+                        onClick={() => {
+                          if (!allowed) return;
+                          setStepKey("base");
+                          setMotionType(option.value);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 rounded-[18px] border border-slate-200 bg-slate-50 px-3 py-2.5 text-[0.82rem] font-semibold text-slate-700">
+                Choose Adjustable Base if you want motion options.
+              </div>
+            )}
+          </div>
+
+          <div
+            className={[
+              "rounded-[24px] border bg-white/96 p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+              stepKey === "review" ? "border-indigo-200" : "border-white/80",
+            ].join(" ")}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#eef3ff] text-[0.82rem] font-black text-[#2f57e8]">
+                  3
+                </div>
+                <div>
+                  <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                    Review & Add
+                  </div>
+                  <div className="mt-0.5 text-[1.05rem] font-extrabold text-slate-900">
+                    {podLabel}
+                  </div>
+                </div>
+              </div>
+              {canAdd ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
+            </div>
+
+            <div className="mt-3 rounded-[20px] border border-[#e2e9fb] bg-white px-3 py-2.5 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[16px] border border-[#e3eafc] bg-[#fbfcff]">
+                  <BuilderMediaPreview
+                    src={mattressImage}
+                    alt={mattressLabel}
+                    icon={BedDouble}
+                    className="h-full w-full"
+                    imgClassName="h-full w-full object-cover"
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                    Fixed Mattress
+                  </div>
+                  <div className="mt-0.5 text-[0.9rem] font-extrabold leading-tight text-slate-900">
+                    {mattressLabel}
+                  </div>
+                  <div className="mt-0.5 text-[0.75rem] leading-5 text-slate-600">
+                    Locked to {podLabel}. Compare another pod if you want a different mattress family.
+                  </div>
+                  {onViewResults ? (
+                    <button
+                      type="button"
+                      onClick={onViewResults}
+                      className="mt-1.5 inline-flex items-center gap-2 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
+                    >
+                      Compare other pods
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            {isDualComfort ? (
+              <div className="mt-3 rounded-[20px] border border-[#e2e9fb] bg-[#f8faff] px-3 py-2.5 shadow-sm">
+                <div className="text-[0.74rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  Comfort Sides
+                </div>
+                <div className="mt-2 grid gap-2 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <div className="text-[0.78rem] font-extrabold text-slate-700">Left Side</div>
+                    {DUAL_COMFORT_OPTIONS.map((option) => (
+                      <BuilderOptionButton
+                        key={`left-${option}`}
+                        title={option}
+                        active={dcLeft === option}
+                        compact
+                        onClick={() => {
+                          setStepKey("review");
+                          setDcLeft(option);
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-[0.78rem] font-extrabold text-slate-700">Right Side</div>
+                    {DUAL_COMFORT_OPTIONS.map((option) => (
+                      <BuilderOptionButton
+                        key={`right-${option}`}
+                        title={option}
+                        active={dcRight === option}
+                        compact
+                        onClick={() => {
+                          setStepKey("review");
+                          setDcRight(option);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            <div className="mt-3 rounded-[18px] border border-[#dbe5ff] bg-white/96 px-3 py-2.5 shadow-sm">
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                <div>
+                  <div className="text-[0.66rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Size
+                  </div>
+                  <div className="mt-0.5 text-[0.88rem] font-extrabold text-slate-900">
+                    {size || "Choose"}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[0.66rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Base
+                  </div>
+                  <div className="mt-0.5 text-[0.88rem] font-extrabold text-slate-900">
+                    {selectedBaseLabel}
+                  </div>
+                  <div className="text-[0.72rem] text-slate-600">
+                    {showMotion ? `${selectedMotionLabel} motion` : "No Motion"}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[0.66rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Monthly
+                  </div>
+                  <div className="mt-0.5 text-[0.88rem] font-extrabold text-slate-900">
+                    {money(monthly)}/mo
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[0.66rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Total
+                  </div>
+                  <div className="mt-0.5 text-[0.88rem] font-extrabold text-slate-900">
+                    {money(previewTotal)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 space-y-2">
+              <Button
+                onClick={() => {
+                  setStepKey("review");
+                  addToPlan();
+                }}
+                disabled={!canAdd}
+                className="min-h-[42px] w-full rounded-[18px] px-5 text-[0.9rem] font-extrabold"
+              >
+                <span>{primaryCtaLabel}</span>
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={viewCart}
+                  className="text-[0.76rem] font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
+                >
+                  Open Cart
+                </button>
+
+                <button
+                  type="button"
+                  onClick={resetBuild}
+                  className="text-[0.76rem] font-extrabold uppercase tracking-[0.14em] text-slate-500"
+                >
+                  Start Over
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
