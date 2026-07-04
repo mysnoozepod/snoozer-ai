@@ -1,10 +1,24 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { ClipboardList, BedDouble, Layers3 } from "lucide-react";
+import {
+  ArrowRight,
+  BedDouble,
+  ClipboardList,
+  Layers3,
+  ShieldCheck,
+} from "lucide-react";
+
 import { getAssessment } from "@/lib/api";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
+import {
+  ShowroomBrandMark,
+  ShowroomEyebrow,
+  ShowroomFrame,
+  ShowroomPageShell,
+  ShowroomPanel,
+  ShowroomTopRail,
+} from "@/components/showroom/ShowroomPrimitives";
 
 function safeGet(key) {
   try {
@@ -67,10 +81,10 @@ function StepCard({ step, title, body, detail, icon: Icon, active = false }) {
   return (
     <motion.div
       className={[
-        "relative rounded-[28px] border bg-white p-6 shadow-sm transition-all duration-300 md:p-7",
+        "relative rounded-[22px] border bg-white p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)] transition-all duration-300 md:p-3.5",
         active
           ? "border-[#1A66D2] shadow-lg ring-2 ring-[#1A66D2]/10"
-          : "border-gray-200",
+          : "border-white/70",
       ].join(" ")}
       animate={{
         y: active ? -4 : 0,
@@ -83,26 +97,26 @@ function StepCard({ step, title, body, detail, icon: Icon, active = false }) {
           <div className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#1A66D2]">
             Step {step}
           </div>
-          <div className="mt-3 text-2xl font-extrabold leading-tight text-gray-900 md:text-3xl">
+          <div className="mt-1.5 text-[1.04rem] font-extrabold leading-tight text-gray-900 md:text-[1.16rem]">
             {title}
           </div>
         </div>
 
         <div
           className={[
-            "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-colors duration-300",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-colors duration-300",
             active ? "bg-[#EAF2FF] text-[#1A66D2]" : "bg-gray-100 text-gray-600",
           ].join(" ")}
         >
-          <Icon className="h-6 w-6" />
+          <Icon className="h-4 w-4" />
         </div>
       </div>
 
-      <div className="mt-4 text-base leading-relaxed text-gray-700 md:text-lg">
+      <div className="mt-2 text-[0.86rem] leading-5 text-gray-700 md:text-[0.9rem]">
         {body}
       </div>
 
-      <div className="mt-3 text-sm leading-relaxed text-gray-500 md:text-base">
+      <div className="mt-1.5 text-[11px] leading-4 text-gray-500 md:text-[0.78rem]">
         {detail}
       </div>
     </motion.div>
@@ -216,17 +230,17 @@ export default function WhatToExpect() {
         {
           step: 0,
           title: "Your Snooze Assessment is already on file.",
-          body: "You can move into your Snooze Test now, or retake your assessment if you want a fresh match.",
+          body: "You can move into your Snooze Test now or retake the assessment for a fresh match.",
         },
         {
           step: 1,
           title: "Next comes your Snooze Test.",
-          body: "Try the recommended pods first, so you can feel the differences for yourself.",
+          body: "Start with your recommended pods so the feel differences stay obvious.",
         },
         {
           step: 2,
           title: "Then complete your sleep setup.",
-          body: "Choose the mattress, base, and comfort options that feel right when you are ready.",
+          body: "Choose the mattress, base, and comfort options that feel right.",
         },
       ];
     }
@@ -235,17 +249,17 @@ export default function WhatToExpect() {
       {
         step: 0,
         title: "Start with your Snooze Assessment.",
-        body: "Answer a few quick questions so Snoozer can learn your sleep needs and comfort preferences.",
+        body: "Answer a few quick questions so Snoozer can learn how you sleep.",
       },
       {
         step: 1,
         title: "Then move into your Snooze Test.",
-        body: "Try the recommended pods first, so you can feel the differences for yourself.",
+        body: "Start with your recommended pods so the feel differences stay obvious.",
       },
       {
         step: 2,
         title: "Finish by completing your sleep setup.",
-        body: "Choose the mattress, base, and comfort options that feel right when you are ready.",
+        body: "Choose the mattress, base, and comfort options that feel right.",
       },
     ];
   }, [assessmentComplete]);
@@ -348,44 +362,31 @@ export default function WhatToExpect() {
   };
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-[#D0D6E4] to-white px-4 py-6 md:py-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-2xl">
-          <div className="p-6 md:p-8">
-            <motion.div
-              className="rounded-[28px] border border-indigo-100 bg-gradient-to-r from-[#EEF4FF] to-white p-5 shadow-sm md:p-6"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-8">
-                <div className="flex min-w-0 items-start gap-4 md:gap-5">
-                  <div className="relative shrink-0">
-                    <div className="absolute inset-0 rounded-full bg-[#1A66D2] opacity-20 blur-2xl" />
-                    <img
-                      src="/snoozer-avatar.png"
-                      alt="Snoozer"
-                      className="relative h-20 w-20 rounded-full object-cover shadow-xl md:h-24 md:w-24"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
+    <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
+      <ShowroomTopRail className="justify-center pt-4 md:pt-5">
+        <ShowroomBrandMark imageClassName="w-[190px] md:w-[220px]" />
+      </ShowroomTopRail>
 
-                  <div className="min-w-0">
-                    <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-[#2A2B2A] md:text-4xl">
-                      What To Expect
-                    </h1>
-
-                    <p className="mt-2 max-w-3xl text-base text-gray-700 md:text-lg">
-                      Snoozer will guide you through a simple three-step path:
-                      Snooze Assessment, Snooze Test, and completing your sleep
-                      setup.
-                    </p>
-                  </div>
-                </div>
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4 pt-2 md:px-6">
+        <ShowroomFrame className="shrink-0 p-3.5 md:p-4">
+          <motion.div
+            className="grid gap-3 lg:grid-cols-[minmax(0,1.08fr)_312px]"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
+            <div className="min-w-0">
+              <div className="min-w-0">
+                <ShowroomEyebrow>What To Expect</ShowroomEyebrow>
+                <h1 className="mt-2 text-[2.45rem] font-black tracking-tight text-slate-900 md:text-[3rem] xl:text-[3.4rem]">
+                  Your guided showroom path.
+                </h1>
+                <p className="mt-2.5 max-w-3xl text-[0.96rem] leading-6 text-slate-700 md:text-[1rem]">
+                  Start with your match, test your top pods, then build the setup that feels right.
+                </p>
               </div>
 
-              <div className="mt-5 rounded-[24px] border border-white/80 bg-white/80 p-4 shadow-sm md:p-5">
+              <div className="mt-3 rounded-[24px] border border-white/80 bg-[linear-gradient(135deg,rgba(236,243,255,0.92),rgba(255,255,255,0.98))] p-3.5 shadow-sm">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeStep}
@@ -397,120 +398,115 @@ export default function WhatToExpect() {
                     <div className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#1A66D2]">
                       Guided by Snoozer
                     </div>
-
-                    <div className="mt-2 text-xl font-extrabold leading-tight text-gray-900 md:text-2xl">
+                    <div className="mt-1.5 text-[1.3rem] font-extrabold leading-tight text-slate-900 md:text-[1.54rem]">
                       {captionPhases[activeStep]?.title}
                     </div>
-
-                    <div className="mt-2 text-sm leading-relaxed text-gray-600 md:text-base">
+                    <div className="mt-1.5 max-w-2xl text-[0.9rem] leading-5 text-slate-600 md:text-[0.94rem]">
                       {captionPhases[activeStep]?.body}
                     </div>
                   </motion.div>
                 </AnimatePresence>
 
-                <div className="mt-4 flex items-center gap-2">
+                <div className="mt-3 flex items-center gap-2">
                   {captionPhases.map((phase, idx) => (
                     <div
                       key={`${phase.title}-${idx}`}
                       className={[
                         "h-2 rounded-full transition-all duration-300",
-                        idx === activeStep ? "w-8 bg-[#1A66D2]" : "w-2 bg-[#B9D0F5]",
+                        idx === activeStep ? "w-10 bg-[#1A66D2]" : "w-3 bg-[#B9D0F5]",
                       ].join(" ")}
                     />
                   ))}
                 </div>
               </div>
-            </motion.div>
 
-            <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
-              <StepCard
-                step="1"
-                title="Snooze Assessment"
-                body="A few quick questions to learn how you sleep and what feels most comfortable."
-                detail="This helps Snoozer understand your sleep needs, comfort preferences, and the type of setup that may fit you best."
-                icon={ClipboardList}
-                active={activeStep === 0}
-              />
-
-              <StepCard
-                step="2"
-                title="Snooze Test"
-                body="Try the recommended pods first, so you can feel the differences for yourself."
-                detail="You'll start with the pod matches Snoozer recommends, so you're not guessing from a wall of mattresses."
-                icon={BedDouble}
-                active={activeStep === 1}
-              />
-
-              <StepCard
-                step="3"
-                title="Complete Your Sleep Setup"
-                body="Choose the mattress, base, and comfort options that feel right to you."
-                detail="Once you know what you like, you can finish a complete sleep setup that fits your comfort and budget."
-                icon={Layers3}
-                active={activeStep === 2}
-              />
+              <div className="mt-3 grid grid-cols-1 gap-2.5 lg:grid-cols-3">
+                <StepCard
+                  step="1"
+                  title="Assessment"
+                  body="Answer a few sleep questions."
+                  detail="This shapes your mattress, base, and motion path."
+                  icon={ClipboardList}
+                  active={activeStep === 0}
+                />
+                <StepCard
+                  step="2"
+                  title="Test Recommended Pods"
+                  body="Start with your best match, then compare."
+                  detail="Test one pod at a time while the feel stays fresh."
+                  icon={BedDouble}
+                  active={activeStep === 1}
+                />
+                <StepCard
+                  step="3"
+                  title="Build Your Sleep Setup"
+                  body="Choose your mattress, base, and comfort options."
+                  detail="Once you know your feel, the final setup gets easier."
+                  icon={Layers3}
+                  active={activeStep === 2}
+                />
+              </div>
             </div>
 
-            <div className="mt-8 rounded-[28px] border border-gray-200 bg-[#F8FBFF] p-5 shadow-sm md:p-6">
-              <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-                <div className="max-w-2xl">
-                  <div className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#1A66D2]">
-                    Next Step
+            <div className="space-y-2.5">
+              <ShowroomPanel className="p-4 shadow-[0_20px_52px_rgba(47,72,137,0.10)]">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">
+                    <ShieldCheck className="h-5 w-5" />
                   </div>
-
-                  <div className="mt-2 text-2xl font-extrabold tracking-tight text-gray-900">
-                    {assessmentComplete
-                      ? "Your Snooze Assessment is already complete."
-                      : "Start with your Snooze Assessment."}
-                  </div>
-
-                  <div className="mt-2 text-base leading-relaxed text-gray-600">
-                    {assessmentComplete
-                      ? "Snoozer already has enough information to take you to your recommended pods. You can also retake your Snooze Assessment if you want a fresh recommendation."
-                      : "This is the fastest way for Snoozer to guide you toward the sleep setup that fits you best."}
+                  <div>
+                    <div className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#1A66D2]">
+                      Next Step
+                    </div>
+                    <div className="mt-1.5 text-[1.25rem] font-black tracking-tight text-slate-900">
+                      {assessmentComplete
+                        ? "Your assessment is already complete."
+                        : "Start with your Snooze Assessment."}
+                    </div>
+                    <p className="mt-2 text-[0.9rem] leading-5 text-slate-600">
+                      {assessmentComplete
+                        ? "You can go straight to your recommended pods, or retake the assessment for a fresh match."
+                        : "This is the fastest way to turn your showroom visit into clear pod recommendations."}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex w-full flex-col gap-3 md:w-[340px]">
+                <div className="mt-3 space-y-2.5">
                   {ctaReady ? (
                     <>
-                      <Button
+                      <button
                         type="button"
                         onClick={primaryAction}
                         disabled={checking}
-                        className="w-full rounded-2xl bg-[#1A66D2] py-6 text-base font-semibold text-white hover:bg-[#1550A0]"
+                        className="inline-flex w-full items-center justify-center gap-3 rounded-[18px] bg-[#1A66D2] px-6 py-3.5 text-[0.96rem] font-black text-white shadow-[0_22px_46px_rgba(26,102,210,0.24)] transition hover:bg-[#1550A0] disabled:cursor-not-allowed disabled:opacity-70"
                       >
                         {primaryLabel}
-                      </Button>
+                        <ArrowRight className="h-5 w-5" />
+                      </button>
 
                       {assessmentComplete ? (
-                        <Button
+                        <button
                           type="button"
-                          variant="outline"
                           onClick={secondaryAction}
                           disabled={checking}
-                          className="w-full rounded-2xl border-[#B7CBEF] py-6 text-base font-semibold text-[#335C97] hover:bg-[#EEF4FF]"
+                          className="w-full rounded-[18px] border border-[#B7CBEF] bg-white px-6 py-3 text-sm font-black text-[#335C97] transition hover:bg-[#EEF4FF]"
                         >
                           Retake Snooze Assessment
-                        </Button>
+                        </button>
                       ) : null}
                     </>
                   ) : (
-                    <Button
-                      type="button"
-                      disabled
-                      className="w-full rounded-2xl bg-[#1A66D2] py-6 text-base font-semibold text-white"
-                    >
+                    <div className="rounded-[18px] bg-[#1A66D2] px-6 py-3.5 text-center text-base font-black text-white">
                       Preparing Your Next Step
-                    </Button>
+                    </div>
                   )}
                 </div>
-              </div>
+              </ShowroomPanel>
             </div>
-          </div>
+          </motion.div>
 
           {currentPageVoiceState.blocked || currentPageVoiceState.error ? (
-            <div className="border-t border-gray-200 bg-white px-6 py-4 md:px-8">
+            <div className="mt-5 border-t border-slate-200 pt-4">
               <div className="flex flex-wrap items-center justify-end gap-2 text-sm text-gray-600">
                 {currentPageVoiceState.blocked ? (
                   <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
@@ -526,8 +522,8 @@ export default function WhatToExpect() {
               </div>
             </div>
           ) : null}
-        </div>
+        </ShowroomFrame>
       </div>
-    </section>
+    </ShowroomPageShell>
   );
 }

@@ -3584,14 +3584,14 @@ export default function Pod() {
       return (
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="grid min-h-0 gap-3 xl:flex-1 xl:grid-cols-3">
-            <ShowroomPanel className="flex min-h-0 flex-col p-4 md:p-4.5" tone="frost">
+            <ShowroomPanel className="flex flex-col p-4 md:p-4.5" tone="frost">
               <div className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
                 Specs
               </div>
               <div className="mt-2 text-[1.2rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.3rem]">
                 What's Inside
               </div>
-              <div className="mt-3 min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1">
+              <div className="mt-3 flex-1 space-y-2.5 pr-0.5">
                 {learnSpecsItems.map((item) => (
                   <div key={item} className="flex gap-2 text-[0.92rem] leading-6 text-slate-700">
                     <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#2f57e8]" />
@@ -3601,7 +3601,7 @@ export default function Pod() {
               </div>
             </ShowroomPanel>
 
-            <ShowroomPanel className="flex min-h-0 flex-col p-4 md:p-4.5" tone="frost">
+            <ShowroomPanel className="flex flex-col p-4 md:p-4.5" tone="frost">
               <div className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
                 Pricing
               </div>
@@ -3609,7 +3609,7 @@ export default function Pod() {
                 Mattress Only
               </div>
               {learnPricingRows.length ? (
-                <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1">
+                <div className="mt-3 flex-1 pr-0.5">
                   <div className="grid gap-2">
                     {learnPricingRows.map((row) => (
                       <div
@@ -3629,14 +3629,14 @@ export default function Pod() {
               )}
             </ShowroomPanel>
 
-            <ShowroomPanel className="flex min-h-0 flex-col p-4 md:p-4.5" tone="frost">
+            <ShowroomPanel className="flex flex-col p-4 md:p-4.5" tone="frost">
               <div className="text-[0.75rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
                 Why It Fits You
               </div>
               <div className="mt-2 text-[1.2rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.3rem]">
                 Why this mattress may fit
               </div>
-              <div className="mt-3 min-h-0 flex-1 space-y-2.5 overflow-y-auto pr-1">
+              <div className="mt-3 flex-1 space-y-2.5 pr-0.5">
                 {learnFitItems.map((item) => (
                   <div key={item} className="flex gap-2 text-[0.92rem] leading-6 text-slate-700">
                     <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#2f57e8]" />
@@ -3906,7 +3906,7 @@ export default function Pod() {
 
   const podHomeContent = useMemo(
     () => (
-      <div className="flex h-full min-h-0 flex-col gap-4">
+      <div className="flex h-full min-h-0 flex-col gap-5">
         <ShowroomPanel className="shrink-0 overflow-hidden p-0" tone="soft">
           <PodRouteHeroHeader
             eyebrow=""
@@ -3973,7 +3973,7 @@ export default function Pod() {
   }, [loading, activePod, isDefaultPodDashboard, podHomeContent, stageContent]);
 
   return (
-    <ShowroomPageShell className="flex flex-col overflow-hidden pb-0">
+    <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
       <div className="mx-auto w-full max-w-[1380px] shrink-0 px-4 pt-1 md:px-6 md:pt-2">
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[28px] border border-white/80 bg-white/94 px-4 py-2 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-2.5">
           <button
@@ -4013,13 +4013,13 @@ export default function Pod() {
         </div>
       </div>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-4 pb-0 pt-1.5 md:px-6 md:pt-2">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-4 pb-1 pt-1.5 md:px-6 md:pb-2 md:pt-2">
         {isDefaultPodDashboard ? (
           <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-1.5 md:p-2">
             {podHomeContent}
           </ShowroomFrame>
         ) : (
-          <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-1.5 md:p-2" : "p-2 md:p-2.5"].join(" ")}>
+            <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-1.5 md:p-2" : "p-2 md:p-2.5"].join(" ")}>
             <ShowroomPanel className="shrink-0 overflow-hidden p-0" tone="soft">
               <PodRouteHeroHeader
                 eyebrow=""
@@ -4037,8 +4037,8 @@ export default function Pod() {
             <div
               ref={stagePanelRef}
               className={[
-                "mt-2 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-1 pb-1",
-                isRestTaskStage ? "" : "md:mt-2.5",
+                "mt-3 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-1.5 pb-3 md:pr-2 md:pb-4",
+                isRestTaskStage ? "" : "md:mt-3.5",
               ].join(" ")}
             >
               {activePanelContent}

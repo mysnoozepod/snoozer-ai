@@ -926,7 +926,7 @@ export default function Results() {
   const leadImageStatus = leadPod ? getImageStatus(leadPod) : "idle";
 
   return (
-    <ShowroomPageShell className="flex flex-col overflow-hidden pb-0">
+    <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
       <ShowroomTopRail className="items-center pt-3 md:pt-4">
         <div className="hidden w-[160px] md:block" />
         <ShowroomBrandMark imageClassName="w-[190px] md:w-[220px]" />
@@ -940,14 +940,14 @@ export default function Results() {
         />
       </ShowroomTopRail>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-4 pb-3 pt-1 md:px-6 md:pt-2">
-        <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-hidden p-2 md:p-2.5">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-3 pt-1 md:px-6 md:pt-2">
+        <ShowroomFrame className="flex shrink-0 flex-col p-2 md:p-2.5">
           {loading ? (
             <div className="rounded-[28px] border border-white/80 bg-white/92 px-6 py-10 text-center text-slate-600 shadow-sm">
               Preparing your pod matches
             </div>
           ) : rankedPods.length ? (
-            <div className="flex min-h-0 flex-1 flex-col gap-3">
+            <div className="flex shrink-0 flex-col gap-3">
               <motion.div
                 className="shrink-0"
                 initial={{ opacity: 0, y: 10 }}
@@ -1048,7 +1048,7 @@ export default function Results() {
                 </ShowroomPanel>
               </motion.div>
 
-              <ShowroomPanel className="min-h-0 flex-1 overflow-hidden p-3 md:p-3.5" tone="frost">
+              <ShowroomPanel className="p-3 md:p-3.5" tone="frost">
                 <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
                   <div>
                     <ShowroomEyebrow className="text-[0.7rem]">All Matches</ShowroomEyebrow>
@@ -1075,7 +1075,7 @@ export default function Results() {
                   </button>
                 </div>
 
-                <div className="mt-3 grid min-h-0 gap-2 sm:grid-cols-2 xl:grid-cols-5">
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
                   {allMatches.map((match) => (
                     <CompactMatchCard
                       key={`${match.podId}-${match.index}`}
