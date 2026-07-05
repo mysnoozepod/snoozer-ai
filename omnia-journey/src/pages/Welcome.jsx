@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, CircleHelp, Headphones, LockKeyhole, ShieldCheck } from "lucide-react";
+import { ArrowRight, CircleHelp, LockKeyhole, ShieldCheck } from "lucide-react";
 
 import { resolveApiBase } from "@/lib/apiBase";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import {
   ShowroomBrandMark,
-  ShowroomEyebrow,
   ShowroomFrame,
   ShowroomInlineAction,
   ShowroomPageShell,
@@ -183,9 +182,7 @@ export default function Welcome() {
             </ShowroomPanel>
 
             <div className="min-w-0">
-              <ShowroomEyebrow>Welcome to MySnoozePod</ShowroomEyebrow>
-
-              <h1 className="mt-2 max-w-[760px] text-[2.8rem] font-black leading-[0.9] tracking-tight text-slate-900 md:text-[3.75rem] xl:text-[4.45rem]">
+              <h1 className="max-w-[760px] text-[2.8rem] font-black leading-[0.9] tracking-tight text-slate-900 md:text-[3.75rem] xl:text-[4.45rem]">
                 Let's start your Snooze Session.
               </h1>
 
@@ -243,15 +240,6 @@ export default function Welcome() {
                     icon={CircleHelp}
                     label="Forgot your Snooze Code?"
                     description="Open Ask Snoozer for help."
-                    onClick={() => {
-                      noteUserInteraction?.();
-                      navigate("/ask-snoozer", { state: { from: "/welcome" } });
-                    }}
-                  />
-                  <ShowroomInlineAction
-                    icon={Headphones}
-                    label="Need help checking in?"
-                    description="Get showroom help without losing your place."
                     onClick={() => {
                       noteUserInteraction?.();
                       navigate("/ask-snoozer", { state: { from: "/welcome" } });
