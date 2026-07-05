@@ -1689,7 +1689,7 @@ function PodRouteHeroHeader({
           src={mattressImage}
           alt={mattressTitle}
           className="flex h-full min-h-[114px] w-full items-center justify-end px-0 py-0 md:min-h-0"
-          imgClassName="h-full w-full max-h-full scale-[1.14] object-contain object-center md:scale-[1.32]"
+          imgClassName="h-full w-full max-h-full scale-[1.08] object-contain object-center md:scale-[1.2] lg:scale-[1.24]"
         />
       </div>
     </div>
@@ -4113,7 +4113,7 @@ export default function Pod() {
               ref={stagePanelRef}
               className={[
                 "mt-1.5 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-1 pb-1 md:pr-1.25 md:pb-1.5",
-                isRestTaskStage ? "" : openStage === "details" ? "mt-2.5 md:mt-3" : "md:mt-2",
+                isRestTaskStage ? "" : openStage === "details" || openStage === "build" ? "mt-2.5 md:mt-3" : "md:mt-2",
               ].join(" ")}
             >
               {activePanelContent}

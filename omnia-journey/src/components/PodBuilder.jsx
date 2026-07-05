@@ -112,11 +112,22 @@ function safeVariantId(variant) {
   return id;
 }
 
-function allowedMotionTypesForSelection(size, supportsSplitMotion) {
-  if (!supportsSplitMotion) return ["standard"];
-  if (size === "King") return ["standard", "half_split", "full_split"];
-  if (size === "Queen") return ["standard", "half_split"];
-  return ["standard"];
+function motionAvailabilityForSelection(size, isDualComfort) {
+  const isQueen = size === "Queen";
+  const isKing = size === "King";
+
+  return {
+    standard: true,
+    half_split: Boolean(isDualComfort && (isQueen || isKing)),
+    full_split: Boolean(isKing),
+  };
+}
+
+function allowedMotionTypesForSelection(size, isDualComfort) {
+  const availability = motionAvailabilityForSelection(size, isDualComfort);
+  return Object.entries(availability)
+    .filter(([, allowed]) => allowed)
+    .map(([motionType]) => motionType);
 }
 
 function labelFor(list, value, fallback = "—") {
@@ -299,7 +310,6 @@ function resolveMotionSelection(candidate, allowedMotion) {
 
   if (!normalized) return allowed[0] || "standard";
   if (allowed.includes(normalized)) return normalized;
-  if (normalized === "full_split" && allowed.includes("half_split")) return "half_split";
   return allowed[0] || "standard";
 }
 
@@ -313,7 +323,7 @@ export function buildDefaultSelections({ assessment, pod, supportsSplitMotion, i
 
   const size = sizeFromAssessment || normalizeSizeChoice(pod?.displayedIn?.size) || "Queen";
   const baseType = baseFromAssessment || inferBaseTypeFromPod(pod) || "none";
-  const allowedMotion = allowedMotionTypesForSelection(size, supportsSplitMotion);
+  const allowedMotion = allowedMotionTypesForSelection(size, isDualComfort);
   const motionFallback = inferMotionTypeFromPod(pod) || "standard";
   const motionType =
     baseType === "adjustable"
@@ -353,7 +363,7 @@ function sanitizeSelections(savedBuild, defaults, supportsSplitMotion, isDualCom
     defaults.sources?.baseType === "assessment"
       ? defaults.baseType
       : normalizeBaseTypeChoice(savedBuild?.baseType) || defaults.baseType;
-  const allowedMotion = allowedMotionTypesForSelection(size, supportsSplitMotion);
+  const allowedMotion = allowedMotionTypesForSelection(size, isDualComfort);
   const motionType =
     baseType === "adjustable"
       ? resolveMotionSelection(
@@ -518,10 +528,16 @@ function titleForMotion(option) {
   }
 }
 
-function disabledReasonForMotion(option, size, supportsSplitMotion) {
-  if (!supportsSplitMotion) return "Needs split-capable mattress.";
-  if (option === "full_split") return "King only.";
-  if (option === "half_split") return "Queen or King only.";
+function disabledReasonForMotion(option, size, isDualComfort) {
+  if (option === "half_split") {
+    return 'Available only with 12" Dual Comfort in Queen or King.';
+  }
+  if (option === "full_split") {
+    return "Available with King size only.";
+  }
+  if (!isDualComfort && option === "standard") {
+    return "Available when Adjustable Base is selected.";
+  }
   return `Unavailable with ${size || "this size"}.`;
 }
 
@@ -749,9 +765,13 @@ export default function PodBuilder({
   });
   const appliedRequestedStepRef = useRef(requestedNormalizedStepKey || "size");
 
+  const motionAvailability = useMemo(
+    () => motionAvailabilityForSelection(size, isDualComfort),
+    [size, isDualComfort]
+  );
   const allowedMotion = useMemo(
-    () => allowedMotionTypesForSelection(size, supportsSplitMotion),
-    [size, supportsSplitMotion]
+    () => allowedMotionTypesForSelection(size, isDualComfort),
+    [size, isDualComfort]
   );
 
   useEffect(() => {
@@ -836,12 +856,15 @@ export default function PodBuilder({
   const mattressImage = pickFeaturedImage(mattressProduct);
   const selectedBaseImage = pickFeaturedImage(baseProduct);
   const canAdd = Boolean(mattressMerchId) && (!wantsBase || Boolean(baseMerchId)) && (!isDualComfort || Boolean(dcLeft && dcRight));
+  const reviewSummaryGridClassName = showMotion
+    ? "grid gap-1.25 sm:grid-cols-2 xl:grid-cols-5"
+    : "grid gap-1.25 sm:grid-cols-2 xl:grid-cols-4";
   const selectionSummary = useMemo(
     () => [
       `Mattress: ${mattressLabel}`,
       `Base: ${selectedBaseLabel}`,
       `Size: ${size || "Not selected"}`,
-      showMotion ? `Motion: ${selectedMotionLabel}` : "Motion: No Motion",
+      showMotion ? `Motion: ${selectedMotionLabel}` : "",
       isDualComfort ? `Comfort: ${dcLeft || "Not selected"} / ${dcRight || "Not selected"}` : "",
     ].filter(Boolean),
     [mattressLabel, selectedBaseLabel, size, showMotion, selectedMotionLabel, isDualComfort, dcLeft, dcRight]
@@ -889,8 +912,8 @@ export default function PodBuilder({
           items: [
             size ? `Size: ${size}` : "Choose a size to begin.",
             size ? subtitleForSize(size) : "",
-            supportsSplitMotion && size
-              ? `Available motion with ${size}: ${availableMotionLabel}.`
+            size && allowedMotion.length
+              ? `Adjustable Base unlocks: ${availableMotionLabel}.`
               : "",
           ].filter(Boolean),
           nextAction: "Next: Choose your base",
@@ -905,9 +928,9 @@ export default function PodBuilder({
             : "Mattress only is selected right now.",
           items: [
             `Base: ${selectedBaseLabel}`,
-            showMotion ? `Motion: ${selectedMotionLabel}` : "Motion: No Motion",
+            showMotion ? `Motion: ${selectedMotionLabel}` : "",
             size ? `Size: ${size}` : "",
-            size && supportsSplitMotion ? `Available motion for ${size}: ${availableMotionLabel}.` : "",
+            size && showMotion ? `Available motion for ${size}: ${availableMotionLabel}.` : "",
           ].filter(Boolean),
           nextAction: "Next: Review your setup",
         };
@@ -930,8 +953,8 @@ export default function PodBuilder({
     onPreviewChange,
     stepKey,
     size,
-    supportsSplitMotion,
     availableMotionLabel,
+    allowedMotion.length,
     selectedBaseLabel,
     wantsBase,
     showMotion,
@@ -1206,7 +1229,7 @@ export default function PodBuilder({
 
               <div className="mt-3 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
                 {MOTION_TYPES_UI.map((option) => {
-                  const allowed = allowedMotion.includes(option.value);
+                  const allowed = Boolean(motionAvailability[option.value]);
                   return (
                     <ChoiceCard
                       key={option.value}
@@ -1214,7 +1237,7 @@ export default function PodBuilder({
                       subtitle={
                         allowed
                           ? subtitleForMotion(option.value)
-                          : disabledReasonForMotion(option.value, size, supportsSplitMotion)
+                          : disabledReasonForMotion(option.value, size, isDualComfort)
                       }
                       active={motionType === option.value}
                       disabled={!allowed}
@@ -1283,10 +1306,10 @@ export default function PodBuilder({
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col">
       <div className="min-h-0 flex-1">
-          <div className="grid min-h-0 gap-2 xl:h-full xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.02fr)_minmax(0,0.96fr)] xl:items-start">
+          <div className="grid min-h-0 gap-2.25 xl:h-full xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.02fr)_minmax(0,0.96fr)] xl:items-stretch">
             <div
               className={[
-                "flex min-h-0 flex-col rounded-[22px] border bg-white/96 p-2 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+                "flex h-full min-h-0 flex-col rounded-[22px] border bg-white/96 p-2.25 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
                 stepKey === "size" ? "border-indigo-200" : "border-white/80",
               ].join(" ")}
             >
@@ -1307,7 +1330,7 @@ export default function PodBuilder({
               {sizeReady ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
             </div>
 
-            <div className="mt-2 grid gap-1.25 [grid-template-columns:repeat(auto-fit,minmax(92px,1fr))]">
+            <div className="mt-1.75 grid gap-1.25 [grid-template-columns:repeat(auto-fit,minmax(98px,1fr))]">
               {SIZE_OPTIONS.map((option) => (
                 <BuilderOptionButton
                   key={option}
@@ -1326,7 +1349,7 @@ export default function PodBuilder({
 
             <div
               className={[
-                "flex min-h-0 flex-col rounded-[22px] border bg-white/96 p-2 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+                "flex h-full min-h-0 flex-col rounded-[22px] border bg-white/96 p-2.25 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
                 stepKey === "base" ? "border-indigo-200" : "border-white/80",
               ].join(" ")}
             >
@@ -1347,7 +1370,7 @@ export default function PodBuilder({
               {baseReady ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
             </div>
 
-            <div className="mt-2 grid gap-1.25 [grid-template-columns:repeat(auto-fit,minmax(122px,1fr))]">
+            <div className="mt-1.75 grid gap-1.25 [grid-template-columns:repeat(auto-fit,minmax(128px,1fr))]">
               {BASE_OPTIONS_UI.map((option) => (
                 <BuilderOptionButton
                   key={option.value}
@@ -1364,13 +1387,16 @@ export default function PodBuilder({
             </div>
 
             {showMotion ? (
-              <div className="mt-2 rounded-[18px] border border-[#e2e9fb] bg-[#f8faff] px-2.25 py-2 shadow-sm">
+              <div className="mt-1.75 rounded-[18px] border border-[#e2e9fb] bg-[#f8faff] px-2.5 py-2.25 shadow-sm">
                 <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                  Motion
+                  Motion Options
+                </div>
+                <div className="mt-1 text-[0.7rem] font-medium leading-[1rem] text-slate-600">
+                  Choose the motion setup that fits this mattress, size, and adjustable base.
                 </div>
                 <div className="mt-1.5 grid gap-1.25 sm:grid-cols-2 xl:grid-cols-3">
                   {MOTION_TYPES_UI.map((option) => {
-                    const allowed = allowedMotion.includes(option.value);
+                    const allowed = Boolean(motionAvailability[option.value]);
                     return (
                       <BuilderOptionButton
                         key={option.value}
@@ -1378,11 +1404,10 @@ export default function PodBuilder({
                         subtitle={
                           allowed
                             ? subtitleForMotion(option.value)
-                            : disabledReasonForMotion(option.value, size, supportsSplitMotion)
+                            : disabledReasonForMotion(option.value, size, isDualComfort)
                         }
                         active={motionType === option.value}
                         disabled={!allowed}
-                        compact
                         onClick={() => {
                           if (!allowed) return;
                           setStepKey("base");
@@ -1402,7 +1427,7 @@ export default function PodBuilder({
 
           <div
             className={[
-              "flex min-h-0 flex-col rounded-[22px] border bg-white/96 p-2 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
+              "flex h-full min-h-0 flex-col rounded-[22px] border bg-white/96 p-2.25 shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
               stepKey === "review" ? "border-indigo-200" : "border-white/80",
             ].join(" ")}
           >
@@ -1423,7 +1448,7 @@ export default function PodBuilder({
               {canAdd ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
             </div>
 
-            <div className="mt-2 rounded-[18px] border border-[#e2e9fb] bg-white px-2.25 py-2 shadow-sm">
+            <div className="mt-1.75 rounded-[18px] border border-[#e2e9fb] bg-white px-2.5 py-2.25 shadow-sm">
               <div className="flex items-start gap-3">
                 <div className="flex h-[44px] w-[44px] shrink-0 overflow-hidden rounded-[14px] border border-[#e3eafc] bg-[#fbfcff]">
                   <BuilderMediaPreview
@@ -1459,7 +1484,7 @@ export default function PodBuilder({
             </div>
 
             {isDualComfort ? (
-              <div className="mt-2 rounded-[18px] border border-[#e2e9fb] bg-[#f8faff] px-2.25 py-2 shadow-sm">
+              <div className="mt-1.75 rounded-[18px] border border-[#e2e9fb] bg-[#f8faff] px-2.5 py-2.25 shadow-sm">
                 <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
                   Comfort Sides
                 </div>
@@ -1498,8 +1523,8 @@ export default function PodBuilder({
               </div>
             ) : null}
 
-            <div className="mt-2 rounded-[16px] border border-[#dbe5ff] bg-white/96 px-2.25 py-1.75 shadow-sm">
-              <div className="grid gap-1.25 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-1.75 rounded-[16px] border border-[#dbe5ff] bg-white/96 px-2.5 py-2 shadow-sm">
+              <div className={reviewSummaryGridClassName}>
                 <div>
                   <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
                     Size
@@ -1516,10 +1541,18 @@ export default function PodBuilder({
                   <div className="mt-0.5 text-[0.8rem] font-extrabold text-slate-900">
                     {selectedBaseLabel}
                   </div>
-                  <div className="text-[0.64rem] text-slate-600">
-                    {showMotion ? selectedMotionLabel : "No Motion"}
-                  </div>
                 </div>
+
+                {showMotion ? (
+                  <div>
+                    <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                      Motion
+                    </div>
+                    <div className="mt-0.5 text-[0.8rem] font-extrabold text-slate-900">
+                      {selectedMotionLabel}
+                    </div>
+                  </div>
+                ) : null}
 
                 <div>
                   <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
@@ -1541,7 +1574,7 @@ export default function PodBuilder({
               </div>
             </div>
 
-            <div className="mt-2 space-y-1.25">
+            <div className="mt-auto space-y-1.25 pt-2">
               <Button
                 onClick={() => {
                   setStepKey("review");
