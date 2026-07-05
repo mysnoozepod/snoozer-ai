@@ -57,6 +57,17 @@ function normalizeActions(actions, { max = 25 } = {}) {
     .slice(0, max);
 }
 
+function normalizeChips(chips, { max = 12 } = {}) {
+  return ensureArray(chips)
+    .map((value) => {
+      if (typeof value === "string") return value;
+      if (isObj(value)) return value;
+      return null;
+    })
+    .filter(Boolean)
+    .slice(0, max);
+}
+
 function normalizeProducts(products, { max = 12 } = {}) {
   return ensureArray(products)
     .map((p) => (isObj(p) ? p : null))
@@ -204,6 +215,9 @@ function normalizeSnoozerResponse(raw, opts = {}) {
   const ok = Boolean(safe.ok !== undefined ? safe.ok : status !== "error");
 
   const actions = normalizeActions(safe.actions);
+  const chips = normalizeChips(
+    pickFirst(safe.chips, safe.suggestedPrompts, safe.chips_override, [])
+  );
   const products = normalizeProducts(safe.products);
 
   let error = safe.error ?? null;
@@ -267,6 +281,7 @@ function normalizeSnoozerResponse(raw, opts = {}) {
     message,
 
     actions,
+    chips,
     products,
     context,
     error,

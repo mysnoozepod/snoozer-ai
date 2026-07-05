@@ -105,11 +105,11 @@ function buildNoGuessReply(topic = "detail") {
 }
 
 function buildFallbackReply() {
-  return "I can help with mattress fit, pricing, delivery, returns, or booking a Snooze Session. Which one do you want to narrow first?";
+  return "I can help with mattress fit, pricing, delivery, returns, Snooze Codes, or booking a Snooze Session. Tell me which lane you want to narrow first, and I will keep it simple.";
 }
 
 function buildMissingRecommendationReply() {
-  return "I can recommend a setup once I have your assessment or a few basics like size, sleep position, firmness, whether you share the bed, and whether you want a base.";
+  return "I can recommend a setup once I have your assessment, or we can narrow it right now with a few basics like size, sleep position, firmness, whether you share the bed, and whether you want a base. The fastest route is the Snooze Assessment if you want me to do the sorting for you.";
 }
 
 function buildClarificationReply(decision = {}) {

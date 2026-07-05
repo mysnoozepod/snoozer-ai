@@ -108,6 +108,7 @@ const {
   parseAskSnoozerSizeLabel,
 } = require("./services/askSnoozerIntents");
 const {
+  cleanShopperText,
   resolveAskSnoozerPolicyAnswer,
   resolveAskSnoozerPolicySources,
   resolveAskSnoozerSupplementalSources,
@@ -116,6 +117,10 @@ const {
   buildAskSnoozerClarificationReply,
   buildAskSnoozerFallbackReply,
   buildAskSnoozerMissingRecommendationReply,
+  isBuildGuidanceQuery,
+  isRestTestGuidanceQuery,
+  isSnoozeCodeQuery,
+  isUnknownProductQuery,
   routeAskSnoozerQuestion,
   resolveAskSnoozerCommerceResponse,
 } = require("./services/askSnoozerQualityGate");
@@ -129,8 +134,11 @@ const {
 const { loadShowroomManifest } = require("./services/showroomManifest");
 
 let getHudScriptPayload = null;
+let hudScriptSafeTimeoutMs = Number(
+  process.env.HUD_SCRIPT_SAFE_TIMEOUT_MS || process.env.S3_RETRIEVAL_TIMEOUT_MS || 300
+);
 try {
-  ({ getHudScriptPayload } = require("./services/hudScripts"));
+  ({ getHudScriptPayload, HUD_SCRIPT_SAFE_TIMEOUT_MS: hudScriptSafeTimeoutMs } = require("./services/hudScripts"));
 } catch (e) {
   console.log("âš ï¸ hudScripts service not loaded.", e.message);
 }
@@ -1918,6 +1926,42 @@ async function resolveHudAskAnswerStrategy({
   let policySource = "fallback";
   let policyKey = null;
   let policyRetrieved = false;
+
+  if (isSnoozeCodeQuery(query)) {
+    const identityAnswer = buildAskSnoozerIdentityGuidanceAnswer({
+      query,
+      context: isObject(context)
+        ? context
+        : {
+            path,
+            page_type: pageType,
+          },
+    });
+
+    return {
+      replyOverride: identityAnswer.reply || "",
+      chipsOverride: null,
+      policySubtype: "",
+      metaExtra: {
+        policy_source: "fallback",
+        policy_key: null,
+        policy_retrieved: false,
+        policy_answer_grounded: null,
+        canonical_top_pod_id: canonicalRecommendation?.topPodId || null,
+        canonical_primary_mattress_handle: canonicalRecommendation?.primaryMattressHandle || null,
+        canonical_base_handle:
+          Object.prototype.hasOwnProperty.call(canonicalRecommendation || {}, "baseHandle")
+            ? canonicalRecommendation.baseHandle
+            : null,
+        canonical_motion_key: canonicalRecommendation?.motionKey || null,
+        answer_grounded: Boolean(identityAnswer.answer_grounded),
+        answer_source_type: identityAnswer.answer_source_type || "identity_guidance",
+        answer_source_key: identityAnswer.answer_source_key || null,
+        answer_strategy: identityAnswer.answer_strategy || "identity_guidance",
+        answer_facts_count: Number(identityAnswer.answer_facts_count || 0),
+      },
+    };
+  }
 
   if (intentGroup === "policy_support" && policySubtype !== "pricing") {
     const resolved = await resolveAskSnoozerPolicySources({
@@ -4821,6 +4865,69 @@ function buildAskSnoozerQualityGateObject(decision = null, overrides = {}) {
   };
 }
 
+function buildAskSnoozerChip(label, value, type = "prompt", target = null) {
+  const chip = {
+    label: String(label || "").trim(),
+    value: String(value || label || "").trim(),
+    type: String(type || "prompt").trim() || "prompt",
+  };
+
+  if (target) chip.target = String(target).trim();
+  return chip;
+}
+
+function buildAskSnoozerAction(type, label, target = null) {
+  const action = {
+    type: String(type || "none").trim() || "none",
+    label: String(label || "").trim(),
+  };
+
+  if (target) action.target = String(target).trim();
+  return action;
+}
+
+function buildAskSnoozerMissingAssessmentChips() {
+  return [
+    buildAskSnoozerChip("Start the assessment", "Help me start the Snooze Assessment", "route", "/assessment"),
+    buildAskSnoozerChip("I sleep on my side", "I sleep on my side"),
+    buildAskSnoozerChip("I sleep hot", "I sleep hot"),
+    buildAskSnoozerChip("Mattress only", "I want a mattress only setup"),
+  ];
+}
+
+function buildAskSnoozerPolicyChips(policySubtype = "") {
+  const normalizedSubtype = String(policySubtype || "").trim().toLowerCase();
+  if (normalizedSubtype === "returns") {
+    return [
+      buildAskSnoozerChip("Delivery timing", "How long does delivery take?"),
+      buildAskSnoozerChip("Financing options", "Do you offer financing?"),
+      buildAskSnoozerChip("Book a Snooze Session", "How do I book a Snooze Session?"),
+    ];
+  }
+
+  if (normalizedSubtype === "delivery") {
+    return [
+      buildAskSnoozerChip("Return policy", "What is your return policy?"),
+      buildAskSnoozerChip("Setup help", "Do you offer setup or old mattress removal?"),
+      buildAskSnoozerChip("Book a Snooze Session", "How do I book a Snooze Session?"),
+    ];
+  }
+
+  if (normalizedSubtype === "financing") {
+    return [
+      buildAskSnoozerChip("Return policy", "What is your return policy?"),
+      buildAskSnoozerChip("Delivery timing", "How long does delivery take?"),
+      buildAskSnoozerChip("Talk to human", "I need human help", "action"),
+    ];
+  }
+
+  return [
+    buildAskSnoozerChip("Return policy", "What is your return policy?"),
+    buildAskSnoozerChip("Delivery timing", "How long does delivery take?"),
+    buildAskSnoozerChip("Financing options", "Do you offer financing?"),
+  ];
+}
+
 function maybeBuildAskSnoozerCanonicalAnswer(query, context) {
   const canonicalRecommendation = isObject(context?.canonicalRecommendation)
     ? context.canonicalRecommendation
@@ -5508,39 +5615,325 @@ async function maybeBuildAskSnoozerCommerceAnswer({
   };
 }
 
+function buildAskSnoozerPreviewText(value = "", maxChars = 160) {
+  const cleaned = cleanShopperText(value);
+  if (!cleaned) return "";
+  if (cleaned.length <= maxChars) return cleaned;
+  return `${cleaned.slice(0, maxChars - 3).trim()}...`;
+}
+
+function buildAskSnoozerGuidedFaqResult({
+  classification = null,
+  reply = "",
+  answerGrounded = false,
+  answerSourceType = "fallback",
+  answerSourceKey = "",
+  answerStrategy = "safe_fallback",
+  extractedFacts = [],
+  reason = "",
+  sourceOfTruth = "",
+  answerType = "fallback",
+} = {}) {
+  return {
+    classification,
+    reply,
+    answer_grounded: Boolean(answerGrounded),
+    answer_source_type: answerSourceType,
+    answer_source_key: answerSourceKey,
+    answer_facts_count: Array.isArray(extractedFacts) ? extractedFacts.length : 0,
+    matched_preview: buildAskSnoozerPreviewText(
+      Array.isArray(extractedFacts) && extractedFacts.length ? extractedFacts.join(" ") : reply
+    ),
+    answer_strategy: answerStrategy,
+    extracted_facts: Array.isArray(extractedFacts) ? extractedFacts : [],
+    reason,
+    chips_override: null,
+    source_of_truth: sourceOfTruth || answerSourceType || "fallback",
+    answer_type: answerType,
+  };
+}
+
+function buildAskSnoozerActionGuidanceConfig(intentGroup = "") {
+  switch (String(intentGroup || "").trim()) {
+    case "assessment_handoff":
+      return {
+        actions: [HUD_ASK_ACTION_ASSESSMENT],
+        pages: [HUD_ASK_PAGE_ASSESSMENT],
+      };
+    case "booking_handoff":
+      return {
+        actions: [HUD_ASK_ACTION_BOOKING],
+        pages: [HUD_ASK_PAGE_BOOKING],
+      };
+    case "cart_confidence":
+      return {
+        actions: [HUD_ASK_ACTION_ASSESSMENT],
+        pages: [HUD_ASK_PAGE_BOOKING],
+      };
+    case "brand_education":
+      return {
+        actions: [HUD_ASK_ACTION_ASSESSMENT],
+        pages: [HUD_ASK_PAGE_BOOKING],
+      };
+    default:
+      return {
+        actions: [],
+        pages: [],
+      };
+  }
+}
+
+function resolveAskSnoozerRestTestScriptKey(query = "") {
+  const normalized = normalizeHudAskText(query);
+  if (
+    normalized.includes("notice") ||
+    normalized.includes("during") ||
+    normalized.includes("look for") ||
+    normalized.includes("pay attention")
+  ) {
+    return "pod.rest.quick.reflection";
+  }
+  if (normalized.includes("after") || normalized.includes("next")) {
+    return "pod.rest.quick.actions";
+  }
+  if (normalized.includes("head up")) return "pod.rest.head_up";
+  if (normalized.includes("zero g") || normalized.includes("zero gravity")) return "pod.rest.zero_g";
+  if (normalized.includes("return flat") || normalized.includes("go flat")) return "pod.rest.return_flat";
+  return "pod.rest.quick.start";
+}
+
+async function buildAskSnoozerHudScriptGuidanceAnswer({
+  query = "",
+  traceId = "",
+  classification = null,
+  scriptKey = "",
+  answerType = "guidance",
+} = {}) {
+  if (!scriptKey || typeof getHudScriptPayload !== "function") return null;
+
+  const payload = await getHudScriptPayload(
+    { scriptKey },
+    { traceId, timeoutMs: hudScriptSafeTimeoutMs }
+  );
+  const reply = cleanShopperText(payload?.captions || payload?.speech || "");
+  if (!reply) return null;
+
+  const sourceKey = String(payload?.scriptMeta?.resolvedS3Key || scriptKey).trim() || scriptKey;
+  return buildAskSnoozerGuidedFaqResult({
+    classification,
+    reply,
+    answerGrounded: true,
+    answerSourceType: "hud_script",
+    answerSourceKey: sourceKey,
+    answerStrategy: "script_guidance",
+    extractedFacts: [reply],
+    reason: "script_guidance_resolved",
+    sourceOfTruth: "hud_script",
+    answerType,
+  });
+}
+
+function buildAskSnoozerIdentityGuidanceAnswer({ query = "", context = {}, shopperId = "" } = {}) {
+  const normalizedShopperId = cleanIdentityValue(
+    context?.snoozeCode ||
+      context?.accessCode ||
+      context?.shopperId ||
+      shopperId
+  );
+  const hasCanonical = isObject(context?.canonicalRecommendation);
+  const hasSessionPrep = isObject(context?.sessionPrep);
+  const bookingStatus = cleanIdentityValue(context?.bookingStatus);
+  const codeLabel = normalizedShopperId ? `Snooze Code ${normalizedShopperId}` : "Your Snooze Code";
+
+  const reply = hasCanonical || hasSessionPrep || bookingStatus
+    ? `${codeLabel} is your save-and-return key. Use it to unlock your recommendations, rewards, and Snooze Session prep, then check in so I can pull up your saved profile instead of starting over.`
+    : `${codeLabel} is your save-and-return key. Use it to unlock your recommendations, rewards, and Snooze Session prep, then enter it in Snooze Code check-in any time you want me to load your saved profile.`;
+
+  return buildAskSnoozerGuidedFaqResult({
+    classification: buildAskSnoozerClassification(query, context),
+    reply,
+    answerGrounded: Boolean(normalizedShopperId || hasCanonical || hasSessionPrep || bookingStatus),
+    answerSourceType:
+      normalizedShopperId || hasCanonical || hasSessionPrep || bookingStatus
+        ? "identity_profile"
+        : "identity_guidance",
+    answerSourceKey: normalizedShopperId || "snooze_code_check_in",
+    answerStrategy: "identity_guidance",
+    extractedFacts: [
+      "A Snooze Code unlocks your saved recommendations, rewards, and Snooze Session prep.",
+      normalizedShopperId
+        ? `The active Snooze Code is ${normalizedShopperId}.`
+        : "Check-in loads the saved profile tied to the code.",
+    ],
+    reason: "identity_guidance_resolved",
+    sourceOfTruth:
+      normalizedShopperId || hasCanonical || hasSessionPrep || bookingStatus
+        ? "identity_profile"
+        : "identity_guidance",
+    answerType: "identity_guidance",
+  });
+}
+
+function resolveAskSnoozerCompetitorLabel(query = "") {
+  const normalized = normalizeHudAskText(query);
+  if (normalized.includes("tempur-pedic") || normalized.includes("tempurpedic")) {
+    return "Tempur-Pedic";
+  }
+  if (normalized.includes("sleep number")) return "Sleep Number";
+  if (normalized.includes("casper")) return "Casper";
+  if (normalized.includes("nectar")) return "Nectar";
+  if (normalized.includes("beautyrest")) return "Beautyrest";
+  if (normalized.includes("serta")) return "Serta";
+  if (normalized.includes("sealy")) return "Sealy";
+  if (normalized.includes("purple")) return "Purple";
+  return "that brand";
+}
+
+function buildAskSnoozerCatalogBoundaryAnswer({ query = "", context = {} } = {}) {
+  const competitorLabel = resolveAskSnoozerCompetitorLabel(query);
+  const currentProductHandle = extractAskSnoozerCurrentProductHandle(context);
+  const currentProduct = currentProductHandle
+    ? getAskSnoozerShowroomProduct(currentProductHandle)
+    : null;
+  const currentTitle = cleanShopperText(currentProduct?.title || "");
+
+  const reply = currentTitle
+    ? `I can compare what you like about ${competitorLabel} against our lineup, but I only ground recommendations to the MySnoozePod catalog here. Since you're looking at ${currentTitle}, tell me whether you want softer pressure relief, firmer support, lower motion transfer, or adjustable-base compatibility and I'll point you to the closest match in our line.`
+    : `I can compare what you like about ${competitorLabel} against our lineup, but I only ground recommendations to the MySnoozePod catalog here. Tell me the feel or support you want and I'll map it to the closest match in our line.`;
+
+  return buildAskSnoozerGuidedFaqResult({
+    classification: buildAskSnoozerClassification(query, context),
+    reply,
+    answerGrounded: true,
+    answerSourceType: "catalog_boundary",
+    answerSourceKey: competitorLabel.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+    answerStrategy: "catalog_boundary",
+    extractedFacts: [
+      "Recommendations are grounded to the MySnoozePod catalog only.",
+      currentTitle
+        ? `The current MySnoozePod anchor is ${currentTitle}.`
+        : "A direct competitor product match is not grounded in this catalog.",
+    ],
+    reason: "catalog_boundary_resolved",
+    sourceOfTruth: "catalog_boundary",
+    answerType: "catalog_boundary",
+  });
+}
+
+async function buildAskSnoozerSourceGuidedFaqAnswer({
+  query = "",
+  context = {},
+  traceId = "",
+  classification = null,
+} = {}) {
+  const intent = String(classification?.intent || "").trim();
+  const intentGroup = String(classification?.intent_group || "").trim();
+  const actionConfig = buildAskSnoozerActionGuidanceConfig(intentGroup);
+  const supplemental = await resolveAskSnoozerSupplementalSources({
+    classification,
+    query,
+    path: normalizeAskSnoozerContextPath(context?.path),
+    products: [],
+    traceId,
+    timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
+  });
+
+  const answer = buildAskSnoozerAnswer({
+    query,
+    intent,
+    intent_group: intentGroup,
+    context,
+    sources: Array.isArray(supplemental?.sources) ? supplemental.sources : [],
+    actions: actionConfig.actions,
+    pages: actionConfig.pages,
+  });
+
+  if (!answer?.reply) return null;
+
+  return {
+    classification,
+    ...answer,
+    source_of_truth:
+      intentGroup === "brand_education"
+        ? "local_brand"
+        : "action_allowlist",
+    answer_type:
+      intentGroup === "booking_handoff"
+        ? "booking_guidance"
+        : intentGroup === "assessment_handoff"
+          ? "assessment_guidance"
+          : intentGroup === "cart_confidence"
+            ? "cart_guidance"
+            : "brand_guidance",
+  };
+}
+
 async function maybeBuildAskSnoozerDeterministicFaqAnswer({
   query = "",
   context = {},
   traceId = "",
+  shopperId = "",
 } = {}) {
   const classification = buildAskSnoozerClassification(query, context);
-  const intent = String(classification?.intent || "").trim();
   const intentGroup = String(classification?.intent_group || "").trim();
 
-  if (intentGroup === "booking_handoff") {
-    return buildAskSnoozerAnswer({
+  if (isSnoozeCodeQuery(query)) {
+    return buildAskSnoozerIdentityGuidanceAnswer({
       query,
-      intent,
-      intent_group: intentGroup,
-      actions: [{ label: "Book A Snooze Session", href: HUD_SAFE_PAGE_ROUTES.booking }],
-      pages: [{ label: "Book A Snooze Session", href: HUD_SAFE_PAGE_ROUTES.booking }],
+      context,
+      shopperId,
+    });
+  }
+
+  if (isRestTestGuidanceQuery(query)) {
+    return buildAskSnoozerHudScriptGuidanceAnswer({
+      query,
+      traceId,
+      classification,
+      scriptKey: resolveAskSnoozerRestTestScriptKey(query),
+      answerType: "rest_test_guidance",
+    });
+  }
+
+  if (isBuildGuidanceQuery(query, context)) {
+    return buildAskSnoozerHudScriptGuidanceAnswer({
+      query,
+      traceId,
+      classification,
+      scriptKey: "pod.build.default",
+      answerType: "build_guidance",
+    });
+  }
+
+  if (isUnknownProductQuery(query)) {
+    return buildAskSnoozerCatalogBoundaryAnswer({
+      query,
+      context,
+    });
+  }
+
+  if (["brand_education", "assessment_handoff", "booking_handoff"].includes(intentGroup)) {
+    return buildAskSnoozerSourceGuidedFaqAnswer({
+      query,
+      context,
+      traceId,
+      classification,
     });
   }
 
   if (looksLikeAskSnoozerSupportQuestion(query)) {
-    return {
+    return buildAskSnoozerGuidedFaqResult({
       classification,
       reply: buildAskSnoozerSupportReply(query),
-      answer_grounded: false,
-      answer_source_type: "deterministic_support",
-      answer_source_key: "contact_support",
-      answer_facts_count: 0,
-      matched_preview: "",
-      answer_strategy: "safe_fallback",
-      extracted_facts: [],
+      answerGrounded: false,
+      answerSourceType: "deterministic_support",
+      answerSourceKey: "contact_support",
+      answerStrategy: "safe_fallback",
+      extractedFacts: [],
       reason: "support_fallback",
-      chips_override: [],
-    };
+      sourceOfTruth: "deterministic_support",
+      answerType: "support_guidance",
+    });
   }
 
   return null;
@@ -7667,7 +8060,9 @@ async function handle(event = {}) {
         text: reply,
         context: mergedContext,
         products: [],
-        actions: [],
+        actions: [
+          buildAskSnoozerAction("start_assessment", "Start assessment", "/assessment"),
+        ],
         metrics: {
           retrievalMs: 0,
           modelMs: 0,
@@ -7677,6 +8072,7 @@ async function handle(event = {}) {
       });
 
       env.reply = reply;
+      env.chips = buildAskSnoozerMissingAssessmentChips();
       env.thread_id = effectiveSessionId;
       env.status = "completed";
       env.sessionId = effectiveSessionId;
@@ -7808,6 +8204,10 @@ async function handle(event = {}) {
       });
 
       env.reply = policy.reply || env.message?.text || "";
+      env.chips =
+        Array.isArray(policy?.chips) && policy.chips.length
+          ? policy.chips
+          : buildAskSnoozerPolicyChips(policy?.policySubtype);
       env.thread_id = effectiveSessionId;
       env.status = policy?.retrieved
         ? (policy?.answerGrounded ? "completed" : "fallback")
@@ -8450,11 +8850,22 @@ async function handle(event = {}) {
       query: msg,
       context,
       traceId,
+      shopperId,
     });
     if (deterministicFaqAnswer) {
       const latencyMs = Date.now() - startedAt;
       const mergedContext =
         sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+      const faqAnswerType =
+        String(deterministicFaqAnswer.answer_type || "").trim() ||
+        (askSnoozerDecision.intentGroup === "support"
+          ? "support_guidance"
+          : askSnoozerDecision.intentGroup === "session_guidance"
+            ? "session_guidance"
+            : "guided_faq");
+      const faqSourceOfTruth =
+        String(deterministicFaqAnswer.source_of_truth || "").trim() ||
+        askSnoozerDecision.sourceOfTruth;
       const env = buildSuccessResponse({
         requestId: traceId,
         latencyMs,
@@ -8488,13 +8899,8 @@ async function handle(event = {}) {
           : [],
         reason: deterministicFaqAnswer.reason || "",
         qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType:
-            askSnoozerDecision.intentGroup === "support"
-              ? "fallback"
-              : askSnoozerDecision.intentGroup === "session_guidance"
-                ? "session_guidance"
-                : "fallback",
-          sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+          answerType: faqAnswerType,
+          sourceOfTruth: faqSourceOfTruth,
           factsResolved: Boolean(deterministicFaqAnswer.answer_grounded),
           fallbackUsed: false,
           reason: deterministicFaqAnswer.reason || "",
@@ -8520,8 +8926,11 @@ async function handle(event = {}) {
         traceId,
         sessionId: effectiveSessionId,
         shopperId,
-        intent: buildAskSnoozerClassification(msg, context)?.intent || null,
-        intentGroup: buildAskSnoozerClassification(msg, context)?.intent_group || null,
+        intent: deterministicFaqAnswer.classification?.intent || null,
+        intentGroup: deterministicFaqAnswer.classification?.intent_group || null,
+        answerStrategy: env.meta?.answer_strategy || null,
+        answerSourceType: env.meta?.answer_source_type || null,
+        answerSourceKey: env.meta?.answer_source_key || null,
         totalMs: latencyMs,
       });
       log("ask-snoozer.fulfillment.result", "resolved", {
@@ -8532,7 +8941,7 @@ async function handle(event = {}) {
         intent: askSnoozerDecision.intent,
         confidence: askSnoozerDecision.confidence,
         slots: askSnoozerDecision.slots,
-        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+        sourceOfTruth: faqSourceOfTruth,
         factsResolved: Boolean(deterministicFaqAnswer.answer_grounded),
         missingSlots: askSnoozerDecision.missingSlots,
         fallbackUsed: false,
