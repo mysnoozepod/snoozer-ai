@@ -319,7 +319,7 @@ function MotionOptionCard({ option, selected, disabled, disabledReason, onClick 
             : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/40",
       ].join(" ")}
     >
-      <div className="aspect-[16/10] w-full overflow-hidden bg-gray-50">
+      <div className="aspect-[16/7] w-full overflow-hidden bg-gray-50">
         <img
           src={option.image}
           alt={option.label}
@@ -329,9 +329,9 @@ function MotionOptionCard({ option, selected, disabled, disabledReason, onClick 
         />
       </div>
 
-      <div className="p-3.5">
-        <div className="mb-1 flex items-center justify-between gap-3">
-          <span className="text-base font-semibold text-gray-900">{option.label}</span>
+      <div className="p-3">
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <span className="text-[0.95rem] font-semibold text-gray-900">{option.label}</span>
           <span
             className={[
               "rounded-full px-2 py-1 text-xs font-extrabold",
@@ -343,7 +343,7 @@ function MotionOptionCard({ option, selected, disabled, disabledReason, onClick 
           </span>
         </div>
 
-        <p className="text-sm text-gray-600">{option.description}</p>
+        <p className="text-xs leading-5 text-gray-600">{option.description}</p>
 
         {disabled && disabledReason ? (
           <p className="mt-2 text-xs font-medium text-amber-700">{disabledReason}</p>
@@ -1141,8 +1141,8 @@ export default function Assessment() {
   }
 
   return (
-    <ShowroomPageShell className="pb-4 md:pb-5">
-      <ShowroomTopRail className="pt-3 md:pt-4">
+    <ShowroomPageShell className="h-auto min-h-[100dvh] max-h-none overflow-y-auto pb-4 md:pb-5">
+      <ShowroomTopRail className="pt-2 md:pt-3">
         <ShowroomBrandMark />
         <ShowroomCartBadge
           count={snoozepodCount}
@@ -1154,26 +1154,26 @@ export default function Assessment() {
         />
       </ShowroomTopRail>
 
-      <div className="mx-auto max-w-[1360px] px-4 pb-4 pt-2 md:px-6 md:pb-5">
-        <ShowroomFrame className="p-4 md:p-5">
-          <div className="grid gap-4 lg:grid-cols-[270px_minmax(0,1fr)] xl:grid-cols-[286px_minmax(0,1fr)]">
+      <div className="mx-auto max-w-[1340px] px-4 pb-4 pt-1 md:px-6 md:pb-5">
+        <ShowroomFrame className="p-3.5 md:p-4">
+          <div className="grid gap-3 lg:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[264px_minmax(0,1fr)]">
             <div className="space-y-3">
-              <div className="rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_40%_0%,rgba(87,121,255,0.18),transparent_45%),linear-gradient(180deg,#f7fbff_0%,#eef4ff_100%)] p-4 shadow-[0_18px_44px_rgba(45,71,136,0.08)] md:p-5">
+              <div className="rounded-[28px] border border-white/80 bg-[radial-gradient(circle_at_40%_0%,rgba(87,121,255,0.18),transparent_45%),linear-gradient(180deg,#f7fbff_0%,#eef4ff_100%)] p-4 shadow-[0_18px_44px_rgba(45,71,136,0.08)] md:p-4">
                 <ShowroomEyebrow>{displayTitle}</ShowroomEyebrow>
-                <h1 className="mt-2.5 text-[3rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[3.25rem]">
+                <h1 className="mt-2 text-[2.35rem] font-black leading-[0.94] tracking-tight text-slate-900 md:text-[2.7rem]">
                   One question at a time.
                 </h1>
-                <p className="mt-2.5 text-[0.98rem] leading-6 text-slate-600">
+                <p className="mt-2 text-[0.94rem] leading-5 text-slate-600">
                   Answer what feels closest. Snoozer will build your match order.
                 </p>
 
-                <div className="mt-4 flex justify-center">
+                <div className="mt-3 flex justify-center">
                   <div className="relative">
                   <div className="absolute inset-0 rounded-full blur-3xl opacity-25" style={{ background: BRAND.primary }} aria-hidden="true" />
                   <motion.img
                       src="/snoozer-avatar.png"
                       alt="Snoozer"
-                      className="relative h-36 w-36 rounded-full object-cover shadow-xl md:h-40 md:w-40"
+                      className="relative h-28 w-28 rounded-full object-cover shadow-xl md:h-32 md:w-32"
                       animate={{ y: [0, -4, 0] }}
                       transition={{ duration: 3, repeat: Infinity }}
                       loading="lazy"
@@ -1182,16 +1182,16 @@ export default function Assessment() {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-[22px] border border-white/80 bg-white/92 px-4 py-3 shadow-sm">
+                <div className="mt-3 rounded-[20px] border border-white/80 bg-white/92 px-3.5 py-3 shadow-sm">
                   <div className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
                     Progress
                   </div>
-                  <div className="mt-1 text-lg font-black text-slate-900 md:text-xl">
+                  <div className="mt-1 text-base font-black text-slate-900 md:text-lg">
                     {progress}% complete
                   </div>
-                  <div className="mt-3 h-2.5 w-full rounded-full bg-[#dfe8fb]">
+                  <div className="mt-2.5 h-2 w-full rounded-full bg-[#dfe8fb]">
                     <div
-                      className="h-2.5 rounded-full transition-all"
+                      className="h-2 rounded-full transition-all"
                       style={{ width: `${progress}%`, background: BRAND.primary }}
                     />
                   </div>
@@ -1205,14 +1205,14 @@ export default function Assessment() {
               </div>
             </div>
 
-            <div className="min-w-0 rounded-[30px] border border-white/80 bg-white/96 p-4 shadow-[0_18px_44px_rgba(45,71,136,0.08)] md:p-5">
+            <div className="min-w-0 rounded-[28px] border border-white/80 bg-white/96 p-4 shadow-[0_18px_44px_rgba(45,71,136,0.08)] md:p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e4ff] bg-[#eef3ff] px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-[#2f57e8]">
                     <ClipboardList className="h-3.5 w-3.5" />
                     {currentSection}
                   </div>
-                  <div className="mt-2 max-w-3xl text-[0.9rem] leading-6 text-slate-600">
+                  <div className="mt-1.5 max-w-3xl text-[0.88rem] leading-5 text-slate-600">
                     {currentSupportText}
                   </div>
                 </div>
@@ -1230,7 +1230,7 @@ export default function Assessment() {
                 />
               </div>
 
-              <div className="mt-5">
+              <div className="mt-4">
                 <AnimatePresence mode="wait">
                   {current ? (
                     <motion.div
@@ -1240,7 +1240,7 @@ export default function Assessment() {
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.25 }}
                     >
-                      <div className="rounded-[28px] border border-[#cfe0ff] bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] p-4 shadow-sm md:p-5">
+                      <div className="rounded-[26px] border border-[#cfe0ff] bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] p-4 shadow-sm md:p-4">
                         <div className="flex flex-wrap items-center gap-3">
                           <span className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
                             {isRequired(current) ? "Required" : "Optional"}
@@ -1256,20 +1256,20 @@ export default function Assessment() {
                           ) : null}
                         </div>
 
-                        <h2 className="mt-3 text-[1.85rem] font-black leading-tight text-slate-900 md:text-[2rem]">
+                        <h2 className="mt-2.5 text-[1.7rem] font-black leading-tight text-slate-900 md:text-[1.85rem]">
                           {current.text}
                         </h2>
 
                         {currentIsMotionQuestion ? (
-                          <p className="mt-2.5 text-sm leading-6 text-slate-600">
+                          <p className="mt-2 text-sm leading-5 text-slate-600">
                             Pick the adjustable motion setup that feels most realistic for how
                             you want to relax and sleep.
                           </p>
                         ) : null}
 
-                        <div className="mt-5">
+                        <div className="mt-4">
                           {currentIsMotionQuestion ? (
-                            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-2.5 md:grid-cols-3">
                               {motionCards.map((opt) => {
                                 const selected = answers[current.id] === opt.label;
 
@@ -1366,13 +1366,13 @@ export default function Assessment() {
                 </AnimatePresence>
               </div>
 
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3.5">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleBack}
                   disabled={step === 0 || submitting}
-                  className="rounded-[18px] px-5 py-5 text-base font-extrabold"
+                  className="rounded-[18px] px-5 py-4 text-base font-extrabold"
                 >
                   Back
                 </Button>
@@ -1387,7 +1387,7 @@ export default function Assessment() {
                     type="button"
                     onClick={handleSubmit}
                     disabled={!canFinish || submitting}
-                    className="rounded-[18px] px-6 py-5 text-base font-extrabold text-white"
+                    className="rounded-[18px] px-6 py-4 text-base font-extrabold text-white"
                     style={{
                       background: canFinish ? BRAND.primary : "#D1D5DB",
                       cursor: canFinish ? "pointer" : "not-allowed",
@@ -1400,7 +1400,7 @@ export default function Assessment() {
                     type="button"
                     onClick={handleAdvanceCurrent}
                     disabled={!currentCanAdvance || submitting}
-                    className="rounded-[18px] px-6 py-5 text-base font-extrabold text-white"
+                    className="rounded-[18px] px-6 py-4 text-base font-extrabold text-white"
                     style={{
                       background: currentCanAdvance ? BRAND.primary : "#D1D5DB",
                       cursor: currentCanAdvance ? "pointer" : "not-allowed",
