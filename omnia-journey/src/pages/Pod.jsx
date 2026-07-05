@@ -1579,15 +1579,22 @@ function SnoozerCoachBubble({ copy }) {
   if (!copy) return null;
 
   return (
-    <div className="mt-2 flex max-w-[220px] items-start gap-2 rounded-[18px] border border-white/85 bg-white/96 px-2.5 py-2 shadow-[0_14px_28px_rgba(40,63,126,0.12)] md:mt-0">
+    <div className="mt-2 flex max-w-[212px] items-start gap-2.5 rounded-[18px] border border-white/85 bg-white/96 px-2.5 py-2.5 shadow-[0_14px_28px_rgba(40,63,126,0.12)] md:mt-0 md:max-w-[224px] md:px-3 md:py-3">
       <img
         src={PUBLIC_ASSETS.snoozerAvatar}
         alt="Snoozer"
-        className="h-8 w-8 shrink-0 rounded-full object-cover ring-2 ring-[#eef3ff]"
+        className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-[#eef3ff] md:h-10 md:w-10"
         loading="eager"
         decoding="async"
       />
-      <div className="min-w-0 text-[0.8rem] font-medium leading-[1.35] text-slate-700">{copy}</div>
+      <div className="min-w-0">
+        <div className="text-[0.9rem] font-black leading-none text-slate-900 md:text-[0.96rem]">
+          I&apos;m Snoozer.
+        </div>
+        <div className="mt-1 text-[0.84rem] font-medium leading-[1.4] text-slate-700 md:text-[0.9rem]">
+          {copy}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1609,29 +1616,29 @@ function PodRouteHeroHeader({
     <div
       data-pod-route-header="true"
       className={[
-        "grid items-stretch gap-0 overflow-hidden md:h-[120px]",
+        "grid items-stretch gap-0 overflow-hidden md:h-[182px] lg:h-[190px]",
         hasCoachBubble
-          ? "md:grid-cols-[minmax(0,0.96fr)_142px_214px] lg:grid-cols-[minmax(0,0.96fr)_150px_228px]"
-          : "md:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
+          ? "md:grid-cols-[minmax(0,0.86fr)_minmax(172px,0.32fr)_minmax(0,1.16fr)] lg:grid-cols-[minmax(0,0.84fr)_minmax(188px,0.34fr)_minmax(0,1.18fr)]"
+          : "md:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)]",
       ].join(" ")}
     >
       <div
-        className="relative flex min-h-[92px] flex-col justify-center px-4 py-2 md:min-h-0 md:px-4.5 md:py-1.5"
+        className="relative flex min-h-[114px] flex-col justify-center px-5 py-3 md:h-full md:min-h-0 md:px-5 md:py-3"
       >
         {eyebrow ? (
           <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">{eyebrow}</ShowroomEyebrow>
         ) : null}
 
-        <div className={[eyebrow ? "mt-1" : "mt-0", "text-[1.02rem] font-black tracking-tight text-[#2f57e8] md:text-[1.08rem]"].join(" ")}>
+        <div className={[eyebrow ? "mt-1" : "mt-0", "text-[1.08rem] font-black tracking-tight text-[#2f57e8] md:text-[1.18rem]"].join(" ")}>
           {podTitle}
         </div>
 
-        <h1 className="mt-0.5 max-w-[10.8ch] text-[1.46rem] font-black leading-[0.92] tracking-tight text-slate-900 md:text-[1.5rem] xl:text-[1.64rem]">
+        <h1 className="mt-0.5 max-w-[10.2ch] text-[1.92rem] font-black leading-[0.9] tracking-tight text-slate-900 md:text-[2.12rem] lg:text-[2.28rem]">
           {mattressTitle}
         </h1>
 
         {badges.length ? (
-          <div className="mt-1.5 flex items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {badges.map((badge) => (
               <HeaderBadge key={`${badge.label}-${badge.tone || "soft"}`} label={badge.label} tone={badge.tone} />
             ))}
@@ -1669,20 +1676,20 @@ function PodRouteHeroHeader({
       </div>
 
       {hasCoachBubble ? (
-        <div className="hidden border-l border-white/70 bg-[radial-gradient(circle_at_left_center,_rgba(236,242,255,0.95),_rgba(236,242,255,0.72)_32%,_transparent_82%)] px-1.5 py-1 md:flex md:items-center md:justify-center">
-          <div className="w-full max-w-[154px]">
+        <div className="hidden border-l border-white/70 bg-[radial-gradient(circle_at_left_center,_rgba(236,242,255,0.95),_rgba(236,242,255,0.72)_32%,_transparent_82%)] px-2 py-2 md:flex md:h-full md:items-center md:justify-center">
+          <div className="w-full max-w-[236px]">
             <SnoozerCoachBubble copy={coachBubble} />
           </div>
         </div>
       ) : null}
 
-      <div className="relative min-h-[92px] overflow-hidden border-t border-white/70 md:min-h-0 md:border-l md:border-t-0">
+      <div className="relative min-h-[114px] overflow-hidden border-t border-white/70 md:h-full md:min-h-0 md:border-l md:border-t-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
         <ResponsiveImage
           src={mattressImage}
           alt={mattressTitle}
-          className="h-full min-h-[92px] w-full md:min-h-0"
-          imgClassName="h-full w-full object-cover object-center"
+          className="flex h-full min-h-[114px] w-full items-center justify-end px-0 py-0 md:min-h-0"
+          imgClassName="h-full w-full max-h-full scale-[1.14] object-contain object-center md:scale-[1.32]"
         />
       </div>
     </div>
@@ -1819,32 +1826,145 @@ function RestCountdownRing({ remainingSeconds, totalSeconds }) {
   );
 }
 
-function RestLengthCard({ title, subtitle, durationLabel, onClick }) {
+function RestLengthCard({
+  title,
+  subtitle,
+  durationLabel,
+  highlights = [],
+  accent = "orange",
+  buttonLabel = "Start Test",
+  onClick,
+}) {
+  const iconTone = accent === "blue" ? "text-[#355ff1]" : "text-[#ff8f1f]";
+  const durationTone =
+    accent === "blue"
+      ? "bg-[#edf2ff] text-[#355ff1]"
+      : "bg-[#fff1e2] text-[#ff8f1f]";
+  const buttonTone =
+    accent === "blue"
+      ? "bg-[linear-gradient(90deg,#2f57e8_0%,#1f7cff_100%)] shadow-[0_18px_36px_rgba(47,87,232,0.24)]"
+      : "bg-[linear-gradient(90deg,#ff9f1c_0%,#ff7a1a_100%)] shadow-[0_18px_36px_rgba(255,143,31,0.26)]";
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full cursor-pointer flex-col rounded-[20px] border border-white/85 bg-white/96 p-2.5 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#ffd8b0] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[112px] md:p-3"
+      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-3.5 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d8e2ff] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[152px] md:p-4"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)] md:h-[42px] md:w-[42px]">
-          <Timer className="h-[1.125rem] w-[1.125rem] text-[#355ff1] md:h-5 md:w-5" />
+      <div className="flex items-start gap-4">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)]">
+          <Timer className={["h-7 w-7", iconTone].join(" ")} />
         </div>
 
-        <div className="rounded-full bg-[#edf2ff] px-2.5 py-1 text-[0.76rem] font-black text-[#355ff1] md:px-3 md:text-[0.8rem]">
-          {durationLabel}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[1.08rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.18rem]">
+                {title}
+              </div>
+              <div className="mt-0.5 text-[0.84rem] text-slate-600 md:text-[0.9rem]">{subtitle}</div>
+            </div>
+            <div className={["shrink-0 rounded-full px-3 py-1 text-[0.82rem] font-black", durationTone].join(" ")}>
+              {durationLabel}
+            </div>
+          </div>
+
+          {highlights.length ? (
+            <div className="mt-2.5 space-y-1">
+              {highlights.slice(0, 2).map((item) => (
+                <div key={item} className="flex items-center gap-2 text-[0.86rem] text-slate-700">
+                  <CheckCircle2 className={["h-4 w-4 shrink-0", iconTone].join(" ")} />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
 
-      <div className="mt-1.5 text-[1rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.08rem]">
-        {title}
-      </div>
-      <div className="mt-0.5 text-[0.8rem] text-slate-600 md:text-[0.84rem]">{subtitle}</div>
-
-      <div className="mt-auto rounded-[14px] bg-[linear-gradient(90deg,#ff8f1f_0%,#ff7a1a_100%)] px-4 py-1.5 text-center text-[0.8rem] font-black text-white shadow-[0_18px_36px_rgba(255,143,31,0.26)] transition group-hover:scale-[1.01] md:text-[0.86rem]">
-        Start Test <ArrowRight className="ml-2 inline h-4 w-4" />
+      <div
+        className={[
+          "mt-3.5 flex h-10.5 items-center justify-center rounded-full text-[0.9rem] font-black text-white transition group-hover:scale-[1.01]",
+          buttonTone,
+        ].join(" ")}
+      >
+        {buttonLabel} <ArrowRight className="ml-2 inline h-5 w-5" />
       </div>
     </button>
+  );
+}
+
+function PodRestStartSection({
+  podLabel,
+  flowOptions = [],
+  onChooseMode,
+}) {
+  const cards = flowOptions.length
+    ? flowOptions.slice(0, 2).map((flow, index) => ({
+        id: flow.id,
+        title: lowerText(flow.id).includes("deep") ? "15-Minute Test" : "7-Minute Test",
+        subtitle: lowerText(flow.id).includes("deep") ? "More time to settle in" : "Quick feel check",
+        durationLabel: lowerText(flow.id).includes("deep") ? "15 min" : "7 min",
+        buttonLabel: lowerText(flow.id).includes("deep")
+          ? "Start 15-Minute Test"
+          : "Start 7-Minute Test",
+        accent: lowerText(flow.id).includes("deep") ? "blue" : "orange",
+        highlights: lowerText(flow.id).includes("deep")
+          ? ["More time to settle in", "Best for a complete feel"]
+          : ["Quick feel check", "Great for a first impression"],
+      }))
+    : [
+        {
+          id: "quick",
+          title: "7-Minute Test",
+          subtitle: "Quick feel check",
+          durationLabel: "7 min",
+          buttonLabel: "Start 7-Minute Test",
+          accent: "orange",
+          highlights: ["Quick feel check", "Great for a first impression"],
+        },
+        {
+          id: "deep",
+          title: "15-Minute Test",
+          subtitle: "More time to settle in",
+          durationLabel: "15 min",
+          buttonLabel: "Start 15-Minute Test",
+          accent: "blue",
+          highlights: ["More time to settle in", "Best for a complete feel"],
+        },
+      ];
+
+  return (
+    <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="frost">
+      <div className="max-w-[780px]">
+        <div className="text-[1.56rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[1.8rem]">
+          Start Your Rest Test
+        </div>
+        <div className="mt-1.5 text-[0.94rem] leading-6 text-slate-600">
+          Try {podLabel} your way. Start with 7 minutes for a quick feel check, or choose 15 minutes if you want more time to settle in.
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-2.5 md:grid-cols-2">
+        {cards.map((card) => (
+          <RestLengthCard
+            key={card.id}
+            title={card.title}
+            subtitle={card.subtitle}
+            durationLabel={card.durationLabel}
+            highlights={card.highlights}
+            accent={card.accent}
+            buttonLabel={card.buttonLabel}
+            onClick={() => onChooseMode?.(card.id)}
+          />
+        ))}
+      </div>
+
+      <div className="mt-3 flex items-center justify-center gap-2 text-[0.84rem] font-medium text-slate-500">
+        <CheckCircle2 className="h-4 w-4 text-slate-400" />
+        <span>You can end or pause your test at any time.</span>
+      </div>
+    </ShowroomPanel>
   );
 }
 
@@ -1978,6 +2098,7 @@ function buildActiveRestInstructionCards({ hasAdjustableBase }) {
 }
 
 function GuidedRestTest({
+  podLabel = "this pod",
   flowOptions,
   activeMode,
   activeStep,
@@ -2006,28 +2127,11 @@ function GuidedRestTest({
 }) {
   if (!activeMode) {
     return (
-      <ShowroomPanel className="overflow-hidden p-2.5 md:p-3" tone="frost">
-        <div className="min-w-0">
-          <div className="text-[1.42rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[1.56rem]">
-            How long do you want to test?
-          </div>
-
-          <div className="mt-2 grid gap-2 md:grid-cols-2">
-            <RestLengthCard
-              title="7-Minute Test"
-              subtitle="Quick check"
-              durationLabel="7 min"
-              onClick={() => onChooseMode("quick")}
-            />
-            <RestLengthCard
-              title="15-Minute Test"
-              subtitle="More time to settle in"
-              durationLabel="15 min"
-              onClick={() => onChooseMode("deep")}
-            />
-          </div>
-        </div>
-      </ShowroomPanel>
+      <PodRestStartSection
+        podLabel={podLabel}
+        flowOptions={Object.values(flowOptions || {})}
+        onChooseMode={onChooseMode}
+      />
     );
   }
 
@@ -3697,6 +3801,7 @@ export default function Pod() {
 
     return (
       <GuidedRestTest
+        podLabel={podLabel}
         flowOptions={restFlows}
         activeMode={activeRestFlow}
         activeStep={activeRestStep}
@@ -3906,7 +4011,7 @@ export default function Pod() {
 
   const podHomeContent = useMemo(
     () => (
-      <div className="flex h-full min-h-0 flex-col gap-3.5">
+      <div className="flex h-full min-h-0 flex-col gap-2.5">
         <ShowroomPanel className="shrink-0 overflow-hidden p-0" tone="soft">
           <PodRouteHeroHeader
             eyebrow=""
@@ -3917,31 +4022,15 @@ export default function Pod() {
             mattressImage={mattressImage}
             voiceState={voiceState}
             badges={podHomeBadges}
+            coachBubble={restCoachCopy}
           />
         </ShowroomPanel>
 
-        <div className="grid min-h-0 flex-1 auto-rows-fr gap-2.5 md:grid-cols-3">
-          <PodHomeActionCard
-            icon={Timer}
-            title="Rest Test"
-            microcopy="Start here"
-            accent="orange"
-            onClick={goToRestStage}
-          />
-          <PodHomeActionCard
-            icon={BookOpen}
-            title="Learn"
-            microcopy="Why it fits"
-            accent="soft"
-            onClick={goToDetailsStage}
-          />
-          <PodHomeActionCard
-            icon={SlidersHorizontal}
-            title="Build"
-            microcopy="Choose setup"
-            onClick={() => void goToBuildStage("size")}
-          />
-        </div>
+        <PodRestStartSection
+          podLabel={title}
+          flowOptions={dashboardTestingModes}
+          onChooseMode={handleChooseRestMode}
+        />
       </div>
     ),
     [
@@ -3950,9 +4039,9 @@ export default function Pod() {
       isRecommended,
       mattressImage,
       podHomeBadges,
-      goToRestStage,
-      goToDetailsStage,
-      goToBuildStage,
+      restCoachCopy,
+      dashboardTestingModes,
+      handleChooseRestMode,
     ]
   );
 
