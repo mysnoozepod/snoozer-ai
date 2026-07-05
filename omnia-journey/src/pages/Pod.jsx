@@ -1609,24 +1609,24 @@ function PodRouteHeroHeader({
     <div
       data-pod-route-header="true"
       className={[
-        "grid items-stretch gap-0 overflow-hidden md:h-[132px]",
+        "grid items-stretch gap-0 overflow-hidden md:h-[120px]",
         hasCoachBubble
-          ? "md:grid-cols-[minmax(0,0.98fr)_154px_230px] lg:grid-cols-[minmax(0,0.98fr)_164px_248px]"
-          : "md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]",
+          ? "md:grid-cols-[minmax(0,0.96fr)_142px_214px] lg:grid-cols-[minmax(0,0.96fr)_150px_228px]"
+          : "md:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]",
       ].join(" ")}
     >
       <div
-        className="relative flex min-h-[98px] flex-col justify-center px-[1.125rem] py-2.5 md:min-h-0 md:px-5 md:py-1.5"
+        className="relative flex min-h-[92px] flex-col justify-center px-4 py-2 md:min-h-0 md:px-4.5 md:py-1.5"
       >
         {eyebrow ? (
           <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">{eyebrow}</ShowroomEyebrow>
         ) : null}
 
-        <div className={[eyebrow ? "mt-1" : "mt-0", "text-[1.08rem] font-black tracking-tight text-[#2f57e8] md:text-[1.14rem]"].join(" ")}>
+        <div className={[eyebrow ? "mt-1" : "mt-0", "text-[1.02rem] font-black tracking-tight text-[#2f57e8] md:text-[1.08rem]"].join(" ")}>
           {podTitle}
         </div>
 
-        <h1 className="mt-0.5 max-w-[10.6ch] text-[1.56rem] font-black leading-[0.92] tracking-tight text-slate-900 md:text-[1.62rem] xl:text-[1.74rem]">
+        <h1 className="mt-0.5 max-w-[10.8ch] text-[1.46rem] font-black leading-[0.92] tracking-tight text-slate-900 md:text-[1.5rem] xl:text-[1.64rem]">
           {mattressTitle}
         </h1>
 
@@ -1669,19 +1669,19 @@ function PodRouteHeroHeader({
       </div>
 
       {hasCoachBubble ? (
-        <div className="hidden border-l border-white/70 bg-[radial-gradient(circle_at_left_center,_rgba(236,242,255,0.95),_rgba(236,242,255,0.72)_32%,_transparent_82%)] px-1.5 py-1.5 md:flex md:items-center md:justify-center">
-          <div className="w-full max-w-[166px]">
+        <div className="hidden border-l border-white/70 bg-[radial-gradient(circle_at_left_center,_rgba(236,242,255,0.95),_rgba(236,242,255,0.72)_32%,_transparent_82%)] px-1.5 py-1 md:flex md:items-center md:justify-center">
+          <div className="w-full max-w-[154px]">
             <SnoozerCoachBubble copy={coachBubble} />
           </div>
         </div>
       ) : null}
 
-      <div className="relative min-h-[100px] overflow-hidden border-t border-white/70 md:min-h-0 md:border-l md:border-t-0">
+      <div className="relative min-h-[92px] overflow-hidden border-t border-white/70 md:min-h-0 md:border-l md:border-t-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
         <ResponsiveImage
           src={mattressImage}
           alt={mattressTitle}
-          className="h-full min-h-[100px] w-full md:min-h-0"
+          className="h-full min-h-[92px] w-full md:min-h-0"
           imgClassName="h-full w-full object-cover object-center"
         />
       </div>
@@ -1724,25 +1724,25 @@ function PodHomeActionCard({
       type="button"
       onClick={onClick}
       className={[
-        "group flex h-full min-h-[126px] flex-col rounded-[26px] border border-white/85 p-3.5 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[138px] md:p-3.5",
+        "group flex h-full min-h-[118px] flex-col rounded-[24px] border border-white/85 p-3 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(39,69,134,0.16)] md:min-h-[128px] md:p-3.25",
         rootClass,
       ].join(" ")}
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/90 bg-white/96 shadow-[0_16px_32px_rgba(45,71,136,0.12)] md:h-[50px] md:w-[50px]">
-        {Icon ? <Icon className={["h-5 w-5 md:h-6 md:w-6", iconTone].join(" ")} /> : null}
+      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/90 bg-white/96 shadow-[0_16px_32px_rgba(45,71,136,0.12)] md:h-[46px] md:w-[46px]">
+        {Icon ? <Icon className={["h-5 w-5 md:h-[1.3rem] md:w-[1.3rem]", iconTone].join(" ")} /> : null}
       </div>
 
-      <div className="mt-3 text-[1.28rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.38rem]">
+      <div className="mt-2.5 text-[1.18rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.28rem]">
         {title}
       </div>
 
-      <div className={["mt-1 text-[0.82rem] font-semibold md:text-[0.86rem]", microcopyTone].join(" ")}>
+      <div className={["mt-1 text-[0.78rem] font-semibold md:text-[0.82rem]", microcopyTone].join(" ")}>
         {microcopy}
       </div>
 
       <div
         className={[
-          "mt-auto flex h-9 items-center justify-center rounded-full text-white shadow-[0_18px_34px_rgba(47,87,232,0.24)] transition group-hover:scale-[1.01] md:h-[40px]",
+          "mt-auto flex h-8.5 items-center justify-center rounded-full text-white shadow-[0_18px_34px_rgba(47,87,232,0.24)] transition group-hover:scale-[1.01] md:h-[36px]",
           barClass,
         ].join(" ")}
       >
@@ -1769,9 +1769,9 @@ function ExperienceFooterButton({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex min-h-[34px] items-center justify-center gap-2 rounded-[14px] border border-white/85 bg-white/96 px-3 text-[0.78rem] font-extrabold text-slate-900 shadow-[0_12px_28px_rgba(45,71,136,0.1)] transition hover:-translate-y-0.5 hover:bg-slate-50 md:min-w-[110px]"
+      className="inline-flex min-h-[30px] items-center justify-center gap-1.5 rounded-[12px] border border-white/85 bg-white/96 px-2.5 text-[0.74rem] font-extrabold text-slate-900 shadow-[0_10px_24px_rgba(45,71,136,0.1)] transition hover:-translate-y-0.5 hover:bg-slate-50 md:min-w-[102px]"
     >
-      {Icon ? <Icon className={["h-3.5 w-3.5 shrink-0", accentClass].join(" ")} /> : null}
+      {Icon ? <Icon className={["h-[0.85rem] w-[0.85rem] shrink-0", accentClass].join(" ")} /> : null}
       <span>{label}</span>
     </button>
   );
@@ -3472,7 +3472,7 @@ export default function Pod() {
         ? "Cooling cues: breathable or cooling-focused materials appear in the current product data."
         : "Comfort cues: designed to balance support and pressure relief through a full showroom test.",
     ];
-    return items.filter(Boolean).slice(0, 5);
+    return items.filter(Boolean).slice(0, 4);
   }, [recommendationMeta?.firmness, assessment, mattressTruth, mattressDisplayTitle]);
 
   const learnPricingRows = useMemo(() => {
@@ -3523,7 +3523,7 @@ export default function Pod() {
         : `Match reason: ${whyThisPodSentence}`
     );
 
-    return items.filter(Boolean).slice(0, 4);
+    return items.filter(Boolean).slice(0, 3);
   }, [shopperDetailContext, mattressTruth, benefits, whyThisPodReason, whyThisPodSentence]);
 
   const goToDetailsStage = useCallback(async () => {
@@ -3583,17 +3583,17 @@ export default function Pod() {
     if (openStage === "details") {
       return (
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="grid min-h-0 gap-2.5 xl:flex-1 xl:grid-cols-3">
-            <ShowroomPanel className="flex flex-col p-3.5 md:p-4" tone="frost">
+          <div className="grid min-h-0 gap-2 xl:flex-1 xl:grid-cols-3">
+            <ShowroomPanel className="flex flex-col p-3 md:p-3.5" tone="frost">
               <div className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
                 Specs
               </div>
-              <div className="mt-1.5 text-[1.08rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.18rem]">
+              <div className="mt-1 text-[1.02rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.12rem]">
                 What's Inside
               </div>
-              <div className="mt-2.5 flex-1 space-y-2 pr-0.5">
+              <div className="mt-2 flex-1 space-y-1.5 pr-0.5">
                 {learnSpecsItems.map((item) => (
-                  <div key={item} className="flex gap-2 text-[0.84rem] leading-5 text-slate-700">
+                  <div key={item} className="flex gap-2 text-[0.8rem] leading-[1.25rem] text-slate-700">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2f57e8]" />
                     <span>{item}</span>
                   </div>
@@ -3601,44 +3601,44 @@ export default function Pod() {
               </div>
             </ShowroomPanel>
 
-            <ShowroomPanel className="flex flex-col p-3.5 md:p-4" tone="frost">
+            <ShowroomPanel className="flex flex-col p-3 md:p-3.5" tone="frost">
               <div className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
                 Pricing
               </div>
-              <div className="mt-1.5 text-[1.08rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.18rem]">
+              <div className="mt-1 text-[1.02rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.12rem]">
                 Mattress Only
               </div>
               {learnPricingRows.length ? (
-                <div className="mt-2.5 flex-1 pr-0.5">
-                  <div className="grid gap-1.5">
+                <div className="mt-2 flex-1 pr-0.5">
+                  <div className="grid gap-1.25 sm:grid-cols-2">
                     {learnPricingRows.map((row) => (
                       <div
                         key={row.size}
-                        className="flex items-center justify-between rounded-[16px] border border-[#dbe5ff] bg-white/96 px-2.5 py-2 shadow-sm"
+                        className="flex items-center justify-between rounded-[15px] border border-[#dbe5ff] bg-white/96 px-2.5 py-1.5 shadow-sm"
                       >
-                        <div className="text-[0.84rem] font-extrabold text-slate-900">{row.size}</div>
-                        <div className="text-[0.84rem] font-black text-[#2f57e8]">{row.price}</div>
+                        <div className="text-[0.8rem] font-extrabold text-slate-900">{row.size}</div>
+                        <div className="text-[0.8rem] font-black text-[#2f57e8]">{row.price}</div>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="mt-2.5 rounded-[16px] border border-dashed border-[#dbe5ff] bg-white/90 px-3 py-3.5 text-[0.8rem] leading-5 text-slate-600">
+                <div className="mt-2 rounded-[16px] border border-dashed border-[#dbe5ff] bg-white/90 px-3 py-3 text-[0.78rem] leading-5 text-slate-600">
                   Mattress-only pricing will appear here when the current product pricing finishes loading.
                 </div>
               )}
             </ShowroomPanel>
 
-            <ShowroomPanel className="flex flex-col p-3.5 md:p-4" tone="frost">
+            <ShowroomPanel className="flex flex-col p-3 md:p-3.5" tone="frost">
               <div className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
                 Why It Fits You
               </div>
-              <div className="mt-1.5 text-[1.08rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.18rem]">
+              <div className="mt-1 text-[1.02rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.12rem]">
                 Why this mattress may fit
               </div>
-              <div className="mt-2.5 flex-1 space-y-2 pr-0.5">
+              <div className="mt-2 flex-1 space-y-1.5 pr-0.5">
                 {learnFitItems.map((item) => (
-                  <div key={item} className="flex gap-2 text-[0.84rem] leading-5 text-slate-700">
+                  <div key={item} className="flex gap-2 text-[0.8rem] leading-[1.25rem] text-slate-700">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2f57e8]" />
                     <span>{item}</span>
                   </div>
@@ -3657,7 +3657,7 @@ export default function Pod() {
                     },
                   });
                 }}
-                className="mt-3 w-full rounded-[16px] border border-[#dbe5ff] bg-white px-4 py-2.5 text-[0.8rem] font-black text-[#2f57e8] shadow-sm transition hover:bg-slate-50"
+                className="mt-2.5 w-full rounded-[16px] border border-[#dbe5ff] bg-white px-4 py-2.25 text-[0.78rem] font-black text-[#2f57e8] shadow-sm transition hover:bg-slate-50"
               >
                 Ask Snoozer About This Mattress
               </button>
@@ -3920,7 +3920,7 @@ export default function Pod() {
           />
         </ShowroomPanel>
 
-        <div className="grid min-h-0 flex-1 auto-rows-fr gap-3 md:grid-cols-3">
+        <div className="grid min-h-0 flex-1 auto-rows-fr gap-2.5 md:grid-cols-3">
           <PodHomeActionCard
             icon={Timer}
             title="Rest Test"
@@ -3975,7 +3975,7 @@ export default function Pod() {
   return (
     <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
       <div className="mx-auto w-full max-w-[1380px] shrink-0 px-4 pt-0.5 md:px-6 md:pt-1">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[26px] border border-white/80 bg-white/94 px-4 py-1.5 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-2">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[24px] border border-white/80 bg-white/94 px-4 py-1.25 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-1.5">
           <button
             type="button"
             onClick={() => {
@@ -4013,13 +4013,13 @@ export default function Pod() {
         </div>
       </div>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-4 pb-0.5 pt-1 md:px-6 md:pb-1 md:pt-1.5">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-4 pb-0.5 pt-0.75 md:px-6 md:pb-1 md:pt-1">
         {isDefaultPodDashboard ? (
-          <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-1 md:p-1.5">
+          <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-1 md:p-1.25">
             {podHomeContent}
           </ShowroomFrame>
         ) : (
-            <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-1 md:p-1.5" : "p-1.5 md:p-2"].join(" ")}>
+            <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-1 md:p-1.25" : "p-1.25 md:p-1.5"].join(" ")}>
             <ShowroomPanel className="shrink-0 overflow-hidden p-0" tone="soft">
               <PodRouteHeroHeader
                 eyebrow=""
@@ -4037,8 +4037,8 @@ export default function Pod() {
             <div
               ref={stagePanelRef}
               className={[
-                "mt-2 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-1 pb-1 md:pr-1.5 md:pb-2",
-                isRestTaskStage ? "" : "md:mt-2.5",
+                "mt-1.5 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-1 pb-1 md:pr-1.25 md:pb-1.5",
+                isRestTaskStage ? "" : "md:mt-2",
               ].join(" ")}
             >
               {activePanelContent}
@@ -4048,8 +4048,8 @@ export default function Pod() {
       </div>
 
       {!loading && activePod ? (
-          <div className="mx-auto mt-0 w-full max-w-[1380px] shrink-0 px-4 pb-1 pt-1 md:px-6 md:pb-1.5 md:pt-1">
-            <div className="flex flex-wrap items-center justify-between gap-1.5 rounded-[18px] border border-white/85 bg-white/96 px-2.5 py-1 shadow-[0_18px_40px_rgba(40,63,126,0.12)]">
+          <div className="mx-auto mt-0 w-full max-w-[1380px] shrink-0 px-4 pb-0.75 pt-0.75 md:px-6 md:pb-1 md:pt-0.75">
+            <div className="flex flex-wrap items-center justify-between gap-1.5 rounded-[16px] border border-white/85 bg-white/96 px-2 py-0.75 shadow-[0_18px_40px_rgba(40,63,126,0.12)]">
               <div className="flex flex-wrap items-center gap-1.5">
                 <ExperienceFooterButton
                   icon={House}
