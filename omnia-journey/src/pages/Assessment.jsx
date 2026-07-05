@@ -2,11 +2,24 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2 } from "lucide-react";
+import {
+  ClipboardList,
+  LockKeyhole,
+  Sparkles,
+  Timer,
+} from "lucide-react";
 import { getAssessmentQuestions, saveAssessment } from "@/lib/api";
 import useRewards from "@/lib/useRewards";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
+import {
+  ShowroomBrandMark,
+  ShowroomCartBadge,
+  ShowroomEyebrow,
+  ShowroomFrame,
+  ShowroomPageShell,
+  ShowroomTopRail,
+} from "@/components/showroom/ShowroomPrimitives";
 
 const BRAND = {
   primary: "#1A66D2",
@@ -269,7 +282,7 @@ function QuestionChoice({ label, selected, onClick }) {
       type="button"
       onClick={onClick}
       className={[
-        "rounded-2xl border px-4 py-4 text-left transition",
+        "rounded-2xl border px-4 py-3.5 text-left transition",
         selected
           ? "border-blue-600 bg-blue-50"
           : "border-gray-200 bg-white hover:bg-gray-50",
@@ -316,7 +329,7 @@ function MotionOptionCard({ option, selected, disabled, disabledReason, onClick 
         />
       </div>
 
-      <div className="p-4">
+      <div className="p-3.5">
         <div className="mb-1 flex items-center justify-between gap-3">
           <span className="text-base font-semibold text-gray-900">{option.label}</span>
           <span
@@ -348,6 +361,51 @@ function buildQuestionSpeech(question) {
   if (question.id === "motionMode") return "Choose your motion style.";
 
   return String(question.text || "").trim();
+}
+
+function questionSupportText(question) {
+  if (!question) return "";
+
+  switch (question.id) {
+    case "size":
+      return "This keeps your recommended pods and base options grounded in the size you actually want to shop.";
+    case "baseType":
+      return "Your base choice changes motion options and which setups are worth testing in the showroom.";
+    case "motionMode":
+      return "Split and standard motion matter most when you want an adjustable setup or share the bed.";
+    case "sleepPartner":
+      return "Sharing the bed affects motion, comfort flexibility, and how we rank partner-friendly pods.";
+    case "sleepPosition":
+      return "Your main sleep position helps Snoozer look for pressure relief or support in the right places.";
+    case "temperature":
+      return "Sleeping hot changes which mattress feels and materials deserve extra attention.";
+    case "firmness":
+      return "Your comfort preference helps Snoozer choose where to start before you compare the next pods.";
+    default:
+      return "Answer this so Snoozer can keep narrowing your best first test.";
+  }
+}
+
+function questionSectionLabel(question) {
+  if (!question) return "Snooze Assessment";
+
+  switch (question.id) {
+    case "size":
+      return "Sleep setup";
+    case "baseType":
+    case "motionMode":
+      return "Base and motion";
+    case "sleepPartner":
+      return "Sleep profile";
+    case "sleepPosition":
+      return "Body support";
+    case "temperature":
+      return "Cooling and comfort";
+    case "firmness":
+      return "Feel preference";
+    default:
+      return "Assessment";
+  }
 }
 
 export default function Assessment() {
@@ -386,7 +444,12 @@ export default function Assessment() {
   }, []);
 
   const rewards = useRewards(shopperId);
+  const snoozepod = useStore((state) => state.snoozepod || []);
   const { setAssessment, setAssessmentSummary } = useStore();
+  const snoozepodCount = useMemo(
+    () => snoozepod.reduce((sum, item) => sum + (Number(item?.quantity) || 0), 0),
+    [snoozepod]
+  );
 
   const introSpokenRef = useRef(false);
   const submitTriggeredRef = useRef(false);
@@ -679,7 +742,39 @@ export default function Assessment() {
       } catch (err) {
         console.error("Failed to load assessment questions:", err);
         if (cancelled || !mountedRef.current) return;
-        setFetchError("We couldn't load the Snooze Assessment right now.");
+        setTitle("Snooze Assessment");
+        setQuestions(
+          buildQuestionFlow([
+            CANONICAL_SIZE_QUESTION,
+            CANONICAL_BASE_QUESTION,
+            CANONICAL_MOTION_QUESTION,
+            {
+              id: "sleepPartner",
+              text: "Do you share the bed with a partner?",
+              options: ["Yes", "No"],
+              required: true,
+            },
+            {
+              id: "sleepPosition",
+              text: "What position do you sleep in most?",
+              options: ["Side", "Back", "Stomach", "Combination"],
+              required: true,
+            },
+            {
+              id: "temperature",
+              text: "Do you sleep hot, cool, or somewhere in the middle?",
+              options: ["Hot", "Neutral", "Cool"],
+              required: true,
+            },
+            {
+              id: "firmness",
+              text: "What feel sounds best to you?",
+              options: ["Soft", "Medium", "Firm"],
+              required: true,
+            },
+          ])
+        );
+        questionsLoadedRef.current = true;
       } finally {
         if (!cancelled && mountedRef.current) {
           setLoading(false);
@@ -986,112 +1081,99 @@ export default function Assessment() {
 
   const displayTitle = normalizeTitle(title);
   const currentIsMotionQuestion = current?.id === "motionMode";
+  const currentSection = questionSectionLabel(current);
+  const currentSupportText = questionSupportText(current);
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-3xl p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Snooze Assessment</h1>
-          <div className="text-sm text-gray-500">Preparing your Snooze Assessment</div>
+      <ShowroomPageShell className="pb-8">
+        <ShowroomTopRail>
+          <ShowroomBrandMark />
+          <ShowroomCartBadge
+            count={snoozepodCount}
+            quiet
+            onClick={() => navigate("/snoozepod")}
+          />
+        </ShowroomTopRail>
+        <div className="mx-auto max-w-[1380px] px-4 pb-6 pt-3 md:px-6">
+          <ShowroomFrame className="p-5 md:p-7">
+            <div className="animate-pulse space-y-5">
+              <div className="h-5 w-40 rounded-full bg-slate-200" />
+              <div className="h-14 w-80 rounded-2xl bg-slate-200" />
+              <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+                <div className="h-[340px] rounded-[30px] bg-slate-100" />
+                <div className="h-[420px] rounded-[30px] bg-slate-100" />
+              </div>
+            </div>
+          </ShowroomFrame>
         </div>
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 w-1/3 rounded bg-gray-200" />
-          <div className="h-40 rounded-xl bg-gray-100" />
-          <div className="h-12 rounded-xl bg-gray-100" />
-        </div>
-      </div>
+      </ShowroomPageShell>
     );
   }
 
   if (fetchError) {
     return (
-      <div className="mx-auto max-w-3xl p-6">
-        <h1 className="mb-3 text-2xl font-bold">Snooze Assessment</h1>
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
-          {fetchError}
+      <ShowroomPageShell className="pb-8">
+        <ShowroomTopRail>
+          <ShowroomBrandMark />
+          <ShowroomCartBadge
+            count={snoozepodCount}
+            quiet
+            onClick={() => navigate("/snoozepod")}
+          />
+        </ShowroomTopRail>
+        <div className="mx-auto max-w-[1180px] px-4 pb-6 pt-3 md:px-6">
+          <ShowroomFrame className="p-6 md:p-8">
+            <ShowroomEyebrow>Snooze Assessment</ShowroomEyebrow>
+            <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-900">
+              We couldn’t load the assessment right now.
+            </h1>
+            <div className="mt-5 rounded-[24px] border border-red-200 bg-red-50 p-5 text-red-700">
+              {fetchError}
+            </div>
+            <div className="mt-5">
+              <Button onClick={() => window.location.reload()}>Try Again</Button>
+            </div>
+          </ShowroomFrame>
         </div>
-        <div className="mt-4">
-          <Button onClick={() => window.location.reload()}>Try Again</Button>
-        </div>
-      </div>
+      </ShowroomPageShell>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold leading-tight">{displayTitle}</h1>
-          <p className="text-sm text-gray-500">
-            Question {Math.min(step + 1, visibleQuestions.length || 1)} of{" "}
-            {visibleQuestions.length || 1}
-          </p>
-        </div>
-
-        <div className="flex flex-col items-end gap-2">
-          <div className="text-sm text-gray-500">{progress}% complete</div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                noteUserInteraction?.();
-                setMuted(!muted);
-              }}
-              className="text-xs text-gray-600 underline hover:text-gray-900"
-              aria-label={muted ? "Unmute Snoozer voice" : "Mute Snoozer voice"}
-              title={muted ? "Unmute Snoozer" : "Mute Snoozer"}
-            >
-              {muted ? "Unmute" : "Mute"}
-            </button>
-
-            <button
-              type="button"
-              onClick={replayCurrentQuestion}
-              className="inline-flex items-center gap-1 text-xs text-gray-600 underline hover:text-gray-900"
-              aria-label="Replay question voice"
-              title="Replay question voice"
-            >
-              <Volume2 className="h-3.5 w-3.5" />
-              Replay
-            </button>
-          </div>
-
-          {voiceState?.blocked ? (
-            <div className="text-[11px] text-amber-700">Tap again to enable voice</div>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="mb-6 h-1.5 w-full rounded-full bg-gray-200">
-        <div
-          className="h-1.5 rounded-full transition-all"
-          style={{ width: `${progress}%`, background: BRAND.primary }}
+    <ShowroomPageShell className="pb-4 md:pb-5">
+      <ShowroomTopRail className="pt-3 md:pt-4">
+        <ShowroomBrandMark />
+        <ShowroomCartBadge
+          count={snoozepodCount}
+          quiet
+          onClick={() => {
+            noteUserInteraction?.();
+            navigate("/snoozepod");
+          }}
         />
-      </div>
+      </ShowroomTopRail>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <AnimatePresence mode="wait">
-          {current ? (
-            <motion.div
-              key={current.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-            >
-              <div className="flex items-start gap-6">
-                <div className="shrink-0">
+      <div className="mx-auto max-w-[1360px] px-4 pb-4 pt-2 md:px-6 md:pb-5">
+        <ShowroomFrame className="p-4 md:p-5">
+          <div className="grid gap-4 lg:grid-cols-[270px_minmax(0,1fr)] xl:grid-cols-[286px_minmax(0,1fr)]">
+            <div className="space-y-3">
+              <div className="rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_40%_0%,rgba(87,121,255,0.18),transparent_45%),linear-gradient(180deg,#f7fbff_0%,#eef4ff_100%)] p-4 shadow-[0_18px_44px_rgba(45,71,136,0.08)] md:p-5">
+                <ShowroomEyebrow>{displayTitle}</ShowroomEyebrow>
+                <h1 className="mt-2.5 text-[3rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[3.25rem]">
+                  One question at a time.
+                </h1>
+                <p className="mt-2.5 text-[0.98rem] leading-6 text-slate-600">
+                  Answer what feels closest. Snoozer will build your match order.
+                </p>
+
+                <div className="mt-4 flex justify-center">
                   <div className="relative">
-                    <div
-                      className="absolute inset-0 rounded-full blur-3xl opacity-25"
-                      style={{ background: BRAND.primary }}
-                      aria-hidden="true"
-                    />
-                    <motion.img
+                  <div className="absolute inset-0 rounded-full blur-3xl opacity-25" style={{ background: BRAND.primary }} aria-hidden="true" />
+                  <motion.img
                       src="/snoozer-avatar.png"
                       alt="Snoozer"
-                      className="relative h-40 w-40 rounded-full object-cover shadow-xl md:h-48 md:w-48"
+                      className="relative h-36 w-36 rounded-full object-cover shadow-xl md:h-40 md:w-40"
                       animate={{ y: [0, -4, 0] }}
                       transition={{ duration: 3, repeat: Infinity }}
                       loading="lazy"
@@ -1100,177 +1182,241 @@ export default function Assessment() {
                   </div>
                 </div>
 
-                <div className="relative flex-1 rounded-3xl border border-blue-200 bg-blue-50 px-7 py-6">
-                  <div
-                    className="absolute -left-4 top-16 h-0 w-0"
-                    style={{
-                      borderTop: "16px solid transparent",
-                      borderBottom: "16px solid transparent",
-                      borderRight: `16px solid ${BRAND.cloudBg}`,
-                    }}
-                    aria-hidden="true"
-                  />
+                <div className="mt-4 rounded-[22px] border border-white/80 bg-white/92 px-4 py-3 shadow-sm">
+                  <div className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                    Progress
+                  </div>
+                  <div className="mt-1 text-lg font-black text-slate-900 md:text-xl">
+                    {progress}% complete
+                  </div>
+                  <div className="mt-3 h-2.5 w-full rounded-full bg-[#dfe8fb]">
+                    <div
+                      className="h-2.5 rounded-full transition-all"
+                      style={{ width: `${progress}%`, background: BRAND.primary }}
+                    />
+                  </div>
+                </div>
 
-                  <p className="mb-1 text-sm text-gray-600">
-                    {isRequired(current) ? "Required" : "Optional"}
-                  </p>
+                {voiceState?.blocked ? (
+                  <div className="mt-2.5 text-xs font-semibold text-amber-700">
+                    Tap again to enable Snoozer voice.
+                  </div>
+                ) : null}
+              </div>
+            </div>
 
-                  <h2 className="text-lg font-semibold leading-snug text-[#2A2B2A] md:text-xl">
-                    {current.text}
-                  </h2>
+            <div className="min-w-0 rounded-[30px] border border-white/80 bg-white/96 p-4 shadow-[0_18px_44px_rgba(45,71,136,0.08)] md:p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e4ff] bg-[#eef3ff] px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+                    <ClipboardList className="h-3.5 w-3.5" />
+                    {currentSection}
+                  </div>
+                  <div className="mt-2 max-w-3xl text-[0.9rem] leading-6 text-slate-600">
+                    {currentSupportText}
+                  </div>
+                </div>
 
-                  {currentIsMotionQuestion ? (
-                    <p className="mt-3 text-sm text-gray-600">
-                      Pick the adjustable setup that fits you best.
-                    </p>
-                  ) : null}
-
-                  {!isRequired(current) ? (
-                    <div className="mt-3">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={handleSkipCurrent}
-                        className="text-gray-700"
-                      >
-                        Skip
-                      </Button>
-                    </div>
-                  ) : null}
+                <div className="flex items-center gap-2 rounded-full border border-[#d9e4ff] bg-[#f7faff] px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                  <Timer className="h-3.5 w-3.5 text-[#2f57e8]" />
+                  {doneCount} answered
                 </div>
               </div>
 
-              <div className="mt-8">
-                {currentIsMotionQuestion ? (
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    {motionCards.map((opt) => {
-                      const selected = answers[current.id] === opt.label;
-
-                      return (
-                        <MotionOptionCard
-                          key={opt.label}
-                          option={opt}
-                          selected={selected}
-                          disabled={opt.disabled}
-                          disabledReason={opt.disabledReason}
-                          onClick={() => {
-                            if (opt.disabled) return;
-                            handleSingleSelect(current.id, opt.label);
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                ) : Array.isArray(current.options) && current.options.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {isMultiQuestion(current)
-                      ? current.options.map((opt) => {
-                          const normalizedOpt = normalizeOptionText(opt);
-                          const selected = Array.isArray(answers[current.id])
-                            ? answers[current.id].includes(normalizedOpt)
-                            : false;
-
-                          return (
-                            <QuestionChoice
-                              key={normalizedOpt}
-                              label={normalizedOpt}
-                              selected={selected}
-                              onClick={() => handleMultiToggle(current.id, normalizedOpt)}
-                            />
-                          );
-                        })
-                      : current.options.map((opt) => {
-                          const normalizedOpt = normalizeOptionText(opt);
-                          const selected = answers[current.id] === normalizedOpt;
-
-                          return (
-                            <QuestionChoice
-                              key={normalizedOpt}
-                              label={normalizedOpt}
-                              selected={selected}
-                              onClick={() => handleSingleSelect(current.id, normalizedOpt)}
-                            />
-                          );
-                        })}
-                  </div>
-                ) : (
-                  <input
-                    type="text"
-                    name={current.id}
-                    value={answers[current.id] || ""}
-                    onChange={(e) =>
-                      setAnswers((prev) => ({ ...prev, [current.id]: e.target.value }))
-                    }
-                    placeholder="Type your answer"
-                    className="w-full rounded-xl border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-[#1A66D2]"
-                  />
-                )}
+              <div className="mt-4 h-2 w-full rounded-full bg-[#dfe8fb]">
+                <div
+                  className="h-2 rounded-full transition-all"
+                  style={{ width: `${progress}%`, background: BRAND.primary }}
+                />
               </div>
 
-              {isRequired(current) &&
-              !isAnswered(current, answers[current.id]) &&
-              !skipped[current.id] ? (
-                <p className="mt-4 text-sm text-gray-500">Choose an option to continue.</p>
-              ) : null}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-gray-600"
-            >
-              We are getting your Snooze Assessment ready.
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <div className="mt-5">
+                <AnimatePresence mode="wait">
+                  {current ? (
+                    <motion.div
+                      key={current.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <div className="rounded-[28px] border border-[#cfe0ff] bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] p-4 shadow-sm md:p-5">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                            {isRequired(current) ? "Required" : "Optional"}
+                          </span>
+                          {!isRequired(current) ? (
+                            <button
+                              type="button"
+                              onClick={handleSkipCurrent}
+                              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 transition hover:bg-slate-50"
+                            >
+                              Skip this
+                            </button>
+                          ) : null}
+                        </div>
+
+                        <h2 className="mt-3 text-[1.85rem] font-black leading-tight text-slate-900 md:text-[2rem]">
+                          {current.text}
+                        </h2>
+
+                        {currentIsMotionQuestion ? (
+                          <p className="mt-2.5 text-sm leading-6 text-slate-600">
+                            Pick the adjustable motion setup that feels most realistic for how
+                            you want to relax and sleep.
+                          </p>
+                        ) : null}
+
+                        <div className="mt-5">
+                          {currentIsMotionQuestion ? (
+                            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                              {motionCards.map((opt) => {
+                                const selected = answers[current.id] === opt.label;
+
+                                return (
+                                  <MotionOptionCard
+                                    key={opt.label}
+                                    option={opt}
+                                    selected={selected}
+                                    disabled={opt.disabled}
+                                    disabledReason={opt.disabledReason}
+                                    onClick={() => {
+                                      if (opt.disabled) return;
+                                      handleSingleSelect(current.id, opt.label);
+                                    }}
+                                  />
+                                );
+                              })}
+                            </div>
+                          ) : Array.isArray(current.options) && current.options.length > 0 ? (
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                              {isMultiQuestion(current)
+                                ? current.options.map((opt) => {
+                                    const normalizedOpt = normalizeOptionText(opt);
+                                    const selected = Array.isArray(answers[current.id])
+                                      ? answers[current.id].includes(normalizedOpt)
+                                      : false;
+
+                                    return (
+                                      <QuestionChoice
+                                        key={normalizedOpt}
+                                        label={normalizedOpt}
+                                        selected={selected}
+                                        onClick={() =>
+                                          handleMultiToggle(current.id, normalizedOpt)
+                                        }
+                                      />
+                                    );
+                                  })
+                                : current.options.map((opt) => {
+                                    const normalizedOpt = normalizeOptionText(opt);
+                                    const selected = answers[current.id] === normalizedOpt;
+
+                                    return (
+                                      <QuestionChoice
+                                        key={normalizedOpt}
+                                        label={normalizedOpt}
+                                        selected={selected}
+                                        onClick={() =>
+                                          handleSingleSelect(current.id, normalizedOpt)
+                                        }
+                                      />
+                                    );
+                                  })}
+                            </div>
+                          ) : (
+                            <label className="flex items-center gap-3 rounded-[22px] border border-[#b8cbff] bg-white px-5 py-3.5 shadow-sm">
+                              <LockKeyhole className="h-5 w-5 text-slate-400" />
+                              <input
+                                type="text"
+                                name={current.id}
+                                value={answers[current.id] || ""}
+                                onChange={(e) =>
+                                  setAnswers((prev) => ({
+                                    ...prev,
+                                    [current.id]: e.target.value,
+                                  }))
+                                }
+                                placeholder="Type your answer"
+                                className="w-full bg-transparent text-lg font-semibold text-slate-900 outline-none placeholder:text-slate-400"
+                              />
+                            </label>
+                          )}
+                        </div>
+                      </div>
+
+                      {isRequired(current) &&
+                      !isAnswered(current, answers[current.id]) &&
+                      !skipped[current.id] ? (
+                        <p className="mt-3 text-sm font-medium text-slate-500">
+                          Choose an option to continue.
+                        </p>
+                      ) : null}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="empty"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="rounded-[28px] border border-slate-200 bg-slate-50 p-6 text-gray-600"
+                    >
+                      We are getting your Snooze Assessment ready.
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={step === 0 || submitting}
+                  className="rounded-[18px] px-5 py-5 text-base font-extrabold"
+                >
+                  Back
+                </Button>
+
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#eef3ff] px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#2f57e8]">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Done {doneCount}/{visibleQuestions.length || 1}
+                </div>
+
+                {step === visibleQuestions.length - 1 ? (
+                  <Button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={!canFinish || submitting}
+                    className="rounded-[18px] px-6 py-5 text-base font-extrabold text-white"
+                    style={{
+                      background: canFinish ? BRAND.primary : "#D1D5DB",
+                      cursor: canFinish ? "pointer" : "not-allowed",
+                    }}
+                  >
+                    {submitting ? "Saving your results..." : "Finish & View Results"}
+                  </Button>
+                ) : showNextButton ? (
+                  <Button
+                    type="button"
+                    onClick={handleAdvanceCurrent}
+                    disabled={!currentCanAdvance || submitting}
+                    className="rounded-[18px] px-6 py-5 text-base font-extrabold text-white"
+                    style={{
+                      background: currentCanAdvance ? BRAND.primary : "#D1D5DB",
+                      cursor: currentCanAdvance ? "pointer" : "not-allowed",
+                    }}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <div className="w-[168px]" aria-hidden="true" />
+                )}
+              </div>
+            </div>
+          </div>
+        </ShowroomFrame>
       </div>
-
-      <div className="mt-6 flex items-center justify-between gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleBack}
-          disabled={step === 0 || submitting}
-        >
-          Back
-        </Button>
-
-        <div className="text-xs text-gray-500">
-          Done {doneCount}/{visibleQuestions.length || 1}
-        </div>
-
-        {step === visibleQuestions.length - 1 ? (
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!canFinish || submitting}
-            className="text-white"
-            style={{
-              background: canFinish ? BRAND.primary : "#D1D5DB",
-              cursor: canFinish ? "pointer" : "not-allowed",
-            }}
-          >
-            {submitting ? "Saving your results..." : "Finish & View Results"}
-          </Button>
-        ) : showNextButton ? (
-          <Button
-            type="button"
-            onClick={handleAdvanceCurrent}
-            disabled={!currentCanAdvance || submitting}
-            className="text-white"
-            style={{
-              background: currentCanAdvance ? BRAND.primary : "#D1D5DB",
-              cursor: currentCanAdvance ? "pointer" : "not-allowed",
-            }}
-          >
-            Next
-          </Button>
-        ) : (
-          <div className="w-[152px]" aria-hidden="true" />
-        )}
-      </div>
-    </div>
+    </ShowroomPageShell>
   );
 }
 
