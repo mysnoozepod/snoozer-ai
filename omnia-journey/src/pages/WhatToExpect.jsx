@@ -78,29 +78,29 @@ function hasCompletedAssessment(snapshot) {
 
 function StepCard({ step, title, body, detail, icon: Icon }) {
   return (
-    <div className="flex h-full flex-col rounded-[26px] border border-white/80 bg-white px-5 py-5 text-center shadow-[0_18px_42px_rgba(45,71,136,0.09)] md:px-6 md:py-6">
+    <div className="flex h-full flex-col rounded-[26px] border border-white/80 bg-white px-4 py-4 text-center shadow-[0_18px_42px_rgba(45,71,136,0.09)] md:px-5 md:py-5">
       <div className="text-[0.82rem] font-black uppercase tracking-[0.24em] text-[#1A66D2]">
         Step {step}
       </div>
 
-      <div className="mt-4 flex justify-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,#F4F8FF_0%,#EFF4FF_100%)] text-[#2f57e8] shadow-inner">
-          <Icon className="h-4 w-4" />
+      <div className="mt-3 flex justify-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-[linear-gradient(180deg,#F4F8FF_0%,#EFF4FF_100%)] text-[#2f57e8] shadow-inner">
+          <Icon className="h-[18px] w-[18px]" />
         </div>
       </div>
 
-      <div className="mt-5 text-[1.04rem] font-black leading-tight text-slate-900 md:text-[1.16rem]">
+      <div className="mt-4 text-[1rem] font-black leading-tight text-slate-900 md:text-[1.1rem]">
         {title}
       </div>
 
-      <div className="mt-4 text-[0.94rem] leading-7 text-slate-600">
+      <div className="mt-3 text-[0.9rem] leading-6 text-slate-600">
         {body}
       </div>
 
       {detail ? (
         <div
           className={[
-            "mt-3 text-[0.94rem] leading-7",
+            "mt-2.5 text-[0.9rem] leading-6",
             detail === "You’re here"
               ? "font-semibold text-[#2f57e8]"
               : "text-slate-600",
@@ -109,12 +109,6 @@ function StepCard({ step, title, body, detail, icon: Icon }) {
           {detail}
         </div>
       ) : null}
-
-      <div className="mt-auto pt-5">
-        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#EEF4FF] text-[1.2rem] font-black text-[#2f57e8]">
-          {step}
-        </div>
-      </div>
     </div>
   );
 }
