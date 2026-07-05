@@ -78,29 +78,29 @@ function hasCompletedAssessment(snapshot) {
 
 function StepCard({ step, title, body, detail, icon: Icon }) {
   return (
-    <div className="flex h-full flex-col rounded-[26px] border border-white/80 bg-white px-4 py-4 text-center shadow-[0_18px_42px_rgba(45,71,136,0.09)] md:px-5 md:py-5">
-      <div className="text-[0.82rem] font-black uppercase tracking-[0.24em] text-[#1A66D2]">
+    <div className="flex h-full flex-col rounded-[24px] border border-white/80 bg-white px-4 py-3 text-center shadow-[0_16px_36px_rgba(45,71,136,0.085)] md:px-4.5 md:py-3.5">
+      <div className="text-[0.78rem] font-black uppercase tracking-[0.22em] text-[#1A66D2]">
         Step {step}
       </div>
 
-      <div className="mt-3 flex justify-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-[linear-gradient(180deg,#F4F8FF_0%,#EFF4FF_100%)] text-[#2f57e8] shadow-inner">
-          <Icon className="h-[18px] w-[18px]" />
+      <div className="mt-2.5 flex justify-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-[20px] bg-[linear-gradient(180deg,#F4F8FF_0%,#EFF4FF_100%)] text-[#2f57e8] shadow-inner">
+          <Icon className="h-4 w-4" />
         </div>
       </div>
 
-      <div className="mt-4 text-[1rem] font-black leading-tight text-slate-900 md:text-[1.1rem]">
+      <div className="mt-3 text-[0.95rem] font-black leading-tight text-slate-900 md:text-[1.04rem]">
         {title}
       </div>
 
-      <div className="mt-3 text-[0.9rem] leading-6 text-slate-600">
+      <div className="mt-2.5 text-[0.84rem] leading-5 text-slate-600">
         {body}
       </div>
 
       {detail ? (
         <div
           className={[
-            "mt-2.5 text-[0.9rem] leading-6",
+            "mt-2 text-[0.84rem] leading-5",
             detail === "You’re here"
               ? "font-semibold text-[#2f57e8]"
               : "text-slate-600",
@@ -305,22 +305,22 @@ export default function WhatToExpect() {
       <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4 pt-2 md:px-6">
         <ShowroomFrame className="shrink-0 p-3.5 md:p-4">
           <motion.div
-            className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start"
+            className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_288px] xl:items-start"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
             <div className="min-w-0">
               <div className="min-w-0">
-                <h1 className="text-[2.45rem] font-black tracking-tight text-slate-900 md:text-[3rem] xl:text-[3.4rem]">
+                <h1 className="text-[2.2rem] font-black tracking-tight text-slate-900 md:text-[2.75rem] xl:text-[3.15rem]">
                   Your guided showroom path.
                 </h1>
-                <p className="mt-2.5 max-w-3xl text-[0.96rem] leading-6 text-slate-700 md:text-[1rem]">
+                <p className="mt-2 max-w-3xl text-[0.92rem] leading-6 text-slate-700 md:text-[0.96rem]">
                   Start with your match, test your top pods, then build the setup that feels right.
                 </p>
               </div>
 
-              <div className="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-3">
+              <div className="mt-4 grid grid-cols-1 gap-2.5 lg:grid-cols-3">
                 <StepCard
                   step="1"
                   title="Assessment"
