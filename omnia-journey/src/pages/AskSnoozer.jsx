@@ -132,6 +132,107 @@ function buttonClass(active = true) {
   ].join(" ");
 }
 
+function ComposerCard({
+  draft,
+  canSend,
+  compact = false,
+  pending = false,
+  textareaRef,
+  noteUserInteraction,
+  onChange,
+  onKeyDown,
+  onSend,
+  onPromptClick,
+}) {
+  return (
+    <div
+      className={
+        compact
+          ? "rounded-[22px] border border-slate-200 bg-slate-50/80 p-3 shadow-inner"
+          : "rounded-[28px] border border-[#dbe5ff] bg-white/96 p-4 shadow-[0_18px_40px_rgba(31,55,117,0.10)]"
+      }
+    >
+      {!compact ? (
+        <div className="mb-3">
+          <div className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#2f57e8]">
+            Ask anything
+          </div>
+          <div className="mt-1 text-sm leading-6 text-slate-600">
+            Type a question for Snoozer, then send it like a normal chat.
+          </div>
+        </div>
+      ) : null}
+
+      <div
+        className={
+          compact
+            ? ""
+            : "rounded-[24px] border border-slate-200 bg-slate-50/72 px-3 py-2 shadow-inner"
+        }
+      >
+        <textarea
+          ref={textareaRef}
+          value={draft}
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+          onFocus={() => noteUserInteraction?.()}
+          rows={compact ? 2 : 3}
+          placeholder="Ask about cooling, comfort, pods, sessions, or your recommendation..."
+          className={
+            compact
+              ? "min-h-[64px] w-full resize-none bg-transparent px-1 py-1 text-sm leading-6 text-slate-800 outline-none placeholder:text-slate-400"
+              : "min-h-[96px] w-full resize-none bg-transparent px-1 py-1 text-[15px] leading-7 text-slate-800 outline-none placeholder:text-slate-400"
+          }
+        />
+      </div>
+
+      <div
+        className={
+          compact
+            ? "mt-3 flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between"
+            : "mt-4 flex flex-col gap-3"
+        }
+      >
+        <div className="flex flex-wrap gap-2">
+          {QUICK_PROMPTS.map((item) => (
+            <button
+              key={`${compact ? "compact" : "empty"}-${item.label}`}
+              type="button"
+              onClick={() => onPromptClick(item.prompt)}
+              className={
+                compact
+                  ? "rounded-full border border-[#d7e3ff] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#2f57e8] transition hover:bg-[#eef4ff]"
+                  : "rounded-full border border-[#d7e3ff] bg-[#f6f9ff] px-3.5 py-2 text-[0.78rem] font-semibold text-[#2f57e8] transition hover:bg-[#eef4ff]"
+              }
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onSend(draft)}
+          disabled={!canSend}
+          className={
+            compact
+              ? buttonClass(canSend)
+              : [
+                  "inline-flex items-center justify-center gap-2 self-end rounded-full px-5 py-3 text-sm font-semibold transition",
+                  canSend
+                    ? "bg-[#16315F] text-white shadow-[0_14px_28px_rgba(22,49,95,0.18)] hover:bg-[#102749]"
+                    : "bg-slate-200 text-slate-500",
+                ].join(" ")
+          }
+        >
+          {pending ? "Sending..." : "Send message"}
+          <ArrowUp className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AskSnoozer() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -370,8 +471,8 @@ export default function AskSnoozer() {
       <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-4 pb-3 pt-2 md:px-6 md:pb-4">
         <div className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[minmax(0,1fr)_290px]">
           <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-hidden p-1.5 md:p-2">
-            <ShowroomPanel className="shrink-0 overflow-hidden p-4 md:p-4.5" tone="soft">
-              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <ShowroomPanel className="shrink-0 overflow-hidden p-4" tone="soft">
+              <div className="flex flex-col gap-2.5 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0">
                   <div className="flex items-center gap-3">
                     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.96),rgba(233,240,255,0.92))] shadow-[0_14px_32px_rgba(46,74,138,0.10)]">
@@ -391,7 +492,7 @@ export default function AskSnoozer() {
                     </div>
                   </div>
 
-                  <p className="mt-3 max-w-3xl text-[0.92rem] leading-6 text-slate-600 md:text-[0.96rem]">
+                  <p className="mt-2 max-w-3xl text-[0.9rem] leading-6 text-slate-600 md:text-[0.95rem]">
                     Ask about comfort, cooling, partner fit, adjustable bases, Snooze
                     Codes, policy questions, or what to try next in the showroom.
                   </p>
@@ -401,46 +502,41 @@ export default function AskSnoozer() {
                   Responses appear below as soon as you send a message.
                 </div>
               </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                {QUICK_PROMPTS.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => handlePromptClick(item.prompt)}
-                    className="rounded-full border border-[#d7e3ff] bg-[#f6f9ff] px-3.5 py-1.5 text-[0.78rem] font-semibold text-[#2f57e8] transition hover:bg-[#eef4ff]"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
             </ShowroomPanel>
 
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
               <div
                 ref={transcriptRef}
-                className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-3 pb-3 pt-3 md:px-4"
+                className={`flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-3 pb-3 pt-3 md:px-4 ${
+                  hasMessages ? "" : "justify-center"
+                }`}
               >
                 {!hasMessages ? (
-                  <div className="space-y-3">
-                    <div className="rounded-[24px] border border-[#dbe5ff] bg-white/92 p-4 shadow-sm">
-                      <div className="flex items-start gap-3">
-                        <img
-                          src="/snoozer-avatar.png"
-                          alt="Snoozer"
-                          className="h-11 w-11 rounded-2xl border border-slate-100 bg-[#F7FAFF] p-1"
-                        />
-                        <div className="min-w-0">
-                          <div className="text-sm font-black text-slate-900">
-                            Start with a quick question.
-                          </div>
-                          <p className="mt-1 text-sm leading-6 text-slate-600">
-                            Snoozer will answer here in the chat, explain recommendations,
-                            or point you to the next showroom step.
-                          </p>
-                        </div>
+                  <div className="mx-auto flex w-full max-w-[920px] flex-col gap-4">
+                    <div className="text-center">
+                      <div className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#2f57e8]">
+                        Ask Snoozer
                       </div>
+                      <h2 className="mt-2 text-[1.5rem] font-black tracking-tight text-slate-900 md:text-[1.9rem]">
+                        Start chatting right here.
+                      </h2>
+                      <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-slate-600 md:text-[0.96rem]">
+                        Ask about your recommendation, cooling, partner comfort,
+                        adjustable bases, Snooze Codes, or what pod to try next.
+                      </p>
                     </div>
+
+                    <ComposerCard
+                      draft={draft}
+                      canSend={canSend}
+                      pending={pending}
+                      textareaRef={textareaRef}
+                      noteUserInteraction={noteUserInteraction}
+                      onChange={(event) => setDraft(event.target.value)}
+                      onKeyDown={onComposerKeyDown}
+                      onSend={sendMessage}
+                      onPromptClick={handlePromptClick}
+                    />
 
                     <div className="grid gap-2 md:grid-cols-2">
                       {STARTER_PROMPTS.map((prompt) => (
@@ -630,45 +726,22 @@ export default function AskSnoozer() {
                 ) : null}
               </div>
 
-              <div className="shrink-0 border-t border-slate-100 bg-white/94 px-3 pb-3 pt-3 md:px-4 md:pb-4">
-                <div className="rounded-[22px] border border-slate-200 bg-slate-50/80 p-3 shadow-inner">
-                  <textarea
-                    ref={textareaRef}
-                    value={draft}
+              {hasMessages ? (
+                <div className="shrink-0 border-t border-slate-100 bg-white/94 px-3 pb-3 pt-3 md:px-4 md:pb-4">
+                  <ComposerCard
+                    draft={draft}
+                    canSend={canSend}
+                    compact
+                    pending={pending}
+                    textareaRef={textareaRef}
+                    noteUserInteraction={noteUserInteraction}
                     onChange={(event) => setDraft(event.target.value)}
                     onKeyDown={onComposerKeyDown}
-                    onFocus={() => noteUserInteraction?.()}
-                    rows={2}
-                    placeholder="Ask about cooling, comfort, pods, sessions, or your recommendation..."
-                    className="min-h-[64px] w-full resize-none bg-transparent px-1 py-1 text-sm leading-6 text-slate-800 outline-none placeholder:text-slate-400"
+                    onSend={sendMessage}
+                    onPromptClick={handlePromptClick}
                   />
-
-                  <div className="mt-3 flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between">
-                    <div className="flex flex-wrap gap-2">
-                      {QUICK_PROMPTS.map((item) => (
-                        <button
-                          key={`composer-${item.label}`}
-                          type="button"
-                          onClick={() => handlePromptClick(item.prompt)}
-                          className="rounded-full border border-[#d7e3ff] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#2f57e8] transition hover:bg-[#eef4ff]"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => sendMessage(draft)}
-                      disabled={!canSend}
-                      className={buttonClass(canSend)}
-                    >
-                      Send
-                      <ArrowUp className="h-4 w-4" />
-                    </button>
-                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           </ShowroomFrame>
 
