@@ -13,15 +13,13 @@ import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import {
   ArrowRight,
   CheckCircle2,
+  Headphones,
   ImageOff,
   MessageSquare,
   Star,
-  Volume2,
 } from "lucide-react";
-import { useStore } from "@/lib/useStore";
 import {
   ShowroomBrandMark,
-  ShowroomCartBadge,
   ShowroomEyebrow,
   ShowroomFrame,
   ShowroomPanel,
@@ -589,12 +587,7 @@ export default function Results() {
     useShowroomHud();
 
   const shopperId = safeGet("snooze.accessCode") || "";
-  const snoozepod = useStore((state) => state.snoozepod || []);
   const rewards = useRewards(shopperId);
-  const snoozepodCount = useMemo(
-    () => snoozepod.reduce((sum, item) => sum + (Number(item?.quantity) || 0), 0),
-    [snoozepod]
-  );
 
   const answers = useMemo(() => {
     const raw = safeGet("snooze.assessment");
@@ -803,8 +796,6 @@ export default function Results() {
     () => buildLeadReasonCards({ pod: leadPod, recommendationMeta: recs?.meta || {} }).slice(0, 2),
     [leadPod, recs?.meta]
   );
-  const allMatches = useMemo(() => buildAllMatchesList(rankedPods), [rankedPods]);
-
   const recommendedRankByPodId = useMemo(() => {
     const map = {};
     rankedPods.slice(0, 3).forEach((p, index) => {
@@ -927,17 +918,8 @@ export default function Results() {
 
   return (
     <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
-      <ShowroomTopRail className="items-center pt-3 md:pt-4">
-        <div className="hidden w-[160px] md:block" />
+      <ShowroomTopRail className="justify-center pt-3 md:pt-4">
         <ShowroomBrandMark imageClassName="w-[190px] md:w-[220px]" />
-        <ShowroomCartBadge
-          count={snoozepodCount}
-          quiet
-          onClick={() => {
-            noteUserInteraction?.();
-            navigate("/snoozepod");
-          }}
-        />
       </ShowroomTopRail>
 
       <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-3 pt-1 md:px-6 md:pt-2">
@@ -958,9 +940,8 @@ export default function Results() {
                   <div className="grid gap-3 xl:grid-cols-[minmax(0,1.16fr)_290px] xl:items-stretch">
                     <div className="grid gap-3 lg:grid-cols-[minmax(0,0.98fr)_minmax(280px,0.92fr)] lg:items-center">
                       <div className="min-w-0">
-                        <ShowroomEyebrow>Your Results</ShowroomEyebrow>
                         <h1 className="mt-2 text-[1.95rem] font-black tracking-tight text-slate-900 md:text-[2.35rem]">
-                          Your Testing Plan
+                          Recommended Pods To Test
                         </h1>
                         <p className="mt-2 max-w-xl text-[0.92rem] leading-6 text-slate-600 md:text-[0.98rem]">
                           {heroLine} {heroSupportLine}
@@ -1049,43 +1030,62 @@ export default function Results() {
               </motion.div>
 
               <ShowroomPanel className="p-3 md:p-3.5" tone="frost">
-                <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                  <div>
-                    <ShowroomEyebrow className="text-[0.7rem]">All Matches</ShowroomEyebrow>
-                    <div className="mt-1 text-[1rem] font-black tracking-tight text-slate-900 md:text-[1.08rem]">
-                      Your full match list, in order.
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
+                <div className="grid gap-3 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,0.82fr)_minmax(0,1.28fr)] xl:items-center">
+                  <ResultsSupportAction
+                    icon={MessageSquare}
+                    title="Ask Snoozer"
+                    description="Get help or learn more."
                     onClick={() => {
                       noteUserInteraction?.();
                       navigate("/ask-snoozer", {
                         state: {
                           from: "/results",
-                          starter: "Explain my results.",
                         },
                       });
                     }}
-                    className="inline-flex items-center justify-center gap-2 rounded-[16px] border border-[#dbe5ff] bg-white px-4 py-2.5 text-sm font-black text-[#2f57e8] shadow-sm transition hover:bg-slate-50"
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                    Ask Snoozer
-                  </button>
-                </div>
+                  />
 
-                <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-                  {allMatches.map((match) => (
-                    <CompactMatchCard
-                      key={`${match.podId}-${match.index}`}
-                      index={match.index}
-                      podId={match.podId}
-                      mattress={match.mattress}
-                      imageUrl={match.imageUrl}
-                      onOpen={() => openPodMode(match.podId)}
-                    />
-                  ))}
+                  <ResultsSupportAction
+                    icon={Headphones}
+                    title="Talk to Human"
+                    description="We’re here if you need us."
+                    onClick={() => {
+                      noteUserInteraction?.();
+                      navigate("/ask-snoozer", {
+                        state: {
+                          from: "/results",
+                        },
+                      });
+                    }}
+                  />
+
+                  <div className="rounded-[22px] border border-white/80 bg-white/92 px-3.5 py-3 shadow-sm">
+                    <div className="text-[0.82rem] font-black tracking-tight text-[#2f57e8] md:text-[0.9rem]">
+                      Also available to test
+                    </div>
+                    {secondaryPods.length ? (
+                      <div className="mt-2.5 grid gap-2 sm:grid-cols-2">
+                        {secondaryPods.map((pod, index) => {
+                          const id = toPodId(pod?.podId ?? pod?.id);
+                          return (
+                            <SecondaryMatchStrip
+                              key={id}
+                              index={topThreePods.length + index + 1}
+                              podId={id}
+                              displayMattress={extractDisplayMattress(pod)}
+                              imageUrl={resolveImageUrl(pod)}
+                              imageStatus={getImageStatus(pod)}
+                              onOpen={() => openPodMode(id)}
+                            />
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="mt-2.5 text-sm font-medium text-slate-500">
+                        Your top three pods are ready to test now.
+                      </div>
+                    )}
+                  </div>
                 </div>
               </ShowroomPanel>
             </div>
@@ -1097,6 +1097,24 @@ export default function Results() {
         </ShowroomFrame>
       </div>
     </ShowroomPageShell>
+  );
+}
+
+function ResultsSupportAction({ icon: Icon, title, description, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-3 rounded-[22px] border border-white/80 bg-white/92 px-3.5 py-3 text-left shadow-sm transition hover:border-indigo-100 hover:bg-slate-50"
+    >
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">
+        {Icon ? <Icon className="h-5 w-5" /> : null}
+      </div>
+      <div className="min-w-0">
+        <div className="text-[0.98rem] font-black text-slate-900">{title}</div>
+        <div className="mt-0.5 text-[0.84rem] leading-5 text-slate-500">{description}</div>
+      </div>
+    </button>
   );
 }
 
@@ -1191,12 +1209,12 @@ function SecondaryMatchStrip({
     <button
       type="button"
       onClick={onOpen}
-      className="flex items-center gap-3 rounded-[20px] border border-slate-200 bg-white p-2.5 text-left shadow-sm transition hover:border-indigo-100 hover:shadow-md"
+      className="flex items-center gap-2.5 rounded-[20px] border border-slate-200 bg-white p-2.5 text-left shadow-sm transition hover:border-indigo-100 hover:shadow-md"
     >
       <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-xs font-black text-[#2f57e8]">
         {index}
       </div>
-      <div className="w-[72px] shrink-0">
+      <div className="w-[58px] shrink-0">
         <ResultImageCard
           displayMattress={displayMattress}
           imageUrl={imageUrl}
@@ -1204,10 +1222,10 @@ function SecondaryMatchStrip({
         />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[0.98rem] font-black leading-tight text-slate-900">
-          {displayMattress}
+        <div className="text-[0.96rem] font-black leading-tight text-slate-900">
+          SnoozePod {podId}
         </div>
-        <div className="mt-1 text-[0.8rem] font-semibold text-slate-500">SnoozePod {podId}</div>
+        <div className="mt-0.5 text-[0.78rem] leading-4 text-slate-500">{displayMattress}</div>
       </div>
       <ArrowRight className="h-4 w-4 shrink-0 text-[#2f57e8]" />
     </button>
