@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   BedDouble,
@@ -13,7 +13,6 @@ import { getAssessment } from "@/lib/api";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import {
   ShowroomBrandMark,
-  ShowroomEyebrow,
   ShowroomFrame,
   ShowroomPageShell,
   ShowroomPanel,
@@ -77,49 +76,46 @@ function hasCompletedAssessment(snapshot) {
   return false;
 }
 
-function StepCard({ step, title, body, detail, icon: Icon, active = false }) {
+function StepCard({ step, title, body, detail, icon: Icon }) {
   return (
-    <motion.div
-      className={[
-        "relative rounded-[22px] border bg-white p-3 shadow-[0_16px_40px_rgba(45,71,136,0.08)] transition-all duration-300 md:p-3.5",
-        active
-          ? "border-[#1A66D2] shadow-lg ring-2 ring-[#1A66D2]/10"
-          : "border-white/70",
-      ].join(" ")}
-      animate={{
-        y: active ? -4 : 0,
-        scale: active ? 1.01 : 1,
-      }}
-      transition={{ duration: 0.22, ease: "easeOut" }}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#1A66D2]">
-            Step {step}
-          </div>
-          <div className="mt-1.5 text-[1.04rem] font-extrabold leading-tight text-gray-900 md:text-[1.16rem]">
-            {title}
-          </div>
-        </div>
+    <div className="flex h-full flex-col rounded-[26px] border border-white/80 bg-white px-5 py-5 text-center shadow-[0_18px_42px_rgba(45,71,136,0.09)] md:px-6 md:py-6">
+      <div className="text-[0.82rem] font-black uppercase tracking-[0.24em] text-[#1A66D2]">
+        Step {step}
+      </div>
 
-        <div
-          className={[
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-colors duration-300",
-            active ? "bg-[#EAF2FF] text-[#1A66D2]" : "bg-gray-100 text-gray-600",
-          ].join(" ")}
-        >
+      <div className="mt-4 flex justify-center">
+        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-[linear-gradient(180deg,#F4F8FF_0%,#EFF4FF_100%)] text-[#2f57e8] shadow-inner">
           <Icon className="h-4 w-4" />
         </div>
       </div>
 
-      <div className="mt-2 text-[0.86rem] leading-5 text-gray-700 md:text-[0.9rem]">
+      <div className="mt-5 text-[1.04rem] font-black leading-tight text-slate-900 md:text-[1.16rem]">
+        {title}
+      </div>
+
+      <div className="mt-4 text-[0.94rem] leading-7 text-slate-600">
         {body}
       </div>
 
-      <div className="mt-1.5 text-[11px] leading-4 text-gray-500 md:text-[0.78rem]">
-        {detail}
+      {detail ? (
+        <div
+          className={[
+            "mt-3 text-[0.94rem] leading-7",
+            detail === "You’re here"
+              ? "font-semibold text-[#2f57e8]"
+              : "text-slate-600",
+          ].join(" ")}
+        >
+          {detail}
+        </div>
+      ) : null}
+
+      <div className="mt-auto pt-5">
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#EEF4FF] text-[1.2rem] font-black text-[#2f57e8]">
+          {step}
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -163,7 +159,6 @@ export default function WhatToExpect() {
     const parsed = raw ? safeParseJson(raw) : null;
     return isValidSnapshot(parsed) ? parsed : null;
   });
-  const [activeStep, setActiveStep] = useState(0);
 
   const introTimerRef = useRef(null);
   const announcedKeyRef = useRef("");
@@ -224,46 +219,6 @@ export default function WhatToExpect() {
     return hasCompletedAssessment(snapshot);
   }, [snapshot]);
 
-  const captionPhases = useMemo(() => {
-    if (assessmentComplete) {
-      return [
-        {
-          step: 0,
-          title: "Your Snooze Assessment is already on file.",
-          body: "You can move into your Snooze Test now or retake the assessment for a fresh match.",
-        },
-        {
-          step: 1,
-          title: "Next comes your Snooze Test.",
-          body: "Start with your recommended pods so the feel differences stay obvious.",
-        },
-        {
-          step: 2,
-          title: "Then complete your sleep setup.",
-          body: "Choose the mattress, base, and comfort options that feel right.",
-        },
-      ];
-    }
-
-    return [
-      {
-        step: 0,
-        title: "Start with your Snooze Assessment.",
-        body: "Answer a few quick questions so Snoozer can learn how you sleep.",
-      },
-      {
-        step: 1,
-        title: "Then move into your Snooze Test.",
-        body: "Start with your recommended pods so the feel differences stay obvious.",
-      },
-      {
-        step: 2,
-        title: "Finish by completing your sleep setup.",
-        body: "Choose the mattress, base, and comfort options that feel right.",
-      },
-    ];
-  }, [assessmentComplete]);
-
   const voiceScript = useMemo(() => {
     return buildFallbackWhatToExpectScript(assessmentComplete);
   }, [assessmentComplete]);
@@ -314,20 +269,6 @@ export default function WhatToExpect() {
     };
   }, [assessmentComplete, checking, shopperId, runHudAction, voiceScript]);
 
-  useEffect(() => {
-    setActiveStep(0);
-
-    const timers = [
-      setTimeout(() => setActiveStep(0), 400),
-      setTimeout(() => setActiveStep(1), 4200),
-      setTimeout(() => setActiveStep(2), 8600),
-    ];
-
-    return () => {
-      timers.forEach(clearTimeout);
-    };
-  }, [assessmentComplete]);
-
   const currentPageVoiceState = useMemo(() => {
     const expectedText = String(voiceScript.speech || "").trim();
     const lastText = String(voiceState?.lastText || "").trim();
@@ -370,15 +311,14 @@ export default function WhatToExpect() {
       <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4 pt-2 md:px-6">
         <ShowroomFrame className="shrink-0 p-3.5 md:p-4">
           <motion.div
-            className="grid gap-3 lg:grid-cols-[minmax(0,1.08fr)_312px]"
+            className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
             <div className="min-w-0">
               <div className="min-w-0">
-                <ShowroomEyebrow>What To Expect</ShowroomEyebrow>
-                <h1 className="mt-2 text-[2.45rem] font-black tracking-tight text-slate-900 md:text-[3rem] xl:text-[3.4rem]">
+                <h1 className="text-[2.45rem] font-black tracking-tight text-slate-900 md:text-[3rem] xl:text-[3.4rem]">
                   Your guided showroom path.
                 </h1>
                 <p className="mt-2.5 max-w-3xl text-[0.96rem] leading-6 text-slate-700 md:text-[1rem]">
@@ -386,48 +326,13 @@ export default function WhatToExpect() {
                 </p>
               </div>
 
-              <div className="mt-3 rounded-[24px] border border-white/80 bg-[linear-gradient(135deg,rgba(236,243,255,0.92),rgba(255,255,255,0.98))] p-3.5 shadow-sm">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeStep}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.28, ease: "easeOut" }}
-                  >
-                    <div className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#1A66D2]">
-                      Guided by Snoozer
-                    </div>
-                    <div className="mt-1.5 text-[1.3rem] font-extrabold leading-tight text-slate-900 md:text-[1.54rem]">
-                      {captionPhases[activeStep]?.title}
-                    </div>
-                    <div className="mt-1.5 max-w-2xl text-[0.9rem] leading-5 text-slate-600 md:text-[0.94rem]">
-                      {captionPhases[activeStep]?.body}
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-
-                <div className="mt-3 flex items-center gap-2">
-                  {captionPhases.map((phase, idx) => (
-                    <div
-                      key={`${phase.title}-${idx}`}
-                      className={[
-                        "h-2 rounded-full transition-all duration-300",
-                        idx === activeStep ? "w-10 bg-[#1A66D2]" : "w-3 bg-[#B9D0F5]",
-                      ].join(" ")}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-3 grid grid-cols-1 gap-2.5 lg:grid-cols-3">
+              <div className="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-3">
                 <StepCard
                   step="1"
                   title="Assessment"
-                  body="Answer a few sleep questions."
-                  detail="This shapes your mattress, base, and motion path."
+                  body="Answer a few sleep questions to create your personalized sleep profile."
+                  detail={assessmentComplete ? "" : "You’re here"}
                   icon={ClipboardList}
-                  active={activeStep === 0}
                 />
                 <StepCard
                   step="2"
@@ -435,7 +340,6 @@ export default function WhatToExpect() {
                   body="Start with your best match, then compare."
                   detail="Test one pod at a time while the feel stays fresh."
                   icon={BedDouble}
-                  active={activeStep === 1}
                 />
                 <StepCard
                   step="3"
@@ -443,13 +347,12 @@ export default function WhatToExpect() {
                   body="Choose your mattress, base, and comfort options."
                   detail="Once you know your feel, the final setup gets easier."
                   icon={Layers3}
-                  active={activeStep === 2}
                 />
               </div>
             </div>
 
-            <div className="space-y-2.5">
-              <ShowroomPanel className="p-4 shadow-[0_20px_52px_rgba(47,72,137,0.10)]">
+            <div className="space-y-2.5 xl:self-start">
+              <ShowroomPanel className="p-4 shadow-[0_20px_52px_rgba(47,72,137,0.10)] md:p-4.5">
                 <div className="flex items-start gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">
                     <ShieldCheck className="h-5 w-5" />
