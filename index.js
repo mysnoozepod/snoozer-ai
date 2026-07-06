@@ -1,4 +1,4 @@
-// index.js â€” Omnia / Snoozer Backend Core
+﻿// index.js Ã¢â‚¬â€ Omnia / Snoozer Backend Core
 // Handler: index.lambdaHandler
 //
 // Deterministic-first Ask Snoozer:
@@ -25,69 +25,75 @@ require("dotenv").config();
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const hudRoutes = require("./routes/hudRoutes");
+const identityRoutes = require("./routes/identityRoutes");
+const assessmentRoutes = require("./routes/assessmentRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
+const recommendationRoutes = require("./routes/recommendationRoutes");
+const askSnoozerRoutes = require("./routes/askSnoozerRoutes");
 const shopify = require("./routes/shopifyRoutes");
 
 let rewardsRoutes;
 try {
   rewardsRoutes = require("./routes/rewardsRoutes");
 } catch {
-  console.log("âš ï¸ rewardsRoutes not found.");
+  console.log("Ã¢Å¡Â Ã¯Â¸Â rewardsRoutes not found.");
 }
 
 let buildIndexes;
 try {
   ({ buildIndexes } = require("./services/s3Indexer"));
 } catch {
-  console.log("âš ï¸ s3Indexer not loaded.");
+  console.log("Ã¢Å¡Â Ã¯Â¸Â s3Indexer not loaded.");
 }
 
 let recsService = null;
 try {
   recsService = require("./services/recommendations");
 } catch {
-  console.log("âš ï¸ recommendations service not loaded (ok).");
+  console.log("Ã¢Å¡Â Ã¯Â¸Â recommendations service not loaded (ok).");
 }
 
 let recommendationResolver = null;
 try {
   recommendationResolver = require("./services/recommendationResolver");
 } catch (error) {
-  console.log("âš ï¸ recommendation resolver not loaded (ok).", error.message);
+  console.log("Ã¢Å¡Â Ã¯Â¸Â recommendation resolver not loaded (ok).", error.message);
 }
 
 let customerProfileService = null;
 try {
   customerProfileService = require("./services/customerProfile");
 } catch (error) {
-  console.log("Ã¢Å¡Â Ã¯Â¸Â customerProfile service not loaded (ok).", error.message);
+  console.log("ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â customerProfile service not loaded (ok).", error.message);
 }
 
 let bookingSessionService = null;
 try {
   bookingSessionService = require("./services/bookingSession");
 } catch (error) {
-  console.log("âš ï¸ bookingSession service not loaded (ok).", error.message);
+  console.log("Ã¢Å¡Â Ã¯Â¸Â bookingSession service not loaded (ok).", error.message);
 }
 
 let shopifySvc = null;
 try {
   shopifySvc = require("./services/shopify");
 } catch {
-  console.log("Ã¢Å¡Â Ã¯Â¸Â shopify service not loaded (ok).");
+  console.log("ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â shopify service not loaded (ok).");
 }
 
 let snoozeIdentityService = null;
 try {
   snoozeIdentityService = require("./services/snoozeIdentity");
 } catch (error) {
-  console.log("⚠️ snoozeIdentity service not loaded (ok).", error.message);
+  console.log("âš ï¸ snoozeIdentity service not loaded (ok).", error.message);
 }
 
 let rewardsService = null;
 try {
   rewardsService = require("./services/rewards");
 } catch (error) {
-  console.log("⚠️ rewards service not loaded (ok).", error.message);
+  console.log("âš ï¸ rewards service not loaded (ok).", error.message);
 }
 
 let openaiSvc = null;
@@ -96,7 +102,7 @@ function getOpenAiSvc() {
   try {
     openaiSvc = require("./services/openai");
   } catch (error) {
-    console.log("Ã¢Å¡Â Ã¯Â¸Â openai service helpers not loaded (ok).", error.message);
+    console.log("ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â openai service helpers not loaded (ok).", error.message);
     openaiSvc = null;
   }
   return openaiSvc;
@@ -140,7 +146,7 @@ let hudScriptSafeTimeoutMs = Number(
 try {
   ({ getHudScriptPayload, HUD_SCRIPT_SAFE_TIMEOUT_MS: hudScriptSafeTimeoutMs } = require("./services/hudScripts"));
 } catch (e) {
-  console.log("âš ï¸ hudScripts service not loaded.", e.message);
+  console.log("Ã¢Å¡Â Ã¯Â¸Â hudScripts service not loaded.", e.message);
 }
 
 const { S3Client, GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
@@ -157,7 +163,7 @@ let PollyClient, SynthesizeSpeechCommand;
 try {
   ({ PollyClient, SynthesizeSpeechCommand } = require("@aws-sdk/client-polly"));
 } catch {
-  console.log("âš ï¸ Polly client not loaded.");
+  console.log("Ã¢Å¡Â Ã¯Â¸Â Polly client not loaded.");
 }
 
 const {
@@ -172,9 +178,9 @@ const {
   logContractResponse,
 } = require("./utils/responseContract");
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Config / Globals
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const REGION = process.env.AWS_REGION || "us-east-1";
 const s3 = new S3Client({ region: REGION });
 const ddbDoc = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }));
@@ -218,9 +224,9 @@ const HUD_DEFAULTS = {
 
 let questionsInFlight = null;
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Timing / timeout helpers
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 function elapsedMs(startedAtMs) {
   return Math.max(0, Date.now() - Number(startedAtMs || Date.now()));
 }
@@ -268,9 +274,9 @@ function safeNumber(v, fallback) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // HUD mode helpers
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 function isShowroomMode(mode) {
   const m = String(mode || "").toLowerCase().trim();
   return m === "pod" || m === "explore" || m === "showroom";
@@ -791,9 +797,9 @@ async function buildHudFromAny(input, { ok, mode, context, aiResult, payload, de
   return strictHud;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // CORS + HTTP Helpers
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 function splitCSV(v = "") {
   return String(v || "")
     .split(/[,\s]+/)
@@ -896,9 +902,9 @@ function log(src, msg, extra = {}) {
   console.log(JSON.stringify({ src, msg, time: new Date().toISOString(), ...extra }));
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Optional Snooze Profile + Zoho integration
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 let buildSnoozeProfile = null;
 let mapProfileToZohoFields = null;
 try {
@@ -906,7 +912,7 @@ try {
   buildSnoozeProfile = sp.buildSnoozeProfile;
   mapProfileToZohoFields = sp.mapProfileToZohoFields;
 } catch (e) {
-  console.log("âš ï¸ snoozeProfile service not loaded.", e.message);
+  console.log("Ã¢Å¡Â Ã¯Â¸Â snoozeProfile service not loaded.", e.message);
 }
 
 let upsertContactByShopperId = null;
@@ -914,27 +920,27 @@ try {
   const zohoSvc = require("./services/zoho");
   upsertContactByShopperId = zohoSvc.upsertContactByShopperId;
 } catch (e) {
-  console.log("âš ï¸ Zoho service not loaded for Snooze Profile.", e.message);
+  console.log("Ã¢Å¡Â Ã¯Â¸Â Zoho service not loaded for Snooze Profile.", e.message);
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Optional Assessment Snapshot (Zoho + Dynamo unified view)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 let getAssessmentSnapshot = null;
 try {
   ({ getAssessmentSnapshot } = require("./handlers/getAssessmentSnapshot"));
 } catch (e) {
-  console.log("âš ï¸ getAssessmentSnapshot handler not loaded.", e.message);
+  console.log("Ã¢Å¡Â Ã¯Â¸Â getAssessmentSnapshot handler not loaded.", e.message);
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Path + Body helpers
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 let syncCustomerProfileToZoho = null;
 try {
   ({ syncCustomerProfileToZoho } = require("./services/customerProfileZohoSync"));
 } catch (e) {
-  console.log("Ã¢Å¡Â Ã¯Â¸Â customerProfileZohoSync service not loaded.", e.message);
+  console.log("ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â customerProfileZohoSync service not loaded.", e.message);
 }
 
 function normalizePath(event) {
@@ -3387,9 +3393,9 @@ async function resolveHudAskProducts({
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Polly helpers
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 async function resolveHudAskCanonicalProducts({
   canonicalRecommendation = null,
   intent = "",
@@ -3564,9 +3570,9 @@ async function synthesizePollyAudio({
   };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Snoozer Context Object (SCO) builders
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 function nowIso() {
   return new Date().toISOString();
 }
@@ -3707,9 +3713,9 @@ function normalizeContextPatch(patch, aiResult = null) {
   return p;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Deterministic pod anchoring
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 function normalizePodAnchors(payloadContext = {}, payload = {}) {
   const ctx = isObject(payloadContext) ? { ...payloadContext } : {};
 
@@ -3752,9 +3758,9 @@ function normalizePodAnchors(payloadContext = {}, payload = {}) {
   return ctx;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Sessions storage
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 async function getSessionItem(sessionId) {
   const out = await ddbDoc.send(new GetCommand({ TableName: SESSIONS_TABLE, Key: { sessionId } }));
   return out.Item || null;
@@ -3788,9 +3794,9 @@ async function saveSessionContext(sessionId, context) {
   return { iso, ttl };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Assessment + Content Logic (S3-backed)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 async function fetchQuestionsObject() {
   const res = await s3.send(new GetObjectCommand({ Bucket: QUESTIONS_BUCKET, Key: QUESTIONS_KEY }));
   const chunks = [];
@@ -5939,9 +5945,9 @@ async function maybeBuildAskSnoozerDeterministicFaqAnswer({
   return null;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // IoT Scene Trigger (publish to IoT Core if configured)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 async function triggerScene({ podId, scene }) {
   if (!IOT_ENDPOINT || !IoTDataPlaneClient || !PublishCommand) {
     return { ok: false, reason: "iot_disabled" };
@@ -5965,9 +5971,9 @@ async function triggerScene({ podId, scene }) {
   return { ok: true, topic };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Main
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 async function handle(event = {}) {
   const method = (event.httpMethod || event.requestContext?.http?.method || "GET").toUpperCase();
 
@@ -5991,315 +5997,53 @@ async function handle(event = {}) {
     });
   }
 
-  if (method === "POST" && routePath === "/hud/ask") {
-    const startedAt = Date.now();
-    const body = safeJsonBody(event);
+  const hudRouteResponse = await hudRoutes.handleHudRoutes({
+    event,
+    method,
+    routePath,
+    traceId,
+    deps: {
+      safeJsonBody,
+      buildFallbackHud,
+      flatResponse,
+      getHudScriptPayload,
+      isObject,
+      measureStep,
+      log,
+      enforceHudContract,
+      normalizeHudStateValue,
+      normalizeHudPriorityValue,
+      normalizeHudVoiceStyleValue,
+      normalizeHudScriptKey,
+      normalizeHudPageValue,
+      normalizeHudEventValue,
+      sanitizeHudAskPath,
+      normalizeHudAskPageType,
+      deriveEffectiveThreadId,
+      safeResolveSnoozeIdentity,
+      cleanIdentityValue,
+      resolveCanonicalRecommendationContext,
+      classifyAskSnoozerIntent,
+      safeGetCustomerProfile,
+      attachStoredProfileContext,
+      resolveHudAskProducts,
+      resolveHudAskCanonicalProducts,
+      resolveHudAskAnswerStrategy,
+      customerProfileService,
+      buildIdentityProfilePatch,
+      safeUpsertCustomerProfile,
+      logProfileRouteOutcome,
+      safeUpsertIdentityAliases,
+      maybeSyncProfileToZohoForInteraction,
+      buildHudAskPayload,
+      elapsedMs,
+      isCanonicalSnoozeIdentity,
+      rawJsonResponse,
+    },
+  });
+  if (hudRouteResponse) return hudRouteResponse;
 
-    try {
-      const query = typeof body?.query === "string" ? body.query.trim() : "";
-      const pathValue = sanitizeHudAskPath(body?.path || "/");
-      const pageType = normalizeHudAskPageType(body?.page_type || "unknown", pathValue);
-      const surface = String(body?.surface || "shopify_header").trim().toLowerCase() || "shopify_header";
-      const currentProductHandle =
-        typeof body?.currentProductHandle === "string" ? body.currentProductHandle.trim() : "";
-      const requestId = String(event?.requestContext?.requestId || traceId || "").trim() || null;
-      console.log("[hud/ask] invoked", {
-        path: pathValue,
-        method,
-        query,
-        page_type: pageType,
-        surface,
-        currentProductHandle: currentProductHandle || null,
-        requestId,
-      });
-      const threadId = deriveEffectiveThreadId(event, {
-        thread_id: body?.thread_id,
-        sessionId: body?.session_id,
-      });
-      const hudContext = isObject(body?.context) ? body.context : {};
-      const incomingHudShopperId =
-        String(body?.shopperId || body?.shopper_id || body?.context?.shopperId || "").trim() || "";
-      const hudIdentity = await safeResolveSnoozeIdentity(
-        {
-          shopperId: incomingHudShopperId,
-          snoozeCode: body?.snoozeCode || body?.code || hudContext?.snoozeCode || "",
-          accessCode: body?.accessCode || hudContext?.accessCode || "",
-          sourceShopperId: body?.sourceShopperId || hudContext?.sourceShopperId || "",
-          visitorId: body?.visitorId || hudContext?.visitorId || "",
-          sessionId: threadId,
-          threadId,
-          context: hudContext,
-          sourceSurface: surface,
-          reason: "hud_ask",
-        },
-        { traceId, route: "/hud/ask" }
-      );
-      const shopperId = cleanIdentityValue(hudIdentity?.shopperId) || "";
-      let canonicalRecommendation = null;
-      try {
-        canonicalRecommendation = await resolveCanonicalRecommendationContext({
-          payload: body,
-          context: hudContext,
-          shopperId,
-          sessionId: threadId,
-          allowSessionLookup: Boolean(body?.thread_id || body?.session_id),
-          source: "hud_ask",
-          traceId,
-        });
-      } catch (error) {
-        log("hud.ask.canonical.error", error.message, {
-          traceId,
-          threadId,
-          shopperId: shopperId || null,
-          code: error?.code || null,
-        });
-      }
-      const classification = classifyAskSnoozerIntent(query, {
-        path: pathValue,
-        page_type: pageType,
-        surface,
-      });
-      const intent = classification.intent;
-      const previousHudProfileResult = await safeGetCustomerProfile(
-        {
-          profileId: hudIdentity?.profileId || undefined,
-          shopperId: shopperId || undefined,
-          sessionId: threadId || undefined,
-          threadId: threadId || undefined,
-        },
-        { traceId, route: "/hud/ask" }
-      );
-      const previousHudProfile = previousHudProfileResult?.profile || null;
-      const hudAnswerContext = attachStoredProfileContext(
-        {
-          ...hudContext,
-          path: pathValue,
-          page_type: pageType,
-          pageType,
-          surface,
-          bookingStatus: body?.bookingStatus || hudContext?.bookingStatus || "",
-        },
-        previousHudProfile
-      );
-      if (!canonicalRecommendation && isObject(hudAnswerContext?.canonicalRecommendation)) {
-        canonicalRecommendation = hudAnswerContext.canonicalRecommendation;
-      }
-      const productResolution = await resolveHudAskProducts({
-        classification,
-        intent,
-        query,
-        path: pathValue,
-        pageType,
-        traceId,
-        currentProductHandle,
-        canonicalRecommendation,
-      });
-      let products = Array.isArray(productResolution?.products) ? productResolution.products : [];
-      if (!products.length && canonicalRecommendation) {
-        const canonicalProducts = await resolveHudAskCanonicalProducts({
-          canonicalRecommendation,
-          intent,
-          currentProductHandle:
-            productResolution?.currentProductHandle || currentProductHandle || "",
-          traceId,
-        });
-        if (canonicalProducts.length) {
-          products = canonicalProducts;
-        }
-      }
-      const answerStrategy = await resolveHudAskAnswerStrategy({
-        classification,
-        intent,
-        query,
-        path: pathValue,
-        pageType,
-        traceId,
-        products,
-        productResolution,
-        canonicalRecommendation,
-        context: hudAnswerContext,
-      });
-      const hudProfilePatch =
-        customerProfileService &&
-        typeof customerProfileService.buildHudProfilePatch === "function"
-          ? customerProfileService.buildHudProfilePatch({
-              previousProfile: previousHudProfile,
-              ...buildIdentityProfilePatch(hudIdentity, {
-                sourceShopperId:
-                  body?.sourceShopperId ||
-                  hudContext?.sourceShopperId ||
-                  incomingHudShopperId,
-                sessionId: threadId,
-                threadId,
-                visitorId: body?.visitorId || hudContext?.visitorId || "",
-              }),
-              shopperId,
-              sessionId: threadId,
-              threadId,
-              sourceSurface: surface,
-              lastIntent: intent,
-              lastIntentGroup: classification.intent_group || "",
-              query,
-              path: pathValue,
-              pageType,
-              currentProductHandle:
-                productResolution?.currentProductHandle || currentProductHandle || "",
-              products,
-              canonicalRecommendation,
-              assessment: hudContext?.assessment || body?.assessment || body?.answers || null,
-              customer: hudContext?.customer || null,
-              email: body?.email || hudContext?.email || "",
-              phone: body?.phone || hudContext?.phone || "",
-              preferredName: body?.preferredName || hudContext?.preferredName || "",
-              contactPreference: body?.contactPreference || hudContext?.contactPreference || "",
-              consent: hudContext?.consent || null,
-              leadStage: body?.leadStage || hudContext?.leadStage || "",
-              bookingStatus: body?.bookingStatus || hudContext?.bookingStatus || "",
-            })
-          : {
-              ...buildIdentityProfilePatch(hudIdentity, {
-                sourceShopperId:
-                  body?.sourceShopperId ||
-                  hudContext?.sourceShopperId ||
-                  incomingHudShopperId,
-                sessionId: threadId,
-                threadId,
-                visitorId: body?.visitorId || hudContext?.visitorId || "",
-              }),
-              shopperId,
-              sessionId: threadId,
-              threadId,
-              sourceSurface: surface,
-              lastIntent: intent,
-              lastIntentGroup: classification.intent_group || "",
-              lastQuery: query,
-              lastPath: pathValue,
-              lastPageType: pageType,
-              currentProductHandle:
-                productResolution?.currentProductHandle || currentProductHandle || "",
-              recommendedProductHandles: Array.isArray(products)
-                ? products.map((product) => product?.handle).filter(Boolean)
-                : [],
-              canonicalRecommendation,
-              assessment: hudContext?.assessment || body?.assessment || body?.answers || null,
-              customer: hudContext?.customer || null,
-              email: body?.email || hudContext?.email || "",
-              phone: body?.phone || hudContext?.phone || "",
-              preferredName: body?.preferredName || hudContext?.preferredName || "",
-              contactPreference: body?.contactPreference || hudContext?.contactPreference || "",
-              consent: hudContext?.consent || null,
-              leadStage: body?.leadStage || hudContext?.leadStage || "",
-              bookingStatus: body?.bookingStatus || hudContext?.bookingStatus || "",
-            };
-      const hudProfileUpsertResult = await safeUpsertCustomerProfile(hudProfilePatch, {
-        traceId,
-        route: "/hud/ask",
-      });
-      logProfileRouteOutcome("hud", hudProfileUpsertResult, {
-        traceId,
-        route: "/hud/ask",
-        shopperId: shopperId || null,
-        sessionId: threadId || null,
-      });
-      await safeUpsertIdentityAliases(
-        hudIdentity,
-        {
-          sourceShopperId:
-            body?.sourceShopperId ||
-            hudContext?.sourceShopperId ||
-            incomingHudShopperId,
-          visitorId: body?.visitorId || hudContext?.visitorId || "",
-          sessionId: threadId,
-          threadId,
-          sourceSurface: surface,
-          lastIntent: intent,
-          leadStage: hudProfilePatch?.leadStage || "",
-        },
-        { traceId, route: "/hud/ask" }
-      );
-      await maybeSyncProfileToZohoForInteraction({
-        channel: "hud",
-        traceId,
-        route: "/hud/ask",
-        previousProfile: previousHudProfile,
-        nextPatch: hudProfilePatch,
-        policyContext: {
-          route: "/hud/ask",
-          lastIntent: intent,
-          lastIntentGroup: classification.intent_group || "",
-        },
-      });
-      const payload = buildHudAskPayload({
-        classification,
-        intent,
-        query,
-        path: pathValue,
-        pageType,
-        latencyMs: elapsedMs(startedAt),
-        threadId,
-        products,
-        replyOverride: answerStrategy?.replyOverride || "",
-        chipsOverride: answerStrategy?.chipsOverride || null,
-        metaExtra: {
-          ...(answerStrategy?.metaExtra && typeof answerStrategy.metaExtra === "object"
-            ? answerStrategy.metaExtra
-            : {}),
-          snooze_code_present: isCanonicalSnoozeIdentity(hudIdentity),
-          identity_type: hudIdentity?.identityType || null,
-          profile_id: hudIdentity?.profileId || null,
-        },
-        policySubtype: answerStrategy?.policySubtype || classification?.policy_subtype || "",
-      });
-
-      log("hud.ask", "ok", {
-        traceId,
-        threadId,
-        shopperId: shopperId || null,
-        intent,
-        intentGroup: classification.intent_group || null,
-        policySubtype: payload.policy_subtype || null,
-        policySource: payload.meta?.policy_source || null,
-        canonicalTopPodId: payload.meta?.canonical_top_pod_id || null,
-        confidence: classification.confidence || null,
-        confidenceLabel: classification.confidence_label || null,
-        path: pathValue,
-        pageType,
-        surface,
-        productCount: payload.products.length,
-        latencyMs: payload.meta.latency_ms,
-      });
-
-      return rawJsonResponse(event, 200, payload);
-    } catch (e) {
-      const fallback = buildHudAskPayload({
-        classification: {
-          intent: "fallback",
-          intent_group: "fallback_unclear",
-          confidence: 0.42,
-          confidence_label: "low",
-        },
-        intent: "fallback",
-        query: typeof body?.query === "string" ? body.query.trim() : "",
-        path: sanitizeHudAskPath(body?.path || "/"),
-        pageType: normalizeHudAskPageType(body?.page_type || "unknown", body?.path || "/"),
-        latencyMs: elapsedMs(startedAt),
-        threadId: deriveEffectiveThreadId(event, {
-          thread_id: body?.thread_id,
-          sessionId: body?.session_id,
-        }),
-        error: "HUD_ASK_FALLBACK",
-      });
-
-      log("hud.ask.error", e.message, {
-        traceId,
-        latencyMs: fallback.meta.latency_ms,
-      });
-
-      return rawJsonResponse(event, 200, fallback);
-    }
-  }
-
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Voice: Welcome / Polly
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Voice: Welcome / Polly
   if (method === "POST" && routePath === "/voice/welcome") {
     const body = safeJsonBody(event);
 
@@ -6375,7 +6119,7 @@ async function handle(event = {}) {
     }
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ HUD TTS
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ HUD TTS
   if (method === "POST" && routePath === "/hud/tts") {
     const body = safeJsonBody(event);
 
@@ -6445,241 +6189,50 @@ async function handle(event = {}) {
     }
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ HUD Script Resolver
-  if (method === "POST" && routePath === "/hud/script") {
-    const body = safeJsonBody(event);
+  const assessmentRouteResponse = await assessmentRoutes.handleAssessmentRoutes({
+    event,
+    method,
+    routePath,
+    traceId,
+    deps: {
+      response,
+      safeJsonBody,
+      baseHeaders,
+      getHeader,
+      headQuestionsObject,
+      withTimeout,
+      S3_RETRIEVAL_TIMEOUT_MS,
+      QUESTIONS_BUCKET,
+      QUESTIONS_KEY,
+      QUESTIONS_TTL_MS,
+      measureStep,
+      loadAssessmentQuestions,
+      fmtLastModified,
+      normalizeEtag,
+      log,
+      isTimeoutError,
+      cleanIdentityValue,
+      deriveEffectiveThreadId,
+      safeResolveSnoozeIdentity,
+      safeIssueSnoozeCode,
+      isCanonicalSnoozeIdentity,
+      saveAssessmentResult,
+      resolveCanonicalRecommendationContext,
+      customerProfileService,
+      buildIdentityProfilePatch,
+      resolveIdentityLeadStage,
+      safeUpsertCustomerProfile,
+      logIdentityProfileOutcome,
+      safeUpsertIdentityAliases,
+      safeMarkIdentityMerge,
+      maybeSyncIdentityProfileToZoho,
+      getAssessmentSnapshot,
+      getAssessmentResult,
+    },
+  });
+  if (assessmentRouteResponse) return assessmentRouteResponse;
 
-    try {
-      if (typeof getHudScriptPayload !== "function") {
-        return flatResponse(
-          event,
-          200,
-          buildFallbackHud({
-            speech: "I'm here if you need me.",
-            captions: "I'm here if you need me.",
-          })
-        );
-      }
-
-      const shopperId = body?.shopperId ? String(body.shopperId).trim() : "guest";
-      const context = isObject(body?.context) ? body.context : {};
-      const request = {
-        page: body?.page || body?.hudPage,
-        event: body?.event || body?.hudEvent,
-        scriptKey: body?.scriptKey || body?.hudScriptKey,
-      };
-
-      const retrieval = await measureStep("hud_script_resolve", () =>
-        getHudScriptPayload(request, {
-          traceId,
-          shopperId,
-          context,
-        })
-      );
-
-      if (!retrieval.ok) {
-        log("hud.script.resolve.error", retrieval.error.message, {
-          traceId,
-          shopperId,
-          request,
-          retrievalMs: retrieval.ms,
-          totalMs: retrieval.ms,
-          timeoutMs: retrieval.error?.timeoutMs || null,
-          fallbackUsed: true,
-        });
-
-        return flatResponse(
-          event,
-          200,
-          buildFallbackHud({
-            speech: "I'm here if you need me.",
-            captions: "I'm here if you need me.",
-          })
-        );
-      }
-
-      const resolved = retrieval.value;
-
-      if (!resolved || typeof resolved !== "object") {
-        log("hud.script.resolve.miss", "not_found", {
-          traceId,
-          shopperId,
-          request,
-          retrievalMs: retrieval.ms,
-          totalMs: retrieval.ms,
-          fallbackUsed: true,
-        });
-
-        return flatResponse(
-          event,
-          200,
-          buildFallbackHud({
-            speech: "I'm here if you need me.",
-            captions: "I'm here if you need me.",
-          })
-        );
-      }
-
-      const hud = enforceHudContract({
-        speech: typeof resolved.speech === "string" ? resolved.speech : "",
-        captions:
-          typeof resolved.captions === "string"
-            ? resolved.captions
-            : typeof resolved.speech === "string"
-              ? resolved.speech
-              : "",
-        state: normalizeHudStateValue(resolved.state, "speaking"),
-        priority: normalizeHudPriorityValue(resolved.priority, "normal"),
-        ttlMs:
-          Number.isFinite(Number(resolved.ttlMs)) && Number(resolved.ttlMs) > 0
-            ? Number(resolved.ttlMs)
-            : 5000,
-        actions: Array.isArray(resolved.actions) ? resolved.actions : [],
-      });
-
-      log("hud.script.resolve", "ok", {
-        traceId,
-        shopperId,
-        page: resolved?.scriptMeta?.page || null,
-        event: resolved?.scriptMeta?.event || null,
-        scriptKey: normalizeHudScriptKey(body?.scriptKey || body?.hudScriptKey) || null,
-        retrievalMs: resolved?.scriptMeta?.retrievalMs ?? retrieval.ms,
-        totalMs: resolved?.scriptMeta?.totalMs ?? retrieval.ms,
-        fallbackUsed: Boolean(resolved?.scriptMeta?.fallbackUsed),
-        fallbackTier: resolved?.scriptMeta?.fallbackTier || "s3",
-        validationPassed: resolved?.scriptMeta?.validationPassed !== false,
-        state: hud.state,
-      });
-
-      return flatResponse(event, 200, {
-        ...hud,
-        voiceStyle: normalizeHudVoiceStyleValue(resolved?.voiceStyle, "default"),
-      });
-    } catch (e) {
-      log("hud.script.resolve.error", e.message, {
-        traceId,
-        request: {
-          page: normalizeHudPageValue(body?.page || body?.hudPage),
-          event: normalizeHudEventValue(body?.event || body?.hudEvent),
-          scriptKey: normalizeHudScriptKey(body?.scriptKey || body?.hudScriptKey),
-        },
-        totalMs: 0,
-        fallbackUsed: true,
-      });
-
-      return flatResponse(
-        event,
-        200,
-        buildFallbackHud({
-          speech: "I'm here if you need me.",
-          captions: "I'm here if you need me.",
-        })
-      );
-    }
-  }
-
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Content: Assessment JSON (S3)
-  if (method === "GET" && (routePath === "/content/assessment" || routePath === "/content/assessment/meta")) {
-    try {
-      const headStep = await measureStep("assessment_head_meta", () =>
-        withTimeout(
-          headQuestionsObject(),
-          S3_RETRIEVAL_TIMEOUT_MS,
-          "ASSESSMENT_HEAD_TIMEOUT",
-          `Assessment HEAD exceeded ${S3_RETRIEVAL_TIMEOUT_MS}ms`,
-          { bucket: QUESTIONS_BUCKET, key: QUESTIONS_KEY }
-        )
-      );
-
-      if (!headStep.ok) throw headStep.error;
-
-      const head = headStep.value;
-      const etag = normalizeEtag(head.etag);
-      const lastModified = fmtLastModified(head.lastModified);
-
-      const ifNoneMatch = getHeader(event.headers, "if-none-match") || getHeader(event.headers, "If-None-Match");
-
-      if (ifNoneMatch && etag && String(ifNoneMatch).trim() === etag && routePath !== "/content/assessment/meta") {
-        return {
-          statusCode: 304,
-          headers: baseHeaders(event, {
-            ETag: etag,
-            "Last-Modified": lastModified,
-            "Cache-Control": "public, max-age=60",
-            "X-Trace-Id": traceId,
-          }),
-          body: "",
-        };
-      }
-
-      if (routePath === "/content/assessment/meta") {
-        return response(
-          event,
-          200,
-          {
-            ok: true,
-            bucket: QUESTIONS_BUCKET,
-            key: QUESTIONS_KEY,
-            etag,
-            lastModified,
-            cacheTtlMs: QUESTIONS_TTL_MS,
-            retrievalTimeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
-            retrievalMs: headStep.ms,
-          },
-          {
-            ETag: etag,
-            "Last-Modified": lastModified,
-            "Cache-Control": "public, max-age=60",
-          }
-        );
-      }
-
-      const loadStep = await measureStep("assessment_load", () => loadAssessmentQuestions());
-      if (!loadStep.ok) throw loadStep.error;
-
-      log("content.assessment", "ok", {
-        traceId,
-        headMs: headStep.ms,
-        loadMs: loadStep.ms,
-        timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
-      });
-
-      return response(
-        event,
-        200,
-        {
-          ...loadStep.value.data,
-          meta: {
-            etag: loadStep.value.meta.etag,
-            lastModified: fmtLastModified(loadStep.value.meta.lastModified),
-            source: "s3",
-            bucket: QUESTIONS_BUCKET,
-            key: QUESTIONS_KEY,
-            retrievalMs: loadStep.ms,
-          },
-        },
-        {
-          ETag: loadStep.value.meta.etag,
-          "Last-Modified": fmtLastModified(loadStep.value.meta.lastModified),
-          "Cache-Control": "public, max-age=60",
-        }
-      );
-    } catch (e) {
-      log("content.assessment.error", e.message, {
-        traceId,
-        bucket: QUESTIONS_BUCKET,
-        key: QUESTIONS_KEY,
-        timeoutMs: isTimeoutError(e) ? S3_RETRIEVAL_TIMEOUT_MS : null,
-      });
-      return response(event, 500, {
-        code: isTimeoutError(e) ? "ASSESSMENT_RETRIEVAL_TIMEOUT" : "E_CONTENT_ASSESSMENT",
-        message: "Failed to load assessment content",
-        details: e.message,
-      });
-    }
-  }
-
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Sessions: START
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sessions: START
   if (method === "POST" && routePath === "/session/start") {
     const body = safeJsonBody(event);
 
@@ -6722,7 +6275,7 @@ async function handle(event = {}) {
     }
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Sessions: GET context
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sessions: GET context
   if (method === "GET" && routePath.startsWith("/session/context/")) {
     const sessionId = decodeURIComponent(routePath.split("/").pop() || "");
     if (!sessionId) return response(event, 400, { message: "sessionId required" });
@@ -6747,7 +6300,7 @@ async function handle(event = {}) {
     }
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Sessions: PATCH context
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Sessions: PATCH context
   if (method === "PATCH" && routePath.startsWith("/session/context/")) {
     const sessionId = decodeURIComponent(routePath.split("/").pop() || "");
     if (!sessionId) return response(event, 400, { message: "sessionId required" });
@@ -6790,7 +6343,7 @@ async function handle(event = {}) {
     }
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Admin reindex
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Admin reindex
   if (method === "POST" && routePath === "/admin/reindex") {
     const key = getHeader(event.headers, "x-api-key") || "";
     if (ADMIN_API_KEY && key !== ADMIN_API_KEY) {
@@ -6803,651 +6356,57 @@ async function handle(event = {}) {
     return response(event, 200, { ok: true, ...out });
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Assessment (legacy endpoints)
-  if (method === "POST" && routePath === "/identity/snooze-code") {
-    const body = safeJsonBody(event);
-    const reason = cleanIdentityValue(body?.reason).toLowerCase();
-    const sourceSurface = cleanIdentityValue(body?.sourceSurface) || "identity_api";
-    const identitySessionId = deriveEffectiveThreadId(event, {
-      sessionId: body?.sessionId,
-      thread_id: body?.threadId,
-    });
+  const identityRouteResponse = await identityRoutes.handleIdentityRoutes({
+    event,
+    method,
+    routePath,
+    traceId,
+    deps: {
+      safeJsonBody,
+      cleanIdentityValue,
+      deriveEffectiveThreadId,
+      safeResolveSnoozeIdentity,
+      safeIssueSnoozeCode,
+      isCanonicalSnoozeIdentity,
+      response,
+      resolveIdentityLeadStage,
+      resolveCanonicalRecommendationContext,
+      log,
+      customerProfileService,
+      buildIdentityProfilePatch,
+      safeUpsertCustomerProfile,
+      logIdentityProfileOutcome,
+      safeUpsertIdentityAliases,
+      safeMarkIdentityMerge,
+      maybeSyncIdentityProfileToZoho,
+      safeGetCustomerProfile,
+      buildCheckInSummary,
+    },
+  });
+  if (identityRouteResponse) return identityRouteResponse;
 
-    const resolvedIdentity = await safeResolveSnoozeIdentity(
-      {
-        shopperId: body?.shopperId,
-        snoozeCode: body?.snoozeCode || body?.code || "",
-        accessCode: body?.accessCode || "",
-        sourceShopperId: body?.sourceShopperId || body?.shopperId || "",
-        visitorId: body?.visitorId || "",
-        sessionId: identitySessionId,
-        threadId: identitySessionId,
-        sourceSurface,
-        reason,
-        assessment: body?.assessment || body?.answers || null,
-        canonicalRecommendation: body?.canonicalRecommendation || null,
-        contact: body?.contact || null,
-      },
-      { traceId, route: "/identity/snooze-code" }
-    );
+  const bookingRouteResponse = await bookingRoutes.handleBookingRoutes({
+    event,
+    method,
+    routePath,
+    traceId,
+    deps: {
+      response,
+      bookingSessionService,
+      safeJsonBody,
+      log,
+    },
+  });
+  if (bookingRouteResponse) return bookingRouteResponse;
 
-    const finalIdentity = await safeIssueSnoozeCode(
-      {
-        shopperId: body?.shopperId,
-        snoozeCode: body?.snoozeCode || body?.code || "",
-        accessCode: body?.accessCode || "",
-        sourceShopperId: body?.sourceShopperId || body?.shopperId || "",
-        visitorId: body?.visitorId || "",
-        sessionId: identitySessionId,
-        threadId: identitySessionId,
-        sourceSurface,
-        reason,
-        identity: resolvedIdentity,
-        assessment: body?.assessment || body?.answers || null,
-        canonicalRecommendation: body?.canonicalRecommendation || null,
-        contact: body?.contact || null,
-      },
-      { traceId, route: "/identity/snooze-code" }
-    );
+  const shopifyRouteResponse = await shopify.handleShopifyRoute({
+    event,
+    method,
+    routePath,
+  });
+  if (shopifyRouteResponse) return shopifyRouteResponse;
 
-    if (!isCanonicalSnoozeIdentity(finalIdentity)) {
-      return response(event, 200, {
-        ok: false,
-        code: "SNOOZE_CODE_NOT_QUALIFIED",
-        message: "Snooze Code not issued.",
-        shopperId: resolvedIdentity?.shopperId || null,
-        snoozeCode: null,
-        accessCode: null,
-        profileId: resolvedIdentity?.profileId || null,
-        identityType: resolvedIdentity?.identityType || null,
-        isNewCode: false,
-        aliases: Array.isArray(resolvedIdentity?.aliases) ? resolvedIdentity.aliases : [],
-        leadStage: resolveIdentityLeadStage(reason) || null,
-      });
-    }
-
-    let identityCanonicalRecommendation = body?.canonicalRecommendation || null;
-    if (!identityCanonicalRecommendation && body?.assessment) {
-      try {
-        identityCanonicalRecommendation = await resolveCanonicalRecommendationContext({
-          payload: { answers: body.assessment },
-          storedAssessment: { answers: body.assessment },
-          shopperId: finalIdentity.shopperId,
-          allowSessionLookup: false,
-          source: "identity_snooze_code",
-          traceId,
-        });
-      } catch (error) {
-        log("snooze.identity.canonical.error", error.message, {
-          traceId,
-          route: "/identity/snooze-code",
-          shopperId: finalIdentity.shopperId || null,
-          code: error?.code || null,
-        });
-      }
-    }
-
-    const identityPatch = customerProfileService &&
-      typeof customerProfileService.buildCustomerProfilePatch === "function"
-      ? customerProfileService.buildCustomerProfilePatch({
-          ...buildIdentityProfilePatch(finalIdentity, {
-            sourceShopperId: body?.sourceShopperId || body?.shopperId || "",
-            visitorId: body?.visitorId || "",
-            sessionId: identitySessionId,
-            threadId: identitySessionId,
-          }),
-          contact: body?.contact || null,
-          assessmentAnswers: body?.assessment || body?.answers || null,
-          canonicalRecommendation: identityCanonicalRecommendation,
-          sourceSurface,
-          lastIntent: "snooze_code_issue",
-          leadStage: resolveIdentityLeadStage(reason),
-        })
-      : {
-          ...buildIdentityProfilePatch(finalIdentity, {
-            sourceShopperId: body?.sourceShopperId || body?.shopperId || "",
-            visitorId: body?.visitorId || "",
-            sessionId: identitySessionId,
-            threadId: identitySessionId,
-          }),
-          contact: body?.contact || null,
-          assessmentAnswers: body?.assessment || body?.answers || null,
-          canonicalRecommendation: identityCanonicalRecommendation,
-          sourceSurface,
-          lastIntent: "snooze_code_issue",
-          leadStage: resolveIdentityLeadStage(reason),
-        };
-
-    const identityProfileResult = await safeUpsertCustomerProfile(identityPatch, {
-      traceId,
-      route: "/identity/snooze-code",
-    });
-
-    logIdentityProfileOutcome(
-      "/identity/snooze-code",
-      identityProfileResult,
-      finalIdentity,
-      { traceId }
-    );
-
-    await safeUpsertIdentityAliases(
-      finalIdentity,
-      {
-        sourceShopperId: body?.sourceShopperId || body?.shopperId || "",
-        visitorId: body?.visitorId || "",
-        sessionId: identitySessionId,
-        threadId: identitySessionId,
-        sourceSurface,
-        lastIntent: "snooze_code_issue",
-        leadStage: identityPatch?.leadStage || "",
-      },
-      { traceId, route: "/identity/snooze-code" }
-    );
-
-    if (
-      finalIdentity?.isNewCode &&
-      cleanIdentityValue(resolvedIdentity?.profileId) &&
-      resolvedIdentity.profileId !== finalIdentity.profileId
-    ) {
-      await safeMarkIdentityMerge(resolvedIdentity.profileId, finalIdentity, {
-        traceId,
-        route: "/identity/snooze-code",
-        reason,
-        sourceSurface,
-      });
-    }
-
-    await maybeSyncIdentityProfileToZoho(identityPatch, {
-      traceId,
-      route: "/identity/snooze-code",
-    });
-
-    return response(event, 200, {
-      ok: true,
-      shopperId: finalIdentity.shopperId || null,
-      snoozeCode: finalIdentity.snoozeCode || null,
-      accessCode: finalIdentity.accessCode || null,
-      profileId: finalIdentity.profileId || null,
-      identityType: finalIdentity.identityType || null,
-      identitySource: finalIdentity.identitySource || null,
-      isNewCode: Boolean(finalIdentity?.isNewCode),
-      aliases: Array.isArray(finalIdentity?.aliases) ? finalIdentity.aliases : [],
-      leadStage: identityPatch?.leadStage || null,
-      message: finalIdentity?.message || "Snooze Code ready.",
-    });
-  }
-
-  if (method === "POST" && routePath === "/identity/check-in") {
-    const body = safeJsonBody(event);
-    const sourceSurface = cleanIdentityValue(body?.sourceSurface) || "identity_checkin";
-    const identitySessionId = deriveEffectiveThreadId(event, {
-      sessionId: body?.sessionId,
-      thread_id: body?.threadId,
-    });
-    const resolvedIdentity = await safeResolveSnoozeIdentity(
-      {
-        shopperId: body?.shopperId,
-        snoozeCode: body?.snoozeCode || body?.code || "",
-        accessCode: body?.accessCode || "",
-        visitorId: body?.visitorId || "",
-        sessionId: identitySessionId,
-        threadId: identitySessionId,
-        sourceSurface,
-        reason: "manual_create",
-      },
-      { traceId, route: "/identity/check-in" }
-    );
-
-    if (!isCanonicalSnoozeIdentity(resolvedIdentity)) {
-      log("snooze.identity.checkin.not_found", "not_found", {
-        traceId,
-        route: "/identity/check-in",
-        sourceSurface,
-        incomingShopperId: cleanIdentityValue(body?.shopperId) || null,
-        snoozeCode:
-          cleanIdentityValue(body?.snoozeCode || body?.accessCode || body?.code) || null,
-      });
-      return response(event, 200, {
-        ok: false,
-        code: "SNOOZE_CODE_NOT_FOUND",
-        message: "Snooze Code not found.",
-      });
-    }
-
-    const canonicalProfileResult = await safeGetCustomerProfile(
-      {
-        profileId: resolvedIdentity.profileId,
-        shopperId: resolvedIdentity.shopperId,
-      },
-      { traceId, route: "/identity/check-in" }
-    );
-    const canonicalProfile = canonicalProfileResult?.profile || null;
-
-    if (!canonicalProfile) {
-      log("snooze.identity.checkin.not_found", "not_found", {
-        traceId,
-        route: "/identity/check-in",
-        sourceSurface,
-        incomingShopperId: cleanIdentityValue(body?.shopperId) || null,
-        snoozeCode: resolvedIdentity.snoozeCode || null,
-        profileId: resolvedIdentity.profileId || null,
-      });
-      return response(event, 200, {
-        ok: false,
-        code: "SNOOZE_CODE_NOT_FOUND",
-        message: "Snooze Code not found.",
-      });
-    }
-
-    const checkInPatch = {
-      ...buildIdentityProfilePatch(resolvedIdentity, {
-        sessionId: identitySessionId,
-        threadId: identitySessionId,
-        visitorId: body?.visitorId || "",
-      }),
-      sourceSurface,
-      lastIntent: "snooze_code_checkin",
-      leadStage: resolveIdentityLeadStage(
-        "manual_create",
-        canonicalProfile?.leadStage || ""
-      ),
-      bookingStatus: cleanIdentityValue(canonicalProfile?.bookingStatus) || undefined,
-    };
-
-    const checkInProfileResult = await safeUpsertCustomerProfile(checkInPatch, {
-      traceId,
-      route: "/identity/check-in",
-    });
-
-    logIdentityProfileOutcome(
-      "/identity/check-in",
-      checkInProfileResult,
-      resolvedIdentity,
-      { traceId }
-    );
-
-    await safeUpsertIdentityAliases(
-      resolvedIdentity,
-      {
-        visitorId: body?.visitorId || "",
-        sessionId: identitySessionId,
-        threadId: identitySessionId,
-        sourceSurface,
-        lastIntent: "snooze_code_checkin",
-        leadStage: checkInPatch?.leadStage || "",
-      },
-      { traceId, route: "/identity/check-in" }
-    );
-
-    log("customer.profile.zoho.identity.skipped", "NO_MATERIAL_ZOHO_CHANGE", {
-      traceId,
-      route: "/identity/check-in",
-      shopperId: resolvedIdentity.shopperId || null,
-      reason: "NO_MATERIAL_ZOHO_CHANGE",
-    });
-
-    const summary = await buildCheckInSummary(
-      customerProfileService &&
-        typeof customerProfileService.mergeCustomerProfile === "function"
-        ? customerProfileService.mergeCustomerProfile(canonicalProfile, checkInPatch)
-        : { ...canonicalProfile, ...checkInPatch },
-      sourceSurface
-    );
-
-    log("snooze.identity.checkin.ok", "ok", {
-      traceId,
-      route: "/identity/check-in",
-      sourceSurface,
-      canonicalShopperId: resolvedIdentity.shopperId || null,
-      snoozeCode: resolvedIdentity.snoozeCode || null,
-      profileId: resolvedIdentity.profileId || null,
-      leadStage: summary.leadStage || null,
-    });
-
-    return response(event, 200, summary);
-  }
-
-  if (method === "GET" && routePath === "/assessment-questions") {
-    const loaded = await loadAssessmentQuestions();
-    return response(event, 200, loaded.data, {
-      ETag: loaded.meta.etag,
-      "Last-Modified": fmtLastModified(loaded.meta.lastModified),
-      "Cache-Control": "public, max-age=60",
-    });
-  }
-
-  if (method === "POST" && routePath === "/assessment") {
-    const body = safeJsonBody(event);
-    const incomingShopperId = cleanIdentityValue(body?.shopperId);
-    const answers = body?.answers || {};
-    const origin = body?.origin;
-    const identitySessionId = deriveEffectiveThreadId(event, {
-      sessionId: body?.sessionId,
-      thread_id: body?.threadId,
-    });
-
-    if (
-      !incomingShopperId &&
-      !cleanIdentityValue(body?.snoozeCode) &&
-      !cleanIdentityValue(body?.accessCode)
-    ) {
-      return response(event, 400, { message: "shopperId required" });
-    }
-
-    const resolvedAssessmentIdentity = await safeResolveSnoozeIdentity(
-      {
-        shopperId: incomingShopperId,
-        snoozeCode: body?.snoozeCode || body?.code || "",
-        accessCode: body?.accessCode || "",
-        sourceShopperId: body?.sourceShopperId || incomingShopperId,
-        visitorId: body?.visitorId || "",
-        sessionId: identitySessionId,
-        threadId: identitySessionId,
-        sourceSurface: origin || "assessment_api",
-        reason: "assessment_completed",
-      },
-      { traceId, route: "/assessment" }
-    );
-
-    const issuedAssessmentIdentity = await safeIssueSnoozeCode(
-      {
-        shopperId: incomingShopperId,
-        snoozeCode: body?.snoozeCode || body?.code || "",
-        accessCode: body?.accessCode || "",
-        sourceShopperId: body?.sourceShopperId || incomingShopperId,
-        visitorId: body?.visitorId || "",
-        sessionId: identitySessionId,
-        threadId: identitySessionId,
-        sourceSurface: origin || "assessment_api",
-        reason: "assessment_completed",
-        identity: resolvedAssessmentIdentity,
-      },
-      { traceId, route: "/assessment" }
-    );
-
-    const finalAssessmentIdentity =
-      issuedAssessmentIdentity && isCanonicalSnoozeIdentity(issuedAssessmentIdentity)
-        ? issuedAssessmentIdentity
-        : resolvedAssessmentIdentity;
-    const shopperId = cleanIdentityValue(
-      finalAssessmentIdentity?.shopperId || incomingShopperId
-    );
-
-    await saveAssessmentResult(shopperId, answers || {});
-
-    let assessmentCanonicalRecommendation = null;
-    try {
-      assessmentCanonicalRecommendation = await resolveCanonicalRecommendationContext({
-        payload: {
-          answers: answers || {},
-          snoozeCode: finalAssessmentIdentity?.snoozeCode || null,
-          accessCode: finalAssessmentIdentity?.accessCode || null,
-        },
-        storedAssessment: { answers: answers || {} },
-        shopperId,
-        allowSessionLookup: false,
-        source: "assessment_profile",
-        traceId,
-      });
-    } catch (error) {
-      log("assessment.profile.canonical.error", error.message, { traceId, shopperId });
-    }
-
-    const customerProfilePatch =
-      customerProfileService &&
-      typeof customerProfileService.buildCustomerProfilePatch === "function"
-        ? customerProfileService.buildCustomerProfilePatch({
-            ...buildIdentityProfilePatch(finalAssessmentIdentity, {
-              sourceShopperId: body?.sourceShopperId || incomingShopperId,
-              sessionId: identitySessionId,
-              threadId: identitySessionId,
-              visitorId: body?.visitorId || "",
-            }),
-            shopperId,
-            origin: origin || "assessment_api",
-            sourceSurface: origin || "assessment_api",
-            lastIntent: "assessment_submit",
-            leadStage: resolveIdentityLeadStage("assessment_completed"),
-            assessmentAnswers: answers || {},
-            canonicalRecommendation: assessmentCanonicalRecommendation,
-          })
-        : {
-            ...buildIdentityProfilePatch(finalAssessmentIdentity, {
-              sourceShopperId: body?.sourceShopperId || incomingShopperId,
-              sessionId: identitySessionId,
-              threadId: identitySessionId,
-              visitorId: body?.visitorId || "",
-            }),
-            shopperId,
-            origin: origin || "assessment_api",
-            sourceSurface: origin || "assessment_api",
-            lastIntent: "assessment_submit",
-            leadStage: resolveIdentityLeadStage("assessment_completed"),
-            assessmentAnswers: answers || {},
-            canonicalRecommendation: assessmentCanonicalRecommendation,
-          };
-
-    const assessmentProfileResult = await safeUpsertCustomerProfile(customerProfilePatch, {
-      traceId,
-      route: "/assessment",
-    });
-    logIdentityProfileOutcome(
-      "/assessment",
-      assessmentProfileResult,
-      {
-        shopperId,
-        snoozeCode: finalAssessmentIdentity?.snoozeCode || null,
-        profileId: finalAssessmentIdentity?.profileId || null,
-        identityType: finalAssessmentIdentity?.identityType || null,
-      },
-      { traceId }
-    );
-
-    await safeUpsertIdentityAliases(
-      finalAssessmentIdentity,
-      {
-        sourceShopperId: body?.sourceShopperId || incomingShopperId,
-        visitorId: body?.visitorId || "",
-        sessionId: identitySessionId,
-        threadId: identitySessionId,
-        sourceSurface: origin || "assessment_api",
-        lastIntent: "assessment_submit",
-        leadStage: customerProfilePatch?.leadStage || "",
-      },
-      { traceId, route: "/assessment" }
-    );
-
-    if (
-      issuedAssessmentIdentity?.isNewCode &&
-      cleanIdentityValue(resolvedAssessmentIdentity?.profileId) &&
-      resolvedAssessmentIdentity.profileId !== finalAssessmentIdentity?.profileId
-    ) {
-      await safeMarkIdentityMerge(resolvedAssessmentIdentity.profileId, finalAssessmentIdentity, {
-        traceId,
-        route: "/assessment",
-        reason: "assessment_completed",
-        sourceSurface: origin || "assessment_api",
-      });
-    } else {
-      log("snooze.identity.merge.skipped", "alias_only", {
-        traceId,
-        route: "/assessment",
-        profileId: resolvedAssessmentIdentity?.profileId || null,
-        canonicalProfileId: finalAssessmentIdentity?.profileId || null,
-        reason: "alias_only",
-      });
-    }
-
-    await maybeSyncIdentityProfileToZoho(customerProfilePatch, {
-      traceId,
-      route: "/assessment",
-    });
-
-    return response(event, 200, {
-      ok: true,
-      shopperId,
-      snoozeCode: finalAssessmentIdentity?.snoozeCode || null,
-      accessCode: finalAssessmentIdentity?.accessCode || null,
-      profileId: finalAssessmentIdentity?.profileId || null,
-      identityType: finalAssessmentIdentity?.identityType || null,
-      isNewCode: Boolean(issuedAssessmentIdentity?.isNewCode),
-    });
-  }
-
-  if (method === "GET" && routePath.startsWith("/assessment/")) {
-    const parts = routePath.split("/").filter(Boolean);
-    const shopperId = decodeURIComponent(parts[parts.length - 1] || "");
-    if (!shopperId) return response(event, 400, { message: "shopperId required" });
-
-    if (typeof getAssessmentSnapshot === "function") {
-      try {
-        const out = await getAssessmentSnapshot(shopperId);
-        return response(event, out.statusCode || 200, out.body || {});
-      } catch (e) {
-        log("assessment.snapshot.error", e.message, { traceId, shopperId });
-      }
-    }
-
-    let item = null;
-    try {
-      item = await getAssessmentResult(shopperId);
-    } catch (e) {
-      log("assessment.dynamo.error", e.message, { traceId, shopperId });
-    }
-
-    return response(event, 200, {
-      ok: true,
-      shopperId,
-      exists: !!item,
-      shopperState: item ? "KNOWN" : "NEW",
-      assessment: item || null,
-      profile: null,
-      meta: {
-        zohoContactId: null,
-        zohoModifiedTime: null,
-        dynamoUpdatedAt: item?.updatedAt || null,
-      },
-      actions: {
-        canViewResults: !!item,
-        canRetakeAssessment: true,
-        shouldPromptAssessment: !item,
-      },
-      source: "fallback_dynamo_only",
-    });
-  }
-
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Shopify RPC passthroughs
-  if (
-    method === "POST" &&
-    (routePath === "/booking/calendly-webhook" || routePath === "/calendly/webhook")
-  ) {
-    if (
-      !bookingSessionService ||
-      typeof bookingSessionService.upsertBookingSession !== "function"
-    ) {
-      return response(event, 500, {
-        ok: false,
-        code: "E_BOOKING_WEBHOOK_UNAVAILABLE",
-        message: "Booking webhook unavailable.",
-      });
-    }
-
-    try {
-      const body = safeJsonBody(event);
-      const result = await bookingSessionService.upsertBookingSession(body || {}, {
-        route: routePath,
-        log: (src, msg, extra) => log(src, msg, extra),
-      });
-
-      return response(event, 200, {
-        ok: true,
-        shopperId: result?.identity?.shopperId || null,
-        snoozeCode:
-          result?.identity?.snoozeCode || result?.identity?.accessCode || null,
-        accessCode:
-          result?.identity?.accessCode || result?.identity?.snoozeCode || null,
-        profileId: result?.identity?.profileId || null,
-        identityType: result?.identity?.identityType || null,
-        eventType: result?.booking?.eventType || null,
-        bookingStatus: result?.profilePatch?.bookingStatus || null,
-        sessionPrepStatus: result?.sessionPrep?.status || null,
-        skipped: Boolean(result?.skipped),
-        reason: result?.reason || null,
-      });
-    } catch (error) {
-      log("booking.webhook.error", error.message, {
-        traceId,
-        route: routePath,
-        code: error?.code || null,
-      });
-      return response(event, Number(error.statusCode || 500), {
-        ok: false,
-        code: error?.code || "E_BOOKING_WEBHOOK",
-        message: error?.message || "Booking webhook failed.",
-      });
-    }
-  }
-
-  if (method === "POST" && routePath === "/shopify/listProducts") {
-    return await withTimeout(
-      shopify.listProducts(event),
-      SHOPIFY_TIMEOUT_MS,
-      "SHOPIFY_TIMEOUT",
-      `Shopify listProducts exceeded ${SHOPIFY_TIMEOUT_MS}ms`
-    );
-  }
-  if (method === "POST" && routePath === "/shopify/getProduct") {
-    return await withTimeout(
-      shopify.getProduct(event),
-      SHOPIFY_TIMEOUT_MS,
-      "SHOPIFY_TIMEOUT",
-      `Shopify getProduct exceeded ${SHOPIFY_TIMEOUT_MS}ms`
-    );
-  }
-  if (method === "POST" && (routePath === "/shopify/createCart" || routePath === "/shopify/cart")) {
-    return await withTimeout(
-      shopify.createCart(event),
-      SHOPIFY_TIMEOUT_MS,
-      "SHOPIFY_TIMEOUT",
-      `Shopify createCart exceeded ${SHOPIFY_TIMEOUT_MS}ms`
-    );
-  }
-
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Shopify persistent cart ops
-  if (method === "POST" && routePath === "/shopify/cart/get") {
-    return await withTimeout(
-      shopify.getCart(event),
-      SHOPIFY_TIMEOUT_MS,
-      "SHOPIFY_TIMEOUT",
-      `Shopify getCart exceeded ${SHOPIFY_TIMEOUT_MS}ms`
-    );
-  }
-  if (method === "POST" && routePath === "/shopify/cart/addLines") {
-    return await withTimeout(
-      shopify.addCartLines(event),
-      SHOPIFY_TIMEOUT_MS,
-      "SHOPIFY_TIMEOUT",
-      `Shopify addCartLines exceeded ${SHOPIFY_TIMEOUT_MS}ms`
-    );
-  }
-  if (method === "POST" && routePath === "/shopify/cart/updateLines") {
-    return await withTimeout(
-      shopify.updateCartLines(event),
-      SHOPIFY_TIMEOUT_MS,
-      "SHOPIFY_TIMEOUT",
-      `Shopify updateCartLines exceeded ${SHOPIFY_TIMEOUT_MS}ms`
-    );
-  }
-  if (method === "POST" && routePath === "/shopify/cart/removeLines") {
-    return await withTimeout(
-      shopify.removeCartLines(event),
-      SHOPIFY_TIMEOUT_MS,
-      "SHOPIFY_TIMEOUT",
-      `Shopify removeCartLines exceeded ${SHOPIFY_TIMEOUT_MS}ms`
-    );
-  }
-
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Rewards
+  // ???????????????????????????????????????????????????????????????????????????????????????? Rewards
   if (rewardsRoutes) {
     if (method === "GET" && /^\/rewards\/balance\/[^/]+$/.test(routePath)) {
       return await rewardsRoutes.getRewardsBalance(event);
@@ -7466,1910 +6425,100 @@ async function handle(event = {}) {
     }
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Ask Snoozer (SCO-aware + deterministic-first)
-  if (method === "POST" && (routePath === "/ask-snoozer" || routePath === "/ask")) {
-    const startedAt = Date.now();
-    const payload = safeJsonBody(event);
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Ask Snoozer (SCO-aware + deterministic-first)
+  const askSnoozerRouteResponse = await askSnoozerRoutes.handleAskSnoozerRoutes({
+    event,
+    method,
+    routePath,
+    traceId,
+    deps: {
+      safeJsonBody,
+      isDebugRequest,
+      deriveEffectiveThreadId,
+      cleanIdentityValue,
+      safeResolveSnoozeIdentity,
+      log,
+      wantsHudResponse,
+      buildErrorResponse,
+      normalizeSnoozerResponse,
+      logContractResponse,
+      buildHudFromAny,
+      flatResponse,
+      getSessionItem,
+      nowIso,
+      buildDefaultSCO,
+      putSessionItemIfMissing,
+      ttlEpochSeconds,
+      deepMerge,
+      normalizePodAnchors,
+      getAssessmentResult,
+      recsService,
+      getSeedRecommendations,
+      resolveCanonicalRecommendationContext,
+      attachCanonicalRecommendationContext,
+      pickAskSnoozerAssessmentInput,
+      buildAskSnoozerClassification,
+      safeGetCustomerProfile,
+      attachStoredProfileContext,
+      customerProfileService,
+      buildIdentityProfilePatch,
+      safeUpsertCustomerProfile,
+      logProfileRouteOutcome,
+      safeUpsertIdentityAliases,
+      maybeSyncProfileToZohoForInteraction,
+      STRICT_POD_ANCHOR,
+      routeAskSnoozerQuestion,
+      maybeBuildAskSnoozerCanonicalAnswer,
+      saveSessionContext,
+      buildSuccessResponse,
+      maybeBuildAskSnoozerDeterministicGuidanceAnswer,
+      maybeBuildAskSnoozerCommerceAnswer,
+      queryExplicitlyRequestsAskSnoozerCommerce,
+      resolveAskSnoozerCommerceResponse,
+      resolveAskSnoozerPolicyAnswer,
+      buildAskSnoozerPolicyChips,
+      buildAskSnoozerAction,
+      buildAskSnoozerMissingAssessmentChips,
+      buildAskSnoozerClarificationReply,
+      buildAskSnoozerMissingRecommendationReply,
+      buildAskSnoozerFallbackReply,
+      buildAskSnoozerQualityGateObject,
+      maybeBuildAskSnoozerDeterministicFaqAnswer,
+      MODEL_TIMEOUT_MS,
+      measureStep,
+      withTimeout,
+      isObject,
+      safeNumber,
+      normalizeContextPatch,
+      normalizeHudStateValue,
+      normalizeHudPriorityValue,
+      normalizeHudVoiceStyleValue,
+      isTimeoutError,
+    },
+  });
+  if (askSnoozerRouteResponse) return askSnoozerRouteResponse;
 
-    const debug = isDebugRequest(event);
-
-    const msg = payload.message || payload.prompt || payload.text || "";
-    const mode = payload.mode || undefined;
-    const effectiveSessionId = deriveEffectiveThreadId(event, payload);
-    const askSourceSurface =
-      payload.source ||
-      payload?.context?.session?.source ||
-      payload?.context?.source ||
-      "ask_snoozer";
-    const incomingAskShopperId = cleanIdentityValue(payload?.shopperId);
-    const askIdentity = await safeResolveSnoozeIdentity(
-      {
-        shopperId: incomingAskShopperId,
-        snoozeCode:
-          payload?.snoozeCode ||
-          payload?.code ||
-          payload?.context?.snoozeCode ||
-          "",
-        accessCode: payload?.accessCode || payload?.context?.accessCode || "",
-        sourceShopperId:
-          payload?.sourceShopperId ||
-          payload?.context?.sourceShopperId ||
-          incomingAskShopperId,
-        visitorId: payload?.visitorId || payload?.context?.visitorId || "",
-        sessionId: effectiveSessionId,
-        threadId: effectiveSessionId,
-        context: payload?.context || {},
-        sourceSurface: askSourceSurface,
-        reason: "ask_snoozer",
-      },
-      { traceId, route: "/ask-snoozer" }
-    );
-    const shopperId = askIdentity?.shopperId || null;
-
-    log("ask-snoozer.route", "session", {
-      traceId,
-      shopperId,
-      mode,
-      effectiveSessionId,
-      debug,
-    });
-
-    const wantHud = wantsHudResponse(event, mode);
-
-    if (!msg) {
-      const errorBody = buildErrorResponse({
-        requestId: traceId,
-        latencyMs: 0,
-        context: { shopperId, sessionId: effectiveSessionId },
-        code: "E_BAD_REQUEST",
-        message: "Missing message",
-      });
-
-      const normalized = normalizeSnoozerResponse(
-        {
-          ...errorBody,
-          ok: false,
-          status: "error",
-          sessionId: effectiveSessionId,
-          reply: "Missing message.",
-          error: { code: "E_BAD_REQUEST", message: "Missing message" },
-        },
-        { traceId, sessionId: effectiveSessionId, routePath, startedAtMs: startedAt, debug }
-      );
-
-      logContractResponse(normalized);
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: false,
-          mode,
-          context: { shopperId, sessionId: effectiveSessionId },
-          payload,
-          defaultSpeech: "Missing message.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    // 1) Load SCO (or auto-create)
-    let sco = null;
-    try {
-      const item = await getSessionItem(effectiveSessionId);
-      sco = item?.context || null;
-
-      if (!sco) {
-        const iso = nowIso();
-        const source = payload.source || payload?.context?.session?.source || payload?.context?.source || "kiosk";
-        const storeId =
-          payload.storeId || payload?.context?.session?.storeId || payload?.context?.storeId || "mysnoozepod-1";
-
-        const ctx = buildDefaultSCO(effectiveSessionId, source, storeId);
-
-        try {
-          await putSessionItemIfMissing({
-            sessionId: effectiveSessionId,
-            context: ctx,
-            iso,
-            ttl: ttlEpochSeconds(30),
-          });
-          sco = ctx;
-          log("session.autocreate", "created", { traceId, effectiveSessionId });
-        } catch {
-          const reread = await getSessionItem(effectiveSessionId);
-          sco = reread?.context || ctx;
-        }
-      }
-    } catch (e) {
-      log("session.load.error", e.message, { traceId, effectiveSessionId });
-    }
-
-    // 2) Merge callerContext into SCO and normalize pod anchors
-    const callerContext = (payload.context && typeof payload.context === "object" ? payload.context : {}) || {};
-
-    let context =
-      sco && typeof sco === "object"
-        ? deepMerge(sco, callerContext)
-        : deepMerge({ sessionId: effectiveSessionId }, callerContext);
-
-    // Normalize pod anchors
-    context = normalizePodAnchors(context, payload);
-
-    // Always stamp these top-level
-    context.shopperId = shopperId;
-    context.snoozeCode = askIdentity?.snoozeCode || context?.snoozeCode || null;
-    context.accessCode = askIdentity?.accessCode || context?.accessCode || null;
-    context.profileId = askIdentity?.profileId || context?.profileId || null;
-    context.sessionId = effectiveSessionId;
-
-    // 3) Attach assessment and canonical recommendation context
-    let storedAssessment = null;
-    try {
-      if (shopperId) {
-        storedAssessment = await getAssessmentResult(shopperId);
-        if (storedAssessment) context.assessment = storedAssessment;
-
-        const m = String(mode || "").toLowerCase();
-        const allowRecs = m !== "pod";
-
-        if (allowRecs) {
-          let recs;
-          if (recsService && typeof recsService.getRecommendations === "function") {
-            recs = await recsService.getRecommendations(shopperId, { mode: m });
-          } else {
-            recs = await getSeedRecommendations(shopperId);
-          }
-
-          if (Array.isArray(recs?.products) && recs.products.length) {
-            const handles = recs.products.map((p) => p && p.handle).filter(Boolean);
-            if (handles.length) context.recommendedProductHandles = handles;
-          }
-
-          if (Array.isArray(recs?.hints) && recs.hints.length) {
-            context.recommendationHints = recs.hints;
-
-            if (!context.retrievalHints || typeof context.retrievalHints !== "object") {
-              context.retrievalHints = {};
-            }
-            if (!Array.isArray(context.retrievalHints.tags)) {
-              context.retrievalHints.tags = [];
-            }
-            for (const h of recs.hints) {
-              if (h && !context.retrievalHints.tags.includes(h)) {
-                context.retrievalHints.tags.push(h);
-              }
-            }
-          }
-        } else {
-          context.recommendationHints = [];
-        }
-      }
-
-      const canonicalContext = await resolveCanonicalRecommendationContext({
-        payload,
-        context,
-        storedAssessment,
-        shopperId,
-        sessionId: effectiveSessionId,
-        allowSessionLookup: false,
-        source: "ask_snoozer",
-        traceId,
-      });
-
-      if (canonicalContext) {
-        try {
-          context = attachCanonicalRecommendationContext(context, canonicalContext);
-          log("ask-snoozer.canonical", "resolved", {
-            traceId,
-            sessionId: effectiveSessionId,
-            shopperId,
-            topPodId: canonicalContext.topPodId || null,
-            primaryMattressHandle: canonicalContext.primaryMattressHandle || null,
-            baseHandle: canonicalContext.baseHandle || null,
-            motionKey: canonicalContext.motionKey || null,
-          });
-        } catch (canonicalErr) {
-          log("ask-snoozer.canonical.error", canonicalErr.message, {
-            traceId,
-            sessionId: effectiveSessionId,
-            shopperId,
-            code: canonicalErr?.code || null,
-          });
-        }
-      }
-    } catch (ctxErr) {
-      log("ask-snoozer.context.error", ctxErr.message, { traceId, shopperId });
-    }
-
-    const profileAssessmentInput = pickAskSnoozerAssessmentInput({
-      payload,
-      context,
-      storedAssessment,
-    });
-    const askSnoozerClassification = buildAskSnoozerClassification(msg, context);
-    const previousAskProfileResult = await safeGetCustomerProfile(
-      {
-        profileId: askIdentity?.profileId || undefined,
-        shopperId: shopperId || undefined,
-        sessionId: effectiveSessionId || undefined,
-        threadId: effectiveSessionId || undefined,
-      },
-      { traceId, route: "/ask-snoozer" }
-    );
-    const previousAskProfile = previousAskProfileResult?.profile || null;
-    context = attachStoredProfileContext(
-      {
-        ...context,
-        bookingStatus: payload?.bookingStatus || context?.bookingStatus || "",
-      },
-      previousAskProfile
-    );
-
-    const askProfilePatch =
-      customerProfileService &&
-      typeof customerProfileService.buildAskSnoozerProfilePatch === "function"
-        ? customerProfileService.buildAskSnoozerProfilePatch({
-            previousProfile: previousAskProfile,
-            ...buildIdentityProfilePatch(askIdentity, {
-              sourceShopperId:
-                payload?.sourceShopperId ||
-                payload?.context?.sourceShopperId ||
-                incomingAskShopperId,
-              sessionId: effectiveSessionId,
-              threadId: effectiveSessionId,
-              visitorId: payload?.visitorId || payload?.context?.visitorId || "",
-            }),
-            shopperId,
-            sessionId: effectiveSessionId,
-            threadId: effectiveSessionId,
-            mode: mode || "",
-            sourceSurface: askSourceSurface,
-            lastIntent: askSnoozerClassification?.intent || "unknown",
-            lastIntentGroup: askSnoozerClassification?.intent_group || "",
-            message: msg,
-            assessment: profileAssessmentInput,
-            canonicalRecommendation: context?.canonicalRecommendation || null,
-            customer: context?.customer || null,
-            email: payload?.email || context?.customer?.email || "",
-            phone: payload?.phone || context?.customer?.phone || "",
-            preferredName: payload?.preferredName || context?.customer?.preferredName || "",
-            contactPreference:
-              payload?.contactPreference || context?.customer?.contactPreference || "",
-            consent: context?.customer?.consent || null,
-            leadStage: payload?.leadStage || context?.leadStage || "",
-            bookingStatus: payload?.bookingStatus || context?.bookingStatus || "",
-            podId: context?.podId || payload?.podId || "",
-            recommendedProductHandles: Array.isArray(context?.recommendedProductHandles)
-              ? context.recommendedProductHandles
-              : [],
-            context,
-          })
-        : {
-            ...buildIdentityProfilePatch(askIdentity, {
-              sourceShopperId:
-                payload?.sourceShopperId ||
-                payload?.context?.sourceShopperId ||
-                incomingAskShopperId,
-              sessionId: effectiveSessionId,
-              threadId: effectiveSessionId,
-              visitorId: payload?.visitorId || payload?.context?.visitorId || "",
-            }),
-            shopperId,
-            sessionId: effectiveSessionId,
-            threadId: effectiveSessionId,
-            mode: mode || "",
-            sourceSurface: askSourceSurface,
-            lastIntent: askSnoozerClassification?.intent || "unknown",
-            lastIntentGroup: askSnoozerClassification?.intent_group || "",
-            lastQuery: msg,
-            assessment: profileAssessmentInput,
-            canonicalRecommendation: context?.canonicalRecommendation || null,
-            customer: context?.customer || null,
-            email: payload?.email || context?.customer?.email || "",
-            phone: payload?.phone || context?.customer?.phone || "",
-            preferredName: payload?.preferredName || context?.customer?.preferredName || "",
-            contactPreference:
-              payload?.contactPreference || context?.customer?.contactPreference || "",
-            consent: context?.customer?.consent || null,
-            leadStage: payload?.leadStage || context?.leadStage || "",
-            bookingStatus: payload?.bookingStatus || context?.bookingStatus || "",
-            podId: context?.podId || payload?.podId || "",
-            recommendedProductHandles: Array.isArray(context?.recommendedProductHandles)
-              ? context.recommendedProductHandles
-              : [],
-          };
-
-    const askProfileUpsertResult = await safeUpsertCustomerProfile(askProfilePatch, {
-      traceId,
-      route: "/ask-snoozer",
-    });
-    logProfileRouteOutcome("ask", askProfileUpsertResult, {
-      traceId,
-      route: "/ask-snoozer",
-      shopperId: shopperId || null,
-      sessionId: effectiveSessionId || null,
-    });
-    await safeUpsertIdentityAliases(
-      askIdentity,
-      {
-        sourceShopperId:
-          payload?.sourceShopperId ||
-          payload?.context?.sourceShopperId ||
-          incomingAskShopperId,
-        visitorId: payload?.visitorId || payload?.context?.visitorId || "",
-        sessionId: effectiveSessionId,
-        threadId: effectiveSessionId,
-        sourceSurface: askSourceSurface,
-        lastIntent: askSnoozerClassification?.intent || "",
-        leadStage: askProfilePatch?.leadStage || "",
-      },
-      { traceId, route: "/ask-snoozer" }
-    );
-    await maybeSyncProfileToZohoForInteraction({
-      channel: "ask",
-      traceId,
-      route: "/ask-snoozer",
-      previousProfile: previousAskProfile,
-      nextPatch: askProfilePatch,
-      policyContext: {
-        route: "/ask-snoozer",
-        lastIntent: askSnoozerClassification?.intent || "",
-        lastIntentGroup: askSnoozerClassification?.intent_group || "",
-      },
-    });
-
-    // 3.5) STRICT POD ANCHOR: fail fast if pod mode lacks anchors
-    if (STRICT_POD_ANCHOR && String(mode || "").toLowerCase() === "pod") {
-      const hasPodId = !!String(context?.podId || "").trim();
-      const hasExplore = Array.isArray(context?.explore) && context.explore.length > 0;
-
-      if (!hasPodId || !hasExplore) {
-        const latencyMs = Date.now() - startedAt;
-
-        const normalized = normalizeSnoozerResponse(
-          {
-            ok: false,
-            status: "error",
-            sessionId: effectiveSessionId,
-            thread_id: effectiveSessionId,
-            reply:
-              "Pod mode is missing required context (podId + exploreContext). The UI must send the pod items so Snoozer can be deterministic.",
-            error: {
-              code: "E_POD_CONTEXT_MISSING",
-              message: "Missing podId or exploreContext/explore array.",
-              details: { hasPodId, hasExplore },
-            },
-            meta: {
-              path: "deterministic",
-              latency_ms: latencyMs,
-              metrics: {
-                retrievalMs: 0,
-                modelMs: 0,
-                totalMs: latencyMs,
-                fallbackUsed: true,
-              },
-            },
-            actions: [],
-          },
-          { traceId, sessionId: effectiveSessionId, routePath, startedAtMs: startedAt, debug }
-        );
-
-        logContractResponse(normalized);
-
-        log("ask-snoozer.metrics", "pod_context_missing", {
-          traceId,
-          sessionId: effectiveSessionId,
-          mode,
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: true,
-          path: "deterministic",
-        });
-
-        if (wantHud) {
-          const hud = await buildHudFromAny(normalized, {
-            ok: false,
-            mode,
-            context,
-            payload,
-            defaultSpeech:
-              "Pod mode is missing required context. The UI must send the pod items so Snoozer can stay deterministic.",
-            traceId,
-          });
-          return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-        }
-
-        return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-      }
-    }
-
-    const askSnoozerDecision = routeAskSnoozerQuestion({
-      query: msg,
-      context,
-      classification: askSnoozerClassification,
-    });
-    log("ask-snoozer.router.decision", "routed", {
-      traceId,
-      shopperId: shopperId || null,
-      sessionId: effectiveSessionId,
-      intentGroup: askSnoozerDecision.intentGroup,
-      intent: askSnoozerDecision.intent,
-      confidence: askSnoozerDecision.confidence,
-      sourceOfTruth: askSnoozerDecision.sourceOfTruth,
-      shouldUseOpenAI: askSnoozerDecision.shouldUseOpenAI,
-      shouldAskClarifyingQuestion: askSnoozerDecision.shouldAskClarifyingQuestion,
-      reason: null,
-    });
-    log("ask-snoozer.slots.extracted", "slots", {
-      traceId,
-      shopperId: shopperId || null,
-      sessionId: effectiveSessionId,
-      intentGroup: askSnoozerDecision.intentGroup,
-      intent: askSnoozerDecision.intent,
-      confidence: askSnoozerDecision.confidence,
-      slots: askSnoozerDecision.slots,
-      missingSlots: askSnoozerDecision.missingSlots,
-      sourceOfTruth: askSnoozerDecision.sourceOfTruth,
-      factsResolved: false,
-      fallbackUsed: false,
-      reason: null,
-    });
-
-    const canonicalAnswer = maybeBuildAskSnoozerCanonicalAnswer(msg, context);
-    if (canonicalAnswer) {
-      const latencyMs = Date.now() - startedAt;
-
-      if (sco && typeof sco === "object") {
-        try {
-          const merged = deepMerge(sco, context);
-          await saveSessionContext(effectiveSessionId, merged);
-          sco = merged;
-          log("session.autosave", "canonical_context", { traceId, effectiveSessionId });
-        } catch (e) {
-          log("session.autosave.error", e.message, { traceId, effectiveSessionId });
-        }
-      }
-
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model:
-          canonicalAnswer.answer_strategy === "session_prep"
-            ? "deterministic_session_guidance"
-            : "canonical_recommendation",
-        text: canonicalAnswer.reply || "",
-        context: mergedContext,
-        products: [],
-        actions: [],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      });
-
-      env.reply = canonicalAnswer.reply || env.message?.text || "";
-      env.thread_id = effectiveSessionId;
-      env.status = "completed";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path: "deterministic",
-        answer_strategy: canonicalAnswer.answer_strategy || "canonical_recommendation",
-        answer_grounded: Boolean(canonicalAnswer.answer_grounded),
-        answer_source_type: canonicalAnswer.answer_source_type || "canonical_recommendation",
-        answer_source_key: canonicalAnswer.answer_source_key || null,
-        answer_facts_count: Number(canonicalAnswer.answer_facts_count || 0),
-        matched_preview: canonicalAnswer.matched_preview || "",
-        extracted_facts: Array.isArray(canonicalAnswer.extracted_facts)
-          ? canonicalAnswer.extracted_facts
-          : [],
-        reason: canonicalAnswer.reason || "",
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType:
-            canonicalAnswer.answer_strategy === "session_prep"
-              ? "session_guidance"
-              : "product_answer",
-          sourceOfTruth:
-            canonicalAnswer.answer_strategy === "session_prep"
-              ? "session_prep"
-              : "canonical_profile",
-          factsResolved: Boolean(canonicalAnswer.answer_grounded),
-          fallbackUsed: false,
-          reason: canonicalAnswer.reason || "",
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-
-      log("ask-snoozer.canonical", "answered", {
-        traceId,
-        sessionId: effectiveSessionId,
-        shopperId,
-        topPodId: context?.canonicalRecommendation?.topPodId || null,
-        primaryMattressHandle: context?.canonicalRecommendation?.primaryMattressHandle || null,
-        baseHandle: context?.canonicalRecommendation?.baseHandle || null,
-        motionKey: context?.canonicalRecommendation?.motionKey || null,
-        totalMs: latencyMs,
-      });
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth:
-          canonicalAnswer.answer_strategy === "session_prep"
-            ? "session_prep"
-            : "canonical_profile",
-        factsResolved: Boolean(canonicalAnswer.answer_grounded),
-        missingSlots: [],
-        fallbackUsed: false,
-        reason: canonicalAnswer.reason || "",
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: env.reply || env.message?.text || "I'm here.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    if (
-      askSnoozerDecision.intentGroup === "recommendation" &&
-      !isObject(context?.canonicalRecommendation)
-    ) {
-      const latencyMs = Date.now() - startedAt;
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-      const reply = buildAskSnoozerMissingRecommendationReply();
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model: "deterministic_recommendation_fallback",
-        text: reply,
-        context: mergedContext,
-        products: [],
-        actions: [
-          buildAskSnoozerAction("start_assessment", "Start assessment", "/assessment"),
-        ],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      });
-
-      env.reply = reply;
-      env.chips = buildAskSnoozerMissingAssessmentChips();
-      env.thread_id = effectiveSessionId;
-      env.status = "completed";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path: "deterministic_recommendation_fallback",
-        answer_strategy: "missing_assessment",
-        answer_grounded: false,
-        answer_source_type: "fallback",
-        answer_source_key: null,
-        answer_facts_count: 0,
-        matched_preview: "",
-        extracted_facts: [],
-        reason: "missing_assessment",
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType: "fallback",
-          sourceOfTruth: "fallback",
-          factsResolved: false,
-          fallbackUsed: false,
-          missingSlots: ["assessment"],
-          reason: "missing_assessment",
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: "fallback",
-        factsResolved: false,
-        missingSlots: ["assessment"],
-        fallbackUsed: false,
-        reason: "missing_assessment",
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: reply,
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    if (askSnoozerDecision.intentGroup === "policy") {
-      const latencyMs = Date.now() - startedAt;
-      log("ask-snoozer.fulfillment.start", "policy", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
-        factsResolved: false,
-        missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed: false,
-        reason: null,
-      });
-      const policy = await resolveAskSnoozerPolicyAnswer({
-        query: msg,
-        traceId,
-        timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
-      });
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-
-      if (!policy?.retrieved) {
-        log("ask-snoozer.knowledge.missing", "policy_source_missing", {
-          traceId,
-          shopperId: shopperId || null,
-          sessionId: effectiveSessionId,
-          intentGroup: askSnoozerDecision.intentGroup,
-          intent: askSnoozerDecision.intent,
-          confidence: askSnoozerDecision.confidence,
-          slots: askSnoozerDecision.slots,
-          sourceOfTruth: "s3_policy",
-          factsResolved: false,
-          missingSlots: askSnoozerDecision.missingSlots,
-          fallbackUsed: true,
-          reason: "policy_source_missing",
-          knowledgeKeys: askSnoozerDecision.knowledgeKeys,
-        });
-      }
-
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model: !policy?.retrieved
-          ? "deterministic_policy_gap"
-          : policy?.answerGrounded
-            ? "policy_source_of_truth"
-            : "policy_source_of_truth_with_gap",
-        text: policy.reply || "",
-        context: mergedContext,
-        products: [],
-        actions: [],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: !policy?.retrieved,
-        },
-      });
-
-      env.reply = policy.reply || env.message?.text || "";
-      env.chips =
-        Array.isArray(policy?.chips) && policy.chips.length
-          ? policy.chips
-          : buildAskSnoozerPolicyChips(policy?.policySubtype);
-      env.thread_id = effectiveSessionId;
-      env.status = policy?.retrieved
-        ? (policy?.answerGrounded ? "completed" : "fallback")
-        : "fallback";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path: "deterministic_policy",
-        answer_strategy: policy?.answerGrounded
-          ? "policy_source_summary"
-          : !policy?.retrieved
-            ? "safe_missing_source"
-            : "approved_policy_detail_missing",
-        answer_grounded: Boolean(policy?.answerGrounded),
-        answer_source_type: policy?.sourceKind || policy?.source || "fallback",
-        answer_source_key: policy?.key || null,
-        answer_facts_count: policy?.answerGrounded ? 1 : 0,
-        matched_preview: policy?.matchedPreview || "",
-        extracted_facts: [],
-        reason:
-          policy?.reason ||
-          (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType: "policy_answer",
-          sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
-          factsResolved: Boolean(policy?.answerGrounded),
-          fallbackUsed: !policy?.retrieved,
-          reason:
-            policy?.reason ||
-            (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: !policy?.retrieved,
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-      log("ask-snoozer.policy.answer", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
-        factsResolved: Boolean(policy?.answerGrounded),
-        missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed: !policy?.retrieved,
-        reason:
-          policy?.reason ||
-          (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
-      });
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
-        factsResolved: Boolean(policy?.answerGrounded),
-        missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed: !policy?.retrieved,
-        reason:
-          policy?.reason ||
-          (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: env.reply || env.message?.text || "I'm here.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    if (
-      askSnoozerDecision.shouldAskClarifyingQuestion &&
-      ["commerce", "policy"].includes(askSnoozerDecision.intentGroup)
-    ) {
-      const latencyMs = Date.now() - startedAt;
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-      const reply = buildAskSnoozerClarificationReply(askSnoozerDecision);
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model: "deterministic_clarification",
-        text: reply,
-        context: mergedContext,
-        products: [],
-        actions: [],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      });
-
-      env.reply = reply;
-      env.thread_id = effectiveSessionId;
-      env.status = "completed";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path: "deterministic_clarification",
-        answer_strategy: "needs_clarification",
-        answer_grounded: false,
-        answer_source_type: "clarification",
-        answer_source_key: null,
-        answer_facts_count: 0,
-        matched_preview: "",
-        extracted_facts: [],
-        reason: "missing_slots",
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType: "clarification",
-          sourceOfTruth: askSnoozerDecision.sourceOfTruth,
-          factsResolved: false,
-          fallbackUsed: false,
-          reason: "missing_slots",
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-      log("ask-snoozer.clarification", "missing_slots", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
-        factsResolved: false,
-        missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed: false,
-        reason: "missing_slots",
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: reply,
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    if (askSnoozerDecision.intentGroup === "commerce") {
-      log("ask-snoozer.fulfillment.start", "commerce", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
-        factsResolved: false,
-        missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed: false,
-        reason: null,
-      });
-      const commerceResolution = await resolveAskSnoozerCommerceResponse({
-        query: msg,
-        decision: askSnoozerDecision,
-        fetchProductsByHandles: shopifySvc?.fetchProductsByHandles,
-      });
-      const latencyMs = Date.now() - startedAt;
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-      const products = Array.isArray(commerceResolution?.products)
-        ? commerceResolution.products.map((entry) => ({
-            type: "product",
-            label: entry?.title || entry?.handle || "",
-            title: entry?.title || entry?.handle || "",
-            handle: entry?.handle || "",
-            href: entry?.href || "",
-            product_id: String(entry?.product?.id || "").trim() || undefined,
-            variant_id: entry?.variantId || undefined,
-            variant_title: entry?.variantTitle || undefined,
-          }))
-        : [];
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model:
-          commerceResolution?.answerType === "clarification"
-            ? "deterministic_clarification"
-            : "deterministic_commerce",
-        text: commerceResolution?.reply || "",
-        context: mergedContext,
-        products,
-        actions: [],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
-        },
-      });
-
-      env.reply = commerceResolution?.reply || env.message?.text || "";
-      env.thread_id = effectiveSessionId;
-      env.status = commerceResolution?.fallbackUsed ? "completed_with_fallback" : "answered";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path:
-          commerceResolution?.answerType === "clarification"
-            ? "deterministic_clarification"
-            : "deterministic_commerce",
-        source: {
-          kind: "shopify",
-          shopifyProducts: products.length,
-        },
-        source_label: "shopify",
-        intent: askSnoozerDecision.intent,
-        intent_group: askSnoozerDecision.intentGroup,
-        policy_subtype: askSnoozerClassification?.policy_subtype || "",
-        scope: askSnoozerDecision.slots?.scope || null,
-        requested_size: askSnoozerDecision.slots?.size || null,
-        resolved_product_handle: commerceResolution?.resolvedProductHandle || null,
-        resolved_base_handle: commerceResolution?.resolvedBaseHandle || null,
-        shopify_price_found: Boolean(commerceResolution?.factsResolved),
-        answer_strategy:
-          commerceResolution?.answerType === "clarification"
-            ? "needs_clarification"
-            : commerceResolution?.factsResolved
-              ? "verified_price"
-              : "safe_fallback",
-        answer_grounded: Boolean(commerceResolution?.factsResolved),
-        answer_source_type: commerceResolution?.sourceOfTruth || "fallback",
-        answer_source_key:
-          commerceResolution?.resolvedProductHandle ||
-          commerceResolution?.resolvedBaseHandle ||
-          null,
-        answer_facts_count: commerceResolution?.factsResolved ? Math.max(1, products.length) : 0,
-        matched_preview: "",
-        extracted_facts: [],
-        reason: commerceResolution?.reason || "",
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType: commerceResolution?.answerType || "fallback",
-          sourceOfTruth: commerceResolution?.sourceOfTruth || "fallback",
-          factsResolved: Boolean(commerceResolution?.factsResolved),
-          fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
-          missingSlots: Array.isArray(commerceResolution?.missingSlots)
-            ? commerceResolution.missingSlots
-            : askSnoozerDecision.missingSlots,
-          reason: commerceResolution?.reason || "",
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-      log("ask-snoozer.commerce.answer", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: commerceResolution?.sourceOfTruth || "fallback",
-        factsResolved: Boolean(commerceResolution?.factsResolved),
-        missingSlots: Array.isArray(commerceResolution?.missingSlots)
-          ? commerceResolution.missingSlots
-          : askSnoozerDecision.missingSlots,
-        fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
-        reason: commerceResolution?.reason || "",
-      });
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: commerceResolution?.sourceOfTruth || "fallback",
-        factsResolved: Boolean(commerceResolution?.factsResolved),
-        missingSlots: Array.isArray(commerceResolution?.missingSlots)
-          ? commerceResolution.missingSlots
-          : askSnoozerDecision.missingSlots,
-        fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
-        reason: commerceResolution?.reason || "",
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: env.reply || env.message?.text || "I'm here.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    const deterministicGuidanceAnswer =
-      askSnoozerDecision.intentGroup === "product_education"
-        ? await maybeBuildAskSnoozerDeterministicGuidanceAnswer({
-            query: msg,
-            context,
-            traceId,
-            decision: askSnoozerDecision,
-            classification: askSnoozerDecision.classification || askSnoozerClassification,
-          })
-        : null;
-    if (deterministicGuidanceAnswer) {
-      const latencyMs = Date.now() - startedAt;
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-      const answerType =
-        String(deterministicGuidanceAnswer?.answer_strategy || "").trim() ===
-        "needs_product_clarification"
-          ? "clarification"
-          : "product_answer";
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model:
-          answerType === "clarification"
-            ? "deterministic_clarification"
-            : "deterministic_product_education",
-        text: deterministicGuidanceAnswer.reply || "",
-        context: mergedContext,
-        products: [],
-        actions: [],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      });
-
-      env.reply = deterministicGuidanceAnswer.reply || env.message?.text || "";
-      env.thread_id = effectiveSessionId;
-      env.status =
-        answerType === "clarification"
-          ? "completed"
-          : deterministicGuidanceAnswer.answer_grounded
-            ? "answered"
-            : "fallback";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path:
-          answerType === "clarification"
-            ? "deterministic_clarification"
-            : "deterministic_product_education",
-        answer_strategy:
-          deterministicGuidanceAnswer.answer_strategy || "source_summary",
-        answer_grounded: Boolean(deterministicGuidanceAnswer.answer_grounded),
-        answer_source_type:
-          deterministicGuidanceAnswer.answer_source_type || "s3_product",
-        answer_source_key: deterministicGuidanceAnswer.answer_source_key || null,
-        answer_facts_count: Number(deterministicGuidanceAnswer.answer_facts_count || 0),
-        matched_preview: deterministicGuidanceAnswer.matched_preview || "",
-        extracted_facts: Array.isArray(deterministicGuidanceAnswer.extracted_facts)
-          ? deterministicGuidanceAnswer.extracted_facts
-          : [],
-        reason: deterministicGuidanceAnswer.reason || "",
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType,
-          sourceOfTruth:
-            deterministicGuidanceAnswer.answer_source_type === "canonical_profile"
-              ? "canonical_profile"
-              : askSnoozerDecision.sourceOfTruth,
-          factsResolved: Boolean(deterministicGuidanceAnswer.answer_grounded),
-          fallbackUsed: false,
-          reason: deterministicGuidanceAnswer.reason || "",
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-      log("ask-snoozer.product-education", "answered", {
-        traceId,
-        sessionId: effectiveSessionId,
-        shopperId,
-        intent: deterministicGuidanceAnswer.classification?.intent || null,
-        intentGroup: deterministicGuidanceAnswer.classification?.intent_group || null,
-        answerStrategy: env.meta?.answer_strategy || null,
-        answerSourceType: env.meta?.answer_source_type || null,
-        answerSourceKey: env.meta?.answer_source_key || null,
-        totalMs: latencyMs,
-      });
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth:
-          deterministicGuidanceAnswer.answer_source_type === "canonical_profile"
-            ? "canonical_profile"
-            : askSnoozerDecision.sourceOfTruth,
-        factsResolved: Boolean(deterministicGuidanceAnswer.answer_grounded),
-        missingSlots: [],
-        fallbackUsed: false,
-        reason: deterministicGuidanceAnswer.reason || "",
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: env.reply || env.message?.text || "I'm here.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    const deterministicCommerceAnswer =
-      askSnoozerDecision.intentGroup === "product_education" &&
-      queryExplicitlyRequestsAskSnoozerCommerce(msg)
-        ? await maybeBuildAskSnoozerCommerceAnswer({
-            query: msg,
-            context,
-            traceId,
-            classification: askSnoozerDecision.classification || askSnoozerClassification,
-          })
-        : null;
-    if (deterministicCommerceAnswer) {
-      const latencyMs = Date.now() - startedAt;
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model: "deterministic_commerce",
-        text: deterministicCommerceAnswer.replyOverride || "",
-        context: mergedContext,
-        products: Array.isArray(deterministicCommerceAnswer.products)
-          ? deterministicCommerceAnswer.products
-          : [],
-        actions: [],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      });
-
-      env.reply = deterministicCommerceAnswer.replyOverride || env.message?.text || "";
-      env.thread_id = effectiveSessionId;
-      env.status = "answered";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path: "deterministic_commerce",
-        source: {
-          kind: "shopify",
-          shopifyProducts: Array.isArray(deterministicCommerceAnswer.products)
-            ? deterministicCommerceAnswer.products.length
-            : 0,
-        },
-        source_label: "shopify",
-        intent: deterministicCommerceAnswer.metaIntent || deterministicCommerceAnswer.classification?.intent || null,
-        intent_group: deterministicCommerceAnswer.classification?.intent_group || null,
-        policy_subtype: deterministicCommerceAnswer.classification?.policy_subtype || "",
-        scope: deterministicCommerceAnswer.scope || null,
-        requested_size: deterministicCommerceAnswer.requestedSize || null,
-        resolved_product_handle: deterministicCommerceAnswer.resolvedProductHandle || null,
-        resolved_base_handle: deterministicCommerceAnswer.resolvedBaseHandle || null,
-        shopify_price_found: Boolean(deterministicCommerceAnswer.shopifyPriceFound),
-        retrievalMs: 0,
-        modelMs: 0,
-        totalMs: latencyMs,
-        fallbackUsed: false,
-        ...(isObject(deterministicCommerceAnswer.metaExtra)
-          ? deterministicCommerceAnswer.metaExtra
-          : {}),
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType:
-            String(
-              deterministicCommerceAnswer?.metaExtra?.answer_strategy ||
-                deterministicCommerceAnswer?.answer_strategy ||
-                ""
-            ).trim() === "needs_product_clarification"
-              ? "clarification"
-              : "product_answer",
-          sourceOfTruth: askSnoozerDecision.sourceOfTruth,
-          factsResolved: Boolean(
-            deterministicCommerceAnswer?.metaExtra?.answer_grounded
-          ),
-          fallbackUsed: false,
-          reason:
-            deterministicCommerceAnswer?.metaExtra?.reason ||
-            deterministicCommerceAnswer?.reason ||
-            "",
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-      log("ask-snoozer.commerce", "answered", {
-        traceId,
-        sessionId: effectiveSessionId,
-        shopperId,
-        intent: deterministicCommerceAnswer.metaIntent || deterministicCommerceAnswer.classification?.intent || null,
-        intentGroup: deterministicCommerceAnswer.classification?.intent_group || null,
-        scope: deterministicCommerceAnswer.scope || null,
-        requestedSize: deterministicCommerceAnswer.requestedSize || null,
-        answerStrategy: env.meta?.answer_strategy || null,
-        answerSourceType: env.meta?.answer_source_type || null,
-        answerSourceKey: env.meta?.answer_source_key || null,
-        source: "shopify",
-        fallbackUsed: false,
-        handles: Array.isArray(deterministicCommerceAnswer.products)
-          ? deterministicCommerceAnswer.products.map((product) => product.handle).filter(Boolean)
-          : [],
-        totalMs: latencyMs,
-      });
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
-        factsResolved: Boolean(
-          deterministicCommerceAnswer?.metaExtra?.answer_grounded
-        ),
-        missingSlots: [],
-        fallbackUsed: false,
-        reason:
-          deterministicCommerceAnswer?.metaExtra?.reason ||
-          deterministicCommerceAnswer?.reason ||
-          "",
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: env.reply || env.message?.text || "I'm here.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    const deterministicFaqAnswer = await maybeBuildAskSnoozerDeterministicFaqAnswer({
-      query: msg,
-      context,
-      traceId,
-      shopperId,
-    });
-    if (deterministicFaqAnswer) {
-      const latencyMs = Date.now() - startedAt;
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-      const faqAnswerType =
-        String(deterministicFaqAnswer.answer_type || "").trim() ||
-        (askSnoozerDecision.intentGroup === "support"
-          ? "support_guidance"
-          : askSnoozerDecision.intentGroup === "session_guidance"
-            ? "session_guidance"
-            : "guided_faq");
-      const faqSourceOfTruth =
-        String(deterministicFaqAnswer.source_of_truth || "").trim() ||
-        askSnoozerDecision.sourceOfTruth;
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model: "deterministic_faq",
-        text: deterministicFaqAnswer.reply || "",
-        context: mergedContext,
-        products: [],
-        actions: [],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      });
-
-      env.reply = deterministicFaqAnswer.reply || env.message?.text || "";
-      env.thread_id = effectiveSessionId;
-      env.status = "completed";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path: "deterministic",
-        answer_strategy: deterministicFaqAnswer.answer_strategy || "safe_fallback",
-        answer_grounded: Boolean(deterministicFaqAnswer.answer_grounded),
-        answer_source_type: deterministicFaqAnswer.answer_source_type || "fallback",
-        answer_source_key: deterministicFaqAnswer.answer_source_key || null,
-        answer_facts_count: Number(deterministicFaqAnswer.answer_facts_count || 0),
-        matched_preview: deterministicFaqAnswer.matched_preview || "",
-        extracted_facts: Array.isArray(deterministicFaqAnswer.extracted_facts)
-          ? deterministicFaqAnswer.extracted_facts
-          : [],
-        reason: deterministicFaqAnswer.reason || "",
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType: faqAnswerType,
-          sourceOfTruth: faqSourceOfTruth,
-          factsResolved: Boolean(deterministicFaqAnswer.answer_grounded),
-          fallbackUsed: false,
-          reason: deterministicFaqAnswer.reason || "",
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-      log("ask-snoozer.faq", "answered", {
-        traceId,
-        sessionId: effectiveSessionId,
-        shopperId,
-        intent: deterministicFaqAnswer.classification?.intent || null,
-        intentGroup: deterministicFaqAnswer.classification?.intent_group || null,
-        answerStrategy: env.meta?.answer_strategy || null,
-        answerSourceType: env.meta?.answer_source_type || null,
-        answerSourceKey: env.meta?.answer_source_key || null,
-        totalMs: latencyMs,
-      });
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: faqSourceOfTruth,
-        factsResolved: Boolean(deterministicFaqAnswer.answer_grounded),
-        missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed: false,
-        reason: deterministicFaqAnswer.reason || "",
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: env.reply || env.message?.text || "I'm here.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    if (!askSnoozerDecision.shouldUseOpenAI) {
-      const latencyMs = Date.now() - startedAt;
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-      const reply = buildAskSnoozerFallbackReply();
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model: "deterministic_fallback",
-        text: reply,
-        context: mergedContext,
-        products: [],
-        actions: [],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      });
-
-      env.reply = reply;
-      env.thread_id = effectiveSessionId;
-      env.status = "completed";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path: "deterministic_fallback",
-        answer_strategy: "safe_fallback",
-        answer_grounded: false,
-        answer_source_type: "fallback",
-        answer_source_key: null,
-        answer_facts_count: 0,
-        matched_preview: "",
-        extracted_facts: [],
-        reason: "fallback_guard",
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType: "fallback",
-          sourceOfTruth: "fallback",
-          factsResolved: false,
-          fallbackUsed: false,
-          reason: "fallback_guard",
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: "fallback",
-        factsResolved: false,
-        missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed: false,
-        reason: "fallback_guard",
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: reply,
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    // 4) Call Snoozer
-    try {
-      const { getSnoozerResponse } = require("./services/openai");
-
-      const modelStep = await measureStep("model_call", () =>
-        withTimeout(
-          getSnoozerResponse(msg, {
-            reqId: traceId,
-            thread_id: effectiveSessionId,
-            mode,
-            context,
-          }),
-          MODEL_TIMEOUT_MS,
-          "OPENAI_TIMEOUT",
-          `Model exceeded ${MODEL_TIMEOUT_MS}ms`,
-          { sessionId: effectiveSessionId, mode }
-        )
-      );
-
-      const modelMs = modelStep.ms;
-      const latencyMs = Date.now() - startedAt;
-
-      if (!modelStep.ok) throw modelStep.error;
-
-      const aiResult = modelStep.value;
-      const aiMetrics = isObject(aiResult?.meta?.metrics) ? aiResult.meta.metrics : null;
-      const fallbackUsed = Boolean(
-        aiMetrics?.fallbackUsed ??
-          aiResult?.meta?.fallbackUsed
-      );
-
-      // 5) Persist contextPatch into SCO
-      const rawPatch =
-        aiResult?.contextPatch && typeof aiResult.contextPatch === "object"
-          ? aiResult.contextPatch
-          : null;
-
-      const patch = rawPatch ? normalizeContextPatch(rawPatch, aiResult) : null;
-
-      if (patch && sco && typeof sco === "object") {
-        try {
-          const merged = deepMerge(sco, patch);
-          await saveSessionContext(effectiveSessionId, merged);
-          sco = merged;
-          log("session.autosave", "patched", { traceId, effectiveSessionId });
-        } catch (e) {
-          log("session.autosave.error", e.message, { traceId, effectiveSessionId });
-        }
-      }
-
-      let mergedContext = context;
-      if (sco && typeof sco === "object") {
-        mergedContext = deepMerge(sco, context);
-      }
-      if (aiResult && aiResult.context && typeof aiResult.context === "object") {
-        mergedContext = deepMerge(mergedContext, aiResult.context);
-      }
-
-      const rawMessage = debug ? (aiResult?.raw || aiResult) : null;
-
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model: aiResult?.model,
-        text: aiResult?.text || aiResult?.reply || "",
-        rawMessage,
-        tokens: aiResult?.tokens,
-        products: aiResult?.products || aiResult?.data?.products || [],
-        context: mergedContext,
-        actions: aiResult?.actions || aiResult?.suggestedActions || [],
-        s3Prompts: debug ? aiResult?.s3Prompts || [] : [],
-      });
-
-      env.reply = aiResult?.reply || env.message?.text || "";
-      env.thread_id = aiResult?.thread_id || effectiveSessionId;
-      env.status = aiResult?.status || "completed";
-      env.meta = {
-        ...(aiResult?.meta || {}),
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType: "fallback",
-          sourceOfTruth: "openai",
-          factsResolved: false,
-          fallbackUsed,
-          reason: fallbackUsed ? "openai_fallback" : "openai",
-        }),
-        retrievalMs: safeNumber(aiMetrics?.retrievalMs ?? aiResult?.meta?.retrievalMs, 0),
-        modelMs,
-        totalMs: latencyMs,
-        fallbackUsed,
-        metrics: {
-          retrievalMs: safeNumber(aiMetrics?.retrievalMs ?? aiResult?.meta?.retrievalMs, 0),
-          modelMs,
-          totalMs: latencyMs,
-          fallbackUsed,
-        },
-      };
-
-      if (aiResult?.cartId) env.cartId = aiResult.cartId;
-      if (aiResult?.checkoutUrl) env.checkoutUrl = aiResult.checkoutUrl;
-      if (patch) env.contextPatch = patch;
-
-      if (aiResult?.hud && typeof aiResult.hud === "object") {
-        env.hud = {
-          scriptKey:
-            typeof aiResult.hud.scriptKey === "string" ? aiResult.hud.scriptKey : undefined,
-          speech: typeof aiResult.hud.speech === "string" ? aiResult.hud.speech : undefined,
-          captions: typeof aiResult.hud.captions === "string" ? aiResult.hud.captions : undefined,
-          state: normalizeHudStateValue(aiResult.hud.state, "speaking"),
-          priority: normalizeHudPriorityValue(aiResult.hud.priority, "normal"),
-          ttlMs:
-            Number.isFinite(Number(aiResult.hud.ttlMs)) && Number(aiResult.hud.ttlMs) > 0
-              ? Number(aiResult.hud.ttlMs)
-              : undefined,
-          voiceStyle: normalizeHudVoiceStyleValue(aiResult.hud.voiceStyle, "default"),
-          actions: Array.isArray(aiResult.hud.actions) ? aiResult.hud.actions : undefined,
-        };
-      }
-
-      env.sessionId = effectiveSessionId;
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-
-      log("ask-snoozer.metrics", "completed", {
-        traceId,
-        sessionId: effectiveSessionId,
-        mode,
-        retrievalMs: env.meta?.metrics?.retrievalMs || 0,
-        modelMs,
-        totalMs: latencyMs,
-        fallbackUsed,
-        timeoutMs: MODEL_TIMEOUT_MS,
-        path: env.meta?.path || null,
-      });
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: "openai",
-        factsResolved: false,
-        missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed,
-        reason: fallbackUsed ? "openai_fallback" : "openai",
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          aiResult,
-          payload,
-          defaultSpeech: env.reply || env.message?.text || "I'm here.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    } catch (err) {
-      const latencyMs = Date.now() - startedAt;
-      log("ask-snoozer.error", err.message, { traceId, stack: err.stack });
-
-      const isTimeout = isTimeoutError(err);
-
-      const errorBody = buildErrorResponse({
-        requestId: traceId,
-        latencyMs,
-        context: { shopperId, sessionId: effectiveSessionId },
-        code: isTimeout ? "OPENAI_TIMEOUT" : "ASK_SNOOZER_FAILED",
-        message: isTimeout
-          ? "Snoozer is thinking too hard right now. Try again."
-          : "Snoozer had trouble responding. Please try again.",
-        details: process.env.NODE_ENV === "production" ? undefined : err.message,
-      });
-
-      const normalized = normalizeSnoozerResponse(
-        {
-          ...errorBody,
-          ok: false,
-          status: "error",
-          sessionId: effectiveSessionId,
-          reply: isTimeout
-            ? "Snoozer is thinking too hard right now. Try again."
-            : "Snoozer had trouble responding. Please try again.",
-          error: {
-            code: isTimeout ? "OPENAI_TIMEOUT" : "ASK_SNOOZER_FAILED",
-            message: String(err.message || err),
-          },
-          meta: {
-            ...(errorBody.meta || {}),
-            qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-              answerType: "fallback",
-              sourceOfTruth: "fallback",
-              factsResolved: false,
-              fallbackUsed: true,
-              reason: isTimeout ? "timeout_fallback" : "ask_snoozer_failed",
-            }),
-            metrics: {
-              retrievalMs: 0,
-              modelMs: isTimeout ? MODEL_TIMEOUT_MS : 0,
-              totalMs: latencyMs,
-              fallbackUsed: true,
-            },
-          },
-        },
-        {
-          traceId,
-          sessionId: effectiveSessionId,
-          routePath,
-          startedAtMs: startedAt,
-          debug: isDebugRequest(event),
-        }
-      );
-
-      logContractResponse(normalized);
-
-      log("ask-snoozer.metrics", "fallback", {
-        traceId,
-        sessionId: effectiveSessionId,
-        mode,
-        retrievalMs: 0,
-        modelMs: isTimeout ? MODEL_TIMEOUT_MS : 0,
-        totalMs: latencyMs,
-        fallbackUsed: true,
-        timeoutMs: isTimeout ? MODEL_TIMEOUT_MS : null,
-        path: "fallback",
-      });
-      if (isTimeout) {
-        log("ask-snoozer.timeout.fallback", "timeout_fallback", {
-          traceId,
-          shopperId: shopperId || null,
-          sessionId: effectiveSessionId,
-          intentGroup: askSnoozerDecision.intentGroup,
-          intent: askSnoozerDecision.intent,
-          confidence: askSnoozerDecision.confidence,
-          slots: askSnoozerDecision.slots,
-          sourceOfTruth: "fallback",
-          factsResolved: false,
-          missingSlots: askSnoozerDecision.missingSlots,
-          fallbackUsed: true,
-          reason: "timeout_fallback",
-        });
-      }
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: false,
-          mode,
-          context: { shopperId, sessionId: effectiveSessionId },
-          payload,
-          defaultSpeech: isTimeout
-            ? "Snoozer is thinking too hard right now. Try again."
-            : "Snoozer had trouble responding. Please try again.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-  }
-
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ CRM
   if (method === "POST" && routePath === "/crm/track-event") {
     const body = safeJsonBody(event);
     log("crm.event", "track", { ...body, traceId });
     return response(event, 200, { ok: true });
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Recommendations
-  if (method === "GET" && routePath.startsWith("/recommendations/")) {
-    const shopperId = decodeURIComponent(routePath.split("/").pop() || "guest");
+  const recommendationRouteResponse = await recommendationRoutes.handleRecommendationRoutes({
+    event,
+    method,
+    routePath,
+    deps: {
+      response,
+      recsService,
+      getSeedRecommendations,
+      recommendationResolver,
+      safeJsonBody,
+    },
+  });
+  if (recommendationRouteResponse) return recommendationRouteResponse;
 
-    let recs;
-    if (recsService && typeof recsService.getRecommendations === "function") {
-      recs = await recsService.getRecommendations(shopperId, { mode: "explore" });
-    } else {
-      recs = await getSeedRecommendations(shopperId);
-    }
-
-    return response(event, 200, recs);
-  }
-
-  if (method === "POST" && routePath === "/recommendations/resolve") {
-    if (!recommendationResolver || typeof recommendationResolver.resolveRecommendation !== "function") {
-      return response(event, 500, {
-        ok: false,
-        code: "E_RECOMMENDATION_RESOLVER_UNAVAILABLE",
-        message: "Recommendation resolver unavailable.",
-      });
-    }
-
-    try {
-      const body = safeJsonBody(event);
-      const resolved = await recommendationResolver.resolveRecommendation(body || {});
-      return response(event, 200, resolved);
-    } catch (error) {
-      return response(event, Number(error.statusCode || 500), {
-        ok: false,
-        code: error.code || "E_RECOMMENDATION_RESOLVE",
-        message: error.message || "Unable to resolve recommendations.",
-      });
-    }
-  }
-
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ IoT Scene Trigger
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ IoT Scene Trigger
   if (method === "POST" && routePath === "/iot/trigger-scene") {
     const { podId, scene } = safeJsonBody(event);
     try {
@@ -9383,9 +6532,9 @@ async function handle(event = {}) {
   return response(event, 404, { message: "Not found" });
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Export Lambda
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 exports.lambdaHandler = async (event) => {
   try {
     const out = await handle(event);

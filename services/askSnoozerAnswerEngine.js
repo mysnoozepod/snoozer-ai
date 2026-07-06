@@ -986,6 +986,9 @@ function buildProductSpecificReply({
     const bestPriceEntry = pricedEntries[0] || primary;
     const multipleMatches = pricedEntries.length > 1 && !currentHandle;
     const explicitSize = Boolean(sizeLabel);
+    const cheapestQuery = queryLooksLikeCheapestQuestion(normalizedQuery);
+    const anchoredCurrentProduct = Boolean(currentHandle && currentEntry);
+    const allowStartingPriceWithoutExplicitSize = anchoredCurrentProduct || cheapestQuery;
     const productNames = Array.from(
       new Set(
         pricedEntries
@@ -994,7 +997,7 @@ function buildProductSpecificReply({
       )
     );
 
-    if (!queryLooksLikeCheapestQuestion(normalizedQuery) && multipleMatches && productNames.length > 1) {
+    if (!cheapestQuery && !explicitSize && multipleMatches && productNames.length > 1) {
       return {
         reply: `I can check the live price, but I still need the mattress model. Do you mean ${productNames.slice(0, 2).join(" or ")}?`,
         grounded: true,
@@ -1005,7 +1008,7 @@ function buildProductSpecificReply({
       };
     }
 
-    if (!explicitSize && primarySizes.length > 1) {
+    if (!explicitSize && primarySizes.length > 1 && !allowStartingPriceWithoutExplicitSize) {
       return {
         reply: `${primaryTitle} comes in ${formatSizeList(primarySizes)}. Which size do you want me to price live?`,
         grounded: true,
@@ -1021,7 +1024,18 @@ function buildProductSpecificReply({
     const variantTitle = cleanAnswerText(bestPriceEntry?.matchedSizeLabel || sizeLabel || bestPriceEntry?.variantTitle || "");
 
     if (price) {
-      if (queryLooksLikeCheapestQuestion(normalizedQuery)) {
+      if (!explicitSize && anchoredCurrentProduct) {
+        return {
+          reply: `${title} starts at ${price}. Tell me the size if you want the exact live price for this mattress.`,
+          grounded: true,
+          sourceType,
+          sourceKey: bestPriceEntry.handle || sourceKey,
+          facts: [`${title} starting verified price: ${price}`],
+          strategy: "verified_price",
+        };
+      }
+
+      if (cheapestQuery) {
         return {
           reply: explicitSize
             ? `${title} is the lowest verified ${variantTitle ? `${variantTitle} ` : ""}match I found at ${price}. Compare it first if price is your main filter.`
@@ -1301,6 +1315,21 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     const finalSaleFact = findFact(facts, ["final sale", "motion bases", "adjustable frames"]);
     const mattressOnlyFact = findFact(facts, ["mattress purchases only", "good condition", "stains"]);
     const trialStartFact = findFact(facts, ["begins the day your mattress is delivered", "from delivery"]);
+    const doesntLikeMattressQuery =
+      normalizedQuery.includes("dont like") || normalizedQuery.includes("don't like");
+
+    if (doesntLikeMattressQuery) {
+      return {
+        reply: joinUniqueSentences([
+          "The return information says mattresses can be returned or exchanged once during the 100-night trial.",
+          "The mattress needs to stay in good condition.",
+          refundFact?.text
+            ? "Refunds are usually issued within 3 to 5 business days after pickup."
+            : "",
+        ]),
+        grounded: true,
+      };
+    }
 
     if (queryLooksLikeTrialQuestion(normalizedQuery)) {
       return {

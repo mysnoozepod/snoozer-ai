@@ -54,10 +54,7 @@ const POLICY_KEY_CANDIDATES = Object.freeze({
 const SUPPLEMENTAL_SOURCE_CANDIDATES = Object.freeze({
   assessment_handoff: Object.freeze({
     knowledge: [],
-    skill: [
-      "skills/help_me_choose.md",
-      "skills/where_to_start.md",
-    ],
+    skill: ["skills/help_me_choose.md"],
   }),
   split_education: Object.freeze({
     knowledge: ["products/mattress/12-dual-comfort-hybrid.md"],

@@ -817,6 +817,73 @@ async function removeCartLinesRoute(event = {}) {
   }
 }
 
+async function handleShopifyRoute({ event, method, routePath }) {
+  if (method === "POST" && routePath === "/shopify/listProducts") {
+    return withTimeout(
+      listProducts(event),
+      ROUTE_TIMEOUT_MS,
+      "SHOPIFY_TIMEOUT",
+      `Shopify listProducts exceeded ${ROUTE_TIMEOUT_MS}ms`
+    );
+  }
+
+  if (method === "POST" && routePath === "/shopify/getProduct") {
+    return withTimeout(
+      getProduct(event),
+      ROUTE_TIMEOUT_MS,
+      "SHOPIFY_TIMEOUT",
+      `Shopify getProduct exceeded ${ROUTE_TIMEOUT_MS}ms`
+    );
+  }
+
+  if (method === "POST" && (routePath === "/shopify/createCart" || routePath === "/shopify/cart")) {
+    return withTimeout(
+      createCartRoute(event),
+      ROUTE_TIMEOUT_MS,
+      "SHOPIFY_TIMEOUT",
+      `Shopify createCart exceeded ${ROUTE_TIMEOUT_MS}ms`
+    );
+  }
+
+  if (method === "POST" && routePath === "/shopify/cart/get") {
+    return withTimeout(
+      getCartRoute(event),
+      ROUTE_TIMEOUT_MS,
+      "SHOPIFY_TIMEOUT",
+      `Shopify getCart exceeded ${ROUTE_TIMEOUT_MS}ms`
+    );
+  }
+
+  if (method === "POST" && routePath === "/shopify/cart/addLines") {
+    return withTimeout(
+      addCartLinesRoute(event),
+      ROUTE_TIMEOUT_MS,
+      "SHOPIFY_TIMEOUT",
+      `Shopify addCartLines exceeded ${ROUTE_TIMEOUT_MS}ms`
+    );
+  }
+
+  if (method === "POST" && routePath === "/shopify/cart/updateLines") {
+    return withTimeout(
+      updateCartLinesRoute(event),
+      ROUTE_TIMEOUT_MS,
+      "SHOPIFY_TIMEOUT",
+      `Shopify updateCartLines exceeded ${ROUTE_TIMEOUT_MS}ms`
+    );
+  }
+
+  if (method === "POST" && routePath === "/shopify/cart/removeLines") {
+    return withTimeout(
+      removeCartLinesRoute(event),
+      ROUTE_TIMEOUT_MS,
+      "SHOPIFY_TIMEOUT",
+      `Shopify removeCartLines exceeded ${ROUTE_TIMEOUT_MS}ms`
+    );
+  }
+
+  return null;
+}
+
 module.exports = {
   listProducts,
   getProduct,
@@ -829,4 +896,5 @@ module.exports = {
   addCartLines: addCartLinesRoute,
   updateCartLines: updateCartLinesRoute,
   removeCartLines: removeCartLinesRoute,
+  handleShopifyRoute,
 };

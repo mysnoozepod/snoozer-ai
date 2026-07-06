@@ -128,6 +128,41 @@ const EDUCATION_TERMS = Object.freeze([
   "motion isolation",
 ]);
 
+const SNOOZE_CODE_TERMS = Object.freeze([
+  "snooze code",
+  "access code",
+  "unlock code",
+  "shopper id",
+  "profile code",
+]);
+
+const REST_TEST_GUIDANCE_TERMS = Object.freeze([
+  "rest test",
+  "time on bed",
+]);
+
+const BUILD_GUIDANCE_TERMS = Object.freeze([
+  "build my pod",
+  "build your pod",
+  "build a pod",
+  "what should i add first",
+  "what do i add first",
+  "where should i start building",
+  "how do i build my pod",
+  "help me build my pod",
+]);
+
+const UNKNOWN_PRODUCT_BRAND_PATTERNS = Object.freeze([
+  /\bpurple\b/i,
+  /\btempur(?:-|\s*)pedic\b/i,
+  /\bsleep number\b/i,
+  /\bcasper\b/i,
+  /\bnectar\b/i,
+  /\bbeautyrest\b/i,
+  /\bserta\b/i,
+  /\bsealy\b/i,
+]);
+
 const NOUNLESS_QUERY_TERMS = Object.freeze(["asdf", "banana", "moon", "nonsense"]);
 const LEGACY_PRODUCT_EDUCATION_INTENT_GROUPS = new Set([
   "product_fit",
@@ -358,6 +393,45 @@ function isProductEducationQuery(text = "", classification = null) {
   ].includes(intentGroup);
 }
 
+function isSnoozeCodeQuery(text = "") {
+  const normalized = normalizeAskSnoozerText(text);
+  if (!normalized) return false;
+  if (includesAny(normalized, SNOOZE_CODE_TERMS)) return true;
+  return /\b(?:code|access code|snooze code)\s*[:#-]?\s*\d{4,6}\b/.test(normalized);
+}
+
+function isRestTestGuidanceQuery(text = "") {
+  const normalized = normalizeAskSnoozerText(text);
+  if (!normalized || !includesAny(normalized, REST_TEST_GUIDANCE_TERMS)) return false;
+  if (/\bwhat is (?:a )?rest test\b/.test(normalized)) return false;
+  return /\b(start|notice|during|look for|pay attention|what should i|how do i|after|next|do first)\b/.test(
+    normalized
+  );
+}
+
+function isBuildGuidanceQuery(text = "", context = {}) {
+  const normalized = normalizeAskSnoozerText(text);
+  if (!normalized) return false;
+  if (includesAny(normalized, BUILD_GUIDANCE_TERMS)) return true;
+
+  const path = normalizeAskSnoozerText(context?.path || "");
+  const pageType = normalizeAskSnoozerText(context?.page_type || context?.pageType || "");
+  const onBuildSurface =
+    path.includes("snoozepod") ||
+    path.includes("build") ||
+    pageType === "build";
+
+  return onBuildSurface && /\b(add first|start building|build my pod|build your pod)\b/.test(normalized);
+}
+
+function isUnknownProductQuery(text = "", slots = {}) {
+  const normalized = normalizeAskSnoozerText(text);
+  if (!normalized) return false;
+  if (slots?.productHandle || slots?.baseHandle) return false;
+  if (!/(mattress|bed|brand|compare|tell me about|vs|versus)/.test(normalized)) return false;
+  return UNKNOWN_PRODUCT_BRAND_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
 function isNonsenseFallback(text = "") {
   const normalized = normalizeAskSnoozerText(text);
   return NOUNLESS_QUERY_TERMS.filter((term) => normalized.includes(term)).length >= 2;
@@ -465,11 +539,25 @@ function resolveSourceOfTruth({
   context = {},
 } = {}) {
   if (intentGroup === "policy") return "s3_policy";
+  if (intentGroup === "identity_guidance") {
+    return isObject(context?.canonicalRecommendation) ? "identity_profile" : "identity_guidance";
+  }
   if (intentGroup === "recommendation") {
     return isObject(context?.canonicalRecommendation) ? "canonical_profile" : "fallback";
   }
   if (intentGroup === "session_guidance") return "session_prep";
+  if (intentGroup === "rest_test_guidance" || intentGroup === "build_guidance") {
+    return "hud_script";
+  }
   if (intentGroup === "commerce") return "shopify";
+  if (
+    intentGroup === "assessment_handoff" ||
+    intentGroup === "booking_handoff" ||
+    intentGroup === "cart_confidence"
+  ) {
+    return "action_allowlist";
+  }
+  if (intentGroup === "brand_education") return "local_brand";
   if (intentGroup === "product_education") {
     return slots.productHandle || slots.baseHandle
       ? "s3_product"
@@ -477,6 +565,7 @@ function resolveSourceOfTruth({
         ? "canon"
         : "s3_product";
   }
+  if (intentGroup === "catalog_boundary") return "catalog_boundary";
   if (intentGroup === "sleep_education") return "openai";
   return "fallback";
 }
@@ -520,6 +609,12 @@ function routeAskSnoozerQuestion({
     intentGroup = "recommendation";
   } else if (isNonsenseFallback(normalized)) {
     intentGroup = "fallback";
+  } else if (isSnoozeCodeQuery(normalized)) {
+    intentGroup = "identity_guidance";
+  } else if (isRestTestGuidanceQuery(normalized)) {
+    intentGroup = "rest_test_guidance";
+  } else if (isBuildGuidanceQuery(normalized, context)) {
+    intentGroup = "build_guidance";
   } else if (
     isSessionGuidanceQuery(normalized) &&
     (
@@ -529,8 +624,16 @@ function routeAskSnoozerQuestion({
     )
   ) {
     intentGroup = "session_guidance";
+  } else if (String(resolvedClassification?.intent_group || "").trim() === "assessment_handoff") {
+    intentGroup = "assessment_handoff";
+  } else if (String(resolvedClassification?.intent_group || "").trim() === "booking_handoff") {
+    intentGroup = "booking_handoff";
+  } else if (String(resolvedClassification?.intent_group || "").trim() === "brand_education") {
+    intentGroup = "brand_education";
   } else if (isSupportQuery(normalized) || includesAny(normalized, BOOKING_SUPPORT_TERMS)) {
     intentGroup = "support";
+  } else if (isUnknownProductQuery(normalized, slots)) {
+    intentGroup = "catalog_boundary";
   } else if (isCommerceQuery(normalized, resolvedClassification)) {
     intentGroup = "commerce";
   } else if (
@@ -951,6 +1054,10 @@ module.exports = {
   buildAskSnoozerClarificationReply,
   buildAskSnoozerFallbackReply,
   buildAskSnoozerMissingRecommendationReply,
+  isBuildGuidanceQuery,
+  isRestTestGuidanceQuery,
+  isSnoozeCodeQuery,
+  isUnknownProductQuery,
   routeAskSnoozerQuestion,
   resolveAskSnoozerCommerceResponse,
 };

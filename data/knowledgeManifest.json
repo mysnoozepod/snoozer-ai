@@ -44,7 +44,7 @@
       "required": false,
       "bucket": "prompt",
       "sourceKind": "skill",
-      "sourceKeys": ["skills/where_to_start.md", "skills/help_me_choose.md"]
+      "sourceKeys": ["skills/help_me_choose.md"]
     },
     "booking_help": {
       "required": false,

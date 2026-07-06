@@ -156,8 +156,8 @@ function buildAdjustableBaseVoice({
     [
       "Elevation can help some sleepers feel more comfortable when snoring is a concern",
       primaryTitle
-        ? `${primaryTitle} is worth comparing with an adjustable base so you can raise your head and upper body on purpose`
-        : "An adjustable base lets you raise your head and upper body, which is worth comparing during your Snooze Session",
+        ? `${primaryTitle} is worth comparing in an adjustable base setup so you can raise your head and upper body on purpose`
+        : "An adjustable base setup lets you raise your head and upper body, which is worth comparing during your Snooze Session",
       askSize ? "Are you shopping Queen or King?" : "That is worth trying during your Snooze Session.",
     ],
     3,
