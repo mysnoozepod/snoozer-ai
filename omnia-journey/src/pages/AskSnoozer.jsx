@@ -18,7 +18,6 @@ import {
   ShowroomCartBadge,
   ShowroomEyebrow,
   ShowroomFooterAction,
-  ShowroomFooterDock,
   ShowroomFrame,
   ShowroomPageShell,
   ShowroomPanel,
@@ -121,18 +120,18 @@ function ChatComposer({
   noteUserInteraction,
 }) {
   return (
-    <div className="rounded-[28px] border border-[#dbe5ff] bg-white/96 p-3.5 shadow-[0_18px_40px_rgba(31,55,117,0.10)] md:p-4">
-      <div className="flex gap-3">
-        <div className="min-w-0 flex-1 rounded-[22px] border border-slate-200 bg-slate-50/80 px-3 py-2.5 shadow-inner">
+    <div className="rounded-[24px] border border-[#dbe5ff] bg-white/96 p-3 shadow-[0_18px_40px_rgba(31,55,117,0.10)] md:p-3.5">
+      <div className="flex items-end gap-3">
+        <div className="min-w-0 flex-1 rounded-[20px] border border-slate-200 bg-slate-50/80 px-3 py-2 shadow-inner">
           <textarea
             ref={textareaRef}
             value={draft}
             onChange={onChange}
             onKeyDown={onKeyDown}
             onFocus={() => noteUserInteraction?.()}
-            rows={3}
+            rows={2}
             placeholder="Ask about your recommendations, comfort, adjustable bases, policies, Snooze Codes, or what to try next."
-            className="min-h-[84px] w-full resize-none bg-transparent text-[15px] leading-7 text-slate-800 outline-none placeholder:text-slate-400"
+            className="min-h-[60px] w-full resize-none bg-transparent text-[15px] leading-6 text-slate-800 outline-none placeholder:text-slate-400"
           />
         </div>
 
@@ -141,7 +140,7 @@ function ChatComposer({
           onClick={() => onSend(draft)}
           disabled={!canSend}
           className={[
-            "inline-flex w-[120px] shrink-0 items-center justify-center gap-2 self-end rounded-[20px] px-4 py-3 text-sm font-semibold transition",
+            "inline-flex h-[56px] w-[112px] shrink-0 items-center justify-center gap-2 rounded-[18px] px-4 text-sm font-semibold transition",
             canSend
               ? "bg-[#16315F] text-white shadow-[0_14px_28px_rgba(22,49,95,0.18)] hover:bg-[#102749]"
               : "bg-slate-200 text-slate-500",
@@ -389,10 +388,10 @@ export default function AskSnoozer() {
       </ShowroomTopRail>
 
       <div className="mx-auto flex min-h-0 w-full max-w-[1240px] flex-1 flex-col overflow-hidden px-4 pb-2 pt-2 md:px-6 md:pb-3">
-        <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-hidden p-1.5 md:p-2">
-          <ShowroomPanel className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 md:p-5" tone="soft">
-            <div className="shrink-0">
-              <div className="flex items-center gap-3">
+        <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-hidden p-1 md:p-1.5">
+          <ShowroomPanel className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden p-0" tone="soft">
+            <div className="shrink-0 border-b border-[#dbe5ff] px-5 py-4 md:px-6 md:py-5">
+              <div className="flex items-start gap-3">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.96),rgba(233,240,255,0.92))] shadow-[0_14px_32px_rgba(46,74,138,0.10)]">
                   <img
                     src="/snoozer-avatar.png"
@@ -405,51 +404,33 @@ export default function AskSnoozer() {
                   <ShowroomEyebrow className="text-[0.72rem] tracking-[0.18em]">
                     Ask Snoozer
                   </ShowroomEyebrow>
-                  <h1 className="mt-1 text-[1.6rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[1.9rem]">
+                  <h1 className="mt-1 text-[1.55rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[1.8rem]">
                     Chat with Snoozer
                   </h1>
+                  <p className="mt-2 max-w-3xl text-[0.92rem] leading-6 text-slate-600 md:text-[0.95rem]">
+                    Ask about your recommendations, comfort, adjustable bases, policies,
+                    Snooze Codes, or what to try next.
+                  </p>
                 </div>
               </div>
-
-              <p className="mt-3 max-w-3xl text-[0.9rem] leading-6 text-slate-600 md:text-[0.95rem]">
-                Ask about your recommendations, comfort, adjustable bases, policies,
-                Snooze Codes, or what to try next.
-              </p>
-            </div>
-
-            <div className="mt-4 shrink-0">
-              <ChatComposer
-                draft={draft}
-                pending={pending}
-                canSend={canSend}
-                textareaRef={textareaRef}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={onComposerKeyDown}
-                onSend={sendMessage}
-                noteUserInteraction={noteUserInteraction}
-              />
-            </div>
-
-            <div className="mt-3 shrink-0 flex flex-wrap gap-2">
-              {STARTER_CHIPS.map((item) => (
-                <ChatStarterChip
-                  key={item.label}
-                  label={item.label}
-                  onClick={() => handleStarterClick(item.prompt)}
-                />
-              ))}
             </div>
 
             <div
               ref={transcriptRef}
-              className="mt-4 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto rounded-[26px] border border-white/85 bg-white/92 px-3 py-3 shadow-inner md:px-4 md:py-4"
+              className="min-h-[260px] overflow-y-auto bg-white/72 px-4 py-4 md:px-6 md:py-5"
             >
               {!messages.length ? (
-                <div className="flex min-h-[220px] flex-1 items-center justify-center rounded-[22px] border border-dashed border-[#dbe5ff] bg-[#f8faff] px-6 text-center text-[0.96rem] font-medium text-slate-500">
-                  Snoozer&apos;s response will appear here.
+                <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dbe5ff] bg-[#f8faff] px-6 text-center">
+                  <div className="text-[1rem] font-semibold text-slate-700">
+                    Snoozer&apos;s response will appear here.
+                  </div>
+                  <div className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
+                    Send a question above to start the conversation.
+                  </div>
                 </div>
               ) : null}
 
+              <div className="space-y-3">
               {messages.map((message) => {
                 const isAssistant = message.role === "assistant";
 
@@ -595,9 +576,10 @@ export default function AskSnoozer() {
                   </article>
                 );
               })}
+              </div>
 
               {pending ? (
-                <div className="flex justify-start">
+                <div className="mt-3 flex justify-start">
                   <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
                     <div className="mb-2.5 flex items-center gap-3">
                       <img
@@ -620,30 +602,50 @@ export default function AskSnoozer() {
                 </div>
               ) : null}
             </div>
+
+            <div className="shrink-0 border-t border-[#dbe5ff] bg-[linear-gradient(180deg,rgba(248,250,255,0.92),rgba(255,255,255,0.97))] px-4 py-3 md:px-5 md:py-4">
+              <ChatComposer
+                draft={draft}
+                pending={pending}
+                canSend={canSend}
+                textareaRef={textareaRef}
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={onComposerKeyDown}
+                onSend={sendMessage}
+                noteUserInteraction={noteUserInteraction}
+              />
+
+              <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                {STARTER_CHIPS.map((item) => (
+                  <ChatStarterChip
+                    key={item.label}
+                    label={item.label}
+                    onClick={() => handleStarterClick(item.prompt)}
+                  />
+                ))}
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
+                <FooterActiveChip />
+                <ShowroomFooterAction
+                  icon={Compass}
+                  label="View Results"
+                  className="md:min-w-[132px]"
+                  onClick={() => {
+                    noteUserInteraction?.();
+                    navigate("/results");
+                  }}
+                />
+                <ShowroomFooterAction
+                  icon={Headphones}
+                  label="Talk to Human"
+                  className="md:min-w-[144px]"
+                  onClick={handleTalkToHuman}
+                />
+              </div>
+            </div>
           </ShowroomPanel>
         </ShowroomFrame>
-
-        <ShowroomFooterDock
-          sticky={false}
-          className="mt-2"
-          label="Showroom Footer"
-          sublabel="Chat stays active while you move through the showroom."
-        >
-          <FooterActiveChip />
-          <ShowroomFooterAction
-            icon={Compass}
-            label="View Results"
-            onClick={() => {
-              noteUserInteraction?.();
-              navigate("/results");
-            }}
-          />
-          <ShowroomFooterAction
-            icon={Headphones}
-            label="Talk to Human"
-            onClick={handleTalkToHuman}
-          />
-        </ShowroomFooterDock>
       </div>
     </ShowroomPageShell>
   );
