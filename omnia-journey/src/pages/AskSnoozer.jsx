@@ -159,6 +159,7 @@ export default function AskSnoozer() {
   const transcriptRef = useRef(null);
   const textareaRef = useRef(null);
   const overlayWasOpenRef = useRef(false);
+  const handledPrefillLocationRef = useRef("");
 
   const snoozepod = useStore((state) => state.snoozepod || []);
   const [messages, setMessages] = useState([]);
@@ -214,6 +215,23 @@ export default function AskSnoozer() {
       behavior: messages.length ? "smooth" : "auto",
     });
   }, [messages, pending]);
+
+  useEffect(() => {
+    const state =
+      location.state && typeof location.state === "object" ? location.state : null;
+    const prefill = typeof state?.prefill === "string" ? state.prefill.trim() : "";
+
+    if (!prefill) return;
+
+    setDraft((current) => (String(current || "").trim() ? current : prefill));
+
+    if (state?.autoSend && handledPrefillLocationRef.current !== location.key) {
+      handledPrefillLocationRef.current = location.key;
+      window.setTimeout(() => {
+        sendMessage(prefill);
+      }, 0);
+    }
+  }, [location.key, location.state]);
 
   async function sendMessage(rawMessage) {
     const content = String(rawMessage || "").trim();
@@ -364,7 +382,7 @@ export default function AskSnoozer() {
   }
 
   return (
-    <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
+    <ShowroomPageShell className="flex min-h-0 flex-col pb-3">
       <ShowroomTopRail className="items-center pt-2 md:pt-3">
         <ShowroomBrandMark />
         <ShowroomCartBadge
@@ -377,55 +395,54 @@ export default function AskSnoozer() {
         />
       </ShowroomTopRail>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1120px] flex-1 flex-col overflow-hidden px-4 pb-3 pt-2 md:px-6 md:pb-4">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1120px] flex-1 flex-col px-4 pt-2 md:px-6 md:pt-3">
         <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-hidden p-1 md:p-1.5">
           <ShowroomPanel className="flex min-h-0 flex-1 flex-col overflow-hidden p-0" tone="soft">
-            <div className="shrink-0 border-b border-[#dbe5ff] px-5 py-4 md:px-6 md:py-5">
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.96),rgba(233,240,255,0.92))] shadow-[0_14px_32px_rgba(46,74,138,0.10)]">
-                    <img
-                      src="/snoozer-avatar.png"
-                      alt="Snoozer"
-                      className="h-11 w-11 object-contain"
-                    />
-                  </div>
-
-                  <div className="min-w-0">
-                    <ShowroomEyebrow className="text-[0.72rem] tracking-[0.18em]">
-                      Ask Snoozer
-                    </ShowroomEyebrow>
-                    <h1 className="mt-1 text-[1.5rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[1.72rem]">
-                      Chat with Snoozer
-                    </h1>
-                    <p className="mt-2 max-w-3xl text-[0.92rem] leading-6 text-slate-600 md:text-[0.95rem]">
-                      Ask about recommendations, comfort, adjustable bases, policies,
-                      Snooze Codes, or what to try next.
-                    </p>
-                  </div>
+            <div className="shrink-0 border-b border-[#dbe5ff] px-5 py-5 md:px-6 md:py-6">
+              <div className="flex items-start gap-3">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.96),rgba(233,240,255,0.92))] shadow-[0_14px_32px_rgba(46,74,138,0.10)]">
+                  <img
+                    src="/snoozer-avatar.png"
+                    alt="Snoozer"
+                    className="h-11 w-11 object-contain"
+                  />
                 </div>
 
-                <div className="flex flex-wrap gap-2 md:justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      noteUserInteraction?.();
-                      navigate("/results");
-                    }}
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50"
-                  >
-                    <Compass className="h-4 w-4 shrink-0 text-[#2f57e8]" />
-                    <span>View Results</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleTalkToHuman}
-                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50"
-                  >
-                    <Headphones className="h-4 w-4 shrink-0 text-[#2f57e8]" />
-                    <span>Talk to Human</span>
-                  </button>
+                <div className="min-w-0">
+                  <ShowroomEyebrow className="text-[0.72rem] tracking-[0.18em]">
+                    Ask Snoozer
+                  </ShowroomEyebrow>
+                  <h1 className="mt-1 text-[1.56rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[1.82rem]">
+                    Chat with Snoozer
+                  </h1>
+                  <p className="mt-2 max-w-3xl text-[0.94rem] leading-6 text-slate-600">
+                    Ask about your recommendations, comfort, adjustable bases, policies,
+                    Snooze Codes, or what to try next.
+                  </p>
                 </div>
+              </div>
+            </div>
+
+            <div className="shrink-0 border-b border-[#dbe5ff] px-4 py-4 md:px-6 md:py-5">
+              <ChatComposer
+                draft={draft}
+                pending={pending}
+                canSend={canSend}
+                textareaRef={textareaRef}
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={onComposerKeyDown}
+                onSend={sendMessage}
+                noteUserInteraction={noteUserInteraction}
+              />
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {STARTER_CHIPS.map((item) => (
+                  <ChatStarterChip
+                    key={item.label}
+                    label={item.label}
+                    onClick={() => handleStarterClick(item.prompt)}
+                  />
+                ))}
               </div>
             </div>
 
@@ -433,13 +450,16 @@ export default function AskSnoozer() {
               ref={transcriptRef}
               className="min-h-0 flex-1 overflow-y-auto bg-white/72 px-4 py-4 md:px-6 md:py-5"
             >
-              {!messages.length ? (
-                <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dbe5ff] bg-[#f8faff] px-6 text-center">
-                  <div className="max-w-2xl text-[1rem] font-semibold leading-7 text-slate-700">
-                    Ask anything and Snoozer will reply here.
+              {!messages.length && !pending ? (
+                <div className="flex h-full min-h-[320px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dbe5ff] bg-[#f8faff] px-6 text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">
+                    <MessageSquareText className="h-7 w-7" />
+                  </div>
+                  <div className="mt-4 max-w-2xl text-[1.02rem] font-semibold leading-7 text-slate-700">
+                    Ask anything and Snoozer will answer right here.
                   </div>
                   <div className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
-                    This page is now just input and output, so your conversation stays visible.
+                    Start with one of the quick prompts, or type your own question above.
                   </div>
                 </div>
               ) : null}
@@ -454,7 +474,7 @@ export default function AskSnoozer() {
                       className={`flex ${isAssistant ? "justify-start" : "justify-end"}`}
                     >
                       <div
-                        className={`max-w-[94%] rounded-[24px] px-4 py-3.5 shadow-sm md:max-w-[78%] ${
+                        className={`max-w-[96%] rounded-[24px] px-4 py-3.5 shadow-sm md:max-w-[78%] ${
                           isAssistant
                             ? "border border-slate-200 bg-white text-slate-800"
                             : "bg-[#16315F] text-white"
@@ -617,29 +637,29 @@ export default function AskSnoozer() {
               ) : null}
             </div>
 
-            <div className="shrink-0 border-t border-[#dbe5ff] bg-[linear-gradient(180deg,rgba(248,250,255,0.92),rgba(255,255,255,0.97))] px-4 py-3 md:px-5 md:py-4">
-              <ChatComposer
-                draft={draft}
-                pending={pending}
-                canSend={canSend}
-                textareaRef={textareaRef}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={onComposerKeyDown}
-                onSend={sendMessage}
-                noteUserInteraction={noteUserInteraction}
-              />
+            <div className="shrink-0 border-t border-[#dbe5ff] bg-[linear-gradient(180deg,rgba(248,250,255,0.92),rgba(255,255,255,0.97))] px-4 py-3 md:px-6">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    noteUserInteraction?.();
+                    navigate("/results");
+                  }}
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50"
+                >
+                  <Compass className="h-4 w-4 shrink-0 text-[#2f57e8]" />
+                  <span>View Results</span>
+                </button>
 
-              {!messages.length ? (
-                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                  {STARTER_CHIPS.map((item) => (
-                    <ChatStarterChip
-                      key={item.label}
-                      label={item.label}
-                      onClick={() => handleStarterClick(item.prompt)}
-                    />
-                  ))}
-                </div>
-              ) : null}
+                <button
+                  type="button"
+                  onClick={handleTalkToHuman}
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50"
+                >
+                  <Headphones className="h-4 w-4 shrink-0 text-[#2f57e8]" />
+                  <span>Talk to Human</span>
+                </button>
+              </div>
             </div>
           </ShowroomPanel>
         </ShowroomFrame>

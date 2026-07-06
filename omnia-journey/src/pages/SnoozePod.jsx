@@ -4,6 +4,11 @@ import { ArrowLeft, Ticket, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/useStore";
 import { api } from "@/lib/api";
+import {
+  extractShopifyCartGid,
+  getStoredShopifyCartIdentity,
+  persistShopifyCartIdentity,
+} from "@/lib/session/shopifyCartState";
 
 function safeGet(key) {
   try {
@@ -95,67 +100,16 @@ function normalizeItemId(item, idx) {
   return `item-${idx}`;
 }
 
-function isShopifyCartGid(value) {
-  return /^gid:\/\/shopify\/Cart\/[^/?#\s]+$/i.test(String(value || "").trim());
-}
-
 function extractCartGid(value) {
-  if (!value) return "";
-
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (isShopifyCartGid(trimmed)) return trimmed;
-
-    const match = trimmed.match(/gid:\/\/shopify\/Cart\/[^/?#\s]+/i);
-    if (match?.[0] && isShopifyCartGid(match[0])) return match[0];
-
-    return "";
-  }
-
-  if (typeof value === "object") {
-    const candidates = [
-      value?.id,
-      value?.cartId,
-      value?.cart?.id,
-      value?.data?.id,
-      value?.data?.cartId,
-      value?.data?.cart?.id,
-      value?.result?.cart?.id,
-      value?.contextPatch?.ids?.cartId,
-      value?.contextPatch?.cartId,
-    ];
-
-    for (const candidate of candidates) {
-      const gid = extractCartGid(candidate);
-      if (gid) return gid;
-    }
-  }
-
-  return "";
+  return extractShopifyCartGid(value);
 }
 
 function persistCartIdentity(cartId) {
-  const gid = extractCartGid(cartId);
-  if (!gid) return "";
-
-  safeSet("snooze.cartId", gid);
-  safeSet("snooze.shopify.cartId", gid);
-
-  return gid;
+  return persistShopifyCartIdentity({ cartId }).cartId || "";
 }
 
 function getShopifyCartId() {
-  const stored = [safeGet("snooze.cartId"), safeGet("snooze.shopify.cartId")];
-
-  for (const candidate of stored) {
-    const gid = extractCartGid(candidate);
-    if (gid) {
-      persistCartIdentity(gid);
-      return gid;
-    }
-  }
-
-  return "";
+  return getStoredShopifyCartIdentity().cartId || "";
 }
 
 function toVariantGid(v) {
@@ -427,9 +381,9 @@ export default function SnoozePod() {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-[#E8ECF5] to-white py-8">
-      <div className="mx-auto max-w-5xl px-4">
-        <div className="mb-6 flex items-center justify-between gap-4">
+    <section className="min-h-screen bg-gradient-to-b from-[#E8ECF5] to-white py-6">
+      <div className="mx-auto max-w-4xl px-4">
+        <div className="mb-5 flex items-center justify-between gap-4">
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -453,14 +407,14 @@ export default function SnoozePod() {
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-white p-6 shadow-sm">
+        <div className="rounded-3xl border bg-white p-5 shadow-sm md:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
                 Your SnoozePod
               </h1>
               <p className="mt-2 text-sm text-gray-600">
-                Review your setup.
+                Review your setup, apply rewards, and head to checkout when you're ready.
               </p>
             </div>
 
@@ -470,7 +424,7 @@ export default function SnoozePod() {
                 {formatMoney(totals.total)}
               </div>
               <div className="mt-1 text-xs text-gray-600">
-                Subtotal: {formatMoney(totals.subtotal)} • Rewards: −{formatMoney(totals.rewardDiscount)}
+                Subtotal: {formatMoney(totals.subtotal)} | Rewards: -{formatMoney(totals.rewardDiscount)}
               </div>
             </div>
           </div>
