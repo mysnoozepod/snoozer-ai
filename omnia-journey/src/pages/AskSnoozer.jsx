@@ -17,7 +17,6 @@ import {
   ShowroomBrandMark,
   ShowroomCartBadge,
   ShowroomEyebrow,
-  ShowroomFooterAction,
   ShowroomFrame,
   ShowroomPageShell,
   ShowroomPanel,
@@ -150,15 +149,6 @@ function ChatComposer({
           <ArrowUp className="h-4 w-4" />
         </button>
       </div>
-    </div>
-  );
-}
-
-function FooterActiveChip() {
-  return (
-    <div className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#d7e3ff] bg-[#eef4ff] px-4 py-2 text-sm font-extrabold text-[#2340b8] shadow-sm">
-      <MessageSquareText className="h-4 w-4 shrink-0 text-[#2f57e8]" />
-      <span>Ask Snoozer</span>
     </div>
   );
 }
@@ -387,195 +377,219 @@ export default function AskSnoozer() {
         />
       </ShowroomTopRail>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1240px] flex-1 flex-col overflow-hidden px-4 pb-2 pt-2 md:px-6 md:pb-3">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1120px] flex-1 flex-col overflow-hidden px-4 pb-3 pt-2 md:px-6 md:pb-4">
         <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-hidden p-1 md:p-1.5">
-          <ShowroomPanel className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden p-0" tone="soft">
+          <ShowroomPanel className="flex min-h-0 flex-1 flex-col overflow-hidden p-0" tone="soft">
             <div className="shrink-0 border-b border-[#dbe5ff] px-5 py-4 md:px-6 md:py-5">
-              <div className="flex items-start gap-3">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.96),rgba(233,240,255,0.92))] shadow-[0_14px_32px_rgba(46,74,138,0.10)]">
-                  <img
-                    src="/snoozer-avatar.png"
-                    alt="Snoozer"
-                    className="h-11 w-11 object-contain"
-                  />
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.96),rgba(233,240,255,0.92))] shadow-[0_14px_32px_rgba(46,74,138,0.10)]">
+                    <img
+                      src="/snoozer-avatar.png"
+                      alt="Snoozer"
+                      className="h-11 w-11 object-contain"
+                    />
+                  </div>
+
+                  <div className="min-w-0">
+                    <ShowroomEyebrow className="text-[0.72rem] tracking-[0.18em]">
+                      Ask Snoozer
+                    </ShowroomEyebrow>
+                    <h1 className="mt-1 text-[1.5rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[1.72rem]">
+                      Chat with Snoozer
+                    </h1>
+                    <p className="mt-2 max-w-3xl text-[0.92rem] leading-6 text-slate-600 md:text-[0.95rem]">
+                      Ask about recommendations, comfort, adjustable bases, policies,
+                      Snooze Codes, or what to try next.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="min-w-0">
-                  <ShowroomEyebrow className="text-[0.72rem] tracking-[0.18em]">
-                    Ask Snoozer
-                  </ShowroomEyebrow>
-                  <h1 className="mt-1 text-[1.55rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[1.8rem]">
-                    Chat with Snoozer
-                  </h1>
-                  <p className="mt-2 max-w-3xl text-[0.92rem] leading-6 text-slate-600 md:text-[0.95rem]">
-                    Ask about your recommendations, comfort, adjustable bases, policies,
-                    Snooze Codes, or what to try next.
-                  </p>
+                <div className="flex flex-wrap gap-2 md:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      noteUserInteraction?.();
+                      navigate("/results");
+                    }}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50"
+                  >
+                    <Compass className="h-4 w-4 shrink-0 text-[#2f57e8]" />
+                    <span>View Results</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTalkToHuman}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50"
+                  >
+                    <Headphones className="h-4 w-4 shrink-0 text-[#2f57e8]" />
+                    <span>Talk to Human</span>
+                  </button>
                 </div>
               </div>
             </div>
 
             <div
               ref={transcriptRef}
-              className="min-h-[260px] overflow-y-auto bg-white/72 px-4 py-4 md:px-6 md:py-5"
+              className="min-h-0 flex-1 overflow-y-auto bg-white/72 px-4 py-4 md:px-6 md:py-5"
             >
               {!messages.length ? (
                 <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-[24px] border border-dashed border-[#dbe5ff] bg-[#f8faff] px-6 text-center">
-                  <div className="text-[1rem] font-semibold text-slate-700">
-                    Snoozer&apos;s response will appear here.
+                  <div className="max-w-2xl text-[1rem] font-semibold leading-7 text-slate-700">
+                    Ask anything and Snoozer will reply here.
                   </div>
                   <div className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
-                    Send a question above to start the conversation.
+                    This page is now just input and output, so your conversation stays visible.
                   </div>
                 </div>
               ) : null}
 
               <div className="space-y-3">
-              {messages.map((message) => {
-                const isAssistant = message.role === "assistant";
+                {messages.map((message) => {
+                  const isAssistant = message.role === "assistant";
 
-                return (
-                  <article
-                    key={message.id}
-                    className={`flex ${isAssistant ? "justify-start" : "justify-end"}`}
-                  >
-                    <div
-                      className={`max-w-[94%] rounded-[24px] px-4 py-3.5 shadow-sm md:max-w-[78%] ${
-                        isAssistant
-                          ? "border border-slate-200 bg-white text-slate-800"
-                          : "bg-[#16315F] text-white"
-                      }`}
+                  return (
+                    <article
+                      key={message.id}
+                      className={`flex ${isAssistant ? "justify-start" : "justify-end"}`}
                     >
-                      {isAssistant ? (
-                        <div className="mb-2.5 flex items-center gap-3">
-                          <img
-                            src="/snoozer-avatar.png"
-                            alt="Snoozer"
-                            className="h-9 w-9 rounded-2xl border border-slate-100 bg-[#F7FAFF] p-1"
-                          />
-                          <div>
-                            <div className="text-sm font-black text-slate-900">Snoozer</div>
-                            <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">
-                              {formatAssistantStatus(message.status)}
+                      <div
+                        className={`max-w-[94%] rounded-[24px] px-4 py-3.5 shadow-sm md:max-w-[78%] ${
+                          isAssistant
+                            ? "border border-slate-200 bg-white text-slate-800"
+                            : "bg-[#16315F] text-white"
+                        }`}
+                      >
+                        {isAssistant ? (
+                          <div className="mb-2.5 flex items-center gap-3">
+                            <img
+                              src="/snoozer-avatar.png"
+                              alt="Snoozer"
+                              className="h-9 w-9 rounded-2xl border border-slate-100 bg-[#F7FAFF] p-1"
+                            />
+                            <div>
+                              <div className="text-sm font-black text-slate-900">Snoozer</div>
+                              <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">
+                                {formatAssistantStatus(message.status)}
+                              </div>
                             </div>
                           </div>
+                        ) : null}
+
+                        <div className="whitespace-pre-wrap text-sm leading-6 md:text-[15px]">
+                          {message.content}
                         </div>
-                      ) : null}
 
-                      <div className="whitespace-pre-wrap text-sm leading-6 md:text-[15px]">
-                        {message.content}
-                      </div>
-
-                      {isAssistant && Array.isArray(message.chips) && message.chips.length ? (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {message.chips.map((chip) => (
-                            <button
-                              key={`${message.id}-${chip.label}-${chip.value}`}
-                              type="button"
-                              onClick={() => handleChip(chip)}
-                              className="rounded-full border border-[#16315F]/12 bg-[#16315F]/5 px-3 py-1.5 text-xs font-semibold text-[#16315F] transition hover:bg-[#16315F]/10"
-                            >
-                              {chip.label}
-                            </button>
-                          ))}
-                        </div>
-                      ) : null}
-
-                      {isAssistant && Array.isArray(message.actions) && message.actions.length ? (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {message.actions.map((action) => (
-                            <button
-                              key={`${message.id}-${action.label}`}
-                              type="button"
-                              onClick={() => handleAction(action)}
-                              className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                            >
-                              {action.label}
-                            </button>
-                          ))}
-                        </div>
-                      ) : null}
-
-                      {isAssistant &&
-                      Array.isArray(message.recommendations) &&
-                      message.recommendations.length ? (
-                        <div className="mt-3 grid gap-2 md:grid-cols-2">
-                          {message.recommendations.map((item) => {
-                            const cardKey = `${message.id}-${item.id}`;
-                            const showImage =
-                              Boolean(item.imageUrl) && !failedRecommendationImages[cardKey];
-
-                            return (
+                        {isAssistant && Array.isArray(message.chips) && message.chips.length ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {message.chips.map((chip) => (
                               <button
-                                key={cardKey}
+                                key={`${message.id}-${chip.label}-${chip.value}`}
                                 type="button"
-                                onClick={() => {
-                                  noteUserInteraction?.();
-                                  if (item.url?.startsWith("/")) {
-                                    navigate(item.url);
-                                  } else if (item.url) {
-                                    window.open(item.url, "_blank", "noopener,noreferrer");
-                                  }
-                                }}
-                                className="flex items-start gap-3 rounded-[18px] border border-slate-200 bg-slate-50/70 p-3 text-left transition hover:border-slate-300 hover:bg-slate-50"
+                                onClick={() => handleChip(chip)}
+                                className="rounded-full border border-[#16315F]/12 bg-[#16315F]/5 px-3 py-1.5 text-xs font-semibold text-[#16315F] transition hover:bg-[#16315F]/10"
                               >
-                                <div className="h-14 w-14 overflow-hidden rounded-2xl bg-white">
-                                  {showImage ? (
-                                    <img
-                                      src={item.imageUrl}
-                                      alt={item.title}
-                                      onError={() =>
-                                        setFailedRecommendationImages((current) => ({
-                                          ...current,
-                                          [cardKey]: true,
-                                        }))
-                                      }
-                                      className="h-full w-full object-contain p-1"
-                                    />
-                                  ) : (
-                                    <div className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                                      {item.type}
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="text-sm font-bold text-slate-900">
-                                    {item.title}
-                                  </div>
-                                  {item.subtitle ? (
-                                    <div className="mt-1 text-xs leading-5 text-slate-500">
-                                      {item.subtitle}
-                                    </div>
-                                  ) : null}
-                                  {item.url ? (
-                                    <div className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#16315F]">
-                                      View
-                                      <ExternalLink className="h-3.5 w-3.5" />
-                                    </div>
-                                  ) : null}
-                                </div>
+                                {chip.label}
                               </button>
-                            );
-                          })}
-                        </div>
-                      ) : null}
+                            ))}
+                          </div>
+                        ) : null}
 
-                      {isAssistant && message.canRetry ? (
-                        <div className="mt-3">
-                          <button
-                            type="button"
-                            onClick={() => handleRetry(message.retryPrompt)}
-                            className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 transition hover:bg-amber-100"
-                          >
-                            <RefreshCcw className="h-3.5 w-3.5" />
-                            Retry
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  </article>
-                );
-              })}
+                        {isAssistant && Array.isArray(message.actions) && message.actions.length ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {message.actions.map((action) => (
+                              <button
+                                key={`${message.id}-${action.label}`}
+                                type="button"
+                                onClick={() => handleAction(action)}
+                                className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                              >
+                                {action.label}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+
+                        {isAssistant &&
+                        Array.isArray(message.recommendations) &&
+                        message.recommendations.length ? (
+                          <div className="mt-3 grid gap-2 md:grid-cols-2">
+                            {message.recommendations.map((item) => {
+                              const cardKey = `${message.id}-${item.id}`;
+                              const showImage =
+                                Boolean(item.imageUrl) && !failedRecommendationImages[cardKey];
+
+                              return (
+                                <button
+                                  key={cardKey}
+                                  type="button"
+                                  onClick={() => {
+                                    noteUserInteraction?.();
+                                    if (item.url?.startsWith("/")) {
+                                      navigate(item.url);
+                                    } else if (item.url) {
+                                      window.open(item.url, "_blank", "noopener,noreferrer");
+                                    }
+                                  }}
+                                  className="flex items-start gap-3 rounded-[18px] border border-slate-200 bg-slate-50/70 p-3 text-left transition hover:border-slate-300 hover:bg-slate-50"
+                                >
+                                  <div className="h-14 w-14 overflow-hidden rounded-2xl bg-white">
+                                    {showImage ? (
+                                      <img
+                                        src={item.imageUrl}
+                                        alt={item.title}
+                                        onError={() =>
+                                          setFailedRecommendationImages((current) => ({
+                                            ...current,
+                                            [cardKey]: true,
+                                          }))
+                                        }
+                                        className="h-full w-full object-contain p-1"
+                                      />
+                                    ) : (
+                                      <div className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                                        {item.type}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-sm font-bold text-slate-900">
+                                      {item.title}
+                                    </div>
+                                    {item.subtitle ? (
+                                      <div className="mt-1 text-xs leading-5 text-slate-500">
+                                        {item.subtitle}
+                                      </div>
+                                    ) : null}
+                                    {item.url ? (
+                                      <div className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#16315F]">
+                                        View
+                                        <ExternalLink className="h-3.5 w-3.5" />
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : null}
+
+                        {isAssistant && message.canRetry ? (
+                          <div className="mt-3">
+                            <button
+                              type="button"
+                              onClick={() => handleRetry(message.retryPrompt)}
+                              className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 transition hover:bg-amber-100"
+                            >
+                              <RefreshCcw className="h-3.5 w-3.5" />
+                              Retry
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
 
               {pending ? (
@@ -615,34 +629,17 @@ export default function AskSnoozer() {
                 noteUserInteraction={noteUserInteraction}
               />
 
-              <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                {STARTER_CHIPS.map((item) => (
-                  <ChatStarterChip
-                    key={item.label}
-                    label={item.label}
-                    onClick={() => handleStarterClick(item.prompt)}
-                  />
-                ))}
-              </div>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
-                <FooterActiveChip />
-                <ShowroomFooterAction
-                  icon={Compass}
-                  label="View Results"
-                  className="md:min-w-[132px]"
-                  onClick={() => {
-                    noteUserInteraction?.();
-                    navigate("/results");
-                  }}
-                />
-                <ShowroomFooterAction
-                  icon={Headphones}
-                  label="Talk to Human"
-                  className="md:min-w-[144px]"
-                  onClick={handleTalkToHuman}
-                />
-              </div>
+              {!messages.length ? (
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                  {STARTER_CHIPS.map((item) => (
+                    <ChatStarterChip
+                      key={item.label}
+                      label={item.label}
+                      onClick={() => handleStarterClick(item.prompt)}
+                    />
+                  ))}
+                </div>
+              ) : null}
             </div>
           </ShowroomPanel>
         </ShowroomFrame>
