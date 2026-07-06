@@ -1579,19 +1579,19 @@ function SnoozerCoachBubble({ copy }) {
   if (!copy) return null;
 
   return (
-    <div className="mt-2 flex max-w-[212px] items-start gap-2.5 rounded-[18px] border border-white/85 bg-white/96 px-2.5 py-2.5 shadow-[0_14px_28px_rgba(40,63,126,0.12)] md:mt-0 md:max-w-[224px] md:px-3 md:py-3">
+    <div className="mt-2 flex max-w-[188px] items-start gap-2 rounded-[18px] border border-white/85 bg-white/96 px-2.25 py-2 shadow-[0_14px_28px_rgba(40,63,126,0.12)] md:mt-0 md:max-w-[198px] md:px-2.5 md:py-2.25">
       <img
         src={PUBLIC_ASSETS.snoozerAvatar}
         alt="Snoozer"
-        className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-[#eef3ff] md:h-10 md:w-10"
+        className="h-8 w-8 shrink-0 rounded-full object-cover ring-2 ring-[#eef3ff] md:h-9 md:w-9"
         loading="eager"
         decoding="async"
       />
       <div className="min-w-0">
-        <div className="text-[0.9rem] font-black leading-none text-slate-900 md:text-[0.96rem]">
+        <div className="text-[0.84rem] font-black leading-none text-slate-900 md:text-[0.9rem]">
           I&apos;m Snoozer.
         </div>
-        <div className="mt-1 text-[0.84rem] font-medium leading-[1.4] text-slate-700 md:text-[0.9rem]">
+        <div className="mt-0.75 text-[0.76rem] font-medium leading-[1.3] text-slate-700 md:text-[0.82rem]">
           {copy}
         </div>
       </div>
@@ -1830,7 +1830,6 @@ function RestLengthCard({
   title,
   subtitle,
   durationLabel,
-  highlights = [],
   accent = "orange",
   buttonLabel = "Start Test",
   onClick,
@@ -1849,42 +1848,31 @@ function RestLengthCard({
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-3.5 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d8e2ff] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[152px] md:p-4"
+      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-3 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d8e2ff] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[126px] md:p-3.25"
     >
-      <div className="flex items-start gap-4">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)]">
-          <Timer className={["h-7 w-7", iconTone].join(" ")} />
+      <div className="flex items-start gap-3">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)]">
+          <Timer className={["h-6 w-6", iconTone].join(" ")} />
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-[1.08rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.18rem]">
+              <div className="text-[1rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.08rem]">
                 {title}
               </div>
-              <div className="mt-0.5 text-[0.84rem] text-slate-600 md:text-[0.9rem]">{subtitle}</div>
+              <div className="mt-1 text-[0.8rem] leading-5 text-slate-600 md:text-[0.84rem]">{subtitle}</div>
             </div>
-            <div className={["shrink-0 rounded-full px-3 py-1 text-[0.82rem] font-black", durationTone].join(" ")}>
+            <div className={["shrink-0 rounded-full px-3 py-1 text-[0.76rem] font-black", durationTone].join(" ")}>
               {durationLabel}
             </div>
           </div>
-
-          {highlights.length ? (
-            <div className="mt-2.5 space-y-1">
-              {highlights.slice(0, 2).map((item) => (
-                <div key={item} className="flex items-center gap-2 text-[0.86rem] text-slate-700">
-                  <CheckCircle2 className={["h-4 w-4 shrink-0", iconTone].join(" ")} />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          ) : null}
         </div>
       </div>
 
       <div
         className={[
-          "mt-3.5 flex h-10.5 items-center justify-center rounded-full text-[0.9rem] font-black text-white transition group-hover:scale-[1.01]",
+          "mt-3 flex h-10 items-center justify-center rounded-full text-[0.86rem] font-black text-white transition group-hover:scale-[1.01]",
           buttonTone,
         ].join(" ")}
       >
@@ -1909,9 +1897,6 @@ function PodRestStartSection({
           ? "Start 15-Minute Test"
           : "Start 7-Minute Test",
         accent: lowerText(flow.id).includes("deep") ? "blue" : "orange",
-        highlights: lowerText(flow.id).includes("deep")
-          ? ["More time to settle in", "Best for a complete feel"]
-          : ["Quick feel check", "Great for a first impression"],
       }))
     : [
         {
@@ -1921,7 +1906,6 @@ function PodRestStartSection({
           durationLabel: "7 min",
           buttonLabel: "Start 7-Minute Test",
           accent: "orange",
-          highlights: ["Quick feel check", "Great for a first impression"],
         },
         {
           id: "deep",
@@ -1930,29 +1914,27 @@ function PodRestStartSection({
           durationLabel: "15 min",
           buttonLabel: "Start 15-Minute Test",
           accent: "blue",
-          highlights: ["More time to settle in", "Best for a complete feel"],
         },
       ];
 
   return (
-    <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="frost">
+    <ShowroomPanel className="overflow-hidden p-3 md:p-3.5" tone="frost">
       <div className="max-w-[780px]">
-        <div className="text-[1.56rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[1.8rem]">
+        <div className="text-[1.44rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[1.68rem]">
           Start Your Rest Test
         </div>
-        <div className="mt-1.5 text-[0.94rem] leading-6 text-slate-600">
+        <div className="mt-1 text-[0.88rem] leading-5 text-slate-600 md:text-[0.92rem]">
           Try {podLabel} your way. Start with 7 minutes for a quick feel check, or choose 15 minutes if you want more time to settle in.
         </div>
       </div>
 
-      <div className="mt-3 grid gap-2.5 md:grid-cols-2">
+      <div className="mt-2.5 grid gap-2 md:grid-cols-2">
         {cards.map((card) => (
           <RestLengthCard
             key={card.id}
             title={card.title}
             subtitle={card.subtitle}
             durationLabel={card.durationLabel}
-            highlights={card.highlights}
             accent={card.accent}
             buttonLabel={card.buttonLabel}
             onClick={() => onChooseMode?.(card.id)}
@@ -1960,7 +1942,7 @@ function PodRestStartSection({
         ))}
       </div>
 
-      <div className="mt-3 flex items-center justify-center gap-2 text-[0.84rem] font-medium text-slate-500">
+      <div className="mt-2.5 flex items-center justify-center gap-2 text-[0.78rem] font-medium text-slate-500">
         <CheckCircle2 className="h-4 w-4 text-slate-400" />
         <span>You can end or pause your test at any time.</span>
       </div>
@@ -4112,7 +4094,7 @@ export default function Pod() {
             <div
               ref={stagePanelRef}
               className={[
-                "mt-1.5 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-1 pb-1 md:pr-1.25 md:pb-1.5",
+                "mt-1.5 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-1 pb-2 md:pr-1.25 md:pb-2.5",
                 isRestTaskStage ? "" : openStage === "details" || openStage === "build" ? "mt-2.5 md:mt-3" : "md:mt-2",
               ].join(" ")}
             >
