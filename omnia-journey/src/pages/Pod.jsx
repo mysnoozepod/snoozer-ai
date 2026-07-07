@@ -6,10 +6,12 @@ import {
   MessageSquare,
   BedDouble,
   CheckCircle2,
+  Heart,
   HelpCircle,
   Headphones,
   Scale,
   Smile,
+  X,
 } from "lucide-react";
 
 import { api } from "@/lib/api";
