@@ -538,6 +538,7 @@ module.exports = {
   isDebugRequest,
   normalizeSnoozerResponse,
   logContractResponse,
+  safeNumber,
 
   // HUD
   normalizeHudResponse,

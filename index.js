@@ -176,6 +176,7 @@ const {
   isDebugRequest,
   normalizeSnoozerResponse,
   logContractResponse,
+  safeNumber,
   enforceHudContract,
 } = require("./utils/responseContract");
 
@@ -6441,6 +6442,7 @@ async function handle(event = {}) {
       buildAskSnoozerFallbackReply,
       buildAskSnoozerQualityGateObject,
       maybeBuildAskSnoozerDeterministicFaqAnswer,
+      S3_RETRIEVAL_TIMEOUT_MS,
       MODEL_TIMEOUT_MS,
       measureStep,
       withTimeout,

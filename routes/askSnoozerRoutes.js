@@ -52,6 +52,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     buildAskSnoozerFallbackReply,
     buildAskSnoozerQualityGateObject,
     maybeBuildAskSnoozerDeterministicFaqAnswer,
+    S3_RETRIEVAL_TIMEOUT_MS,
     MODEL_TIMEOUT_MS,
     measureStep,
     withTimeout,
