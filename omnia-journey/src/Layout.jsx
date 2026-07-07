@@ -20,6 +20,7 @@ import {
   useVoiceQueue,
 } from "@/lib/snoozer/voice/VoiceQueueContext";
 import { fetchHudAudio } from "@/lib/snoozer/voice/fetchHudAudio";
+import { useSessionStore } from "@/state/sessionStore";
 
 /** ---- Brand tokens ---- */
 const COLOR = {
@@ -36,29 +37,11 @@ export function useSnoozer() {
   return useContext(SnoozerContext);
 }
 
-function useShopperId() {
-  const [id, setId] = useState("");
-
-  useEffect(() => {
-    try {
-      const val =
-        sessionStorage.getItem("snooze.accessCode") ||
-        sessionStorage.getItem("snooze.shopperId") ||
-        "";
-      setId(val);
-    } catch {
-      setId("");
-    }
-  }, []);
-
-  return id;
-}
-
 function LayoutShell() {
   const location = useLocation();
   const pathname = location.pathname || "/";
 
-  const shopperId = useShopperId();
+  const shopperId = useSessionStore((state) => state?.shopperId || "");
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [hudOpen, setHudOpen] = useState(true);
@@ -99,20 +82,17 @@ function LayoutShell() {
     maxCarryoverMs: 3000,
   });
 
-  const isCenteredRoute =
-    pathname.startsWith("/welcome") ||
-    pathname.startsWith("/what-to-expect") ||
-    pathname.startsWith("/results");
+  const isCenteredRoute = false;
 
-  const showBars =
-    pathname.startsWith("/explore") || pathname.startsWith("/checkout");
+  const showBars = pathname.startsWith("/explore-dev");
 
   const pageOwnsSnoozerVisual =
     pathname.startsWith("/welcome") ||
     pathname.startsWith("/what-to-expect") ||
     pathname.startsWith("/assessment") ||
     pathname.startsWith("/results") ||
-    pathname.startsWith("/pod/");
+    pathname.startsWith("/pod/") ||
+    pathname.startsWith("/ask-snoozer");
 
   const showPersistentHudOverlay =
     hudOpen &&
@@ -326,7 +306,7 @@ function LayoutShell() {
             flex: 1,
             display: isCenteredRoute ? "grid" : "block",
             placeItems: isCenteredRoute ? "center" : "initial",
-            padding: isCenteredRoute ? 0 : "16px",
+            padding: pageOwnsSnoozerVisual || isCenteredRoute ? 0 : "16px",
           }}
         >
           <Outlet />

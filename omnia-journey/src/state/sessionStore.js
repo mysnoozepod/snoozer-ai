@@ -17,6 +17,8 @@ const STORAGE_KEY = "snooze.sessionState.v1";
 
 const LEGACY_KEYS = {
   threadId: "snooze.threadId",
+  sessionId: "snooze.sessionId",
+  shopperId: "snooze.shopperId",
   cartId: "snooze.cartId",
   checkoutUrl: "snooze.checkoutUrl",
   accessCode: "snooze.accessCode",
@@ -30,6 +32,7 @@ const CART_SESSION_KEY = "snooze.cartSession.v1";
 const DEFAULT_STATE = Object.freeze({
   version: 1,
   threadId: null,
+  sessionId: null,
   shopperId: null,
   cartId: null,
   checkoutUrl: null,
@@ -159,8 +162,15 @@ function migrateLegacyInto(state) {
   }
 
   if (!out.shopperId) {
+    const shopperId = safeGetItem(LEGACY_KEYS.shopperId);
     const accessCode = safeGetItem(LEGACY_KEYS.accessCode);
-    if (accessCode) out.shopperId = accessCode;
+    if (shopperId) out.shopperId = shopperId;
+    else if (accessCode) out.shopperId = accessCode;
+  }
+
+  if (!out.sessionId) {
+    const legacySessionId = safeGetItem(LEGACY_KEYS.sessionId);
+    if (legacySessionId) out.sessionId = legacySessionId;
   }
 
   if (!out.cartId) {
@@ -209,6 +219,20 @@ function persistCanonicalMirrors(next) {
     safeSetItem(LEGACY_KEYS.threadId, String(next.threadId));
   } else {
     safeRemoveItem(LEGACY_KEYS.threadId);
+  }
+
+  if (next.sessionId) {
+    safeSetItem(LEGACY_KEYS.sessionId, String(next.sessionId));
+  } else {
+    safeRemoveItem(LEGACY_KEYS.sessionId);
+  }
+
+  if (next.shopperId) {
+    safeSetItem(LEGACY_KEYS.shopperId, String(next.shopperId));
+    safeSetItem(LEGACY_KEYS.accessCode, String(next.shopperId));
+  } else {
+    safeRemoveItem(LEGACY_KEYS.shopperId);
+    safeRemoveItem(LEGACY_KEYS.accessCode);
   }
 
   if (next.cartId) {
@@ -284,6 +308,9 @@ export function resetSessionState() {
   safeRemoveItem(STORAGE_KEY);
 
   safeRemoveItem(LEGACY_KEYS.threadId);
+  safeRemoveItem(LEGACY_KEYS.sessionId);
+  safeRemoveItem(LEGACY_KEYS.shopperId);
+  safeRemoveItem(LEGACY_KEYS.accessCode);
   safeRemoveItem(LEGACY_KEYS.cartId);
   safeRemoveItem(LEGACY_KEYS.checkoutUrl);
   safeRemoveItem(LEGACY_KEYS.shopifyCartId);
@@ -305,6 +332,30 @@ export function ensureSessionThreadId() {
 export function setShopperId(shopperId) {
   const id = shopperId && String(shopperId).trim() ? String(shopperId).trim() : null;
   setSessionState({ shopperId: id });
+}
+
+export function getShopperId() {
+  const shopperId = String(getSessionState()?.shopperId || "").trim();
+  if (shopperId) return shopperId;
+  const legacyShopperId = String(safeGetItem(LEGACY_KEYS.shopperId) || "").trim();
+  if (legacyShopperId) return legacyShopperId;
+  const accessCode = String(safeGetItem(LEGACY_KEYS.accessCode) || "").trim();
+  return accessCode || null;
+}
+
+export function getAccessCode() {
+  return getShopperId();
+}
+
+export function setAccessCode(accessCode) {
+  setShopperId(accessCode);
+  return getShopperId();
+}
+
+export function setSessionLinkId(sessionId) {
+  const id = sessionId && String(sessionId).trim() ? String(sessionId).trim() : null;
+  setSessionState({ sessionId: id });
+  return getSessionState();
 }
 
 /**
@@ -497,6 +548,10 @@ export const sessionStore = {
   reset: resetSessionState,
   ensureThreadId: ensureSessionThreadId,
   setShopperId,
+  getShopperId,
+  getAccessCode,
+  setAccessCode,
+  setSessionLinkId,
   setCartIdentity,
   applyAssistantResponse,
   subscribe: subscribeSessionState,

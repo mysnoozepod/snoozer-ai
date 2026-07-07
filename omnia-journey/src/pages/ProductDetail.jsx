@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/useStore";
+import { persistShopifyCartIdentity } from "@/lib/session/shopifyCartState";
 
 const STORE_DOMAIN =
   import.meta.env.VITE_STORE_DOMAIN || "mysnoozepodtest.myshopify.com";
@@ -118,6 +119,7 @@ export default function ProductDetail() {
   // ✅ Cart is managed via zustand store (matches Cart.jsx + Explore.jsx)
   const addToCart = useStore((s) => s.addToCart);
   const setCartMeta = useStore((s) => s.setCartMeta);
+  const recommendations = useStore((s) => s.recommendations);
 
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -129,12 +131,17 @@ export default function ProductDetail() {
 
   // Back should follow top recommendation, not hardcoded pod/1
   const backPodId = useMemo(() => {
-    const raw = safeGet("snooze.recommendations");
-    const parsed = raw ? safeParseJson(raw) : null;
+    const raw = recommendations ? null : safeGet("snooze.recommendations");
+    const parsed =
+      recommendations && typeof recommendations === "object"
+        ? recommendations
+        : raw
+          ? safeParseJson(raw)
+          : null;
     const pods = Array.isArray(parsed?.pods) ? parsed.pods : [];
     const first = pods[0] || null;
     return first ? toPodId(first.podId ?? first.id) : "1";
-  }, []);
+  }, [recommendations]);
 
   useEffect(() => {
     let alive = true;
@@ -280,21 +287,8 @@ export default function ProductDetail() {
       const checkoutUrl = res?.checkoutUrl || cartObj?.checkoutUrl || null;
 
       if (checkoutUrl) {
-        // Persist identity in BOTH: zustand + legacy sessionStore
         setCartMeta?.({ cartId, checkoutUrl });
-        setCartIdentity?.({ cartId, checkoutUrl });
-
-        // Also keep the simple sessionStorage keys warm for any legacy readers
-        try {
-          sessionStorage.setItem("snooze.checkoutUrl", String(checkoutUrl));
-          sessionStorage.setItem("snooze.shopify.checkoutUrl", String(checkoutUrl));
-          if (cartId) {
-            sessionStorage.setItem("snooze.cartId", String(cartId));
-            sessionStorage.setItem("snooze.shopify.cartId", String(cartId));
-          }
-        } catch {
-          // ignore
-        }
+        persistShopifyCartIdentity({ cartId, checkoutUrl });
 
         window.location.assign(checkoutUrl);
         return;

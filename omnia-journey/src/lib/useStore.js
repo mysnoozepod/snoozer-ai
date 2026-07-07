@@ -1,6 +1,12 @@
 // src/lib/useStore.js
 import { create } from "zustand";
 import { api } from "@/lib/api";
+import {
+  clearStoredShopifyCartIdentity,
+  extractShopifyCartGid,
+  getStoredShopifyCartIdentity,
+  persistShopifyCartIdentity,
+} from "@/lib/session/shopifyCartState";
 
 const STORAGE_KEYS = {
   activeTab: "snooze.activeTab",
@@ -19,6 +25,7 @@ const STORAGE_KEYS = {
 
   assessment: "snooze.assessment",
   assessmentSummary: "snooze.assessmentSummary",
+  recommendations: "snooze.recommendations",
   recommendedProducts: "snooze.recommendedProducts",
   recommendedProductHandles: "snooze.recommendedProductHandles",
 };
@@ -49,14 +56,6 @@ function saveJSON(key, value) {
 function saveText(key, value) {
   try {
     sessionStorage.setItem(key, String(value || ""));
-  } catch {
-    // ignore
-  }
-}
-
-function removeText(key) {
-  try {
-    sessionStorage.removeItem(key);
   } catch {
     // ignore
   }
@@ -107,77 +106,20 @@ function toVariantGid(v) {
   return null;
 }
 
-function isCartGid(v) {
-  if (!v) return false;
-  const s = String(v).trim();
-  return /^gid:\/\/shopify\/Cart\/[^/?#\s]+$/i.test(s);
-}
-
 function extractCartGid(v) {
-  if (!v) return null;
-
-  if (typeof v === "string") {
-    const s = v.trim();
-    if (!s) return null;
-    if (isCartGid(s)) return s;
-
-    const match = s.match(/gid:\/\/shopify\/Cart\/[^/?#\s]+/i);
-    return match?.[0] && isCartGid(match[0]) ? match[0] : null;
-  }
-
-  if (typeof v === "object") {
-    const candidates = [
-      v?.id,
-      v?.cartId,
-      v?.cart?.id,
-      v?.data?.id,
-      v?.data?.cartId,
-      v?.data?.cart?.id,
-      v?.result?.cart?.id,
-      v?.contextPatch?.ids?.cartId,
-      v?.contextPatch?.cartId,
-    ];
-
-    for (const candidate of candidates) {
-      const gid = extractCartGid(candidate);
-      if (gid) return gid;
-    }
-  }
-
-  return null;
+  return extractShopifyCartGid(v) || null;
 }
 
 function getStoredCartGid() {
-  const candidates = [
-    load("snooze.shopify.cartId", null),
-    load("snooze.cartId", null),
-  ];
-
-  for (const candidate of candidates) {
-    const gid = extractCartGid(candidate);
-    if (gid) return gid;
-  }
-
-  return null;
+  return getStoredShopifyCartIdentity().cartId || null;
 }
 
 function persistCartMeta({ cartId, checkoutUrl } = {}) {
-  const nextCartId = extractCartGid(cartId);
-  const nextCheckoutUrl = checkoutUrl ? String(checkoutUrl) : null;
-
-  if (nextCartId) {
-    saveText("snooze.shopify.cartId", nextCartId);
-    saveText("snooze.cartId", nextCartId);
-  }
-
-  if (nextCheckoutUrl) {
-    saveText("snooze.shopify.checkoutUrl", nextCheckoutUrl);
-    saveText("snooze.checkoutUrl", nextCheckoutUrl);
-  }
+  const persisted = persistShopifyCartIdentity({ cartId, checkoutUrl });
 
   return {
-    cartId: nextCartId,
-    checkoutUrl: nextCheckoutUrl,
+    cartId: persisted.cartId || null,
+    checkoutUrl: persisted.checkoutUrl || null,
   };
 }
 
@@ -304,11 +246,9 @@ function shouldAutoSyncShopifyCart() {
   }
 }
 
-const initialCartId = getStoredCartGid();
-const initialCheckoutUrl =
-  load(STORAGE_KEYS.checkoutUrl, null) ||
-  load("snooze.checkoutUrl", null) ||
-  null;
+const initialCartIdentity = getStoredShopifyCartIdentity();
+const initialCartId = extractCartGid(initialCartIdentity.cartId);
+const initialCheckoutUrl = initialCartIdentity.checkoutUrl || null;
 
 if (initialCartId) {
   persistCartMeta({ cartId: initialCartId, checkoutUrl: initialCheckoutUrl });
@@ -338,6 +278,7 @@ export const useStore = create((set, get) => ({
 
   assessment: load(STORAGE_KEYS.assessment, null),
   assessmentSummary: load(STORAGE_KEYS.assessmentSummary, ""),
+  recommendations: load(STORAGE_KEYS.recommendations, null),
   recommendedProducts: load(STORAGE_KEYS.recommendedProducts, []),
   recommendedProductHandles: load(STORAGE_KEYS.recommendedProductHandles, []),
 
@@ -410,10 +351,7 @@ export const useStore = create((set, get) => ({
 
   clearCartMeta: () => {
     set({ cartId: null, checkoutUrl: null });
-    removeText(STORAGE_KEYS.cartId);
-    removeText("snooze.cartId");
-    removeText(STORAGE_KEYS.checkoutUrl);
-    removeText("snooze.checkoutUrl");
+    clearStoredShopifyCartIdentity();
     track("snoozer_cart_meta_clear");
   },
 
@@ -774,12 +712,18 @@ export const useStore = create((set, get) => ({
   setAssessmentSummary: (summary) => {
     const value = summary || "";
     set({ assessmentSummary: value });
-    try {
-      sessionStorage.setItem(STORAGE_KEYS.assessmentSummary, value);
-    } catch {
-      // ignore
-    }
+    saveText(STORAGE_KEYS.assessmentSummary, value);
     track("snoozer_assessment_summary_set", { hasSummary: !!value });
+  },
+
+  setRecommendations: (recommendations) => {
+    const next =
+      recommendations && typeof recommendations === "object" ? recommendations : null;
+    set({ recommendations: next });
+    saveJSON(STORAGE_KEYS.recommendations, next || {});
+    track("snoozer_recommendations_set", {
+      podCount: Array.isArray(next?.pods) ? next.pods.length : 0,
+    });
   },
 
   setRecommendedProducts: (products) => {

@@ -11,6 +11,7 @@ import {
 
 import { getAssessment } from "@/lib/api";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
+import { getShopperId } from "@/state/sessionStore";
 import {
   ShowroomBrandMark,
   ShowroomFrame,
@@ -145,7 +146,7 @@ export default function WhatToExpect() {
   const navigate = useNavigate();
   const { noteUserInteraction, runHudAction, voiceState } = useShowroomHud();
 
-  const shopperId = safeGet("snooze.accessCode") || safeGet("snooze.shopperId") || "";
+  const shopperId = getShopperId() || "";
 
   const [checking, setChecking] = useState(false);
   const [snapshot, setSnapshot] = useState(() => {

@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, CircleHelp, LockKeyhole, ShieldCheck } from "lucide-react";
 
-import { resolveApiBase } from "@/lib/apiBase";
+import { getAssessment } from "@/lib/api";
+import { getAccessCode, setAccessCode } from "@/state/sessionStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import {
   ShowroomBrandMark,
@@ -13,22 +14,6 @@ import {
   ShowroomPanel,
   ShowroomTopRail,
 } from "@/components/showroom/ShowroomPrimitives";
-
-function safeGet(key) {
-  try {
-    return sessionStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function safeSet(key, value) {
-  try {
-    sessionStorage.setItem(key, value);
-  } catch {
-    // ignore
-  }
-}
 
 function safeRemove(key) {
   try {
@@ -46,8 +31,7 @@ export default function Welcome() {
   const navigate = useNavigate();
   const { noteUserInteraction, runHudAction } = useShowroomHud();
 
-  const apiBase = useMemo(() => resolveApiBase(), []);
-  const [code, setCode] = useState(() => safeGet("snooze.accessCode") || "");
+  const [code, setCode] = useState(() => getAccessCode() || "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -85,14 +69,10 @@ export default function Welcome() {
       safeRemove("snooze.snapshot");
       safeRemove("snooze.shopperState");
 
-      safeSet("snooze.accessCode", trimmed);
-      safeSet("snooze.shopperId", trimmed);
-
-      if (apiBase) {
-        fetch(`${apiBase}/assessment/${encodeURIComponent(trimmed)}`).catch(() => {
-          // ignore background hydrate miss
-        });
-      }
+      setAccessCode(trimmed);
+      getAssessment(trimmed).catch(() => {
+        // ignore background hydrate miss
+      });
 
       const introJob = await runHudAction("start_assessment", {
         scriptKey: "welcome.entry.new",

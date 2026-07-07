@@ -2,6 +2,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
+import {
+  getStoredShopifyCartIdentity,
+  persistShopifyCartIdentity,
+} from "@/lib/session/shopifyCartState";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 function safeGet(key) {
@@ -19,7 +23,7 @@ function safeSet(key, val) {
 }
 
 function readCheckoutUrl() {
-  return safeGet("snooze.shopify.checkoutUrl") || safeGet("snooze.checkoutUrl") || "";
+  return getStoredShopifyCartIdentity().checkoutUrl || "";
 }
 
 function readLastCaption() {
@@ -533,10 +537,7 @@ export function SnoozerHUD({
       const contextPatch = res?.contextPatch || null;
 
       if (checkoutUrl) {
-        try {
-          sessionStorage.setItem("snooze.checkoutUrl", String(checkoutUrl));
-          sessionStorage.setItem("snooze.shopify.checkoutUrl", String(checkoutUrl));
-        } catch {}
+        persistShopifyCartIdentity({ cartId, checkoutUrl });
         setLocalOpenCartUrl(String(checkoutUrl));
       }
 

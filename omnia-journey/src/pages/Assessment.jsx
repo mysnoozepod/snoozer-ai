@@ -12,6 +12,7 @@ import { getAssessmentQuestions, saveAssessment } from "@/lib/api";
 import useRewards from "@/lib/useRewards";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
+import { getShopperId } from "@/state/sessionStore";
 import {
   ShowroomBrandMark,
   ShowroomCartBadge,
@@ -435,12 +436,7 @@ export default function Assessment() {
   } = useShowroomHud();
 
   const shopperId = useMemo(() => {
-    try {
-      const v = sessionStorage.getItem("snooze.accessCode") || "guest";
-      return v || "guest";
-    } catch {
-      return "guest";
-    }
+    return getShopperId() || "guest";
   }, []);
 
   const rewards = useRewards(shopperId);
@@ -1006,13 +1002,6 @@ export default function Assessment() {
 
       if (typeof setAssessment === "function") setAssessment(cleaned);
       if (typeof setAssessmentSummary === "function") setAssessmentSummary(summary);
-
-      try {
-        sessionStorage.setItem("snooze.assessment", JSON.stringify(cleaned));
-        sessionStorage.setItem("snooze.assessmentSummary", summary || "");
-      } catch {
-        // ignore
-      }
 
       const transitionMs = Math.max(
         2200,

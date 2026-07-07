@@ -1,5 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { askSnoozer } from "@/lib/api";
+import {
+  ensureSessionThreadId,
+  getSessionState,
+  getShopperId,
+  setSessionLinkId,
+} from "@/state/sessionStore";
 
 /**
  * useSnoozerSession()
@@ -32,18 +38,13 @@ function makeId(prefix = "snoozer") {
 
 export default function useSnoozerSession(defaultMode = "explore") {
   // Shopper context (per browser session)
-  const shopperId = (() => {
-    try {
-      return sessionStorage.getItem("snooze.accessCode") || "guest";
-    } catch {
-      return "guest";
-    }
-  })();
+  const shopperId = getShopperId() || "guest";
 
   const sessionIdRef = useRef(
     (() => {
       try {
-        const existing = sessionStorage.getItem(STORAGE_KEYS.sessionId);
+        const existing =
+          getSessionState()?.sessionId || sessionStorage.getItem(STORAGE_KEYS.sessionId);
         return existing || makeId("sess");
       } catch {
         return makeId("sess");
@@ -55,6 +56,7 @@ export default function useSnoozerSession(defaultMode = "explore") {
   useEffect(() => {
     try {
       sessionStorage.setItem(STORAGE_KEYS.sessionId, sessionIdRef.current);
+      setSessionLinkId(sessionIdRef.current);
     } catch {
       // ignore
     }
@@ -106,7 +108,9 @@ export default function useSnoozerSession(defaultMode = "explore") {
     (() => {
       try {
         return (
-          sessionStorage.getItem(STORAGE_KEYS.threadId) || makeId("snoozer")
+          ensureSessionThreadId() ||
+          sessionStorage.getItem(STORAGE_KEYS.threadId) ||
+          makeId("snoozer")
         );
       } catch {
         return makeId("snoozer");

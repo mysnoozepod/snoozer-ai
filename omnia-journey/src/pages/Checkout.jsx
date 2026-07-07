@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/useStore";
-import { getSessionState, setCartIdentity } from "@/state/sessionStore";
+import { getSessionState, getShopperId } from "@/state/sessionStore";
 
 function formatMoney(amount, currency = "USD") {
   const n = Number(amount);
@@ -85,13 +85,7 @@ export default function Checkout() {
   const [toast, setToast] = useState("");
   const [error, setError] = useState("");
 
-  const shopperId = (() => {
-    try {
-      return sessionStorage.getItem("snooze.accessCode") || "guest";
-    } catch {
-      return "guest";
-    }
-  })();
+  const shopperId = getShopperId() || "guest";
 
   const total = useMemo(() => {
     return (Array.isArray(cartItems) ? cartItems : []).reduce((acc, item) => {
@@ -166,7 +160,6 @@ export default function Checkout() {
           if (serverDigest && serverDigest === localDigest) {
             // Keep both stores warm
             setCartMeta?.({ cartId: existingCartId, checkoutUrl: existingCheckoutUrl });
-            setCartIdentity?.({ cartId: existingCartId, checkoutUrl: existingCheckoutUrl });
 
             api
               .trackCRMEvent({
@@ -211,7 +204,6 @@ export default function Checkout() {
 
       // Persist identity for reuse across refresh (zustand + legacy)
       setCartMeta?.({ cartId: newCartId, checkoutUrl: newCheckoutUrl });
-      setCartIdentity?.({ cartId: newCartId, checkoutUrl: newCheckoutUrl });
 
       api
         .trackCRMEvent({

@@ -43,6 +43,7 @@ import {
   SIZE_OPTIONS,
 } from "@/lib/utils/recommendations";
 import { useStore } from "@/lib/useStore";
+import { getShopperId } from "@/state/sessionStore";
 import { usePodCart } from "@/hooks/usePodCart";
 import { usePodExperience } from "@/hooks/usePodExperience";
 import { usePodHudGuidance } from "@/hooks/usePodHudGuidance";
@@ -77,12 +78,6 @@ function safeGet(key) {
   } catch {
     return null;
   }
-}
-
-function safeSet(key, val) {
-  try {
-    sessionStorage.setItem(key, val);
-  } catch {}
 }
 
 function safeParseJson(str) {
@@ -1020,12 +1015,11 @@ export default function Pod() {
   const { podId } = useParams();
   const navigate = useNavigate();
   const shopperId = useMemo(() => {
-    try {
-      return sessionStorage.getItem("snooze.accessCode") || "guest";
-    } catch {
-      return "guest";
-    }
+    return getShopperId() || "guest";
   }, []);
+  const storedAssessment = useStore((state) => state.assessment);
+  const storedRecommendations = useStore((state) => state.recommendations);
+  const setRecommendations = useStore((state) => state.setRecommendations);
   const { noteUserInteraction, voiceState, speakPod, cancelPodVoice, resetPodVoiceKeys } =
     usePodHudGuidance({ shopperId });
 
@@ -1100,10 +1094,11 @@ export default function Pod() {
   }, []);
 
   const assessment = useMemo(() => {
+    if (storedAssessment && typeof storedAssessment === "object") return storedAssessment;
     const raw = safeGet("snooze.assessment");
     const parsed = raw ? safeParseJson(raw) : null;
     return parsed && typeof parsed === "object" ? parsed : {};
-  }, []);
+  }, [storedAssessment]);
 
   const painSignals = useMemo(() => extractPainSignals(assessment), [assessment]);
   const benefits = useMemo(() => buildBenefits(painSignals), [painSignals]);
@@ -1125,8 +1120,8 @@ export default function Pod() {
     (async () => {
       setLoading(true);
 
-      const stored = safeGet("snooze.recommendations");
-      const parsed = stored ? safeParseJson(stored) : null;
+      const stored = storedRecommendations || safeParseJson(safeGet("snooze.recommendations"));
+      const parsed = stored && typeof stored === "object" ? stored : null;
       const sanitizedStored = sanitizeRecommendationsPayload(parsed);
 
       if (
@@ -1148,7 +1143,7 @@ export default function Pod() {
         if (!alive) return;
 
         setRecs(sanitizedGenerated);
-        safeSet("snooze.recommendations", JSON.stringify(sanitizedGenerated || {}));
+        setRecommendations?.(sanitizedGenerated || {});
       } catch {
         // ignore
       } finally {
@@ -1159,7 +1154,7 @@ export default function Pod() {
     return () => {
       alive = false;
     };
-  }, [assessment]);
+  }, [assessment, setRecommendations, storedRecommendations]);
 
   useEffect(() => {
     if (!recs?.pods?.length) return;

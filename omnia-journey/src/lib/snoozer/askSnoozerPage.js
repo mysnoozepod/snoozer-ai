@@ -1,6 +1,8 @@
 import { ensureSession, getSessionId } from "@/lib/api";
 import { buildApiUrl as buildSharedApiUrl } from "@/lib/apiBase";
-import { getSessionState } from "@/state/sessionStore";
+import { getAccessCode, getSessionState, getShopperId } from "@/state/sessionStore";
+import { getStoredShopifyCartIdentity } from "@/lib/session/shopifyCartState";
+import { useStore } from "@/lib/useStore";
 
 const ASK_SNOOZER_ROUTE = "/ask-snoozer";
 const ASK_SNOOZER_CONVERSATION_KEY = "snooze.askSnoozer.conversationId";
@@ -163,11 +165,9 @@ function readReferrerRoute(explicitReferrerRoute) {
 
 function readIdentity(sessionId) {
   const session = typeof getSessionState === "function" ? getSessionState() : {};
-  const accessCode = firstNonEmptyString([
-    safeGetItem("snooze.accessCode"),
-    safeGetItem("snooze.shopperId"),
-  ]);
+  const accessCode = firstNonEmptyString([getAccessCode(), safeGetItem("snooze.accessCode")]);
   const shopperId = firstNonEmptyString([
+    getShopperId(),
     session?.shopperId,
     safeGetItem("snooze.shopperId"),
     accessCode,
@@ -183,18 +183,22 @@ function readIdentity(sessionId) {
 
 function readContext() {
   const session = typeof getSessionState === "function" ? getSessionState() : {};
-  const assessment = readStoredObject(["snooze.assessment"]);
-  const recommendation = readStoredObject(["snooze.recommendations"]);
+  const storeState = typeof useStore?.getState === "function" ? useStore.getState() : {};
+  const assessment =
+    storeState?.assessment && typeof storeState.assessment === "object"
+      ? storeState.assessment
+      : readStoredObject(["snooze.assessment"]);
+  const recommendation =
+    storeState?.recommendations && typeof storeState.recommendations === "object"
+      ? storeState.recommendations
+      : readStoredObject(["snooze.recommendations"]);
   const sessionPrep = readStoredObject([
     "snooze.sessionPrep",
     "snooze.session_prep",
     "snooze.session-prep",
   ]);
-  const cartId = firstNonEmptyString([
-    session?.cartId,
-    safeGetItem("snooze.shopify.cartId"),
-    safeGetItem("snooze.cartId"),
-  ]);
+  const cartIdentity = getStoredShopifyCartIdentity();
+  const cartId = firstNonEmptyString([cartIdentity.cartId, session?.cartId]);
 
   return {
     assessment: assessment || null,

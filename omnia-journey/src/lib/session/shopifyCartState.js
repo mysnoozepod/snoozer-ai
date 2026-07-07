@@ -127,3 +127,20 @@ export function persistShopifyCartIdentity({ cartId, checkoutUrl } = {}) {
     checkoutUrl: nextCheckoutUrl,
   };
 }
+
+export function clearStoredShopifyCartIdentity() {
+  safeRemove(LEGACY_KEYS.cartId);
+  safeRemove(LEGACY_KEYS.shopifyCartId);
+  safeRemove(LEGACY_KEYS.checkoutUrl);
+  safeRemove(LEGACY_KEYS.shopifyCheckoutUrl);
+
+  setCartIdentity?.({
+    cartId: null,
+    checkoutUrl: null,
+  });
+
+  return {
+    cartId: "",
+    checkoutUrl: "",
+  };
+}

@@ -2,7 +2,17 @@ import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/useStore";
-import { getSessionState, setCartIdentity } from "@/state/sessionStore";
+import { getSessionState, getShopperId } from "@/state/sessionStore";
+import {
+  ShowroomBrandMark,
+  ShowroomCartBadge,
+  ShowroomEyebrow,
+  ShowroomFooterAction,
+  ShowroomFrame,
+  ShowroomPageShell,
+  ShowroomPanel,
+  ShowroomTopRail,
+} from "@/components/showroom/ShowroomPrimitives";
 
 function safeGet(key) {
   try {
@@ -135,27 +145,24 @@ export default function Cart() {
 
   const cartId = useStore((s) => s.cartId || null);
   const checkoutUrl = useStore((s) => s.checkoutUrl || null);
+  const recommendations = useStore((s) => s.recommendations);
   const setCartMeta = useStore((s) => s.setCartMeta);
   const clearCartMeta = useStore((s) => s.clearCartMeta);
 
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [toast, setToast] = useState("");
 
-  const shopperId = (() => {
-    try {
-      return sessionStorage.getItem("snooze.accessCode") || "guest";
-    } catch {
-      return "guest";
-    }
-  })();
+  const shopperId = getShopperId() || "guest";
 
   const continuePodId = useMemo(() => {
-    const raw = safeGet("snooze.recommendations");
-    const parsed = raw ? safeParseJson(raw) : null;
+    const parsed =
+      recommendations && typeof recommendations === "object"
+        ? recommendations
+        : safeParseJson(safeGet("snooze.recommendations"));
     const pods = Array.isArray(parsed?.pods) ? parsed.pods : [];
     const first = pods[0] || null;
     return first ? toPodId(first.podId ?? first.id) : "1";
-  }, []);
+  }, [recommendations]);
 
   const bestCheckoutUrl = useMemo(() => {
     const legacy = getSessionState?.() || {};
@@ -170,6 +177,13 @@ export default function Cart() {
         acc +
         (Number.isFinite(unit) ? unit : 0) * (Number.isFinite(qty) ? qty : 1)
       );
+    }, 0);
+  }, [cartItems]);
+
+  const totalItems = useMemo(() => {
+    return (Array.isArray(cartItems) ? cartItems : []).reduce((sum, item) => {
+      const qty = Number(item.quantity ?? item.qty ?? 1);
+      return sum + (Number.isFinite(qty) ? qty : 1);
     }, 0);
   }, [cartItems]);
 
@@ -230,7 +244,6 @@ export default function Cart() {
 
           if (serverDigest && serverDigest === localDigest) {
             setCartMeta?.({ cartId: bestCartId, checkoutUrl: bestUrl });
-            setCartIdentity?.({ cartId: bestCartId, checkoutUrl: bestUrl });
 
             api
               .trackCRMEvent({
@@ -269,7 +282,6 @@ export default function Cart() {
       }
 
       setCartMeta?.({ cartId: newCartId, checkoutUrl: newCheckoutUrl });
-      setCartIdentity?.({ cartId: newCartId, checkoutUrl: newCheckoutUrl });
 
       api
         .trackCRMEvent({
@@ -300,7 +312,6 @@ export default function Cart() {
   function handleClearCart() {
     clearCart?.();
     clearCartMeta?.();
-    setCartIdentity?.({ cartId: null, checkoutUrl: null });
 
     setToast("Cart cleared.");
     api
@@ -313,160 +324,209 @@ export default function Cart() {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-[#E8ECF5] to-white py-8">
-      <div className="mx-auto max-w-4xl px-4">
-        <div className="mb-6 flex items-center justify-between gap-3">
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
-            Cart
-          </h1>
+    <ShowroomPageShell className="pb-8">
+      <ShowroomTopRail className="items-center">
+        <ShowroomBrandMark />
+        <ShowroomCartBadge count={totalItems} quiet />
+      </ShowroomTopRail>
 
-          <div className="flex items-center gap-3">
-            <Link
-              to={`/pod/${encodeURIComponent(continuePodId)}`}
-              className="text-sm font-semibold text-indigo-700 underline hover:text-indigo-900"
-            >
-              Continue Testing
-            </Link>
+      <div className="mx-auto max-w-[1380px] px-4 pb-6 pt-2 md:px-6">
+        <ShowroomFrame className="overflow-hidden p-4 md:p-5">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.08fr)_340px]">
+            <div className="min-w-0">
+              <ShowroomEyebrow>Your SnoozePod</ShowroomEyebrow>
+              <h1 className="mt-2 text-[2.1rem] font-black tracking-tight text-slate-900 md:text-[2.8rem]">
+                Review your setup before checkout.
+              </h1>
+              <p className="mt-2 max-w-2xl text-[0.95rem] leading-6 text-slate-600 md:text-[1rem]">
+                Keep what you want, adjust quantities, then head to checkout when you&apos;re ready.
+              </p>
 
-            <Link
-              to="/snoozepod"
-              className="text-sm font-semibold text-indigo-700 underline hover:text-indigo-900"
-            >
-              View SnoozePod
-            </Link>
+              <div className="mt-4 flex flex-wrap gap-2.5">
+                <Link
+                  to={`/pod/${encodeURIComponent(continuePodId)}`}
+                  className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Continue Testing
+                </Link>
+                <Link
+                  to="/snoozepod"
+                  className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
+                >
+                  View SnoozePod
+                </Link>
+                {bestCheckoutUrl ? (
+                  <a
+                    href={bestCheckoutUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Open Checkout
+                  </a>
+                ) : null}
+                {cartItems.length > 0 ? (
+                  <button
+                    onClick={handleClearCart}
+                    className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+                    disabled={checkoutLoading}
+                  >
+                    Clear Cart
+                  </button>
+                ) : null}
+              </div>
 
-            {bestCheckoutUrl ? (
-              <a
-                href={bestCheckoutUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm font-semibold text-indigo-700 underline hover:text-indigo-900"
-              >
-                Open Checkout
-              </a>
-            ) : null}
+              <div className="mt-4 space-y-3">
+                {cartItems.length === 0 ? (
+                  <ShowroomPanel className="p-6">
+                    <div className="text-[1.2rem] font-black text-slate-900">Your cart is empty.</div>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Add a mattress or base from a pod to see it here.
+                    </p>
+                    <div className="mt-4">
+                      <Link
+                        to={`/pod/${encodeURIComponent(continuePodId)}`}
+                        className="inline-flex rounded-[18px] bg-[#1A66D2] px-5 py-3 text-sm font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.22)] transition hover:bg-[#1550A0]"
+                      >
+                        Go to SnoozePod {continuePodId}
+                      </Link>
+                    </div>
+                  </ShowroomPanel>
+                ) : (
+                  cartItems.map((item, idx) => {
+                    const id =
+                      item.merchandiseId ||
+                      item.variantId ||
+                      item.id ||
+                      `${item?.title || "item"}-${idx}`;
 
-            {cartItems.length > 0 ? (
-              <button
-                onClick={handleClearCart}
-                className="text-sm font-semibold text-gray-600 underline hover:text-gray-900"
-                disabled={checkoutLoading}
-              >
-                Clear
-              </button>
-            ) : null}
-          </div>
-        </div>
+                    const title = item.title || "Item";
+                    const image = safeImage(item);
+                    const qty = Number(item.quantity ?? item.qty ?? 1) || 1;
+                    const unit = Number(item.unitPrice ?? item.price ?? 0) || 0;
+                    const attrs = pickKeyAttributes(item?.attributes);
 
-        <div className="rounded-2xl border bg-white p-6 shadow-sm">
-          {cartItems.length === 0 ? (
-            <p className="text-gray-600">Your cart is empty.</p>
-          ) : (
-            <div>
-              <div className="space-y-4">
-                {cartItems.map((item, idx) => {
-                  const id =
-                    item.merchandiseId ||
-                    item.variantId ||
-                    item.id ||
-                    `${item?.title || "item"}-${idx}`;
-
-                  const title = item.title || "Item";
-                  const image = safeImage(item);
-                  const qty = Number(item.quantity ?? item.qty ?? 1) || 1;
-                  const unit = Number(item.unitPrice ?? item.price ?? 0) || 0;
-                  const attrs = pickKeyAttributes(item?.attributes);
-
-                  return (
-                    <div
-                      key={id}
-                      className="flex gap-4 rounded-2xl border bg-gray-50 p-4"
-                    >
-                      <img
-                        src={image}
-                        alt={title}
-                        className="h-20 w-20 rounded-xl border bg-white object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = "/no-image.svg";
-                        }}
-                      />
-
-                      <div className="min-w-0 flex-1">
-                        <h2 className="truncate text-lg font-extrabold text-gray-900">
-                          {title}
-                        </h2>
-                        <p className="text-sm text-gray-600">
-                          {formatMoney(unit)} each
-                        </p>
-
-                        {attrs.length ? (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {attrs.map((a) => (
-                              <span
-                                key={`${a.key}-${a.value}`}
-                                className="inline-flex items-center rounded-full border bg-white px-2 py-0.5 text-[11px] font-semibold text-gray-700"
-                              >
-                                {a.key}: {a.value}
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
-
-                        <div className="mt-3 flex items-center gap-3">
-                          <label className="text-sm text-gray-600">Qty</label>
-                          <input
-                            type="number"
-                            min={1}
-                            value={qty}
-                            onChange={(e) => {
-                              const next = Math.max(1, Number(e.target.value) || 1);
-                              try {
-                                updateCart?.(id, next);
-                              } catch {
-                                // no-op
-                              }
+                    return (
+                      <ShowroomPanel key={id} className="p-4 md:p-5">
+                        <div className="flex flex-col gap-4 md:flex-row">
+                          <img
+                            src={image}
+                            alt={title}
+                            className="h-24 w-24 rounded-[22px] border border-slate-200 bg-white object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = "/no-image.svg";
                             }}
-                            className="h-10 w-20 rounded-xl border bg-white px-2 text-sm"
-                            disabled={checkoutLoading}
                           />
 
-                          <button
-                            onClick={() => id && removeFromCart?.(id)}
-                            className="text-sm font-semibold text-red-700 hover:underline"
-                            disabled={checkoutLoading}
-                          >
-                            Remove
-                          </button>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <h2 className="truncate text-[1.15rem] font-black text-slate-900 md:text-[1.25rem]">
+                                  {title}
+                                </h2>
+                                <p className="mt-1 text-sm font-semibold text-slate-500">
+                                  {formatMoney(unit)} each
+                                </p>
+                              </div>
+
+                              <div className="text-right text-lg font-black text-slate-900">
+                                {formatMoney(unit * qty)}
+                              </div>
+                            </div>
+
+                            {attrs.length ? (
+                              <div className="mt-3 flex flex-wrap gap-1.5">
+                                {attrs.map((a) => (
+                                  <span
+                                    key={`${a.key}-${a.value}`}
+                                    className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700"
+                                  >
+                                    {a.key}: {a.value}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            <div className="mt-4 flex flex-wrap items-center gap-3">
+                              <label className="text-sm font-semibold text-slate-500">Qty</label>
+                              <input
+                                type="number"
+                                min={1}
+                                value={qty}
+                                onChange={(e) => {
+                                  const next = Math.max(1, Number(e.target.value) || 1);
+                                  try {
+                                    updateCart?.(id, next);
+                                  } catch {
+                                    // no-op
+                                  }
+                                }}
+                                className="h-10 w-20 rounded-[14px] border border-slate-200 bg-white px-3 text-sm font-semibold"
+                                disabled={checkoutLoading}
+                              />
+
+                              <button
+                                onClick={() => id && removeFromCart?.(id)}
+                                className="text-sm font-extrabold text-red-700 transition hover:text-red-800 hover:underline"
+                                disabled={checkoutLoading}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-
-                      <div className="text-right font-extrabold text-gray-900">
-                        {formatMoney(unit * qty)}
-                      </div>
-                    </div>
-                  );
-                })}
+                      </ShowroomPanel>
+                    );
+                  })
+                )}
               </div>
+            </div>
 
-              <div className="mt-6 flex items-center justify-between">
-                <div className="text-sm text-gray-600">Final review.</div>
-                <div className="text-xl font-extrabold text-gray-900">
-                  Total: {formatMoney(total)}
+            <div className="space-y-3">
+              <ShowroomPanel className="p-5">
+                <ShowroomEyebrow>Order Summary</ShowroomEyebrow>
+                <div className="mt-2 text-[1.55rem] font-black tracking-tight text-slate-900">
+                  {formatMoney(total)}
                 </div>
-              </div>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Final review before you move into checkout.
+                </p>
 
-              <div className="mt-5">
+                <div className="mt-4 grid gap-2">
+                  <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-3">
+                    <div className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
+                      Items
+                    </div>
+                    <div className="mt-1 text-base font-black text-slate-900">{totalItems}</div>
+                  </div>
+                  <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-3">
+                    <div className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
+                      Checkout
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-slate-600">
+                      You&apos;ll continue using the existing checkout flow.
+                    </div>
+                  </div>
+                </div>
+
                 <button
                   onClick={handleCheckout}
                   disabled={checkoutLoading || !cartItems.length}
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 font-extrabold text-white transition hover:bg-indigo-700 disabled:opacity-60 md:w-auto"
+                  className="mt-5 inline-flex w-full items-center justify-center rounded-[18px] bg-[#1A66D2] px-6 py-3.5 text-base font-black text-white transition hover:bg-[#1550A0] disabled:opacity-60"
                 >
                   {checkoutLoading ? "Processing..." : "Checkout"}
                 </button>
-              </div>
+              </ShowroomPanel>
+
+              <ShowroomFooterAction
+                label="Back to SnoozePod"
+                onClick={() => {
+                  window.location.assign(`/pod/${encodeURIComponent(continuePodId)}`);
+                }}
+              />
             </div>
-          )}
-        </div>
+          </div>
+        </ShowroomFrame>
 
         {toast ? (
           <div
@@ -477,6 +537,6 @@ export default function Cart() {
           </div>
         ) : null}
       </div>
-    </section>
+    </ShowroomPageShell>
   );
 }

@@ -25,12 +25,11 @@
 // - Added getProductsIndexByHandle() for one-pass image lookup in Results/Pod UI
 // - getProductById() now falls back to exact-handle search from listProducts when getProduct misses
 
-import { getSessionState, setCartIdentity } from "@/state/sessionStore";
+import { getSessionState, setSessionLinkId } from "@/state/sessionStore";
+import { buildApiUrl, resolveApiBase } from "@/lib/apiBase";
+import { persistShopifyCartIdentity } from "@/lib/session/shopifyCartState";
 
-let API_BASE = import.meta.env.VITE_API_BASE?.replace(/\/$/, "") || "";
-if (API_BASE && !/\/(prod|staging|dev)$/i.test(API_BASE)) {
-  API_BASE += "/prod";
-}
+const API_BASE = resolveApiBase();
 
 const DEFAULT_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT_MS || 20000);
 const RETRY_BACKOFF_MS = 600;
@@ -41,8 +40,6 @@ const CACHE_KEYS = {
 };
 
 const SESSION_KEY = "snooze.sessionId";
-const CART_ID_KEYS = ["snooze.shopify.cartId", "snooze.cartId"];
-const CHECKOUT_URL_KEYS = ["snooze.shopify.checkoutUrl", "snooze.checkoutUrl"];
 
 let _sessionPromise = null;
 
@@ -95,6 +92,11 @@ export async function ensureSession({ force = false } = {}) {
     }
     try {
       localStorage.setItem(SESSION_KEY, String(id));
+    } catch {
+      // ignore
+    }
+    try {
+      setSessionLinkId(String(id));
     } catch {
       // ignore
     }
@@ -374,10 +376,8 @@ function buildRequestHeaders(method = "POST", headers = {}) {
 }
 
 async function request(path, { method = "POST", query, body, headers } = {}) {
-  if (!API_BASE) throw new Error("API base not configured (VITE_API_BASE missing)");
-
   const cleanPath = `/${stripSlashes(path)}`;
-  let url = joinUrl(API_BASE, cleanPath);
+  let url = buildApiUrl(cleanPath);
 
   if (query && Object.keys(query).length) {
     const qs = new URLSearchParams();
@@ -488,10 +488,7 @@ export async function synthesizeWelcomeVoice({
   engine = "generative",
   format = "mp3",
 } = {}) {
-  if (!API_BASE) throw new Error("API base not configured (VITE_API_BASE missing)");
-
-  const cleanPath = "/voice/welcome";
-  const url = joinUrl(API_BASE, cleanPath);
+  const url = buildApiUrl("/voice/welcome");
 
   const controller = new AbortController();
   const clear = startTimeout(controller, DEFAULT_TIMEOUT);
@@ -672,51 +669,8 @@ function extractCartGid(value) {
 }
 
 function persistCartIdentity(cartId, checkoutUrl = null) {
-  const gid = extractCartGid(cartId);
-
-  if (gid) {
-    for (const key of CART_ID_KEYS) {
-      try {
-        sessionStorage.setItem(key, gid);
-      } catch {
-        // ignore
-      }
-    }
-
-    try {
-      if (typeof setCartIdentity === "function") {
-        setCartIdentity({
-          cartId: gid,
-          ...(checkoutUrl ? { checkoutUrl: String(checkoutUrl) } : {}),
-        });
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  if (checkoutUrl) {
-    for (const key of CHECKOUT_URL_KEYS) {
-      try {
-        sessionStorage.setItem(key, String(checkoutUrl));
-      } catch {
-        // ignore
-      }
-    }
-
-    try {
-      if (typeof setCartIdentity === "function") {
-        setCartIdentity({
-          ...(gid ? { cartId: gid } : {}),
-          checkoutUrl: String(checkoutUrl),
-        });
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  return gid;
+  const persisted = persistShopifyCartIdentity({ cartId, checkoutUrl });
+  return persisted.cartId || extractCartGid(cartId);
 }
 
 function normalizeAttributes(attrs) {

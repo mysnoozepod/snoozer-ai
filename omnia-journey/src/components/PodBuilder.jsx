@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/useStore";
+import { getShopperId } from "@/state/sessionStore";
 import {
   SIZE_OPTIONS,
   BASE_OPTIONS_UI,
@@ -201,15 +202,7 @@ function writeSavedBuild(pod, value) {
 }
 
 function readShopperKey() {
-  try {
-    return (
-      sessionStorage.getItem("snooze.shopperId") ||
-      sessionStorage.getItem("snooze.accessCode") ||
-      "guest"
-    );
-  } catch {
-    return "guest";
-  }
+  return getShopperId() || "guest";
 }
 
 function readAssessmentValue(assessment, ...keys) {

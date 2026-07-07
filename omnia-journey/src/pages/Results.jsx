@@ -9,7 +9,9 @@ import {
   isCanonicalRecommendationsEnabled,
 } from "@/lib/utils/resultsRecommendations";
 import { api } from "@/lib/api";
+import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
+import { getShopperId } from "@/state/sessionStore";
 import {
   ArrowRight,
   CheckCircle2,
@@ -47,14 +49,6 @@ function safeGet(key) {
 function safeSet(key, value) {
   try {
     sessionStorage.setItem(key, value);
-  } catch {
-    // ignore
-  }
-}
-
-function safeSetJson(key, value) {
-  try {
-    sessionStorage.setItem(key, JSON.stringify(value));
   } catch {
     // ignore
   }
@@ -586,13 +580,17 @@ export default function Results() {
   const { muted, replay, noteUserInteraction, runHudAction, setMuted, voiceState } =
     useShowroomHud();
 
-  const shopperId = safeGet("snooze.accessCode") || "";
+  const shopperId = getShopperId() || "";
+  const storedAssessment = useStore((state) => state.assessment);
+  const setRecommendations = useStore((state) => state.setRecommendations);
+  const setRecommendedProductHandles = useStore((state) => state.setRecommendedProductHandles);
   const rewards = useRewards(shopperId);
 
   const answers = useMemo(() => {
+    if (storedAssessment && typeof storedAssessment === "object") return storedAssessment;
     const raw = safeGet("snooze.assessment");
     return raw ? safeParseJson(raw) : {};
-  }, []);
+  }, [storedAssessment]);
 
   const [loading, setLoading] = useState(true);
   const [recs, setRecs] = useState(null);
@@ -654,15 +652,14 @@ export default function Results() {
         });
         const safeGenerated = recommendations || { pods: [] };
 
-        safeSetJson("snooze.recommendations", safeGenerated || {});
-
         const handles = new Set();
         (safeGenerated?.pods || []).forEach((p) => {
           const mattressHandle = getMattressHandle(p);
           if (mattressHandle) handles.add(mattressHandle);
           if (p?.baseHandle) handles.add(p.baseHandle);
         });
-        safeSetJson("snooze.recommendedProductHandles", Array.from(handles));
+        setRecommendations?.(safeGenerated || {});
+        setRecommendedProductHandles?.(Array.from(handles));
 
         if (!alive) return;
         setRecs(safeGenerated || null);
@@ -678,7 +675,7 @@ export default function Results() {
     return () => {
       alive = false;
     };
-  }, [answers]);
+  }, [answers, setRecommendations, setRecommendedProductHandles]);
 
   useEffect(() => {
     let alive = true;
