@@ -6433,6 +6433,7 @@ async function handle(event = {}) {
       maybeBuildAskSnoozerCommerceAnswer,
       queryExplicitlyRequestsAskSnoozerCommerce,
       resolveAskSnoozerCommerceResponse,
+      shopifySvc,
       resolveAskSnoozerPolicyAnswer,
       buildAskSnoozerPolicyChips,
       buildAskSnoozerAction,

@@ -43,6 +43,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     maybeBuildAskSnoozerCommerceAnswer,
     queryExplicitlyRequestsAskSnoozerCommerce,
     resolveAskSnoozerCommerceResponse,
+    shopifySvc,
     resolveAskSnoozerPolicyAnswer,
     buildAskSnoozerPolicyChips,
     buildAskSnoozerAction,

@@ -114,21 +114,47 @@ function hasRenderableText(body) {
   });
 }
 
-async function invoke(path) {
+const ASK_SNOOZER_CASES = [
+  { id: "hello", message: "hello" },
+  { id: "firmer-mattress", message: "Do I need a firmer mattress?" },
+  { id: "compare-top-pods", message: "Compare my top pods" },
+  { id: "best-value", message: "What is the best value option?" },
+  { id: "wake-up-tired", message: "Why do I wake up tired?" },
+];
+
+function assertNoRuntimeLeak(path, testCase, body) {
+  const serialized = JSON.stringify(body);
+  assert(!/ReferenceError/i.test(serialized), `${path} ${testCase.id} leaked a ReferenceError`);
+  assert(!/safeNumber is not defined/i.test(serialized), `${path} ${testCase.id} regressed safeNumber`);
+}
+
+function assertNoInventedCommerceTruth(path, testCase, body) {
+  const checkoutUrl = body?.checkoutUrl || body?.metadata?.checkoutUrl || body?.context?.checkoutUrl;
+  const cartId = body?.cartId || body?.metadata?.cartId || body?.context?.cartId;
+  assert(!checkoutUrl, `${path} ${testCase.id} invented checkoutUrl`);
+  assert(!cartId, `${path} ${testCase.id} invented cartId`);
+
+  const serialized = JSON.stringify(body);
+  assert(!/gid:\/\/shopify\/(Cart|ProductVariant)\//i.test(serialized), `${path} ${testCase.id} invented Shopify GID`);
+}
+
+async function invoke(path, testCase) {
   const { lambdaHandler } = require("../index");
   const response = await lambdaHandler(
     buildEvent(path, {
-      message: "hello",
-      sessionId: `smoke-${path.replace("/", "")}`,
+      message: testCase.message,
+      sessionId: `smoke-${path.replace("/", "")}-${testCase.id}`,
       accessCode: "1234",
       shopperId: "1234",
     })
   );
 
-  assert.strictEqual(response.statusCode, 200, `${path} should return HTTP 200`);
+  assert.strictEqual(response.statusCode, 200, `${path} ${testCase.id} should return HTTP 200`);
   const body = JSON.parse(response.body);
-  assert.strictEqual(body.ok, true, `${path} should return ok=true`);
-  assert(hasRenderableText(body), `${path} should include a renderable text field`);
+  assert.strictEqual(body.ok, true, `${path} ${testCase.id} should return ok=true`);
+  assert(hasRenderableText(body), `${path} ${testCase.id} should include a renderable text field`);
+  assertNoRuntimeLeak(path, testCase, body);
+  assertNoInventedCommerceTruth(path, testCase, body);
   return body;
 }
 
@@ -137,9 +163,22 @@ async function main() {
   patchOpenAi();
 
   try {
-    await invoke("/ask-snoozer");
-    await invoke("/ask");
-    console.log("All /ask-snoozer route smoke tests passed.");
+    const results = [];
+    for (const path of ["/ask-snoozer", "/ask"]) {
+      for (const testCase of ASK_SNOOZER_CASES) {
+        const body = await invoke(path, testCase);
+        results.push({
+          path,
+          id: testCase.id,
+          answerPreview: String(body.answer || body.reply || body.message || "").slice(0, 80),
+          contract: body.contract,
+        });
+      }
+    }
+    console.log("Ask Snoozer route smoke matrix passed.", {
+      cases: results.length,
+      results,
+    });
   } finally {
     restore();
   }
