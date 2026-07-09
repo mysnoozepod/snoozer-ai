@@ -251,7 +251,10 @@ async function testCanonicalRecommendationAnswer() {
     body.reply.includes(resolved.normalizedAssessment.motionLabel),
     "reply should mention the canonical motion label"
   );
-  assert(/^Got it -/i.test(String(body.reply || "")), "recommendation reply should use the sharper voice opener");
+  assert(
+    /^(I would start with|Start with)/i.test(String(body.reply || "")),
+    "recommendation reply should use direct showroom guidance"
+  );
   assertNoBannedPhrases(body.reply, "canonical recommendation reply");
 }
 

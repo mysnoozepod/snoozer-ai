@@ -80,6 +80,7 @@ const CANON_KEY = process.env.CANON_KEY || "meta/canon.json";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const FAST_MODEL = process.env.OPENAI_FAST_MODEL || "gpt-4o-mini";
+const FINAL_MODEL = process.env.OPENAI_FINAL_MODEL || "gpt-4o";
 
 // Timeouts / TTLs
 const AXIOS_TIMEOUT_MS = Math.max(8000, Number(process.env.OPENAI_TIMEOUT_MS || 30000));
@@ -127,6 +128,22 @@ const CONCISE_GUARDRAILS = [
   "- If asked price/cart/checkout, say: “I’ll pull live pricing/checkout for you” and ask what size they want if needed.",
   "- If you do not have relevant showroom knowledge loaded, say you don't have it and offer options instead.",
   "- Be direct, calm, and on-brand for MySnoozePod: friendly, clear, practical.",
+  "- Return JSON-friendly text (no markdown tables).",
+].join("\n");
+
+const PREMIUM_ANSWER_GUARDRAILS = [
+  "INSTRUCTIONS:",
+  "- You are Snoozer, a premium in-showroom sleep guide for MySnoozePod.",
+  "- Give direct, useful answers. No generic chatbot filler.",
+  "- Keep replies concise enough for showroom use unless asked for more detail.",
+  "- Use shopper/session/canonical context when it is present, but never override canonical pod, mattress, base, or motion decisions.",
+  "- Do NOT guess prices, availability, financing math, checkout details, delivery promises, discounts, warranty terms, variant IDs, or policies.",
+  "- If asked price/cart/checkout, say live Shopify checkout/pricing has to confirm it and ask what size they want if needed.",
+  "- Do NOT diagnose, treat, cure, or promise medical outcomes. For medical concerns, explain comfort/support testing and suggest a healthcare professional when appropriate.",
+  "- If you do not have relevant showroom knowledge loaded, say you don't have it and offer options instead.",
+  "- Preferred structure: answer first, explain why, name the tradeoff, then give a next step.",
+  "- Avoid phrases like 'as an AI', lazy 'based on your preferences' openers, and vague 'may be a good fit' without a reason.",
+  "- Be calm, confident, specific, and lightly conversational.",
   "- Return JSON-friendly text (no markdown tables).",
 ].join("\n");
 
@@ -1197,13 +1214,13 @@ async function loadKeysAsSnippets(keys = [], limitBytes = MAX_CTX_BYTES) {
 async function getBasePromptOnce(reqId) {
   if (isFresh(cache.basePrompt.ts, BASE_PROMPT_TTL_MS)) return cache.basePrompt.value;
 
-  let base = CONCISE_GUARDRAILS;
+  let base = PREMIUM_ANSWER_GUARDRAILS;
 
   try {
     const sysResult = await getObjectText(PROMPT_BUCKET, SYSTEM_PROMPT_KEY);
     const sys = sysResult?.value || null;
     if (sys) {
-      base = `${sys.trim()}\n\n${CONCISE_GUARDRAILS}`;
+      base = `${sys.trim()}\n\n${PREMIUM_ANSWER_GUARDRAILS}`;
       logEvent("prompt.base.loaded", { reqId, bucket: PROMPT_BUCKET, key: SYSTEM_PROMPT_KEY });
     } else {
       logEvent("prompt.base.missing", { reqId, bucket: PROMPT_BUCKET, key: SYSTEM_PROMPT_KEY });
@@ -1224,7 +1241,10 @@ function buildModeInstructions(mode) {
     "IMPORTANT RULES:",
     "- Do not guess prices, availability, financing math, or checkout details.",
     "- If the guest asks price/cart/checkout, say: “I’ll pull live pricing/checkout for you” and ask what size they want if needed.",
+    "- Never invent product, policy, delivery, warranty, financing, medical, or availability claims.",
+    "- When context exists, make the answer specific to the shopper's pod, mattress, base, motion mode, or session.",
     "- Keep it practical and short unless asked for more.",
+    "- End with a clear test or next step when helpful.",
   ];
 
   if (m === "pod") {
@@ -2015,7 +2035,7 @@ async function deterministicUpdateCartQtyPath(
 // ──────────────────────────────
 // Model path (NO TOOLS, NO COMMERCE) + retrieval enforcement
 // ──────────────────────────────
-async function callOpenAIChat({ messages, reqId }) {
+async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL }) {
   if (!OPENAI_API_KEY) {
     const err = new Error("OPENAI_API_KEY missing");
     err.code = "OPENAI_KEY_MISSING";
@@ -2029,7 +2049,7 @@ async function callOpenAIChat({ messages, reqId }) {
       const normalized = normalizeMessages(messages, reqId, { trim: true });
 
       const payload = {
-        model: FAST_MODEL,
+        model,
         temperature: 0.2,
         max_tokens: 350,
         messages: normalized,
@@ -2053,7 +2073,7 @@ async function callOpenAIChat({ messages, reqId }) {
 
       return {
         text: msg.content || "",
-        model: data.model || FAST_MODEL,
+        model: data.model || model,
         tokens: {
           prompt: usage.prompt_tokens ?? null,
           completion: usage.completion_tokens ?? null,

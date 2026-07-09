@@ -1,6 +1,18 @@
 #!/usr/bin/env node
 
 const assert = require("assert");
+process.env.ASK_SNOOZER_PREFER_LOCAL_KNOWLEDGE = "1";
+for (const key of [
+  "ZCRM_CLIENT_ID",
+  "ZCRM_CLIENT_SECRET",
+  "ZCRM_REFRESH_TOKEN",
+  "ZCRM_OAUTH_DOMAIN",
+  "ZCRM_API_DOMAIN",
+  "ZOHO_CRM_BASE",
+]) {
+  process.env[key] = "";
+}
+
 const {
   DynamoDBDocumentClient,
   GetCommand,
@@ -85,9 +97,11 @@ function patchDynamo() {
 function patchOpenAi() {
   openai.getSnoozerResponse = async function mockedGetSnoozerResponse(message, options = {}) {
     return {
-      reply: `Hi there. I can help with that: ${message}`,
-      text: `Hi there. I can help with that: ${message}`,
-      model: "mock-openai",
+      reply:
+        "I do not want to guess without the right showroom context. I can help compare mattresses, explain your recommendation, answer policy questions from the loaded guides, or point you to a human.",
+      text:
+        "I do not want to guess without the right showroom context. I can help compare mattresses, explain your recommendation, answer policy questions from the loaded guides, or point you to a human.",
+      model: "mock-premium-final-answer",
       meta: {
         path: "mock_openai",
         retrievalMs: 0,
@@ -120,7 +134,83 @@ const ASK_SNOOZER_CASES = [
   { id: "compare-top-pods", message: "Compare my top pods" },
   { id: "best-value", message: "What is the best value option?" },
   { id: "wake-up-tired", message: "Why do I wake up tired?" },
+  {
+    id: "why-pod-recommended",
+    message: "Why is this pod recommended for me?",
+    body: { context: { assessment: buildCanonicalAssessment() } },
+    expectAny: ["SnoozePod 4", "12-inch All Foam", "No Base", "No Motion"],
+  },
+  {
+    id: "mattress-recommendation",
+    message: "What mattress do you recommend for me?",
+    body: { context: { assessment: buildCanonicalAssessment() } },
+    expectAny: ["12-inch All Foam", "SnoozePod 4"],
+  },
+  {
+    id: "compare-top-mattresses",
+    message: "Compare my top mattresses.",
+    expectAny: ["foam", "hybrid", "compare"],
+  },
+  {
+    id: "return-policy",
+    message: "What is your return policy?",
+    expectAny: ["100-night", "trial", "final sale", "mattress"],
+  },
+  {
+    id: "delivery",
+    message: "How does delivery work?",
+    expectAny: ["delivery", "checkout", "business days", "setup"],
+  },
+  {
+    id: "financing",
+    message: "Can I finance this?",
+    expectAny: ["financing", "checkout", "terms", "monthly"],
+  },
+  {
+    id: "sleep-hot",
+    message: "I sleep hot. What should I do?",
+    expectAny: ["cooling", "heat", "breathable", "sleep setup"],
+  },
+  {
+    id: "back-pain",
+    message: "I have back pain. What should I look for?",
+    expectAny: ["support", "stable", "diagnose", "lower back"],
+  },
+  {
+    id: "talk-human",
+    message: "Can I talk to a human?",
+    expectAny: ["human", "support", "store contact", "guidance"],
+  },
+  {
+    id: "help-decide",
+    message: "I do not know what to choose. Help me decide.",
+    body: { context: { assessment: buildCanonicalAssessment() } },
+    expectAny: ["SnoozePod", "assessment", "start", "test"],
+  },
 ];
+
+function buildCanonicalAssessment() {
+  return {
+    size: "Queen",
+    motionMode: "No Motion",
+    firmness: "Soft",
+    sleepPosition: "Side",
+    sleepPartner: "No",
+    baseType: "No Base",
+    temperature: "Hot",
+  };
+}
+
+function extractAnswerText(body) {
+  return String(
+    body?.answer ||
+      body?.reply ||
+      body?.message?.text ||
+      body?.speech ||
+      body?.captions ||
+      ""
+  ).trim();
+}
 
 function assertNoRuntimeLeak(path, testCase, body) {
   const serialized = JSON.stringify(body);
@@ -138,6 +228,49 @@ function assertNoInventedCommerceTruth(path, testCase, body) {
   assert(!/gid:\/\/shopify\/(Cart|ProductVariant)\//i.test(serialized), `${path} ${testCase.id} invented Shopify GID`);
 }
 
+function assertAnswerQuality(path, testCase, body) {
+  const answer = extractAnswerText(body);
+  assert(answer, `${path} ${testCase.id} should include answer text`);
+  assert(answer.length <= 700, `${path} ${testCase.id} should stay concise`);
+
+  const banned = [
+    /as an ai/i,
+    /based on your preferences/i,
+    /lorem ipsum/i,
+    /\bundefined\b/i,
+    /\bnull\b/i,
+    /variant_id/i,
+    /product_id/i,
+    /traceId/i,
+    /ReferenceError/i,
+    /OPENAI_TIMEOUT/i,
+    /I understand\b/i,
+  ];
+  for (const pattern of banned) {
+    assert(!pattern.test(answer), `${path} ${testCase.id} used banned phrasing: ${pattern}`);
+  }
+
+  const medicalClaims = [
+    /\bcure\b/i,
+    /\bheal\b/i,
+    /\btreat\b/i,
+    /\bdiagnose\b.*\bwith certainty\b/i,
+    /\bguarantee\b.*\bpain\b/i,
+    /\beliminate\b.*\bpain\b/i,
+  ];
+  for (const pattern of medicalClaims) {
+    assert(!pattern.test(answer), `${path} ${testCase.id} made unsupported medical claim`);
+  }
+
+  if (Array.isArray(testCase.expectAny) && testCase.expectAny.length) {
+    const lowerAnswer = answer.toLowerCase();
+    assert(
+      testCase.expectAny.some((term) => lowerAnswer.includes(String(term).toLowerCase())),
+      `${path} ${testCase.id} should mention one of: ${testCase.expectAny.join(", ")}. Actual: ${answer}`
+    );
+  }
+}
+
 async function invoke(path, testCase) {
   const { lambdaHandler } = require("../index");
   const response = await lambdaHandler(
@@ -146,6 +279,7 @@ async function invoke(path, testCase) {
       sessionId: `smoke-${path.replace("/", "")}-${testCase.id}`,
       accessCode: "1234",
       shopperId: "1234",
+      ...(testCase.body || {}),
     })
   );
 
@@ -155,6 +289,7 @@ async function invoke(path, testCase) {
   assert(hasRenderableText(body), `${path} ${testCase.id} should include a renderable text field`);
   assertNoRuntimeLeak(path, testCase, body);
   assertNoInventedCommerceTruth(path, testCase, body);
+  assertAnswerQuality(path, testCase, body);
   return body;
 }
 
@@ -170,7 +305,7 @@ async function main() {
         results.push({
           path,
           id: testCase.id,
-          answerPreview: String(body.answer || body.reply || body.message || "").slice(0, 80),
+          answerPreview: extractAnswerText(body).slice(0, 100),
           contract: body.contract,
         });
       }

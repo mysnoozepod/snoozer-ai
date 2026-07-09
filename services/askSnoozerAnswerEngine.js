@@ -1281,7 +1281,7 @@ function buildProductSpecificReply({
   if (intent === "product_question" || currentHandle) {
     return {
       reply: joinUniqueSentences([
-        "Got it - use the current page context as one comparison point, not the whole answer",
+        "Use the current page context as one comparison point, not the whole answer",
         `${primaryTitle} is worth checking against your size, support, and base setup before you decide.`,
       ]),
       grounded: true,
@@ -1335,11 +1335,12 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
       return {
         reply: joinUniqueSentences([
           trialFact?.text
-            ? "Mattresses can be returned or exchanged once during the 100-night trial."
+            ? "We offer a 100-night sleep trial on mattress purchases."
             : topFact,
           finalSaleFact?.text
-            ? "Adjustable bases and motion bases are final sale once opened or delivered."
+            ? "Adjustable bases, furniture, and accessories are final sale."
             : trialStartFact?.text || "",
+          "If you are unsure, spend the most test time on the mattress itself before checkout.",
         ]),
         grounded: true,
       };
@@ -1384,10 +1385,13 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     return {
       reply: joinUniqueSentences([
         trialFact?.text
-          ? "The return information says mattresses can be returned or exchanged once during the 100-night trial."
+          ? "Mattresses can be returned or exchanged once during the 100-night sleep trial."
           : topFact,
+        finalSaleFact?.text
+          ? "Adjustable bases, furniture, and accessories are final sale."
+          : "",
         mattressOnlyFact?.text
-          ? "The mattress needs to stay in good condition, and refunds usually process 3 to 5 business days after pickup."
+          ? "If you are unsure, spend the most test time on the mattress itself before checkout."
           : refundFact?.text || "",
       ]),
       grounded: true,
@@ -1399,6 +1403,11 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     const setupFact = findFact(facts, ["white-glove", "setup", "old mattress removal", "assembly"]);
     const schedulingFact = findFact(facts, ["text or email", "track", "reschedule", "scheduling"]);
     const feeFact = findFact(facts, ["free for orders", "delivery fee", "qualifying orders", "service area"]);
+    const setupQuery =
+      includesTerm(normalizedQuery, "set up") ||
+      includesTerm(normalizedQuery, "setup") ||
+      includesTerm(normalizedQuery, "white glove") ||
+      includesTerm(normalizedQuery, "old mattress");
 
     if (includesTerm(normalizedQuery, "how much") || includesTerm(normalizedQuery, "cost") || includesTerm(normalizedQuery, "fee")) {
       return {
@@ -1409,6 +1418,18 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
           timingFact?.text
             ? "Standard delivery usually runs 3 to 7 business days from purchase, depending on location and availability."
             : schedulingFact?.text || "",
+        ]),
+        grounded: true,
+      };
+    }
+
+    if (setupQuery) {
+      return {
+        reply: joinUniqueSentences([
+          timingFact?.text
+            ? "Delivery uses trusted local carriers and usually runs 3 to 7 business days."
+            : topFact,
+          "White-glove setup and old mattress removal may be available when that delivery option is shown for your order.",
         ]),
         grounded: true,
       };
@@ -1430,10 +1451,13 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
 
     return {
       reply: joinUniqueSentences([
-        "Delivery usually runs 3 to 7 business days through trusted local carriers.",
+        timingFact?.text
+          ? "Orders are delivered through trusted local carriers, with standard delivery usually running 3 to 7 business days from purchase, depending on location and availability."
+          : topFact,
         setupFact?.text
-          ? "White-glove setup and old mattress removal are also available when needed."
+          ? "White-glove setup and old mattress removal are available when that service fits the order."
           : schedulingFact?.text || "",
+        "Before checkout, confirm the delivery option shown for your order.",
       ]),
       grounded: true,
     };
@@ -1601,11 +1625,12 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     return {
       reply: joinUniqueSentences([
         monthlyFact?.text
-          ? "The current financing guidance says monthly payment options are available for qualifying purchases."
+          ? "Yes. Monthly payment options may be available, including 0% APR plans for qualified customers."
           : topFact,
         aprFact?.text
-          ? "It also mentions 0% APR plans for qualified customers."
+          ? "Available terms are shown at checkout, so review those before deciding."
           : minimumFact?.text || "",
+        "I will not guess approval, rates, or monthly payments here.",
       ]),
       grounded: true,
     };
@@ -1698,7 +1723,7 @@ function buildProductReply({ intent = "", products = [] } = {}) {
     case "product_question":
       return {
         reply: joinUniqueSentences([
-          "Got it - start with the details on the mattress you are viewing",
+          "Start with the details on the mattress you are viewing",
           "Then compare size, support, and base setup before you decide.",
         ]),
         grounded: true,
@@ -2043,6 +2068,11 @@ function queryLooksLikeRecommendationQuestion(query = "") {
     includesTerm(normalizedQuery, "explain my results") ||
     includesTerm(normalizedQuery, "explain the results") ||
     includesTerm(normalizedQuery, "why this pod") ||
+    includesTerm(normalizedQuery, "why is this pod recommended") ||
+    includesTerm(normalizedQuery, "why was this pod recommended") ||
+    includesTerm(normalizedQuery, "why is this recommended") ||
+    includesTerm(normalizedQuery, "why was this recommended") ||
+    includesTerm(normalizedQuery, "recommended for me") ||
     includesTerm(normalizedQuery, "why this snoozepod") ||
     includesTerm(normalizedQuery, "which mattress fits me") ||
     includesTerm(normalizedQuery, "which mattress is right for me") ||
@@ -2054,7 +2084,11 @@ function queryLooksLikeRecommendationQuestion(query = "") {
     includesTerm(normalizedQuery, "which pod should i try first") ||
     includesTerm(normalizedQuery, "what pod should i start with") ||
     includesTerm(normalizedQuery, "what did snoozer recommend") ||
-    includesTerm(normalizedQuery, "explain my recommendation")
+    includesTerm(normalizedQuery, "explain my recommendation") ||
+    includesTerm(normalizedQuery, "help me decide") ||
+    includesTerm(normalizedQuery, "do not know what to choose") ||
+    includesTerm(normalizedQuery, "dont know what to choose") ||
+    includesTerm(normalizedQuery, "don't know what to choose")
   );
 }
 
@@ -2118,6 +2152,11 @@ function buildCanonicalRecommendationReply({ query = "", canonicalRecommendation
 
   if (
     includesTerm(normalizedQuery, "why this pod") ||
+    includesTerm(normalizedQuery, "why is this pod recommended") ||
+    includesTerm(normalizedQuery, "why was this pod recommended") ||
+    includesTerm(normalizedQuery, "why is this recommended") ||
+    includesTerm(normalizedQuery, "why was this recommended") ||
+    includesTerm(normalizedQuery, "recommended for me") ||
     includesTerm(normalizedQuery, "why this snoozepod")
   ) {
     mode = "why_pod";
@@ -2143,6 +2182,13 @@ function buildCanonicalRecommendationReply({ query = "", canonicalRecommendation
     includesTerm(normalizedQuery, "what pod should i start with") ||
     includesTerm(normalizedQuery, "which bed should i test first") ||
     includesTerm(normalizedQuery, "what should i lie on first")
+  ) {
+    mode = "what_try_first";
+  } else if (
+    includesTerm(normalizedQuery, "help me decide") ||
+    includesTerm(normalizedQuery, "do not know what to choose") ||
+    includesTerm(normalizedQuery, "dont know what to choose") ||
+    includesTerm(normalizedQuery, "don't know what to choose")
   ) {
     mode = "what_try_first";
   }

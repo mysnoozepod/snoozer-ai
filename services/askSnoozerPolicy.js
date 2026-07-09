@@ -633,10 +633,13 @@ function buildReturnsReply(raw, query) {
     return buildGroundedResult(
       joinReplyParts([
         buildPolicyLaneLead({ query, policyTopic: "return_policy" }),
-        "Mattresses come with a 100-night sleep trial and can be returned or exchanged one time within that window.",
-        "If you need to start a return, Snoozer or the store can help arrange pickup.",
+        "Mattresses can be returned or exchanged one time during the 100-night sleep trial.",
+        nonReturnable
+          ? "Adjustable bases, furniture, and accessories are final sale."
+          : "",
+        "If you are unsure, spend the most test time on the mattress itself before checkout.",
       ]),
-      `${overview}\n${startReturn}\n${exchangeSection}\n${trialStartSection}`.trim(),
+      `${overview}\n${nonReturnable}\n${startReturn}\n${exchangeSection}\n${trialStartSection}`.trim(),
       {
         fallback: buildFallbackPolicyReply("returns"),
         reason: "policy_answer_resolved",
@@ -694,7 +697,7 @@ function buildDeliveryReply(raw, query) {
       overview;
     if (timing) {
       return buildGroundedResult(
-        "Most orders arrive in about 3 to 7 business days, and scheduling is handled by text or email once the order is ready.",
+        "The current delivery guidance says most orders arrive in about 3 to 7 business days, and scheduling is handled by text or email once the order is ready. Before checkout, confirm the delivery option shown for your order.",
         timing,
         { fallback: buildFallbackPolicyReply("delivery") }
       );
@@ -703,7 +706,7 @@ function buildDeliveryReply(raw, query) {
 
   if (overview || options) {
     return buildGroundedResult(
-      "Orders are delivered through trusted local carriers, with standard delivery usually running 3 to 7 business days. White-glove setup and old mattress removal can also be added when needed.",
+      "Orders are delivered through trusted local carriers, with standard delivery usually running 3 to 7 business days. White-glove setup and old mattress removal can also be added when needed. Before checkout, confirm the delivery option shown for your order.",
       `${overview}\n${options}`.trim(),
       { fallback: buildFallbackPolicyReply("delivery") }
     );
@@ -809,7 +812,7 @@ function buildFinancingReply(raw, query) {
 
   if (replySection || keyFacts) {
     return buildGroundedResult(
-      "Flexible monthly payment options may be available, including 0% APR plans for qualified customers. Exact approval terms come from the financing provider.",
+      "Yes. Monthly payment options may be available, including 0% APR plans for qualified customers. Available terms are shown at checkout, so review those before deciding.",
       groundedBlock,
       { fallback: buildFallbackPolicyReply("financing") }
     );
