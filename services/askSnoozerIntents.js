@@ -470,8 +470,11 @@ const BACK_PAIN_TERMS = Object.freeze([
 
 const SIDE_SLEEPER_TERMS = Object.freeze([
   "side sleeper",
+  "side sleepers",
+  "side sleeping",
   "sleep on my side",
   "sleep on my side and",
+  "sleeping on my side",
 ]);
 
 const RESTLESS_SLEEP_TERMS = Object.freeze([

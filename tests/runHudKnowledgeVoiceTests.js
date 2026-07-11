@@ -146,8 +146,8 @@ async function testCoupleConflictPrefersDualComfort() {
   assert(Array.isArray(body.products) && body.products.length > 0, "expected HUD product cards");
   assert.strictEqual(body.products[0].handle, "12-dual-comfort-hybrid");
   assert(/dual comfort/i.test(String(body.reply || "")), "couple conflict reply should mention Dual Comfort");
-  assert(/different bodies|force one mattress feel/i.test(String(body.reply || "")), "couple conflict reply should explain the fit conflict");
-  assert(/queen or king/i.test(String(body.reply || "")), "couple conflict reply should ask for Queen or King");
+  assert(/motion separation/i.test(String(body.reply || "")), "couple conflict reply should separate partner movement from firmness");
+  assert(/different firmness|own feel/i.test(String(body.reply || "")), "couple conflict reply should explain the firmness conflict");
   assert(String(body.reply || "").length <= 220, "couple conflict reply should stay concise");
   assertNoBannedPhrases(body.reply, "couple conflict reply");
 }
@@ -187,7 +187,7 @@ async function testHotSleeperVoice() {
   assert.strictEqual(body.status, "ok");
   assert(/airflow|heat/i.test(String(body.reply || "")), "hot-sleeper reply should mention airflow or heat");
   assert(!/\bcools you|will keep you cool|guaranteed cooling\b/i.test(String(body.reply || "")), "hot-sleeper reply should not overclaim cooling");
-  assert(/side, back, or stomach|assessment/i.test(String(body.reply || "")), "hot-sleeper reply should ask the next useful question or point toward assessment");
+  assert(/temperature balance|heat build|breathable|full sleep setup/i.test(String(body.reply || "")), "hot-sleeper reply should focus on setup-level temperature guidance");
   assert(String(body.reply || "").length <= 220, "hot-sleeper reply should stay concise");
   assertNoBannedPhrases(body.reply, "hot-sleeper voice reply");
 }

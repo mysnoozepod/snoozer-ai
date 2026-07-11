@@ -244,12 +244,12 @@ async function testCanonicalRecommendationAnswer() {
     "reply should mention the canonical mattress title"
   );
   assert(
-    body.reply.includes("No Base"),
-    "reply should preserve explicit no-base intent"
+    !/no[-\s]?base/i.test(body.reply),
+    "reply should not expose no-base as customer-facing product copy"
   );
   assert(
-    body.reply.includes(resolved.normalizedAssessment.motionLabel),
-    "reply should mention the canonical motion label"
+    !/no[-\s]?motion/i.test(body.reply),
+    "reply should not expose no-motion as customer-facing product copy"
   );
   assert(
     /^(I would start with|Start with)/i.test(String(body.reply || "")),

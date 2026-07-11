@@ -92,11 +92,11 @@ function buildNoGuessReply(topic = "detail") {
     case "returns":
       return "I do not have the full approved return policy detail loaded yet, so I will not guess the terms. I can still help you get human support or continue with your recommendation.";
     case "delivery":
-      return "I do not have the full approved delivery detail loaded yet, so I will not guess the timing or fees. I can still help with product fit or get you to human support.";
+      return "I do not want to guess on delivery timing or fees. I can show you the delivery option available at checkout, or bring in a team member to confirm the details before you buy.";
     case "warranty":
       return "I do not have the full approved warranty detail loaded yet, so I will not guess the terms. I can still help with product fit or get you to human support.";
     case "financing":
-      return "I do not have the full approved financing detail loaded yet, so I will not guess the terms. I can still help with product fit or get you to human support.";
+      return "I do not want to guess on financing terms. The available options are shown at checkout, or I can bring in a team member if you want confirmation before you buy.";
     case "pricing":
       return "I do not have that approved pricing detail loaded yet, so I will not guess.";
     default:
@@ -167,7 +167,7 @@ function buildPolicyLaneLead({ query = "", policyTopic = "" } = {}) {
     normalizedQuery.includes("dont like") ||
     normalizedQuery.includes("don't like")
   ) {
-    return "Yes - that falls under the return policy.";
+    return "You can return or exchange your mattress within the 100-night sleep trial.";
   }
 
   if (
@@ -176,10 +176,10 @@ function buildPolicyLaneLead({ query = "", policyTopic = "" } = {}) {
     normalizedQuery.includes("mattress trial") ||
     normalizedQuery.includes("trial")
   ) {
-    return "Our sleep trial is handled through the return policy.";
+    return "Mattress purchases are covered by the sleep trial.";
   }
 
-  return "That falls under the return policy.";
+  return "The return policy applies to mattress trial questions.";
 }
 
 function presentCommerceResponse({ decision = {}, resolution = {} } = {}) {

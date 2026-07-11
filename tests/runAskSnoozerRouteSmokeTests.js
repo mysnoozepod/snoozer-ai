@@ -138,7 +138,8 @@ const ASK_SNOOZER_CASES = [
     id: "why-pod-recommended",
     message: "Why is this pod recommended for me?",
     body: { context: { assessment: buildCanonicalAssessment() } },
-    expectAny: ["SnoozePod 4", "12-inch All Foam", "No Base", "No Motion"],
+    expectAny: ["SnoozePod 4", "12-inch All Foam", "pressure", "support"],
+    mustNotInclude: ["No Base", "No Motion"],
   },
   {
     id: "mattress-recommendation",
@@ -165,16 +166,31 @@ const ASK_SNOOZER_CASES = [
     id: "financing",
     message: "Can I finance this?",
     expectAny: ["financing", "checkout", "terms", "monthly"],
+    mustNotInclude: ["0% APR"],
   },
   {
     id: "sleep-hot",
     message: "I sleep hot. What should I do?",
     expectAny: ["cooling", "heat", "breathable", "sleep setup"],
+    mustNotInclude: ["Tell me if you sleep side", "Tell me your usual sleep position"],
+  },
+  {
+    id: "side-sleeper",
+    message: "I sleep on my side. What should I look for?",
+    expectAny: ["pressure relief", "shoulders", "hips"],
+    mustNotInclude: ["firm bed"],
   },
   {
     id: "back-pain",
     message: "I have back pain. What should I look for?",
     expectAny: ["support", "stable", "diagnose", "lower back"],
+    mustNotInclude: ["cure", "guarantee"],
+  },
+  {
+    id: "partner-moves",
+    message: "My partner moves a lot. What matters?",
+    expectAny: ["motion separation", "different firmness", "choose their own feel"],
+    mustNotInclude: ["14-inch Hybrid gives each partner", "No Base", "No Motion"],
   },
   {
     id: "talk-human",
@@ -186,6 +202,7 @@ const ASK_SNOOZER_CASES = [
     message: "I do not know what to choose. Help me decide.",
     body: { context: { assessment: buildCanonicalAssessment() } },
     expectAny: ["SnoozePod", "assessment", "start", "test"],
+    mustNotInclude: ["No Base", "No Motion"],
   },
 ];
 
@@ -245,6 +262,10 @@ function assertAnswerQuality(path, testCase, body) {
     /ReferenceError/i,
     /OPENAI_TIMEOUT/i,
     /I understand\b/i,
+    /\bNo Base\b/i,
+    /\bNo Motion\b/i,
+    /\bno[-\s]?base\b/i,
+    /\bno[-\s]?motion\b/i,
   ];
   for (const pattern of banned) {
     assert(!pattern.test(answer), `${path} ${testCase.id} used banned phrasing: ${pattern}`);
@@ -268,6 +289,16 @@ function assertAnswerQuality(path, testCase, body) {
       testCase.expectAny.some((term) => lowerAnswer.includes(String(term).toLowerCase())),
       `${path} ${testCase.id} should mention one of: ${testCase.expectAny.join(", ")}. Actual: ${answer}`
     );
+  }
+
+  if (Array.isArray(testCase.mustNotInclude) && testCase.mustNotInclude.length) {
+    const lowerAnswer = answer.toLowerCase();
+    for (const term of testCase.mustNotInclude) {
+      assert(
+        !lowerAnswer.includes(String(term).toLowerCase()),
+        `${path} ${testCase.id} should not mention "${term}". Actual: ${answer}`
+      );
+    }
   }
 }
 

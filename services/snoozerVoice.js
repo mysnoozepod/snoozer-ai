@@ -63,10 +63,10 @@ function buildCoupleConflictVoice({
   const current = cleanVoiceText(currentTitle);
   return joinVoiceSentences(
     [
-      "For Queen or King, different bodies and different feels point to the couple-friendly Dual Comfort path",
+      "If your partner moves a lot, motion separation matters first",
       current && normalizeVoiceText(current) !== normalizeVoiceText(primary)
-        ? `This page is ${current}, but I would compare ${primary} first because it gives each partner room to solve firmness`
-        : `${primary} gives each partner room to solve firmness without forcing one shared feel`,
+        ? `This page is ${current}; for different firmness, compare ${primary} so each sleeper can choose their own feel`
+        : `For different firmness, compare ${primary} so each sleeper can choose their own feel`,
     ],
     3,
     maxChars
@@ -76,11 +76,11 @@ function buildCoupleConflictVoice({
 function buildBackPainVoice({ primaryTitle = "", maxChars = 220 } = {}) {
   return joinVoiceSentences(
     [
-      "For back support, start with support first, then judge comfort",
+      "A firm bed is not always the answer for back pain; support and pressure relief have to work together",
       primaryTitle
-        ? `${primaryTitle} is worth comparing if your hips and lower back feel supported without chasing the hardest bed`
-        : "Look for the setup that keeps your hips and lower back supported without making the bed feel stiff",
-      "I cannot diagnose pain, but I can help you compare which mattress feels most stable while you test.",
+        ? `Use your Rest Test on ${primaryTitle} to check whether your lower back and hips feel supported`
+        : "Use your Rest Test to check whether your lower back and hips feel supported",
+      "I cannot diagnose back pain, but I can help you compare support and comfort.",
     ],
     3,
     maxChars
@@ -95,9 +95,9 @@ function buildSleepHotVoice({
   return joinVoiceSentences(
     [
       primaryTitle
-        ? `Test airflow and heat buildup on ${primaryTitle} first`
-        : "If you sleep hot, test airflow and heat buildup first",
-      askSleepPosition ? "Tell me if you sleep side, back, or stomach and I can narrow the next pod." : "",
+        ? `Temperature balance matters, so test whether ${primaryTitle} lets heat build up around you or feels breathable over a few quiet minutes`
+        : "Temperature balance matters, so look at the full sleep setup: mattress feel, airflow, bedding, and cooling accessories",
+      askSleepPosition ? "Tell me your usual sleep position only if you have not taken the assessment yet." : "Do not expect one mattress to solve every heat issue by itself.",
     ],
     3,
     maxChars
@@ -107,10 +107,10 @@ function buildSleepHotVoice({
 function buildSideSleepingVoice({ primaryTitle = "", maxChars = 220 } = {}) {
   return joinVoiceSentences(
     [
-      "As a side sleeper, pressure relief at the shoulder and hip is the first thing to notice",
+      "Side sleepers usually need pressure relief first because shoulders and hips carry the most pressure",
       primaryTitle
-        ? `${primaryTitle} is worth comparing if it cushions those pressure points while keeping your spine from dipping`
-        : "Start with the setup that gives you contour at the shoulder and hip without letting your spine dip",
+        ? `Compare ${primaryTitle} for cushioning in those areas without letting your body sink too far out of alignment`
+        : "Compare the option that cushions those areas without letting your body sink too far out of alignment",
     ],
     2,
     maxChars
@@ -213,7 +213,7 @@ function buildFallbackGuidanceVoice({ maxChars = 220 } = {}) {
   return joinVoiceSentences(
     [
       "I do not want to guess without the right context",
-      "Tell me how you sleep, whether you share the bed, and whether you want motion or no base, and I will narrow the next step.",
+      "Tell me how you sleep, whether you share the bed, and whether you want an adjustable setup, and I will narrow the next step.",
     ],
     2,
     maxChars
@@ -233,8 +233,11 @@ function buildCanonicalRecommendationVoice({
 } = {}) {
   const topPod = cleanVoiceText(topPodName) || "your top SnoozePod";
   const mattress = cleanVoiceText(mattressTitle) || "your matched mattress";
-  const base = cleanVoiceText(baseTitle) || "No Base";
-  const motion = cleanVoiceText(motionLabel) || "No Motion";
+  const rawBase = cleanVoiceText(baseTitle);
+  const rawMotion = cleanVoiceText(motionLabel);
+  const base = /^no base$/i.test(rawBase) ? "" : rawBase;
+  const motion = /^no motion$/i.test(rawMotion) || /^none$/i.test(rawMotion) ? "" : rawMotion;
+  const safeSetup = [mattress, base, motion].filter(Boolean).join(" with ");
   const reason = cleanVoiceText(reasonSummary);
   const warning = cleanVoiceText(warningSummary);
   const nextNames = Array.isArray(nextPodNames)
@@ -246,26 +249,34 @@ function buildCanonicalRecommendationVoice({
 
   switch (mode) {
     case "why_pod":
-      intro = `${topPod} rose to the top because it lines up with ${reason || "your sleep setup"}`;
-      detail = `Your matched setup is ${mattress} with ${base} and ${motion}`;
+      intro = `${topPod}, featuring ${mattress}, matches ${reason || "the support and comfort needs from your assessment"}`;
+      detail = `Matched setup: ${safeSetup}. Start there, then compare the next pod`;
       break;
     case "which_mattress":
-      intro = `I would start with ${mattress}`;
-      detail = `In your results, that sits inside ${topPod} with ${base} and ${motion}${reason ? ` because it matches ${reason}` : ""}`;
+      intro = `I would start with ${mattress} on ${topPod}`;
+      detail = reason
+        ? `Test it for ${reason}, then notice whether your body can relax into the mattress without losing support`
+        : "Pay attention to whether your body can relax into the mattress without losing support";
       break;
     case "explain_results":
       intro = nextNames.length
         ? `Your test order starts with ${topPod}, then ${nextNames.join(", then ")}`
         : `Your first setup is ${topPod}`;
-      detail = `The core match is ${mattress} with ${base} and ${motion}${reason ? ` because it lines up with ${reason}` : ""}`;
+      detail = `The core match is ${safeSetup}${reason ? ` because it lines up with ${reason}` : ""}`;
+      break;
+    case "help_decide":
+      intro = "No worries - that is what I am here for";
+      detail = nextNames.length
+        ? `Start with ${topPod}, then compare ${nextNames.join(" and ")} while the feel is still fresh`
+        : `Start with ${topPod}, then tell me what feels best or worst`;
       break;
     case "what_try_first":
       intro = `Start with ${topPod}`;
-      detail = `That setup is ${mattress} with ${base} and ${motion}${reason ? ` because it lines up with ${reason}` : ""}`;
+      detail = `That starts with ${safeSetup}${reason ? ` because it lines up with ${reason}` : ""}`;
       break;
     default:
       intro = `I would start with ${topPod}`;
-      detail = `For you, that means ${mattress} with ${base} and ${motion}${reason ? ` because it lines up with ${reason}` : ""}`;
+      detail = `For you, that means ${safeSetup}${reason ? ` because it lines up with ${reason}` : ""}`;
       break;
   }
 
@@ -273,6 +284,7 @@ function buildCanonicalRecommendationVoice({
     [
       intro,
       detail,
+      mode === "help_decide" ? "Give me quick feedback after each pod and I will help narrow the tradeoff" : "",
       warning ? `One note: ${warning}` : "",
     ],
     3,

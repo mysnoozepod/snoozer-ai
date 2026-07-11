@@ -10,6 +10,7 @@ const {
   buildSnoozerVoiceReply,
   cleanVoiceText,
 } = require("./snoozerVoice");
+const { formatCustomerProductTitle } = require("./askSnoozerResponsePresenter");
 
 const MAX_REPLY_CHARS = 205;
 const MAX_FACTS = 3;
@@ -497,8 +498,7 @@ function queryLooksLikeBackSupportQuestion(query = "") {
   const normalizedQuery = normalizeAskSnoozerText(query);
   return (
     includesTerm(normalizedQuery, "back support") ||
-    includesTerm(normalizedQuery, "back pain") ||
-    includesTerm(normalizedQuery, "pressure relief")
+    includesTerm(normalizedQuery, "back pain")
   );
 }
 
@@ -509,7 +509,13 @@ function queryLooksLikeFirmnessQuestion(query = "") {
 
 function queryLooksLikeSideSleeperQuestion(query = "") {
   const normalizedQuery = normalizeAskSnoozerText(query);
-  return includesTerm(normalizedQuery, "side sleeper") || includesTerm(normalizedQuery, "side sleepers");
+  return (
+    includesTerm(normalizedQuery, "side sleeper") ||
+    includesTerm(normalizedQuery, "side sleepers") ||
+    includesTerm(normalizedQuery, "side sleeping") ||
+    includesTerm(normalizedQuery, "sleep on my side") ||
+    includesTerm(normalizedQuery, "sleeping on my side")
+  );
 }
 
 function queryLooksLikeDifferenceQuestion(query = "") {
@@ -1180,7 +1186,7 @@ function buildProductSpecificReply({
     return {
       reply: buildSnoozerVoiceReply("sleep_hot", {
         primaryTitle,
-        askSleepPosition: true,
+        askSleepPosition: false,
       }),
       grounded: true,
       sourceType,
@@ -1560,7 +1566,7 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
       return {
         reply: joinUniqueSentences([
           monthlyFact?.text
-            ? "The current financing guidance says monthly payment options are available, including 0% APR plans for qualified customers."
+            ? "The current financing guidance says flexible monthly payment options may be available for qualified customers, with current terms shown at checkout."
             : aprFact?.text || topFact,
           aprFact?.text && !/no money down/i.test(aprFact.text)
             ? "I do not see an exact no-money-down promise in the current financing guidance."
@@ -1625,11 +1631,9 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     return {
       reply: joinUniqueSentences([
         monthlyFact?.text
-          ? "Yes. Monthly payment options may be available, including 0% APR plans for qualified customers."
+          ? "Yes. Flexible financing and monthly payment options may be available for qualified customers, with current terms shown at checkout."
           : topFact,
-        aprFact?.text
-          ? "Available terms are shown at checkout, so review those before deciding."
-          : minimumFact?.text || "",
+        "Available terms are shown at checkout, so review those before deciding.",
         "I will not guess approval, rates, or monthly payments here.",
       ]),
       grounded: true,
@@ -1706,7 +1710,7 @@ function buildProductReply({ intent = "", products = [] } = {}) {
     case "sleep_hot":
       return {
         reply: buildSnoozerVoiceReply("sleep_hot", {
-          askSleepPosition: true,
+          askSleepPosition: false,
         }),
         grounded: true,
       };
@@ -1861,7 +1865,7 @@ const CANONICAL_REASON_LABELS = Object.freeze({
   requested_adjustable_base: "your adjustable-base choice",
   requested_storage_base: "your storage-base choice",
   requested_platform_base: "your platform-base choice",
-  requested_no_base: "your no-base choice",
+  requested_no_base: "",
   primary_mattress_exact: "exact mattress match",
   primary_mattress_family: "same mattress family match",
   requested_full_split: "your full-split motion choice",
@@ -1872,7 +1876,7 @@ const CANONICAL_REASON_LABELS = Object.freeze({
   firmness_firm_match: "firm comfort match",
   firmness_soft_match: "soft comfort match",
   fixture_size_match: "size match",
-  simple_non_motion_option: "simple no-motion setup",
+  simple_non_motion_option: "",
 });
 
 function queryLooksLikeBookedSessionQuestion(query = "") {
@@ -1933,21 +1937,35 @@ function buildCanonicalSetupSentence(canonicalRecommendation = null) {
 
   const mattressTitle =
     cleanVoiceText(canonical.primaryMattressTitle || "") ||
+    cleanVoiceText(formatCustomerProductTitle({
+      handle: canonical.primaryMattressHandle,
+      title: canonical.primaryMattressTitle || "",
+      catalogType: "mattress",
+    })) ||
     cleanVoiceText(canonical.primaryMattressHandle || "") ||
     "your matched mattress";
-  const baseTitle =
+  const rawBaseTitle =
     canonical.baseHandle == null
-      ? "No Base"
+      ? ""
       : cleanVoiceText(canonical.baseTitle || "") ||
+        cleanVoiceText(formatCustomerProductTitle({
+          handle: canonical.baseHandle,
+          title: canonical.baseTitle || "",
+          catalogType: "base",
+        })) ||
         cleanVoiceText(canonical.baseHandle || "") ||
         "your matched base";
-  const motionLabel =
+  const rawMotionLabel =
     cleanVoiceText(canonical.motionLabel || "") ||
     cleanVoiceText(canonical.normalizedAssessment?.motionLabel || "") ||
-    cleanVoiceText(canonical.motionKey || "") ||
-    "No Motion";
+    cleanVoiceText(canonical.motionKey || "");
+  const baseTitle = /^no base$/i.test(rawBaseTitle) ? "" : rawBaseTitle;
+  const motionLabel = /^no motion$/i.test(rawMotionLabel) || /^none$/i.test(rawMotionLabel)
+    ? ""
+    : rawMotionLabel;
+  const setupParts = [mattressTitle, baseTitle, motionLabel].filter(Boolean);
 
-  return `That setup is ${mattressTitle} with ${baseTitle} and ${motionLabel}`;
+  return `That setup starts with ${setupParts.join(" with ")}`;
 }
 
 function buildSessionPrepReply({ query = "", context = null, canonicalRecommendation = null } = {}) {
@@ -2132,19 +2150,32 @@ function buildCanonicalRecommendationReply({ query = "", canonicalRecommendation
     : [];
   const mattressTitle =
     cleanAnswerText(canonical.primaryMattressTitle || "") ||
+    cleanAnswerText(formatCustomerProductTitle({
+      handle: canonical.primaryMattressHandle,
+      title: canonical.primaryMattressTitle || "",
+      catalogType: "mattress",
+    })) ||
     cleanAnswerText(canonical.primaryMattressHandle || "") ||
     "your matched mattress";
-  const baseTitle =
+  const rawBaseTitle =
     canonical.baseHandle == null
-      ? "No Base"
+      ? ""
       : cleanAnswerText(canonical.baseTitle || "") ||
+        cleanAnswerText(formatCustomerProductTitle({
+          handle: canonical.baseHandle,
+          title: canonical.baseTitle || "",
+          catalogType: "base",
+        })) ||
         cleanAnswerText(canonical.baseHandle || "") ||
         "your matched base";
-  const motionLabel =
+  const rawMotionLabel =
     cleanAnswerText(canonical.motionLabel || "") ||
     cleanAnswerText(canonical.normalizedAssessment?.motionLabel || "") ||
-    cleanAnswerText(canonical.motionKey || "") ||
-    "No Motion";
+    cleanAnswerText(canonical.motionKey || "");
+  const baseTitle = /^no base$/i.test(rawBaseTitle) ? "" : rawBaseTitle;
+  const motionLabel = /^no motion$/i.test(rawMotionLabel) || /^none$/i.test(rawMotionLabel)
+    ? ""
+    : rawMotionLabel;
   const reasonSummary = formatCanonicalReasonLabels(canonical.reasonKeys);
   const warningSummary = Array.isArray(canonical.warnings) ? canonical.warnings.filter(Boolean)[0] || "" : "";
 
@@ -2190,7 +2221,7 @@ function buildCanonicalRecommendationReply({ query = "", canonicalRecommendation
     includesTerm(normalizedQuery, "dont know what to choose") ||
     includesTerm(normalizedQuery, "don't know what to choose")
   ) {
-    mode = "what_try_first";
+    mode = "help_decide";
   }
 
   const reply = buildCanonicalRecommendationVoice({

@@ -617,8 +617,8 @@
       "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_include": ["monthly payment", "0% apr", "qualified"],
-      "must_not_include": ["guaranteed approval", "no credit check", "i can point you in the right direction"]
+      "must_include": ["monthly payment", "qualified"],
+      "must_not_include": ["0% apr", "guaranteed approval", "no credit check", "i can point you in the right direction"]
     }
   },
   {
@@ -638,8 +638,8 @@
       "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_include": ["monthly payment", "0% apr"],
-      "must_not_include": ["i can point you in the right direction"]
+      "must_include": ["financing", "qualified", "checkout"],
+      "must_not_include": ["0% apr", "i can point you in the right direction"]
     }
   },
   {
@@ -659,7 +659,7 @@
       "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_include": ["monthly payment", "0% apr"],
+      "must_include": ["monthly payment", "qualified"],
       "must_not_include": ["guaranteed approval", "no credit check", "i can point you in the right direction"]
     }
   },
@@ -1540,7 +1540,7 @@
       "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
       "answer_facts_count_min": 1,
       "products": { "min": 1, "max": 1, "preferred_first_handle": "12-dual-comfort-hybrid" },
-      "must_include": ["different feels", "couple-friendly"]
+      "must_include": ["motion separation", "different firmness"]
     }
   },
   {
@@ -1705,7 +1705,7 @@
       "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
       "answer_facts_count_min": 1,
       "products": { "min": 1, "max": 1, "preferred_first_handle": "12-dual-comfort-hybrid" },
-      "must_include": ["couple-friendly", "different feels"]
+      "must_include": ["motion separation", "different firmness"]
     }
   },
   {
@@ -1825,7 +1825,8 @@
       "answer_source_any_of": ["s3_skill", "local_skill"],
       "answer_facts_count_min": 1,
       "products": { "min": 0, "max": 0 },
-      "must_include": ["monthly payment", "0% apr"]
+      "must_include": ["financing", "qualified", "checkout"],
+      "must_not_include": ["0% apr"]
     }
   },
   {
@@ -1844,7 +1845,7 @@
       "answer_source_any_of": ["s3_skill", "local_skill"],
       "answer_facts_count_min": 1,
       "products": { "min": 0, "max": 0 },
-      "must_include": ["monthly payment", "0% apr"]
+      "must_include": ["monthly payment", "qualified"]
     }
   },
   {
@@ -1863,7 +1864,7 @@
       "answer_source_any_of": ["s3_skill", "local_skill"],
       "answer_facts_count_min": 1,
       "products": { "min": 0, "max": 0 },
-      "must_include": ["monthly payment", "0% apr"],
+      "must_include": ["monthly payment", "qualified"],
       "must_not_include": ["return policy", "100-night"]
     }
   },
@@ -1960,7 +1961,7 @@
       "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
       "answer_facts_count_min": 1,
       "products": { "min": 1, "max": 1, "preferred_first_handle": "10-all-foam-mattress" },
-      "must_include": ["support first"],
+      "must_include": ["support", "pressure relief"],
       "must_not_include": ["cure", "heal", "treat"]
     }
   },
@@ -1996,7 +1997,7 @@
       "answer_source_any_of": ["shopify_product+s3_catalog", "shopify_product+fallback_catalog", "s3_knowledge", "local_knowledge"],
       "answer_facts_count_min": 1,
       "products": { "min": 1, "max": 3, "preferred_first_handle": "12-dual-comfort-hybrid" },
-      "must_include": ["couple-friendly"]
+      "must_include": ["motion separation", "different firmness"]
     }
   },
   {
@@ -2156,7 +2157,7 @@
       "answer_source_any_of": ["s3_skill", "local_skill"],
       "answer_facts_count_min": 1,
       "products": { "min": 0, "max": 0 },
-      "must_include": ["monthly payment", "0% apr"]
+      "must_include": ["monthly payment", "qualified"]
     }
   },
   {
@@ -2282,7 +2283,7 @@
       "accepted_intents": ["fallback", "default"],
       "confidence_label_min": "low",
       "products": { "min": 0, "max": 0 },
-      "must_include": ["how you sleep", "motion or no base"]
+      "must_include": ["how you sleep", "adjustable setup"]
     }
   },
   {

@@ -5,7 +5,6 @@ const { getLocalMirrorCandidates } = require("./knowledgeKeyAliases");
 const { loadPromptFromS3 } = require("./promptLoader");
 const {
   buildNoGuessReply,
-  buildPolicyLaneLead,
   joinReplyParts,
 } = require("./askSnoozerResponsePresenter");
 const {
@@ -422,6 +421,34 @@ function extractHints(raw) {
     }));
 }
 
+function shouldShowFinancingAprHint(query = "") {
+  const normalized = normalizeAskSnoozerText(query);
+  return [
+    "0% apr",
+    "apr",
+    "interest",
+    "rate",
+    "rates",
+    "synchrony",
+    "shop pay",
+    "affirm",
+    "provider",
+    "providers",
+  ].some((term) => normalized.includes(term));
+}
+
+function filterPolicyHintsForQuery(hints = [], { policySubtype = "", query = "" } = {}) {
+  const safeHints = Array.isArray(hints) ? hints : [];
+  if (String(policySubtype || "").trim() !== "financing" || shouldShowFinancingAprHint(query)) {
+    return safeHints;
+  }
+
+  return safeHints.filter((hint) => {
+    const text = normalizeAskSnoozerText(`${hint?.label || ""} ${hint?.value || ""}`);
+    return !text.includes("0% apr") && !text.includes("apr");
+  });
+}
+
 function extractSourceTitle(raw, fallbackKey = "") {
   const text = normalizeMarkdown(raw);
   const frontMatterTitle = text.match(/^\s*title:\s*(.+)$/im);
@@ -616,7 +643,7 @@ function buildReturnsReply(raw, query) {
     if (overview || eligibility || exchangeSection || trialStartSection) {
       return buildGroundedResult(
         joinReplyParts([
-          "Yes - that falls under the return policy.",
+          "You can return or exchange your mattress within the 100-night sleep trial.",
           "Mattresses come with a 100-night sleep trial and can be returned or exchanged one time within that window.",
           "The mattress needs to stay in good condition.",
         ]),
@@ -632,10 +659,10 @@ function buildReturnsReply(raw, query) {
   if (overview || startReturn || exchangeSection || trialStartSection) {
     return buildGroundedResult(
       joinReplyParts([
-        buildPolicyLaneLead({ query, policyTopic: "return_policy" }),
+        "You can return or exchange your mattress within the 100-night sleep trial.",
         "Mattresses can be returned or exchanged one time during the 100-night sleep trial.",
         nonReturnable
-          ? "Adjustable bases, furniture, and accessories are final sale."
+          ? "Motion bases, adjustable frames, bedding, pillows, and accessories are final sale once opened or delivered."
           : "",
         "If you are unsure, spend the most test time on the mattress itself before checkout.",
       ]),
@@ -796,15 +823,22 @@ function buildFinancingReply(raw, query) {
     !/no money down/i.test(groundedBlock)
   ) {
     return buildGroundedResult(
-      "I do not see an exact no-money-down promise in the approved financing detail. Monthly payment options and 0% APR plans may still be available for qualified customers.",
+      "I do not see an exact no-money-down promise in the approved financing detail. Flexible monthly payment options may be available for qualified customers and eligible purchases.",
       groundedBlock,
       { fallback: buildFallbackPolicyReply("financing") }
     );
   }
 
-  if (normalizedQuery.includes("monthly")) {
+  if (
+    normalizedQuery.includes("monthly") ||
+    normalizedQuery.includes("payment plan") ||
+    normalizedQuery.includes("payment plans") ||
+    normalizedQuery.includes("pay over time") ||
+    normalizedQuery.includes("pay later") ||
+    normalizedQuery.includes("payments")
+  ) {
     return buildGroundedResult(
-      "Monthly payment options may be available, and some shoppers may qualify for 0% APR plans. Exact approval terms and minimum purchase requirements come from the financing provider.",
+      "Pay over time and monthly payment options may be available for qualified customers and eligible purchases. Exact approval terms and minimum purchase requirements come from the financing provider.",
       groundedBlock,
       { fallback: buildFallbackPolicyReply("financing") }
     );
@@ -812,7 +846,7 @@ function buildFinancingReply(raw, query) {
 
   if (replySection || keyFacts) {
     return buildGroundedResult(
-      "Yes. Monthly payment options may be available, including 0% APR plans for qualified customers. Available terms are shown at checkout, so review those before deciding.",
+      "Yes, we offer flexible financing options for qualified customers and eligible purchases. The available options are shown at checkout, so you can review them before making a decision.",
       groundedBlock,
       { fallback: buildFallbackPolicyReply("financing") }
     );
@@ -1040,7 +1074,7 @@ async function resolveAskSnoozerPolicyAnswer({ query = "", traceId = "", timeout
     return {
       policySubtype,
       reply: grounded.reply,
-      chips: extractHints(skillMatch.raw),
+      chips: filterPolicyHintsForQuery(extractHints(skillMatch.raw), { policySubtype, query }),
       retrieved: true,
       source: skillMatch.source,
       key: skillMatch.key,
@@ -1113,7 +1147,9 @@ async function resolveAskSnoozerPolicySources({ query = "", traceId = "", timeou
   return {
     policySubtype,
     sources,
-    chips: skillMatch?.raw ? extractHints(skillMatch.raw) : [],
+    chips: skillMatch?.raw
+      ? filterPolicyHintsForQuery(extractHints(skillMatch.raw), { policySubtype, query })
+      : [],
     retrieved: sources.length > 0,
     source: primary?.source_type || "fallback",
     key: primary?.source_key || "",
