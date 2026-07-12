@@ -680,7 +680,7 @@
       "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_include": ["100-night", "returned or exchanged"],
+      "must_include": ["100-night", "return or exchange"],
       "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
@@ -722,7 +722,7 @@
       "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_include": ["100-night", "returned or exchanged"],
+      "must_include": ["100-night", "return or exchange"],
       "must_not_include": ["i can point you in the right direction", "current policy or checkout information"]
     }
   },
@@ -761,7 +761,7 @@
       "answer_facts_count_min": 1,
       "confidence_label_min": "high",
       "products": { "min": 0, "max": 0 },
-      "must_include": ["100-night", "returned or exchanged"],
+      "must_include": ["100-night", "return or exchange"],
       "must_not_include": ["current policy or checkout information", "i can point you in the right direction"]
     }
   },
@@ -1393,7 +1393,7 @@
       "answer_source_any_of": ["s3_policy", "local_policy"],
       "answer_facts_count_min": 1,
       "products": { "min": 0, "max": 0 },
-      "must_include": ["100-night", "returned or exchanged"]
+      "must_include": ["100-night", "return or exchange"]
     }
   },
   {

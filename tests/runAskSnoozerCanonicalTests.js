@@ -275,7 +275,9 @@ async function testCanonicalExplanationAnswer() {
     includePods: true,
   });
   const topPod = resolved.pods.find((pod) => pod.podId === resolved.recommendation.topPodId);
-  const baseTitle = getProductTitle(resolved, resolved.recommendation.baseHandle);
+  const mattressTitle = normalizeCustomerFacingTitle(
+    getProductTitle(resolved, resolved.recommendation.primaryMattressHandle)
+  );
 
   const body = await invokeAskSnoozer({
     message: "Why this pod?",
@@ -296,13 +298,10 @@ async function testCanonicalExplanationAnswer() {
     "explanation reply should mention the canonical top pod name"
   );
   assert(
-    body.reply.includes(baseTitle),
-    "explanation reply should mention the canonical base title"
+    body.reply.includes(mattressTitle),
+    "explanation reply should mention the canonical mattress title"
   );
-  assert(
-    body.reply.includes(resolved.normalizedAssessment.motionLabel),
-    "explanation reply should mention the canonical motion label"
-  );
+  assert(!/exact mattress match|matched setup|back or stomach sleeper support/i.test(body.reply), "explanation reply should avoid internal labels");
   assertNoBannedPhrases(body.reply, "canonical explanation reply");
 }
 

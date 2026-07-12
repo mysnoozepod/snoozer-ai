@@ -139,13 +139,14 @@ const ASK_SNOOZER_CASES = [
     message: "Why is this pod recommended for me?",
     body: { context: { assessment: buildCanonicalAssessment() } },
     expectAny: ["SnoozePod 4", "12-inch All Foam", "pressure", "support"],
-    mustNotInclude: ["No Base", "No Motion"],
+    mustNotInclude: ["No Base", "No Motion", "exact mattress match", "matched setup"],
   },
   {
     id: "mattress-recommendation",
     message: "What mattress do you recommend for me?",
     body: { context: { assessment: buildCanonicalAssessment() } },
     expectAny: ["12-inch All Foam", "SnoozePod 4"],
+    mustNotInclude: ["No Base", "No Motion", "matched setup"],
   },
   {
     id: "compare-top-mattresses",
@@ -156,6 +157,7 @@ const ASK_SNOOZER_CASES = [
     id: "return-policy",
     message: "What is your return policy?",
     expectAny: ["100-night", "trial", "final sale", "mattress"],
+    mustNotInclude: ["Yes, that falls under the return policy"],
   },
   {
     id: "delivery",
@@ -189,8 +191,8 @@ const ASK_SNOOZER_CASES = [
   {
     id: "partner-moves",
     message: "My partner moves a lot. What matters?",
-    expectAny: ["motion separation", "different firmness", "choose their own feel"],
-    mustNotInclude: ["14-inch Hybrid gives each partner", "No Base", "No Motion"],
+    expectAny: ["motion separation", "12-inch Dual Comfort", "different firmness"],
+    mustNotInclude: ["14-inch Hybrid gives each partner", "14-inch Hybrid lets each", "14-inch Hybrid so each sleeper", "No Base", "No Motion"],
   },
   {
     id: "talk-human",
@@ -201,8 +203,8 @@ const ASK_SNOOZER_CASES = [
     id: "help-decide",
     message: "I do not know what to choose. Help me decide.",
     body: { context: { assessment: buildCanonicalAssessment() } },
-    expectAny: ["SnoozePod", "assessment", "start", "test"],
-    mustNotInclude: ["No Base", "No Motion"],
+    expectAny: ["SnoozePod", "lower-back support", "shoulder", "hip", "best or worst"],
+    mustNotInclude: ["No Base", "No Motion", "matched setup"],
   },
 ];
 
@@ -262,6 +264,9 @@ function assertAnswerQuality(path, testCase, body) {
     /ReferenceError/i,
     /OPENAI_TIMEOUT/i,
     /I understand\b/i,
+    /exact mattress match/i,
+    /matched setup/i,
+    /back or stomach sleeper support/i,
     /\bNo Base\b/i,
     /\bNo Motion\b/i,
     /\bno[-\s]?base\b/i,
@@ -299,6 +304,16 @@ function assertAnswerQuality(path, testCase, body) {
         `${path} ${testCase.id} should not mention "${term}". Actual: ${answer}`
       );
     }
+  }
+
+  if (/return-policy/i.test(testCase.id)) {
+    const returnExchangeCount = (answer.match(/return(?:ed)? or exchang(?:e|ed)/gi) || []).length;
+    assert(returnExchangeCount <= 1, `${path} ${testCase.id} duplicated return/exchange phrasing. Actual: ${answer}`);
+    assert(!/falls under the return policy/i.test(answer), `${path} ${testCase.id} used awkward return-policy opener`);
+  }
+
+  if (/side-sleeper/i.test(testCase.id)) {
+    assert(!/\.\.\.$/.test(answer), `${path} ${testCase.id} should not be backend-truncated. Actual: ${answer}`);
   }
 }
 

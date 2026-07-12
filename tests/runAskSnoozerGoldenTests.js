@@ -176,6 +176,10 @@ function validateGuardrails(payload, failures) {
     addFailure(failures, "response_contract_break", "Reply contains internal/debug text");
   }
 
+  if (/exact mattress match|matched setup|back or stomach sleeper support|\bNo Base\b|\bNo Motion\b/i.test(reply)) {
+    addFailure(failures, "internal_language", "Reply contains internal setup or recommendation language");
+  }
+
   if (/product_id|variant_id/i.test(visibleText)) {
     addFailure(failures, "response_contract_break", "Visible text exposes internal product identifiers");
   }

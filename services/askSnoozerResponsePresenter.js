@@ -167,7 +167,7 @@ function buildPolicyLaneLead({ query = "", policyTopic = "" } = {}) {
     normalizedQuery.includes("dont like") ||
     normalizedQuery.includes("don't like")
   ) {
-    return "You can return or exchange your mattress within the 100-night sleep trial.";
+    return "You can return or exchange your mattress one time during the 100-night sleep trial.";
   }
 
   if (

@@ -624,7 +624,6 @@ function buildReturnsReply(raw, query) {
     if (overview || refundSection) {
       return buildGroundedResult(
         joinReplyParts([
-          "Our sleep trial is handled through the return policy.",
           "Mattresses come with a 100-night sleep trial and can be returned or exchanged one time within that window.",
           "Refunds are usually processed within 3 to 5 business days after pickup.",
         ]),
@@ -643,8 +642,7 @@ function buildReturnsReply(raw, query) {
     if (overview || eligibility || exchangeSection || trialStartSection) {
       return buildGroundedResult(
         joinReplyParts([
-          "You can return or exchange your mattress within the 100-night sleep trial.",
-          "Mattresses come with a 100-night sleep trial and can be returned or exchanged one time within that window.",
+          "You can return or exchange your mattress one time during the 100-night sleep trial.",
           "The mattress needs to stay in good condition.",
         ]),
         `${overview}\n${eligibility}\n${exchangeSection}\n${trialStartSection}`.trim(),
@@ -659,12 +657,10 @@ function buildReturnsReply(raw, query) {
   if (overview || startReturn || exchangeSection || trialStartSection) {
     return buildGroundedResult(
       joinReplyParts([
-        "You can return or exchange your mattress within the 100-night sleep trial.",
-        "Mattresses can be returned or exchanged one time during the 100-night sleep trial.",
+        "You can return or exchange your mattress one time during the 100-night sleep trial.",
         nonReturnable
           ? "Motion bases, adjustable frames, bedding, pillows, and accessories are final sale once opened or delivered."
           : "",
-        "If you are unsure, spend the most test time on the mattress itself before checkout.",
       ]),
       `${overview}\n${nonReturnable}\n${startReturn}\n${exchangeSection}\n${trialStartSection}`.trim(),
       {

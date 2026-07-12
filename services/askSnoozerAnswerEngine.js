@@ -661,6 +661,27 @@ function inferProductProfile(handle = "") {
   };
 }
 
+function findDualComfortEntry(entries = []) {
+  return (Array.isArray(entries) ? entries : []).find((entry) => {
+    const handle = String(entry?.handle || "").trim().toLowerCase();
+    return inferProductProfile(handle).isDualComfort;
+  }) || null;
+}
+
+function factsSupportMotionTransfer(facts = []) {
+  return (Array.isArray(facts) ? facts : []).some((fact) => {
+    const text = cleanAnswerText(fact?.text || fact || "").toLowerCase();
+    return (
+      text.includes("motion isolation") ||
+      text.includes("motion transfer") ||
+      text.includes("motion separation") ||
+      text.includes("partner move") ||
+      text.includes("share the bed") ||
+      text.includes("toss-and-turn")
+    );
+  });
+}
+
 function extractAvailableSizes(entry = null) {
   if (!entry?.product || !Array.isArray(entry.product.variants)) return [];
   const seen = new Set();
@@ -928,6 +949,10 @@ function buildProductSpecificReply({
 
   const primaryTitle = cleanAnswerText(primary.title || primary.label || "");
   const currentTitle = cleanAnswerText(currentEntry?.title || currentEntry?.label || "");
+  const dualComfortEntry = findDualComfortEntry(entries);
+  const dualComfortTitle =
+    cleanAnswerText(dualComfortEntry?.title || dualComfortEntry?.label || "") ||
+    "12-inch Dual Comfort Hybrid mattress";
   const primaryProfile = inferProductProfile(primary.handle);
   const primarySizes = extractAvailableSizes(primary);
   const sourceType = productContext?.answerSourceType || "shopify_product";
@@ -946,6 +971,7 @@ function buildProductSpecificReply({
       order: index,
     }))
   ).map((fact) => fact.text);
+  const supportsMotionTransfer = factsSupportMotionTransfer(factTexts);
 
   const bundleReply = buildBundlePricingReply({
     query,
@@ -1111,6 +1137,9 @@ function buildProductSpecificReply({
       comparisonReply = joinUniqueSentences([
         buildSnoozerVoiceReply("couple_conflict", {
           primaryTitle: cleanAnswerText(first.title || ""),
+          dualComfortTitle: cleanAnswerText(first.title || ""),
+          motionTitle: cleanAnswerText(second.title || ""),
+          supportsMotionTransfer,
           sizeLabel,
           maxChars: 150,
         }),
@@ -1121,6 +1150,9 @@ function buildProductSpecificReply({
         `${cleanAnswerText(first.title || "")} is the cleaner shared-feel hybrid comparison if you want lift and airflow.`,
         buildSnoozerVoiceReply("couple_conflict", {
           primaryTitle: cleanAnswerText(second.title || ""),
+          dualComfortTitle: cleanAnswerText(second.title || ""),
+          motionTitle: cleanAnswerText(first.title || ""),
+          supportsMotionTransfer,
           sizeLabel,
           maxChars: 150,
         }),
@@ -1168,15 +1200,21 @@ function buildProductSpecificReply({
   }
 
   if (intent === "couple_conflict" || queryLooksLikeCouplesQuestion(normalizedQuery)) {
+    const coupleSourceKey = Array.from(
+      new Set([primary.handle, dualComfortEntry?.handle].map((handle) => cleanAnswerText(handle || "")).filter(Boolean))
+    ).join(",");
     return {
       reply: buildSnoozerVoiceReply("couple_conflict", {
         primaryTitle,
         currentTitle,
+        dualComfortTitle,
+        motionTitle: primaryTitle,
+        supportsMotionTransfer,
         sizeLabel,
       }),
       grounded: true,
       sourceType,
-      sourceKey,
+      sourceKey: coupleSourceKey || sourceKey,
       facts: factTexts.length ? factTexts.slice(0, 2) : [`${primaryTitle} is positioned for couples or motion isolation.`],
       strategy: "source_summary",
     };
@@ -1231,6 +1269,9 @@ function buildProductSpecificReply({
     if (primaryProfile.isDualComfort) {
       differenceReply = buildSnoozerVoiceReply("couple_conflict", {
         primaryTitle,
+        dualComfortTitle,
+        motionTitle: primaryTitle,
+        supportsMotionTransfer,
         sizeLabel,
         maxChars: 170,
       });
@@ -1262,6 +1303,9 @@ function buildProductSpecificReply({
       firmnessReply = buildSnoozerVoiceReply("couple_conflict", {
         primaryTitle,
         currentTitle,
+        dualComfortTitle,
+        motionTitle: currentTitle || primaryTitle,
+        supportsMotionTransfer,
         sizeLabel,
       });
     } else if (primaryProfile.isHybrid) {
@@ -1327,7 +1371,7 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     if (doesntLikeMattressQuery) {
       return {
         reply: joinUniqueSentences([
-          "The return information says mattresses can be returned or exchanged once during the 100-night trial.",
+          "You can return or exchange your mattress one time during the 100-night sleep trial.",
           "The mattress needs to stay in good condition.",
           refundFact?.text
             ? "Refunds are usually issued within 3 to 5 business days after pickup."
@@ -1344,7 +1388,7 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
             ? "We offer a 100-night sleep trial on mattress purchases."
             : topFact,
           finalSaleFact?.text
-            ? "Adjustable bases, furniture, and accessories are final sale."
+            ? "Motion bases, adjustable frames, bedding, pillows, and accessories are final sale."
             : trialStartFact?.text || "",
           "If you are unsure, spend the most test time on the mattress itself before checkout.",
         ]),
@@ -1378,7 +1422,7 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
       return {
         reply: joinUniqueSentences([
           trialFact?.text
-            ? "The return information says mattresses can be returned or exchanged once during the 100-night trial."
+            ? "You can return or exchange your mattress one time during the 100-night sleep trial."
             : topFact,
           refundFact?.text
             ? "Refunds are usually issued within 3 to 5 business days after pickup."
@@ -1391,10 +1435,10 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
     return {
       reply: joinUniqueSentences([
         trialFact?.text
-          ? "Mattresses can be returned or exchanged once during the 100-night sleep trial."
+          ? "You can return or exchange your mattress one time during the 100-night sleep trial."
           : topFact,
         finalSaleFact?.text
-          ? "Adjustable bases, furniture, and accessories are final sale."
+          ? "Motion bases, adjustable frames, bedding, pillows, and accessories are final sale."
           : "",
         mattressOnlyFact?.text
           ? "If you are unsure, spend the most test time on the mattress itself before checkout."
@@ -1858,7 +1902,7 @@ function buildFallbackReply() {
 const CANONICAL_REASON_LABELS = Object.freeze({
   split_requires_dual: "split-motion support",
   firmness_prefers_hybrid: "hybrid support preference",
-  back_or_stomach_support: "back or stomach sleeper support",
+  back_or_stomach_support: "stable support for the way you sleep",
   side_pressure_relief: "side pressure relief",
   default_support: "balanced support",
   motion_requires_adjustable: "motion setup compatibility",
@@ -1866,7 +1910,7 @@ const CANONICAL_REASON_LABELS = Object.freeze({
   requested_storage_base: "your storage-base choice",
   requested_platform_base: "your platform-base choice",
   requested_no_base: "",
-  primary_mattress_exact: "exact mattress match",
+  primary_mattress_exact: "strongest fit from your assessment",
   primary_mattress_family: "same mattress family match",
   requested_full_split: "your full-split motion choice",
   requested_half_split: "your half-split motion choice",
