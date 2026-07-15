@@ -1,7 +1,7 @@
 // src/components/SnoozerPanel.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { canOpenCheckoutUrl } from "@/device/deviceActionGuards";
+import { canOpenCheckoutUrl, filterDeviceActions } from "@/device/deviceActionGuards";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { api } from "@/lib/api";
 import {
@@ -694,8 +694,11 @@ export function SnoozerHUD({
   }, [sz.avatarImg, presentationMode, useGlass]);
 
   const normalizedActions = useMemo(() => {
-    return Array.isArray(controlledActions) ? controlledActions.slice(0, 12) : [];
-  }, [controlledActions]);
+    return filterDeviceActions(
+      device,
+      Array.isArray(controlledActions) ? controlledActions : []
+    ).slice(0, 12);
+  }, [controlledActions, device]);
 
   return (
     <div className={outerClass}>

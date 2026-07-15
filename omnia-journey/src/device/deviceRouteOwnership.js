@@ -5,6 +5,7 @@ import {
   CHECKOUT_LOUNGE_MESSAGE,
   canInitiateCheckout,
   canViewCart,
+  canViewFinancing,
   getCartRouteFallback,
   getCheckoutRouteFallback,
 } from "./deviceActionGuards.js";
@@ -120,6 +121,16 @@ export function getDeviceRouteDecision(device, pathname) {
     return redirect(fallback.to, fallback.state, { reason: "cart_blocked" });
   }
 
+  if (route === "/financing") {
+    if (canViewFinancing(device)) return allow({ reason: "financing_authority" });
+    return redirect(device.defaultRoute || "/welcome", {
+      routeUnavailable: true,
+      attemptedPath: route,
+      deviceId: device.deviceId || null,
+      deviceMode: device.deviceMode || null,
+    }, { reason: "financing_blocked" });
+  }
+
   if (device.deviceMode === DEVICE_MODES.POD_IPAD) {
     const boundPodRoute = makePodRoute(device.podId);
     if (!boundPodRoute || !device.zoneId) {
@@ -192,4 +203,3 @@ export function getDeviceRouteDecision(device, pathname) {
 
   return allow({ reason: "allowed_route" });
 }
-

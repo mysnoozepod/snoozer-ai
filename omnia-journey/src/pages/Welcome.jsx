@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, CircleHelp, LockKeyhole, ShieldCheck } from "lucide-react";
 
+import { canUseAskSnoozer } from "@/device/deviceActionGuards";
+import { useDeviceMode } from "@/device/useDeviceMode";
 import { getAssessment } from "@/lib/api";
 import { getAccessCode, setAccessCode } from "@/state/sessionStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
@@ -29,11 +31,13 @@ function normalizeAccessCode(raw) {
 
 export default function Welcome() {
   const navigate = useNavigate();
+  const device = useDeviceMode();
   const { noteUserInteraction, runHudAction } = useShowroomHud();
 
   const [code, setCode] = useState(() => getAccessCode() || "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const canOpenAskSnoozer = canUseAskSnoozer(device);
 
   const hasStartedRef = useRef(false);
   const transitionTimerRef = useRef(null);
@@ -219,10 +223,18 @@ export default function Welcome() {
                   <ShowroomInlineAction
                     icon={CircleHelp}
                     label="Forgot your Snooze Code?"
-                    description="Open Ask Snoozer for help."
+                    description={
+                      canOpenAskSnoozer
+                        ? "Open Ask Snoozer for help."
+                        : "A sleep specialist can help you recover it."
+                    }
                     onClick={() => {
                       noteUserInteraction?.();
-                      navigate("/ask-snoozer", { state: { from: "/welcome" } });
+                      if (canOpenAskSnoozer) {
+                        navigate("/ask-snoozer", { state: { from: "/welcome" } });
+                        return;
+                      }
+                      setError("A sleep specialist can help you recover your Snooze Code.");
                     }}
                   />
                 </div>

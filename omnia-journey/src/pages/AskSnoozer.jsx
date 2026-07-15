@@ -11,8 +11,12 @@ import {
 } from "lucide-react";
 
 import { useSnoozer } from "@/Layout";
-import { canViewCart } from "@/device/deviceActionGuards";
-import { matchesAnyRoutePattern } from "@/device/deviceRoutePatterns";
+import {
+  canNavigateTo,
+  canViewCart,
+  filterDeviceActions,
+  isDeviceActionAllowed,
+} from "@/device/deviceActionGuards";
 import { makePodRoute } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { sendAskSnoozerMessage } from "@/lib/snoozer/askSnoozerPage";
@@ -186,10 +190,7 @@ export default function AskSnoozer() {
     [snoozepod]
   );
   const showCommerceAffordances = canViewCart(device);
-  const canNavigateToResults = matchesAnyRoutePattern(
-    "/results",
-    device?.allowedRoutePatterns || []
-  );
+  const canNavigateToResults = canNavigateTo(device, "/results");
   const devicePodRoute = makePodRoute(device?.podId) || "/pod/pod-1";
   const referrerRoute =
     location.state && typeof location.state === "object"
@@ -244,6 +245,25 @@ export default function AskSnoozer() {
     }
   }, [location.key, location.state]);
 
+  function filterResponseChips(chips = []) {
+    if (!Array.isArray(chips)) return [];
+    return chips.filter((chip) => {
+      if (chip?.type === "route" && chip?.target) {
+        return canNavigateTo(device, chip.target);
+      }
+
+      if (chip?.type === "action") {
+        return isDeviceActionAllowed(device, chip);
+      }
+
+      if (chip?.target) {
+        return isDeviceActionAllowed(device, chip);
+      }
+
+      return true;
+    });
+  }
+
   async function sendMessage(rawMessage) {
     const content = String(rawMessage || "").trim();
     if (!content || pending) return;
@@ -285,8 +305,8 @@ export default function AskSnoozer() {
         createdAt:
           (typeof response?.reply === "object" && response?.reply?.createdAt) || nowIso(),
         status: response?.status || "answered",
-        chips: Array.isArray(response?.chips) ? response.chips : [],
-        actions: Array.isArray(response?.actions) ? response.actions : [],
+        chips: filterResponseChips(response?.chips),
+        actions: filterDeviceActions(device, response?.actions),
         recommendations: Array.isArray(response?.recommendations)
           ? response.recommendations
           : [],
@@ -331,6 +351,8 @@ export default function AskSnoozer() {
   function handleAction(action) {
     noteUserInteraction?.();
 
+    if (!isDeviceActionAllowed(device, action)) return;
+
     switch (action?.type) {
       case "navigate":
         if (action.target) navigate(action.target);
@@ -357,11 +379,13 @@ export default function AskSnoozer() {
     noteUserInteraction?.();
 
     if (chip?.type === "route" && chip?.target) {
+      if (!canNavigateTo(device, chip.target)) return;
       navigate(chip.target);
       return;
     }
 
     if (chip?.type === "action") {
+      if (!isDeviceActionAllowed(device, chip)) return;
       handleAction({
         type: chip.value === "I need human help" ? "request_human" : "none",
         label: chip.label,

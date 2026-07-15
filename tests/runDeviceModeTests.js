@@ -85,6 +85,11 @@ async function run() {
   assert.equal(guards.canMutateCart(podResolution), true);
   assert.equal(guards.canInitiateCheckout(podResolution), false);
   assert.equal(guards.canOpenCheckoutUrl(podResolution), false);
+  assert.equal(guards.canViewFinancing(podResolution), false);
+  assert.equal(guards.canViewPodNavigation(podResolution, "/pod/pod-3"), true);
+  assert.equal(guards.canViewPodNavigation(podResolution, "/pod/pod-4"), false);
+  assert.equal(guards.canUseAskSnoozer(podResolution), true);
+  assert.equal(guards.canViewAdminDiagnostics(podResolution), false);
   assert.equal(guards.shouldShowCheckoutLoungeHandoff(podResolution), true);
   assert.deepEqual(
     guards.getCheckoutRouteFallback(podResolution, "/checkout/guest"),
@@ -112,6 +117,8 @@ async function run() {
   assert.equal(guards.canViewCart(devFallback), true);
   assert.equal(guards.canInitiateCheckout(devFallback), true);
   assert.equal(guards.canOpenCheckoutUrl(devFallback), true);
+  assert.equal(guards.canViewFinancing(devFallback), true);
+  assert.equal(guards.canViewAdminDiagnostics(devFallback), true);
 
   const productionMissing = registry.resolveDeviceConfig({
     environment: "production",
@@ -143,6 +150,10 @@ async function run() {
   assert.equal(guards.canMutateCart(checkoutDevice), true);
   assert.equal(guards.canInitiateCheckout(checkoutDevice), true);
   assert.equal(guards.canOpenCheckoutUrl(checkoutDevice), true);
+  assert.equal(guards.canViewFinancing(checkoutDevice), true);
+  assert.equal(guards.canViewPodNavigation(checkoutDevice), false);
+  assert.equal(guards.canUseAskSnoozer(checkoutDevice), false);
+  assert.equal(guards.canViewAdminDiagnostics(checkoutDevice), false);
   assert.equal(guards.getCheckoutRouteFallback(checkoutDevice, "/checkout/guest").allow, true);
   assert.equal(guards.getCheckoutRouteFallback(checkoutDevice, "/checkout/abc").allow, true);
 
@@ -156,6 +167,7 @@ async function run() {
   assert.equal(guards.canViewCart(sleepDevice), true);
   assert.equal(guards.canMutateCart(sleepDevice), true);
   assert.equal(guards.canInitiateCheckout(sleepDevice), false);
+  assert.equal(guards.canViewFinancing(sleepDevice), false);
   assert.equal(guards.shouldShowCheckoutLoungeHandoff(sleepDevice), true);
   assert.equal(guards.getCheckoutRouteFallback(sleepDevice, "/checkout/guest").to, "/cart");
 
@@ -169,6 +181,8 @@ async function run() {
   assert.equal(guards.canViewCart(askDevice), false);
   assert.equal(guards.canMutateCart(askDevice), false);
   assert.equal(guards.canInitiateCheckout(askDevice), false);
+  assert.equal(guards.canViewFinancing(askDevice), false);
+  assert.equal(guards.canUseAskSnoozer(askDevice), true);
   assert.equal(guards.getCartRouteFallback(askDevice, "/cart").to, "/ask-snoozer");
   assert.equal(guards.getCheckoutRouteFallback(askDevice, "/checkout/guest").to, "/ask-snoozer");
 
@@ -182,6 +196,8 @@ async function run() {
   assert.equal(guards.canViewCart(welcomeDevice), false);
   assert.equal(guards.canMutateCart(welcomeDevice), false);
   assert.equal(guards.canInitiateCheckout(welcomeDevice), false);
+  assert.equal(guards.canViewFinancing(welcomeDevice), false);
+  assert.equal(guards.canUseAskSnoozer(welcomeDevice), false);
   assert.equal(guards.getCartRouteFallback(welcomeDevice, "/cart").to, "/welcome");
   assert.equal(guards.getCheckoutRouteFallback(welcomeDevice, "/checkout/guest").to, "/welcome");
 
@@ -322,6 +338,10 @@ async function run() {
     "/ask-snoozer"
   );
   assert.equal(
+    routeOwnership.getDeviceRouteDecision(askDevice, "/financing").redirectTo,
+    "/ask-snoozer"
+  );
+  assert.equal(
     routeOwnership.getDeviceRouteDecision(askDevice, "/results").redirectTo,
     "/ask-snoozer"
   );
@@ -331,6 +351,11 @@ async function run() {
   );
   assert.equal(routeOwnership.getDeviceRouteDecision(checkoutDevice, "/cart").allow, true);
   assert.equal(routeOwnership.getDeviceRouteDecision(checkoutDevice, "/checkout/guest").allow, true);
+  assert.equal(routeOwnership.getDeviceRouteDecision(checkoutDevice, "/financing").allow, true);
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(pod1, "/financing").redirectTo,
+    "/pod/pod-1"
+  );
   assert.equal(
     routeOwnership.getDeviceRouteDecision(sleepDevice, "/sleep-essentials").unavailableKind,
     "future_route_not_implemented"
@@ -399,6 +424,32 @@ async function run() {
   assert.equal(
     routeOwnership.getDeviceRouteDecision(welcomeDevice, "/explore-dev").redirectTo,
     "/welcome"
+  );
+
+  const mixedActions = [
+    { type: "checkout", label: "Checkout" },
+    { type: "navigate", target: "/cart", label: "Cart" },
+    { type: "navigate", target: "/financing", label: "Financing" },
+    { type: "start_assessment", label: "Start assessment" },
+    { type: "navigate", target: "/pod/pod-1", label: "SnoozePod 1" },
+    { type: "request_human", label: "Talk to Human" },
+  ];
+
+  assert.deepEqual(
+    guards.filterDeviceActions(welcomeDevice, mixedActions).map((action) => action.label),
+    ["Start assessment", "Talk to Human"]
+  );
+  assert.deepEqual(
+    guards.filterDeviceActions(pod1, mixedActions).map((action) => action.label),
+    ["Cart", "SnoozePod 1", "Talk to Human"]
+  );
+  assert.deepEqual(
+    guards.filterDeviceActions(askDevice, mixedActions).map((action) => action.label),
+    ["Talk to Human"]
+  );
+  assert.deepEqual(
+    guards.filterDeviceActions(checkoutDevice, mixedActions).map((action) => action.label),
+    ["Checkout", "Cart", "Financing", "Talk to Human"]
   );
 
   console.log(

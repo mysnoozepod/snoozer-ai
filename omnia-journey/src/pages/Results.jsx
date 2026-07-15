@@ -12,7 +12,9 @@ import { api } from "@/lib/api";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import { getShopperId } from "@/state/sessionStore";
+import { canNavigateTo, canUseAskSnoozer } from "@/device/deviceActionGuards";
 import { makePodRoute } from "@/device/podRouteUtils";
+import { useDeviceMode } from "@/device/useDeviceMode";
 import {
   ArrowRight,
   CheckCircle2,
@@ -578,6 +580,7 @@ function TypingDots() {
 
 export default function Results() {
   const navigate = useNavigate();
+  const device = useDeviceMode();
   const { muted, replay, noteUserInteraction, runHudAction, setMuted, voiceState } =
     useShowroomHud();
 
@@ -906,10 +909,27 @@ export default function Results() {
   const openPodMode = useCallback(
     (podId) => {
       noteUserInteraction?.();
-      navigate(makePodRoute(podId) || "/pod/pod-1");
+      const route = makePodRoute(podId) || "/pod/pod-1";
+      if (canNavigateTo(device, route)) {
+        navigate(route);
+        return;
+      }
+
+      runHudAction("view_results", {
+        fallback: {
+          speech: `Head to SnoozePod ${podId} in the showroom when you are ready to test it.`,
+          captions: `Head to SnoozePod ${podId} in the showroom when you are ready to test it.`,
+          state: "speaking",
+          priority: "normal",
+          ttlMs: 4200,
+          actions: [],
+        },
+      }).catch(() => {});
     },
-    [navigate, noteUserInteraction]
+    [device, navigate, noteUserInteraction, runHudAction]
   );
+
+  const canOpenAskSnoozer = canUseAskSnoozer(device);
 
   const leadImageUrl = leadPod ? resolveImageUrl(leadPod) : "";
   const leadImageStatus = leadPod ? getImageStatus(leadPod) : "idle";
@@ -979,7 +999,10 @@ export default function Results() {
                           onClick={() => openPodMode(leadPodId)}
                           className="mt-4 inline-flex items-center justify-center gap-3 rounded-[18px] bg-[#1A66D2] px-5 py-3 text-sm font-black text-white shadow-[0_22px_46px_rgba(26,102,210,0.24)] transition hover:bg-[#1550A0]"
                         >
-                          Go to SnoozePod {leadPodId}
+                          {canNavigateTo(device, makePodRoute(leadPodId) || "/pod/pod-1")
+                            ? "Go to"
+                            : "Head to"}{" "}
+                          SnoozePod {leadPodId}
                           <ArrowRight className="h-5 w-5" />
                         </button>
                       </div>
@@ -1017,6 +1040,7 @@ export default function Results() {
                                 recommendedRank: recommendedRankByPodId[id] || 0,
                                 recommendationMeta: recs?.meta || {},
                               })}
+                              canOpen={canNavigateTo(device, makePodRoute(id) || "/pod/pod-1")}
                               onOpen={() => openPodMode(id)}
                             />
                           );
@@ -1029,19 +1053,21 @@ export default function Results() {
 
               <ShowroomPanel className="p-3 md:p-3.5" tone="frost">
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,0.82fr)_minmax(0,1.28fr)] xl:items-center">
-                  <ResultsSupportAction
-                    icon={MessageSquare}
-                    title="Ask Snoozer"
-                    description="Get help or learn more."
-                    onClick={() => {
-                      noteUserInteraction?.();
-                      navigate("/ask-snoozer", {
-                        state: {
-                          from: "/results",
-                        },
-                      });
-                    }}
-                  />
+                  {canOpenAskSnoozer ? (
+                    <ResultsSupportAction
+                      icon={MessageSquare}
+                      title="Ask Snoozer"
+                      description="Get help or learn more."
+                      onClick={() => {
+                        noteUserInteraction?.();
+                        navigate("/ask-snoozer", {
+                          state: {
+                            from: "/results",
+                          },
+                        });
+                      }}
+                    />
+                  ) : null}
 
                   <ResultsSupportAction
                     icon={Headphones}
@@ -1049,11 +1075,29 @@ export default function Results() {
                     description="We’re here if you need us."
                     onClick={() => {
                       noteUserInteraction?.();
-                      navigate("/ask-snoozer", {
-                        state: {
-                          from: "/results",
+                      if (canOpenAskSnoozer) {
+                        navigate("/ask-snoozer", {
+                          state: {
+                            from: "/results",
+                            prefill: "I need human help.",
+                            autoSend: true,
+                          },
+                        });
+                        return;
+                      }
+
+                      runHudAction("view_results", {
+                        fallback: {
+                          speech:
+                            "A sleep specialist can help you from here. Keep your Snooze Code handy.",
+                          captions:
+                            "A sleep specialist can help you from here. Keep your Snooze Code handy.",
+                          state: "speaking",
+                          priority: "normal",
+                          ttlMs: 4200,
+                          actions: [],
                         },
-                      });
+                      }).catch(() => {});
                     }}
                   />
 
@@ -1073,6 +1117,7 @@ export default function Results() {
                               displayMattress={extractDisplayMattress(pod)}
                               imageUrl={resolveImageUrl(pod)}
                               imageStatus={getImageStatus(pod)}
+                              canOpen={canNavigateTo(device, makePodRoute(id) || "/pod/pod-1")}
                               onOpen={() => openPodMode(id)}
                             />
                           );
@@ -1201,14 +1246,16 @@ function SecondaryMatchStrip({
   displayMattress,
   imageUrl,
   imageStatus,
+  canOpen = true,
   onOpen,
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="flex items-center gap-2.5 rounded-[20px] border border-slate-200 bg-white p-2.5 text-left shadow-sm transition hover:border-indigo-100 hover:shadow-md"
-    >
+  const className = [
+    "flex items-center gap-2.5 rounded-[20px] border border-slate-200 bg-white p-2.5 text-left shadow-sm",
+    canOpen ? "transition hover:border-indigo-100 hover:shadow-md" : "",
+  ].join(" ");
+
+  const content = (
+    <>
       <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-xs font-black text-[#2f57e8]">
         {index}
       </div>
@@ -1225,7 +1272,23 @@ function SecondaryMatchStrip({
         </div>
         <div className="mt-0.5 text-[0.78rem] leading-4 text-slate-500">{displayMattress}</div>
       </div>
-      <ArrowRight className="h-4 w-4 shrink-0 text-[#2f57e8]" />
+      {canOpen ? (
+        <ArrowRight className="h-4 w-4 shrink-0 text-[#2f57e8]" />
+      ) : (
+        <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+          In showroom
+        </span>
+      )}
+    </>
+  );
+
+  if (!canOpen) {
+    return <div className={className}>{content}</div>;
+  }
+
+  return (
+    <button type="button" onClick={onOpen} className={className}>
+      {content}
     </button>
   );
 }
@@ -1237,14 +1300,16 @@ function CompareNextTile({
   imageUrl,
   imageStatus,
   reasonText,
+  canOpen = true,
   onOpen,
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="flex items-center gap-2.5 rounded-[20px] border border-slate-200 bg-white p-2.5 text-left shadow-sm transition hover:border-indigo-100 hover:shadow-md"
-    >
+  const className = [
+    "flex items-center gap-2.5 rounded-[20px] border border-slate-200 bg-white p-2.5 text-left shadow-sm",
+    canOpen ? "transition hover:border-indigo-100 hover:shadow-md" : "",
+  ].join(" ");
+
+  const content = (
+    <>
       <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-xs font-black text-[#2f57e8]">
         {index}
       </div>
@@ -1262,7 +1327,23 @@ function CompareNextTile({
         <div className="mt-0.5 text-[11px] font-semibold text-slate-600">{displayMattress}</div>
         <div className="mt-1 text-[11px] leading-4 text-slate-500">{reasonText}</div>
       </div>
-      <ArrowRight className="h-4 w-4 shrink-0 text-[#2f57e8]" />
+      {canOpen ? (
+        <ArrowRight className="h-4 w-4 shrink-0 text-[#2f57e8]" />
+      ) : (
+        <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+          In showroom
+        </span>
+      )}
+    </>
+  );
+
+  if (!canOpen) {
+    return <div className={className}>{content}</div>;
+  }
+
+  return (
+    <button type="button" onClick={onOpen} className={className}>
+      {content}
     </button>
   );
 }

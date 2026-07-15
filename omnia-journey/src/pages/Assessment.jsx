@@ -9,6 +9,8 @@ import {
   Timer,
 } from "lucide-react";
 import { getAssessmentQuestions, saveAssessment } from "@/lib/api";
+import { canViewCart } from "@/device/deviceActionGuards";
+import { useDeviceMode } from "@/device/useDeviceMode";
 import useRewards from "@/lib/useRewards";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
@@ -410,6 +412,7 @@ function questionSectionLabel(question) {
 }
 
 export default function Assessment() {
+  const device = useDeviceMode();
   const [title, setTitle] = useState("Snooze Assessment");
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -446,6 +449,7 @@ export default function Assessment() {
     () => snoozepod.reduce((sum, item) => sum + (Number(item?.quantity) || 0), 0),
     [snoozepod]
   );
+  const showCartBadge = canViewCart(device);
 
   const introSpokenRef = useRef(false);
   const submitTriggeredRef = useRef(false);
@@ -1078,11 +1082,13 @@ export default function Assessment() {
       <ShowroomPageShell className="pb-8">
         <ShowroomTopRail>
           <ShowroomBrandMark />
-          <ShowroomCartBadge
-            count={snoozepodCount}
-            quiet
-            onClick={() => navigate("/snoozepod")}
-          />
+          {showCartBadge ? (
+            <ShowroomCartBadge
+              count={snoozepodCount}
+              quiet
+              onClick={() => navigate("/cart")}
+            />
+          ) : null}
         </ShowroomTopRail>
         <div className="mx-auto max-w-[1380px] px-4 pb-6 pt-3 md:px-6">
           <ShowroomFrame className="p-5 md:p-7">
@@ -1105,11 +1111,13 @@ export default function Assessment() {
       <ShowroomPageShell className="pb-8">
         <ShowroomTopRail>
           <ShowroomBrandMark />
-          <ShowroomCartBadge
-            count={snoozepodCount}
-            quiet
-            onClick={() => navigate("/snoozepod")}
-          />
+          {showCartBadge ? (
+            <ShowroomCartBadge
+              count={snoozepodCount}
+              quiet
+              onClick={() => navigate("/cart")}
+            />
+          ) : null}
         </ShowroomTopRail>
         <div className="mx-auto max-w-[1180px] px-4 pb-6 pt-3 md:px-6">
           <ShowroomFrame className="p-6 md:p-8">
@@ -1133,14 +1141,16 @@ export default function Assessment() {
     <ShowroomPageShell className="h-auto min-h-[100dvh] max-h-none overflow-y-auto pb-4 md:pb-5">
       <ShowroomTopRail className="pt-2 md:pt-3">
         <ShowroomBrandMark />
-        <ShowroomCartBadge
-          count={snoozepodCount}
-          quiet
-          onClick={() => {
-            noteUserInteraction?.();
-            navigate("/snoozepod");
-          }}
-        />
+        {showCartBadge ? (
+          <ShowroomCartBadge
+            count={snoozepodCount}
+            quiet
+            onClick={() => {
+              noteUserInteraction?.();
+              navigate("/cart");
+            }}
+          />
+        ) : null}
       </ShowroomTopRail>
 
       <div className="mx-auto max-w-[1340px] px-4 pb-4 pt-1 md:px-6 md:pb-5">

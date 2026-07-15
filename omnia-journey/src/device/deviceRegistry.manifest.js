@@ -150,7 +150,7 @@ export const DEVICE_REGISTRY_MANIFEST = Object.freeze({
     zoneId: "checkout-zone",
     podId: null,
     defaultRoute: "/cart",
-    allowedRoutePatterns: ["/cart", "/checkout/:id", "/checkout/guest"],
+    allowedRoutePatterns: ["/cart", "/checkout/:id", "/checkout/guest", "/financing"],
     blockedRoutePatterns: [
       "/welcome",
       "/what-to-expect",
@@ -175,4 +175,3 @@ export const DEVICE_REGISTRY_MANIFEST = Object.freeze({
 
 export const LOCKED_DEVICE_IDS = Object.freeze(Object.keys(DEVICE_REGISTRY_MANIFEST));
 export const COMMON_CUSTOMER_BLOCKED_ROUTES = Object.freeze(commonCustomerBlockedRoutes);
-

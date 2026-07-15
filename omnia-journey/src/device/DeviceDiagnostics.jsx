@@ -1,4 +1,5 @@
 import React from "react";
+import { canViewAdminDiagnostics } from "./deviceActionGuards.js";
 import { DEVICE_STATUSES } from "./deviceModes.js";
 import { useDeviceMode } from "./useDeviceMode.js";
 
@@ -17,8 +18,7 @@ function formatList(values) {
 
 export default function DeviceDiagnostics() {
   const deviceState = useDeviceMode();
-  const isDev = Boolean(import.meta.env?.DEV);
-  const shouldShow = isDev || deviceState?.isAdminDev;
+  const shouldShow = canViewAdminDiagnostics(deviceState);
 
   if (!shouldShow) return null;
 
@@ -89,4 +89,3 @@ export default function DeviceDiagnostics() {
     </aside>
   );
 }
-

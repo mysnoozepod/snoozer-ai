@@ -5,6 +5,8 @@ import {
   CHECKOUT_LOUNGE_MESSAGE,
   canInitiateCheckout,
   canOpenCheckoutUrl,
+  canViewFinancing,
+  canViewPodNavigation,
   shouldShowCheckoutLoungeHandoff,
 } from "@/device/deviceActionGuards";
 import { getPodNumber, makePodRoute, normalizePodId } from "@/device/podRouteUtils";
@@ -167,6 +169,8 @@ export default function Cart() {
   const shopperId = getShopperId() || "guest";
   const checkoutAllowed = canInitiateCheckout(device);
   const checkoutUrlAllowed = canOpenCheckoutUrl(device);
+  const podNavigationAllowed = canViewPodNavigation(device);
+  const financingAllowed = canViewFinancing(device);
   const showCheckoutHandoff =
     shouldShowCheckoutLoungeHandoff(device) || Boolean(location.state?.checkoutHandoff);
 
@@ -378,18 +382,22 @@ export default function Cart() {
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2.5">
-                <Link
-                  to={continuePodRoute}
-                  className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
-                >
-                  Continue Testing
-                </Link>
-                <Link
-                  to="/snoozepod"
-                  className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
-                >
-                  View SnoozePod
-                </Link>
+                {podNavigationAllowed ? (
+                  <>
+                    <Link
+                      to={continuePodRoute}
+                      className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Continue Testing
+                    </Link>
+                    <Link
+                      to={continuePodRoute}
+                      className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      View Assigned Pod
+                    </Link>
+                  </>
+                ) : null}
                 {bestCheckoutUrl && checkoutUrlAllowed ? (
                   <a
                     href={bestCheckoutUrl}
@@ -399,6 +407,14 @@ export default function Cart() {
                   >
                     Open Checkout
                   </a>
+                ) : null}
+                {financingAllowed ? (
+                  <Link
+                    to="/financing"
+                    className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Financing
+                  </Link>
                 ) : null}
                 {cartItems.length > 0 ? (
                   <button
@@ -416,16 +432,20 @@ export default function Cart() {
                   <ShowroomPanel className="p-6">
                     <div className="text-[1.2rem] font-black text-slate-900">Your cart is empty.</div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Add a mattress or base from a pod to see it here.
+                      {podNavigationAllowed
+                        ? "Add a mattress or base from a pod to see it here."
+                        : "A sleep specialist can help you add your showroom setup."}
                     </p>
-                    <div className="mt-4">
-                      <Link
-                        to={continuePodRoute}
-                        className="inline-flex rounded-[18px] bg-[#1A66D2] px-5 py-3 text-sm font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.22)] transition hover:bg-[#1550A0]"
-                      >
-                        Go to SnoozePod {continuePodId}
-                      </Link>
-                    </div>
+                    {podNavigationAllowed ? (
+                      <div className="mt-4">
+                        <Link
+                          to={continuePodRoute}
+                          className="inline-flex rounded-[18px] bg-[#1A66D2] px-5 py-3 text-sm font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.22)] transition hover:bg-[#1550A0]"
+                        >
+                          Go to SnoozePod {continuePodId}
+                        </Link>
+                      </div>
+                    ) : null}
                   </ShowroomPanel>
                 ) : (
                   cartItems.map((item, idx) => {
@@ -594,12 +614,14 @@ export default function Cart() {
                 )}
               </ShowroomPanel>
 
-              <ShowroomFooterAction
-                label="Back to SnoozePod"
-                onClick={() => {
-                  window.location.assign(continuePodRoute);
-                }}
-              />
+              {podNavigationAllowed ? (
+                <ShowroomFooterAction
+                  label="Back to SnoozePod"
+                  onClick={() => {
+                    window.location.assign(continuePodRoute);
+                  }}
+                />
+              ) : null}
             </div>
           </div>
         </ShowroomFrame>

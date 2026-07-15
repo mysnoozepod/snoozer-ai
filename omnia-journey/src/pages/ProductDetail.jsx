@@ -132,6 +132,7 @@ export default function ProductDetail() {
   const setCartMeta = useStore((s) => s.setCartMeta);
   const recommendations = useStore((s) => s.recommendations);
   const checkoutAllowed = canInitiateCheckout(device);
+  const cartMutationAllowed = canMutateCart(device);
 
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -420,21 +421,33 @@ export default function ProductDetail() {
           </div>
 
           <div className="space-y-3">
-            <button
-              onClick={handleAddToCart}
-              className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60"
-              disabled={!selectedVariant?.gid || creatingCheckout}
-            >
-              Add to Cart
-            </button>
+            {cartMutationAllowed ? (
+              <button
+                onClick={handleAddToCart}
+                className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-60"
+                disabled={!selectedVariant?.gid || creatingCheckout}
+              >
+                Add to Cart
+              </button>
+            ) : (
+              <p className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+                This product detail is view-only at this station.
+              </p>
+            )}
 
-            <button
-              onClick={handleCheckoutNow}
-              className="w-full py-3 border border-indigo-600 text-indigo-700 rounded-lg hover:bg-indigo-50 transition disabled:opacity-60"
-              disabled={!selectedVariant?.gid || creatingCheckout}
-            >
-              {creatingCheckout ? "Preparing checkout…" : "Checkout Now"}
-            </button>
+            {checkoutAllowed ? (
+              <button
+                onClick={handleCheckoutNow}
+                className="w-full py-3 border border-indigo-600 text-indigo-700 rounded-lg hover:bg-indigo-50 transition disabled:opacity-60"
+                disabled={!selectedVariant?.gid || creatingCheckout}
+              >
+                {creatingCheckout ? "Preparing checkout…" : "Checkout Now"}
+              </button>
+            ) : cartMutationAllowed ? (
+              <p className="rounded-lg border border-[#d7e3ff] bg-[#f7faff] px-4 py-3 text-sm font-semibold text-slate-700">
+                Add it here, then continue checkout at the Checkout Lounge.
+              </p>
+            ) : null}
 
             {addedMsg ? (
               <p className="text-sm text-green-700" role="status">
