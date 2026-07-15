@@ -12,6 +12,7 @@ import { api } from "@/lib/api";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import { getShopperId } from "@/state/sessionStore";
+import { makePodRoute } from "@/device/podRouteUtils";
 import {
   ArrowRight,
   CheckCircle2,
@@ -905,7 +906,7 @@ export default function Results() {
   const openPodMode = useCallback(
     (podId) => {
       noteUserInteraction?.();
-      navigate(`/pod/${encodeURIComponent(podId)}`);
+      navigate(makePodRoute(podId) || "/pod/pod-1");
     },
     [navigate, noteUserInteraction]
   );

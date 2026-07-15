@@ -67,7 +67,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <DeviceModeProvider>
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Layout />}>
+                <Route
+                  path="/"
+                  element={
+                    <DeviceRouteGuard>
+                      <Layout />
+                    </DeviceRouteGuard>
+                  }
+                >
                 {/* Entry */}
                 <Route index element={<Navigate to="/welcome" replace />} />
                 <Route path="start" element={<Navigate to="/welcome" replace />} />
@@ -89,21 +96,21 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="snoozepod" element={<SnoozePod />} />
 
                 {/* Legacy Explore route */}
-                <Route path="explore" element={<Navigate to="/pod/1" replace />} />
+                <Route path="explore" element={<Navigate to="/pod/pod-1" replace />} />
                 <Route path="explore-dev" element={<Explore />} />
 
                 {/* Aliases -> Pod experience (so links/buttons never break) */}
                 <Route
                   path="shop-with-snoozer"
-                  element={<Navigate to="/pod/1" replace />}
+                  element={<Navigate to="/pod/pod-1" replace />}
                 />
                 <Route
                   path="ask-snoozer/explore"
-                  element={<Navigate to="/pod/1" replace />}
+                  element={<Navigate to="/pod/pod-1" replace />}
                 />
                 <Route
                   path="asksnoozer/explore"
-                  element={<Navigate to="/pod/1" replace />}
+                  element={<Navigate to="/pod/pod-1" replace />}
                 />
 
                 <Route path="ask-snoozer" element={<AskSnoozer />} />

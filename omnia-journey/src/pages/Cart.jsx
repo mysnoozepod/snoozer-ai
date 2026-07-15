@@ -7,6 +7,7 @@ import {
   canOpenCheckoutUrl,
   shouldShowCheckoutLoungeHandoff,
 } from "@/device/deviceActionGuards";
+import { getPodNumber, makePodRoute, normalizePodId } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { useStore } from "@/lib/useStore";
 import { getSessionState, getShopperId } from "@/state/sessionStore";
@@ -38,6 +39,8 @@ function safeParseJson(str) {
 }
 
 function toPodId(v) {
+  const normalized = normalizePodId(v);
+  if (normalized) return getPodNumber(normalized) || "1";
   const s = String(v ?? "").trim();
   return s || "1";
 }
@@ -186,6 +189,10 @@ export default function Cart() {
     const first = pods[0] || null;
     return first ? toPodId(first.podId ?? first.id) : "1";
   }, [recommendations]);
+  const continuePodRoute = useMemo(
+    () => makePodRoute(continuePodId) || "/pod/pod-1",
+    [continuePodId]
+  );
 
   const bestCheckoutUrl = useMemo(() => {
     const legacy = getSessionState?.() || {};
@@ -372,7 +379,7 @@ export default function Cart() {
 
               <div className="mt-4 flex flex-wrap gap-2.5">
                 <Link
-                  to={`/pod/${encodeURIComponent(continuePodId)}`}
+                  to={continuePodRoute}
                   className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50"
                 >
                   Continue Testing
@@ -413,7 +420,7 @@ export default function Cart() {
                     </p>
                     <div className="mt-4">
                       <Link
-                        to={`/pod/${encodeURIComponent(continuePodId)}`}
+                        to={continuePodRoute}
                         className="inline-flex rounded-[18px] bg-[#1A66D2] px-5 py-3 text-sm font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.22)] transition hover:bg-[#1550A0]"
                       >
                         Go to SnoozePod {continuePodId}
@@ -590,7 +597,7 @@ export default function Cart() {
               <ShowroomFooterAction
                 label="Back to SnoozePod"
                 onClick={() => {
-                  window.location.assign(`/pod/${encodeURIComponent(continuePodId)}`);
+                  window.location.assign(continuePodRoute);
                 }}
               />
             </div>

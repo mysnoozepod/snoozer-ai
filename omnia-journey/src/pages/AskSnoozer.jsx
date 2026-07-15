@@ -12,6 +12,8 @@ import {
 
 import { useSnoozer } from "@/Layout";
 import { canViewCart } from "@/device/deviceActionGuards";
+import { matchesAnyRoutePattern } from "@/device/deviceRoutePatterns";
+import { makePodRoute } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { sendAskSnoozerMessage } from "@/lib/snoozer/askSnoozerPage";
 import { useStore } from "@/lib/useStore";
@@ -184,6 +186,11 @@ export default function AskSnoozer() {
     [snoozepod]
   );
   const showCommerceAffordances = canViewCart(device);
+  const canNavigateToResults = matchesAnyRoutePattern(
+    "/results",
+    device?.allowedRoutePatterns || []
+  );
+  const devicePodRoute = makePodRoute(device?.podId) || "/pod/pod-1";
   const referrerRoute =
     location.state && typeof location.state === "object"
       ? location.state.from || null
@@ -261,6 +268,12 @@ export default function AskSnoozer() {
         message: content,
         history,
         referrerRoute,
+        deviceContext: {
+          deviceId: device?.deviceId || null,
+          deviceMode: device?.deviceMode || null,
+          podId: device?.podId || null,
+          zoneId: device?.zoneId || null,
+        },
       });
 
       const assistantMessage = {
@@ -326,7 +339,7 @@ export default function AskSnoozer() {
         navigate("/assessment");
         return;
       case "open_builder":
-        navigate("/pod/1");
+        navigate(devicePodRoute);
         return;
       case "view_recommendation":
         navigate(action?.target || "/results");
@@ -395,7 +408,7 @@ export default function AskSnoozer() {
             quiet
             onClick={() => {
               noteUserInteraction?.();
-              navigate("/snoozepod");
+              navigate("/cart");
             }}
           />
         ) : null}
@@ -645,17 +658,19 @@ export default function AskSnoozer() {
 
             <div className="shrink-0 border-t border-[#dbe5ff] bg-[linear-gradient(180deg,rgba(248,250,255,0.92),rgba(255,255,255,0.97))] px-4 py-3 md:px-6">
               <div className="flex flex-wrap items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    noteUserInteraction?.();
-                    navigate("/results");
-                  }}
-                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50"
-                >
-                  <Compass className="h-4 w-4 shrink-0 text-[#2f57e8]" />
-                  <span>View Results</span>
-                </button>
+                {canNavigateToResults ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      noteUserInteraction?.();
+                      navigate("/results");
+                    }}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-900 shadow-sm transition hover:bg-slate-50"
+                  >
+                    <Compass className="h-4 w-4 shrink-0 text-[#2f57e8]" />
+                    <span>View Results</span>
+                  </button>
+                ) : null}
 
                 <button
                   type="button"

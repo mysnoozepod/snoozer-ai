@@ -16,6 +16,11 @@ import {
 
 import { api } from "@/lib/api";
 import {
+  getPodNumber,
+  makePodRoute,
+  normalizePodId as normalizeCanonicalPodId,
+} from "@/device/podRouteUtils";
+import {
   buildDefaultSelections,
   money,
   monthlyEstimate,
@@ -88,11 +93,6 @@ function safeParseJson(str) {
   } catch {
     return null;
   }
-}
-
-function normalizePodId(v) {
-  const n = String(v ?? "").trim();
-  return n || "1";
 }
 
 function pickFirstVariantId(fullProduct) {
@@ -1025,7 +1025,9 @@ export default function Pod() {
   const { noteUserInteraction, voiceState, speakPod, cancelPodVoice, resetPodVoiceKeys } =
     usePodHudGuidance({ shopperId });
 
-  const pid = normalizePodId(podId);
+  const pid = normalizeCanonicalPodId(podId) || "pod-1";
+  const podNumber = getPodNumber(pid) || "1";
+  const currentPodRoute = makePodRoute(pid) || "/pod/pod-1";
   const storagePrefix = useMemo(() => `snooze.pod.${pid}`, [pid]);
 
   const { snoozepodCount, cartNotice, cartPulse, showCartFeedback } = usePodCart();
@@ -1162,7 +1164,9 @@ export default function Pod() {
     if (!recs?.pods?.length) return;
 
     const found =
-      recs.pods.find((p) => String(p.podId ?? p.id ?? "") === String(pid)) || recs.pods[0] || null;
+      recs.pods.find((p) => normalizeCanonicalPodId(p.podId ?? p.id) === pid) ||
+      recs.pods[0] ||
+      null;
 
     const sanitizedFound = found ? stripLegacyPodImageFields(found) : null;
 
@@ -1293,7 +1297,7 @@ export default function Pod() {
     setBuildStepKey(key);
   }, []);
 
-  const podLabel = `SnoozePod ${pid}`;
+  const podLabel = `SnoozePod ${podNumber}`;
   const title = activePod?.title || podLabel;
   const isRecommended = !!activePod?.recommended;
   const rank = Number(activePod?.rank || 0);
@@ -2228,8 +2232,8 @@ export default function Pod() {
             }
           }}
           primaryCtaLabel="Add This Setup"
-          onViewSnoozePod={() => navigate("/snoozepod")}
-          onViewResults={() => navigate("/results")}
+          onViewSnoozePod={() => navigate("/cart")}
+          onViewResults={null}
           requestedStepKey={buildStepKey}
         />
       );
@@ -2254,7 +2258,7 @@ export default function Pod() {
         onSelectReflection={handleSelectRestReflection}
         onViewDetails={() => void activateDetailsAction(DEFAULT_DETAILS_ACTION_ID, { ensureDetailsStage: true })}
         onBuildPod={() => void goToBuildStage("size")}
-        onCompareAnotherPod={() => navigate("/results")}
+        onCompareAnotherPod={() => navigate(currentPodRoute)}
         completionStage={restCompletionStage}
         reflectionChoice={feelChoice}
         onSwitchToLongerMode={() => handleChooseRestMode("deep")}
@@ -2304,6 +2308,7 @@ export default function Pod() {
     learnPricingRows,
     learnFitItems,
     goToBuildStage,
+    currentPodRoute,
   ]);
 
   const isDefaultPodDashboard =
@@ -2374,12 +2379,12 @@ export default function Pod() {
             type="button"
             onClick={() => {
               noteUserInteraction?.();
-              navigate("/results");
+              void goToPodHome();
             }}
             className="justify-self-start inline-flex items-center gap-3 rounded-[18px] border border-transparent bg-transparent px-2 py-1.5 text-sm font-extrabold text-slate-900 transition hover:text-[#2f57e8]"
           >
             <ArrowLeft className="h-5 w-5" />
-            Back to results
+            Pod Home
           </button>
 
           <ShowroomBrandMark
@@ -2394,7 +2399,7 @@ export default function Pod() {
               className={cartPulse ? "scale-[1.01] border-indigo-300 ring-4 ring-indigo-100" : ""}
               onClick={() => {
                 noteUserInteraction?.();
-                navigate("/snoozepod");
+                navigate("/cart");
               }}
             />
 
@@ -2452,14 +2457,14 @@ export default function Pod() {
             onAskSnoozer={() => {
               noteUserInteraction?.();
               void cancelPodVoice({ resetKeys: true });
-              navigate("/ask-snoozer", { state: { from: `/pod/${pid}` } });
+              navigate("/ask-snoozer", { state: { from: currentPodRoute } });
             }}
             onTalkToHuman={() => {
               noteUserInteraction?.();
               void cancelPodVoice({ resetKeys: true });
               navigate("/ask-snoozer", {
                 state: {
-                  from: `/pod/${pid}`,
+                  from: currentPodRoute,
                   prefill: "I need human help.",
                   autoSend: true,
                 },

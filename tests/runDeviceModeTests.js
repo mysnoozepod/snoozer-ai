@@ -52,6 +52,8 @@ async function run() {
   const cache = await importDeviceModule("deviceConfigCache.js");
   const routes = await importDeviceModule("deviceRoutePatterns.js");
   const guards = await importDeviceModule("deviceActionGuards.js");
+  const podRoutes = await importDeviceModule("podRouteUtils.js");
+  const routeOwnership = await importDeviceModule("deviceRouteOwnership.js");
 
   const manifest = manifestModule.DEVICE_REGISTRY_MANIFEST;
 
@@ -253,12 +255,158 @@ async function run() {
   assert.equal(routes.matchesRoutePattern("/pod/pod-3?from=test", "/pod/:podId"), true);
   assert.equal(routes.matchesAnyRoutePattern("/cart", ["/welcome", "/cart"]), true);
 
+  assert.equal(podRoutes.normalizePodId("1"), "pod-1");
+  assert.equal(podRoutes.normalizePodId("pod-1"), "pod-1");
+  assert.equal(podRoutes.normalizePodId("pod-9"), null);
+  assert.equal(podRoutes.makePodRoute("1"), "/pod/pod-1");
+  assert.equal(podRoutes.makePodRoute("pod-5"), "/pod/pod-5");
+  assert.equal(podRoutes.getRoutePodId("/pod/1?source=test"), "pod-1");
+  assert.equal(podRoutes.getRoutePodId("/pod/pod-4"), "pod-4");
+  assert.equal(podRoutes.isCanonicalPodRoute("/pod/pod-4"), true);
+  assert.equal(podRoutes.isCanonicalPodRoute("/pod/4"), false);
+  assert.equal(podRoutes.routeMatchesBoundPod("/pod/pod-3", "3"), true);
+
+  const pod1 = registry.resolveDeviceConfig({
+    deviceId: "pod-1-ipad-01",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(routeOwnership.getDeviceRouteDecision(pod1, "/pod/pod-1").allow, true);
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(pod1, "/pod/pod-2").redirectTo,
+    "/pod/pod-1"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(pod1, "/pod/1").redirectTo,
+    "/pod/pod-1"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(pod1, "/pod/not-real").redirectTo,
+    "/pod/pod-1"
+  );
+  assert.equal(routeOwnership.getDeviceRouteDecision(pod1, "/ask-snoozer").allow, true);
+  assert.equal(routeOwnership.getDeviceRouteDecision(pod1, "/cart").allow, true);
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(pod1, "/checkout/guest").redirectTo,
+    "/cart"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(pod1, "/welcome").redirectTo,
+    "/pod/pod-1"
+  );
+
+  const pod1MissingBinding = {
+    ...pod1,
+    podId: null,
+  };
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(pod1MissingBinding, "/pod/pod-1").unavailableKind,
+    "missing_pod_binding"
+  );
+
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(welcomeDevice, "/pod/pod-1").redirectTo,
+    "/welcome"
+  );
+  assert.equal(routeOwnership.getDeviceRouteDecision(welcomeDevice, "/results").allow, true);
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(askDevice, "/pod/pod-1").redirectTo,
+    "/ask-snoozer"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(askDevice, "/cart").redirectTo,
+    "/ask-snoozer"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(askDevice, "/checkout/guest").redirectTo,
+    "/ask-snoozer"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(askDevice, "/results").redirectTo,
+    "/ask-snoozer"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(checkoutDevice, "/pod/pod-1").redirectTo,
+    "/cart"
+  );
+  assert.equal(routeOwnership.getDeviceRouteDecision(checkoutDevice, "/cart").allow, true);
+  assert.equal(routeOwnership.getDeviceRouteDecision(checkoutDevice, "/checkout/guest").allow, true);
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(sleepDevice, "/sleep-essentials").unavailableKind,
+    "future_route_not_implemented"
+  );
+  assert.equal(routeOwnership.getDeviceRouteDecision(sleepDevice, "/cart").allow, true);
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(productionUnknown, "/welcome").unavailableKind,
+    "unknown_device"
+  );
+  const disabledWelcome = {
+    ...welcomeDevice,
+    status: modes.DEVICE_STATUSES.DISABLED,
+  };
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(disabledWelcome, "/welcome").unavailableKind,
+    "disabled_device"
+  );
+  assert.equal(routeOwnership.getDeviceRouteDecision(devFallback, "/products/test").allow, true);
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(devFallback, "/pod/1").redirectTo,
+    "/pod/pod-1"
+  );
+
+  const routeRedirectStorage = createMemoryStorage();
+  routeRedirectStorage.setItem("snooze.cartId", "cart-456");
+  routeRedirectStorage.setItem("snooze.checkoutUrl", "https://checkout.example/keep");
+  routeRedirectStorage.setItem("snoozer_snooze_code", "589424");
+  routeOwnership.getDeviceRouteDecision(pod1, "/pod/pod-2");
+  assert.equal(routeRedirectStorage.getItem("snooze.cartId"), "cart-456");
+  assert.equal(routeRedirectStorage.getItem("snooze.checkoutUrl"), "https://checkout.example/keep");
+  assert.equal(routeRedirectStorage.getItem("snoozer_snooze_code"), "589424");
+
+  const pod3 = registry.resolveDeviceConfig({
+    deviceId: "pod-3-ipad-01",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(pod3, "/explore").redirectTo,
+    "/pod/pod-3"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(pod3, "/shop-with-snoozer").redirectTo,
+    "/pod/pod-3"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(pod3, "/ask-snoozer/explore").redirectTo,
+    "/pod/pod-3"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(welcomeDevice, "/products/14-hybrid").redirectTo,
+    "/welcome"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(welcomeDevice, "/faqs").redirectTo,
+    "/welcome"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(welcomeDevice, "/financing").redirectTo,
+    "/welcome"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(welcomeDevice, "/snoozepod").redirectTo,
+    "/welcome"
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(welcomeDevice, "/explore-dev").redirectTo,
+    "/welcome"
+  );
+
   console.log(
     JSON.stringify(
       {
         ok: true,
         checkedDevices: Object.keys(manifest).length,
-        assertions: 79,
+        assertions: "expanded",
       },
       null,
       2

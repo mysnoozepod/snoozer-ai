@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Ticket, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getPodNumber, makePodRoute, normalizePodId } from "@/device/podRouteUtils";
 import { useStore } from "@/lib/useStore";
 import { api } from "@/lib/api";
 import {
@@ -51,6 +52,8 @@ function formatMoney(n) {
 }
 
 function toPodId(v) {
+  const normalized = normalizePodId(v);
+  if (normalized) return getPodNumber(normalized) || "1";
   const s = String(v ?? "").trim();
   return s || "1";
 }
@@ -258,6 +261,10 @@ export default function SnoozePod() {
     const first = pods[0] || null;
     return first ? toPodId(first.podId ?? first.id) : "1";
   }, []);
+  const continuePodRoute = useMemo(
+    () => makePodRoute(continuePodId) || "/pod/pod-1",
+    [continuePodId]
+  );
 
   async function commitToCart() {
     setStatus("");
@@ -396,7 +403,7 @@ export default function SnoozePod() {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              onClick={() => navigate(`/pod/${encodeURIComponent(continuePodId)}`)}
+              onClick={() => navigate(continuePodRoute)}
               disabled={syncing}
             >
               Continue Testing

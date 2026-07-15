@@ -241,7 +241,7 @@ function inferRouteTarget(label, value) {
   if (haystack.includes("assessment")) return "/assessment";
   if (haystack.includes("session")) return "/what-to-expect";
   if (haystack.includes("recommend")) return "/results";
-  if (haystack.includes("build")) return "/pod/1";
+  if (haystack.includes("build")) return "/pod/pod-1";
   return null;
 }
 
@@ -803,6 +803,7 @@ export async function sendAskSnoozerMessage({
   message,
   history,
   referrerRoute = null,
+  deviceContext = null,
 } = {}) {
   const trimmedMessage = String(message || "").trim();
   if (!trimmedMessage) {
@@ -816,6 +817,21 @@ export async function sendAskSnoozerMessage({
     (await ensureSession().catch(() => null)) || getSessionId() || createId("session");
   const conversationId = ensureConversationId();
   const requestContext = readContext();
+  const operationalDeviceContext =
+    deviceContext && typeof deviceContext === "object"
+      ? {
+          deviceId: firstNonEmptyString([deviceContext.deviceId]) || null,
+          deviceMode: firstNonEmptyString([deviceContext.deviceMode]) || null,
+          podId: firstNonEmptyString([deviceContext.podId]) || null,
+          zoneId: firstNonEmptyString([deviceContext.zoneId]) || null,
+        }
+      : null;
+  const mergedContext = operationalDeviceContext
+    ? {
+        ...requestContext,
+        device: operationalDeviceContext,
+      }
+    : requestContext;
   const requestPayload = {
     message: trimmedMessage,
     conversationId,
@@ -824,9 +840,10 @@ export async function sendAskSnoozerMessage({
     page: {
       route: ASK_SNOOZER_ROUTE,
       referrerRoute: readReferrerRoute(referrerRoute),
+      device: operationalDeviceContext,
     },
     identity: readIdentity(sessionId),
-    context: requestContext,
+    context: mergedContext,
     history: normalizeHistory(history),
     client: readClientContext(),
   };
@@ -837,7 +854,7 @@ export async function sendAskSnoozerMessage({
       conversationId,
       requestId,
       message: trimmedMessage,
-      context: requestContext,
+      context: mergedContext,
     });
   } catch (error) {
     if (error?.responseBody) {
@@ -845,7 +862,7 @@ export async function sendAskSnoozerMessage({
         conversationId,
         requestId: error?.requestId || createId("request"),
         message: trimmedMessage,
-        context: requestContext,
+        context: mergedContext,
       });
       if (String(salvaged?.reply?.content || "").trim()) {
         return {
@@ -860,7 +877,7 @@ export async function sendAskSnoozerMessage({
       conversationId,
       requestId: error?.requestId || createId("request"),
       message: trimmedMessage,
-      context: requestContext,
+      context: mergedContext,
     });
   }
 }

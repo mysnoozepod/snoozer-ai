@@ -10,6 +10,7 @@ import {
   readCachedDeviceConfig,
   writeDeviceConfigCache,
 } from "./deviceConfigCache.js";
+import { makePodRoute } from "./podRouteUtils.js";
 
 const CUSTOMER_MODES_WITHOUT_CHECKOUT = new Set([
   DEVICE_MODES.WELCOME_KIOSK,
@@ -45,7 +46,7 @@ export function isDevelopmentEnvironment(environment, explicitDevFlag = false) {
 }
 
 export function getExpectedPodRoute(podId) {
-  return `/pod/${String(podId || "").trim()}`;
+  return makePodRoute(podId) || `/pod/${String(podId || "").trim()}`;
 }
 
 export function createAdminDevDeviceConfig(options = {}) {
@@ -281,4 +282,3 @@ export function getBrowserDeviceBootstrap(importMetaEnv = {}) {
     isDevelopment: Boolean(importMetaEnv.DEV),
   };
 }
-

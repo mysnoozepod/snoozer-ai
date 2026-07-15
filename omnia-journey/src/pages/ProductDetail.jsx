@@ -7,6 +7,7 @@ import {
   canMutateCart,
   canViewCart,
 } from "@/device/deviceActionGuards";
+import { getPodNumber, makePodRoute, normalizePodId } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/useStore";
@@ -32,6 +33,8 @@ function safeParseJson(str) {
 }
 
 function toPodId(v) {
+  const normalized = normalizePodId(v);
+  if (normalized) return getPodNumber(normalized) || "1";
   const s = String(v ?? "").trim();
   return s || "1";
 }
@@ -151,6 +154,7 @@ export default function ProductDetail() {
     const first = pods[0] || null;
     return first ? toPodId(first.podId ?? first.id) : "1";
   }, [recommendations]);
+  const backPodRoute = useMemo(() => makePodRoute(backPodId) || "/pod/pod-1", [backPodId]);
 
   useEffect(() => {
     let alive = true;
@@ -331,7 +335,7 @@ export default function ProductDetail() {
     return (
       <div className="p-8 text-center">
         <p className="text-red-500">{error}</p>
-        <Link to={`/pod/${encodeURIComponent(backPodId)}`} className="text-indigo-600 hover:underline">
+        <Link to={backPodRoute} className="text-indigo-600 hover:underline">
           ← Back
         </Link>
       </div>
@@ -342,7 +346,7 @@ export default function ProductDetail() {
     return (
       <div className="p-8 text-center">
         <p className="text-red-500">Product not found.</p>
-        <Link to={`/pod/${encodeURIComponent(backPodId)}`} className="text-indigo-600 hover:underline">
+        <Link to={backPodRoute} className="text-indigo-600 hover:underline">
           ← Back
         </Link>
       </div>
@@ -351,7 +355,7 @@ export default function ProductDetail() {
 
   return (
     <section className="max-w-4xl mx-auto p-8">
-      <Link to={`/pod/${encodeURIComponent(backPodId)}`} className="text-indigo-600 hover:underline">
+      <Link to={backPodRoute} className="text-indigo-600 hover:underline">
         ← Back
       </Link>
 
