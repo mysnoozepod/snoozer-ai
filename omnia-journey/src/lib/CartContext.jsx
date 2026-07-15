@@ -24,6 +24,7 @@ import {
   updateCartLines as apiUpdateCartLines,
   removeCartLines as apiRemoveCartLines,
 } from "@/lib/api";
+import { emitDeviceCartMutation } from "@/device/deviceActivityTracker";
 
 import {
   getSessionState,
@@ -267,19 +268,23 @@ export function CartProvider({ children }) {
 
   const addToCart = useCallback(
     async (item) => {
+      emitDeviceCartMutation(true, { reason: "cartMutation", operation: "addToCart" });
       const normalized = normalizeItem(item);
-      if (!normalized) return false;
-
-      // 1) Update UI immediately
-      setCartItems((prev) => mergeAdd(prev, normalized));
-
-      // 2) Try to sync to Shopify cart
-      const line = {
-        merchandiseId: normalized.merchandiseId,
-        quantity: normalized.quantity,
-      };
+      if (!normalized) {
+        emitDeviceCartMutation(false, { reason: "cartMutation", operation: "addToCart" });
+        return false;
+      }
 
       try {
+        // 1) Update UI immediately
+        setCartItems((prev) => mergeAdd(prev, normalized));
+
+        // 2) Try to sync to Shopify cart
+        const line = {
+          merchandiseId: normalized.merchandiseId,
+          quantity: normalized.quantity,
+        };
+
         if (!cartId) {
           const payload = await apiCreateCart({ lines: [line] });
           const { cart, cartId: newId, checkoutUrl: newUrl } =
@@ -306,6 +311,8 @@ export function CartProvider({ children }) {
       } catch {
         // keep local cart state even if server sync fails
         return true;
+      } finally {
+        emitDeviceCartMutation(false, { reason: "cartMutation", operation: "addToCart" });
       }
     },
     [cartId]
@@ -313,37 +320,38 @@ export function CartProvider({ children }) {
 
   const updateCart = useCallback(
     async (id, quantity) => {
+      emitDeviceCartMutation(true, { reason: "cartMutation", operation: "updateCart" });
       const qty = Math.max(0, Math.floor(Number(quantity) || 0));
 
-      // Capture current lineId BEFORE we mutate state (avoid stale closure + react batching weirdness)
-      const current = findByAnyId(cartItemsRef.current, id);
-      const lineId = current?.lineId || null;
-
-      // Update UI immediately
-      setCartItems((prev) => {
-        const next = (Array.isArray(prev) ? prev : []).map((x) => ({ ...x }));
-        const idx = next.findIndex(
-          (x) =>
-            String(x?.id || "") === String(id) ||
-            String(x?.variantId || "") === String(id) ||
-            String(x?.merchandiseId || "") === String(id)
-        );
-        if (idx < 0) return next;
-
-        if (qty === 0) {
-          next.splice(idx, 1);
-          return next;
-        }
-
-        next[idx].quantity = qty;
-        return next;
-      });
-
-      // Server sync if possible (requires cartId + lineId)
-      if (!cartId) return;
-      if (!lineId) return;
-
       try {
+        // Capture current lineId BEFORE we mutate state (avoid stale closure + react batching weirdness)
+        const current = findByAnyId(cartItemsRef.current, id);
+        const lineId = current?.lineId || null;
+
+        // Update UI immediately
+        setCartItems((prev) => {
+          const next = (Array.isArray(prev) ? prev : []).map((x) => ({ ...x }));
+          const idx = next.findIndex(
+            (x) =>
+              String(x?.id || "") === String(id) ||
+              String(x?.variantId || "") === String(id) ||
+              String(x?.merchandiseId || "") === String(id)
+          );
+          if (idx < 0) return next;
+
+          if (qty === 0) {
+            next.splice(idx, 1);
+            return next;
+          }
+
+          next[idx].quantity = qty;
+          return next;
+        });
+
+        // Server sync if possible (requires cartId + lineId)
+        if (!cartId) return;
+        if (!lineId) return;
+
         if (qty === 0) {
           const payload = await apiRemoveCartLines({
             cartId,
@@ -367,6 +375,8 @@ export function CartProvider({ children }) {
         if (cart) setCartItems(cartToItems(cart));
       } catch {
         // ignore server sync failure
+      } finally {
+        emitDeviceCartMutation(false, { reason: "cartMutation", operation: "updateCart" });
       }
     },
     [cartId]
@@ -374,27 +384,28 @@ export function CartProvider({ children }) {
 
   const removeFromCart = useCallback(
     async (id) => {
-      // Capture lineId BEFORE we mutate state
-      const current = findByAnyId(cartItemsRef.current, id);
-      const lineId = current?.lineId || null;
-
-      // Update UI immediately
-      setCartItems((prev) => {
-        const next = (Array.isArray(prev) ? prev : []).filter((x) => {
-          const match =
-            String(x?.id || "") === String(id) ||
-            String(x?.variantId || "") === String(id) ||
-            String(x?.merchandiseId || "") === String(id);
-          return !match;
-        });
-        return next;
-      });
-
-      // Server sync if possible
-      if (!cartId) return;
-      if (!lineId) return;
-
+      emitDeviceCartMutation(true, { reason: "cartMutation", operation: "removeFromCart" });
       try {
+        // Capture lineId BEFORE we mutate state
+        const current = findByAnyId(cartItemsRef.current, id);
+        const lineId = current?.lineId || null;
+
+        // Update UI immediately
+        setCartItems((prev) => {
+          const next = (Array.isArray(prev) ? prev : []).filter((x) => {
+            const match =
+              String(x?.id || "") === String(id) ||
+              String(x?.variantId || "") === String(id) ||
+              String(x?.merchandiseId || "") === String(id);
+            return !match;
+          });
+          return next;
+        });
+
+        // Server sync if possible
+        if (!cartId) return;
+        if (!lineId) return;
+
         const payload = await apiRemoveCartLines({
           cartId,
           lineIds: [lineId],
@@ -405,19 +416,26 @@ export function CartProvider({ children }) {
         if (cart) setCartItems(cartToItems(cart));
       } catch {
         // ignore
+      } finally {
+        emitDeviceCartMutation(false, { reason: "cartMutation", operation: "removeFromCart" });
       }
     },
     [cartId]
   );
 
   const clearCart = useCallback(async () => {
-    setCartItems([]);
-    setCartIdentity({ cartId: null, checkoutUrl: null });
-
+    emitDeviceCartMutation(true, { reason: "cartMutation", operation: "clearCart" });
     try {
-      sessionStorage.removeItem(CART_ITEMS_KEY);
-    } catch {
-      // ignore
+      setCartItems([]);
+      setCartIdentity({ cartId: null, checkoutUrl: null });
+
+      try {
+        sessionStorage.removeItem(CART_ITEMS_KEY);
+      } catch {
+        // ignore
+      }
+    } finally {
+      emitDeviceCartMutation(false, { reason: "cartMutation", operation: "clearCart" });
     }
   }, []);
 

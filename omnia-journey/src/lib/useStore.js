@@ -1,6 +1,7 @@
 // src/lib/useStore.js
 import { create } from "zustand";
 import { api } from "@/lib/api";
+import { emitDeviceCartMutation } from "@/device/deviceActivityTracker";
 import {
   clearStoredShopifyCartIdentity,
   extractShopifyCartGid,
@@ -108,6 +109,13 @@ function toVariantGid(v) {
 
 function extractCartGid(v) {
   return extractShopifyCartGid(v) || null;
+}
+
+function markCartMutation(active, operation) {
+  emitDeviceCartMutation(Boolean(active), {
+    reason: "cartMutation",
+    operation,
+  });
 }
 
 function getStoredCartGid() {
@@ -359,6 +367,7 @@ export const useStore = create((set, get) => ({
     if (!normalizedItem?.merchandiseId) return null;
     if (!shouldAutoSyncShopifyCart()) return null;
 
+    markCartMutation(true, "syncShopifyCartAdd");
     try {
       const state = get();
       const existingCartId = extractCartGid(state.cartId) || getStoredCartGid();
@@ -434,6 +443,8 @@ export const useStore = create((set, get) => ({
       });
       console.warn("[useStore] Shopify cart sync failed:", err);
       return null;
+    } finally {
+      markCartMutation(false, "syncShopifyCartAdd");
     }
   },
 
@@ -447,6 +458,7 @@ export const useStore = create((set, get) => ({
   },
 
   addToCart: (item) => {
+    markCartMutation(true, "addToCart");
     const current = get().cart || [];
     const normalized = normalizeCartItem(item);
 
@@ -460,6 +472,7 @@ export const useStore = create((set, get) => ({
           merchandiseId: item?.merchandiseId,
         },
       });
+      markCartMutation(false, "addToCart");
       return;
     }
 
@@ -483,13 +496,19 @@ export const useStore = create((set, get) => ({
     });
     track("snoozer_tab_badge_set", { tab: "Cart" });
 
-    Promise.resolve(get().syncShopifyCartAdd(normalized)).catch(() => {});
+    Promise.resolve(get().syncShopifyCartAdd(normalized))
+      .catch(() => {})
+      .finally(() => markCartMutation(false, "addToCart"));
   },
 
   updateCart: (id, quantity) => {
+    markCartMutation(true, "updateCart");
     const key = String(id || "");
     const q = Math.max(0, Math.floor(Number(quantity) || 0));
-    if (!key) return;
+    if (!key) {
+      markCartMutation(false, "updateCart");
+      return;
+    }
 
     const next = (get().cart || [])
       .map((p) => (p.id === key ? { ...p, quantity: q } : p))
@@ -498,22 +517,30 @@ export const useStore = create((set, get) => ({
     set((state) => ({ cart: next, badges: { ...state.badges, Cart: true } }));
     saveJSON(STORAGE_KEYS.cart, next);
     track("snoozer_action", { type: "cart_update", id: key, quantity: q });
+    markCartMutation(false, "updateCart");
   },
 
   removeFromCart: (id) => {
+    markCartMutation(true, "removeFromCart");
     const key = String(id || "");
-    if (!key) return;
+    if (!key) {
+      markCartMutation(false, "removeFromCart");
+      return;
+    }
 
     const next = (get().cart || []).filter((p) => p.id !== key);
     set((state) => ({ cart: next, badges: { ...state.badges, Cart: true } }));
     saveJSON(STORAGE_KEYS.cart, next);
     track("snoozer_action", { type: "cart_remove", id: key });
+    markCartMutation(false, "removeFromCart");
   },
 
   clearCart: () => {
+    markCartMutation(true, "clearCart");
     set((state) => ({ cart: [], badges: { ...state.badges, Cart: false } }));
     saveJSON(STORAGE_KEYS.cart, []);
     track("snoozer_action", { type: "cart_clear" });
+    markCartMutation(false, "clearCart");
   },
 
   getCartSubtotal: () => {
@@ -652,9 +679,11 @@ export const useStore = create((set, get) => ({
   },
 
   commitSnoozePodToCart: ({ clearPlan = false } = {}) => {
+    markCartMutation(true, "commitSnoozePodToCart");
     const plan = get().snoozepod || [];
     if (!plan.length) {
       track("snoozer_action", { type: "snoozepod_commit_empty" });
+      markCartMutation(false, "commitSnoozePodToCart");
       return { committed: 0 };
     }
 
@@ -700,6 +729,7 @@ export const useStore = create((set, get) => ({
     });
     track("snoozer_tab_badge_set", { tab: "Cart" });
 
+    markCartMutation(false, "commitSnoozePodToCart");
     return { committed: plan.length };
   },
 

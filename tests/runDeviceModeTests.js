@@ -31,6 +31,12 @@ async function importDeviceModule(fileName) {
 function createMemoryStorage() {
   const values = new Map();
   return {
+    get length() {
+      return values.size;
+    },
+    key(index) {
+      return Array.from(values.keys())[index] || null;
+    },
     getItem(key) {
       return values.has(key) ? values.get(key) : null;
     },
@@ -54,6 +60,8 @@ async function run() {
   const guards = await importDeviceModule("deviceActionGuards.js");
   const podRoutes = await importDeviceModule("podRouteUtils.js");
   const routeOwnership = await importDeviceModule("deviceRouteOwnership.js");
+  const resetPolicies = await importDeviceModule("resetPolicies.js");
+  const activityTracker = await importDeviceModule("deviceActivityTracker.js");
 
   const manifest = manifestModule.DEVICE_REGISTRY_MANIFEST;
 
@@ -451,6 +459,181 @@ async function run() {
     guards.filterDeviceActions(checkoutDevice, mixedActions).map((action) => action.label),
     ["Checkout", "Cart", "Financing", "Talk to Human"]
   );
+
+  const welcomePolicy = resetPolicies.getDeviceResetPolicy(welcomeDevice);
+  const podPolicy = resetPolicies.getDeviceResetPolicy(pod1);
+  const askPolicy = resetPolicies.getDeviceResetPolicy(askDevice);
+  const sleepPolicy = resetPolicies.getDeviceResetPolicy(sleepDevice);
+  const checkoutPolicy = resetPolicies.getDeviceResetPolicy(checkoutDevice);
+
+  assert.equal(welcomePolicy.timeoutMs, 5 * 60 * 1000);
+  assert.equal(podPolicy.timeoutMs, 15 * 60 * 1000);
+  assert.equal(askPolicy.timeoutMs, 5 * 60 * 1000);
+  assert.equal(sleepPolicy.timeoutMs, 8 * 60 * 1000);
+  assert.equal(checkoutPolicy.warningMs, 15 * 60 * 1000);
+  assert.equal(checkoutPolicy.abandonmentMs, 30 * 60 * 1000);
+
+  assert.equal(
+    resetPolicies.getDeviceResetSchedule({
+      policy: welcomePolicy,
+      lastActivityAt: 0,
+      now: 5 * 60 * 1000,
+    }).status,
+    resetPolicies.DEVICE_RESET_STATUSES.PENDING
+  );
+  assert.equal(
+    resetPolicies.getDeviceResetSchedule({
+      policy: podPolicy,
+      lastActivityAt: 0,
+      now: 15 * 60 * 1000,
+    }).status,
+    resetPolicies.DEVICE_RESET_STATUSES.PENDING
+  );
+  assert.equal(
+    resetPolicies.getDeviceResetSchedule({
+      policy: askPolicy,
+      lastActivityAt: 0,
+      now: 5 * 60 * 1000,
+    }).status,
+    resetPolicies.DEVICE_RESET_STATUSES.PENDING
+  );
+  assert.equal(
+    resetPolicies.getDeviceResetSchedule({
+      policy: sleepPolicy,
+      lastActivityAt: 0,
+      now: 8 * 60 * 1000,
+    }).status,
+    resetPolicies.DEVICE_RESET_STATUSES.PENDING
+  );
+
+  const checkoutWarningSchedule = resetPolicies.getDeviceResetSchedule({
+    policy: checkoutPolicy,
+    lastActivityAt: 0,
+    now: 15 * 60 * 1000,
+  });
+  assert.equal(checkoutWarningSchedule.status, resetPolicies.DEVICE_RESET_STATUSES.WARNING);
+  const checkoutAbandonedSchedule = resetPolicies.getDeviceResetSchedule({
+    policy: checkoutPolicy,
+    lastActivityAt: 0,
+    now: 30 * 60 * 1000,
+  });
+  assert.equal(checkoutAbandonedSchedule.status, resetPolicies.DEVICE_RESET_STATUSES.PENDING);
+  assert.equal(
+    resetPolicies.getDeviceResetSchedule({
+      policy: podPolicy,
+      lastActivityAt: 0,
+      now: 15 * 60 * 1000,
+      activeReasons: ["tts"],
+    }).canReset,
+    false
+  );
+  assert.equal(
+    resetPolicies.getDeviceResetSchedule({
+      policy: podPolicy,
+      lastActivityAt: 0,
+      now: 15 * 60 * 1000,
+      activeReasons: ["cartMutation"],
+    }).canReset,
+    false
+  );
+  assert.equal(
+    resetPolicies.getDeviceResetSchedule({
+      policy: askPolicy,
+      lastActivityAt: 0,
+      now: 5 * 60 * 1000,
+      activeReasons: ["activeResponse"],
+    }).canReset,
+    false
+  );
+
+  const preservationStorage = createMemoryStorage();
+  preservationStorage.setItem("snooze.cartId", "cart-keep");
+  preservationStorage.setItem("snooze.checkoutUrl", "https://checkout.example/keep");
+  preservationStorage.setItem("snoozer_snooze_code", "589424");
+  preservationStorage.setItem("snooze.shopperId", "589424");
+  preservationStorage.setItem("snooze.assessment", JSON.stringify({ size: "Queen" }));
+  preservationStorage.setItem("snooze.recommendations", JSON.stringify({ topPodId: "pod-4" }));
+  preservationStorage.setItem("snooze.pod.pod-4.openStage", "build");
+  preservationStorage.setItem("snooze.podBuilder.pod-4", JSON.stringify({ size: "King" }));
+  preservationStorage.setItem("snooze.chatTranscript", JSON.stringify([{ role: "user" }]));
+
+  const welcomeReset = resetPolicies.executeDeviceReset({
+    device: welcomeDevice,
+    policy: welcomePolicy,
+    storage: preservationStorage,
+    pathname: "/assessment",
+  });
+  assert.equal(welcomeReset.route, "/welcome");
+  assert.equal(preservationStorage.getItem("snooze.assessment"), null);
+  assert.equal(preservationStorage.getItem("snooze.cartId"), "cart-keep");
+  assert.equal(preservationStorage.getItem("snooze.checkoutUrl"), "https://checkout.example/keep");
+  assert.equal(preservationStorage.getItem("snoozer_snooze_code"), "589424");
+  assert.equal(preservationStorage.getItem("snooze.shopperId"), "589424");
+
+  const podReset = resetPolicies.executeDeviceReset({
+    device: { ...pod1, podId: "pod-4", defaultRoute: "/pod/pod-4" },
+    policy: podPolicy,
+    storage: preservationStorage,
+    pathname: "/pod/pod-4",
+  });
+  assert.equal(podReset.route, "/pod/pod-4");
+  assert.equal(preservationStorage.getItem("snooze.pod.pod-4.openStage"), null);
+  assert.equal(preservationStorage.getItem("snooze.podBuilder.pod-4"), null);
+  assert.equal(preservationStorage.getItem("snooze.cartId"), "cart-keep");
+
+  const askReset = resetPolicies.executeDeviceReset({
+    device: askDevice,
+    policy: askPolicy,
+    storage: preservationStorage,
+    pathname: "/ask-snoozer",
+  });
+  assert.equal(askReset.route, "/ask-snoozer");
+  assert.equal(preservationStorage.getItem("snooze.chatTranscript"), null);
+
+  const sleepReset = resetPolicies.executeDeviceReset({
+    device: sleepDevice,
+    policy: sleepPolicy,
+    storage: preservationStorage,
+    pathname: "/sleep-essentials",
+  });
+  assert.equal(sleepReset.route, "/sleep-essentials");
+
+  const checkoutReset = resetPolicies.executeDeviceReset({
+    device: checkoutDevice,
+    policy: checkoutPolicy,
+    storage: preservationStorage,
+    pathname: "/checkout/guest",
+  });
+  assert.equal(checkoutReset.route, "/cart");
+  assert.equal(checkoutReset.message, resetPolicies.CHECKOUT_ABANDONMENT_MESSAGE);
+  assert.equal(preservationStorage.getItem("snooze.cartId"), "cart-keep");
+  assert.equal(preservationStorage.getItem("snooze.checkoutUrl"), "https://checkout.example/keep");
+
+  let fakeNow = 1000;
+  const tracker = activityTracker.createDeviceActivityTracker({
+    clock: () => fakeNow,
+    target: null,
+    eventTarget: null,
+  });
+  let lastSnapshot = tracker.getSnapshot();
+  const unsubscribeTracker = tracker.subscribe((snapshot) => {
+    lastSnapshot = snapshot;
+  });
+  fakeNow = 2500;
+  tracker.record("touch");
+  assert.equal(lastSnapshot.lastActivityAt, 2500);
+  assert.equal(lastSnapshot.activeReason, "touch");
+  tracker.setActiveReason("tts", true);
+  assert.equal(lastSnapshot.isActive, true);
+  assert.deepEqual(lastSnapshot.activeReasons, ["tts"]);
+  fakeNow = 3200;
+  tracker.setActiveReason("tts", false);
+  assert.equal(lastSnapshot.isActive, false);
+  assert.equal(lastSnapshot.lastActivityAt, 3200);
+  tracker.setActiveReason("cartMutation", true);
+  assert.deepEqual(lastSnapshot.activeReasons, ["cartMutation"]);
+  tracker.setActiveReason("cartMutation", false);
+  unsubscribeTracker();
 
   console.log(
     JSON.stringify(

@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { emitDeviceTtsActivity } from "@/device/deviceActivityTracker";
 import { VoiceQueueController } from "./voiceQueue";
 
 const VoiceQueueContext = createContext(null);
@@ -44,6 +45,7 @@ export function VoiceQueueProvider({
   const captionTimerRef = useRef(null);
   const currentJobRef = useRef(null);
   const activeRunTokenRef = useRef(0);
+  const ttsActiveRef = useRef(false);
 
   const [muted, setMutedState] = useState(readInitialMutedState);
   const [voiceState, setVoiceState] = useState(buildDefaultVoiceState);
@@ -487,6 +489,16 @@ export function VoiceQueueProvider({
       maybeRunNext();
     }
   }, [snapshot.queue.length, snapshot.currentJob, controller, maybeRunNext]);
+
+  useEffect(() => {
+    const isActive = Boolean(snapshot.currentJob || snapshot.isBusy || voiceState.loading || voiceState.playing);
+    if (ttsActiveRef.current === isActive) return;
+    ttsActiveRef.current = isActive;
+    emitDeviceTtsActivity(isActive, {
+      reason: "tts",
+      currentJobId: snapshot.currentJob?.id || null,
+    });
+  }, [snapshot.currentJob, snapshot.isBusy, voiceState.loading, voiceState.playing]);
 
   const enqueueHudResponse = useCallback(
     async (response) => {

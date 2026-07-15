@@ -17,6 +17,10 @@ import {
   filterDeviceActions,
   isDeviceActionAllowed,
 } from "@/device/deviceActionGuards";
+import {
+  emitDeviceActiveResponse,
+  emitDeviceHumanHelp,
+} from "@/device/deviceActivityTracker";
 import { makePodRoute } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { sendAskSnoozerMessage } from "@/lib/snoozer/askSnoozerPage";
@@ -169,6 +173,7 @@ export default function AskSnoozer() {
   const textareaRef = useRef(null);
   const overlayWasOpenRef = useRef(false);
   const handledPrefillLocationRef = useRef("");
+  const humanHelpTimerRef = useRef(null);
 
   const snoozepod = useStore((state) => state.snoozepod || []);
   const [messages, setMessages] = useState([]);
@@ -227,6 +232,18 @@ export default function AskSnoozer() {
       behavior: messages.length ? "smooth" : "auto",
     });
   }, [messages, pending]);
+
+  useEffect(() => {
+    emitDeviceActiveResponse(pending, { reason: "activeResponse" });
+  }, [pending]);
+
+  useEffect(() => {
+    return () => {
+      if (humanHelpTimerRef.current) window.clearTimeout(humanHelpTimerRef.current);
+      emitDeviceHumanHelp(false, { reason: "humanHelp" });
+      emitDeviceActiveResponse(false, { reason: "activeResponse" });
+    };
+  }, []);
 
   useEffect(() => {
     const state =
@@ -367,8 +384,7 @@ export default function AskSnoozer() {
         navigate(action?.target || "/results");
         return;
       case "request_human":
-        setDraft("I need human help.");
-        textareaRef.current?.focus();
+        handleTalkToHuman();
         return;
       default:
         if (action?.target) navigate(action.target);
@@ -409,6 +425,11 @@ export default function AskSnoozer() {
 
   function handleTalkToHuman() {
     noteUserInteraction?.();
+    emitDeviceHumanHelp(true, { reason: "humanHelp" });
+    if (humanHelpTimerRef.current) window.clearTimeout(humanHelpTimerRef.current);
+    humanHelpTimerRef.current = window.setTimeout(() => {
+      emitDeviceHumanHelp(false, { reason: "humanHelp" });
+    }, 90000);
     setDraft("I need human help.");
     textareaRef.current?.focus();
   }

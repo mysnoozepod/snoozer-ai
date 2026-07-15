@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { getAssessmentQuestions, saveAssessment } from "@/lib/api";
 import { canViewCart } from "@/device/deviceActionGuards";
+import { emitDeviceAssessmentSubmission } from "@/device/deviceActivityTracker";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import useRewards from "@/lib/useRewards";
 import { useStore } from "@/lib/useStore";
@@ -984,6 +985,7 @@ export default function Assessment() {
     let shouldResetSubmitting = true;
 
     try {
+      emitDeviceAssessmentSubmission(true, { reason: "assessmentSubmission" });
       submitTriggeredRef.current = true;
       setSubmitting(true);
       clearTimer(progressTimerRef);
@@ -1030,6 +1032,7 @@ export default function Assessment() {
       if (shouldResetSubmitting && mountedRef.current) {
         setSubmitting(false);
       }
+      emitDeviceAssessmentSubmission(false, { reason: "assessmentSubmission" });
     }
   };
 

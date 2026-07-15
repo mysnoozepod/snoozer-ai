@@ -26,6 +26,7 @@ import SnoozePod from "./pages/SnoozePod.jsx";
 import { CartProvider } from "./lib/CartContext.jsx";
 import { api } from "./lib/api.js";
 import { DeviceModeProvider } from "./device/DeviceModeProvider.jsx";
+import { DeviceResetProvider } from "./device/DeviceResetProvider.jsx";
 import DeviceRouteGuard from "./device/DeviceRouteGuard.jsx";
 
 import ErrorBoundary from "./ErrorBoundary.jsx";
@@ -66,7 +67,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <SessionBoot>
           <DeviceModeProvider>
             <BrowserRouter>
-              <Routes>
+              <DeviceResetProvider>
+                <Routes>
                 <Route
                   path="/"
                   element={
@@ -147,7 +149,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
                 </Route>
-              </Routes>
+                </Routes>
+              </DeviceResetProvider>
             </BrowserRouter>
           </DeviceModeProvider>
         </SessionBoot>
