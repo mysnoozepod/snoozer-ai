@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 
 import { useSnoozer } from "@/Layout";
+import { canViewCart } from "@/device/deviceActionGuards";
+import { useDeviceMode } from "@/device/useDeviceMode";
 import { sendAskSnoozerMessage } from "@/lib/snoozer/askSnoozerPage";
 import { useStore } from "@/lib/useStore";
 import {
@@ -156,6 +158,7 @@ function ChatComposer({
 export default function AskSnoozer() {
   const navigate = useNavigate();
   const location = useLocation();
+  const device = useDeviceMode();
   const transcriptRef = useRef(null);
   const textareaRef = useRef(null);
   const overlayWasOpenRef = useRef(false);
@@ -180,6 +183,7 @@ export default function AskSnoozer() {
     () => snoozepod.reduce((sum, item) => sum + (Number(item?.quantity) || 0), 0),
     [snoozepod]
   );
+  const showCommerceAffordances = canViewCart(device);
   const referrerRoute =
     location.state && typeof location.state === "object"
       ? location.state.from || null
@@ -385,14 +389,16 @@ export default function AskSnoozer() {
     <ShowroomPageShell className="flex min-h-0 flex-col pb-3">
       <ShowroomTopRail className="items-center pt-2 md:pt-3">
         <ShowroomBrandMark />
-        <ShowroomCartBadge
-          count={snoozepodCount}
-          quiet
-          onClick={() => {
-            noteUserInteraction?.();
-            navigate("/snoozepod");
-          }}
-        />
+        {showCommerceAffordances ? (
+          <ShowroomCartBadge
+            count={snoozepodCount}
+            quiet
+            onClick={() => {
+              noteUserInteraction?.();
+              navigate("/snoozepod");
+            }}
+          />
+        ) : null}
       </ShowroomTopRail>
 
       <div className="mx-auto flex min-h-0 w-full max-w-[1120px] flex-1 flex-col px-4 pt-2 md:px-6 md:pt-3">

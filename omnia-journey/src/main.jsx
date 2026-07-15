@@ -26,6 +26,7 @@ import SnoozePod from "./pages/SnoozePod.jsx";
 import { CartProvider } from "./lib/CartContext.jsx";
 import { api } from "./lib/api.js";
 import { DeviceModeProvider } from "./device/DeviceModeProvider.jsx";
+import DeviceRouteGuard from "./device/DeviceRouteGuard.jsx";
 
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import "./styles/index.css";
@@ -108,9 +109,30 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="ask-snoozer" element={<AskSnoozer />} />
 
                 {/* Cart + Checkout */}
-                <Route path="cart" element={<Cart />} />
-                <Route path="checkout/guest" element={<Checkout />} />
-                <Route path="checkout/:id" element={<Checkout />} />
+                <Route
+                  path="cart"
+                  element={
+                    <DeviceRouteGuard requireCart>
+                      <Cart />
+                    </DeviceRouteGuard>
+                  }
+                />
+                <Route
+                  path="checkout/guest"
+                  element={
+                    <DeviceRouteGuard requireCheckout>
+                      <Checkout />
+                    </DeviceRouteGuard>
+                  }
+                />
+                <Route
+                  path="checkout/:id"
+                  element={
+                    <DeviceRouteGuard requireCheckout>
+                      <Checkout />
+                    </DeviceRouteGuard>
+                  }
+                />
 
                 {/* Product detail â€” accepts either handle or numeric ID */}
                 <Route path="products/:slug" element={<ProductDetail />} />

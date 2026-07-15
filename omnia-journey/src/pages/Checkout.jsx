@@ -2,6 +2,8 @@
 import React, { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { CHECKOUT_LOUNGE_MESSAGE, canInitiateCheckout } from "@/device/deviceActionGuards";
+import { useDeviceMode } from "@/device/useDeviceMode";
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/useStore";
 import { getSessionState, getShopperId } from "@/state/sessionStore";
@@ -71,6 +73,8 @@ function normalizeServerLines(cartObj) {
 export default function Checkout() {
   // kept for route compatibility if you ever use /checkout/:id
   const { id } = useParams(); // eslint-disable-line no-unused-vars
+  const device = useDeviceMode();
+  const checkoutAllowed = canInitiateCheckout(device);
 
   // ✅ Cart comes from zustand (matches Cart.jsx + Explore.jsx + ProductDetail.jsx)
   const cartItems = useStore((s) => s.cart || []);
@@ -116,6 +120,11 @@ export default function Checkout() {
   async function createCheckout() {
     setError("");
     setToast("");
+
+    if (!checkoutAllowed) {
+      setError(CHECKOUT_LOUNGE_MESSAGE);
+      return;
+    }
 
     if (!Array.isArray(cartItems) || cartItems.length === 0) {
       setError("Your cart is empty.");
@@ -236,6 +245,12 @@ export default function Checkout() {
       <h1 className="text-2xl font-bold mb-2">Review Your Cart</h1>
       <p className="text-sm text-gray-600 mb-6">Total: {formatMoney(total)}</p>
 
+      {!checkoutAllowed ? (
+        <div className="mb-6 rounded-2xl border border-[#d7e3ff] bg-[#f7faff] p-4 text-sm font-semibold leading-6 text-slate-700">
+          {CHECKOUT_LOUNGE_MESSAGE}
+        </div>
+      ) : null}
+
       {cartItems.length === 0 ? (
         <p className="text-gray-500">Your cart is empty.</p>
       ) : (
@@ -295,7 +310,7 @@ export default function Checkout() {
 
             <Button
               onClick={createCheckout}
-              disabled={loading || !cartItems.length}
+              disabled={loading || !cartItems.length || !checkoutAllowed}
               className="w-full py-3 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition disabled:opacity-70"
             >
               {loading ? "Processing…" : "Proceed to Checkout"}

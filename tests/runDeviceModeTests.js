@@ -51,6 +51,7 @@ async function run() {
   const registry = await importDeviceModule("deviceRegistry.js");
   const cache = await importDeviceModule("deviceConfigCache.js");
   const routes = await importDeviceModule("deviceRoutePatterns.js");
+  const guards = await importDeviceModule("deviceActionGuards.js");
 
   const manifest = manifestModule.DEVICE_REGISTRY_MANIFEST;
 
@@ -78,6 +79,26 @@ async function run() {
   assert.equal(podResolution.podId, "pod-3");
   assert.equal(podResolution.configSource, modes.CONFIG_SOURCES.MANIFEST);
   assert.equal(podResolution.checkoutAuthority, false);
+  assert.equal(guards.canViewCart(podResolution), true);
+  assert.equal(guards.canMutateCart(podResolution), true);
+  assert.equal(guards.canInitiateCheckout(podResolution), false);
+  assert.equal(guards.canOpenCheckoutUrl(podResolution), false);
+  assert.equal(guards.shouldShowCheckoutLoungeHandoff(podResolution), true);
+  assert.deepEqual(
+    guards.getCheckoutRouteFallback(podResolution, "/checkout/guest"),
+    {
+      to: "/cart",
+      state: {
+        checkoutBlocked: true,
+        checkoutHandoff: true,
+        attemptedPath: "/checkout/guest",
+        deviceId: "pod-3-ipad-01",
+        deviceMode: modes.DEVICE_MODES.POD_IPAD,
+        message: guards.CHECKOUT_LOUNGE_MESSAGE,
+      },
+      allow: false,
+    }
+  );
 
   const devFallback = registry.resolveDeviceConfig({
     environment: "development",
@@ -86,6 +107,9 @@ async function run() {
   assert.equal(devFallback.status, modes.DEVICE_STATUSES.READY);
   assert.equal(devFallback.deviceMode, modes.DEVICE_MODES.ADMIN_DEV);
   assert.equal(devFallback.configSource, modes.CONFIG_SOURCES.DEVELOPMENT_FALLBACK);
+  assert.equal(guards.canViewCart(devFallback), true);
+  assert.equal(guards.canInitiateCheckout(devFallback), true);
+  assert.equal(guards.canOpenCheckoutUrl(devFallback), true);
 
   const productionMissing = registry.resolveDeviceConfig({
     environment: "production",
@@ -93,6 +117,8 @@ async function run() {
   });
   assert.equal(productionMissing.status, modes.DEVICE_STATUSES.UNKNOWN);
   assert.equal(productionMissing.isAdminDev, false);
+  assert.equal(guards.canViewCart(productionMissing), false);
+  assert.equal(guards.canInitiateCheckout(productionMissing), false);
 
   const productionUnknown = registry.resolveDeviceConfig({
     deviceId: "mystery-device",
@@ -101,6 +127,70 @@ async function run() {
   });
   assert.equal(productionUnknown.status, modes.DEVICE_STATUSES.UNKNOWN);
   assert.equal(productionUnknown.isKnownDevice, false);
+  assert.equal(guards.canViewCart(productionUnknown), false);
+  assert.equal(guards.canInitiateCheckout(productionUnknown), false);
+
+  const checkoutDevice = registry.resolveDeviceConfig({
+    deviceId: "checkout-01",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(checkoutDevice.status, modes.DEVICE_STATUSES.READY);
+  assert.equal(checkoutDevice.deviceMode, modes.DEVICE_MODES.CHECKOUT_KIOSK);
+  assert.equal(guards.canViewCart(checkoutDevice), true);
+  assert.equal(guards.canMutateCart(checkoutDevice), true);
+  assert.equal(guards.canInitiateCheckout(checkoutDevice), true);
+  assert.equal(guards.canOpenCheckoutUrl(checkoutDevice), true);
+  assert.equal(guards.getCheckoutRouteFallback(checkoutDevice, "/checkout/guest").allow, true);
+  assert.equal(guards.getCheckoutRouteFallback(checkoutDevice, "/checkout/abc").allow, true);
+
+  const sleepDevice = registry.resolveDeviceConfig({
+    deviceId: "sleep-essentials-01",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(sleepDevice.status, modes.DEVICE_STATUSES.READY);
+  assert.equal(sleepDevice.deviceMode, modes.DEVICE_MODES.SLEEP_ESSENTIALS_KIOSK);
+  assert.equal(guards.canViewCart(sleepDevice), true);
+  assert.equal(guards.canMutateCart(sleepDevice), true);
+  assert.equal(guards.canInitiateCheckout(sleepDevice), false);
+  assert.equal(guards.shouldShowCheckoutLoungeHandoff(sleepDevice), true);
+  assert.equal(guards.getCheckoutRouteFallback(sleepDevice, "/checkout/guest").to, "/cart");
+
+  const askDevice = registry.resolveDeviceConfig({
+    deviceId: "ask-snoozer-01",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(askDevice.status, modes.DEVICE_STATUSES.READY);
+  assert.equal(askDevice.deviceMode, modes.DEVICE_MODES.ASK_SNOOZER_KIOSK);
+  assert.equal(guards.canViewCart(askDevice), false);
+  assert.equal(guards.canMutateCart(askDevice), false);
+  assert.equal(guards.canInitiateCheckout(askDevice), false);
+  assert.equal(guards.getCartRouteFallback(askDevice, "/cart").to, "/ask-snoozer");
+  assert.equal(guards.getCheckoutRouteFallback(askDevice, "/checkout/guest").to, "/ask-snoozer");
+
+  const welcomeDevice = registry.resolveDeviceConfig({
+    deviceId: "welcome-01",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(welcomeDevice.status, modes.DEVICE_STATUSES.READY);
+  assert.equal(welcomeDevice.deviceMode, modes.DEVICE_MODES.WELCOME_KIOSK);
+  assert.equal(guards.canViewCart(welcomeDevice), false);
+  assert.equal(guards.canMutateCart(welcomeDevice), false);
+  assert.equal(guards.canInitiateCheckout(welcomeDevice), false);
+  assert.equal(guards.getCartRouteFallback(welcomeDevice, "/cart").to, "/welcome");
+  assert.equal(guards.getCheckoutRouteFallback(welcomeDevice, "/checkout/guest").to, "/welcome");
+
+  const redirectStorage = createMemoryStorage();
+  redirectStorage.setItem("snooze.cartId", "cart-123");
+  redirectStorage.setItem("snooze.checkoutUrl", "https://checkout.example/test");
+  redirectStorage.setItem("snoozer_snooze_code", "589424");
+  guards.getCheckoutRouteFallback(podResolution, "/checkout/guest");
+  assert.equal(redirectStorage.getItem("snooze.cartId"), "cart-123");
+  assert.equal(redirectStorage.getItem("snooze.checkoutUrl"), "https://checkout.example/test");
+  assert.equal(redirectStorage.getItem("snoozer_snooze_code"), "589424");
 
   const badPod = {
     ...manifest["pod-3-ipad-01"],
@@ -168,7 +258,7 @@ async function run() {
       {
         ok: true,
         checkedDevices: Object.keys(manifest).length,
-        assertions: 34,
+        assertions: 79,
       },
       null,
       2
@@ -180,4 +270,3 @@ run().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-

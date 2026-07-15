@@ -1,6 +1,13 @@
 // src/pages/ProductDetail.jsx
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
+import {
+  CHECKOUT_LOUNGE_MESSAGE,
+  canInitiateCheckout,
+  canMutateCart,
+  canViewCart,
+} from "@/device/deviceActionGuards";
+import { useDeviceMode } from "@/device/useDeviceMode";
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/useStore";
 import { persistShopifyCartIdentity } from "@/lib/session/shopifyCartState";
@@ -115,11 +122,13 @@ function formatMoney(amount, currency = "USD") {
 export default function ProductDetail() {
   const { slug } = useParams(); // handle or numeric ID
   const navigate = useNavigate();
+  const device = useDeviceMode();
 
   // ✅ Cart is managed via zustand store (matches Cart.jsx + Explore.jsx)
   const addToCart = useStore((s) => s.addToCart);
   const setCartMeta = useStore((s) => s.setCartMeta);
   const recommendations = useStore((s) => s.recommendations);
+  const checkoutAllowed = canInitiateCheckout(device);
 
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -267,6 +276,16 @@ export default function ProductDetail() {
     const item = buildCartItem();
     if (!item) {
       setCheckoutError("This product variant is not available.");
+      return;
+    }
+
+    if (!checkoutAllowed) {
+      if (canMutateCart(device)) {
+        addToCart?.(item);
+        setAddedMsg("Added to cart.");
+      }
+      setCheckoutError(CHECKOUT_LOUNGE_MESSAGE);
+      if (canViewCart(device)) navigate("/cart", { state: { checkoutHandoff: true } });
       return;
     }
 

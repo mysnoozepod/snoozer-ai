@@ -1,6 +1,8 @@
 // src/components/SnoozerPanel.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { canOpenCheckoutUrl } from "@/device/deviceActionGuards";
+import { useDeviceMode } from "@/device/useDeviceMode";
 import { api } from "@/lib/api";
 import {
   getStoredShopifyCartIdentity,
@@ -185,6 +187,7 @@ export function SnoozerHUD({
   openCartUrl: controlledOpenCartUrl,
   onSend,
 }) {
+  const device = useDeviceMode();
   const modeLower = String(mode || "").toLowerCase().trim();
 
   const [input, setInput] = useState("");
@@ -281,10 +284,12 @@ export function SnoozerHUD({
     return displayedText || "";
   }, [effectiveBusy, effectiveError, displayedText, isStreaming, externalCaptionText]);
 
-  const effectiveOpenCartUrl =
-    typeof controlledOpenCartUrl === "string"
+  const openCheckoutAllowed = canOpenCheckoutUrl(device);
+  const effectiveOpenCartUrl = openCheckoutAllowed
+    ? typeof controlledOpenCartUrl === "string"
       ? controlledOpenCartUrl
-      : localOpenCartUrl;
+      : localOpenCartUrl
+    : "";
 
   const listRef = useRef(null);
   const introTimeoutRef = useRef(null);

@@ -1,6 +1,13 @@
 import React, { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
+import {
+  CHECKOUT_LOUNGE_MESSAGE,
+  canInitiateCheckout,
+  canOpenCheckoutUrl,
+  shouldShowCheckoutLoungeHandoff,
+} from "@/device/deviceActionGuards";
+import { useDeviceMode } from "@/device/useDeviceMode";
 import { useStore } from "@/lib/useStore";
 import { getSessionState, getShopperId } from "@/state/sessionStore";
 import {
@@ -138,6 +145,8 @@ function pickKeyAttributes(attrs) {
 }
 
 export default function Cart() {
+  const location = useLocation();
+  const device = useDeviceMode();
   const cartItems = useStore((s) => s.cart || []);
   const updateCart = useStore((s) => s.updateCart);
   const removeFromCart = useStore((s) => s.removeFromCart);
@@ -153,6 +162,20 @@ export default function Cart() {
   const [toast, setToast] = useState("");
 
   const shopperId = getShopperId() || "guest";
+  const checkoutAllowed = canInitiateCheckout(device);
+  const checkoutUrlAllowed = canOpenCheckoutUrl(device);
+  const showCheckoutHandoff =
+    shouldShowCheckoutLoungeHandoff(device) || Boolean(location.state?.checkoutHandoff);
+
+  const displaySnoozeCode = useMemo(() => {
+    const stored =
+      safeGet("snoozeCode") ||
+      safeGet("snoozer_snooze_code") ||
+      safeGet("snoozer_access_code") ||
+      safeGet("snoozer_shopper_id");
+    if (stored) return stored;
+    return shopperId && shopperId !== "guest" ? shopperId : "";
+  }, [shopperId]);
 
   const continuePodId = useMemo(() => {
     const parsed =
@@ -202,6 +225,11 @@ export default function Cart() {
 
   async function handleCheckout() {
     if (checkoutLoading) return;
+
+    if (!checkoutAllowed) {
+      setToast(CHECKOUT_LOUNGE_MESSAGE);
+      return;
+    }
 
     if (!cartItems.length) {
       setToast("Your cart is empty.");
@@ -355,7 +383,7 @@ export default function Cart() {
                 >
                   View SnoozePod
                 </Link>
-                {bestCheckoutUrl ? (
+                {bestCheckoutUrl && checkoutUrlAllowed ? (
                   <a
                     href={bestCheckoutUrl}
                     target="_blank"
@@ -489,7 +517,9 @@ export default function Cart() {
                   {formatMoney(total)}
                 </div>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Final review before you move into checkout.
+                  {checkoutAllowed
+                    ? "Final review before you move into checkout."
+                    : "Your setup is saved for the Checkout Lounge."}
                 </p>
 
                 <div className="mt-4 grid gap-2">
@@ -504,18 +534,57 @@ export default function Cart() {
                       Checkout
                     </div>
                     <div className="mt-1 text-sm font-semibold text-slate-600">
-                      You&apos;ll continue using the existing checkout flow.
+                      {checkoutAllowed
+                        ? "You'll continue using the existing checkout flow."
+                        : "Continue at the Checkout Lounge to complete checkout."}
                     </div>
                   </div>
                 </div>
 
-                <button
-                  onClick={handleCheckout}
-                  disabled={checkoutLoading || !cartItems.length}
-                  className="mt-5 inline-flex w-full items-center justify-center rounded-[18px] bg-[#1A66D2] px-6 py-3.5 text-base font-black text-white transition hover:bg-[#1550A0] disabled:opacity-60"
-                >
-                  {checkoutLoading ? "Processing..." : "Checkout"}
-                </button>
+                {showCheckoutHandoff ? (
+                  <div className="mt-5 rounded-[22px] border border-[#d7e3ff] bg-[#f7faff] p-4">
+                    <div className="text-[0.72rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+                      Continue at the Checkout Lounge
+                    </div>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">
+                      {CHECKOUT_LOUNGE_MESSAGE}
+                    </p>
+                    <div className="mt-3 grid gap-2">
+                      <div className="rounded-[16px] border border-slate-200 bg-white px-3 py-2">
+                        <div className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">
+                          Snooze Code
+                        </div>
+                        <div className="mt-1 text-sm font-black text-slate-900">
+                          {displaySnoozeCode || "Not checked in yet"}
+                        </div>
+                      </div>
+                      <div className="rounded-[16px] border border-slate-200 bg-white px-3 py-2 text-xs font-semibold leading-5 text-slate-600">
+                        Cart ID, checkout URL, Snooze Code, and session identity stay preserved.
+                      </div>
+                      <div className="rounded-[16px] border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-900">
+                        QR continuation is not wired in this app yet. A sleep specialist can help you
+                        continue at the Checkout Lounge.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setToast("A sleep specialist can help you continue at the Checkout Lounge.")
+                      }
+                      className="mt-4 inline-flex w-full items-center justify-center rounded-[18px] border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-900 transition hover:bg-slate-50"
+                    >
+                      Talk to Human
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleCheckout}
+                    disabled={checkoutLoading || !cartItems.length}
+                    className="mt-5 inline-flex w-full items-center justify-center rounded-[18px] bg-[#1A66D2] px-6 py-3.5 text-base font-black text-white transition hover:bg-[#1550A0] disabled:opacity-60"
+                  >
+                    {checkoutLoading ? "Processing..." : "Checkout"}
+                  </button>
+                )}
               </ShowroomPanel>
 
               <ShowroomFooterAction
