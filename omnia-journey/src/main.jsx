@@ -25,6 +25,7 @@ import SnoozePod from "./pages/SnoozePod.jsx";
 // âœ… Single source of truth: CartContext lives in src/lib
 import { CartProvider } from "./lib/CartContext.jsx";
 import { api } from "./lib/api.js";
+import { DeviceModeProvider } from "./device/DeviceModeProvider.jsx";
 
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import "./styles/index.css";
@@ -62,9 +63,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <ErrorBoundary>
       <CartProvider>
         <SessionBoot>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Layout />}>
+          <DeviceModeProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Layout />}>
                 {/* Entry */}
                 <Route index element={<Navigate to="/welcome" replace />} />
                 <Route path="start" element={<Navigate to="/welcome" replace />} />
@@ -115,9 +117,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </DeviceModeProvider>
         </SessionBoot>
       </CartProvider>
     </ErrorBoundary>
