@@ -128,6 +128,51 @@ async function run() {
   assert.equal(guards.canViewFinancing(devFallback), true);
   assert.equal(guards.canViewAdminDiagnostics(devFallback), true);
 
+  const localReviewBootstrap = registry.getBrowserDeviceBootstrap({
+    DEV: true,
+    MODE: "development",
+    VITE_DEPLOYMENT_ROLE: "review",
+  });
+  assert.equal(localReviewBootstrap.deploymentRole, "review");
+  const localReviewFallback = registry.resolveDeviceConfig({
+    ...localReviewBootstrap,
+    storage: createMemoryStorage(),
+  });
+  assert.equal(localReviewFallback.status, modes.DEVICE_STATUSES.READY);
+  assert.equal(localReviewFallback.deviceId, "admin-dev");
+  assert.equal(localReviewFallback.deviceMode, modes.DEVICE_MODES.ADMIN_DEV);
+  assert.equal(guards.canViewAdminDiagnostics(localReviewFallback), true);
+
+  const stagingReviewFallback = registry.resolveDeviceConfig({
+    deploymentRole: "review",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(stagingReviewFallback.status, modes.DEVICE_STATUSES.READY);
+  assert.equal(stagingReviewFallback.deviceId, "admin-dev");
+  assert.equal(stagingReviewFallback.deviceMode, modes.DEVICE_MODES.ADMIN_DEV);
+  assert.equal(stagingReviewFallback.deploymentRole, "review");
+  assert.equal(guards.canViewCart(stagingReviewFallback), true);
+  assert.equal(guards.canInitiateCheckout(stagingReviewFallback), true);
+  assert.equal(guards.canViewAdminDiagnostics(stagingReviewFallback), true);
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(stagingReviewFallback, "/checkout/guest").allow,
+    true
+  );
+  assert.equal(
+    routeOwnership.getDeviceRouteDecision(stagingReviewFallback, "/pod/1").redirectTo,
+    "/pod/pod-1"
+  );
+
+  const stagingReviewWithAdminDevice = registry.resolveDeviceConfig({
+    deviceId: "admin-dev",
+    deploymentRole: "review",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(stagingReviewWithAdminDevice.status, modes.DEVICE_STATUSES.READY);
+  assert.equal(stagingReviewWithAdminDevice.deviceId, "admin-dev");
+
   const productionMissing = registry.resolveDeviceConfig({
     environment: "production",
     storage: createMemoryStorage(),
@@ -146,6 +191,40 @@ async function run() {
   assert.equal(productionUnknown.isKnownDevice, false);
   assert.equal(guards.canViewCart(productionUnknown), false);
   assert.equal(guards.canInitiateCheckout(productionUnknown), false);
+
+  const showroomMissing = registry.resolveDeviceConfig({
+    deploymentRole: "showroom-device",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(showroomMissing.status, modes.DEVICE_STATUSES.UNKNOWN);
+  assert.equal(showroomMissing.isAdminDev, false);
+  assert.match(showroomMissing.validationErrors.join(" "), /showroom-device/);
+  assert.equal(guards.canViewCart(showroomMissing), false);
+  assert.equal(guards.canInitiateCheckout(showroomMissing), false);
+
+  const showroomUnknown = registry.resolveDeviceConfig({
+    deviceId: "mystery-device",
+    deploymentRole: "showroom-device",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(showroomUnknown.status, modes.DEVICE_STATUSES.UNKNOWN);
+  assert.equal(showroomUnknown.isKnownDevice, false);
+  assert.equal(showroomUnknown.isAdminDev, false);
+  assert.equal(guards.canViewCart(showroomUnknown), false);
+  assert.equal(guards.canInitiateCheckout(showroomUnknown), false);
+
+  const showroomPodSuccess = registry.resolveDeviceConfig({
+    deviceId: "pod-3-ipad-01",
+    deploymentRole: "showroom-device",
+    environment: "production",
+    storage: createMemoryStorage(),
+  });
+  assert.equal(showroomPodSuccess.status, modes.DEVICE_STATUSES.READY);
+  assert.equal(showroomPodSuccess.deviceMode, modes.DEVICE_MODES.POD_IPAD);
+  assert.equal(showroomPodSuccess.deploymentRole, "showroom-device");
+  assert.equal(showroomPodSuccess.podId, "pod-3");
 
   const checkoutDevice = registry.resolveDeviceConfig({
     deviceId: "checkout-01",

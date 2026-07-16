@@ -9,6 +9,8 @@ applications:
             - npm ci
         build:
           commands:
+            - export VITE_DEPLOYMENT_ROLE="${VITE_DEPLOYMENT_ROLE:-review}"
+            - export VITE_DEVICE_ID="${VITE_DEVICE_ID:-admin-dev}"
             - npm run build
       artifacts:
         baseDirectory: dist

@@ -12,6 +12,7 @@ export const DeviceModeContext = createContext({
   deviceId: null,
   deviceMode: null,
   environment: "production",
+  deploymentRole: "",
   storeId: null,
   zoneId: null,
   podId: null,
@@ -35,6 +36,7 @@ function createLoadingState() {
     deviceId: null,
     deviceMode: null,
     environment: "production",
+    deploymentRole: "",
     storeId: null,
     zoneId: null,
     podId: null,
@@ -77,4 +79,3 @@ export function DeviceModeProvider({ children }) {
 }
 
 export default DeviceModeProvider;
-

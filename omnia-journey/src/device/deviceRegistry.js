@@ -19,6 +19,11 @@ const CUSTOMER_MODES_WITHOUT_CHECKOUT = new Set([
   DEVICE_MODES.SLEEP_ESSENTIALS_KIOSK,
 ]);
 
+export const DEPLOYMENT_ROLES = Object.freeze({
+  REVIEW: "review",
+  SHOWROOM_DEVICE: "showroom-device",
+});
+
 function isPlainObject(value) {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
@@ -43,6 +48,15 @@ export function normalizeRuntimeEnvironment(value) {
 export function isDevelopmentEnvironment(environment, explicitDevFlag = false) {
   const env = normalizeRuntimeEnvironment(environment);
   return Boolean(explicitDevFlag || env === "development" || env === "test" || env === "local");
+}
+
+export function normalizeDeploymentRole(value) {
+  const role = String(value || "").trim().toLowerCase();
+  if (!role) return "";
+  if (role === DEPLOYMENT_ROLES.REVIEW || role === DEPLOYMENT_ROLES.SHOWROOM_DEVICE) {
+    return role;
+  }
+  return role;
 }
 
 export function getExpectedPodRoute(podId) {
@@ -147,6 +161,7 @@ function makeResolution({
   configSource,
   validationErrors = [],
   environment,
+  deploymentRole,
   isKnownDevice = false,
 }) {
   const normalizedDevice = cloneConfig(device);
@@ -158,6 +173,7 @@ function makeResolution({
     deviceId: normalizedDevice?.deviceId || null,
     deviceMode: mode,
     environment: normalizeRuntimeEnvironment(environment || normalizedDevice?.env),
+    deploymentRole: normalizeDeploymentRole(deploymentRole),
     storeId: normalizedDevice?.storeId || null,
     zoneId: normalizedDevice?.zoneId || null,
     podId: normalizedDevice?.podId || null,
@@ -182,9 +198,22 @@ function makeResolution({
 export function resolveDeviceConfig(options = {}) {
   const manifest = options.manifest || DEVICE_REGISTRY_MANIFEST;
   const environment = normalizeRuntimeEnvironment(options.environment);
+  const deploymentRole = normalizeDeploymentRole(options.deploymentRole);
   const isDev = isDevelopmentEnvironment(environment, options.isDevelopment);
   const deviceId = String(options.deviceId || "").trim();
   const viteDeviceMode = String(options.viteDeviceMode || "").trim();
+
+  if (deploymentRole === DEPLOYMENT_ROLES.REVIEW) {
+    const adminConfig = createAdminDevDeviceConfig({ environment });
+    return makeResolution({
+      status: DEVICE_STATUSES.READY,
+      device: adminConfig,
+      configSource: CONFIG_SOURCES.DEVELOPMENT_FALLBACK,
+      environment,
+      deploymentRole,
+      isKnownDevice: false,
+    });
+  }
 
   if (!deviceId) {
     if (isDev && (!viteDeviceMode || viteDeviceMode === DEVICE_MODES.ADMIN_DEV)) {
@@ -194,6 +223,7 @@ export function resolveDeviceConfig(options = {}) {
         device: adminConfig,
         configSource: CONFIG_SOURCES.DEVELOPMENT_FALLBACK,
         environment,
+        deploymentRole,
         isKnownDevice: false,
       });
     }
@@ -202,8 +232,13 @@ export function resolveDeviceConfig(options = {}) {
       status: DEVICE_STATUSES.UNKNOWN,
       device: null,
       configSource: CONFIG_SOURCES.FAILED_RESOLUTION,
-      validationErrors: ["VITE_DEVICE_ID is required outside local development."],
+      validationErrors: [
+        deploymentRole === DEPLOYMENT_ROLES.SHOWROOM_DEVICE
+          ? "VITE_DEVICE_ID is required when VITE_DEPLOYMENT_ROLE=showroom-device."
+          : "VITE_DEVICE_ID is required outside local development or review mode.",
+      ],
       environment,
+      deploymentRole,
       isKnownDevice: false,
     });
   }
@@ -224,6 +259,7 @@ export function resolveDeviceConfig(options = {}) {
           configSource: CONFIG_SOURCES.CACHE,
           validationErrors: [],
           environment,
+          deploymentRole,
           isKnownDevice: true,
         });
       }
@@ -235,6 +271,7 @@ export function resolveDeviceConfig(options = {}) {
       configSource: CONFIG_SOURCES.FAILED_RESOLUTION,
       validationErrors: [`Unknown deviceId: ${deviceId}`],
       environment,
+      deploymentRole,
       isKnownDevice: false,
     });
   }
@@ -247,6 +284,7 @@ export function resolveDeviceConfig(options = {}) {
       configSource: CONFIG_SOURCES.MANIFEST,
       validationErrors: validation.errors,
       environment,
+      deploymentRole,
       isKnownDevice: true,
     });
   }
@@ -258,6 +296,7 @@ export function resolveDeviceConfig(options = {}) {
       configSource: CONFIG_SOURCES.MANIFEST,
       validationErrors: ["Device is disabled."],
       environment,
+      deploymentRole,
       isKnownDevice: true,
     });
   }
@@ -270,6 +309,7 @@ export function resolveDeviceConfig(options = {}) {
     configSource: CONFIG_SOURCES.MANIFEST,
     validationErrors: [],
     environment,
+    deploymentRole,
     isKnownDevice: true,
   });
 }
@@ -278,6 +318,7 @@ export function getBrowserDeviceBootstrap(importMetaEnv = {}) {
   return {
     deviceId: importMetaEnv.VITE_DEVICE_ID || "",
     viteDeviceMode: importMetaEnv.VITE_DEVICE_MODE || "",
+    deploymentRole: importMetaEnv.VITE_DEPLOYMENT_ROLE || "",
     environment: importMetaEnv.MODE || (importMetaEnv.DEV ? "development" : "production"),
     isDevelopment: Boolean(importMetaEnv.DEV),
   };

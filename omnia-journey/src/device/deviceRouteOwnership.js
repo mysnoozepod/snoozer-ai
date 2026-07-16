@@ -1,5 +1,5 @@
 import { DEVICE_MODES, DEVICE_STATUSES } from "./deviceModes.js";
-import { isDevelopmentEnvironment } from "./deviceRegistry.js";
+import { DEPLOYMENT_ROLES, isDevelopmentEnvironment } from "./deviceRegistry.js";
 import { matchesAnyRoutePattern } from "./deviceRoutePatterns.js";
 import {
   CHECKOUT_LOUNGE_MESSAGE,
@@ -60,9 +60,10 @@ function allow(extra = {}) {
 
 export function isAdminDevRouteAllowed(device) {
   return Boolean(
-    device?.isAdminDev &&
+      device?.isAdminDev &&
       device?.deviceMode === DEVICE_MODES.ADMIN_DEV &&
-      isDevelopmentEnvironment(device?.environment, false)
+      (isDevelopmentEnvironment(device?.environment, false) ||
+        device?.deploymentRole === DEPLOYMENT_ROLES.REVIEW)
   );
 }
 

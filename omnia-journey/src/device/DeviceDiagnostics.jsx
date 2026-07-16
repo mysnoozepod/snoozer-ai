@@ -75,6 +75,7 @@ export default function DeviceDiagnostics() {
         <DiagnosticRow label="deviceMode" value={deviceState?.deviceMode} />
         <DiagnosticRow label="source" value={deviceState?.configSource} />
         <DiagnosticRow label="env" value={deviceState?.environment} />
+        <DiagnosticRow label="role" value={deviceState?.deploymentRole} />
         <DiagnosticRow label="storeId" value={deviceState?.storeId} />
         <DiagnosticRow label="zoneId" value={deviceState?.zoneId} />
         <DiagnosticRow label="podId" value={deviceState?.podId} />
