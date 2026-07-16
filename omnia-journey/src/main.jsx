@@ -28,6 +28,7 @@ import { api } from "./lib/api.js";
 import { DeviceModeProvider } from "./device/DeviceModeProvider.jsx";
 import { DeviceResetProvider } from "./device/DeviceResetProvider.jsx";
 import DeviceRouteGuard from "./device/DeviceRouteGuard.jsx";
+import { ZoneStateProvider } from "./iot/ZoneStateContext.jsx";
 
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import "./styles/index.css";
@@ -67,7 +68,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <SessionBoot>
           <DeviceModeProvider>
             <BrowserRouter>
-              <DeviceResetProvider>
+              <ZoneStateProvider>
+                <DeviceResetProvider>
                 <Routes>
                 <Route
                   path="/"
@@ -150,7 +152,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="*" element={<NotFound />} />
                 </Route>
                 </Routes>
-              </DeviceResetProvider>
+                </DeviceResetProvider>
+              </ZoneStateProvider>
             </BrowserRouter>
           </DeviceModeProvider>
         </SessionBoot>
