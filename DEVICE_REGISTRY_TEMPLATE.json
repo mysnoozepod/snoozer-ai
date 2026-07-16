@@ -1,0 +1,272 @@
+{
+  "version": "1.0",
+  "status": "template",
+  "lastUpdated": "2026-07-16",
+  "storeId": "severn-pilot",
+  "environment": "production",
+  "notes": [
+    "Template only. Do not store secrets here.",
+    "Checkout authority must remain limited to checkout-01.",
+    "Pod iPads must stay bound to their assigned pod route.",
+    "Bedding Kiosk may use the sleep-essentials-kiosk mode and approved unavailable state until the route exists."
+  ],
+  "devices": [
+    {
+      "deviceId": "welcome-01",
+      "label": "Welcome Kiosk",
+      "deviceMode": "welcome-kiosk",
+      "zoneId": "welcome-zone",
+      "podId": null,
+      "defaultRoute": "/welcome",
+      "allowedRoutePatterns": [
+        "/welcome",
+        "/what-to-expect",
+        "/assessment",
+        "/results"
+      ],
+      "blockedRoutePatterns": [
+        "/pod/*",
+        "/ask-snoozer",
+        "/cart",
+        "/checkout/*",
+        "/snoozepod",
+        "/products/*",
+        "/explore-dev"
+      ],
+      "checkoutAuthority": false,
+      "cartAuthority": "none",
+      "resetPolicyId": "welcome",
+      "expectedLocation": "front-entry",
+      "assetTag": "TBD",
+      "serialNumber": "TBD",
+      "commissioned": false
+    },
+    {
+      "deviceId": "pod-1-ipad-01",
+      "label": "Pod 1 iPad",
+      "deviceMode": "pod-ipad",
+      "zoneId": "pod-1",
+      "podId": "pod-1",
+      "defaultRoute": "/pod/pod-1",
+      "allowedRoutePatterns": [
+        "/pod/pod-1",
+        "/ask-snoozer",
+        "/cart"
+      ],
+      "blockedRoutePatterns": [
+        "/welcome",
+        "/what-to-expect",
+        "/assessment",
+        "/results",
+        "/checkout/*",
+        "/explore-dev"
+      ],
+      "checkoutAuthority": false,
+      "cartAuthority": "preview",
+      "resetPolicyId": "pod",
+      "expectedLocation": "pod-1",
+      "assetTag": "TBD",
+      "serialNumber": "TBD",
+      "commissioned": false
+    },
+    {
+      "deviceId": "pod-2-ipad-01",
+      "label": "Pod 2 iPad",
+      "deviceMode": "pod-ipad",
+      "zoneId": "pod-2",
+      "podId": "pod-2",
+      "defaultRoute": "/pod/pod-2",
+      "allowedRoutePatterns": [
+        "/pod/pod-2",
+        "/ask-snoozer",
+        "/cart"
+      ],
+      "blockedRoutePatterns": [
+        "/welcome",
+        "/what-to-expect",
+        "/assessment",
+        "/results",
+        "/checkout/*",
+        "/explore-dev"
+      ],
+      "checkoutAuthority": false,
+      "cartAuthority": "preview",
+      "resetPolicyId": "pod",
+      "expectedLocation": "pod-2",
+      "assetTag": "TBD",
+      "serialNumber": "TBD",
+      "commissioned": false
+    },
+    {
+      "deviceId": "pod-3-ipad-01",
+      "label": "Pod 3 iPad",
+      "deviceMode": "pod-ipad",
+      "zoneId": "pod-3",
+      "podId": "pod-3",
+      "defaultRoute": "/pod/pod-3",
+      "allowedRoutePatterns": [
+        "/pod/pod-3",
+        "/ask-snoozer",
+        "/cart"
+      ],
+      "blockedRoutePatterns": [
+        "/welcome",
+        "/what-to-expect",
+        "/assessment",
+        "/results",
+        "/checkout/*",
+        "/explore-dev"
+      ],
+      "checkoutAuthority": false,
+      "cartAuthority": "preview",
+      "resetPolicyId": "pod",
+      "expectedLocation": "pod-3",
+      "assetTag": "TBD",
+      "serialNumber": "TBD",
+      "commissioned": false
+    },
+    {
+      "deviceId": "pod-4-ipad-01",
+      "label": "Pod 4 iPad",
+      "deviceMode": "pod-ipad",
+      "zoneId": "pod-4",
+      "podId": "pod-4",
+      "defaultRoute": "/pod/pod-4",
+      "allowedRoutePatterns": [
+        "/pod/pod-4",
+        "/ask-snoozer",
+        "/cart"
+      ],
+      "blockedRoutePatterns": [
+        "/welcome",
+        "/what-to-expect",
+        "/assessment",
+        "/results",
+        "/checkout/*",
+        "/explore-dev"
+      ],
+      "checkoutAuthority": false,
+      "cartAuthority": "preview",
+      "resetPolicyId": "pod",
+      "expectedLocation": "pod-4",
+      "assetTag": "TBD",
+      "serialNumber": "TBD",
+      "commissioned": false
+    },
+    {
+      "deviceId": "pod-5-ipad-01",
+      "label": "Pod 5 iPad",
+      "deviceMode": "pod-ipad",
+      "zoneId": "pod-5",
+      "podId": "pod-5",
+      "defaultRoute": "/pod/pod-5",
+      "allowedRoutePatterns": [
+        "/pod/pod-5",
+        "/ask-snoozer",
+        "/cart"
+      ],
+      "blockedRoutePatterns": [
+        "/welcome",
+        "/what-to-expect",
+        "/assessment",
+        "/results",
+        "/checkout/*",
+        "/explore-dev"
+      ],
+      "checkoutAuthority": false,
+      "cartAuthority": "preview",
+      "resetPolicyId": "pod",
+      "expectedLocation": "pod-5",
+      "assetTag": "TBD",
+      "serialNumber": "TBD",
+      "commissioned": false
+    },
+    {
+      "deviceId": "ask-snoozer-01",
+      "label": "Ask Snoozer Kiosk",
+      "deviceMode": "ask-snoozer-kiosk",
+      "zoneId": "ask-snoozer-zone",
+      "podId": null,
+      "defaultRoute": "/ask-snoozer",
+      "allowedRoutePatterns": [
+        "/ask-snoozer"
+      ],
+      "blockedRoutePatterns": [
+        "/welcome",
+        "/what-to-expect",
+        "/assessment",
+        "/results",
+        "/pod/*",
+        "/cart",
+        "/checkout/*",
+        "/snoozepod",
+        "/products/*",
+        "/explore-dev"
+      ],
+      "checkoutAuthority": false,
+      "cartAuthority": "none",
+      "resetPolicyId": "askSnoozer",
+      "expectedLocation": "help-zone",
+      "assetTag": "TBD",
+      "serialNumber": "TBD",
+      "commissioned": false
+    },
+    {
+      "deviceId": "bedding-01",
+      "label": "Bedding Kiosk",
+      "deviceMode": "sleep-essentials-kiosk",
+      "zoneId": "bedding-zone",
+      "podId": null,
+      "defaultRoute": "/sleep-essentials",
+      "allowedRoutePatterns": [
+        "/sleep-essentials",
+        "/cart"
+      ],
+      "blockedRoutePatterns": [
+        "/welcome",
+        "/what-to-expect",
+        "/assessment",
+        "/results",
+        "/pod/*",
+        "/checkout/*",
+        "/explore-dev"
+      ],
+      "checkoutAuthority": false,
+      "cartAuthority": "preview",
+      "resetPolicyId": "sleepEssentials",
+      "expectedLocation": "bedding-zone",
+      "assetTag": "TBD",
+      "serialNumber": "TBD",
+      "commissioned": false
+    },
+    {
+      "deviceId": "checkout-01",
+      "label": "Checkout Lounge",
+      "deviceMode": "checkout-kiosk",
+      "zoneId": "checkout-zone",
+      "podId": null,
+      "defaultRoute": "/cart",
+      "allowedRoutePatterns": [
+        "/cart",
+        "/checkout/:id",
+        "/checkout/guest",
+        "/financing"
+      ],
+      "blockedRoutePatterns": [
+        "/welcome",
+        "/what-to-expect",
+        "/assessment",
+        "/results",
+        "/pod/*",
+        "/explore-dev"
+      ],
+      "checkoutAuthority": true,
+      "cartAuthority": "full",
+      "resetPolicyId": "checkout",
+      "expectedLocation": "checkout-lounge",
+      "assetTag": "TBD",
+      "serialNumber": "TBD",
+      "commissioned": false
+    }
+  ]
+}

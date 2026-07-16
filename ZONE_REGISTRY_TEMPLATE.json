@@ -1,0 +1,232 @@
+{
+  "version": "1.0",
+  "status": "template",
+  "lastUpdated": "2026-07-16",
+  "storeId": "severn-pilot",
+  "notes": [
+    "Template only. Complete physical placement, asset tags, and serial numbers during commissioning.",
+    "Presence sensors are for awareness/wake behavior.",
+    "Occupancy sensors are pod-level signals and do not own cart, checkout, identity, or recommendations."
+  ],
+  "zones": [
+    {
+      "zoneId": "welcome-zone",
+      "label": "Welcome Zone",
+      "zoneType": "welcome",
+      "customerDevices": [
+        "welcome-01"
+      ],
+      "presenceSensors": [
+        "presence-welcome-01"
+      ],
+      "occupancySensors": [],
+      "lightingZoneId": null,
+      "audioZoneId": "ambient-audio-01",
+      "edgeControllerId": "shared-zone-controller-01",
+      "acceptance": [
+        "Welcome Kiosk is visible and powered.",
+        "Presence sensor is labeled and physically aimed.",
+        "Welcome route is allowed.",
+        "Checkout routes are blocked."
+      ]
+    },
+    {
+      "zoneId": "pod-1",
+      "label": "SnoozePod 1 Zone",
+      "zoneType": "pod",
+      "customerDevices": [
+        "pod-1-ipad-01"
+      ],
+      "presenceSensors": [
+        "presence-pod-1-01"
+      ],
+      "occupancySensors": [
+        "occupancy-pod-1-01"
+      ],
+      "lightingZoneId": "lighting-pod-1",
+      "audioZoneId": "ambient-audio-01",
+      "edgeControllerId": "pod-1-edge-01",
+      "acceptance": [
+        "Pod iPad opens /pod/pod-1.",
+        "Pod iPad redirects away from other pod routes.",
+        "Occupancy sensor is labeled.",
+        "Lighting zone is labeled."
+      ]
+    },
+    {
+      "zoneId": "pod-2",
+      "label": "SnoozePod 2 Zone",
+      "zoneType": "pod",
+      "customerDevices": [
+        "pod-2-ipad-01"
+      ],
+      "presenceSensors": [
+        "presence-pod-2-01"
+      ],
+      "occupancySensors": [
+        "occupancy-pod-2-01"
+      ],
+      "lightingZoneId": "lighting-pod-2",
+      "audioZoneId": "ambient-audio-01",
+      "edgeControllerId": "pod-2-edge-01",
+      "acceptance": [
+        "Pod iPad opens /pod/pod-2.",
+        "Pod iPad redirects away from other pod routes.",
+        "Occupancy sensor is labeled.",
+        "Lighting zone is labeled."
+      ]
+    },
+    {
+      "zoneId": "pod-3",
+      "label": "SnoozePod 3 Zone",
+      "zoneType": "pod",
+      "customerDevices": [
+        "pod-3-ipad-01"
+      ],
+      "presenceSensors": [
+        "presence-pod-3-01"
+      ],
+      "occupancySensors": [
+        "occupancy-pod-3-01"
+      ],
+      "lightingZoneId": "lighting-pod-3",
+      "audioZoneId": "ambient-audio-01",
+      "edgeControllerId": "pod-3-edge-01",
+      "acceptance": [
+        "Pod iPad opens /pod/pod-3.",
+        "Pod iPad redirects away from other pod routes.",
+        "Occupancy sensor is labeled.",
+        "Lighting zone is labeled."
+      ]
+    },
+    {
+      "zoneId": "pod-4",
+      "label": "SnoozePod 4 Zone",
+      "zoneType": "pod",
+      "customerDevices": [
+        "pod-4-ipad-01"
+      ],
+      "presenceSensors": [
+        "presence-pod-4-01"
+      ],
+      "occupancySensors": [
+        "occupancy-pod-4-01"
+      ],
+      "lightingZoneId": "lighting-pod-4",
+      "audioZoneId": "ambient-audio-01",
+      "edgeControllerId": "pod-4-edge-01",
+      "acceptance": [
+        "Pod iPad opens /pod/pod-4.",
+        "Pod iPad redirects away from other pod routes.",
+        "Occupancy sensor is labeled.",
+        "Lighting zone is labeled."
+      ]
+    },
+    {
+      "zoneId": "pod-5",
+      "label": "SnoozePod 5 Zone",
+      "zoneType": "pod",
+      "customerDevices": [
+        "pod-5-ipad-01"
+      ],
+      "presenceSensors": [
+        "presence-pod-5-01"
+      ],
+      "occupancySensors": [
+        "occupancy-pod-5-01"
+      ],
+      "lightingZoneId": "lighting-pod-5",
+      "audioZoneId": "ambient-audio-01",
+      "edgeControllerId": "pod-5-edge-01",
+      "acceptance": [
+        "Pod iPad opens /pod/pod-5.",
+        "Pod iPad redirects away from other pod routes.",
+        "Occupancy sensor is labeled.",
+        "Lighting zone is labeled."
+      ]
+    },
+    {
+      "zoneId": "ask-snoozer-zone",
+      "label": "Ask Snoozer Zone",
+      "zoneType": "assistant",
+      "customerDevices": [
+        "ask-snoozer-01"
+      ],
+      "presenceSensors": [
+        "presence-ask-snoozer-01"
+      ],
+      "occupancySensors": [],
+      "lightingZoneId": null,
+      "audioZoneId": "ambient-audio-01",
+      "edgeControllerId": "shared-zone-controller-01",
+      "acceptance": [
+        "Ask Snoozer route is allowed.",
+        "Cart and checkout routes are blocked.",
+        "Presence sensor is labeled."
+      ]
+    },
+    {
+      "zoneId": "bedding-zone",
+      "label": "Bedding Zone",
+      "zoneType": "bedding",
+      "customerDevices": [
+        "bedding-01"
+      ],
+      "presenceSensors": [
+        "presence-bedding-01"
+      ],
+      "occupancySensors": [],
+      "lightingZoneId": null,
+      "audioZoneId": "ambient-audio-01",
+      "edgeControllerId": "shared-zone-controller-01",
+      "acceptance": [
+        "Bedding Kiosk is powered.",
+        "Approved unavailable/awareness state is acceptable until route exists.",
+        "Checkout authority is false."
+      ]
+    },
+    {
+      "zoneId": "checkout-zone",
+      "label": "Checkout Lounge",
+      "zoneType": "checkout",
+      "customerDevices": [
+        "checkout-01"
+      ],
+      "presenceSensors": [
+        "presence-checkout-01"
+      ],
+      "occupancySensors": [],
+      "lightingZoneId": null,
+      "audioZoneId": "ambient-audio-01",
+      "edgeControllerId": "shared-zone-controller-01",
+      "acceptance": [
+        "Checkout Lounge can open cart and checkout routes.",
+        "Checkout Lounge is the only checkout-authorized station.",
+        "Presence sensor is labeled."
+      ]
+    }
+  ],
+  "sharedSystems": {
+    "ambientAudio": {
+      "audioZoneId": "ambient-audio-01",
+      "label": "Shared MVP Ambient Audio",
+      "mode": "single-zone",
+      "deferred": [
+        "multi-zone-audio"
+      ]
+    },
+    "networkRack": {
+      "rackId": "network-rack-01",
+      "label": "Showroom Wall Rack",
+      "upsIds": [
+        "ups-01"
+      ],
+      "networkDevices": [
+        "unifi-express-01",
+        "unifi-lite-16-poe-01",
+        "u6-plus-01",
+        "u6-plus-02"
+      ]
+    }
+  }
+}

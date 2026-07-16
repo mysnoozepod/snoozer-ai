@@ -1,0 +1,485 @@
+{
+  "version": "1.0",
+  "status": "template",
+  "lastUpdated": "2026-07-16",
+  "storeId": "severn-pilot",
+  "awsRegion": "us-east-1",
+  "architecture": {
+    "iotCore": "AWS IoT Core",
+    "runtime": "Lambda Node.js 20",
+    "latestStateStore": "DynamoDB Latest State",
+    "eventHistoryStore": "DynamoDB Event History",
+    "realtime": "API Gateway WebSockets",
+    "observability": "CloudWatch"
+  },
+  "rules": [
+    "Template only. Do not create AWS resources from this file without a separate IoT implementation task.",
+    "Sensor and edge events must never own Shopify cart truth.",
+    "Sensor and edge events must never own checkout truth.",
+    "Sensor and edge events must never override Snooze Code or Customer Profile OS identity.",
+    "No pressure mapping, wearables, biometrics, environmental controls, or multi-zone audio in MVP."
+  ],
+  "topicConventions": {
+    "telemetry": "mysnoozepod/{storeId}/{zoneId}/{thingName}/telemetry",
+    "state": "mysnoozepod/{storeId}/{zoneId}/{thingName}/state",
+    "command": "mysnoozepod/{storeId}/{zoneId}/{thingName}/command",
+    "health": "mysnoozepod/{storeId}/{zoneId}/{thingName}/health"
+  },
+  "thingGroups": [
+    {
+      "thingGroupName": "showroom-presence-sensors",
+      "purpose": "Presence awareness and wake signals",
+      "expectedCount": 9
+    },
+    {
+      "thingGroupName": "showroom-occupancy-sensors",
+      "purpose": "Pod occupancy state",
+      "expectedCount": 5
+    },
+    {
+      "thingGroupName": "showroom-lighting-zones",
+      "purpose": "Pod lighting command targets",
+      "expectedCount": 5
+    },
+    {
+      "thingGroupName": "showroom-edge-controllers",
+      "purpose": "Local zone control and event relay",
+      "expectedCount": 7
+    },
+    {
+      "thingGroupName": "showroom-audio",
+      "purpose": "Shared MVP ambient audio command target",
+      "expectedCount": 1
+    }
+  ],
+  "things": [
+    {
+      "thingName": "presence-welcome-01",
+      "thingType": "presence-sensor",
+      "zoneId": "welcome-zone",
+      "edgeControllerId": "shared-zone-controller-01",
+      "shadowName": "presence-welcome-01-shadow",
+      "publishes": [
+        "telemetry",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Welcome Wake",
+      "commissioned": false
+    },
+    {
+      "thingName": "presence-pod-1-01",
+      "thingType": "presence-sensor",
+      "zoneId": "pod-1",
+      "edgeControllerId": "pod-1-edge-01",
+      "shadowName": "presence-pod-1-01-shadow",
+      "publishes": [
+        "telemetry",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Pod Presence",
+      "commissioned": false
+    },
+    {
+      "thingName": "presence-pod-2-01",
+      "thingType": "presence-sensor",
+      "zoneId": "pod-2",
+      "edgeControllerId": "pod-2-edge-01",
+      "shadowName": "presence-pod-2-01-shadow",
+      "publishes": [
+        "telemetry",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Pod Presence",
+      "commissioned": false
+    },
+    {
+      "thingName": "presence-pod-3-01",
+      "thingType": "presence-sensor",
+      "zoneId": "pod-3",
+      "edgeControllerId": "pod-3-edge-01",
+      "shadowName": "presence-pod-3-01-shadow",
+      "publishes": [
+        "telemetry",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Pod Presence",
+      "commissioned": false
+    },
+    {
+      "thingName": "presence-pod-4-01",
+      "thingType": "presence-sensor",
+      "zoneId": "pod-4",
+      "edgeControllerId": "pod-4-edge-01",
+      "shadowName": "presence-pod-4-01-shadow",
+      "publishes": [
+        "telemetry",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Pod Presence",
+      "commissioned": false
+    },
+    {
+      "thingName": "presence-pod-5-01",
+      "thingType": "presence-sensor",
+      "zoneId": "pod-5",
+      "edgeControllerId": "pod-5-edge-01",
+      "shadowName": "presence-pod-5-01-shadow",
+      "publishes": [
+        "telemetry",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Pod Presence",
+      "commissioned": false
+    },
+    {
+      "thingName": "presence-ask-snoozer-01",
+      "thingType": "presence-sensor",
+      "zoneId": "ask-snoozer-zone",
+      "edgeControllerId": "shared-zone-controller-01",
+      "shadowName": "presence-ask-snoozer-01-shadow",
+      "publishes": [
+        "telemetry",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Ask Snoozer Awareness",
+      "commissioned": false
+    },
+    {
+      "thingName": "presence-bedding-01",
+      "thingType": "presence-sensor",
+      "zoneId": "bedding-zone",
+      "edgeControllerId": "shared-zone-controller-01",
+      "shadowName": "presence-bedding-01-shadow",
+      "publishes": [
+        "telemetry",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Bedding Awareness",
+      "commissioned": false
+    },
+    {
+      "thingName": "presence-checkout-01",
+      "thingType": "presence-sensor",
+      "zoneId": "checkout-zone",
+      "edgeControllerId": "shared-zone-controller-01",
+      "shadowName": "presence-checkout-01-shadow",
+      "publishes": [
+        "telemetry",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Checkout Awareness",
+      "commissioned": false
+    },
+    {
+      "thingName": "occupancy-pod-1-01",
+      "thingType": "occupancy-sensor",
+      "zoneId": "pod-1",
+      "edgeControllerId": "pod-1-edge-01",
+      "shadowName": "occupancy-pod-1-01-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Pod Occupancy",
+      "commissioned": false
+    },
+    {
+      "thingName": "occupancy-pod-2-01",
+      "thingType": "occupancy-sensor",
+      "zoneId": "pod-2",
+      "edgeControllerId": "pod-2-edge-01",
+      "shadowName": "occupancy-pod-2-01-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Pod Occupancy",
+      "commissioned": false
+    },
+    {
+      "thingName": "occupancy-pod-3-01",
+      "thingType": "occupancy-sensor",
+      "zoneId": "pod-3",
+      "edgeControllerId": "pod-3-edge-01",
+      "shadowName": "occupancy-pod-3-01-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Pod Occupancy",
+      "commissioned": false
+    },
+    {
+      "thingName": "occupancy-pod-4-01",
+      "thingType": "occupancy-sensor",
+      "zoneId": "pod-4",
+      "edgeControllerId": "pod-4-edge-01",
+      "shadowName": "occupancy-pod-4-01-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Pod Occupancy",
+      "commissioned": false
+    },
+    {
+      "thingName": "occupancy-pod-5-01",
+      "thingType": "occupancy-sensor",
+      "zoneId": "pod-5",
+      "edgeControllerId": "pod-5-edge-01",
+      "shadowName": "occupancy-pod-5-01-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [],
+      "mvpExperience": "Pod Occupancy",
+      "commissioned": false
+    },
+    {
+      "thingName": "lighting-pod-1",
+      "thingType": "lighting-zone",
+      "zoneId": "pod-1",
+      "edgeControllerId": "pod-1-edge-01",
+      "shadowName": "lighting-pod-1-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Lighting",
+      "commissioned": false
+    },
+    {
+      "thingName": "lighting-pod-2",
+      "thingType": "lighting-zone",
+      "zoneId": "pod-2",
+      "edgeControllerId": "pod-2-edge-01",
+      "shadowName": "lighting-pod-2-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Lighting",
+      "commissioned": false
+    },
+    {
+      "thingName": "lighting-pod-3",
+      "thingType": "lighting-zone",
+      "zoneId": "pod-3",
+      "edgeControllerId": "pod-3-edge-01",
+      "shadowName": "lighting-pod-3-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Lighting",
+      "commissioned": false
+    },
+    {
+      "thingName": "lighting-pod-4",
+      "thingType": "lighting-zone",
+      "zoneId": "pod-4",
+      "edgeControllerId": "pod-4-edge-01",
+      "shadowName": "lighting-pod-4-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Lighting",
+      "commissioned": false
+    },
+    {
+      "thingName": "lighting-pod-5",
+      "thingType": "lighting-zone",
+      "zoneId": "pod-5",
+      "edgeControllerId": "pod-5-edge-01",
+      "shadowName": "lighting-pod-5-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Lighting",
+      "commissioned": false
+    },
+    {
+      "thingName": "ambient-audio-01",
+      "thingType": "ambient-audio-system",
+      "zoneId": "shared-showroom",
+      "edgeControllerId": "shared-zone-controller-01",
+      "shadowName": "ambient-audio-01-shadow",
+      "publishes": [
+        "state",
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Ambient Audio",
+      "commissioned": false
+    },
+    {
+      "thingName": "pod-1-edge-01",
+      "thingType": "pod-edge-controller",
+      "zoneId": "pod-1",
+      "edgeControllerId": null,
+      "shadowName": "pod-1-edge-01-shadow",
+      "publishes": [
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Pod Edge Control",
+      "commissioned": false
+    },
+    {
+      "thingName": "pod-2-edge-01",
+      "thingType": "pod-edge-controller",
+      "zoneId": "pod-2",
+      "edgeControllerId": null,
+      "shadowName": "pod-2-edge-01-shadow",
+      "publishes": [
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Pod Edge Control",
+      "commissioned": false
+    },
+    {
+      "thingName": "pod-3-edge-01",
+      "thingType": "pod-edge-controller",
+      "zoneId": "pod-3",
+      "edgeControllerId": null,
+      "shadowName": "pod-3-edge-01-shadow",
+      "publishes": [
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Pod Edge Control",
+      "commissioned": false
+    },
+    {
+      "thingName": "pod-4-edge-01",
+      "thingType": "pod-edge-controller",
+      "zoneId": "pod-4",
+      "edgeControllerId": null,
+      "shadowName": "pod-4-edge-01-shadow",
+      "publishes": [
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Pod Edge Control",
+      "commissioned": false
+    },
+    {
+      "thingName": "pod-5-edge-01",
+      "thingType": "pod-edge-controller",
+      "zoneId": "pod-5",
+      "edgeControllerId": null,
+      "shadowName": "pod-5-edge-01-shadow",
+      "publishes": [
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Pod Edge Control",
+      "commissioned": false
+    },
+    {
+      "thingName": "shared-zone-controller-01",
+      "thingType": "shared-zone-controller",
+      "zoneId": "shared-showroom",
+      "edgeControllerId": null,
+      "shadowName": "shared-zone-controller-01-shadow",
+      "publishes": [
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Shared Zone Control",
+      "commissioned": false
+    },
+    {
+      "thingName": "spare-edge-01",
+      "thingType": "spare-edge-controller",
+      "zoneId": "spares",
+      "edgeControllerId": null,
+      "shadowName": "spare-edge-01-shadow",
+      "publishes": [
+        "health"
+      ],
+      "subscribes": [
+        "command"
+      ],
+      "mvpExperience": "Spare Recovery",
+      "commissioned": false
+    }
+  ],
+  "dynamoDbTables": {
+    "latestState": {
+      "tableName": "mysnoozepod-showroom-latest-state",
+      "partitionKey": "thingName",
+      "sortKey": "stateType",
+      "purpose": "Latest known sensor/controller state"
+    },
+    "eventHistory": {
+      "tableName": "mysnoozepod-showroom-event-history",
+      "partitionKey": "storeId",
+      "sortKey": "timestampThingEvent",
+      "purpose": "Append-only event history for diagnostics and analytics"
+    }
+  },
+  "websocket": {
+    "apiName": "mysnoozepod-showroom-events",
+    "purpose": "Future realtime fanout to approved customer devices",
+    "routes": [
+      "$connect",
+      "$disconnect",
+      "subscribeZone",
+      "unsubscribeZone"
+    ]
+  },
+  "acceptanceCriteria": [
+    "All thing names map to a physical label.",
+    "All thing names map to a zone.",
+    "All pod sensor things map to the correct pod edge controller.",
+    "No IoT thing owns checkout or cart truth.",
+    "No deferred capability is represented as MVP-ready."
+  ]
+}
