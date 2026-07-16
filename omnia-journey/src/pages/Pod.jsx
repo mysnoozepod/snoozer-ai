@@ -2596,7 +2596,7 @@ export default function Pod() {
 
   return (
     <ShowroomPageShell
-      className="flex min-h-0 flex-col overflow-hidden pb-0"
+      className="flex h-[100dvh] max-h-[100dvh] min-h-0 flex-col overflow-hidden pb-0"
       data-pod-lighting-state={podLightingState}
       data-physical-control-status={physicalControl.status}
       data-physical-control-fault={physicalControl.fault ? "true" : "false"}
@@ -2607,8 +2607,8 @@ export default function Pod() {
       data-zone-occupied={zoneExperience.isOccupied ? "true" : "false"}
       data-rest-test-eligible={zoneExperience.restTestEligible ? "true" : "false"}
     >
-      <div className="mx-auto w-full max-w-[1380px] shrink-0 px-4 pt-0.5 md:px-6 md:pt-1">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[24px] border border-white/80 bg-white/94 px-4 py-1.25 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-1.5">
+      <div className="mx-auto w-full max-w-[1380px] shrink-0 px-[20px] pt-[10px] md:px-[24px] md:pt-[12px]">
+        <div className="grid min-h-[72px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[24px] border border-white/80 bg-white/94 px-[16px] py-[6px] shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:min-h-[76px] md:px-[20px]">
           <button
             type="button"
             onClick={() => {
@@ -2623,7 +2623,7 @@ export default function Pod() {
 
           <ShowroomBrandMark
             className="justify-self-center"
-            imageClassName="w-[180px] md:w-[220px]"
+            imageClassName="w-[clamp(170px,18vw,220px)]"
           />
 
           <div className="justify-self-end flex flex-col items-end gap-2">
@@ -2646,13 +2646,13 @@ export default function Pod() {
         </div>
       </div>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-4 pb-0.5 pt-0.75 md:px-6 md:pb-1 md:pt-1">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-[20px] pb-[6px] pt-[10px] md:px-[24px] md:pb-[8px] md:pt-[12px]">
         {isDefaultPodDashboard ? (
-          <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-1 md:p-1.25">
+          <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-[8px]">
             {podHomeContent}
           </ShowroomFrame>
         ) : (
-          <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-1 md:p-1.25" : "p-1.25 md:p-1.5"].join(" ")}>
+          <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-[8px]" : "p-[10px]"].join(" ")}>
             <ShowroomPanel className="shrink-0 overflow-hidden p-0" tone="soft">
               <PodRouteHeroHeader
                 eyebrow=""
@@ -2670,8 +2670,8 @@ export default function Pod() {
             <div
               ref={stagePanelRef}
               className={[
-                "mt-1.5 flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-1 pb-2 md:pr-1.25 md:pb-2.5",
-                isRestTaskStage ? "" : openStage === "details" || openStage === "build" ? "mt-2.5 md:mt-3" : "md:mt-2",
+                "mt-[10px] flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-[4px] pb-[12px]",
+                isRestTaskStage ? "" : openStage === "details" || openStage === "build" ? "mt-[12px]" : "",
               ].join(" ")}
             >
               {activePanelContent}
@@ -2681,7 +2681,7 @@ export default function Pod() {
       </div>
 
       {!loading && activePod ? (
-        <div className="mx-auto mt-0 w-full max-w-[1380px] shrink-0 px-4 pb-0.75 pt-0.75 md:px-6 md:pb-1 md:pt-0.75">
+        <div className="mx-auto mt-0 w-full max-w-[1380px] shrink-0 px-[20px] pb-[10px] pt-[6px] md:px-[24px]">
           <PodFooterNav
             openStage={openStage}
             onGoHome={() => void goToPodHome()}

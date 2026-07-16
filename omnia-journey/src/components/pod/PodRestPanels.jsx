@@ -48,7 +48,7 @@ function RestCountdownRing({ remainingSeconds, totalSeconds }) {
   const strokeOffset = circumference * (1 - progress);
 
   return (
-    <div className="relative flex h-[132px] w-[132px] items-center justify-center md:h-[144px] md:w-[144px]">
+    <div className="relative flex h-[124px] w-[124px] items-center justify-center md:h-[136px] md:w-[136px]">
       <svg className="h-full w-full -rotate-90" viewBox="0 0 248 248" aria-hidden="true">
         <circle cx="124" cy="124" r={radius} fill="none" stroke="rgba(219,229,255,0.92)" strokeWidth="10" />
         <circle
@@ -65,7 +65,7 @@ function RestCountdownRing({ remainingSeconds, totalSeconds }) {
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-[2rem] font-black leading-none tracking-tight text-slate-900 md:text-[2.2rem]">
+        <div className="text-[clamp(1.9rem,3vw,2.18rem)] font-black leading-none tracking-tight text-slate-900">
           {formatRestCountdown(safeRemaining)}
         </div>
         <div className="mt-1 text-[0.76rem] font-medium text-slate-500">remaining</div>
@@ -93,20 +93,20 @@ function RestLengthCard({
     <button
       type="button"
       onClick={onClick}
-      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-3 text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d8e2ff] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[126px] md:p-3.25"
+      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-[14px] text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d8e2ff] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[132px] md:p-[16px]"
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)]">
+          <div className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)]">
           <Timer className={["h-6 w-6", iconTone].join(" ")} />
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-[1rem] font-black leading-none tracking-tight text-slate-900 md:text-[1.08rem]">
+              <div className="text-[clamp(1.05rem,1.6vw,1.25rem)] font-black leading-none tracking-tight text-slate-900">
                 {title}
               </div>
-              <div className="mt-1 text-[0.8rem] leading-5 text-slate-600 md:text-[0.84rem]">
+              <div className="mt-[6px] text-[clamp(0.86rem,1.2vw,0.95rem)] leading-[1.25] text-slate-600">
                 {subtitle}
               </div>
             </div>
@@ -119,7 +119,7 @@ function RestLengthCard({
 
       <div
         className={[
-          "mt-3 flex h-10 items-center justify-center rounded-full text-[0.86rem] font-black text-white transition group-hover:scale-[1.01]",
+          "mt-[14px] flex h-[44px] items-center justify-center rounded-full text-[clamp(0.9rem,1.25vw,1rem)] font-black text-white transition group-hover:scale-[1.01]",
           buttonTone,
         ].join(" ")}
       >
@@ -159,23 +159,23 @@ export function PodRestStartSection({ podLabel, flowOptions = [], onChooseMode }
       ];
 
   return (
-    <ShowroomPanel className="overflow-hidden p-3 md:p-3.5" tone="frost">
+    <ShowroomPanel className="overflow-hidden p-[16px]" tone="frost">
       <div className="max-w-[780px]">
-        <div className="text-[1.44rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[1.68rem]">
+        <div className="text-[clamp(1.75rem,2.6vw,2.12rem)] font-black leading-[0.98] tracking-tight text-slate-900">
           Start Your Rest Test
         </div>
-        <div className="mt-1 text-[0.88rem] leading-5 text-slate-600 md:text-[0.92rem]">
+        <div className="mt-[6px] text-[clamp(1rem,1.35vw,1.08rem)] leading-[1.35] text-slate-600">
           Try {podLabel} your way. Start with 7 minutes for a quick feel check, or choose 15 minutes if you want more time to settle in.
         </div>
       </div>
 
-      <div className="mt-2.5 grid gap-2 md:grid-cols-2">
+      <div className="mt-[14px] grid gap-[14px] md:grid-cols-2">
         {cards.map((card) => (
           <RestLengthCard key={card.id} {...card} onClick={() => onChooseMode?.(card.id)} />
         ))}
       </div>
 
-      <div className="mt-2.5 flex items-center justify-center gap-2 text-[0.78rem] font-medium text-slate-500">
+      <div className="mt-[10px] flex items-center justify-center gap-2 text-[0.82rem] font-medium text-slate-500">
         <CheckCircle2 className="h-4 w-4 text-slate-400" />
         <span>You can end or pause your test at any time.</span>
       </div>
@@ -342,7 +342,7 @@ export function GuidedRestTest({
 
   if (completionStage === REST_COMPLETION_STAGES.actions) {
     return (
-      <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="frost">
+      <ShowroomPanel className="overflow-hidden p-[16px]" tone="frost">
         <div className="text-[1.82rem] font-black leading-tight tracking-tight text-slate-900 md:text-[2rem]">
           Rest Test saved
         </div>
@@ -402,8 +402,8 @@ export function GuidedRestTest({
 
   if (completionStage === REST_COMPLETION_STAGES.reflection) {
     return (
-      <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="frost">
-        <div className="text-[1.72rem] font-black leading-tight tracking-tight text-slate-900 md:text-[1.95rem]">
+      <ShowroomPanel className="overflow-hidden p-[16px]" tone="frost">
+        <div className="text-[clamp(1.75rem,2.4vw,2.05rem)] font-black leading-tight tracking-tight text-slate-900">
           How did this pod feel?
         </div>
 
@@ -422,26 +422,26 @@ export function GuidedRestTest({
   }
 
   return (
-    <ShowroomPanel className="overflow-hidden p-3 md:p-3.5" tone="frost">
-      <div className="text-[1.42rem] font-black leading-[0.98] tracking-tight text-slate-900 md:text-[1.56rem]">
+    <ShowroomPanel className="overflow-hidden p-[16px]" tone="frost">
+      <div className="text-[clamp(1.7rem,2.3vw,2rem)] font-black leading-[0.98] tracking-tight text-slate-900">
         {activeTitle}
       </div>
 
-      <div className="mt-2 grid gap-2 xl:grid-cols-[148px_minmax(0,1fr)] xl:items-start">
+      <div className="mt-[12px] grid gap-[14px] xl:grid-cols-[140px_minmax(0,1fr)] xl:items-start">
         <div className="flex justify-center xl:justify-start">
           <RestCountdownRing remainingSeconds={timerRemaining} totalSeconds={stepTotalSeconds} />
         </div>
 
-        <div className="space-y-2">
-          <div className="rounded-[16px] border border-[#dbe5ff] bg-white/96 px-3 py-2 shadow-sm">
+        <div className="space-y-[10px]">
+          <div className="rounded-[16px] border border-[#dbe5ff] bg-white/96 px-[14px] py-[10px] shadow-sm">
             <div className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
               Current Focus
             </div>
-            <div className="mt-1 text-[0.9rem] font-black text-slate-900">{currentFocusTitle}</div>
-            <div className="mt-0.5 text-[0.76rem] leading-[1.05rem] text-slate-600">{currentFocusBody}</div>
+            <div className="mt-[5px] text-[clamp(1rem,1.4vw,1.12rem)] font-black text-slate-900">{currentFocusTitle}</div>
+            <div className="mt-[3px] text-[clamp(0.86rem,1.15vw,0.96rem)] leading-[1.3] text-slate-600">{currentFocusBody}</div>
           </div>
 
-          <div className="grid gap-2 md:grid-cols-3">
+          <div className="grid gap-[10px] md:grid-cols-3">
             {instructionCards.map((card) => (
               <RestInstructionCard
                 key={card.id}
@@ -454,7 +454,7 @@ export function GuidedRestTest({
         </div>
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-2">
+      <div className="mt-[12px] flex flex-wrap items-center gap-[10px]">
         <button
           type="button"
           onClick={onPauseTimer}

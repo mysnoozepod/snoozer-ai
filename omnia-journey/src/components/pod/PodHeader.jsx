@@ -13,8 +13,9 @@ function HeaderBadge({ label, tone = "soft" }) {
 
   return (
     <div
+      data-pod-badge="true"
       className={[
-        "inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[0.7rem] font-extrabold uppercase tracking-[0.1em] shadow-[0_10px_24px_rgba(40,63,126,0.08)] md:px-3",
+        "inline-flex items-center whitespace-nowrap rounded-full border px-[10px] py-[6px] text-[clamp(0.68rem,1vw,0.82rem)] font-extrabold uppercase tracking-[0.1em] shadow-[0_10px_24px_rgba(40,63,126,0.08)]",
         toneClass,
       ].join(" ")}
     >
@@ -27,7 +28,7 @@ function SnoozerCoachBubble({ copy }) {
   if (!copy) return null;
 
   return (
-    <div className="mt-2 flex max-w-[188px] items-start gap-2 rounded-[18px] border border-white/85 bg-white/96 px-2.25 py-2 shadow-[0_14px_28px_rgba(40,63,126,0.12)] md:mt-0 md:max-w-[198px] md:px-2.5 md:py-2.25">
+    <div className="mt-2 flex max-w-[188px] items-start gap-2 rounded-[18px] border border-white/85 bg-white/96 px-[9px] py-[8px] shadow-[0_14px_28px_rgba(40,63,126,0.12)] md:mt-0 md:max-w-[198px] md:px-[10px] md:py-[9px]">
       <img
         src="/snoozer-avatar.png"
         alt="Snoozer"
@@ -39,7 +40,7 @@ function SnoozerCoachBubble({ copy }) {
         <div className="text-[0.84rem] font-black leading-none text-slate-900 md:text-[0.9rem]">
           I&apos;m Snoozer.
         </div>
-        <div className="mt-0.75 text-[0.76rem] font-medium leading-[1.3] text-slate-700 md:text-[0.82rem]">
+        <div className="mt-[3px] text-[0.76rem] font-medium leading-[1.3] text-slate-700 md:text-[0.82rem]">
           {copy}
         </div>
       </div>
@@ -94,13 +95,13 @@ export function PodRouteHeroHeader({
     <div
       data-pod-route-header="true"
       className={[
-        "grid items-stretch gap-0 overflow-hidden md:h-[182px] lg:h-[190px]",
+        "grid items-stretch gap-0 overflow-hidden md:h-[clamp(180px,23dvh,205px)]",
         hasCoachBubble
           ? "md:grid-cols-[minmax(0,0.86fr)_minmax(172px,0.32fr)_minmax(0,1.16fr)] lg:grid-cols-[minmax(0,0.84fr)_minmax(188px,0.34fr)_minmax(0,1.18fr)]"
           : "md:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)]",
       ].join(" ")}
     >
-      <div className="relative flex min-h-[114px] flex-col justify-center px-5 py-3 md:h-full md:min-h-0 md:px-5 md:py-3">
+      <div className="relative flex min-h-[114px] flex-col justify-center px-[18px] py-[14px] md:h-full md:min-h-0 md:px-[20px] md:py-[16px]">
         {eyebrow ? (
           <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">{eyebrow}</ShowroomEyebrow>
         ) : null}
@@ -108,18 +109,18 @@ export function PodRouteHeroHeader({
         <div
           className={[
             eyebrow ? "mt-1" : "mt-0",
-            "text-[1.08rem] font-black tracking-tight text-[#2f57e8] md:text-[1.18rem]",
+            "text-[clamp(1.02rem,1.5vw,1.18rem)] font-black tracking-tight text-[#2f57e8]",
           ].join(" ")}
         >
           {podTitle}
         </div>
 
-        <h1 className="mt-0.5 max-w-[10.2ch] text-[1.92rem] font-black leading-[0.9] tracking-tight text-slate-900 md:text-[2.12rem] lg:text-[2.28rem]">
+        <h1 className="mt-[4px] max-w-[11.5ch] text-[clamp(2rem,3vw,2.85rem)] font-black leading-[0.92] tracking-tight text-slate-900">
           {mattressTitle}
         </h1>
 
         {badges.length ? (
-          <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-[10px] flex max-w-full items-center gap-[8px] overflow-x-auto pb-[2px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {badges.map((badge) => (
               <HeaderBadge
                 key={`${badge.label}-${badge.tone || "soft"}`}
@@ -129,13 +130,13 @@ export function PodRouteHeroHeader({
             ))}
           </div>
         ) : isRecommended ? (
-          <div className="mt-2.5">
+          <div className="mt-[10px]">
             <HeaderBadge label="Best First Match" tone="primary" />
           </div>
         ) : null}
 
         {helperText ? (
-          <div className="mt-1.5 text-[0.84rem] font-medium text-slate-600 md:text-[0.88rem]">
+          <div className="mt-[8px] text-[clamp(0.86rem,1.25vw,0.95rem)] font-medium text-slate-600">
             {helperText}
           </div>
         ) : null}
