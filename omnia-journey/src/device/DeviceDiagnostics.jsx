@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { canViewAdminDiagnostics } from "./deviceActionGuards.js";
 import { DEVICE_STATUSES } from "./deviceModes.js";
 import { useDeviceMode } from "./useDeviceMode.js";
@@ -18,11 +18,58 @@ function formatList(values) {
 
 export default function DeviceDiagnostics() {
   const deviceState = useDeviceMode();
+  const [expanded, setExpanded] = useState(false);
   const shouldShow = canViewAdminDiagnostics(deviceState);
 
   if (!shouldShow) return null;
 
   const isHealthy = deviceState?.status === DEVICE_STATUSES.READY;
+
+  if (!expanded) {
+    return (
+      <button
+        type="button"
+        aria-label="Open device diagnostics"
+        onClick={() => setExpanded(true)}
+        style={{
+          position: "fixed",
+          left: 12,
+          bottom: 12,
+          zIndex: 2147483000,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          border: "1px solid rgba(37, 99, 235, 0.24)",
+          borderRadius: 999,
+          background: "rgba(255, 255, 255, 0.9)",
+          boxShadow: "0 14px 38px rgba(15, 23, 42, 0.14)",
+          color: "#1d4ed8",
+          cursor: "pointer",
+          fontFamily:
+            "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+          fontSize: 11,
+          fontWeight: 900,
+          letterSpacing: "0.08em",
+          padding: "8px 11px",
+          textTransform: "uppercase",
+        }}
+      >
+        Diagnostics
+        <span
+          style={{
+            borderRadius: 999,
+            padding: "2px 7px",
+            background: isHealthy ? "#dcfce7" : "#fee2e2",
+            color: isHealthy ? "#166534" : "#991b1b",
+            letterSpacing: 0,
+            textTransform: "none",
+          }}
+        >
+          {deviceState?.status || "loading"}
+        </span>
+      </button>
+    );
+  }
 
   return (
     <aside
@@ -68,6 +115,22 @@ export default function DeviceDiagnostics() {
         >
           {deviceState?.status || "loading"}
         </span>
+        <button
+          type="button"
+          onClick={() => setExpanded(false)}
+          style={{
+            border: "1px solid rgba(100, 116, 139, 0.22)",
+            borderRadius: 999,
+            background: "#fff",
+            color: "#475569",
+            cursor: "pointer",
+            fontSize: 11,
+            fontWeight: 900,
+            padding: "3px 8px",
+          }}
+        >
+          Hide
+        </button>
       </div>
 
       <dl style={{ display: "grid", gap: 6, margin: 0 }}>
