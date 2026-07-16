@@ -58,7 +58,7 @@ export const DEVICE_RESET_POLICIES = Object.freeze({
     defaultRoute: null,
     resetKeys: [],
     resetPrefixes: TRANSIENT_PREFIXES.pod,
-    blockerReasons: ["tts", "cartMutation"],
+    blockerReasons: ["tts", "cartMutation", "pod-occupied", "rest-test-active"],
     preserve: ["cart", "cartId", "checkoutUrl", "snoozeCode", "shopperIdentity"],
   }),
   [DEVICE_MODES.ASK_SNOOZER_KIOSK]: Object.freeze({

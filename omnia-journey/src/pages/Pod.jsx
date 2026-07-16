@@ -51,9 +51,20 @@ import {
 } from "@/lib/utils/recommendations";
 import { useStore } from "@/lib/useStore";
 import { getShopperId } from "@/state/sessionStore";
+import { emitDeviceRestTestActive } from "@/device/deviceActivityTracker";
 import { usePodCart } from "@/hooks/usePodCart";
 import { usePodExperience } from "@/hooks/usePodExperience";
 import { usePodHudGuidance } from "@/hooks/usePodHudGuidance";
+import { createAmbientAudioController } from "@/iot/ambientAudioController";
+import {
+  REST_TEST_OPENING_HUD_PAYLOAD,
+  getIotExperienceConfig,
+} from "@/iot/iotExperienceConfig";
+import {
+  LIGHTING_STATES,
+  shouldCompleteRestTestForVacancy,
+} from "@/iot/showroomExperienceState";
+import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
 
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import snoozerRestActiveImg from "@/assets/avatars/snoozer-rest-active.png";
@@ -67,6 +78,8 @@ const PUBLIC_ASSETS = {
   fullSplitMotion: "/full-split-motion.png",
   noImage: "/no-image.svg",
 };
+
+const IOT_EXPERIENCE_CONFIG = getIotExperienceConfig(import.meta.env || {});
 
 const SHOWROOM_MATTRESS_HERO_FALLBACKS = {
   "12-dual-comfort-hybrid":
@@ -1077,7 +1090,18 @@ export default function Pod() {
   });
 
   const restAdvanceTimeoutRef = useRef(null);
+  const restVacancyTimeoutRef = useRef(null);
+  const lightingReadyTimeoutRef = useRef(null);
+  const restOpeningSpokenRef = useRef(false);
+  const ambientAudioRef = useRef(null);
   const stagePanelRef = useRef(null);
+  const [podLightingState, setPodLightingState] = useState(LIGHTING_STATES.READY);
+
+  if (!ambientAudioRef.current) {
+    ambientAudioRef.current = createAmbientAudioController({
+      track: IOT_EXPERIENCE_CONFIG.defaultRestTestAudioTrack,
+    });
+  }
 
   const clearTimer = (ref) => {
     if (ref.current) {
@@ -1094,8 +1118,12 @@ export default function Pod() {
       window.__SNOOZE_DISABLE_WIDGET = prev;
       document.body.classList.remove("no-global-chat");
       clearTimer(restAdvanceTimeoutRef);
+      clearTimer(restVacancyTimeoutRef);
+      clearTimer(lightingReadyTimeoutRef);
+      ambientAudioRef.current?.stop();
+      emitDeviceRestTestActive(false, { reason: "rest-test-active", podId: pid });
     };
-  }, []);
+  }, [pid]);
 
   const assessment = useMemo(() => {
     if (storedAssessment && typeof storedAssessment === "object") return storedAssessment;
@@ -1339,6 +1367,14 @@ export default function Pod() {
     return restFlows[restModeId] || null;
   }, [restFlows, restModeId]);
 
+  const restTestActive = Boolean(activeRestFlow && !testComplete && !restCompletionStage);
+  const zoneExperience = useShowroomZoneExperience({
+    podId: pid,
+    restTestActive,
+    restTestComplete: testComplete || Boolean(restCompletionStage),
+    sourceSurface: "pod",
+  });
+
   const activeRestStep = useMemo(() => {
     if (!activeRestFlow?.steps?.length) return null;
     return activeRestFlow.steps[restStepIndex] || null;
@@ -1357,6 +1393,44 @@ export default function Pod() {
 
     return () => window.clearTimeout(id);
   }, [openStage, activeRestFlow, restCompletionStage]);
+
+  useEffect(() => {
+    emitDeviceRestTestActive(restTestActive, {
+      reason: "rest-test-active",
+      podId: pid,
+      zoneId: zoneExperience.zoneId,
+    });
+
+    return () => {
+      emitDeviceRestTestActive(false, {
+        reason: "rest-test-active",
+        podId: pid,
+        zoneId: zoneExperience.zoneId,
+      });
+    };
+  }, [restTestActive, pid, zoneExperience.zoneId]);
+
+  useEffect(() => {
+    if (!IOT_EXPERIENCE_CONFIG.enableIotExperiences) return;
+    if (restTestActive) return;
+
+    if (zoneExperience.hasFault) {
+      setPodLightingState(LIGHTING_STATES.FAULT);
+      return;
+    }
+
+    if (zoneExperience.isPresent && !zoneExperience.isStale) {
+      setPodLightingState(LIGHTING_STATES.ACTIVE);
+      return;
+    }
+
+    setPodLightingState(LIGHTING_STATES.READY);
+  }, [
+    restTestActive,
+    zoneExperience.hasFault,
+    zoneExperience.isPresent,
+    zoneExperience.isStale,
+  ]);
 
   const recommendationMeta = recs?.meta || {};
 
@@ -1841,7 +1915,16 @@ export default function Pod() {
 
   const resetRestTest = useCallback(async () => {
     clearTimer(restAdvanceTimeoutRef);
+    clearTimer(restVacancyTimeoutRef);
+    clearTimer(lightingReadyTimeoutRef);
     await cancelPodVoice();
+    ambientAudioRef.current?.stop({ fadeMs: 700 });
+    restOpeningSpokenRef.current = false;
+    setPodLightingState(
+      zoneExperience.isPresent && !zoneExperience.isStale
+        ? LIGHTING_STATES.ACTIVE
+        : LIGHTING_STATES.READY
+    );
 
     setShowRestChooser(true);
     setRestModeId("");
@@ -1853,7 +1936,7 @@ export default function Pod() {
     setFeelChoice("");
     setRestCompletionStage("");
     resetPodVoiceKeys();
-  }, [cancelPodVoice, resetPodVoiceKeys]);
+  }, [cancelPodVoice, resetPodVoiceKeys, zoneExperience.isPresent, zoneExperience.isStale]);
 
   const handleChooseRestMode = useCallback(
     async (modeId) => {
@@ -1876,15 +1959,27 @@ export default function Pod() {
       setFeelChoice("");
       setRestCompletionStage("");
       resetPodVoiceKeys();
-      speakPod(`${flow.title}. ${firstStep.voice || firstStep.body}`, {
-        actionType: "start_rest_test",
-        calm: true,
-        force: true,
-        scriptKey: modeId === "deep" ? "pod.rest.deep.start" : "pod.rest.quick.start",
-        key: `rest-mode::${modeId}::step-0`,
-      });
+      setPodLightingState(LIGHTING_STATES.REST_TEST);
+      ambientAudioRef.current?.start(IOT_EXPERIENCE_CONFIG.defaultRestTestAudioTrack);
+
+      if (!restOpeningSpokenRef.current) {
+        restOpeningSpokenRef.current = true;
+        speakPod(REST_TEST_OPENING_HUD_PAYLOAD.speech, {
+          actionType: "start_rest_test",
+          captions: REST_TEST_OPENING_HUD_PAYLOAD.captions,
+          state: REST_TEST_OPENING_HUD_PAYLOAD.state,
+          priority: REST_TEST_OPENING_HUD_PAYLOAD.priority,
+          ttlMs: REST_TEST_OPENING_HUD_PAYLOAD.ttlMs,
+          actions: REST_TEST_OPENING_HUD_PAYLOAD.actions,
+          preservePriority: true,
+          calm: true,
+          force: true,
+          scriptKey: modeId === "deep" ? "pod.rest.deep.start" : "pod.rest.quick.start",
+          key: `rest-opening::${pid}`,
+        });
+      }
     },
-    [cancelPodVoice, restFlows, speakPod, noteUserInteraction]
+    [cancelPodVoice, restFlows, speakPod, noteUserInteraction, pid]
   );
 
   const handleStartTimer = useCallback(() => {
@@ -1946,6 +2041,17 @@ export default function Pod() {
       setTestComplete(true);
       setRestCompletionStage(REST_COMPLETION_STAGES.reflection);
       resetPodVoiceKeys();
+      ambientAudioRef.current?.stop({ fadeMs: 1200 });
+      setPodLightingState(LIGHTING_STATES.COMPLETE);
+      clearTimer(lightingReadyTimeoutRef);
+      lightingReadyTimeoutRef.current = window.setTimeout(() => {
+        setPodLightingState(
+          zoneExperience.isPresent && !zoneExperience.isStale
+            ? LIGHTING_STATES.ACTIVE
+            : LIGHTING_STATES.READY
+        );
+        lightingReadyTimeoutRef.current = null;
+      }, 1800);
 
       void speakPod(buildRestReflectionVoice(flow.title), {
         calm: true,
@@ -1954,11 +2060,11 @@ export default function Pod() {
         key: `rest-reflection::${flow.id}`,
       });
     },
-    [resetPodVoiceKeys, speakPod]
+    [resetPodVoiceKeys, speakPod, zoneExperience.isPresent, zoneExperience.isStale]
   );
 
   const runRestTransition = useCallback(
-    ({ flow, nextIndex, nextStep, nextCue, voiceText }) => {
+    ({ flow, nextIndex, nextStep }) => {
       clearTimer(restAdvanceTimeoutRef);
       void cancelPodVoice();
 
@@ -1976,18 +2082,9 @@ export default function Pod() {
         setSelectedRestInstructionId("");
         resetPodVoiceKeys();
         restAdvanceTimeoutRef.current = null;
-
-        if (voiceText) {
-          void speakPod(voiceText, {
-            calm: true,
-            force: true,
-            scriptKey: getRestStepScriptKey(nextStep.id),
-            key: `rest-step-transition::${nextStep.id}`,
-          });
-        }
       }, 650);
     },
-    [cancelPodVoice, completeRestRoutine, resetPodVoiceKeys, speakPod]
+    [cancelPodVoice, completeRestRoutine, resetPodVoiceKeys]
   );
 
   useEffect(() => {
@@ -2015,6 +2112,52 @@ export default function Pod() {
     restStepIndex,
     completeRestRoutine,
     runRestTransition,
+  ]);
+
+  useEffect(() => {
+    clearTimer(restVacancyTimeoutRef);
+
+    if (!IOT_EXPERIENCE_CONFIG.enableIotExperiences) return undefined;
+    if (!restTestActive || testComplete || !activeRestFlow) return undefined;
+    if (!zoneExperience.hasFreshOccupancySignal || zoneExperience.isStale) return undefined;
+    if (zoneExperience.isOccupied) return undefined;
+
+    const lastVacatedAt = zoneExperience.zoneState?.lastOccupancyEventAt
+      ? new Date(zoneExperience.zoneState.lastOccupancyEventAt).getTime()
+      : Date.now();
+
+    const elapsed = Date.now() - lastVacatedAt;
+    const remainingGrace = Math.max(
+      IOT_EXPERIENCE_CONFIG.restTestVacancyGraceMs - elapsed,
+      0
+    );
+
+    restVacancyTimeoutRef.current = window.setTimeout(() => {
+      if (
+        shouldCompleteRestTestForVacancy({
+          restTestActive: true,
+          isOccupied: false,
+          hasFreshOccupancySignal: true,
+          isStale: false,
+          vacatedAt: lastVacatedAt,
+          nowMs: Date.now(),
+          graceMs: IOT_EXPERIENCE_CONFIG.restTestVacancyGraceMs,
+        })
+      ) {
+        completeRestRoutine(activeRestFlow);
+      }
+    }, remainingGrace);
+
+    return () => clearTimer(restVacancyTimeoutRef);
+  }, [
+    activeRestFlow,
+    completeRestRoutine,
+    restTestActive,
+    testComplete,
+    zoneExperience.hasFreshOccupancySignal,
+    zoneExperience.isOccupied,
+    zoneExperience.isStale,
+    zoneExperience.zoneState?.lastOccupancyEventAt,
   ]);
 
   const handleAdvanceRestStep = useCallback(() => {
@@ -2372,7 +2515,14 @@ export default function Pod() {
   }, [loading, activePod, isDefaultPodDashboard, podHomeContent, stageContent]);
 
   return (
-    <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
+    <ShowroomPageShell
+      className="flex min-h-0 flex-col overflow-hidden pb-0"
+      data-pod-lighting-state={podLightingState}
+      data-zone-id={zoneExperience.zoneId || undefined}
+      data-zone-present={zoneExperience.isPresent ? "true" : "false"}
+      data-zone-occupied={zoneExperience.isOccupied ? "true" : "false"}
+      data-rest-test-eligible={zoneExperience.restTestEligible ? "true" : "false"}
+    >
       <div className="mx-auto w-full max-w-[1380px] shrink-0 px-4 pt-0.5 md:px-6 md:pt-1">
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[24px] border border-white/80 bg-white/94 px-4 py-1.25 shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:px-5 md:py-1.5">
           <button

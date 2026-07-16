@@ -1,8 +1,9 @@
 import { cn } from "@/lib/utils";
 
-export function ShowroomPageShell({ className, children }) {
+export function ShowroomPageShell({ className, children, ...props }) {
   return (
     <section
+      {...props}
       className={cn(
         "flex min-h-[100dvh] min-w-0 flex-col overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(84,120,255,0.2),_transparent_30%),radial-gradient(circle_at_bottom,_rgba(149,177,255,0.12),_transparent_26%),linear-gradient(180deg,#eef4ff_0%,#f7faff_42%,#f9fbff_100%)] pb-0 pt-2 text-slate-900 md:pt-3",
         className

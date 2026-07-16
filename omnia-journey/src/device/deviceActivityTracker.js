@@ -6,6 +6,9 @@ export const DEVICE_ASSESSMENT_SUBMISSION_EVENT =
 export const DEVICE_QR_FLOW_EVENT = "mysnoozepod:device-qr-flow";
 export const DEVICE_HUMAN_HELP_EVENT = "mysnoozepod:device-human-help";
 export const DEVICE_ACTIVE_RESPONSE_EVENT = "mysnoozepod:device-active-response";
+export const DEVICE_ZONE_PRESENCE_EVENT = "mysnoozepod:device-zone-presence";
+export const DEVICE_POD_OCCUPANCY_EVENT = "mysnoozepod:device-pod-occupancy";
+export const DEVICE_REST_TEST_EVENT = "mysnoozepod:device-rest-test";
 
 const BLOCKER_BY_EVENT = Object.freeze({
   [DEVICE_TTS_EVENT]: "tts",
@@ -14,6 +17,9 @@ const BLOCKER_BY_EVENT = Object.freeze({
   [DEVICE_QR_FLOW_EVENT]: "qrFlow",
   [DEVICE_HUMAN_HELP_EVENT]: "humanHelp",
   [DEVICE_ACTIVE_RESPONSE_EVENT]: "activeResponse",
+  [DEVICE_ZONE_PRESENCE_EVENT]: "zone-presence",
+  [DEVICE_POD_OCCUPANCY_EVENT]: "pod-occupied",
+  [DEVICE_REST_TEST_EVENT]: "rest-test-active",
 });
 
 const DOM_ACTIVITY_EVENTS = Object.freeze([
@@ -85,6 +91,27 @@ export function emitDeviceHumanHelp(active, detail = {}) {
 
 export function emitDeviceActiveResponse(active, detail = {}) {
   emitWindowEvent(DEVICE_ACTIVE_RESPONSE_EVENT, {
+    active: Boolean(active),
+    ...normalizeDetail(detail),
+  });
+}
+
+export function emitDeviceZonePresence(active, detail = {}) {
+  emitWindowEvent(DEVICE_ZONE_PRESENCE_EVENT, {
+    active: Boolean(active),
+    ...normalizeDetail(detail),
+  });
+}
+
+export function emitDevicePodOccupancy(active, detail = {}) {
+  emitWindowEvent(DEVICE_POD_OCCUPANCY_EVENT, {
+    active: Boolean(active),
+    ...normalizeDetail(detail),
+  });
+}
+
+export function emitDeviceRestTestActive(active, detail = {}) {
+  emitWindowEvent(DEVICE_REST_TEST_EVENT, {
     active: Boolean(active),
     ...normalizeDetail(detail),
   });
@@ -206,6 +233,9 @@ export function createDeviceActivityTracker(options = {}) {
     attachWindowEvent(DEVICE_QR_FLOW_EVENT);
     attachWindowEvent(DEVICE_HUMAN_HELP_EVENT);
     attachWindowEvent(DEVICE_ACTIVE_RESPONSE_EVENT);
+    attachWindowEvent(DEVICE_ZONE_PRESENCE_EVENT);
+    attachWindowEvent(DEVICE_POD_OCCUPANCY_EVENT);
+    attachWindowEvent(DEVICE_REST_TEST_EVENT);
 
     return detach;
   }

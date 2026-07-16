@@ -25,6 +25,7 @@ import { makePodRoute } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { sendAskSnoozerMessage } from "@/lib/snoozer/askSnoozerPage";
 import { useStore } from "@/lib/useStore";
+import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
 import {
   ShowroomBrandMark,
   ShowroomCartBadge,
@@ -188,6 +189,9 @@ export default function AskSnoozer() {
   const closeSnoozer = snoozer?.closeSnoozer;
   const openSnoozer = snoozer?.openSnoozer;
   const hudOpen = snoozer?.hud?.open;
+  const zoneExperience = useShowroomZoneExperience({
+    sourceSurface: "ask-snoozer",
+  });
 
   const canSend = !pending && String(draft || "").trim().length > 0;
   const snoozepodCount = useMemo(
@@ -310,6 +314,7 @@ export default function AskSnoozer() {
           deviceMode: device?.deviceMode || null,
           podId: device?.podId || null,
           zoneId: device?.zoneId || null,
+          proximity: zoneExperience.proximityContext,
         },
       });
 

@@ -46,7 +46,10 @@ function sanitizeMetadata(metadata) {
 
 function isActiveState(event) {
   const state = cleanString(event.state).toLowerCase();
+  const eventType = cleanString(event.eventType).toLowerCase();
   if (typeof event.value === "boolean") return event.value;
+  if (eventType.includes("detected") || eventType.includes("occupied")) return true;
+  if (eventType.includes("cleared") || eventType.includes("vacated")) return false;
   if (["active", "present", "occupied", "detected", "true", "on"].includes(state)) return true;
   if (["inactive", "absent", "vacant", "cleared", "false", "off"].includes(state)) return false;
   return null;
@@ -72,7 +75,10 @@ function applyPresenceOccupancy(existing = {}, event) {
 
   if (
     active !== null &&
-    (eventType.includes("occup") || eventType.includes("vacant") || sensorType.includes("occup"))
+    (eventType.includes("occup") ||
+      eventType.includes("vacant") ||
+      eventType.includes("vacat") ||
+      sensorType.includes("occup"))
   ) {
     next.isOccupied = active;
     next.lastOccupancyEventAt = receivedAt;

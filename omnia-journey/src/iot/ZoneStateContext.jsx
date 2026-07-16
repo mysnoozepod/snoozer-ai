@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  emitDeviceActivity,
+  emitDevicePodOccupancy,
+  emitDeviceZonePresence,
+} from "../device/deviceActivityTracker.js";
 import { useDeviceMode } from "../device/useDeviceMode.js";
 import {
   resolveAuthorizedZoneIds,
@@ -19,6 +24,7 @@ import {
   readLastKnownZoneState,
   writeLastKnownZoneState,
 } from "./zoneStateCache.js";
+import { deriveZoneExperienceSnapshot } from "./showroomExperienceState.js";
 
 const STALE_AFTER_MS = 30000;
 const MAX_RECONNECT_ATTEMPTS = 8;
@@ -135,6 +141,79 @@ function IotZoneDiagnostics({ endpoint, state }) {
       </dl>
     </aside>
   );
+}
+
+function ZoneExperienceActivityBridge({ device, state }) {
+  const zoneId = useMemo(() => resolveAuthorizedZoneIds(device)[0] || "", [device]);
+  const snapshot = useMemo(
+    () => deriveZoneExperienceSnapshot(state, zoneId),
+    [state, zoneId]
+  );
+
+  useEffect(() => {
+    if (!snapshot.zoneId || !snapshot.hasFreshPresenceSignal) return undefined;
+
+    emitDeviceZonePresence(snapshot.isPresent, {
+      reason: "zone-presence",
+      zoneId: snapshot.zoneId,
+      sourceSurface: device?.deviceMode || "showroom",
+    });
+
+    if (snapshot.isPresent) {
+      emitDeviceActivity("zone-presence", {
+        zoneId: snapshot.zoneId,
+        sourceSurface: device?.deviceMode || "showroom",
+      });
+    }
+
+    return () => {
+      emitDeviceZonePresence(false, {
+        reason: "zone-presence",
+        zoneId: snapshot.zoneId,
+        sourceSurface: device?.deviceMode || "showroom",
+      });
+    };
+  }, [
+    snapshot.zoneId,
+    snapshot.hasFreshPresenceSignal,
+    snapshot.isPresent,
+    device?.deviceMode,
+  ]);
+
+  useEffect(() => {
+    if (!snapshot.zoneId || !snapshot.hasFreshOccupancySignal || snapshot.isStale) {
+      return undefined;
+    }
+
+    emitDevicePodOccupancy(snapshot.isOccupied, {
+      reason: "pod-occupied",
+      zoneId: snapshot.zoneId,
+      sourceSurface: device?.deviceMode || "showroom",
+    });
+
+    if (snapshot.isOccupied) {
+      emitDeviceActivity("pod-occupied", {
+        zoneId: snapshot.zoneId,
+        sourceSurface: device?.deviceMode || "showroom",
+      });
+    }
+
+    return () => {
+      emitDevicePodOccupancy(false, {
+        reason: "pod-occupied",
+        zoneId: snapshot.zoneId,
+        sourceSurface: device?.deviceMode || "showroom",
+      });
+    };
+  }, [
+    snapshot.zoneId,
+    snapshot.hasFreshOccupancySignal,
+    snapshot.isOccupied,
+    snapshot.isStale,
+    device?.deviceMode,
+  ]);
+
+  return null;
 }
 
 export function ZoneStateProvider({ children }) {
@@ -306,6 +385,7 @@ export function ZoneStateProvider({ children }) {
 
   return (
     <ZoneStateContext.Provider value={value}>
+      <ZoneExperienceActivityBridge device={device} state={value} />
       {children}
       <IotZoneDiagnostics endpoint={endpoint} state={value} />
     </ZoneStateContext.Provider>

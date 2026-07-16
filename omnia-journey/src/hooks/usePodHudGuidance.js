@@ -20,6 +20,11 @@ export function usePodHudGuidance({ shopperId }) {
         scriptKey = "",
         actionType = "",
         state = "speaking",
+        captions = "",
+        ttlMs = null,
+        voiceStyle = "",
+        actions = [],
+        preservePriority = false,
       } = {}
     ) => {
       const phrase = String(text || "").trim();
@@ -36,12 +41,12 @@ export function usePodHudGuidance({ shopperId }) {
 
       const payload = {
         speech: phrase,
-        captions: phrase,
+        captions: String(captions || phrase),
         state,
-        priority: force ? "high" : priority,
-        ttlMs: calm ? 6500 : 5000,
-        voiceStyle: calm ? "calm" : "default",
-        actions: [],
+        priority: force && !preservePriority ? "high" : priority,
+        ttlMs: Number(ttlMs) > 0 ? Number(ttlMs) : calm ? 6500 : 5000,
+        voiceStyle: voiceStyle || (calm ? "calm" : "default"),
+        actions: Array.isArray(actions) ? actions : [],
         replaceCurrent: force,
       };
 
