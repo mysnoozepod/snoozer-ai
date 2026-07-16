@@ -12,14 +12,40 @@ function isObject(value) {
 }
 
 function loadIotDeviceRegistry(options = {}) {
-  if (isObject(options.registry)) return buildIotRegistryIndexes(options.registry);
+  const effectiveEnv = cleanString(options.env || process.env.IOT_ENV);
+  if (isObject(options.registry)) {
+    return buildIotRegistryIndexes(applyRegistryEnvironment(options.registry, effectiveEnv));
+  }
 
   const registryPath = cleanString(
     options.registryPath || process.env.IOT_DEVICE_REGISTRY_PATH || DEFAULT_REGISTRY_PATH
   );
   const raw = fs.readFileSync(registryPath, "utf8");
-  const registry = JSON.parse(raw);
+  const registry = applyRegistryEnvironment(JSON.parse(raw), effectiveEnv);
   return buildIotRegistryIndexes(registry);
+}
+
+function applyRegistryEnvironment(registry, env) {
+  if (!env || registry?.env === env) return registry;
+
+  const next = JSON.parse(JSON.stringify(registry));
+  const previousEnv = cleanString(next.env);
+  next.env = env;
+
+  for (const device of next.devices || []) {
+    device.env = env;
+    if (previousEnv && device.thingName) {
+      device.thingName = device.thingName.replace(`msp-${previousEnv}-`, `msp-${env}-`);
+    }
+    for (const key of ["eventTopic", "heartbeatTopic", "faultTopic", "statusTopic"]) {
+      if (device.mqtt?.[key] && previousEnv) {
+        device.mqtt[key] = device.mqtt[key].replace(`/mysnoozepod/${previousEnv}/`, `/mysnoozepod/${env}/`);
+        device.mqtt[key] = device.mqtt[key].replace(`mysnoozepod/${previousEnv}/`, `mysnoozepod/${env}/`);
+      }
+    }
+  }
+
+  return next;
 }
 
 function buildIotRegistryIndexes(registry) {
@@ -115,6 +141,7 @@ function validateRegistryMembership(event, indexes) {
 
 module.exports = {
   DEFAULT_REGISTRY_PATH,
+  applyRegistryEnvironment,
   buildIotRegistryIndexes,
   loadIotDeviceRegistry,
   getRegisteredZone,

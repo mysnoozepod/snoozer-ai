@@ -135,7 +135,7 @@ async function ingest(event, options = {}) {
       eventsTable: "iot_zone_events_test",
       quarantineQueueUrl: "https://sqs.us-east-1.amazonaws.com/123/iot-quarantine-test",
       eventTtlDays: 180,
-      registry,
+      registry: options.registry || registry,
       ddbDoc,
       sqsClient,
       now: options.now || BASE_NOW,
@@ -313,6 +313,21 @@ async function testShopperIdentityOptional() {
   assert.strictEqual(ddbDoc.historyItems[0].snoozeCode, null);
 }
 
+async function testDevDeploymentRegistryOverlay() {
+  const event = validEvent({
+    eventId: "evt-dev-registry-overlay-1",
+    env: "dev",
+  });
+  const { result } = await ingest(event, {
+    env: "dev",
+    topic: "mysnoozepod/dev/stores/severn-pilot/zones/pod-3/events",
+    registry: loadIotDeviceRegistry({ env: "dev" }),
+  });
+
+  assert.strictEqual(result.accepted, true);
+  assert.strictEqual(result.env, "dev");
+}
+
 async function main() {
   const tests = [
     ["valid_presence_event", testValidPresenceEvent],
@@ -333,6 +348,7 @@ async function main() {
     ["append_only_history_uses_transactional_put", testAppendOnlyHistoryUsesTransactionalPut],
     ["latest_state_uses_conditional_update", testLatestStateUsesConditionalUpdate],
     ["shopper_identity_optional", testShopperIdentityOptional],
+    ["dev_deployment_registry_overlay", testDevDeploymentRegistryOverlay],
   ];
 
   const failures = [];

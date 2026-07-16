@@ -1,0 +1,31 @@
+.git/**
+.aws-sam/**
+_out/**
+omnia-journey/**
+assets/**
+layout/**
+locales/**
+sections/**
+snippets/**
+templates/**
+Shopify Theme Files/**
+Sensor Operating Layer v1/**
+business planning/**
+New folder/**
+node_modules/**
+nodejs/**
+snoozer-layer/**
+test-zip/**
+zip-preview/**
+*.zip
+*.md
+*.png
+*.log
+tmp-*.json
+pod-check.png
+results-check*.png
+results-correction-check.png
+phase3-audit/**
+phase4-audit/**
+s3-audit/**
+s3 files/**
