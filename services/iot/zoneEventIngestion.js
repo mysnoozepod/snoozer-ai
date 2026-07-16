@@ -4,6 +4,7 @@ const { validateZoneEvent } = require("./zoneEventValidator");
 const { persistZoneEvent } = require("./zoneEventStore");
 const { quarantineMalformedZoneEvent } = require("./zoneEventQuarantine");
 const { emitIotMetric } = require("./zoneEventMetrics");
+const { broadcastZoneEvent } = require("./zoneEventBroadcaster");
 
 function cleanString(value) {
   return String(value == null ? "" : value).trim();
@@ -237,6 +238,34 @@ async function processZoneEvent(event, options = {}) {
     latestUpdated: persistence.latest?.latestUpdated === true,
   }, options);
 
+  let broadcast = null;
+  if (options.broadcast !== false) {
+    try {
+      broadcast = await broadcastZoneEvent(normalized, options);
+      if (!broadcast?.skipped) {
+        logIot("iot.zone_event.broadcast", {
+          eventId: normalized.eventId,
+          env: normalized.env,
+          storeId: normalized.storeId,
+          zoneId: normalized.zoneId,
+          attempted: broadcast.attempted || 0,
+          delivered: broadcast.delivered || 0,
+          goneDeleted: broadcast.goneDeleted || 0,
+          failed: broadcast.failed || 0,
+        }, options);
+      }
+    } catch (error) {
+      broadcast = { ok: false, failed: true, reason: error.message };
+      logIot("iot.zone_event.broadcast_failed", {
+        eventId: normalized.eventId,
+        env: normalized.env,
+        storeId: normalized.storeId,
+        zoneId: normalized.zoneId,
+        error: error.message,
+      }, options);
+    }
+  }
+
   return {
     ok: true,
     accepted: true,
@@ -249,6 +278,7 @@ async function processZoneEvent(event, options = {}) {
     zoneId: normalized.zoneId,
     deviceId: normalized.deviceId,
     receivedAt,
+    broadcast,
   };
 }
 

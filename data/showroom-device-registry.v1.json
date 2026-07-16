@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "registryVersion": "showroom-device-registry.v1",
+  "env": "dev",
+  "storeId": "severn-pilot",
+  "devices": [
+    {
+      "deviceId": "admin-dev",
+      "deviceMode": "admin-dev",
+      "zoneId": "admin-dev",
+      "allowedZoneIds": ["*"],
+      "enabled": true
+    },
+    {
+      "deviceId": "welcome-01",
+      "deviceMode": "welcome-kiosk",
+      "zoneId": "welcome-kiosk",
+      "allowedZoneIds": ["welcome-kiosk"],
+      "enabled": true
+    },
+    {
+      "deviceId": "pod-1-ipad-01",
+      "deviceMode": "pod-ipad",
+      "zoneId": "pod-1",
+      "podId": "pod-1",
+      "allowedZoneIds": ["pod-1"],
+      "enabled": true
+    },
+    {
+      "deviceId": "pod-2-ipad-01",
+      "deviceMode": "pod-ipad",
+      "zoneId": "pod-2",
+      "podId": "pod-2",
+      "allowedZoneIds": ["pod-2"],
+      "enabled": true
+    },
+    {
+      "deviceId": "pod-3-ipad-01",
+      "deviceMode": "pod-ipad",
+      "zoneId": "pod-3",
+      "podId": "pod-3",
+      "allowedZoneIds": ["pod-3"],
+      "enabled": true
+    },
+    {
+      "deviceId": "pod-4-ipad-01",
+      "deviceMode": "pod-ipad",
+      "zoneId": "pod-4",
+      "podId": "pod-4",
+      "allowedZoneIds": ["pod-4"],
+      "enabled": true
+    },
+    {
+      "deviceId": "pod-5-ipad-01",
+      "deviceMode": "pod-ipad",
+      "zoneId": "pod-5",
+      "podId": "pod-5",
+      "allowedZoneIds": ["pod-5"],
+      "enabled": true
+    },
+    {
+      "deviceId": "ask-snoozer-01",
+      "deviceMode": "ask-snoozer-kiosk",
+      "zoneId": "ask-snoozer",
+      "allowedZoneIds": ["ask-snoozer"],
+      "enabled": true
+    },
+    {
+      "deviceId": "sleep-essentials-01",
+      "deviceMode": "sleep-essentials-kiosk",
+      "zoneId": "sleep-essentials-zone",
+      "allowedZoneIds": ["sleep-essentials-zone"],
+      "enabled": true
+    },
+    {
+      "deviceId": "checkout-01",
+      "deviceMode": "checkout-kiosk",
+      "zoneId": "checkout-zone",
+      "allowedZoneIds": ["checkout-zone"],
+      "enabled": true
+    }
+  ]
+}

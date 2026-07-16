@@ -1,6 +1,6 @@
 # AWS Rollback Guide
 
-Status: Phase 3 rollback guide  
+Status: Phase 4 rollback guide
 Scope: MySnoozePod IoT backend infrastructure only
 
 ## Purpose
@@ -27,6 +27,16 @@ Re-enable:
 aws iot enable-topic-rule --rule-name msp_dev_zone_event_ingest_rule
 ```
 
+## Stop WebSocket Delivery Only
+
+If realtime delivery is misbehaving but IoT persistence is healthy, leave the IoT Rule enabled and disconnect clients by deleting records from:
+
+```text
+msp-{env}-websocket-connections
+```
+
+You can also redeploy a prior stack revision that removes `WEBSOCKET_API_ENDPOINT` from the ingestion Lambda. This stops broadcasts while keeping DynamoDB event persistence intact.
+
 ## Roll Back Lambda Code Only
 
 If a deployment changes Lambda code and infrastructure is still healthy, redeploy the previous Git commit:
@@ -38,7 +48,7 @@ sam deploy `
   --template-file .aws-sam/build/template.yaml `
   --stack-name mysnoozepod-iot-dev `
   --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM `
-  --parameter-overrides DeploymentEnv=dev StoreId=severn-pilot EventTtlDays=180 LogLevel=info LogRetentionDays=30
+  --parameter-overrides DeploymentEnv=dev StoreId=severn-pilot EventTtlDays=180 LogLevel=info LogRetentionDays=30 WebSocketConnectionTtlSeconds=86400
 ```
 
 Return to main after rollback if needed:

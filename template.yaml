@@ -45,6 +45,11 @@ Parameters:
       - 180
       - 365
     Description: CloudWatch log retention for the ingestion Lambda.
+  WebSocketConnectionTtlSeconds:
+    Type: Number
+    Default: 86400
+    MinValue: 300
+    Description: TTL in seconds for WebSocket connection and subscription records.
   AlarmEmail:
     Type: String
     Default: ""
@@ -230,6 +235,28 @@ Resources:
       Endpoint: !Ref AlarmEmail
       TopicArn: !Ref IoTAlarmTopic
 
+  ShowroomWebSocketApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub "msp-${DeploymentEnv}-iot-websocket"
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+      Tags:
+        App: MySnoozePod
+        Environment: !Ref DeploymentEnv
+        StackArea: IoT
+
+  ShowroomWebSocketStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref ShowroomWebSocketApi
+      StageName: !Ref DeploymentEnv
+      AutoDeploy: true
+      Tags:
+        App: MySnoozePod
+        Environment: !Ref DeploymentEnv
+        StackArea: IoT
+
   ZoneEventIngestLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -242,6 +269,155 @@ Resources:
           Value: !Ref DeploymentEnv
         - Key: StackArea
           Value: IoT
+
+  IotWebSocketLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/msp-${DeploymentEnv}-iot-websocket"
+      RetentionInDays: !Ref LogRetentionDays
+      Tags:
+        - Key: App
+          Value: MySnoozePod
+        - Key: Environment
+          Value: !Ref DeploymentEnv
+        - Key: StackArea
+          Value: IoT
+
+  IotWebSocketCleanupLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/msp-${DeploymentEnv}-iot-websocket-cleanup"
+      RetentionInDays: !Ref LogRetentionDays
+      Tags:
+        - Key: App
+          Value: MySnoozePod
+        - Key: Environment
+          Value: !Ref DeploymentEnv
+        - Key: StackArea
+          Value: IoT
+
+  IotWebSocketFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - IotWebSocketLogGroup
+    Properties:
+      FunctionName: !Sub "msp-${DeploymentEnv}-iot-websocket"
+      Description: MySnoozePod IoT WebSocket connection and subscription handler.
+      CodeUri: .
+      Handler: index.iotWebSocketHandler
+      Environment:
+        Variables:
+          IOT_ENV: !Ref DeploymentEnv
+          IOT_STORE_ID: !Ref StoreId
+          IOT_DEVICE_REGISTRY_PATH: data/iot-device-registry.v1.json
+          SHOWROOM_DEVICE_REGISTRY_PATH: data/showroom-device-registry.v1.json
+          WEBSOCKET_CONNECTIONS_TABLE: !Ref WebSocketConnectionsTable
+          WEBSOCKET_CONNECTION_TTL_SECONDS: !Ref WebSocketConnectionTtlSeconds
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            - Sid: WebSocketConnectionReadWrite
+              Effect: Allow
+              Action:
+                - dynamodb:BatchWriteItem
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Query
+                - dynamodb:UpdateItem
+              Resource:
+                - !GetAtt WebSocketConnectionsTable.Arn
+                - !Sub "${WebSocketConnectionsTable.Arn}/index/*"
+      Tags:
+        App: MySnoozePod
+        Environment: !Ref DeploymentEnv
+        StackArea: IoT
+
+  IotWebSocketCleanupFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - IotWebSocketCleanupLogGroup
+    Properties:
+      FunctionName: !Sub "msp-${DeploymentEnv}-iot-websocket-cleanup"
+      Description: MySnoozePod IoT WebSocket stale connection cleanup handler.
+      CodeUri: .
+      Handler: index.iotWebSocketCleanupHandler
+      Environment:
+        Variables:
+          WEBSOCKET_CONNECTIONS_TABLE: !Ref WebSocketConnectionsTable
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            - Sid: WebSocketConnectionCleanup
+              Effect: Allow
+              Action:
+                - dynamodb:BatchWriteItem
+                - dynamodb:DeleteItem
+                - dynamodb:Scan
+              Resource:
+                - !GetAtt WebSocketConnectionsTable.Arn
+      Events:
+        CleanupSchedule:
+          Type: Schedule
+          Properties:
+            Name: !Sub "msp-${DeploymentEnv}-iot-websocket-cleanup"
+            Schedule: rate(15 minutes)
+            Enabled: true
+      Tags:
+        App: MySnoozePod
+        Environment: !Ref DeploymentEnv
+        StackArea: IoT
+
+  WebSocketLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ShowroomWebSocketApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub
+        - "arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations"
+        - FunctionArn: !GetAtt IotWebSocketFunction.Arn
+
+  WebSocketConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ShowroomWebSocketApi
+      RouteKey: "$connect"
+      AuthorizationType: NONE
+      Target: !Sub "integrations/${WebSocketLambdaIntegration}"
+
+  WebSocketDisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ShowroomWebSocketApi
+      RouteKey: "$disconnect"
+      AuthorizationType: NONE
+      Target: !Sub "integrations/${WebSocketLambdaIntegration}"
+
+  WebSocketSubscribeRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ShowroomWebSocketApi
+      RouteKey: "subscribe"
+      AuthorizationType: NONE
+      Target: !Sub "integrations/${WebSocketLambdaIntegration}"
+
+  WebSocketUnsubscribeRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ShowroomWebSocketApi
+      RouteKey: "unsubscribe"
+      AuthorizationType: NONE
+      Target: !Sub "integrations/${WebSocketLambdaIntegration}"
+
+  WebSocketInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref IotWebSocketFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ShowroomWebSocketApi}/*"
 
   ZoneEventIngestFunction:
     Type: AWS::Serverless::Function
@@ -262,6 +438,8 @@ Resources:
           IOT_QUARANTINE_QUEUE_URL: !Ref IoTQuarantineQueue
           IOT_EVENT_TTL_DAYS: !Ref EventTtlDays
           IOT_LOG_LEVEL: !Ref LogLevel
+          WEBSOCKET_CONNECTIONS_TABLE: !Ref WebSocketConnectionsTable
+          WEBSOCKET_API_ENDPOINT: !Sub "https://${ShowroomWebSocketApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${DeploymentEnv}"
       Policies:
         - AWSLambdaBasicExecutionRole
         - Version: "2012-10-17"
@@ -288,6 +466,21 @@ Resources:
               Action:
                 - sqs:SendMessage
               Resource: !GetAtt IoTQuarantineQueue.Arn
+            - Sid: QueryAndCleanWebSocketSubscribers
+              Effect: Allow
+              Action:
+                - dynamodb:BatchWriteItem
+                - dynamodb:GetItem
+                - dynamodb:Query
+              Resource:
+                - !GetAtt WebSocketConnectionsTable.Arn
+                - !Sub "${WebSocketConnectionsTable.Arn}/index/*"
+            - Sid: BroadcastToWebSocketConnections
+              Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+              Resource:
+                - !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ShowroomWebSocketApi}/${DeploymentEnv}/POST/@connections/*"
       Tags:
         App: MySnoozePod
         Environment: !Ref DeploymentEnv
@@ -492,8 +685,20 @@ Outputs:
     Description: DynamoDB append-only zone events table.
     Value: !Ref ZoneEventsTable
   WebSocketConnectionsTableName:
-    Description: DynamoDB WebSocket connection table reserved for later websocket push.
+    Description: DynamoDB WebSocket connection and zone subscription table.
     Value: !Ref WebSocketConnectionsTable
+  ShowroomWebSocketApiId:
+    Description: API Gateway WebSocket API ID.
+    Value: !Ref ShowroomWebSocketApi
+  ShowroomWebSocketUrl:
+    Description: WebSocket endpoint for realtime showroom zone events.
+    Value: !Sub "wss://${ShowroomWebSocketApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${DeploymentEnv}"
+  IotWebSocketFunctionName:
+    Description: WebSocket connect/disconnect/subscribe/unsubscribe Lambda.
+    Value: !Ref IotWebSocketFunction
+  IotWebSocketCleanupFunctionName:
+    Description: Scheduled stale WebSocket connection cleanup Lambda.
+    Value: !Ref IotWebSocketCleanupFunction
   IoTQuarantineQueueUrl:
     Description: SQS queue URL for malformed IoT events and IoT Rule errors.
     Value: !Ref IoTQuarantineQueue

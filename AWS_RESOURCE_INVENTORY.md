@@ -1,11 +1,11 @@
 # AWS Resource Inventory
 
-Status: Phase 3 infrastructure inventory  
+Status: Phase 4 infrastructure inventory
 Scope: MySnoozePod IoT backend stack
 
 ## Summary
 
-The SAM template creates the AWS resources required for Phase 2 ZoneEvent ingestion to run without manually creating DynamoDB, SQS, Lambda, IoT Rule, IAM, or CloudWatch resources.
+The SAM template creates the AWS resources required for ZoneEvent ingestion and realtime WebSocket broadcast without manually creating DynamoDB, SQS, Lambda, IoT Rule, API Gateway WebSocket, IAM, or CloudWatch resources.
 
 ## Parameters
 
@@ -16,6 +16,7 @@ The SAM template creates the AWS resources required for Phase 2 ZoneEvent ingest
 | `EventTtlDays` | `180` | Event history and idempotency TTL. |
 | `LogLevel` | `info` | Runtime IoT log level. |
 | `LogRetentionDays` | `30` | CloudWatch log group retention. |
+| `WebSocketConnectionTtlSeconds` | `86400` | WebSocket connection and subscription TTL. |
 | `AlarmEmail` | empty | Optional SNS alarm email subscription. |
 
 ## DynamoDB Tables
@@ -99,8 +100,9 @@ msp-{env}-websocket-connections
 
 Purpose:
 
-- Reserved for later WebSocket push phases.
-- Not used by the Phase 2 ingestion runtime yet.
+- Stores active WebSocket connection records.
+- Stores one subscription record per connection and zone.
+- Supports zone-based subscriber queries for realtime ZoneEvent broadcasts.
 
 Keys:
 
@@ -112,7 +114,15 @@ GSIs:
 
 | Index | Keys | Purpose |
 | --- | --- | --- |
-| `GSI1` | `GSI1PK`, `GSI1SK` | Future store/zone subscription queries. |
+| `GSI1` | `GSI1PK`, `GSI1SK` | Store/zone subscription queries. |
+
+Subscription item shape:
+
+```text
+PK = SUBSCRIPTION#ZONE#{zoneId}#CONNECTION#{connectionId}
+GSI1PK = STORE#{storeId}#ZONE#{zoneId}
+GSI1SK = CONNECTION#{connectionId}
+```
 
 TTL:
 
@@ -170,6 +180,45 @@ Environment:
 | `IOT_QUARANTINE_QUEUE_URL` | queue URL |
 | `IOT_EVENT_TTL_DAYS` | `EventTtlDays` |
 | `IOT_LOG_LEVEL` | `LogLevel` |
+| `WEBSOCKET_CONNECTIONS_TABLE` | `msp-{env}-websocket-connections` |
+| `WEBSOCKET_API_ENDPOINT` | WebSocket API management endpoint |
+
+### WebSocket Route Handler
+
+Name:
+
+```text
+msp-{env}-iot-websocket
+```
+
+Handler:
+
+```text
+index.iotWebSocketHandler
+```
+
+Routes:
+
+- `$connect`
+- `$disconnect`
+- `subscribe`
+- `unsubscribe`
+
+### WebSocket Cleanup Handler
+
+Name:
+
+```text
+msp-{env}-iot-websocket-cleanup
+```
+
+Handler:
+
+```text
+index.iotWebSocketCleanupHandler
+```
+
+Runs every 15 minutes and deletes expired WebSocket records.
 
 ## IAM
 
@@ -179,6 +228,18 @@ The Lambda role allows:
 - `dynamodb:GetItem`, `dynamodb:Query`, `dynamodb:UpdateItem` on the latest-state table.
 - `dynamodb:PutItem`, `dynamodb:TransactWriteItems`, `dynamodb:Query` on the event-history table and its indexes.
 - `sqs:SendMessage` to the quarantine queue.
+- `dynamodb:GetItem`, `dynamodb:Query`, and `dynamodb:BatchWriteItem` on the WebSocket connections table for broadcast lookup and Gone connection cleanup.
+- `execute-api:ManageConnections` on the WebSocket API `@connections` path.
+
+The WebSocket route Lambda role allows:
+
+- CloudWatch Logs.
+- WebSocket connection table read/write/query access.
+
+The WebSocket cleanup Lambda role allows:
+
+- CloudWatch Logs.
+- WebSocket connection table scan/delete access.
 
 The IoT Rule error action role allows:
 
@@ -207,6 +268,25 @@ Action:
 Error action:
 
 - Send to `msp-{env}-iot-quarantine`.
+
+## API Gateway WebSocket
+
+API name:
+
+```text
+msp-{env}-iot-websocket
+```
+
+Routes:
+
+| Route | Purpose |
+| --- | --- |
+| `$connect` | Validates device identity and stores connection. |
+| `$disconnect` | Deletes connection and subscriptions. |
+| `subscribe` | Authorizes zone subscription. |
+| `unsubscribe` | Removes zone subscription. |
+
+Accepted ZoneEvents are broadcast to subscribers only after DynamoDB persistence succeeds.
 
 ## CloudWatch
 
@@ -241,6 +321,10 @@ The stack outputs:
 
 - Zone event ingestion Lambda name.
 - Zone event ingestion Lambda ARN.
+- WebSocket API ID.
+- WebSocket API URL.
+- WebSocket route Lambda name.
+- WebSocket cleanup Lambda name.
 - IoT Rule name.
 - Zone state table name.
 - Zone events table name.

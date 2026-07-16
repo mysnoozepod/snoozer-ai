@@ -1,13 +1,13 @@
 # AWS Deployment Guide
 
-Status: Phase 3 infrastructure deployment guide  
+Status: Phase 4 infrastructure deployment guide
 Scope: MySnoozePod IoT backend stack only
 
 ## Purpose
 
 This guide deploys the AWS infrastructure needed by the existing IoT ZoneEvent ingestion runtime.
 
-It does not deploy React, Shopify, cart, checkout, firmware, lighting automation, or WebSocket broadcast behavior.
+It does not deploy React, Shopify, cart, checkout, firmware, lighting automation, or frontend WebSocket client wiring.
 
 ## Prerequisites
 
@@ -28,7 +28,7 @@ mysnoozepod-iot-prod
 
 ## Environment Values
 
-The Phase 2 runtime uses these environment variables. The SAM template sets them automatically:
+The IoT runtime uses these environment variables. The SAM template sets them automatically:
 
 | Variable | Source |
 | --- | --- |
@@ -40,11 +40,16 @@ The Phase 2 runtime uses these environment variables. The SAM template sets them
 | `IOT_QUARANTINE_QUEUE_URL` | `msp-{env}-iot-quarantine` queue URL |
 | `IOT_EVENT_TTL_DAYS` | `EventTtlDays` parameter |
 | `IOT_LOG_LEVEL` | `LogLevel` parameter |
+| `SHOWROOM_DEVICE_REGISTRY_PATH` | `data/showroom-device-registry.v1.json` |
+| `WEBSOCKET_CONNECTIONS_TABLE` | `msp-{env}-websocket-connections` |
+| `WEBSOCKET_API_ENDPOINT` | WebSocket API management endpoint |
+| `WEBSOCKET_CONNECTION_TTL_SECONDS` | `WebSocketConnectionTtlSeconds` parameter |
 
 ## Validate Locally
 
 ```powershell
 node tests/runIotZoneEventIngestionTests.js
+node tests/runIotWebSocketTests.js
 sam validate --template-file template.yaml
 ```
 
@@ -70,7 +75,8 @@ sam deploy `
     StoreId=severn-pilot `
     EventTtlDays=180 `
     LogLevel=info `
-    LogRetentionDays=30
+    LogRetentionDays=30 `
+    WebSocketConnectionTtlSeconds=86400
 ```
 
 Optional alarm email:
@@ -86,6 +92,7 @@ sam deploy `
     EventTtlDays=180 `
     LogLevel=info `
     LogRetentionDays=30 `
+    WebSocketConnectionTtlSeconds=86400 `
     AlarmEmail=you@example.com
 ```
 
@@ -105,8 +112,44 @@ sam deploy `
     StoreId=severn-pilot `
     EventTtlDays=180 `
     LogLevel=info `
-    LogRetentionDays=30
+    LogRetentionDays=30 `
+    WebSocketConnectionTtlSeconds=86400
 ```
+
+## WebSocket Backend
+
+The stack creates an API Gateway WebSocket API for realtime showroom zone events.
+
+Routes:
+
+| Route | Purpose |
+| --- | --- |
+| `$connect` | Validates `deviceId` and stores the connection. |
+| `$disconnect` | Deletes the connection and subscriptions. |
+| `subscribe` | Authorizes and stores zone subscriptions. |
+| `unsubscribe` | Removes zone subscriptions. |
+
+Connect:
+
+```text
+wss://{api-id}.execute-api.{region}.amazonaws.com/{env}?deviceId=pod-3-ipad-01
+```
+
+Subscribe:
+
+```json
+{ "action": "subscribe", "zoneId": "pod-3" }
+```
+
+Authorization:
+
+- Pod iPads can subscribe only to their assigned pod zone.
+- `welcome-01` can subscribe only to `welcome-kiosk`.
+- `ask-snoozer-01` can subscribe only to `ask-snoozer`.
+- `sleep-essentials-01` can subscribe only to `sleep-essentials-zone`.
+- `checkout-01` can subscribe only to `checkout-zone`.
+- `admin-dev` can subscribe to all registered zones.
+- Unknown devices, disabled devices, unknown zones, and unauthorized zones are rejected.
 
 ## IoT Rule SQL
 
@@ -126,6 +169,20 @@ Get stack outputs:
 aws cloudformation describe-stacks `
   --stack-name mysnoozepod-iot-dev `
   --query "Stacks[0].Outputs"
+```
+
+Use the `ShowroomWebSocketUrl` output for realtime clients.
+
+Optional WebSocket smoke test:
+
+```powershell
+npx wscat -c "wss://<api-id>.execute-api.us-east-1.amazonaws.com/dev?deviceId=pod-3-ipad-01"
+```
+
+Then send:
+
+```json
+{ "action": "subscribe", "zoneId": "pod-3" }
 ```
 
 Invoke Lambda directly with a known-good event:
@@ -226,6 +283,6 @@ Check:
 
 - Does not create IoT Things or certificates.
 - Does not flash firmware.
-- Does not enable React WebSocket subscriptions.
+- Does not wire React clients to the WebSocket URL.
 - Does not trigger lighting, audio, HUD, cart, checkout, Shopify, Zoho, or Calendly behavior.
 - Does not migrate existing Lambda/API Gateway stack.
