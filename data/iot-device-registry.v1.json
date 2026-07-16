@@ -1,0 +1,214 @@
+{
+  "schemaVersion": "1.0",
+  "registryVersion": "iot-device-registry.v1",
+  "env": "prod",
+  "storeId": "severn-pilot",
+  "zones": [
+    { "zoneId": "welcome-kiosk", "zoneType": "kiosk", "podId": null },
+    { "zoneId": "pod-1", "zoneType": "pod", "podId": "pod-1" },
+    { "zoneId": "pod-2", "zoneType": "pod", "podId": "pod-2" },
+    { "zoneId": "pod-3", "zoneType": "pod", "podId": "pod-3" },
+    { "zoneId": "pod-4", "zoneType": "pod", "podId": "pod-4" },
+    { "zoneId": "pod-5", "zoneType": "pod", "podId": "pod-5" },
+    { "zoneId": "ask-snoozer", "zoneType": "kiosk", "podId": null },
+    { "zoneId": "sleep-essentials-zone", "zoneType": "kiosk", "podId": null },
+    { "zoneId": "checkout-zone", "zoneType": "checkout", "podId": null },
+    { "zoneId": "help", "zoneType": "help", "podId": null }
+  ],
+  "devices": [
+    {
+      "deviceId": "pod-1-edge-01",
+      "deviceType": "pod-edge-controller",
+      "env": "prod",
+      "storeId": "severn-pilot",
+      "zoneId": "pod-1",
+      "zoneIds": ["pod-1"],
+      "podId": "pod-1",
+      "thingName": "msp-prod-severn-pilot-pod-1-edge-01",
+      "certificateId": "TBD",
+      "firmwareVersion": "1.0.0",
+      "networkType": "ethernet-poe",
+      "enabled": true,
+      "sensors": [
+        { "sensorId": "pod-1-presence-01", "sensorType": "mmwave-presence", "zoneId": "pod-1", "inputChannel": "uart-1", "enabled": true },
+        { "sensorId": "pod-1-occupancy-01", "sensorType": "bed-occupancy", "zoneId": "pod-1", "inputChannel": "digital-1", "enabled": true }
+      ],
+      "outputs": [
+        { "outputId": "pod-1-lighting-01", "outputType": "lighting-zone", "zoneId": "pod-1", "outputChannel": "relay-1", "enabled": true }
+      ],
+      "mqtt": {
+        "eventTopic": "mysnoozepod/prod/stores/severn-pilot/zones/pod-1/events",
+        "heartbeatTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-1-edge-01/heartbeat",
+        "faultTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-1-edge-01/fault",
+        "statusTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-1-edge-01/status"
+      },
+      "configVersion": 1
+    },
+    {
+      "deviceId": "pod-2-edge-01",
+      "deviceType": "pod-edge-controller",
+      "env": "prod",
+      "storeId": "severn-pilot",
+      "zoneId": "pod-2",
+      "zoneIds": ["pod-2"],
+      "podId": "pod-2",
+      "thingName": "msp-prod-severn-pilot-pod-2-edge-01",
+      "certificateId": "TBD",
+      "firmwareVersion": "1.0.0",
+      "networkType": "ethernet-poe",
+      "enabled": true,
+      "sensors": [
+        { "sensorId": "pod-2-presence-01", "sensorType": "mmwave-presence", "zoneId": "pod-2", "inputChannel": "uart-1", "enabled": true },
+        { "sensorId": "pod-2-occupancy-01", "sensorType": "bed-occupancy", "zoneId": "pod-2", "inputChannel": "digital-1", "enabled": true }
+      ],
+      "outputs": [
+        { "outputId": "pod-2-lighting-01", "outputType": "lighting-zone", "zoneId": "pod-2", "outputChannel": "relay-1", "enabled": true }
+      ],
+      "mqtt": {
+        "eventTopic": "mysnoozepod/prod/stores/severn-pilot/zones/pod-2/events",
+        "heartbeatTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-2-edge-01/heartbeat",
+        "faultTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-2-edge-01/fault",
+        "statusTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-2-edge-01/status"
+      },
+      "configVersion": 1
+    },
+    {
+      "deviceId": "pod-3-edge-01",
+      "deviceType": "pod-edge-controller",
+      "env": "prod",
+      "storeId": "severn-pilot",
+      "zoneId": "pod-3",
+      "zoneIds": ["pod-3"],
+      "podId": "pod-3",
+      "thingName": "msp-prod-severn-pilot-pod-3-edge-01",
+      "certificateId": "TBD",
+      "firmwareVersion": "1.0.0",
+      "networkType": "ethernet-poe",
+      "enabled": true,
+      "sensors": [
+        { "sensorId": "pod-3-presence-01", "sensorType": "mmwave-presence", "zoneId": "pod-3", "inputChannel": "uart-1", "enabled": true },
+        { "sensorId": "pod-3-occupancy-01", "sensorType": "bed-occupancy", "zoneId": "pod-3", "inputChannel": "digital-1", "enabled": true }
+      ],
+      "outputs": [
+        { "outputId": "pod-3-lighting-01", "outputType": "lighting-zone", "zoneId": "pod-3", "outputChannel": "relay-1", "enabled": true }
+      ],
+      "mqtt": {
+        "eventTopic": "mysnoozepod/prod/stores/severn-pilot/zones/pod-3/events",
+        "heartbeatTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-3-edge-01/heartbeat",
+        "faultTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-3-edge-01/fault",
+        "statusTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-3-edge-01/status"
+      },
+      "configVersion": 1
+    },
+    {
+      "deviceId": "pod-4-edge-01",
+      "deviceType": "pod-edge-controller",
+      "env": "prod",
+      "storeId": "severn-pilot",
+      "zoneId": "pod-4",
+      "zoneIds": ["pod-4"],
+      "podId": "pod-4",
+      "thingName": "msp-prod-severn-pilot-pod-4-edge-01",
+      "certificateId": "TBD",
+      "firmwareVersion": "1.0.0",
+      "networkType": "ethernet-poe",
+      "enabled": true,
+      "sensors": [
+        { "sensorId": "pod-4-presence-01", "sensorType": "mmwave-presence", "zoneId": "pod-4", "inputChannel": "uart-1", "enabled": true },
+        { "sensorId": "pod-4-occupancy-01", "sensorType": "bed-occupancy", "zoneId": "pod-4", "inputChannel": "digital-1", "enabled": true }
+      ],
+      "outputs": [
+        { "outputId": "pod-4-lighting-01", "outputType": "lighting-zone", "zoneId": "pod-4", "outputChannel": "relay-1", "enabled": true }
+      ],
+      "mqtt": {
+        "eventTopic": "mysnoozepod/prod/stores/severn-pilot/zones/pod-4/events",
+        "heartbeatTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-4-edge-01/heartbeat",
+        "faultTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-4-edge-01/fault",
+        "statusTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-4-edge-01/status"
+      },
+      "configVersion": 1
+    },
+    {
+      "deviceId": "pod-5-edge-01",
+      "deviceType": "pod-edge-controller",
+      "env": "prod",
+      "storeId": "severn-pilot",
+      "zoneId": "pod-5",
+      "zoneIds": ["pod-5"],
+      "podId": "pod-5",
+      "thingName": "msp-prod-severn-pilot-pod-5-edge-01",
+      "certificateId": "TBD",
+      "firmwareVersion": "1.0.0",
+      "networkType": "ethernet-poe",
+      "enabled": true,
+      "sensors": [
+        { "sensorId": "pod-5-presence-01", "sensorType": "mmwave-presence", "zoneId": "pod-5", "inputChannel": "uart-1", "enabled": true },
+        { "sensorId": "pod-5-occupancy-01", "sensorType": "bed-occupancy", "zoneId": "pod-5", "inputChannel": "digital-1", "enabled": true }
+      ],
+      "outputs": [
+        { "outputId": "pod-5-lighting-01", "outputType": "lighting-zone", "zoneId": "pod-5", "outputChannel": "relay-1", "enabled": true }
+      ],
+      "mqtt": {
+        "eventTopic": "mysnoozepod/prod/stores/severn-pilot/zones/pod-5/events",
+        "heartbeatTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-5-edge-01/heartbeat",
+        "faultTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-5-edge-01/fault",
+        "statusTopic": "mysnoozepod/prod/stores/severn-pilot/devices/pod-5-edge-01/status"
+      },
+      "configVersion": 1
+    },
+    {
+      "deviceId": "showroom-zone-edge-01",
+      "deviceType": "shared-zone-controller",
+      "env": "prod",
+      "storeId": "severn-pilot",
+      "zoneId": "help",
+      "zoneIds": ["welcome-kiosk", "ask-snoozer", "sleep-essentials-zone", "checkout-zone", "help"],
+      "podId": null,
+      "thingName": "msp-prod-severn-pilot-showroom-zone-edge-01",
+      "certificateId": "TBD",
+      "firmwareVersion": "1.0.0",
+      "networkType": "ethernet-poe",
+      "enabled": true,
+      "sensors": [
+        { "sensorId": "welcome-kiosk-presence-01", "sensorType": "mmwave-presence", "zoneId": "welcome-kiosk", "inputChannel": "uart-1", "enabled": true },
+        { "sensorId": "ask-snoozer-presence-01", "sensorType": "mmwave-presence", "zoneId": "ask-snoozer", "inputChannel": "uart-2", "enabled": true },
+        { "sensorId": "sleep-essentials-zone-presence-01", "sensorType": "mmwave-presence", "zoneId": "sleep-essentials-zone", "inputChannel": "uart-3", "enabled": true },
+        { "sensorId": "checkout-zone-presence-01", "sensorType": "mmwave-presence", "zoneId": "checkout-zone", "inputChannel": "uart-4", "enabled": true },
+        { "sensorId": "help-manual-01", "sensorType": "manual-control", "zoneId": "help", "inputChannel": "staff", "enabled": true }
+      ],
+      "outputs": [
+        { "outputId": "showroom-ambient-audio-01", "outputType": "ambient-audio", "zoneId": "help", "outputChannel": "audio-1", "enabled": true }
+      ],
+      "mqtt": {
+        "eventTopic": "mysnoozepod/prod/stores/severn-pilot/zones/{zoneId}/events",
+        "heartbeatTopic": "mysnoozepod/prod/stores/severn-pilot/devices/showroom-zone-edge-01/heartbeat",
+        "faultTopic": "mysnoozepod/prod/stores/severn-pilot/devices/showroom-zone-edge-01/fault",
+        "statusTopic": "mysnoozepod/prod/stores/severn-pilot/devices/showroom-zone-edge-01/status"
+      },
+      "configVersion": 1
+    },
+    {
+      "deviceId": "spare-edge-01",
+      "deviceType": "spare-edge-controller",
+      "env": "prod",
+      "storeId": "severn-pilot",
+      "zoneId": "help",
+      "zoneIds": ["help"],
+      "podId": null,
+      "thingName": "msp-prod-severn-pilot-spare-edge-01",
+      "certificateId": "TBD",
+      "firmwareVersion": "1.0.0",
+      "networkType": "ethernet-poe",
+      "enabled": false,
+      "sensors": [],
+      "outputs": [],
+      "mqtt": {
+        "eventTopic": "mysnoozepod/prod/stores/severn-pilot/zones/{zoneId}/events",
+        "heartbeatTopic": "mysnoozepod/prod/stores/severn-pilot/devices/spare-edge-01/heartbeat",
+        "faultTopic": "mysnoozepod/prod/stores/severn-pilot/devices/spare-edge-01/fault",
+        "statusTopic": "mysnoozepod/prod/stores/severn-pilot/devices/spare-edge-01/status"
+      },
+      "configVersion": 1
+    }
+  ]
+}

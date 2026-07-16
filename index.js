@@ -32,6 +32,7 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const recommendationRoutes = require("./routes/recommendationRoutes");
 const askSnoozerRoutes = require("./routes/askSnoozerRoutes");
 const shopify = require("./routes/shopifyRoutes");
+const { handleIotZoneEvent } = require("./services/iot/zoneEventIngestion");
 
 let rewardsRoutes;
 try {
@@ -6525,4 +6526,8 @@ exports.lambdaHandler = async (event) => {
       }),
     };
   }
+};
+
+exports.iotZoneEventHandler = async (event, context) => {
+  return handleIotZoneEvent(event, context);
 };
