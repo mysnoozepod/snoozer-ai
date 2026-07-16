@@ -279,10 +279,73 @@ Check:
 - SQS visible messages alarm.
 - DynamoDB write throttle alarms.
 
+## Phase 7 Physical Control Bridge
+
+Deploy the SAM stack with the IoT Data-ATS endpoint when physical command publishing is enabled:
+
+```powershell
+$iotEndpoint = aws iot describe-endpoint --endpoint-type iot:Data-ATS --query endpointAddress --output text
+
+sam deploy `
+  --stack-name mysnoozepod-iot-dev `
+  --capabilities CAPABILITY_IAM `
+  --parameter-overrides `
+    DeploymentEnv=dev `
+    StoreId=severn-pilot `
+    IotDataEndpoint=$iotEndpoint
+```
+
+Physical command HTTP route used by the React showroom backend:
+
+```text
+POST /iot/physical-control/commands
+```
+
+Minimum request:
+
+```json
+{
+  "commandType": "set_lighting_state",
+  "zoneId": "pod-3",
+  "desiredState": {
+    "lightingState": "rest-test"
+  },
+  "source": "frontend",
+  "sourceSurface": "pod"
+}
+```
+
+Expected command topic:
+
+```text
+mysnoozepod/{env}/stores/{storeId}/devices/{deviceId}/commands
+```
+
+Controller ack topic:
+
+```text
+mysnoozepod/{env}/stores/{storeId}/devices/{deviceId}/ack
+```
+
+Controller reported-state topic:
+
+```text
+mysnoozepod/{env}/stores/{storeId}/devices/{deviceId}/reported-state
+```
+
+If the main manually deployed backend Lambda owns `POST /iot/physical-control/commands`, its execution role also needs:
+
+- `dynamodb:GetItem`, `dynamodb:PutItem`, `dynamodb:UpdateItem`, and `dynamodb:Query` on `msp-{env}-physical-control`.
+- `iot:Publish` on `arn:aws:iot:{region}:{account}:topic/mysnoozepod/{env}/stores/{storeId}/devices/*/commands`.
+- `execute-api:ManageConnections` for the showroom WebSocket API if command status should broadcast immediately.
+
+Physical failures are expected to fail softly. Manual showroom flows, cart, checkout, and Shopify truth must continue working even if command publish, ack, or reported-state handling is unavailable.
+
 ## What This Stack Does Not Do
 
 - Does not create IoT Things or certificates.
 - Does not flash firmware.
 - Does not wire React clients to the WebSocket URL.
-- Does not trigger lighting, audio, HUD, cart, checkout, Shopify, Zoho, or Calendly behavior.
+- Does not flash edge firmware.
+- Does not change cart, checkout, Shopify, Zoho, or Calendly behavior.
 - Does not migrate existing Lambda/API Gateway stack.

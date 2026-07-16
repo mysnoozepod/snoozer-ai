@@ -14,9 +14,11 @@ import {
 import { createShowroomIotClient, getReconnectDelay } from "./showroomIotClient.js";
 import {
   ZONE_CONNECTION_STATUSES,
+  applyPhysicalControlToState,
   applyZoneEventToState,
   createInitialZoneState,
   markZoneStateStale,
+  normalizePhysicalControlMessage,
   normalizeZoneEventMessage,
   shouldMarkZoneStateStale,
 } from "./zoneStateReducer.js";
@@ -330,9 +332,14 @@ export function ZoneStateProvider({ children }) {
         },
         onMessage: (raw) => {
           const normalized = normalizeZoneEventMessage(raw, subscribedZoneIds);
-          if (!normalized.ok) return;
+          const physical = normalized.ok
+            ? null
+            : normalizePhysicalControlMessage(raw, subscribedZoneIds);
+          if (!normalized.ok && !physical.ok) return;
           setState((current) => {
-            const result = applyZoneEventToState(current, normalized.event);
+            const result = normalized.ok
+              ? applyZoneEventToState(current, normalized.event)
+              : applyPhysicalControlToState(current, physical.event);
             if (result.accepted) {
               writeLastKnownZoneState(result.state, { deviceId: device.deviceId });
             }

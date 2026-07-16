@@ -147,5 +147,6 @@ module.exports = {
   getRegisteredZone,
   getRegisteredDevice,
   getRegisteredSensor,
+  deviceOwnsZone,
   validateRegistryMembership,
 };

@@ -145,6 +145,41 @@ export function normalizeZoneEventMessage(raw, authorizedZoneIds = []) {
   };
 }
 
+export function normalizePhysicalControlMessage(raw, authorizedZoneIds = []) {
+  const message = parseMessage(raw);
+  if (!message) return { ok: false, reason: "MALFORMED_MESSAGE" };
+  if (message.type !== "physical_control") return { ok: false, reason: "UNSUPPORTED_MESSAGE_TYPE" };
+
+  const zoneId = cleanString(message.zoneId);
+  const authorized = new Set(authorizedZoneIds);
+  if (!zoneId) return { ok: false, reason: "MISSING_ZONE_ID" };
+  if (authorized.size && !authorized.has(zoneId)) {
+    return { ok: false, reason: "ZONE_NOT_AUTHORIZED", zoneId };
+  }
+
+  return {
+    ok: true,
+    event: {
+      type: "physical_control",
+      commandId: cleanString(message.commandId),
+      storeId: cleanString(message.storeId),
+      zoneId,
+      deviceId: cleanString(message.deviceId),
+      commandType: cleanString(message.commandType),
+      status: cleanString(message.status),
+      desiredState: message.desiredState && typeof message.desiredState === "object" ? message.desiredState : {},
+      appliedState: message.appliedState && typeof message.appliedState === "object" ? message.appliedState : {},
+      reportedState: message.reportedState && typeof message.reportedState === "object" ? message.reportedState : {},
+      manualOverride: message.manualOverride === true,
+      fault: message.fault || null,
+      ack: message.ack && typeof message.ack === "object" ? message.ack : null,
+      updatedAt: cleanString(message.updatedAt || message.broadcastAt || new Date().toISOString()),
+      broadcastAt: cleanString(message.broadcastAt),
+      metadata: sanitizeMetadata(message.metadata),
+    },
+  };
+}
+
 export function applyZoneEventToState(currentState, event) {
   const state = currentState || createInitialZoneState();
   if (!event?.eventId || !event?.zoneId) {
@@ -200,6 +235,54 @@ export function applyZoneEventToState(currentState, event) {
   };
 
   return { accepted: true, reason: "ACCEPTED", state: nextState };
+}
+
+export function applyPhysicalControlToState(currentState, event) {
+  const state = currentState || createInitialZoneState();
+  if (!event?.zoneId) {
+    return { accepted: false, reason: "INVALID_PHYSICAL_CONTROL_EVENT", state };
+  }
+
+  const existingZoneState = state.zoneStateByZone?.[event.zoneId] || {};
+  const receivedAt = event.updatedAt || new Date().toISOString();
+  const nextZoneState = {
+    ...existingZoneState,
+    zoneId: event.zoneId,
+    physicalControl: {
+      commandId: event.commandId || existingZoneState.physicalControl?.commandId || null,
+      deviceId: event.deviceId || existingZoneState.physicalControl?.deviceId || null,
+      commandType: event.commandType || existingZoneState.physicalControl?.commandType || null,
+      status: event.status || existingZoneState.physicalControl?.status || null,
+      desiredState: event.desiredState || {},
+      appliedState: event.appliedState || {},
+      reportedState: event.reportedState || {},
+      manualOverride: event.manualOverride === true,
+      fault: event.fault || null,
+      ack: event.ack || null,
+      updatedAt: receivedAt,
+    },
+    receivedAt,
+    stale: false,
+  };
+
+  return {
+    accepted: true,
+    reason: "ACCEPTED",
+    state: {
+      ...state,
+      latestEventByZone: {
+        ...(state.latestEventByZone || {}),
+        [event.zoneId]: event,
+      },
+      zoneStateByZone: {
+        ...(state.zoneStateByZone || {}),
+        [event.zoneId]: nextZoneState,
+      },
+      lastReceivedAt: receivedAt,
+      isStale: false,
+      lastError: null,
+    },
+  };
 }
 
 export function markZoneStateStale(currentState, reason = "STALE") {

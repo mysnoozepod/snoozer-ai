@@ -41,6 +41,14 @@ function parseMqttTopic(topic) {
         deviceId: parts[5],
       };
     }
+
+    if (["commands", "ack", "reported-state"].includes(topicType)) {
+      return {
+        ...base,
+        kind: `device-${topicType}`,
+        deviceId: parts[5],
+      };
+    }
   }
 
   return {

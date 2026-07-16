@@ -120,6 +120,8 @@ Prod delete should be a deliberate break-glass action:
 
 ```powershell
 aws iot disable-topic-rule --rule-name msp_prod_zone_event_ingest_rule
+aws iot disable-topic-rule --rule-name msp_prod_physical_control_ack_rule
+aws iot disable-topic-rule --rule-name msp_prod_physical_control_reported_state_rule
 sam delete --stack-name mysnoozepod-iot-prod
 ```
 
@@ -134,7 +136,9 @@ aws cloudwatch disable-alarm-actions `
     msp-dev-zone-event-rejected `
     msp-dev-iot-quarantine-visible `
     msp-dev-zone-state-write-throttles `
-    msp-dev-zone-events-write-throttles
+    msp-dev-zone-events-write-throttles `
+    msp-dev-physical-control-lambda-errors `
+    msp-dev-physical-control-write-throttles
 ```
 
 Re-enable:
@@ -146,8 +150,26 @@ aws cloudwatch enable-alarm-actions `
     msp-dev-zone-event-rejected `
     msp-dev-iot-quarantine-visible `
     msp-dev-zone-state-write-throttles `
-    msp-dev-zone-events-write-throttles
+    msp-dev-zone-events-write-throttles `
+    msp-dev-physical-control-lambda-errors `
+    msp-dev-physical-control-write-throttles
 ```
+
+## Physical Control Rollback
+
+If lighting or ambient-audio commands misbehave but sensor ingestion is healthy, rollback only the command bridge:
+
+1. Disable physical-control ack and reported-state IoT Rules.
+2. Remove or unset `IOT_DATA_ENDPOINT` from the command Lambda/main backend Lambda to stop publishing.
+3. Leave WebSocket zone events and manual showroom flows running.
+4. If needed, disable the affected edge-controller certificate in AWS IoT.
+
+```powershell
+aws iot disable-topic-rule --rule-name msp_dev_physical_control_ack_rule
+aws iot disable-topic-rule --rule-name msp_dev_physical_control_reported_state_rule
+```
+
+Physical command records live in `msp-{env}-physical-control` and expire through TTL. They are separate from customer/session/profile/cart records.
 
 ## Device-Specific Rollback
 

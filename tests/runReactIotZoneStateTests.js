@@ -177,6 +177,34 @@ async function run() {
   assert.equal(applied.accepted, false);
   assert.equal(applied.reason, "STALE_SEQUENCE");
 
+  const physical = reducer.normalizePhysicalControlMessage(
+    {
+      type: "physical_control",
+      commandId: "cmd-1",
+      storeId: "severn-pilot",
+      zoneId: "pod-3",
+      deviceId: "pod-3-edge-01",
+      commandType: "set_lighting_state",
+      status: "applied",
+      desiredState: { lightingState: "rest-test" },
+      appliedState: { lightingState: "rest-test" },
+      reportedState: { lightingState: "rest-test" },
+      updatedAt: "2026-07-16T12:00:05.000Z",
+    },
+    ["pod-3"]
+  );
+  assert.equal(physical.ok, true);
+  const physicalApplied = reducer.applyPhysicalControlToState(state, physical.event);
+  assert.equal(physicalApplied.accepted, true);
+  assert.equal(
+    physicalApplied.state.zoneStateByZone["pod-3"].physicalControl.appliedState.lightingState,
+    "rest-test"
+  );
+  assert.equal(
+    reducer.normalizePhysicalControlMessage({ type: "physical_control", zoneId: "pod-4" }, ["pod-3"]).reason,
+    "ZONE_NOT_AUTHORIZED"
+  );
+
   assert.equal(reducer.normalizeZoneEventMessage("{not json", ["pod-3"]).ok, false);
   assert.equal(
     reducer.normalizeZoneEventMessage({ type: "zone_event", eventId: "evt-3", zoneId: "pod-4" }, ["pod-3"]).reason,

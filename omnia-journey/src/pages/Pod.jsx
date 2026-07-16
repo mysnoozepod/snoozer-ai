@@ -64,6 +64,7 @@ import {
   LIGHTING_STATES,
   shouldCompleteRestTestForVacancy,
 } from "@/iot/showroomExperienceState";
+import { usePhysicalControl } from "@/iot/usePhysicalControl";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
 
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
@@ -1094,6 +1095,8 @@ export default function Pod() {
   const lightingReadyTimeoutRef = useRef(null);
   const restOpeningSpokenRef = useRef(false);
   const ambientAudioRef = useRef(null);
+  const lastPhysicalLightingRef = useRef("");
+  const lastPhysicalAudioRef = useRef("");
   const stagePanelRef = useRef(null);
   const [podLightingState, setPodLightingState] = useState(LIGHTING_STATES.READY);
 
@@ -1374,11 +1377,42 @@ export default function Pod() {
     restTestComplete: testComplete || Boolean(restCompletionStage),
     sourceSurface: "pod",
   });
+  const physicalControl = usePhysicalControl({
+    zoneId: zoneExperience.zoneId || pid,
+    sourceSurface: "pod",
+    enabled: IOT_EXPERIENCE_CONFIG.enableIotExperiences,
+  });
 
   const activeRestStep = useMemo(() => {
     if (!activeRestFlow?.steps?.length) return null;
     return activeRestFlow.steps[restStepIndex] || null;
   }, [activeRestFlow, restStepIndex]);
+
+  const requestPhysicalLighting = useCallback(
+    (lightingState, metadata = {}) => {
+      if (!lightingState || !IOT_EXPERIENCE_CONFIG.enableIotExperiences) return;
+      if (lastPhysicalLightingRef.current === lightingState) return;
+      lastPhysicalLightingRef.current = lightingState;
+      void physicalControl.requestLightingState(lightingState, {
+        podId: pid,
+        ...metadata,
+      });
+    },
+    [physicalControl, pid]
+  );
+
+  const requestPhysicalAudio = useCallback(
+    (audioState, metadata = {}) => {
+      if (!audioState || !IOT_EXPERIENCE_CONFIG.enableIotExperiences) return;
+      if (lastPhysicalAudioRef.current === audioState) return;
+      lastPhysicalAudioRef.current = audioState;
+      void physicalControl.requestAudioState(audioState, {
+        podId: pid,
+        ...metadata,
+      });
+    },
+    [physicalControl, pid]
+  );
 
   useEffect(() => {
     if (openStage !== "rest") return;
@@ -1416,20 +1450,24 @@ export default function Pod() {
 
     if (zoneExperience.hasFault) {
       setPodLightingState(LIGHTING_STATES.FAULT);
+      requestPhysicalLighting(LIGHTING_STATES.FAULT, { reason: "zone-fault" });
       return;
     }
 
     if (zoneExperience.isPresent && !zoneExperience.isStale) {
       setPodLightingState(LIGHTING_STATES.ACTIVE);
+      requestPhysicalLighting(LIGHTING_STATES.ACTIVE, { reason: "zone-present" });
       return;
     }
 
     setPodLightingState(LIGHTING_STATES.READY);
+    requestPhysicalLighting(LIGHTING_STATES.READY, { reason: "zone-ready" });
   }, [
     restTestActive,
     zoneExperience.hasFault,
     zoneExperience.isPresent,
     zoneExperience.isStale,
+    requestPhysicalLighting,
   ]);
 
   const recommendationMeta = recs?.meta || {};
@@ -1925,6 +1963,13 @@ export default function Pod() {
         ? LIGHTING_STATES.ACTIVE
         : LIGHTING_STATES.READY
     );
+    requestPhysicalAudio("stopped", { reason: "rest-reset" });
+    requestPhysicalLighting(
+      zoneExperience.isPresent && !zoneExperience.isStale
+        ? LIGHTING_STATES.ACTIVE
+        : LIGHTING_STATES.READY,
+      { reason: "rest-reset" }
+    );
 
     setShowRestChooser(true);
     setRestModeId("");
@@ -1936,7 +1981,14 @@ export default function Pod() {
     setFeelChoice("");
     setRestCompletionStage("");
     resetPodVoiceKeys();
-  }, [cancelPodVoice, resetPodVoiceKeys, zoneExperience.isPresent, zoneExperience.isStale]);
+  }, [
+    cancelPodVoice,
+    resetPodVoiceKeys,
+    requestPhysicalAudio,
+    requestPhysicalLighting,
+    zoneExperience.isPresent,
+    zoneExperience.isStale,
+  ]);
 
   const handleChooseRestMode = useCallback(
     async (modeId) => {
@@ -1960,7 +2012,16 @@ export default function Pod() {
       setRestCompletionStage("");
       resetPodVoiceKeys();
       setPodLightingState(LIGHTING_STATES.REST_TEST);
+      requestPhysicalLighting(LIGHTING_STATES.REST_TEST, {
+        reason: "rest-test-start",
+        restModeId: modeId,
+      });
       ambientAudioRef.current?.start(IOT_EXPERIENCE_CONFIG.defaultRestTestAudioTrack);
+      requestPhysicalAudio("playing", {
+        reason: "rest-test-start",
+        restModeId: modeId,
+        track: IOT_EXPERIENCE_CONFIG.defaultRestTestAudioTrack,
+      });
 
       if (!restOpeningSpokenRef.current) {
         restOpeningSpokenRef.current = true;
@@ -1979,7 +2040,15 @@ export default function Pod() {
         });
       }
     },
-    [cancelPodVoice, restFlows, speakPod, noteUserInteraction, pid]
+    [
+      cancelPodVoice,
+      restFlows,
+      speakPod,
+      noteUserInteraction,
+      pid,
+      requestPhysicalAudio,
+      requestPhysicalLighting,
+    ]
   );
 
   const handleStartTimer = useCallback(() => {
@@ -2042,14 +2111,18 @@ export default function Pod() {
       setRestCompletionStage(REST_COMPLETION_STAGES.reflection);
       resetPodVoiceKeys();
       ambientAudioRef.current?.stop({ fadeMs: 1200 });
+      requestPhysicalAudio("fading", { reason: "rest-test-complete" });
       setPodLightingState(LIGHTING_STATES.COMPLETE);
+      requestPhysicalLighting(LIGHTING_STATES.COMPLETE, { reason: "rest-test-complete" });
       clearTimer(lightingReadyTimeoutRef);
       lightingReadyTimeoutRef.current = window.setTimeout(() => {
-        setPodLightingState(
+        const nextLightingState =
           zoneExperience.isPresent && !zoneExperience.isStale
             ? LIGHTING_STATES.ACTIVE
-            : LIGHTING_STATES.READY
-        );
+            : LIGHTING_STATES.READY;
+        setPodLightingState(nextLightingState);
+        requestPhysicalLighting(nextLightingState, { reason: "rest-test-complete-reset" });
+        requestPhysicalAudio("stopped", { reason: "rest-test-complete-reset" });
         lightingReadyTimeoutRef.current = null;
       }, 1800);
 
@@ -2060,7 +2133,14 @@ export default function Pod() {
         key: `rest-reflection::${flow.id}`,
       });
     },
-    [resetPodVoiceKeys, speakPod, zoneExperience.isPresent, zoneExperience.isStale]
+    [
+      resetPodVoiceKeys,
+      speakPod,
+      requestPhysicalAudio,
+      requestPhysicalLighting,
+      zoneExperience.isPresent,
+      zoneExperience.isStale,
+    ]
   );
 
   const runRestTransition = useCallback(
@@ -2518,6 +2598,10 @@ export default function Pod() {
     <ShowroomPageShell
       className="flex min-h-0 flex-col overflow-hidden pb-0"
       data-pod-lighting-state={podLightingState}
+      data-physical-control-status={physicalControl.status}
+      data-physical-control-fault={physicalControl.fault ? "true" : "false"}
+      data-physical-applied-lighting-state={physicalControl.appliedState?.lightingState || ""}
+      data-physical-reported-lighting-state={physicalControl.reportedState?.lightingState || ""}
       data-zone-id={zoneExperience.zoneId || undefined}
       data-zone-present={zoneExperience.isPresent ? "true" : "false"}
       data-zone-occupied={zoneExperience.isOccupied ? "true" : "false"}

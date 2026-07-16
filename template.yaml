@@ -50,6 +50,20 @@ Parameters:
     Default: 86400
     MinValue: 300
     Description: TTL in seconds for WebSocket connection and subscription records.
+  PhysicalCommandTtlDays:
+    Type: Number
+    Default: 30
+    MinValue: 1
+    Description: TTL in days for physical control command status and latest reported physical state.
+  PhysicalCommandTimeoutMs:
+    Type: Number
+    Default: 15000
+    MinValue: 1000
+    Description: Milliseconds before a physical control command is eligible for timeout handling.
+  IotDataEndpoint:
+    Type: String
+    Default: ""
+    Description: AWS IoT Data-ATS endpoint hostname used for publishing physical commands. Example abc123-ats.iot.us-east-1.amazonaws.com.
   AlarmEmail:
     Type: String
     Default: ""
@@ -200,6 +214,61 @@ Resources:
         - Key: StackArea
           Value: IoT
 
+  PhysicalControlTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "msp-${DeploymentEnv}-physical-control"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+        - AttributeName: GSI2PK
+          AttributeType: S
+        - AttributeName: GSI2SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: GSI2
+          KeySchema:
+            - AttributeName: GSI2PK
+              KeyType: HASH
+            - AttributeName: GSI2SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      SSESpecification:
+        SSEEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: App
+          Value: MySnoozePod
+        - Key: Environment
+          Value: !Ref DeploymentEnv
+        - Key: StackArea
+          Value: IoT
+
   IoTQuarantineQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -287,6 +356,45 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/msp-${DeploymentEnv}-iot-websocket-cleanup"
+      RetentionInDays: !Ref LogRetentionDays
+      Tags:
+        - Key: App
+          Value: MySnoozePod
+        - Key: Environment
+          Value: !Ref DeploymentEnv
+        - Key: StackArea
+          Value: IoT
+
+  PhysicalControlAckLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/msp-${DeploymentEnv}-physical-control-ack"
+      RetentionInDays: !Ref LogRetentionDays
+      Tags:
+        - Key: App
+          Value: MySnoozePod
+        - Key: Environment
+          Value: !Ref DeploymentEnv
+        - Key: StackArea
+          Value: IoT
+
+  PhysicalControlReportedStateLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/msp-${DeploymentEnv}-physical-control-reported-state"
+      RetentionInDays: !Ref LogRetentionDays
+      Tags:
+        - Key: App
+          Value: MySnoozePod
+        - Key: Environment
+          Value: !Ref DeploymentEnv
+        - Key: StackArea
+          Value: IoT
+
+  PhysicalControlTimeoutLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/msp-${DeploymentEnv}-physical-control-timeout"
       RetentionInDays: !Ref LogRetentionDays
       Tags:
         - Key: App
@@ -419,6 +527,211 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ShowroomWebSocketApi}/*"
 
+  PhysicalControlCommandFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "msp-${DeploymentEnv}-physical-control-command"
+      Description: MySnoozePod physical control command validation, persistence, and IoT publish handler.
+      CodeUri: .
+      Handler: index.iotPhysicalControlCommandHandler
+      Environment:
+        Variables:
+          IOT_ENV: !Ref DeploymentEnv
+          IOT_STORE_ID: !Ref StoreId
+          IOT_DEVICE_REGISTRY_PATH: data/iot-device-registry.v1.json
+          IOT_PHYSICAL_CONTROL_TABLE: !Ref PhysicalControlTable
+          IOT_PHYSICAL_COMMAND_TTL_DAYS: !Ref PhysicalCommandTtlDays
+          IOT_PHYSICAL_COMMAND_TIMEOUT_MS: !Ref PhysicalCommandTimeoutMs
+          IOT_DATA_ENDPOINT: !Ref IotDataEndpoint
+          WEBSOCKET_CONNECTIONS_TABLE: !Ref WebSocketConnectionsTable
+          WEBSOCKET_API_ENDPOINT: !Sub "https://${ShowroomWebSocketApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${DeploymentEnv}"
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            - Sid: PhysicalControlReadWrite
+              Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Query
+                - dynamodb:UpdateItem
+              Resource:
+                - !GetAtt PhysicalControlTable.Arn
+                - !Sub "${PhysicalControlTable.Arn}/index/*"
+            - Sid: PublishPhysicalControlCommands
+              Effect: Allow
+              Action:
+                - iot:Publish
+              Resource:
+                - !Sub "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/mysnoozepod/${DeploymentEnv}/stores/${StoreId}/devices/*/commands"
+            - Sid: QueryAndCleanWebSocketSubscribers
+              Effect: Allow
+              Action:
+                - dynamodb:BatchWriteItem
+                - dynamodb:GetItem
+                - dynamodb:Query
+              Resource:
+                - !GetAtt WebSocketConnectionsTable.Arn
+                - !Sub "${WebSocketConnectionsTable.Arn}/index/*"
+            - Sid: BroadcastToWebSocketConnections
+              Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+              Resource:
+                - !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ShowroomWebSocketApi}/${DeploymentEnv}/POST/@connections/*"
+      Tags:
+        App: MySnoozePod
+        Environment: !Ref DeploymentEnv
+        StackArea: IoT
+
+  PhysicalControlAckFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - PhysicalControlAckLogGroup
+    Properties:
+      FunctionName: !Sub "msp-${DeploymentEnv}-physical-control-ack"
+      Description: MySnoozePod physical controller ack ingestion handler.
+      CodeUri: .
+      Handler: index.iotPhysicalControlAckHandler
+      Environment:
+        Variables:
+          IOT_ENV: !Ref DeploymentEnv
+          IOT_STORE_ID: !Ref StoreId
+          IOT_PHYSICAL_CONTROL_TABLE: !Ref PhysicalControlTable
+          WEBSOCKET_CONNECTIONS_TABLE: !Ref WebSocketConnectionsTable
+          WEBSOCKET_API_ENDPOINT: !Sub "https://${ShowroomWebSocketApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${DeploymentEnv}"
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            - Sid: PhysicalControlAckReadWrite
+              Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:UpdateItem
+              Resource:
+                - !GetAtt PhysicalControlTable.Arn
+            - Sid: QueryAndCleanWebSocketSubscribers
+              Effect: Allow
+              Action:
+                - dynamodb:BatchWriteItem
+                - dynamodb:GetItem
+                - dynamodb:Query
+              Resource:
+                - !GetAtt WebSocketConnectionsTable.Arn
+                - !Sub "${WebSocketConnectionsTable.Arn}/index/*"
+            - Sid: BroadcastToWebSocketConnections
+              Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+              Resource:
+                - !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ShowroomWebSocketApi}/${DeploymentEnv}/POST/@connections/*"
+      Tags:
+        App: MySnoozePod
+        Environment: !Ref DeploymentEnv
+        StackArea: IoT
+
+  PhysicalControlReportedStateFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - PhysicalControlReportedStateLogGroup
+    Properties:
+      FunctionName: !Sub "msp-${DeploymentEnv}-physical-control-reported-state"
+      Description: MySnoozePod physical controller reported-state ingestion handler.
+      CodeUri: .
+      Handler: index.iotPhysicalControlReportedStateHandler
+      Environment:
+        Variables:
+          IOT_ENV: !Ref DeploymentEnv
+          IOT_STORE_ID: !Ref StoreId
+          IOT_PHYSICAL_CONTROL_TABLE: !Ref PhysicalControlTable
+          WEBSOCKET_CONNECTIONS_TABLE: !Ref WebSocketConnectionsTable
+          WEBSOCKET_API_ENDPOINT: !Sub "https://${ShowroomWebSocketApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${DeploymentEnv}"
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            - Sid: PhysicalControlReportedStateWrite
+              Effect: Allow
+              Action:
+                - dynamodb:UpdateItem
+              Resource:
+                - !GetAtt PhysicalControlTable.Arn
+            - Sid: QueryAndCleanWebSocketSubscribers
+              Effect: Allow
+              Action:
+                - dynamodb:BatchWriteItem
+                - dynamodb:GetItem
+                - dynamodb:Query
+              Resource:
+                - !GetAtt WebSocketConnectionsTable.Arn
+                - !Sub "${WebSocketConnectionsTable.Arn}/index/*"
+            - Sid: BroadcastToWebSocketConnections
+              Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+              Resource:
+                - !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ShowroomWebSocketApi}/${DeploymentEnv}/POST/@connections/*"
+      Tags:
+        App: MySnoozePod
+        Environment: !Ref DeploymentEnv
+        StackArea: IoT
+
+  PhysicalControlTimeoutFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - PhysicalControlTimeoutLogGroup
+    Properties:
+      FunctionName: !Sub "msp-${DeploymentEnv}-physical-control-timeout"
+      Description: MySnoozePod physical command timeout sweep.
+      CodeUri: .
+      Handler: index.iotPhysicalControlTimeoutHandler
+      Environment:
+        Variables:
+          IOT_ENV: !Ref DeploymentEnv
+          IOT_STORE_ID: !Ref StoreId
+          IOT_PHYSICAL_CONTROL_TABLE: !Ref PhysicalControlTable
+          WEBSOCKET_CONNECTIONS_TABLE: !Ref WebSocketConnectionsTable
+          WEBSOCKET_API_ENDPOINT: !Sub "https://${ShowroomWebSocketApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${DeploymentEnv}"
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: "2012-10-17"
+          Statement:
+            - Sid: PhysicalControlTimeoutReadWrite
+              Effect: Allow
+              Action:
+                - dynamodb:Scan
+                - dynamodb:UpdateItem
+              Resource:
+                - !GetAtt PhysicalControlTable.Arn
+            - Sid: QueryAndCleanWebSocketSubscribers
+              Effect: Allow
+              Action:
+                - dynamodb:BatchWriteItem
+                - dynamodb:GetItem
+                - dynamodb:Query
+              Resource:
+                - !GetAtt WebSocketConnectionsTable.Arn
+                - !Sub "${WebSocketConnectionsTable.Arn}/index/*"
+            - Sid: BroadcastToWebSocketConnections
+              Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+              Resource:
+                - !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ShowroomWebSocketApi}/${DeploymentEnv}/POST/@connections/*"
+      Events:
+        TimeoutSchedule:
+          Type: Schedule
+          Properties:
+            Name: !Sub "msp-${DeploymentEnv}-physical-control-timeout"
+            Schedule: rate(1 minute)
+            Enabled: true
+      Tags:
+        App: MySnoozePod
+        Environment: !Ref DeploymentEnv
+        StackArea: IoT
+
   ZoneEventIngestFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -495,7 +808,7 @@ Resources:
       TopicRulePayload:
         AwsIotSqlVersion: "2016-03-23"
         RuleDisabled: false
-        Sql: "SELECT *, topic() AS mqttTopic, timestamp() AS iotReceivedAt FROM 'mysnoozepod/+/stores/+/+/+/#'"
+        Sql: "SELECT *, topic() AS mqttTopic, timestamp() AS iotReceivedAt FROM 'mysnoozepod/+/stores/+/zones/+/events'"
         Actions:
           - Lambda:
               FunctionArn: !GetAtt ZoneEventIngestFunction.Arn
@@ -541,6 +854,60 @@ Resources:
       Principal: iot.amazonaws.com
       SourceArn: !Sub "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:rule/msp_${DeploymentEnv}_zone_event_ingest_rule"
 
+  PhysicalControlAckRule:
+    Type: AWS::IoT::TopicRule
+    DependsOn:
+      - PhysicalControlAckInvokePermission
+    Properties:
+      RuleName: !Sub "msp_${DeploymentEnv}_physical_control_ack_rule"
+      TopicRulePayload:
+        AwsIotSqlVersion: "2016-03-23"
+        RuleDisabled: false
+        Sql: "SELECT *, topic() AS mqttTopic, timestamp() AS iotReceivedAt FROM 'mysnoozepod/+/stores/+/devices/+/ack'"
+        Actions:
+          - Lambda:
+              FunctionArn: !GetAtt PhysicalControlAckFunction.Arn
+        ErrorAction:
+          Sqs:
+            QueueUrl: !Ref IoTQuarantineQueue
+            RoleArn: !GetAtt IoTRuleErrorActionRole.Arn
+            UseBase64: false
+
+  PhysicalControlReportedStateRule:
+    Type: AWS::IoT::TopicRule
+    DependsOn:
+      - PhysicalControlReportedStateInvokePermission
+    Properties:
+      RuleName: !Sub "msp_${DeploymentEnv}_physical_control_reported_state_rule"
+      TopicRulePayload:
+        AwsIotSqlVersion: "2016-03-23"
+        RuleDisabled: false
+        Sql: "SELECT *, topic() AS mqttTopic, timestamp() AS iotReceivedAt FROM 'mysnoozepod/+/stores/+/devices/+/reported-state'"
+        Actions:
+          - Lambda:
+              FunctionArn: !GetAtt PhysicalControlReportedStateFunction.Arn
+        ErrorAction:
+          Sqs:
+            QueueUrl: !Ref IoTQuarantineQueue
+            RoleArn: !GetAtt IoTRuleErrorActionRole.Arn
+            UseBase64: false
+
+  PhysicalControlAckInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PhysicalControlAckFunction
+      Principal: iot.amazonaws.com
+      SourceArn: !Sub "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:rule/msp_${DeploymentEnv}_physical_control_ack_rule"
+
+  PhysicalControlReportedStateInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref PhysicalControlReportedStateFunction
+      Principal: iot.amazonaws.com
+      SourceArn: !Sub "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:rule/msp_${DeploymentEnv}_physical_control_reported_state_rule"
+
   ZoneEventAcceptedMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -579,6 +946,26 @@ Resources:
       MetricTransformations:
         - MetricNamespace: MySnoozePod/IoT
           MetricName: ZoneEventQuarantineFailedLog
+          MetricValue: "1"
+
+  PhysicalControlAckMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref PhysicalControlAckLogGroup
+      FilterPattern: '{ $.PhysicalCommandAckReceived = 1 }'
+      MetricTransformations:
+        - MetricNamespace: MySnoozePod/IoT
+          MetricName: PhysicalCommandAckReceivedLog
+          MetricValue: "1"
+
+  PhysicalControlReportedStateMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref PhysicalControlReportedStateLogGroup
+      FilterPattern: '{ $.PhysicalReportedStateReceived = 1 }'
+      MetricTransformations:
+        - MetricNamespace: MySnoozePod/IoT
+          MetricName: PhysicalReportedStateReceivedLog
           MetricValue: "1"
 
   LambdaErrorsAlarm:
@@ -668,6 +1055,73 @@ Resources:
       TreatMissingData: notBreaching
       AlarmActions: !If [HasAlarmEmail, [!Ref IoTAlarmTopic], []]
 
+  PhysicalControlLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "msp-${DeploymentEnv}-physical-control-lambda-errors"
+      AlarmDescription: Physical control ack/reported-state/timeout Lambda had runtime errors.
+      Metrics:
+        - Id: ackErrors
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Errors
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref PhysicalControlAckFunction
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: reportedErrors
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Errors
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref PhysicalControlReportedStateFunction
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: timeoutErrors
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Errors
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref PhysicalControlTimeoutFunction
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: totalErrors
+          Expression: "ackErrors + reportedErrors + timeoutErrors"
+          Label: PhysicalControlLambdaErrors
+          ReturnData: true
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If [HasAlarmEmail, [!Ref IoTAlarmTopic], []]
+
+  PhysicalControlWriteThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "msp-${DeploymentEnv}-physical-control-write-throttles"
+      AlarmDescription: Physical control table write throttling detected.
+      Namespace: AWS/DynamoDB
+      MetricName: WriteThrottleEvents
+      Dimensions:
+        - Name: TableName
+          Value: !Ref PhysicalControlTable
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If [HasAlarmEmail, [!Ref IoTAlarmTopic], []]
+
 Outputs:
   ZoneEventIngestFunctionName:
     Description: Lambda function for AWS IoT Rule target.
@@ -687,6 +1141,24 @@ Outputs:
   WebSocketConnectionsTableName:
     Description: DynamoDB WebSocket connection and zone subscription table.
     Value: !Ref WebSocketConnectionsTable
+  PhysicalControlTableName:
+    Description: DynamoDB physical control command status and reported-state table.
+    Value: !Ref PhysicalControlTable
+  PhysicalControlCommandFunctionName:
+    Description: Lambda function for physical control command issue/publish.
+    Value: !Ref PhysicalControlCommandFunction
+  PhysicalControlAckFunctionName:
+    Description: Lambda function for physical control ack ingestion.
+    Value: !Ref PhysicalControlAckFunction
+  PhysicalControlReportedStateFunctionName:
+    Description: Lambda function for physical reported-state ingestion.
+    Value: !Ref PhysicalControlReportedStateFunction
+  PhysicalControlAckRuleName:
+    Description: AWS IoT Rule name for physical control acknowledgements.
+    Value: !Ref PhysicalControlAckRule
+  PhysicalControlReportedStateRuleName:
+    Description: AWS IoT Rule name for physical reported-state updates.
+    Value: !Ref PhysicalControlReportedStateRule
   ShowroomWebSocketApiId:
     Description: API Gateway WebSocket API ID.
     Value: !Ref ShowroomWebSocketApi

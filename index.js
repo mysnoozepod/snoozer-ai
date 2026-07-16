@@ -37,6 +37,12 @@ const {
   handleIotWebSocket,
   handleIotWebSocketCleanup,
 } = require("./services/iot/websocketHandler");
+const {
+  handleIotPhysicalControlAck,
+  handleIotPhysicalControlReportedState,
+  handleIotPhysicalControlTimeout,
+  issuePhysicalControlCommand,
+} = require("./services/iot/physicalControl");
 
 let rewardsRoutes;
 try {
@@ -6494,6 +6500,24 @@ async function handle(event = {}) {
     }
   }
 
+  if (method === "POST" && routePath === "/iot/physical-control/commands") {
+    const body = safeJsonBody(event);
+    try {
+      const out = await issuePhysicalControlCommand(body);
+      return response(event, out.ok || out.duplicate || out.skipped ? 200 : 400, out);
+    } catch (e) {
+      log("iot.physical_control", "error", {
+        traceId,
+        err: e.message,
+      });
+      return response(event, 500, {
+        ok: false,
+        code: "E_IOT_PHYSICAL_CONTROL",
+        message: e.message,
+      });
+    }
+  }
+
   return response(event, 404, { message: "Not found" });
 }
 
@@ -6542,4 +6566,20 @@ exports.iotWebSocketHandler = async (event, context) => {
 
 exports.iotWebSocketCleanupHandler = async (event, context) => {
   return handleIotWebSocketCleanup(event, context);
+};
+
+exports.iotPhysicalControlCommandHandler = async (event) => {
+  return issuePhysicalControlCommand(safeJsonBody(event));
+};
+
+exports.iotPhysicalControlAckHandler = async (event, context) => {
+  return handleIotPhysicalControlAck(event, context);
+};
+
+exports.iotPhysicalControlReportedStateHandler = async (event, context) => {
+  return handleIotPhysicalControlReportedState(event, context);
+};
+
+exports.iotPhysicalControlTimeoutHandler = async (event, context) => {
+  return handleIotPhysicalControlTimeout(event, context);
 };

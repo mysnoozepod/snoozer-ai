@@ -258,7 +258,7 @@ msp_{env}_zone_event_ingest_rule
 SQL:
 
 ```sql
-SELECT *, topic() AS mqttTopic, timestamp() AS iotReceivedAt FROM 'mysnoozepod/+/stores/+/+/+/#'
+SELECT *, topic() AS mqttTopic, timestamp() AS iotReceivedAt FROM 'mysnoozepod/+/stores/+/zones/+/events'
 ```
 
 Action:
@@ -288,6 +288,50 @@ Routes:
 
 Accepted ZoneEvents are broadcast to subscribers only after DynamoDB persistence succeeds.
 
+## Physical Control Bridge
+
+Command status table:
+
+```text
+msp-{env}-physical-control
+```
+
+Primary records:
+
+| Record | PK | SK | Purpose |
+| --- | --- | --- | --- |
+| Command status | `COMMAND#<commandId>` | `STATUS` | Desired state, publish status, ack status, timeout/failure details. |
+| Latest physical state | `STORE#<storeId>` | `PHYSICAL#ZONE#<zoneId>#DEVICE#<deviceId>` | Latest reported lighting/audio/manual override/fault state. |
+
+Lambda functions:
+
+| Function | Handler | Purpose |
+| --- | --- | --- |
+| `msp-{env}-physical-control-command` | `index.iotPhysicalControlCommandHandler` | Validates command target, persists command, publishes to IoT Core command topic. |
+| `msp-{env}-physical-control-ack` | `index.iotPhysicalControlAckHandler` | Ingests controller acknowledgements and updates command status. |
+| `msp-{env}-physical-control-reported-state` | `index.iotPhysicalControlReportedStateHandler` | Ingests controller reported physical state. |
+| `msp-{env}-physical-control-timeout` | `index.iotPhysicalControlTimeoutHandler` | Scheduled timeout sweep for commands with no terminal ack. |
+
+IoT command topic published by backend:
+
+```text
+mysnoozepod/{env}/stores/{storeId}/devices/{deviceId}/commands
+```
+
+Controller acknowledgement topic:
+
+```text
+mysnoozepod/{env}/stores/{storeId}/devices/{deviceId}/ack
+```
+
+Controller reported-state topic:
+
+```text
+mysnoozepod/{env}/stores/{storeId}/devices/{deviceId}/reported-state
+```
+
+Physical control WebSocket updates use payload type `physical_control` and are broadcast to subscribers for the affected zone after DynamoDB updates complete.
+
 ## CloudWatch
 
 Log group:
@@ -314,6 +358,8 @@ Alarms:
 | `msp-{env}-iot-quarantine-visible` | Quarantine queue has visible messages. |
 | `msp-{env}-zone-state-write-throttles` | Latest-state write throttling. |
 | `msp-{env}-zone-events-write-throttles` | Event-history write throttling. |
+| `msp-{env}-physical-control-lambda-errors` | Physical control Lambda runtime errors. |
+| `msp-{env}-physical-control-write-throttles` | Physical control status/state write throttling. |
 
 ## Outputs
 
@@ -325,6 +371,12 @@ The stack outputs:
 - WebSocket API URL.
 - WebSocket route Lambda name.
 - WebSocket cleanup Lambda name.
+- Physical control table name.
+- Physical control command Lambda name.
+- Physical control ack Lambda name.
+- Physical control reported-state Lambda name.
+- Physical control ack IoT Rule name.
+- Physical control reported-state IoT Rule name.
 - IoT Rule name.
 - Zone state table name.
 - Zone events table name.

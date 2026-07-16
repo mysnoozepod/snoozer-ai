@@ -1360,6 +1360,15 @@ export const triggerIotScene = (payload) =>
       await retryableRequest("/iot/trigger-scene", { method: "POST", body: payload })
     ))();
 
+export const issuePhysicalControlCommand = (payload) =>
+  (async () =>
+    unwrap(
+      await retryableRequest("/iot/physical-control/commands", {
+        method: "POST",
+        body: payload,
+      })
+    ))();
+
 // ─────────────────────────────────────────────────────────────
 // Namespace Export
 // ─────────────────────────────────────────────────────────────
@@ -1404,6 +1413,7 @@ export const api = {
   getRecommendations,
   resolveRecommendations,
   triggerIotScene,
+  issuePhysicalControlCommand,
 };
 
 if (import.meta.env.DEV) {
