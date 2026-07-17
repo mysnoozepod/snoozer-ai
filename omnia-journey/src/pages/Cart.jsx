@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
 import {
@@ -162,8 +162,10 @@ export default function Cart() {
   const recommendations = useStore((s) => s.recommendations);
   const setCartMeta = useStore((s) => s.setCartMeta);
   const clearCartMeta = useStore((s) => s.clearCartMeta);
+  const syncCartFromShopify = useStore((s) => s.syncCartFromShopify);
 
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [cartSyncing, setCartSyncing] = useState(false);
   const [toast, setToast] = useState("");
 
   const shopperId = getShopperId() || "guest";
@@ -233,6 +235,28 @@ export default function Cart() {
   }, [cartItems]);
 
   const localDigest = useMemo(() => digestLines(cartLines), [cartLines]);
+
+  useEffect(() => {
+    let alive = true;
+    setCartSyncing(true);
+
+    syncCartFromShopify?.({ sourcePage: "cart-page" })
+      .catch((err) => {
+        console.warn("[cart] cart page restore failed", {
+          operation: "cart_fetch",
+          sourcePage: "cart-page",
+          cartId,
+          errorCode: err?.code || err?.name || err?.status || "CART_FETCH_FAILED",
+        });
+      })
+      .finally(() => {
+        if (alive) setCartSyncing(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [cartId, syncCartFromShopify]);
 
   async function handleCheckout() {
     if (checkoutLoading) return;
@@ -430,7 +454,9 @@ export default function Cart() {
               <div className="mt-4 space-y-3">
                 {cartItems.length === 0 ? (
                   <ShowroomPanel className="p-6">
-                    <div className="text-[1.2rem] font-black text-slate-900">Your cart is empty.</div>
+                    <div className="text-[1.2rem] font-black text-slate-900">
+                      {cartSyncing ? "Checking your cart..." : "Your cart is empty."}
+                    </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       {podNavigationAllowed
                         ? "Add a mattress or base from a pod to see it here."
@@ -450,9 +476,10 @@ export default function Cart() {
                 ) : (
                   cartItems.map((item, idx) => {
                     const id =
+                      item.lineId ||
+                      item.id ||
                       item.merchandiseId ||
                       item.variantId ||
-                      item.id ||
                       `${item?.title || "item"}-${idx}`;
 
                     const title = item.title || "Item";

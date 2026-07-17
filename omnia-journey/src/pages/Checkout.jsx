@@ -1,5 +1,5 @@
 // src/pages/Checkout.jsx
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CHECKOUT_LOUNGE_MESSAGE, canInitiateCheckout } from "@/device/deviceActionGuards";
@@ -83,6 +83,7 @@ export default function Checkout() {
   const cartId = useStore((s) => s.cartId || null);
   const checkoutUrl = useStore((s) => s.checkoutUrl || null);
   const setCartMeta = useStore((s) => s.setCartMeta);
+  const syncCartFromShopify = useStore((s) => s.syncCartFromShopify);
 
   const [discountCode, setDiscountCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -116,6 +117,17 @@ export default function Checkout() {
   }, [cartItems]);
 
   const localDigest = useMemo(() => digestLines(cartLines), [cartLines]);
+
+  useEffect(() => {
+    syncCartFromShopify?.({ sourcePage: "checkout-lounge" }).catch((err) => {
+      console.warn("[cart] checkout lounge restore failed", {
+        operation: "cart_fetch",
+        sourcePage: "checkout-lounge",
+        cartId,
+        errorCode: err?.code || err?.name || err?.status || "CART_FETCH_FAILED",
+      });
+    });
+  }, [cartId, syncCartFromShopify]);
 
   async function createCheckout() {
     setError("");

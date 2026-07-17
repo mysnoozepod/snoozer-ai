@@ -691,8 +691,9 @@ export default function PodBuilder({
   onViewResults,
   requestedStepKey,
 }) {
-  const addToSnoozePod = useStore((state) => state.addToSnoozePod);
-  const getSnoozePodSubtotal = useStore((state) => state.getSnoozePodSubtotal);
+  const addLinesToAuthoritativeCart = useStore(
+    (state) => state.addLinesToAuthoritativeCart
+  );
 
   const fixedMattressType = useMemo(() => inferMattressTypeFromPod(pod), [pod]);
   const fixedMattressHandle = useMemo(
@@ -731,6 +732,8 @@ export default function PodBuilder({
   const [motionType, setMotionType] = useState(initialSelections.motionType);
   const [dcLeft, setDcLeft] = useState(initialSelections.dcLeft);
   const [dcRight, setDcRight] = useState(initialSelections.dcRight);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [cartError, setCartError] = useState("");
 
   const showMotion = baseType === "adjustable";
   const wantsBase = baseType !== "none";
@@ -1038,42 +1041,43 @@ export default function PodBuilder({
     onCue?.("Your setup has been reset.", "tip");
   }, [defaults, onCue]);
 
-  const addToPlan = useCallback(() => {
+  const addToPlan = useCallback(async () => {
+    if (isAddingToCart) return;
+
     if (!mattressMerchId) {
       onCue?.("This mattress is unavailable in the selected size.", "warning");
       return;
     }
 
+    if (wantsBase && !baseMerchId) {
+      onCue?.("This base is unavailable in the selected size.", "warning");
+      return;
+    }
+
     const podIdValue = String(pod?.podId ?? pod?.id ?? "").trim();
 
-    addToSnoozePod({
-      merchandiseId: mattressMerchId,
-      handle: fixedMattressHandle,
-      title: mattressProduct?.title || "Mattress",
-      imageUrl: pickFeaturedImage(mattressProduct),
-      unitPrice: mattressPrice,
-      quantity: 1,
-      attributes: [
-        { key: "Size", value: size },
-        { key: "Mattress", value: mattressLabel },
-        ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
-        ...(isDualComfort
-          ? [
-              { key: "Left Feel", value: dcLeft },
-              { key: "Right Feel", value: dcRight },
-            ]
-          : []),
-        ...(podIdValue ? [{ key: "SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
-      ],
-    });
+    const lines = [
+      {
+        merchandiseId: mattressMerchId,
+        quantity: 1,
+        attributes: [
+          { key: "Size", value: size },
+          { key: "Mattress", value: mattressLabel },
+          ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
+          ...(isDualComfort
+            ? [
+                { key: "Left Feel", value: dcLeft },
+                { key: "Right Feel", value: dcRight },
+              ]
+            : []),
+          ...(podIdValue ? [{ key: "SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
+        ],
+      },
+    ];
 
     if (wantsBase && baseMerchId) {
-      addToSnoozePod({
+      lines.push({
         merchandiseId: baseMerchId,
-        handle: selectedBaseHandle,
-        title: baseProduct?.title || selectedBaseLabel,
-        imageUrl: pickFeaturedImage(baseProduct),
-        unitPrice: basePrice,
         quantity: 1,
         attributes: [
           { key: "Size", value: size },
@@ -1084,24 +1088,44 @@ export default function PodBuilder({
       });
     }
 
-    onCue?.("Added to cart.", "success");
+    setCartError("");
+    setIsAddingToCart(true);
+
+    try {
+      await addLinesToAuthoritativeCart?.({
+        lines,
+        sourcePage: "pod-build",
+      });
+      onCue?.("Added to cart.", "success");
+    } catch (err) {
+      const errorCode = err?.code || err?.name || err?.status || "CART_MUTATION_FAILED";
+      console.warn("[cart] pod build add failed", {
+        operation: "cart_line_add",
+        sourcePage: "pod-build",
+        requestedLineCount: lines.length,
+        mattressMerchId,
+        baseMerchId: wantsBase ? baseMerchId : null,
+        errorCode,
+      });
+      const message =
+        "We couldn't add that setup. Your selections are still here so you can try again.";
+      setCartError(message);
+      onCue?.(message, "warning");
+    } finally {
+      setIsAddingToCart(false);
+    }
   }, [
-    addToSnoozePod,
+    addLinesToAuthoritativeCart,
     baseMerchId,
-    basePrice,
-    baseProduct,
     dcLeft,
     dcRight,
-    fixedMattressHandle,
+    isAddingToCart,
     isDualComfort,
     mattressLabel,
     mattressMerchId,
-    mattressPrice,
-    mattressProduct,
     onCue,
     pod?.id,
     pod?.podId,
-    selectedBaseHandle,
     selectedBaseLabel,
     selectedMotionLabel,
     showMotion,
@@ -1110,9 +1134,9 @@ export default function PodBuilder({
   ]);
 
   const viewCart = useCallback(() => {
-    onCue?.(`SnoozePod total: ${money(getSnoozePodSubtotal?.() ?? 0)}.`, "tip");
+    onCue?.("Opening your Shopify cart.", "tip");
     onViewSnoozePod?.();
-  }, [getSnoozePodSubtotal, onCue, onViewSnoozePod]);
+  }, [onCue, onViewSnoozePod]);
 
   const renderCurrentStep = () => {
     if (stepKey === "mattress") {
@@ -1568,15 +1592,20 @@ export default function PodBuilder({
             </div>
 
             <div className="mt-auto space-y-[8px] pt-[12px]">
+              {cartError ? (
+                <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-3 py-2 text-[0.76rem] font-semibold leading-snug text-amber-900">
+                  {cartError}
+                </div>
+              ) : null}
               <Button
                 onClick={() => {
                   setStepKey("review");
                   addToPlan();
                 }}
-                disabled={!canAdd}
+                disabled={!canAdd || isAddingToCart}
                 className="min-h-[42px] w-full rounded-[16px] px-5 text-[0.88rem] font-extrabold"
               >
-                <span>{primaryCtaLabel}</span>
+                <span>{isAddingToCart ? "Adding..." : primaryCtaLabel}</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
 

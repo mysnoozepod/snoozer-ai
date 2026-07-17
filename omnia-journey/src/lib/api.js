@@ -805,6 +805,15 @@ function normalizeCartPayload(payload, fallbackCartId = null) {
   const meta = extractCartMeta(root);
   const cartId = meta.cartId || extractCartGid(fallbackCartId) || null;
   const checkoutUrl = meta.checkoutUrl || null;
+  const cart =
+    root?.cart ||
+    root?.data?.cart ||
+    root?.cartCreate?.cart ||
+    root?.cartLinesAdd?.cart ||
+    root?.cartLinesUpdate?.cart ||
+    root?.cartLinesRemove?.cart ||
+    root?.result?.cart ||
+    null;
 
   if (cartId || checkoutUrl) {
     persistCartIdentity(cartId, checkoutUrl);
@@ -814,10 +823,7 @@ function normalizeCartPayload(payload, fallbackCartId = null) {
     ...root,
     ...(cartId ? { cartId } : {}),
     ...(checkoutUrl ? { checkoutUrl } : {}),
-    cart:
-      root?.cart ||
-      root?.data?.cart ||
-      (root?.cart ? root.cart : undefined),
+    ...(cart ? { cart } : {}),
   };
 }
 

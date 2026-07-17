@@ -244,6 +244,174 @@ function extractCartMeta(payload) {
   };
 }
 
+function extractCartObject(payload) {
+  const root = payload && typeof payload === "object" ? payload : null;
+  if (!root) return null;
+
+  return (
+    root?.cart ||
+    root?.data?.cart ||
+    root?.cartCreate?.cart ||
+    root?.cartLinesAdd?.cart ||
+    root?.cartLinesUpdate?.cart ||
+    root?.cartLinesRemove?.cart ||
+    root?.result?.cart ||
+    (root?.id && root?.lines ? root : null) ||
+    null
+  );
+}
+
+function normalizeCartAttributes(attrs) {
+  if (!Array.isArray(attrs)) return [];
+  return attrs
+    .map((attr) => ({
+      key: String(attr?.key || "").trim(),
+      value: String(attr?.value || "").trim(),
+    }))
+    .filter((attr) => attr.key && attr.value);
+}
+
+function flattenCartLines(lines) {
+  if (Array.isArray(lines?.edges)) {
+    return lines.edges.map((edge) => edge?.node || edge).filter(Boolean);
+  }
+  if (Array.isArray(lines?.nodes)) return lines.nodes.filter(Boolean);
+  if (Array.isArray(lines)) return lines.map((line) => line?.node || line).filter(Boolean);
+  return [];
+}
+
+function lineImageUrl(line, merchandise) {
+  return (
+    merchandise?.image?.url ||
+    merchandise?.image?.src ||
+    merchandise?.product?.featuredImage?.url ||
+    merchandise?.product?.featuredImage?.src ||
+    line?.imageUrl ||
+    line?.image ||
+    "/no-image.svg"
+  );
+}
+
+function lineUnitPrice(line, quantity) {
+  const amount =
+    line?.cost?.amountPerQuantity?.amount ??
+    line?.merchandise?.price?.amount ??
+    line?.merchandise?.priceV2?.amount ??
+    line?.unitPrice ??
+    line?.price ??
+    null;
+
+  if (amount != null) return toNumberMoney(amount);
+
+  const total = toNumberMoney(line?.cost?.totalAmount?.amount);
+  return total && quantity ? total / quantity : 0;
+}
+
+function shopifyCartToItems(cart) {
+  const lines = flattenCartLines(cart?.lines);
+
+  return lines
+    .map((line) => {
+      const merchandise = line?.merchandise || {};
+      const merchandiseId = toVariantGid(
+        merchandise?.id || line?.merchandiseId || line?.variantId
+      );
+      if (!merchandiseId) return null;
+
+      const quantity = Math.max(1, Math.floor(Number(line?.quantity) || 1));
+      const variantTitle = String(merchandise?.title || "").trim();
+      const productTitle = String(
+        merchandise?.product?.title || line?.title || "Item"
+      ).trim();
+      const title =
+        variantTitle && !/^default title$/i.test(variantTitle)
+          ? `${productTitle} - ${variantTitle}`
+          : productTitle;
+
+      return {
+        id: line?.id || merchandiseId,
+        lineId: line?.id || null,
+        merchandiseId,
+        title,
+        imageUrl: lineImageUrl(line, merchandise),
+        unitPrice: lineUnitPrice(line, quantity),
+        quantity,
+        handle: merchandise?.product?.handle || line?.handle || null,
+        attributes: normalizeCartAttributes(line?.attributes),
+      };
+    })
+    .filter(Boolean);
+}
+
+function cartTotalQuantity(cart, items = []) {
+  const direct = Number(cart?.totalQuantity);
+  if (Number.isFinite(direct) && direct >= 0) return direct;
+  return items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+}
+
+function cartLineCount(cart, items = []) {
+  const lines = flattenCartLines(cart?.lines);
+  return lines.length || items.length;
+}
+
+function logCartOperation({
+  operation,
+  cartId,
+  sourcePage = "unknown",
+  requestedLineCount = 0,
+  cart = null,
+  ok = true,
+  startedAt = Date.now(),
+  error = null,
+} = {}) {
+  const items = cart ? shopifyCartToItems(cart) : [];
+  const payload = {
+    operation,
+    cartId: extractCartGid(cartId || cart?.id) || null,
+    sourcePage,
+    requestedLineCount,
+    returnedLineCount: cart ? cartLineCount(cart, items) : 0,
+    returnedTotalQuantity: cart ? cartTotalQuantity(cart, items) : 0,
+    success: !!ok,
+    duration: Date.now() - startedAt,
+    errorCode: error?.code || error?.name || error?.status || null,
+  };
+
+  try {
+    const logger = ok ? console.info : console.warn;
+    logger("[cart]", payload);
+  } catch {
+    // ignore
+  }
+}
+
+function normalizeLineForMutation(line) {
+  if (!line || typeof line !== "object") return null;
+  const merchandiseId = toVariantGid(
+    line.merchandiseId || line.variantId || line.variant_id || line.id
+  );
+  if (!merchandiseId) return null;
+  const quantity = Math.max(1, Math.floor(Number(line.quantity ?? line.qty ?? 1) || 1));
+  const attributes = normalizeCartAttributes(line.attributes);
+  return {
+    merchandiseId,
+    quantity,
+    ...(attributes.length ? { attributes } : {}),
+  };
+}
+
+function findCartItemByAnyId(items, id) {
+  const key = String(id || "");
+  if (!key) return null;
+  return (Array.isArray(items) ? items : []).find(
+    (item) =>
+      String(item?.lineId || "") === key ||
+      String(item?.id || "") === key ||
+      String(item?.merchandiseId || "") === key ||
+      String(item?.variantId || "") === key
+  );
+}
+
 function shouldAutoSyncShopifyCart() {
   try {
     const v = import.meta?.env?.VITE_CART_SYNC;
@@ -363,89 +531,178 @@ export const useStore = create((set, get) => ({
     track("snoozer_cart_meta_clear");
   },
 
-  syncShopifyCartAdd: async (normalizedItem) => {
-    if (!normalizedItem?.merchandiseId) return null;
-    if (!shouldAutoSyncShopifyCart()) return null;
+  applyAuthoritativeCartPayload: (
+    payload,
+    {
+      fallbackCartId = null,
+      sourcePage = "unknown",
+      operation = "cart_apply",
+      requestedLineCount = 0,
+      startedAt = Date.now(),
+    } = {}
+  ) => {
+    const cart = extractCartObject(payload);
+    const meta = extractCartMeta(payload);
+    const cartId = meta.cartId || extractCartGid(fallbackCartId) || extractCartGid(cart?.id);
+    const checkoutUrl = meta.checkoutUrl || cart?.checkoutUrl || null;
+    const items = cart ? shopifyCartToItems(cart) : get().cart || [];
 
-    markCartMutation(true, "syncShopifyCartAdd");
+    if (cartId || checkoutUrl) {
+      get().setCartMeta({ cartId, checkoutUrl });
+    }
+
+    set((state) => ({
+      cart: items,
+      badges: { ...state.badges, Cart: cartTotalQuantity(cart, items) > 0 },
+    }));
+    saveJSON(STORAGE_KEYS.cart, items);
+
+    logCartOperation({
+      operation,
+      cartId,
+      sourcePage,
+      requestedLineCount,
+      cart,
+      ok: true,
+      startedAt,
+    });
+
+    return {
+      ok: true,
+      cart,
+      cartId: cartId || null,
+      checkoutUrl: checkoutUrl ? String(checkoutUrl) : null,
+      items,
+      totalQuantity: cartTotalQuantity(cart, items),
+    };
+  },
+
+  syncCartFromShopify: async ({ sourcePage = "unknown" } = {}) => {
+    const startedAt = Date.now();
+    const state = get();
+    const cartId = extractCartGid(state.cartId) || getStoredCartGid();
+
+    if (!cartId) {
+      if ((state.cart || []).length) {
+        set((s) => ({ cart: [], badges: { ...s.badges, Cart: false } }));
+        saveJSON(STORAGE_KEYS.cart, []);
+      }
+      logCartOperation({
+        operation: "cart_restore_skipped",
+        sourcePage,
+        ok: true,
+        startedAt,
+      });
+      return { ok: false, skipped: true, reason: "NO_CART_ID" };
+    }
+
+    markCartMutation(true, "syncCartFromShopify");
     try {
-      const state = get();
-      const existingCartId = extractCartGid(state.cartId) || getStoredCartGid();
+      const response = await api.getCart(cartId);
+      return get().applyAuthoritativeCartPayload(response, {
+        fallbackCartId: cartId,
+        sourcePage,
+        operation: "cart_fetch",
+        startedAt,
+      });
+    } catch (err) {
+      logCartOperation({
+        operation: "cart_fetch",
+        cartId,
+        sourcePage,
+        ok: false,
+        startedAt,
+        error: err,
+      });
+      set((s) => ({ cart: [], badges: { ...s.badges, Cart: false } }));
+      saveJSON(STORAGE_KEYS.cart, []);
+      get().clearCartMeta();
+      throw err;
+    } finally {
+      markCartMutation(false, "syncCartFromShopify");
+    }
+  },
 
+  addLinesToAuthoritativeCart: async ({
+    lines = [],
+    sourcePage = "unknown",
+  } = {}) => {
+    if (!shouldAutoSyncShopifyCart()) {
+      throw new Error("Shopify cart sync is disabled.");
+    }
+
+    const finalLines = (Array.isArray(lines) ? lines : [])
+      .map(normalizeLineForMutation)
+      .filter(Boolean);
+
+    if (!finalLines.length) {
+      throw new Error("No valid Shopify merchandise lines were provided.");
+    }
+
+    const startedAt = Date.now();
+    const state = get();
+    const existingCartId = extractCartGid(state.cartId) || getStoredCartGid();
+    const operation = existingCartId ? "cart_line_add" : "cart_create";
+
+    markCartMutation(true, "addLinesToAuthoritativeCart");
+    try {
       try {
         if (api?.ensureSession) await api.ensureSession();
       } catch {
-        // ignore
+        // session best-effort only; cart mutation still owns success/failure
       }
 
-      if (!existingCartId) {
-        const created = await api.createCart({
-          lines: [
-            {
-              merchandiseId: normalizedItem.merchandiseId,
-              quantity: normalizedItem.quantity || 1,
-              attributes: Array.isArray(normalizedItem.attributes)
-                ? normalizedItem.attributes
-                : undefined,
-            },
-          ],
-        });
+      const response = existingCartId
+        ? await api.addLinesToCart({ cartId: existingCartId, lines: finalLines })
+        : await api.createCart({ lines: finalLines });
 
-        const meta = extractCartMeta(created);
-        if (meta.cartId || meta.checkoutUrl) {
-          get().setCartMeta(meta);
-        }
-
-        track("snoozer_shopify_cart_create", {
-          ok: true,
-          hasCartId: !!meta.cartId,
-          hasCheckoutUrl: !!meta.checkoutUrl,
-        });
-
-        return meta;
-      }
-
-      const added = await api.addLinesToCart({
-        cartId: existingCartId,
-        lines: [
-          {
-            merchandiseId: normalizedItem.merchandiseId,
-            quantity: normalizedItem.quantity || 1,
-            attributes: Array.isArray(normalizedItem.attributes)
-              ? normalizedItem.attributes
-              : undefined,
-          },
-        ],
+      let applied = get().applyAuthoritativeCartPayload(response, {
+        fallbackCartId: existingCartId,
+        sourcePage,
+        operation,
+        requestedLineCount: finalLines.length,
+        startedAt,
       });
 
-      const meta = extractCartMeta(added);
-      if (meta.cartId || meta.checkoutUrl) {
-        get().setCartMeta({
-          cartId: meta.cartId || existingCartId,
-          checkoutUrl: meta.checkoutUrl || state.checkoutUrl || null,
-        });
-      } else {
-        get().setCartMeta({
-          cartId: existingCartId,
-          checkoutUrl: state.checkoutUrl || null,
+      if (applied.cartId && !extractCartObject(response)) {
+        const fresh = await api.getCart(applied.cartId);
+        applied = get().applyAuthoritativeCartPayload(fresh, {
+          fallbackCartId: applied.cartId,
+          sourcePage,
+          operation: "cart_fetch_after_mutation",
+          requestedLineCount: finalLines.length,
+          startedAt,
         });
       }
 
-      track("snoozer_shopify_cart_addLines", {
-        ok: true,
-        hasCheckoutUrl: !!(meta.checkoutUrl || state.checkoutUrl),
-      });
-
-      return meta;
+      track("snoozer_tab_badge_set", { tab: "Cart" });
+      return applied;
     } catch (err) {
+      logCartOperation({
+        operation,
+        cartId: existingCartId,
+        sourcePage,
+        requestedLineCount: finalLines.length,
+        ok: false,
+        startedAt,
+        error: err,
+      });
       track("snoozer_shopify_cart_sync_error", {
+        operation,
         message: err?.message || String(err),
       });
-      console.warn("[useStore] Shopify cart sync failed:", err);
-      return null;
+      throw err;
     } finally {
-      markCartMutation(false, "syncShopifyCartAdd");
+      markCartMutation(false, "addLinesToAuthoritativeCart");
     }
+  },
+
+  syncShopifyCartAdd: async (normalizedItem) => {
+    if (!normalizedItem?.merchandiseId) return null;
+    return get().addLinesToAuthoritativeCart({
+      lines: [normalizedItem],
+      sourcePage: "legacy-add-to-cart",
+    });
   },
 
   applySnoozerCartMeta: ({ cartId, checkoutUrl } = {}) => {
@@ -457,9 +714,7 @@ export const useStore = create((set, get) => ({
     });
   },
 
-  addToCart: (item) => {
-    markCartMutation(true, "addToCart");
-    const current = get().cart || [];
+  addToCart: async (item) => {
     const normalized = normalizeCartItem(item);
 
     if (!normalized) {
@@ -472,36 +727,33 @@ export const useStore = create((set, get) => ({
           merchandiseId: item?.merchandiseId,
         },
       });
-      markCartMutation(false, "addToCart");
-      return;
+      return false;
     }
 
-    const existing = current.find((p) => p.id === normalized.id);
-    const next = existing
-      ? current.map((p) =>
-          p.id === normalized.id
-            ? { ...p, quantity: (p.quantity || 1) + (normalized.quantity || 1) }
-            : p
-        )
-      : [...current, normalized];
-
-    set((state) => ({ cart: next, badges: { ...state.badges, Cart: true } }));
-    saveJSON(STORAGE_KEYS.cart, next);
-
-    track("snoozer_action", {
-      type: "cart_add",
-      id: normalized.id,
-      merchandiseId: normalized.merchandiseId,
-      quantity: normalized.quantity,
-    });
-    track("snoozer_tab_badge_set", { tab: "Cart" });
-
-    Promise.resolve(get().syncShopifyCartAdd(normalized))
-      .catch(() => {})
-      .finally(() => markCartMutation(false, "addToCart"));
+    try {
+      await get().addLinesToAuthoritativeCart({
+        lines: [normalized],
+        sourcePage: "legacy-add-to-cart",
+      });
+      track("snoozer_action", {
+        type: "cart_add",
+        id: normalized.id,
+        merchandiseId: normalized.merchandiseId,
+        quantity: normalized.quantity,
+      });
+      return true;
+    } catch (err) {
+      track("snoozer_action", {
+        type: "cart_add_failed",
+        id: normalized.id,
+        merchandiseId: normalized.merchandiseId,
+        errorCode: err?.code || err?.name || err?.status || "CART_ADD_FAILED",
+      });
+      return false;
+    }
   },
 
-  updateCart: (id, quantity) => {
+  updateCart: async (id, quantity) => {
     markCartMutation(true, "updateCart");
     const key = String(id || "");
     const q = Math.max(0, Math.floor(Number(quantity) || 0));
@@ -510,17 +762,53 @@ export const useStore = create((set, get) => ({
       return;
     }
 
-    const next = (get().cart || [])
-      .map((p) => (p.id === key ? { ...p, quantity: q } : p))
-      .filter((p) => (p.quantity || 0) > 0);
+    const state = get();
+    const item = findCartItemByAnyId(state.cart, key);
+    const cartId = extractCartGid(state.cartId) || getStoredCartGid();
+    const lineId = item?.lineId || item?.id || null;
 
-    set((state) => ({ cart: next, badges: { ...state.badges, Cart: true } }));
-    saveJSON(STORAGE_KEYS.cart, next);
-    track("snoozer_action", { type: "cart_update", id: key, quantity: q });
-    markCartMutation(false, "updateCart");
+    if (!cartId || !lineId) {
+      logCartOperation({
+        operation: "cart_line_update",
+        cartId,
+        sourcePage: "cart-page",
+        ok: false,
+        error: { code: "MISSING_CART_LINE_ID" },
+      });
+      markCartMutation(false, "updateCart");
+      return;
+    }
+
+    const startedAt = Date.now();
+    try {
+      const response = await api.updateCartLines({
+        cartId,
+        lines: [{ id: lineId, quantity: q }],
+      });
+      get().applyAuthoritativeCartPayload(response, {
+        fallbackCartId: cartId,
+        sourcePage: "cart-page",
+        operation: "cart_line_update",
+        requestedLineCount: 1,
+        startedAt,
+      });
+      track("snoozer_action", { type: "cart_update", id: key, quantity: q });
+    } catch (err) {
+      logCartOperation({
+        operation: "cart_line_update",
+        cartId,
+        sourcePage: "cart-page",
+        requestedLineCount: 1,
+        ok: false,
+        startedAt,
+        error: err,
+      });
+    } finally {
+      markCartMutation(false, "updateCart");
+    }
   },
 
-  removeFromCart: (id) => {
+  removeFromCart: async (id) => {
     markCartMutation(true, "removeFromCart");
     const key = String(id || "");
     if (!key) {
@@ -528,17 +816,54 @@ export const useStore = create((set, get) => ({
       return;
     }
 
-    const next = (get().cart || []).filter((p) => p.id !== key);
-    set((state) => ({ cart: next, badges: { ...state.badges, Cart: true } }));
-    saveJSON(STORAGE_KEYS.cart, next);
-    track("snoozer_action", { type: "cart_remove", id: key });
-    markCartMutation(false, "removeFromCart");
+    const state = get();
+    const item = findCartItemByAnyId(state.cart, key);
+    const cartId = extractCartGid(state.cartId) || getStoredCartGid();
+    const lineId = item?.lineId || item?.id || null;
+
+    if (!cartId || !lineId) {
+      logCartOperation({
+        operation: "cart_line_remove",
+        cartId,
+        sourcePage: "cart-page",
+        ok: false,
+        error: { code: "MISSING_CART_LINE_ID" },
+      });
+      markCartMutation(false, "removeFromCart");
+      return;
+    }
+
+    const startedAt = Date.now();
+    try {
+      const response = await api.removeCartLines({ cartId, lineIds: [lineId] });
+      get().applyAuthoritativeCartPayload(response, {
+        fallbackCartId: cartId,
+        sourcePage: "cart-page",
+        operation: "cart_line_remove",
+        requestedLineCount: 1,
+        startedAt,
+      });
+      track("snoozer_action", { type: "cart_remove", id: key });
+    } catch (err) {
+      logCartOperation({
+        operation: "cart_line_remove",
+        cartId,
+        sourcePage: "cart-page",
+        requestedLineCount: 1,
+        ok: false,
+        startedAt,
+        error: err,
+      });
+    } finally {
+      markCartMutation(false, "removeFromCart");
+    }
   },
 
   clearCart: () => {
     markCartMutation(true, "clearCart");
     set((state) => ({ cart: [], badges: { ...state.badges, Cart: false } }));
     saveJSON(STORAGE_KEYS.cart, []);
+    get().clearCartMeta();
     track("snoozer_action", { type: "cart_clear" });
     markCartMutation(false, "clearCart");
   },

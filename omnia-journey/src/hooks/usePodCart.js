@@ -3,10 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "@/lib/useStore";
 
 export function usePodCart() {
-  const plan = useStore((state) => (Array.isArray(state.snoozepod) ? state.snoozepod : []));
+  const cart = useStore((state) => (Array.isArray(state.cart) ? state.cart : []));
+  const cartId = useStore((state) => state.cartId || null);
+  const syncCartFromShopify = useStore((state) => state.syncCartFromShopify);
   const snoozepodCount = useMemo(
-    () => plan.reduce((sum, item) => sum + Math.max(0, Number(item?.quantity) || 0), 0),
-    [plan]
+    () => cart.reduce((sum, item) => sum + Math.max(0, Number(item?.quantity) || 0), 0),
+    [cart]
   );
 
   const [cartNotice, setCartNotice] = useState("");
@@ -42,6 +44,17 @@ export function usePodCart() {
 
     lastCartCountRef.current = snoozepodCount;
   }, [snoozepodCount, showCartFeedback]);
+
+  useEffect(() => {
+    syncCartFromShopify?.({ sourcePage: "pod-header" }).catch((err) => {
+      console.warn("[cart] pod header restore failed", {
+        operation: "cart_fetch",
+        sourcePage: "pod-header",
+        cartId,
+        errorCode: err?.code || err?.name || err?.status || "CART_FETCH_FAILED",
+      });
+    });
+  }, [cartId, syncCartFromShopify]);
 
   useEffect(() => clearFeedbackTimer, [clearFeedbackTimer]);
 
