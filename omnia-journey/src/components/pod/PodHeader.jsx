@@ -15,7 +15,7 @@ function HeaderBadge({ label, tone = "soft" }) {
     <div
       data-pod-badge="true"
       className={[
-        "inline-flex items-center whitespace-nowrap rounded-full border px-[10px] py-[6px] text-[clamp(0.68rem,1vw,0.82rem)] font-extrabold uppercase tracking-[0.1em] shadow-[0_10px_24px_rgba(40,63,126,0.08)]",
+        "inline-flex min-h-[28px] items-center whitespace-nowrap rounded-full border px-[9px] py-[4px] text-[clamp(0.62rem,0.9vw,0.74rem)] font-extrabold uppercase tracking-[0.1em] shadow-[0_8px_18px_rgba(40,63,126,0.08)]",
         toneClass,
       ].join(" ")}
     >
@@ -28,19 +28,19 @@ function SnoozerCoachBubble({ copy }) {
   if (!copy) return null;
 
   return (
-    <div className="mt-2 flex max-w-[188px] items-start gap-2 rounded-[18px] border border-white/85 bg-white/96 px-[9px] py-[8px] shadow-[0_14px_28px_rgba(40,63,126,0.12)] md:mt-0 md:max-w-[198px] md:px-[10px] md:py-[9px]">
+    <div className="mt-2 flex max-w-[180px] items-start gap-2 rounded-[16px] border border-white/85 bg-white/96 px-[8px] py-[7px] shadow-[0_12px_24px_rgba(40,63,126,0.12)] md:mt-0 md:max-w-[190px]">
       <img
         src="/snoozer-avatar.png"
         alt="Snoozer"
-        className="h-8 w-8 shrink-0 rounded-full object-cover ring-2 ring-[#eef3ff] md:h-9 md:w-9"
+        className="h-7 w-7 shrink-0 rounded-full object-cover ring-2 ring-[#eef3ff] md:h-8 md:w-8"
         loading="eager"
         decoding="async"
       />
       <div className="min-w-0">
-        <div className="text-[0.84rem] font-black leading-none text-slate-900 md:text-[0.9rem]">
+        <div className="text-[0.78rem] font-black leading-none text-slate-900 md:text-[0.84rem]">
           I&apos;m Snoozer.
         </div>
-        <div className="mt-[3px] text-[0.76rem] font-medium leading-[1.3] text-slate-700 md:text-[0.82rem]">
+        <div className="mt-[3px] line-clamp-4 text-[0.68rem] font-medium leading-[1.25] text-slate-700 md:text-[0.74rem]">
           {copy}
         </div>
       </div>
@@ -95,13 +95,13 @@ export function PodRouteHeroHeader({
     <div
       data-pod-route-header="true"
       className={[
-        "grid items-stretch gap-0 overflow-hidden md:h-[clamp(180px,23dvh,205px)]",
+        "grid h-full min-h-0 items-stretch gap-0 overflow-hidden",
         hasCoachBubble
-          ? "md:grid-cols-[minmax(0,0.86fr)_minmax(172px,0.32fr)_minmax(0,1.16fr)] lg:grid-cols-[minmax(0,0.84fr)_minmax(188px,0.34fr)_minmax(0,1.18fr)]"
-          : "md:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)]",
+          ? "md:grid-cols-[minmax(0,0.86fr)_minmax(166px,0.3fr)_minmax(0,1.16fr)] lg:grid-cols-[minmax(0,0.84fr)_minmax(178px,0.32fr)_minmax(0,1.2fr)]"
+          : "md:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]",
       ].join(" ")}
     >
-      <div className="relative flex min-h-[114px] flex-col justify-center px-[18px] py-[14px] md:h-full md:min-h-0 md:px-[20px] md:py-[16px]">
+      <div className="relative flex min-h-[112px] flex-col justify-center px-[16px] py-[10px] md:h-full md:min-h-0 md:px-[18px] md:py-[10px]">
         {eyebrow ? (
           <ShowroomEyebrow className="text-[0.78rem] tracking-[0.24em]">{eyebrow}</ShowroomEyebrow>
         ) : null}
@@ -109,18 +109,18 @@ export function PodRouteHeroHeader({
         <div
           className={[
             eyebrow ? "mt-1" : "mt-0",
-            "text-[clamp(1.02rem,1.5vw,1.18rem)] font-black tracking-tight text-[#2f57e8]",
+            "text-[clamp(0.96rem,1.4vw,1.1rem)] font-black tracking-tight text-[#2f57e8]",
           ].join(" ")}
         >
           {podTitle}
         </div>
 
-        <h1 className="mt-[4px] max-w-[11.5ch] text-[clamp(2rem,3vw,2.85rem)] font-black leading-[0.92] tracking-tight text-slate-900">
+        <h1 className="mt-[3px] max-w-[12.6ch] text-[clamp(1.85rem,2.85vw,2.5rem)] font-black leading-[0.92] tracking-tight text-slate-900">
           {mattressTitle}
         </h1>
 
         {badges.length ? (
-          <div className="mt-[10px] flex max-w-full items-center gap-[8px] overflow-x-auto pb-[2px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-[7px] flex max-w-full items-center gap-[6px] overflow-x-auto pb-[1px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {badges.map((badge) => (
               <HeaderBadge
                 key={`${badge.label}-${badge.tone || "soft"}`}
@@ -130,13 +130,13 @@ export function PodRouteHeroHeader({
             ))}
           </div>
         ) : isRecommended ? (
-          <div className="mt-[10px]">
+          <div className="mt-[7px]">
             <HeaderBadge label="Best First Match" tone="primary" />
           </div>
         ) : null}
 
         {helperText ? (
-          <div className="mt-[8px] text-[clamp(0.86rem,1.25vw,0.95rem)] font-medium text-slate-600">
+          <div className="mt-[6px] line-clamp-2 text-[clamp(0.8rem,1.1vw,0.9rem)] font-medium leading-[1.25] text-slate-600">
             {helperText}
           </div>
         ) : null}
@@ -171,13 +171,13 @@ export function PodRouteHeroHeader({
         </div>
       ) : null}
 
-      <div className="relative min-h-[114px] overflow-hidden border-t border-white/70 md:h-full md:min-h-0 md:border-l md:border-t-0">
+      <div className="relative min-h-[112px] overflow-hidden border-t border-white/70 md:h-full md:min-h-0 md:border-l md:border-t-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,_rgba(232,239,255,0.92),_rgba(232,239,255,0.55)_26%,_transparent_58%)]" />
         <ResponsiveHeroImage
           src={mattressImage}
           alt={mattressTitle}
-          className="flex h-full min-h-[114px] w-full items-center justify-end px-0 py-0 md:min-h-0"
-          imgClassName="h-full w-full max-h-full scale-[1.08] object-contain object-center md:scale-[1.2] lg:scale-[1.24]"
+          className="flex h-full min-h-[112px] w-full items-center justify-end px-0 py-0 md:min-h-0"
+          imgClassName="h-full w-full max-h-full scale-[1.04] object-contain object-center md:scale-[1.1] lg:scale-[1.12]"
         />
       </div>
     </div>

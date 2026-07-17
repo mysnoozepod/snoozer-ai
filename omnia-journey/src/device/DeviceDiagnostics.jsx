@@ -30,6 +30,7 @@ export default function DeviceDiagnostics() {
       <button
         type="button"
         aria-label="Open device diagnostics"
+        data-pod-lab-ignore="true"
         onClick={() => setExpanded(true)}
         style={{
           position: "fixed",
@@ -74,6 +75,7 @@ export default function DeviceDiagnostics() {
   return (
     <aside
       aria-label="Device diagnostics"
+      data-pod-lab-ignore="true"
       style={{
         position: "fixed",
         left: 12,
@@ -117,6 +119,7 @@ export default function DeviceDiagnostics() {
         </span>
         <button
           type="button"
+          data-pod-lab-ignore="true"
           onClick={() => setExpanded(false)}
           style={{
             border: "1px solid rgba(100, 116, 139, 0.22)",

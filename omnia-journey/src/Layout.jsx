@@ -93,6 +93,8 @@ function LayoutShell() {
     pathname.startsWith("/results") ||
     pathname.startsWith("/pod/") ||
     pathname.startsWith("/ask-snoozer");
+  const pageUsesPodViewportShell =
+    pathname.startsWith("/pod/") || pathname.startsWith("/dev/pod-lab");
 
   const showPersistentHudOverlay =
     hudOpen &&
@@ -307,6 +309,9 @@ function LayoutShell() {
             display: isCenteredRoute ? "grid" : "block",
             placeItems: isCenteredRoute ? "center" : "initial",
             padding: pageOwnsSnoozerVisual || isCenteredRoute ? 0 : "16px",
+            height: pageUsesPodViewportShell ? "100dvh" : undefined,
+            maxHeight: pageUsesPodViewportShell ? "100dvh" : undefined,
+            overflow: pageUsesPodViewportShell ? "hidden" : undefined,
           }}
         >
           <Outlet />

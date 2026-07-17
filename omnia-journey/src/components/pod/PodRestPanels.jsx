@@ -461,7 +461,7 @@ export function GuidedRestTest({
           onClick={onPauseTimer}
           data-pod-layout-rest-control="true"
           data-pod-layout-primary-action="rest-pause"
-          className="inline-flex min-h-[36px] min-w-[144px] items-center justify-center gap-2 rounded-[14px] border border-[#dbe5ff] bg-white px-3.5 text-[0.8rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
+          className="inline-flex min-h-[44px] min-w-[144px] items-center justify-center gap-2 rounded-[14px] border border-[#dbe5ff] bg-white px-3.5 text-[0.8rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
         >
           <Pause className="h-4 w-4" />
           {pauseLabel}
@@ -472,7 +472,7 @@ export function GuidedRestTest({
           onClick={onEndAndRate}
           data-pod-layout-rest-control="true"
           data-pod-layout-primary-action="rest-end"
-          className="inline-flex min-h-[36px] min-w-[144px] items-center justify-center gap-2 rounded-[14px] border border-[#ffd7d7] bg-white px-3.5 text-[0.8rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
+          className="inline-flex min-h-[44px] min-w-[144px] items-center justify-center gap-2 rounded-[14px] border border-[#ffd7d7] bg-white px-3.5 text-[0.8rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
         >
           <X className="h-4 w-4" />
           End & Rate
@@ -483,7 +483,7 @@ export function GuidedRestTest({
             type="button"
             onClick={onSwitchToLongerMode}
             data-pod-layout-rest-control="true"
-            className="inline-flex min-h-[36px] flex-1 items-center justify-center gap-2 rounded-[14px] border border-[#dbe5ff] bg-[#f8faff] px-3.5 text-[0.76rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[206px] xl:flex-none"
+            className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-[14px] border border-[#dbe5ff] bg-[#f8faff] px-3.5 text-[0.76rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[206px] xl:flex-none"
           >
             Need more time? Switch to 15 min
             <ArrowRight className="h-4 w-4" />

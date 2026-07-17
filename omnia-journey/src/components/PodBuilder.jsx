@@ -1605,7 +1605,7 @@ export default function PodBuilder({
                 disabled={!canAdd || isAddingToCart}
                 data-pod-layout-build-action="true"
                 data-pod-layout-primary-action="build-add"
-                className="min-h-[42px] w-full rounded-[16px] px-5 text-[0.88rem] font-extrabold"
+                className="min-h-[48px] w-full rounded-[16px] px-5 text-[0.88rem] font-extrabold"
               >
                 <span>{isAddingToCart ? "Adding..." : primaryCtaLabel}</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -1615,7 +1615,7 @@ export default function PodBuilder({
                 <button
                   type="button"
                   onClick={viewCart}
-                  className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
+                  className="inline-flex min-h-[44px] items-center rounded-[12px] px-2 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
                 >
                   Open Cart
                 </button>
@@ -1623,7 +1623,7 @@ export default function PodBuilder({
                 <button
                   type="button"
                   onClick={resetBuild}
-                  className="text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-slate-500"
+                  className="inline-flex min-h-[44px] items-center rounded-[12px] px-2 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-slate-500"
                 >
                   Start Over
                 </button>

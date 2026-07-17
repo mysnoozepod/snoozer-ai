@@ -22,10 +22,19 @@ export const POD_LAYOUT_CONTRACT = Object.freeze({
     viewportHeight: 820,
     header: 72,
     navigation: 56,
-    productHero: 190,
+    productHero: 164,
     outerVerticalAllowance: 24,
     sectionGaps: 36,
-    activeContent: 442,
+    activeContent: 468,
+  },
+  compactVerticalBudget: {
+    viewportHeight: 768,
+    header: 72,
+    navigation: 56,
+    productHero: 152,
+    outerVerticalAllowance: 24,
+    sectionGaps: 36,
+    activeContent: 428,
   },
   spacing: {
     outerHorizontalPadding: 24,
@@ -52,6 +61,13 @@ export const POD_LAYOUT_CONTRACT = Object.freeze({
     labelMax: 15,
   },
 });
+
+export function getPodLayoutBudgetForViewport(viewport = {}) {
+  const height = Number(viewport.height) || POD_LAYOUT_CONTRACT.primaryViewport.height;
+  return height >= POD_LAYOUT_CONTRACT.primaryViewport.height
+    ? POD_LAYOUT_CONTRACT.verticalBudget
+    : POD_LAYOUT_CONTRACT.compactVerticalBudget;
+}
 
 export function normalizePodLabState(value) {
   const state = String(value || "").trim().toLowerCase();

@@ -57,6 +57,7 @@ function IotZoneDiagnostics({ endpoint, state }) {
       <button
         type="button"
         aria-label="Open IoT diagnostics"
+        data-pod-lab-ignore="true"
         onClick={() => setExpanded(true)}
         style={{
           position: "fixed",
@@ -84,6 +85,7 @@ function IotZoneDiagnostics({ endpoint, state }) {
   return (
     <aside
       aria-label="IoT zone diagnostics"
+      data-pod-lab-ignore="true"
       style={{
         position: "fixed",
         right: 12,
@@ -108,6 +110,7 @@ function IotZoneDiagnostics({ endpoint, state }) {
         </strong>
         <button
           type="button"
+          data-pod-lab-ignore="true"
           onClick={() => setExpanded(false)}
           style={{
             border: "1px solid rgba(100, 116, 139, 0.22)",

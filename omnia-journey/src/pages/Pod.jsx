@@ -66,7 +66,7 @@ import {
 } from "@/iot/showroomExperienceState";
 import { usePhysicalControl } from "@/iot/usePhysicalControl";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
-import { normalizePodLabState } from "@/lib/podLayoutContract";
+import { POD_LAYOUT_CONTRACT, normalizePodLabState } from "@/lib/podLayoutContract";
 
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import snoozerRestActiveImg from "@/assets/avatars/snoozer-rest-active.png";
@@ -2626,6 +2626,22 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     !activeRestFlow &&
     !restCompletionStage &&
     !testComplete;
+  const activeNavKey = isDefaultPodDashboard
+    ? "home"
+    : openStage === "details"
+      ? "learn"
+      : openStage === "build"
+        ? "build"
+        : "rest";
+  const podShellVars = {
+    "--pod-header-height": `${POD_LAYOUT_CONTRACT.verticalBudget.header}px`,
+    "--pod-nav-height": `${POD_LAYOUT_CONTRACT.verticalBudget.navigation}px`,
+    "--pod-hero-height": `clamp(${POD_LAYOUT_CONTRACT.compactVerticalBudget.productHero}px, 20dvh, ${POD_LAYOUT_CONTRACT.verticalBudget.productHero}px)`,
+    "--pod-outer-x": `${POD_LAYOUT_CONTRACT.spacing.outerHorizontalPadding}px`,
+    "--pod-main-gap": `${POD_LAYOUT_CONTRACT.spacing.mainGap}px`,
+    "--pod-card-padding": `${POD_LAYOUT_CONTRACT.spacing.cardPadding}px`,
+    "--pod-touch-target": `${POD_LAYOUT_CONTRACT.sizing.touchTargetMin}px`,
+  };
   const dashboardTestingModes = useMemo(
     () => Object.values(restFlows || {}).filter(Boolean).slice(0, 2),
     [restFlows]
@@ -2675,7 +2691,8 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
 
   return (
     <ShowroomPageShell
-      className="flex h-[100dvh] max-h-[100dvh] min-h-0 flex-col overflow-hidden pb-0"
+      className="flex h-[100dvh] max-h-[100dvh] min-h-0 flex-col overflow-hidden pb-0 pt-0 md:pt-0"
+      style={podShellVars}
       data-pod-lab-mode={labMode ? "true" : "false"}
       data-pod-lab-state={effectiveLabState || undefined}
       data-pod-lighting-state={podLightingState}
@@ -2690,16 +2707,16 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     >
       <div
         data-pod-layout-region="top-header"
-        className="mx-auto w-full max-w-[1380px] shrink-0 px-[20px] pt-[10px] md:px-[24px] md:pt-[12px]"
+        className="mx-auto h-[var(--pod-header-height)] w-full max-w-[1380px] shrink-0 px-[var(--pod-outer-x)] py-[6px]"
       >
-        <div className="grid min-h-[72px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[24px] border border-white/80 bg-white/94 px-[16px] py-[6px] shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:min-h-[76px] md:px-[20px]">
+        <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[20px] border border-white/80 bg-white/94 px-[14px] shadow-[0_18px_46px_rgba(40,63,126,0.1)] backdrop-blur md:px-[18px]">
           <button
             type="button"
             onClick={() => {
               noteUserInteraction?.();
               void goToPodHome();
             }}
-            className="justify-self-start inline-flex items-center gap-3 rounded-[18px] border border-transparent bg-transparent px-2 py-1.5 text-sm font-extrabold text-slate-900 transition hover:text-[#2f57e8]"
+            className="inline-flex min-h-[var(--pod-touch-target)] items-center gap-3 justify-self-start rounded-[14px] border border-transparent bg-transparent px-2 text-sm font-extrabold text-slate-900 transition hover:text-[#2f57e8]"
           >
             <ArrowLeft className="h-5 w-5" />
             Pod Home
@@ -2730,50 +2747,14 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
         </div>
       </div>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-[20px] pb-[6px] pt-[10px] md:px-[24px] md:pb-[8px] md:pt-[12px]">
-        {isDefaultPodDashboard ? (
-          <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-[8px]">
-            {podHomeContent}
-          </ShowroomFrame>
-        ) : (
-          <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-[8px]" : "p-[10px]"].join(" ")}>
-            <div data-pod-layout-region="product-hero" className="shrink-0">
-              <ShowroomPanel className="overflow-hidden p-0" tone="soft">
-                <PodRouteHeroHeader
-                  eyebrow=""
-                  podTitle={title}
-                  mattressTitle={mattressDisplayTitle}
-                  helperText=""
-                  isRecommended={isRecommended}
-                  mattressImage={mattressImage}
-                  voiceState={voiceState}
-                  badges={openStage === "details" || openStage === "build" ? headerBadges : headerBadges.slice(0, isRecommended ? 2 : 1)}
-                  coachBubble={isRestSelectionStage ? restCoachCopy : ""}
-                />
-              </ShowroomPanel>
-            </div>
-
-            <div
-              ref={stagePanelRef}
-              data-pod-layout-region="active-content"
-              className={[
-                "mt-[10px] flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-[4px] pb-[12px]",
-                isRestTaskStage ? "" : openStage === "details" || openStage === "build" ? "mt-[12px]" : "",
-              ].join(" ")}
-            >
-              {activePanelContent}
-            </div>
-          </ShowroomFrame>
-        )}
-      </div>
-
       {!loading && activePod ? (
         <div
-          data-pod-layout-region="bottom-nav"
-          className="mx-auto mt-0 w-full max-w-[1380px] shrink-0 px-[20px] pb-[10px] pt-[6px] md:px-[24px]"
+          data-pod-layout-region="pod-nav"
+          className="mx-auto h-[var(--pod-nav-height)] w-full max-w-[1380px] shrink-0 px-[var(--pod-outer-x)] py-[4px]"
         >
           <PodFooterNav
             openStage={openStage}
+            activeKey={activeNavKey}
             onGoHome={() => void goToPodHome()}
             onGoRest={goToRestStage}
             onGoLearn={goToDetailsStage}
@@ -2795,8 +2776,45 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
               });
             }}
           />
-          </div>
+        </div>
       ) : null}
+
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-[var(--pod-outer-x)] pb-[12px] pt-[8px]">
+        {isDefaultPodDashboard ? (
+          <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-[8px]">
+            {podHomeContent}
+          </ShowroomFrame>
+        ) : (
+          <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-[8px]" : "p-[10px]"].join(" ")}>
+            <div data-pod-layout-region="product-hero" className="h-[var(--pod-hero-height)] shrink-0">
+              <ShowroomPanel className="h-full overflow-hidden p-0" tone="soft">
+                <PodRouteHeroHeader
+                  eyebrow=""
+                  podTitle={title}
+                  mattressTitle={mattressDisplayTitle}
+                  helperText=""
+                  isRecommended={isRecommended}
+                  mattressImage={mattressImage}
+                  voiceState={voiceState}
+                  badges={openStage === "details" || openStage === "build" ? headerBadges : headerBadges.slice(0, isRecommended ? 2 : 1)}
+                  coachBubble={isRestSelectionStage ? restCoachCopy : ""}
+                />
+              </ShowroomPanel>
+            </div>
+
+            <div
+              ref={stagePanelRef}
+              data-pod-layout-region="active-content"
+              className={[
+                "mt-[var(--pod-main-gap)] flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-[4px] pb-[4px]",
+                isRestTaskStage ? "" : "",
+              ].join(" ")}
+            >
+              {activePanelContent}
+            </div>
+          </ShowroomFrame>
+        )}
+      </div>
     </ShowroomPageShell>
   );
 }

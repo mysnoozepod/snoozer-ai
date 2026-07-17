@@ -1,8 +1,10 @@
 import { BookOpen, Headphones, House, MessageSquare, SlidersHorizontal, Timer } from "lucide-react";
 
-function ExperienceFooterButton({ icon: Icon, label, onClick, accent = "default" }) {
+function ExperienceFooterButton({ icon: Icon, label, onClick, active = false, accent = "default" }) {
   const accentClass =
-    accent === "orange"
+    active
+      ? "text-[#2f57e8]"
+      : accent === "orange"
       ? "text-[#ff8f1f]"
       : accent === "blue"
         ? "text-[#2f57e8]"
@@ -12,16 +14,22 @@ function ExperienceFooterButton({ icon: Icon, label, onClick, accent = "default"
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex min-h-[38px] items-center justify-center gap-[7px] rounded-[14px] border border-white/85 bg-white/96 px-[14px] text-[clamp(0.78rem,1vw,0.9rem)] font-extrabold text-slate-900 shadow-[0_10px_24px_rgba(45,71,136,0.1)] transition hover:-translate-y-0.5 hover:bg-slate-50 md:min-w-[116px]"
+      className={[
+        "inline-flex h-full min-h-[var(--pod-touch-target,44px)] min-w-0 items-center justify-center gap-[6px] rounded-[12px] border px-[8px] text-center text-[clamp(0.72rem,0.9vw,0.84rem)] font-extrabold leading-none transition hover:bg-slate-50",
+        active
+          ? "border-[#d6e4ff] bg-[#eef3ff] text-[#2340b8] shadow-[0_8px_18px_rgba(47,87,232,0.13)]"
+          : "border-white/80 bg-white/92 text-slate-900 shadow-[0_8px_18px_rgba(45,71,136,0.08)]",
+      ].join(" ")}
     >
-      {Icon ? <Icon className={["h-[0.85rem] w-[0.85rem] shrink-0", accentClass].join(" ")} /> : null}
-      <span>{label}</span>
+      {Icon ? <Icon className={["h-[0.9rem] w-[0.9rem] shrink-0", accentClass].join(" ")} /> : null}
+      <span className="truncate">{label}</span>
     </button>
   );
 }
 
 export function PodFooterNav({
   openStage,
+  activeKey,
   onGoHome,
   onGoRest,
   onGoLearn,
@@ -29,36 +37,21 @@ export function PodFooterNav({
   onAskSnoozer,
   onTalkToHuman,
 }) {
+  const resolvedActiveKey =
+    activeKey ||
+    (openStage === "details" ? "learn" : openStage === "build" ? "build" : openStage === "rest" ? "rest" : "home");
+
   return (
     <div
       data-pod-footer-nav="true"
-      className="flex min-h-[60px] flex-wrap items-center justify-between gap-[8px] rounded-[18px] border border-white/85 bg-white/96 px-[12px] py-[8px] shadow-[0_18px_40px_rgba(40,63,126,0.12)]"
+      className="grid h-full min-h-[var(--pod-nav-height,56px)] grid-cols-6 items-stretch gap-[6px] overflow-hidden rounded-[16px] border border-white/85 bg-white/96 p-[6px] shadow-[0_14px_34px_rgba(40,63,126,0.1)]"
     >
-      <div className="flex flex-wrap items-center gap-[8px]">
-        <ExperienceFooterButton icon={House} label="Pod Home" accent="blue" onClick={onGoHome} />
-
-        {openStage !== "rest" ? (
-          <ExperienceFooterButton icon={Timer} label="Rest Test" accent="blue" onClick={onGoRest} />
-        ) : null}
-
-        {openStage !== "details" ? (
-          <ExperienceFooterButton icon={BookOpen} label="Learn" accent="blue" onClick={onGoLearn} />
-        ) : null}
-
-        {openStage !== "build" ? (
-          <ExperienceFooterButton
-            icon={SlidersHorizontal}
-            label="Build"
-            accent="blue"
-            onClick={onGoBuild}
-          />
-        ) : null}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-[8px]">
-        <ExperienceFooterButton icon={MessageSquare} label="Ask Snoozer" onClick={onAskSnoozer} />
-        <ExperienceFooterButton icon={Headphones} label="Talk to Human" onClick={onTalkToHuman} />
-      </div>
+      <ExperienceFooterButton icon={House} label="Pod Home" accent="blue" active={resolvedActiveKey === "home"} onClick={onGoHome} />
+      <ExperienceFooterButton icon={Timer} label="Rest Test" accent="blue" active={resolvedActiveKey === "rest"} onClick={onGoRest} />
+      <ExperienceFooterButton icon={BookOpen} label="Learn" accent="blue" active={resolvedActiveKey === "learn"} onClick={onGoLearn} />
+      <ExperienceFooterButton icon={SlidersHorizontal} label="Build" accent="blue" active={resolvedActiveKey === "build"} onClick={onGoBuild} />
+      <ExperienceFooterButton icon={MessageSquare} label="Ask Snoozer" onClick={onAskSnoozer} />
+      <ExperienceFooterButton icon={Headphones} label="Talk to Human" onClick={onTalkToHuman} />
     </div>
   );
 }

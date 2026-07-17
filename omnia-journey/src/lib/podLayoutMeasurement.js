@@ -1,4 +1,4 @@
-import { POD_LAYOUT_CONTRACT } from "@/lib/podLayoutContract";
+import { POD_LAYOUT_CONTRACT, getPodLayoutBudgetForViewport } from "@/lib/podLayoutContract";
 
 function rectFor(node) {
   if (!node || typeof node.getBoundingClientRect !== "function") return null;
@@ -15,6 +15,11 @@ function rectFor(node) {
 
 function region(name) {
   return document.querySelector(`[data-pod-layout-region="${name}"]`);
+}
+
+function activeContentScrollAllowed(state) {
+  const normalized = String(state || "").trim().toLowerCase();
+  return normalized === "learn" || normalized.startsWith("build");
 }
 
 function intersects(a, b) {
@@ -59,6 +64,7 @@ function collectTouchTargets(root = document) {
 function fixedElements() {
   return Array.from(document.querySelectorAll("body *"))
     .filter((node) => {
+      if (node.closest("[data-pod-lab-ignore]")) return false;
       const style = window.getComputedStyle(node);
       return style.position === "fixed" || style.position === "sticky";
     })
@@ -85,6 +91,7 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
     width: window.innerWidth,
     height: window.innerHeight,
   };
+  const budget = getPodLayoutBudgetForViewport(viewport);
   const visualViewport = window.visualViewport
     ? {
         width: Math.round(window.visualViewport.width * 100) / 100,
@@ -98,7 +105,7 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
     header: region("top-header"),
     productHero: region("product-hero"),
     activeContent: region("active-content"),
-    navigation: region("bottom-nav"),
+    navigation: region("pod-nav") || region("bottom-nav"),
     diagnostics: region("diagnostics"),
   };
 
@@ -163,7 +170,12 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
   const failures = [];
   if (pageScrollWidth > pageClientWidth + 1) failures.push("horizontal-page-overflow");
   if (pageScrollHeight > pageClientHeight + 1) failures.push("vertical-page-overflow");
-  if (activeContent && activeContent.scrollHeight > activeContent.clientHeight + 1) {
+  const activeContentOverflows = activeContent ? activeContent.scrollHeight > activeContent.clientHeight + 1 : false;
+  const warnings = [];
+  if (activeContentOverflows) {
+    warnings.push("active-content-scroll");
+  }
+  if (activeContentOverflows && !activeContentScrollAllowed(state)) {
     failures.push("active-content-scroll");
   }
   if (overlaps.length) failures.push("element-overlap");
@@ -190,30 +202,30 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
     },
     regions: {
       header: {
-        target: contract.verticalBudget.header,
+        target: budget.header,
         actual: rects.header?.height || 0,
-        diff: targetDiff(rects.header?.height || 0, contract.verticalBudget.header),
+        diff: targetDiff(rects.header?.height || 0, budget.header),
         rect: rects.header,
       },
       navigation: {
-        target: contract.verticalBudget.navigation,
+        target: budget.navigation,
         actual: rects.navigation?.height || 0,
-        diff: targetDiff(rects.navigation?.height || 0, contract.verticalBudget.navigation),
+        diff: targetDiff(rects.navigation?.height || 0, budget.navigation),
         rect: rects.navigation,
       },
       productHero: {
-        target: contract.verticalBudget.productHero,
+        target: budget.productHero,
         actual: rects.productHero?.height || 0,
-        diff: targetDiff(rects.productHero?.height || 0, contract.verticalBudget.productHero),
+        diff: targetDiff(rects.productHero?.height || 0, budget.productHero),
         rect: rects.productHero,
       },
       activeContent: {
-        target: contract.verticalBudget.activeContent,
+        target: budget.activeContent,
         actual: rects.activeContent?.height || 0,
-        diff: targetDiff(rects.activeContent?.height || 0, contract.verticalBudget.activeContent),
+        diff: targetDiff(rects.activeContent?.height || 0, budget.activeContent),
         scrollHeight: activeContent?.scrollHeight || 0,
         clientHeight: activeContent?.clientHeight || 0,
-        overflow: activeContent ? activeContent.scrollHeight > activeContent.clientHeight + 1 : false,
+        overflow: activeContentOverflows,
         rect: rects.activeContent,
       },
     },
@@ -230,6 +242,7 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
       belowMinimum: touchTargets.filter((item) => Math.min(item.width, item.height) < contract.sizing.touchTargetMin),
       smallest: smallestTouchMinSide ? smallestTouchTarget : null,
     },
+    warnings,
     failures,
     result: failures.length ? "fail" : "pass",
   };

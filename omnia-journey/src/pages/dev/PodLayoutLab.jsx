@@ -69,7 +69,7 @@ function PodLayoutDiagnostics({ state }) {
       data-pod-layout-region="diagnostics"
       data-pod-lab-panel="diagnostics"
       data-pod-lab-ready="true"
-      className="fixed left-3 top-3 z-[80] max-h-[240px] w-[260px] overflow-auto rounded-[18px] border border-indigo-200 bg-white/92 p-3 text-xs text-slate-700 shadow-[0_24px_60px_rgba(15,23,42,0.18)] backdrop-blur"
+      className="fixed left-3 top-[154px] z-[80] max-h-[220px] w-[250px] overflow-auto rounded-[18px] border border-indigo-200 bg-white/92 p-3 text-xs text-slate-700 shadow-[0_24px_60px_rgba(15,23,42,0.18)] backdrop-blur"
     >
       <div className="mb-2 flex items-center justify-between gap-2">
         <div>
