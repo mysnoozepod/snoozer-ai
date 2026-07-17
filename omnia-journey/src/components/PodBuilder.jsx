@@ -1603,6 +1603,8 @@ export default function PodBuilder({
                   addToPlan();
                 }}
                 disabled={!canAdd || isAddingToCart}
+                data-pod-layout-build-action="true"
+                data-pod-layout-primary-action="build-add"
                 className="min-h-[42px] w-full rounded-[16px] px-5 text-[0.88rem] font-extrabold"
               >
                 <span>{isAddingToCart ? "Adding..." : primaryCtaLabel}</span>

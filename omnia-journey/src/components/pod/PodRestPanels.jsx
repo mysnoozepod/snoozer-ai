@@ -93,6 +93,7 @@ function RestLengthCard({
     <button
       type="button"
       onClick={onClick}
+      data-pod-layout-primary-action="rest-start"
       className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-[14px] text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d8e2ff] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[132px] md:p-[16px]"
     >
       <div className="flex items-start gap-3">
@@ -458,6 +459,8 @@ export function GuidedRestTest({
         <button
           type="button"
           onClick={onPauseTimer}
+          data-pod-layout-rest-control="true"
+          data-pod-layout-primary-action="rest-pause"
           className="inline-flex min-h-[36px] min-w-[144px] items-center justify-center gap-2 rounded-[14px] border border-[#dbe5ff] bg-white px-3.5 text-[0.8rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
         >
           <Pause className="h-4 w-4" />
@@ -467,6 +470,8 @@ export function GuidedRestTest({
         <button
           type="button"
           onClick={onEndAndRate}
+          data-pod-layout-rest-control="true"
+          data-pod-layout-primary-action="rest-end"
           className="inline-flex min-h-[36px] min-w-[144px] items-center justify-center gap-2 rounded-[14px] border border-[#ffd7d7] bg-white px-3.5 text-[0.8rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
         >
           <X className="h-4 w-4" />
@@ -477,6 +482,7 @@ export function GuidedRestTest({
           <button
             type="button"
             onClick={onSwitchToLongerMode}
+            data-pod-layout-rest-control="true"
             className="inline-flex min-h-[36px] flex-1 items-center justify-center gap-2 rounded-[14px] border border-[#dbe5ff] bg-[#f8faff] px-3.5 text-[0.76rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[206px] xl:flex-none"
           >
             Need more time? Switch to 15 min

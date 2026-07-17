@@ -15,6 +15,7 @@ import Financing from "./pages/Financing.jsx";
 import Assessment from "./pages/Assessment.jsx";
 import Results from "./pages/Results.jsx";
 import AskSnoozer from "./pages/AskSnoozer.jsx";
+import PodLayoutLab from "./pages/dev/PodLayoutLab.jsx";
 
 // âœ… Pod experience route
 import Pod from "./pages/Pod.jsx";
@@ -118,6 +119,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 />
 
                 <Route path="ask-snoozer" element={<AskSnoozer />} />
+
+                {/* Developer-only Pod measurement lab */}
+                <Route path="dev/pod-lab" element={<PodLayoutLab />} />
 
                 {/* Cart + Checkout */}
                 <Route

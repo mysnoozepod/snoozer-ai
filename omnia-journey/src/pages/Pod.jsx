@@ -1,6 +1,6 @@
 // src/pages/Pod.jsx
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   MessageSquare,
@@ -66,6 +66,7 @@ import {
 } from "@/iot/showroomExperienceState";
 import { usePhysicalControl } from "@/iot/usePhysicalControl";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
+import { normalizePodLabState } from "@/lib/podLayoutContract";
 
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import snoozerRestActiveImg from "@/assets/avatars/snoozer-rest-active.png";
@@ -1027,8 +1028,14 @@ function inferMotionVisualFromHandle(handle = "", baseTitle = "") {
   };
 }
 
-export default function Pod() {
+function getPodLabStateFromSearch(search) {
+  const params = new URLSearchParams(search || "");
+  return params.get("podLabState") || params.get("state") || "";
+}
+
+export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const { podId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const shopperId = useMemo(() => {
     return getShopperId() || "guest";
@@ -1039,7 +1046,11 @@ export default function Pod() {
   const { noteUserInteraction, voiceState, speakPod, cancelPodVoice, resetPodVoiceKeys } =
     usePodHudGuidance({ shopperId });
 
-  const pid = normalizeCanonicalPodId(podId) || "pod-1";
+  const effectivePodId = labPodId || podId;
+  const effectiveLabState = labMode
+    ? normalizePodLabState(labState || getPodLabStateFromSearch(location.search))
+    : "";
+  const pid = normalizeCanonicalPodId(effectivePodId) || "pod-1";
   const podNumber = getPodNumber(pid) || "1";
   const currentPodRoute = makePodRoute(pid) || "/pod/pod-1";
   const storagePrefix = useMemo(() => `snooze.pod.${pid}`, [pid]);
@@ -1369,6 +1380,74 @@ export default function Pod() {
     if (!restModeId) return null;
     return restFlows[restModeId] || null;
   }, [restFlows, restModeId]);
+
+  useEffect(() => {
+    if (!labMode || !effectiveLabState || !activePod) return;
+
+    setTestComplete(false);
+    setFeelChoice("");
+    setRestCompletionStage("");
+    setSelectedRestInstructionId("");
+
+    if (effectiveLabState === "learn") {
+      setOpenStage("details");
+      setShowRestChooser(false);
+      setRestModeId("");
+      setTimerRunning(false);
+      setTimerRemaining(0);
+      return;
+    }
+
+    if (effectiveLabState.startsWith("build")) {
+      const requestedStep =
+        effectiveLabState === "build-base"
+          ? "base"
+          : effectiveLabState === "build-review"
+            ? "review"
+            : "size";
+
+      setOpenStage("build");
+      setShowRestChooser(false);
+      setRestModeId("");
+      setTimerRunning(false);
+      setTimerRemaining(0);
+      setBuildStepKey(requestedStep);
+      return;
+    }
+
+    setOpenStage("rest");
+
+    if (effectiveLabState === "rest-active") {
+      setShowRestChooser(true);
+      setRestModeId("quick");
+      setRestStepIndex(0);
+      setTimerRemaining(410);
+      setTimerRunning(false);
+      setSelectedRestInstructionId("side");
+      return;
+    }
+
+    setShowRestChooser(true);
+    setRestModeId("");
+    setRestStepIndex(0);
+    setTimerRemaining(0);
+    setTimerRunning(false);
+  }, [
+    activePod,
+    effectiveLabState,
+    labMode,
+    setBuildStepKey,
+    setFeelChoice,
+    setOpenStage,
+    setRestCompletionStage,
+    setRestModeId,
+    setRestStepIndex,
+    setSelectedRestInstructionId,
+    setShowRestChooser,
+    setTestComplete,
+    setTimerRemaining,
+    setTimerRunning,
+  ]);
 
   const restTestActive = Boolean(activeRestFlow && !testComplete && !restCompletionStage);
   const zoneExperience = useShowroomZoneExperience({
@@ -2597,6 +2676,8 @@ export default function Pod() {
   return (
     <ShowroomPageShell
       className="flex h-[100dvh] max-h-[100dvh] min-h-0 flex-col overflow-hidden pb-0"
+      data-pod-lab-mode={labMode ? "true" : "false"}
+      data-pod-lab-state={effectiveLabState || undefined}
       data-pod-lighting-state={podLightingState}
       data-physical-control-status={physicalControl.status}
       data-physical-control-fault={physicalControl.fault ? "true" : "false"}
@@ -2607,7 +2688,10 @@ export default function Pod() {
       data-zone-occupied={zoneExperience.isOccupied ? "true" : "false"}
       data-rest-test-eligible={zoneExperience.restTestEligible ? "true" : "false"}
     >
-      <div className="mx-auto w-full max-w-[1380px] shrink-0 px-[20px] pt-[10px] md:px-[24px] md:pt-[12px]">
+      <div
+        data-pod-layout-region="top-header"
+        className="mx-auto w-full max-w-[1380px] shrink-0 px-[20px] pt-[10px] md:px-[24px] md:pt-[12px]"
+      >
         <div className="grid min-h-[72px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[24px] border border-white/80 bg-white/94 px-[16px] py-[6px] shadow-[0_22px_58px_rgba(40,63,126,0.12)] backdrop-blur md:min-h-[76px] md:px-[20px]">
           <button
             type="button"
@@ -2653,22 +2737,25 @@ export default function Pod() {
           </ShowroomFrame>
         ) : (
           <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-[8px]" : "p-[10px]"].join(" ")}>
-            <ShowroomPanel className="shrink-0 overflow-hidden p-0" tone="soft">
-              <PodRouteHeroHeader
-                eyebrow=""
-                podTitle={title}
-                mattressTitle={mattressDisplayTitle}
-                helperText=""
-                isRecommended={isRecommended}
-                mattressImage={mattressImage}
-                voiceState={voiceState}
-                badges={openStage === "details" || openStage === "build" ? headerBadges : headerBadges.slice(0, isRecommended ? 2 : 1)}
-                coachBubble={isRestSelectionStage ? restCoachCopy : ""}
-              />
-            </ShowroomPanel>
+            <div data-pod-layout-region="product-hero" className="shrink-0">
+              <ShowroomPanel className="overflow-hidden p-0" tone="soft">
+                <PodRouteHeroHeader
+                  eyebrow=""
+                  podTitle={title}
+                  mattressTitle={mattressDisplayTitle}
+                  helperText=""
+                  isRecommended={isRecommended}
+                  mattressImage={mattressImage}
+                  voiceState={voiceState}
+                  badges={openStage === "details" || openStage === "build" ? headerBadges : headerBadges.slice(0, isRecommended ? 2 : 1)}
+                  coachBubble={isRestSelectionStage ? restCoachCopy : ""}
+                />
+              </ShowroomPanel>
+            </div>
 
             <div
               ref={stagePanelRef}
+              data-pod-layout-region="active-content"
               className={[
                 "mt-[10px] flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-[4px] pb-[12px]",
                 isRestTaskStage ? "" : openStage === "details" || openStage === "build" ? "mt-[12px]" : "",
@@ -2681,7 +2768,10 @@ export default function Pod() {
       </div>
 
       {!loading && activePod ? (
-        <div className="mx-auto mt-0 w-full max-w-[1380px] shrink-0 px-[20px] pb-[10px] pt-[6px] md:px-[24px]">
+        <div
+          data-pod-layout-region="bottom-nav"
+          className="mx-auto mt-0 w-full max-w-[1380px] shrink-0 px-[20px] pb-[10px] pt-[6px] md:px-[24px]"
+        >
           <PodFooterNav
             openStage={openStage}
             onGoHome={() => void goToPodHome()}
