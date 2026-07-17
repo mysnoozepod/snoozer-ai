@@ -1,4 +1,5 @@
 export const POD_LAYOUT_LAB_STATES = Object.freeze([
+  "pod-home",
   "rest-selection",
   "rest-active",
   "learn",
@@ -26,6 +27,8 @@ export const POD_LAYOUT_CONTRACT = Object.freeze({
     outerVerticalAllowance: 24,
     sectionGaps: 36,
     activeContent: 468,
+    activeContentTopMax: 328,
+    activeContentVisibleMin: 450,
   },
   compactVerticalBudget: {
     viewportHeight: 768,
@@ -35,6 +38,8 @@ export const POD_LAYOUT_CONTRACT = Object.freeze({
     outerVerticalAllowance: 24,
     sectionGaps: 36,
     activeContent: 428,
+    activeContentTopMax: 312,
+    activeContentVisibleMin: 400,
   },
   spacing: {
     outerHorizontalPadding: 24,
@@ -71,5 +76,5 @@ export function getPodLayoutBudgetForViewport(viewport = {}) {
 
 export function normalizePodLabState(value) {
   const state = String(value || "").trim().toLowerCase();
-  return POD_LAYOUT_LAB_STATES.includes(state) ? state : "rest-selection";
+  return POD_LAYOUT_LAB_STATES.includes(state) ? state : "pod-home";
 }

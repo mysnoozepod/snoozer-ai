@@ -51,7 +51,9 @@ import {
 } from "@/lib/utils/recommendations";
 import { useStore } from "@/lib/useStore";
 import { getShopperId } from "@/state/sessionStore";
+import { canViewAdminDiagnostics } from "@/device/deviceActionGuards";
 import { emitDeviceRestTestActive } from "@/device/deviceActivityTracker";
+import { useDeviceMode } from "@/device/useDeviceMode";
 import { usePodCart } from "@/hooks/usePodCart";
 import { usePodExperience } from "@/hooks/usePodExperience";
 import { usePodHudGuidance } from "@/hooks/usePodHudGuidance";
@@ -67,6 +69,7 @@ import {
 import { usePhysicalControl } from "@/iot/usePhysicalControl";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
 import { POD_LAYOUT_CONTRACT, normalizePodLabState } from "@/lib/podLayoutContract";
+import { measurePodLayout } from "@/lib/podLayoutMeasurement";
 
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import snoozerRestActiveImg from "@/assets/avatars/snoozer-rest-active.png";
@@ -1030,13 +1033,15 @@ function inferMotionVisualFromHandle(handle = "", baseTitle = "") {
 
 function getPodLabStateFromSearch(search) {
   const params = new URLSearchParams(search || "");
-  return params.get("podLabState") || params.get("state") || "";
+  return params.get("podLayoutState") || params.get("podLabState") || params.get("state") || "";
 }
 
 export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const { podId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const deviceState = useDeviceMode();
+  const canUseLayoutHarness = canViewAdminDiagnostics(deviceState);
   const shopperId = useMemo(() => {
     return getShopperId() || "guest";
   }, []);
@@ -1047,9 +1052,11 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     usePodHudGuidance({ shopperId });
 
   const effectivePodId = labPodId || podId;
-  const effectiveLabState = labMode
-    ? normalizePodLabState(labState || getPodLabStateFromSearch(location.search))
-    : "";
+  const rawLayoutState = labState || getPodLabStateFromSearch(location.search);
+  const effectiveLabState =
+    labMode || (canUseLayoutHarness && rawLayoutState)
+      ? normalizePodLabState(rawLayoutState)
+      : "";
   const pid = normalizeCanonicalPodId(effectivePodId) || "pod-1";
   const podNumber = getPodNumber(pid) || "1";
   const currentPodRoute = makePodRoute(pid) || "/pod/pod-1";
@@ -1382,12 +1389,22 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   }, [restFlows, restModeId]);
 
   useEffect(() => {
-    if (!labMode || !effectiveLabState || !activePod) return;
+    if (!effectiveLabState || !activePod) return;
 
     setTestComplete(false);
     setFeelChoice("");
     setRestCompletionStage("");
     setSelectedRestInstructionId("");
+
+    if (effectiveLabState === "pod-home") {
+      setOpenStage("rest");
+      setShowRestChooser(false);
+      setRestModeId("");
+      setRestStepIndex(0);
+      setTimerRemaining(0);
+      setTimerRunning(false);
+      return;
+    }
 
     if (effectiveLabState === "learn") {
       setOpenStage("details");
@@ -1435,7 +1452,6 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   }, [
     activePod,
     effectiveLabState,
-    labMode,
     setBuildStepKey,
     setFeelChoice,
     setOpenStage,
@@ -2642,6 +2658,25 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     "--pod-card-padding": `${POD_LAYOUT_CONTRACT.spacing.cardPadding}px`,
     "--pod-touch-target": `${POD_LAYOUT_CONTRACT.sizing.touchTargetMin}px`,
   };
+
+  useEffect(() => {
+    if (!(labMode || canUseLayoutHarness)) return undefined;
+
+    const state = effectiveLabState || activeNavKey || "pod-home";
+    const reader = () => measurePodLayout({ state, contract: POD_LAYOUT_CONTRACT });
+    window.__getPodLayoutMeasurement = reader;
+    window.__SNOOZE_POD_LAYOUT_READY = !loading && Boolean(activePod);
+
+    return () => {
+      if (window.__getPodLayoutMeasurement === reader) {
+        delete window.__getPodLayoutMeasurement;
+      }
+      if (window.__SNOOZE_POD_LAYOUT_READY !== undefined) {
+        delete window.__SNOOZE_POD_LAYOUT_READY;
+      }
+    };
+  }, [activeNavKey, activePod, canUseLayoutHarness, effectiveLabState, labMode, loading]);
+
   const dashboardTestingModes = useMemo(
     () => Object.values(restFlows || {}).filter(Boolean).slice(0, 2),
     [restFlows]
@@ -2693,8 +2728,10 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     <ShowroomPageShell
       className="flex h-[100dvh] max-h-[100dvh] min-h-0 flex-col overflow-hidden pb-0 pt-0 md:pt-0"
       style={podShellVars}
+      data-pod-layout-shell="true"
       data-pod-lab-mode={labMode ? "true" : "false"}
       data-pod-lab-state={effectiveLabState || undefined}
+      data-pod-layout-ready={!loading && activePod ? "true" : "false"}
       data-pod-lighting-state={podLightingState}
       data-physical-control-status={physicalControl.status}
       data-physical-control-fault={physicalControl.fault ? "true" : "false"}
@@ -2780,12 +2817,8 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
       ) : null}
 
       <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-[var(--pod-outer-x)] pb-[12px] pt-[8px]">
-        {isDefaultPodDashboard ? (
-          <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain p-[8px]">
-            {podHomeContent}
-          </ShowroomFrame>
-        ) : (
-          <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-hidden", isRestTaskStage ? "p-[8px]" : "p-[10px]"].join(" ")}>
+        <ShowroomFrame className={["flex min-h-0 flex-1 flex-col overflow-visible", isRestTaskStage ? "p-[8px]" : "p-[10px]"].join(" ")}>
+          {!loading && activePod ? (
             <div data-pod-layout-region="product-hero" className="h-[var(--pod-hero-height)] shrink-0">
               <ShowroomPanel className="h-full overflow-hidden p-0" tone="soft">
                 <PodRouteHeroHeader
@@ -2797,23 +2830,23 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
                   mattressImage={mattressImage}
                   voiceState={voiceState}
                   badges={openStage === "details" || openStage === "build" ? headerBadges : headerBadges.slice(0, isRecommended ? 2 : 1)}
-                  coachBubble={isRestSelectionStage ? restCoachCopy : ""}
+                  coachBubble={isDefaultPodDashboard || isRestSelectionStage ? restCoachCopy : ""}
                 />
               </ShowroomPanel>
             </div>
+          ) : null}
 
-            <div
-              ref={stagePanelRef}
-              data-pod-layout-region="active-content"
-              className={[
-                "mt-[var(--pod-main-gap)] flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-contain pr-[4px] pb-[4px]",
-                isRestTaskStage ? "" : "",
-              ].join(" ")}
-            >
-              {activePanelContent}
-            </div>
-          </ShowroomFrame>
-        )}
+          <div
+            ref={stagePanelRef}
+            data-pod-layout-region="active-content"
+            className={[
+              "mt-[var(--pod-main-gap)] flex min-h-0 flex-1 flex-col overflow-visible pr-[4px] pb-[4px]",
+              isRestTaskStage ? "" : "",
+            ].join(" ")}
+          >
+            {activePanelContent}
+          </div>
+        </ShowroomFrame>
       </div>
     </ShowroomPageShell>
   );

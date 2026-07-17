@@ -15,7 +15,7 @@ function HeaderBadge({ label, tone = "soft" }) {
     <div
       data-pod-badge="true"
       className={[
-        "inline-flex min-h-[28px] items-center whitespace-nowrap rounded-full border px-[9px] py-[4px] text-[clamp(0.62rem,0.9vw,0.74rem)] font-extrabold uppercase tracking-[0.1em] shadow-[0_8px_18px_rgba(40,63,126,0.08)]",
+        "inline-flex min-h-[24px] items-center whitespace-nowrap rounded-full border px-[7px] py-[3px] text-[clamp(0.58rem,0.78vw,0.68rem)] font-extrabold uppercase tracking-[0.09em] shadow-[0_8px_18px_rgba(40,63,126,0.08)]",
         toneClass,
       ].join(" ")}
     >
@@ -28,7 +28,7 @@ function SnoozerCoachBubble({ copy }) {
   if (!copy) return null;
 
   return (
-    <div className="mt-2 flex max-w-[180px] items-start gap-2 rounded-[16px] border border-white/85 bg-white/96 px-[8px] py-[7px] shadow-[0_12px_24px_rgba(40,63,126,0.12)] md:mt-0 md:max-w-[190px]">
+    <div className="mt-2 flex max-w-[236px] items-start gap-2 rounded-[16px] border border-white/85 bg-white/96 px-[8px] py-[7px] shadow-[0_12px_24px_rgba(40,63,126,0.12)] md:mt-0 md:max-w-[252px]">
       <img
         src="/snoozer-avatar.png"
         alt="Snoozer"
@@ -40,7 +40,7 @@ function SnoozerCoachBubble({ copy }) {
         <div className="text-[0.78rem] font-black leading-none text-slate-900 md:text-[0.84rem]">
           I&apos;m Snoozer.
         </div>
-        <div className="mt-[3px] line-clamp-4 text-[0.68rem] font-medium leading-[1.25] text-slate-700 md:text-[0.74rem]">
+        <div className="mt-[3px] text-[0.64rem] font-medium leading-[1.18] text-slate-700 md:text-[0.68rem]">
           {copy}
         </div>
       </div>
@@ -97,8 +97,8 @@ export function PodRouteHeroHeader({
       className={[
         "grid h-full min-h-0 items-stretch gap-0 overflow-hidden",
         hasCoachBubble
-          ? "md:grid-cols-[minmax(0,0.86fr)_minmax(166px,0.3fr)_minmax(0,1.16fr)] lg:grid-cols-[minmax(0,0.84fr)_minmax(178px,0.32fr)_minmax(0,1.2fr)]"
-          : "md:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:grid-cols-[minmax(0,0.84fr)_minmax(0,1.16fr)]",
+          ? "md:grid-cols-[minmax(0,0.78fr)_minmax(224px,0.42fr)_minmax(0,1.02fr)] lg:grid-cols-[minmax(0,0.76fr)_minmax(236px,0.44fr)_minmax(0,1.08fr)]"
+          : "md:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
       ].join(" ")}
     >
       <div className="relative flex min-h-[112px] flex-col justify-center px-[16px] py-[10px] md:h-full md:min-h-0 md:px-[18px] md:py-[10px]">
@@ -115,12 +115,12 @@ export function PodRouteHeroHeader({
           {podTitle}
         </div>
 
-        <h1 className="mt-[3px] max-w-[12.6ch] text-[clamp(1.85rem,2.85vw,2.5rem)] font-black leading-[0.92] tracking-tight text-slate-900">
+        <h1 className="mt-[2px] max-w-[18ch] text-[clamp(1.72rem,2.55vw,2.25rem)] font-black leading-[0.9] tracking-tight text-slate-900">
           {mattressTitle}
         </h1>
 
         {badges.length ? (
-          <div className="mt-[7px] flex max-w-full items-center gap-[6px] overflow-x-auto pb-[1px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-[5px] flex max-w-full flex-wrap items-center gap-[4px] pb-[1px]">
             {badges.map((badge) => (
               <HeaderBadge
                 key={`${badge.label}-${badge.tone || "soft"}`}
@@ -177,7 +177,7 @@ export function PodRouteHeroHeader({
           src={mattressImage}
           alt={mattressTitle}
           className="flex h-full min-h-[112px] w-full items-center justify-end px-0 py-0 md:min-h-0"
-          imgClassName="h-full w-full max-h-full scale-[1.04] object-contain object-center md:scale-[1.1] lg:scale-[1.12]"
+          imgClassName="h-full w-full max-h-full object-contain object-center"
         />
       </div>
     </div>

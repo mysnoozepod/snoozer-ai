@@ -22,7 +22,7 @@ function ExperienceFooterButton({ icon: Icon, label, onClick, active = false, ac
       ].join(" ")}
     >
       {Icon ? <Icon className={["h-[0.9rem] w-[0.9rem] shrink-0", accentClass].join(" ")} /> : null}
-      <span className="truncate">{label}</span>
+      <span className="min-w-0 truncate leading-[1.25]">{label}</span>
     </button>
   );
 }
@@ -44,7 +44,7 @@ export function PodFooterNav({
   return (
     <div
       data-pod-footer-nav="true"
-      className="grid h-full min-h-[var(--pod-nav-height,56px)] grid-cols-6 items-stretch gap-[6px] overflow-hidden rounded-[16px] border border-white/85 bg-white/96 p-[6px] shadow-[0_14px_34px_rgba(40,63,126,0.1)]"
+      className="grid h-full min-h-0 grid-cols-6 items-stretch gap-[6px] rounded-[16px] border border-white/85 bg-white/96 p-[6px] shadow-[0_14px_34px_rgba(40,63,126,0.1)]"
     >
       <ExperienceFooterButton icon={House} label="Pod Home" accent="blue" active={resolvedActiveKey === "home"} onClick={onGoHome} />
       <ExperienceFooterButton icon={Timer} label="Rest Test" accent="blue" active={resolvedActiveKey === "rest"} onClick={onGoRest} />

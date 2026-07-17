@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { canViewAdminDiagnostics } from "./deviceActionGuards.js";
 import { DEVICE_STATUSES } from "./deviceModes.js";
 import { useDeviceMode } from "./useDeviceMode.js";
+import { BUILD_INFO } from "@/lib/buildInfo.js";
 
 function DiagnosticRow({ label, value }) {
   return (
@@ -19,7 +20,25 @@ function formatList(values) {
 export default function DeviceDiagnostics() {
   const deviceState = useDeviceMode();
   const [expanded, setExpanded] = useState(false);
+  const [viewport, setViewport] = useState(() => ({
+    width: typeof window !== "undefined" ? window.innerWidth : 0,
+    height: typeof window !== "undefined" ? window.innerHeight : 0,
+  }));
   const shouldShow = canViewAdminDiagnostics(deviceState);
+
+  useEffect(() => {
+    if (!shouldShow) return undefined;
+
+    const update = () =>
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [shouldShow]);
 
   if (!shouldShow) return null;
 
@@ -152,6 +171,14 @@ export default function DeviceDiagnostics() {
         <DiagnosticRow label="allowed" value={formatList(deviceState?.allowedRoutePatterns)} />
         <DiagnosticRow label="blocked" value={formatList(deviceState?.blockedRoutePatterns)} />
         <DiagnosticRow label="errors" value={formatList(deviceState?.validationErrors)} />
+        <DiagnosticRow label="build commit" value={BUILD_INFO.commit} />
+        <DiagnosticRow label="build time" value={BUILD_INFO.timestamp} />
+        <DiagnosticRow label="frontend version" value={BUILD_INFO.version} />
+        <DiagnosticRow
+          label="route"
+          value={typeof window !== "undefined" ? `${window.location.pathname}${window.location.search}` : ""}
+        />
+        <DiagnosticRow label="viewport" value={`${viewport.width} x ${viewport.height}`} />
       </dl>
     </aside>
   );

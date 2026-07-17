@@ -13,13 +13,38 @@ function rectFor(node) {
   };
 }
 
+function styleFor(node) {
+  if (!node) return null;
+  const style = window.getComputedStyle(node);
+  return {
+    position: style.position,
+    display: style.display,
+    overflow: style.overflow,
+    overflowX: style.overflowX,
+    overflowY: style.overflowY,
+    height: style.height,
+    minHeight: style.minHeight,
+    maxHeight: style.maxHeight,
+  };
+}
+
 function region(name) {
   return document.querySelector(`[data-pod-layout-region="${name}"]`);
 }
 
-function activeContentScrollAllowed(state) {
-  const normalized = String(state || "").trim().toLowerCase();
-  return normalized === "learn" || normalized.startsWith("build");
+function nodeLabel(node) {
+  if (!node) return "";
+  const parts = [
+    node.getAttribute("data-pod-layout-region"),
+    node.getAttribute("data-pod-layout-primary-action"),
+    node.getAttribute("aria-label"),
+    node.id ? `#${node.id}` : "",
+    node.className && typeof node.className === "string"
+      ? `.${node.className.trim().split(/\s+/).slice(0, 3).join(".")}`
+      : "",
+    node.tagName,
+  ].filter(Boolean);
+  return parts[0] || node.tagName || "element";
 }
 
 function intersects(a, b) {
@@ -61,6 +86,42 @@ function collectTouchTargets(root = document) {
     .filter((item) => item.width > 0 && item.height > 0);
 }
 
+function collectScrollContainers(root = document.body) {
+  return Array.from(root.querySelectorAll("*"))
+    .filter((node) => !node.closest("[data-pod-lab-ignore]"))
+    .map((node) => {
+      const style = styleFor(node);
+      const overflowText = `${style.overflow} ${style.overflowX} ${style.overflowY}`.toLowerCase();
+      const isOverflowNode = /(auto|scroll|hidden|clip)/.test(overflowText);
+      if (!isOverflowNode) return null;
+
+      const rect = rectFor(node);
+      const scrollHeight = node.scrollHeight || 0;
+      const clientHeight = node.clientHeight || 0;
+      const scrollWidth = node.scrollWidth || 0;
+      const clientWidth = node.clientWidth || 0;
+      const concealsVertical = scrollHeight > clientHeight + 1;
+      const concealsHorizontal = scrollWidth > clientWidth + 1;
+
+      return {
+        label: nodeLabel(node),
+        tagName: node.tagName,
+        rect,
+        style,
+        scrollHeight,
+        clientHeight,
+        scrollWidth,
+        clientWidth,
+        concealsVertical,
+        concealsHorizontal,
+        isShell: Boolean(node.closest("[data-pod-layout-shell]")),
+        isRegion: Boolean(node.getAttribute("data-pod-layout-region")),
+      };
+    })
+    .filter(Boolean)
+    .filter((item) => item.rect && item.rect.width > 0 && item.rect.height > 0);
+}
+
 function fixedElements() {
   return Array.from(document.querySelectorAll("body *"))
     .filter((node) => {
@@ -78,6 +139,83 @@ function fixedElements() {
 function targetDiff(actual, target) {
   if (!Number.isFinite(actual) || !Number.isFinite(target)) return null;
   return Math.round((actual - target) * 100) / 100;
+}
+
+function visibleHeight(rect, viewport) {
+  if (!rect || !viewport) return 0;
+  return Math.max(0, Math.min(rect.bottom, viewport.bottom) - Math.max(rect.top, viewport.top));
+}
+
+function rectWithin(inner, outer, tolerance = 1) {
+  if (!inner || !outer) return false;
+  return (
+    inner.top >= outer.top - tolerance &&
+    inner.left >= outer.left - tolerance &&
+    inner.right <= outer.right + tolerance &&
+    inner.bottom <= outer.bottom + tolerance
+  );
+}
+
+function collectHeroContainment(productHero) {
+  const heroRect = rectFor(productHero);
+  if (!productHero || !heroRect) {
+    return {
+      checked: 0,
+      failures: [],
+      images: [],
+      contentRect: null,
+    };
+  }
+
+  const contentNode = productHero.firstElementChild || null;
+  const contentRect = rectFor(contentNode);
+  const descendants = Array.from(productHero.querySelectorAll("*"))
+    .filter((node) => !node.closest("[data-pod-lab-ignore]"))
+    .map((node) => ({
+      label: nodeLabel(node),
+      tagName: node.tagName,
+      rect: rectFor(node),
+    }))
+    .filter((item) => item.rect && item.rect.width > 0 && item.rect.height > 0);
+
+  const failures = descendants.filter((item) => !rectWithin(item.rect, heroRect, 1));
+  const images = descendants
+    .filter((item) => item.tagName === "IMG")
+    .map((item) => ({
+      ...item,
+      contained: rectWithin(item.rect, heroRect, 1),
+      visiblePercent: intersectionRatio(item.rect, heroRect),
+    }));
+
+  return {
+    checked: descendants.length,
+    failures,
+    images,
+    contentRect,
+  };
+}
+
+function serializeRegion(node, target) {
+  const rect = rectFor(node);
+  return {
+    target,
+    actual: rect?.height || 0,
+    diff: targetDiff(rect?.height || 0, target),
+    rect,
+    style: styleFor(node),
+    scrollHeight: node?.scrollHeight || 0,
+    clientHeight: node?.clientHeight || 0,
+    scrollWidth: node?.scrollWidth || 0,
+    clientWidth: node?.clientWidth || 0,
+    visiblePercent: intersectionRatio(rect, {
+      left: 0,
+      top: 0,
+      right: window.innerWidth,
+      bottom: window.innerHeight,
+      width: window.innerWidth,
+      height: window.innerHeight,
+    }),
+  };
 }
 
 export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } = {}) {
@@ -102,6 +240,7 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
     : null;
 
   const nodes = {
+    appViewport: document.querySelector("[data-pod-layout-shell]"),
     header: region("top-header"),
     productHero: region("product-hero"),
     activeContent: region("active-content"),
@@ -168,16 +307,15 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
       : 0;
 
   const failures = [];
+  if (!nodes.header) failures.push("missing-header-region");
+  if (!nodes.navigation) failures.push("missing-navigation-region");
+  if (!nodes.productHero) failures.push("missing-product-hero-region");
+  if (!nodes.activeContent) failures.push("missing-active-content-region");
   if (pageScrollWidth > pageClientWidth + 1) failures.push("horizontal-page-overflow");
   if (pageScrollHeight > pageClientHeight + 1) failures.push("vertical-page-overflow");
   const activeContentOverflows = activeContent ? activeContent.scrollHeight > activeContent.clientHeight + 1 : false;
   const warnings = [];
-  if (activeContentOverflows) {
-    warnings.push("active-content-scroll");
-  }
-  if (activeContentOverflows && !activeContentScrollAllowed(state)) {
-    failures.push("active-content-scroll");
-  }
+  if (activeContentOverflows) failures.push("active-content-scroll");
   if (overlaps.length) failures.push("element-overlap");
   if (primaryVisibility.length && primaryVisibility.some((action) => action.visiblePercent < 95)) {
     failures.push("primary-action-not-fully-visible");
@@ -185,6 +323,38 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
   if (smallestTouchMinSide > 0 && smallestTouchMinSide < contract.sizing.touchTargetMin) {
     failures.push("touch-target-below-minimum");
   }
+
+  const headerDiff = Math.abs(targetDiff(rects.header?.height || 0, budget.header) || 0);
+  const navDiff = Math.abs(targetDiff(rects.navigation?.height || 0, budget.navigation) || 0);
+  const heroDiff = Math.abs(targetDiff(rects.productHero?.height || 0, budget.productHero) || 0);
+  if (headerDiff > 2) failures.push("header-height-out-of-contract");
+  if (navDiff > 2) failures.push("navigation-height-out-of-contract");
+  if (heroDiff > 2) failures.push("product-hero-height-out-of-contract");
+
+  const activeVisibleHeight = visibleHeight(rects.activeContent, viewport);
+  if (rects.activeContent && rects.activeContent.top > budget.activeContentTopMax + 1) {
+    failures.push("active-content-starts-too-low");
+  }
+  if (rects.activeContent && activeVisibleHeight < budget.activeContentVisibleMin) {
+    failures.push("active-content-visible-height-too-small");
+  }
+
+  const heroContainment = collectHeroContainment(nodes.productHero);
+  if (heroContainment.failures.length) failures.push("product-hero-child-overflow");
+  if (heroContainment.images.some((item) => !item.contained)) failures.push("mattress-image-outside-hero");
+
+  const scrollContainers = collectScrollContainers(document.body);
+  const shellScrollContainers = scrollContainers.filter((item) => {
+    const values = `${item.style.overflow} ${item.style.overflowX} ${item.style.overflowY}`.toLowerCase();
+    const scrollIntent = /(auto|scroll)/.test(values);
+    return item.isShell && scrollIntent && (item.concealsVertical || item.concealsHorizontal);
+  });
+  const clippedShellContainers = scrollContainers.filter((item) => {
+    const values = `${item.style.overflow} ${item.style.overflowX} ${item.style.overflowY}`.toLowerCase();
+    return item.isShell && /hidden/.test(values) && (item.concealsVertical || item.concealsHorizontal);
+  });
+  if (shellScrollContainers.length) failures.push("shell-scroll-container");
+  if (clippedShellContainers.length) failures.push("shell-clipping-content");
 
   return {
     state,
@@ -200,35 +370,26 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
       verticalOverflow: pageScrollHeight > pageClientHeight + 1,
       horizontalOverflow: pageScrollWidth > pageClientWidth + 1,
     },
+    appViewport: serializeRegion(nodes.appViewport, viewport.height),
     regions: {
-      header: {
-        target: budget.header,
-        actual: rects.header?.height || 0,
-        diff: targetDiff(rects.header?.height || 0, budget.header),
-        rect: rects.header,
-      },
-      navigation: {
-        target: budget.navigation,
-        actual: rects.navigation?.height || 0,
-        diff: targetDiff(rects.navigation?.height || 0, budget.navigation),
-        rect: rects.navigation,
-      },
-      productHero: {
-        target: budget.productHero,
-        actual: rects.productHero?.height || 0,
-        diff: targetDiff(rects.productHero?.height || 0, budget.productHero),
-        rect: rects.productHero,
-      },
+      header: serializeRegion(nodes.header, budget.header),
+      navigation: serializeRegion(nodes.navigation, budget.navigation),
+      productHero: serializeRegion(nodes.productHero, budget.productHero),
       activeContent: {
-        target: budget.activeContent,
-        actual: rects.activeContent?.height || 0,
-        diff: targetDiff(rects.activeContent?.height || 0, budget.activeContent),
+        ...serializeRegion(nodes.activeContent, budget.activeContent),
         scrollHeight: activeContent?.scrollHeight || 0,
         clientHeight: activeContent?.clientHeight || 0,
         overflow: activeContentOverflows,
+        visibleHeight: activeVisibleHeight,
+        topMax: budget.activeContentTopMax,
+        visibleMin: budget.activeContentVisibleMin,
         rect: rects.activeContent,
       },
     },
+    productHeroContainment: heroContainment,
+    scrollContainers,
+    shellScrollContainers,
+    clippedShellContainers,
     overlaps,
     primaryActions: primaryVisibility,
     primaryActionVisible: primaryVisibility.length

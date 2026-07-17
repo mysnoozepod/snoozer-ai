@@ -48,7 +48,7 @@ function RestCountdownRing({ remainingSeconds, totalSeconds }) {
   const strokeOffset = circumference * (1 - progress);
 
   return (
-    <div className="relative flex h-[124px] w-[124px] items-center justify-center md:h-[136px] md:w-[136px]">
+    <div className="relative flex h-[112px] w-[112px] items-center justify-center md:h-[120px] md:w-[120px]">
       <svg className="h-full w-full -rotate-90" viewBox="0 0 248 248" aria-hidden="true">
         <circle cx="124" cy="124" r={radius} fill="none" stroke="rgba(219,229,255,0.92)" strokeWidth="10" />
         <circle
@@ -65,10 +65,10 @@ function RestCountdownRing({ remainingSeconds, totalSeconds }) {
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-[clamp(1.9rem,3vw,2.18rem)] font-black leading-none tracking-tight text-slate-900">
+        <div className="text-[clamp(1.7rem,2.6vw,1.96rem)] font-black leading-none tracking-tight text-slate-900">
           {formatRestCountdown(safeRemaining)}
         </div>
-        <div className="mt-1 text-[0.76rem] font-medium text-slate-500">remaining</div>
+        <div className="mt-0.5 text-[0.72rem] font-medium text-slate-500">remaining</div>
       </div>
     </div>
   );
@@ -423,26 +423,26 @@ export function GuidedRestTest({
   }
 
   return (
-    <ShowroomPanel className="overflow-hidden p-[16px]" tone="frost">
-      <div className="text-[clamp(1.7rem,2.3vw,2rem)] font-black leading-[0.98] tracking-tight text-slate-900">
+    <ShowroomPanel className="overflow-hidden p-[12px]" tone="frost">
+      <div className="text-[clamp(1.5rem,2.05vw,1.8rem)] font-black leading-[0.98] tracking-tight text-slate-900">
         {activeTitle}
       </div>
 
-      <div className="mt-[12px] grid gap-[14px] xl:grid-cols-[140px_minmax(0,1fr)] xl:items-start">
+      <div className="mt-[8px] grid gap-[10px] xl:grid-cols-[124px_minmax(0,1fr)] xl:items-start">
         <div className="flex justify-center xl:justify-start">
           <RestCountdownRing remainingSeconds={timerRemaining} totalSeconds={stepTotalSeconds} />
         </div>
 
-        <div className="space-y-[10px]">
-          <div className="rounded-[16px] border border-[#dbe5ff] bg-white/96 px-[14px] py-[10px] shadow-sm">
+        <div className="space-y-[8px]">
+          <div className="rounded-[16px] border border-[#dbe5ff] bg-white/96 px-[12px] py-[8px] shadow-sm">
             <div className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
               Current Focus
             </div>
-            <div className="mt-[5px] text-[clamp(1rem,1.4vw,1.12rem)] font-black text-slate-900">{currentFocusTitle}</div>
-            <div className="mt-[3px] text-[clamp(0.86rem,1.15vw,0.96rem)] leading-[1.3] text-slate-600">{currentFocusBody}</div>
+            <div className="mt-[4px] text-[clamp(0.96rem,1.25vw,1.06rem)] font-black text-slate-900">{currentFocusTitle}</div>
+            <div className="mt-[2px] text-[clamp(0.8rem,1.05vw,0.9rem)] leading-[1.22] text-slate-600">{currentFocusBody}</div>
           </div>
 
-          <div className="grid gap-[10px] md:grid-cols-3">
+          <div className="grid gap-[8px] md:grid-cols-3">
             {instructionCards.map((card) => (
               <RestInstructionCard
                 key={card.id}
@@ -455,7 +455,7 @@ export function GuidedRestTest({
         </div>
       </div>
 
-      <div className="mt-[12px] flex flex-wrap items-center gap-[10px]">
+      <div className="mt-[8px] flex flex-wrap items-center gap-[8px]">
         <button
           type="button"
           onClick={onPauseTimer}
