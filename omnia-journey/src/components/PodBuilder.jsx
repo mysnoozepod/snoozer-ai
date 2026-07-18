@@ -6,6 +6,7 @@ import {
   ImageOff,
   Ruler,
   SlidersHorizontal,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/useStore";
@@ -463,6 +464,63 @@ function BuilderOptionButton({ title, subtitle, active, disabled = false, onClic
   );
 }
 
+function GuidedChoiceButton({
+  title,
+  subtitle,
+  active,
+  confirming = false,
+  disabled = false,
+  onClick,
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={[
+        "group flex min-h-[58px] w-full items-center justify-between gap-3 rounded-[16px] border px-3.5 py-2.5 text-left shadow-sm transition motion-reduce:transition-none",
+        disabled
+          ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 opacity-60"
+          : "hover:-translate-y-0.5 hover:shadow-md",
+        active
+          ? "border-[#315cf6] bg-[#eef3ff] text-slate-950"
+          : "border-[#dfe7fb] bg-white/96 text-slate-900",
+        confirming ? "scale-[0.985] ring-2 ring-[#315cf6]/25" : "",
+      ].join(" ")}
+    >
+      <span className="min-w-0">
+        <span className="block text-[clamp(1rem,1.2vw,1.12rem)] font-black leading-tight">
+          {title}
+        </span>
+        {subtitle ? (
+          <span className="mt-1 block text-[clamp(0.78rem,1vw,0.88rem)] font-semibold leading-snug text-slate-600">
+            {subtitle}
+          </span>
+        ) : null}
+      </span>
+      <span
+        className={[
+          "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border",
+          active || confirming ? "border-[#315cf6] bg-[#315cf6] text-white" : "border-slate-300 bg-white",
+        ].join(" ")}
+      >
+        {active || confirming ? <CheckCircle2 className="h-4 w-4" /> : null}
+      </span>
+    </button>
+  );
+}
+
+function SetupSummaryPill({ label, value }) {
+  return (
+    <div className="min-w-0 rounded-[14px] border border-[#dfe7fb] bg-white/86 px-3 py-2 shadow-sm">
+      <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
+        {label}
+      </div>
+      <div className="mt-0.5 text-[0.8rem] font-black leading-tight text-slate-950">{value}</div>
+    </div>
+  );
+}
+
 export function subtitleForSize(option) {
   switch (option) {
     case "Twin":
@@ -537,10 +595,16 @@ function disabledReasonForMotion(option, size, isDualComfort) {
 function normalizeBuildStepCandidate(value) {
   const normalized = lower(value);
   if (!normalized) return "";
-  if (normalized === "motion") return "base";
-  if (normalized === "dual" || normalized === "comfort") return "review";
+  if (normalized === "dual") return "comfort";
   if (normalized === "mattress") return "size";
-  if (normalized === "base" || normalized === "size" || normalized === "review") {
+  if (
+    normalized === "base" ||
+    normalized === "size" ||
+    normalized === "motion" ||
+    normalized === "comfort" ||
+    normalized === "review" ||
+    normalized === "success"
+  ) {
     return normalized;
   }
   return "";
@@ -734,16 +798,22 @@ export default function PodBuilder({
   const [dcRight, setDcRight] = useState(initialSelections.dcRight);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [cartError, setCartError] = useState("");
+  const [confirmationKey, setConfirmationKey] = useState("");
+  const autoAdvanceTimerRef = useRef(null);
 
   const showMotion = baseType === "adjustable";
   const wantsBase = baseType !== "none";
   const steps = useMemo(
-    () => [
-      { key: "size", label: "Size", icon: Ruler },
-      { key: "base", label: "Base", icon: SlidersHorizontal },
-      { key: "review", label: "Review", icon: CheckCircle2 },
-    ],
-    []
+    () =>
+      [
+        { key: "size", label: "Size", icon: Ruler },
+        { key: "base", label: "Base", icon: BedDouble },
+        showMotion ? { key: "motion", label: "Motion", icon: SlidersHorizontal } : null,
+        isDualComfort ? { key: "comfort", label: "Comfort", icon: Sparkles } : null,
+        { key: "review", label: "Review", icon: CheckCircle2 },
+        { key: "success", label: "Added", icon: CheckCircle2 },
+      ].filter(Boolean),
+    [showMotion, isDualComfort]
   );
 
   const requestedNormalizedStepKey = useMemo(
@@ -782,9 +852,27 @@ export default function PodBuilder({
     }
   }, [showMotion, allowedMotion, motionType]);
 
+  useEffect(() => () => {
+    if (autoAdvanceTimerRef.current) window.clearTimeout(autoAdvanceTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (requestedNormalizedStepKey !== "motion") return;
+    if (baseType === "adjustable") return;
+    setBaseType("adjustable");
+  }, [requestedNormalizedStepKey, baseType]);
+
   useEffect(() => {
     if (steps.some((step) => step.key === stepKey)) return;
-    setStepKey("review");
+    if (stepKey === "motion") {
+      setStepKey("base");
+      return;
+    }
+    if (stepKey === "comfort") {
+      setStepKey("review");
+      return;
+    }
+    setStepKey("size");
   }, [steps, stepKey]);
 
   useEffect(() => {
@@ -852,9 +940,6 @@ export default function PodBuilder({
   const mattressImage = pickFeaturedImage(mattressProduct);
   const selectedBaseImage = pickFeaturedImage(baseProduct);
   const canAdd = Boolean(mattressMerchId) && (!wantsBase || Boolean(baseMerchId)) && (!isDualComfort || Boolean(dcLeft && dcRight));
-  const reviewSummaryGridClassName = showMotion
-    ? "grid gap-[8px] sm:grid-cols-2 lg:grid-cols-5"
-    : "grid gap-[8px] sm:grid-cols-2 lg:grid-cols-4";
   const selectionSummary = useMemo(
     () => [
       `Mattress: ${mattressLabel}`,
@@ -866,36 +951,63 @@ export default function PodBuilder({
     [mattressLabel, selectedBaseLabel, size, showMotion, selectedMotionLabel, isDualComfort, dcLeft, dcRight]
   );
   const sizeReady = Boolean(size);
-  const baseReady = Boolean(baseType) && (!showMotion || Boolean(motionType));
+  const baseReady = Boolean(baseType);
+  const motionReady = !showMotion || Boolean(motionType);
+  const comfortReady = !isDualComfort || Boolean(dcLeft && dcRight);
   const currentStepMeta = useMemo(() => {
     if (stepKey === "size") {
       return {
         eyebrow: "Step 1",
-        title: "Choose your size.",
-        description: "Choose the size you want to price and add.",
+        title: "Choose your mattress size.",
+        description: "Pick the size you want to try in this pod setup.",
       };
     }
     if (stepKey === "base") {
       return {
         eyebrow: "Step 2",
         title: "Choose your base.",
-        description: showMotion
-          ? "Adjustable is selected, so motion stays right here as a sub-choice."
-          : "Choose the base you want under this mattress.",
+        description: "Choose mattress only or the foundation you want under this mattress.",
+      };
+    }
+    if (stepKey === "motion") {
+      return {
+        eyebrow: "Step 3",
+        title: "Choose motion style.",
+        description: `Available motion for ${size}: ${availableMotionLabel}.`,
+      };
+    }
+    if (stepKey === "comfort") {
+      return {
+        eyebrow: showMotion ? "Step 4" : "Step 3",
+        title: "Choose each side's comfort.",
+        description: "Set the left and right feel for this Dual Comfort mattress.",
+      };
+    }
+    if (stepKey === "success") {
+      return {
+        eyebrow: "Setup Added",
+        title: "Your setup is in the cart.",
+        description: "You can keep testing pods or open the cart when you're ready.",
       };
     }
     return {
-      eyebrow: "Step 3",
+      eyebrow: showMotion && isDualComfort ? "Step 5" : showMotion || isDualComfort ? "Step 4" : "Step 3",
       title: "Review & add.",
       description: "Check the setup, then add it when you're ready.",
     };
-  }, [stepKey, isDualComfort, showMotion]);
+  }, [stepKey, isDualComfort, showMotion, size, availableMotionLabel]);
   const canProceed =
     stepKey === "size"
       ? Boolean(size)
       : stepKey === "base"
-        ? Boolean(baseType) && (!showMotion || Boolean(motionType))
-        : canAdd;
+        ? Boolean(baseType)
+        : stepKey === "motion"
+          ? motionReady
+          : stepKey === "comfort"
+            ? comfortReady
+            : stepKey === "success"
+              ? true
+              : canAdd;
 
   useEffect(() => {
     if (!onPreviewChange) return;
@@ -929,6 +1041,37 @@ export default function PodBuilder({
             size && showMotion ? `Available motion for ${size}: ${availableMotionLabel}.` : "",
           ].filter(Boolean),
           nextAction: "Next: Review your setup",
+        };
+      }
+
+      if (stepKey === "motion") {
+        return {
+          title: selectedMotionLabel,
+          caption: "Choose how the adjustable base should move.",
+          items: [
+            `Motion: ${selectedMotionLabel}`,
+            `Available motion for ${size}: ${availableMotionLabel}.`,
+            `Base: ${selectedBaseLabel}`,
+          ].filter(Boolean),
+          nextAction: isDualComfort ? "Next: Choose comfort sides" : "Next: Review your setup",
+        };
+      }
+
+      if (stepKey === "comfort") {
+        return {
+          title: "Dual Comfort",
+          caption: "Choose the feel on each side before review.",
+          items: [`Left side: ${dcLeft}`, `Right side: ${dcRight}`].filter(Boolean),
+          nextAction: "Next: Review your setup",
+        };
+      }
+
+      if (stepKey === "success") {
+        return {
+          title: "Added to cart",
+          caption: "This setup has been added to the shared showroom cart.",
+          items: selectionSummary,
+          nextAction: "Open cart",
         };
       }
 
@@ -1020,14 +1163,50 @@ export default function PodBuilder({
     previewTotal,
   ]);
 
+  const setGuidedStep = useCallback(
+    (nextKey, cue) => {
+      if (!nextKey) return;
+      setStepKey(nextKey);
+      if (cue) onCue?.(cue, "tip");
+    },
+    [onCue]
+  );
+
+  const queueSelectionAdvance = useCallback(
+    (confirmKey, nextKey, cue) => {
+      setCartError("");
+      setConfirmationKey(confirmKey);
+      if (autoAdvanceTimerRef.current) window.clearTimeout(autoAdvanceTimerRef.current);
+
+      const reduceMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+      const delay = reduceMotion ? 0 : 260;
+
+      autoAdvanceTimerRef.current = window.setTimeout(() => {
+        setConfirmationKey("");
+        setGuidedStep(nextKey, cue);
+      }, delay);
+    },
+    [setGuidedStep]
+  );
+
   const goNext = useCallback(() => {
-    if (!nextStep || !canProceed) return;
-    setStepKey(nextStep.key);
-    if (nextStep.key === "review") onCue?.("Take one last look before you add it to cart.", "tip");
-  }, [nextStep, canProceed, onCue]);
+    if (!canProceed) return;
+    if (stepKey === "review") {
+      addToPlan();
+      return;
+    }
+    if (!nextStep || nextStep.key === "success") return;
+    setGuidedStep(
+      nextStep.key,
+      nextStep.key === "review" ? "Take one last look before you add it to cart." : ""
+    );
+  }, [nextStep, canProceed, setGuidedStep, stepKey]);
 
   const goBack = useCallback(() => {
     if (!canGoBack) return;
+    setConfirmationKey("");
     setStepKey(steps[currentStepIndex - 1].key);
   }, [canGoBack, currentStepIndex, steps]);
 
@@ -1038,6 +1217,7 @@ export default function PodBuilder({
     setDcLeft(defaults.dcLeft);
     setDcRight(defaults.dcRight);
     setStepKey("size");
+    setConfirmationKey("");
     onCue?.("Your setup has been reset.", "tip");
   }, [defaults, onCue]);
 
@@ -1096,6 +1276,7 @@ export default function PodBuilder({
         lines,
         sourcePage: "pod-build",
       });
+      setGuidedStep("success");
       onCue?.("Added to cart.", "success");
     } catch (err) {
       const errorCode = err?.code || err?.name || err?.status || "CART_MUTATION_FAILED";
@@ -1128,6 +1309,7 @@ export default function PodBuilder({
     pod?.podId,
     selectedBaseLabel,
     selectedMotionLabel,
+    setGuidedStep,
     showMotion,
     size,
     wantsBase,
@@ -1138,13 +1320,299 @@ export default function PodBuilder({
     onViewSnoozePod?.();
   }, [onCue, onViewSnoozePod]);
 
+  const nextAfterSize = "base";
+  const nextAfterBase = showMotion ? "motion" : isDualComfort ? "comfort" : "review";
+  const nextAfterMotion = isDualComfort ? "comfort" : "review";
+  const visibleProgressSteps = steps.filter((step) => step.key !== "success" || stepKey === "success");
+  const compactMattressLabel = isDualComfort
+    ? "Dual Comfort"
+    : mattressLabel.replace(/\s+Mattress$/i, "");
+  const compactComfortLabel = isDualComfort
+    ? `${String(dcLeft || "Left").replace(/^Medium\s+/i, "Med ")} / ${String(dcRight || "Right").replace(/^Medium\s+/i, "Med ")}`
+    : "";
+  const summaryPills = [
+    { label: "Mattress", value: compactMattressLabel },
+    { label: "Size", value: size || "Choose" },
+    { label: "Base", value: selectedBaseLabel },
+    showMotion ? { label: "Motion", value: selectedMotionLabel } : null,
+    isDualComfort ? { label: "Comfort", value: compactComfortLabel } : null,
+  ].filter(Boolean);
+
+  const renderStageControls = ({
+    primaryLabel = nextStep ? `Continue to ${nextStep.label}` : "Continue",
+    onPrimary = goNext,
+    primaryDisabled = !canProceed,
+    showPrimary = stepKey !== "success",
+  } = {}) => (
+    <div className="mt-auto flex min-h-[58px] items-center justify-between gap-3 border-t border-[#dfe7fb] pt-3">
+      <button
+        type="button"
+        onClick={goBack}
+        disabled={!canGoBack || stepKey === "success"}
+        className={[
+          "inline-flex min-h-[44px] items-center justify-center rounded-[12px] border px-4 text-[0.84rem] font-black transition",
+          !canGoBack || stepKey === "success"
+            ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-300"
+            : "border-[#dfe7fb] bg-white text-slate-800 hover:border-[#315cf6]",
+        ].join(" ")}
+      >
+        Back
+      </button>
+
+      <div className="hidden min-w-0 text-center text-[0.72rem] font-black uppercase tracking-[0.16em] text-slate-500 sm:block">
+        {currentStepMeta.eyebrow}
+      </div>
+
+      {showPrimary ? (
+        <Button
+          type="button"
+          onClick={onPrimary}
+          disabled={primaryDisabled}
+          data-pod-layout-build-action={stepKey === "review" ? "true" : undefined}
+          data-pod-layout-primary-action={stepKey === "review" ? "build-add" : "build-next"}
+          className="min-h-[48px] min-w-[190px] rounded-[14px] px-5 text-[0.9rem] font-black"
+        >
+          <span>{primaryLabel}</span>
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      ) : null}
+    </div>
+  );
+
   const renderCurrentStep = () => {
-    if (stepKey === "mattress") {
+    if (stepKey === "size") {
       return (
-        <div className="space-y-4">
-          <div className="rounded-[24px] border border-[#e2e9fb] bg-white px-4 py-4 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="flex h-[88px] w-[88px] shrink-0 overflow-hidden rounded-[22px] border border-[#e3eafc] bg-[#fbfcff]">
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="grid gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+            {SIZE_OPTIONS.map((option) => (
+              <GuidedChoiceButton
+                key={option}
+                title={option}
+                subtitle={subtitleForSize(option)}
+                active={size === option}
+                confirming={confirmationKey === `size:${option}`}
+                onClick={() => {
+                  setSize(option);
+                  queueSelectionAdvance(`size:${option}`, nextAfterSize, "Choose your base next.");
+                }}
+              />
+            ))}
+          </div>
+          {renderStageControls({
+            primaryLabel: "Continue to Base",
+            onPrimary: () => setGuidedStep(nextAfterSize, "Choose your base next."),
+            primaryDisabled: !sizeReady,
+          })}
+        </div>
+      );
+    }
+
+    if (stepKey === "base") {
+      return (
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+            {BASE_OPTIONS_UI.map((option) => (
+              <GuidedChoiceButton
+                key={option.value}
+                title={option.value === "none" ? "Mattress Only" : option.label}
+                subtitle={subtitleForBase(option.value)}
+                active={baseType === option.value}
+                confirming={confirmationKey === `base:${option.value}`}
+                onClick={() => {
+                  setBaseType(option.value);
+                  const nextKey =
+                    option.value === "adjustable"
+                      ? "motion"
+                      : isDualComfort
+                        ? "comfort"
+                        : "review";
+                  queueSelectionAdvance(
+                    `base:${option.value}`,
+                    nextKey,
+                    option.value === "adjustable"
+                      ? "Adjustable base selected. Choose your motion style next."
+                      : "Review this setup before adding it to cart."
+                  );
+                }}
+              />
+            ))}
+          </div>
+          <div className="mt-3 rounded-[16px] border border-[#dfe7fb] bg-[#f8faff] px-4 py-3 text-[0.86rem] font-semibold leading-snug text-slate-700">
+            Adjustable Base unlocks motion options. Mattress Only keeps this pod focused on mattress feel.
+          </div>
+          {renderStageControls({
+            primaryLabel: `Continue to ${steps.find((step) => step.key === nextAfterBase)?.label || "Review"}`,
+            onPrimary: () => setGuidedStep(nextAfterBase, "Keep building this setup."),
+            primaryDisabled: !baseReady,
+          })}
+        </div>
+      );
+    }
+
+    if (stepKey === "motion") {
+      return (
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="grid gap-2.5 lg:grid-cols-3">
+            {MOTION_TYPES_UI.map((option) => {
+              const allowed = Boolean(motionAvailability[option.value]);
+              return (
+                <GuidedChoiceButton
+                  key={option.value}
+                  title={titleForMotion(option.value)}
+                  subtitle={
+                    allowed
+                      ? subtitleForMotion(option.value)
+                      : disabledReasonForMotion(option.value, size, isDualComfort)
+                  }
+                  active={motionType === option.value}
+                  confirming={confirmationKey === `motion:${option.value}`}
+                  disabled={!allowed}
+                  onClick={() => {
+                    if (!allowed) return;
+                    setMotionType(option.value);
+                    queueSelectionAdvance(
+                      `motion:${option.value}`,
+                      nextAfterMotion,
+                      nextAfterMotion === "comfort"
+                        ? "Now choose each side's comfort."
+                        : "Review this setup before adding it to cart."
+                    );
+                  }}
+                />
+              );
+            })}
+          </div>
+          <div className="mt-3 rounded-[16px] border border-[#dfe7fb] bg-[#f8faff] px-4 py-3 text-[0.86rem] font-semibold leading-snug text-slate-700">
+            {availableMotionLabel} available for this {size} setup.
+          </div>
+          {renderStageControls({
+            primaryLabel: `Continue to ${steps.find((step) => step.key === nextAfterMotion)?.label || "Review"}`,
+            onPrimary: () => setGuidedStep(nextAfterMotion, "Keep building this setup."),
+            primaryDisabled: !motionReady,
+          })}
+        </div>
+      );
+    }
+
+    if (stepKey === "comfort") {
+      return (
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="grid gap-3 lg:grid-cols-2">
+            <div className="rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
+              <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                Left Side
+              </div>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {DUAL_COMFORT_OPTIONS.map((option) => (
+                  <GuidedChoiceButton
+                    key={`left-${option}`}
+                    title={option}
+                    active={dcLeft === option}
+                    confirming={confirmationKey === `left:${option}`}
+                    onClick={() => {
+                      setDcLeft(option);
+                      if (dcRight) {
+                        queueSelectionAdvance(
+                          `left:${option}`,
+                          "review",
+                          "Review this setup before adding it to cart."
+                        );
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
+              <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                Right Side
+              </div>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {DUAL_COMFORT_OPTIONS.map((option) => (
+                  <GuidedChoiceButton
+                    key={`right-${option}`}
+                    title={option}
+                    active={dcRight === option}
+                    confirming={confirmationKey === `right:${option}`}
+                    onClick={() => {
+                      setDcRight(option);
+                      if (dcLeft) {
+                        queueSelectionAdvance(
+                          `right:${option}`,
+                          "review",
+                          "Review this setup before adding it to cart."
+                        );
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+          {renderStageControls({
+            primaryLabel: "Continue to Review",
+            onPrimary: () => setGuidedStep("review", "Review this setup before adding it to cart."),
+            primaryDisabled: !comfortReady,
+          })}
+        </div>
+      );
+    }
+
+    if (stepKey === "success") {
+      return (
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="grid min-h-0 flex-1 items-center gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-[22px] border border-emerald-200 bg-emerald-50/80 p-5">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white">
+                <CheckCircle2 className="h-7 w-7" />
+              </div>
+              <div className="mt-3 text-[clamp(1.35rem,2vw,1.9rem)] font-black tracking-tight text-slate-950">
+                Added to cart.
+              </div>
+              <p className="mt-2 max-w-[34rem] text-[clamp(0.92rem,1.15vw,1.02rem)] font-semibold leading-snug text-slate-600">
+                This setup is saved in the showroom cart. You can keep comparing pods or open the cart when ready.
+              </p>
+            </div>
+            <div className="grid gap-2">
+              {selectionSummary.map((item) => (
+                <div
+                  key={item}
+                  className="flex min-h-[44px] items-center gap-2 rounded-[14px] border border-[#dfe7fb] bg-white px-3 text-[0.9rem] font-bold text-slate-800"
+                >
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[#315cf6]" />
+                  <span className="min-w-0 leading-snug">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-auto flex min-h-[58px] items-center justify-between gap-3 border-t border-[#dfe7fb] pt-3">
+            <button
+              type="button"
+              onClick={resetBuild}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-[12px] border border-[#dfe7fb] bg-white px-4 text-[0.84rem] font-black text-slate-800"
+            >
+              Build Another
+            </button>
+            <Button
+              type="button"
+              onClick={viewCart}
+              data-pod-layout-primary-action="build-open-cart"
+              className="min-h-[48px] min-w-[180px] rounded-[14px] px-5 text-[0.9rem] font-black"
+            >
+              Open Cart
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_0.9fr]">
+          <div className="rounded-[20px] border border-[#dfe7fb] bg-white/96 p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="flex h-[58px] w-[58px] shrink-0 overflow-hidden rounded-[16px] border border-[#dfe7fb] bg-[#fbfcff]">
                 <BuilderMediaPreview
                   src={mattressImage}
                   alt={mattressLabel}
@@ -1153,484 +1621,139 @@ export default function PodBuilder({
                   imgClassName="h-full w-full object-cover"
                 />
               </div>
-
               <div className="min-w-0">
-                <div className="text-[1.08rem] font-extrabold leading-tight text-slate-900">{mattressLabel}</div>
-                <div className="mt-1.5 text-sm leading-6 text-slate-600">
-                  This mattress is fixed to {podLabel}. Use another pod if you want to compare a
-                  different mattress family.
+                <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  Locked Mattress
                 </div>
-
+                <div className="mt-1 text-[clamp(1rem,1.3vw,1.16rem)] font-black leading-tight text-slate-950">
+                  {mattressLabel}
+                </div>
+                <div className="mt-1 text-[0.82rem] font-semibold leading-snug text-slate-600">
+                  Locked to {podLabel}. Compare another pod if you want a different mattress family.
+                </div>
                 {onViewResults ? (
                   <button
                     type="button"
                     onClick={onViewResults}
-                    className="mt-3 inline-flex items-center gap-2 text-sm font-extrabold text-[#2f57e8]"
+                    className="mt-2 inline-flex min-h-[44px] items-center text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#315cf6]"
                   >
                     Compare other pods
                   </button>
                 ) : null}
               </div>
             </div>
-          </div>
-
-          {isDualComfort ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-[24px] border border-[#e2e9fb] bg-white px-4 py-4 shadow-sm">
-                <div className="text-[0.78rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                  Left Side
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {selectionSummary.map((item) => (
+                <div
+                  key={item}
+                  className="flex min-h-[38px] items-center gap-2 rounded-[12px] bg-[#f6f8ff] px-3 text-[0.82rem] font-bold text-slate-700"
+                >
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[#315cf6]" />
+                  <span className="min-w-0 leading-snug">{item}</span>
                 </div>
-                <div className="mt-2 text-sm text-slate-600">Choose the feel you want on one side.</div>
-                <div className="mt-3 grid gap-3">
-                  {DUAL_COMFORT_OPTIONS.map((option) => (
-                    <ChoiceCard
-                      key={`left-${option}`}
-                      title={option}
-                      active={dcLeft === option}
-                      onClick={() => setDcLeft(option)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-[#e2e9fb] bg-white px-4 py-4 shadow-sm">
-                <div className="text-[0.78rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                  Right Side
-                </div>
-                <div className="mt-2 text-sm text-slate-600">Choose the feel you want on the other side.</div>
-                <div className="mt-3 grid gap-3">
-                  {DUAL_COMFORT_OPTIONS.map((option) => (
-                    <ChoiceCard
-                      key={`right-${option}`}
-                      title={option}
-                      active={dcRight === option}
-                      onClick={() => setDcRight(option)}
-                    />
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
-          ) : (
-            <div className="rounded-[22px] border border-indigo-100 bg-indigo-50/80 px-4 py-3 text-sm font-semibold text-indigo-900">
-              Motion becomes available only when you choose an adjustable base.
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    if (stepKey === "base") {
-      return (
-        <div className="space-y-4">
-          <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
-            {BASE_OPTIONS_UI.map((option) => (
-              <ChoiceCard
-                key={option.value}
-                title={option.value === "none" ? "Mattress Only" : option.label}
-                subtitle={subtitleForBase(option.value)}
-                active={baseType === option.value}
-                onClick={() => setBaseType(option.value)}
-              />
-            ))}
           </div>
 
-          {showMotion ? (
-            <div className="rounded-[24px] border border-[#e2e9fb] bg-white px-4 py-4 shadow-sm">
-              <div className="flex items-center gap-2 text-[0.78rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                <SlidersHorizontal className="h-4 w-4 text-[#2f57e8]" />
-                Motion
+          <div className="flex min-h-0 flex-col rounded-[20px] border border-[#dfe7fb] bg-white/96 p-4 shadow-sm">
+            <div className="grid gap-2">
+              <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-[#f8faff] px-3 py-2">
+                <span className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  Est. Monthly
+                </span>
+                <span className="text-[1rem] font-black text-[#315cf6]">{money(monthly)}/mo</span>
               </div>
-              <div className="mt-2 text-sm text-slate-600">
-                Choose the motion style that works with this adjustable base and size.
-              </div>
-
-              <div className="mt-3 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
-                {MOTION_TYPES_UI.map((option) => {
-                  const allowed = Boolean(motionAvailability[option.value]);
-                  return (
-                    <ChoiceCard
-                      key={option.value}
-                      title={titleForMotion(option.value)}
-                      subtitle={
-                        allowed
-                          ? subtitleForMotion(option.value)
-                          : disabledReasonForMotion(option.value, size, isDualComfort)
-                      }
-                      active={motionType === option.value}
-                      disabled={!allowed}
-                      onClick={() => allowed && setMotionType(option.value)}
-                    />
-                  );
-                })}
+              <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-white px-3 py-2">
+                <span className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                  Est. Total
+                </span>
+                <span className="text-[1rem] font-black text-slate-950">{money(previewTotal)}</span>
               </div>
             </div>
-          ) : (
-            <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
-              Choose Adjustable Base to unlock motion choices.
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    if (stepKey === "size") {
-      return (
-        <div className="space-y-4">
-          <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(148px,1fr))]">
-            {SIZE_OPTIONS.map((option) => (
-              <ChoiceCard
-                key={option}
-                title={option}
-                subtitle={subtitleForSize(option)}
-                active={size === option}
-                onClick={() => setSize(option)}
-              />
-            ))}
-          </div>
-
-          {showMotion ? (
-            <div className="rounded-[22px] border border-indigo-100 bg-indigo-50/80 px-4 py-3 text-sm font-semibold text-indigo-900">
-              Motion available with {size}: {availableMotionLabel}.
-            </div>
-          ) : null}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-3">
-        <div className="rounded-[24px] border border-[#e2e9fb] bg-white px-4 py-4 shadow-sm">
-          <div className="text-[0.78rem] font-black uppercase tracking-[0.16em] text-slate-500">
-            Review your setup
-          </div>
-          <div className="mt-3 space-y-2.5">
-            {selectionSummary.map((item) => (
-              <div key={item} className="flex gap-2 text-sm leading-6 text-slate-700">
-                <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[#2f57e8]" />
-                <span>{item}</span>
+            {cartError ? (
+              <div className="mt-3 rounded-[14px] border border-amber-200 bg-amber-50 px-3 py-2 text-[0.8rem] font-semibold leading-snug text-amber-900">
+                {cartError}
               </div>
-            ))}
+            ) : null}
           </div>
         </div>
-
-        <div className="rounded-[22px] border border-indigo-100 bg-indigo-50/80 px-4 py-3 text-sm font-semibold text-indigo-900">
-          Add this setup now, or open the cart and compare it against your next pod.
-        </div>
+        {renderStageControls({
+          primaryLabel: isAddingToCart ? "Adding..." : primaryCtaLabel,
+          onPrimary: addToPlan,
+          primaryDisabled: !canAdd || isAddingToCart,
+        })}
       </div>
     );
   };
 
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col">
-      <div className="min-h-0 flex-1">
-          <div className="grid min-h-0 gap-[14px] lg:h-full lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,1.2fr)] lg:items-stretch">
-            <div
+    <div
+      className="flex min-h-0 w-full flex-1 flex-col gap-2"
+      data-pod-builder-state={stepKey}
+    >
+      <div
+        data-pod-build-progress="true"
+        className="grid max-h-[48px] min-h-[44px] shrink-0 gap-2 [grid-template-columns:repeat(auto-fit,minmax(104px,1fr))]"
+      >
+        {visibleProgressSteps.map((step, index) => {
+          const Icon = step.icon;
+          const active = step.key === stepKey;
+          const complete = steps.findIndex((item) => item.key === stepKey) > steps.findIndex((item) => item.key === step.key);
+          return (
+            <button
+              key={step.key}
+              type="button"
+              onClick={() => {
+                if (step.key === "success") return;
+                setGuidedStep(step.key);
+              }}
               className={[
-                "flex h-full min-h-0 flex-col rounded-[22px] border bg-white/96 p-[14px] shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
-                stepKey === "size" ? "border-indigo-200" : "border-white/80",
+                "flex min-h-[44px] items-center gap-2 rounded-[14px] border px-3 text-left transition motion-reduce:transition-none",
+                active
+                  ? "border-[#315cf6] bg-[#eef3ff] text-[#315cf6]"
+                  : complete
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-[#dfe7fb] bg-white/86 text-slate-600",
               ].join(" ")}
             >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#eef3ff] text-[0.76rem] font-black text-[#2f57e8]">
-                  1
-                </div>
-                <div>
-                  <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                    Choose Size
-                  </div>
-                  <div className="mt-0.5 text-[0.94rem] font-extrabold text-slate-900">
-                    {size || "Choose your size"}
-                  </div>
-                </div>
-              </div>
-              {sizeReady ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
-            </div>
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
+                {complete ? <CheckCircle2 className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[0.62rem] font-black uppercase tracking-[0.14em] opacity-70">
+                  {index + 1}
+                </span>
+                <span className="block truncate text-[0.82rem] font-black">{step.label}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-            <div className="mt-[12px] grid gap-[8px] [grid-template-columns:repeat(auto-fit,minmax(96px,1fr))]">
-              {SIZE_OPTIONS.map((option) => (
-                <BuilderOptionButton
-                  key={option}
-                  title={option}
-                  subtitle=""
-                  active={size === option}
-                  compact
-                  onClick={() => {
-                    setStepKey("size");
-                    setSize(option);
-                  }}
-                />
-              ))}
+      <div
+        data-pod-build-summary="true"
+        className="grid min-h-[42px] shrink-0 gap-2 [grid-template-columns:repeat(auto-fit,minmax(128px,1fr))]"
+      >
+        {summaryPills.map((item) => (
+          <SetupSummaryPill key={item.label} label={item.label} value={item.value} />
+        ))}
+      </div>
+
+      <div className="min-h-0 flex-1 rounded-[22px] border border-[#dfe7fb] bg-white/96 p-4 shadow-[0_18px_46px_rgba(45,71,136,0.09)]">
+        <div className="mb-3 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#315cf6]">
+              {currentStepMeta.eyebrow}
             </div>
+            <h2 className="mt-1 text-[clamp(1.35rem,2vw,1.95rem)] font-black leading-tight tracking-tight text-slate-950">
+              {currentStepMeta.title}
+            </h2>
           </div>
-
-            <div
-              className={[
-                "flex h-full min-h-0 flex-col rounded-[22px] border bg-white/96 p-[14px] shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
-                stepKey === "base" ? "border-indigo-200" : "border-white/80",
-              ].join(" ")}
-            >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#eef3ff] text-[0.76rem] font-black text-[#2f57e8]">
-                  2
-                </div>
-                <div>
-                  <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                    Choose Base
-                  </div>
-                  <div className="mt-0.5 text-[0.94rem] font-extrabold text-slate-900">
-                    {selectedBaseLabel}
-                  </div>
-                </div>
-              </div>
-              {baseReady ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
-            </div>
-
-            <div className="mt-[12px] grid gap-[8px] [grid-template-columns:repeat(auto-fit,minmax(132px,1fr))]">
-              {BASE_OPTIONS_UI.map((option) => (
-                <BuilderOptionButton
-                  key={option.value}
-                  title={option.value === "none" ? "Mattress Only" : option.label}
-                  subtitle=""
-                  active={baseType === option.value}
-                  compact
-                  onClick={() => {
-                    setStepKey("base");
-                    setBaseType(option.value);
-                  }}
-                />
-              ))}
-            </div>
-
-            {showMotion ? (
-              <div className="mt-[12px] rounded-[18px] border border-[#e2e9fb] bg-[#f8faff] px-[12px] py-[10px] shadow-sm">
-                <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                  Motion Options
-                </div>
-                <div className="mt-[5px] text-[0.76rem] font-medium leading-[1.1rem] text-slate-600">
-                  Choose the motion setup that fits this mattress, size, and adjustable base.
-                </div>
-                <div className="mt-[10px] grid gap-[8px] sm:grid-cols-2 lg:grid-cols-3">
-                  {MOTION_TYPES_UI.map((option) => {
-                    const allowed = Boolean(motionAvailability[option.value]);
-                    return (
-                      <BuilderOptionButton
-                        key={option.value}
-                        title={titleForMotion(option.value)}
-                        subtitle={
-                          allowed
-                            ? subtitleForMotion(option.value)
-                            : disabledReasonForMotion(option.value, size, isDualComfort)
-                        }
-                        active={motionType === option.value}
-                        disabled={!allowed}
-                        onClick={() => {
-                          if (!allowed) return;
-                          setStepKey("base");
-                          setMotionType(option.value);
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="mt-[12px] rounded-[16px] border border-slate-200 bg-slate-50 px-[10px] py-[8px] text-[0.78rem] font-semibold text-slate-700">
-                Choose Adjustable Base to unlock motion choices.
-              </div>
-            )}
-          </div>
-
-          <div
-            className={[
-              "flex h-full min-h-0 flex-col rounded-[22px] border bg-white/96 p-[14px] shadow-[0_16px_40px_rgba(45,71,136,0.08)]",
-              stepKey === "review" ? "border-indigo-200" : "border-white/80",
-            ].join(" ")}
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#eef3ff] text-[0.76rem] font-black text-[#2f57e8]">
-                  3
-                </div>
-                <div>
-                  <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                    Review & Add
-                  </div>
-                  <div className="mt-0.5 text-[0.94rem] font-extrabold text-slate-900">
-                    {podLabel}
-                  </div>
-                </div>
-              </div>
-              {canAdd ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : null}
-            </div>
-
-            <div className="mt-[12px] rounded-[18px] border border-[#e2e9fb] bg-white px-[12px] py-[10px] shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="flex h-[44px] w-[44px] shrink-0 overflow-hidden rounded-[14px] border border-[#e3eafc] bg-[#fbfcff]">
-                  <BuilderMediaPreview
-                    src={mattressImage}
-                    alt={mattressLabel}
-                    icon={BedDouble}
-                    className="h-full w-full"
-                    imgClassName="h-full w-full object-cover"
-                  />
-                </div>
-
-                <div className="min-w-0">
-                  <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                    Fixed Mattress
-                  </div>
-                  <div className="mt-[3px] text-[0.88rem] font-extrabold leading-tight text-slate-900">
-                    {mattressLabel}
-                  </div>
-                  <div className="mt-[3px] text-[0.74rem] leading-[1.08rem] text-slate-600">
-                    Locked to {podLabel}. Compare another pod if you want a different mattress family.
-                  </div>
-                  {onViewResults ? (
-                    <button
-                      type="button"
-                      onClick={onViewResults}
-                      className="mt-1 inline-flex items-center gap-2 text-[0.64rem] font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
-                    >
-                      Compare other pods
-                    </button>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            {isDualComfort ? (
-              <div className="mt-[12px] rounded-[18px] border border-[#e2e9fb] bg-[#f8faff] px-[12px] py-[10px] shadow-sm">
-                <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                  Comfort Sides
-                </div>
-                <div className="mt-[10px] grid gap-[8px] md:grid-cols-2">
-                  <div className="space-y-[8px]">
-                    <div className="text-[0.72rem] font-extrabold text-slate-700">Left Side</div>
-                    {DUAL_COMFORT_OPTIONS.map((option) => (
-                      <BuilderOptionButton
-                        key={`left-${option}`}
-                        title={option}
-                        active={dcLeft === option}
-                        compact
-                        onClick={() => {
-                          setStepKey("review");
-                          setDcLeft(option);
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="space-y-[8px]">
-                    <div className="text-[0.72rem] font-extrabold text-slate-700">Right Side</div>
-                    {DUAL_COMFORT_OPTIONS.map((option) => (
-                      <BuilderOptionButton
-                        key={`right-${option}`}
-                        title={option}
-                        active={dcRight === option}
-                        compact
-                        onClick={() => {
-                          setStepKey("review");
-                          setDcRight(option);
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            <div className="mt-[12px] rounded-[16px] border border-[#dbe5ff] bg-white/96 px-[12px] py-[10px] shadow-sm">
-              <div className={reviewSummaryGridClassName}>
-                <div>
-                  <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
-                    Size
-                  </div>
-                  <div className="mt-0.5 text-[0.8rem] font-extrabold text-slate-900">
-                    {size || "Choose"}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
-                    Base
-                  </div>
-                  <div className="mt-0.5 text-[0.8rem] font-extrabold text-slate-900">
-                    {selectedBaseLabel}
-                  </div>
-                </div>
-
-                {showMotion ? (
-                  <div>
-                    <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
-                      Motion
-                    </div>
-                    <div className="mt-0.5 text-[0.8rem] font-extrabold text-slate-900">
-                      {selectedMotionLabel}
-                    </div>
-                  </div>
-                ) : null}
-
-                <div>
-                  <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
-                    Monthly
-                  </div>
-                  <div className="mt-0.5 text-[0.8rem] font-extrabold text-slate-900">
-                    {money(monthly)}/mo
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
-                    Total
-                  </div>
-                  <div className="mt-0.5 text-[0.8rem] font-extrabold text-slate-900">
-                    {money(previewTotal)}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-auto space-y-[8px] pt-[12px]">
-              {cartError ? (
-                <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-3 py-2 text-[0.76rem] font-semibold leading-snug text-amber-900">
-                  {cartError}
-                </div>
-              ) : null}
-              <Button
-                onClick={() => {
-                  setStepKey("review");
-                  addToPlan();
-                }}
-                disabled={!canAdd || isAddingToCart}
-                data-pod-layout-build-action="true"
-                data-pod-layout-primary-action="build-add"
-                className="min-h-[48px] w-full rounded-[16px] px-5 text-[0.88rem] font-extrabold"
-              >
-                <span>{isAddingToCart ? "Adding..." : primaryCtaLabel}</span>
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-
-              <div className="flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={viewCart}
-                  className="inline-flex min-h-[44px] items-center rounded-[12px] px-2 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[#2f57e8]"
-                >
-                  Open Cart
-                </button>
-
-                <button
-                  type="button"
-                  onClick={resetBuild}
-                  className="inline-flex min-h-[44px] items-center rounded-[12px] px-2 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-slate-500"
-                >
-                  Start Over
-                </button>
-              </div>
-            </div>
-          </div>
+          <p className="max-w-[30rem] text-right text-[clamp(0.82rem,1vw,0.94rem)] font-semibold leading-snug text-slate-600">
+            {currentStepMeta.description}
+          </p>
         </div>
+        <div className="min-h-0 h-[calc(100%-76px)]">{renderCurrentStep()}</div>
       </div>
     </div>
   );

@@ -1416,12 +1416,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     }
 
     if (effectiveLabState.startsWith("build")) {
-      const requestedStep =
-        effectiveLabState === "build-base"
-          ? "base"
-          : effectiveLabState === "build-review"
-            ? "review"
-            : "size";
+      const requestedStep = effectiveLabState.replace(/^build-/, "") || "size";
 
       setOpenStage("build");
       setShowRestChooser(false);

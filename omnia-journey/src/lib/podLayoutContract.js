@@ -5,7 +5,10 @@ export const POD_LAYOUT_LAB_STATES = Object.freeze([
   "learn",
   "build-size",
   "build-base",
+  "build-motion",
+  "build-comfort",
   "build-review",
+  "build-success",
 ]);
 
 export const POD_LAYOUT_VIEWPORTS = Object.freeze([
