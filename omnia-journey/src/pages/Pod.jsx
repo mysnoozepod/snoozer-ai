@@ -70,6 +70,7 @@ import { usePhysicalControl } from "@/iot/usePhysicalControl";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
 import { POD_LAYOUT_CONTRACT, normalizePodLabState } from "@/lib/podLayoutContract";
 import { measurePodLayout } from "@/lib/podLayoutMeasurement";
+import { buildSleepNutritionItems } from "@/lib/sleepNutrition";
 
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import snoozerRestActiveImg from "@/assets/avatars/snoozer-rest-active.png";
@@ -476,11 +477,6 @@ function formatBenefitBadge(benefits = [], reason = "") {
   if (text.includes("cool")) return "Cooling";
   if (text.includes("motion")) return "Motion Control";
   return "Comfort Match";
-}
-
-function inferHeightLabel(mattressTitle = "") {
-  const match = String(mattressTitle || "").match(/(\d{1,2}")/);
-  return match ? `${match[1]} Height` : "Mattress Height";
 }
 
 function buildPodReasonContext(pod, recommendationMeta = {}) {
@@ -2404,31 +2400,15 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     [activeRestFlow, cancelPodVoice, noteUserInteraction, speakPod]
   );
 
-  const learnSpecsItems = useMemo(() => {
+  const learnSleepNutritionItems = useMemo(() => {
     const firmnessValue = String(
       recommendationMeta?.firmness || assessment?.firmness || assessment?.comfort || assessment?.feel || "Medium"
     ).trim();
-    const items = [
-      `Feel: ${firmnessValue || "Medium"}.`,
-      `Construction: ${
-        mattressTruth.family === "dual"
-          ? "Dual Comfort Hybrid"
-          : mattressTruth.family === "hybrid"
-            ? "Hybrid"
-            : mattressTruth.family === "foam"
-              ? "All-foam"
-              : "Balanced comfort build"
-      }.`,
-      `Height: ${inferHeightLabel(mattressTruth.mattressTitle || mattressDisplayTitle)}.`,
-      mattressTruth.hasCoils
-        ? "Support core: coil-supported design for a steadier, more lifted feel."
-        : "Support core: foam support layers for a quieter, more even feel.",
-      mattressTruth.hasCooling
-        ? "Cooling cues: breathable or cooling-focused materials appear in the current product data."
-        : "Comfort cues: designed to balance support and pressure relief through a full showroom test.",
-    ];
-    return items.filter(Boolean).slice(0, 4);
-  }, [recommendationMeta?.firmness, assessment, mattressTruth, mattressDisplayTitle]);
+    return buildSleepNutritionItems({
+      mattressTruth,
+      firmness: firmnessValue || "Medium",
+    });
+  }, [recommendationMeta?.firmness, assessment, mattressTruth]);
 
   const learnPricingRows = useMemo(() => {
     return SIZE_OPTIONS.map((option) => {
@@ -2521,7 +2501,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     if (openStage === "details") {
       return (
         <PodLearnPanel
-          learnSpecsItems={learnSpecsItems}
+          learnSleepNutritionItems={learnSleepNutritionItems}
           learnPricingRows={learnPricingRows}
           learnFitItems={learnFitItems}
         />
@@ -2617,7 +2597,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     hasAdjustableBase,
     selectedRestInstructionId,
     buildStepKey,
-    learnSpecsItems,
+    learnSleepNutritionItems,
     learnPricingRows,
     learnFitItems,
     goToBuildStage,
@@ -2826,6 +2806,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
                   voiceState={voiceState}
                   badges={openStage === "details" || openStage === "build" ? headerBadges : headerBadges.slice(0, isRecommended ? 2 : 1)}
                   coachBubble={isDefaultPodDashboard || isRestSelectionStage ? restCoachCopy : ""}
+                  layout={openStage === "build" ? "build" : "default"}
                 />
               </ShowroomPanel>
             </div>

@@ -88,8 +88,10 @@ export function PodRouteHeroHeader({
   voiceState,
   badges = [],
   coachBubble = "",
+  layout = "default",
 }) {
   const hasCoachBubble = Boolean(coachBubble);
+  const isBuildLayout = layout === "build";
 
   return (
     <div
@@ -98,7 +100,9 @@ export function PodRouteHeroHeader({
         "grid h-full min-h-0 items-stretch gap-0 overflow-hidden",
         hasCoachBubble
           ? "md:grid-cols-[minmax(0,0.78fr)_minmax(224px,0.42fr)_minmax(0,1.02fr)] lg:grid-cols-[minmax(0,0.76fr)_minmax(236px,0.44fr)_minmax(0,1.08fr)]"
-          : "md:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
+          : isBuildLayout
+            ? "md:grid-cols-[minmax(0,0.6fr)_minmax(0,0.4fr)]"
+            : "md:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]",
       ].join(" ")}
     >
       <div className="relative flex min-h-[112px] flex-col justify-center px-[16px] py-[10px] md:h-full md:min-h-0 md:px-[18px] md:py-[10px]">
@@ -176,8 +180,15 @@ export function PodRouteHeroHeader({
         <ResponsiveHeroImage
           src={mattressImage}
           alt={mattressTitle}
-          className="flex h-full min-h-[112px] w-full items-center justify-end px-0 py-0 md:min-h-0"
-          imgClassName="h-full w-full max-h-full object-contain object-center"
+          className={[
+            "flex h-full min-h-[112px] w-full items-center px-0 py-0 md:min-h-0",
+            isBuildLayout ? "justify-center" : "justify-end",
+          ].join(" ")}
+          imgClassName={
+            isBuildLayout
+              ? "h-[84%] w-[90%] max-h-full max-w-full object-contain object-center"
+              : "h-full w-full max-h-full object-contain object-center"
+          }
         />
       </div>
     </div>

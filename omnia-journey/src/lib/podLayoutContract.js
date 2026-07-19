@@ -15,6 +15,7 @@ export const POD_LAYOUT_VIEWPORTS = Object.freeze([
   { name: "1180x820", width: 1180, height: 820, primary: true },
   { name: "1024x768", width: 1024, height: 768, primary: false },
   { name: "1366x768", width: 1366, height: 768, primary: false },
+  { name: "staging-review-1600x900", width: 1600, height: 900, primary: false },
 ]);
 
 export const POD_LAYOUT_CONTRACT = Object.freeze({

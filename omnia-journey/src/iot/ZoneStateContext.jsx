@@ -62,7 +62,7 @@ function IotZoneDiagnostics({ endpoint, state }) {
         style={{
           position: "fixed",
           right: 12,
-          bottom: 12,
+          top: 12,
           zIndex: 2147483000,
           border: "1px solid rgba(37, 99, 235, 0.24)",
           borderRadius: 999,
@@ -89,10 +89,10 @@ function IotZoneDiagnostics({ endpoint, state }) {
       style={{
         position: "fixed",
         right: 12,
-        bottom: 12,
+        top: 84,
         zIndex: 2147483000,
         width: "min(440px, calc(100vw - 24px))",
-        maxHeight: "46vh",
+        maxHeight: "190px",
         overflow: "auto",
         border: "1px solid rgba(37, 99, 235, 0.25)",
         borderRadius: 16,

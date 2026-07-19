@@ -23,6 +23,10 @@ export default function DeviceDiagnostics() {
   const [viewport, setViewport] = useState(() => ({
     width: typeof window !== "undefined" ? window.innerWidth : 0,
     height: typeof window !== "undefined" ? window.innerHeight : 0,
+    visualWidth: typeof window !== "undefined" && window.visualViewport ? window.visualViewport.width : 0,
+    visualHeight: typeof window !== "undefined" && window.visualViewport ? window.visualViewport.height : 0,
+    clientWidth: typeof document !== "undefined" ? document.documentElement.clientWidth : 0,
+    clientHeight: typeof document !== "undefined" ? document.documentElement.clientHeight : 0,
   }));
   const shouldShow = canViewAdminDiagnostics(deviceState);
 
@@ -33,11 +37,19 @@ export default function DeviceDiagnostics() {
       setViewport({
         width: window.innerWidth,
         height: window.innerHeight,
+        visualWidth: window.visualViewport?.width || 0,
+        visualHeight: window.visualViewport?.height || 0,
+        clientWidth: document.documentElement.clientWidth,
+        clientHeight: document.documentElement.clientHeight,
       });
 
     update();
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    window.visualViewport?.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("resize", update);
+    };
   }, [shouldShow]);
 
   if (!shouldShow) return null;
@@ -54,7 +66,7 @@ export default function DeviceDiagnostics() {
         style={{
           position: "fixed",
           left: 12,
-          bottom: 12,
+          top: 12,
           zIndex: 2147483000,
           display: "inline-flex",
           alignItems: "center",
@@ -98,10 +110,10 @@ export default function DeviceDiagnostics() {
       style={{
         position: "fixed",
         left: 12,
-        bottom: 12,
+        top: 84,
         zIndex: 2147483000,
         width: "min(420px, calc(100vw - 24px))",
-        maxHeight: "50vh",
+        maxHeight: "190px",
         overflow: "auto",
         border: "1px solid rgba(37, 99, 235, 0.25)",
         borderRadius: 16,
@@ -178,7 +190,15 @@ export default function DeviceDiagnostics() {
           label="route"
           value={typeof window !== "undefined" ? `${window.location.pathname}${window.location.search}` : ""}
         />
-        <DiagnosticRow label="viewport" value={`${viewport.width} x ${viewport.height}`} />
+        <DiagnosticRow label="inner" value={`${Math.round(viewport.width)} x ${Math.round(viewport.height)}`} />
+        <DiagnosticRow
+          label="visual"
+          value={`${Math.round(viewport.visualWidth)} x ${Math.round(viewport.visualHeight)}`}
+        />
+        <DiagnosticRow
+          label="client"
+          value={`${Math.round(viewport.clientWidth)} x ${Math.round(viewport.clientHeight)}`}
+        />
       </dl>
     </aside>
   );

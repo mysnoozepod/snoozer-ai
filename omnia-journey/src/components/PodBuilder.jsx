@@ -467,6 +467,7 @@ function BuilderOptionButton({ title, subtitle, active, disabled = false, onClic
 function GuidedChoiceButton({
   title,
   subtitle,
+  badge,
   active,
   confirming = false,
   disabled = false,
@@ -477,6 +478,9 @@ function GuidedChoiceButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
+      data-pod-build-choice={title}
+      data-pod-build-choice-active={active ? "true" : "false"}
+      data-pod-build-choice-badge={badge || undefined}
       className={[
         "group flex min-h-[58px] w-full items-center justify-between gap-3 rounded-[16px] border px-3.5 py-2.5 text-left shadow-sm transition motion-reduce:transition-none",
         disabled
@@ -489,8 +493,15 @@ function GuidedChoiceButton({
       ].join(" ")}
     >
       <span className="min-w-0">
-        <span className="block text-[clamp(1rem,1.2vw,1.12rem)] font-black leading-tight">
-          {title}
+        <span className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="block text-[clamp(1rem,1.2vw,1.12rem)] font-black leading-tight">
+            {title}
+          </span>
+          {badge ? (
+            <span className="rounded-full border border-[#ffe0bf] bg-[#fff7ed] px-2 py-0.5 text-[0.62rem] font-black uppercase tracking-[0.12em] text-[#f97316]">
+              {badge}
+            </span>
+          ) : null}
         </span>
         {subtitle ? (
           <span className="mt-1 block text-[clamp(0.78rem,1vw,0.88rem)] font-semibold leading-snug text-slate-600">
@@ -510,29 +521,18 @@ function GuidedChoiceButton({
   );
 }
 
-function SetupSummaryPill({ label, value }) {
-  return (
-    <div className="min-w-0 rounded-[14px] border border-[#dfe7fb] bg-white/86 px-3 py-2 shadow-sm">
-      <div className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
-        {label}
-      </div>
-      <div className="mt-0.5 text-[0.8rem] font-black leading-tight text-slate-950">{value}</div>
-    </div>
-  );
-}
-
 export function subtitleForSize(option) {
   switch (option) {
     case "Twin":
-      return "A clean fit for compact spaces.";
+      return "Compact spaces";
     case "Twin XL":
-      return "Extra length without taking up extra width.";
+      return "Extra length";
     case "Full":
-      return "A little more room to stretch out.";
+      return "More room";
     case "Queen":
-      return "The most popular balance of comfort and space.";
+      return "Most popular";
     case "King":
-      return "Maximum room to spread out.";
+      return "Maximum space";
     default:
       return "";
   }
@@ -541,13 +541,13 @@ export function subtitleForSize(option) {
 export function subtitleForBase(option) {
   switch (option) {
     case "none":
-      return "Keep the focus on the mattress feel.";
+      return "Mattress feel only";
     case "adjustable":
-      return "Lift, recline, and unlock motion features.";
+      return "Lift, recline, motion";
     case "platform":
-      return "A simple, supportive foundation.";
+      return "Simple support";
     case "storage":
-      return "Support plus built-in storage underneath.";
+      return "Support with storage";
     default:
       return "";
   }
@@ -556,11 +556,11 @@ export function subtitleForBase(option) {
 function subtitleForMotion(option) {
   switch (option) {
     case "standard":
-      return "One-piece movement across the whole bed.";
+      return "One-piece movement";
     case "half_split":
-      return "Separate head adjustment with a shared foot.";
+      return "Split head, shared foot";
     case "full_split":
-      return "Independent movement on both sides.";
+      return "Independent sides";
     default:
       return "";
   }
@@ -581,10 +581,10 @@ function titleForMotion(option) {
 
 function disabledReasonForMotion(option, size, isDualComfort) {
   if (option === "half_split") {
-    return 'Available only with 12" Dual Comfort in Queen or King.';
+    return "Dual Comfort Queen or King only.";
   }
   if (option === "full_split") {
-    return "Available with King size only.";
+    return "King only.";
   }
   if (!isDualComfort && option === "standard") {
     return "Available when Adjustable Base is selected.";
@@ -820,6 +820,7 @@ export default function PodBuilder({
     () => normalizeBuildStepCandidate(requestedStepKey),
     [requestedStepKey]
   );
+  const isLayoutSeededStep = Boolean(requestedNormalizedStepKey && requestedNormalizedStepKey !== "size");
 
   const [stepKey, setStepKey] = useState(() => {
     if (steps.some((step) => step.key === requestedNormalizedStepKey)) {
@@ -830,6 +831,20 @@ export default function PodBuilder({
     return steps.some((step) => step.key === candidate) ? candidate : "size";
   });
   const appliedRequestedStepRef = useRef(requestedNormalizedStepKey || "size");
+  const [confirmedSelections, setConfirmedSelections] = useState(() => {
+    const savedConfirmed =
+      compatibleSavedBuild?.confirmed && typeof compatibleSavedBuild.confirmed === "object"
+        ? compatibleSavedBuild.confirmed
+        : {};
+
+    return {
+      size: Boolean(savedConfirmed.size || compatibleSavedBuild?.sizeConfirmed || isLayoutSeededStep),
+      base: Boolean(savedConfirmed.base || isLayoutSeededStep),
+      motion: Boolean(savedConfirmed.motion || isLayoutSeededStep),
+      comfortLeft: Boolean(savedConfirmed.comfortLeft || isLayoutSeededStep),
+      comfortRight: Boolean(savedConfirmed.comfortRight || isLayoutSeededStep),
+    };
+  });
 
   const motionAvailability = useMemo(
     () => motionAvailabilityForSelection(size, isDualComfort),
@@ -908,10 +923,22 @@ export default function PodBuilder({
       dcLeft,
       dcRight,
       stepKey,
+      confirmed: confirmedSelections,
       shopperKey,
       assessmentSignature,
     });
-  }, [pod, size, baseType, motionType, dcLeft, dcRight, stepKey, shopperKey, assessmentSignature]);
+  }, [
+    pod,
+    size,
+    baseType,
+    motionType,
+    dcLeft,
+    dcRight,
+    stepKey,
+    confirmedSelections,
+    shopperKey,
+    assessmentSignature,
+  ]);
 
   const mattressVariant = useMemo(() => pickVariantForSize(mattressProduct, size), [mattressProduct, size]);
   const baseVariant = useMemo(
@@ -924,6 +951,13 @@ export default function PodBuilder({
   const basePrice = useMemo(() => parseVariantPrice(baseVariant), [baseVariant]);
   const previewTotal = useMemo(() => mattressPrice + (wantsBase ? basePrice : 0), [mattressPrice, basePrice, wantsBase]);
   const monthly = useMemo(() => monthlyEstimate(previewTotal), [previewTotal]);
+  const sizeConfirmed = Boolean(confirmedSelections.size);
+  const baseConfirmed = Boolean(confirmedSelections.base);
+  const motionConfirmed = !showMotion || Boolean(confirmedSelections.motion);
+  const comfortConfirmed =
+    !isDualComfort || Boolean(confirmedSelections.comfortLeft && confirmedSelections.comfortRight);
+  const requiredSelectionsConfirmed =
+    sizeConfirmed && baseConfirmed && motionConfirmed && comfortConfirmed;
 
   const selectedBaseLabel =
     baseType === "none" ? "Mattress Only" : labelFor(BASE_OPTIONS_UI, baseType, "Mattress Only");
@@ -939,7 +973,11 @@ export default function PodBuilder({
   const canGoBack = currentStepIndex > 0;
   const mattressImage = pickFeaturedImage(mattressProduct);
   const selectedBaseImage = pickFeaturedImage(baseProduct);
-  const canAdd = Boolean(mattressMerchId) && (!wantsBase || Boolean(baseMerchId)) && (!isDualComfort || Boolean(dcLeft && dcRight));
+  const canAdd =
+    requiredSelectionsConfirmed &&
+    Boolean(mattressMerchId) &&
+    (!wantsBase || Boolean(baseMerchId)) &&
+    (!isDualComfort || Boolean(dcLeft && dcRight));
   const selectionSummary = useMemo(
     () => [
       `Mattress: ${mattressLabel}`,
@@ -950,37 +988,47 @@ export default function PodBuilder({
     ].filter(Boolean),
     [mattressLabel, selectedBaseLabel, size, showMotion, selectedMotionLabel, isDualComfort, dcLeft, dcRight]
   );
-  const sizeReady = Boolean(size);
-  const baseReady = Boolean(baseType);
-  const motionReady = !showMotion || Boolean(motionType);
-  const comfortReady = !isDualComfort || Boolean(dcLeft && dcRight);
+  const reviewDetails = useMemo(
+    () =>
+      [
+        { label: "Size", value: size || "Choose" },
+        { label: "Base", value: selectedBaseLabel },
+        showMotion ? { label: "Motion", value: selectedMotionLabel } : null,
+        isDualComfort ? { label: "Comfort", value: `${dcLeft || "Left"} / ${dcRight || "Right"}` } : null,
+      ].filter(Boolean),
+    [dcLeft, dcRight, isDualComfort, selectedBaseLabel, selectedMotionLabel, showMotion, size]
+  );
+  const sizeReady = Boolean(size && sizeConfirmed);
+  const baseReady = Boolean(baseType && baseConfirmed);
+  const motionReady = Boolean(motionConfirmed && motionType);
+  const comfortReady = Boolean(comfortConfirmed && (!isDualComfort || (dcLeft && dcRight)));
   const currentStepMeta = useMemo(() => {
     if (stepKey === "size") {
       return {
         eyebrow: "Step 1",
         title: "Choose your mattress size.",
-        description: "Pick the size you want to try in this pod setup.",
+        description: "Queen is most popular, but nothing is selected until you tap.",
       };
     }
     if (stepKey === "base") {
       return {
         eyebrow: "Step 2",
         title: "Choose your base.",
-        description: "Choose mattress only or the foundation you want under this mattress.",
+        description: "Pick mattress only or the foundation for this setup.",
       };
     }
     if (stepKey === "motion") {
       return {
         eyebrow: "Step 3",
         title: "Choose motion style.",
-        description: `Available motion for ${size}: ${availableMotionLabel}.`,
+        description: `${availableMotionLabel} available for ${size}.`,
       };
     }
     if (stepKey === "comfort") {
       return {
         eyebrow: showMotion ? "Step 4" : "Step 3",
         title: "Choose each side's comfort.",
-        description: "Set the left and right feel for this Dual Comfort mattress.",
+        description: "Pick the left feel, then the right feel.",
       };
     }
     if (stepKey === "success") {
@@ -993,7 +1041,7 @@ export default function PodBuilder({
     return {
       eyebrow: showMotion && isDualComfort ? "Step 5" : showMotion || isDualComfort ? "Step 4" : "Step 3",
       title: "Review & add.",
-      description: "Check the setup, then add it when you're ready.",
+      description: "Confirm the details before adding this setup.",
     };
   }, [stepKey, isDualComfort, showMotion, size, availableMotionLabel]);
   const canProceed =
@@ -1218,6 +1266,13 @@ export default function PodBuilder({
     setDcRight(defaults.dcRight);
     setStepKey("size");
     setConfirmationKey("");
+    setConfirmedSelections({
+      size: false,
+      base: false,
+      motion: false,
+      comfortLeft: false,
+      comfortRight: false,
+    });
     onCue?.("Your setup has been reset.", "tip");
   }, [defaults, onCue]);
 
@@ -1324,19 +1379,22 @@ export default function PodBuilder({
   const nextAfterBase = showMotion ? "motion" : isDualComfort ? "comfort" : "review";
   const nextAfterMotion = isDualComfort ? "comfort" : "review";
   const visibleProgressSteps = steps.filter((step) => step.key !== "success" || stepKey === "success");
-  const compactMattressLabel = isDualComfort
-    ? "Dual Comfort"
-    : mattressLabel.replace(/\s+Mattress$/i, "");
-  const compactComfortLabel = isDualComfort
-    ? `${String(dcLeft || "Left").replace(/^Medium\s+/i, "Med ")} / ${String(dcRight || "Right").replace(/^Medium\s+/i, "Med ")}`
-    : "";
-  const summaryPills = [
-    { label: "Mattress", value: compactMattressLabel },
-    { label: "Size", value: size || "Choose" },
-    { label: "Base", value: selectedBaseLabel },
-    showMotion ? { label: "Motion", value: selectedMotionLabel } : null,
-    isDualComfort ? { label: "Comfort", value: compactComfortLabel } : null,
-  ].filter(Boolean);
+  const isStepComplete = useCallback(
+    (key) => {
+      if (key === "size") return sizeReady;
+      if (key === "base") return baseReady;
+      if (key === "motion") return motionReady;
+      if (key === "comfort") return comfortReady;
+      if (key === "review") return stepKey === "success";
+      if (key === "success") return stepKey === "success";
+      return false;
+    },
+    [baseReady, comfortReady, motionReady, sizeReady, stepKey]
+  );
+  const canVisitStep = useCallback(
+    (key) => key === stepKey || isStepComplete(key) || key === "size",
+    [isStepComplete, stepKey]
+  );
 
   const renderStageControls = ({
     primaryLabel = nextStep ? `Continue to ${nextStep.label}` : "Continue",
@@ -1389,10 +1447,16 @@ export default function PodBuilder({
                 key={option}
                 title={option}
                 subtitle={subtitleForSize(option)}
-                active={size === option}
+                badge={option === "Queen" && !sizeConfirmed ? "Most Popular" : ""}
+                active={sizeConfirmed && size === option}
                 confirming={confirmationKey === `size:${option}`}
                 onClick={() => {
                   setSize(option);
+                  setConfirmedSelections((current) => ({
+                    ...current,
+                    size: true,
+                    motion: current.motion && allowedMotionTypesForSelection(option, isDualComfort).includes(motionType),
+                  }));
                   queueSelectionAdvance(`size:${option}`, nextAfterSize, "Choose your base next.");
                 }}
               />
@@ -1416,10 +1480,15 @@ export default function PodBuilder({
                 key={option.value}
                 title={option.value === "none" ? "Mattress Only" : option.label}
                 subtitle={subtitleForBase(option.value)}
-                active={baseType === option.value}
+                active={baseConfirmed && baseType === option.value}
                 confirming={confirmationKey === `base:${option.value}`}
                 onClick={() => {
                   setBaseType(option.value);
+                  setConfirmedSelections((current) => ({
+                    ...current,
+                    base: true,
+                    motion: option.value === "adjustable" ? false : current.motion,
+                  }));
                   const nextKey =
                     option.value === "adjustable"
                       ? "motion"
@@ -1464,12 +1533,16 @@ export default function PodBuilder({
                       ? subtitleForMotion(option.value)
                       : disabledReasonForMotion(option.value, size, isDualComfort)
                   }
-                  active={motionType === option.value}
+                  active={confirmedSelections.motion && motionType === option.value}
                   confirming={confirmationKey === `motion:${option.value}`}
                   disabled={!allowed}
                   onClick={() => {
                     if (!allowed) return;
                     setMotionType(option.value);
+                    setConfirmedSelections((current) => ({
+                      ...current,
+                      motion: true,
+                    }));
                     queueSelectionAdvance(
                       `motion:${option.value}`,
                       nextAfterMotion,
@@ -1507,11 +1580,16 @@ export default function PodBuilder({
                   <GuidedChoiceButton
                     key={`left-${option}`}
                     title={option}
-                    active={dcLeft === option}
+                    active={confirmedSelections.comfortLeft && dcLeft === option}
                     confirming={confirmationKey === `left:${option}`}
                     onClick={() => {
                       setDcLeft(option);
-                      if (dcRight) {
+                      const shouldAdvance = confirmedSelections.comfortRight && dcRight;
+                      setConfirmedSelections((current) => ({
+                        ...current,
+                        comfortLeft: true,
+                      }));
+                      if (shouldAdvance) {
                         queueSelectionAdvance(
                           `left:${option}`,
                           "review",
@@ -1532,11 +1610,16 @@ export default function PodBuilder({
                   <GuidedChoiceButton
                     key={`right-${option}`}
                     title={option}
-                    active={dcRight === option}
+                    active={confirmedSelections.comfortRight && dcRight === option}
                     confirming={confirmationKey === `right:${option}`}
                     onClick={() => {
                       setDcRight(option);
-                      if (dcLeft) {
+                      const shouldAdvance = confirmedSelections.comfortLeft && dcLeft;
+                      setConfirmedSelections((current) => ({
+                        ...current,
+                        comfortRight: true,
+                      }));
+                      if (shouldAdvance) {
                         queueSelectionAdvance(
                           `right:${option}`,
                           "review",
@@ -1609,10 +1692,10 @@ export default function PodBuilder({
 
     return (
       <div className="flex h-full min-h-0 flex-col">
-        <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_0.9fr]">
-          <div className="rounded-[20px] border border-[#dfe7fb] bg-white/96 p-4 shadow-sm">
+        <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
             <div className="flex items-start gap-3">
-              <div className="flex h-[58px] w-[58px] shrink-0 overflow-hidden rounded-[16px] border border-[#dfe7fb] bg-[#fbfcff]">
+              <div className="flex h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[14px] border border-[#dfe7fb] bg-[#fbfcff]">
                 <BuilderMediaPreview
                   src={mattressImage}
                   alt={mattressLabel}
@@ -1623,12 +1706,12 @@ export default function PodBuilder({
               </div>
               <div className="min-w-0">
                 <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                  Locked Mattress
+                  Mattress
                 </div>
                 <div className="mt-1 text-[clamp(1rem,1.3vw,1.16rem)] font-black leading-tight text-slate-950">
                   {mattressLabel}
                 </div>
-                <div className="mt-1 text-[0.82rem] font-semibold leading-snug text-slate-600">
+                <div className="mt-0.5 text-[0.78rem] font-semibold leading-snug text-slate-600">
                   Locked to {podLabel}. Compare another pod if you want a different mattress family.
                 </div>
                 {onViewResults ? (
@@ -1642,20 +1725,22 @@ export default function PodBuilder({
                 ) : null}
               </div>
             </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {selectionSummary.map((item) => (
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              {reviewDetails.map((item) => (
                 <div
-                  key={item}
-                  className="flex min-h-[38px] items-center gap-2 rounded-[12px] bg-[#f6f8ff] px-3 text-[0.82rem] font-bold text-slate-700"
+                  key={item.label}
+                  className="flex min-h-[38px] items-center justify-between gap-3 rounded-[12px] bg-[#f6f8ff] px-3 text-[0.8rem] font-bold text-slate-700"
                 >
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[#315cf6]" />
-                  <span className="min-w-0 leading-snug">{item}</span>
+                  <span className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                    {item.label}
+                  </span>
+                  <span className="min-w-0 text-right leading-snug text-slate-950">{item.value}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-col rounded-[20px] border border-[#dfe7fb] bg-white/96 p-4 shadow-sm">
+          <div className="flex min-h-0 flex-col rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
             <div className="grid gap-2">
               <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-[#f8faff] px-3 py-2">
                 <span className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">
@@ -1698,13 +1783,15 @@ export default function PodBuilder({
         {visibleProgressSteps.map((step, index) => {
           const Icon = step.icon;
           const active = step.key === stepKey;
-          const complete = steps.findIndex((item) => item.key === stepKey) > steps.findIndex((item) => item.key === step.key);
+          const complete = isStepComplete(step.key);
+          const visitable = canVisitStep(step.key);
           return (
             <button
               key={step.key}
               type="button"
+              disabled={!visitable}
               onClick={() => {
-                if (step.key === "success") return;
+                if (!visitable || step.key === "success") return;
                 setGuidedStep(step.key);
               }}
               className={[
@@ -1713,7 +1800,8 @@ export default function PodBuilder({
                   ? "border-[#315cf6] bg-[#eef3ff] text-[#315cf6]"
                   : complete
                     ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-[#dfe7fb] bg-white/86 text-slate-600",
+                    : "border-[#dfe7fb] bg-white/60 text-slate-400",
+                visitable ? "" : "cursor-not-allowed opacity-70",
               ].join(" ")}
             >
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
@@ -1730,30 +1818,21 @@ export default function PodBuilder({
         })}
       </div>
 
-      <div
-        data-pod-build-summary="true"
-        className="grid min-h-[42px] shrink-0 gap-2 [grid-template-columns:repeat(auto-fit,minmax(128px,1fr))]"
-      >
-        {summaryPills.map((item) => (
-          <SetupSummaryPill key={item.label} label={item.label} value={item.value} />
-        ))}
-      </div>
-
-      <div className="min-h-0 flex-1 rounded-[22px] border border-[#dfe7fb] bg-white/96 p-4 shadow-[0_18px_46px_rgba(45,71,136,0.09)]">
-        <div className="mb-3 flex items-start justify-between gap-4">
+      <div className="min-h-0 flex-1 rounded-[22px] border border-[#dfe7fb] bg-white/96 p-3 shadow-[0_18px_46px_rgba(45,71,136,0.09)]">
+        <div className="mb-2.5 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#315cf6]">
               {currentStepMeta.eyebrow}
             </div>
-            <h2 className="mt-1 text-[clamp(1.35rem,2vw,1.95rem)] font-black leading-tight tracking-tight text-slate-950">
+            <h2 className="mt-0.5 text-[clamp(1.25rem,1.9vw,1.78rem)] font-black leading-tight tracking-tight text-slate-950">
               {currentStepMeta.title}
             </h2>
           </div>
-          <p className="max-w-[30rem] text-right text-[clamp(0.82rem,1vw,0.94rem)] font-semibold leading-snug text-slate-600">
+          <p className="max-w-[27rem] text-right text-[clamp(0.78rem,0.95vw,0.9rem)] font-semibold leading-snug text-slate-600">
             {currentStepMeta.description}
           </p>
         </div>
-        <div className="min-h-0 h-[calc(100%-76px)]">{renderCurrentStep()}</div>
+        <div className="min-h-0 h-[calc(100%-66px)]">{renderCurrentStep()}</div>
       </div>
     </div>
   );

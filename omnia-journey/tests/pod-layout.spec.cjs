@@ -12,6 +12,7 @@ const CASES = [
   { id: "pod-4-build-base", route: "/pod/pod-4", state: "build-base" },
   { id: "pod-4-build-review", route: "/pod/pod-4", state: "build-review" },
   { id: "pod-4-build-success", route: "/pod/pod-4", state: "build-success" },
+  { id: "pod-1-learn", route: "/pod/pod-1", state: "learn" },
   { id: "pod-1-build-size", route: "/pod/pod-1", state: "build-size" },
   { id: "pod-1-build-base", route: "/pod/pod-1", state: "build-base" },
   { id: "pod-1-build-motion", route: "/pod/pod-1", state: "build-motion" },
@@ -24,6 +25,7 @@ const VIEWPORTS = [
   { name: "1180x820", width: 1180, height: 820 },
   { name: "1024x768", width: 1024, height: 768 },
   { name: "1366x768", width: 1366, height: 768 },
+  { name: "staging-review-1600x900", width: 1600, height: 900 },
 ];
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
@@ -245,6 +247,21 @@ for (const viewport of VIEWPORTS) {
 
       if (testInfo.project.name === "strict") {
         expect(measurement.failures, readFailureText(measurement)).toEqual([]);
+
+        if (testCase.state === "learn") {
+          await expect(page.getByText("Sleep Nutrition")).toBeVisible();
+          await expect(page.getByText("What this mattress gives your sleep")).toBeVisible();
+          await expect(page.getByText(/^Specs$/)).toHaveCount(0);
+        }
+
+        if (testCase.state === "build-size") {
+          await expect(page.locator("[data-pod-build-summary]")).toHaveCount(0);
+          const queenChoice = page.locator('[data-pod-build-choice="Queen"]').first();
+          await expect(queenChoice).toHaveAttribute("data-pod-build-choice-badge", "Most Popular");
+          await expect(queenChoice).toHaveAttribute("data-pod-build-choice-active", "false");
+          await queenChoice.click();
+          await expect(page.locator('[data-pod-builder-state="base"]')).toBeVisible();
+        }
       }
     });
   }
