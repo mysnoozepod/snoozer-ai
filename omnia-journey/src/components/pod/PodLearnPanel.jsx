@@ -32,11 +32,11 @@ export function PodLearnPanel({ learnSleepNutritionItems = [], learnPricingRows 
           <div className="mt-[4px] text-[clamp(1.12rem,1.58vw,1.34rem)] font-black leading-tight tracking-tight text-slate-900">
             What this mattress gives your sleep
           </div>
-          <div className="mt-[8px] space-y-[6px] pr-[2px]">
+          <div className="mt-[7px] space-y-[5px] pr-[2px]">
             {learnSleepNutritionItems.map((item) => (
               <div
                 key={`${item.category}-${item.statement}`}
-                className="flex gap-[8px] rounded-[14px] border border-[#dbe5ff] bg-white/78 px-[8px] py-[7px] text-[clamp(0.78rem,1vw,0.9rem)] leading-[1.18] text-slate-700"
+                className="flex gap-[8px] rounded-[14px] border border-[#dbe5ff] bg-white/78 px-[8px] py-[6px] text-[clamp(1rem,1.05vw,1.08rem)] leading-[1.14] text-slate-700"
               >
                 <span
                   className={[
@@ -75,9 +75,6 @@ export function PodLearnPanel({ learnSleepNutritionItems = [], learnPricingRows 
                   </div>
                 ))}
               </div>
-              <div className="mt-[8px] text-[0.78rem] leading-4 text-slate-500">
-                Prices may vary by retailer.
-              </div>
             </div>
           ) : (
             <div className="mt-[8px] rounded-[16px] border border-dashed border-[#dbe5ff] bg-white/90 px-[10px] py-[10px] text-[0.82rem] leading-5 text-slate-600">
@@ -93,9 +90,9 @@ export function PodLearnPanel({ learnSleepNutritionItems = [], learnPricingRows 
           <div className="mt-[4px] text-[clamp(1.12rem,1.58vw,1.34rem)] font-black leading-tight tracking-tight text-slate-900">
             Why this mattress may fit
           </div>
-          <div className="mt-[8px] space-y-[6px] pr-[2px]">
+          <div className="mt-[8px] space-y-[7px] pr-[2px]">
             {learnFitItems.map((item) => (
-              <div key={item} className="flex gap-[8px] text-[clamp(0.86rem,1.08vw,0.94rem)] leading-[1.24] text-slate-700">
+              <div key={item} className="flex gap-[8px] text-[clamp(0.95rem,1.05vw,1.04rem)] leading-[1.22] text-slate-700">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2f57e8]" />
                 <span>{item}</span>
               </div>

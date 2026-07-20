@@ -47,39 +47,27 @@ function IotZoneDiagnostics({ endpoint, state }) {
   const device = useDeviceMode();
   const [expanded, setExpanded] = useState(false);
 
+  useEffect(() => {
+    if (!shouldShowIotDiagnostics(device)) return undefined;
+
+    const onKeyDown = (event) => {
+      if (event.ctrlKey && event.altKey && String(event.key || "").toLowerCase() === "i") {
+        event.preventDefault();
+        setExpanded((current) => !current);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [device]);
+
   if (!shouldShowIotDiagnostics(device)) return null;
 
   const endpointLabel = endpoint ? endpoint.split("?")[0] : "not configured";
   const latestEvent = Object.values(state.latestEventByZone || {}).slice(-1)[0];
 
   if (!expanded) {
-    return (
-      <button
-        type="button"
-        aria-label="Open IoT diagnostics"
-        data-pod-lab-ignore="true"
-        onClick={() => setExpanded(true)}
-        style={{
-          position: "fixed",
-          right: 12,
-          top: 12,
-          zIndex: 2147483000,
-          border: "1px solid rgba(37, 99, 235, 0.24)",
-          borderRadius: 999,
-          background: "rgba(255, 255, 255, 0.9)",
-          boxShadow: "0 14px 38px rgba(15, 23, 42, 0.14)",
-          color: "#1d4ed8",
-          cursor: "pointer",
-          fontSize: 11,
-          fontWeight: 900,
-          letterSpacing: "0.08em",
-          padding: "8px 11px",
-          textTransform: "uppercase",
-        }}
-      >
-        IoT {state.connectionStatus}
-      </button>
-    );
+    return null;
   }
 
   return (

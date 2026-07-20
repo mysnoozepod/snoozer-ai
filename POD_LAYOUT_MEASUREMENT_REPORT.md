@@ -17,131 +17,203 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 
 | Viewport | State | Page Scroll | Active Top | Active Visible | Hero Children | Shell Scroll/Clip | Overlap | Primary Action Visible | Warnings | Result |
 |----------|-------|-------------|------------|----------------|---------------|-------------------|---------|------------------------|----------|--------|
-| 1180x820 | pod-4-home | no | 323 | 474 | 19 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-4-rest-selection | no | 321 | 478 | 19 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-4-rest-active | no | 321 | 478 | 12 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-4-learn | no | 323 | 474 | 14 ok | no | no | n/a | none | pass |
-| 1180x820 | pod-4-build-size | no | 323 | 474 | 14 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-4-build-base | no | 323 | 474 | 14 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-4-build-review | no | 323 | 474 | 14 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-4-build-success | no | 323 | 474 | 14 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-1-learn | no | 323 | 474 | 14 ok | no | no | n/a | none | pass |
-| 1180x820 | pod-1-build-size | no | 323 | 474 | 14 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-1-build-base | no | 323 | 474 | 14 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-1-build-motion | no | 323 | 474 | 14 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-1-build-comfort | no | 323 | 474 | 14 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-1-build-review | no | 323 | 474 | 14 ok | no | no | yes (100%) | none | pass |
-| 1180x820 | pod-1-build-success | no | 323 | 474 | 14 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-4-home | no | 312.59 | 432.41 | 19 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-4-rest-selection | no | 310.59 | 436.41 | 19 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-4-rest-active | no | 310.59 | 436.41 | 12 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-4-learn | no | 312.59 | 432.41 | 14 ok | no | no | n/a | none | pass |
-| 1024x768 | pod-4-build-size | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-4-build-base | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-4-build-review | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-4-build-success | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-1-learn | no | 312.59 | 432.41 | 14 ok | no | no | n/a | none | pass |
-| 1024x768 | pod-1-build-size | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-1-build-base | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-1-build-motion | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-1-build-comfort | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-1-build-review | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1024x768 | pod-1-build-success | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-4-home | no | 312.59 | 432.41 | 19 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-4-rest-selection | no | 310.59 | 436.41 | 19 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-4-rest-active | no | 310.59 | 436.41 | 12 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-4-learn | no | 312.59 | 432.41 | 14 ok | no | no | n/a | none | pass |
-| 1366x768 | pod-4-build-size | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-4-build-base | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-4-build-review | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-4-build-success | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-1-learn | no | 312.59 | 432.41 | 14 ok | no | no | n/a | none | pass |
-| 1366x768 | pod-1-build-size | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-1-build-base | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-1-build-motion | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-1-build-comfort | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-1-build-review | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| 1366x768 | pod-1-build-success | no | 312.59 | 432.41 | 14 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-4-home | no | 323 | 554 | 19 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-4-rest-selection | no | 321 | 558 | 19 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-4-rest-active | no | 321 | 558 | 12 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-4-learn | no | 323 | 554 | 14 ok | no | no | n/a | none | pass |
-| staging-review-1600x900 | pod-4-build-size | no | 323 | 554 | 14 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-4-build-base | no | 323 | 554 | 14 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-4-build-review | no | 323 | 554 | 14 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-4-build-success | no | 323 | 554 | 14 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-1-learn | no | 323 | 554 | 14 ok | no | no | n/a | none | pass |
-| staging-review-1600x900 | pod-1-build-size | no | 323 | 554 | 14 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-1-build-base | no | 323 | 554 | 14 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-1-build-motion | no | 323 | 554 | 14 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-1-build-comfort | no | 323 | 554 | 14 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-1-build-review | no | 323 | 554 | 14 ok | no | no | yes (100%) | none | pass |
-| staging-review-1600x900 | pod-1-build-success | no | 323 | 554 | 14 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-4-home | no | 283 | 514 | 8 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-4-rest-selection | no | 281 | 518 | 8 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-4-rest-active | no | 281 | 518 | 8 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-4-learn | no | 283 | 514 | 10 ok | no | no | n/a | none | pass |
+| 1180x820 | pod-4-build-size | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-4-build-base | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-4-build-motion | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-4-build-review | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-4-build-success | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-1-learn | no | 283 | 514 | 10 ok | no | no | n/a | none | pass |
+| 1180x820 | pod-1-build-size | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-1-build-base | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-1-build-motion | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-1-build-comfort | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-1-build-review | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-1-build-success | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-4-home | no | 283 | 462 | 8 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-4-rest-selection | no | 281 | 466 | 8 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-4-rest-active | no | 281 | 466 | 8 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-4-learn | no | 283 | 462 | 10 ok | no | no | n/a | none | pass |
+| 1024x768 | pod-4-build-size | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-4-build-base | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-4-build-motion | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-4-build-review | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-4-build-success | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-1-learn | no | 283 | 462 | 10 ok | no | no | n/a | none | pass |
+| 1024x768 | pod-1-build-size | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-1-build-base | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-1-build-motion | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-1-build-comfort | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-1-build-review | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-1-build-success | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-4-home | no | 283 | 462 | 8 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-4-rest-selection | no | 281 | 466 | 8 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-4-rest-active | no | 281 | 466 | 8 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-4-learn | no | 283 | 462 | 10 ok | no | no | n/a | none | pass |
+| 1366x768 | pod-4-build-size | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-4-build-base | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-4-build-motion | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-4-build-review | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-4-build-success | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-1-learn | no | 283 | 462 | 10 ok | no | no | n/a | none | pass |
+| 1366x768 | pod-1-build-size | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-1-build-base | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-1-build-motion | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-1-build-comfort | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-1-build-review | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-1-build-success | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-4-home | no | 283 | 594 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-4-rest-selection | no | 281 | 598 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-4-rest-active | no | 281 | 598 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-4-learn | no | 283 | 594 | 10 ok | no | no | n/a | none | pass |
+| staging-review-1600x900 | pod-4-build-size | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-4-build-base | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-4-build-motion | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-4-build-review | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-4-build-success | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-1-learn | no | 283 | 594 | 10 ok | no | no | n/a | none | pass |
+| staging-review-1600x900 | pod-1-build-size | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-1-build-base | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-1-build-motion | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-1-build-comfort | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-1-build-review | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-1-build-success | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-4-home | no | 283 | 593 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-4-rest-selection | no | 281 | 597 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-4-rest-active | no | 281 | 597 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-4-learn | no | 283 | 593 | 10 ok | no | no | n/a | none | pass |
+| staging-observed-1920x899 | pod-4-build-size | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-4-build-base | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-4-build-motion | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-4-build-review | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-4-build-success | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-1-learn | no | 283 | 593 | 10 ok | no | no | n/a | none | pass |
+| staging-observed-1920x899 | pod-1-build-size | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-1-build-base | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-1-build-motion | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-1-build-comfort | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-1-build-review | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-1-build-success | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-4-home | no | 283 | 554 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-4-rest-selection | no | 281 | 558 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-4-rest-active | no | 281 | 558 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-4-learn | no | 283 | 554 | 10 ok | no | no | n/a | none | pass |
+| staging-compact-1920x860 | pod-4-build-size | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-4-build-base | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-4-build-motion | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-4-build-review | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-4-build-success | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-1-learn | no | 283 | 554 | 10 ok | no | no | n/a | none | pass |
+| staging-compact-1920x860 | pod-1-build-size | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-1-build-base | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-1-build-motion | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-1-build-comfort | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-1-build-review | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-1-build-success | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
 
 ## Region Measurements
 
 | Viewport | State | Header actual/diff | Hero actual/diff | Content actual/diff | Nav actual/diff |
 |----------|-------|--------------------|------------------|---------------------|-----------------|
-| 1180x820 | pod-4-home | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-4-rest-selection | 72/0 | 164/0 | 478/10 | 56/0 |
-| 1180x820 | pod-4-rest-active | 72/0 | 164/0 | 478/10 | 56/0 |
-| 1180x820 | pod-4-learn | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-4-build-size | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-4-build-base | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-4-build-review | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-4-build-success | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-1-learn | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-1-build-size | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-1-build-base | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-1-build-motion | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-1-build-comfort | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-1-build-review | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1180x820 | pod-1-build-success | 72/0 | 164/0 | 474/6 | 56/0 |
-| 1024x768 | pod-4-home | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-4-rest-selection | 72/0 | 153.59/1.59 | 436.41/8.41 | 56/0 |
-| 1024x768 | pod-4-rest-active | 72/0 | 153.59/1.59 | 436.41/8.41 | 56/0 |
-| 1024x768 | pod-4-learn | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-4-build-size | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-4-build-base | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-4-build-review | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-4-build-success | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-1-learn | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-1-build-size | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-1-build-base | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-1-build-motion | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-1-build-comfort | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-1-build-review | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1024x768 | pod-1-build-success | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-4-home | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-4-rest-selection | 72/0 | 153.59/1.59 | 436.41/8.41 | 56/0 |
-| 1366x768 | pod-4-rest-active | 72/0 | 153.59/1.59 | 436.41/8.41 | 56/0 |
-| 1366x768 | pod-4-learn | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-4-build-size | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-4-build-base | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-4-build-review | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-4-build-success | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-1-learn | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-1-build-size | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-1-build-base | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-1-build-motion | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-1-build-comfort | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-1-build-review | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| 1366x768 | pod-1-build-success | 72/0 | 153.59/1.59 | 432.41/4.41 | 56/0 |
-| staging-review-1600x900 | pod-4-home | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-4-rest-selection | 72/0 | 164/0 | 558/90 | 56/0 |
-| staging-review-1600x900 | pod-4-rest-active | 72/0 | 164/0 | 558/90 | 56/0 |
-| staging-review-1600x900 | pod-4-learn | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-4-build-size | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-4-build-base | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-4-build-review | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-4-build-success | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-1-learn | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-1-build-size | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-1-build-base | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-1-build-motion | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-1-build-comfort | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-1-build-review | 72/0 | 164/0 | 554/86 | 56/0 |
-| staging-review-1600x900 | pod-1-build-success | 72/0 | 164/0 | 554/86 | 56/0 |
+| 1180x820 | pod-4-home | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-4-rest-selection | 72/0 | 116/0 | 518/10 | 64/0 |
+| 1180x820 | pod-4-rest-active | 72/0 | 116/0 | 518/10 | 64/0 |
+| 1180x820 | pod-4-learn | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-4-build-size | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-4-build-base | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-4-build-motion | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-4-build-review | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-4-build-success | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-1-learn | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-1-build-size | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-1-build-base | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-1-build-motion | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-1-build-comfort | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-1-build-review | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-1-build-success | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1024x768 | pod-4-home | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-4-rest-selection | 72/0 | 116/0 | 466/10 | 64/0 |
+| 1024x768 | pod-4-rest-active | 72/0 | 116/0 | 466/10 | 64/0 |
+| 1024x768 | pod-4-learn | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-4-build-size | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-4-build-base | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-4-build-motion | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-4-build-review | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-4-build-success | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-1-learn | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-1-build-size | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-1-build-base | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-1-build-motion | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-1-build-comfort | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-1-build-review | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-1-build-success | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-4-home | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-4-rest-selection | 72/0 | 116/0 | 466/10 | 64/0 |
+| 1366x768 | pod-4-rest-active | 72/0 | 116/0 | 466/10 | 64/0 |
+| 1366x768 | pod-4-learn | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-4-build-size | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-4-build-base | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-4-build-motion | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-4-build-review | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-4-build-success | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-1-learn | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-1-build-size | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-1-build-base | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-1-build-motion | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-1-build-comfort | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-1-build-review | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-1-build-success | 72/0 | 116/0 | 462/6 | 64/0 |
+| staging-review-1600x900 | pod-4-home | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-4-rest-selection | 72/0 | 116/0 | 598/90 | 64/0 |
+| staging-review-1600x900 | pod-4-rest-active | 72/0 | 116/0 | 598/90 | 64/0 |
+| staging-review-1600x900 | pod-4-learn | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-4-build-size | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-4-build-base | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-4-build-motion | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-4-build-review | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-4-build-success | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-1-learn | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-1-build-size | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-1-build-base | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-1-build-motion | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-1-build-comfort | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-1-build-review | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-1-build-success | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-observed-1920x899 | pod-4-home | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-4-rest-selection | 72/0 | 116/0 | 597/89 | 64/0 |
+| staging-observed-1920x899 | pod-4-rest-active | 72/0 | 116/0 | 597/89 | 64/0 |
+| staging-observed-1920x899 | pod-4-learn | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-4-build-size | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-4-build-base | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-4-build-motion | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-4-build-review | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-4-build-success | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-1-learn | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-1-build-size | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-1-build-base | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-1-build-motion | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-1-build-comfort | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-1-build-review | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-1-build-success | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-compact-1920x860 | pod-4-home | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-4-rest-selection | 72/0 | 116/0 | 558/50 | 64/0 |
+| staging-compact-1920x860 | pod-4-rest-active | 72/0 | 116/0 | 558/50 | 64/0 |
+| staging-compact-1920x860 | pod-4-learn | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-4-build-size | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-4-build-base | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-4-build-motion | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-4-build-review | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-4-build-success | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-1-learn | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-1-build-size | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-1-build-base | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-1-build-motion | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-1-build-comfort | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-1-build-review | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-1-build-success | 72/0 | 116/0 | 554/46 | 64/0 |
 
 ## Artifact Locations
 

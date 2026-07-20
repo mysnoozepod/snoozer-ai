@@ -109,6 +109,16 @@ export function pickVariantForSize(product, size) {
 }
 
 function safeVariantId(variant) {
+  if (!variant) return null;
+  if (
+    variant.availableForSale === false ||
+    variant.available === false ||
+    variant.isAvailable === false ||
+    variant.inventoryAvailable === false
+  ) {
+    return null;
+  }
+
   const id = variant?.id ? String(variant.id).trim() : "";
   if (!id.startsWith("gid://shopify/ProductVariant/")) return null;
   return id;
@@ -543,11 +553,11 @@ export function subtitleForBase(option) {
     case "none":
       return "Mattress feel only";
     case "adjustable":
-      return "Lift, recline, motion";
+      return "Lift and recline";
     case "platform":
       return "Simple support";
     case "storage":
-      return "Support with storage";
+      return "Built-in storage";
     default:
       return "";
   }
@@ -973,10 +983,22 @@ export default function PodBuilder({
   const canGoBack = currentStepIndex > 0;
   const mattressImage = pickFeaturedImage(mattressProduct);
   const selectedBaseImage = pickFeaturedImage(baseProduct);
+  const mattressCommerceReady = Boolean(mattressMerchId);
+  const baseCommerceReady = !wantsBase || Boolean(baseMerchId);
+  const commerceReady = mattressCommerceReady && baseCommerceReady;
+  const commerceUnavailableMessage = useMemo(() => {
+    if (!requiredSelectionsConfirmed) return "";
+    if (!mattressCommerceReady) {
+      return "This mattress is unavailable in the selected size. Your selections are saved so you can choose another size or pod.";
+    }
+    if (!baseCommerceReady) {
+      return "This base is unavailable in the selected size. Your selections are saved so you can choose another base or size.";
+    }
+    return "";
+  }, [baseCommerceReady, mattressCommerceReady, requiredSelectionsConfirmed]);
   const canAdd =
     requiredSelectionsConfirmed &&
-    Boolean(mattressMerchId) &&
-    (!wantsBase || Boolean(baseMerchId)) &&
+    commerceReady &&
     (!isDualComfort || Boolean(dcLeft && dcRight));
   const selectionSummary = useMemo(
     () => [
@@ -1005,50 +1027,44 @@ export default function PodBuilder({
   const currentStepMeta = useMemo(() => {
     if (stepKey === "size") {
       return {
-        eyebrow: "Step 1",
         title: "Choose your mattress size.",
         description: "Queen is most popular, but nothing is selected until you tap.",
       };
     }
     if (stepKey === "base") {
       return {
-        eyebrow: "Step 2",
         title: "Choose your base.",
         description: "Pick mattress only or the foundation for this setup.",
       };
     }
     if (stepKey === "motion") {
       return {
-        eyebrow: "Step 3",
         title: "Choose motion style.",
         description: `${availableMotionLabel} available for ${size}.`,
       };
     }
     if (stepKey === "comfort") {
       return {
-        eyebrow: showMotion ? "Step 4" : "Step 3",
         title: "Choose each side's comfort.",
         description: "Pick the left feel, then the right feel.",
       };
     }
     if (stepKey === "success") {
       return {
-        eyebrow: "Setup Added",
         title: "Your setup is in the cart.",
         description: "You can keep testing pods or open the cart when you're ready.",
       };
     }
     return {
-      eyebrow: showMotion && isDualComfort ? "Step 5" : showMotion || isDualComfort ? "Step 4" : "Step 3",
       title: "Review & add.",
-      description: "Confirm the details before adding this setup.",
+      description: commerceUnavailableMessage || "Confirm the details before adding this setup.",
     };
-  }, [stepKey, isDualComfort, showMotion, size, availableMotionLabel]);
+  }, [stepKey, size, availableMotionLabel, commerceUnavailableMessage]);
   const canProceed =
     stepKey === "size"
-      ? Boolean(size)
+      ? sizeReady
       : stepKey === "base"
-        ? Boolean(baseType)
+        ? baseReady
         : stepKey === "motion"
           ? motionReady
           : stepKey === "comfort"
@@ -1128,8 +1144,8 @@ export default function PodBuilder({
         caption: "Ready to review this setup before you add it to cart.",
         items: [
           ...selectionSummary,
-          `Estimated monthly: ${money(monthly)}/mo`,
-          `Estimated total: ${money(previewTotal)}`,
+          commerceReady ? `Estimated monthly: ${money(monthly)}/mo` : "Availability: not ready to add",
+          commerceReady ? `Estimated total: ${money(previewTotal)}` : commerceUnavailableMessage,
         ],
         nextAction: primaryCtaLabel,
       };
@@ -1156,6 +1172,8 @@ export default function PodBuilder({
     primaryCtaLabel,
     selectionSummary,
     mattressMerchId,
+    commerceReady,
+    commerceUnavailableMessage,
   ]);
 
   useEffect(() => {
@@ -1183,6 +1201,8 @@ export default function PodBuilder({
       isDualComfort,
       canProceed,
       canAdd,
+      commerceReady,
+      commerceUnavailableMessage,
       monthly,
       previewTotal,
     });
@@ -1207,6 +1227,8 @@ export default function PodBuilder({
     isDualComfort,
     canProceed,
     canAdd,
+    commerceReady,
+    commerceUnavailableMessage,
     monthly,
     previewTotal,
   ]);
@@ -1279,13 +1301,12 @@ export default function PodBuilder({
   const addToPlan = useCallback(async () => {
     if (isAddingToCart) return;
 
-    if (!mattressMerchId) {
-      onCue?.("This mattress is unavailable in the selected size.", "warning");
-      return;
-    }
-
-    if (wantsBase && !baseMerchId) {
-      onCue?.("This base is unavailable in the selected size.", "warning");
+    if (!canAdd) {
+      const message =
+        commerceUnavailableMessage ||
+        "Complete each required selection before adding this setup.";
+      setCartError(message);
+      onCue?.(message, "warning");
       return;
     }
 
@@ -1353,6 +1374,8 @@ export default function PodBuilder({
   }, [
     addLinesToAuthoritativeCart,
     baseMerchId,
+    canAdd,
+    commerceUnavailableMessage,
     dcLeft,
     dcRight,
     isAddingToCart,
@@ -1416,10 +1439,6 @@ export default function PodBuilder({
       >
         Back
       </button>
-
-      <div className="hidden min-w-0 text-center text-[0.72rem] font-black uppercase tracking-[0.16em] text-slate-500 sm:block">
-        {currentStepMeta.eyebrow}
-      </div>
 
       {showPrimary ? (
         <Button
@@ -1506,9 +1525,6 @@ export default function PodBuilder({
               />
             ))}
           </div>
-          <div className="mt-3 rounded-[16px] border border-[#dfe7fb] bg-[#f8faff] px-4 py-3 text-[0.86rem] font-semibold leading-snug text-slate-700">
-            Adjustable Base unlocks motion options. Mattress Only keeps this pod focused on mattress feel.
-          </div>
           {renderStageControls({
             primaryLabel: `Continue to ${steps.find((step) => step.key === nextAfterBase)?.label || "Review"}`,
             onPrimary: () => setGuidedStep(nextAfterBase, "Keep building this setup."),
@@ -1554,9 +1570,6 @@ export default function PodBuilder({
                 />
               );
             })}
-          </div>
-          <div className="mt-3 rounded-[16px] border border-[#dfe7fb] bg-[#f8faff] px-4 py-3 text-[0.86rem] font-semibold leading-snug text-slate-700">
-            {availableMotionLabel} available for this {size} setup.
           </div>
           {renderStageControls({
             primaryLabel: `Continue to ${steps.find((step) => step.key === nextAfterMotion)?.label || "Review"}`,
@@ -1692,38 +1705,16 @@ export default function PodBuilder({
 
     return (
       <div className="flex h-full min-h-0 flex-col">
-        <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_0.92fr]">
           <div className="rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="flex h-[52px] w-[52px] shrink-0 overflow-hidden rounded-[14px] border border-[#dfe7fb] bg-[#fbfcff]">
-                <BuilderMediaPreview
-                  src={mattressImage}
-                  alt={mattressLabel}
-                  icon={BedDouble}
-                  className="h-full w-full"
-                  imgClassName="h-full w-full object-cover"
-                />
-              </div>
-              <div className="min-w-0">
-                <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                  Mattress
-                </div>
-                <div className="mt-1 text-[clamp(1rem,1.3vw,1.16rem)] font-black leading-tight text-slate-950">
-                  {mattressLabel}
-                </div>
-                <div className="mt-0.5 text-[0.78rem] font-semibold leading-snug text-slate-600">
-                  Locked to {podLabel}. Compare another pod if you want a different mattress family.
-                </div>
-                {onViewResults ? (
-                  <button
-                    type="button"
-                    onClick={onViewResults}
-                    className="mt-2 inline-flex min-h-[44px] items-center text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#315cf6]"
-                  >
-                    Compare other pods
-                  </button>
-                ) : null}
-              </div>
+            <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
+              Mattress
+            </div>
+            <div className="mt-1 text-[clamp(1rem,1.3vw,1.16rem)] font-black leading-tight text-slate-950">
+              {mattressLabel}
+            </div>
+            <div className="mt-1 text-[0.8rem] font-semibold leading-snug text-slate-600">
+              Locked to {podLabel}.
             </div>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {reviewDetails.map((item) => (
@@ -1741,21 +1732,27 @@ export default function PodBuilder({
           </div>
 
           <div className="flex min-h-0 flex-col rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
-            <div className="grid gap-2">
-              <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-[#f8faff] px-3 py-2">
-                <span className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                  Est. Monthly
-                </span>
-                <span className="text-[1rem] font-black text-[#315cf6]">{money(monthly)}/mo</span>
+            {commerceReady ? (
+              <div className="grid gap-2">
+                <div className="flex min-h-[44px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-[#f8faff] px-3">
+                  <span className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                    Est. Monthly
+                  </span>
+                  <span className="text-[1rem] font-black text-[#315cf6]">{money(monthly)}/mo</span>
+                </div>
+                <div className="flex min-h-[44px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-white px-3">
+                  <span className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">
+                    Est. Total
+                  </span>
+                  <span className="text-[1rem] font-black text-slate-950">{money(previewTotal)}</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-white px-3 py-2">
-                <span className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                  Est. Total
-                </span>
-                <span className="text-[1rem] font-black text-slate-950">{money(previewTotal)}</span>
+            ) : (
+              <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-3 py-3 text-[0.86rem] font-semibold leading-snug text-amber-900">
+                {commerceUnavailableMessage || "This setup is not ready to add yet."}
               </div>
-            </div>
-            {cartError ? (
+            )}
+            {cartError && cartError !== commerceUnavailableMessage ? (
               <div className="mt-3 rounded-[14px] border border-amber-200 bg-amber-50 px-3 py-2 text-[0.8rem] font-semibold leading-snug text-amber-900">
                 {cartError}
               </div>
@@ -1776,55 +1773,10 @@ export default function PodBuilder({
       className="flex min-h-0 w-full flex-1 flex-col gap-2"
       data-pod-builder-state={stepKey}
     >
-      <div
-        data-pod-build-progress="true"
-        className="grid max-h-[48px] min-h-[44px] shrink-0 gap-2 [grid-template-columns:repeat(auto-fit,minmax(104px,1fr))]"
-      >
-        {visibleProgressSteps.map((step, index) => {
-          const Icon = step.icon;
-          const active = step.key === stepKey;
-          const complete = isStepComplete(step.key);
-          const visitable = canVisitStep(step.key);
-          return (
-            <button
-              key={step.key}
-              type="button"
-              disabled={!visitable}
-              onClick={() => {
-                if (!visitable || step.key === "success") return;
-                setGuidedStep(step.key);
-              }}
-              className={[
-                "flex min-h-[44px] items-center gap-2 rounded-[14px] border px-3 text-left transition motion-reduce:transition-none",
-                active
-                  ? "border-[#315cf6] bg-[#eef3ff] text-[#315cf6]"
-                  : complete
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-[#dfe7fb] bg-white/60 text-slate-400",
-                visitable ? "" : "cursor-not-allowed opacity-70",
-              ].join(" ")}
-            >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-                {complete ? <CheckCircle2 className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
-              </span>
-              <span className="min-w-0">
-                <span className="block text-[0.62rem] font-black uppercase tracking-[0.14em] opacity-70">
-                  {index + 1}
-                </span>
-                <span className="block truncate text-[0.82rem] font-black">{step.label}</span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
       <div className="min-h-0 flex-1 rounded-[22px] border border-[#dfe7fb] bg-white/96 p-3 shadow-[0_18px_46px_rgba(45,71,136,0.09)]">
-        <div className="mb-2.5 flex items-start justify-between gap-4">
+        <div className="mb-2 flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="text-[0.7rem] font-black uppercase tracking-[0.18em] text-[#315cf6]">
-              {currentStepMeta.eyebrow}
-            </div>
-            <h2 className="mt-0.5 text-[clamp(1.25rem,1.9vw,1.78rem)] font-black leading-tight tracking-tight text-slate-950">
+            <h2 className="text-[clamp(1.25rem,1.9vw,1.78rem)] font-black leading-tight tracking-tight text-slate-950">
               {currentStepMeta.title}
             </h2>
           </div>
@@ -1832,7 +1784,7 @@ export default function PodBuilder({
             {currentStepMeta.description}
           </p>
         </div>
-        <div className="min-h-0 h-[calc(100%-66px)]">{renderCurrentStep()}</div>
+        <div className="min-h-0 h-[calc(100%-48px)]">{renderCurrentStep()}</div>
       </div>
     </div>
   );

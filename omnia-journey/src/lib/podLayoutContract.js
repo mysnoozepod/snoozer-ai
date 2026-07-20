@@ -16,6 +16,8 @@ export const POD_LAYOUT_VIEWPORTS = Object.freeze([
   { name: "1024x768", width: 1024, height: 768, primary: false },
   { name: "1366x768", width: 1366, height: 768, primary: false },
   { name: "staging-review-1600x900", width: 1600, height: 900, primary: false },
+  { name: "staging-observed-1920x899", width: 1920, height: 899, primary: false },
+  { name: "staging-compact-1920x860", width: 1920, height: 860, primary: false },
 ]);
 
 export const POD_LAYOUT_CONTRACT = Object.freeze({
@@ -26,24 +28,24 @@ export const POD_LAYOUT_CONTRACT = Object.freeze({
   verticalBudget: {
     viewportHeight: 820,
     header: 72,
-    navigation: 56,
-    productHero: 164,
+    navigation: 64,
+    productHero: 116,
     outerVerticalAllowance: 24,
     sectionGaps: 36,
-    activeContent: 468,
-    activeContentTopMax: 328,
-    activeContentVisibleMin: 450,
+    activeContent: 508,
+    activeContentTopMax: 288,
+    activeContentVisibleMin: 490,
   },
   compactVerticalBudget: {
     viewportHeight: 768,
     header: 72,
-    navigation: 56,
-    productHero: 152,
+    navigation: 64,
+    productHero: 116,
     outerVerticalAllowance: 24,
     sectionGaps: 36,
-    activeContent: 428,
-    activeContentTopMax: 312,
-    activeContentVisibleMin: 400,
+    activeContent: 456,
+    activeContentTopMax: 288,
+    activeContentVisibleMin: 430,
   },
   spacing: {
     outerHorizontalPadding: 24,

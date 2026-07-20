@@ -33,6 +33,13 @@ export default function DeviceDiagnostics() {
   useEffect(() => {
     if (!shouldShow) return undefined;
 
+    const onKeyDown = (event) => {
+      if (event.ctrlKey && event.altKey && String(event.key || "").toLowerCase() === "d") {
+        event.preventDefault();
+        setExpanded((current) => !current);
+      }
+    };
+
     const update = () =>
       setViewport({
         width: window.innerWidth,
@@ -44,9 +51,11 @@ export default function DeviceDiagnostics() {
       });
 
     update();
+    window.addEventListener("keydown", onKeyDown);
     window.addEventListener("resize", update);
     window.visualViewport?.addEventListener("resize", update);
     return () => {
+      window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("resize", update);
       window.visualViewport?.removeEventListener("resize", update);
     };
@@ -57,50 +66,7 @@ export default function DeviceDiagnostics() {
   const isHealthy = deviceState?.status === DEVICE_STATUSES.READY;
 
   if (!expanded) {
-    return (
-      <button
-        type="button"
-        aria-label="Open device diagnostics"
-        data-pod-lab-ignore="true"
-        onClick={() => setExpanded(true)}
-        style={{
-          position: "fixed",
-          left: 12,
-          top: 12,
-          zIndex: 2147483000,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          border: "1px solid rgba(37, 99, 235, 0.24)",
-          borderRadius: 999,
-          background: "rgba(255, 255, 255, 0.9)",
-          boxShadow: "0 14px 38px rgba(15, 23, 42, 0.14)",
-          color: "#1d4ed8",
-          cursor: "pointer",
-          fontFamily:
-            "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
-          fontSize: 11,
-          fontWeight: 900,
-          letterSpacing: "0.08em",
-          padding: "8px 11px",
-          textTransform: "uppercase",
-        }}
-      >
-        Diagnostics
-        <span
-          style={{
-            borderRadius: 999,
-            padding: "2px 7px",
-            background: isHealthy ? "#dcfce7" : "#fee2e2",
-            color: isHealthy ? "#166534" : "#991b1b",
-            letterSpacing: 0,
-            textTransform: "none",
-          }}
-        >
-          {deviceState?.status || "loading"}
-        </span>
-      </button>
-    );
+    return null;
   }
 
   return (

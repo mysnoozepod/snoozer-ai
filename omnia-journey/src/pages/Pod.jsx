@@ -437,9 +437,10 @@ function detectMattressTruth({ mattressProduct, activePod, baseProduct }) {
     hasCooling:
       combined.includes("cool") ||
       combined.includes("cooling") ||
+      combined.includes("airflow") ||
       combined.includes("breathable") ||
-      combined.includes("temperature") ||
-      combined.includes("gel"),
+      combined.includes("breathability") ||
+      combined.includes("temperature"),
     hasPressureRelief:
       combined.includes("pressure") ||
       combined.includes("relief") ||
@@ -2797,16 +2798,12 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
             <div data-pod-layout-region="product-hero" className="h-[var(--pod-hero-height)] shrink-0">
               <ShowroomPanel className="h-full overflow-hidden p-0" tone="soft">
                 <PodRouteHeroHeader
-                  eyebrow=""
                   podTitle={title}
                   mattressTitle={mattressDisplayTitle}
                   helperText=""
                   isRecommended={isRecommended}
-                  mattressImage={mattressImage}
                   voiceState={voiceState}
                   badges={openStage === "details" || openStage === "build" ? headerBadges : headerBadges.slice(0, isRecommended ? 2 : 1)}
-                  coachBubble={isDefaultPodDashboard || isRestSelectionStage ? restCoachCopy : ""}
-                  layout={openStage === "build" ? "build" : "default"}
                 />
               </ShowroomPanel>
             </div>

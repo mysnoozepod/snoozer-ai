@@ -10,6 +10,7 @@ const CASES = [
   { id: "pod-4-learn", route: "/pod/pod-4", state: "learn" },
   { id: "pod-4-build-size", route: "/pod/pod-4", state: "build-size" },
   { id: "pod-4-build-base", route: "/pod/pod-4", state: "build-base" },
+  { id: "pod-4-build-motion", route: "/pod/pod-4", state: "build-motion" },
   { id: "pod-4-build-review", route: "/pod/pod-4", state: "build-review" },
   { id: "pod-4-build-success", route: "/pod/pod-4", state: "build-success" },
   { id: "pod-1-learn", route: "/pod/pod-1", state: "learn" },
@@ -26,6 +27,8 @@ const VIEWPORTS = [
   { name: "1024x768", width: 1024, height: 768 },
   { name: "1366x768", width: 1366, height: 768 },
   { name: "staging-review-1600x900", width: 1600, height: 900 },
+  { name: "staging-observed-1920x899", width: 1920, height: 899 },
+  { name: "staging-compact-1920x860", width: 1920, height: 860 },
 ];
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
@@ -247,11 +250,18 @@ for (const viewport of VIEWPORTS) {
 
       if (testInfo.project.name === "strict") {
         expect(measurement.failures, readFailureText(measurement)).toEqual([]);
+        await expect(page.locator('[data-pod-route-header="true"] img')).toHaveCount(0);
 
         if (testCase.state === "learn") {
           await expect(page.getByText("Sleep Nutrition")).toBeVisible();
           await expect(page.getByText("What this mattress gives your sleep")).toBeVisible();
           await expect(page.getByText(/^Specs$/)).toHaveCount(0);
+          await expect(page.getByText("Prices may vary by retailer.")).toHaveCount(0);
+        }
+
+        if (testCase.state.startsWith("build")) {
+          await expect(page.locator("[data-pod-build-progress='true']")).toHaveCount(0);
+          await expect(page.getByText(/^Step \d$/i)).toHaveCount(0);
         }
 
         if (testCase.state === "build-size") {
@@ -266,3 +276,28 @@ for (const viewport of VIEWPORTS) {
     });
   }
 }
+
+test("pod-4 queen adjustable standard setup is gated by resolved commerce lines", async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/pod/pod-4?podLayoutState=build-size", { waitUntil: "domcontentloaded" });
+  await ensureRendered(page);
+
+  await page.locator('[data-pod-build-choice="Queen"]').first().click();
+  await expect(page.locator('[data-pod-builder-state="base"]')).toBeVisible();
+
+  await page.locator('[data-pod-build-choice="Adjustable Base"]').first().click();
+  await expect(page.locator('[data-pod-builder-state="motion"]')).toBeVisible();
+
+  await page.locator('[data-pod-build-choice="Standard Motion"]').first().click();
+  await expect(page.locator('[data-pod-builder-state="review"]')).toBeVisible();
+
+  const addButton = page.locator('[data-pod-layout-primary-action="build-add"]').first();
+  await expect(addButton).toBeVisible();
+  const addDisabled = await addButton.isDisabled();
+  const availabilityMessageCount = await page.getByText(/unavailable|not ready to add/i).count();
+
+  expect(
+    addDisabled || availabilityMessageCount > 0,
+    "Pod 4 cannot present Queen + Adjustable Base + Standard Motion as addable without resolved variants"
+  ).toBeTruthy();
+});
