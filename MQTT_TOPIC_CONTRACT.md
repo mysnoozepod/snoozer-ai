@@ -1,5 +1,16 @@
 # MQTT Topic Contract
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+- The zone event topic contract is implemented in the ingestion validator and IoT Rule design.
+- The physical control bridge adds isolated per-device `commands`, `ack`, and `reported-state` topics.
+- Topic/environment/store/device mismatches fail closed and are covered by tests.
+- Dev and prod isolation remains mandatory; no production device may subscribe to dev commands or publish into the prod namespace without explicit provisioning.
+- Live certificates, IoT policies, and edge firmware conformance remain pending commissioning.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 1 architecture contract  
 Scope: AWS IoT Core MQTT topics for MySnoozePod showroom sensors  
 Runtime code: not implemented in this pass
@@ -264,4 +275,3 @@ mysnoozepod/prod/stores/severn-pilot/zones/checkout-zone/events
 ```text
 mysnoozepod/prod/stores/severn-pilot/devices/showroom-zone-edge-01/fault
 ```
-

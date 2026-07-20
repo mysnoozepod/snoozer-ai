@@ -1,5 +1,16 @@
 # WebSocket Zone Push Plan
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+- WebSocket connect, disconnect, subscribe, and unsubscribe handlers are implemented with showroom-device registry authorization.
+- Accepted zone events broadcast only after DynamoDB persistence succeeds.
+- React subscribes by authorized zone, reconnects with backoff, re-subscribes, caches last-known state, and marks stale state safely.
+- Physical-control status updates can broadcast through the same zone-aware channel.
+- Polling is not an approved fallback for live showroom zone state. Live endpoint deployment and `ManageConnections` permissions remain pending.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 1 architecture plan  
 Scope: API Gateway WebSocket push model for MySnoozePod zone state  
 Runtime code: not implemented in this pass
@@ -284,4 +295,3 @@ Allowed non-polling cases:
 - Operator manual refresh.
 
 Continuous polling is not part of MVP architecture.
-

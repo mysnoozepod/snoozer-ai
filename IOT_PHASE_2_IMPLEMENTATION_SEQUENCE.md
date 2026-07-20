@@ -1,5 +1,26 @@
 # IoT Phase 2 Implementation Sequence
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+> The original sequence below is retained as planning history. Runtime implementation has progressed beyond the document's original “not implemented” status.
+
+Completed in source:
+
+1. ZoneEvent schema validation and registry guardrails.
+2. Node.js 20 IoT ingestion Lambda services.
+3. DynamoDB latest state and append-only event history.
+4. Malformed-event SQS quarantine and CloudWatch metrics.
+5. SAM infrastructure and rollback documentation.
+6. WebSocket connect/disconnect/subscribe/unsubscribe and zone authorization.
+7. React live zone-state subscriber with cache/reconnect/stale handling.
+8. Showroom experience integration for presence, occupancy, Rest Test, lighting state, and ambient audio state.
+9. Physical command bridge with desired/reported state, acknowledgement, retry/timeout, persistence, and React status wiring.
+
+Remaining work is deployment/commissioning, hardware selection and installation, live IAM/environment validation, and physical adapter integration—not another abstract IoT architecture phase.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 1 planning document  
 Scope: Exact coding and deployment sequence after contracts are approved  
 Runtime code: not implemented in this pass
@@ -206,4 +227,3 @@ Do not add:
 - Biometrics.
 - Consumer IoT hubs.
 - Polling.
-

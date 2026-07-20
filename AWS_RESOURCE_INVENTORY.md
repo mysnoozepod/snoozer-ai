@@ -1,5 +1,16 @@
 # AWS Resource Inventory
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+- The repository now defines the Phase 1–7 IoT resource set, including ingestion, quarantine, state/history tables, WebSocket connections, and physical-control command/state resources.
+- Source-defined does not mean live-deployed. Confirm every resource in the target AWS account before marking it active.
+- Physical command topics are `commands`, `ack`, and `reported-state` under the isolated environment/store/device hierarchy.
+- Live hardware identities, certificates, serial numbers, and commissioned status remain pending.
+- Checkout authority remains restricted to the Checkout Lounge and is not controlled by this inventory.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 4 infrastructure inventory
 Scope: MySnoozePod IoT backend stack
 

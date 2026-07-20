@@ -1,5 +1,15 @@
 # Zone Event Schema
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+- The canonical ZoneEvent validator, topic-to-payload checks, registry checks, idempotency behavior, stale-event protection, quarantine path, and metrics are implemented and tested.
+- Malformed or unauthorized events fail closed and cannot update latest state or trigger showroom behavior.
+- The schema remains the contract for physical edge events; hardware vendors and firmware must conform during commissioning.
+- No checkout, cart, customer identity, or Shopify truth may be placed under ZoneEvent authority.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 1 architecture contract  
 Scope: MySnoozePod showroom sensor and IoT layer  
 Runtime code: not implemented in this pass
@@ -412,4 +422,3 @@ Invalid when published to a `prod` topic.
 ```
 
 Invalid because presence alone cannot attach Snooze Code.
-

@@ -1,5 +1,16 @@
 # Sensor to Experience Trigger Map
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+- The React experience adapter is implemented for Welcome presence refresh, Pod presence/occupancy, Rest Test eligibility/vacancy grace, Ask Snoozer proximity context, and passive awareness in Sleep Essentials/Checkout.
+- Rest Test start/complete states now map to logical lighting and ambient-audio states.
+- The physical control bridge can issue logical lighting/audio commands and consume acknowledgements/reported state.
+- No customer-facing entry or exit automation was added.
+- Real sensor thresholds, controller adapters, lighting/audio hardware, and commissioning behavior remain pending physical installation.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 1 architecture contract  
 Scope: Mapping normalized sensor events to MySnoozePod showroom experiences  
 Runtime code: not implemented in this pass
@@ -165,4 +176,3 @@ If a sensor fails:
 - Do not block Rest Test buttons.
 - Do not block Ask Snoozer.
 - Do not block cart or checkout.
-

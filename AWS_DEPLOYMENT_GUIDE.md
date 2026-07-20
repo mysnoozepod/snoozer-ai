@@ -1,5 +1,16 @@
 # AWS Deployment Guide
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+- IoT Phases 1–7 are implemented in source: contracts, validated ingestion, DynamoDB persistence, quarantine, SAM infrastructure, WebSocket push, React zone state, experience integration, and the physical control bridge.
+- The software control loop now covers command issue → MQTT publish → controller acknowledgement/reported state → DynamoDB/WebSocket → React status.
+- Live AWS deployment validation remains pending because SAM CLI validation was unavailable locally and CloudFormation validation was blocked by IAM permissions.
+- Deployment still requires live values and permissions for `IOT_PHYSICAL_CONTROL_TABLE`, `IOT_DATA_ENDPOINT`, DynamoDB access, IoT publish, and WebSocket `ManageConnections`.
+- No physical sensor/controller fleet is commissioned yet. Cart, checkout, Shopify truth, and manual showroom flows must continue operating when IoT is disabled or unavailable.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 4 infrastructure deployment guide
 Scope: MySnoozePod IoT backend stack only
 

@@ -1,5 +1,16 @@
 # IoT Device Registry Contract
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+- Canonical store ID: `severn-pilot`.
+- Canonical customer zones: `welcome-kiosk`, `pod-1` through `pod-5`, `ask-snoozer`, `sleep-essentials-zone`, `checkout-zone`, and `help`.
+- Source registries now support event validation, WebSocket authorization, zone subscriptions, and physical command target resolution.
+- Five pod edge controllers, one shared non-pod controller, and one spare remain the planned controller count.
+- Physical asset tags, serial numbers, AWS IoT Things/certificates, and commissioned status remain pending and must not be guessed.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 1 architecture contract  
 Scope: Production and dev IoT device registry for the MySnoozePod showroom  
 Runtime code: not implemented in this pass
@@ -473,4 +484,3 @@ Use the canonical example above.
 - Dev devices use dev certs and dev topics.
 - Prod devices use prod certs and prod topics.
 - Registry tooling must fail closed on environment mismatch.
-

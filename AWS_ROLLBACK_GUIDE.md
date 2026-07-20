@@ -1,5 +1,15 @@
 # AWS Rollback Guide
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+- Rollback coverage now includes zone ingestion, WebSocket delivery, React live-state consumption, and the physical control bridge.
+- The physical command layer must be independently disableable while sensor ingestion and all manual customer flows continue.
+- No live production rollback rehearsal has been completed because the stack and physical controller fleet are not yet commissioned.
+- When deployment begins, validate rollback in dev before enabling prod IoT rules or device certificates.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 4 rollback guide
 Scope: MySnoozePod IoT backend infrastructure only
 

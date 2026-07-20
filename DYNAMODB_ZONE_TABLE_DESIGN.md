@@ -1,5 +1,15 @@
 # DynamoDB Zone Table Design
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+- The latest-state and append-only event-history patterns are implemented in the IoT ingestion services and SAM template.
+- Idempotent history writes, stale-event protection, command status, and latest physical reported state are covered in source and tests.
+- The optional `eventType + receivedAt` GSI remains deferred.
+- Live tables, capacity behavior, alarms, TTL operation, and production retention still require deployed-environment validation.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 1 architecture contract  
 Scope: DynamoDB tables for MySnoozePod IoT latest state, event history, and WebSocket connections  
 Runtime code: not implemented in this pass
@@ -373,4 +383,3 @@ PK = CONNECTION#{connectionId}
 - `ping` updates `lastSeenAt`.
 - TTL removes abandoned records.
 - Broadcast Lambda deletes connection on API Gateway 410 Gone.
-

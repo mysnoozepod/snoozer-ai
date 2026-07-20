@@ -1,5 +1,16 @@
 # AWS IoT Resource Plan
 
+<!-- LIVING_STATUS_START -->
+## Current Implementation Status — 2026-07-20
+
+- The planned AWS IoT resources are represented in `template.yaml` and supporting Node.js 20 handlers.
+- Zone event ingestion, quarantine, latest state, append-only history, WebSocket subscriptions, and physical command acknowledgement/reported-state paths are implemented in source.
+- Canonical store ID remains `severn-pilot`; dev and prod topic isolation remains mandatory.
+- AWS IoT Things, certificates, policies, physical controller provisioning, and showroom commissioning are not complete.
+- This document remains the resource authority for deployment planning; Shopify cart and checkout remain outside IoT ownership.
+<!-- LIVING_STATUS_END -->
+
+
 Status: Phase 1 architecture plan  
 Scope: AWS resources required for MySnoozePod IoT sensor layer  
 Runtime code: not implemented in this pass
@@ -325,4 +336,3 @@ When API Gateway Management API returns Gone/410:
 1. Delete connection from `msp_{env}_websocket_connections`.
 2. Emit metric `WebSocketStaleConnectionRemoved`.
 3. Continue broadcasting to remaining connections.
-
