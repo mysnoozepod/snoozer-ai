@@ -14,6 +14,9 @@ const CASES = [
   { id: "pod-4-build-review", route: "/pod/pod-4", state: "build-review" },
   { id: "pod-4-build-success", route: "/pod/pod-4", state: "build-success" },
   { id: "pod-1-learn", route: "/pod/pod-1", state: "learn" },
+  { id: "pod-1-home", route: "/pod/pod-1", state: "pod-home" },
+  { id: "pod-2-home", route: "/pod/pod-2", state: "pod-home" },
+  { id: "pod-2-learn", route: "/pod/pod-2", state: "learn" },
   { id: "pod-1-build-size", route: "/pod/pod-1", state: "build-size" },
   { id: "pod-1-build-base", route: "/pod/pod-1", state: "build-base" },
   { id: "pod-1-build-motion", route: "/pod/pod-1", state: "build-motion" },
@@ -29,7 +32,15 @@ const VIEWPORTS = [
   { name: "staging-review-1600x900", width: 1600, height: 900 },
   { name: "staging-observed-1920x899", width: 1920, height: 899 },
   { name: "staging-compact-1920x860", width: 1920, height: 860 },
+  { name: "staging-actual-1280x585", width: 1280, height: 585, textRoutesOnly: true },
+  { name: "staging-short-1280x560", width: 1280, height: 560, textRoutesOnly: true },
 ];
+
+const TEXT_ROUTE_STATES = new Set(["pod-home", "learn"]);
+
+function shouldRunCase(viewport, testCase) {
+  return !viewport.textRoutesOnly || TEXT_ROUTE_STATES.has(testCase.state);
+}
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const OUTPUT_ROOT = path.join(REPO_ROOT, "_out", "pod-layout");
@@ -107,6 +118,9 @@ function readFailureText(measurement) {
   if (measurement?.touchTargets?.belowMinimum?.length) {
     details.push(`touch-targets=${measurement.touchTargets.belowMinimum.length}`);
   }
+  if (measurement?.textContainment?.failures?.length) {
+    details.push(`text-containment=${JSON.stringify(measurement.textContainment.failures.slice(0, 3))}`);
+  }
   return [failures.join(", "), ...details].filter(Boolean).join("; ");
 }
 
@@ -120,6 +134,7 @@ async function generateSummaryReport() {
 
   for (const viewport of VIEWPORTS) {
     for (const testCase of CASES) {
+      if (!shouldRunCase(viewport, testCase)) continue;
       const jsonPath = path.join(OUTPUT_ROOT, viewport.name, `${testCase.id}.json`);
       try {
         const measurement = JSON.parse(await fs.readFile(jsonPath, "utf8"));
@@ -233,6 +248,7 @@ test.describe.configure({ mode: "serial" });
 
 for (const viewport of VIEWPORTS) {
   for (const testCase of CASES) {
+    if (!shouldRunCase(viewport, testCase)) continue;
     test(`${viewport.name} ${testCase.id}`, async ({ page }, testInfo) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.goto(`${testCase.route}?podLayoutState=${testCase.state}`, { waitUntil: "domcontentloaded" });
@@ -249,14 +265,21 @@ for (const viewport of VIEWPORTS) {
       await generateSummaryReport();
 
       if (testInfo.project.name === "strict") {
+        expect(
+          measurement.textContainment?.failures || [],
+          JSON.stringify(measurement.textContainment?.failures || [], null, 2)
+        ).toEqual([]);
         expect(measurement.failures, readFailureText(measurement)).toEqual([]);
         await expect(page.locator('[data-pod-route-header="true"] img')).toHaveCount(0);
 
         if (testCase.state === "learn") {
           await expect(page.getByText("Sleep Nutrition")).toBeVisible();
           await expect(page.getByText("What this mattress gives your sleep")).toBeVisible();
+          await expect(page.getByText("Snoozer Recommends This Mattress Because")).toBeVisible();
           await expect(page.getByText(/^Specs$/)).toHaveCount(0);
           await expect(page.getByText("Prices may vary by retailer.")).toHaveCount(0);
+          await expect(page.locator("[data-pod-nutrition-row]")).toHaveCount(3);
+          await expect(page.locator('[data-pod-recommendation-bullet="true"]')).toHaveCount(3);
         }
 
         if (testCase.state.startsWith("build")) {

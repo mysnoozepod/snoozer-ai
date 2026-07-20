@@ -94,7 +94,8 @@ function RestLengthCard({
       type="button"
       onClick={onClick}
       data-pod-layout-primary-action="rest-start"
-      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-[14px] text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d8e2ff] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)] md:min-h-[132px] md:p-[16px]"
+      data-pod-text-card={lowerText(title).replace(/[^a-z0-9]+/g, "-")}
+      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-[12px] text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d8e2ff] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)]"
     >
       <div className="flex items-start gap-3">
           <div className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)]">
@@ -120,7 +121,7 @@ function RestLengthCard({
 
       <div
         className={[
-          "mt-[14px] flex h-[44px] items-center justify-center rounded-full text-[clamp(0.9rem,1.25vw,1rem)] font-black text-white transition group-hover:scale-[1.01]",
+          "mt-[10px] flex h-[44px] items-center justify-center rounded-full text-[clamp(0.9rem,1.25vw,1rem)] font-black text-white transition group-hover:scale-[1.01]",
           buttonTone,
         ].join(" ")}
       >
@@ -160,25 +161,25 @@ export function PodRestStartSection({ podLabel, flowOptions = [], onChooseMode }
       ];
 
   return (
-    <ShowroomPanel className="overflow-hidden p-[16px]" tone="frost">
+    <ShowroomPanel data-pod-text-card="pod-home" className="overflow-visible p-[12px]" tone="frost">
       <div className="max-w-[780px]">
         <div className="text-[clamp(1.75rem,2.6vw,2.12rem)] font-black leading-[0.98] tracking-tight text-slate-900">
           Start Your Rest Test
         </div>
-        <div className="mt-[6px] text-[clamp(1rem,1.35vw,1.08rem)] leading-[1.35] text-slate-600">
-          Try {podLabel} your way. Start with 7 minutes for a quick feel check, or choose 15 minutes if you want more time to settle in.
+        <div className="mt-[4px] text-[clamp(1rem,1.35vw,1.08rem)] leading-[1.3] text-slate-600">
+          Try {podLabel} your way: choose a 7-minute quick check or 15 minutes to settle in.
         </div>
       </div>
 
-      <div className="mt-[14px] grid gap-[14px] md:grid-cols-2">
+      <div className="mt-[10px] grid gap-[12px] md:grid-cols-2">
         {cards.map((card) => (
           <RestLengthCard key={card.id} {...card} onClick={() => onChooseMode?.(card.id)} />
         ))}
       </div>
 
-      <div className="mt-[10px] flex items-center justify-center gap-2 text-[0.82rem] font-medium text-slate-500">
+      <div className="mt-[6px] flex items-center justify-center gap-2 text-[0.82rem] font-medium text-slate-500">
         <CheckCircle2 className="h-4 w-4 text-slate-400" />
-        <span>You can end or pause your test at any time.</span>
+        <span>Pause or end your test anytime.</span>
       </div>
     </ShowroomPanel>
   );

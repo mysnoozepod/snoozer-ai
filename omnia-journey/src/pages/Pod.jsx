@@ -309,6 +309,50 @@ function buildWhyThisPodSentence(painSignals = []) {
   return `This pod matches your comfort profile around ${reason}.`;
 }
 
+function buildLearnRecommendationItems({
+  shopperContext = {},
+  mattressTruth = {},
+  rank = 0,
+  matchReason = "",
+}) {
+  const items = [];
+  const positionLabels = {
+    side: "Supports the side-sleeping position you selected.",
+    back: "Supports the back-sleeping position you selected.",
+    stomach: "Supports the stomach-sleeping position you selected.",
+  };
+
+  if (positionLabels[shopperContext.position]) {
+    items.push(positionLabels[shopperContext.position]);
+  } else if (shopperContext.firmness) {
+    items.push(`Matches the ${shopperContext.firmness} feel you selected.`);
+  } else if (matchReason) {
+    items.push(matchReason);
+  }
+
+  if (shopperContext.sleepsHot && mattressTruth.hasCooling) {
+    items.push("Includes explicit cooling or airflow features for your temperature preference.");
+  } else if (shopperContext.hasPartner && mattressTruth.isDualComfort) {
+    items.push("Dual Comfort construction gives shared sleepers a more intentional comparison.");
+  } else if (mattressTruth.family === "foam") {
+    items.push("All-foam construction provides a quieter, more consistent surface.");
+  } else if (mattressTruth.family === "dual") {
+    items.push("Dual Comfort hybrid construction adds stability for shared sleep.");
+  } else if (mattressTruth.family === "hybrid") {
+    items.push("Hybrid construction adds a steadier, more lifted support profile.");
+  } else {
+    items.push("Its support construction matches the balanced feel in this pod.");
+  }
+
+  items.push(
+    rank > 0
+      ? `Snoozer ranked this mattress ${rank === 1 ? "highest" : `#${rank}`} for your sleep profile.`
+      : "Snoozer placed this mattress in your recommended testing plan."
+  );
+
+  return Array.from(new Set(items.filter(Boolean))).slice(0, 3);
+}
+
 function buildHeaderPersonalization(painSignals = []) {
   const reason = buildWhyThisPodReason(painSignals);
   return `Start by noticing ${reason}, then compare from there.`;
@@ -2423,44 +2467,13 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   }, [mattressProduct]);
 
   const learnFitItems = useMemo(() => {
-    const items = [];
-
-    if (shopperDetailContext.position === "side") {
-      items.push("Side-sleeper fit: pay closest attention to shoulder and hip pressure relief.");
-    } else if (shopperDetailContext.position === "back") {
-      items.push("Back-sleeper fit: notice whether your lower back feels supported and aligned.");
-    } else if (shopperDetailContext.position === "stomach") {
-      items.push("Stomach-sleeper fit: check whether the surface keeps your midsection from dipping too far.");
-    }
-
-    if (shopperDetailContext.sleepsHot) {
-      items.push(
-        mattressTruth.hasCooling
-          ? "Hot-sleeper fit: this mattress shows cooling cues worth noticing after a few quiet minutes."
-          : "Hot-sleeper fit: use this pod to judge temperature comfort once you have settled in."
-      );
-    }
-
-    if (shopperDetailContext.hasPartner) {
-      items.push(
-        mattressTruth.isDualComfort
-          ? "Couples fit: the Dual Comfort setup gives you a stronger compare point for shared sleep."
-          : "Couples fit: pay attention to surface stability and motion when one sleeper moves."
-      );
-    }
-
-    if (!items.length && benefits.length) {
-      items.push(`${benefits[0].charAt(0).toUpperCase()}${benefits[0].slice(1)}.`);
-    }
-
-    items.push(
-      lowerText(whyThisPodReason).includes("back")
-        ? "Support language here is about comfort and alignment, not medical treatment."
-        : `Match reason: ${whyThisPodSentence}`
-    );
-
-    return items.filter(Boolean).slice(0, 3);
-  }, [shopperDetailContext, mattressTruth, benefits, whyThisPodReason, whyThisPodSentence]);
+    return buildLearnRecommendationItems({
+      shopperContext: shopperDetailContext,
+      mattressTruth,
+      rank,
+      matchReason: whyThisPodSentence,
+    });
+  }, [shopperDetailContext, mattressTruth, rank, whyThisPodSentence]);
 
   const goToDetailsStage = useCallback(async () => {
     setShowRestChooser(false);

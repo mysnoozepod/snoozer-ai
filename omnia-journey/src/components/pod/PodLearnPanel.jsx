@@ -22,21 +22,25 @@ function categoryInitial(category) {
 }
 
 export function PodLearnPanel({ learnSleepNutritionItems = [], learnPricingRows = [], learnFitItems = [] }) {
+  const nutritionItems = learnSleepNutritionItems.slice(0, 3);
+  const recommendationItems = learnFitItems.slice(0, 3);
+
   return (
     <div className="flex min-h-0 flex-col">
       <div className="grid min-h-0 items-start gap-[10px] xl:grid-cols-3 xl:items-stretch">
-        <ShowroomPanel className="min-h-0 p-[12px]" tone="frost">
+        <ShowroomPanel data-pod-text-card="sleep-nutrition" className="min-h-0 p-[10px]" tone="frost">
           <div className="text-[clamp(0.78rem,1vw,0.92rem)] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
             Sleep Nutrition
           </div>
           <div className="mt-[4px] text-[clamp(1.12rem,1.58vw,1.34rem)] font-black leading-tight tracking-tight text-slate-900">
             What this mattress gives your sleep
           </div>
-          <div className="mt-[7px] space-y-[5px] pr-[2px]">
-            {learnSleepNutritionItems.map((item) => (
+          <div className="mt-[6px] space-y-[4px] pr-[2px]">
+            {nutritionItems.map((item) => (
               <div
                 key={`${item.category}-${item.statement}`}
-                className="flex gap-[8px] rounded-[14px] border border-[#dbe5ff] bg-white/78 px-[8px] py-[6px] text-[clamp(1rem,1.05vw,1.08rem)] leading-[1.14] text-slate-700"
+                data-pod-nutrition-row={item.category}
+                className="flex gap-[8px] rounded-[14px] border border-[#dbe5ff] bg-white/78 px-[8px] py-[5px] text-[clamp(1rem,1.05vw,1.08rem)] leading-[1.14] text-slate-700"
               >
                 <span
                   className={[
@@ -55,7 +59,7 @@ export function PodLearnPanel({ learnSleepNutritionItems = [], learnPricingRows 
           </div>
         </ShowroomPanel>
 
-        <ShowroomPanel className="min-h-0 p-[12px]" tone="frost">
+        <ShowroomPanel data-pod-text-card="pricing" className="min-h-0 p-[10px]" tone="frost">
           <div className="text-[clamp(0.78rem,1vw,0.92rem)] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
             Pricing
           </div>
@@ -83,16 +87,20 @@ export function PodLearnPanel({ learnSleepNutritionItems = [], learnPricingRows 
           )}
         </ShowroomPanel>
 
-        <ShowroomPanel className="min-h-0 p-[12px]" tone="frost">
+        <ShowroomPanel data-pod-text-card="snoozer-recommendation" className="min-h-0 p-[10px]" tone="frost">
           <div className="text-[clamp(0.78rem,1vw,0.92rem)] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
-            Why It Fits You
+            Snoozer Recommendation
           </div>
           <div className="mt-[4px] text-[clamp(1.12rem,1.58vw,1.34rem)] font-black leading-tight tracking-tight text-slate-900">
-            Why this mattress may fit
+            Snoozer Recommends This Mattress Because
           </div>
           <div className="mt-[8px] space-y-[7px] pr-[2px]">
-            {learnFitItems.map((item) => (
-              <div key={item} className="flex gap-[8px] text-[clamp(0.95rem,1.05vw,1.04rem)] leading-[1.22] text-slate-700">
+            {recommendationItems.map((item) => (
+              <div
+                key={item}
+                data-pod-recommendation-bullet="true"
+                className="flex gap-[8px] text-[clamp(0.95rem,1.05vw,1.04rem)] leading-[1.22] text-slate-700"
+              >
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2f57e8]" />
                 <span>{item}</span>
               </div>

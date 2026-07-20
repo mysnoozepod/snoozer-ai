@@ -18,6 +18,20 @@ export const POD_LAYOUT_VIEWPORTS = Object.freeze([
   { name: "staging-review-1600x900", width: 1600, height: 900, primary: false },
   { name: "staging-observed-1920x899", width: 1920, height: 899, primary: false },
   { name: "staging-compact-1920x860", width: 1920, height: 860, primary: false },
+  {
+    name: "staging-actual-1280x585",
+    width: 1280,
+    height: 585,
+    primary: false,
+    textRoutesOnly: true,
+  },
+  {
+    name: "staging-short-1280x560",
+    width: 1280,
+    height: 560,
+    primary: false,
+    textRoutesOnly: true,
+  },
 ]);
 
 export const POD_LAYOUT_CONTRACT = Object.freeze({
@@ -47,6 +61,17 @@ export const POD_LAYOUT_CONTRACT = Object.freeze({
     activeContentTopMax: 288,
     activeContentVisibleMin: 430,
   },
+  shortVerticalBudget: {
+    viewportHeight: 585,
+    header: 72,
+    navigation: 64,
+    productHero: 116,
+    outerVerticalAllowance: 24,
+    sectionGaps: 36,
+    activeContent: 273,
+    activeContentTopMax: 288,
+    activeContentVisibleMin: 253,
+  },
   spacing: {
     outerHorizontalPadding: 24,
     cardPadding: 16,
@@ -75,6 +100,21 @@ export const POD_LAYOUT_CONTRACT = Object.freeze({
 
 export function getPodLayoutBudgetForViewport(viewport = {}) {
   const height = Number(viewport.height) || POD_LAYOUT_CONTRACT.primaryViewport.height;
+  if (height <= 640) {
+    const fixedHeight =
+      POD_LAYOUT_CONTRACT.shortVerticalBudget.header +
+      POD_LAYOUT_CONTRACT.shortVerticalBudget.navigation +
+      POD_LAYOUT_CONTRACT.shortVerticalBudget.productHero +
+      POD_LAYOUT_CONTRACT.shortVerticalBudget.outerVerticalAllowance +
+      POD_LAYOUT_CONTRACT.shortVerticalBudget.sectionGaps;
+    const activeContent = Math.max(220, height - fixedHeight);
+    return {
+      ...POD_LAYOUT_CONTRACT.shortVerticalBudget,
+      viewportHeight: height,
+      activeContent,
+      activeContentVisibleMin: Math.max(210, activeContent - 20),
+    };
+  }
   return height >= POD_LAYOUT_CONTRACT.primaryViewport.height
     ? POD_LAYOUT_CONTRACT.verticalBudget
     : POD_LAYOUT_CONTRACT.compactVerticalBudget;

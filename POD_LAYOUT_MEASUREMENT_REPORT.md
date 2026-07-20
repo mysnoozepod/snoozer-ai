@@ -27,6 +27,9 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | 1180x820 | pod-4-build-review | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
 | 1180x820 | pod-4-build-success | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
 | 1180x820 | pod-1-learn | no | 283 | 514 | 10 ok | no | no | n/a | none | pass |
+| 1180x820 | pod-1-home | no | 283 | 514 | 8 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-2-home | no | 283 | 514 | 7 ok | no | no | yes (100%) | none | pass |
+| 1180x820 | pod-2-learn | no | 283 | 514 | 9 ok | no | no | n/a | none | pass |
 | 1180x820 | pod-1-build-size | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
 | 1180x820 | pod-1-build-base | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
 | 1180x820 | pod-1-build-motion | no | 283 | 514 | 10 ok | no | no | yes (100%) | none | pass |
@@ -43,6 +46,9 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | 1024x768 | pod-4-build-review | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
 | 1024x768 | pod-4-build-success | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
 | 1024x768 | pod-1-learn | no | 283 | 462 | 10 ok | no | no | n/a | none | pass |
+| 1024x768 | pod-1-home | no | 283 | 462 | 8 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-2-home | no | 283 | 462 | 7 ok | no | no | yes (100%) | none | pass |
+| 1024x768 | pod-2-learn | no | 283 | 462 | 9 ok | no | no | n/a | none | pass |
 | 1024x768 | pod-1-build-size | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
 | 1024x768 | pod-1-build-base | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
 | 1024x768 | pod-1-build-motion | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
@@ -59,6 +65,9 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | 1366x768 | pod-4-build-review | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
 | 1366x768 | pod-4-build-success | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
 | 1366x768 | pod-1-learn | no | 283 | 462 | 10 ok | no | no | n/a | none | pass |
+| 1366x768 | pod-1-home | no | 283 | 462 | 8 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-2-home | no | 283 | 462 | 7 ok | no | no | yes (100%) | none | pass |
+| 1366x768 | pod-2-learn | no | 283 | 462 | 9 ok | no | no | n/a | none | pass |
 | 1366x768 | pod-1-build-size | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
 | 1366x768 | pod-1-build-base | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
 | 1366x768 | pod-1-build-motion | no | 283 | 462 | 10 ok | no | no | yes (100%) | none | pass |
@@ -75,6 +84,9 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | staging-review-1600x900 | pod-4-build-review | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-review-1600x900 | pod-4-build-success | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-review-1600x900 | pod-1-learn | no | 283 | 594 | 10 ok | no | no | n/a | none | pass |
+| staging-review-1600x900 | pod-1-home | no | 283 | 594 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-2-home | no | 283 | 594 | 7 ok | no | no | yes (100%) | none | pass |
+| staging-review-1600x900 | pod-2-learn | no | 283 | 594 | 9 ok | no | no | n/a | none | pass |
 | staging-review-1600x900 | pod-1-build-size | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-review-1600x900 | pod-1-build-base | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-review-1600x900 | pod-1-build-motion | no | 283 | 594 | 10 ok | no | no | yes (100%) | none | pass |
@@ -91,6 +103,9 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | staging-observed-1920x899 | pod-4-build-review | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-observed-1920x899 | pod-4-build-success | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-observed-1920x899 | pod-1-learn | no | 283 | 593 | 10 ok | no | no | n/a | none | pass |
+| staging-observed-1920x899 | pod-1-home | no | 283 | 593 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-2-home | no | 283 | 593 | 7 ok | no | no | yes (100%) | none | pass |
+| staging-observed-1920x899 | pod-2-learn | no | 283 | 593 | 9 ok | no | no | n/a | none | pass |
 | staging-observed-1920x899 | pod-1-build-size | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-observed-1920x899 | pod-1-build-base | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-observed-1920x899 | pod-1-build-motion | no | 283 | 593 | 10 ok | no | no | yes (100%) | none | pass |
@@ -107,12 +122,27 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | staging-compact-1920x860 | pod-4-build-review | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-compact-1920x860 | pod-4-build-success | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-compact-1920x860 | pod-1-learn | no | 283 | 554 | 10 ok | no | no | n/a | none | pass |
+| staging-compact-1920x860 | pod-1-home | no | 283 | 554 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-2-home | no | 283 | 554 | 7 ok | no | no | yes (100%) | none | pass |
+| staging-compact-1920x860 | pod-2-learn | no | 283 | 554 | 9 ok | no | no | n/a | none | pass |
 | staging-compact-1920x860 | pod-1-build-size | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-compact-1920x860 | pod-1-build-base | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-compact-1920x860 | pod-1-build-motion | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-compact-1920x860 | pod-1-build-comfort | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-compact-1920x860 | pod-1-build-review | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
 | staging-compact-1920x860 | pod-1-build-success | no | 283 | 554 | 10 ok | no | no | yes (100%) | none | pass |
+| staging-actual-1280x585 | pod-4-home | no | 283 | 279 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-actual-1280x585 | pod-4-learn | no | 283 | 279 | 10 ok | no | no | n/a | none | pass |
+| staging-actual-1280x585 | pod-1-learn | no | 283 | 279 | 10 ok | no | no | n/a | none | pass |
+| staging-actual-1280x585 | pod-1-home | no | 283 | 279 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-actual-1280x585 | pod-2-home | no | 283 | 279 | 7 ok | no | no | yes (100%) | none | pass |
+| staging-actual-1280x585 | pod-2-learn | no | 283 | 279 | 9 ok | no | no | n/a | none | pass |
+| staging-short-1280x560 | pod-4-home | no | 283 | 254 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-short-1280x560 | pod-4-learn | no | 283 | 254 | 10 ok | no | no | n/a | none | pass |
+| staging-short-1280x560 | pod-1-learn | no | 283 | 254 | 10 ok | no | no | n/a | none | pass |
+| staging-short-1280x560 | pod-1-home | no | 283 | 254 | 8 ok | no | no | yes (100%) | none | pass |
+| staging-short-1280x560 | pod-2-home | no | 283 | 254 | 7 ok | no | no | yes (100%) | none | pass |
+| staging-short-1280x560 | pod-2-learn | no | 283 | 254 | 9 ok | no | no | n/a | none | pass |
 
 ## Region Measurements
 
@@ -128,6 +158,9 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | 1180x820 | pod-4-build-review | 72/0 | 116/0 | 514/6 | 64/0 |
 | 1180x820 | pod-4-build-success | 72/0 | 116/0 | 514/6 | 64/0 |
 | 1180x820 | pod-1-learn | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-1-home | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-2-home | 72/0 | 116/0 | 514/6 | 64/0 |
+| 1180x820 | pod-2-learn | 72/0 | 116/0 | 514/6 | 64/0 |
 | 1180x820 | pod-1-build-size | 72/0 | 116/0 | 514/6 | 64/0 |
 | 1180x820 | pod-1-build-base | 72/0 | 116/0 | 514/6 | 64/0 |
 | 1180x820 | pod-1-build-motion | 72/0 | 116/0 | 514/6 | 64/0 |
@@ -144,6 +177,9 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | 1024x768 | pod-4-build-review | 72/0 | 116/0 | 462/6 | 64/0 |
 | 1024x768 | pod-4-build-success | 72/0 | 116/0 | 462/6 | 64/0 |
 | 1024x768 | pod-1-learn | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-1-home | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-2-home | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1024x768 | pod-2-learn | 72/0 | 116/0 | 462/6 | 64/0 |
 | 1024x768 | pod-1-build-size | 72/0 | 116/0 | 462/6 | 64/0 |
 | 1024x768 | pod-1-build-base | 72/0 | 116/0 | 462/6 | 64/0 |
 | 1024x768 | pod-1-build-motion | 72/0 | 116/0 | 462/6 | 64/0 |
@@ -160,6 +196,9 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | 1366x768 | pod-4-build-review | 72/0 | 116/0 | 462/6 | 64/0 |
 | 1366x768 | pod-4-build-success | 72/0 | 116/0 | 462/6 | 64/0 |
 | 1366x768 | pod-1-learn | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-1-home | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-2-home | 72/0 | 116/0 | 462/6 | 64/0 |
+| 1366x768 | pod-2-learn | 72/0 | 116/0 | 462/6 | 64/0 |
 | 1366x768 | pod-1-build-size | 72/0 | 116/0 | 462/6 | 64/0 |
 | 1366x768 | pod-1-build-base | 72/0 | 116/0 | 462/6 | 64/0 |
 | 1366x768 | pod-1-build-motion | 72/0 | 116/0 | 462/6 | 64/0 |
@@ -176,6 +215,9 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | staging-review-1600x900 | pod-4-build-review | 72/0 | 116/0 | 594/86 | 64/0 |
 | staging-review-1600x900 | pod-4-build-success | 72/0 | 116/0 | 594/86 | 64/0 |
 | staging-review-1600x900 | pod-1-learn | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-1-home | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-2-home | 72/0 | 116/0 | 594/86 | 64/0 |
+| staging-review-1600x900 | pod-2-learn | 72/0 | 116/0 | 594/86 | 64/0 |
 | staging-review-1600x900 | pod-1-build-size | 72/0 | 116/0 | 594/86 | 64/0 |
 | staging-review-1600x900 | pod-1-build-base | 72/0 | 116/0 | 594/86 | 64/0 |
 | staging-review-1600x900 | pod-1-build-motion | 72/0 | 116/0 | 594/86 | 64/0 |
@@ -192,6 +234,9 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | staging-observed-1920x899 | pod-4-build-review | 72/0 | 116/0 | 593/85 | 64/0 |
 | staging-observed-1920x899 | pod-4-build-success | 72/0 | 116/0 | 593/85 | 64/0 |
 | staging-observed-1920x899 | pod-1-learn | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-1-home | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-2-home | 72/0 | 116/0 | 593/85 | 64/0 |
+| staging-observed-1920x899 | pod-2-learn | 72/0 | 116/0 | 593/85 | 64/0 |
 | staging-observed-1920x899 | pod-1-build-size | 72/0 | 116/0 | 593/85 | 64/0 |
 | staging-observed-1920x899 | pod-1-build-base | 72/0 | 116/0 | 593/85 | 64/0 |
 | staging-observed-1920x899 | pod-1-build-motion | 72/0 | 116/0 | 593/85 | 64/0 |
@@ -208,12 +253,27 @@ Build states cover the simple `/pod/pod-4` path plus the adjustable/Dual Comfort
 | staging-compact-1920x860 | pod-4-build-review | 72/0 | 116/0 | 554/46 | 64/0 |
 | staging-compact-1920x860 | pod-4-build-success | 72/0 | 116/0 | 554/46 | 64/0 |
 | staging-compact-1920x860 | pod-1-learn | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-1-home | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-2-home | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-compact-1920x860 | pod-2-learn | 72/0 | 116/0 | 554/46 | 64/0 |
 | staging-compact-1920x860 | pod-1-build-size | 72/0 | 116/0 | 554/46 | 64/0 |
 | staging-compact-1920x860 | pod-1-build-base | 72/0 | 116/0 | 554/46 | 64/0 |
 | staging-compact-1920x860 | pod-1-build-motion | 72/0 | 116/0 | 554/46 | 64/0 |
 | staging-compact-1920x860 | pod-1-build-comfort | 72/0 | 116/0 | 554/46 | 64/0 |
 | staging-compact-1920x860 | pod-1-build-review | 72/0 | 116/0 | 554/46 | 64/0 |
 | staging-compact-1920x860 | pod-1-build-success | 72/0 | 116/0 | 554/46 | 64/0 |
+| staging-actual-1280x585 | pod-4-home | 72/0 | 116/0 | 279/6 | 64/0 |
+| staging-actual-1280x585 | pod-4-learn | 72/0 | 116/0 | 279/6 | 64/0 |
+| staging-actual-1280x585 | pod-1-learn | 72/0 | 116/0 | 279/6 | 64/0 |
+| staging-actual-1280x585 | pod-1-home | 72/0 | 116/0 | 279/6 | 64/0 |
+| staging-actual-1280x585 | pod-2-home | 72/0 | 116/0 | 279/6 | 64/0 |
+| staging-actual-1280x585 | pod-2-learn | 72/0 | 116/0 | 279/6 | 64/0 |
+| staging-short-1280x560 | pod-4-home | 72/0 | 116/0 | 254/6 | 64/0 |
+| staging-short-1280x560 | pod-4-learn | 72/0 | 116/0 | 254/6 | 64/0 |
+| staging-short-1280x560 | pod-1-learn | 72/0 | 116/0 | 254/6 | 64/0 |
+| staging-short-1280x560 | pod-1-home | 72/0 | 116/0 | 254/6 | 64/0 |
+| staging-short-1280x560 | pod-2-home | 72/0 | 116/0 | 254/6 | 64/0 |
+| staging-short-1280x560 | pod-2-learn | 72/0 | 116/0 | 254/6 | 64/0 |
 
 ## Artifact Locations
 

@@ -27,7 +27,7 @@ export function ShowroomFrame({ className, children }) {
   );
 }
 
-export function ShowroomPanel({ className, children, tone = "white" }) {
+export function ShowroomPanel({ className, children, tone = "white", ...props }) {
   const toneClass =
     tone === "soft"
       ? "border-indigo-100/80 bg-[linear-gradient(180deg,rgba(246,249,255,0.98),rgba(255,255,255,0.98))]"
@@ -37,6 +37,7 @@ export function ShowroomPanel({ className, children, tone = "white" }) {
 
   return (
     <div
+      {...props}
       className={cn(
         "rounded-[28px] border shadow-[0_16px_42px_rgba(45,71,136,0.1)]",
         toneClass,

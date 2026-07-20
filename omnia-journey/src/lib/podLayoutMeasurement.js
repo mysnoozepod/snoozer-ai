@@ -195,6 +195,113 @@ function collectHeroContainment(productHero) {
   };
 }
 
+function collectTextContainment(viewport) {
+  const cards = Array.from(document.querySelectorAll("[data-pod-text-card]"));
+  const failures = [];
+  const results = cards.map((card) => {
+    const cardName = card.getAttribute("data-pod-text-card") || nodeLabel(card);
+    const cardRect = rectFor(card);
+    const cardStyle = window.getComputedStyle(card);
+    const paddingBottom = Number.parseFloat(cardStyle.paddingBottom) || 0;
+    const contentBottom = (cardRect?.bottom || 0) - paddingBottom;
+    const overflowStyles = {
+      overflow: cardStyle.overflow,
+      overflowX: cardStyle.overflowX,
+      overflowY: cardStyle.overflowY,
+    };
+    const masksContent = Object.values(overflowStyles).some((value) => /hidden|clip/i.test(value));
+    const cardOverflows = card.scrollHeight > card.clientHeight + 1;
+
+    if (masksContent) {
+      failures.push({
+        reason: "hidden-overflow-on-text-card",
+        cardName,
+        cardRect,
+        viewport,
+        overflowStyles,
+      });
+    }
+
+    if (cardOverflows) {
+      failures.push({
+        reason: "text-card-scroll-height-exceeds-client-height",
+        cardName,
+        cardRect,
+        viewport,
+        overflowStyles,
+        scrollHeight: card.scrollHeight,
+        clientHeight: card.clientHeight,
+      });
+    }
+
+    const textNodes = Array.from(card.querySelectorAll("*"))
+      .filter((node) => !node.closest('[aria-hidden="true"]'))
+      .filter((node) =>
+        Array.from(node.childNodes).some(
+          (child) => child.nodeType === 3 && String(child.textContent || "").trim()
+        )
+      )
+      .map((node) => {
+        const style = window.getComputedStyle(node);
+        const rect = rectFor(node);
+        const text = Array.from(node.childNodes)
+          .filter((child) => child.nodeType === 3)
+          .map((child) => String(child.textContent || "").trim())
+          .filter(Boolean)
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .slice(0, 180);
+        return { node, style, rect, text };
+      })
+      .filter(
+        (item) =>
+          item.text &&
+          item.rect &&
+          item.rect.width > 0 &&
+          item.rect.height > 0 &&
+          item.style.display !== "none" &&
+          item.style.visibility !== "hidden" &&
+          Number(item.style.opacity || 1) > 0
+      );
+
+    textNodes.forEach((item) => {
+      const belowCardContent = item.rect.bottom > contentBottom + 1;
+      const outsideCardTop = item.rect.top < (cardRect?.top || 0) - 1;
+      const outsideViewport = item.rect.top < viewport.top || item.rect.bottom > viewport.bottom;
+
+      if (belowCardContent || outsideCardTop || outsideViewport) {
+        failures.push({
+          reason: belowCardContent
+            ? "text-crosses-card-bottom-padding"
+            : outsideCardTop
+              ? "text-crosses-card-top"
+              : "text-partially-outside-viewport",
+          cardName,
+          text: item.text,
+          textRect: item.rect,
+          cardRect,
+          cardContentBottom: Math.round(contentBottom * 100) / 100,
+          intendedBottomPadding: paddingBottom,
+          viewport,
+          overflowStyles,
+        });
+      }
+    });
+
+    return {
+      cardName,
+      cardRect,
+      textNodeCount: textNodes.length,
+      paddingBottom,
+      scrollHeight: card.scrollHeight,
+      clientHeight: card.clientHeight,
+      overflowStyles,
+    };
+  });
+
+  return { checkedCards: results.length, cards: results, failures };
+}
+
 function serializeRegion(node, target) {
   const rect = rectFor(node);
   return {
@@ -343,6 +450,9 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
   if (heroContainment.failures.length) failures.push("product-hero-child-overflow");
   if (heroContainment.images.some((item) => !item.contained)) failures.push("mattress-image-outside-hero");
 
+  const textContainment = collectTextContainment(viewport);
+  if (textContainment.failures.length) failures.push("text-containment-failure");
+
   const scrollContainers = collectScrollContainers(document.body);
   const shellScrollContainers = scrollContainers.filter((item) => {
     const values = `${item.style.overflow} ${item.style.overflowX} ${item.style.overflowY}`.toLowerCase();
@@ -387,6 +497,7 @@ export function measurePodLayout({ state = "", contract = POD_LAYOUT_CONTRACT } 
       },
     },
     productHeroContainment: heroContainment,
+    textContainment,
     scrollContainers,
     shellScrollContainers,
     clippedShellContainers,

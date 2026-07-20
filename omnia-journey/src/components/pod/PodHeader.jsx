@@ -10,7 +10,7 @@ function HeaderBadge({ label, tone = "soft" }) {
     <div
       data-pod-badge="true"
       className={[
-        "inline-flex min-h-[28px] items-center whitespace-nowrap rounded-full border px-[10px] py-[5px] text-[clamp(0.72rem,0.9vw,0.86rem)] font-extrabold uppercase tracking-[0.1em] shadow-[0_8px_18px_rgba(40,63,126,0.08)]",
+        "inline-flex min-h-[28px] items-center whitespace-nowrap rounded-full border px-[10px] py-[3px] text-[clamp(0.72rem,0.9vw,0.86rem)] font-extrabold uppercase leading-none tracking-[0.1em] shadow-[0_8px_18px_rgba(40,63,126,0.08)]",
         toneClass,
       ].join(" ")}
     >
@@ -30,6 +30,7 @@ export function PodRouteHeroHeader({
   return (
     <div
       data-pod-route-header="true"
+      data-pod-text-card="product-hero"
       className="flex h-full min-h-0 items-center overflow-visible px-[22px] py-[6px]"
     >
       <div className="min-w-0 flex-1">
@@ -44,7 +45,7 @@ export function PodRouteHeroHeader({
         </h1>
 
         {badges.length ? (
-          <div className="mt-[6px] flex max-w-full flex-wrap items-center gap-[7px] pb-[1px]">
+          <div className="mt-[2px] flex max-w-full flex-wrap items-center gap-[7px] pb-[1px]">
             {badges.map((badge) => (
               <HeaderBadge
                 key={`${badge.label}-${badge.tone || "soft"}`}

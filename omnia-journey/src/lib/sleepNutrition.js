@@ -81,5 +81,5 @@ export function buildSleepNutritionItems({ mattressTruth = {}, firmness = "" } =
     },
   ].filter(Boolean);
 
-  return items.filter((item) => item.category && item.statement);
+  return items.filter((item) => item.category && item.statement).slice(0, 3);
 }
