@@ -1,496 +1,583 @@
+import { useMemo, useState } from "react";
 import {
+  ArrowLeft,
   ArrowRight,
-  BedDouble,
-  CheckCircle2,
-  Heart,
+  Check,
+  Home,
+  Music2,
   Pause,
-  SlidersHorizontal,
-  Timer,
-  X,
+  Play,
+  RotateCcw,
+  Square,
+  Star,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 import { ShowroomPanel } from "@/components/showroom/ShowroomPrimitives";
+import {
+  REST_TEST_AMBIENCE,
+  REST_TEST_DURATIONS,
+  REST_TEST_PHASES,
+  REST_TEST_STAGES,
+} from "@/lib/restTestProgram.mjs";
 
-const REST_COMPLETION_STAGES = {
-  reflection: "reflection",
-  actions: "actions",
-};
-
-const REST_REFLECTION_OPTIONS = [
-  { id: "love_it", label: "I love the way this feels", icon: Heart, tone: "blue" },
-  { id: "compare_it", label: "I might like it, but need to compare it", icon: CheckCircle2, tone: "orange" },
-  { id: "not_for_me", label: "Not for me", icon: X, tone: "red" },
-];
-
-function lowerText(value) {
-  return String(value || "").trim().toLowerCase();
-}
-
-function formatDuration(totalSeconds) {
-  const total = Math.max(0, Number(totalSeconds) || 0);
-  const minutes = Math.max(1, Math.round(total / 60));
-  return `${minutes} min`;
-}
-
-function formatRestCountdown(totalSeconds) {
+function formatTime(totalSeconds) {
   const total = Math.max(0, Number(totalSeconds) || 0);
   const minutes = Math.floor(total / 60);
   const seconds = total % 60;
-  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-function RestCountdownRing({ remainingSeconds, totalSeconds }) {
-  const safeTotal = Math.max(1, Number(totalSeconds) || 1);
-  const safeRemaining = Math.max(0, Number(remainingSeconds) || 0);
-  const progress = safeRemaining / safeTotal;
-  const radius = 108;
-  const circumference = 2 * Math.PI * radius;
-  const strokeOffset = circumference * (1 - progress);
+export function PodRestStartSection({ podLabel, flowOptions = [], onChooseMode }) {
+  const ids = flowOptions.length ? flowOptions.map((flow) => flow.id).slice(0, 2) : ["quick", "deep"];
+  const cards = ids.map((id) => {
+    const duration = REST_TEST_DURATIONS[id] || REST_TEST_DURATIONS.quick;
+    return {
+      ...duration,
+      subtitle: id === "deep" ? "More time to settle in" : "Quick feel check",
+      accent: id === "deep" ? "blue" : "orange",
+    };
+  });
 
   return (
-    <div className="relative flex h-[112px] w-[112px] items-center justify-center md:h-[120px] md:w-[120px]">
-      <svg className="h-full w-full -rotate-90" viewBox="0 0 248 248" aria-hidden="true">
-        <circle cx="124" cy="124" r={radius} fill="none" stroke="rgba(219,229,255,0.92)" strokeWidth="10" />
-        <circle
-          cx="124"
-          cy="124"
-          r={radius}
-          fill="none"
-          stroke="#355ff1"
-          strokeLinecap="round"
-          strokeWidth="10"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeOffset}
-        />
-      </svg>
+    <ShowroomPanel data-pod-text-card="pod-home" className="h-full overflow-hidden p-[12px]" tone="frost">
+      <div>
+        <h2 className="text-[clamp(1.55rem,2.4vw,2rem)] font-black leading-none tracking-tight text-slate-950">Start Your Rest Test</h2>
+        <p className="mt-1 text-[clamp(0.82rem,1.2vw,1rem)] leading-snug text-slate-600">
+          Try {podLabel} your way. Choose a guided experience, then begin when you are settled.
+        </p>
+      </div>
+      <div className="mt-2 grid gap-3 md:grid-cols-2">
+        {cards.map((card) => (
+          <button
+            type="button"
+            key={card.id}
+            onClick={() => onChooseMode?.(card.id)}
+            className={[
+              "flex min-h-[88px] items-center justify-between gap-4 rounded-[16px] border bg-white px-4 py-3 text-left shadow-[0_12px_26px_rgba(35,58,117,0.08)]",
+              card.accent === "orange" ? "border-orange-200" : "border-blue-200",
+            ].join(" ")}
+          >
+            <span>
+              <span className="block text-[clamp(1rem,1.45vw,1.2rem)] font-black text-slate-950">{card.label}</span>
+              <span className="mt-0.5 block text-[0.78rem] font-semibold text-slate-600">{card.subtitle}</span>
+            </span>
+            <span className={card.accent === "orange" ? "text-[#ff8f1f]" : "text-[#355ff1]"}><ArrowRight className="h-5 w-5" /></span>
+          </button>
+        ))}
+      </div>
+    </ShowroomPanel>
+  );
+}
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-[clamp(1.7rem,2.6vw,1.96rem)] font-black leading-none tracking-tight text-slate-900">
-          {formatRestCountdown(safeRemaining)}
+function ChoiceButton({ selected, children, onClick, testId }) {
+  return (
+    <button
+      type="button"
+      data-testid={testId}
+      aria-pressed={selected}
+      onClick={onClick}
+      className={[
+        "flex min-h-[44px] min-w-0 items-center justify-between gap-2 rounded-[14px] border px-3 text-left transition",
+        selected
+          ? "border-[#355ff1] bg-[#eef3ff] text-[#234ee8] shadow-[0_10px_24px_rgba(53,95,241,0.12)]"
+          : "border-[#dce5f7] bg-white text-slate-800 hover:border-[#b8c9f4]",
+      ].join(" ")}
+    >
+      <span className="min-w-0 text-[clamp(0.76rem,1.15vw,0.9rem)] font-black leading-tight">{children}</span>
+      <span
+        className={[
+          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
+          selected ? "border-[#355ff1] bg-[#355ff1] text-white" : "border-slate-300 text-transparent",
+        ].join(" ")}
+      >
+        <Check className="h-3 w-3" strokeWidth={3} />
+      </span>
+    </button>
+  );
+}
+
+function AmbientControls({ controller, compact = false }) {
+  const { state } = controller;
+  return (
+    <div className={compact ? "flex min-w-0 items-center gap-2" : "space-y-2"}>
+      {!compact ? (
+        <div className="grid grid-cols-2 gap-2">
+          {Object.values(REST_TEST_AMBIENCE).map((track) => (
+            <ChoiceButton
+              key={track.id}
+              selected={state.ambienceId === track.id}
+              onClick={() => controller.selectAmbience(track.id)}
+              testId={`rest-sound-${track.id}`}
+            >
+              {track.label}
+            </ChoiceButton>
+          ))}
         </div>
-        <div className="mt-0.5 text-[0.72rem] font-medium text-slate-500">remaining</div>
+      ) : (
+        <span className="hidden truncate text-[0.72rem] font-bold text-slate-600 md:block">
+          {REST_TEST_AMBIENCE[state.ambienceId]?.label}
+        </span>
+      )}
+
+      <div className="flex min-w-0 items-center gap-2">
+        {!compact ? (
+          <button
+            type="button"
+            onClick={() => controller.previewAmbience()}
+            data-testid="rest-sound-preview"
+            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] border border-[#dce5f7] bg-white px-3 text-[0.76rem] font-extrabold text-[#355ff1]"
+          >
+            <Play className="h-4 w-4" /> Preview
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => controller.setMuted(!state.muted)}
+          aria-label={state.muted ? "Unmute ambient sound" : "Mute ambient sound"}
+          data-testid="rest-sound-mute"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] border border-[#dce5f7] bg-white text-[#355ff1]"
+        >
+          {state.muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+        </button>
+        <input
+          aria-label="Ambient sound volume"
+          data-testid="rest-sound-volume"
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={state.volume}
+          onChange={(event) => controller.setVolume(event.target.value)}
+          className="h-11 min-w-[72px] flex-1 accent-[#355ff1]"
+        />
       </div>
     </div>
   );
 }
 
-function RestLengthCard({
-  title,
-  subtitle,
-  durationLabel,
-  accent = "orange",
-  buttonLabel = "Start Test",
-  onClick,
-}) {
-  const iconTone = accent === "blue" ? "text-[#355ff1]" : "text-[#ff8f1f]";
-  const durationTone = accent === "blue" ? "bg-[#edf2ff] text-[#355ff1]" : "bg-[#fff1e2] text-[#ff8f1f]";
-  const buttonTone =
-    accent === "blue"
-      ? "bg-[linear-gradient(90deg,#2f57e8_0%,#1f7cff_100%)] shadow-[0_18px_36px_rgba(47,87,232,0.24)]"
-      : "bg-[linear-gradient(90deg,#ff9f1c_0%,#ff7a1a_100%)] shadow-[0_18px_36px_rgba(255,143,31,0.26)]";
-
+function ConfirmBar({ action, onCancel, onConfirm }) {
+  if (!action) return null;
+  const isRestart = action === "restart";
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      data-pod-layout-primary-action="rest-start"
-      data-pod-text-card={lowerText(title).replace(/[^a-z0-9]+/g, "-")}
-      className="group flex w-full cursor-pointer flex-col rounded-[22px] border border-white/85 bg-white/96 p-[12px] text-left shadow-[0_18px_46px_rgba(45,71,136,0.1)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d8e2ff] hover:shadow-[0_24px_54px_rgba(45,71,136,0.14)]"
-    >
-      <div className="flex items-start gap-3">
-          <div className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full border border-white/90 bg-[#f7faff] shadow-[0_12px_28px_rgba(45,71,136,0.08)]">
-          <Timer className={["h-6 w-6", iconTone].join(" ")} />
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-[clamp(1.05rem,1.6vw,1.25rem)] font-black leading-none tracking-tight text-slate-900">
-                {title}
-              </div>
-              <div className="mt-[6px] text-[clamp(0.86rem,1.2vw,0.95rem)] leading-[1.25] text-slate-600">
-                {subtitle}
-              </div>
-            </div>
-            <div className={["shrink-0 rounded-full px-3 py-1 text-[0.76rem] font-black", durationTone].join(" ")}>
-              {durationLabel}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        className={[
-          "mt-[10px] flex h-[44px] items-center justify-center rounded-full text-[clamp(0.9rem,1.25vw,1rem)] font-black text-white transition group-hover:scale-[1.01]",
-          buttonTone,
-        ].join(" ")}
-      >
-        {buttonLabel} <ArrowRight className="ml-2 inline h-5 w-5" />
-      </div>
-    </button>
-  );
-}
-
-export function PodRestStartSection({ podLabel, flowOptions = [], onChooseMode }) {
-  const cards = flowOptions.length
-    ? flowOptions.slice(0, 2).map((flow) => ({
-        id: flow.id,
-        title: lowerText(flow.id).includes("deep") ? "15-Minute Test" : "7-Minute Test",
-        subtitle: lowerText(flow.id).includes("deep") ? "More time to settle in" : "Quick feel check",
-        durationLabel: lowerText(flow.id).includes("deep") ? "15 min" : "7 min",
-        buttonLabel: lowerText(flow.id).includes("deep") ? "Start 15-Minute Test" : "Start 7-Minute Test",
-        accent: lowerText(flow.id).includes("deep") ? "blue" : "orange",
-      }))
-    : [
-        {
-          id: "quick",
-          title: "7-Minute Test",
-          subtitle: "Quick feel check",
-          durationLabel: "7 min",
-          buttonLabel: "Start 7-Minute Test",
-          accent: "orange",
-        },
-        {
-          id: "deep",
-          title: "15-Minute Test",
-          subtitle: "More time to settle in",
-          durationLabel: "15 min",
-          buttonLabel: "Start 15-Minute Test",
-          accent: "blue",
-        },
-      ];
-
-  return (
-    <ShowroomPanel data-pod-text-card="pod-home" className="overflow-visible p-[12px]" tone="frost">
-      <div className="max-w-[780px]">
-        <div className="text-[clamp(1.75rem,2.6vw,2.12rem)] font-black leading-[0.98] tracking-tight text-slate-900">
-          Start Your Rest Test
-        </div>
-        <div className="mt-[4px] text-[clamp(1rem,1.35vw,1.08rem)] leading-[1.3] text-slate-600">
-          Try {podLabel} your way: choose a 7-minute quick check or 15 minutes to settle in.
-        </div>
-      </div>
-
-      <div className="mt-[10px] grid gap-[12px] md:grid-cols-2">
-        {cards.map((card) => (
-          <RestLengthCard key={card.id} {...card} onClick={() => onChooseMode?.(card.id)} />
-        ))}
-      </div>
-
-      <div className="mt-[6px] flex items-center justify-center gap-2 text-[0.82rem] font-medium text-slate-500">
-        <CheckCircle2 className="h-4 w-4 text-slate-400" />
-        <span>Pause or end your test anytime.</span>
-      </div>
-    </ShowroomPanel>
-  );
-}
-
-function RestRatingCard({ option, selected = false, onClick }) {
-  const Icon = option.icon;
-  const toneClasses =
-    option.tone === "orange"
-      ? selected
-        ? "border-[#ffbe85] bg-[#fff5eb] text-[#d76a09] shadow-[0_18px_34px_rgba(255,143,31,0.18)]"
-        : "border-[#ffdcb9] bg-white text-slate-900 hover:bg-[#fff9f2]"
-      : option.tone === "red"
-        ? selected
-          ? "border-[#ffc8c8] bg-[#fff3f3] text-[#d84545] shadow-[0_18px_34px_rgba(220,80,80,0.12)]"
-          : "border-[#ffd7d7] bg-white text-slate-900 hover:bg-[#fff8f8]"
-        : selected
-          ? "border-[#b8cbff] bg-[#eef3ff] text-[#2f57e8] shadow-[0_18px_34px_rgba(47,87,232,0.16)]"
-          : "border-[#d6e4ff] bg-white text-slate-900 hover:bg-[#f7faff]";
-  const iconTone = option.tone === "orange" ? "text-[#ff8f1f]" : option.tone === "red" ? "text-[#ef5b5b]" : "text-[#355ff1]";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={[
-        "flex min-h-[134px] cursor-pointer flex-col rounded-[22px] border px-3.5 py-3.5 text-center transition duration-200 hover:-translate-y-0.5 md:min-h-[146px] md:px-4 md:py-4",
-        toneClasses,
-      ].join(" ")}
-    >
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white/82 shadow-[0_10px_24px_rgba(45,71,136,0.08)] md:h-16 md:w-16">
-        {Icon ? <Icon className={["h-7 w-7 md:h-8 md:w-8", iconTone].join(" ")} /> : null}
-      </div>
-
-      <div className="mt-3 text-[0.94rem] font-black leading-tight text-slate-900 md:mt-4 md:text-[1.04rem]">
-        {option.label}
-      </div>
-
-      {selected ? (
-        <div className="mt-3 text-[0.8rem] font-extrabold uppercase tracking-[0.18em] text-[#2f57e8] md:mt-4">
-          Selected
-        </div>
-      ) : null}
-    </button>
-  );
-}
-
-function RestInstructionCard({
-  id,
-  title,
-  body,
-  icon: Icon = CheckCircle2,
-  accent = "blue",
-  selected = false,
-  onClick,
-}) {
-  const accentClass =
-    accent === "orange"
-      ? "border-[#ffe0bf] bg-[#fff7ef] text-[#ff8f1f]"
-      : "border-[#dbe5ff] bg-white text-[#355ff1]";
-
-  return (
-    <button
-      type="button"
-      onClick={() => onClick?.(id)}
-      aria-pressed={selected}
-      className={[
-        "rounded-[18px] border bg-white/96 p-2.5 text-left shadow-[0_14px_30px_rgba(45,71,136,0.08)] transition hover:-translate-y-0.5",
-        selected
-          ? "border-[#b8cbff] bg-[#f7faff] shadow-[0_20px_40px_rgba(47,87,232,0.16)]"
-          : "border-white/80 hover:border-[#d6e4ff]",
-      ].join(" ")}
-    >
-      <div className="flex items-start gap-3">
-        <div className={["flex h-8 w-8 shrink-0 items-center justify-center rounded-full border", accentClass].join(" ")}>
-          {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
-        </div>
-        <div className="min-w-0">
-          <div className="text-[0.86rem] font-black leading-tight text-slate-900">{title}</div>
-          <div className="mt-0.5 text-[0.74rem] leading-[1.05rem] text-slate-600">{body}</div>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-export function buildActiveRestInstructionCards({ hasAdjustableBase }) {
-  return [
-    {
-      id: "back",
-      title: "Try Your Back",
-      body: "Lie flat and notice lower-back support.",
-      focusTitle: "Try your back",
-      focusBody: "Lie flat and notice lower-back support through the middle of the mattress.",
-      icon: BedDouble,
-      accent: "blue",
-    },
-    {
-      id: "side",
-      title: "Try Your Side",
-      body: "Check shoulder and hip pressure.",
-      focusTitle: "Try your side",
-      focusBody: "Pay attention to shoulder and hip pressure relief while you settle in.",
-      icon: CheckCircle2,
-      accent: "blue",
-    },
-    hasAdjustableBase
-      ? {
-          id: "motion",
-          title: "Try Motion",
-          body: "Try Zero Gravity, Snore, or Head Up.",
-          focusTitle: "Try motion",
-          focusBody: "Use the adjustable positions and notice whether support or pressure relief changes.",
-          icon: SlidersHorizontal,
-          accent: "orange",
-        }
-      : {
-          id: "relax",
-          title: "Relax & Notice",
-          body: "Let your body settle and notice pressure points.",
-          focusTitle: "Relax and notice",
-          focusBody: "Stay still for a moment and notice comfort, pressure points, and overall support.",
-          icon: Heart,
-          accent: "orange",
-        },
-  ];
-}
-
-export function GuidedRestTest({
-  podLabel = "this pod",
-  flowOptions,
-  activeMode,
-  activeStep,
-  activeStepIndex,
-  timerRemaining,
-  timerRunning,
-  onChooseMode,
-  onPauseTimer,
-  onResetTest,
-  onSelectReflection,
-  onViewDetails,
-  onBuildPod,
-  onCompareAnotherPod,
-  onSwitchToLongerMode,
-  completionStage,
-  reflectionChoice,
-  hasAdjustableBase,
-  selectedInstructionId,
-  onSelectInstruction,
-  onEndAndRate,
-}) {
-  if (!activeMode) {
-    return (
-      <PodRestStartSection
-        podLabel={podLabel}
-        flowOptions={Object.values(flowOptions || {})}
-        onChooseMode={onChooseMode}
-      />
-    );
-  }
-
-  if (completionStage === REST_COMPLETION_STAGES.actions) {
-    return (
-      <ShowroomPanel className="overflow-hidden p-[16px]" tone="frost">
-        <div className="text-[1.82rem] font-black leading-tight tracking-tight text-slate-900 md:text-[2rem]">
-          Rest Test saved
-        </div>
-
-        {reflectionChoice ? (
-          <div className="mt-3 rounded-[18px] border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-900">
-            Saved rating: {reflectionChoice}
-          </div>
-        ) : null}
-
-        <div className="mt-3 grid grid-cols-1 gap-2.5 md:grid-cols-3">
-          <button
-            type="button"
-            onClick={onCompareAnotherPod}
-            className="rounded-[18px] bg-indigo-600 px-4 py-2.5 text-[0.9rem] font-extrabold text-white transition hover:bg-indigo-700"
-          >
-            Compare Another Pod
-          </button>
-          <button
-            type="button"
-            onClick={onViewDetails}
-            className="rounded-[18px] border bg-white px-4 py-2.5 text-[0.9rem] font-extrabold text-gray-900 transition hover:bg-gray-50"
-          >
-            Learn About This Pod
-          </button>
-          <button
-            type="button"
-            onClick={onBuildPod}
-            className="rounded-[18px] border bg-white px-4 py-2.5 text-[0.9rem] font-extrabold text-gray-900 transition hover:bg-gray-50"
-          >
-            Build This Setup
-          </button>
-        </div>
-
+    <div className="absolute inset-x-2 bottom-2 z-20 flex min-h-[52px] items-center justify-between gap-3 rounded-[14px] border border-amber-200 bg-white px-3 py-2 shadow-[0_14px_34px_rgba(15,23,42,0.18)]">
+      <p className="min-w-0 text-[0.74rem] font-bold leading-tight text-slate-700">
+        {isRestart
+          ? "Restart this Rest Test from the beginning?"
+          : "End this Rest Test? Your progress on this mattress will be saved as incomplete."}
+      </p>
+      <div className="flex shrink-0 gap-2">
+        <button type="button" onClick={onCancel} className="min-h-[44px] rounded-[12px] border px-3 text-xs font-black">
+          Cancel
+        </button>
         <button
           type="button"
-          onClick={onResetTest}
-          className="mt-3 inline-flex items-center gap-2 text-sm font-extrabold text-slate-500 transition hover:text-slate-900"
+          data-testid={`rest-confirm-${action}`}
+          onClick={onConfirm}
+          className="min-h-[44px] rounded-[12px] bg-slate-900 px-3 text-xs font-black text-white"
         >
-          Back to Rest Test Options
+          {isRestart ? "Restart" : "End Test"}
         </button>
-      </ShowroomPanel>
-    );
-  }
+      </div>
+    </div>
+  );
+}
 
-  const stepTotalSeconds = Math.max(1, Number(activeStep?.seconds) || 1);
-  const activeTitle = activeMode?.id === "deep" ? "15-Minute Test in Progress" : "7-Minute Test in Progress";
-  const pauseLabel = timerRunning ? "Pause Test" : "Resume Test";
-  const showLongerModeSwitch = activeMode?.id === "quick";
-  const instructionCards = buildActiveRestInstructionCards({ hasAdjustableBase });
-  const selectedInstruction = instructionCards.find((card) => card.id === selectedInstructionId) || null;
-  const currentFocusTitle = selectedInstruction?.focusTitle || activeStep?.cue || "Keep settling in";
-  const currentFocusBody =
-    selectedInstruction?.focusBody ||
-    activeStep?.body ||
-    "Stay in the position and notice comfort, support, and pressure relief.";
-
-  if (completionStage === REST_COMPLETION_STAGES.reflection) {
-    return (
-      <ShowroomPanel className="overflow-hidden p-[16px]" tone="frost">
-        <div className="text-[clamp(1.75rem,2.4vw,2.05rem)] font-black leading-tight tracking-tight text-slate-900">
-          How did this pod feel?
-        </div>
-
-        <div className="mt-3 grid gap-2.5 md:grid-cols-3">
-          {REST_REFLECTION_OPTIONS.map((option) => (
-            <RestRatingCard
-              key={option.id}
-              option={option}
-              selected={false}
-              onClick={() => onSelectReflection(option.id)}
-            />
-          ))}
-        </div>
-      </ShowroomPanel>
-    );
-  }
+function RestTestEntry({ controller, podLabel, onBackHome }) {
+  const [confirmAction, setConfirmAction] = useState("");
+  const durations = Object.values(REST_TEST_DURATIONS);
 
   return (
-    <ShowroomPanel className="overflow-hidden p-[12px]" tone="frost">
-      <div className="text-[clamp(1.5rem,2.05vw,1.8rem)] font-black leading-[0.98] tracking-tight text-slate-900">
-        {activeTitle}
-      </div>
-
-      <div className="mt-[8px] grid gap-[10px] xl:grid-cols-[124px_minmax(0,1fr)] xl:items-start">
-        <div className="flex justify-center xl:justify-start">
-          <RestCountdownRing remainingSeconds={timerRemaining} totalSeconds={stepTotalSeconds} />
-        </div>
-
-        <div className="space-y-[8px]">
-          <div className="rounded-[16px] border border-[#dbe5ff] bg-white/96 px-[12px] py-[8px] shadow-sm">
-            <div className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
-              Current Focus
-            </div>
-            <div className="mt-[4px] text-[clamp(0.96rem,1.25vw,1.06rem)] font-black text-slate-900">{currentFocusTitle}</div>
-            <div className="mt-[2px] text-[clamp(0.8rem,1.05vw,0.9rem)] leading-[1.22] text-slate-600">{currentFocusBody}</div>
-          </div>
-
-          <div className="grid gap-[8px] md:grid-cols-3">
-            {instructionCards.map((card) => (
-              <RestInstructionCard
-                key={card.id}
-                {...card}
-                selected={card.id === selectedInstructionId}
-                onClick={onSelectInstruction}
-              />
+    <ShowroomPanel
+      tone="frost"
+      data-testid="rest-test-entry"
+      data-rest-test-state="entry"
+      className="relative h-full min-h-0 overflow-y-auto p-[10px] lg:overflow-hidden"
+    >
+      <div className="grid h-full min-h-0 gap-2 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_minmax(250px,0.72fr)]">
+        <section className="min-w-0 rounded-[16px] border border-white/80 bg-white/74 px-3 py-2">
+          <h2 className="text-[clamp(1.15rem,2vw,1.65rem)] font-black leading-[1.02] tracking-tight text-slate-950">
+            Settle in. Snoozer will guide your Rest Test.
+          </h2>
+          <p className="mt-1 line-clamp-2 text-[clamp(0.72rem,1.08vw,0.86rem)] leading-snug text-slate-600">
+            Choose your experience, get comfortable, and pay attention to pressure relief, support, and how your body settles into the mattress.
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {durations.map((duration) => (
+              <ChoiceButton
+                key={duration.id}
+                selected={controller.state.durationId === duration.id}
+                onClick={() => controller.selectDuration(duration.id)}
+                testId={`rest-duration-${duration.id}`}
+              >
+                {duration.label}
+              </ChoiceButton>
             ))}
           </div>
+        </section>
+
+        <section className="min-w-0 rounded-[16px] border border-white/80 bg-white/74 px-3 py-2">
+          <div className="flex items-center gap-2 text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#355ff1]">
+            <Music2 className="h-4 w-4" /> Ambient Sound
+          </div>
+          <div className="mt-2">
+            <AmbientControls controller={controller} />
+          </div>
+        </section>
+
+        <section className="flex min-h-0 flex-col justify-center gap-2 rounded-[16px] border border-[#dbe5ff] bg-[#f7f9ff] px-3 py-2">
+          {controller.unfinished ? (
+            <>
+              <div className="text-xs font-black uppercase tracking-[0.15em] text-[#355ff1]">Unfinished Rest Test</div>
+              <button
+                type="button"
+                data-testid="rest-resume-test"
+                onClick={controller.resume}
+                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-3 text-sm font-black text-white"
+              >
+                <Play className="h-4 w-4" /> Resume Test
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setConfirmAction("restart")} className="min-h-[44px] rounded-[12px] border bg-white text-xs font-black">
+                  Restart Test
+                </button>
+                <button type="button" onClick={() => setConfirmAction("end")} className="min-h-[44px] rounded-[12px] border border-red-200 bg-white text-xs font-black text-red-600">
+                  End Previous
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                data-testid="rest-begin-test"
+                onClick={controller.begin}
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-[13px] bg-[linear-gradient(90deg,#2f57e8,#246cff)] px-4 text-sm font-black text-white shadow-[0_14px_28px_rgba(47,87,232,0.22)]"
+              >
+                Begin Rest Test <ArrowRight className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                data-testid="rest-back-home"
+                onClick={onBackHome}
+                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] border border-[#dbe5ff] bg-white px-3 text-xs font-black text-slate-800"
+              >
+                <ArrowLeft className="h-4 w-4" /> Back to Pod Home
+              </button>
+              <p className="text-center text-[0.68rem] font-semibold leading-tight text-slate-500">
+                {podLabel} / Local guided program / Works offline
+              </p>
+            </>
+          )}
+        </section>
+      </div>
+
+      <ConfirmBar
+        action={confirmAction}
+        onCancel={() => setConfirmAction("")}
+        onConfirm={() => {
+          if (confirmAction === "restart") controller.restart();
+          else controller.endEarly();
+          setConfirmAction("");
+        }}
+      />
+    </ShowroomPanel>
+  );
+}
+
+function RestVisual({ stage, paused, available }) {
+  return (
+    <div className="relative flex h-full min-h-0 items-center justify-center overflow-hidden rounded-[16px] border border-white/80 bg-[radial-gradient(circle_at_50%_35%,#ffffff_0%,#eef4ff_72%,#e4ecfb_100%)]">
+      {available ? (
+        <img
+          key={stage.id}
+          src={stage.visual}
+          alt={`Snoozer demonstrating ${stage.positionLabel}`}
+          className={[
+            "rest-test-visual-enter h-full max-h-[205px] w-full object-contain p-1",
+            paused ? "rest-test-visual-paused" : "rest-test-visual-breathe",
+          ].join(" ")}
+        />
+      ) : (
+        <div className="px-4 text-center text-sm font-bold text-slate-600">{stage.positionLabel}</div>
+      )}
+      <div className="absolute left-2 top-2 rounded-full border border-white/80 bg-white/90 px-2.5 py-1 text-[0.66rem] font-black uppercase tracking-[0.12em] text-[#355ff1] shadow-sm">
+        {stage.positionLabel}
+      </div>
+    </div>
+  );
+}
+
+function ActiveRestTest({ controller }) {
+  const [confirmAction, setConfirmAction] = useState("");
+  const { state, stage, duration } = controller;
+  const isPaused = state.phase === REST_TEST_PHASES.PAUSED;
+  const isPositioning = [REST_TEST_PHASES.POSITIONING, REST_TEST_PHASES.STARTING].includes(state.phase);
+  const isBaseFailure = state.phase === REST_TEST_PHASES.BASE_FAILURE;
+  const stageNumber = state.stageIndex + 1;
+  const nextStage = REST_TEST_STAGES[state.stageIndex + 1] || null;
+  const progress = Math.min(100, Math.max(0, (state.overallActiveElapsedSeconds / duration.totalSeconds) * 100));
+  const statusLabel = isPaused ? "Paused" : isPositioning ? "Get Into Position" : isBaseFailure ? "Position Unavailable" : "Testing Now";
+
+  return (
+    <ShowroomPanel
+      tone="frost"
+      data-testid="rest-test-active"
+      data-rest-test-state={state.phase}
+      data-rest-test-stage={stage.id}
+      className="relative h-full min-h-0 overflow-y-auto p-[8px] lg:overflow-hidden"
+    >
+      <div className="grid h-full min-h-[190px] gap-2 lg:grid-cols-[minmax(245px,0.72fr)_minmax(0,1.28fr)]">
+        <RestVisual stage={stage} paused={isPaused} available={controller.visualsAvailable} />
+
+        <div className="flex min-h-0 min-w-0 flex-col rounded-[16px] border border-white/80 bg-white/78 px-3 py-2">
+          <div className="flex min-w-0 items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-[0.66rem] font-black uppercase tracking-[0.18em] text-[#355ff1]">
+                Stage {stageNumber} of {REST_TEST_STAGES.length} / {statusLabel}
+              </div>
+              <h2 className="mt-0.5 truncate text-[clamp(1.15rem,2.1vw,1.72rem)] font-black leading-none tracking-tight text-slate-950">
+                {stage.name}
+              </h2>
+            </div>
+            <div className="shrink-0 text-right">
+              <div className="text-[clamp(1.35rem,2.5vw,2rem)] font-black leading-none tabular-nums text-slate-950">
+                {formatTime(state.stageRemainingSeconds)}
+              </div>
+              <div className="mt-0.5 text-[0.62rem] font-bold uppercase tracking-[0.12em] text-slate-500">active time</div>
+            </div>
+          </div>
+
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#dfe7f8]" aria-label={`${Math.round(progress)} percent complete`}>
+            <div className="h-full rounded-full bg-[linear-gradient(90deg,#355ff1,#6c63ff)] transition-[width]" style={{ width: `${progress}%` }} />
+          </div>
+
+          <div className="mt-2 min-h-0 flex-1 rounded-[14px] border border-[#dbe5ff] bg-[#f7f9ff] px-3 py-2">
+            {isPaused ? (
+              <>
+                <div className="text-sm font-black text-slate-950">Rest Test paused</div>
+                <p className="mt-1 text-[0.76rem] leading-snug text-slate-600">Your exact stage time is saved. Continue whenever you are ready.</p>
+              </>
+            ) : isBaseFailure ? (
+              <>
+                <div className="text-sm font-black text-slate-950">The base position is unavailable right now.</div>
+                <p className="mt-1 text-[0.76rem] leading-snug text-slate-600">You can continue evaluating the mattress while it remains flat.</p>
+              </>
+            ) : isPositioning ? (
+              <>
+                <div className="text-sm font-black text-slate-950">{stage.manualInstruction}</div>
+                <p className="mt-1 text-[0.76rem] leading-snug text-slate-600">The timer waits while you get comfortable.</p>
+              </>
+            ) : (
+              <>
+                <div className="text-sm font-black text-slate-950">{stage.quietPrompt}</div>
+                <p className="mt-1 line-clamp-2 text-[0.76rem] leading-snug text-slate-600">Stay still and give your body time to settle. Snoozer will guide the next transition.</p>
+              </>
+            )}
+          </div>
+
+          <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+            {isPositioning ? (
+              <button
+                type="button"
+                data-testid="rest-position-ready"
+                onClick={controller.positionReady}
+                className="inline-flex min-h-[44px] min-w-[150px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-3 text-sm font-black text-white"
+              >
+                <Check className="h-4 w-4" /> Position Ready
+              </button>
+            ) : isPaused ? (
+              <button
+                type="button"
+                data-testid="rest-resume-active"
+                onClick={controller.resume}
+                className="inline-flex min-h-[44px] min-w-[130px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-3 text-sm font-black text-white"
+              >
+                <Play className="h-4 w-4" /> Resume Test
+              </button>
+            ) : isBaseFailure ? (
+              <>
+                <button type="button" onClick={controller.continueFlat} className="min-h-[44px] flex-1 rounded-[12px] bg-[#355ff1] px-3 text-xs font-black text-white">Continue Flat</button>
+                <button type="button" onClick={controller.tryBaseAgain} className="min-h-[44px] flex-1 rounded-[12px] border bg-white px-3 text-xs font-black">Try Again</button>
+              </>
+            ) : (
+              <button
+                type="button"
+                data-testid="rest-pause-test"
+                onClick={controller.pause}
+                className="inline-flex min-h-[44px] min-w-[120px] items-center justify-center gap-2 rounded-[12px] border border-[#dbe5ff] bg-white px-3 text-xs font-black text-[#355ff1]"
+              >
+                <Pause className="h-4 w-4" /> Pause
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setConfirmAction("restart")}
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] border border-[#dbe5ff] bg-white px-3 text-xs font-black text-slate-700"
+            >
+              <RotateCcw className="h-4 w-4" /> Restart
+            </button>
+            <button
+              type="button"
+              data-testid="rest-end-test"
+              onClick={() => setConfirmAction("end")}
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] border border-red-200 bg-white px-3 text-xs font-black text-red-600"
+            >
+              <Square className="h-3.5 w-3.5" /> End Test
+            </button>
+            <div className="ml-auto min-w-[130px] flex-1 md:max-w-[220px]">
+              <AmbientControls controller={controller} compact />
+            </div>
+          </div>
+
+          {nextStage ? (
+            <div className="mt-1 truncate text-right text-[0.64rem] font-bold text-slate-500">Next: {nextStage.name}</div>
+          ) : null}
         </div>
       </div>
 
-      <div className="mt-[8px] flex flex-wrap items-center gap-[8px]">
-        <button
-          type="button"
-          onClick={onPauseTimer}
-          data-pod-layout-rest-control="true"
-          data-pod-layout-primary-action="rest-pause"
-          className="inline-flex min-h-[44px] min-w-[144px] items-center justify-center gap-2 rounded-[14px] border border-[#dbe5ff] bg-white px-3.5 text-[0.8rem] font-black text-[#355ff1] shadow-sm transition hover:bg-slate-50"
-        >
-          <Pause className="h-4 w-4" />
-          {pauseLabel}
-        </button>
+      <ConfirmBar
+        action={confirmAction}
+        onCancel={() => setConfirmAction("")}
+        onConfirm={() => {
+          if (confirmAction === "restart") controller.restart();
+          else controller.endEarly();
+          setConfirmAction("");
+        }}
+      />
+    </ShowroomPanel>
+  );
+}
 
-        <button
-          type="button"
-          onClick={onEndAndRate}
-          data-pod-layout-rest-control="true"
-          data-pod-layout-primary-action="rest-end"
-          className="inline-flex min-h-[44px] min-w-[144px] items-center justify-center gap-2 rounded-[14px] border border-[#ffd7d7] bg-white px-3.5 text-[0.8rem] font-black text-[#ef5b5b] shadow-sm transition hover:bg-[#fff8f8]"
-        >
-          <X className="h-4 w-4" />
-          End & Rate
-        </button>
+function FivePointRating({ label, value, onChange, testId }) {
+  return (
+    <fieldset className="min-w-0 rounded-[14px] border border-[#dbe5ff] bg-white px-2.5 py-2">
+      <legend className="sr-only">{label}</legend>
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate text-[0.76rem] font-black text-slate-900">{label}</span>
+        <div className="flex gap-1" data-testid={testId}>
+          {[1, 2, 3, 4, 5].map((score) => (
+            <button
+              type="button"
+              key={score}
+              aria-label={`${label}: ${score} out of 5`}
+              aria-pressed={value === score}
+              onClick={() => onChange(score)}
+              className={[
+                "flex h-11 w-11 items-center justify-center rounded-full border text-xs font-black transition",
+                value === score ? "border-[#355ff1] bg-[#355ff1] text-white" : "border-[#dbe5ff] bg-[#f8faff] text-slate-600",
+              ].join(" ")}
+            >
+              {score}
+            </button>
+          ))}
+        </div>
+      </div>
+    </fieldset>
+  );
+}
 
-        {showLongerModeSwitch ? (
+function CompactOptionGroup({ label, options, value, onChange, testId }) {
+  return (
+    <fieldset className="min-w-0 rounded-[14px] border border-[#dbe5ff] bg-white px-2.5 py-2">
+      <legend className="sr-only">{label}</legend>
+      <div className="flex min-w-0 items-center gap-1.5" data-testid={testId}>
+        <span className="mr-auto truncate text-[0.72rem] font-black text-slate-900">{label}</span>
+        {options.map((option) => (
           <button
             type="button"
-            onClick={onSwitchToLongerMode}
-            data-pod-layout-rest-control="true"
-            className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-[14px] border border-[#dbe5ff] bg-[#f8faff] px-3.5 text-[0.76rem] font-extrabold text-[#355ff1] shadow-sm transition hover:bg-white xl:min-w-[206px] xl:flex-none"
+            key={option.value}
+            aria-pressed={value === option.value}
+            onClick={() => onChange(option.value)}
+            className={[
+              "min-h-[36px] rounded-[10px] border px-2 text-[0.66rem] font-black",
+              value === option.value ? "border-[#355ff1] bg-[#eef3ff] text-[#234ee8]" : "border-[#dbe5ff] bg-white text-slate-600",
+            ].join(" ")}
           >
-            Need more time? Switch to 15 min
-            <ArrowRight className="h-4 w-4" />
+            {option.label}
           </button>
-        ) : null}
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function RestTestCompletion({ controller, podLabel, onBackHome, onTryAnotherMattress }) {
+  const [favoriteSaved, setFavoriteSaved] = useState(false);
+  const positionOptions = useMemo(
+    () => [
+      { value: "flat", label: "Flat" },
+      { value: "zero_gravity", label: "Zero Gravity" },
+      { value: "snore", label: "Snore preset" },
+    ],
+    []
+  );
+  const againOptions = useMemo(
+    () => [
+      { value: "yes", label: "Yes" },
+      { value: "maybe", label: "Maybe" },
+      { value: "no", label: "No" },
+    ],
+    []
+  );
+
+  return (
+    <ShowroomPanel
+      tone="frost"
+      data-testid="rest-test-completion"
+      data-rest-test-state="completed"
+      className="h-full min-h-0 overflow-y-auto p-[9px] lg:overflow-hidden"
+    >
+      <div className="grid h-full min-h-0 gap-2 lg:grid-cols-[minmax(230px,0.6fr)_minmax(0,1.4fr)]">
+        <section className="flex min-h-0 flex-col justify-center rounded-[16px] border border-emerald-100 bg-[linear-gradient(145deg,#f2fff9,#ffffff)] px-3 py-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white"><Check className="h-5 w-5" strokeWidth={3} /></div>
+          <h2 className="mt-1 text-[clamp(1.18rem,2vw,1.65rem)] font-black leading-none text-slate-950">Your Rest Test is complete.</h2>
+          <p className="mt-1 text-[0.73rem] leading-snug text-slate-600">Rate how {podLabel} felt while the experience is still fresh.</p>
+        </section>
+
+        <section className="grid min-h-0 gap-2 lg:grid-cols-2">
+          <div className="grid content-center gap-1.5">
+            <FivePointRating label="Overall comfort" value={controller.state.ratings.comfort} onChange={(value) => controller.rate("comfort", value)} testId="rest-rating-comfort" />
+            <FivePointRating label="Pressure relief" value={controller.state.ratings.pressureRelief} onChange={(value) => controller.rate("pressureRelief", value)} testId="rest-rating-pressure" />
+            <FivePointRating label="Support" value={controller.state.ratings.support} onChange={(value) => controller.rate("support", value)} testId="rest-rating-support" />
+          </div>
+          <div className="grid content-center gap-1.5">
+            <CompactOptionGroup label="Best position" options={positionOptions} value={controller.state.preferredPosition} onChange={controller.setPreferredPosition} testId="rest-best-position" />
+            <CompactOptionGroup label="Test this mattress again?" options={againOptions} value={controller.state.testAgain} onChange={controller.setTestAgain} testId="rest-test-again" />
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                data-testid="rest-save-favorite"
+                onClick={() => { controller.saveFavorite(); setFavoriteSaved(true); }}
+                className="inline-flex min-h-[44px] items-center justify-center gap-1 rounded-[11px] border border-[#dbe5ff] bg-white px-2 text-[0.66rem] font-black text-[#355ff1]"
+              >
+                {favoriteSaved ? <Check className="h-3.5 w-3.5" /> : <Star className="h-3.5 w-3.5" />} {favoriteSaved ? "Saved" : "Favorite"}
+              </button>
+              <button type="button" onClick={onBackHome} className="inline-flex min-h-[44px] items-center justify-center gap-1 rounded-[11px] border border-[#dbe5ff] bg-white px-2 text-[0.66rem] font-black text-slate-800">
+                <Home className="h-3.5 w-3.5" /> Pod Home
+              </button>
+              <button type="button" onClick={onTryAnotherMattress} className="inline-flex min-h-[44px] items-center justify-center gap-1 rounded-[11px] bg-[#355ff1] px-2 text-[0.66rem] font-black text-white">
+                Try Another <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
     </ShowroomPanel>
   );
 }
+
+export function GuidedRestTest({ controller, podLabel = "this pod", onBackHome, onTryAnotherMattress }) {
+  if (!controller) return null;
+  if (controller.state.phase === REST_TEST_PHASES.COMPLETED) {
+    return <RestTestCompletion controller={controller} podLabel={podLabel} onBackHome={onBackHome} onTryAnotherMattress={onTryAnotherMattress} />;
+  }
+  if (controller.state.phase === REST_TEST_PHASES.READY || controller.state.phase === REST_TEST_PHASES.ENDED_EARLY) {
+    return <RestTestEntry controller={controller} podLabel={podLabel} onBackHome={onBackHome} />;
+  }
+  return <ActiveRestTest controller={controller} />;
+}
+
+export default GuidedRestTest;

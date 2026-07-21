@@ -42,7 +42,7 @@ import { PodFooterNav } from "@/components/pod/PodFooterNav";
 import { PodRouteHeroHeader } from "@/components/pod/PodHeader";
 import { PodHome } from "@/components/pod/PodHome";
 import { PodLearnPanel } from "@/components/pod/PodLearnPanel";
-import { GuidedRestTest, buildActiveRestInstructionCards } from "@/components/pod/PodRestPanels";
+import { GuidedRestTest } from "@/components/pod/PodRestPanels";
 import {
   BASE_OPTIONS_UI,
   generateShowroomRecommendations,
@@ -50,13 +50,14 @@ import {
   SIZE_OPTIONS,
 } from "@/lib/utils/recommendations";
 import { useStore } from "@/lib/useStore";
-import { getShopperId } from "@/state/sessionStore";
+import { getSessionState, getShopperId } from "@/state/sessionStore";
 import { canViewAdminDiagnostics } from "@/device/deviceActionGuards";
 import { emitDeviceRestTestActive } from "@/device/deviceActivityTracker";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { usePodCart } from "@/hooks/usePodCart";
 import { usePodExperience } from "@/hooks/usePodExperience";
 import { usePodHudGuidance } from "@/hooks/usePodHudGuidance";
+import { useGuidedRestTest } from "@/hooks/useGuidedRestTest";
 import { createAmbientAudioController } from "@/iot/ambientAudioController";
 import {
   REST_TEST_OPENING_HUD_PAYLOAD,
@@ -1077,6 +1078,11 @@ function getPodLabStateFromSearch(search) {
   return params.get("podLayoutState") || params.get("podLabState") || params.get("state") || "";
 }
 
+function getRestTestLabStateFromSearch(search) {
+  const params = new URLSearchParams(search || "");
+  return params.get("restTestState") || "";
+}
+
 export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const { podId } = useParams();
   const location = useLocation();
@@ -1094,6 +1100,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
 
   const effectivePodId = labPodId || podId;
   const rawLayoutState = labState || getPodLabStateFromSearch(location.search);
+  const restTestLabState = getRestTestLabStateFromSearch(location.search);
   const effectiveLabState =
     labMode || (canUseLayoutHarness && rawLayoutState)
       ? normalizePodLabState(rawLayoutState)
@@ -1424,10 +1431,36 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     [hasAdjustableBase, whyThisPodReason]
   );
 
-  const activeRestFlow = useMemo(() => {
-    if (!restModeId) return null;
-    return restFlows[restModeId] || null;
-  }, [restFlows, restModeId]);
+  // The legacy Rest Test flow remains available only for Pod Home labels. The
+  // guided controller below is the sole owner of active Rest Test execution.
+  const activeRestFlow = null;
+
+  const restTestIdentity = useMemo(() => {
+    const session = getSessionState() || {};
+    return {
+      shopperId: session.shopperId || shopperId || null,
+      sessionId: session.sessionId || session.threadId || null,
+      snoozeCode: session.accessCode || session.shopperId || null,
+      accessCode: session.accessCode || null,
+      podId: pid,
+      mattressId: effectiveMattressHandle || activePod?.mattressHandle || null,
+    };
+  }, [activePod?.mattressHandle, effectiveMattressHandle, pid, shopperId]);
+
+  const handleGuidedRestEarlyExit = useCallback(() => {
+    setOpenStage("rest");
+    setShowRestChooser(false);
+  }, [setOpenStage, setShowRestChooser]);
+
+  const guidedRestTest = useGuidedRestTest({
+    storageKey: `${storagePrefix}.guidedRestTest.v1`,
+    identity: restTestIdentity,
+    speakPod,
+    cancelPodVoice,
+    voiceState,
+    onEarlyExit: handleGuidedRestEarlyExit,
+  });
+  const setGuidedRestLabState = guidedRestTest.setLabState;
 
   useEffect(() => {
     if (!effectiveLabState || !activePod) return;
@@ -1472,11 +1505,12 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
 
     if (effectiveLabState === "rest-active") {
       setShowRestChooser(true);
-      setRestModeId("quick");
+      setRestModeId("");
       setRestStepIndex(0);
-      setTimerRemaining(410);
+      setTimerRemaining(0);
       setTimerRunning(false);
-      setSelectedRestInstructionId("side");
+      setSelectedRestInstructionId("");
+      setGuidedRestLabState("back");
       return;
     }
 
@@ -1499,13 +1533,33 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     setTestComplete,
     setTimerRemaining,
     setTimerRunning,
+    setGuidedRestLabState,
   ]);
 
-  const restTestActive = Boolean(activeRestFlow && !testComplete && !restCompletionStage);
+  useEffect(() => {
+    if (!restTestLabState || !canUseLayoutHarness) return;
+    setOpenStage("rest");
+    setShowRestChooser(true);
+    if (restTestLabState === "entry") {
+      guidedRestTest.restart();
+      return;
+    }
+    setGuidedRestLabState(restTestLabState);
+  }, [canUseLayoutHarness, guidedRestTest.restart, restTestLabState, setGuidedRestLabState]);
+
+  const restTestActive = guidedRestTest.isActive;
+
+  useEffect(() => {
+    if (openStage === "rest" || !guidedRestTest.isActive || guidedRestTest.state.phase === "paused") {
+      return;
+    }
+    guidedRestTest.pause();
+  }, [guidedRestTest.isActive, guidedRestTest.pause, guidedRestTest.state.phase, openStage]);
+
   const zoneExperience = useShowroomZoneExperience({
     podId: pid,
     restTestActive,
-    restTestComplete: testComplete || Boolean(restCompletionStage),
+    restTestComplete: guidedRestTest.state.phase === "completed",
     sourceSurface: "pod",
   });
   const physicalControl = usePhysicalControl({
@@ -2122,64 +2176,14 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   ]);
 
   const handleChooseRestMode = useCallback(
-    async (modeId) => {
+    (modeId) => {
       noteUserInteraction?.();
-
-      const flow = restFlows[modeId];
-      const firstStep = flow?.steps?.[0] || null;
-      if (!flow || !firstStep) return;
-
-      clearTimer(restAdvanceTimeoutRef);
-      await cancelPodVoice();
-
+      void cancelPodVoice();
+      guidedRestTest.selectDuration(modeId);
+      setOpenStage("rest");
       setShowRestChooser(true);
-      setRestModeId(modeId);
-      setRestStepIndex(0);
-      setTimerRemaining(firstStep.seconds);
-      setTimerRunning(true);
-      setSelectedRestInstructionId("");
-      setTestComplete(false);
-      setFeelChoice("");
-      setRestCompletionStage("");
-      resetPodVoiceKeys();
-      setPodLightingState(LIGHTING_STATES.REST_TEST);
-      requestPhysicalLighting(LIGHTING_STATES.REST_TEST, {
-        reason: "rest-test-start",
-        restModeId: modeId,
-      });
-      ambientAudioRef.current?.start(IOT_EXPERIENCE_CONFIG.defaultRestTestAudioTrack);
-      requestPhysicalAudio("playing", {
-        reason: "rest-test-start",
-        restModeId: modeId,
-        track: IOT_EXPERIENCE_CONFIG.defaultRestTestAudioTrack,
-      });
-
-      if (!restOpeningSpokenRef.current) {
-        restOpeningSpokenRef.current = true;
-        speakPod(REST_TEST_OPENING_HUD_PAYLOAD.speech, {
-          actionType: "start_rest_test",
-          captions: REST_TEST_OPENING_HUD_PAYLOAD.captions,
-          state: REST_TEST_OPENING_HUD_PAYLOAD.state,
-          priority: REST_TEST_OPENING_HUD_PAYLOAD.priority,
-          ttlMs: REST_TEST_OPENING_HUD_PAYLOAD.ttlMs,
-          actions: REST_TEST_OPENING_HUD_PAYLOAD.actions,
-          preservePriority: true,
-          calm: true,
-          force: true,
-          scriptKey: modeId === "deep" ? "pod.rest.deep.start" : "pod.rest.quick.start",
-          key: `rest-opening::${pid}`,
-        });
-      }
     },
-    [
-      cancelPodVoice,
-      restFlows,
-      speakPod,
-      noteUserInteraction,
-      pid,
-      requestPhysicalAudio,
-      requestPhysicalLighting,
-    ]
+    [cancelPodVoice, guidedRestTest.selectDuration, noteUserInteraction, setOpenStage, setShowRestChooser]
   );
 
   const handleStartTimer = useCallback(() => {
@@ -2494,11 +2498,14 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     void cancelPodVoice();
     setOpenStage("rest");
     setShowRestChooser(true);
-  }, [cancelPodVoice, restModeId, restCompletionStage, feelChoice, noteUserInteraction]);
+  }, [cancelPodVoice, noteUserInteraction, setOpenStage, setShowRestChooser]);
 
   const goToPodHome = useCallback(async () => {
     noteUserInteraction?.();
     await cancelPodVoice();
+    if (guidedRestTest.isActive && guidedRestTest.state.phase !== "paused") {
+      guidedRestTest.pause();
+    }
     setOpenStage("rest");
     setShowRestChooser(false);
     setRestModeId("");
@@ -2509,7 +2516,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     setRestCompletionStage("");
     setFeelChoice("");
     setTestComplete(false);
-  }, [cancelPodVoice, noteUserInteraction, podLabel]);
+  }, [cancelPodVoice, guidedRestTest, noteUserInteraction, setOpenStage, setShowRestChooser]);
 
   const stageContent = useMemo(() => {
     if (openStage === "details") {
@@ -2549,31 +2556,9 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     return (
       <GuidedRestTest
         podLabel={podLabel}
-        flowOptions={restFlows}
-        activeMode={activeRestFlow}
-        activeStep={activeRestStep}
-        activeStepIndex={restStepIndex}
-        timerRemaining={timerRemaining}
-        timerRunning={timerRunning}
-        onChooseMode={handleChooseRestMode}
-        onStartTimer={handleStartTimer}
-        onPauseTimer={handlePauseRestTimer}
-        onAdvanceStep={handleAdvanceRestStep}
-        onSkipStep={handleSkipRestStep}
-        onResetTest={resetRestTest}
-        onChooseReflection={handleChooseRestFeedback}
-        onSelectReflection={handleSelectRestReflection}
-        onViewDetails={() => void activateDetailsAction(DEFAULT_DETAILS_ACTION_ID, { ensureDetailsStage: true })}
-        onBuildPod={() => void goToBuildStage("size")}
-        onCompareAnotherPod={() => navigate(currentPodRoute)}
-        completionStage={restCompletionStage}
-        reflectionChoice={feelChoice}
-        onSwitchToLongerMode={() => handleChooseRestMode("deep")}
-        testComplete={testComplete}
-        hasAdjustableBase={hasAdjustableBase}
-        selectedInstructionId={selectedRestInstructionId}
-        onSelectInstruction={handleSelectRestInstruction}
-        onEndAndRate={handleEndAndRate}
+        controller={guidedRestTest}
+        onBackHome={() => void goToPodHome()}
+        onTryAnotherMattress={() => navigate("/results")}
       />
     );
   }, [
@@ -2588,49 +2573,23 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     setBuildSelectionState,
     navigate,
     showCartFeedback,
-    restFlows,
-    activeRestFlow,
-    activeRestStep,
-    restStepIndex,
-    timerRemaining,
-    timerRunning,
-    handleChooseRestMode,
-    handleStartTimer,
-    handlePauseRestTimer,
-    handleAdvanceRestStep,
-    handleSkipRestStep,
-    handleSelectRestInstruction,
-    handleEndAndRate,
-    resetRestTest,
-    handleChooseRestFeedback,
-    handleSelectRestReflection,
-    activateDetailsAction,
-    restCompletionStage,
-    feelChoice,
-    testComplete,
-    hasAdjustableBase,
-    selectedRestInstructionId,
+    guidedRestTest,
+    goToPodHome,
     buildStepKey,
     learnSleepNutritionItems,
     learnPricingRows,
     learnFitItems,
     goToBuildStage,
-    currentPodRoute,
   ]);
 
   const isDefaultPodDashboard =
     openStage === "rest" &&
-    !showRestChooser &&
-    !activeRestFlow &&
-    !restCompletionStage &&
-    !testComplete;
+    !showRestChooser;
   const isRestTaskStage = openStage === "rest" && !isDefaultPodDashboard;
   const isRestSelectionStage =
     openStage === "rest" &&
     showRestChooser &&
-    !activeRestFlow &&
-    !restCompletionStage &&
-    !testComplete;
+    guidedRestTest.state.phase === "ready";
   const activeNavKey = isDefaultPodDashboard
     ? "home"
     : openStage === "details"

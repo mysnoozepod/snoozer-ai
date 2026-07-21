@@ -8,7 +8,9 @@
     "preview": "vite preview",
     "pod:lab": "vite --host 127.0.0.1",
     "pod:measure": "playwright test -c playwright.pod-layout.config.cjs --project=measure",
-    "pod:layout:test": "playwright test -c playwright.pod-layout.config.cjs --project=strict"
+    "pod:layout:test": "playwright test -c playwright.pod-layout.config.cjs --project=strict",
+    "rest:test": "node tests/runRestTestProgramTests.mjs",
+    "rest:visual:test": "playwright test -c playwright.rest-test.config.cjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

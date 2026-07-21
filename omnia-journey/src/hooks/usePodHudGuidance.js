@@ -28,7 +28,7 @@ export function usePodHudGuidance({ shopperId }) {
       } = {}
     ) => {
       const phrase = String(text || "").trim();
-      if (!phrase || muted) return null;
+      if (!phrase) return null;
 
       const dedupeKey = String(key || phrase).trim();
       if (!force && dedupeKey && lastPodVoiceKeyRef.current === dedupeKey) {
@@ -65,7 +65,7 @@ export function usePodHudGuidance({ shopperId }) {
         actionType,
       });
     },
-    [muted, say, sayScript, shopperId]
+    [say, sayScript, shopperId]
   );
 
   const resetPodVoiceKeys = useCallback(() => {

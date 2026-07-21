@@ -219,3 +219,45 @@
     opacity: 0.95;
   }
 }
+
+@keyframes rest-test-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.006);
+  }
+}
+
+@keyframes rest-test-visual-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.rest-test-visual-enter {
+  animation: rest-test-visual-enter 480ms ease-out both;
+}
+
+.rest-test-visual-breathe {
+  animation:
+    rest-test-visual-enter 480ms ease-out both,
+    rest-test-breathe 6s ease-in-out 480ms infinite;
+  transform-origin: 50% 72%;
+}
+
+.rest-test-visual-paused {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rest-test-visual-enter,
+  .rest-test-visual-breathe {
+    animation: none;
+    transform: none;
+  }
+}
