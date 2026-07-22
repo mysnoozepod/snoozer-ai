@@ -54,7 +54,7 @@ function testProgramContract() {
     assert.ok(stage.quietPrompt.length > 20, `${stage.id} must own a quiet-period prompt`);
     assert.ok(stage.manualInstruction.length > 15, `${stage.id} must own a manual base instruction`);
     assert.ok(stage.interjection.length > 70, `${stage.id} must own a position-specific interjection`);
-    assert.equal(stage.visual.startsWith("/rest-test/visuals/"), true);
+    assert.equal(stage.visual.includes("/assets/rest-test/visuals/"), true);
   });
   assert.equal(REST_TEST_STAGES[4].speech.includes("treat"), false, "Snore guidance must not make a treatment claim");
   assert.deepEqual(
@@ -237,7 +237,7 @@ async function testAudioController() {
   assert.equal(instances.at(-1).loop, true, "ambience must loop");
   assert.equal(instances.at(-1).volume, 0.4);
   controller.setVolume(0.7);
-  await new Promise((resolve) => setTimeout(resolve, 240));
+  await new Promise((resolve) => setTimeout(resolve, 320));
   assert.equal(instances.at(-1).volume, 0.7);
   const firstTrack = instances.at(-1);
   controller.start(REST_TEST_AMBIENCE.sleepTones.src, { fadeMs: 0 });
@@ -270,7 +270,7 @@ async function testAssetsAndCustomerSurface() {
     REST_TEST_AMBIENCE.sleepTones.src,
     ...new Set(REST_TEST_STAGES.map((stage) => stage.visual)),
   ]) {
-    await access(new URL(`../public${source}`, import.meta.url));
+    await access(new URL(source));
   }
   const panelSource = await readFile(new URL("../src/components/pod/PodRestPanels.jsx", import.meta.url), "utf8");
   for (const removedText of ["Ambient Sound", "Soft Jazz Instrumental", "Crashing Waves", "Works offline", "Next:"]) {

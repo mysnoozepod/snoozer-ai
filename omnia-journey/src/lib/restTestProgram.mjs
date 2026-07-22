@@ -27,16 +27,27 @@ export const REST_TEST_DURATIONS = Object.freeze({
   }),
 });
 
+// Vite owns these files so manual Amplify ZIP deployments cannot omit the
+// nested public folders used by the original Rest Test implementation.
+const REST_TEST_MEDIA = Object.freeze({
+  waves: new URL("../assets/rest-test/audio/rest-test-crashing-waves.mp3", import.meta.url).href,
+  sleepTones: new URL("../assets/rest-test/audio/rest-test-soft-ambient-sleep-tones.mp3", import.meta.url).href,
+  backFlat: new URL("../assets/rest-test/visuals/rest-test-back-flat.png", import.meta.url).href,
+  sideFlat: new URL("../assets/rest-test/visuals/rest-test-side-flat.png", import.meta.url).href,
+  zeroGravity: new URL("../assets/rest-test/visuals/rest-test-zero-gravity.png", import.meta.url).href,
+  snore: new URL("../assets/rest-test/visuals/rest-test-snore.png", import.meta.url).href,
+});
+
 export const REST_TEST_AMBIENCE = Object.freeze({
   waves: Object.freeze({
     id: "waves",
     label: "Crashing Waves",
-    src: "/rest-test/audio/rest-test-crashing-waves.mp3",
+    src: REST_TEST_MEDIA.waves,
   }),
   sleepTones: Object.freeze({
     id: "sleepTones",
     label: "Soft Ambient Sleep Tones",
-    src: "/rest-test/audio/rest-test-soft-ambient-sleep-tones.mp3",
+    src: REST_TEST_MEDIA.sleepTones,
   }),
 });
 
@@ -55,7 +66,7 @@ export const REST_TEST_STAGES = Object.freeze([
     positionLabel: "Back / Flat",
     machineState: "back_flat",
     transitionState: "starting",
-    visual: "/rest-test/visuals/rest-test-back-flat.png",
+    visual: REST_TEST_MEDIA.backFlat,
     baseTarget: "flat",
     manualInstruction: "Use the base remote to return the mattress to flat.",
     speech: "Start on your back. Lie still for a full minute and let the mattress conform to your body.",
@@ -69,7 +80,7 @@ export const REST_TEST_STAGES = Object.freeze([
     positionLabel: "Side / Flat",
     machineState: "side_flat",
     transitionState: "transition_to_side",
-    visual: "/rest-test/visuals/rest-test-side-flat.png",
+    visual: REST_TEST_MEDIA.sideFlat,
     baseTarget: "flat",
     manualInstruction: "Keep the base flat, then turn onto your side.",
     speech: "Now, turn onto your side. Pay attention to how your shoulders and hips feel as the mattress supports you.",
@@ -83,7 +94,7 @@ export const REST_TEST_STAGES = Object.freeze([
     positionLabel: "Back / Flat",
     machineState: "back_recalibration",
     transitionState: "transition_to_recalibration",
-    visual: "/rest-test/visuals/rest-test-back-flat.png",
+    visual: REST_TEST_MEDIA.backFlat,
     baseTarget: "flat",
     manualInstruction: "Keep the base flat, then return to your back.",
     speech: "Return to your back. Take a moment to recalibrate and notice the mattress again while it is completely flat.",
@@ -97,7 +108,7 @@ export const REST_TEST_STAGES = Object.freeze([
     positionLabel: "Back / Zero Gravity",
     machineState: "zero_gravity",
     transitionState: "transition_to_zero_gravity",
-    visual: "/rest-test/visuals/rest-test-zero-gravity.png",
+    visual: REST_TEST_MEDIA.zeroGravity,
     baseTarget: "zero_gravity",
     manualInstruction: "Use the base remote to select Zero Gravity.",
     speech: "Stay on your back. Now, let's experience Zero Gravity. Notice how the position redistributes pressure and supports your body.",
@@ -111,7 +122,7 @@ export const REST_TEST_STAGES = Object.freeze([
     positionLabel: "Back / Head Raised",
     machineState: "snore_preset",
     transitionState: "transition_to_snore",
-    visual: "/rest-test/visuals/rest-test-snore.png",
+    visual: REST_TEST_MEDIA.snore,
     baseTarget: "snore",
     manualInstruction: "Use the base remote to raise the head while keeping the foot section flat.",
     speech: "Now, let's try the Snore preset. This gently raises your head while keeping the foot section flat. Notice whether the elevation feels natural.",
@@ -125,7 +136,7 @@ export const REST_TEST_STAGES = Object.freeze([
     positionLabel: "Back / Flat",
     machineState: "final_flat_comparison",
     transitionState: "transition_to_flat",
-    visual: "/rest-test/visuals/rest-test-back-flat.png",
+    visual: REST_TEST_MEDIA.backFlat,
     baseTarget: "flat",
     manualInstruction: "Use the base remote to return the mattress to flat.",
     speech: "Now, return the base to flat. Spend this final minute comparing the mattress against Zero Gravity and the Snore preset.",

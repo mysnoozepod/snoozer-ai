@@ -306,7 +306,7 @@ export default function WhatToExpect() {
       <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4 pt-2 md:px-6">
         <ShowroomFrame className="shrink-0 p-3.5 md:p-4">
           <motion.div
-            className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_288px] xl:items-start"
+            className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_288px] lg:items-start"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
@@ -346,7 +346,7 @@ export default function WhatToExpect() {
               </div>
             </div>
 
-            <div className="space-y-2.5 xl:self-start">
+            <div className="space-y-2.5 lg:self-start">
               <ShowroomPanel className="p-4 shadow-[0_20px_52px_rgba(47,72,137,0.10)] md:p-4.5">
                 <div className="flex items-start gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">

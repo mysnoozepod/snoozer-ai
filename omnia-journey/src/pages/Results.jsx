@@ -955,7 +955,7 @@ export default function Results() {
                 transition={{ duration: 0.25, ease: "easeOut" }}
               >
                 <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="soft">
-                  <div className="grid gap-3 xl:grid-cols-[minmax(0,1.16fr)_290px] xl:items-stretch">
+                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1.16fr)_270px] lg:items-stretch">
                     <div className="grid gap-3 lg:grid-cols-[minmax(0,0.98fr)_minmax(280px,0.92fr)] lg:items-center">
                       <div className="min-w-0">
                         <h1 className="mt-2 text-[1.95rem] font-black tracking-tight text-slate-900 md:text-[2.35rem]">
@@ -1052,7 +1052,7 @@ export default function Results() {
               </motion.div>
 
               <ShowroomPanel className="p-3 md:p-3.5" tone="frost">
-                <div className="grid gap-3 xl:grid-cols-[minmax(0,0.82fr)_minmax(0,0.82fr)_minmax(0,1.28fr)] xl:items-center">
+                <div className="grid gap-3 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,0.82fr)_minmax(0,1.28fr)] lg:items-center">
                   {canOpenAskSnoozer ? (
                     <ResultsSupportAction
                       icon={MessageSquare}

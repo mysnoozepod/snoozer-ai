@@ -115,12 +115,12 @@ test("Begin Rest Test unlocks audible waves from the direct click", async ({ pag
 
 test("approved Rest Test assets return HTTP 200", async ({ request }) => {
   const paths = [
-    "/rest-test/audio/rest-test-crashing-waves.mp3",
-    "/rest-test/audio/rest-test-soft-ambient-sleep-tones.mp3",
-    "/rest-test/visuals/rest-test-back-flat.png",
-    "/rest-test/visuals/rest-test-side-flat.png",
-    "/rest-test/visuals/rest-test-zero-gravity.png",
-    "/rest-test/visuals/rest-test-snore.png",
+    "/rest-test-crashing-waves.mp3",
+    "/rest-test-soft-ambient-sleep-tones.mp3",
+    "/rest-test-back-flat.png",
+    "/rest-test-side-flat.png",
+    "/rest-test-zero-gravity.png",
+    "/rest-test-snore.png",
   ];
   for (const assetPath of paths) {
     const response = await request.get(assetPath);
