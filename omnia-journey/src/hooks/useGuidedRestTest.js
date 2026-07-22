@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "r
 import { createAmbientAudioController } from "@/iot/ambientAudioController";
 import {
   REST_TEST_AMBIENCE,
+  REST_TEST_AUDIO_CONFIG,
   REST_TEST_BASE_FAILURE_SPEECH,
   REST_TEST_COMPLETION_SPEECH,
   REST_TEST_PHASES,
@@ -11,6 +12,7 @@ import {
   createInitialRestTestState,
   getRestTestDuration,
   getRestTestStage,
+  getRestTestTrackForStage,
   getStageDuration,
   isRestTestUnfinished,
   preloadRestTestVisuals,
@@ -75,16 +77,18 @@ export function useGuidedRestTest({
 } = {}) {
   const [state, dispatch] = useReducer(restTestReducer, storageKey, loadInitialState);
   const [visualsReady, setVisualsReady] = useState(false);
-  const [visualsAvailable, setVisualsAvailable] = useState(true);
+  const [visualAvailability, setVisualAvailability] = useState({});
   const audioRef = useRef(null);
   const spokenStageKeyRef = useRef("");
   const completionSpokenRef = useRef(false);
   const earlyExitHandledRef = useRef(false);
+  const interjectionSpokenRef = useRef(new Set());
 
   if (!audioRef.current) {
     audioRef.current = createAmbientAudioController({
-      track: REST_TEST_AMBIENCE[state.ambienceId].src,
-      volume: state.volume,
+      track: REST_TEST_AMBIENCE.waves.src,
+      volume: REST_TEST_AUDIO_CONFIG.volume,
+      duckMultiplier: REST_TEST_AUDIO_CONFIG.duckMultiplier,
     });
   }
 
@@ -105,7 +109,9 @@ export function useGuidedRestTest({
     preloadRestTestVisuals().then((result) => {
       if (!mounted) return;
       setVisualsReady(true);
-      setVisualsAvailable(result.ok !== false);
+      setVisualAvailability(
+        Object.fromEntries((result.results || []).map((item) => [item.src, Boolean(item.ok)]))
+      );
     });
     return () => {
       mounted = false;
@@ -126,31 +132,44 @@ export function useGuidedRestTest({
   }, [identity, state, storageKey]);
 
   useEffect(() => {
-    audioRef.current?.setTrack(REST_TEST_AMBIENCE[state.ambienceId].src);
-    audioRef.current?.setVolume(state.volume);
-    audioRef.current?.setMuted(state.muted);
-  }, [state.ambienceId, state.muted, state.volume]);
-
-  useEffect(() => {
-    if (voiceState?.playing || voiceState?.loading) {
+    const speaking = Boolean(voiceState?.playing || voiceState?.loading);
+    if (speaking) {
       audioRef.current?.duck();
     } else {
       audioRef.current?.restore();
     }
-  }, [voiceState?.loading, voiceState?.playing]);
+    if (state.musicDucked !== speaking) {
+      dispatch({ type: "SET_MUSIC_DUCKED", ducked: speaking });
+    }
+  }, [state.musicDucked, voiceState?.loading, voiceState?.playing]);
 
   useEffect(() => {
     if (state.phase !== REST_TEST_PHASES.ACTIVE) return undefined;
-    const timerId = window.setInterval(() => dispatch({ type: "TICK" }), 1000);
+    const timerId = window.setInterval(() => {
+      dispatch({ type: "TICK", audioSnapshot: audioRef.current?.getSnapshot() });
+    }, 1000);
     return () => window.clearInterval(timerId);
   }, [state.phase]);
+
+  useEffect(() => {
+    if (![REST_TEST_PHASES.POSITIONING, REST_TEST_PHASES.ACTIVE, REST_TEST_PHASES.DEGRADED, REST_TEST_PHASES.BASE_FAILURE].includes(state.phase)) return;
+    const track = getRestTestTrackForStage(state.stageIndex);
+    const snapshot = audioRef.current?.getSnapshot();
+    if (snapshot?.track !== track.src) {
+      audioRef.current?.start(track.src, {
+        fadeMs: state.stageIndex === 3 ? REST_TEST_AUDIO_CONFIG.crossfadeMs : REST_TEST_AUDIO_CONFIG.startFadeMs,
+      });
+      dispatch({ type: "SYNC_AUDIO", snapshot: audioRef.current?.getSnapshot() });
+    }
+  }, [state.phase, state.stageIndex]);
 
   useEffect(() => {
     if (state.phase !== REST_TEST_PHASES.POSITIONING) return;
     const key = `${state.startedAt || "new"}::${stage.id}`;
     if (spokenStageKeyRef.current === key) return;
     spokenStageKeyRef.current = key;
-    audioRef.current?.start(REST_TEST_AMBIENCE[state.ambienceId].src, { fadeMs: 700 });
+    let cancelled = false;
+    dispatch({ type: "SET_OPENING_SPEECH_ACTIVE", active: true });
     void (async () => {
       await cancelPodVoice?.({ resetKeys: true });
       await speakPod?.(stage.speech, {
@@ -161,8 +180,31 @@ export function useGuidedRestTest({
         preservePriority: true,
         key: `guided-rest-stage::${key}`,
       });
-    })().catch(() => null);
-  }, [cancelPodVoice, speakPod, stage, state.ambienceId, state.phase, state.stageIndex, state.startedAt]);
+    })()
+      .catch(() => null)
+      .finally(() => {
+        if (!cancelled) dispatch({ type: "SET_OPENING_SPEECH_ACTIVE", active: false });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [cancelPodVoice, speakPod, stage, state.phase, state.stageIndex, state.startedAt]);
+
+  useEffect(() => {
+    if (state.phase !== REST_TEST_PHASES.ACTIVE || state.stageActiveElapsedSeconds < 30) return;
+    if (state.openingSpeechActive || voiceState?.playing || voiceState?.loading) return;
+    if (state.interjectionFiredStageIds.includes(stage.id) || interjectionSpokenRef.current.has(stage.id)) return;
+    interjectionSpokenRef.current.add(stage.id);
+    dispatch({ type: "MARK_INTERJECTION_FIRED", stageId: stage.id });
+    void speakPod?.(stage.interjection, {
+      ...hudPayload(stage.interjection, { state: "speaking", priority: "normal", ttlMs: 6500 }),
+      actionType: "rest_test_interjection",
+      force: true,
+      calm: true,
+      preservePriority: true,
+      key: `guided-rest-interjection::${state.startedAt}::${stage.id}`,
+    });
+  }, [speakPod, stage, state.interjectionFiredStageIds, state.openingSpeechActive, state.phase, state.stageActiveElapsedSeconds, state.startedAt, voiceState?.loading, voiceState?.playing]);
 
   useEffect(() => {
     if (state.phase === REST_TEST_PHASES.PAUSED) {
@@ -197,6 +239,7 @@ export function useGuidedRestTest({
       completionSpokenRef.current = false;
       earlyExitHandledRef.current = false;
       spokenStageKeyRef.current = "";
+      interjectionSpokenRef.current.clear();
       audioRef.current?.stop({ fadeMs: 350 });
     }
   }, [cancelPodVoice, onEarlyExit, speakPod, state.phase, state.startedAt]);
@@ -204,12 +247,20 @@ export function useGuidedRestTest({
   useEffect(() => () => audioRef.current?.stop(), []);
 
   const selectDuration = useCallback((durationId) => dispatch({ type: "SET_DURATION", durationId }), []);
-  const selectAmbience = useCallback((ambienceId) => dispatch({ type: "SET_AMBIENCE", ambienceId }), []);
-  const setVolume = useCallback((volume) => dispatch({ type: "SET_VOLUME", volume }), []);
-  const setMuted = useCallback((muted) => dispatch({ type: "SET_MUTED", muted }), []);
-  const begin = useCallback(() => dispatch({ type: "BEGIN", startedAt: new Date().toISOString() }), []);
+  const begin = useCallback(() => {
+    // Keep play() in the direct click call stack so browser autoplay policy is satisfied.
+    audioRef.current?.start(REST_TEST_AMBIENCE.waves.src, { fadeMs: REST_TEST_AUDIO_CONFIG.startFadeMs });
+    dispatch({
+      type: "BEGIN",
+      startedAt: new Date().toISOString(),
+      audioSnapshot: audioRef.current?.getSnapshot(),
+    });
+  }, []);
   const positionReady = useCallback(() => dispatch({ type: "POSITION_READY" }), []);
-  const pause = useCallback(() => dispatch({ type: "PAUSE" }), []);
+  const pause = useCallback(() => {
+    audioRef.current?.pause({ fadeMs: 280 });
+    dispatch({ type: "PAUSE" });
+  }, []);
   const resume = useCallback(() => {
     audioRef.current?.resume();
     dispatch({ type: "RESUME" });
@@ -223,10 +274,14 @@ export function useGuidedRestTest({
     void cancelPodVoice?.({ resetKeys: true });
     audioRef.current?.stop({ fadeMs: 350 });
     spokenStageKeyRef.current = "";
+    interjectionSpokenRef.current.clear();
     completionSpokenRef.current = false;
     dispatch({ type: "RESTART" });
   }, [cancelPodVoice]);
-  const endEarly = useCallback(() => dispatch({ type: "END_EARLY", completedAt: new Date().toISOString() }), []);
+  const endEarly = useCallback(() => {
+    audioRef.current?.stop({ fadeMs: 650 });
+    dispatch({ type: "END_EARLY", completedAt: new Date().toISOString() });
+  }, []);
   const reportBaseFailure = useCallback(() => {
     dispatch({ type: "BASE_FAILURE" });
     void speakPod?.(REST_TEST_BASE_FAILURE_SPEECH, {
@@ -240,10 +295,6 @@ export function useGuidedRestTest({
   const rate = useCallback((field, value) => dispatch({ type: "RATE", field, value }), []);
   const setPreferredPosition = useCallback((value) => dispatch({ type: "SET_PREFERRED_POSITION", value }), []);
   const setTestAgain = useCallback((value) => dispatch({ type: "SET_TEST_AGAIN", value }), []);
-  const previewAmbience = useCallback((ambienceId = state.ambienceId) => {
-    const track = REST_TEST_AMBIENCE[ambienceId] || REST_TEST_AMBIENCE.waves;
-    return audioRef.current?.preview(track.src);
-  }, [state.ambienceId]);
   const setLabState = useCallback((labState) => dispatch({ type: "LOAD_LAB_STATE", state: labState }), []);
   const saveFavorite = useCallback(() => {
     const record = { ...buildRestTestRecord(state, identity), favorite: true };
@@ -259,13 +310,9 @@ export function useGuidedRestTest({
     unfinished,
     isActive,
     visualsReady,
-    visualsAvailable,
+    visualAvailability,
     audioSnapshot: audioRef.current?.getSnapshot(),
     selectDuration,
-    selectAmbience,
-    setVolume,
-    setMuted,
-    previewAmbience,
     begin,
     positionReady,
     pause,

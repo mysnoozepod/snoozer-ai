@@ -1,22 +1,18 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   Check,
   Home,
-  Music2,
   Pause,
   Play,
   RotateCcw,
   Square,
   Star,
-  Volume2,
-  VolumeX,
 } from "lucide-react";
 
 import { ShowroomPanel } from "@/components/showroom/ShowroomPrimitives";
 import {
-  REST_TEST_AMBIENCE,
   REST_TEST_DURATIONS,
   REST_TEST_PHASES,
   REST_TEST_STAGES,
@@ -98,65 +94,6 @@ function ChoiceButton({ selected, children, onClick, testId }) {
   );
 }
 
-function AmbientControls({ controller, compact = false }) {
-  const { state } = controller;
-  return (
-    <div className={compact ? "flex min-w-0 items-center gap-2" : "space-y-2"}>
-      {!compact ? (
-        <div className="grid grid-cols-2 gap-2">
-          {Object.values(REST_TEST_AMBIENCE).map((track) => (
-            <ChoiceButton
-              key={track.id}
-              selected={state.ambienceId === track.id}
-              onClick={() => controller.selectAmbience(track.id)}
-              testId={`rest-sound-${track.id}`}
-            >
-              {track.label}
-            </ChoiceButton>
-          ))}
-        </div>
-      ) : (
-        <span className="hidden truncate text-[0.72rem] font-bold text-slate-600 md:block">
-          {REST_TEST_AMBIENCE[state.ambienceId]?.label}
-        </span>
-      )}
-
-      <div className="flex min-w-0 items-center gap-2">
-        {!compact ? (
-          <button
-            type="button"
-            onClick={() => controller.previewAmbience()}
-            data-testid="rest-sound-preview"
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] border border-[#dce5f7] bg-white px-3 text-[0.76rem] font-extrabold text-[#355ff1]"
-          >
-            <Play className="h-4 w-4" /> Preview
-          </button>
-        ) : null}
-        <button
-          type="button"
-          onClick={() => controller.setMuted(!state.muted)}
-          aria-label={state.muted ? "Unmute ambient sound" : "Mute ambient sound"}
-          data-testid="rest-sound-mute"
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] border border-[#dce5f7] bg-white text-[#355ff1]"
-        >
-          {state.muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-        </button>
-        <input
-          aria-label="Ambient sound volume"
-          data-testid="rest-sound-volume"
-          type="range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={state.volume}
-          onChange={(event) => controller.setVolume(event.target.value)}
-          className="h-11 min-w-[72px] flex-1 accent-[#355ff1]"
-        />
-      </div>
-    </div>
-  );
-}
-
 function ConfirmBar({ action, onCancel, onConfirm }) {
   if (!action) return null;
   const isRestart = action === "restart";
@@ -195,38 +132,42 @@ function RestTestEntry({ controller, podLabel, onBackHome }) {
       data-rest-test-state="entry"
       className="relative h-full min-h-0 overflow-y-auto p-[10px] lg:overflow-hidden"
     >
-      <div className="grid h-full min-h-0 gap-2 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_minmax(250px,0.72fr)]">
-        <section className="min-w-0 rounded-[16px] border border-white/80 bg-white/74 px-3 py-2">
-          <h2 className="text-[clamp(1.15rem,2vw,1.65rem)] font-black leading-[1.02] tracking-tight text-slate-950">
+      <div className="grid h-full min-h-0 gap-3 lg:grid-cols-[minmax(0,1.55fr)_minmax(260px,0.65fr)]">
+        <section className="flex min-w-0 flex-col justify-center rounded-[16px] border border-white/80 bg-white/78 px-5 py-3">
+          <h2 className="text-[clamp(1.35rem,2.4vw,2rem)] font-black leading-[1.02] tracking-tight text-slate-950">
             Settle in. Snoozer will guide your Rest Test.
           </h2>
-          <p className="mt-1 line-clamp-2 text-[clamp(0.72rem,1.08vw,0.86rem)] leading-snug text-slate-600">
-            Choose your experience, get comfortable, and pay attention to pressure relief, support, and how your body settles into the mattress.
+          <p className="mt-2 text-[clamp(0.92rem,1.4vw,1.08rem)] leading-snug text-slate-600">
+            Choose 7 minutes for a quick feel check or 15 minutes for more time to settle in.
           </p>
-          <div className="mt-2 grid grid-cols-2 gap-2">
+          <div className="mt-3 grid grid-cols-2 gap-3">
             {durations.map((duration) => (
-              <ChoiceButton
+              <button
+                type="button"
                 key={duration.id}
-                selected={controller.state.durationId === duration.id}
+                aria-pressed={controller.state.durationId === duration.id}
                 onClick={() => controller.selectDuration(duration.id)}
-                testId={`rest-duration-${duration.id}`}
+                data-testid={`rest-duration-${duration.id}`}
+                className={[
+                  "flex min-h-[70px] items-center justify-between rounded-[16px] border px-4 text-left transition",
+                  controller.state.durationId === duration.id
+                    ? "border-[#355ff1] bg-[#eef3ff] text-[#234ee8] shadow-[0_12px_28px_rgba(53,95,241,0.13)]"
+                    : "border-[#dce5f7] bg-white text-slate-800",
+                ].join(" ")}
               >
-                {duration.label}
-              </ChoiceButton>
+                <span>
+                  <span className="block text-[clamp(1rem,1.5vw,1.25rem)] font-black leading-tight">{duration.label}</span>
+                  <span className="mt-1 block text-sm font-semibold text-slate-600">
+                    {duration.id === "quick" ? "Quick feel check" : "More time to settle in"}
+                  </span>
+                </span>
+                <Check className="h-5 w-5 shrink-0" />
+              </button>
             ))}
           </div>
         </section>
 
-        <section className="min-w-0 rounded-[16px] border border-white/80 bg-white/74 px-3 py-2">
-          <div className="flex items-center gap-2 text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#355ff1]">
-            <Music2 className="h-4 w-4" /> Ambient Sound
-          </div>
-          <div className="mt-2">
-            <AmbientControls controller={controller} />
-          </div>
-        </section>
-
-        <section className="flex min-h-0 flex-col justify-center gap-2 rounded-[16px] border border-[#dbe5ff] bg-[#f7f9ff] px-3 py-2">
+        <section className="flex min-h-0 flex-col justify-center gap-3 rounded-[16px] border border-[#dbe5ff] bg-[#f7f9ff] px-4 py-3">
           {controller.unfinished ? (
             <>
               <div className="text-xs font-black uppercase tracking-[0.15em] text-[#355ff1]">Unfinished Rest Test</div>
@@ -234,7 +175,7 @@ function RestTestEntry({ controller, podLabel, onBackHome }) {
                 type="button"
                 data-testid="rest-resume-test"
                 onClick={controller.resume}
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-3 text-sm font-black text-white"
+                className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-4 text-base font-black text-white"
               >
                 <Play className="h-4 w-4" /> Resume Test
               </button>
@@ -253,7 +194,7 @@ function RestTestEntry({ controller, podLabel, onBackHome }) {
                 type="button"
                 data-testid="rest-begin-test"
                 onClick={controller.begin}
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-[13px] bg-[linear-gradient(90deg,#2f57e8,#246cff)] px-4 text-sm font-black text-white shadow-[0_14px_28px_rgba(47,87,232,0.22)]"
+                className="inline-flex min-h-[58px] items-center justify-center gap-2 rounded-[13px] bg-[linear-gradient(90deg,#2f57e8,#246cff)] px-4 text-base font-black text-white shadow-[0_14px_28px_rgba(47,87,232,0.22)]"
               >
                 Begin Rest Test <ArrowRight className="h-4 w-4" />
               </button>
@@ -265,9 +206,6 @@ function RestTestEntry({ controller, podLabel, onBackHome }) {
               >
                 <ArrowLeft className="h-4 w-4" /> Back to Pod Home
               </button>
-              <p className="text-center text-[0.68rem] font-semibold leading-tight text-slate-500">
-                {podLabel} / Local guided program / Works offline
-              </p>
             </>
           )}
         </section>
@@ -286,16 +224,23 @@ function RestTestEntry({ controller, podLabel, onBackHome }) {
   );
 }
 
-function RestVisual({ stage, paused, available }) {
+function RestVisual({ stage, paused }) {
+  const [failedSrc, setFailedSrc] = useState("");
+
+  useEffect(() => {
+    setFailedSrc("");
+  }, [stage.visual]);
+
   return (
     <div className="relative flex h-full min-h-0 items-center justify-center overflow-hidden rounded-[16px] border border-white/80 bg-[radial-gradient(circle_at_50%_35%,#ffffff_0%,#eef4ff_72%,#e4ecfb_100%)]">
-      {available ? (
+      {failedSrc !== stage.visual ? (
         <img
           key={stage.id}
           src={stage.visual}
           alt={`Snoozer demonstrating ${stage.positionLabel}`}
+          onError={() => setFailedSrc(stage.visual)}
           className={[
-            "rest-test-visual-enter h-full max-h-[205px] w-full object-contain p-1",
+            "rest-test-visual-enter h-full max-h-[280px] w-full object-contain p-1",
             paused ? "rest-test-visual-paused" : "rest-test-visual-breathe",
           ].join(" ")}
         />
@@ -316,7 +261,6 @@ function ActiveRestTest({ controller }) {
   const isPositioning = [REST_TEST_PHASES.POSITIONING, REST_TEST_PHASES.STARTING].includes(state.phase);
   const isBaseFailure = state.phase === REST_TEST_PHASES.BASE_FAILURE;
   const stageNumber = state.stageIndex + 1;
-  const nextStage = REST_TEST_STAGES[state.stageIndex + 1] || null;
   const progress = Math.min(100, Math.max(0, (state.overallActiveElapsedSeconds / duration.totalSeconds) * 100));
   const statusLabel = isPaused ? "Paused" : isPositioning ? "Get Into Position" : isBaseFailure ? "Position Unavailable" : "Testing Now";
 
@@ -326,10 +270,14 @@ function ActiveRestTest({ controller }) {
       data-testid="rest-test-active"
       data-rest-test-state={state.phase}
       data-rest-test-stage={stage.id}
+      data-rest-test-audio-status={controller.audioSnapshot?.status || "idle"}
+      data-rest-test-audio-track={controller.audioSnapshot?.trackId || state.activeTrackId}
+      data-rest-test-audio-volume={controller.audioSnapshot?.volume ?? state.volume}
+      data-rest-test-audio-time={controller.audioSnapshot?.currentTime || state.audioPlaybackPosition || 0}
       className="relative h-full min-h-0 overflow-y-auto p-[8px] lg:overflow-hidden"
     >
-      <div className="grid h-full min-h-[190px] gap-2 lg:grid-cols-[minmax(245px,0.72fr)_minmax(0,1.28fr)]">
-        <RestVisual stage={stage} paused={isPaused} available={controller.visualsAvailable} />
+      <div className="grid h-full min-h-[190px] gap-3 lg:grid-cols-[minmax(300px,0.92fr)_minmax(0,1.08fr)]">
+        <RestVisual stage={stage} paused={isPaused} />
 
         <div className="flex min-h-0 min-w-0 flex-col rounded-[16px] border border-white/80 bg-white/78 px-3 py-2">
           <div className="flex min-w-0 items-start justify-between gap-3">
@@ -337,12 +285,12 @@ function ActiveRestTest({ controller }) {
               <div className="text-[0.66rem] font-black uppercase tracking-[0.18em] text-[#355ff1]">
                 Stage {stageNumber} of {REST_TEST_STAGES.length} / {statusLabel}
               </div>
-              <h2 className="mt-0.5 truncate text-[clamp(1.15rem,2.1vw,1.72rem)] font-black leading-none tracking-tight text-slate-950">
+              <h2 className="mt-1 truncate text-[clamp(1.4rem,2.4vw,2rem)] font-black leading-none tracking-tight text-slate-950">
                 {stage.name}
               </h2>
             </div>
             <div className="shrink-0 text-right">
-              <div className="text-[clamp(1.35rem,2.5vw,2rem)] font-black leading-none tabular-nums text-slate-950">
+              <div className="text-[clamp(2rem,3.8vw,3rem)] font-black leading-none tabular-nums text-slate-950">
                 {formatTime(state.stageRemainingSeconds)}
               </div>
               <div className="mt-0.5 text-[0.62rem] font-bold uppercase tracking-[0.12em] text-slate-500">active time</div>
@@ -356,24 +304,21 @@ function ActiveRestTest({ controller }) {
           <div className="mt-2 min-h-0 flex-1 rounded-[14px] border border-[#dbe5ff] bg-[#f7f9ff] px-3 py-2">
             {isPaused ? (
               <>
-                <div className="text-sm font-black text-slate-950">Rest Test paused</div>
-                <p className="mt-1 text-[0.76rem] leading-snug text-slate-600">Your exact stage time is saved. Continue whenever you are ready.</p>
+                <div className="text-lg font-black text-slate-950">Rest Test paused</div>
+                <p className="mt-1 text-base leading-snug text-slate-600">Your exact stage time is saved. Continue whenever you are ready.</p>
               </>
             ) : isBaseFailure ? (
               <>
-                <div className="text-sm font-black text-slate-950">The base position is unavailable right now.</div>
-                <p className="mt-1 text-[0.76rem] leading-snug text-slate-600">You can continue evaluating the mattress while it remains flat.</p>
+                <div className="text-lg font-black text-slate-950">The base position is unavailable right now.</div>
+                <p className="mt-1 text-base leading-snug text-slate-600">You can continue evaluating the mattress while it remains flat.</p>
               </>
             ) : isPositioning ? (
               <>
-                <div className="text-sm font-black text-slate-950">{stage.manualInstruction}</div>
-                <p className="mt-1 text-[0.76rem] leading-snug text-slate-600">The timer waits while you get comfortable.</p>
+                <div className="text-lg font-black text-slate-950">{stage.manualInstruction}</div>
+                <p className="mt-1 text-base leading-snug text-slate-600">The timer waits while you get comfortable.</p>
               </>
             ) : (
-              <>
-                <div className="text-sm font-black text-slate-950">{stage.quietPrompt}</div>
-                <p className="mt-1 line-clamp-2 text-[0.76rem] leading-snug text-slate-600">Stay still and give your body time to settle. Snoozer will guide the next transition.</p>
-              </>
+              <div className="text-lg font-black leading-snug text-slate-950">{stage.quietPrompt}</div>
             )}
           </div>
 
@@ -383,7 +328,7 @@ function ActiveRestTest({ controller }) {
                 type="button"
                 data-testid="rest-position-ready"
                 onClick={controller.positionReady}
-                className="inline-flex min-h-[44px] min-w-[150px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-3 text-sm font-black text-white"
+                className="inline-flex min-h-[56px] min-w-[150px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-4 text-base font-black text-white"
               >
                 <Check className="h-4 w-4" /> Position Ready
               </button>
@@ -392,7 +337,7 @@ function ActiveRestTest({ controller }) {
                 type="button"
                 data-testid="rest-resume-active"
                 onClick={controller.resume}
-                className="inline-flex min-h-[44px] min-w-[130px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-3 text-sm font-black text-white"
+                className="inline-flex min-h-[56px] min-w-[130px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-4 text-base font-black text-white"
               >
                 <Play className="h-4 w-4" /> Resume Test
               </button>
@@ -406,35 +351,31 @@ function ActiveRestTest({ controller }) {
                 type="button"
                 data-testid="rest-pause-test"
                 onClick={controller.pause}
-                className="inline-flex min-h-[44px] min-w-[120px] items-center justify-center gap-2 rounded-[12px] border border-[#dbe5ff] bg-white px-3 text-xs font-black text-[#355ff1]"
+                className="inline-flex min-h-[56px] min-w-[150px] flex-1 items-center justify-center gap-2 rounded-[12px] border border-[#dbe5ff] bg-white px-4 text-base font-black text-[#355ff1]"
               >
                 <Pause className="h-4 w-4" /> Pause
               </button>
             )}
 
-            <button
-              type="button"
-              onClick={() => setConfirmAction("restart")}
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] border border-[#dbe5ff] bg-white px-3 text-xs font-black text-slate-700"
-            >
-              <RotateCcw className="h-4 w-4" /> Restart
-            </button>
+            {isPaused ? (
+              <button
+                type="button"
+                data-testid="rest-restart-test"
+                onClick={() => setConfirmAction("restart")}
+                className="inline-flex min-h-[56px] min-w-[140px] flex-1 items-center justify-center gap-2 rounded-[12px] border border-[#dbe5ff] bg-white px-4 text-base font-black text-slate-700"
+              >
+                <RotateCcw className="h-4 w-4" /> Restart Test
+              </button>
+            ) : null}
             <button
               type="button"
               data-testid="rest-end-test"
               onClick={() => setConfirmAction("end")}
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] border border-red-200 bg-white px-3 text-xs font-black text-red-600"
+              className="inline-flex min-h-[56px] min-w-[130px] flex-1 items-center justify-center gap-2 rounded-[12px] border border-red-200 bg-white px-4 text-base font-black text-red-600"
             >
               <Square className="h-3.5 w-3.5" /> End Test
             </button>
-            <div className="ml-auto min-w-[130px] flex-1 md:max-w-[220px]">
-              <AmbientControls controller={controller} compact />
-            </div>
           </div>
-
-          {nextStage ? (
-            <div className="mt-1 truncate text-right text-[0.64rem] font-bold text-slate-500">Next: {nextStage.name}</div>
-          ) : null}
         </div>
       </div>
 

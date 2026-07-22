@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 
 import {
   REST_TEST_AMBIENCE,
+  REST_TEST_AUDIO_CONFIG,
   REST_TEST_BASE_FAILURE_SPEECH,
   REST_TEST_DURATIONS,
   REST_TEST_PHASES,
@@ -10,6 +11,7 @@ import {
   buildRestTestRecord,
   createInitialRestTestState,
   getTotalActiveSeconds,
+  getRestTestTrackForStage,
   restTestReducer,
   restoreRestTestState,
 } from "../src/lib/restTestProgram.mjs";
@@ -51,9 +53,15 @@ function testProgramContract() {
     assert.ok(stage.speech.length > 30, `${stage.id} must own deterministic speech`);
     assert.ok(stage.quietPrompt.length > 20, `${stage.id} must own a quiet-period prompt`);
     assert.ok(stage.manualInstruction.length > 15, `${stage.id} must own a manual base instruction`);
+    assert.ok(stage.interjection.length > 70, `${stage.id} must own a position-specific interjection`);
     assert.equal(stage.visual.startsWith("/rest-test/visuals/"), true);
   });
   assert.equal(REST_TEST_STAGES[4].speech.includes("treat"), false, "Snore guidance must not make a treatment claim");
+  assert.deepEqual(
+    REST_TEST_STAGES.map((_, index) => getRestTestTrackForStage(index).id),
+    ["waves", "waves", "waves", "sleepTones", "sleepTones", "sleepTones"]
+  );
+  assert.equal(REST_TEST_AUDIO_CONFIG.volume, 0.38);
 }
 
 function testManualAcknowledgementAndTiming() {
@@ -81,7 +89,7 @@ function testManualAcknowledgementAndTiming() {
 }
 
 function testPauseResumeRestartAndEarlyExit() {
-  let state = createInitialRestTestState({ durationId: "deep", ambienceId: "jazz", volume: 0.65 });
+  let state = createInitialRestTestState({ durationId: "deep" });
   state = reduce(state, "BEGIN", { startedAt: "2026-07-21T00:00:00.000Z" });
   state = reduce(state, "POSITION_READY");
   state = reduce(state, "TICK");
@@ -108,14 +116,37 @@ function testPauseResumeRestartAndEarlyExit() {
   assert.equal(record.eventType, "rest_test.incomplete");
   assert.equal(record.shopperId, "589424");
   assert.equal(record.podId, "pod-4");
-  assert.equal(record.ambientSound, "jazz");
+  assert.equal(record.ambientSound, "waves");
 
   const restarted = reduce(state, "RESTART");
   assert.equal(restarted.phase, REST_TEST_PHASES.READY);
   assert.equal(restarted.durationId, "deep");
-  assert.equal(restarted.ambienceId, "jazz");
-  assert.equal(restarted.volume, 0.65);
+  assert.equal(restarted.ambienceId, "waves");
+  assert.equal(restarted.volume, REST_TEST_AUDIO_CONFIG.volume);
   assert.equal(restarted.startedAt, null);
+}
+
+function testInterjectionTimingAndDeduplication() {
+  let state = createInitialRestTestState();
+  state = reduce(state, "BEGIN", { startedAt: "2026-07-21T00:00:00.000Z" });
+  state = reduce(state, "POSITION_READY");
+  for (let index = 0; index < 29; index += 1) state = reduce(state, "TICK");
+  assert.equal(state.stageActiveElapsedSeconds, 29);
+  assert.deepEqual(state.interjectionFiredStageIds, []);
+
+  state = reduce(state, "PAUSE");
+  state = reduce(state, "TICK");
+  assert.equal(state.stageActiveElapsedSeconds, 29, "paused time must not advance the interjection clock");
+  state = reduce(state, "RESUME");
+  state = reduce(state, "TICK");
+  assert.equal(state.stageActiveElapsedSeconds, 30);
+  state = reduce(state, "MARK_INTERJECTION_FIRED", { stageId: "back_flat" });
+  state = reduce(state, "MARK_INTERJECTION_FIRED", { stageId: "back_flat" });
+  assert.deepEqual(state.interjectionFiredStageIds, ["back_flat"], "a stage interjection must be recorded once");
+
+  const restarted = reduce(state, "RESTART");
+  assert.equal(restarted.stageActiveElapsedSeconds, 0);
+  assert.deepEqual(restarted.interjectionFiredStageIds, []);
 }
 
 function testFailuresAndSafeRestore() {
@@ -206,21 +237,19 @@ async function testAudioController() {
   assert.equal(instances.at(-1).loop, true, "ambience must loop");
   assert.equal(instances.at(-1).volume, 0.4);
   controller.setVolume(0.7);
+  await new Promise((resolve) => setTimeout(resolve, 240));
   assert.equal(instances.at(-1).volume, 0.7);
-  controller.setMuted(true);
-  assert.equal(instances.at(-1).volume, 0);
-  controller.setMuted(false);
-  assert.equal(instances.at(-1).volume, 0.7);
-
   const firstTrack = instances.at(-1);
-  controller.start(REST_TEST_AMBIENCE.jazz.src, { fadeMs: 0 });
+  controller.start(REST_TEST_AMBIENCE.sleepTones.src, { fadeMs: 0 });
   assert.equal(firstTrack.paused, true, "selecting a new track must stop the previous track");
   assert.equal(instances.filter((audio) => !audio.paused).length, 1, "only one ambience source may play");
 
-  controller.preview(REST_TEST_AMBIENCE.waves.src, { seconds: 2 });
-  const firstPreview = instances.at(-1);
-  controller.preview(REST_TEST_AMBIENCE.jazz.src, { seconds: 2 });
-  assert.equal(firstPreview.paused, true, "a second preview must stop the first preview");
+  const active = instances.at(-1);
+  active.currentTime = 2.5;
+  assert.equal(controller.getSnapshot().currentTime, 2.5, "the controller must expose advancing playback position");
+  const countBeforeReuse = instances.length;
+  controller.start(REST_TEST_AMBIENCE.sleepTones.src, { fadeMs: 0 });
+  assert.equal(instances.length, countBeforeReuse, "rerenders must reuse the active soundtrack instance");
 
   controller.duck();
   await new Promise((resolve) => setTimeout(resolve, 240));
@@ -235,11 +264,27 @@ async function testAudioController() {
   delete globalThis.Audio;
 }
 
+async function testAssetsAndCustomerSurface() {
+  for (const source of [
+    REST_TEST_AMBIENCE.waves.src,
+    REST_TEST_AMBIENCE.sleepTones.src,
+    ...new Set(REST_TEST_STAGES.map((stage) => stage.visual)),
+  ]) {
+    await access(new URL(`../public${source}`, import.meta.url));
+  }
+  const panelSource = await readFile(new URL("../src/components/pod/PodRestPanels.jsx", import.meta.url), "utf8");
+  for (const removedText of ["Ambient Sound", "Soft Jazz Instrumental", "Crashing Waves", "Works offline", "Next:"]) {
+    assert.equal(panelSource.includes(removedText), false, `${removedText} must not appear on the shopper surface`);
+  }
+}
+
 testProgramContract();
 testManualAcknowledgementAndTiming();
 testPauseResumeRestartAndEarlyExit();
+testInterjectionTimingAndDeduplication();
 testFailuresAndSafeRestore();
 testCompletionAndRatings();
 await testAudioController();
+await testAssetsAndCustomerSurface();
 
 console.log("Rest Test program tests passed: timing, order, state, persistence, failure, ratings, and audio policy.");

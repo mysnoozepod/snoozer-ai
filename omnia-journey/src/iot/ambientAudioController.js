@@ -14,127 +14,112 @@ function clampVolume(value) {
   return Math.max(0, Math.min(1, Number(value) || 0));
 }
 
-export function createAmbientAudioController({ track = "", volume = 0.45 } = {}) {
+export function createAmbientAudioController({ track = "", volume = 0.38, duckMultiplier = 0.24 } = {}) {
   let selectedTrack = String(track || "").trim();
   let activeTrack = "";
   let audio = null;
-  let previewAudio = null;
   let status = "idle";
-  let muted = false;
   let targetVolume = clampVolume(volume);
   let ducked = false;
-  let fadeTimer = null;
-
-  function clearFade() {
-    if (fadeTimer && typeof window !== "undefined") {
-      window.clearInterval(fadeTimer);
-    }
-    fadeTimer = null;
-  }
+  const retiring = new Set();
+  const fadeTimers = new Map();
 
   function appliedVolume() {
-    if (muted) return 0;
-    return clampVolume(targetVolume * (ducked ? 0.24 : 1));
+    return clampVolume(targetVolume * (ducked ? duckMultiplier : 1));
   }
 
-  function syncVolume() {
-    if (audio) audio.volume = appliedVolume();
-    if (previewAudio) previewAudio.volume = muted ? 0 : Math.min(targetVolume, 0.5);
+  function clearFade(element) {
+    const timer = fadeTimers.get(element);
+    if (timer && typeof window !== "undefined") window.clearInterval(timer);
+    fadeTimers.delete(element);
   }
 
-  function fadeTo(nextVolume, durationMs = 350, onDone) {
-    if (!audio || typeof window === "undefined") {
+  function fadeElement(element, nextVolume, durationMs = 350, onDone) {
+    if (!element || typeof window === "undefined" || durationMs <= 0) {
+      if (element) element.volume = clampVolume(nextVolume);
       onDone?.();
       return;
     }
-    clearFade();
-    const start = Number(audio.volume || 0);
+    clearFade(element);
+    const start = Number(element.volume || 0);
     const target = clampVolume(nextVolume);
-    const steps = Math.max(1, Math.round(Math.max(0, durationMs) / 40));
+    const steps = Math.max(1, Math.round(durationMs / 40));
     let step = 0;
-    fadeTimer = window.setInterval(() => {
+    const timer = window.setInterval(() => {
       step += 1;
-      if (audio) audio.volume = clampVolume(start + (target - start) * (step / steps));
+      element.volume = clampVolume(start + (target - start) * (step / steps));
       if (step >= steps) {
-        clearFade();
+        clearFade(element);
         onDone?.();
       }
     }, 40);
+    fadeTimers.set(element, timer);
   }
 
-  function stopPreview() {
-    if (!previewAudio) return;
-    safeCall(() => previewAudio.pause());
-    previewAudio.currentTime = 0;
-    previewAudio = null;
+  function retire(element, fadeMs = 0, { reset = true } = {}) {
+    if (!element) return;
+    retiring.add(element);
+    const finish = () => {
+      clearFade(element);
+      safeCall(() => element.pause());
+      if (reset) safeCall(() => { element.currentTime = 0; });
+      retiring.delete(element);
+    };
+    fadeMs > 0 ? fadeElement(element, 0, fadeMs, finish) : finish();
   }
 
   function stop({ fadeMs = 0 } = {}) {
-    stopPreview();
     const current = audio;
+    audio = null;
     activeTrack = "";
-
-    if (!current) {
-      status = "idle";
-      return { ok: true, stopped: false, status };
-    }
-
-    const finish = () => {
-      if (audio === current) audio = null;
-      safeCall(() => current.pause());
-      current.currentTime = 0;
-      status = "idle";
-    };
-
-    if (fadeMs > 0) {
-      fadeTo(0, Math.min(Number(fadeMs), 1500), finish);
-    } else {
-      clearFade();
-      finish();
-    }
-
-    return { ok: true, stopped: true, status: fadeMs > 0 ? "stopping" : status };
+    if (current) retire(current, Math.min(Number(fadeMs) || 0, 1500));
+    [...retiring].forEach((element) => {
+      if (element !== current) retire(element, 0);
+    });
+    status = fadeMs > 0 && current ? "stopping" : "idle";
+    return { ok: true, stopped: Boolean(current), status };
   }
 
   function start(nextTrack = selectedTrack, { fadeMs = 600 } = {}) {
     const requestedTrack = String(nextTrack || "").trim();
     selectedTrack = requestedTrack || selectedTrack;
-    stopPreview();
-
     if (!selectedTrack) {
       status = "placeholder";
       return { ok: true, started: false, skipped: true, reason: "NO_AUDIO_TRACK_CONFIGURED", status };
     }
 
     if (activeTrack === selectedTrack && audio) {
-      const playResult = safeCall(() => audio.play());
+      const playPromise = safeCall(() => audio.play());
       status = "playing";
-      fadeTo(appliedVolume(), fadeMs);
-      playResult?.catch?.(() => {
-        status = "blocked";
-      });
-      return { ok: true, started: false, reused: true, track: activeTrack, status };
+      fadeElement(audio, appliedVolume(), fadeMs);
+      playPromise?.catch?.(() => { status = "blocked"; });
+      return { ok: true, started: false, reused: true, track: activeTrack, status, playPromise };
     }
 
-    stop();
-    activeTrack = selectedTrack;
-
     if (!canUseAudio()) {
+      activeTrack = selectedTrack;
       status = "placeholder";
       return { ok: true, started: false, skipped: true, reason: "AUDIO_API_UNAVAILABLE", track: activeTrack, status };
     }
 
-    audio = new Audio(activeTrack);
-    audio.loop = true;
-    audio.preload = "auto";
-    audio.volume = fadeMs > 0 ? 0 : appliedVolume();
-    const playResult = safeCall(() => audio.play());
+    const previous = audio;
+    const next = new Audio(selectedTrack);
+    next.loop = true;
+    next.preload = "auto";
+    next.volume = previous && fadeMs > 0 ? 0 : appliedVolume();
+    audio = next;
+    activeTrack = selectedTrack;
+    const playPromise = safeCall(() => next.play());
     status = "playing";
-    if (fadeMs > 0) fadeTo(appliedVolume(), fadeMs);
-    playResult?.catch?.(() => {
-      status = "blocked";
+
+    if (previous) retire(previous, Math.max(0, Number(fadeMs) || 0));
+    if (fadeMs > 0) fadeElement(next, appliedVolume(), fadeMs);
+    playPromise?.catch?.(() => {
+      if (audio === next) status = "blocked";
+      retire(next, 0);
     });
-    return { ok: true, started: true, track: activeTrack, status };
+
+    return { ok: true, started: true, track: activeTrack, status, playPromise };
   }
 
   function pause({ fadeMs = 250 } = {}) {
@@ -142,9 +127,9 @@ export function createAmbientAudioController({ track = "", volume = 0.45 } = {})
     const current = audio;
     const finish = () => {
       safeCall(() => current.pause());
-      status = "paused";
+      if (audio === current) status = "paused";
     };
-    fadeMs > 0 ? fadeTo(0, fadeMs, finish) : finish();
+    fadeMs > 0 ? fadeElement(current, 0, fadeMs, finish) : finish();
     return { ok: true, paused: true, status: "pausing" };
   }
 
@@ -152,26 +137,23 @@ export function createAmbientAudioController({ track = "", volume = 0.45 } = {})
     return start(activeTrack || selectedTrack, { fadeMs: 450 });
   }
 
-  function preview(nextTrack = selectedTrack, { seconds = 8 } = {}) {
-    stopPreview();
-    const requestedTrack = String(nextTrack || "").trim();
-    if (!requestedTrack || !canUseAudio()) {
-      return { ok: false, skipped: true, reason: !requestedTrack ? "NO_AUDIO_TRACK_CONFIGURED" : "AUDIO_API_UNAVAILABLE" };
-    }
-    previewAudio = new Audio(requestedTrack);
-    previewAudio.loop = false;
-    previewAudio.volume = muted ? 0 : Math.min(targetVolume, 0.5);
-    const current = previewAudio;
-    const playResult = safeCall(() => current.play());
-    playResult?.catch?.(() => {
-      if (previewAudio === current) previewAudio = null;
-    });
-    if (typeof window !== "undefined") {
-      window.setTimeout(() => {
-        if (previewAudio === current) stopPreview();
-      }, Math.max(2, Math.min(12, Number(seconds) || 8)) * 1000);
-    }
-    return { ok: true, previewing: true, track: requestedTrack };
+  function syncVolume() {
+    if (audio) fadeElement(audio, appliedVolume(), 180);
+  }
+
+  function snapshot() {
+    return {
+      status,
+      track: activeTrack || selectedTrack,
+      trackId: (activeTrack || selectedTrack).includes("crashing-waves") ? "waves" : "sleepTones",
+      hasAudio: Boolean(audio),
+      muted: false,
+      volume: targetVolume,
+      currentTime: Number(audio?.currentTime || 0),
+      paused: audio ? Boolean(audio.paused) : true,
+      ducked,
+      activeInstanceCount: [audio, ...retiring].filter((element) => element && !element.paused).length,
+    };
   }
 
   return {
@@ -179,8 +161,6 @@ export function createAmbientAudioController({ track = "", volume = 0.45 } = {})
     stop,
     pause,
     resume,
-    preview,
-    stopPreview,
     reset: stop,
     setTrack: (nextTrack) => {
       selectedTrack = String(nextTrack || "").trim();
@@ -191,27 +171,14 @@ export function createAmbientAudioController({ track = "", volume = 0.45 } = {})
       syncVolume();
       return targetVolume;
     },
-    setMuted: (nextMuted) => {
-      muted = Boolean(nextMuted);
-      syncVolume();
-      return muted;
-    },
     duck: () => {
       ducked = true;
-      fadeTo(appliedVolume(), 180);
+      if (audio) fadeElement(audio, appliedVolume(), 180);
     },
     restore: () => {
       ducked = false;
-      fadeTo(appliedVolume(), 320);
+      if (audio) fadeElement(audio, appliedVolume(), 320);
     },
-    getSnapshot: () => ({
-      status,
-      track: activeTrack || selectedTrack,
-      hasAudio: Boolean(audio),
-      muted,
-      volume: targetVolume,
-      ducked,
-      previewing: Boolean(previewAudio),
-    }),
+    getSnapshot: snapshot,
   };
 }

@@ -33,11 +33,19 @@ export const REST_TEST_AMBIENCE = Object.freeze({
     label: "Crashing Waves",
     src: "/rest-test/audio/rest-test-crashing-waves.mp3",
   }),
-  jazz: Object.freeze({
-    id: "jazz",
-    label: "Soft Jazz Instrumental",
-    src: "/rest-test/audio/rest-test-soft-jazz-instrumental.mp3",
+  sleepTones: Object.freeze({
+    id: "sleepTones",
+    label: "Soft Ambient Sleep Tones",
+    src: "/rest-test/audio/rest-test-soft-ambient-sleep-tones.mp3",
   }),
+});
+
+export const REST_TEST_AUDIO_CONFIG = Object.freeze({
+  volume: 0.38,
+  duckMultiplier: 0.24,
+  startFadeMs: 500,
+  crossfadeMs: 900,
+  stageTrackIds: Object.freeze(["waves", "waves", "waves", "sleepTones", "sleepTones", "sleepTones"]),
 });
 
 export const REST_TEST_STAGES = Object.freeze([
@@ -52,6 +60,7 @@ export const REST_TEST_STAGES = Object.freeze([
     manualInstruction: "Use the base remote to return the mattress to flat.",
     speech: "Start on your back. Lie still for a full minute and let the mattress conform to your body.",
     quietPrompt: "Notice how your shoulders, lower back, and hips settle into the mattress.",
+    interjection: "Let your shoulders, hips, and lower back settle. Give the mattress time to respond to your body.",
     nextStageId: "side_flat",
   }),
   Object.freeze({
@@ -65,6 +74,7 @@ export const REST_TEST_STAGES = Object.freeze([
     manualInstruction: "Keep the base flat, then turn onto your side.",
     speech: "Now, turn onto your side. Pay attention to how your shoulders and hips feel as the mattress supports you.",
     quietPrompt: "Notice whether pressure builds around your shoulder or hip.",
+    interjection: "Side sleepers need pressure relief around the shoulders and hips while staying comfortably aligned.",
     nextStageId: "back_recalibration",
   }),
   Object.freeze({
@@ -78,6 +88,7 @@ export const REST_TEST_STAGES = Object.freeze([
     manualInstruction: "Keep the base flat, then return to your back.",
     speech: "Return to your back. Take a moment to recalibrate and notice the mattress again while it is completely flat.",
     quietPrompt: "Notice your alignment and whether your lower back feels evenly supported.",
+    interjection: "To judge your comfort clearly, relax and give your muscles and joints time to settle back into this flat position.",
     nextStageId: "zero_gravity",
   }),
   Object.freeze({
@@ -91,6 +102,7 @@ export const REST_TEST_STAGES = Object.freeze([
     manualInstruction: "Use the base remote to select Zero Gravity.",
     speech: "Stay on your back. Now, let's experience Zero Gravity. Notice how the position redistributes pressure and supports your body.",
     quietPrompt: "Pay attention to your lower back, legs, and overall sense of relaxation.",
+    interjection: "Zero Gravity raises your head and legs to redistribute pressure. Notice whether your lower back feels more supported in this position.",
     nextStageId: "snore",
   }),
   Object.freeze({
@@ -104,6 +116,7 @@ export const REST_TEST_STAGES = Object.freeze([
     manualInstruction: "Use the base remote to raise the head while keeping the foot section flat.",
     speech: "Now, let's try the Snore preset. This gently raises your head while keeping the foot section flat. Notice whether the elevation feels natural.",
     quietPrompt: "Notice your neck, upper body, and breathing comfort in this position.",
+    interjection: "The Snore preset gently raises your head while keeping the foot section flat. For some sleepers, a slight incline may help reduce snoring.",
     nextStageId: "final_flat",
   }),
   Object.freeze({
@@ -117,6 +130,7 @@ export const REST_TEST_STAGES = Object.freeze([
     manualInstruction: "Use the base remote to return the mattress to flat.",
     speech: "Now, return the base to flat. Spend this final minute comparing the mattress against Zero Gravity and the Snore preset.",
     quietPrompt: "Which position felt most comfortable and supportive to you?",
+    interjection: "Now that you're back in flat, compare how your body feels here with Zero Gravity and the Snore preset. Which position felt most natural?",
     nextStageId: null,
   }),
 ]);
@@ -142,24 +156,35 @@ export function getStageDuration(durationId, stageIndex) {
   return duration.stageSeconds[Math.max(0, Math.min(duration.stageSeconds.length - 1, Number(stageIndex) || 0))];
 }
 
+export function getRestTestTrackForStage(stageIndex = 0) {
+  const index = Math.max(0, Math.min(REST_TEST_AUDIO_CONFIG.stageTrackIds.length - 1, Number(stageIndex) || 0));
+  return REST_TEST_AMBIENCE[REST_TEST_AUDIO_CONFIG.stageTrackIds[index]] || REST_TEST_AMBIENCE.waves;
+}
+
 export function getTotalActiveSeconds(durationId = "quick") {
   return getRestTestDuration(durationId).stageSeconds.reduce((sum, seconds) => sum + seconds, 0);
 }
 
 export function createInitialRestTestState(overrides = {}) {
   const durationId = REST_TEST_DURATIONS[overrides.durationId] ? overrides.durationId : "quick";
-  const ambienceId = REST_TEST_AMBIENCE[overrides.ambienceId] ? overrides.ambienceId : "waves";
   return {
     version: 1,
     phase: REST_TEST_PHASES.READY,
     resumePhase: null,
     durationId,
-    ambienceId,
-    volume: 0.45,
+    ambienceId: "waves",
+    volume: REST_TEST_AUDIO_CONFIG.volume,
     muted: false,
+    activeTrackId: "waves",
+    audioPlaybackPosition: 0,
+    audioPaused: true,
+    musicDucked: false,
+    openingSpeechActive: false,
     stageIndex: 0,
     stageRemainingSeconds: getStageDuration(durationId, 0),
     overallActiveElapsedSeconds: 0,
+    stageActiveElapsedSeconds: 0,
+    interjectionFiredStageIds: [],
     completedStageIds: [],
     pauseCount: 0,
     degraded: false,
@@ -177,7 +202,6 @@ export function createInitialRestTestState(overrides = {}) {
 export function restoreRestTestState(value) {
   if (!value || value.version !== 1) return createInitialRestTestState();
   const durationId = REST_TEST_DURATIONS[value.durationId] ? value.durationId : "quick";
-  const ambienceId = REST_TEST_AMBIENCE[value.ambienceId] ? value.ambienceId : "waves";
   const stageIndex = Math.max(0, Math.min(REST_TEST_STAGES.length - 1, Number(value.stageIndex) || 0));
   const unfinishedPhases = new Set([
     REST_TEST_PHASES.STARTING,
@@ -201,10 +225,14 @@ export function restoreRestTestState(value) {
   return createInitialRestTestState({
     ...value,
     durationId,
-    ambienceId,
+    ambienceId: "waves",
     stageIndex,
     stageRemainingSeconds: Math.max(0, Number(value.stageRemainingSeconds) || getStageDuration(durationId, stageIndex)),
     overallActiveElapsedSeconds: Math.max(0, Number(value.overallActiveElapsedSeconds) || 0),
+    stageActiveElapsedSeconds: Math.max(0, Number(value.stageActiveElapsedSeconds) || 0),
+    interjectionFiredStageIds: Array.isArray(value.interjectionFiredStageIds)
+      ? value.interjectionFiredStageIds.filter((id) => REST_TEST_STAGES.some((stage) => stage.id === id))
+      : [],
     completedStageIds: Array.isArray(value.completedStageIds) ? value.completedStageIds.filter(Boolean) : [],
     phase: restoredPhase,
     resumePhase:
@@ -226,9 +254,6 @@ export function isRestTestUnfinished(state) {
 function restartState(state) {
   return createInitialRestTestState({
     durationId: state.durationId,
-    ambienceId: state.ambienceId,
-    volume: state.volume,
-    muted: state.muted,
   });
 }
 
@@ -243,27 +268,33 @@ export function restTestReducer(state, action = {}) {
         stageRemainingSeconds: getStageDuration(action.durationId, 0),
       };
     }
-    case "SET_AMBIENCE":
-      return REST_TEST_AMBIENCE[action.ambienceId] ? { ...state, ambienceId: action.ambienceId } : state;
-    case "SET_VOLUME":
-      return { ...state, volume: Math.max(0, Math.min(1, Number(action.volume) || 0)) };
-    case "SET_MUTED":
-      return { ...state, muted: Boolean(action.muted) };
     case "BEGIN":
       return {
         ...restartState(state),
         phase: REST_TEST_PHASES.POSITIONING,
         completionStatus: "in_progress",
         startedAt: action.startedAt || new Date().toISOString(),
+        audioPaused: false,
+        activeTrackId: action.audioSnapshot?.trackId || "waves",
+        audioPlaybackPosition: Math.max(0, Number(action.audioSnapshot?.currentTime) || 0),
       };
     case "POSITION_READY":
       if (![REST_TEST_PHASES.POSITIONING, REST_TEST_PHASES.DEGRADED, REST_TEST_PHASES.BASE_FAILURE].includes(state.phase)) return state;
-      return { ...state, phase: REST_TEST_PHASES.ACTIVE, resumePhase: null };
+      return { ...state, phase: REST_TEST_PHASES.ACTIVE, resumePhase: null, openingSpeechActive: false };
     case "TICK": {
       if (state.phase !== REST_TEST_PHASES.ACTIVE) return state;
       const elapsed = state.overallActiveElapsedSeconds + 1;
+      const stageElapsed = state.stageActiveElapsedSeconds + 1;
       if (state.stageRemainingSeconds > 1) {
-        return { ...state, stageRemainingSeconds: state.stageRemainingSeconds - 1, overallActiveElapsedSeconds: elapsed };
+        return {
+          ...state,
+          stageRemainingSeconds: state.stageRemainingSeconds - 1,
+          overallActiveElapsedSeconds: elapsed,
+          stageActiveElapsedSeconds: stageElapsed,
+          audioPlaybackPosition: Math.max(0, Number(action.audioSnapshot?.currentTime) || state.audioPlaybackPosition || 0),
+          activeTrackId: action.audioSnapshot?.trackId || state.activeTrackId,
+          audioPaused: Boolean(action.audioSnapshot?.paused),
+        };
       }
       const stage = getRestTestStage(state.stageIndex);
       const completedStageIds = Array.from(new Set([...state.completedStageIds, stage.id]));
@@ -273,6 +304,7 @@ export function restTestReducer(state, action = {}) {
           phase: REST_TEST_PHASES.COMPLETED,
           stageRemainingSeconds: 0,
           overallActiveElapsedSeconds: elapsed,
+          stageActiveElapsedSeconds: stageElapsed,
           completedStageIds,
           completionStatus: "completed",
           completedAt: action.completedAt || new Date().toISOString(),
@@ -285,6 +317,8 @@ export function restTestReducer(state, action = {}) {
         stageIndex,
         stageRemainingSeconds: getStageDuration(state.durationId, stageIndex),
         overallActiveElapsedSeconds: elapsed,
+        stageActiveElapsedSeconds: 0,
+        activeTrackId: getRestTestTrackForStage(stageIndex).id,
         completedStageIds,
       };
     }
@@ -295,10 +329,28 @@ export function restTestReducer(state, action = {}) {
         phase: REST_TEST_PHASES.PAUSED,
         resumePhase: state.phase === REST_TEST_PHASES.ACTIVE ? REST_TEST_PHASES.ACTIVE : REST_TEST_PHASES.POSITIONING,
         pauseCount: state.pauseCount + 1,
+        audioPaused: true,
       };
     case "RESUME":
       if (state.phase !== REST_TEST_PHASES.PAUSED) return state;
-      return { ...state, phase: state.resumePhase || REST_TEST_PHASES.POSITIONING, resumePhase: null };
+      return { ...state, phase: state.resumePhase || REST_TEST_PHASES.POSITIONING, resumePhase: null, audioPaused: false };
+    case "MARK_INTERJECTION_FIRED":
+      if (!REST_TEST_STAGES.some((stage) => stage.id === action.stageId)) return state;
+      return {
+        ...state,
+        interjectionFiredStageIds: Array.from(new Set([...state.interjectionFiredStageIds, action.stageId])),
+      };
+    case "SET_OPENING_SPEECH_ACTIVE":
+      return { ...state, openingSpeechActive: Boolean(action.active) };
+    case "SET_MUSIC_DUCKED":
+      return { ...state, musicDucked: Boolean(action.ducked) };
+    case "SYNC_AUDIO":
+      return {
+        ...state,
+        activeTrackId: action.snapshot?.trackId || state.activeTrackId,
+        audioPlaybackPosition: Math.max(0, Number(action.snapshot?.currentTime) || state.audioPlaybackPosition || 0),
+        audioPaused: action.snapshot ? Boolean(action.snapshot.paused) : state.audioPaused,
+      };
     case "RESTART":
       return restartState(state);
     case "END_EARLY":
@@ -329,7 +381,7 @@ export function restTestReducer(state, action = {}) {
     case "SET_TEST_AGAIN":
       return { ...state, testAgain: String(action.value || "") };
     case "LOAD_LAB_STATE": {
-      const stageByName = { back: 0, side: 1, zero: 3, snore: 4 };
+      const stageByName = { back: 0, side: 1, "back-recalibration": 2, zero: 3, snore: 4, final: 5 };
       if (action.state === "completion") {
         return {
           ...createInitialRestTestState(state),
@@ -377,7 +429,7 @@ export function buildRestTestRecord(state, identity = {}) {
     completionStatus: state.completionStatus,
     earlyExit: Boolean(state.earlyExit),
     pauseCount: state.pauseCount,
-    ambientSound: state.ambienceId,
+    ambientSound: state.activeTrackId,
     preferredPosition: state.preferredPosition || null,
     comfortRating: state.ratings.comfort || null,
     pressureReliefRating: state.ratings.pressureRelief || null,

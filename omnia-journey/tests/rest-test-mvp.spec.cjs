@@ -5,9 +5,10 @@ const path = require("node:path");
 const VIEWPORTS = [
   { name: "1280x585", width: 1280, height: 585 },
   { name: "1280x560", width: 1280, height: 560 },
-  { name: "1180x820", width: 1180, height: 820 },
+  { name: "staging-1920x899", width: 1920, height: 899 },
+  { name: "staging-compact-1920x860", width: 1920, height: 860 },
 ];
-const STATES = ["entry", "back", "side", "zero", "snore", "paused", "completion"];
+const STATES = ["entry", "back", "side", "back-recalibration", "zero", "snore", "final", "paused", "completion"];
 const OUTPUT_ROOT = path.resolve(__dirname, "..", "..", "_out", "rest-test-mvp");
 
 async function waitForPod(page) {
@@ -62,6 +63,20 @@ for (const viewport of VIEWPORTS) {
       expect(result.hiddenControls).toEqual([]);
       expect(result.shortTouchTargets).toEqual([]);
 
+      await expect(page.getByText("Ambient Sound", { exact: true })).toHaveCount(0);
+      await expect(page.getByText(/^Next:/)).toHaveCount(0);
+      if (!["entry", "paused", "completion"].includes(state)) {
+        await expect(page.getByTestId("rest-restart-test")).toHaveCount(0);
+      }
+      if (state === "paused") {
+        await expect(page.getByTestId("rest-restart-test")).toBeVisible();
+      }
+      if (!["entry", "completion"].includes(state)) {
+        const image = page.locator('[data-rest-test-state] img[alt^="Snoozer demonstrating"]');
+        await expect(image).toBeVisible();
+        expect(await image.evaluate((node) => node.naturalWidth)).toBeGreaterThan(0);
+      }
+
       const output = path.join(OUTPUT_ROOT, viewport.name);
       await fs.mkdir(output, { recursive: true });
       await page.screenshot({ path: path.join(output, `${state}.png`), fullPage: false });
@@ -83,6 +98,46 @@ test("manual Position Ready gates active timing", async ({ page }) => {
   await expect(page.locator('[data-rest-test-state="active"]')).toBeVisible();
   expect(before).toBe("back_flat");
 });
+
+test("Begin Rest Test unlocks audible waves from the direct click", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 585 });
+  await page.goto("/pod/pod-4?podLayoutState=rest-selection&restTestState=entry");
+  await waitForPod(page);
+  await page.getByTestId("rest-begin-test").click();
+  const panel = page.locator('[data-rest-test-state="positioning"]');
+  await expect(panel).toHaveAttribute("data-rest-test-audio-track", "waves");
+  await expect(panel).toHaveAttribute("data-rest-test-audio-status", "playing");
+  expect(Number(await panel.getAttribute("data-rest-test-audio-volume"))).toBeGreaterThan(0);
+  await page.getByTestId("rest-position-ready").click();
+  await page.waitForTimeout(1300);
+  expect(Number(await page.locator('[data-rest-test-state="active"]').getAttribute("data-rest-test-audio-time"))).toBeGreaterThan(0);
+});
+
+test("approved Rest Test assets return HTTP 200", async ({ request }) => {
+  const paths = [
+    "/rest-test/audio/rest-test-crashing-waves.mp3",
+    "/rest-test/audio/rest-test-soft-ambient-sleep-tones.mp3",
+    "/rest-test/visuals/rest-test-back-flat.png",
+    "/rest-test/visuals/rest-test-side-flat.png",
+    "/rest-test/visuals/rest-test-zero-gravity.png",
+    "/rest-test/visuals/rest-test-snore.png",
+  ];
+  for (const assetPath of paths) {
+    const response = await request.get(assetPath);
+    expect(response.status(), assetPath).toBe(200);
+  }
+});
+
+for (const podId of ["pod-1", "pod-2", "pod-4"]) {
+  test(`${podId} uses the corrected real-route Rest Test`, async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 585 });
+    await page.goto(`/pod/${podId}?podLayoutState=rest-selection&restTestState=entry`);
+    await waitForPod(page);
+    await page.getByTestId("rest-begin-test").click();
+    await expect(page.locator('[data-rest-test-state="positioning"]')).toHaveAttribute("data-rest-test-audio-track", "waves");
+    await expect(page.locator('img[alt^="Snoozer demonstrating"]')).toBeVisible();
+  });
+}
 
 test("leaving Rest Test pauses the persisted program", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 585 });
