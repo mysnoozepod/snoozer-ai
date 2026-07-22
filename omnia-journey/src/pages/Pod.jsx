@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
-  ArrowLeft,
   MessageSquare,
   BedDouble,
   CheckCircle2,
@@ -2178,12 +2177,11 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const handleChooseRestMode = useCallback(
     (modeId) => {
       noteUserInteraction?.();
-      void cancelPodVoice();
-      guidedRestTest.selectDuration(modeId);
+      guidedRestTest.start(modeId);
       setOpenStage("rest");
       setShowRestChooser(true);
     },
-    [cancelPodVoice, guidedRestTest.selectDuration, noteUserInteraction, setOpenStage, setShowRestChooser]
+    [guidedRestTest.start, noteUserInteraction, setOpenStage, setShowRestChooser]
   );
 
   const handleStartTimer = useCallback(() => {
@@ -2695,17 +2693,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
         className="mx-auto h-[var(--pod-header-height)] w-full max-w-[1380px] shrink-0 px-[var(--pod-outer-x)] py-[6px]"
       >
         <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[20px] border border-white/80 bg-white/94 px-[14px] shadow-[0_18px_46px_rgba(40,63,126,0.1)] backdrop-blur md:px-[18px]">
-          <button
-            type="button"
-            onClick={() => {
-              noteUserInteraction?.();
-              void goToPodHome();
-            }}
-            className="inline-flex min-h-[var(--pod-touch-target)] items-center gap-3 justify-self-start rounded-[14px] border border-transparent bg-transparent px-2 text-sm font-extrabold text-slate-900 transition hover:text-[#2f57e8]"
-          >
-            <ArrowLeft className="h-5 w-5" />
-            Pod Home
-          </button>
+          <div aria-hidden="true" />
 
           <ShowroomBrandMark
             className="justify-self-center"

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
   Home,
@@ -41,7 +40,7 @@ export function PodRestStartSection({ podLabel, flowOptions = [], onChooseMode }
       <div>
         <h2 className="text-[clamp(1.55rem,2.4vw,2rem)] font-black leading-none tracking-tight text-slate-950">Start Your Rest Test</h2>
         <p className="mt-1 text-[clamp(0.82rem,1.2vw,1rem)] leading-snug text-slate-600">
-          Try {podLabel} your way. Choose a guided experience, then begin when you are settled.
+          Try {podLabel} your way. Choose 7 or 15 minutes to begin.
         </p>
       </div>
       <div className="mt-2 grid gap-3 md:grid-cols-2">
@@ -64,33 +63,6 @@ export function PodRestStartSection({ podLabel, flowOptions = [], onChooseMode }
         ))}
       </div>
     </ShowroomPanel>
-  );
-}
-
-function ChoiceButton({ selected, children, onClick, testId }) {
-  return (
-    <button
-      type="button"
-      data-testid={testId}
-      aria-pressed={selected}
-      onClick={onClick}
-      className={[
-        "flex min-h-[44px] min-w-0 items-center justify-between gap-2 rounded-[14px] border px-3 text-left transition",
-        selected
-          ? "border-[#355ff1] bg-[#eef3ff] text-[#234ee8] shadow-[0_10px_24px_rgba(53,95,241,0.12)]"
-          : "border-[#dce5f7] bg-white text-slate-800 hover:border-[#b8c9f4]",
-      ].join(" ")}
-    >
-      <span className="min-w-0 text-[clamp(0.76rem,1.15vw,0.9rem)] font-black leading-tight">{children}</span>
-      <span
-        className={[
-          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
-          selected ? "border-[#355ff1] bg-[#355ff1] text-white" : "border-slate-300 text-transparent",
-        ].join(" ")}
-      >
-        <Check className="h-3 w-3" strokeWidth={3} />
-      </span>
-    </button>
   );
 }
 
@@ -121,8 +93,7 @@ function ConfirmBar({ action, onCancel, onConfirm }) {
   );
 }
 
-function RestTestEntry({ controller, podLabel, onBackHome }) {
-  const [confirmAction, setConfirmAction] = useState("");
+function RestTestEntry({ controller }) {
   const durations = Object.values(REST_TEST_DURATIONS);
 
   return (
@@ -130,96 +101,40 @@ function RestTestEntry({ controller, podLabel, onBackHome }) {
       tone="frost"
       data-testid="rest-test-entry"
       data-rest-test-state="entry"
-      className="relative h-full min-h-0 overflow-y-auto p-[10px] lg:overflow-hidden"
+      className="relative h-full min-h-0 overflow-y-auto p-[12px] lg:overflow-hidden"
     >
-      <div className="grid h-full min-h-0 gap-3 lg:grid-cols-[minmax(0,1.55fr)_minmax(260px,0.65fr)]">
-        <section className="flex min-w-0 flex-col justify-center rounded-[16px] border border-white/80 bg-white/78 px-5 py-3">
-          <h2 className="text-[clamp(1.35rem,2.4vw,2rem)] font-black leading-[1.02] tracking-tight text-slate-950">
-            Settle in. Snoozer will guide your Rest Test.
-          </h2>
-          <p className="mt-2 text-[clamp(0.92rem,1.4vw,1.08rem)] leading-snug text-slate-600">
-            Choose 7 minutes for a quick feel check or 15 minutes for more time to settle in.
-          </p>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            {durations.map((duration) => (
-              <button
-                type="button"
-                key={duration.id}
-                aria-pressed={controller.state.durationId === duration.id}
-                onClick={() => controller.selectDuration(duration.id)}
-                data-testid={`rest-duration-${duration.id}`}
-                className={[
-                  "flex min-h-[70px] items-center justify-between rounded-[16px] border px-4 text-left transition",
-                  controller.state.durationId === duration.id
-                    ? "border-[#355ff1] bg-[#eef3ff] text-[#234ee8] shadow-[0_12px_28px_rgba(53,95,241,0.13)]"
-                    : "border-[#dce5f7] bg-white text-slate-800",
-                ].join(" ")}
-              >
-                <span>
-                  <span className="block text-[clamp(1rem,1.5vw,1.25rem)] font-black leading-tight">{duration.label}</span>
-                  <span className="mt-1 block text-sm font-semibold text-slate-600">
-                    {duration.id === "quick" ? "Quick feel check" : "More time to settle in"}
-                  </span>
+      <div className="flex h-full min-h-0 flex-col justify-center rounded-[16px] border border-white/80 bg-white/78 px-5 py-4">
+        <h2 className="text-[clamp(1.45rem,2.5vw,2.1rem)] font-black leading-[1.02] tracking-tight text-slate-950">
+          Settle in. Snoozer will guide your Rest Test.
+        </h2>
+        <p className="mt-2 text-[clamp(0.92rem,1.4vw,1.08rem)] leading-snug text-slate-600">
+          Choose 7 minutes for a quick feel check or 15 minutes for more time to settle in.
+        </p>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {durations.map((duration) => (
+            <button
+              type="button"
+              key={duration.id}
+              onClick={() => controller.start(duration.id)}
+              data-testid={`rest-duration-${duration.id}`}
+              className={[
+                "group flex min-h-[112px] items-center justify-between rounded-[16px] border bg-white px-5 text-left transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4",
+                duration.id === "quick"
+                  ? "border-orange-200 shadow-[0_14px_30px_rgba(255,143,31,0.12)] focus-visible:ring-orange-100"
+                  : "border-blue-200 shadow-[0_14px_30px_rgba(53,95,241,0.12)] focus-visible:ring-blue-100",
+              ].join(" ")}
+            >
+              <span>
+                <span className="block text-[clamp(1.1rem,1.7vw,1.4rem)] font-black leading-tight text-slate-950">{duration.label}</span>
+                <span className="mt-1.5 block text-sm font-semibold text-slate-600">
+                  {duration.id === "quick" ? "Quick feel check" : "More time to settle in"}
                 </span>
-                <Check className="h-5 w-5 shrink-0" />
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="flex min-h-0 flex-col justify-center gap-3 rounded-[16px] border border-[#dbe5ff] bg-[#f7f9ff] px-4 py-3">
-          {controller.unfinished ? (
-            <>
-              <div className="text-xs font-black uppercase tracking-[0.15em] text-[#355ff1]">Unfinished Rest Test</div>
-              <button
-                type="button"
-                data-testid="rest-resume-test"
-                onClick={controller.resume}
-                className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-4 text-base font-black text-white"
-              >
-                <Play className="h-4 w-4" /> Resume Test
-              </button>
-              <div className="grid grid-cols-2 gap-2">
-                <button type="button" onClick={() => setConfirmAction("restart")} className="min-h-[44px] rounded-[12px] border bg-white text-xs font-black">
-                  Restart Test
-                </button>
-                <button type="button" onClick={() => setConfirmAction("end")} className="min-h-[44px] rounded-[12px] border border-red-200 bg-white text-xs font-black text-red-600">
-                  End Previous
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                data-testid="rest-begin-test"
-                onClick={controller.begin}
-                className="inline-flex min-h-[58px] items-center justify-center gap-2 rounded-[13px] bg-[linear-gradient(90deg,#2f57e8,#246cff)] px-4 text-base font-black text-white shadow-[0_14px_28px_rgba(47,87,232,0.22)]"
-              >
-                Begin Rest Test <ArrowRight className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                data-testid="rest-back-home"
-                onClick={onBackHome}
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[12px] border border-[#dbe5ff] bg-white px-3 text-xs font-black text-slate-800"
-              >
-                <ArrowLeft className="h-4 w-4" /> Back to Pod Home
-              </button>
-            </>
-          )}
-        </section>
+              </span>
+              <ArrowRight className={duration.id === "quick" ? "h-6 w-6 shrink-0 text-[#ff8f1f]" : "h-6 w-6 shrink-0 text-[#355ff1]"} />
+            </button>
+          ))}
+        </div>
       </div>
-
-      <ConfirmBar
-        action={confirmAction}
-        onCancel={() => setConfirmAction("")}
-        onConfirm={() => {
-          if (confirmAction === "restart") controller.restart();
-          else controller.endEarly();
-          setConfirmAction("");
-        }}
-      />
     </ShowroomPanel>
   );
 }
@@ -262,7 +177,7 @@ function ActiveRestTest({ controller }) {
   const isBaseFailure = state.phase === REST_TEST_PHASES.BASE_FAILURE;
   const stageNumber = state.stageIndex + 1;
   const progress = Math.min(100, Math.max(0, (state.overallActiveElapsedSeconds / duration.totalSeconds) * 100));
-  const statusLabel = isPaused ? "Paused" : isPositioning ? "Get Into Position" : isBaseFailure ? "Position Unavailable" : "Testing Now";
+  const statusLabel = isPaused ? "Paused" : isPositioning ? "Moving Into Position" : isBaseFailure ? "Position Unavailable" : "Testing Now";
 
   return (
     <ShowroomPanel
@@ -315,7 +230,13 @@ function ActiveRestTest({ controller }) {
             ) : isPositioning ? (
               <>
                 <div className="text-lg font-black text-slate-950">{stage.manualInstruction}</div>
-                <p className="mt-1 text-base leading-snug text-slate-600">The timer waits while you get comfortable.</p>
+                <p className="mt-1 text-base leading-snug text-slate-600">
+                  {state.openingSpeechActive
+                    ? "Snoozer is guiding this change. Active testing starts automatically afterward."
+                    : state.transitionRemainingSeconds > 0
+                      ? `Active testing starts automatically in ${state.transitionRemainingSeconds} seconds.`
+                      : "Active testing is about to begin automatically."}
+                </p>
               </>
             ) : (
               <div className="text-lg font-black leading-snug text-slate-950">{stage.quietPrompt}</div>
@@ -323,16 +244,7 @@ function ActiveRestTest({ controller }) {
           </div>
 
           <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
-            {isPositioning ? (
-              <button
-                type="button"
-                data-testid="rest-position-ready"
-                onClick={controller.positionReady}
-                className="inline-flex min-h-[56px] min-w-[150px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-[#355ff1] px-4 text-base font-black text-white"
-              >
-                <Check className="h-4 w-4" /> Position Ready
-              </button>
-            ) : isPaused ? (
+            {isPaused ? (
               <button
                 type="button"
                 data-testid="rest-resume-active"
@@ -516,7 +428,7 @@ export function GuidedRestTest({ controller, podLabel = "this pod", onBackHome, 
     return <RestTestCompletion controller={controller} podLabel={podLabel} onBackHome={onBackHome} onTryAnotherMattress={onTryAnotherMattress} />;
   }
   if (controller.state.phase === REST_TEST_PHASES.READY || controller.state.phase === REST_TEST_PHASES.ENDED_EARLY) {
-    return <RestTestEntry controller={controller} podLabel={podLabel} onBackHome={onBackHome} />;
+    return <RestTestEntry controller={controller} />;
   }
   return <ActiveRestTest controller={controller} />;
 }

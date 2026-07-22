@@ -30,8 +30,7 @@ export const REST_TEST_DURATIONS = Object.freeze({
 // Vite owns these files so manual Amplify ZIP deployments cannot omit the
 // nested public folders used by the original Rest Test implementation.
 const REST_TEST_MEDIA = Object.freeze({
-  waves: new URL("../assets/rest-test/audio/rest-test-crashing-waves.mp3", import.meta.url).href,
-  sleepTones: new URL("../assets/rest-test/audio/rest-test-soft-ambient-sleep-tones.mp3", import.meta.url).href,
+  jazz: new URL("../assets/rest-test/audio/rest-test-soft-jazz.mp3", import.meta.url).href,
   backFlat: new URL("../assets/rest-test/visuals/rest-test-back-flat.png", import.meta.url).href,
   sideFlat: new URL("../assets/rest-test/visuals/rest-test-side-flat.png", import.meta.url).href,
   zeroGravity: new URL("../assets/rest-test/visuals/rest-test-zero-gravity.png", import.meta.url).href,
@@ -39,24 +38,22 @@ const REST_TEST_MEDIA = Object.freeze({
 });
 
 export const REST_TEST_AMBIENCE = Object.freeze({
-  waves: Object.freeze({
-    id: "waves",
-    label: "Crashing Waves",
-    src: REST_TEST_MEDIA.waves,
-  }),
-  sleepTones: Object.freeze({
-    id: "sleepTones",
-    label: "Soft Ambient Sleep Tones",
-    src: REST_TEST_MEDIA.sleepTones,
+  jazz: Object.freeze({
+    id: "jazz",
+    label: "Soft Jazz Instrumental",
+    src: REST_TEST_MEDIA.jazz,
   }),
 });
 
 export const REST_TEST_AUDIO_CONFIG = Object.freeze({
   volume: 0.38,
-  duckMultiplier: 0.24,
   startFadeMs: 500,
-  crossfadeMs: 900,
-  stageTrackIds: Object.freeze(["waves", "waves", "waves", "sleepTones", "sleepTones", "sleepTones"]),
+});
+
+export const REST_TEST_TRANSITION_SECONDS = Object.freeze({
+  initial: 0,
+  body: 10,
+  adjustableBase: 20,
 });
 
 export const REST_TEST_STAGES = Object.freeze([
@@ -168,8 +165,15 @@ export function getStageDuration(durationId, stageIndex) {
 }
 
 export function getRestTestTrackForStage(stageIndex = 0) {
-  const index = Math.max(0, Math.min(REST_TEST_AUDIO_CONFIG.stageTrackIds.length - 1, Number(stageIndex) || 0));
-  return REST_TEST_AMBIENCE[REST_TEST_AUDIO_CONFIG.stageTrackIds[index]] || REST_TEST_AMBIENCE.waves;
+  void stageIndex;
+  return REST_TEST_AMBIENCE.jazz;
+}
+
+export function getRestTestTransitionSeconds(stageIndex = 0) {
+  const index = Math.max(0, Math.min(REST_TEST_STAGES.length - 1, Number(stageIndex) || 0));
+  if (index === 0) return REST_TEST_TRANSITION_SECONDS.initial;
+  if (index <= 2) return REST_TEST_TRANSITION_SECONDS.body;
+  return REST_TEST_TRANSITION_SECONDS.adjustableBase;
 }
 
 export function getTotalActiveSeconds(durationId = "quick") {
@@ -177,20 +181,21 @@ export function getTotalActiveSeconds(durationId = "quick") {
 }
 
 export function createInitialRestTestState(overrides = {}) {
-  const durationId = REST_TEST_DURATIONS[overrides.durationId] ? overrides.durationId : "quick";
+  const durationId = REST_TEST_DURATIONS[overrides.durationId] ? overrides.durationId : null;
   return {
     version: 1,
     phase: REST_TEST_PHASES.READY,
     resumePhase: null,
     durationId,
-    ambienceId: "waves",
+    ambienceId: "jazz",
     volume: REST_TEST_AUDIO_CONFIG.volume,
     muted: false,
-    activeTrackId: "waves",
+    activeTrackId: "jazz",
     audioPlaybackPosition: 0,
     audioPaused: true,
-    musicDucked: false,
+    musicPausedForSpeech: false,
     openingSpeechActive: false,
+    transitionRemainingSeconds: 0,
     stageIndex: 0,
     stageRemainingSeconds: getStageDuration(durationId, 0),
     overallActiveElapsedSeconds: 0,
@@ -212,7 +217,7 @@ export function createInitialRestTestState(overrides = {}) {
 
 export function restoreRestTestState(value) {
   if (!value || value.version !== 1) return createInitialRestTestState();
-  const durationId = REST_TEST_DURATIONS[value.durationId] ? value.durationId : "quick";
+  const durationId = REST_TEST_DURATIONS[value.durationId] ? value.durationId : null;
   const stageIndex = Math.max(0, Math.min(REST_TEST_STAGES.length - 1, Number(value.stageIndex) || 0));
   const unfinishedPhases = new Set([
     REST_TEST_PHASES.STARTING,
@@ -236,9 +241,11 @@ export function restoreRestTestState(value) {
   return createInitialRestTestState({
     ...value,
     durationId,
-    ambienceId: "waves",
+    ambienceId: "jazz",
+    activeTrackId: "jazz",
     stageIndex,
     stageRemainingSeconds: Math.max(0, Number(value.stageRemainingSeconds) || getStageDuration(durationId, stageIndex)),
+    transitionRemainingSeconds: Math.max(0, Number(value.transitionRemainingSeconds) || 0),
     overallActiveElapsedSeconds: Math.max(0, Number(value.overallActiveElapsedSeconds) || 0),
     stageActiveElapsedSeconds: Math.max(0, Number(value.stageActiveElapsedSeconds) || 0),
     interjectionFiredStageIds: Array.isArray(value.interjectionFiredStageIds)
@@ -262,10 +269,8 @@ export function isRestTestUnfinished(state) {
   );
 }
 
-function restartState(state) {
-  return createInitialRestTestState({
-    durationId: state.durationId,
-  });
+function restartState() {
+  return createInitialRestTestState();
 }
 
 export function restTestReducer(state, action = {}) {
@@ -279,19 +284,38 @@ export function restTestReducer(state, action = {}) {
         stageRemainingSeconds: getStageDuration(action.durationId, 0),
       };
     }
-    case "BEGIN":
+    case "BEGIN": {
+      if (!REST_TEST_DURATIONS[action.durationId]) return state;
+      if (isRestTestUnfinished(state)) return state;
+      const durationId = action.durationId;
       return {
-        ...restartState(state),
+        ...createInitialRestTestState({ durationId }),
         phase: REST_TEST_PHASES.POSITIONING,
         completionStatus: "in_progress",
         startedAt: action.startedAt || new Date().toISOString(),
         audioPaused: false,
-        activeTrackId: action.audioSnapshot?.trackId || "waves",
+        activeTrackId: "jazz",
         audioPlaybackPosition: Math.max(0, Number(action.audioSnapshot?.currentTime) || 0),
+        transitionRemainingSeconds: getRestTestTransitionSeconds(0),
       };
-    case "POSITION_READY":
-      if (![REST_TEST_PHASES.POSITIONING, REST_TEST_PHASES.DEGRADED, REST_TEST_PHASES.BASE_FAILURE].includes(state.phase)) return state;
+    }
+    case "OPENING_SPEECH_COMPLETE":
+      if (state.phase !== REST_TEST_PHASES.POSITIONING) return state;
+      if (state.transitionRemainingSeconds > 0) {
+        return { ...state, openingSpeechActive: false };
+      }
       return { ...state, phase: REST_TEST_PHASES.ACTIVE, resumePhase: null, openingSpeechActive: false };
+    case "TRANSITION_TICK":
+      if (state.phase !== REST_TEST_PHASES.POSITIONING || state.openingSpeechActive) return state;
+      if (state.transitionRemainingSeconds > 1) {
+        return { ...state, transitionRemainingSeconds: state.transitionRemainingSeconds - 1 };
+      }
+      return {
+        ...state,
+        phase: REST_TEST_PHASES.ACTIVE,
+        resumePhase: null,
+        transitionRemainingSeconds: 0,
+      };
     case "TICK": {
       if (state.phase !== REST_TEST_PHASES.ACTIVE) return state;
       const elapsed = state.overallActiveElapsedSeconds + 1;
@@ -329,7 +353,8 @@ export function restTestReducer(state, action = {}) {
         stageRemainingSeconds: getStageDuration(state.durationId, stageIndex),
         overallActiveElapsedSeconds: elapsed,
         stageActiveElapsedSeconds: 0,
-        activeTrackId: getRestTestTrackForStage(stageIndex).id,
+        transitionRemainingSeconds: getRestTestTransitionSeconds(stageIndex),
+        activeTrackId: "jazz",
         completedStageIds,
       };
     }
@@ -341,6 +366,7 @@ export function restTestReducer(state, action = {}) {
         resumePhase: state.phase === REST_TEST_PHASES.ACTIVE ? REST_TEST_PHASES.ACTIVE : REST_TEST_PHASES.POSITIONING,
         pauseCount: state.pauseCount + 1,
         audioPaused: true,
+        openingSpeechActive: false,
       };
     case "RESUME":
       if (state.phase !== REST_TEST_PHASES.PAUSED) return state;
@@ -353,8 +379,8 @@ export function restTestReducer(state, action = {}) {
       };
     case "SET_OPENING_SPEECH_ACTIVE":
       return { ...state, openingSpeechActive: Boolean(action.active) };
-    case "SET_MUSIC_DUCKED":
-      return { ...state, musicDucked: Boolean(action.ducked) };
+    case "SET_MUSIC_PAUSED_FOR_SPEECH":
+      return { ...state, musicPausedForSpeech: Boolean(action.paused) };
     case "SYNC_AUDIO":
       return {
         ...state,
@@ -363,7 +389,7 @@ export function restTestReducer(state, action = {}) {
         audioPaused: action.snapshot ? Boolean(action.snapshot.paused) : state.audioPaused,
       };
     case "RESTART":
-      return restartState(state);
+      return restartState();
     case "END_EARLY":
       return {
         ...state,
@@ -378,7 +404,12 @@ export function restTestReducer(state, action = {}) {
       if (state.phase !== REST_TEST_PHASES.BASE_FAILURE) return state;
       return { ...state, phase: REST_TEST_PHASES.POSITIONING };
     case "CONTINUE_FLAT":
-      return { ...state, phase: REST_TEST_PHASES.ACTIVE, degraded: true };
+      return {
+        ...state,
+        phase: REST_TEST_PHASES.POSITIONING,
+        degraded: true,
+        openingSpeechActive: false,
+      };
     case "RATE":
       return {
         ...state,

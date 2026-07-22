@@ -85,38 +85,34 @@ for (const viewport of VIEWPORTS) {
   }
 }
 
-test("manual Position Ready gates active timing", async ({ page }) => {
+test("duration selection starts the automatic Rest Test flow", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 585 });
   await page.goto("/pod/pod-4?podLayoutState=rest-selection&restTestState=entry");
   await waitForPod(page);
-  await page.getByTestId("rest-begin-test").click();
-  await expect(page.locator('[data-rest-test-state="positioning"]')).toBeVisible();
-  const before = await page.locator('[data-rest-test-stage]').getAttribute("data-rest-test-stage");
-  await page.waitForTimeout(1150);
-  await expect(page.locator('[data-rest-test-state="positioning"]')).toBeVisible();
-  await page.getByTestId("rest-position-ready").click();
-  await expect(page.locator('[data-rest-test-state="active"]')).toBeVisible();
-  expect(before).toBe("back_flat");
+  await expect(page.getByTestId("rest-begin-test")).toHaveCount(0);
+  await expect(page.getByTestId("rest-position-ready")).toHaveCount(0);
+  await page.getByTestId("rest-duration-quick").click();
+  await expect(page.locator('[data-rest-test-stage="back_flat"]')).toBeVisible();
+  await expect(page.locator('[data-rest-test-state="active"]')).toBeVisible({ timeout: 20_000 });
 });
 
-test("Begin Rest Test unlocks audible waves from the direct click", async ({ page }) => {
+test("duration click unlocks the persistent jazz track", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 585 });
   await page.goto("/pod/pod-4?podLayoutState=rest-selection&restTestState=entry");
   await waitForPod(page);
-  await page.getByTestId("rest-begin-test").click();
-  const panel = page.locator('[data-rest-test-state="positioning"]');
-  await expect(panel).toHaveAttribute("data-rest-test-audio-track", "waves");
-  await expect(panel).toHaveAttribute("data-rest-test-audio-status", "playing");
+  await page.getByTestId("rest-duration-quick").click();
+  const panel = page.locator('[data-rest-test-state="positioning"], [data-rest-test-state="active"]');
+  await expect(panel).toHaveAttribute("data-rest-test-audio-track", "jazz");
+  await expect(panel).toHaveAttribute("data-rest-test-audio-status", /playing|paused/);
   expect(Number(await panel.getAttribute("data-rest-test-audio-volume"))).toBeGreaterThan(0);
-  await page.getByTestId("rest-position-ready").click();
-  await page.waitForTimeout(1300);
-  expect(Number(await page.locator('[data-rest-test-state="active"]').getAttribute("data-rest-test-audio-time"))).toBeGreaterThan(0);
+  const active = page.locator('[data-rest-test-state="active"]');
+  await expect(active).toBeVisible({ timeout: 20_000 });
+  await expect(active).toHaveAttribute("data-rest-test-audio-track", "jazz");
 });
 
 test("approved Rest Test assets return HTTP 200", async ({ request }) => {
   const paths = [
-    "/rest-test-crashing-waves.mp3",
-    "/rest-test-soft-ambient-sleep-tones.mp3",
+    "/rest-test-soft-jazz.mp3",
     "/rest-test-back-flat.png",
     "/rest-test-side-flat.png",
     "/rest-test-zero-gravity.png",
@@ -133,8 +129,10 @@ for (const podId of ["pod-1", "pod-2", "pod-4"]) {
     await page.setViewportSize({ width: 1280, height: 585 });
     await page.goto(`/pod/${podId}?podLayoutState=rest-selection&restTestState=entry`);
     await waitForPod(page);
-    await page.getByTestId("rest-begin-test").click();
-    await expect(page.locator('[data-rest-test-state="positioning"]')).toHaveAttribute("data-rest-test-audio-track", "waves");
+    await page.getByTestId("rest-duration-quick").click();
+    const active = page.locator('[data-rest-test-state="active"]');
+    await expect(active).toBeVisible({ timeout: 20_000 });
+    await expect(active).toHaveAttribute("data-rest-test-audio-track", "jazz");
     await expect(page.locator('img[alt^="Snoozer demonstrating"]')).toBeVisible();
   });
 }
@@ -143,9 +141,8 @@ test("leaving Rest Test pauses the persisted program", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 585 });
   await page.goto("/pod/pod-4?podLayoutState=rest-selection&restTestState=entry");
   await waitForPod(page);
-  await page.getByTestId("rest-begin-test").click();
-  await page.getByTestId("rest-position-ready").click();
-  await expect(page.locator('[data-rest-test-state="active"]')).toBeVisible();
+  await page.getByTestId("rest-duration-quick").click();
+  await expect(page.locator('[data-rest-test-state="active"]')).toBeVisible({ timeout: 20_000 });
   await page.getByRole("button", { name: "Learn" }).click();
   await page.getByRole("button", { name: "Rest Test" }).click();
   await expect(page.locator('[data-rest-test-state="paused"]')).toBeVisible();

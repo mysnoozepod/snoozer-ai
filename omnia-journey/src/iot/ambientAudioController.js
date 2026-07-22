@@ -145,7 +145,7 @@ export function createAmbientAudioController({ track = "", volume = 0.38, duckMu
     return {
       status,
       track: activeTrack || selectedTrack,
-      trackId: (activeTrack || selectedTrack).includes("crashing-waves") ? "waves" : "sleepTones",
+      trackId: (activeTrack || selectedTrack).includes("soft-jazz") ? "jazz" : "unknown",
       hasAudio: Boolean(audio),
       muted: false,
       volume: targetVolume,

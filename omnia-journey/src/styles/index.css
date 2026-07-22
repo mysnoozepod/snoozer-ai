@@ -251,7 +251,9 @@
 }
 
 .rest-test-visual-paused {
-  animation-play-state: paused;
+  animation: none;
+  opacity: 1;
+  transform: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

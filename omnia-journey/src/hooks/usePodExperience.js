@@ -20,7 +20,7 @@ export function usePodExperience({ storagePrefix, defaultDetailsActionId }) {
   const [timerRemaining, setTimerRemaining] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [selectedRestInstructionId, setSelectedRestInstructionId] = useState("");
-  const [showRestChooser, setShowRestChooser] = useState(false);
+  const [showRestChooser, setShowRestChooser] = useState(true);
 
   useEffect(() => safeSet(`${storagePrefix}.openStage`, openStage || "rest"), [storagePrefix, openStage]);
   useEffect(() => safeSet(`${storagePrefix}.buildStepKey`, buildStepKey || "size"), [storagePrefix, buildStepKey]);
@@ -44,7 +44,7 @@ export function usePodExperience({ storagePrefix, defaultDetailsActionId }) {
     setTimerRemaining(0);
     setTimerRunning(false);
     setSelectedRestInstructionId("");
-    setShowRestChooser(false);
+    setShowRestChooser(true);
   }, [defaultDetailsActionId]);
 
   return {
