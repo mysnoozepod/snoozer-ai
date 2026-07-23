@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
+  ArrowLeft,
   MessageSquare,
   BedDouble,
   CheckCircle2,
@@ -42,6 +43,7 @@ import { PodRouteHeroHeader } from "@/components/pod/PodHeader";
 import { PodHome } from "@/components/pod/PodHome";
 import { PodLearnPanel } from "@/components/pod/PodLearnPanel";
 import { GuidedRestTest } from "@/components/pod/PodRestPanels";
+import SnoozerPanel from "@/components/SnoozerPanel";
 import {
   BASE_OPTIONS_UI,
   generateShowroomRecommendations,
@@ -86,6 +88,23 @@ const PUBLIC_ASSETS = {
 };
 
 const IOT_EXPERIENCE_CONFIG = getIotExperienceConfig(import.meta.env || {});
+
+function formatRestStatusTime(totalSeconds) {
+  const total = Math.max(0, Number(totalSeconds) || 0);
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+
+function restTransitionLabel(stage) {
+  const labels = {
+    transition_to_side: "Turn onto your side",
+    transition_to_recalibration: "Return to your back",
+    transition_to_zero_gravity: "Moving to Zero Gravity",
+    transition_to_snore: "Moving to Snore preset",
+    transition_to_flat: "Returning to flat",
+    starting: "Starting your Rest Test",
+  };
+  return labels[stage?.transitionState] || stage?.positionLabel || "Rest Test in progress";
+}
 
 const SHOWROOM_MATTRESS_HERO_FALLBACKS = {
   "12-dual-comfort-hybrid":
@@ -1547,13 +1566,19 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   }, [canUseLayoutHarness, guidedRestTest.restart, restTestLabState, setGuidedRestLabState]);
 
   const restTestActive = guidedRestTest.isActive;
+  const completedRestSessionRef = useRef("");
 
   useEffect(() => {
-    if (openStage === "rest" || !guidedRestTest.isActive || guidedRestTest.state.phase === "paused") {
+    if (guidedRestTest.state.phase !== "completed") {
+      completedRestSessionRef.current = "";
       return;
     }
-    guidedRestTest.pause();
-  }, [guidedRestTest.isActive, guidedRestTest.pause, guidedRestTest.state.phase, openStage]);
+    const completionKey = guidedRestTest.state.startedAt || "completed";
+    if (completedRestSessionRef.current === completionKey) return;
+    completedRestSessionRef.current = completionKey;
+    setOpenStage("rest");
+    setShowRestChooser(true);
+  }, [guidedRestTest.state.phase, guidedRestTest.state.startedAt, setOpenStage, setShowRestChooser]);
 
   const zoneExperience = useShowroomZoneExperience({
     podId: pid,
@@ -2479,24 +2504,28 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
 
   const goToDetailsStage = useCallback(async () => {
     setShowRestChooser(false);
+    if (guidedRestTest.isActive) {
+      setOpenStage("details");
+      return;
+    }
     await activateDetailsAction(DEFAULT_DETAILS_ACTION_ID, { ensureDetailsStage: true });
-  }, [activateDetailsAction]);
+  }, [activateDetailsAction, guidedRestTest.isActive, setOpenStage, setShowRestChooser]);
 
   const goToBuildStage = useCallback(async (nextStepKey = "size") => {
     noteUserInteraction?.();
-    await cancelPodVoice();
+    if (!guidedRestTest.isActive) await cancelPodVoice();
     setShowRestChooser(false);
     setOpenStage("build");
     setBuildStepKey(String(nextStepKey || "size"));
-    void speakForStage("build");
-  }, [cancelPodVoice, speakForStage, noteUserInteraction, podLabel]);
+    if (!guidedRestTest.isActive) void speakForStage("build");
+  }, [cancelPodVoice, guidedRestTest.isActive, speakForStage, noteUserInteraction, setBuildStepKey, setOpenStage, setShowRestChooser]);
 
   const goToRestStage = useCallback(() => {
     noteUserInteraction?.();
-    void cancelPodVoice();
+    if (!guidedRestTest.isActive) void cancelPodVoice();
     setOpenStage("rest");
     setShowRestChooser(true);
-  }, [cancelPodVoice, noteUserInteraction, setOpenStage, setShowRestChooser]);
+  }, [cancelPodVoice, guidedRestTest.isActive, noteUserInteraction, setOpenStage, setShowRestChooser]);
 
   const goToPodHome = useCallback(async () => {
     noteUserInteraction?.();
@@ -2543,11 +2572,40 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
               showCartFeedback("Added to cart");
             }
           }}
-          primaryCtaLabel="Add This Setup"
+          primaryCtaLabel="Add Selected Setup to Cart"
           onViewSnoozePod={() => navigate("/cart")}
           onViewResults={null}
           requestedStepKey={buildStepKey}
         />
+      );
+    }
+
+    if (openStage === "ask" || openStage === "human") {
+      const humanMode = openStage === "human";
+      return (
+        <ShowroomPanel className="h-full min-h-0 overflow-auto p-4" tone="frost">
+          <div className="mb-3">
+            <h2 className="text-[clamp(1.35rem,2vw,1.8rem)] font-black text-slate-950">
+              {humanMode ? "Talk to a Human" : "Ask Snoozer"}
+            </h2>
+            <p className="mt-1 text-sm font-semibold text-slate-600">
+              {humanMode
+                ? "Tell Snoozer what you need and a showroom team member can take it from here."
+                : "Ask about this mattress, your Rest Test, or the setup you are customizing."}
+            </p>
+          </div>
+          <SnoozerPanel
+            mode="pod"
+            podId={pid}
+            shopperId={shopperId}
+            assessment={assessment}
+            context={{ podId: pid, sourceSurface: humanMode ? "pod-human-help" : "pod-ask-snoozer" }}
+            showInput
+            showHeader={false}
+            initialCaption={humanMode ? "Tell me what help you need." : "What would you like to know?"}
+            inputPlaceholder={humanMode ? "Describe the help you need" : "Ask Snoozer about this pod"}
+          />
+        </ShowroomPanel>
       );
     }
 
@@ -2578,23 +2636,44 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     learnPricingRows,
     learnFitItems,
     goToBuildStage,
+    pid,
+    shopperId,
   ]);
 
-  const isDefaultPodDashboard =
-    openStage === "rest" &&
-    !showRestChooser;
-  const isRestTaskStage = openStage === "rest" && !isDefaultPodDashboard;
+  const isDefaultPodDashboard = false;
+  const isRestTaskStage = openStage === "rest";
   const isRestSelectionStage =
     openStage === "rest" &&
     showRestChooser &&
     guidedRestTest.state.phase === "ready";
-  const activeNavKey = isDefaultPodDashboard
-    ? "home"
-    : openStage === "details"
+  const activeNavKey = openStage === "details"
       ? "learn"
       : openStage === "build"
-        ? "build"
+        ? "customize"
+        : openStage === "ask"
+          ? "ask"
+          : openStage === "human"
+            ? "human"
         : "rest";
+  const restStatus = guidedRestTest.isActive
+    ? {
+        paused: guidedRestTest.state.phase === "paused",
+        label:
+          guidedRestTest.state.phase === "positioning"
+            ? restTransitionLabel(guidedRestTest.stage)
+            : guidedRestTest.stage?.positionLabel || "Rest Test in progress",
+        time: formatRestStatusTime(
+          guidedRestTest.state.phase === "positioning"
+            ? guidedRestTest.state.transitionRemainingSeconds
+            : guidedRestTest.state.stageRemainingSeconds
+        ),
+        onReturn: goToRestStage,
+        onToggle:
+          guidedRestTest.state.phase === "paused"
+            ? guidedRestTest.resume
+            : guidedRestTest.pause,
+      }
+    : null;
   const podShellVars = {
     "--pod-header-height": `${POD_LAYOUT_CONTRACT.verticalBudget.header}px`,
     "--pod-nav-height": `${POD_LAYOUT_CONTRACT.verticalBudget.navigation}px`,
@@ -2693,7 +2772,14 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
         className="mx-auto h-[var(--pod-header-height)] w-full max-w-[1380px] shrink-0 px-[var(--pod-outer-x)] py-[6px]"
       >
         <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[20px] border border-white/80 bg-white/94 px-[14px] shadow-[0_18px_46px_rgba(40,63,126,0.1)] backdrop-blur md:px-[18px]">
-          <div aria-hidden="true" />
+          <button
+            type="button"
+            onClick={() => navigate("/results")}
+            className="inline-flex min-h-[44px] w-fit items-center gap-2 rounded-[12px] px-3 text-sm font-black text-slate-800 hover:bg-slate-50"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Back to results
+          </button>
 
           <ShowroomBrandMark
             className="justify-self-center"
@@ -2728,25 +2814,18 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
           <PodFooterNav
             openStage={openStage}
             activeKey={activeNavKey}
-            onGoHome={() => void goToPodHome()}
             onGoRest={goToRestStage}
             onGoLearn={goToDetailsStage}
             onGoBuild={() => void goToBuildStage("size")}
             onAskSnoozer={() => {
               noteUserInteraction?.();
-              void cancelPodVoice({ resetKeys: true });
-              navigate("/ask-snoozer", { state: { from: currentPodRoute } });
+              setOpenStage("ask");
+              setShowRestChooser(false);
             }}
             onTalkToHuman={() => {
               noteUserInteraction?.();
-              void cancelPodVoice({ resetKeys: true });
-              navigate("/ask-snoozer", {
-                state: {
-                  from: currentPodRoute,
-                  prefill: "I need human help.",
-                  autoSend: true,
-                },
-              });
+              setOpenStage("human");
+              setShowRestChooser(false);
             }}
           />
         </div>
@@ -2764,6 +2843,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
                   isRecommended={isRecommended}
                   voiceState={voiceState}
                   badges={openStage === "details" || openStage === "build" ? headerBadges : headerBadges.slice(0, isRecommended ? 2 : 1)}
+                  restStatus={restStatus}
                 />
               </ShowroomPanel>
             </div>

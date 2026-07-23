@@ -100,6 +100,7 @@ test("duration click unlocks the persistent jazz track", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 585 });
   await page.goto("/pod/pod-4?podLayoutState=rest-selection&restTestState=entry");
   await waitForPod(page);
+  await expect(page.locator('[data-pod-rest-status="true"]')).toHaveCount(0);
   await page.getByTestId("rest-duration-quick").click();
   const panel = page.locator('[data-rest-test-state="positioning"], [data-rest-test-state="active"]');
   await expect(panel).toHaveAttribute("data-rest-test-audio-track", "jazz");
@@ -137,13 +138,43 @@ for (const podId of ["pod-1", "pod-2", "pod-4"]) {
   });
 }
 
-test("leaving Rest Test pauses the persisted program", async ({ page }) => {
+test("active Rest Test persists across every Pod experience tab", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 585 });
   await page.goto("/pod/pod-4?podLayoutState=rest-selection&restTestState=entry");
   await waitForPod(page);
   await page.getByTestId("rest-duration-quick").click();
   await expect(page.locator('[data-rest-test-state="active"]')).toBeVisible({ timeout: 20_000 });
-  await page.getByRole("button", { name: "Learn" }).click();
-  await page.getByRole("button", { name: "Rest Test" }).click();
-  await expect(page.locator('[data-rest-test-state="paused"]')).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pod Home" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Build", exact: true })).toHaveCount(0);
+  const status = page.locator('[data-pod-rest-status="true"]');
+  await expect(status).toBeVisible();
+  const startingTime = await status.locator(".tabular-nums").textContent();
+
+  const evidenceDir = path.join(OUTPUT_ROOT, "persistence");
+  await fs.mkdir(evidenceDir, { recursive: true });
+  for (const tab of ["Learn", "Customize", "Ask Snoozer", "Talk to Human"]) {
+    await page.getByRole("button", { name: tab, exact: true }).click();
+    await expect(status).toBeVisible();
+    await page.screenshot({
+      path: path.join(evidenceDir, `${tab.toLowerCase().replaceAll(" ", "-")}.png`),
+      fullPage: false,
+    });
+  }
+
+  await page.waitForTimeout(1_100);
+  const continuedTime = await status.locator(".tabular-nums").textContent();
+  expect(continuedTime).not.toBe(startingTime);
+  await page.getByRole("button", { name: "Pause Rest Test" }).click();
+  await expect(page.getByRole("button", { name: "Resume Rest Test" })).toBeVisible();
+  const pausedTime = await status.locator(".tabular-nums").textContent();
+  await page.waitForTimeout(1_100);
+  await expect(status.locator(".tabular-nums")).toHaveText(pausedTime);
+  await page.getByRole("button", { name: "Resume Rest Test" }).click();
+
+  await page.getByRole("button", { name: "Rest Test", exact: true }).click();
+  await expect(page.locator('[data-rest-test-state="active"]')).toBeVisible();
+  await fs.writeFile(
+    path.join(evidenceDir, "timer-continuity.json"),
+    `${JSON.stringify({ startingTime, continuedTime, pausedTime }, null, 2)}\n`
+  );
 });

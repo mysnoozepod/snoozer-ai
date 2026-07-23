@@ -200,7 +200,7 @@ function ActiveRestTest({ controller }) {
               <div className="text-[0.66rem] font-black uppercase tracking-[0.18em] text-[#355ff1]">
                 Stage {stageNumber} of {REST_TEST_STAGES.length} / {statusLabel}
               </div>
-              <h2 className="mt-1 truncate text-[clamp(1.4rem,2.4vw,2rem)] font-black leading-none tracking-tight text-slate-950">
+              <h2 className="mt-1 text-[clamp(1.4rem,2.4vw,2rem)] font-black leading-tight tracking-tight text-slate-950">
                 {stage.name}
               </h2>
             </div>

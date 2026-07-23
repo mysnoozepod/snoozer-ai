@@ -26,12 +26,13 @@ export function PodRouteHeroHeader({
   isRecommended = false,
   voiceState,
   badges = [],
+  restStatus,
 }) {
   return (
     <div
       data-pod-route-header="true"
       data-pod-text-card="product-hero"
-      className="flex h-full min-h-0 items-center overflow-visible px-[22px] py-[6px]"
+      className="flex h-full min-h-0 items-center gap-4 overflow-visible px-[22px] py-[6px]"
     >
       <div className="min-w-0 flex-1">
         <div
@@ -81,6 +82,38 @@ export function PodRouteHeroHeader({
           </div>
         ) : null}
       </div>
+
+      {restStatus ? (
+        <div
+          className="flex min-w-[220px] max-w-[290px] shrink-0 items-center justify-between gap-3 rounded-[18px] border border-[#d6e4ff] bg-white/95 px-4 py-3 text-left shadow-[0_12px_28px_rgba(47,87,232,0.12)]"
+          data-pod-rest-status="true"
+        >
+          <button
+            type="button"
+            onClick={restStatus.onReturn}
+            className="min-h-[44px] min-w-0 flex-1 text-left"
+            aria-label="Return to active Rest Test"
+          >
+            <span className="block text-[0.66rem] font-black uppercase tracking-[0.18em] text-[#315cf6]">
+              {restStatus.paused ? "Rest Test Paused" : "Rest Test"}
+            </span>
+            <span className="mt-1 block truncate text-[0.82rem] font-black uppercase text-slate-700">
+              {restStatus.label}
+            </span>
+            <span className="mt-0.5 block text-[1.6rem] font-black tabular-nums leading-none text-slate-950">
+              {restStatus.time}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={restStatus.onToggle}
+            className="inline-flex min-h-[44px] min-w-[76px] items-center justify-center rounded-[12px] bg-[#315cf6] px-3 text-[0.76rem] font-black text-white"
+            aria-label={restStatus.paused ? "Resume Rest Test" : "Pause Rest Test"}
+          >
+            {restStatus.paused ? "Resume" : "Pause"}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

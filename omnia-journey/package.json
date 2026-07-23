@@ -10,7 +10,8 @@
     "pod:measure": "playwright test -c playwright.pod-layout.config.cjs --project=measure",
     "pod:layout:test": "playwright test -c playwright.pod-layout.config.cjs --project=strict",
     "rest:test": "node tests/runRestTestProgramTests.mjs",
-    "rest:visual:test": "playwright test -c playwright.rest-test.config.cjs"
+    "rest:visual:test": "playwright test -c playwright.rest-test.config.cjs",
+    "pod:persistence:test": "node tests/runPersistentPodExperienceTests.mjs && playwright test -c playwright.rest-test.config.cjs -g \"persists across every Pod experience tab\""
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

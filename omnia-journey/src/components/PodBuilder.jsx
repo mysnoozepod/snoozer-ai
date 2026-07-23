@@ -20,6 +20,39 @@ import {
   getMattressHandleForType,
 } from "@/lib/utils/recommendations";
 
+export const VERIFIED_SIZE_DIMENSIONS = Object.freeze({
+  Twin: '38" x 75"',
+  "Twin XL": '38" x 80"',
+  Full: '54" x 75"',
+  Queen: '60" x 80"',
+  King: '76" x 80"',
+});
+
+export const APPROVED_MOTION_VISUALS = Object.freeze({
+  standard: "/standard-motion.png",
+  half_split: "/half-split-motion.png",
+  full_split: "/full-split-motion.png",
+});
+
+const PENDING_ESSENTIAL_CATEGORIES = Object.freeze([
+  "Mattress protector",
+  "Sheets",
+  "Bedding",
+  "Pillows",
+]);
+
+function SizeDiagram({ size }) {
+  const widths = { Twin: "46%", "Twin XL": "46%", Full: "66%", Queen: "76%", King: "94%" };
+  return (
+    <span className="flex h-11 w-16 shrink-0 items-center justify-center rounded-[10px] bg-[#f2f6ff]" aria-hidden="true">
+      <span
+        className="block h-7 rounded-[5px] border-2 border-[#315cf6] bg-white shadow-[0_4px_8px_rgba(49,92,246,0.12)]"
+        style={{ width: widths[size] || "70%" }}
+      />
+    </span>
+  );
+}
+
 function lower(value) {
   return String(value || "").toLowerCase().trim();
 }
@@ -481,6 +514,7 @@ function GuidedChoiceButton({
   active,
   confirming = false,
   disabled = false,
+  visual = null,
   onClick,
 }) {
   return (
@@ -502,7 +536,8 @@ function GuidedChoiceButton({
         confirming ? "scale-[0.985] ring-2 ring-[#315cf6]/25" : "",
       ].join(" ")}
     >
-      <span className="min-w-0">
+      {visual}
+      <span className="min-w-0 flex-1">
         <span className="flex min-w-0 flex-wrap items-center gap-2">
           <span className="block text-[clamp(1rem,1.2vw,1.12rem)] font-black leading-tight">
             {title}
@@ -1465,7 +1500,8 @@ export default function PodBuilder({
               <GuidedChoiceButton
                 key={option}
                 title={option}
-                subtitle={subtitleForSize(option)}
+                subtitle={VERIFIED_SIZE_DIMENSIONS[option] || subtitleForSize(option)}
+                visual={<SizeDiagram size={option} />}
                 badge={option === "Queen" && !sizeConfirmed ? "Most Popular" : ""}
                 active={sizeConfirmed && size === option}
                 confirming={confirmationKey === `size:${option}`}
@@ -1552,6 +1588,13 @@ export default function PodBuilder({
                   active={confirmedSelections.motion && motionType === option.value}
                   confirming={confirmationKey === `motion:${option.value}`}
                   disabled={!allowed}
+                  visual={(
+                    <img
+                      src={APPROVED_MOTION_VISUALS[option.value]}
+                      alt=""
+                      className="h-12 w-20 shrink-0 rounded-[10px] bg-white object-contain"
+                    />
+                  )}
                   onClick={() => {
                     if (!allowed) return;
                     setMotionType(option.value);
@@ -1729,6 +1772,19 @@ export default function PodBuilder({
                 </div>
               ))}
             </div>
+            <div className="mt-2 border-t border-[#e7ecfa] pt-2" data-sleep-essentials-status="catalog-pending">
+              <div className="text-[0.64rem] font-black uppercase tracking-[0.14em] text-slate-500">
+                Sleep Essentials
+              </div>
+              <div className="mt-1 grid grid-cols-2 gap-1.5">
+                {PENDING_ESSENTIAL_CATEGORIES.map((category) => (
+                  <div key={category} className="rounded-[10px] bg-[#f6f8ff] px-2 py-1.5">
+                    <div className="text-[0.72rem] font-black text-slate-800">{category}</div>
+                    <div className="text-[0.62rem] font-semibold text-slate-500">Catalog setup pending</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="flex min-h-0 flex-col rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
@@ -1776,12 +1832,13 @@ export default function PodBuilder({
       <div className="min-h-0 flex-1 rounded-[22px] border border-[#dfe7fb] bg-white/96 p-3 shadow-[0_18px_46px_rgba(45,71,136,0.09)]">
         <div className="mb-2 flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h2 className="text-[clamp(1.25rem,1.9vw,1.78rem)] font-black leading-tight tracking-tight text-slate-950">
-              {currentStepMeta.title}
+            <h2 className="text-[clamp(1.18rem,1.75vw,1.62rem)] font-black leading-tight tracking-tight text-slate-950">
+              Customize Your SnoozePod
             </h2>
+            <div className="mt-0.5 text-[0.76rem] font-black text-[#315cf6]">{currentStepMeta.title}</div>
           </div>
-          <p className="max-w-[27rem] text-right text-[clamp(0.78rem,0.95vw,0.9rem)] font-semibold leading-snug text-slate-600">
-            {currentStepMeta.description}
+          <p className="max-w-[34rem] text-right text-[clamp(0.74rem,0.9vw,0.84rem)] font-semibold leading-snug text-slate-600">
+            Choose your size, motion setup, and sleep essentials to build the complete system that fits you. {currentStepMeta.description}
           </p>
         </div>
         <div className="min-h-0 h-[calc(100%-48px)]">{renderCurrentStep()}</div>

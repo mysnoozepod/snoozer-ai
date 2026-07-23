@@ -176,7 +176,7 @@ export function useGuidedRestTest({
     void (async () => {
       await cancelPodVoice?.({ resetKeys: true });
       await speakPod?.(stage.speech, {
-        ...hudPayload(stage.speech, { priority: state.stageIndex === 0 ? "high" : "normal" }),
+        ...hudPayload(stage.speech, { priority: "high" }),
         actionType: "start_rest_test",
         force: true,
         calm: true,
@@ -230,7 +230,7 @@ export function useGuidedRestTest({
     interjectionSpokenRef.current.add(stage.id);
     dispatch({ type: "MARK_INTERJECTION_FIRED", stageId: stage.id });
     void speakPod?.(stage.interjection, {
-      ...hudPayload(stage.interjection, { state: "speaking", priority: "normal", ttlMs: 6500 }),
+      ...hudPayload(stage.interjection, { state: "speaking", priority: "high", ttlMs: 6500 }),
       actionType: "rest_test_interjection",
       force: true,
       calm: true,

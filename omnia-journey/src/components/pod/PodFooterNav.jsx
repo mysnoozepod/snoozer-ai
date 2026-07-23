@@ -1,4 +1,4 @@
-import { BookOpen, Headphones, House, MessageSquare, SlidersHorizontal, Timer } from "lucide-react";
+import { BookOpen, Headphones, MessageSquare, SlidersHorizontal, Timer } from "lucide-react";
 
 function ExperienceFooterButton({ icon: Icon, label, onClick, active = false, accent = "default" }) {
   const accentClass =
@@ -30,7 +30,6 @@ function ExperienceFooterButton({ icon: Icon, label, onClick, active = false, ac
 export function PodFooterNav({
   openStage,
   activeKey,
-  onGoHome,
   onGoRest,
   onGoLearn,
   onGoBuild,
@@ -39,19 +38,18 @@ export function PodFooterNav({
 }) {
   const resolvedActiveKey =
     activeKey ||
-    (openStage === "details" ? "learn" : openStage === "build" ? "build" : openStage === "rest" ? "rest" : "home");
+    (openStage === "details" ? "learn" : openStage === "build" ? "customize" : openStage === "ask" ? "ask" : openStage === "human" ? "human" : "rest");
 
   return (
     <div
       data-pod-footer-nav="true"
-      className="grid h-full min-h-[64px] grid-cols-6 items-stretch gap-[8px] rounded-[18px] border border-white/85 bg-white/96 p-[6px] shadow-[0_14px_34px_rgba(40,63,126,0.1)]"
+      className="grid h-full min-h-[56px] grid-cols-5 items-stretch gap-[8px] rounded-[18px] border border-white/85 bg-white/96 p-[4px] shadow-[0_14px_34px_rgba(40,63,126,0.1)]"
     >
-      <ExperienceFooterButton icon={House} label="Pod Home" accent="blue" active={resolvedActiveKey === "home"} onClick={onGoHome} />
       <ExperienceFooterButton icon={Timer} label="Rest Test" accent="blue" active={resolvedActiveKey === "rest"} onClick={onGoRest} />
       <ExperienceFooterButton icon={BookOpen} label="Learn" accent="blue" active={resolvedActiveKey === "learn"} onClick={onGoLearn} />
-      <ExperienceFooterButton icon={SlidersHorizontal} label="Build" accent="blue" active={resolvedActiveKey === "build"} onClick={onGoBuild} />
-      <ExperienceFooterButton icon={MessageSquare} label="Ask Snoozer" onClick={onAskSnoozer} />
-      <ExperienceFooterButton icon={Headphones} label="Talk to Human" onClick={onTalkToHuman} />
+      <ExperienceFooterButton icon={SlidersHorizontal} label="Customize" accent="blue" active={resolvedActiveKey === "customize"} onClick={onGoBuild} />
+      <ExperienceFooterButton icon={MessageSquare} label="Ask Snoozer" active={resolvedActiveKey === "ask"} onClick={onAskSnoozer} />
+      <ExperienceFooterButton icon={Headphones} label="Talk to Human" active={resolvedActiveKey === "human"} onClick={onTalkToHuman} />
     </div>
   );
 }
