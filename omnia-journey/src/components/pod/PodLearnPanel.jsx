@@ -27,7 +27,7 @@ export function PodLearnPanel({ learnSleepNutritionItems = [], learnPricingRows 
 
   return (
     <div className="flex min-h-0 flex-col">
-      <div className="grid min-h-0 items-start gap-[10px] xl:grid-cols-3 xl:items-stretch">
+      <div className="grid min-h-0 items-start gap-[10px] lg:grid-cols-3 lg:items-stretch">
         <ShowroomPanel data-pod-text-card="sleep-nutrition" className="min-h-0 p-[10px]" tone="frost">
           <div className="text-[clamp(0.78rem,1vw,0.92rem)] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
             Sleep Nutrition
