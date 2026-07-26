@@ -1308,15 +1308,80 @@ export default function PodBuilder({
       selectedEssentialChoices,
     ]
   );
-  const reviewDetails = useMemo(
+  const coreReviewRows = useMemo(
+    () => [
+      {
+        label: "Mattress",
+        value: isDualComfort
+          ? `${mattressLabel} · ${dcLeft || "Left"} / ${dcRight || "Right"}`
+          : mattressLabel,
+        price: mattressPrice,
+      },
+      { label: "Size", value: size || "Not selected", price: null },
+      {
+        label: "Base",
+        value: selectedBaseLabel,
+        price: wantsBase ? basePrice : null,
+      },
+      {
+        label: "Motion",
+        value: showMotion ? selectedMotionLabel : "Not included",
+        price: null,
+      },
+    ],
+    [
+      basePrice,
+      dcLeft,
+      dcRight,
+      isDualComfort,
+      mattressLabel,
+      mattressPrice,
+      selectedBaseLabel,
+      selectedMotionLabel,
+      showMotion,
+      size,
+      wantsBase,
+    ]
+  );
+  const essentialReviewRows = useMemo(
     () =>
-      [
-        { label: "Size", value: size || "Choose" },
-        { label: "Base", value: selectedBaseLabel },
-        showMotion ? { label: "Motion", value: selectedMotionLabel } : null,
-        isDualComfort ? { label: "Comfort", value: `${dcLeft || "Left"} / ${dcRight || "Right"}` } : null,
-      ].filter(Boolean),
-    [dcLeft, dcRight, isDualComfort, selectedBaseLabel, selectedMotionLabel, showMotion, size]
+      ESSENTIAL_STEP_KEYS.map((category) => {
+        const choice = selectedEssentialChoices[category];
+        const quantity = category === "pillows" ? choice?.quantity || 1 : 1;
+        return {
+          label: ESSENTIAL_CATEGORY_CONFIG[category].singular,
+          value: choice
+            ? `${choice.title}${quantity > 1 ? ` ×${quantity}` : ""}`
+            : "Skipped",
+          price: choice ? choice.price * quantity : null,
+        };
+      }),
+    [selectedEssentialChoices]
+  );
+  const successSummaryRows = useMemo(
+    () => [
+      { label: "Mattress", value: mattressLabel },
+      { label: "Core setup", value: `${size || "No size"} · ${selectedBaseLabel}` },
+      {
+        label: "Motion",
+        value: showMotion ? selectedMotionLabel : "Not included",
+      },
+      {
+        label: "Sleep essentials",
+        value: essentialReviewRows
+          .filter((item) => item.value !== "Skipped")
+          .map((item) => item.label)
+          .join(", ") || "Skipped",
+      },
+    ],
+    [
+      essentialReviewRows,
+      mattressLabel,
+      selectedBaseLabel,
+      selectedMotionLabel,
+      showMotion,
+      size,
+    ]
   );
   const sizeReady = Boolean(size && sizeConfirmed);
   const baseReady = Boolean(baseType && baseConfirmed);
@@ -1356,12 +1421,12 @@ export default function PodBuilder({
     if (stepKey === "success") {
       return {
         title: "Your setup is in the cart.",
-        description: "You can keep testing pods or open the cart when you're ready.",
+        description: "",
       };
     }
     return {
-      title: "Review & add.",
-      description: commerceUnavailableMessage || "Confirm the details before adding this setup.",
+      title: "Review Your SnoozePod",
+      description: commerceUnavailableMessage || "Confirm your setup before adding it to the cart.",
     };
   }, [stepKey, size, availableMotionLabel, commerceUnavailableMessage]);
   const canProceed =
@@ -1783,8 +1848,15 @@ export default function PodBuilder({
     showPrimary = stepKey !== "success",
     secondaryLabel = "",
     onSecondary,
+    reserveSpace = false,
   } = {}) => (
-    <div className="mt-auto flex min-h-[52px] items-center justify-between gap-3 border-t border-[#dfe7fb] pt-2">
+    <div
+      className={[
+        "flex min-h-[52px] items-center justify-between gap-3 border-t border-[#dfe7fb] pt-2",
+        reserveSpace ? "shrink-0" : "mt-auto",
+      ].join(" ")}
+      data-pod-builder-action-row={reserveSpace ? "true" : undefined}
+    >
       <button
         type="button"
         onClick={goBack}
@@ -2202,110 +2274,150 @@ export default function PodBuilder({
 
     if (stepKey === "success") {
       return (
-        <div className="flex h-full min-h-0 flex-col">
-          <div className="grid min-h-0 flex-1 items-center gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="rounded-[22px] border border-emerald-200 bg-emerald-50/80 p-5">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white">
-                <CheckCircle2 className="h-7 w-7" />
+        <div
+          className="grid h-full min-h-0 gap-3 lg:grid-cols-[1.35fr_0.65fr]"
+          data-pod-builder-success-layout="compact"
+        >
+          <div className="flex min-h-0 flex-col gap-2">
+            <div
+              className="flex min-h-[64px] shrink-0 items-center gap-3 rounded-[18px] border border-emerald-200 bg-emerald-50/80 px-4 py-2.5"
+              data-pod-builder-success-banner="true"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+                <CheckCircle2 className="h-6 w-6" />
               </div>
-              <div className="mt-3 text-[clamp(1.35rem,2vw,1.9rem)] font-black tracking-tight text-slate-950">
-                Added to cart.
+              <div className="min-w-0">
+                <div className="text-[clamp(1.08rem,1.55vw,1.35rem)] font-black tracking-tight text-slate-950">
+                  Your setup is in the cart.
+                </div>
+                <p className="text-[0.78rem] font-semibold leading-snug text-slate-600">
+                  Open the cart or customize another setup.
+                </p>
               </div>
-              <p className="mt-2 max-w-[34rem] text-[clamp(0.92rem,1.15vw,1.02rem)] font-semibold leading-snug text-slate-600">
-                This setup is saved in the showroom cart. You can keep comparing pods or open the cart when ready.
-              </p>
             </div>
-            <div className="grid gap-2">
-              {selectionSummary.map((item) => (
+            <div
+              className="grid min-h-0 flex-1 content-start gap-1.5 sm:grid-cols-2"
+              data-pod-builder-success-summary="true"
+            >
+              {successSummaryRows.map((item) => (
                 <div
-                  key={item}
-                  className="flex min-h-[44px] items-center gap-2 rounded-[14px] border border-[#dfe7fb] bg-white px-3 text-[0.9rem] font-bold text-slate-800"
+                  key={item.label}
+                  className="flex min-h-[40px] min-w-0 items-center gap-2 rounded-[12px] border border-[#dfe7fb] bg-white px-3"
                 >
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-[#315cf6]" />
-                  <span className="min-w-0 leading-snug">{item}</span>
+                  <div className="min-w-0 leading-tight">
+                    <div className="text-[0.56rem] font-black uppercase tracking-[0.1em] text-slate-500">
+                      {item.label}
+                    </div>
+                    <div className="text-[0.7rem] font-bold text-slate-900">{item.value}</div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-          <div className="mt-auto flex min-h-[58px] items-center justify-between gap-3 border-t border-[#dfe7fb] pt-3">
-            <button
-              type="button"
-              onClick={resetBuild}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-[12px] border border-[#dfe7fb] bg-white px-4 text-[0.84rem] font-black text-slate-800"
-            >
-              Build Another
-            </button>
+          <div
+            className="flex min-h-0 flex-col justify-center gap-3 rounded-[18px] border border-[#dfe7fb] bg-[#f8faff] p-3"
+            data-pod-builder-success-actions="true"
+          >
             <Button
               type="button"
               onClick={viewCart}
               data-pod-layout-primary-action="build-open-cart"
-              className="min-h-[48px] min-w-[180px] rounded-[14px] px-5 text-[0.9rem] font-black"
+              className="min-h-[48px] w-full rounded-[14px] px-5 text-[0.9rem] font-black"
             >
               Open Cart
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
+            <button
+              type="button"
+              onClick={resetBuild}
+              className="inline-flex min-h-[48px] w-full items-center justify-center rounded-[14px] border border-[#dfe7fb] bg-white px-4 text-[0.88rem] font-black text-slate-800"
+            >
+              Build Another
+            </button>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="flex h-full min-h-0 flex-col">
-        <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[1fr_0.92fr]">
-          <div className="rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
-            <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
-              Mattress
-            </div>
-            <div className="mt-1 text-[clamp(1rem,1.3vw,1.16rem)] font-black leading-tight text-slate-950">
-              {mattressLabel}
-            </div>
-            <div className="mt-1 text-[0.8rem] font-semibold leading-snug text-slate-600">
-              Locked to {podLabel}.
-            </div>
-            <div className="mt-2 grid gap-2 sm:grid-cols-2">
-              {reviewDetails.map((item) => (
-                <div
-                  key={item.label}
-                  className="flex min-h-[38px] items-center justify-between gap-3 rounded-[12px] bg-[#f6f8ff] px-3 text-[0.8rem] font-bold text-slate-700"
-                >
-                  <span className="text-[0.62rem] font-black uppercase tracking-[0.14em] text-slate-500">
-                    {item.label}
-                  </span>
-                  <span className="min-w-0 text-right leading-snug text-slate-950">{item.value}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-2 border-t border-[#e7ecfa] pt-2" data-sleep-essentials-status="reviewed">
-              <div className="text-[0.64rem] font-black uppercase tracking-[0.14em] text-slate-500">
+      <div className="flex h-full min-h-0 flex-col gap-2" data-pod-builder-review-layout="compact">
+        <div className="grid min-h-0 flex-1 gap-2.5 lg:grid-cols-[1.35fr_0.65fr]">
+          <div
+            className="grid min-h-0 content-start gap-1.5 rounded-[18px] border border-[#dfe7fb] bg-white/96 p-2.5 shadow-sm"
+            data-pod-builder-review-summary="true"
+          >
+            <section className="min-h-0" data-pod-builder-summary-group="core">
+              <div className="mb-1 text-[0.62rem] font-black uppercase tracking-[0.15em] text-[#315cf6]">
+                Core Setup
+              </div>
+              <div className="grid gap-1 md:grid-cols-4">
+                {coreReviewRows.map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex min-h-[40px] min-w-0 items-center gap-1.5 rounded-[10px] bg-[#f6f8ff] px-2"
+                    data-pod-builder-summary-row="core"
+                  >
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#315cf6]" />
+                    <div className="min-w-0 flex-1 leading-tight">
+                      <div className="text-[0.54rem] font-black uppercase tracking-[0.09em] text-slate-500">
+                        {item.label}
+                      </div>
+                      <div className="text-[0.65rem] font-bold text-slate-950">{item.value}</div>
+                    </div>
+                    {item.price > 0 ? (
+                      <span className="shrink-0 text-[0.72rem] font-black text-[#315cf6]">
+                        {money(item.price)}
+                      </span>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </section>
+            <section
+              className="min-h-0 border-t border-[#e7ecfa] pt-1.5"
+              data-pod-builder-summary-group="essentials"
+              data-sleep-essentials-status="reviewed"
+            >
+              <div className="mb-1 text-[0.62rem] font-black uppercase tracking-[0.15em] text-[#315cf6]">
                 Sleep Essentials
               </div>
-              <div className="mt-1 grid gap-1.5">
-                {ESSENTIAL_STEP_KEYS.map((category) => {
-                  const choice = selectedEssentialChoices[category];
-                  return (
-                    <div
-                      key={category}
-                      className="flex min-h-[36px] items-center justify-between gap-3 rounded-[10px] bg-[#f6f8ff] px-2.5 py-1.5"
-                    >
-                      <div className="text-[0.68rem] font-black text-slate-700">
-                        {ESSENTIAL_CATEGORY_CONFIG[category].label}
+              <div className="grid gap-1 sm:grid-cols-3">
+                {essentialReviewRows.map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex min-h-[34px] min-w-0 items-center gap-1.5 rounded-[10px] bg-[#f6f8ff] px-2"
+                    data-pod-builder-summary-row="essential"
+                  >
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#315cf6]" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[0.58rem] font-black uppercase tracking-[0.1em] text-slate-500">
+                        {item.label}
                       </div>
-                      <div className="min-w-0 truncate text-right text-[0.68rem] font-bold text-slate-900">
-                        {choice
-                          ? `${choice.title}${category === "pillows" && choice.quantity > 1 ? ` x${choice.quantity}` : ""}`
-                          : "Skipped"}
+                      <div className="text-[0.64rem] font-bold leading-tight text-slate-950">
+                        {item.value}
                       </div>
                     </div>
-                  );
-                })}
+                    {item.price > 0 ? (
+                      <span className="shrink-0 text-[0.68rem] font-black text-[#315cf6]">
+                        {money(item.price)}
+                      </span>
+                    ) : null}
+                  </div>
+                ))}
               </div>
-            </div>
+            </section>
           </div>
 
-          <div className="flex min-h-0 flex-col rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
+          <div
+            className="flex min-h-0 flex-col rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm"
+            data-pod-builder-commerce-summary="true"
+          >
             {commerceReady ? (
               <div className="grid gap-2">
-                <div className="flex min-h-[44px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-[#f8faff] px-3">
+                <div
+                  className="flex min-h-[44px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-[#f8faff] px-3"
+                >
                   <span className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">
                     Est. Monthly
                   </span>
@@ -2334,6 +2446,7 @@ export default function PodBuilder({
           primaryLabel: isAddingToCart ? "Adding..." : primaryCtaLabel,
           onPrimary: addToPlan,
           primaryDisabled: !canAdd || isAddingToCart,
+          reserveSpace: true,
         })}
       </div>
     );
@@ -2348,13 +2461,19 @@ export default function PodBuilder({
         <div className="mb-2 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h2 className="text-[clamp(1.18rem,1.75vw,1.62rem)] font-black leading-tight tracking-tight text-slate-950">
-              Customize Your SnoozePod
+              {stepKey === "review" ? "Review Your SnoozePod" : "Customize Your SnoozePod"}
             </h2>
-            <div className="mt-0.5 text-[0.76rem] font-black text-[#315cf6]">{currentStepMeta.title}</div>
+            {stepKey !== "review" && stepKey !== "success" ? (
+              <div className="mt-0.5 text-[0.76rem] font-black text-[#315cf6]">{currentStepMeta.title}</div>
+            ) : null}
           </div>
-          <p className="max-w-[34rem] text-right text-[clamp(0.74rem,0.9vw,0.84rem)] font-semibold leading-snug text-slate-600">
-            Choose your size, motion setup, and sleep essentials to build the complete system that fits you. {currentStepMeta.description}
-          </p>
+          {stepKey !== "success" ? (
+            <p className="max-w-[34rem] text-right text-[clamp(0.74rem,0.9vw,0.84rem)] font-semibold leading-snug text-slate-600">
+              {stepKey === "review"
+                ? currentStepMeta.description
+                : `Choose your size, motion setup, and sleep essentials to build the complete system that fits you. ${currentStepMeta.description}`}
+            </p>
+          ) : null}
         </div>
         <div className="min-h-0 h-[calc(100%-48px)]">{renderCurrentStep()}</div>
       </div>

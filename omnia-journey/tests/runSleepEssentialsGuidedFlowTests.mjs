@@ -35,5 +35,28 @@ assert.ok(
 );
 assert.ok(builderSource.includes("essentialsReady"), "review/cart must require an intentional select or skip");
 assert.ok(builderSource.includes("essentialsVersion: 1"), "guided progress must persist across tab changes");
+assert.ok(builderSource.includes("Review Your SnoozePod"), "review must use the compact review heading");
+assert.ok(
+  builderSource.includes('data-pod-builder-summary-row="core"'),
+  "review must render compact Core Setup rows"
+);
+assert.ok(
+  builderSource.includes('data-pod-builder-summary-row="essential"'),
+  "review must render compact Sleep Essentials rows"
+);
+assert.ok(
+  builderSource.includes('data-pod-builder-action-row={reserveSpace ? "true" : undefined}'),
+  "review action row must reserve normal-flow space"
+);
+assert.ok(
+  builderSource.includes('data-pod-builder-success-layout="compact"'),
+  "cart confirmation must use the compact success layout"
+);
+assert.equal(builderSource.includes("Review & add."), false, "redundant review copy must be removed");
+assert.equal(
+  builderSource.includes("This setup is saved in the showroom cart."),
+  false,
+  "duplicate success copy must be removed"
+);
 
 console.log("Sleep Essentials guided-flow tests passed.");

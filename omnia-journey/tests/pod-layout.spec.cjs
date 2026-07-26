@@ -13,6 +13,8 @@ const CASES = [
   { id: "pod-4-build-motion", route: "/pod/pod-4", state: "build-motion" },
   { id: "pod-4-build-review", route: "/pod/pod-4", state: "build-review" },
   { id: "pod-4-build-success", route: "/pod/pod-4", state: "build-success" },
+  { id: "pod-5-build-review", route: "/pod/pod-5", state: "build-review" },
+  { id: "pod-5-build-success", route: "/pod/pod-5", state: "build-success" },
   { id: "pod-1-learn", route: "/pod/pod-1", state: "learn" },
   { id: "pod-1-home", route: "/pod/pod-1", state: "pod-home" },
   { id: "pod-2-home", route: "/pod/pod-2", state: "pod-home" },
@@ -36,7 +38,7 @@ const VIEWPORTS = [
   { name: "staging-short-1280x560", width: 1280, height: 560, textRoutesOnly: true },
 ];
 
-const TEXT_ROUTE_STATES = new Set(["pod-home", "learn"]);
+const TEXT_ROUTE_STATES = new Set(["pod-home", "learn", "build-review", "build-success"]);
 
 function shouldRunCase(viewport, testCase) {
   return !viewport.textRoutesOnly || TEXT_ROUTE_STATES.has(testCase.state);
@@ -241,7 +243,16 @@ async function generateSummaryReport() {
     ""
   );
 
-  await fs.writeFile(REPORT_PATH, `${lines.join("\n")}\n`);
+  const report = `${lines.join("\n")}\n`;
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    try {
+      await fs.writeFile(REPORT_PATH, report);
+      break;
+    } catch (error) {
+      if (attempt === 5 || !["UNKNOWN", "EBUSY", "EPERM"].includes(error?.code)) throw error;
+      await new Promise((resolve) => setTimeout(resolve, attempt * 100));
+    }
+  }
 }
 
 test.describe.configure({ mode: "serial" });
@@ -285,6 +296,116 @@ for (const viewport of VIEWPORTS) {
         if (testCase.state.startsWith("build")) {
           await expect(page.locator("[data-pod-build-progress='true']")).toHaveCount(0);
           await expect(page.getByText(/^Step \d$/i)).toHaveCount(0);
+        }
+
+        if (testCase.state === "build-review") {
+          await expect(page.getByRole("heading", { name: "Review Your SnoozePod" })).toBeVisible();
+          await expect(page.locator('[data-pod-builder-summary-row="core"]')).toHaveCount(4);
+          await expect(page.locator('[data-pod-builder-summary-row="essential"]')).toHaveCount(3);
+          await expect(page.locator('[data-pod-builder-commerce-summary="true"]')).toBeVisible();
+          const totalLabel = page.getByText("Est. Total");
+          const commerceUnavailable = page
+            .locator('[data-pod-builder-commerce-summary="true"]')
+            .getByText(/not ready to add yet|unavailable/i);
+          if (await totalLabel.count()) {
+            await expect(page.getByText("Est. Monthly")).toBeVisible();
+            await expect(totalLabel).toBeVisible();
+          } else {
+            await expect(commerceUnavailable).toBeVisible();
+          }
+          await expect(page.locator('[data-pod-layout-primary-action="build-add"]')).toBeVisible();
+          await expect(page.getByText("Review & add.")).toHaveCount(0);
+
+          const reviewContainment = await page.evaluate(() => {
+            const summary = document.querySelector('[data-pod-builder-review-summary="true"]');
+            const action = document.querySelector('[data-pod-builder-action-row="true"]');
+            if (!summary || !action) return { ok: false, reason: "missing review summary or action row" };
+            const coreGroup = document.querySelector('[data-pod-builder-summary-group="core"]');
+            const essentialsGroup = document.querySelector('[data-pod-builder-summary-group="essentials"]');
+            const summaryRows = Array.from(document.querySelectorAll("[data-pod-builder-summary-row]"));
+            const summaryRect = summary.getBoundingClientRect();
+            const actionRect = action.getBoundingClientRect();
+            const coreRect = coreGroup?.getBoundingClientRect();
+            const essentialsRect = essentialsGroup?.getBoundingClientRect();
+            const actionStyle = getComputedStyle(action);
+            const state = action.closest('[data-pod-builder-state="review"]');
+            const rowFailures = summaryRows
+              .map((row) => {
+                const rect = row.getBoundingClientRect();
+                const parentRect = row.parentElement.getBoundingClientRect();
+                return {
+                  text: row.textContent.trim().replace(/\s+/g, " "),
+                  rect: rect.toJSON(),
+                  parentRect: parentRect.toJSON(),
+                  scrollHeight: row.scrollHeight,
+                  clientHeight: row.clientHeight,
+                  overflow: getComputedStyle(row).overflow,
+                  failed:
+                    rect.bottom > parentRect.bottom + 0.5 ||
+                    rect.bottom > window.innerHeight + 0.5 ||
+                    row.scrollHeight > row.clientHeight,
+                };
+              })
+              .filter((row) => row.failed);
+            return {
+              ok:
+                coreRect &&
+                essentialsRect &&
+                coreRect.bottom <= essentialsRect.top + 0.5 &&
+                summaryRect.bottom <= actionRect.top + 0.5 &&
+                actionRect.bottom <= window.innerHeight + 0.5 &&
+                state.scrollHeight <= state.clientHeight &&
+                !["absolute", "fixed", "sticky"].includes(actionStyle.position) &&
+                rowFailures.length === 0,
+              summaryRect: summaryRect.toJSON(),
+              actionRect: actionRect.toJSON(),
+              coreRect: coreRect?.toJSON(),
+              essentialsRect: essentialsRect?.toJSON(),
+              rowFailures,
+              viewport: { width: window.innerWidth, height: window.innerHeight },
+              stateScrollHeight: state.scrollHeight,
+              stateClientHeight: state.clientHeight,
+              actionPosition: actionStyle.position,
+              actionOverflow: actionStyle.overflow,
+            };
+          });
+          expect(reviewContainment.ok, JSON.stringify(reviewContainment, null, 2)).toBeTruthy();
+        }
+
+        if (testCase.state === "build-success") {
+          await expect(page.locator('[data-pod-builder-success-layout="compact"]')).toBeVisible();
+          await expect(page.locator('[data-pod-builder-success-banner="true"]')).toBeVisible();
+          await expect(page.getByText("Your setup is in the cart.", { exact: true })).toHaveCount(1);
+          await expect(page.getByRole("button", { name: "Open Cart" })).toBeVisible();
+          await expect(page.getByRole("button", { name: "Build Another" })).toBeVisible();
+          await expect(page.getByText("Added to cart.", { exact: true })).toHaveCount(0);
+          await expect(page.getByText("This setup is saved in the showroom cart.", { exact: false })).toHaveCount(0);
+
+          const successContainment = await page.evaluate(() => {
+            const layout = document.querySelector('[data-pod-builder-success-layout="compact"]');
+            const actions = document.querySelector('[data-pod-builder-success-actions="true"]');
+            if (!layout || !actions) return { ok: false, reason: "missing compact success layout" };
+            const layoutRect = layout.getBoundingClientRect();
+            const actionRect = actions.getBoundingClientRect();
+            const layoutStyle = getComputedStyle(layout);
+            const actionStyle = getComputedStyle(actions);
+            return {
+              ok:
+                layoutRect.bottom <= window.innerHeight + 0.5 &&
+                actionRect.bottom <= layoutRect.bottom + 0.5 &&
+                layout.scrollHeight <= layout.clientHeight &&
+                !["absolute", "fixed", "sticky"].includes(actionStyle.position) &&
+                layoutStyle.overflow !== "hidden",
+              layoutRect: layoutRect.toJSON(),
+              actionRect: actionRect.toJSON(),
+              viewport: { width: window.innerWidth, height: window.innerHeight },
+              layoutScrollHeight: layout.scrollHeight,
+              layoutClientHeight: layout.clientHeight,
+              layoutOverflow: layoutStyle.overflow,
+              actionPosition: actionStyle.position,
+            };
+          });
+          expect(successContainment.ok, JSON.stringify(successContainment, null, 2)).toBeTruthy();
         }
 
         if (testCase.state === "build-size") {
