@@ -38,10 +38,19 @@ for (const asset of ["/standard-motion.png", "/half-split-motion.png", "/full-sp
   assert.ok(builderSource.includes(asset), `${asset} must be reused from the assessment`);
   await access(new URL(`../public${asset}`, import.meta.url));
 }
-for (const category of ["Mattress protector", "Sheets", "Bedding", "Pillows"]) {
-  assert.ok(builderSource.includes(`"${category}"`), `${category} must have an explicit catalog status`);
+for (const step of ['"pillows"', '"sheets"', '"protector"']) {
+  assert.ok(builderSource.includes(step), `${step} must have a guided customization stage`);
 }
-assert.ok(builderSource.includes("Catalog setup pending"), "unsupported accessories must not receive invented variants");
+assert.equal(builderSource.includes('"Bedding"'), false, "the generic Bedding category must not be in Customize");
+assert.equal(builderSource.includes("Catalog setup pending"), false, "live approved products must replace placeholders");
+assert.ok(
+  builderSource.includes("gid://shopify/ProductVariant/"),
+  "Sleep Essentials must require exact Shopify variant GIDs"
+);
+assert.ok(
+  builderSource.includes("selectedEssentialChoices"),
+  "selected Sleep Essentials must be revalidated against the live catalog"
+);
 assert.ok(podSource.includes('primaryCtaLabel="Add Selected Setup to Cart"'), "Customize must expose the requested cart action");
 
 assert.ok(hookSource.includes('priority: "high"'), "Rest Test speech must use the high-priority HUD lane");

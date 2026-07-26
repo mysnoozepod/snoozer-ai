@@ -312,6 +312,15 @@ test("pod-4 queen adjustable standard setup is gated by resolved commerce lines"
   await expect(page.locator('[data-pod-builder-state="motion"]')).toBeVisible();
 
   await page.locator('[data-pod-build-choice="Standard Motion"]').first().click();
+  await expect(page.locator('[data-pod-builder-state="pillows"]')).toBeVisible();
+
+  await page.getByRole("button", { name: "Skip", exact: true }).click();
+  await expect(page.locator('[data-pod-builder-state="sheets"]')).toBeVisible();
+
+  await page.getByRole("button", { name: "Skip", exact: true }).click();
+  await expect(page.locator('[data-pod-builder-state="protector"]')).toBeVisible();
+
+  await page.getByRole("button", { name: "Skip", exact: true }).click();
   await expect(page.locator('[data-pod-builder-state="review"]')).toBeVisible();
 
   const addButton = page.locator('[data-pod-layout-primary-action="build-add"]').first();
