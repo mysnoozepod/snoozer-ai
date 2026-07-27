@@ -87,6 +87,7 @@ const REWARD_EVENT_TYPES = Object.freeze([
   "milestone.assessment.completed",
   "milestone.rest_test.completed",
   "milestone.pod.completed",
+  "milestone.accessories.completed",
   "milestone.learn.completed",
   "milestone.customize.completed",
   "milestone.ratings.completed",

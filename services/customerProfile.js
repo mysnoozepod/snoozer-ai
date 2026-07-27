@@ -385,6 +385,9 @@ function buildCustomerProfilePatch(input = {}) {
     bookingEventName: cleanString(input.bookingEventName) || undefined,
     sessionPrep: isObject(input.sessionPrep) ? cloneObject(input.sessionPrep) : undefined,
     sessionPrepStatus: cleanString(input.sessionPrepStatus || input.sessionPrep?.status) || undefined,
+    rewardSummary: isObject(input.rewardSummary)
+      ? cloneObject(input.rewardSummary)
+      : undefined,
     lastInteractionAt: interactionAt,
     createdAt,
     updatedAt,

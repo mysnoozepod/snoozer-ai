@@ -13,6 +13,7 @@
     "calendly:webhooks:create": "node scripts/calendlyWebhookSetup.js --create",
     "test:ask-snoozer": "node scripts/runAskSnoozerGoldenTests.js",
     "test:ask-snoozer-copy": "node scripts/runAskSnoozerGoldenTests.js --copy-only",
+    "test:rewards-production": "node tests/runRewardsProductionTests.js",
     "validate:ask-snoozer-knowledge": "node scripts/validateAskSnoozerKnowledgeManifest.js",
     "package:lambda": "tar -a -cf snoozer-backend.zip index.js package.json package-lock.json data handlers routes services utils node_modules faqs.json knowledge_base.json",
     "package:with-deps": "rm -f build.zip && npm ci && zip -r build.zip . -x \".git/*\" -x \"*.log\" -x \"build.zip\"",
@@ -26,6 +27,7 @@
     "@aws-sdk/client-sqs": "3.901.0",
     "@aws-sdk/lib-dynamodb": "^3.901.0",
     "@aws-sdk/s3-request-presigner": "^3.609.0",
+    "@aws-sdk/util-dynamodb": "^3.996.7",
     "axios": "^1.7.7",
     "dotenv": "^17.2.3",
     "js-yaml": "^4.1.0"

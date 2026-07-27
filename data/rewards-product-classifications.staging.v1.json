@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "classificationVersion": "rewards-products.staging.v1",
+  "source": "manifest",
+  "products": [
+    {
+      "handle": "12-dual-comfort-hybrid",
+      "canonicalProductId": "mattress.12_dual_comfort_hybrid",
+      "categories": ["mattress", "dual_comfort_mattress"]
+    },
+    {
+      "handle": "14-hybrid",
+      "canonicalProductId": "mattress.14_hybrid",
+      "categories": ["mattress"]
+    },
+    {
+      "handle": "12-all-foam-mattress",
+      "canonicalProductId": "mattress.12_all_foam",
+      "categories": ["mattress"]
+    },
+    {
+      "handle": "10-all-foam-mattress",
+      "canonicalProductId": "mattress.10_all_foam",
+      "categories": ["mattress"]
+    },
+    {
+      "handle": "premium-motion-adjustable-base",
+      "canonicalProductId": "base.premium_motion",
+      "categories": ["adjustable_base"]
+    },
+    {
+      "handle": "platform-base",
+      "canonicalProductId": "base.platform",
+      "categories": ["accessory"]
+    },
+    {
+      "handle": "storage-base",
+      "canonicalProductId": "base.storage",
+      "categories": ["accessory"]
+    }
+  ]
+}

@@ -470,6 +470,10 @@ const CART_FIELDS = `
     totalAmount { amount currencyCode }
     totalTaxAmount { amount currencyCode }
   }
+  discountCodes {
+    code
+    applicable
+  }
   lines(first: 50) {
     edges {
       node {
@@ -1051,6 +1055,52 @@ async function getCart({ cartId } = {}) {
   return data.cart;
 }
 
+async function applyDiscountCodes({ cartId, discountCodes = [] } = {}) {
+  requireShopifyConfig();
+
+  if (!cartId || !isValidCartGid(String(cartId))) {
+    throw buildShopifyError(
+      "cartId is required and must be a valid Shopify Cart GID.",
+      "INVALID_CART_ID"
+    );
+  }
+  const safeCodes = [...new Set(discountCodes.map((code) => String(code || "").trim()))]
+    .filter(Boolean)
+    .slice(0, 5);
+  if (!safeCodes.length) {
+    throw buildShopifyError(
+      "At least one discount code is required.",
+      "NO_DISCOUNT_CODES"
+    );
+  }
+
+  const MUTATION = `
+    mutation CartDiscountCodesUpdate($cartId: ID!, $discountCodes: [String!]!) {
+      cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $discountCodes) {
+        cart { ${CART_FIELDS} }
+        userErrors { field message }
+        warnings { code message }
+      }
+    }
+  `;
+  const data = await sfQuery(
+    MUTATION,
+    { cartId: String(cartId), discountCodes: safeCodes },
+    { label: "sf.cartDiscountCodesUpdate" }
+  );
+  const payload = data?.cartDiscountCodesUpdate;
+  const userErrors = payload?.userErrors || [];
+  if (!payload?.cart || userErrors.length) {
+    const message =
+      userErrors.map((error) => error.message).join("; ") ||
+      "Failed to apply discount code.";
+    throw buildShopifyError(message, "CART_DISCOUNT_UPDATE_FAILED", {
+      userErrors,
+    });
+  }
+  return payload.cart;
+}
+
 async function addCartLines({ cartId, lines = [] } = {}) {
   requireShopifyConfig();
 
@@ -1269,6 +1319,7 @@ module.exports = {
   // cart
   createCart,
   getCart,
+  applyDiscountCodes,
   addCartLines,
   updateCartLines,
   removeCartLines,

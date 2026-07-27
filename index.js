@@ -107,6 +107,13 @@ try {
   console.log("âš ï¸ rewards service not loaded (ok).", error.message);
 }
 
+let rewardProgramService = null;
+try {
+  rewardProgramService = require("./services/rewards/service");
+} catch (error) {
+  console.log("Rewards program service not loaded (ok).", error.message);
+}
+
 let openaiSvc = null;
 function getOpenAiSvc() {
   if (openaiSvc) return openaiSvc;
@@ -6195,6 +6202,7 @@ async function handle(event = {}) {
       safeUpsertIdentityAliases,
       safeMarkIdentityMerge,
       maybeSyncIdentityProfileToZoho,
+      rewardProgramService,
       getAssessmentSnapshot,
       getAssessmentResult,
     },
@@ -6376,22 +6384,14 @@ async function handle(event = {}) {
   if (shopifyRouteResponse) return shopifyRouteResponse;
 
   // ???????????????????????????????????????????????????????????????????????????????????????? Rewards
-  if (rewardsRoutes) {
-    if (method === "GET" && /^\/rewards\/balance\/[^/]+$/.test(routePath)) {
-      return await rewardsRoutes.getRewardsBalance(event);
-    }
-    if (method === "POST" && routePath === "/rewards/earn") {
-      return await rewardsRoutes.earnRewards(event);
-    }
-    if (method === "GET" && routePath === "/rewards/catalog") {
-      return await rewardsRoutes.getRewardsCatalog(event);
-    }
-    if (method === "POST" && routePath === "/rewards/redeem") {
-      return await rewardsRoutes.redeemRewards(event);
-    }
-    if (method === "GET" && routePath === "/rewards/debug/pricerules") {
-      return await rewardsRoutes.debugListPriceRules(event);
-    }
+  if (
+    rewardsRoutes &&
+    (routePath.startsWith("/rewards") ||
+      routePath === "/webhooks/shopify/rewards") &&
+    typeof rewardsRoutes.handleRewardsRoutes === "function"
+  ) {
+    const rewardsResponse = await rewardsRoutes.handleRewardsRoutes(event);
+    if (rewardsResponse) return rewardsResponse;
   }
 
   // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Ask Snoozer (SCO-aware + deterministic-first)

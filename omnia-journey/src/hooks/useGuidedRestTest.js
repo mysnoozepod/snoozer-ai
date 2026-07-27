@@ -2,6 +2,12 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "r
 
 import { createAmbientAudioController } from "@/iot/ambientAudioController";
 import {
+  completeRewardRestTest,
+  recordRewardRestTestStage,
+  saveRewardRatings,
+  startRewardRestTest,
+} from "@/lib/api";
+import {
   REST_TEST_AMBIENCE,
   REST_TEST_AUDIO_CONFIG,
   REST_TEST_BASE_FAILURE_SPEECH,
@@ -19,6 +25,7 @@ import {
   restTestReducer,
   restoreRestTestState,
 } from "@/lib/restTestProgram.mjs";
+import { refreshRewardsState } from "@/state/rewardsStore";
 
 const EVENT_STORAGE_KEY = "snooze.restTestEvents.v1";
 
@@ -86,6 +93,8 @@ export function useGuidedRestTest({
   const startLockRef = useRef(false);
   const musicPausedForSpeechRef = useRef(false);
   const stageSpeechObservedRef = useRef(false);
+  const reportedRewardStagesRef = useRef(new Set());
+  const completedRewardJourneyRef = useRef("");
 
   if (!audioRef.current) {
     audioRef.current = createAmbientAudioController({
@@ -132,6 +141,47 @@ export function useGuidedRestTest({
       }
     }
   }, [identity, state, storageKey]);
+
+  useEffect(() => {
+    const journeyId = String(state.startedAt || "").trim();
+    const podId = String(identity?.podId || "").trim();
+    if (!journeyId || !podId) return;
+
+    for (const stageId of state.completedStageIds || []) {
+      if (reportedRewardStagesRef.current.has(stageId)) continue;
+      reportedRewardStagesRef.current.add(stageId);
+      void recordRewardRestTestStage({ journeyId, podId, stageId }).catch((error) => {
+        reportedRewardStagesRef.current.delete(stageId);
+        console.warn("[rewards] Rest Test stage was not recorded", {
+          stageId,
+          code: error?.code || "REWARD_STAGE_RECORD_FAILED",
+        });
+      });
+    }
+  }, [identity?.podId, state.completedStageIds, state.startedAt]);
+
+  useEffect(() => {
+    if (state.phase !== REST_TEST_PHASES.COMPLETED) return;
+    const journeyId = String(state.startedAt || "").trim();
+    const podId = String(identity?.podId || "").trim();
+    if (!journeyId || !podId || completedRewardJourneyRef.current === journeyId) return;
+    completedRewardJourneyRef.current = journeyId;
+
+    void (async () => {
+      await Promise.all(
+        (state.completedStageIds || []).map((stageId) =>
+          recordRewardRestTestStage({ journeyId, podId, stageId })
+        )
+      );
+      await completeRewardRestTest({ journeyId, podId });
+      await refreshRewardsState({ force: true });
+    })().catch((error) => {
+      completedRewardJourneyRef.current = "";
+      console.warn("[rewards] Rest Test completion was not recorded", {
+        code: error?.code || "REWARD_REST_TEST_COMPLETION_FAILED",
+      });
+    });
+  }, [identity?.podId, state.completedStageIds, state.phase, state.startedAt]);
 
   useEffect(() => {
     const voicePlaying = Boolean(voiceState?.playing);
@@ -276,6 +326,8 @@ export function useGuidedRestTest({
       interjectionSpokenRef.current.clear();
       startLockRef.current = false;
       musicPausedForSpeechRef.current = false;
+      reportedRewardStagesRef.current.clear();
+      completedRewardJourneyRef.current = "";
       audioRef.current?.stop({ fadeMs: 350 });
     }
   }, [cancelPodVoice, onEarlyExit, speakPod, state.phase, state.startedAt]);
@@ -287,16 +339,32 @@ export function useGuidedRestTest({
     if (startLockRef.current || isRestTestUnfinished(state)) return false;
     if (![REST_TEST_PHASES.READY, REST_TEST_PHASES.ENDED_EARLY].includes(state.phase)) return false;
     startLockRef.current = true;
+    const startedAt = new Date().toISOString();
+    reportedRewardStagesRef.current.clear();
+    completedRewardJourneyRef.current = "";
     // Keep play() in the direct click call stack so browser autoplay policy is satisfied.
     audioRef.current?.start(REST_TEST_AMBIENCE.jazz.src, { fadeMs: REST_TEST_AUDIO_CONFIG.startFadeMs });
     dispatch({
       type: "BEGIN",
       durationId,
-      startedAt: new Date().toISOString(),
+      startedAt,
       audioSnapshot: audioRef.current?.getSnapshot(),
     });
+    const podId = String(identity?.podId || "").trim();
+    if (podId) {
+      void startRewardRestTest({
+        journeyId: startedAt,
+        podId,
+        mattressId: identity?.mattressId || null,
+        durationId,
+      }).catch((error) => {
+        console.warn("[rewards] Rest Test start was not recorded", {
+          code: error?.code || "REWARD_REST_TEST_START_FAILED",
+        });
+      });
+    }
     return true;
-  }, [state]);
+  }, [identity?.mattressId, identity?.podId, state]);
   const selectDuration = start;
   const pause = useCallback(() => {
     if (state.phase === REST_TEST_PHASES.POSITIONING) {
@@ -323,6 +391,8 @@ export function useGuidedRestTest({
     startLockRef.current = false;
     musicPausedForSpeechRef.current = false;
     interjectionSpokenRef.current.clear();
+    reportedRewardStagesRef.current.clear();
+    completedRewardJourneyRef.current = "";
     completionSpokenRef.current = false;
     dispatch({ type: "RESTART" });
   }, [cancelPodVoice]);
@@ -348,6 +418,22 @@ export function useGuidedRestTest({
     const record = { ...buildRestTestRecord(state, identity), favorite: true };
     writeJson(`snooze.restTestFavorite.${identity?.mattressId || identity?.podId || "current"}`, record);
     upsertRestTestRecord(record);
+    const journeyId = String(state.startedAt || "").trim();
+    const podId = String(identity?.podId || "").trim();
+    if (journeyId && podId) {
+      void saveRewardRatings({
+        journeyId,
+        podId,
+        favoritePodId: podId,
+        ratings: state.ratings,
+      })
+        .then(() => refreshRewardsState({ force: true }))
+        .catch((error) => {
+          console.warn("[rewards] Rest Test ratings were not recorded", {
+            code: error?.code || "REWARD_RATINGS_SAVE_FAILED",
+          });
+        });
+    }
     return record;
   }, [identity, state]);
 

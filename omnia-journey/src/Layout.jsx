@@ -10,6 +10,7 @@ import React, {
 import { Outlet, useLocation } from "react-router-dom";
 
 import RewardsDrawer from "./components/RewardsDrawer.jsx";
+import RewardsPill from "./components/RewardsPill.jsx";
 import HeaderContextBar from "./components/HeaderContextBar.jsx";
 import FooterControlBar from "./components/FooterControlBar.jsx";
 import SnoozerHUD from "./components/SnoozerHUD.jsx";
@@ -21,6 +22,10 @@ import {
 } from "@/lib/snoozer/voice/VoiceQueueContext";
 import { fetchHudAudio } from "@/lib/snoozer/voice/fetchHudAudio";
 import { useSessionStore } from "@/state/sessionStore";
+import {
+  refreshRewardsState,
+  useRewardsState,
+} from "@/state/rewardsStore";
 
 /** ---- Brand tokens ---- */
 const COLOR = {
@@ -53,11 +58,17 @@ function LayoutShell() {
     }
   });
 
-  const [rewards, setRewards] = useState({
-    balance: 0,
-    level: 1,
-    title: "Dream Seeker",
-  });
+  const rewardState = useRewardsState();
+  const rewards = useMemo(
+    () => ({
+      balance: Number(rewardState.summary?.availableSleepPoints || 0),
+      level: rewardState.summary?.currentBadge?.label || "Explorer",
+      title: rewardState.summary?.currentBadge?.label || "Explorer",
+      summary: rewardState.summary,
+      status: rewardState.status,
+    }),
+    [rewardState]
+  );
 
   const voiceQueue = useVoiceQueue() || {};
 
@@ -102,31 +113,7 @@ function LayoutShell() {
     Boolean(currentJob?.captions || currentJob?.speech);
 
   useEffect(() => {
-    try {
-      const pts = Number(sessionStorage.getItem("snooze.points") || 0);
-
-      let level = 1;
-      let title = "Dream Seeker";
-
-      if (pts >= 200 && pts < 500) {
-        level = 2;
-        title = "Snooze Explorer";
-      } else if (pts >= 500 && pts < 1000) {
-        level = 3;
-        title = "Sleep Specialist";
-      } else if (pts >= 1000) {
-        level = 4;
-        title = "Master of Rest";
-      }
-
-      setRewards({ balance: pts, level, title });
-    } catch {
-      setRewards({
-        balance: 0,
-        level: 1,
-        title: "Dream Seeker",
-      });
-    }
+    if (shopperId) void refreshRewardsState();
   }, [shopperId]);
 
   useEffect(() => {
@@ -250,17 +237,7 @@ function LayoutShell() {
         open: hudOpen,
         muted: hudMuted,
       },
-      earnPoints: (points) => {
-        setRewards((prev) => {
-          const total = prev.balance + points;
-          try {
-            sessionStorage.setItem("snooze.points", total);
-          } catch {
-            // ignore
-          }
-          return { ...prev, balance: total };
-        });
-      },
+      refreshRewards: () => refreshRewardsState({ force: true }),
       openSnoozer: () => setHudOpen(true),
       closeSnoozer: () => setHudOpen(false),
       toggleSnoozer: () => setHudOpen((prev) => !prev),
@@ -301,7 +278,11 @@ function LayoutShell() {
           shopperId={shopperId}
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
+          onHud={sayHud}
         />
+        {shopperId && pathname !== "/checkout" && (
+          <RewardsPill shopperId={shopperId} onClick={() => setDrawerOpen(true)} />
+        )}
 
         <main
           style={{

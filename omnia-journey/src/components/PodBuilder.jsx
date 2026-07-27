@@ -13,8 +13,10 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import * as api from "@/lib/api";
+import { getStoredShopifyCartIdentity } from "@/lib/session/shopifyCartState";
 import { useStore } from "@/lib/useStore";
-import { getShopperId } from "@/state/sessionStore";
+import { getSessionState, getShopperId } from "@/state/sessionStore";
+import { refreshRewardsState } from "@/state/rewardsStore";
 import curatedCatalog from "../../../s3 files/snoozerknowledgeprod/meta/catalog.json";
 import {
   SIZE_OPTIONS,
@@ -1758,12 +1760,39 @@ export default function PodBuilder({
     setIsAddingToCart(true);
 
     try {
-      await addLinesToAuthoritativeCart?.({
+      const cartResult = await addLinesToAuthoritativeCart?.({
         lines,
         sourcePage: "pod-build",
       });
       setGuidedStep("success");
       onCue?.("Added to cart.", "success");
+
+      const hasSelectedEssentials = ESSENTIAL_STEP_KEYS.some(
+        (category) => Boolean(selectedEssentialChoices[category])
+      );
+      if (hasSelectedEssentials) {
+        const cartId =
+          cartResult?.id ||
+          cartResult?.cartId ||
+          cartResult?.cart?.id ||
+          getStoredShopifyCartIdentity().cartId;
+        const session = getSessionState();
+        if (cartId) {
+          void api
+            .completeRewardAccessories({
+              journeyId:
+                session?.sessionId ||
+                `${podIdValue || "pod"}-${new Date().toISOString().slice(0, 10)}`,
+              cartId,
+            })
+            .then(() => refreshRewardsState({ force: true }))
+            .catch((error) => {
+              console.warn("[rewards] Sleep Essentials completion was not recorded", {
+                code: error?.code || "REWARD_ACCESSORIES_COMPLETION_FAILED",
+              });
+            });
+        }
+      }
     } catch (err) {
       const errorCode = err?.code || err?.name || err?.status || "CART_MUTATION_FAILED";
       console.warn("[cart] pod build add failed", {

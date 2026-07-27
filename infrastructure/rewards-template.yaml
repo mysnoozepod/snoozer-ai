@@ -1,0 +1,286 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: MySnoozePod rewards persistence, rules, transactional outbox, and Zoho synchronization workers.
+
+Parameters:
+  DeploymentEnv:
+    Type: String
+    Default: staging
+    AllowedValues: [dev, staging, prod]
+  LogRetentionDays:
+    Type: Number
+    Default: 30
+    AllowedValues: [7, 14, 30, 60, 90, 180, 365]
+  ZohoFieldMapJson:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: Verified semantic-to-Zoho Contact field API mapping JSON.
+  CustomerProfileTableName:
+    Type: String
+    Default: ""
+    Description: Existing Customer Profile OS table read by the Zoho worker.
+  AlarmTopicArn:
+    Type: String
+    Default: ""
+    Description: Optional verified SNS alarm topic ARN.
+
+Conditions:
+  HasAlarmTopic: !Not [!Equals [!Ref AlarmTopicArn, ""]]
+  HasCustomerProfileTable: !Not [!Equals [!Ref CustomerProfileTableName, ""]]
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Architectures: [x86_64]
+    MemorySize: 256
+    Timeout: 20
+    Tracing: Active
+    Environment:
+      Variables:
+        REWARDS_ENVIRONMENT: !Ref DeploymentEnv
+        REWARDS_TABLE_NAME: !Ref RewardsTable
+
+Resources:
+  RewardsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub "msp-${DeploymentEnv}-rewards"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      SSESpecification:
+        SSEEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: App
+          Value: MySnoozePod
+        - Key: Environment
+          Value: !Ref DeploymentEnv
+        - Key: StackArea
+          Value: Rewards
+
+  RewardsRulesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "msp-${DeploymentEnv}-rewards-rules-${AWS::AccountId}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: App
+          Value: MySnoozePod
+        - Key: Environment
+          Value: !Ref DeploymentEnv
+        - Key: StackArea
+          Value: Rewards
+
+  RewardsZohoDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "msp-${DeploymentEnv}-rewards-zoho-dlq"
+      KmsMasterKeyId: alias/aws/sqs
+      MessageRetentionPeriod: 1209600
+
+  RewardsZohoQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "msp-${DeploymentEnv}-rewards-zoho"
+      KmsMasterKeyId: alias/aws/sqs
+      VisibilityTimeout: 120
+      MessageRetentionPeriod: 1209600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt RewardsZohoDeadLetterQueue.Arn
+        maxReceiveCount: 5
+
+  RewardsOutboxPublisherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "msp-${DeploymentEnv}-rewards-outbox-publisher"
+      CodeUri: ../
+      Handler: handlers/rewardsOutboxPublisher.handler
+      Timeout: 30
+      Environment:
+        Variables:
+          REWARDS_ZOHO_QUEUE_URL: !Ref RewardsZohoQueue
+      Policies:
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt RewardsZohoQueue.QueueName
+      Events:
+        RewardsStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt RewardsTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 25
+            MaximumBatchingWindowInSeconds: 2
+            MaximumRetryAttempts: 3
+            BisectBatchOnFunctionError: true
+            FilterCriteria:
+              Filters:
+                - Pattern: '{"eventName":["INSERT"],"dynamodb":{"NewImage":{"entityType":{"S":["OUTBOX"]},"status":{"S":["pending"]}}}}'
+
+  RewardsZohoSyncFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "msp-${DeploymentEnv}-rewards-zoho-sync"
+      CodeUri: ../
+      Handler: handlers/rewardsZohoSync.handler
+      Timeout: 60
+      MemorySize: 512
+      ReservedConcurrentExecutions: 5
+      Environment:
+        Variables:
+          REWARDS_ZOHO_FIELD_MAP_JSON: !Ref ZohoFieldMapJson
+          CUSTOMER_PROFILE_TABLE: !Ref CustomerProfileTableName
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RewardsTable
+        - DynamoDBReadPolicy:
+            TableName: !If
+              - HasCustomerProfileTable
+              - !Ref CustomerProfileTableName
+              - !Ref RewardsTable
+        - SQSPollerPolicy:
+            QueueName: !GetAtt RewardsZohoQueue.QueueName
+      Events:
+        RewardsZohoMessages:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt RewardsZohoQueue.Arn
+            BatchSize: 10
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+
+  RewardsOutboxPublisherLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${RewardsOutboxPublisherFunction}"
+      RetentionInDays: !Ref LogRetentionDays
+
+  RewardsZohoSyncLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${RewardsZohoSyncFunction}"
+      RetentionInDays: !Ref LogRetentionDays
+
+  RewardsZohoDlqAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "msp-${DeploymentEnv}-rewards-zoho-dlq-visible"
+      AlarmDescription: Rewards Zoho messages reached the dead-letter queue.
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt RewardsZohoDeadLetterQueue.QueueName
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If [HasAlarmTopic, [!Ref AlarmTopicArn], !Ref "AWS::NoValue"]
+
+  RewardsZohoOldestMessageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "msp-${DeploymentEnv}-rewards-zoho-oldest-message"
+      AlarmDescription: Rewards Zoho synchronization is delayed.
+      Namespace: AWS/SQS
+      MetricName: ApproximateAgeOfOldestMessage
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt RewardsZohoQueue.QueueName
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 900
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If [HasAlarmTopic, [!Ref AlarmTopicArn], !Ref "AWS::NoValue"]
+
+  RewardsWorkerErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "msp-${DeploymentEnv}-rewards-worker-errors"
+      AlarmDescription: Rewards asynchronous workers are failing.
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref RewardsZohoSyncFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 2
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If [HasAlarmTopic, [!Ref AlarmTopicArn], !Ref "AWS::NoValue"]
+
+  RewardsTableThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "msp-${DeploymentEnv}-rewards-table-throttles"
+      AlarmDescription: Rewards DynamoDB requests are being throttled.
+      Namespace: AWS/DynamoDB
+      MetricName: ThrottledRequests
+      Dimensions:
+        - Name: TableName
+          Value: !Ref RewardsTable
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If [HasAlarmTopic, [!Ref AlarmTopicArn], !Ref "AWS::NoValue"]
+
+Outputs:
+  RewardsTableName:
+    Value: !Ref RewardsTable
+  RewardsRulesBucketName:
+    Value: !Ref RewardsRulesBucket
+  RewardsRulesKey:
+    Value: !Sub "rewards/${DeploymentEnv}/rewards-rules.v1.json"
+  RewardsZohoQueueUrl:
+    Value: !Ref RewardsZohoQueue
+  RewardsZohoDeadLetterQueueUrl:
+    Value: !Ref RewardsZohoDeadLetterQueue
+  BackendEnvironmentExample:
+    Value: !Sub >-
+      REWARDS_FEATURE_ENABLED=true,
+      REWARDS_REDEMPTION_ENABLED=false,
+      REWARDS_ENVIRONMENT=${DeploymentEnv},
+      REWARDS_TABLE_NAME=${RewardsTable},
+      REWARDS_RULES_BUCKET=${RewardsRulesBucket},
+      REWARDS_RULES_KEY=rewards/${DeploymentEnv}/rewards-rules.v1.json,
+      REWARDS_ZOHO_QUEUE_URL=${RewardsZohoQueue}

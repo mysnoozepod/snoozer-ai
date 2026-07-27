@@ -1003,52 +1003,118 @@ export async function removeCartLines({ cartId, lineIds } = {}) {
 // ─────────────────────────────────────────────────────────────
 // Rewards
 // ─────────────────────────────────────────────────────────────
-export const getRewardBalance = async (shopperId) => {
-  const raw = await retryableRequest(
-    `/rewards/balance/${encodeURIComponent(shopperId)}`,
-    { method: "GET" }
-  );
+function rewardIdentityHeaders() {
+  const state = getSessionState();
+  const snoozeCode = String(state?.shopperId || "").trim();
+  return snoozeCode ? { "x-snooze-code": snoozeCode } : {};
+}
 
-  const data = unwrap(raw) || {};
-  const rewards = data?.context?.rewards;
+async function rewardRequest(path, { method = "GET", body, headers } = {}) {
+  const raw = await retryableRequest(path, {
+    method,
+    body,
+    headers: { ...rewardIdentityHeaders(), ...(headers || {}) },
+  });
+  return unwrap(raw) || {};
+}
 
-  if (rewards && typeof rewards.balance === "number") {
-    if (data.balance == null) data.balance = rewards.balance;
-    if (data.points == null) data.points = rewards.balance;
-  }
+export async function getRewardSummary() {
+  const data = await rewardRequest("/rewards/summary");
+  return data.summary || null;
+}
 
-  return data;
-};
+export async function getRewardHistory() {
+  const data = await rewardRequest("/rewards/history");
+  return Array.isArray(data.history) ? data.history : [];
+}
 
-export const earnRewardPoints = async (payload) => {
-  const raw = await retryableRequest("/rewards/earn", { method: "POST", body: payload });
+export async function getRewardOffers() {
+  const data = await rewardRequest("/rewards/offers");
+  return Array.isArray(data.offers) ? data.offers : [];
+}
 
-  const data = unwrap(raw) || {};
-  const rewards = data?.context?.rewards;
+export async function getRewardGift() {
+  const data = await rewardRequest("/rewards/gift");
+  return data.gift || null;
+}
 
-  if (rewards && typeof rewards.balance === "number") {
-    if (data.balance == null) data.balance = rewards.balance;
-    if (data.points == null) data.points = rewards.balance;
-  }
-
-  return data;
-};
-
-export const redeemRewardPoints = async (payload) => {
-  const raw = await retryableRequest("/rewards/redeem", {
+export async function previewRewardRedemption(payload) {
+  const data = await rewardRequest("/rewards/redemptions/preview", {
     method: "POST",
     body: payload,
   });
+  return data.preview || null;
+}
 
-  const data = unwrap(raw) || {};
-  const rewards = data?.context?.rewards;
+export async function createRewardRedemption(payload, idempotencyKey) {
+  const data = await rewardRequest("/rewards/redemptions", {
+    method: "POST",
+    body: payload,
+    headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
+  });
+  return { redemption: data.redemption || null, hud: data.hud || null };
+}
 
-  if (rewards && typeof rewards.balance === "number") {
-    if (data.balance == null) data.balance = rewards.balance;
-    if (data.points == null) data.points = rewards.balance;
-  }
+export async function claimRewardGift() {
+  const data = await rewardRequest("/rewards/gift/claim", { method: "POST", body: {} });
+  return data.gift || null;
+}
 
-  return data;
+export async function startRewardRestTest(payload) {
+  const data = await rewardRequest("/rewards/experiences/rest-test/start", {
+    method: "POST",
+    body: payload,
+  });
+  return data.experience || null;
+}
+
+export async function recordRewardRestTestStage(payload) {
+  const data = await rewardRequest("/rewards/experiences/rest-test/stage", {
+    method: "POST",
+    body: payload,
+  });
+  return data.stage || null;
+}
+
+export async function completeRewardRestTest(payload) {
+  const data = await rewardRequest("/rewards/experiences/rest-test/complete", {
+    method: "POST",
+    body: payload,
+  });
+  return data.result || null;
+}
+
+export async function saveRewardRatings(payload) {
+  const data = await rewardRequest("/rewards/experiences/ratings", {
+    method: "POST",
+    body: payload,
+  });
+  return data.result || null;
+}
+
+export async function completeRewardAccessories(payload) {
+  const data = await rewardRequest("/rewards/experiences/accessories/complete", {
+    method: "POST",
+    body: payload,
+  });
+  return data.result || null;
+}
+
+export const getRewardBalance = async () => {
+  const summary = await getRewardSummary();
+  return {
+    balance: Number(summary?.availableSleepPoints || 0),
+    points: Number(summary?.availableSleepPoints || 0),
+    summary,
+  };
+};
+
+export const earnRewardPoints = async () => {
+  throw new Error("Sleep Points are awarded only by confirmed backend milestones.");
+};
+
+export const redeemRewardPoints = async () => {
+  throw new Error("Use the cart-bound reward redemption flow.");
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -1399,6 +1465,18 @@ export const api = {
   getRewardBalance,
   earnRewardPoints,
   redeemRewardPoints,
+  getRewardSummary,
+  getRewardHistory,
+  getRewardOffers,
+  getRewardGift,
+  previewRewardRedemption,
+  createRewardRedemption,
+  claimRewardGift,
+  startRewardRestTest,
+  recordRewardRestTestStage,
+  completeRewardRestTest,
+  saveRewardRatings,
+  completeRewardAccessories,
 
   // system
   health,

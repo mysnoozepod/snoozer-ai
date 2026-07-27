@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import useRewards from "@/lib/useRewards";
 import useSnoozerSession from "@/lib/useSnoozerSession";
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/useStore";
@@ -207,7 +206,6 @@ function buildWhyCopy(heroProduct, activePod, assessment) {
 // ─────────────────────────────────────────────
 export default function Explore() {
   const { shopperId } = useSnoozerSession("explore");
-  const rewards = useRewards(shopperId);
   const addToCart = useStore((s) => s.addToCart);
 
   const [loading, setLoading] = useState(true);
@@ -225,7 +223,6 @@ export default function Explore() {
   );
   const [cueType, setCueType] = useState("tip");
 
-  const [rewarded, setRewarded] = useState(false);
 
   // Disable global chat widget on this route
   useEffect(() => {
@@ -446,10 +443,6 @@ export default function Explore() {
           "Try your normal sleep position first. Then switch positions and notice pressure + alignment."
         );
 
-        if (!rewarded) {
-          rewards.earn(50, "Testing SnoozePod");
-          setRewarded(true);
-        }
       } catch {
         // ignore
       }
@@ -458,7 +451,7 @@ export default function Explore() {
     return () => {
       alive = false;
     };
-  }, [activePod?.mattressHandle, activePod?.podId, podProducts, rewards, rewarded]);
+  }, [activePod?.mattressHandle, activePod?.podId, podProducts]);
 
   async function regenerateWith(nextSize, nextMotion) {
     try {
@@ -549,7 +542,6 @@ export default function Explore() {
         quantity: 1,
       });
 
-      rewards.earn(25, "Added to cart");
       setCueType("success");
       setCue("Added to cart. Keep testing or head to checkout when you’re ready.");
     } catch {

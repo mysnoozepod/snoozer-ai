@@ -32,6 +32,7 @@ async function handleAssessmentRoutes({ event, method, routePath, traceId, deps 
     safeUpsertIdentityAliases,
     safeMarkIdentityMerge,
     maybeSyncIdentityProfileToZoho,
+    rewardProgramService,
     getAssessmentSnapshot,
     getAssessmentResult,
   } = deps;
@@ -315,6 +316,57 @@ async function handleAssessmentRoutes({ event, method, routePath, traceId, deps 
       route: "/assessment",
     });
 
+    const confirmedRewards = [];
+    if (
+      rewardProgramService &&
+      typeof rewardProgramService.recordRewardMilestone === "function" &&
+      finalAssessmentIdentity?.profileId &&
+      !assessmentProfileResult?.skipped
+    ) {
+      const rewardIdentity = {
+        profileId: finalAssessmentIdentity.profileId,
+        shopperId,
+        snoozeCode: finalAssessmentIdentity.snoozeCode || shopperId,
+        accessCode: finalAssessmentIdentity.accessCode || shopperId,
+        sessionId: identitySessionId,
+      };
+      const rewardBase = {
+        identity: rewardIdentity,
+        sessionId: identitySessionId || `assessment:${shopperId}`,
+        sourceSurface: "assessment",
+      };
+      try {
+        confirmedRewards.push(
+          await rewardProgramService.recordRewardMilestone({
+            ...rewardBase,
+            eventType: "milestone.profile.established",
+            subjectType: "customer_profile",
+            subjectId: finalAssessmentIdentity.profileId,
+            metadata: { profileEstablished: true },
+          })
+        );
+        confirmedRewards.push(
+          await rewardProgramService.recordRewardMilestone({
+            ...rewardBase,
+            eventType: "milestone.assessment.completed",
+            subjectType: "assessment",
+            subjectId: `assessment:${shopperId}`,
+            metadata: {
+              assessmentVersion: body?.assessmentVersion || "assessment.v1",
+              assessmentSaved: true,
+              recommendationResolved: Boolean(assessmentCanonicalRecommendation),
+              recommendationFallbackUsed: !assessmentCanonicalRecommendation,
+            },
+          })
+        );
+      } catch (error) {
+        log("assessment.rewards.unavailable", error.code || error.message, {
+          traceId,
+          shopperId,
+        });
+      }
+    }
+
     return response(event, 200, {
       ok: true,
       shopperId,
@@ -323,6 +375,15 @@ async function handleAssessmentRoutes({ event, method, routePath, traceId, deps 
       profileId: finalAssessmentIdentity?.profileId || null,
       identityType: finalAssessmentIdentity?.identityType || null,
       isNewCode: Boolean(issuedAssessmentIdentity?.isNewCode),
+      rewards: confirmedRewards.map((result) => ({
+        duplicate: Boolean(result.duplicate),
+        milestoneId: result.milestoneId,
+        pointAward: result.pointAward,
+        summary: result.summary,
+        unlockedOffers: result.unlockedOffers,
+        gift: result.gift,
+        hud: result.hud,
+      })),
     });
   }
 

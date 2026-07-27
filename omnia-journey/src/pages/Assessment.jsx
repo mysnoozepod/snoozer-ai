@@ -12,7 +12,7 @@ import { getAssessmentQuestions, saveAssessment } from "@/lib/api";
 import { canViewCart } from "@/device/deviceActionGuards";
 import { emitDeviceAssessmentSubmission } from "@/device/deviceActivityTracker";
 import { useDeviceMode } from "@/device/useDeviceMode";
-import useRewards from "@/lib/useRewards";
+import { refreshRewardsState } from "@/state/rewardsStore";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import { getShopperId } from "@/state/sessionStore";
@@ -443,7 +443,6 @@ export default function Assessment() {
     return getShopperId() || "guest";
   }, []);
 
-  const rewards = useRewards(shopperId);
   const snoozepod = useStore((state) => state.snoozepod || []);
   const { setAssessment, setAssessmentSummary } = useStore();
   const snoozepodCount = useMemo(
@@ -821,7 +820,6 @@ export default function Assessment() {
 
     if (!halfwayAwarded && doneCount >= halfwayMark) {
       setHalfwayAwarded(true);
-      rewards.earn(100, "Halfway Through Snooze Assessment");
       clearTimer(progressTimerRef);
       progressTimerRef.current = window.setTimeout(() => {
         speak("Nice progress.", {
@@ -835,7 +833,6 @@ export default function Assessment() {
 
     if (!completeAwarded && doneCount === visibleQuestions.length) {
       setCompleteAwarded(true);
-      rewards.earn(250, "Completed Snooze Assessment");
       clearTimer(progressTimerRef);
       progressTimerRef.current = window.setTimeout(() => {
         speak("Assessment complete.", {
@@ -850,7 +847,6 @@ export default function Assessment() {
     doneCount,
     halfwayMark,
     visibleQuestions.length,
-    rewards,
     halfwayAwarded,
     completeAwarded,
     speak,
@@ -1003,6 +999,7 @@ export default function Assessment() {
       });
 
       await saveAssessment(shopperId || "guest", cleaned);
+      void refreshRewardsState({ force: true });
 
       const summary = buildAssessmentSummary(cleaned, visibleQuestions);
 

@@ -2,7 +2,6 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import useRewards from "@/lib/useRewards";
 import { generateShowroomRecommendations } from "@/lib/utils/recommendations";
 import {
   getResultsRecommendations,
@@ -588,7 +587,6 @@ export default function Results() {
   const storedAssessment = useStore((state) => state.assessment);
   const setRecommendations = useStore((state) => state.setRecommendations);
   const setRecommendedProductHandles = useStore((state) => state.setRecommendedProductHandles);
-  const rewards = useRewards(shopperId);
 
   const answers = useMemo(() => {
     if (storedAssessment && typeof storedAssessment === "object") return storedAssessment;
@@ -761,14 +759,6 @@ export default function Results() {
       alive = false;
     };
   }, [recs]);
-
-  useEffect(() => {
-    if (!shopperId) return;
-    const flag = `snooze.reward.results.${shopperId}`;
-    if (safeGet(flag)) return;
-    rewards.earn(150, "Viewed Results");
-    safeSet(flag, "1");
-  }, [shopperId, rewards]);
 
   const pods = useMemo(() => (Array.isArray(recs?.pods) ? recs.pods : []), [recs]);
 
