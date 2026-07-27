@@ -1,0 +1,595 @@
+{
+  "schemaVersion": 1,
+  "rulesVersion": "rewards.phase1a.draft.1",
+  "effectiveFrom": "2026-01-01T00:00:00.000Z",
+  "effectiveUntil": null,
+  "status": "draft",
+  "showroomBadgeCeilingId": "badge.showroom.snooze_specialist",
+  "milestones": [
+    {
+      "id": "milestone.profile.established",
+      "displayName": "Snooze Profile Established",
+      "description": "A canonical shopper profile has been established by the backend.",
+      "status": "disabled",
+      "enabled": false,
+      "pointAward": 0,
+      "completionAuthority": "backend",
+      "allowedSourceSystems": ["snoozer-backend"],
+      "allowedSourceSurfaces": ["welcome"],
+      "repeatPolicy": {
+        "type": "once_per_shopper_lifetime"
+      },
+      "subjectRequirements": {
+        "required": true,
+        "allowedTypes": ["customer_profile"]
+      },
+      "requiredMetadata": [],
+      "badgeContribution": false,
+      "candidateOfferUnlockIds": [],
+      "effectiveRuleVersion": "rewards.phase1a.draft.1",
+      "metadata": {
+        "founderApprovalRequired": true
+      }
+    },
+    {
+      "id": "milestone.assessment.completed",
+      "displayName": "Assessment Completed",
+      "description": "The backend accepted and persisted a completed Snooze Assessment.",
+      "status": "implemented",
+      "enabled": true,
+      "pointAward": 0,
+      "completionAuthority": "backend",
+      "allowedSourceSystems": ["snoozer-backend"],
+      "allowedSourceSurfaces": ["assessment"],
+      "repeatPolicy": {
+        "type": "once_per_shopper_lifetime"
+      },
+      "subjectRequirements": {
+        "required": true,
+        "allowedTypes": ["assessment"]
+      },
+      "requiredMetadata": ["assessmentVersion"],
+      "badgeContribution": true,
+      "candidateOfferUnlockIds": [],
+      "effectiveRuleVersion": "rewards.phase1a.draft.1",
+      "metadata": {
+        "pointValueStatus": "founder_approval_required"
+      }
+    },
+    {
+      "id": "milestone.rest_test.completed",
+      "displayName": "Rest Test Completed",
+      "description": "The backend accepted a completed Rest Test for a qualifying test subject.",
+      "status": "implemented",
+      "enabled": true,
+      "pointAward": 0,
+      "completionAuthority": "backend",
+      "allowedSourceSystems": ["snoozer-backend"],
+      "allowedSourceSurfaces": ["pod_rest_test"],
+      "repeatPolicy": {
+        "type": "once_per_qualifying_subject"
+      },
+      "subjectRequirements": {
+        "required": true,
+        "allowedTypes": ["rest_test"]
+      },
+      "requiredMetadata": ["podId", "durationSeconds"],
+      "badgeContribution": true,
+      "candidateOfferUnlockIds": [],
+      "effectiveRuleVersion": "rewards.phase1a.draft.1",
+      "metadata": {
+        "pointValueStatus": "founder_approval_required"
+      }
+    },
+    {
+      "id": "milestone.pod.completed",
+      "displayName": "Pod Completed",
+      "description": "A future backend contract confirms completion of a pod experience.",
+      "status": "future",
+      "enabled": false,
+      "pointAward": 0,
+      "completionAuthority": "backend",
+      "allowedSourceSystems": ["snoozer-backend"],
+      "allowedSourceSurfaces": ["pod"],
+      "repeatPolicy": {
+        "type": "once_per_pod"
+      },
+      "subjectRequirements": {
+        "required": true,
+        "allowedTypes": ["pod"]
+      },
+      "requiredMetadata": ["podId"],
+      "badgeContribution": false,
+      "candidateOfferUnlockIds": [],
+      "effectiveRuleVersion": "rewards.phase1a.draft.1",
+      "metadata": {
+        "founderApprovalRequired": true
+      }
+    },
+    {
+      "id": "milestone.learn.completed",
+      "displayName": "Learn Completed",
+      "description": "A future backend contract confirms meaningful Learn completion, not a route visit.",
+      "status": "future",
+      "enabled": false,
+      "pointAward": 0,
+      "completionAuthority": "backend",
+      "allowedSourceSystems": ["snoozer-backend"],
+      "allowedSourceSurfaces": ["pod_learn"],
+      "repeatPolicy": {
+        "type": "once_per_qualifying_subject"
+      },
+      "subjectRequirements": {
+        "required": true,
+        "allowedTypes": ["product_education"]
+      },
+      "requiredMetadata": ["podId"],
+      "badgeContribution": false,
+      "candidateOfferUnlockIds": [],
+      "effectiveRuleVersion": "rewards.phase1a.draft.1",
+      "metadata": {
+        "founderApprovalRequired": true
+      }
+    },
+    {
+      "id": "milestone.customize.completed",
+      "displayName": "Customize Completed",
+      "description": "A future backend contract confirms completion of a valid configuration.",
+      "status": "future",
+      "enabled": false,
+      "pointAward": 0,
+      "completionAuthority": "backend",
+      "allowedSourceSystems": ["snoozer-backend"],
+      "allowedSourceSurfaces": ["pod_customize"],
+      "repeatPolicy": {
+        "type": "once_per_qualifying_subject"
+      },
+      "subjectRequirements": {
+        "required": true,
+        "allowedTypes": ["configuration"]
+      },
+      "requiredMetadata": ["podId"],
+      "badgeContribution": false,
+      "candidateOfferUnlockIds": [],
+      "effectiveRuleVersion": "rewards.phase1a.draft.1",
+      "metadata": {
+        "founderApprovalRequired": true
+      }
+    },
+    {
+      "id": "milestone.ratings.completed",
+      "displayName": "Favorites or Ratings Completed",
+      "description": "A future backend contract confirms a meaningful saved preference set.",
+      "status": "future",
+      "enabled": false,
+      "pointAward": 0,
+      "completionAuthority": "backend",
+      "allowedSourceSystems": ["snoozer-backend"],
+      "allowedSourceSurfaces": ["pod_rest_test", "results"],
+      "repeatPolicy": {
+        "type": "once_per_showroom_journey"
+      },
+      "subjectRequirements": {
+        "required": true,
+        "allowedTypes": ["preference_set"]
+      },
+      "requiredMetadata": ["journeyId"],
+      "badgeContribution": false,
+      "candidateOfferUnlockIds": [],
+      "effectiveRuleVersion": "rewards.phase1a.draft.1",
+      "metadata": {
+        "founderApprovalRequired": true
+      }
+    },
+    {
+      "id": "milestone.full_showroom.completed",
+      "displayName": "Full Showroom Journey Completed",
+      "description": "A future backend contract confirms the approved showroom-completion requirement.",
+      "status": "future",
+      "enabled": false,
+      "pointAward": 0,
+      "completionAuthority": "backend",
+      "allowedSourceSystems": ["snoozer-backend"],
+      "allowedSourceSurfaces": ["showroom_journey"],
+      "repeatPolicy": {
+        "type": "once_per_shopper_lifetime"
+      },
+      "subjectRequirements": {
+        "required": true,
+        "allowedTypes": ["showroom_journey"]
+      },
+      "requiredMetadata": ["journeyId"],
+      "badgeContribution": false,
+      "candidateOfferUnlockIds": ["offer.sleep_mask.completion_gift"],
+      "effectiveRuleVersion": "rewards.phase1a.draft.1",
+      "metadata": {
+        "founderApprovalRequired": true
+      }
+    }
+  ],
+  "badges": [
+    {
+      "id": "badge.showroom.explorer",
+      "label": "Explorer",
+      "thresholdPoints": 0,
+      "sequence": 1,
+      "namespace": "showroom",
+      "metadata": {
+        "thresholdStatus": "draft_founder_approval_required"
+      }
+    },
+    {
+      "id": "badge.showroom.rest_tester",
+      "label": "Rest Tester",
+      "thresholdPoints": 100,
+      "sequence": 2,
+      "namespace": "showroom",
+      "metadata": {
+        "thresholdStatus": "draft_founder_approval_required"
+      }
+    },
+    {
+      "id": "badge.showroom.sleep_scholar",
+      "label": "Sleep Scholar",
+      "thresholdPoints": 300,
+      "sequence": 3,
+      "namespace": "showroom",
+      "metadata": {
+        "thresholdStatus": "draft_founder_approval_required"
+      }
+    },
+    {
+      "id": "badge.showroom.snooze_specialist",
+      "label": "Snooze Specialist",
+      "thresholdPoints": 600,
+      "sequence": 4,
+      "namespace": "showroom",
+      "metadata": {
+        "thresholdStatus": "draft_founder_approval_required"
+      }
+    }
+  ],
+  "discountCapPolicies": {
+    "cap.mattress_base.internal": {
+      "percentageBasisPoints": 1000,
+      "appliesToCategories": ["mattress", "dual_comfort_mattress", "adjustable_base"],
+      "rounding": "floor_minor_units",
+      "customerVisible": false
+    }
+  },
+  "offers": [
+    {
+      "id": "offer.sleep_mask.completion_gift",
+      "offerVersion": "draft.1",
+      "displayLabel": "Complimentary MySnoozePod Sleep Mask",
+      "internalDescription": "Showroom-completion benefit; not purchased with Sleep Points.",
+      "customerDescription": "Complete the qualifying showroom journey to receive a complimentary sleep mask.",
+      "status": "draft",
+      "offerType": "showroom_completion_gift",
+      "requiredBadgeId": null,
+      "requiredPoints": null,
+      "requiredMilestoneIds": ["milestone.full_showroom.completed"],
+      "qualifyingProductCategories": [],
+      "excludedProductCategories": [],
+      "minimumQualifyingQuantity": 0,
+      "minimumQualifyingSubtotalMinor": null,
+      "qualifyingPurchaseRequired": false,
+      "rewardValue": {
+        "benefitKey": "sleep_mask_completion_gift"
+      },
+      "discountCapPolicyId": null,
+      "stackingPolicy": {
+        "mode": "stackable",
+        "allowedOfferIds": [],
+        "allowedOfferTypes": [],
+        "allowedExclusivityGroups": [],
+        "allowsShopifyPromotions": true
+      },
+      "exclusivityGroup": "showroom_completion_gift",
+      "redemptionLimit": {
+        "scope": "shopper_lifetime",
+        "quantity": 1
+      },
+      "expirationPolicy": {
+        "type": "none"
+      },
+      "shopifyApplicationStrategy": "not_applicable",
+      "zohoProfileSummaryLabel": "Sleep Mask Completion Gift",
+      "metadata": {
+        "fulfillmentStatus": "not_implemented"
+      }
+    },
+    {
+      "id": "offer.mattress.fixed_savings",
+      "offerVersion": "draft.1",
+      "displayLabel": "Unlocked Mattress Savings",
+      "internalDescription": "Fixed savings constrained by the internal mattress/base policy.",
+      "customerDescription": "Apply your confirmed unlocked savings to an eligible mattress.",
+      "status": "draft",
+      "offerType": "fixed_dollar_savings",
+      "requiredBadgeId": null,
+      "requiredPoints": null,
+      "requiredMilestoneIds": [],
+      "qualifyingProductCategories": ["mattress", "dual_comfort_mattress"],
+      "excludedProductCategories": [],
+      "minimumQualifyingQuantity": 1,
+      "minimumQualifyingSubtotalMinor": null,
+      "qualifyingPurchaseRequired": true,
+      "rewardValue": {
+        "fixedMinorUnits": 0,
+        "valueStatus": "founder_approval_required"
+      },
+      "discountCapPolicyId": "cap.mattress_base.internal",
+      "stackingPolicy": {
+        "mode": "explicit",
+        "allowedOfferIds": ["offer.sleep_mask.completion_gift"],
+        "allowedOfferTypes": ["qualifying_purchase_gift", "showroom_completion_gift"],
+        "allowedExclusivityGroups": ["showroom_completion_gift", "accessory_gift"],
+        "allowsShopifyPromotions": false
+      },
+      "exclusivityGroup": "primary_sleep_system_discount",
+      "redemptionLimit": {
+        "scope": "shopper",
+        "quantity": 1
+      },
+      "expirationPolicy": {
+        "type": "duration_after_unlock",
+        "durationDays": 30
+      },
+      "shopifyApplicationStrategy": "pending_verification",
+      "zohoProfileSummaryLabel": "Mattress Savings Unlocked",
+      "metadata": {
+        "valueStatus": "founder_approval_required"
+      }
+    },
+    {
+      "id": "offer.base.fixed_savings",
+      "offerVersion": "draft.1",
+      "displayLabel": "Unlocked Adjustable Base Savings",
+      "internalDescription": "Fixed savings constrained by the internal mattress/base policy.",
+      "customerDescription": "Apply your confirmed unlocked savings to an eligible adjustable base.",
+      "status": "draft",
+      "offerType": "fixed_dollar_savings",
+      "requiredBadgeId": null,
+      "requiredPoints": null,
+      "requiredMilestoneIds": [],
+      "qualifyingProductCategories": ["adjustable_base"],
+      "excludedProductCategories": [],
+      "minimumQualifyingQuantity": 1,
+      "minimumQualifyingSubtotalMinor": null,
+      "qualifyingPurchaseRequired": true,
+      "rewardValue": {
+        "fixedMinorUnits": 0,
+        "valueStatus": "founder_approval_required"
+      },
+      "discountCapPolicyId": "cap.mattress_base.internal",
+      "stackingPolicy": {
+        "mode": "explicit",
+        "allowedOfferIds": ["offer.sleep_mask.completion_gift"],
+        "allowedOfferTypes": ["qualifying_purchase_gift", "showroom_completion_gift"],
+        "allowedExclusivityGroups": ["showroom_completion_gift", "accessory_gift"],
+        "allowsShopifyPromotions": false
+      },
+      "exclusivityGroup": "primary_sleep_system_discount",
+      "redemptionLimit": {
+        "scope": "shopper",
+        "quantity": 1
+      },
+      "expirationPolicy": {
+        "type": "duration_after_unlock",
+        "durationDays": 30
+      },
+      "shopifyApplicationStrategy": "pending_verification",
+      "zohoProfileSummaryLabel": "Adjustable Base Savings Unlocked",
+      "metadata": {
+        "valueStatus": "founder_approval_required"
+      }
+    },
+    {
+      "id": "offer.pillow.bogo",
+      "offerVersion": "draft.1",
+      "displayLabel": "Pillow Pair Benefit",
+      "internalDescription": "Controlled BOGO for curated eligible pillow categories.",
+      "customerDescription": "Choose two eligible pillows and receive the qualifying pair benefit.",
+      "status": "draft",
+      "offerType": "bogo",
+      "requiredBadgeId": null,
+      "requiredPoints": null,
+      "requiredMilestoneIds": [],
+      "qualifyingProductCategories": ["pillow", "memory_foam_pillow"],
+      "excludedProductCategories": [],
+      "minimumQualifyingQuantity": 2,
+      "minimumQualifyingSubtotalMinor": null,
+      "qualifyingPurchaseRequired": true,
+      "rewardValue": {
+        "buyQuantity": 1,
+        "giftQuantity": 1
+      },
+      "discountCapPolicyId": null,
+      "stackingPolicy": {
+        "mode": "none",
+        "allowedOfferIds": [],
+        "allowedOfferTypes": [],
+        "allowedExclusivityGroups": [],
+        "allowsShopifyPromotions": false
+      },
+      "exclusivityGroup": "pillow_offer",
+      "redemptionLimit": {
+        "scope": "shopper",
+        "quantity": 1
+      },
+      "expirationPolicy": {
+        "type": "duration_after_unlock",
+        "durationDays": 30
+      },
+      "shopifyApplicationStrategy": "pending_verification",
+      "zohoProfileSummaryLabel": "Pillow Pair Benefit",
+      "metadata": {
+        "approvalStatus": "founder_approval_required"
+      }
+    },
+    {
+      "id": "offer.pillow.second_item_percent",
+      "offerVersion": "draft.1",
+      "displayLabel": "Second Pillow Savings",
+      "internalDescription": "Controlled percentage savings on a second curated eligible pillow.",
+      "customerDescription": "Receive confirmed savings on a second eligible pillow.",
+      "status": "draft",
+      "offerType": "second_item_percentage",
+      "requiredBadgeId": null,
+      "requiredPoints": null,
+      "requiredMilestoneIds": [],
+      "qualifyingProductCategories": ["pillow", "memory_foam_pillow"],
+      "excludedProductCategories": [],
+      "minimumQualifyingQuantity": 2,
+      "minimumQualifyingSubtotalMinor": null,
+      "qualifyingPurchaseRequired": true,
+      "rewardValue": {
+        "percentageBasisPoints": 0,
+        "valueStatus": "founder_approval_required"
+      },
+      "discountCapPolicyId": null,
+      "stackingPolicy": {
+        "mode": "none",
+        "allowedOfferIds": [],
+        "allowedOfferTypes": [],
+        "allowedExclusivityGroups": [],
+        "allowsShopifyPromotions": false
+      },
+      "exclusivityGroup": "pillow_offer",
+      "redemptionLimit": {
+        "scope": "shopper",
+        "quantity": 1
+      },
+      "expirationPolicy": {
+        "type": "duration_after_unlock",
+        "durationDays": 30
+      },
+      "shopifyApplicationStrategy": "pending_verification",
+      "zohoProfileSummaryLabel": "Second Pillow Savings",
+      "metadata": {
+        "approvalStatus": "founder_approval_required"
+      }
+    },
+    {
+      "id": "offer.accessory.qualifying_gift",
+      "offerVersion": "draft.1",
+      "displayLabel": "Qualifying Accessory Gift",
+      "internalDescription": "Controlled accessory gift with a qualifying purchase.",
+      "customerDescription": "Receive a qualifying accessory gift with an eligible sleep-system purchase.",
+      "status": "draft",
+      "offerType": "qualifying_purchase_gift",
+      "requiredBadgeId": null,
+      "requiredPoints": null,
+      "requiredMilestoneIds": [],
+      "qualifyingProductCategories": ["accessory", "bedding", "mattress_protector"],
+      "excludedProductCategories": [],
+      "minimumQualifyingQuantity": 1,
+      "minimumQualifyingSubtotalMinor": null,
+      "qualifyingPurchaseRequired": true,
+      "rewardValue": {
+        "benefitKey": "qualifying_accessory_gift"
+      },
+      "discountCapPolicyId": null,
+      "stackingPolicy": {
+        "mode": "explicit",
+        "allowedOfferIds": [
+          "offer.mattress.fixed_savings",
+          "offer.base.fixed_savings",
+          "offer.sleep_mask.completion_gift"
+        ],
+        "allowedOfferTypes": ["fixed_dollar_savings", "showroom_completion_gift"],
+        "allowedExclusivityGroups": [
+          "primary_sleep_system_discount",
+          "showroom_completion_gift"
+        ],
+        "allowsShopifyPromotions": false
+      },
+      "exclusivityGroup": "accessory_gift",
+      "redemptionLimit": {
+        "scope": "shopper",
+        "quantity": 1
+      },
+      "expirationPolicy": {
+        "type": "duration_after_unlock",
+        "durationDays": 30
+      },
+      "shopifyApplicationStrategy": "pending_verification",
+      "zohoProfileSummaryLabel": "Accessory Gift Unlocked",
+      "metadata": {
+        "approvalStatus": "founder_approval_required"
+      }
+    }
+  ],
+  "productQualification": {
+    "requiredFields": [
+      "canonicalProductId",
+      "classificationVersion",
+      "source",
+      "categories"
+    ],
+    "allowedSources": ["canon", "catalog", "manifest"],
+    "unknownProductBehavior": "fail_closed",
+    "titleInferenceAllowed": false
+  },
+  "offerCompatibility": {
+    "defaultStackingMode": "none",
+    "oneOfferPerExclusivityGroup": true,
+    "shopifyPromotionStackingDefault": false
+  },
+  "offerExpiration": {
+    "defaultType": "duration_after_unlock",
+    "defaultDurationDays": 30
+  },
+  "rewardExpiration": {
+    "enabled": false,
+    "policyStatus": "founder_approval_required"
+  },
+  "completionGifts": {
+    "sleepMask": {
+      "offerId": "offer.sleep_mask.completion_gift",
+      "purchasedWithPoints": false,
+      "fulfillmentImplemented": false
+    }
+  },
+  "idempotency": {
+    "algorithm": "sha256",
+    "eventIdAuthoritative": false,
+    "includeRulesVersion": true,
+    "defaultRepeatPolicy": "non_repeatable"
+  },
+  "zohoSync": {
+    "schemaVersion": 1,
+    "mode": "asynchronous",
+    "authoritative": false,
+    "fieldMappings": {
+      "canonicalProfileId": "Rewards_Profile_ID",
+      "snoozeCode": "Snooze_Code",
+      "currentShowroomBadge": "Rewards_Showroom_Badge",
+      "availableSleepPoints": "Rewards_Available_Points",
+      "lifetimeSleepPoints": "Rewards_Lifetime_Points",
+      "showroomCompletionStatus": "Rewards_Showroom_Complete",
+      "assessmentCompletionStatus": "Rewards_Assessment_Complete",
+      "restTestCompletionStatus": "Rewards_Rest_Test_Complete",
+      "unlockedOfferSummaries": "Rewards_Unlocked_Offers",
+      "lastRewardActivityAt": "Rewards_Last_Activity",
+      "lastShowroomVisitAt": "Rewards_Last_Showroom_Visit",
+      "showroomLocation": "Rewards_Showroom_Location",
+      "rulesVersion": "Rewards_Rules_Version",
+      "synchronizationVersion": "Rewards_Sync_Version",
+      "sourceUpdatedAt": "Rewards_Source_Updated_At"
+    }
+  },
+  "postPurchaseExtensions": {
+    "badgeNamespace": "badge.post_purchase.",
+    "milestoneNamespace": "milestone.post_purchase.",
+    "implemented": false
+  },
+  "metadata": {
+    "activation": "never_load_as_production_rules",
+    "pointValues": "draft_founder_approval_required",
+    "badgeThresholds": "draft_founder_approval_required",
+    "offerValues": "draft_founder_approval_required",
+    "phase": "1A_contracts_only"
+  }
+}

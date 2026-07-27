@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "fixtures": {
+    "eligibleMattress": {
+      "canonicalProductId": "catalog.mattress.12_all_foam",
+      "classificationVersion": "catalog.v1",
+      "source": "catalog",
+      "categories": ["mattress"]
+    },
+    "eligibleDualComfortMattress": {
+      "canonicalProductId": "catalog.mattress.12_dual_comfort_hybrid",
+      "classificationVersion": "catalog.v1",
+      "source": "catalog",
+      "categories": ["mattress", "dual_comfort_mattress"]
+    },
+    "eligibleAdjustableBase": {
+      "canonicalProductId": "catalog.base.adjustable",
+      "classificationVersion": "catalog.v1",
+      "source": "catalog",
+      "categories": ["adjustable_base"]
+    },
+    "eligiblePillow": {
+      "canonicalProductId": "catalog.pillow.memory_foam",
+      "classificationVersion": "catalog.v1",
+      "source": "catalog",
+      "categories": ["pillow", "memory_foam_pillow", "accessory"]
+    },
+    "unclassifiedProduct": {
+      "shopifyProductId": "gid://shopify/Product/unknown",
+      "title": "Unknown Product"
+    }
+  }
+}
