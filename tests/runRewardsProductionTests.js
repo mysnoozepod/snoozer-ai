@@ -292,6 +292,189 @@ async function main() {
     assert.equal((await repository.getSummary(identity.profileId)).lifetimeSleepPoints, 100);
   });
 
+  await test("verified legacy canonical profile and assessment reconcile exactly once", async () => {
+    const repository = new MemoryRewardRepository();
+    const legacyIdentity = {
+      profileId: "shopper#589424",
+      shopperId: "589424",
+      snoozeCode: "589424",
+      sessionId: "legacy-session-one",
+      identityType: "snooze_code",
+      isTemporary: false,
+      profile: {
+        profileId: "shopper#589424",
+        shopperId: "589424",
+        snoozeCode: "589424",
+        identityType: "snooze_code",
+        isTemporary: false,
+        assessmentAnswers: {
+          size: "Queen",
+          firmness: "Soft",
+          sleepPosition: "Side",
+        },
+        topPodId: "pod-4",
+      },
+    };
+    const first = await rewardService.reconcileExistingCanonicalRewards(
+      legacyIdentity,
+      { enabled: true, repository, rules }
+    );
+    const second = await rewardService.reconcileExistingCanonicalRewards(
+      { ...legacyIdentity, sessionId: "legacy-session-two" },
+      { enabled: true, repository, rules }
+    );
+    const summary = await repository.getSummary(legacyIdentity.profileId);
+    const ledger = [...repository.items.values()].filter(
+      (item) => item.entityType === "LEDGER" && item.entryType === "earn"
+    );
+    const outbox = [...repository.items.values()].filter(
+      (item) => item.entityType === "OUTBOX"
+    );
+
+    assert.deepEqual(first.awardedMilestoneIds, [
+      "milestone.profile.established",
+      "milestone.assessment.completed",
+    ]);
+    assert.deepEqual(second.awardedMilestoneIds, []);
+    assert.equal(summary.lifetimeSleepPoints, 200);
+    assert.equal(
+      summary.currentShowroomBadgeId,
+      "badge.showroom.rest_tester"
+    );
+    assert.deepEqual(summary.completedMilestoneIds, [
+      "milestone.profile.established",
+      "milestone.assessment.completed",
+    ]);
+    assert.equal(ledger.length, 2);
+    assert.equal(outbox.length, 2);
+  });
+
+  await test("verified legacy canonical profile receives profile points without assessment evidence", async () => {
+    const repository = new MemoryRewardRepository();
+    const legacyIdentity = {
+      profileId: "shopper#123456",
+      shopperId: "123456",
+      snoozeCode: "123456",
+      sessionId: "legacy-profile-only",
+      identityType: "snooze_code",
+      isTemporary: false,
+      profile: {
+        profileId: "shopper#123456",
+        shopperId: "123456",
+        accessCode: "123456",
+        identityType: "snooze_code",
+        isTemporary: false,
+      },
+    };
+    const result = await rewardService.reconcileExistingCanonicalRewards(
+      legacyIdentity,
+      { enabled: true, repository, rules }
+    );
+
+    assert.deepEqual(result.awardedMilestoneIds, [
+      "milestone.profile.established",
+    ]);
+    assert.equal(result.summary.lifetimeSleepPoints, 100);
+    assert.equal(result.summary.currentBadge.id, "badge.showroom.rest_tester");
+    assert.equal(
+      result.summary.milestones.find(
+        (item) => item.id === "milestone.assessment.completed"
+      ).completed,
+      false
+    );
+  });
+
+  await test("assessment table evidence backfills a saved legacy assessment", async () => {
+    const repository = new MemoryRewardRepository();
+    const legacyIdentity = {
+      profileId: "shopper#654321",
+      shopperId: "654321",
+      snoozeCode: "654321",
+      sessionId: "legacy-assessment-table",
+      identityType: "snooze_code",
+      isTemporary: false,
+      profile: {
+        profileId: "shopper#654321",
+        shopperId: "654321",
+        snoozeCode: "654321",
+        identityType: "snooze_code",
+        isTemporary: false,
+      },
+    };
+    const result = await rewardService.reconcileExistingCanonicalRewards(
+      legacyIdentity,
+      {
+        enabled: true,
+        repository,
+        rules,
+        async getAssessmentResult(shopperId) {
+          assert.equal(shopperId, "654321");
+          return {
+            shopperId,
+            answers: { size: "Queen", sleepPosition: "Side" },
+            updatedAt: "2026-07-01T12:00:00.000Z",
+          };
+        },
+      }
+    );
+
+    assert.equal(result.summary.lifetimeSleepPoints, 200);
+    assert.equal(
+      result.summary.milestones.find(
+        (item) => item.id === "milestone.assessment.completed"
+      ).completed,
+      true
+    );
+  });
+
+  await test("temporary aliases and unverified browser identities cannot reconcile rewards", async () => {
+    const repository = new MemoryRewardRepository();
+    const cases = [
+      {
+        profileId: "session#browser-id",
+        shopperId: "589424",
+        snoozeCode: "589424",
+        identityType: "temporary",
+        isTemporary: true,
+        profile: {
+          profileId: "session#browser-id",
+          shopperId: "589424",
+          isTemporary: true,
+        },
+      },
+      {
+        profileId: "shopper#589424",
+        shopperId: "589424",
+        snoozeCode: "589424",
+        identityType: "identity_alias",
+        isTemporary: false,
+        profile: {
+          profileId: "shopper#589424",
+          shopperId: "589424",
+          identityType: "identity_alias",
+          aliasOfProfileId: "shopper#111111",
+        },
+      },
+      {
+        profileId: "shopper#222222",
+        shopperId: "222222",
+        snoozeCode: "222222",
+        identityType: "snooze_code",
+        isTemporary: false,
+        profile: null,
+      },
+    ];
+
+    for (const candidate of cases) {
+      const result = await rewardService.reconcileExistingCanonicalRewards(
+        candidate,
+        { enabled: true, repository, rules }
+      );
+      assert.equal(result.skipped, true);
+    }
+    assert.equal(repository.items.size, 0);
+  });
+
   await test("incomplete Rest Test is rejected", async () => {
     await assert.rejects(
       processor.processRewardMilestone(

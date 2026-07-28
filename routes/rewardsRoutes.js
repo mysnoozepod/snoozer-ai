@@ -230,8 +230,12 @@ async function handleRewardsRoutes(event = {}, options = {}) {
 
     if (method === "GET" && routePath === "/rewards/summary") {
       const identity = await resolvePublicIdentity(event, options);
+      const reconciliation =
+        await rewardsService.reconcileExistingCanonicalRewards(identity, options);
       return success(requestId, {
-        summary: await rewardsService.getRewardSummary(identity, options),
+        summary:
+          reconciliation.summary ||
+          (await rewardsService.getRewardSummary(identity, options)),
       });
     }
     if (method === "GET" && routePath === "/rewards/history") {

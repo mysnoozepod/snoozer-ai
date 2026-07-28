@@ -6390,7 +6390,9 @@ async function handle(event = {}) {
       routePath === "/webhooks/shopify/rewards") &&
     typeof rewardsRoutes.handleRewardsRoutes === "function"
   ) {
-    const rewardsResponse = await rewardsRoutes.handleRewardsRoutes(event);
+    const rewardsResponse = await rewardsRoutes.handleRewardsRoutes(event, {
+      getAssessmentResult,
+    });
     if (rewardsResponse) return rewardsResponse;
   }
 

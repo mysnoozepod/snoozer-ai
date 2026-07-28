@@ -3,6 +3,7 @@
 const crypto = require("crypto");
 const customerProfileService = require("../customerProfile");
 const { deriveShowroomBadge } = require("../rewardsDomain/rules");
+const snoozeIdentity = require("../snoozeIdentity");
 const processor = require("./processor");
 const repository = require("./repository");
 const { loadRewardsRules } = require("./rulesLoader");
@@ -127,6 +128,197 @@ function publicSummary(summary, rules) {
     activeRulesVersion: summary.activeRulesVersion || rules.rulesVersion,
     summaryVersion: Number(summary.summaryVersion || 0),
     latestRewardActivityAt: summary.latestRewardActivityAt || null,
+  };
+}
+
+function hasObjectValues(value) {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      Object.keys(value).length > 0
+  );
+}
+
+function canonicalProfileEligibility(identity = {}) {
+  const shopperId = snoozeIdentity.normalizeSnoozeCode(identity.shopperId);
+  const expectedProfileId = shopperId ? `shopper#${shopperId}` : "";
+  const profile = identity.profile;
+  if (
+    !shopperId ||
+    !profile ||
+    typeof profile !== "object" ||
+    Array.isArray(profile) ||
+    identity.isTemporary === true ||
+    profile.isTemporary === true
+  ) {
+    return { eligible: false, reason: "CANONICAL_PROFILE_NOT_VERIFIED" };
+  }
+  if (
+    String(identity.profileId || "").trim() !== expectedProfileId ||
+    (profile.profileId &&
+      String(profile.profileId).trim() !== expectedProfileId)
+  ) {
+    return { eligible: false, reason: "CANONICAL_PROFILE_ID_MISMATCH" };
+  }
+
+  const identityType = String(identity.identityType || "").trim().toLowerCase();
+  const profileIdentityType = String(profile.identityType || "").trim().toLowerCase();
+  if (
+    identityType.includes("temporary") ||
+    identityType.includes("alias") ||
+    profileIdentityType.includes("temporary") ||
+    profileIdentityType.includes("alias") ||
+    profile.aliasOfProfileId ||
+    profile.aliasOfShopperId
+  ) {
+    return { eligible: false, reason: "CANONICAL_PROFILE_ALIAS_REJECTED" };
+  }
+
+  const profileShopperId = snoozeIdentity.normalizeSnoozeCode(
+    profile.snoozeCode || profile.accessCode || profile.shopperId
+  );
+  if (profileShopperId && profileShopperId !== shopperId) {
+    return { eligible: false, reason: "CANONICAL_PROFILE_OWNER_MISMATCH" };
+  }
+  return { eligible: true, reason: null, shopperId, profile };
+}
+
+function hasPersistedAssessment(profile = {}, assessmentRecord = null) {
+  return Boolean(
+    hasObjectValues(profile.assessmentAnswers) ||
+      hasObjectValues(profile.normalizedAssessment) ||
+      hasObjectValues(assessmentRecord?.answers) ||
+      hasObjectValues(assessmentRecord?.assessmentAnswers)
+  );
+}
+
+async function reconcileExistingCanonicalRewards(identity, options = {}) {
+  if (!enabled(options)) throw featureError();
+  const eligibility = canonicalProfileEligibility(identity);
+  if (!eligibility.eligible) {
+    console.log(
+      JSON.stringify({
+        event: "rewards.reconciliation.skipped",
+        profileId: identity?.profileId || null,
+        reason: eligibility.reason,
+      })
+    );
+    return {
+      ok: true,
+      skipped: true,
+      reason: eligibility.reason,
+      awardedMilestoneIds: [],
+    };
+  }
+
+  const repo = options.repository || repository;
+  const existingSummary = await repo.getSummary(
+    identity.profileId,
+    options.repositoryOptions || options
+  );
+  const completed = new Set(existingSummary?.completedMilestoneIds || []);
+  const awardedMilestoneIds = [];
+  const sessionId =
+    String(identity.sessionId || "").trim() ||
+    `rewards-reconciliation:${eligibility.shopperId}`;
+
+  if (!completed.has("milestone.profile.established")) {
+    const result = await recordRewardMilestone(
+      {
+        identity,
+        eventType: "milestone.profile.established",
+        sessionId,
+        subjectType: "customer_profile",
+        subjectId: identity.profileId,
+        sourceSurface: "welcome",
+        metadata: {
+          profileEstablished: true,
+          reconciliation: true,
+        },
+      },
+      options
+    );
+    completed.add("milestone.profile.established");
+    if (!result.duplicate) {
+      awardedMilestoneIds.push("milestone.profile.established");
+    }
+  }
+
+  let assessmentRecord = null;
+  if (
+    !completed.has("milestone.assessment.completed") &&
+    !hasPersistedAssessment(eligibility.profile) &&
+    typeof options.getAssessmentResult === "function"
+  ) {
+    try {
+      assessmentRecord = await options.getAssessmentResult(eligibility.shopperId);
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          event: "rewards.reconciliation.assessment_lookup_failed",
+          profileId: identity.profileId,
+          code: error?.code || "ASSESSMENT_LOOKUP_FAILED",
+        })
+      );
+    }
+  }
+
+  if (
+    !completed.has("milestone.assessment.completed") &&
+    hasPersistedAssessment(eligibility.profile, assessmentRecord)
+  ) {
+    const recommendationResolved = Boolean(
+      eligibility.profile.canonicalRecommendation ||
+        eligibility.profile.topPodId ||
+        eligibility.profile.primaryMattressHandle
+    );
+    const result = await recordRewardMilestone(
+      {
+        identity,
+        eventType: "milestone.assessment.completed",
+        sessionId,
+        subjectType: "assessment",
+        subjectId: `assessment:${eligibility.shopperId}`,
+        sourceSurface: "assessment",
+        occurredAt:
+          eligibility.profile.assessmentCompletedAt ||
+          assessmentRecord?.updatedAt ||
+          undefined,
+        metadata: {
+          assessmentVersion:
+            eligibility.profile.assessmentVersion ||
+            assessmentRecord?.assessmentVersion ||
+            "assessment.v1",
+          assessmentSaved: true,
+          recommendationResolved,
+          recommendationFallbackUsed: !recommendationResolved,
+          reconciliation: true,
+        },
+      },
+      options
+    );
+    if (!result.duplicate) {
+      awardedMilestoneIds.push("milestone.assessment.completed");
+    }
+  }
+
+  const summary = await getRewardSummary(identity, options);
+  console.log(
+    JSON.stringify({
+      event: "rewards.reconciliation.completed",
+      profileId: identity.profileId,
+      awardedMilestoneIds,
+      lifetimeSleepPoints: summary.lifetimeSleepPoints,
+      currentShowroomBadgeId: summary.currentBadge?.id || null,
+    })
+  );
+  return {
+    ok: true,
+    skipped: false,
+    reason: null,
+    awardedMilestoneIds,
+    summary,
   };
 }
 
@@ -396,8 +588,10 @@ module.exports = {
   getRewardHistory,
   getRewardOffers,
   getRewardSummary,
+  hasPersistedAssessment,
   mirrorRewardSummary,
   publicSummary,
+  reconcileExistingCanonicalRewards,
   recordRewardMilestone,
   transitionExpiredOffer,
 };
