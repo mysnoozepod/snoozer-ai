@@ -780,7 +780,7 @@ function splitCSV(v = "") {
 
 const DYNAMIC_ALLOWLIST = [
   "http://localhost:5173",
-  "https://staging.d1yszajjde5t5.amplifyapp.com",
+  "https://staging.d1yszajjlde5t5.amplifyapp.com",
   "https://mysnoozepod.com",
   "https://www.mysnoozepod.com",
 ];

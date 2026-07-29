@@ -845,6 +845,10 @@ async function main() {
 
   await test("rewards browser headers are allowed through CORS preflight", () => {
     const backendSource = fs.readFileSync(path.join(root, "index.js"), "utf8");
+    assert.match(
+      backendSource,
+      /https:\/\/staging\.d1yszajjlde5t5\.amplifyapp\.com/
+    );
     assert.match(backendSource, /x-snooze-code/);
     assert.match(backendSource, /x-access-code/);
     assert.match(backendSource, /idempotency-key/);
