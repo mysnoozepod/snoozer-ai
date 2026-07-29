@@ -6,13 +6,23 @@ import {
 
 export default function RewardsPill({ shopperId, onClick, ariaLabel = "Open rewards" }) {
   const summary = useRewardsState((state) => state.summary);
+  const status = useRewardsState((state) => state.status);
 
   useEffect(() => {
     if (shopperId) void refreshRewardsState();
   }, [shopperId]);
 
   if (!shopperId) return null;
-  const points = Number(summary?.availableSleepPoints || 0);
+  const rawPoints = summary?.availableSleepPoints;
+  const hasConfirmedBalance =
+    rawPoints !== null &&
+    rawPoints !== undefined &&
+    Number.isFinite(Number(rawPoints));
+  const label = hasConfirmedBalance
+    ? `${Number(rawPoints)} Sleep Points`
+    : status === "error"
+      ? "Rewards unavailable"
+      : "Loading rewards";
 
   return (
     <button
@@ -35,7 +45,7 @@ export default function RewardsPill({ shopperId, onClick, ariaLabel = "Open rewa
       }}
       aria-label={ariaLabel}
     >
-      {points} Sleep Points
+      {label}
     </button>
   );
 }

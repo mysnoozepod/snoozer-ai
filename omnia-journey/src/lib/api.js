@@ -25,7 +25,11 @@
 // - Added getProductsIndexByHandle() for one-pass image lookup in Results/Pod UI
 // - getProductById() now falls back to exact-handle search from listProducts when getProduct misses
 
-import { getSessionState, setSessionLinkId } from "@/state/sessionStore";
+import {
+  getSessionState,
+  setAccessCode,
+  setSessionLinkId,
+} from "@/state/sessionStore";
 import { buildApiUrl, resolveApiBase } from "@/lib/apiBase";
 import { persistShopifyCartIdentity } from "@/lib/session/shopifyCartState";
 
@@ -40,8 +44,11 @@ const CACHE_KEYS = {
 };
 
 const SESSION_KEY = "snooze.sessionId";
+const REWARD_IDENTITY_LINK_KEY = "snooze.rewardsIdentityLink.v1";
 
 let _sessionPromise = null;
+let _rewardIdentityLinkPromise = null;
+let _rewardIdentityLinkKey = "";
 
 export function getSessionId() {
   try {
@@ -71,7 +78,10 @@ export function getSessionId() {
 
 export async function ensureSession({ force = false } = {}) {
   const existing = getSessionId();
-  if (existing && !force) return existing;
+  if (existing && !force) {
+    setSessionLinkId(existing);
+    return existing;
+  }
 
   if (_sessionPromise && !force) return _sessionPromise;
 
@@ -1006,10 +1016,101 @@ export async function removeCartLines({ cartId, lineIds } = {}) {
 function rewardIdentityHeaders() {
   const state = getSessionState();
   const snoozeCode = String(state?.shopperId || "").trim();
-  return snoozeCode ? { "x-snooze-code": snoozeCode } : {};
+  const sessionId = String(state?.sessionId || getSessionId() || "").trim();
+  return {
+    ...(snoozeCode ? { "x-snooze-code": snoozeCode } : {}),
+    ...(sessionId ? { "x-session-id": sessionId } : {}),
+  };
+}
+
+function getStoredRewardIdentityLink() {
+  try {
+    return String(sessionStorage.getItem(REWARD_IDENTITY_LINK_KEY) || "").trim();
+  } catch {
+    return "";
+  }
+}
+
+function storeRewardIdentityLink(linkKey) {
+  try {
+    sessionStorage.setItem(REWARD_IDENTITY_LINK_KEY, linkKey);
+  } catch {
+    // The in-memory key still prevents duplicate check-ins in this page lifecycle.
+  }
+}
+
+export async function checkInSnoozeCode({
+  snoozeCode,
+  accessCode,
+  sourceSurface = "showroom_welcome",
+} = {}) {
+  const requestedCode = String(snoozeCode || accessCode || "").trim();
+  if (!requestedCode) throw new Error("Enter a valid Snooze Code.");
+
+  const sessionId = await ensureSession();
+  if (!sessionId) throw new Error("Unable to start a secure showroom session.");
+
+  const raw = await retryableRequest("/identity/check-in", {
+    method: "POST",
+    body: {
+      snoozeCode: requestedCode,
+      accessCode: requestedCode,
+      sessionId,
+      sourceSurface,
+    },
+  });
+  const data = unwrap(raw) || raw || {};
+  if (data.ok === false) {
+    const error = new Error(data.message || "Snooze Code not found.");
+    error.code = data.code || "SNOOZE_CODE_NOT_FOUND";
+    throw error;
+  }
+
+  const canonicalCode = String(
+    data.snoozeCode || data.accessCode || data.shopperId || ""
+  ).trim();
+  if (!canonicalCode) {
+    throw new Error("The Snooze Profile could not be verified.");
+  }
+
+  setAccessCode(canonicalCode);
+  setSessionLinkId(sessionId);
+  const linkKey = `${canonicalCode}:${sessionId}`;
+  _rewardIdentityLinkKey = linkKey;
+  storeRewardIdentityLink(linkKey);
+
+  return { ...data, snoozeCode: canonicalCode, sessionId };
+}
+
+export async function ensureRewardIdentityLink() {
+  const state = getSessionState();
+  const snoozeCode = String(state?.shopperId || "").trim();
+  if (!snoozeCode) throw new Error("A valid Snooze Code is required.");
+
+  const sessionId = await ensureSession();
+  const linkKey = `${snoozeCode}:${sessionId}`;
+  if (
+    _rewardIdentityLinkKey === linkKey ||
+    getStoredRewardIdentityLink() === linkKey
+  ) {
+    _rewardIdentityLinkKey = linkKey;
+    return { snoozeCode, sessionId, linked: true };
+  }
+
+  if (!_rewardIdentityLinkPromise) {
+    _rewardIdentityLinkPromise = checkInSnoozeCode({
+      snoozeCode,
+      sourceSurface: "showroom_rewards",
+    }).finally(() => {
+      _rewardIdentityLinkPromise = null;
+    });
+  }
+
+  return _rewardIdentityLinkPromise;
 }
 
 async function rewardRequest(path, { method = "GET", body, headers } = {}) {
+  await ensureRewardIdentityLink();
   const raw = await retryableRequest(path, {
     method,
     body,

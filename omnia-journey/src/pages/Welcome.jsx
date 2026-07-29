@@ -5,7 +5,7 @@ import { ArrowRight, CircleHelp, LockKeyhole, ShieldCheck } from "lucide-react";
 
 import { canUseAskSnoozer } from "@/device/deviceActionGuards";
 import { useDeviceMode } from "@/device/useDeviceMode";
-import { getAssessment } from "@/lib/api";
+import { checkInSnoozeCode, getAssessment } from "@/lib/api";
 import { getAccessCode, setAccessCode } from "@/state/sessionStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import {
@@ -73,14 +73,19 @@ export default function Welcome() {
       safeRemove("snooze.snapshot");
       safeRemove("snooze.shopperState");
 
-      setAccessCode(trimmed);
-      getAssessment(trimmed).catch(() => {
+      const checkIn = await checkInSnoozeCode({
+        snoozeCode: trimmed,
+        sourceSurface: "showroom_welcome",
+      });
+      const canonicalCode = checkIn.snoozeCode || checkIn.shopperId || trimmed;
+      setAccessCode(canonicalCode);
+      getAssessment(canonicalCode).catch(() => {
         // ignore background hydrate miss
       });
 
       const introJob = await runHudAction("start_assessment", {
         scriptKey: "welcome.entry.new",
-        shopperId: trimmed,
+        shopperId: canonicalCode,
         fallback: {
           speech:
             "Hi, welcome to MySnoozePod. I'm Snoozer, your personal sleep assistant. Let's get you sleeping better.",
@@ -117,7 +122,11 @@ export default function Welcome() {
     } catch (err) {
       console.error("Welcome start failed:", err);
       clearTransitionTimer();
-      setError("Unable to start your Snooze Session right now.");
+      setError(
+        err?.code === "SNOOZE_CODE_NOT_FOUND"
+          ? "Snooze Code not found."
+          : "Unable to start your Snooze Session right now."
+      );
       hasStartedRef.current = false;
       setLoading(false);
     }

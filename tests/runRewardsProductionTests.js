@@ -7,6 +7,7 @@ const path = require("path");
 const processor = require("../services/rewards/processor");
 const redemption = require("../services/rewards/redemption");
 const rewardService = require("../services/rewards/service");
+const rewardRoutes = require("../routes/rewardsRoutes");
 const shopifyWebhook = require("../services/rewards/shopifyWebhook");
 const { validateRewardsRules } = require("../services/rewardsDomain/rules");
 
@@ -753,6 +754,93 @@ async function main() {
       .join("\n");
     assert.equal(/\bawardPoints\b/.test(`${rewardStateSource}\n${pageSource}`), false);
     assert.equal(/\bsetInterval\s*\(/.test(rewardStateSource), false);
+  });
+
+  await test("public summary route reconciles an established assessed profile", async () => {
+    const repository = new MemoryRewardRepository();
+    const profile = {
+      profileId: "shopper#589424",
+      shopperId: "589424",
+      snoozeCode: "589424",
+      identityType: "snooze_code",
+      sessionId: "session-route-test",
+      assessmentAnswers: {
+        size: "Queen",
+        sleepPosition: "Side",
+      },
+      canonicalRecommendation: {
+        topPodId: "4",
+        primaryMattressHandle: "12-all-foam-mattress",
+      },
+    };
+    const response = await rewardRoutes.handleRewardsRoutes(
+      {
+        requestContext: {
+          http: { method: "GET" },
+          requestId: "rewards-route-test",
+        },
+        rawPath: "/rewards/summary",
+        headers: {
+          "x-snooze-code": "589424",
+          "x-session-id": "session-route-test",
+        },
+      },
+      {
+        enabled: true,
+        rules,
+        repository,
+        customerProfileService: {
+          async getCustomerProfile({ profileId }) {
+            return profileId === profile.profileId
+              ? { ok: true, profile }
+              : { ok: true, profile: null };
+          },
+        },
+        snoozeIdentity: {
+          async resolveCanonicalIdentity() {
+            return {
+              profileId: profile.profileId,
+              shopperId: profile.shopperId,
+              snoozeCode: profile.snoozeCode,
+              identityType: profile.identityType,
+            };
+          },
+        },
+      }
+    );
+    const body = JSON.parse(response.body);
+    assert.equal(response.statusCode, 200);
+    assert.equal(body.summary.availableSleepPoints, 200);
+    assert.equal(body.summary.lifetimeSleepPoints, 200);
+    assert.deepEqual(
+      body.summary.milestones
+        .filter((milestone) => milestone.completed)
+        .map((milestone) => milestone.id)
+        .sort(),
+      ["milestone.assessment.completed", "milestone.profile.established"]
+    );
+  });
+
+  await test("frontend securely links code and session before reward reads", () => {
+    const apiSource = fs.readFileSync(
+      path.join(root, "omnia-journey/src/lib/api.js"),
+      "utf8"
+    );
+    const welcomeSource = fs.readFileSync(
+      path.join(root, "omnia-journey/src/pages/Welcome.jsx"),
+      "utf8"
+    );
+    const pillSource = fs.readFileSync(
+      path.join(root, "omnia-journey/src/components/RewardsPill.jsx"),
+      "utf8"
+    );
+    assert.match(apiSource, /"x-session-id": sessionId/);
+    assert.match(apiSource, /await ensureRewardIdentityLink\(\)/);
+    assert.match(welcomeSource, /await checkInSnoozeCode\(/);
+    assert.doesNotMatch(
+      pillSource,
+      /Number\(summary\?\.availableSleepPoints \|\| 0\)/
+    );
   });
 
   if (process.exitCode) process.exit(process.exitCode);
