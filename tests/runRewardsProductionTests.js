@@ -843,6 +843,13 @@ async function main() {
     );
   });
 
+  await test("rewards browser headers are allowed through CORS preflight", () => {
+    const backendSource = fs.readFileSync(path.join(root, "index.js"), "utf8");
+    assert.match(backendSource, /x-snooze-code/);
+    assert.match(backendSource, /x-access-code/);
+    assert.match(backendSource, /idempotency-key/);
+  });
+
   if (process.exitCode) process.exit(process.exitCode);
   process.stdout.write(`\nRewards production tests passed: ${passed}\n`);
 }

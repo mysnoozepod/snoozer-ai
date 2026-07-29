@@ -793,7 +793,7 @@ const DYNAMIC_ALLOWLIST = [
 const ALLOWLIST = splitCSV(process.env.CORS_ALLOW_ORIGIN || "").concat(DYNAMIC_ALLOWLIST);
 
 const ALLOW_HEADERS =
-  "content-type,authorization,x-requested-with,x-request-id,x-api-key,x-session-id,x-debug,x-hud,if-none-match";
+  "content-type,authorization,x-requested-with,x-request-id,x-api-key,x-session-id,x-snooze-code,x-access-code,idempotency-key,x-debug,x-hud,if-none-match";
 const ALLOW_METHODS = "GET,POST,PATCH,OPTIONS";
 const EXPOSE_HEADERS = "x-request-id,x-trace-id,x-session-id,etag,last-modified";
 const MAX_AGE = "600";
