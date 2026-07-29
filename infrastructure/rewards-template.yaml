@@ -271,6 +271,10 @@ Outputs:
     Value: !Ref RewardsRulesBucket
   RewardsRulesKey:
     Value: !Sub "rewards/${DeploymentEnv}/rewards-rules.v1.json"
+  RewardsClassificationsBucketName:
+    Value: !Ref RewardsRulesBucket
+  RewardsClassificationsKey:
+    Value: !Sub "rewards/${DeploymentEnv}/rewards-product-classifications.v1.json"
   RewardsZohoQueueUrl:
     Value: !Ref RewardsZohoQueue
   RewardsZohoDeadLetterQueueUrl:
@@ -283,4 +287,7 @@ Outputs:
       REWARDS_TABLE_NAME=${RewardsTable},
       REWARDS_RULES_BUCKET=${RewardsRulesBucket},
       REWARDS_RULES_KEY=rewards/${DeploymentEnv}/rewards-rules.v1.json,
+      REWARDS_RULES_CACHE_TTL_MS=60000,
+      REWARDS_CLASSIFICATIONS_BUCKET=${RewardsRulesBucket},
+      REWARDS_CLASSIFICATIONS_KEY=rewards/${DeploymentEnv}/rewards-product-classifications.v1.json,
       REWARDS_ZOHO_QUEUE_URL=${RewardsZohoQueue}

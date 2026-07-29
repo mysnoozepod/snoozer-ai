@@ -2,6 +2,7 @@
 
 const crypto = require("crypto");
 const rewardsIdentity = require("../services/rewards/identity");
+const rewardsConfiguration = require("../services/rewards/configuration");
 const rewardsRepository = require("../services/rewards/repository");
 const rewardsService = require("../services/rewards/service");
 const rewardsRedemption = require("../services/rewards/redemption");
@@ -215,6 +216,7 @@ async function handleRewardsRoutes(event = {}, options = {}) {
   const requestId = requestIdOf(event);
 
   try {
+    await rewardsConfiguration.logRewardsConfigurationReady(options);
     if (method === "POST" && isShopifyWebhook) {
       const result = await rewardsShopifyWebhook.processShopifyRewardsWebhook(
         event,
