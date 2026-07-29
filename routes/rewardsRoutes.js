@@ -23,7 +23,12 @@ function methodOf(event = {}) {
 }
 
 function pathOf(event = {}) {
-  return String(event.rawPath || event.path || "/").replace(/\/+$/, "") || "/";
+  const rawPath = String(event.rawPath || event.path || "/");
+  const stage = String(event.requestContext?.stage || "").trim();
+  const normalizedPath = stage
+    ? rawPath.replace(new RegExp(`^/${stage}(?=/|$)`, "i"), "") || "/"
+    : rawPath;
+  return normalizedPath.replace(/\/+$/, "") || "/";
 }
 
 function requestIdOf(event = {}) {

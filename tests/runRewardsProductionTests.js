@@ -821,6 +821,61 @@ async function main() {
     );
   });
 
+  await test("public rewards routes accept API Gateway v1 stage-prefixed paths", async () => {
+    const repository = new MemoryRewardRepository();
+    const profile = {
+      profileId: "shopper#7283",
+      shopperId: "7283",
+      snoozeCode: "7283",
+      identityType: "snooze_code",
+      sessionId: "session-stage-prefix-test",
+      assessmentAnswers: {
+        size: "Queen",
+        sleepPosition: "Side",
+      },
+    };
+    const response = await rewardRoutes.handleRewardsRoutes(
+      {
+        requestContext: {
+          stage: "prod",
+          requestId: "rewards-stage-prefix-test",
+        },
+        httpMethod: "GET",
+        path: "/prod/rewards/summary",
+        headers: {
+          "x-snooze-code": "7283",
+          "x-session-id": "session-stage-prefix-test",
+        },
+      },
+      {
+        enabled: true,
+        rules,
+        repository,
+        customerProfileService: {
+          async getCustomerProfile({ profileId }) {
+            return profileId === profile.profileId
+              ? { ok: true, profile }
+              : { ok: true, profile: null };
+          },
+        },
+        snoozeIdentity: {
+          async resolveCanonicalIdentity() {
+            return {
+              profileId: profile.profileId,
+              shopperId: profile.shopperId,
+              snoozeCode: profile.snoozeCode,
+              identityType: profile.identityType,
+            };
+          },
+        },
+      }
+    );
+    const body = JSON.parse(response.body);
+    assert.equal(response.statusCode, 200);
+    assert.equal(body.ok, true);
+    assert.equal(body.summary.availableSleepPoints, 200);
+  });
+
   await test("frontend securely links code and session before reward reads", () => {
     const apiSource = fs.readFileSync(
       path.join(root, "omnia-journey/src/lib/api.js"),
