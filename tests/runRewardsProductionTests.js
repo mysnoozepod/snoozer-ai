@@ -850,6 +850,16 @@ async function main() {
     assert.match(backendSource, /idempotency-key/);
   });
 
+  await test("Lambda requires and routes rewards without an optional fallback", () => {
+    const backendSource = fs.readFileSync(path.join(root, "index.js"), "utf8");
+    assert.match(
+      backendSource,
+      /const\s+\{\s*handleRewardsRoutes\s*\}\s*=\s*require\("\.\/routes\/rewardsRoutes"\)/
+    );
+    assert.doesNotMatch(backendSource, /rewardsRoutes not found/);
+    assert.match(backendSource, /await handleRewardsRoutes\(event/);
+  });
+
   if (process.exitCode) process.exit(process.exitCode);
   process.stdout.write(`\nRewards production tests passed: ${passed}\n`);
 }

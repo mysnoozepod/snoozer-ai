@@ -44,12 +44,7 @@ const {
   issuePhysicalControlCommand,
 } = require("./services/iot/physicalControl");
 
-let rewardsRoutes;
-try {
-  rewardsRoutes = require("./routes/rewardsRoutes");
-} catch {
-  console.log("Ã¢Å¡Â Ã¯Â¸Â rewardsRoutes not found.");
-}
+const { handleRewardsRoutes } = require("./routes/rewardsRoutes");
 
 let buildIndexes;
 try {
@@ -6385,12 +6380,10 @@ async function handle(event = {}) {
 
   // ???????????????????????????????????????????????????????????????????????????????????????? Rewards
   if (
-    rewardsRoutes &&
-    (routePath.startsWith("/rewards") ||
-      routePath === "/webhooks/shopify/rewards") &&
-    typeof rewardsRoutes.handleRewardsRoutes === "function"
+    routePath.startsWith("/rewards") ||
+    routePath === "/webhooks/shopify/rewards"
   ) {
-    const rewardsResponse = await rewardsRoutes.handleRewardsRoutes(event, {
+    const rewardsResponse = await handleRewardsRoutes(event, {
       getAssessmentResult,
     });
     if (rewardsResponse) return rewardsResponse;
