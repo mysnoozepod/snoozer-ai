@@ -9,6 +9,7 @@ const redemption = require("../services/rewards/redemption");
 const rewardService = require("../services/rewards/service");
 const rewardRoutes = require("../routes/rewardsRoutes");
 const shopifyWebhook = require("../services/rewards/shopifyWebhook");
+const rewardsOutbox = require("../services/rewards/outbox");
 const { validateRewardsRules } = require("../services/rewardsDomain/rules");
 
 const root = path.resolve(__dirname, "..");
@@ -78,6 +79,19 @@ const identity = {
   shopperId: "production-test",
   snoozeCode: "589424",
 };
+
+function rewardsQueueRecord(messageId = "message-1") {
+  return {
+    messageId,
+    body: JSON.stringify({
+      schemaVersion: 1,
+      profileId: identity.profileId,
+      outboxKey: "OUTBOX#reward-event-1",
+      eventType: "points_awarded",
+      payload: { shopperId: identity.shopperId, summaryVersion: 1 },
+    }),
+  };
+}
 
 function milestoneInput(eventType, overrides = {}) {
   const common = {
@@ -874,6 +888,64 @@ async function main() {
     assert.equal(response.statusCode, 200);
     assert.equal(body.ok, true);
     assert.equal(body.summary.availableSleepPoints, 200);
+  });
+
+  await test("terminal Zoho configuration failures are acknowledged", async () => {
+    const updates = [];
+    const result = await rewardsOutbox.processRewardsZohoQueue(
+      { Records: [rewardsQueueRecord("terminal-message")] },
+      {
+        repository: {
+          async getEntity() {
+            return {
+              entityType: "OUTBOX",
+              status: "pending",
+              payload: { shopperId: identity.shopperId },
+            };
+          },
+          async updateEntity(profileId, outboxKey, values) {
+            updates.push({ profileId, outboxKey, values });
+            return values;
+          },
+        },
+      }
+    );
+    assert.deepEqual(result.batchItemFailures, []);
+    assert.equal(updates.at(-1).values.status, "configuration_failed");
+  });
+
+  await test("retryable Zoho failures remain eligible for SQS retry", async () => {
+    const result = await rewardsOutbox.processRewardsZohoQueue(
+      { Records: [rewardsQueueRecord("retryable-message")] },
+      {
+        fieldMappings: {
+          availableSleepPoints: "Available_Sleep_Points",
+          lifetimeSleepPoints: "Lifetime_Sleep_Points",
+          currentShowroomBadgeId: "Current_Showroom_Badge",
+          activeRulesVersion: "Active_Rewards_Rules",
+          summaryVersion: "Rewards_Summary_Version",
+          lastRewardActivityAt: "Last_Reward_Activity",
+        },
+        repository: {
+          async getEntity() {
+            return {
+              entityType: "OUTBOX",
+              status: "pending",
+              payload: { shopperId: identity.shopperId },
+            };
+          },
+          async getSummary() {
+            return null;
+          },
+          async updateEntity() {
+            return {};
+          },
+        },
+      }
+    );
+    assert.deepEqual(result.batchItemFailures, [
+      { itemIdentifier: "retryable-message" },
+    ]);
   });
 
   await test("frontend securely links code and session before reward reads", () => {

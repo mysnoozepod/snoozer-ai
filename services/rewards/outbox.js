@@ -280,8 +280,10 @@ async function processRewardsZohoQueue(event = {}, options = {}) {
     try {
       const message = JSON.parse(record.body || "{}");
       await syncRewardsOutboxMessage(message, options);
-    } catch {
-      failures.push({ itemIdentifier: record.messageId });
+    } catch (error) {
+      if (!error?.terminal) {
+        failures.push({ itemIdentifier: record.messageId });
+      }
     }
   }
   return { batchItemFailures: failures };

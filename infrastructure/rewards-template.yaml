@@ -123,7 +123,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "msp-${DeploymentEnv}-rewards-outbox-publisher"
-      CodeUri: ../
+      CodeUri: ../snoozer-backend.zip
       Handler: handlers/rewardsOutboxPublisher.handler
       Timeout: 30
       Environment:
@@ -150,11 +150,10 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "msp-${DeploymentEnv}-rewards-zoho-sync"
-      CodeUri: ../
+      CodeUri: ../snoozer-backend.zip
       Handler: handlers/rewardsZohoSync.handler
       Timeout: 60
       MemorySize: 512
-      ReservedConcurrentExecutions: 5
       Environment:
         Variables:
           REWARDS_ZOHO_FIELD_MAP_JSON: !Ref ZohoFieldMapJson
