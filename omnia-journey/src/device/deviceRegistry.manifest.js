@@ -20,7 +20,7 @@ function makePodDevice(index) {
     zoneId: podId,
     podId,
     defaultRoute: `/pod/${podId}`,
-    allowedRoutePatterns: [`/pod/${podId}`, "/ask-snoozer", "/cart"],
+    allowedRoutePatterns: [`/pod/${podId}`, "/sleep-essentials", "/ask-snoozer", "/cart"],
     blockedRoutePatterns: [
       "/welcome",
       "/what-to-expect",

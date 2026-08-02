@@ -58,13 +58,21 @@ function failure(requestId, error) {
       statusCode,
     })
   );
+  const errorBody = {
+    code: error?.code || "REWARDS_REQUEST_FAILED",
+    message: publicMessage,
+  };
+  if (Array.isArray(error?.details?.reviewedCategories)) {
+    errorBody.reviewedCategories = error.details.reviewedCategories;
+  }
+  if (Array.isArray(error?.details?.remainingCategories)) {
+    errorBody.remainingCategories = error.details.remainingCategories;
+  }
+  if (typeof error?.retryable === "boolean") errorBody.retryable = error.retryable;
   return http(statusCode, {
     ok: false,
     requestId,
-    error: {
-      code: error?.code || "REWARDS_REQUEST_FAILED",
-      message: publicMessage,
-    },
+    error: errorBody,
     hud: rewardsService.REWARD_FAILURE_HUD,
   });
 }
@@ -332,6 +340,34 @@ async function handleRewardsRoutes(event = {}, options = {}) {
       const identity = await resolvePublicIdentity(event, options);
       return success(requestId, {
         result: await rewardsExperiences.saveRatingsAndFavorite(
+          identity,
+          body,
+          options
+        ),
+      });
+    }
+    if (
+      method === "POST" &&
+      routePath === "/rewards/experiences/accessories/progress"
+    ) {
+      const body = requireBody(event);
+      const identity = await resolvePublicIdentity(event, options);
+      return success(requestId, {
+        progress: await rewardsExperiences.recordAccessoriesProgress(
+          identity,
+          body,
+          options
+        ),
+      }, 201);
+    }
+    if (
+      method === "POST" &&
+      routePath === "/rewards/experiences/accessories/status"
+    ) {
+      const body = requireBody(event);
+      const identity = await resolvePublicIdentity(event, options);
+      return success(requestId, {
+        progress: await rewardsExperiences.getAccessoriesProgress(
           identity,
           body,
           options

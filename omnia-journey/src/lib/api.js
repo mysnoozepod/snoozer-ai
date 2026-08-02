@@ -1023,6 +1023,11 @@ function rewardIdentityHeaders() {
   };
 }
 
+export async function getSleepEssentialsCatalog(categoryId = null) {
+  const out = await rpc("sleepEssentials/catalog", { categoryId });
+  return out?.catalog || out || null;
+}
+
 function getStoredRewardIdentityLink() {
   try {
     return String(sessionStorage.getItem(REWARD_IDENTITY_LINK_KEY) || "").trim();
@@ -1199,6 +1204,47 @@ export async function completeRewardAccessories(payload) {
     body: payload,
   });
   return data.result || null;
+}
+
+export async function recordRewardAccessoriesProgress(payload) {
+  const data = await rewardRequest("/rewards/experiences/accessories/progress", {
+    method: "POST",
+    body: payload,
+  });
+  return data.progress || null;
+}
+
+export async function getRewardAccessoriesProgress(payload) {
+  const data = await rewardRequest("/rewards/experiences/accessories/status", {
+    method: "POST",
+    body: payload,
+  });
+  return data.progress || null;
+}
+
+export async function resolveShopperCart() {
+  return rewardRequest("/shopify/cart/owned/resolve", { method: "POST", body: {} });
+}
+
+export async function addLinesToShopperCart({ lines = [] } = {}) {
+  return rewardRequest("/shopify/cart/owned/addLines", {
+    method: "POST",
+    body: { lines },
+  });
+}
+
+export async function updateShopperCartLines({ lines = [] } = {}) {
+  return rewardRequest("/shopify/cart/owned/updateLines", {
+    method: "POST",
+    body: { lines },
+  });
+}
+
+export async function removeShopperCartLines({ lineIds = [] } = {}) {
+  return rewardRequest("/shopify/cart/owned/removeLines", {
+    method: "POST",
+    body: { lineIds },
+  });
 }
 
 export const getRewardBalance = async () => {
@@ -1554,6 +1600,7 @@ export const api = {
   getProducts,
   getProductsIndexByHandle,
   getProductById,
+  getSleepEssentialsCatalog,
 
   // cart
   createCart,
@@ -1561,6 +1608,10 @@ export const api = {
   addLinesToCart,
   updateCartLines,
   removeCartLines,
+  resolveShopperCart,
+  addLinesToShopperCart,
+  updateShopperCartLines,
+  removeShopperCartLines,
 
   // rewards
   getRewardBalance,
@@ -1570,12 +1621,14 @@ export const api = {
   getRewardHistory,
   getRewardOffers,
   getRewardGift,
+  getRewardAccessoriesProgress,
   previewRewardRedemption,
   createRewardRedemption,
   claimRewardGift,
   startRewardRestTest,
   recordRewardRestTestStage,
   completeRewardRestTest,
+  recordRewardAccessoriesProgress,
   saveRewardRatings,
   completeRewardAccessories,
 

@@ -61,19 +61,20 @@
     {
       "id": "milestone.accessories.completed",
       "displayName": "Sleep Essentials Completed",
-      "description": "A qualifying pillows and accessories journey was completed.",
+      "description": "The pillows, sheets and bedding, and protector categories were reviewed.",
       "status": "implemented",
       "enabled": true,
       "pointAward": 100,
       "completionAuthority": "backend",
       "allowedSourceSystems": ["snoozer-backend"],
       "allowedSourceSurfaces": ["sleep_essentials", "pod_customize"],
-      "repeatPolicy": { "type": "once_per_showroom_journey" },
+      "repeatPolicy": { "type": "once_per_shopper_lifetime" },
       "subjectRequirements": { "required": true, "allowedTypes": ["accessory_journey"] },
       "requiredMetadata": ["journeyId"],
       "badgeContribution": true,
       "candidateOfferUnlockIds": [],
-      "effectiveRuleVersion": "rewards.staging.v1"
+      "effectiveRuleVersion": "rewards.staging.v1",
+      "metadata": { "requiredCategoryIds": ["pillows", "sheets_bedding", "protectors"] }
     },
     {
       "id": "milestone.ratings.completed",

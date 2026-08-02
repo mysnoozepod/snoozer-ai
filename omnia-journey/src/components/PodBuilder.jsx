@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   BedDouble,
@@ -13,11 +14,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import * as api from "@/lib/api";
-import { getStoredShopifyCartIdentity } from "@/lib/session/shopifyCartState";
+import {
+  buildPodCustomizeReturnPath,
+  buildSleepEssentialsPath,
+  getSleepEssentialsJourneyId,
+} from "@/lib/sleepEssentials";
 import { useStore } from "@/lib/useStore";
-import { getSessionState, getShopperId } from "@/state/sessionStore";
+import { getShopperId } from "@/state/sessionStore";
 import { refreshRewardsState } from "@/state/rewardsStore";
-import curatedCatalog from "../../../s3 files/snoozerknowledgeprod/meta/catalog.json";
 import {
   SIZE_OPTIONS,
   BASE_OPTIONS_UI,
@@ -42,30 +46,26 @@ export const APPROVED_MOTION_VISUALS = Object.freeze({
 });
 
 const ESSENTIAL_STEP_KEYS = Object.freeze(["pillows", "sheets", "protector"]);
+const CANONICAL_ESSENTIAL_CATEGORY_IDS = Object.freeze({
+  pillows: "pillows",
+  sheets: "sheets_bedding",
+  protector: "protectors",
+});
 const ESSENTIAL_CATEGORY_CONFIG = Object.freeze({
   pillows: {
     label: "Pillows",
     singular: "Pillow",
-    query: "pillow",
     max: 3,
-    handles: curatedCatalog?.categories?.pillows || [],
   },
   sheets: {
     label: "Sheets",
     singular: "Sheet set",
-    query: "sheet",
     max: 3,
-    handles: (curatedCatalog?.categories?.bedding || []).filter((handle) => lower(handle).includes("sheet")),
   },
   protector: {
     label: "Mattress Protectors",
     singular: "Mattress protector",
-    query: "protector",
     max: 2,
-    handles: (curatedCatalog?.categories?.bedding || []).filter((handle) => {
-      const normalized = lower(handle);
-      return normalized.includes("protector") || normalized.includes("encasement");
-    }),
   },
 });
 
@@ -268,10 +268,8 @@ function buildEssentialChoice(product, category, size, motionType) {
 function buildEssentialChoices(products, category, size, motionType) {
   const config = ESSENTIAL_CATEGORY_CONFIG[category];
   if (!config) return [];
-  const approvedHandles = new Set(config.handles);
 
   return (Array.isArray(products) ? products : [])
-    .filter((product) => approvedHandles.has(String(product?.handle || "").trim()))
     .map((product) => buildEssentialChoice(product, category, size, motionType))
     .filter(Boolean)
     .slice(0, config.max);
@@ -923,6 +921,7 @@ export default function PodBuilder({
   onViewResults,
   requestedStepKey,
 }) {
+  const navigate = useNavigate();
   const addLinesToAuthoritativeCart = useStore(
     (state) => state.addLinesToAuthoritativeCart
   );
@@ -935,6 +934,16 @@ export default function PodBuilder({
   const isDualComfort = fixedMattressType === "dual12";
   const supportsSplitMotion = isDualComfort;
   const shopperKey = useMemo(() => readShopperKey(), []);
+  const sleepEssentialsJourneyId = useMemo(
+    () => getSleepEssentialsJourneyId(getShopperId()),
+    [shopperKey]
+  );
+  const canonicalPodId = useMemo(() => {
+    const raw = String(pod?.podId ?? pod?.id ?? "").trim().toLowerCase();
+    if (/^pod-[1-5]$/.test(raw)) return raw;
+    const numeric = raw.replace(/^pod-/, "");
+    return /^[1-5]$/.test(numeric) ? `pod-${numeric}` : "";
+  }, [pod?.id, pod?.podId]);
   const assessmentSignature = useMemo(() => buildAssessmentSignature(assessment), [assessment]);
 
   const savedBuild = useMemo(() => readSavedBuild(pod), [pod]);
@@ -972,6 +981,7 @@ export default function PodBuilder({
     itemsByCategory: {},
     error: "",
   });
+  const [essentialProgressBusy, setEssentialProgressBusy] = useState("");
   const [selectedEssentials, setSelectedEssentials] = useState(() =>
     normalizeSavedEssentials(compatibleSavedBuild?.selectedEssentials)
   );
@@ -1029,6 +1039,52 @@ export default function PodBuilder({
     };
   });
 
+  const openSleepEssentials = useCallback(
+    (category) => {
+      const returnStep = ESSENTIAL_STEP_KEYS.includes(stepKey) ? stepKey : "review";
+      const returnTo = buildPodCustomizeReturnPath(canonicalPodId, returnStep);
+      navigate(buildSleepEssentialsPath({ category, returnTo }));
+    },
+    [canonicalPodId, navigate, stepKey]
+  );
+
+  const recordEssentialProgress = useCallback(
+    async ({ category, action, choice = null }) => {
+      const categoryId = CANONICAL_ESSENTIAL_CATEGORY_IDS[category];
+      if (!sleepEssentialsJourneyId || !categoryId) {
+        const message = "Enter your Snooze Code to save Sleep Essentials progress.";
+        setCartError(message);
+        onCue?.(message, "warning");
+        return false;
+      }
+
+      setEssentialProgressBusy(category);
+      try {
+        await api.recordRewardAccessoriesProgress({
+          journeyId: sleepEssentialsJourneyId,
+          categoryId,
+          action,
+          productHandle: choice?.handle || null,
+          variantId: choice?.variantId || null,
+          sourceSurface: "pod_customize",
+        });
+        return true;
+      } catch (error) {
+        const message = "Your selection is still here, but Sleep Essentials progress could not be saved.";
+        console.warn("[rewards] Sleep Essentials progress was not recorded", {
+          categoryId,
+          code: error?.code || "REWARD_ACCESSORIES_PROGRESS_FAILED",
+        });
+        setCartError(message);
+        onCue?.(message, "warning");
+        return false;
+      } finally {
+        setEssentialProgressBusy("");
+      }
+    },
+    [onCue, sleepEssentialsJourneyId]
+  );
+
   const motionAvailability = useMemo(
     () => motionAvailabilityForSelection(size, isDualComfort),
     [size, isDualComfort]
@@ -1041,18 +1097,19 @@ export default function PodBuilder({
   useEffect(() => {
     let active = true;
 
-    Promise.all(
-      ESSENTIAL_STEP_KEYS.map(async (category) => {
-        const config = ESSENTIAL_CATEGORY_CONFIG[category];
-        const response = await api.getProducts({ q: config.query, limit: 50, lite: false });
-        return [category, response?.items || []];
-      })
-    )
-      .then((entries) => {
+    api.getSleepEssentialsCatalog()
+      .then((catalog) => {
         if (!active) return;
+        const categories = Array.isArray(catalog?.categories) ? catalog.categories : [];
+        const byId = new Map(categories.map((category) => [category.id, category.products || []]));
         setEssentialProducts({
           status: "ready",
-          itemsByCategory: Object.fromEntries(entries),
+          itemsByCategory: Object.fromEntries(
+            ESSENTIAL_STEP_KEYS.map((category) => [
+              category,
+              byId.get(CANONICAL_ESSENTIAL_CATEGORY_IDS[category]) || [],
+            ])
+          ),
           error: "",
         });
       })
@@ -1760,38 +1817,28 @@ export default function PodBuilder({
     setIsAddingToCart(true);
 
     try {
-      const cartResult = await addLinesToAuthoritativeCart?.({
+      await addLinesToAuthoritativeCart?.({
         lines,
         sourcePage: "pod-build",
       });
       setGuidedStep("success");
       onCue?.("Added to cart.", "success");
 
-      const hasSelectedEssentials = ESSENTIAL_STEP_KEYS.some(
-        (category) => Boolean(selectedEssentialChoices[category])
-      );
-      if (hasSelectedEssentials) {
-        const cartId =
-          cartResult?.id ||
-          cartResult?.cartId ||
-          cartResult?.cart?.id ||
-          getStoredShopifyCartIdentity().cartId;
-        const session = getSessionState();
-        if (cartId) {
-          void api
-            .completeRewardAccessories({
-              journeyId:
-                session?.sessionId ||
-                `${podIdValue || "pod"}-${new Date().toISOString().slice(0, 10)}`,
-              cartId,
-            })
-            .then(() => refreshRewardsState({ force: true }))
-            .catch((error) => {
-              console.warn("[rewards] Sleep Essentials completion was not recorded", {
-                code: error?.code || "REWARD_ACCESSORIES_COMPLETION_FAILED",
-              });
+      if (sleepEssentialsJourneyId && essentialsReady) {
+        void api
+          .completeRewardAccessories({
+            journeyId: sleepEssentialsJourneyId,
+            sourceSurface: "pod_customize",
+          })
+          .then(async () => {
+            await refreshRewardsState({ force: true });
+            onCue?.("Sleep Essentials complete. Your reward is confirmed.", "success");
+          })
+          .catch((error) => {
+            console.warn("[rewards] Sleep Essentials completion was not recorded", {
+              code: error?.code || "REWARD_ACCESSORIES_COMPLETION_FAILED",
             });
-        }
+          });
       }
     } catch (err) {
       const errorCode = err?.code || err?.name || err?.status || "CART_MUTATION_FAILED";
@@ -1827,6 +1874,8 @@ export default function PodBuilder({
     selectedBaseLabel,
     selectedMotionLabel,
     selectedEssentialChoices,
+    sleepEssentialsJourneyId,
+    essentialsReady,
     setGuidedStep,
     showMotion,
     size,
@@ -2155,10 +2204,32 @@ export default function PodBuilder({
         setCartError("");
       };
 
-      const skipCategory = () => {
+      const skipCategory = async () => {
+        if (essentialProgressBusy === stepKey) return;
         setSelectedEssentials((current) => ({ ...current, [stepKey]: null }));
         setSkippedEssentials((current) => ({ ...current, [stepKey]: true }));
+        const recorded = await recordEssentialProgress({
+          category: stepKey,
+          action: "reviewed_no_selection",
+        });
+        if (!recorded) return;
         setGuidedStep(nextKey, `${config.label} skipped. ${nextKey === "review" ? "Review your setup." : `Choose ${ESSENTIAL_CATEGORY_CONFIG[nextKey].label.toLowerCase()} next.`}`);
+      };
+
+      const continueCategory = async () => {
+        if (essentialProgressBusy === stepKey) return;
+        const recorded = await recordEssentialProgress({
+          category: stepKey,
+          action: selected ? "saved_selection" : "reviewed_no_selection",
+          choice: selected ? choices.find((choice) => choice.variantId === selected.variantId) || selected : null,
+        });
+        if (!recorded) return;
+        setGuidedStep(
+          nextKey,
+          nextKey === "review"
+            ? "Review this setup before adding it to cart."
+            : `Choose ${ESSENTIAL_CATEGORY_CONFIG[nextKey].label.toLowerCase()} next.`
+        );
       };
 
       return (
@@ -2178,6 +2249,25 @@ export default function PodBuilder({
                 Skipped
               </span>
             ) : null}
+          </div>
+
+          <div className="mb-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" aria-label="Sleep Essentials showroom links">
+            {[
+              ["Browse Pillows", "pillows"],
+              ["Shop Sheets and Bedding", "sheets_bedding"],
+              ["Explore Mattress Protectors", "protectors"],
+              ["View All Sleep Essentials", CANONICAL_ESSENTIAL_CATEGORY_IDS[stepKey]],
+            ].map(([label, category]) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => openSleepEssentials(category)}
+                className="inline-flex min-h-[44px] items-center justify-between rounded-[12px] border border-[#dfe7fb] bg-white px-3 text-left text-[0.72rem] font-black text-[#315cf6] transition hover:border-[#9bb1ff]"
+              >
+                <span>{label}</span>
+                <ArrowRight className="h-4 w-4 shrink-0" />
+              </button>
+            ))}
           </div>
 
           {essentialProducts.status === "error" || (essentialProducts.status === "ready" && !choices.length) ? (
@@ -2286,14 +2376,10 @@ export default function PodBuilder({
 
           {renderStageControls({
             primaryLabel: `Continue to ${nextLabel}`,
-            onPrimary: () =>
-              setGuidedStep(
-                nextKey,
-                nextKey === "review"
-                  ? "Review this setup before adding it to cart."
-                  : `Choose ${ESSENTIAL_CATEGORY_CONFIG[nextKey].label.toLowerCase()} next.`
-              ),
-            primaryDisabled: !selected && !skippedEssentials[stepKey],
+            onPrimary: continueCategory,
+            primaryDisabled:
+              (!selected && !skippedEssentials[stepKey]) ||
+              essentialProgressBusy === stepKey,
             secondaryLabel: "Skip",
             onSecondary: skipCategory,
           })}

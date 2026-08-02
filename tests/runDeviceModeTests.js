@@ -444,8 +444,8 @@ async function run() {
     "/pod/pod-1"
   );
   assert.equal(
-    routeOwnership.getDeviceRouteDecision(sleepDevice, "/sleep-essentials").unavailableKind,
-    "future_route_not_implemented"
+    routeOwnership.getDeviceRouteDecision(sleepDevice, "/sleep-essentials").allow,
+    true
   );
   assert.equal(routeOwnership.getDeviceRouteDecision(sleepDevice, "/cart").allow, true);
   assert.equal(

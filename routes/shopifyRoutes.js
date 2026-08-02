@@ -8,6 +8,8 @@ const {
   updateCartLines,
   removeCartLines,
 } = require("../services/shopify");
+const { getSleepEssentialsCatalog } = require("../services/sleepEssentialsCatalog");
+const shopperCart = require("../services/shopperCart");
 
 // ─────────────────────────────────────────────────────────────
 // Config
@@ -817,7 +819,64 @@ async function removeCartLinesRoute(event = {}) {
   }
 }
 
+function clean(value) {
+  return String(value == null ? "" : value).trim();
+}
+
 async function handleShopifyRoute({ event, method, routePath }) {
+  if (method === "POST" && routePath.startsWith("/shopify/cart/owned/")) {
+    const body = parseBody(event);
+    try {
+      let result;
+      if (routePath === "/shopify/cart/owned/resolve") {
+        result = await shopperCart.resolveShopperCart(event);
+      } else if (routePath === "/shopify/cart/owned/addLines") {
+        const normalized = normalizeLinesFromBody(body);
+        if (!normalized.lines) {
+          return json(400, { error: normalized.error || "Invalid lines", meta: buildMeta(event) });
+        }
+        result = await shopperCart.addShopperCartLines(event, normalized.lines);
+      } else if (routePath === "/shopify/cart/owned/updateLines") {
+        const lines = (Array.isArray(body.lines) ? body.lines : [])
+          .map((line) => ({ id: clean(line?.id || line?.lineId), quantity: Number(line?.quantity) }))
+          .filter((line) => line.id && Number.isFinite(line.quantity) && line.quantity >= 0);
+        if (!lines.length) return json(400, { error: "Invalid lines", meta: buildMeta(event) });
+        result = await shopperCart.updateShopperCartLines(event, lines);
+      } else if (routePath === "/shopify/cart/owned/removeLines") {
+        const lineIds = [...new Set((body.lineIds || []).map(clean).filter(Boolean))];
+        if (!lineIds.length) return json(400, { error: "Invalid lineIds", meta: buildMeta(event) });
+        result = await shopperCart.removeShopperCartLines(event, lineIds);
+      } else {
+        return null;
+      }
+      return json(200, { ...result, meta: buildMeta(event) });
+    } catch (err) {
+      return json(Number(err?.statusCode) || 400, {
+        error: err?.code || "SHOPPER_CART_FAILED",
+        message: err?.message || "The shopper cart request failed.",
+        meta: buildMeta(event),
+      });
+    }
+  }
+
+  if (method === "POST" && routePath === "/shopify/sleepEssentials/catalog") {
+    try {
+      const body = parseBody(event);
+      const catalog = await withTimeout(
+        getSleepEssentialsCatalog({ categoryId: body.categoryId }),
+        Math.max(ROUTE_TIMEOUT_MS, 3000),
+        "shopify.sleepEssentialsCatalog"
+      );
+      return json(200, { catalog, meta: buildMeta(event) });
+    } catch (err) {
+      return json(Number(err?.statusCode) || (isTimeoutError(err) ? 504 : 500), {
+        error: err?.code || "SLEEP_ESSENTIALS_CATALOG_FAILED",
+        message: err?.message || "Sleep Essentials catalog could not be loaded.",
+        meta: buildMeta(event),
+      });
+    }
+  }
+
   if (method === "POST" && routePath === "/shopify/listProducts") {
     return withTimeout(
       listProducts(event),

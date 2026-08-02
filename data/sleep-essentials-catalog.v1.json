@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "sleep-essentials.v1",
+  "categories": [
+    {
+      "id": "pillows",
+      "label": "Pillows",
+      "description": "Compare support, shape, and temperature feel.",
+      "handles": [
+        "shoulder-zoned-gel-dough-pillow",
+        "carboncool-omniphase-pillow",
+        "zoned-gel-dough-pillow"
+      ]
+    },
+    {
+      "id": "sheets_bedding",
+      "label": "Sheets & Bedding",
+      "description": "Explore breathable sheet sets for your preferred feel.",
+      "handles": [
+        "hyper-cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "supima-cotton-sheet-set"
+      ]
+    },
+    {
+      "id": "protectors",
+      "label": "Mattress Protectors",
+      "description": "Protect the sleep surface without losing comfort.",
+      "handles": [
+        "ver-tex-mattress-protector",
+        "dri-tec-mattress-protector",
+        "icetech-mattress-protector"
+      ]
+    }
+  ]
+}

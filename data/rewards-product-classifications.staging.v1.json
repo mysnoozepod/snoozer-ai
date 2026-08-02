@@ -37,6 +37,51 @@
       "handle": "storage-base",
       "canonicalProductId": "base.storage",
       "categories": ["accessory"]
+    },
+    {
+      "handle": "shoulder-zoned-gel-dough-pillow",
+      "canonicalProductId": "pillow.shoulder_zoned_gel_dough",
+      "categories": ["pillow", "memory_foam_pillow"]
+    },
+    {
+      "handle": "carboncool-omniphase-pillow",
+      "canonicalProductId": "pillow.carboncool_omniphase",
+      "categories": ["pillow", "memory_foam_pillow"]
+    },
+    {
+      "handle": "zoned-gel-dough-pillow",
+      "canonicalProductId": "pillow.zoned_gel_dough",
+      "categories": ["pillow", "memory_foam_pillow"]
+    },
+    {
+      "handle": "hyper-cotton-sheet-set",
+      "canonicalProductId": "bedding.hyper_cotton_sheet_set",
+      "categories": ["bedding", "accessory"]
+    },
+    {
+      "handle": "dri-tec-sheet-set",
+      "canonicalProductId": "bedding.dri_tec_sheet_set",
+      "categories": ["bedding", "accessory"]
+    },
+    {
+      "handle": "supima-cotton-sheet-set",
+      "canonicalProductId": "bedding.supima_cotton_sheet_set",
+      "categories": ["bedding", "accessory"]
+    },
+    {
+      "handle": "ver-tex-mattress-protector",
+      "canonicalProductId": "protector.ver_tex",
+      "categories": ["bedding", "accessory"]
+    },
+    {
+      "handle": "dri-tec-mattress-protector",
+      "canonicalProductId": "protector.dri_tec",
+      "categories": ["bedding", "accessory"]
+    },
+    {
+      "handle": "icetech-mattress-protector",
+      "canonicalProductId": "protector.icetech",
+      "categories": ["bedding", "accessory"]
     }
   ]
 }

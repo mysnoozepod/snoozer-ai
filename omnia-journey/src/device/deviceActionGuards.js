@@ -145,6 +145,9 @@ export function isDeviceActionAllowed(device, action) {
   if (text.includes("human") || text.includes("support") || text.includes("specialist")) {
     return true;
   }
+  if (text.includes("redeem") || text.includes("reward redemption") || text.includes("apply reward")) {
+    return canInitiateCheckout(device);
+  }
   if (text.includes("checkout")) return canInitiateCheckout(device);
   if (text.includes("cart") || text.includes("add to cart")) {
     return text.includes("add to cart") ? canMutateCart(device) : canViewCart(device);

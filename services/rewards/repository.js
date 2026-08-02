@@ -70,6 +70,7 @@ async function queryByPrefix(profileId, prefix, options = {}) {
     TableName: requireTable(options),
     KeyConditionExpression: "PK = :pk AND begins_with(SK, :prefix)",
     ExpressionAttributeValues: { ":pk": profilePk(profileId), ":prefix": prefix },
+    ConsistentRead: options.consistentRead === true,
     ScanIndexForward: false,
     Limit: Number(options.limit) || 100,
   }));

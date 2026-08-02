@@ -22,6 +22,7 @@ import {
 } from "@/lib/snoozer/voice/VoiceQueueContext";
 import { fetchHudAudio } from "@/lib/snoozer/voice/fetchHudAudio";
 import { useSessionStore } from "@/state/sessionStore";
+import { useStore } from "@/lib/useStore";
 import {
   refreshRewardsState,
   useRewardsState,
@@ -47,6 +48,7 @@ function LayoutShell() {
   const pathname = location.pathname || "/";
 
   const shopperId = useSessionStore((state) => state?.shopperId || "");
+  const syncCartFromShopify = useStore((state) => state.syncCartFromShopify);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [hudOpen, setHudOpen] = useState(true);
@@ -103,6 +105,7 @@ function LayoutShell() {
     pathname.startsWith("/assessment") ||
     pathname.startsWith("/results") ||
     pathname.startsWith("/pod/") ||
+    pathname.startsWith("/sleep-essentials") ||
     pathname.startsWith("/ask-snoozer");
   const pageUsesPodViewportShell =
     pathname.startsWith("/pod/") || pathname.startsWith("/dev/pod-lab");
@@ -113,8 +116,14 @@ function LayoutShell() {
     Boolean(currentJob?.captions || currentJob?.speech);
 
   useEffect(() => {
-    if (shopperId) void refreshRewardsState();
-  }, [shopperId]);
+    if (!shopperId) return;
+    void refreshRewardsState();
+    void syncCartFromShopify({ sourcePage: `identity:${pathname}` }).catch((error) => {
+      console.warn("[cart] Canonical shopper cart restore failed", {
+        code: error?.code || "SHOPPER_CART_RESTORE_FAILED",
+      });
+    });
+  }, [shopperId, pathname, syncCartFromShopify]);
 
   useEffect(() => {
     try {

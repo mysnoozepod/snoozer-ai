@@ -1,6 +1,7 @@
 // src/lib/useStore.js
 import { create } from "zustand";
 import { api } from "@/lib/api";
+import { getSessionState } from "@/state/sessionStore";
 import { emitDeviceCartMutation } from "@/device/deviceActivityTracker";
 import {
   clearStoredShopifyCartIdentity,
@@ -438,6 +439,7 @@ export const useStore = create((set, get) => ({
   cart: mergeItems(load(STORAGE_KEYS.cart, [])),
   cartId: initialCartId || null,
   checkoutUrl: initialCheckoutUrl || null,
+  cartOwnerShopperId: null,
 
   snoozepod: mergeItems(load(STORAGE_KEYS.snoozepod, [])),
   snoozepodMeta: (() => {
@@ -580,9 +582,15 @@ export const useStore = create((set, get) => ({
   syncCartFromShopify: async ({ sourcePage = "unknown" } = {}) => {
     const startedAt = Date.now();
     const state = get();
+    const shopperId = String(getSessionState()?.shopperId || "").trim();
     const cartId = extractCartGid(state.cartId) || getStoredCartGid();
 
-    if (!cartId) {
+    if (shopperId && state.cartOwnerShopperId !== shopperId) {
+      set((s) => ({ cart: [], cartOwnerShopperId: shopperId, badges: { ...s.badges, Cart: false } }));
+      saveJSON(STORAGE_KEYS.cart, []);
+    }
+
+    if (!shopperId && !cartId) {
       if ((state.cart || []).length) {
         set((s) => ({ cart: [], badges: { ...s.badges, Cart: false } }));
         saveJSON(STORAGE_KEYS.cart, []);
@@ -598,7 +606,15 @@ export const useStore = create((set, get) => ({
 
     markCartMutation(true, "syncCartFromShopify");
     try {
-      const response = await api.getCart(cartId);
+      const response = shopperId
+        ? await api.resolveShopperCart()
+        : await api.getCart(cartId);
+      if (shopperId && !response?.cart) {
+        set((s) => ({ cart: [], cartOwnerShopperId: shopperId, badges: { ...s.badges, Cart: false } }));
+        saveJSON(STORAGE_KEYS.cart, []);
+        get().clearCartMeta();
+        return { ok: true, cart: null, items: [], reason: response?.reason || "NO_OWNED_CART" };
+      }
       return get().applyAuthoritativeCartPayload(response, {
         fallbackCartId: cartId,
         sourcePage,
@@ -614,9 +630,8 @@ export const useStore = create((set, get) => ({
         startedAt,
         error: err,
       });
-      set((s) => ({ cart: [], badges: { ...s.badges, Cart: false } }));
-      saveJSON(STORAGE_KEYS.cart, []);
-      get().clearCartMeta();
+      // Shopify remains authoritative, but a transient fetch must not erase a
+      // same-shopper recovery cache. Shopper changes are cleared before fetch.
       throw err;
     } finally {
       markCartMutation(false, "syncCartFromShopify");
@@ -652,9 +667,12 @@ export const useStore = create((set, get) => ({
         // session best-effort only; cart mutation still owns success/failure
       }
 
-      const response = existingCartId
-        ? await api.addLinesToCart({ cartId: existingCartId, lines: finalLines })
-        : await api.createCart({ lines: finalLines });
+      const shopperId = String(getSessionState()?.shopperId || "").trim();
+      const response = shopperId
+        ? await api.addLinesToShopperCart({ lines: finalLines })
+        : existingCartId
+          ? await api.addLinesToCart({ cartId: existingCartId, lines: finalLines })
+          : await api.createCart({ lines: finalLines });
 
       let applied = get().applyAuthoritativeCartPayload(response, {
         fallbackCartId: existingCartId,
@@ -781,10 +799,10 @@ export const useStore = create((set, get) => ({
 
     const startedAt = Date.now();
     try {
-      const response = await api.updateCartLines({
-        cartId,
-        lines: [{ id: lineId, quantity: q }],
-      });
+      const shopperId = String(getSessionState()?.shopperId || "").trim();
+      const response = shopperId
+        ? await api.updateShopperCartLines({ lines: [{ id: lineId, quantity: q }] })
+        : await api.updateCartLines({ cartId, lines: [{ id: lineId, quantity: q }] });
       get().applyAuthoritativeCartPayload(response, {
         fallbackCartId: cartId,
         sourcePage: "cart-page",
@@ -835,7 +853,10 @@ export const useStore = create((set, get) => ({
 
     const startedAt = Date.now();
     try {
-      const response = await api.removeCartLines({ cartId, lineIds: [lineId] });
+      const shopperId = String(getSessionState()?.shopperId || "").trim();
+      const response = shopperId
+        ? await api.removeShopperCartLines({ lineIds: [lineId] })
+        : await api.removeCartLines({ cartId, lineIds: [lineId] });
       get().applyAuthoritativeCartPayload(response, {
         fallbackCartId: cartId,
         sourcePage: "cart-page",

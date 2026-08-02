@@ -388,6 +388,11 @@ function buildCustomerProfilePatch(input = {}) {
     rewardSummary: isObject(input.rewardSummary)
       ? cloneObject(input.rewardSummary)
       : undefined,
+    shopifyCartId: cleanString(input.shopifyCartId) || undefined,
+    shopifyCheckoutUrl: cleanString(input.shopifyCheckoutUrl) || undefined,
+    shopifyCartStatus: cleanString(input.shopifyCartStatus) || undefined,
+    cartUpdatedAt: cleanString(input.cartUpdatedAt) || undefined,
+    activeJourneyId: cleanString(input.activeJourneyId) || undefined,
     lastInteractionAt: interactionAt,
     createdAt,
     updatedAt,

@@ -171,13 +171,6 @@ export function getDeviceRouteDecision(device, pathname) {
     }
   }
 
-  if (device.deviceMode === DEVICE_MODES.SLEEP_ESSENTIALS_KIOSK && route === "/sleep-essentials") {
-    return unavailable(
-      "future_route_not_implemented",
-      "This Sleep Essentials station is not installed in the app yet."
-    );
-  }
-
   if (matchesAnyRoutePattern(route, device.blockedRoutePatterns || [])) {
     return redirect(device.defaultRoute || "/welcome", {
       routeBlocked: true,

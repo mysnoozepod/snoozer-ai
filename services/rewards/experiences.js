@@ -1,10 +1,8 @@
 "use strict";
 
 const crypto = require("crypto");
-const classificationLoader = require("./classificationLoader");
 const repository = require("./repository");
 const rewardsService = require("./service");
-const shopify = require("../shopify");
 
 const REST_TEST_DURATIONS = Object.freeze({
   quick: 420,
@@ -18,11 +16,15 @@ const REQUIRED_REST_TEST_STAGES = Object.freeze([
   "snore",
   "final_flat",
 ]);
-const ACCESSORY_CATEGORIES = new Set([
-  "accessory",
-  "bedding",
-  "memory_foam_pillow",
-  "pillow",
+const REQUIRED_SLEEP_ESSENTIAL_CATEGORY_IDS = Object.freeze([
+  "pillows",
+  "sheets_bedding",
+  "protectors",
+]);
+const VALID_SLEEP_ESSENTIAL_PROGRESS_ACTIONS = Object.freeze([
+  "added_to_cart",
+  "saved_selection",
+  "reviewed_no_selection",
 ]);
 
 function clean(value) {
@@ -355,31 +357,40 @@ async function saveRatingsAndFavorite(identity, input = {}, options = {}) {
   return { experience: item, result };
 }
 
+async function getAccessoriesProgress(identity, input = {}, options = {}) {
+  const repo = options.repository || repository;
+  const journeyId = safeKeyPart(input.journeyId, "journeyId");
+  const progressItems = await repo.queryByPrefix(
+    identity.profileId,
+    `EXPERIENCE#ACCESSORIES#${journeyId}#CATEGORY#`,
+    { ...(options.repositoryOptions || options), consistentRead: true, limit: 20 }
+  );
+  const reviewedCategories = [
+    ...new Set(progressItems.map((item) => clean(item.categoryId)).filter(Boolean)),
+  ];
+  const remainingCategories = REQUIRED_SLEEP_ESSENTIAL_CATEGORY_IDS.filter(
+    (categoryId) => !reviewedCategories.includes(categoryId)
+  );
+  return {
+    journeyId,
+    reviewedCategoryIds: reviewedCategories,
+    remainingCategoryIds: remainingCategories,
+    complete: remainingCategories.length === 0,
+  };
+}
+
 async function completeAccessoriesExperience(identity, input = {}, options = {}) {
   const repo = options.repository || repository;
   const journeyId = safeKeyPart(input.journeyId, "journeyId");
-  const cartId = clean(input.cartId);
-  if (!cartId) {
-    const error = new Error("A Shopify cart is required.");
-    error.code = "REWARD_CART_REQUIRED";
-    error.statusCode = 400;
-    throw error;
-  }
-  const cart = await (options.shopify || shopify).getCart({ cartId });
-  const loaded = await classificationLoader.loadProductClassifications(
-    options.classificationOptions || options
-  );
-  const qualifyingLines = classificationLoader
-    .classifyCart(cart, loaded.document)
-    .filter((line) =>
-      (line.classification?.categories || []).some((category) =>
-        ACCESSORY_CATEGORIES.has(category)
-      )
-    );
-  if (!qualifyingLines.length) {
-    const error = new Error("No qualifying Sleep Essentials were found in the cart.");
-    error.code = "REWARD_ACCESSORIES_NOT_QUALIFIED";
+  const progress = await getAccessoriesProgress(identity, { journeyId }, options);
+  const reviewedCategories = progress.reviewedCategoryIds;
+  const remainingCategories = progress.remainingCategoryIds;
+  if (remainingCategories.length) {
+    const error = new Error("Review every Sleep Essentials category before completing.");
+    error.code = "REWARD_SLEEP_ESSENTIALS_INCOMPLETE";
     error.statusCode = 409;
+    error.details = { reviewedCategories, remainingCategories };
+    error.retryable = true;
     throw error;
   }
   const now = nowIso(options);
@@ -390,10 +401,8 @@ async function completeAccessoriesExperience(identity, input = {}, options = {})
     entityType: "ACCESSORIES_EXPERIENCE",
     profileId: identity.profileId,
     journeyId,
-    cartId: cart.id,
-    qualifyingHandles: [
-      ...new Set(qualifyingLines.map((line) => line.handle).filter(Boolean)),
-    ],
+    reviewedCategoryIds: [...REQUIRED_SLEEP_ESSENTIAL_CATEGORY_IDS],
+    sourceSurface: clean(input.sourceSurface) || "sleep_essentials",
     status: "completed",
     completedAt: now,
     createdAt: now,
@@ -415,12 +424,15 @@ async function completeAccessoriesExperience(identity, input = {}, options = {})
       sessionId: identity.sessionId,
       subjectType: "accessory_journey",
       subjectId: journeyId,
-      sourceSurface: "pod_customize",
+      sourceSurface:
+        clean(input.sourceSurface) === "pod_customize"
+          ? "pod_customize"
+          : "sleep_essentials",
       metadata: {
         journeyId,
         persisted: true,
         completed: true,
-        cartId: cart.id,
+        reviewedCategoryIds: [...REQUIRED_SLEEP_ESSENTIAL_CATEGORY_IDS],
       },
     },
     options
@@ -428,13 +440,84 @@ async function completeAccessoriesExperience(identity, input = {}, options = {})
   return { experience: item, result };
 }
 
+async function recordAccessoriesProgress(identity, input = {}, options = {}) {
+  const repo = options.repository || repository;
+  const journeyId = safeKeyPart(input.journeyId, "journeyId");
+  const categoryId = safeKeyPart(input.categoryId, "categoryId");
+  if (!REQUIRED_SLEEP_ESSENTIAL_CATEGORY_IDS.includes(categoryId)) {
+    const error = new Error("The Sleep Essentials category is invalid.");
+    error.code = "REWARD_SLEEP_ESSENTIALS_CATEGORY_INVALID";
+    error.statusCode = 400;
+    throw error;
+  }
+  const action = safeKeyPart(input.action, "action");
+  if (!VALID_SLEEP_ESSENTIAL_PROGRESS_ACTIONS.includes(action)) {
+    const error = new Error("Choose a product, save a selection, or confirm no selection.");
+    error.code = "REWARD_SLEEP_ESSENTIALS_ACTION_INVALID";
+    error.statusCode = 400;
+    throw error;
+  }
+  const sourceSurface =
+    clean(input.sourceSurface) === "pod_customize"
+      ? "pod_customize"
+      : "sleep_essentials";
+  const now = nowIso(options);
+  const key = `EXPERIENCE#ACCESSORIES#${journeyId}#CATEGORY#${categoryId}`;
+  const item = {
+    PK: repository.profilePk(identity.profileId),
+    SK: key,
+    entityType: "ACCESSORIES_CATEGORY_PROGRESS",
+    profileId: identity.profileId,
+    shopperId: identity.shopperId,
+    sessionId: identity.sessionId,
+    journeyId,
+    categoryId,
+    action,
+    productHandle: clean(input.productHandle) || null,
+    variantId: clean(input.variantId) || null,
+    sourceSurface,
+    status: "reviewed",
+    reviewedAt: now,
+    createdAt: now,
+    updatedAt: now,
+  };
+  let duplicate = false;
+  try {
+    await repo.putEntity(item, {
+      ...(options.repositoryOptions || options),
+      createOnly: true,
+    });
+  } catch (error) {
+    if (!isConditionalFailure(error)) throw error;
+    duplicate = true;
+  }
+  const progress = await getAccessoriesProgress(identity, { journeyId }, options);
+  const reviewedCategoryIds = [...progress.reviewedCategoryIds];
+  if (!reviewedCategoryIds.includes(categoryId)) reviewedCategoryIds.push(categoryId);
+  return {
+    ...item,
+    duplicate,
+    reviewedCategoryIds,
+    remainingCategoryIds: REQUIRED_SLEEP_ESSENTIAL_CATEGORY_IDS.filter(
+      (value) => !reviewedCategoryIds.includes(value)
+    ),
+    complete: REQUIRED_SLEEP_ESSENTIAL_CATEGORY_IDS.every((value) =>
+      reviewedCategoryIds.includes(value)
+    ),
+  };
+}
+
 module.exports = {
   REQUIRED_REST_TEST_STAGES,
+  REQUIRED_SLEEP_ESSENTIAL_CATEGORY_IDS,
+  VALID_SLEEP_ESSENTIAL_PROGRESS_ACTIONS,
   REST_TEST_DURATIONS,
   completeAccessoriesExperience,
   completeRestTest,
   experienceKey,
+  getAccessoriesProgress,
   recordRestTestStage,
+  recordAccessoriesProgress,
   saveRatingsAndFavorite,
   stageKey,
   startRestTest,

@@ -6,6 +6,7 @@ import {
   BedDouble,
   ClipboardList,
   Layers3,
+  PackageCheck,
   ShieldCheck,
 } from "lucide-react";
 
@@ -77,9 +78,14 @@ function hasCompletedAssessment(snapshot) {
   return false;
 }
 
-function StepCard({ step, title, body, detail, icon: Icon }) {
+function StepCard({ step, title, body, detail, icon: Icon, onClick }) {
+  const Component = onClick ? "button" : "div";
   return (
-    <div className="flex h-full flex-col rounded-[24px] border border-white/80 bg-white px-4 py-3 text-center shadow-[0_16px_36px_rgba(45,71,136,0.085)] md:px-4.5 md:py-3.5">
+    <Component
+      type={onClick ? "button" : undefined}
+      onClick={onClick}
+      className="flex h-full flex-col rounded-[24px] border border-white/80 bg-white px-4 py-3 text-center shadow-[0_16px_36px_rgba(45,71,136,0.085)] transition hover:-translate-y-0.5 hover:border-[#c6d4ff] md:px-4.5 md:py-3.5"
+    >
       <div className="text-[0.78rem] font-black uppercase tracking-[0.22em] text-[#1A66D2]">
         Step {step}
       </div>
@@ -110,7 +116,7 @@ function StepCard({ step, title, body, detail, icon: Icon }) {
           {detail}
         </div>
       ) : null}
-    </div>
+    </Component>
   );
 }
 
@@ -317,11 +323,11 @@ export default function WhatToExpect() {
                   Your guided showroom path.
                 </h1>
                 <p className="mt-2 max-w-3xl text-[0.92rem] leading-6 text-slate-700 md:text-[0.96rem]">
-                  Start with your match, test your top pods, then build the setup that feels right.
+                  Start with your match, test your top pods, explore Sleep Essentials, then build the setup that feels right.
                 </p>
               </div>
 
-              <div className="mt-4 grid grid-cols-1 gap-2.5 lg:grid-cols-3">
+              <div className="mt-4 grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-4">
                 <StepCard
                   step="1"
                   title="Assessment"
@@ -338,6 +344,14 @@ export default function WhatToExpect() {
                 />
                 <StepCard
                   step="3"
+                  title="Sleep Essentials"
+                  body="Compare pillows, bedding, and protectors before your final build."
+                  detail="Review each category your way."
+                  icon={PackageCheck}
+                  onClick={() => navigate("/sleep-essentials")}
+                />
+                <StepCard
+                  step="4"
                   title="Build Your Sleep Setup"
                   body="Choose your mattress, base, and comfort options."
                   detail="Once you know your feel, the final setup gets easier."
