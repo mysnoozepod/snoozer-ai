@@ -24,8 +24,6 @@ import Pod from "./pages/Pod.jsx";
 // âœ… SnoozePod plan page route
 import SnoozePod from "./pages/SnoozePod.jsx";
 
-// âœ… Single source of truth: CartContext lives in src/lib
-import { CartProvider } from "./lib/CartContext.jsx";
 import { api } from "./lib/api.js";
 import { DeviceModeProvider } from "./device/DeviceModeProvider.jsx";
 import { DeviceResetProvider } from "./device/DeviceResetProvider.jsx";
@@ -66,7 +64,6 @@ function NotFound() {
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <CartProvider>
         <SessionBoot>
           <DeviceModeProvider>
             <BrowserRouter>
@@ -163,7 +160,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             </BrowserRouter>
           </DeviceModeProvider>
         </SessionBoot>
-      </CartProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

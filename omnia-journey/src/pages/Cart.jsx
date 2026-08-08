@@ -61,53 +61,8 @@ function formatMoney(amount, currency = "USD") {
   }
 }
 
-function toVariantGid(raw) {
-  if (!raw) return null;
-  const s = String(raw).trim();
-  if (!s) return null;
-  if (s.startsWith("gid://shopify/ProductVariant/")) return s;
-  if (/^\d+$/.test(s) && s !== "0") return `gid://shopify/ProductVariant/${s}`;
-  return null;
-}
-
 function safeImage(item) {
   return item?.imageUrl || item?.image || item?.image?.url || "/no-image.svg";
-}
-
-function digestLines(lines = []) {
-  return (Array.isArray(lines) ? lines : [])
-    .map((l) => `${l.merchandiseId}:${l.quantity}`)
-    .sort()
-    .join("|");
-}
-
-function extractCartFromGetCartResponse(res) {
-  const r = res || {};
-  return r.cart || r.data?.cart || (r.id && r.lines ? r : null) || null;
-}
-
-function normalizeServerLines(cartObj) {
-  const edges =
-    cartObj?.lines?.edges ||
-    cartObj?.lines ||
-    cartObj?.data?.lines?.edges ||
-    [];
-  const out = [];
-
-  if (Array.isArray(edges)) {
-    for (const e of edges) {
-      const node = e?.node || e;
-      const merch = node?.merchandise?.id || node?.merchandiseId || null;
-      const qty = Number(node?.quantity);
-      if (!merch) continue;
-      out.push({
-        merchandiseId: String(merch),
-        quantity: Number.isFinite(qty) && qty > 0 ? Math.floor(qty) : 1,
-      });
-    }
-  }
-
-  return out;
 }
 
 function normalizeAttributes(attrs) {
@@ -130,6 +85,12 @@ function pickKeyAttributes(attrs) {
     "Left Feel",
     "Right Feel",
     "SnoozePod",
+    "Product",
+    "Option",
+    "Setup Size",
+    "Variant Option",
+    "Pillow Size",
+    "Sleep Essential",
   ]);
 
   const list = normalizeAttributes(attrs).filter((a) => allow.has(a.key));
@@ -143,6 +104,12 @@ function pickKeyAttributes(attrs) {
     "Dual Comfort",
     "Left Feel",
     "Right Feel",
+    "Product",
+    "Option",
+    "Setup Size",
+    "Variant Option",
+    "Pillow Size",
+    "Sleep Essential",
   ];
 
   list.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
@@ -156,13 +123,15 @@ export default function Cart() {
   const updateCart = useStore((s) => s.updateCart);
   const removeFromCart = useStore((s) => s.removeFromCart);
   const clearCart = useStore((s) => s.clearCart);
+  const prepareCheckoutCart = useStore((s) => s.prepareCheckoutCart);
 
   const cartId = useStore((s) => s.cartId || null);
   const checkoutUrl = useStore((s) => s.checkoutUrl || null);
   const recommendations = useStore((s) => s.recommendations);
-  const setCartMeta = useStore((s) => s.setCartMeta);
-  const clearCartMeta = useStore((s) => s.clearCartMeta);
   const syncCartFromShopify = useStore((s) => s.syncCartFromShopify);
+  const cartMutationPending = useStore((s) => s.cartMutationPending);
+  const cartError = useStore((s) => s.cartError);
+  const clearCartError = useStore((s) => s.clearCartError);
 
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [cartSyncing, setCartSyncing] = useState(false);
@@ -223,19 +192,6 @@ export default function Cart() {
     }, 0);
   }, [cartItems]);
 
-  const cartLines = useMemo(() => {
-    return (Array.isArray(cartItems) ? cartItems : [])
-      .map((item) => {
-        const gid = toVariantGid(item.merchandiseId || item.variantId || item.id);
-        const quantity = Math.max(1, Number(item.quantity ?? item.qty ?? 1) || 1);
-        if (!gid) return null;
-        return { merchandiseId: gid, quantity };
-      })
-      .filter(Boolean);
-  }, [cartItems]);
-
-  const localDigest = useMemo(() => digestLines(cartLines), [cartLines]);
-
   useEffect(() => {
     let alive = true;
     setCartSyncing(true);
@@ -271,19 +227,6 @@ export default function Cart() {
       return;
     }
 
-    if (!cartLines.length) {
-      setToast("Valid variant IDs not found.");
-      api
-        .trackCRMEvent({
-          shopperId,
-          event: "cart_checkout_error",
-          score: -10,
-          context: { reason: "no_valid_lines" },
-        })
-        .catch(() => {});
-      return;
-    }
-
     setCheckoutLoading(true);
     setToast("");
 
@@ -294,45 +237,11 @@ export default function Cart() {
         // ignore
       }
 
-      const legacy = getSessionState?.() || {};
-      const bestCartId = cartId || legacy?.cartId || null;
-      const bestUrl = checkoutUrl || legacy?.checkoutUrl || null;
-
-      if (bestCartId && bestUrl) {
-        try {
-          const serverRes = await api.getCart(bestCartId);
-          const cartObj = extractCartFromGetCartResponse(serverRes);
-          const serverLines = normalizeServerLines(cartObj);
-          const serverDigest = digestLines(serverLines);
-
-          if (serverDigest && serverDigest === localDigest) {
-            setCartMeta?.({ cartId: bestCartId, checkoutUrl: bestUrl });
-
-            api
-              .trackCRMEvent({
-                shopperId,
-                event: "cart_checkout_reuse_url",
-                score: 10,
-                context: { lineCount: cartLines.length },
-              })
-              .catch(() => {});
-
-            window.location.assign(bestUrl);
-            return;
-          }
-        } catch {
-          // fall through
-        }
-      }
-
-      const res = await api.createCart({ lines: cartLines });
-
-      const cartObj = res?.cart || res?.data?.cart || null;
-      const newCartId = res?.cartId || res?.id || cartObj?.id || null;
-      const newCheckoutUrl = res?.checkoutUrl || cartObj?.checkoutUrl || null;
+      const prepared = await prepareCheckoutCart?.({ sourcePage: "cart-page" });
+      const newCheckoutUrl = prepared?.checkoutUrl || null;
 
       if (!newCheckoutUrl) {
-        setToast("Checkout is unavailable.");
+        setToast("Checkout is temporarily unavailable. Please try again.");
         api
           .trackCRMEvent({
             shopperId,
@@ -344,21 +253,19 @@ export default function Cart() {
         return;
       }
 
-      setCartMeta?.({ cartId: newCartId, checkoutUrl: newCheckoutUrl });
-
       api
         .trackCRMEvent({
           shopperId,
           event: "cart_checkout",
           score: 25,
-          context: { lineCount: cartLines.length },
+          context: { lineCount: prepared?.items?.length || cartItems.length },
         })
         .catch(() => {});
 
       window.location.assign(newCheckoutUrl);
     } catch (err) {
       console.error("Checkout failed:", err);
-      setToast(err?.message || "Checkout failed.");
+      setToast("Checkout is temporarily unavailable. Please try again.");
       api
         .trackCRMEvent({
           shopperId,
@@ -372,18 +279,19 @@ export default function Cart() {
     }
   }
 
-  function handleClearCart() {
-    clearCart?.();
-    clearCartMeta?.();
-
-    setToast("Cart cleared.");
-    api
-      .trackCRMEvent({
-        shopperId,
-        event: "cart_clear",
-        score: 0,
-      })
-      .catch(() => {});
+  async function handleClearCart() {
+    if (cartMutationPending) return;
+    setToast("");
+    clearCartError?.();
+    try {
+      await clearCart?.();
+      setToast("Cart cleared.");
+      api
+        .trackCRMEvent({ shopperId, event: "cart_clear", score: 0 })
+        .catch(() => {});
+    } catch {
+      setToast("We couldn't clear your cart. Your confirmed items are still here. Try again.");
+    }
   }
 
   return (
@@ -444,12 +352,40 @@ export default function Cart() {
                   <button
                     onClick={handleClearCart}
                     className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
-                    disabled={checkoutLoading}
+                    disabled={checkoutLoading || cartMutationPending}
                   >
-                    Clear Cart
+                    {cartMutationPending ? "Updating..." : "Clear Cart"}
                   </button>
                 ) : null}
               </div>
+
+              {cartError ? (
+                <div
+                  role="alert"
+                  className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950"
+                >
+                  <span>{typeof cartError === "string" ? cartError : cartError?.message}</span>
+                  <button
+                    type="button"
+                    className="rounded-full border border-amber-300 bg-white px-4 py-2 font-black"
+                    onClick={async () => {
+                      clearCartError?.();
+                      setCartSyncing(true);
+                      try {
+                        await syncCartFromShopify?.({ sourcePage: "cart-page-retry" });
+                        setToast("Cart refreshed from Shopify.");
+                      } catch {
+                        setToast("Your cart could not be restored. Please try again.");
+                      } finally {
+                        setCartSyncing(false);
+                      }
+                    }}
+                    disabled={cartMutationPending}
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : null}
 
               <div className="mt-4 space-y-3">
                 {cartItems.length === 0 ? (
@@ -537,20 +473,27 @@ export default function Cart() {
                                 value={qty}
                                 onChange={(e) => {
                                   const next = Math.max(1, Number(e.target.value) || 1);
-                                  try {
-                                    updateCart?.(id, next);
-                                  } catch {
-                                    // no-op
-                                  }
+                                  updateCart?.(id, next).catch(() => {
+                                    setToast(
+                                      "We couldn't update that quantity. Shopify's confirmed quantity has been restored. Try again."
+                                    );
+                                  });
                                 }}
                                 className="h-10 w-20 rounded-[14px] border border-slate-200 bg-white px-3 text-sm font-semibold"
-                                disabled={checkoutLoading}
+                                disabled={checkoutLoading || cartMutationPending}
                               />
 
                               <button
-                                onClick={() => id && removeFromCart?.(id)}
+                                onClick={() => {
+                                  if (!id) return;
+                                  removeFromCart?.(id).catch(() => {
+                                    setToast(
+                                      "We couldn't remove that item. Shopify's confirmed cart has been restored. Try again."
+                                    );
+                                  });
+                                }}
                                 className="text-sm font-extrabold text-red-700 transition hover:text-red-800 hover:underline"
-                                disabled={checkoutLoading}
+                                disabled={checkoutLoading || cartMutationPending}
                               >
                                 Remove
                               </button>
@@ -633,7 +576,7 @@ export default function Cart() {
                 ) : (
                   <button
                     onClick={handleCheckout}
-                    disabled={checkoutLoading || !cartItems.length}
+                    disabled={checkoutLoading || cartMutationPending || !cartItems.length}
                     className="mt-5 inline-flex w-full items-center justify-center rounded-[18px] bg-[#1A66D2] px-6 py-3.5 text-base font-black text-white transition hover:bg-[#1550A0] disabled:opacity-60"
                   >
                     {checkoutLoading ? "Processing..." : "Checkout"}

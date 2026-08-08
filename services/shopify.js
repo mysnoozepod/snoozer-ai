@@ -1243,6 +1243,34 @@ async function removeCartLines({ cartId, lineIds = [] } = {}) {
   return payload.cart;
 }
 
+async function clearCart({ cartId } = {}) {
+  const current = await getCart({ cartId });
+  const edges = Array.isArray(current?.lines?.edges) ? current.lines.edges : [];
+  const lineIds = edges.map((edge) => edge?.node?.id).filter(Boolean);
+
+  if (!lineIds.length) return current;
+
+  const cleared = await removeCartLines({ cartId, lineIds });
+  const remaining = Array.isArray(cleared?.lines?.edges) ? cleared.lines.edges : [];
+  const totalQuantity = remaining.reduce(
+    (sum, edge) => sum + Math.max(0, Number(edge?.node?.quantity) || 0),
+    0
+  );
+  if (remaining.length || totalQuantity) {
+    throw buildShopifyError(
+      "Shopify did not confirm an empty cart.",
+      "CART_CLEAR_NOT_CONFIRMED"
+    );
+  }
+
+  console.info("[shopify.cart]", {
+    operation: "cart_clear",
+    cartSuffix: String(cartId).split("/").pop()?.split("?")[0]?.slice(-8) || "unknown",
+    removedLineCount: lineIds.length,
+  });
+  return cleared;
+}
+
 // ──────────────────────────────
 // Admin helpers (optional)
 // ──────────────────────────────
@@ -1324,6 +1352,7 @@ module.exports = {
   addCartLines,
   updateCartLines,
   removeCartLines,
+  clearCart,
 
   // admin
   listPriceRules,

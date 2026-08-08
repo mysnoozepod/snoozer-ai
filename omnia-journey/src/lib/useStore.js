@@ -9,6 +9,14 @@ import {
   getStoredShopifyCartIdentity,
   persistShopifyCartIdentity,
 } from "@/lib/session/shopifyCartState";
+import {
+  cartItemIdentity,
+  cartItemsToMutationLines,
+  cartLinesEqual,
+  normalizeCartAttributes,
+  normalizeMutationLine,
+  serverCartToMutationLines,
+} from "@/lib/cart/cartContract.mjs";
 
 const STORAGE_KEYS = {
   activeTab: "snooze.activeTab",
@@ -86,19 +94,13 @@ const XP_VALUES = {
   checkout: 300,
 };
 
-function isVariantGid(v) {
-  if (!v) return false;
-  const s = String(v).trim();
-  return /^gid:\/\/shopify\/ProductVariant\/\d+$/.test(s);
-}
-
 function toVariantGid(v) {
   if (!v) return null;
   const s = String(v).trim();
   if (!s) return null;
 
   if (s.startsWith("gid://")) {
-    return isVariantGid(s) ? s : null;
+    return /^gid:\/\/shopify\/ProductVariant\/\d+$/.test(s) ? s : null;
   }
 
   if (/^\d+$/.test(s) && s !== "0") {
@@ -117,6 +119,36 @@ function markCartMutation(active, operation) {
     reason: "cartMutation",
     operation,
   });
+}
+
+let cartMutationTail = Promise.resolve();
+
+function customerSafeCartError(operation) {
+  const messages = {
+    cart_line_update: "We couldn't update that quantity. Your cart was refreshed so you can try again.",
+    cart_line_remove: "We couldn't remove that item. Your cart was refreshed so you can try again.",
+    cart_clear: "We couldn't clear your cart. Your current cart is still available so you can try again.",
+    checkout_prepare: "Checkout is temporarily unavailable. Your cart is still saved.",
+  };
+  return messages[operation] || "We couldn't update your cart. Please try again.";
+}
+
+function serializeCartMutation(set, operation, task) {
+  const run = cartMutationTail.catch(() => {}).then(async () => {
+    markCartMutation(true, operation);
+    set({ cartMutationPending: true, cartMutationOperation: operation, cartError: null });
+    try {
+      return await task();
+    } catch (error) {
+      set({ cartError: customerSafeCartError(operation) });
+      throw error;
+    } finally {
+      markCartMutation(false, operation);
+      set({ cartMutationPending: false, cartMutationOperation: null });
+    }
+  });
+  cartMutationTail = run.catch(() => {});
+  return run;
 }
 
 function getStoredCartGid() {
@@ -171,15 +203,24 @@ function normalizeCartItem(item) {
     item.unitPrice ?? item.price ?? item.priceNumber ?? 0
   );
 
+  const lineId = String(item.lineId || "").startsWith("gid://shopify/CartLine/")
+    ? String(item.lineId)
+    : String(item.id || "").startsWith("gid://shopify/CartLine/")
+      ? String(item.id)
+      : null;
+  const attributes = normalizeCartAttributes(item.attributes);
+  const identity = cartItemIdentity({ lineId, merchandiseId, attributes }) || merchandiseId;
+
   return {
-    id: String(merchandiseId),
+    id: String(identity),
+    lineId,
     merchandiseId: String(merchandiseId),
     title,
     imageUrl,
     unitPrice,
     quantity: quantity > 0 ? quantity : 1,
     handle: item.handle || null,
-    attributes: Array.isArray(item.attributes) ? item.attributes : undefined,
+    attributes: attributes.length ? attributes : undefined,
   };
 }
 
@@ -191,14 +232,15 @@ function mergeItems(rawItems) {
     const item = normalizeCartItem(raw);
     if (!item) continue;
 
-    const existing = merged.get(item.id);
+    const identity = cartItemIdentity(item) || item.id;
+    const existing = merged.get(identity);
     if (existing) {
-      merged.set(item.id, {
+      merged.set(identity, {
         ...existing,
         quantity: (existing.quantity || 1) + (item.quantity || 1),
       });
     } else {
-      merged.set(item.id, item);
+      merged.set(identity, item);
     }
   }
 
@@ -260,16 +302,6 @@ function extractCartObject(payload) {
     (root?.id && root?.lines ? root : null) ||
     null
   );
-}
-
-function normalizeCartAttributes(attrs) {
-  if (!Array.isArray(attrs)) return [];
-  return attrs
-    .map((attr) => ({
-      key: String(attr?.key || "").trim(),
-      value: String(attr?.value || "").trim(),
-    }))
-    .filter((attr) => attr.key && attr.value);
 }
 
 function flattenCartLines(lines) {
@@ -386,21 +418,6 @@ function logCartOperation({
   }
 }
 
-function normalizeLineForMutation(line) {
-  if (!line || typeof line !== "object") return null;
-  const merchandiseId = toVariantGid(
-    line.merchandiseId || line.variantId || line.variant_id || line.id
-  );
-  if (!merchandiseId) return null;
-  const quantity = Math.max(1, Math.floor(Number(line.quantity ?? line.qty ?? 1) || 1));
-  const attributes = normalizeCartAttributes(line.attributes);
-  return {
-    merchandiseId,
-    quantity,
-    ...(attributes.length ? { attributes } : {}),
-  };
-}
-
 function findCartItemByAnyId(items, id) {
   const key = String(id || "");
   if (!key) return null;
@@ -440,6 +457,9 @@ export const useStore = create((set, get) => ({
   cartId: initialCartId || null,
   checkoutUrl: initialCheckoutUrl || null,
   cartOwnerShopperId: null,
+  cartMutationPending: false,
+  cartMutationOperation: null,
+  cartError: null,
 
   snoozepod: mergeItems(load(STORAGE_KEYS.snoozepod, [])),
   snoozepodMeta: (() => {
@@ -641,13 +661,13 @@ export const useStore = create((set, get) => ({
   addLinesToAuthoritativeCart: async ({
     lines = [],
     sourcePage = "unknown",
-  } = {}) => {
+  } = {}) => serializeCartMutation(set, "cart_line_add", async () => {
     if (!shouldAutoSyncShopifyCart()) {
       throw new Error("Shopify cart sync is disabled.");
     }
 
     const finalLines = (Array.isArray(lines) ? lines : [])
-      .map(normalizeLineForMutation)
+      .map(normalizeMutationLine)
       .filter(Boolean);
 
     if (!finalLines.length) {
@@ -659,7 +679,6 @@ export const useStore = create((set, get) => ({
     const existingCartId = extractCartGid(state.cartId) || getStoredCartGid();
     const operation = existingCartId ? "cart_line_add" : "cart_create";
 
-    markCartMutation(true, "addLinesToAuthoritativeCart");
     try {
       try {
         if (api?.ensureSession) await api.ensureSession();
@@ -710,10 +729,8 @@ export const useStore = create((set, get) => ({
         message: err?.message || String(err),
       });
       throw err;
-    } finally {
-      markCartMutation(false, "addLinesToAuthoritativeCart");
     }
-  },
+  }),
 
   syncShopifyCartAdd: async (normalizedItem) => {
     if (!normalizedItem?.merchandiseId) return null;
@@ -771,13 +788,11 @@ export const useStore = create((set, get) => ({
     }
   },
 
-  updateCart: async (id, quantity) => {
-    markCartMutation(true, "updateCart");
+  updateCart: async (id, quantity) => serializeCartMutation(set, "cart_line_update", async () => {
     const key = String(id || "");
-    const q = Math.max(0, Math.floor(Number(quantity) || 0));
+    const q = Math.max(1, Math.floor(Number(quantity) || 1));
     if (!key) {
-      markCartMutation(false, "updateCart");
-      return;
+      throw Object.assign(new Error("A valid cart line is required."), { code: "MISSING_CART_LINE_ID" });
     }
 
     const state = get();
@@ -793,8 +808,9 @@ export const useStore = create((set, get) => ({
         ok: false,
         error: { code: "MISSING_CART_LINE_ID" },
       });
-      markCartMutation(false, "updateCart");
-      return;
+      throw Object.assign(new Error("A valid Shopify cart line is required."), {
+        code: "MISSING_CART_LINE_ID",
+      });
     }
 
     const startedAt = Date.now();
@@ -821,17 +837,19 @@ export const useStore = create((set, get) => ({
         startedAt,
         error: err,
       });
-    } finally {
-      markCartMutation(false, "updateCart");
+      try {
+        await get().syncCartFromShopify({ sourcePage: "cart-update-recovery" });
+      } catch {
+        // Preserve the original mutation failure; the cached cart remains visible.
+      }
+      throw err;
     }
-  },
+  }),
 
-  removeFromCart: async (id) => {
-    markCartMutation(true, "removeFromCart");
+  removeFromCart: async (id) => serializeCartMutation(set, "cart_line_remove", async () => {
     const key = String(id || "");
     if (!key) {
-      markCartMutation(false, "removeFromCart");
-      return;
+      throw Object.assign(new Error("A valid cart line is required."), { code: "MISSING_CART_LINE_ID" });
     }
 
     const state = get();
@@ -847,8 +865,9 @@ export const useStore = create((set, get) => ({
         ok: false,
         error: { code: "MISSING_CART_LINE_ID" },
       });
-      markCartMutation(false, "removeFromCart");
-      return;
+      throw Object.assign(new Error("A valid Shopify cart line is required."), {
+        code: "MISSING_CART_LINE_ID",
+      });
     }
 
     const startedAt = Date.now();
@@ -875,19 +894,132 @@ export const useStore = create((set, get) => ({
         startedAt,
         error: err,
       });
-    } finally {
-      markCartMutation(false, "removeFromCart");
+      try {
+        await get().syncCartFromShopify({ sourcePage: "cart-remove-recovery" });
+      } catch {
+        // Preserve the original mutation failure; the cached cart remains visible.
+      }
+      throw err;
     }
-  },
+  }),
 
-  clearCart: () => {
-    markCartMutation(true, "clearCart");
-    set((state) => ({ cart: [], badges: { ...state.badges, Cart: false } }));
-    saveJSON(STORAGE_KEYS.cart, []);
-    get().clearCartMeta();
-    track("snoozer_action", { type: "cart_clear" });
-    markCartMutation(false, "clearCart");
-  },
+  clearCart: async () => serializeCartMutation(set, "cart_clear", async () => {
+    const state = get();
+    const shopperId = String(getSessionState()?.shopperId || "").trim();
+    const cartId = extractCartGid(state.cartId) || getStoredCartGid();
+    if (!cartId && !shopperId) return { ok: true, skipped: true, reason: "CART_ALREADY_EMPTY" };
+
+    const startedAt = Date.now();
+    try {
+      const response = shopperId
+        ? await api.clearShopperCart()
+        : await api.clearCart({ cartId });
+      const confirmedEmptyWithoutCart =
+        response?.cleared === true && !extractCartObject(response);
+      if (confirmedEmptyWithoutCart) {
+        set((current) => ({
+          cart: [],
+          cartId: null,
+          checkoutUrl: null,
+          badges: { ...current.badges, Cart: false },
+        }));
+        saveJSON(STORAGE_KEYS.cart, []);
+        clearStoredShopifyCartIdentity();
+      }
+      const applied = get().applyAuthoritativeCartPayload(response, {
+        fallbackCartId: cartId,
+        sourcePage: "cart-page",
+        operation: "cart_clear",
+        startedAt,
+      });
+      if (applied.totalQuantity !== 0 || applied.items.length !== 0) {
+        throw Object.assign(new Error("Shopify did not confirm an empty cart."), {
+          code: "AUTHORITATIVE_CART_NOT_EMPTY",
+        });
+      }
+      track("snoozer_action", { type: "cart_clear" });
+      return applied;
+    } catch (err) {
+      logCartOperation({
+        operation: "cart_clear",
+        cartId,
+        sourcePage: "cart-page",
+        ok: false,
+        startedAt,
+        error: err,
+      });
+      try {
+        await get().syncCartFromShopify({ sourcePage: "cart-clear-recovery" });
+      } catch {
+        // Preserve the last confirmed cart and checkout link for retry.
+      }
+      throw err;
+    }
+  }),
+
+  prepareCheckoutCart: async ({ sourcePage = "checkout" } = {}) =>
+    serializeCartMutation(set, "checkout_prepare", async () => {
+      const startedAt = Date.now();
+      const desiredLines = cartItemsToMutationLines(get().cart);
+      if (!desiredLines.length) {
+        throw Object.assign(new Error("Your cart is empty."), { code: "CART_EMPTY" });
+      }
+
+      const shopperId = String(getSessionState()?.shopperId || "").trim();
+      const cartId = extractCartGid(get().cartId) || getStoredCartGid();
+      let authoritative = null;
+      try {
+        const response = shopperId
+          ? await api.resolveShopperCart()
+          : cartId
+            ? await api.getCart(cartId)
+            : null;
+        authoritative = extractCartObject(response);
+      } catch (error) {
+        logCartOperation({
+          operation: "checkout_cart_fetch",
+          cartId,
+          sourcePage,
+          ok: false,
+          startedAt,
+          error,
+        });
+      }
+
+      const serverLines = authoritative ? serverCartToMutationLines(authoritative) : [];
+      const reusable =
+        authoritative?.checkoutUrl && cartLinesEqual(desiredLines, serverLines);
+      if (reusable) {
+        return get().applyAuthoritativeCartPayload({ cart: authoritative }, {
+          fallbackCartId: cartId,
+          sourcePage,
+          operation: "checkout_reuse",
+          requestedLineCount: desiredLines.length,
+          startedAt,
+        });
+      }
+
+      if (authoritative && !cartLinesEqual(desiredLines, serverLines)) {
+        console.warn("[cart]", {
+          operation: "checkout_attribute_mismatch",
+          sourcePage,
+          requestedLineCount: desiredLines.length,
+          serverLineCount: serverLines.length,
+        });
+      }
+
+      const replacement = shopperId
+        ? await api.replaceShopperCart({ lines: desiredLines })
+        : await api.createCart({ lines: desiredLines });
+      return get().applyAuthoritativeCartPayload(replacement, {
+        sourcePage,
+        operation: "checkout_cart_recreate",
+        requestedLineCount: desiredLines.length,
+        startedAt,
+      });
+    }),
+
+  clearCartError: () => set({ cartError: null }),
 
   getCartSubtotal: () => {
     const cart = get().cart || [];
@@ -1039,21 +1171,22 @@ export const useStore = create((set, get) => ({
     for (const c of currentCart) {
       const item = normalizeCartItem(c);
       if (!item) continue;
-      merged.set(item.id, item);
+      merged.set(cartItemIdentity(item) || item.id, item);
     }
 
     for (const p of plan) {
       const item = normalizeCartItem(p);
       if (!item) continue;
 
-      const existing = merged.get(item.id);
+      const identity = cartItemIdentity(item) || item.id;
+      const existing = merged.get(identity);
       if (existing) {
-        merged.set(item.id, {
+        merged.set(identity, {
           ...existing,
           quantity: (existing.quantity || 1) + (item.quantity || 1),
         });
       } else {
-        merged.set(item.id, item);
+        merged.set(identity, item);
       }
     }
 

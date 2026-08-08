@@ -1010,6 +1010,13 @@ export async function removeCartLines({ cartId, lineIds } = {}) {
   return normalizeCartPayload(out, gid);
 }
 
+export async function clearCart({ cartId } = {}) {
+  const gid = extractCartGid(cartId);
+  if (!gid) throw new Error("clearCart: valid Shopify Cart GID required");
+  const out = await rpc("cart/clear", { cartId: gid });
+  return normalizeCartPayload(out, gid);
+}
+
 // ─────────────────────────────────────────────────────────────
 // Rewards
 // ─────────────────────────────────────────────────────────────
@@ -1245,6 +1252,17 @@ export async function removeShopperCartLines({ lineIds = [] } = {}) {
     method: "POST",
     body: { lineIds },
   });
+}
+
+export async function replaceShopperCart({ lines = [] } = {}) {
+  return rewardRequest("/shopify/cart/owned/replace", {
+    method: "POST",
+    body: { lines },
+  });
+}
+
+export async function clearShopperCart() {
+  return rewardRequest("/shopify/cart/owned/clear", { method: "POST", body: {} });
 }
 
 export const getRewardBalance = async () => {
@@ -1608,10 +1626,13 @@ export const api = {
   addLinesToCart,
   updateCartLines,
   removeCartLines,
+  clearCart,
   resolveShopperCart,
   addLinesToShopperCart,
   updateShopperCartLines,
   removeShopperCartLines,
+  replaceShopperCart,
+  clearShopperCart,
 
   // rewards
   getRewardBalance,

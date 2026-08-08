@@ -111,6 +111,41 @@ async function addShopperCartLines(event, lines, options = {}) {
   return cartResponse(identity, cart, { restored: validCartId(existingCartId) && !recovered, recovered });
 }
 
+async function replaceShopperCart(event, lines, options = {}) {
+  const identity = await identityFor(event, options);
+  const cart = await (options.shopify || shopify).createCart({ lines });
+  await persistCart(identity, cart, options);
+  return cartResponse(identity, cart, { replaced: true });
+}
+
+async function clearShopperCart(event, options = {}) {
+  const identity = await identityFor(event, options);
+  const cartId = clean(identity.profile?.shopifyCartId);
+  if (!validCartId(cartId)) {
+    return cartResponse(identity, null, {
+      restored: false,
+      cleared: true,
+      reason: "OWNED_CART_ALREADY_EMPTY",
+    });
+  }
+
+  try {
+    const cart = await (options.shopify || shopify).clearCart({ cartId });
+    await persistCart(identity, cart, options);
+    return cartResponse(identity, cart, { restored: true, cleared: true });
+  } catch (error) {
+    if (!isExpiredCartError(error)) throw error;
+    await markCartExpired(identity, options);
+    return cartResponse(identity, null, {
+      restored: false,
+      recovered: true,
+      cleared: true,
+      reason: "OWNED_CART_EXPIRED",
+      previousCartId: cartId,
+    });
+  }
+}
+
 async function mutateOwnedCart(event, mutation, payload, options = {}) {
   const identity = await identityFor(event, options);
   const cartId = clean(identity.profile?.shopifyCartId);
@@ -132,7 +167,9 @@ const removeShopperCartLines = (event, lineIds, options) =>
 
 module.exports = {
   addShopperCartLines,
+  clearShopperCart,
   removeShopperCartLines,
+  replaceShopperCart,
   resolveShopperCart,
   updateShopperCartLines,
   isExpiredCartError,

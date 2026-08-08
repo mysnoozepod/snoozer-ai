@@ -23,6 +23,10 @@ import { useStore } from "@/lib/useStore";
 import { getShopperId } from "@/state/sessionStore";
 import { refreshRewardsState } from "@/state/rewardsStore";
 import {
+  listIndependentPillowChoices,
+  resolveApprovedVariant,
+} from "@/lib/cart/variantResolution.mjs";
+import {
   SIZE_OPTIONS,
   BASE_OPTIONS_UI,
   MOTION_TYPES_UI,
@@ -155,18 +159,14 @@ export function parseVariantPrice(variant) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-function variantMatchesSize(variant, size) {
-  const target = lower(size);
-  if (!target) return false;
-
-  const selectedOptions = Array.isArray(variant?.selectedOptions) ? variant.selectedOptions : [];
-  return selectedOptions.some((option) => lower(option?.value) === target);
-}
-
 export function pickVariantForSize(product, size) {
-  const variants = normalizeVariants(product);
-  if (!variants.length) return null;
-  return variants.find((variant) => variantMatchesSize(variant, size)) || variants[0] || null;
+  const resolution = resolveApprovedVariant({
+    product,
+    category: "mattress",
+    setupSize: size,
+    motionType: "standard",
+  });
+  return resolution.ok ? resolution.variant : null;
 }
 
 function safeVariantId(variant) {
@@ -218,35 +218,8 @@ function stripProductCopy(value) {
     .trim();
 }
 
-function variantOptionValues(variant) {
-  const options = Array.isArray(variant?.selectedOptions) ? variant.selectedOptions : [];
-  return options.map((option) => lower(option?.value)).filter(Boolean);
-}
-
-function variantMatchesEssentialSetup(variant, category, size, motionType) {
-  if (!safeVariantId(variant)) return false;
-  if (category === "pillows") return true;
-
-  const values = variantOptionValues(variant);
-  const title = lower(variant?.title);
-  const candidates = new Set([...values, title].filter(Boolean));
-  const normalizedSize = lower(size);
-
-  if (motionType === "half_split") {
-    return candidates.has(`half split ${normalizedSize}`);
-  }
-  if (motionType === "full_split") {
-    return candidates.has("split king") || candidates.has("full split king");
-  }
-  return candidates.has(normalizedSize);
-}
-
-function buildEssentialChoice(product, category, size, motionType) {
+function buildEssentialChoice(product, variant, actualOption) {
   if (!product || product.available === false || product.availableForSale === false) return null;
-  const variants = normalizeVariants(product);
-  const variant = variants.find((candidate) =>
-    variantMatchesEssentialSetup(candidate, category, size, motionType)
-  );
   const variantId = safeVariantId(variant);
   if (!variantId) return null;
 
@@ -262,6 +235,7 @@ function buildEssentialChoice(product, category, size, motionType) {
     price: parseVariantPrice(variant),
     variantId,
     variantTitle: String(variant?.title || "").trim(),
+    actualOption: String(actualOption || variant?.title || "").trim(),
   };
 }
 
@@ -269,10 +243,32 @@ function buildEssentialChoices(products, category, size, motionType) {
   const config = ESSENTIAL_CATEGORY_CONFIG[category];
   if (!config) return [];
 
-  return (Array.isArray(products) ? products : [])
-    .map((product) => buildEssentialChoice(product, category, size, motionType))
-    .filter(Boolean)
-    .slice(0, config.max);
+  const choices = [];
+  for (const product of Array.isArray(products) ? products : []) {
+    if (category === "pillows") {
+      for (const resolved of listIndependentPillowChoices(product)) {
+        const choice = buildEssentialChoice(product, resolved.variant, resolved.actualOption);
+        if (choice) choices.push(choice);
+      }
+      continue;
+    }
+
+    const resolution = resolveApprovedVariant({
+      product,
+      category: category === "protector" ? "protector" : "sheets",
+      setupSize: size,
+      motionType,
+    });
+    if (resolution.ok) {
+      const choice = buildEssentialChoice(
+        product,
+        resolution.variant,
+        resolution.actualOption
+      );
+      if (choice) choices.push(choice);
+    }
+  }
+  return choices.slice(0, config.max);
 }
 
 function motionAvailabilityForSelection(size, isDualComfort) {
@@ -1220,11 +1216,31 @@ export default function PodBuilder({
     assessmentSignature,
   ]);
 
-  const mattressVariant = useMemo(() => pickVariantForSize(mattressProduct, size), [mattressProduct, size]);
-  const baseVariant = useMemo(
-    () => (wantsBase ? pickVariantForSize(baseProduct, size) : null),
-    [baseProduct, wantsBase, size]
+  const configuredMotionType = showMotion ? motionType : "standard";
+  const mattressResolution = useMemo(
+    () =>
+      resolveApprovedVariant({
+        product: mattressProduct,
+        category: "mattress",
+        setupSize: size,
+        motionType: configuredMotionType,
+      }),
+    [configuredMotionType, mattressProduct, size]
   );
+  const baseResolution = useMemo(
+    () =>
+      wantsBase
+        ? resolveApprovedVariant({
+            product: baseProduct,
+            category: baseType === "adjustable" ? "adjustable_base" : "base",
+            setupSize: size,
+            motionType: configuredMotionType,
+          })
+        : { ok: true, variant: null, variantId: null, actualOption: "" },
+    [baseProduct, baseType, configuredMotionType, size, wantsBase]
+  );
+  const mattressVariant = mattressResolution.ok ? mattressResolution.variant : null;
+  const baseVariant = baseResolution.ok ? baseResolution.variant : null;
   const mattressMerchId = useMemo(() => safeVariantId(mattressVariant), [mattressVariant]);
   const baseMerchId = useMemo(() => safeVariantId(baseVariant), [baseVariant]);
   const mattressPrice = useMemo(() => parseVariantPrice(mattressVariant), [mattressVariant]);
@@ -1238,11 +1254,11 @@ export default function PodBuilder({
             essentialProducts.itemsByCategory?.[category],
             category,
             size,
-            showMotion ? motionType : "standard"
+            configuredMotionType
           ),
         ])
       ),
-    [essentialProducts.itemsByCategory, motionType, showMotion, size]
+    [configuredMotionType, essentialProducts.itemsByCategory, size]
   );
   const selectedEssentialChoices = useMemo(
     () =>
@@ -1327,13 +1343,48 @@ export default function PodBuilder({
   const commerceUnavailableMessage = useMemo(() => {
     if (!requiredSelectionsConfirmed) return "";
     if (!mattressCommerceReady) {
-      return "This mattress is unavailable in the selected size. Your selections are saved so you can choose another size or pod.";
+      return `The required ${mattressResolution.requestedOption || size} mattress option is unavailable. Your selections are saved so you can choose another size or pod.`;
     }
     if (!baseCommerceReady) {
-      return "This base is unavailable in the selected size. Your selections are saved so you can choose another base or size.";
+      return `The required ${baseResolution.requestedOption || size} base option is unavailable. Your selections are saved so you can choose another base or size.`;
     }
     return "";
-  }, [baseCommerceReady, mattressCommerceReady, requiredSelectionsConfirmed]);
+  }, [
+    baseCommerceReady,
+    baseResolution.requestedOption,
+    mattressCommerceReady,
+    mattressResolution.requestedOption,
+    requiredSelectionsConfirmed,
+    size,
+  ]);
+
+  useEffect(() => {
+    if (!requiredSelectionsConfirmed) return;
+    for (const rejection of [
+      !mattressResolution.ok
+        ? { handle: fixedMattressHandle, category: "mattress", ...mattressResolution }
+        : null,
+      wantsBase && !baseResolution.ok
+        ? { handle: selectedBaseHandle, category: "base", ...baseResolution }
+        : null,
+    ].filter(Boolean)) {
+      console.warn("[commerce]", {
+        event: "variant_resolution_rejected",
+        handle: rejection.handle || "unknown",
+        category: rejection.category,
+        requestedOption: rejection.requestedOption,
+        availableOptions: rejection.availableOptions,
+        reason: rejection.reason,
+      });
+    }
+  }, [
+    baseResolution,
+    fixedMattressHandle,
+    mattressResolution,
+    requiredSelectionsConfirmed,
+    selectedBaseHandle,
+    wantsBase,
+  ]);
   const canAdd =
     requiredSelectionsConfirmed &&
     essentialsReady &&
@@ -1770,7 +1821,9 @@ export default function PodBuilder({
         merchandiseId: mattressMerchId,
         quantity: 1,
         attributes: [
-          { key: "Size", value: size },
+          { key: "Size", value: mattressResolution.actualOption },
+          { key: "Setup Size", value: size },
+          { key: "Variant Option", value: mattressResolution.actualOption },
           { key: "Mattress", value: mattressLabel },
           ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
           ...(isDualComfort
@@ -1789,7 +1842,9 @@ export default function PodBuilder({
         merchandiseId: baseMerchId,
         quantity: 1,
         attributes: [
-          { key: "Size", value: size },
+          { key: "Size", value: baseResolution.actualOption },
+          { key: "Setup Size", value: size },
+          { key: "Variant Option", value: baseResolution.actualOption },
           { key: "Base", value: selectedBaseLabel },
           ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
           ...(podIdValue ? [{ key: "SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
@@ -1806,7 +1861,9 @@ export default function PodBuilder({
         attributes: [
           { key: "Sleep Essential", value: ESSENTIAL_CATEGORY_CONFIG[category].singular },
           { key: "Product", value: choice.title },
-          ...(choice.variantTitle ? [{ key: "Option", value: choice.variantTitle }] : []),
+          { key: "Option", value: choice.actualOption },
+          { key: "Variant Option", value: choice.actualOption },
+          ...(category === "pillows" ? [{ key: "Pillow Size", value: choice.actualOption }] : []),
           ...(category !== "pillows" ? [{ key: "Setup Size", value: size }] : []),
           ...(podIdValue ? [{ key: "SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
         ],
@@ -1860,6 +1917,7 @@ export default function PodBuilder({
   }, [
     addLinesToAuthoritativeCart,
     baseMerchId,
+    baseResolution.actualOption,
     canAdd,
     commerceUnavailableMessage,
     dcLeft,
@@ -1868,6 +1926,7 @@ export default function PodBuilder({
     isDualComfort,
     mattressLabel,
     mattressMerchId,
+    mattressResolution.actualOption,
     onCue,
     pod?.id,
     pod?.podId,

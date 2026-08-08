@@ -7,6 +7,7 @@ const {
   addCartLines,
   updateCartLines,
   removeCartLines,
+  clearCart,
 } = require("../services/shopify");
 const { getSleepEssentialsCatalog } = require("../services/sleepEssentialsCatalog");
 const shopperCart = require("../services/shopperCart");
@@ -819,6 +820,37 @@ async function removeCartLinesRoute(event = {}) {
   }
 }
 
+async function clearCartRoute(event = {}) {
+  const traceId = getTraceId(event);
+  const body = parseBody(event);
+  const cartId = body.cartId || body.id || null;
+  if (!cartId || !isValidCartGid(String(cartId))) {
+    return json(400, {
+      error: "Invalid cartId",
+      message: "Provide a valid Shopify Cart GID (gid://shopify/Cart/...).",
+      meta: buildMeta(event),
+    }, { "X-Trace-Id": traceId });
+  }
+
+  try {
+    const cart = await clearCart({ cartId: String(cartId) });
+    return json(200, {
+      cart,
+      cartId: cart?.id || String(cartId),
+      id: cart?.id || String(cartId),
+      checkoutUrl: cart?.checkoutUrl || null,
+      cleared: true,
+      meta: buildMeta(event),
+    }, { "X-Trace-Id": traceId });
+  } catch (err) {
+    return json(isTimeoutError(err) ? 504 : 400, {
+      error: err?.code || "CART_CLEAR_FAILED",
+      message: err?.message || "The cart could not be cleared.",
+      meta: buildMeta(event),
+    }, { "X-Trace-Id": traceId });
+  }
+}
+
 function clean(value) {
   return String(value == null ? "" : value).trim();
 }
@@ -846,6 +878,14 @@ async function handleShopifyRoute({ event, method, routePath }) {
         const lineIds = [...new Set((body.lineIds || []).map(clean).filter(Boolean))];
         if (!lineIds.length) return json(400, { error: "Invalid lineIds", meta: buildMeta(event) });
         result = await shopperCart.removeShopperCartLines(event, lineIds);
+      } else if (routePath === "/shopify/cart/owned/replace") {
+        const normalized = normalizeLinesFromBody(body);
+        if (!normalized.lines) {
+          return json(400, { error: normalized.error || "Invalid lines", meta: buildMeta(event) });
+        }
+        result = await shopperCart.replaceShopperCart(event, normalized.lines);
+      } else if (routePath === "/shopify/cart/owned/clear") {
+        result = await shopperCart.clearShopperCart(event);
       } else {
         return null;
       }
@@ -940,6 +980,15 @@ async function handleShopifyRoute({ event, method, routePath }) {
     );
   }
 
+  if (method === "POST" && routePath === "/shopify/cart/clear") {
+    return withTimeout(
+      clearCartRoute(event),
+      ROUTE_TIMEOUT_MS,
+      "SHOPIFY_TIMEOUT",
+      `Shopify clearCart exceeded ${ROUTE_TIMEOUT_MS}ms`
+    );
+  }
+
   return null;
 }
 
@@ -955,5 +1004,6 @@ module.exports = {
   addCartLines: addCartLinesRoute,
   updateCartLines: updateCartLinesRoute,
   removeCartLines: removeCartLinesRoute,
+  clearCart: clearCartRoute,
   handleShopifyRoute,
 };
