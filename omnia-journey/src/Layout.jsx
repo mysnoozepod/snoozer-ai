@@ -247,6 +247,7 @@ function LayoutShell() {
         muted: hudMuted,
       },
       refreshRewards: () => refreshRewardsState({ force: true }),
+      openRewards: () => setDrawerOpen(true),
       openSnoozer: () => setHudOpen(true),
       closeSnoozer: () => setHudOpen(false),
       toggleSnoozer: () => setHudOpen((prev) => !prev),
