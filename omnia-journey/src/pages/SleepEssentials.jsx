@@ -203,8 +203,8 @@ export default function SleepEssentials() {
           merchandiseId,
           quantity: 1,
           attributes: [
-            { key: "Source", value: "Sleep Essentials" },
-            { key: "Category", value: activeCategoryId },
+            { key: "_Source", value: "Sleep Essentials" },
+            { key: "_Sleep Essential", value: activeCategoryId },
           ],
         }],
       });

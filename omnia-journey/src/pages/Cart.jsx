@@ -88,36 +88,52 @@ function attributeValue(attrs, keys) {
 function pickTechnicalAttributes(attrs) {
   const allow = new Set([
     "SnoozePod",
+    "_SnoozePod",
     "Size",
     "Mattress",
+    "_Mattress",
     "Base",
+    "_Base",
     "Motion",
     "Dual Comfort",
     "Left Feel",
     "Right Feel",
     "Product",
+    "_Product",
     "Option",
+    "_Option",
     "Setup Size",
+    "_Setup Size",
     "Variant Option",
+    "_Variant Option",
     "Pillow Size",
     "Sleep Essential",
+    "_Sleep Essential",
   ]);
 
   const order = [
     "SnoozePod",
+    "_SnoozePod",
     "Size",
     "Setup Size",
+    "_Setup Size",
     "Variant Option",
+    "_Variant Option",
     "Mattress",
+    "_Mattress",
     "Base",
+    "_Base",
     "Motion",
     "Dual Comfort",
     "Left Feel",
     "Right Feel",
     "Product",
+    "_Product",
     "Option",
+    "_Option",
     "Pillow Size",
     "Sleep Essential",
+    "_Sleep Essential",
   ];
 
   return normalizeAttributes(attrs)
@@ -131,14 +147,20 @@ function cleanValue(value) {
     .trim();
 }
 
+function displayAttributeKey(key) {
+  return String(key || "").replace(/^_+/, "");
+}
+
 function cartLineConfiguration(item) {
   const attrs = normalizeAttributes(item?.attributes);
-  const size = cleanValue(attributeValue(attrs, ["Setup Size", "Size"]));
-  const variant = cleanValue(attributeValue(attrs, "Variant Option"));
-  const base = cleanValue(attributeValue(attrs, "Base"));
+  const size = cleanValue(attributeValue(attrs, ["_Setup Size", "Setup Size", "Size"]));
+  const variant = cleanValue(attributeValue(attrs, ["_Variant Option", "Variant Option"]));
+  const base = cleanValue(attributeValue(attrs, ["_Base", "Base"]));
   const motion = cleanValue(attributeValue(attrs, "Motion"));
   const pillowSize = cleanValue(attributeValue(attrs, "Pillow Size"));
-  const essential = cleanValue(attributeValue(attrs, ["Sleep Essential", "Product", "Option"]));
+  const essential = cleanValue(
+    attributeValue(attrs, ["_Sleep Essential", "Sleep Essential", "_Product", "Product", "_Option", "Option"])
+  );
   const title = cleanValue(item?.title);
   const pieces = [];
   const baseLower = base.toLowerCase();
@@ -640,7 +662,7 @@ export default function Cart() {
                                 key={`${id}-${attr.key}-${attr.value}`}
                                 className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700"
                               >
-                                {attr.key}: {attr.value}
+                                {displayAttributeKey(attr.key)}: {attr.value}
                               </span>
                             ))}
                           </div>

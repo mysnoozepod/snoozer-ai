@@ -1822,9 +1822,9 @@ export default function PodBuilder({
         quantity: 1,
         attributes: [
           { key: "Size", value: mattressResolution.actualOption },
-          { key: "Setup Size", value: size },
-          { key: "Variant Option", value: mattressResolution.actualOption },
-          { key: "Mattress", value: mattressLabel },
+          { key: "_Setup Size", value: size },
+          { key: "_Variant Option", value: mattressResolution.actualOption },
+          { key: "_Mattress", value: mattressLabel },
           ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
           ...(isDualComfort
             ? [
@@ -1832,7 +1832,7 @@ export default function PodBuilder({
                 { key: "Right Feel", value: dcRight },
               ]
             : []),
-          ...(podIdValue ? [{ key: "SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
+          ...(podIdValue ? [{ key: "_SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
         ],
       },
     ];
@@ -1843,11 +1843,11 @@ export default function PodBuilder({
         quantity: 1,
         attributes: [
           { key: "Size", value: baseResolution.actualOption },
-          { key: "Setup Size", value: size },
-          { key: "Variant Option", value: baseResolution.actualOption },
-          { key: "Base", value: selectedBaseLabel },
+          { key: "_Setup Size", value: size },
+          { key: "_Variant Option", value: baseResolution.actualOption },
+          { key: "_Base", value: selectedBaseLabel },
           ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
-          ...(podIdValue ? [{ key: "SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
+          ...(podIdValue ? [{ key: "_SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
         ],
       });
     }
@@ -1859,13 +1859,13 @@ export default function PodBuilder({
         merchandiseId: choice.variantId,
         quantity: choice.quantity,
         attributes: [
-          { key: "Sleep Essential", value: ESSENTIAL_CATEGORY_CONFIG[category].singular },
-          { key: "Product", value: choice.title },
-          { key: "Option", value: choice.actualOption },
-          { key: "Variant Option", value: choice.actualOption },
+          { key: "_Sleep Essential", value: ESSENTIAL_CATEGORY_CONFIG[category].singular },
+          { key: "_Product", value: choice.title },
+          { key: "_Option", value: choice.actualOption },
+          { key: "_Variant Option", value: choice.actualOption },
           ...(category === "pillows" ? [{ key: "Pillow Size", value: choice.actualOption }] : []),
-          ...(category !== "pillows" ? [{ key: "Setup Size", value: size }] : []),
-          ...(podIdValue ? [{ key: "SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
+          ...(category !== "pillows" ? [{ key: "_Setup Size", value: size }] : []),
+          ...(podIdValue ? [{ key: "_SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
         ],
       });
     }

@@ -112,13 +112,13 @@ async function main() {
   assert.equal(similarButInvalid.reason, "EXACT_OPTION_NOT_FOUND");
 
   const attributesA = [
-    { key: "Setup", value: "SnoozePod 4" },
-    { key: "Variant Option", value: "Split King" },
+    { key: "_SnoozePod", value: "SnoozePod 4" },
+    { key: "_Variant Option", value: "Split King" },
   ];
   const attributesReordered = [...attributesA].reverse();
   const attributesB = [
-    { key: "Setup", value: "SnoozePod 1" },
-    { key: "Variant Option", value: "Split King" },
+    { key: "_SnoozePod", value: "SnoozePod 1" },
+    { key: "_Variant Option", value: "Split King" },
   ];
   const line = {
     merchandiseId: "gid://shopify/ProductVariant/1003",
@@ -158,8 +158,11 @@ async function main() {
   const store = read("omnia-journey/src/lib/useStore.js");
   assert(!builder.includes("variants[0]"), "Pod Builder must not contain first-variant fallback");
   assert(builder.includes('quantity: 1'), "King (2pc) base must remain one Shopify line at quantity 1");
-  assert(builder.includes('key: "Variant Option"'), "cart lines must describe the resolved variant");
-  assert(builder.includes('key: "Setup Size"'), "cart lines must preserve setup intent separately");
+  assert(builder.includes('key: "_Variant Option"'), "cart lines must privately describe the resolved variant");
+  assert(builder.includes('key: "_Setup Size"'), "cart lines must privately preserve setup intent separately");
+  assert(!builder.includes('key: "Variant Option"'), "resolved variant metadata must not be public checkout copy");
+  assert(!builder.includes('key: "Setup Size"'), "setup intent metadata must not be public checkout copy");
+  assert(builder.includes('key: "Pillow Size"'), "pillow sizing must remain shopper-visible");
   assert(!mainSource.includes("<CartProvider"), "the legacy CartProvider must not be mounted");
   assert(checkout.includes("prepareCheckoutCart"), "checkout must use the lossless cart handoff");
   assert(!checkout.includes("discountCode"), "checkout must not turn typed discounts into notes");
