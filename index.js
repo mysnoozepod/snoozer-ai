@@ -4532,6 +4532,13 @@ function buildIdentityProfilePatch(identity = {}, input = {}) {
   const sourceShopperId = cleanIdentityValue(
     input?.sourceShopperId || identity?.sourceShopperId
   );
+  const sessionIds = uniqueStrings([
+    input?.sessionId,
+    identity?.sessionId,
+    input?.threadId,
+    identity?.threadId,
+    ...(Array.isArray(input?.sessionIds) ? input.sessionIds : []),
+  ]);
 
   return {
     profileId: cleanIdentityValue(identity?.profileId) || undefined,
@@ -4542,6 +4549,7 @@ function buildIdentityProfilePatch(identity = {}, input = {}) {
       cleanIdentityValue(input?.sessionId || identity?.sessionId) || undefined,
     threadId:
       cleanIdentityValue(input?.threadId || identity?.threadId) || undefined,
+    sessionIds: sessionIds.length ? sessionIds : undefined,
     visitorId:
       cleanIdentityValue(input?.visitorId || identity?.visitorId) || undefined,
     identityType: cleanIdentityValue(identity?.identityType) || undefined,
@@ -6386,7 +6394,12 @@ async function handle(event = {}) {
     const rewardsResponse = await handleRewardsRoutes(event, {
       getAssessmentResult,
     });
-    if (rewardsResponse) return rewardsResponse;
+    if (rewardsResponse) {
+      return {
+        ...rewardsResponse,
+        headers: baseHeaders(event, rewardsResponse.headers || {}),
+      };
+    }
   }
 
   // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Ask Snoozer (SCO-aware + deterministic-first)

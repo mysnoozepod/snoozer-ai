@@ -61,6 +61,43 @@ async function getProfileById(profileId, options = {}) {
   return result?.profile || null;
 }
 
+async function ownsSessionViaAlias(input = {}, identity = {}, profile = {}, options = {}) {
+  const sessionId = clean(input.sessionId);
+  if (!sessionId) return false;
+
+  const canonicalProfileId =
+    clean(identity.profileId) || clean(profile.profileId) || `shopper#${clean(identity.shopperId)}`;
+  const canonicalShopperId =
+    clean(identity.shopperId) ||
+    clean(profile.shopperId) ||
+    clean(profile.snoozeCode) ||
+    clean(profile.accessCode);
+  const aliasProfileIds = [`alias#session:${sessionId}`, `alias#thread:${sessionId}`];
+
+  for (const aliasProfileId of aliasProfileIds) {
+    const aliasProfile = await getProfileById(aliasProfileId, options);
+    if (!aliasProfile) continue;
+
+    const aliasProfileOwnerId = clean(aliasProfile.aliasOfProfileId || aliasProfile.mergedIntoProfileId);
+    const aliasShopperOwnerId = clean(
+      aliasProfile.aliasOfShopperId ||
+        aliasProfile.mergedIntoShopperId ||
+        aliasProfile.shopperId ||
+        aliasProfile.snoozeCode ||
+        aliasProfile.accessCode
+    );
+
+    if (
+      (aliasProfileOwnerId && aliasProfileOwnerId === canonicalProfileId) ||
+      (canonicalShopperId && aliasShopperOwnerId === canonicalShopperId)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 async function resolveRewardsIdentity(event, options = {}) {
   const input = readIdentityInput(event);
   if (!snoozeIdentity.normalizeSnoozeCode(input.snoozeCode)) {
@@ -115,11 +152,14 @@ async function resolveRewardsIdentity(event, options = {}) {
     profileSessionIds.size > 0 &&
     !profileSessionIds.has(input.sessionId)
   ) {
-    throw identityError(
-      "REWARD_SESSION_MISMATCH",
-      "This session does not own the requested reward profile.",
-      403
-    );
+    const aliasOwned = await ownsSessionViaAlias(input, identity, profile, options);
+    if (!aliasOwned) {
+      throw identityError(
+        "REWARD_SESSION_MISMATCH",
+        "This session does not own the requested reward profile.",
+        403
+      );
+    }
   }
 
   return {

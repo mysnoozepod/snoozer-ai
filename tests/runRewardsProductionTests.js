@@ -1116,6 +1116,14 @@ async function main() {
     assert.match(backendSource, /idempotency-key/);
   });
 
+  await test("rewards route responses are wrapped with shared browser headers", () => {
+    const backendSource = fs.readFileSync(path.join(root, "index.js"), "utf8");
+    assert.match(
+      backendSource,
+      /headers:\s*baseHeaders\(event,\s*rewardsResponse\.headers\s*\|\|\s*\{\}\)/
+    );
+  });
+
   await test("Lambda requires and routes rewards without an optional fallback", () => {
     const backendSource = fs.readFileSync(path.join(root, "index.js"), "utf8");
     assert.match(

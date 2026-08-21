@@ -38,6 +38,7 @@ const PROFILE_ARRAY_FIELDS = Object.freeze([
   "reasonKeys",
   "recommendedProductHandles",
   "identityAliases",
+  "sessionIds",
   "previousProfileIds",
   "previousShopperIds",
 ]);
@@ -320,6 +321,12 @@ function buildCustomerProfilePatch(input = {}) {
   const previousShopperIds = uniqueStrings(
     Array.isArray(input.previousShopperIds) ? input.previousShopperIds : []
   );
+  const sessionIds = uniqueStrings(
+    []
+      .concat(Array.isArray(input.sessionIds) ? input.sessionIds : [])
+      .concat(input.sessionId)
+      .concat(input.threadId)
+  );
 
   return {
     profileId: cleanString(input.profileId) || undefined,
@@ -328,6 +335,7 @@ function buildCustomerProfilePatch(input = {}) {
     accessCode: cleanString(input.accessCode) || undefined,
     sessionId: cleanString(input.sessionId) || undefined,
     threadId: cleanString(input.threadId) || undefined,
+    sessionIds: sessionIds.length ? sessionIds : undefined,
     visitorId: cleanString(input.visitorId) || undefined,
     identityType: cleanString(input.identityType) || undefined,
     identitySource: cleanString(input.identitySource) || undefined,
