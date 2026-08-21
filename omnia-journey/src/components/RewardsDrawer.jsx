@@ -126,7 +126,14 @@ export default function RewardsDrawer({ shopperId, open, onClose, onHud }) {
 
         {rewards.status === "loading" && !summary && <p>Loading your rewards...</p>}
         {rewards.error && (
-          <div style={{ marginTop: 16, padding: 14, borderRadius: 12, background: "#fff6df" }}>
+          <div
+            style={{
+              marginTop: 16,
+              padding: 14,
+              borderRadius: 12,
+              background: summary ? "#eef5ff" : "#fff6df",
+            }}
+          >
             {rewards.error}
             <button
               type="button"

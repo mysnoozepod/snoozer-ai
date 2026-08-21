@@ -22,6 +22,8 @@ const EMPTY_STATE = Object.freeze({
   updatedAt: null,
 });
 
+const PARTIAL_REWARDS_ERROR = "Some reward details are temporarily unavailable.";
+
 let state = { ...EMPTY_STATE };
 let inflight = null;
 const listeners = new Set();
@@ -56,6 +58,8 @@ export function subscribeRewardsState(listener) {
 
 export async function refreshRewardsState({ force = false } = {}) {
   const nextIdentityKey = identityKey();
+  const previousSnapshot =
+    state.identityKey === nextIdentityKey ? state : EMPTY_STATE;
   if (!hasVerifiedIdentity()) {
     setState({ ...EMPTY_STATE, identityKey: nextIdentityKey });
     return state;
@@ -68,26 +72,52 @@ export async function refreshRewardsState({ force = false } = {}) {
   setState({
     identityKey: nextIdentityKey,
     status: "loading",
-    stale: Boolean(state.summary),
+    stale: Boolean(previousSnapshot.summary),
     error: null,
   });
 
-  inflight = Promise.all([
+  inflight = Promise.allSettled([
     getRewardSummary(),
     getRewardOffers(),
     getRewardGift(),
     getRewardHistory(),
   ])
-    .then(([summary, offers, gift, history]) => {
+    .then(([summaryResult, offersResult, giftResult, historyResult]) => {
+      if (summaryResult.status !== "fulfilled") {
+        throw summaryResult.reason || new Error("Rewards are temporarily unavailable.");
+      }
+
+      const optionalFailure =
+        offersResult.status !== "fulfilled" ||
+        giftResult.status !== "fulfilled" ||
+        historyResult.status !== "fulfilled";
+
       setState({
         identityKey: nextIdentityKey,
         status: "ready",
         stale: false,
-        summary,
-        offers: Array.isArray(offers) ? offers : [],
-        gift: gift || null,
-        history: Array.isArray(history) ? history : [],
-        error: null,
+        summary: summaryResult.value || null,
+        offers:
+          offersResult.status === "fulfilled"
+            ? Array.isArray(offersResult.value)
+              ? offersResult.value
+              : []
+            : Array.isArray(previousSnapshot.offers)
+              ? previousSnapshot.offers
+              : [],
+        gift:
+          giftResult.status === "fulfilled"
+            ? giftResult.value || null
+            : previousSnapshot.gift || null,
+        history:
+          historyResult.status === "fulfilled"
+            ? Array.isArray(historyResult.value)
+              ? historyResult.value
+              : []
+            : Array.isArray(previousSnapshot.history)
+              ? previousSnapshot.history
+              : [],
+        error: optionalFailure ? PARTIAL_REWARDS_ERROR : null,
         updatedAt: new Date().toISOString(),
       });
       return state;

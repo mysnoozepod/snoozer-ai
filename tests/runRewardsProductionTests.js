@@ -4,6 +4,7 @@ const assert = require("assert/strict");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const vm = require("vm");
 const processor = require("../services/rewards/processor");
 const redemption = require("../services/rewards/redemption");
 const rewardService = require("../services/rewards/service");
@@ -238,6 +239,60 @@ const classifications = {
 
 function offer(id) {
   return rules.offers.find((candidate) => candidate.id === id);
+}
+
+function loadRewardsStoreForTest({ api, sessionStore }) {
+  const source = fs.readFileSync(
+    path.join(root, "omnia-journey/src/state/rewardsStore.js"),
+    "utf8"
+  );
+  const transformed = source
+    .replace(
+      /import\s+\{\s*useSyncExternalStore\s*\}\s+from\s+"react";/,
+      'const { useSyncExternalStore } = require("react");'
+    )
+    .replace(
+      /import\s+\{\s*([\s\S]*?)\s*\}\s+from\s+"@\/lib\/api";/,
+      'const {$1} = require("@/lib/api");'
+    )
+    .replace(
+      /import\s+\{\s*([\s\S]*?)\s*\}\s+from\s+"@\/state\/sessionStore";/,
+      'const {$1} = require("@/state/sessionStore");'
+    )
+    .replace(/export\s+async\s+function\s+/g, "async function ")
+    .replace(/export\s+function\s+/g, "function ");
+
+  const module = { exports: {} };
+  const sandbox = {
+    module,
+    exports: module.exports,
+    require(id) {
+      if (id === "react") {
+        return { useSyncExternalStore() { throw new Error("hook path not used in test"); } };
+      }
+      if (id === "@/lib/api") return api;
+      if (id === "@/state/sessionStore") return sessionStore;
+      throw new Error(`Unexpected require: ${id}`);
+    },
+    console,
+    structuredClone,
+    setTimeout,
+    clearTimeout,
+  };
+
+  vm.runInNewContext(
+    `${transformed}
+module.exports = {
+  getRewardsState,
+  subscribeRewardsState,
+  refreshRewardsState,
+  useRewardsState,
+};`,
+    sandbox,
+    { filename: "rewardsStore.test.js" }
+  );
+
+  return module.exports;
 }
 
 async function main() {
@@ -968,6 +1023,86 @@ async function main() {
       pillSource,
       /Number\(summary\?\.availableSleepPoints \|\| 0\)/
     );
+  });
+
+  await test("rewards store keeps authoritative summary when optional endpoints fail", async () => {
+    const store = loadRewardsStoreForTest({
+      api: {
+        async getRewardSummary() {
+          return {
+            availableSleepPoints: 200,
+            currentBadge: { label: "Rest Tester" },
+          };
+        },
+        async getRewardOffers() {
+          throw new Error("offers down");
+        },
+        async getRewardGift() {
+          return { status: "unlocked" };
+        },
+        async getRewardHistory() {
+          throw new Error("history down");
+        },
+      },
+      sessionStore: {
+        getSessionState() {
+          return { shopperId: "7283", sessionId: "session-7283" };
+        },
+        subscribeSessionState() {
+          return () => {};
+        },
+      },
+    });
+
+    await store.refreshRewardsState({ force: true });
+    const snapshot = store.getRewardsState();
+
+    assert.equal(snapshot.status, "ready");
+    assert.equal(snapshot.summary.availableSleepPoints, 200);
+    assert.equal(
+      snapshot.error,
+      "Some reward details are temporarily unavailable."
+    );
+    assert.deepEqual(Array.from(snapshot.offers), []);
+    assert.deepEqual(Array.from(snapshot.history), []);
+    assert.deepEqual(
+      JSON.parse(JSON.stringify(snapshot.gift)),
+      { status: "unlocked" }
+    );
+  });
+
+  await test("rewards store still hard-fails when the summary endpoint fails", async () => {
+    const store = loadRewardsStoreForTest({
+      api: {
+        async getRewardSummary() {
+          throw new Error("summary down");
+        },
+        async getRewardOffers() {
+          return [];
+        },
+        async getRewardGift() {
+          return null;
+        },
+        async getRewardHistory() {
+          return [];
+        },
+      },
+      sessionStore: {
+        getSessionState() {
+          return { shopperId: "7283", sessionId: "session-7283" };
+        },
+        subscribeSessionState() {
+          return () => {};
+        },
+      },
+    });
+
+    await store.refreshRewardsState({ force: true });
+    const snapshot = store.getRewardsState();
+
+    assert.equal(snapshot.status, "error");
+    assert.equal(snapshot.summary, null);
+    assert.equal(snapshot.error, "summary down");
   });
 
   await test("rewards browser headers are allowed through CORS preflight", () => {
