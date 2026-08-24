@@ -108,9 +108,7 @@ function StepCard({ step, title, body, detail, icon: Icon, onClick }) {
         <div
           className={[
             "mt-2 text-[0.84rem] leading-5",
-            detail === "You’re here"
-              ? "font-semibold text-[#2f57e8]"
-              : "text-slate-600",
+            detail === "You’re here" ? "font-semibold text-[#2f57e8]" : "text-slate-600",
           ].join(" ")}
         >
           {detail}
@@ -124,12 +122,12 @@ function buildFallbackWhatToExpectScript(assessmentComplete) {
   if (assessmentComplete) {
     return {
       speech:
-        "Here's how this works. Your Snooze Assessment is already done. Next, try your recommended SnoozePods, then complete your sleep setup.",
+        "Your assessment is already done. Start with your recommended pod, compare the next two at your own pace, use the head towels before testing pillows or mattresses, and ask Snoozer or your sleep expert anytime.",
       captions:
-        "Here's how this works. Your Snooze Assessment is already done. Next, try your recommended SnoozePods, then complete your sleep setup.",
+        "Your assessment is already done. Start with your recommended pod, compare the next two at your own pace, use the head towels before testing pillows or mattresses, and ask Snoozer or your sleep expert anytime.",
       state: "speaking",
       priority: "normal",
-      ttlMs: 5200,
+      ttlMs: 7600,
       voiceStyle: "default",
       actions: [],
     };
@@ -137,12 +135,12 @@ function buildFallbackWhatToExpectScript(assessmentComplete) {
 
   return {
     speech:
-      "Here's how this works. Start with your Snooze Assessment, then try your recommended SnoozePods, then complete your sleep setup.",
+      "Start with your Snooze Assessment, then test the recommended pods at your own pace. Use the head towels from the Welcome Kiosk before trying pillows or mattresses, and remember that Snoozer and your sleep expert stay available the whole time.",
     captions:
-      "Here's how this works. Start with your Snooze Assessment, then try your recommended SnoozePods, then complete your sleep setup.",
+      "Start with your Snooze Assessment, then test the recommended pods at your own pace. Use the head towels from the Welcome Kiosk before trying pillows or mattresses, and remember that Snoozer and your sleep expert stay available the whole time.",
     state: "speaking",
     priority: "normal",
-    ttlMs: 5200,
+    ttlMs: 7800,
     voiceStyle: "default",
     actions: [],
   };
@@ -228,9 +226,7 @@ export default function WhatToExpect() {
     if (checking) return;
     if (!runHudAction) return;
 
-    const announcementKey = `${shopperId || "guest"}::${
-      assessmentComplete ? "complete" : "default"
-    }`;
+    const announcementKey = `${shopperId || "guest"}::${assessmentComplete ? "complete" : "default"}`;
 
     if (announcedKeyRef.current === announcementKey) return;
 
@@ -242,9 +238,7 @@ export default function WhatToExpect() {
     introTimerRef.current = window.setTimeout(() => {
       if (!isMountedRef.current) return;
 
-      const scriptKey = assessmentComplete
-        ? "whattoexpect.assessment_complete"
-        : "whattoexpect.default";
+      const scriptKey = assessmentComplete ? "whattoexpect.assessment_complete" : "whattoexpect.default";
 
       runHudAction(assessmentComplete ? "view_results" : "start_assessment", {
         scriptKey,
@@ -283,9 +277,7 @@ export default function WhatToExpect() {
   }, [voiceScript.speech, voiceState]);
 
   const ctaReady = assessmentComplete || !checking || Boolean(snapshot) || !shopperId;
-  const primaryLabel = assessmentComplete
-    ? "Go to My Recommended Pods"
-    : "Start Your Snooze Assessment";
+  const primaryLabel = assessmentComplete ? "Go to My Recommended Pods" : "Start Your Snooze Assessment";
 
   const primaryAction = () => {
     noteUserInteraction?.();
@@ -323,7 +315,7 @@ export default function WhatToExpect() {
                   Your guided showroom path.
                 </h1>
                 <p className="mt-2 max-w-3xl text-[0.92rem] leading-6 text-slate-700 md:text-[0.96rem]">
-                  Start with your match, test your top pods, explore Sleep Essentials, then build the setup that feels right.
+                  Start with your match, test your top pods, then build the setup that feels right.
                 </p>
               </div>
 
@@ -345,10 +337,9 @@ export default function WhatToExpect() {
                 <StepCard
                   step="3"
                   title="Sleep Essentials"
-                  body="Compare pillows, bedding, and protectors before your final build."
-                  detail="Review each category your way."
+                  body="Compare pillows, bedding, and protectors as part of the sleep experience."
+                  detail="Use the head towels before you test pillows or mattresses."
                   icon={PackageCheck}
-                  onClick={() => navigate("/sleep-essentials")}
                 />
                 <StepCard
                   step="4"
@@ -371,13 +362,11 @@ export default function WhatToExpect() {
                       Next Step
                     </div>
                     <div className="mt-1.5 text-[1.25rem] font-black tracking-tight text-slate-900">
-                      {assessmentComplete
-                        ? "Your assessment is already complete."
-                        : "Start with your Snooze Assessment."}
+                      {assessmentComplete ? "Your assessment is already complete." : "Start with your Snooze Assessment."}
                     </div>
                     <p className="mt-2 text-[0.9rem] leading-5 text-slate-600">
                       {assessmentComplete
-                        ? "You can go straight to your recommended pods, or retake the assessment for a fresh match."
+                        ? "You can go straight to your recommended pods and keep Ask Snoozer or your sleep expert nearby the whole way."
                         : "This is the fastest way to turn your showroom visit into clear pod recommendations."}
                     </p>
                   </div>
@@ -396,7 +385,7 @@ export default function WhatToExpect() {
                         <ArrowRight className="h-5 w-5" />
                       </button>
 
-                      {assessmentComplete ? (
+                      {assessmentComplete ? null : (
                         <button
                           type="button"
                           onClick={secondaryAction}
@@ -405,7 +394,7 @@ export default function WhatToExpect() {
                         >
                           Retake Snooze Assessment
                         </button>
-                      ) : null}
+                      )}
                     </>
                   ) : (
                     <div className="rounded-[18px] bg-[#1A66D2] px-6 py-3.5 text-center text-base font-black text-white">

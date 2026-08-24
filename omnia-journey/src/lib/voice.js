@@ -1,4 +1,6 @@
 // src/lib/voice.js
+import { buildApiUrl } from "@/lib/apiBase";
+
 const DEFAULTS = {
   voiceId: "Ruth",
   engine: "generative",
@@ -37,22 +39,8 @@ function setState(patch = {}) {
   emit();
 }
 
-function resolveApiBase() {
-  const fromEnv =
-    import.meta.env.VITE_API_BASE_URL ||
-    import.meta.env.VITE_API_URL ||
-    import.meta.env.VITE_API_BASE ||
-    "";
-
-  return String(fromEnv || "").replace(/\/+$/, "");
-}
-
 function toAbsoluteApiUrl(path) {
-  const cleanPath = String(path || "").startsWith("/") ? path : `/${path}`;
-  const apiBase = resolveApiBase();
-
-  if (apiBase) return `${apiBase}${cleanPath}`;
-  return cleanPath.startsWith("/api/") ? cleanPath : `/api${cleanPath}`;
+  return buildApiUrl(path);
 }
 
 function stripBase64Prefix(value) {

@@ -223,25 +223,25 @@ function buildHeroLine({ leadPodId }) {
 
 function buildHeroSupportLine({ comparePodIds = [] }) {
   if (comparePodIds.length >= 2) {
-    return "Then compare your next two matches. Your full match list stays available while you test.";
+    return "Then compare your next two matches. You can explore other pods later if you want a wider look.";
   }
 
   if (comparePodIds.length === 1) {
-    return "Then compare your next match. Your full match list stays available while you test.";
+    return "Then compare your next match. You can explore other pods later if you want a wider look.";
   }
 
-  return "Your full match list stays available while you test.";
+  return "Start here first. You can explore other pods later if you want a wider look.";
 }
 
 function buildResultsVoiceScript({ leadPodId, comparePodIds = [] }) {
   if (!leadPodId) return "Your results are ready.";
   if (comparePodIds.length >= 2) {
-    return `Start with SnoozePod ${leadPodId}. Then compare your next two matches. Your full match list stays available while you test.`;
+    return `Start with SnoozePod ${leadPodId}. Then compare your next two matches. You can explore other pods later, and Ask Snoozer or your sleep expert stay available throughout the showroom.`;
   }
   if (comparePodIds.length === 1) {
-    return `Start with SnoozePod ${leadPodId}. Then compare your next match. Your full match list stays available while you test.`;
+    return `Start with SnoozePod ${leadPodId}. Then compare your next match. You can explore other pods later, and Ask Snoozer or your sleep expert stay available throughout the showroom.`;
   }
-  return `Start with SnoozePod ${leadPodId}. Your full match list stays available while you test.`;
+  return `Start with SnoozePod ${leadPodId}. Ask Snoozer and your sleep expert stay available while you test.`;
 }
 
 function buildCardCtaLabel(rank, podId) {
@@ -458,7 +458,7 @@ function buildLeadReasonCards({ pod, recommendationMeta }) {
         break;
       case "side_sleeper_pressure_relief":
         push(
-          "Pressure-relief focus",
+          "Shoulder and hip comfort",
           "A strong first pod to notice shoulder and hip pressure before you compare the next match."
         );
         break;
@@ -472,7 +472,7 @@ function buildLeadReasonCards({ pod, recommendationMeta }) {
       case "primary_mattress_exact":
       case "primary_mattress_family":
         push(
-          "Mattress family match",
+          "Closest feel match",
           "This pod stays closest to the mattress feel your assessment pointed to first."
         );
         break;

@@ -1,7 +1,8 @@
 // Tiny API client with timeout + single smart retry for /ask-snoozer
 // Requires: VITE_API_BASE in your .env (no trailing slash)
+import { resolveApiBase } from "@/lib/apiBase";
 
-const API_BASE = (import.meta.env?.VITE_API_BASE || "").replace(/\/+$/g, "");
+const API_BASE = resolveApiBase();
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));

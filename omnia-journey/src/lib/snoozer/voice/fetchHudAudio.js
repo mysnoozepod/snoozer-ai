@@ -1,3 +1,5 @@
+import { buildApiUrl } from "@/lib/apiBase";
+
 const AUDIO_CACHE = new Map();
 const AUDIO_CACHE_MAX = 48;
 const HUD_AUDIO_TIMEOUT_MS = Number(import.meta.env.VITE_HUD_AUDIO_TIMEOUT_MS || 2000);
@@ -14,18 +16,8 @@ const hudAudioBreaker = {
   openUntil: 0,
 };
 
-function resolveApiBase() {
-  let apiBase = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
-  if (apiBase && !/\/(prod|staging|dev)$/i.test(apiBase)) {
-    apiBase += "/prod";
-  }
-  return apiBase;
-}
-
 function toApiUrl(path) {
-  const cleanPath = String(path || "").startsWith("/") ? path : `/${path}`;
-  const apiBase = resolveApiBase();
-  return apiBase ? `${apiBase}${cleanPath}` : cleanPath;
+  return buildApiUrl(path);
 }
 
 function nowMs() {

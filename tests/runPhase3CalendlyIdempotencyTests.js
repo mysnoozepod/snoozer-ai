@@ -159,6 +159,7 @@ function createHarness({ initialProfiles = [], ddbDoc, failFirstUpsert = false }
   const profiles = new Map(
     initialProfiles.map((profile) => [String(profile.profileId), clone(profile)])
   );
+  const logs = [];
   const stats = {
     profileWriteCount: 0,
     zohoWriteCount: 0,
@@ -170,11 +171,18 @@ function createHarness({ initialProfiles = [], ddbDoc, failFirstUpsert = false }
 
   return {
     profiles,
+    logs,
     stats,
     state,
     options: {
       route: "/booking/calendly-webhook",
-      log: function noop() {},
+      log: (src, msg, extra) => {
+        logs.push({
+          src: String(src || ""),
+          msg: String(msg || ""),
+          extra: clone(extra || {}),
+        });
+      },
       ddbDoc,
       tableName: "snoozer_sessions_test",
       getProfileById: async (profileId) => clone(profiles.get(String(profileId)) || null),
@@ -227,6 +235,8 @@ function createHarness({ initialProfiles = [], ddbDoc, failFirstUpsert = false }
           ddbDoc,
           tableName: options.tableName,
         }),
+      assessCalendlyWebhookIdempotency:
+        calendlyWebhookIdempotency.assessCalendlyWebhookIdempotency,
       deriveCalendlyIdempotencyKey:
         calendlyWebhookIdempotency.deriveCalendlyIdempotencyKey,
     },
@@ -305,6 +315,7 @@ async function testDuplicateInviteeCreatedIsIdempotent() {
 
   assert.strictEqual(first.ok, true);
   assert.strictEqual(first.skipped, false);
+  assert.strictEqual(first.idempotency?.claimed, true);
   assert.strictEqual(first.sessionPrep?.status, "ready");
   assert.strictEqual(second.ok, true);
   assert.strictEqual(second.skipped, true);
@@ -363,6 +374,7 @@ async function testDuplicateInviteeCanceledIsIdempotent() {
   const second = await bookingSession.upsertBookingSession(payload, harness.options);
 
   assert.strictEqual(first.ok, true);
+  assert.strictEqual(first.idempotency?.claimed, true);
   assert.strictEqual(first.sessionPrep?.status, "canceled");
   assert.strictEqual(second.ok, true);
   assert.strictEqual(second.skipped, true);
@@ -438,6 +450,85 @@ async function testMalformedPayloadDoesNotClaimLedgerKey() {
   assert.strictEqual(result.skipped, true);
   assert.strictEqual(result.reason, "BOOKING_IDENTITY_UNRESOLVED");
   assert.strictEqual(ddbDoc.store.size, 0, "malformed payload should not claim idempotency");
+  assert(
+    harness.logs.some(
+      (entry) =>
+        entry.src === "booking.webhook.idempotency" &&
+        entry.msg === "INSUFFICIENT_IDEMPOTENCY_EVIDENCE" &&
+        entry.extra?.idempotencyStatus === "unclaimed"
+    ),
+    "malformed payload should log a clear idempotency skip reason"
+  );
+}
+
+async function testSparsePayloadWithEventUriClaimsIdempotency() {
+  const ddbDoc = createLedgerClient();
+  const harness = createHarness({ ddbDoc });
+
+  const result = await bookingSession.upsertBookingSession(
+    {
+      event: "invitee.canceled",
+      payload: {
+        scheduled_event: {
+          uri: "https://api.calendly.com/scheduled_events/sparse-event-uri-1",
+        },
+      },
+    },
+    harness.options
+  );
+
+  assert.strictEqual(result.ok, true);
+  assert.strictEqual(result.skipped, true);
+  assert.strictEqual(result.reason, "BOOKING_IDENTITY_UNRESOLVED");
+  assert.strictEqual(result.idempotency?.claimed, true);
+  assert.strictEqual(result.idempotency?.derived?.source, "event_uri");
+  assert.strictEqual(ddbDoc.store.size, 1, "event URI evidence should claim idempotency");
+}
+
+async function testSparsePayloadWithInviteeUriClaimsIdempotency() {
+  const ddbDoc = createLedgerClient();
+  const harness = createHarness({ ddbDoc });
+
+  const result = await bookingSession.upsertBookingSession(
+    {
+      event: "invitee.canceled",
+      payload: {
+        invitee: {
+          uri: "https://api.calendly.com/invitees/sparse-invitee-uri-1",
+        },
+      },
+    },
+    harness.options
+  );
+
+  assert.strictEqual(result.ok, true);
+  assert.strictEqual(result.skipped, true);
+  assert.strictEqual(result.reason, "BOOKING_IDENTITY_UNRESOLVED");
+  assert.strictEqual(result.idempotency?.claimed, true);
+  assert.strictEqual(result.idempotency?.derived?.source, "invitee_uri");
+  assert.strictEqual(ddbDoc.store.size, 1, "invitee URI evidence should claim idempotency");
+}
+
+async function testSparsePayloadWithPayloadEventIdClaimsIdempotency() {
+  const ddbDoc = createLedgerClient();
+  const harness = createHarness({ ddbDoc });
+
+  const result = await bookingSession.upsertBookingSession(
+    {
+      event: "invitee.created",
+      payload: {
+        id: "calendly-payload-event-1",
+      },
+    },
+    harness.options
+  );
+
+  assert.strictEqual(result.ok, true);
+  assert.strictEqual(result.skipped, true);
+  assert.strictEqual(result.reason, "BOOKING_IDENTITY_UNRESOLVED");
+  assert.strictEqual(result.idempotency?.claimed, true);
+  assert.strictEqual(result.idempotency?.derived?.source, "payload_event_id");
+  assert.strictEqual(ddbDoc.store.size, 1, "payload event id should claim idempotency");
 }
 
 async function testLedgerWriteFailureBlocksMutation() {
@@ -555,6 +646,9 @@ async function main() {
     ["duplicate_invitee_canceled_is_idempotent", testDuplicateInviteeCanceledIsIdempotent],
     ["same_invitee_different_event_types_do_not_conflict", testSameInviteeDifferentEventTypesDoNotConflict],
     ["malformed_payload_does_not_claim_ledger_key", testMalformedPayloadDoesNotClaimLedgerKey],
+    ["sparse_payload_with_event_uri_claims_idempotency", testSparsePayloadWithEventUriClaimsIdempotency],
+    ["sparse_payload_with_invitee_uri_claims_idempotency", testSparsePayloadWithInviteeUriClaimsIdempotency],
+    ["sparse_payload_with_payload_event_id_claims_idempotency", testSparsePayloadWithPayloadEventIdClaimsIdempotency],
     ["ledger_write_failure_blocks_mutation", testLedgerWriteFailureBlocksMutation],
     ["failure_after_claim_marks_failed_and_allows_retry", testFailureAfterClaimMarksFailedAndAllowsRetry],
   ];

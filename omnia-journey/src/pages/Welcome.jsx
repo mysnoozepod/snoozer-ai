@@ -220,9 +220,9 @@ export default function Welcome() {
                       <ShieldCheck className="h-5 w-5" />
                     </div>
                     <div>
-                      <div className="text-[0.98rem] font-black text-slate-900">Your privacy matters.</div>
+                      <div className="text-[0.98rem] font-black text-slate-900">Personalize Your Experience</div>
                       <p className="mt-1 text-[0.84rem] leading-5 text-slate-600">
-                        Your Snooze Code unlocks your recommendations, rewards, and session prep.
+                        Your Snooze Code unlocks rewards, recommendations, and special discounts!
                       </p>
                     </div>
                   </div>

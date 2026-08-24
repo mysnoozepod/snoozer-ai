@@ -1,0 +1,10 @@
+{
+  "id": "what_to_expect_assessment_complete",
+  "speech": "Your Snooze Assessment is already on file. Next, head to your Snooze Test and try the recommended pods first. When you're ready, complete your sleep setup and finish your selection.",
+  "captions": "Your Snooze Assessment is already on file. Next, head to your Snooze Test and try the recommended pods first. When you're ready, complete your sleep setup and finish your selection.",
+  "state": "speaking",
+  "priority": "normal",
+  "ttlMs": 6500,
+  "voiceStyle": "default",
+  "actions": []
+}

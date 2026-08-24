@@ -41,20 +41,6 @@ function summarizeWebhookResult(result = {}) {
   };
 }
 
-function hasWebhookClaimEvidence(booking = {}) {
-  const eventType = cleanString(booking?.eventType);
-  const eventUri = cleanString(booking?.eventUri);
-  const inviteeUri = cleanString(booking?.inviteeUri);
-  const startTime = cleanString(booking?.startTime);
-  const email = cleanString(booking?.email);
-  const name = cleanString(booking?.name);
-
-  if (!eventType) return false;
-  if (!(eventUri || inviteeUri)) return false;
-
-  return Boolean(startTime || email || name);
-}
-
 function logIdempotency(logger, booking = {}, claim = {}, extra = {}) {
   if (typeof logger !== "function") return;
 
@@ -389,6 +375,10 @@ function getDependencies(options = {}) {
       typeof options.deriveCalendlyIdempotencyKey === "function"
         ? options.deriveCalendlyIdempotencyKey
         : calendlyWebhookIdempotency.deriveCalendlyIdempotencyKey,
+    assessCalendlyWebhookIdempotency:
+      typeof options.assessCalendlyWebhookIdempotency === "function"
+        ? options.assessCalendlyWebhookIdempotency
+        : calendlyWebhookIdempotency.assessCalendlyWebhookIdempotency,
     resolveRecommendation:
       typeof options.resolveRecommendation === "function"
         ? options.resolveRecommendation
@@ -1006,8 +996,9 @@ async function upsertBookingSession(input, options = {}) {
   });
 
   try {
-    if (hasWebhookClaimEvidence(booking)) {
-      const derived = deps.deriveCalendlyIdempotencyKey(booking);
+    const idempotencyAssessment = deps.assessCalendlyWebhookIdempotency(booking);
+    if (idempotencyAssessment.canClaim) {
+      const derived = idempotencyAssessment.derived;
       idempotencyClaim = await deps.claimCalendlyWebhook(
         {
           ...booking,
@@ -1050,6 +1041,23 @@ async function upsertBookingSession(input, options = {}) {
           idempotency: idempotencyClaim,
         };
       }
+    } else {
+      logIdempotency(
+        logger,
+        booking,
+        {
+          idempotencyStatus: "unclaimed",
+          reason:
+            cleanString(idempotencyAssessment.reason) || "INSUFFICIENT_IDEMPOTENCY_EVIDENCE",
+          derived: idempotencyAssessment.derived,
+          duplicate: false,
+        },
+        {
+          mutationSkipped: true,
+          reason:
+            cleanString(idempotencyAssessment.reason) || "INSUFFICIENT_IDEMPOTENCY_EVIDENCE",
+        }
+      );
     }
 
     const identityResolution = await resolveBookingIdentity(booking, options);

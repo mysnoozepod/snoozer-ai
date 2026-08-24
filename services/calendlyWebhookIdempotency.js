@@ -115,6 +115,19 @@ function deriveCalendlyIdempotencyKey(input = {}) {
   };
 }
 
+function assessCalendlyWebhookIdempotency(input = {}) {
+  const derived = deriveCalendlyIdempotencyKey(input);
+  return {
+    canClaim: Boolean(derived?.ok && derived?.canClaim),
+    reason: cleanString(derived?.reason) || null,
+    derived,
+  };
+}
+
+function hasCalendlyWebhookIdempotencyEvidence(input = {}) {
+  return assessCalendlyWebhookIdempotency(input).canClaim;
+}
+
 function buildLedgerRecord(input = {}) {
   const idempotencyKey = cleanString(input.idempotencyKey);
   const keyHash = cleanString(input.keyHash || hashValue(idempotencyKey));
@@ -381,11 +394,13 @@ async function markCalendlyWebhookFailed(input = {}, options = {}) {
 
 module.exports = {
   DEFAULT_TABLE_NAME,
+  assessCalendlyWebhookIdempotency,
   buildLedgerRecord,
   buildLedgerSessionId,
   claimCalendlyWebhook,
   deriveCalendlyIdempotencyKey,
   hashValue,
+  hasCalendlyWebhookIdempotencyEvidence,
   markCalendlyWebhookFailed,
   markCalendlyWebhookProcessed,
 };

@@ -1,4 +1,5 @@
-const API_BASE = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
+import { buildApiUrl } from "@/lib/apiBase";
+
 const SCRIPT_CACHE = new Map();
 const SCRIPT_CACHE_MAX = 48;
 const HUD_SCRIPT_TIMEOUT_MS = 1800;
@@ -10,8 +11,7 @@ const hudScriptBreaker = {
 };
 
 function toApiUrl(path) {
-  const cleanPath = String(path || "").startsWith("/") ? path : `/${path}`;
-  return API_BASE ? `${API_BASE}${cleanPath}` : cleanPath;
+  return buildApiUrl(path);
 }
 
 function nowMs() {
