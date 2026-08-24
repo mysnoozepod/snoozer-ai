@@ -1,8 +1,9 @@
 const { test, expect } = require("@playwright/test");
 
-async function stubBackendFailures(page, { hudTtlMs = null } = {}) {
+async function stubBackendFailures(page, { hudTtlMs = null, requests = [] } = {}) {
   await page.route("**/*", async (route) => {
     const url = route.request().url();
+    if (/\/hud\/tts$/i.test(url)) requests.push("hud-tts");
     if (hudTtlMs && /\/hud\/script$/i.test(url)) {
       await route.fulfill({
         status: 200,
@@ -71,34 +72,36 @@ test("What To Expect centers all four orientation steps without navigation contr
   await expectNoDocumentScroll(page);
 });
 
-test("What To Expect follows HUD caption completion for both profile branches", async ({ browser }) => {
-  for (const branch of ["incomplete", "complete"]) {
+test("What To Expect triggers HUD/TTS and follows completion for new and existing codes", async ({ browser }) => {
+  for (const branch of ["new", "existing"]) {
     const context = await browser.newContext({ viewport: { width: 1180, height: 820 } });
     const page = await context.newPage();
-    await stubBackendFailures(page, { hudTtlMs: 1_200 });
+    const requests = [];
+    await stubBackendFailures(page, { hudTtlMs: 1_200, requests });
 
-    if (branch === "complete") {
-      await page.addInitScript(() => {
+    await page.addInitScript((profileBranch) => {
+        const existing = profileBranch === "existing";
+        const shopperId = existing ? "2468" : "9876";
         sessionStorage.setItem(
           "snooze.sessionState.v1",
-          JSON.stringify({ version: 1, shopperId: "2468" })
+          JSON.stringify({ version: 1, shopperId })
         );
         sessionStorage.setItem(
           "snooze.snapshot",
           JSON.stringify({
-            shopperId: "2468",
-            exists: true,
-            shopperState: "ASSESSED",
-            assessment: { answers: { firmness: "Soft" } },
+            shopperId,
+            exists: existing,
+            shopperState: existing ? "ASSESSED" : "NEW",
+            assessment: existing ? { answers: { firmness: "Soft" } } : null,
           })
         );
-      });
-    }
+      }, branch);
 
     await page.goto("/what-to-expect", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "Your guided showroom path." })).toBeVisible();
     await expect(page.locator("body")).toContainText("Welcome to your Snooze Session");
-    await expect(page).toHaveURL(branch === "complete" ? /\/results$/ : /\/assessment$/);
+    await expect.poll(() => requests.filter((request) => request === "hud-tts").length).toBeGreaterThan(0);
+    await expect(page).toHaveURL(branch === "existing" ? /\/results$/ : /\/assessment$/);
     await context.close();
   }
 });

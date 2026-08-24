@@ -756,14 +756,13 @@ function normalizeBuildStepCandidate(value) {
   if (!normalized) return "";
   if (normalized === "dual") return "comfort";
   if (normalized === "mattress") return "size";
+  if (normalized === "pillows" || normalized === "sheets" || normalized === "protector") return "essentials";
   if (
     normalized === "base" ||
     normalized === "size" ||
     normalized === "motion" ||
     normalized === "comfort" ||
-    normalized === "pillows" ||
-    normalized === "sheets" ||
-    normalized === "protector" ||
+    normalized === "essentials" ||
     normalized === "review" ||
     normalized === "success"
   ) {
@@ -916,11 +915,14 @@ export default function PodBuilder({
   onViewSnoozePod,
   onViewResults,
   requestedStepKey,
+  mattressAlreadyInCart = false,
 }) {
   const navigate = useNavigate();
   const addLinesToAuthoritativeCart = useStore(
     (state) => state.addLinesToAuthoritativeCart
   );
+  const cartItems = useStore((state) => state.cart || []);
+  const removeFromCart = useStore((state) => state.removeFromCart);
 
   const fixedMattressType = useMemo(() => inferMattressTypeFromPod(pod), [pod]);
   const fixedMattressHandle = useMemo(
@@ -995,9 +997,7 @@ export default function PodBuilder({
         { key: "base", label: "Base", icon: BedDouble },
         showMotion ? { key: "motion", label: "Motion", icon: SlidersHorizontal } : null,
         isDualComfort ? { key: "comfort", label: "Comfort", icon: Sparkles } : null,
-        { key: "pillows", label: "Pillows", icon: PackageCheck },
-        { key: "sheets", label: "Sheets", icon: PackageCheck },
-        { key: "protector", label: "Protector", icon: PackageCheck },
+        { key: "essentials", label: "Essentials", icon: PackageCheck },
         { key: "review", label: "Review", icon: CheckCircle2 },
         { key: "success", label: "Added", icon: CheckCircle2 },
       ].filter(Boolean),
@@ -1016,7 +1016,7 @@ export default function PodBuilder({
     }
 
     const candidate = normalizeBuildStepCandidate(compatibleSavedBuild?.stepKey);
-    if (candidate === "review" && compatibleSavedBuild?.essentialsVersion !== 1) return "pillows";
+    if (candidate === "review" && compatibleSavedBuild?.essentialsVersion !== 2) return "essentials";
     return steps.some((step) => step.key === candidate) ? candidate : "size";
   });
   const appliedRequestedStepRef = useRef(requestedNormalizedStepKey || "size");
@@ -1037,7 +1037,7 @@ export default function PodBuilder({
 
   const openSleepEssentials = useCallback(
     (category) => {
-      const returnStep = ESSENTIAL_STEP_KEYS.includes(stepKey) ? stepKey : "review";
+      const returnStep = stepKey === "essentials" ? "essentials" : "review";
       const returnTo = buildPodCustomizeReturnPath(canonicalPodId, returnStep);
       navigate(buildSleepEssentialsPath({ category, returnTo }));
     },
@@ -1195,7 +1195,7 @@ export default function PodBuilder({
       dcRight,
       stepKey,
       confirmed: confirmedSelections,
-      essentialsVersion: 1,
+      essentialsVersion: 2,
       selectedEssentials,
       skippedEssentials,
       shopperKey,
@@ -1522,10 +1522,10 @@ export default function PodBuilder({
         description: "Pick the left feel, then the right feel.",
       };
     }
-    if (ESSENTIAL_STEP_KEYS.includes(stepKey)) {
+    if (stepKey === "essentials") {
       return {
-        title: `Choose ${ESSENTIAL_CATEGORY_CONFIG[stepKey].label.toLowerCase()}.`,
-        description: "Select an approved option or skip this category.",
+        title: "Complete Your Sleep Setup",
+        description: "Choose from a small set of approved essentials, or continue with your core setup.",
       };
     }
     if (stepKey === "success") {
@@ -1548,8 +1548,8 @@ export default function PodBuilder({
           ? motionReady
           : stepKey === "comfort"
             ? comfortReady
-            : ESSENTIAL_STEP_KEYS.includes(stepKey)
-              ? Boolean(selectedEssentialChoices[stepKey] || skippedEssentials[stepKey])
+            : stepKey === "essentials"
+              ? essentialProducts.status !== "loading"
             : stepKey === "success"
               ? true
               : canAdd;
@@ -1611,22 +1611,13 @@ export default function PodBuilder({
         };
       }
 
-      if (ESSENTIAL_STEP_KEYS.includes(stepKey)) {
-        const choice = selectedEssentialChoices[stepKey];
-        const categoryLabel = ESSENTIAL_CATEGORY_CONFIG[stepKey].label;
+      if (stepKey === "essentials") {
+        const chosen = ESSENTIAL_STEP_KEYS.map((key) => selectedEssentialChoices[key]).filter(Boolean);
         return {
-          title: choice?.title || `${categoryLabel}: ${skippedEssentials[stepKey] ? "Skipped" : "Choose or skip"}`,
-          caption: choice
-            ? `${choice.variantTitle || "Available option"} selected from the live catalog.`
-            : "Only approved, available Shopify options are shown.",
-          items: choice
-            ? [
-                `${categoryLabel}: ${choice.title}`,
-                choice.variantTitle ? `Option: ${choice.variantTitle}` : "",
-                `Price: ${money(choice.price)}`,
-              ].filter(Boolean)
-            : [],
-          nextAction: "Continue",
+          title: "Complete Your Sleep Setup",
+          caption: "Only approved, available Shopify options are shown.",
+          items: chosen.map((choice) => `${choice.title} · ${money(choice.price)}`),
+          nextAction: "Review your setup",
         };
       }
 
@@ -1707,6 +1698,8 @@ export default function PodBuilder({
       commerceUnavailableMessage,
       monthly,
       previewTotal,
+      selectedEssentials: ESSENTIAL_STEP_KEYS.map((category) => selectedEssentialChoices[category]?.title).filter(Boolean),
+      skippedEssentials: ESSENTIAL_STEP_KEYS.filter((category) => skippedEssentials[category]),
     });
   }, [
     onStateChange,
@@ -1733,6 +1726,8 @@ export default function PodBuilder({
     commerceUnavailableMessage,
     monthly,
     previewTotal,
+    selectedEssentialChoices,
+    skippedEssentials,
   ]);
 
   const setGuidedStep = useCallback(
@@ -1816,7 +1811,16 @@ export default function PodBuilder({
 
     const podIdValue = String(pod?.podId ?? pod?.id ?? "").trim();
 
-    const lines = [
+    const mattressHandleKey = String(fixedMattressHandle || "");
+    const mattressMerchandiseKey = String(mattressMerchId || "");
+    const existingMattressLines = cartItems.filter((item) =>
+      (mattressHandleKey && String(item?.handle || "") === mattressHandleKey) ||
+      (mattressMerchandiseKey && String(item?.merchandiseId || "") === mattressMerchandiseKey)
+    );
+    const exactMattressAlreadyInCart = existingMattressLines.some(
+      (item) => String(item?.merchandiseId || "") === String(mattressMerchId || "")
+    );
+    const lines = exactMattressAlreadyInCart ? [] : [
       {
         merchandiseId: mattressMerchId,
         quantity: 1,
@@ -1874,10 +1878,16 @@ export default function PodBuilder({
     setIsAddingToCart(true);
 
     try {
-      await addLinesToAuthoritativeCart?.({
-        lines,
-        sourcePage: "pod-build",
-      });
+      for (const item of existingMattressLines) {
+        if (String(item?.merchandiseId || "") === String(mattressMerchId || "")) continue;
+        await removeFromCart?.(item.lineId || item.id);
+      }
+      if (lines.length) {
+        await addLinesToAuthoritativeCart?.({
+          lines,
+          sourcePage: "pod-build",
+        });
+      }
       setGuidedStep("success");
       onCue?.("Added to cart.", "success");
 
@@ -1916,6 +1926,9 @@ export default function PodBuilder({
     }
   }, [
     addLinesToAuthoritativeCart,
+    cartItems,
+    fixedMattressHandle,
+    removeFromCart,
     baseMerchId,
     baseResolution.actualOption,
     canAdd,
@@ -1947,8 +1960,8 @@ export default function PodBuilder({
   }, [onCue, onViewSnoozePod]);
 
   const nextAfterSize = "base";
-  const nextAfterBase = showMotion ? "motion" : isDualComfort ? "comfort" : "pillows";
-  const nextAfterMotion = isDualComfort ? "comfort" : "pillows";
+  const nextAfterBase = showMotion ? "motion" : isDualComfort ? "comfort" : "essentials";
+  const nextAfterMotion = isDualComfort ? "comfort" : "essentials";
   const visibleProgressSteps = steps.filter((step) => step.key !== "success" || stepKey === "success");
   const isStepComplete = useCallback(
     (key) => {
@@ -1956,9 +1969,7 @@ export default function PodBuilder({
       if (key === "base") return baseReady;
       if (key === "motion") return motionReady;
       if (key === "comfort") return comfortReady;
-      if (ESSENTIAL_STEP_KEYS.includes(key)) {
-        return Boolean(selectedEssentialChoices[key] || skippedEssentials[key]);
-      }
+      if (key === "essentials") return essentialsReady;
       if (key === "review") return stepKey === "success";
       if (key === "success") return stepKey === "success";
       return false;
@@ -2093,7 +2104,7 @@ export default function PodBuilder({
                       ? "motion"
                       : isDualComfort
                         ? "comfort"
-                        : "pillows";
+                        : "essentials";
                   queueSelectionAdvance(
                     `base:${option.value}`,
                     nextKey,
@@ -2192,8 +2203,8 @@ export default function PodBuilder({
                       if (shouldAdvance) {
                         queueSelectionAdvance(
                           `left:${option}`,
-                          "pillows",
-                          "Choose your pillows next."
+                          "essentials",
+                          "Complete your sleep setup next."
                         );
                       }
                     }}
@@ -2222,8 +2233,8 @@ export default function PodBuilder({
                       if (shouldAdvance) {
                         queueSelectionAdvance(
                           `right:${option}`,
-                          "pillows",
-                          "Choose your pillows next."
+                          "essentials",
+                          "Complete your sleep setup next."
                         );
                       }
                     }}
@@ -2233,9 +2244,95 @@ export default function PodBuilder({
             </div>
           </div>
           {renderStageControls({
-            primaryLabel: "Continue to Pillows",
-            onPrimary: () => setGuidedStep("pillows", "Choose your pillows next."),
+            primaryLabel: "Continue to Sleep Essentials",
+            onPrimary: () => setGuidedStep("essentials", "Complete your sleep setup next."),
             primaryDisabled: !comfortReady,
+          })}
+        </div>
+      );
+    }
+
+    if (stepKey === "essentials") {
+      const visibleCategories = ESSENTIAL_STEP_KEYS
+        .map((category) => ({ category, choices: essentialChoicesByCategory[category] || [] }))
+        .filter(({ choices }) => choices.length > 0);
+
+      const selectChoice = (category, choice) => {
+        setSelectedEssentials((current) => ({
+          ...current,
+          [category]: {
+            handle: choice.handle,
+            variantId: choice.variantId,
+            quantity: category === "pillows" ? current[category]?.quantity || 1 : 1,
+          },
+        }));
+        setSkippedEssentials((current) => ({ ...current, [category]: false }));
+        setCartError("");
+      };
+
+      const continueEssentials = async () => {
+        if (essentialProgressBusy) return;
+        const categoriesToSkip = ESSENTIAL_STEP_KEYS.filter((category) => !selectedEssentialChoices[category]);
+        setSkippedEssentials((current) => ({
+          ...current,
+          ...Object.fromEntries(categoriesToSkip.map((category) => [category, true])),
+        }));
+        setEssentialProgressBusy("all");
+        await Promise.allSettled(ESSENTIAL_STEP_KEYS.map((category) => {
+          const choice = selectedEssentialChoices[category];
+          return recordEssentialProgress({
+            category,
+            action: choice ? "saved_selection" : "reviewed_no_selection",
+            choice,
+          });
+        }));
+        setEssentialProgressBusy("");
+        setGuidedStep("review", "Review this setup before adding it to cart.");
+      };
+
+      return (
+        <div className="flex h-full min-h-0 flex-col" data-sleep-essentials-step="combined">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-[0.78rem] font-semibold text-slate-600">
+              {essentialProducts.status === "loading" ? "Loading approved Shopify options..." : "A few approved finishing touches for this setup."}
+            </p>
+            <button type="button" onClick={() => openSleepEssentials("all")} className="inline-flex min-h-[40px] items-center gap-1 rounded-[12px] border border-[#dfe7fb] bg-white px-3 text-[0.75rem] font-black text-[#315cf6]">
+              View All Sleep Essentials <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          {essentialProducts.status === "loading" ? (
+            <div className="flex min-h-[120px] flex-1 items-center justify-center rounded-[18px] border border-[#dfe7fb] bg-[#f8faff] text-sm font-semibold text-slate-600">Preparing approved options…</div>
+          ) : visibleCategories.length ? (
+            <div className="grid min-h-0 flex-1 gap-2 overflow-y-auto lg:grid-cols-3">
+              {visibleCategories.map(({ category, choices }) => (
+                <section key={category} className="rounded-[16px] border border-[#dfe7fb] bg-white p-2.5" data-sleep-essentials-category={category}>
+                  <div className="mb-2 text-[0.68rem] font-black uppercase tracking-[0.15em] text-[#315cf6]">{ESSENTIAL_CATEGORY_CONFIG[category].label}</div>
+                  <div className="grid gap-1.5">
+                    {choices.slice(0, 3).map((choice) => {
+                      const active = selectedEssentialChoices[category]?.variantId === choice.variantId;
+                      return (
+                        <button key={choice.variantId} type="button" onClick={() => selectChoice(category, choice)} className={`flex min-h-[68px] items-center gap-2 rounded-[13px] border p-2 text-left ${active ? "border-[#315cf6] bg-[#eef3ff]" : "border-[#e2e8f7] bg-white"}`}>
+                          <BuilderMediaPreview src={choice.image} alt={choice.title} icon={PackageCheck} className="h-12 w-12 shrink-0 overflow-hidden rounded-[9px] bg-[#f6f8ff]" imgClassName="h-full w-full object-contain p-1" />
+                          <span className="min-w-0 flex-1"><span className="line-clamp-2 block text-[0.75rem] font-black leading-tight text-slate-950">{choice.title}</span><span className="mt-0.5 block text-[0.76rem] font-black text-[#315cf6]">{money(choice.price)}</span></span>
+                          <CheckCircle2 className={active ? "h-4 w-4 shrink-0 text-[#315cf6]" : "h-4 w-4 shrink-0 text-slate-200"} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
+            </div>
+          ) : (
+            <div className="flex min-h-[120px] flex-1 items-center justify-center rounded-[18px] border border-[#dfe7fb] bg-[#f8faff] px-5 text-center">
+              <div><PackageCheck className="mx-auto h-8 w-8 text-[#315cf6]" /><p className="mt-2 font-black text-slate-900">No approved Sleep Essentials are available for this setup right now.</p><p className="mt-1 text-sm text-slate-600">You can continue with the core mattress and base setup.</p></div>
+            </div>
+          )}
+
+          {renderStageControls({
+            primaryLabel: "Continue to Review",
+            onPrimary: continueEssentials,
+            primaryDisabled: essentialProducts.status === "loading" || Boolean(essentialProgressBusy),
           })}
         </div>
       );
@@ -2632,6 +2729,11 @@ export default function PodBuilder({
       data-pod-builder-state={stepKey}
     >
       <div className="min-h-0 flex-1 rounded-[22px] border border-[#dfe7fb] bg-white/96 p-3 shadow-[0_18px_46px_rgba(45,71,136,0.09)]">
+        {mattressAlreadyInCart && stepKey !== "success" ? (
+          <div className="mb-2 rounded-[14px] border border-emerald-200 bg-emerald-50 px-3 py-2 text-[0.8rem] font-bold text-emerald-800" data-mattress-cart-continuity="true">
+            Your mattress is already in your cart — let’s finish your setup.
+          </div>
+        ) : null}
         <div className="mb-2 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h2 className="text-[clamp(1.18rem,1.75vw,1.62rem)] font-black leading-tight tracking-tight text-slate-950">

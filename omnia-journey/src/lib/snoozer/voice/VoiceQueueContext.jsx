@@ -602,8 +602,16 @@ export function VoiceQueueProvider({
   );
 
   const handleRouteChange = useCallback(
-    async ({ stop = true, clearQueue = true, fadeMs } = {}) => {
+    async ({ stop = true, clearQueue = true, fadeMs, allowContinuation, maxCarryoverMs } = {}) => {
       if (!stop) return;
+
+      if (typeof allowContinuation === "boolean") {
+        const decision = controller.handleRouteChange({ allowContinuation, maxCarryoverMs });
+        if (decision?.action === "continue" || decision?.action === "none") return;
+        if (decision?.action === "fade-and-stop" && !Number.isFinite(fadeMs)) {
+          fadeMs = decision.fadeOutMs;
+        }
+      }
 
       clearCaptionTimer();
       invalidateRunToken();

@@ -367,15 +367,6 @@ function RestTestCompletion({ controller, podLabel, onBackHome, onTryAnotherMatt
     ],
     []
   );
-  const againOptions = useMemo(
-    () => [
-      { value: "yes", label: "Yes" },
-      { value: "maybe", label: "Maybe" },
-      { value: "no", label: "No" },
-    ],
-    []
-  );
-
   return (
     <ShowroomPanel
       tone="frost"
@@ -398,7 +389,7 @@ function RestTestCompletion({ controller, podLabel, onBackHome, onTryAnotherMatt
           </div>
           <div className="grid content-center gap-1.5">
             <CompactOptionGroup label="Best position" options={positionOptions} value={controller.state.preferredPosition} onChange={controller.setPreferredPosition} testId="rest-best-position" />
-            <CompactOptionGroup label="Test this mattress again?" options={againOptions} value={controller.state.testAgain} onChange={controller.setTestAgain} testId="rest-test-again" />
+            {favoriteSaved ? <p className="rounded-[11px] bg-emerald-50 px-2.5 py-2 text-[0.7rem] font-bold text-emerald-800">Saved. Learn more about this mattress or compare another pod.</p> : null}
             <div className="grid grid-cols-3 gap-1.5">
               <button
                 type="button"

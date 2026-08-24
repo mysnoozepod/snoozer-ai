@@ -13,7 +13,8 @@
     "test:welcome-device:layout": "npm run build && playwright test -c playwright.welcome-device.config.cjs",
     "rest:test": "node tests/runRestTestProgramTests.mjs",
     "rest:visual:test": "playwright test -c playwright.rest-test.config.cjs",
-    "pod:persistence:test": "node tests/runPersistentPodExperienceTests.mjs && playwright test -c playwright.rest-test.config.cjs -g \"persists across every Pod experience tab\""
+    "pod:persistence:test": "node tests/runPersistentPodExperienceTests.mjs && playwright test -c playwright.rest-test.config.cjs -g \"persists across every Pod experience tab\"",
+    "test:pod-polish": "node tests/runPodExperiencePolishTests.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

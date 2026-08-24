@@ -37,7 +37,7 @@ export function getSleepEssentialsJourneyId(shopperId) {
 export function buildPodCustomizeReturnPath(podId, stepKey = "review") {
   const normalizedPodId = String(podId || "").trim().toLowerCase();
   if (!/^pod-[1-5]$/.test(normalizedPodId)) return "/results";
-  const safeStep = ["pillows", "sheets", "protector", "review"].includes(stepKey)
+  const safeStep = ["essentials", "pillows", "sheets", "protector", "review"].includes(stepKey)
     ? stepKey
     : "review";
   return `/pod/${normalizedPodId}?stage=build&buildStep=${safeStep}`;
@@ -54,7 +54,7 @@ export function getSafeSleepEssentialsReturnPath(value, fallback = "/results") {
     const stage = url.searchParams.get("stage");
     const step = url.searchParams.get("buildStep");
     if (stage !== "build") return fallback;
-    if (step && !["pillows", "sheets", "protector", "review"].includes(step)) {
+    if (step && !["essentials", "pillows", "sheets", "protector", "review"].includes(step)) {
       return fallback;
     }
 

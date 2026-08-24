@@ -434,8 +434,13 @@ export function useGuidedRestTest({
           });
         });
     }
+    void speakPod?.("I saved your ratings and favorite. You can learn more about this mattress or compare another pod.", {
+      ...hudPayload("I saved your ratings and favorite. You can learn more about this mattress or compare another pod.", { state: "celebrate", priority: "normal", ttlMs: 5200 }),
+      calm: true,
+      key: `guided-rest-ratings-saved::${state.startedAt}`,
+    });
     return record;
-  }, [identity, state]);
+  }, [identity, speakPod, state]);
 
   return {
     state,

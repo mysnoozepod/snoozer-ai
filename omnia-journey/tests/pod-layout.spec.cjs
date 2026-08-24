@@ -284,13 +284,16 @@ for (const viewport of VIEWPORTS) {
         await expect(page.locator('[data-pod-route-header="true"] img')).toHaveCount(0);
 
         if (testCase.state === "learn") {
-          await expect(page.getByText("Sleep Nutrition")).toBeVisible();
-          await expect(page.getByText("What this mattress gives your sleep")).toBeVisible();
-          await expect(page.getByText("Snoozer Recommends This Mattress Because")).toBeVisible();
+          await expect(page.getByText("How This Mattress Supports Your Sleep")).toBeVisible();
+          await expect(page.getByText("Choose Size")).toBeVisible();
+          await expect(page.getByText("Snoozer Recommendation")).toBeVisible();
+          await expect(page.getByText("Sleep Nutrition")).toHaveCount(0);
+          await expect(page.locator('[data-pod-route-header] [data-pod-badge="true"]')).toHaveCount(0);
           await expect(page.getByText(/^Specs$/)).toHaveCount(0);
           await expect(page.getByText("Prices may vary by retailer.")).toHaveCount(0);
-          await expect(page.locator("[data-pod-nutrition-row]")).toHaveCount(3);
-          await expect(page.locator('[data-pod-recommendation-bullet="true"]')).toHaveCount(3);
+          await expect(page.locator("[data-pod-support-row]").first()).toBeVisible();
+          await expect(page.locator('[data-pod-recommendation-summary="true"]')).toHaveCount(1);
+          await expect(page.locator("[data-pod-nutrition-row]")).toHaveCount(0);
         }
 
         if (testCase.state.startsWith("build")) {
@@ -433,15 +436,8 @@ test("pod-4 queen adjustable standard setup is gated by resolved commerce lines"
   await expect(page.locator('[data-pod-builder-state="motion"]')).toBeVisible();
 
   await page.locator('[data-pod-build-choice="Standard Motion"]').first().click();
-  await expect(page.locator('[data-pod-builder-state="pillows"]')).toBeVisible();
-
-  await page.getByRole("button", { name: "Skip", exact: true }).click();
-  await expect(page.locator('[data-pod-builder-state="sheets"]')).toBeVisible();
-
-  await page.getByRole("button", { name: "Skip", exact: true }).click();
-  await expect(page.locator('[data-pod-builder-state="protector"]')).toBeVisible();
-
-  await page.getByRole("button", { name: "Skip", exact: true }).click();
+  await expect(page.locator('[data-pod-builder-state="essentials"]')).toBeVisible();
+  await page.getByRole("button", { name: "Continue to Review", exact: true }).click();
   await expect(page.locator('[data-pod-builder-state="review"]')).toBeVisible();
 
   const addButton = page.locator('[data-pod-layout-primary-action="build-add"]').first();

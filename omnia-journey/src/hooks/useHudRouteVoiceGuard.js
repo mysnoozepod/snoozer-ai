@@ -1,6 +1,6 @@
 // src/hooks/useHudRouteVoiceGuard.js
 
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useVoiceQueue } from '../lib/snoozer/voice/VoiceQueueContext';
 
@@ -9,7 +9,10 @@ export function useHudRouteVoiceGuard(options = {}) {
   const prevPathRef = useRef(location.pathname);
   const { handleRouteChange } = useVoiceQueue();
 
-  useEffect(() => {
+  // Clear or carry the previous route's voice before the entering page queues
+  // its narration. A passive effect races new-profile hydration and can erase
+  // the What To Expect job after it has already been enqueued.
+  useLayoutEffect(() => {
     const prevPath = prevPathRef.current;
     const nextPath = location.pathname;
 

@@ -72,7 +72,8 @@ import { usePhysicalControl } from "@/iot/usePhysicalControl";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
 import { POD_LAYOUT_CONTRACT, normalizePodLabState } from "@/lib/podLayoutContract";
 import { measurePodLayout } from "@/lib/podLayoutMeasurement";
-import { buildSleepNutritionItems } from "@/lib/sleepNutrition";
+import { buildMattressSupportItems } from "@/lib/sleepSupport";
+import { buildBoundedPodReviewContext, getPodReviewCoaching } from "@/lib/podReviewCoaching";
 
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import snoozerRestActiveImg from "@/assets/avatars/snoozer-rest-active.png";
@@ -369,7 +370,15 @@ function buildLearnRecommendationItems({
       : "Snoozer placed this mattress in your recommended testing plan."
   );
 
-  return Array.from(new Set(items.filter(Boolean))).slice(0, 3);
+  const facts = Array.from(new Set(items.filter(Boolean))).slice(0, 2);
+  if (!facts.length) {
+    return "I included this mattress in your testing plan because its verified support profile fits your assessment.";
+  }
+  const conversational = facts.map((item) => {
+    const clause = item.replace(/\.$/, "").replace(/^Supports /, "it supports ").replace(/^Matches /, "it matches ");
+    return clause.charAt(0).toLowerCase() + clause.slice(1);
+  });
+  return `I put this one in your testing plan because ${conversational.join(" and ")}.`;
 }
 
 function buildHeaderPersonalization(painSignals = []) {
@@ -1113,6 +1122,8 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const storedAssessment = useStore((state) => state.assessment);
   const storedRecommendations = useStore((state) => state.recommendations);
   const setRecommendations = useStore((state) => state.setRecommendations);
+  const cartItems = useStore((state) => state.cart || []);
+  const addLinesToAuthoritativeCart = useStore((state) => state.addLinesToAuthoritativeCart);
   const { noteUserInteraction, voiceState, speakPod, cancelPodVoice, resetPodVoiceKeys } =
     usePodHudGuidance({ shopperId });
 
@@ -1137,6 +1148,10 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const [mattressProduct, setMattressProduct] = useState(null);
   const [baseProduct, setBaseProduct] = useState(null);
   const [mattressImageFallback, setMattressImageFallback] = useState("");
+  const [learnSelectedSize, setLearnSelectedSize] = useState("");
+  const [learnCartBusy, setLearnCartBusy] = useState(false);
+  const [learnCartError, setLearnCartError] = useState("");
+  const reviewCoachKeyRef = useRef("");
 
   const [selectedMattressHandle, setSelectedMattressHandle] = useState(undefined);
   const [selectedBaseHandle, setSelectedBaseHandle] = useState(undefined);
@@ -2472,11 +2487,11 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     [activeRestFlow, cancelPodVoice, noteUserInteraction, speakPod]
   );
 
-  const learnSleepNutritionItems = useMemo(() => {
+  const learnSupportItems = useMemo(() => {
     const firmnessValue = String(
       recommendationMeta?.firmness || assessment?.firmness || assessment?.comfort || assessment?.feel || "Medium"
     ).trim();
-    return buildSleepNutritionItems({
+    return buildMattressSupportItems({
       mattressTruth,
       firmness: firmnessValue || "Medium",
     });
@@ -2489,11 +2504,14 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
       return {
         size: option,
         price: price > 0 ? money(price) : "Unavailable",
+        variantId: String(variant?.id || "").startsWith("gid://shopify/ProductVariant/")
+          ? String(variant.id)
+          : "",
+        actualOption: String(variant?.title || option),
       };
-    }).filter((row) => row.price !== "Unavailable");
+    }).filter((row) => row.price !== "Unavailable" && row.variantId);
   }, [mattressProduct]);
-
-  const learnFitItems = useMemo(() => {
+  const learnRecommendation = useMemo(() => {
     return buildLearnRecommendationItems({
       shopperContext: shopperDetailContext,
       mattressTruth,
@@ -2501,6 +2519,98 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
       matchReason: whyThisPodSentence,
     });
   }, [shopperDetailContext, mattressTruth, rank, whyThisPodSentence]);
+
+  useEffect(() => {
+    if (!learnSelectedSize) return;
+    if (!learnPricingRows.some((row) => row.size === learnSelectedSize)) {
+      setLearnSelectedSize("");
+    }
+  }, [learnPricingRows, learnSelectedSize]);
+
+  const selectedLearnRow = useMemo(
+    () => learnPricingRows.find((row) => row.size === learnSelectedSize) || null,
+    [learnPricingRows, learnSelectedSize]
+  );
+  const mattressInCart = useMemo(() => {
+    if (!selectedLearnRow?.variantId) return false;
+    return cartItems.some((item) => String(item?.merchandiseId || "") === selectedLearnRow.variantId);
+  }, [cartItems, selectedLearnRow?.variantId]);
+  const mattressHandleInCart = useMemo(
+    () => {
+      const handle = String(mattressProduct?.handle || activePod?.mattressHandle || "");
+      return Boolean(handle) && cartItems.some((item) => String(item?.handle || "") === handle);
+    },
+    [activePod?.mattressHandle, cartItems, mattressProduct?.handle]
+  );
+
+  const addLearnMattressToCart = useCallback(async (row) => {
+    if (learnCartBusy || !row?.variantId) return;
+    setLearnCartBusy(true);
+    setLearnCartError("");
+    try {
+      const result = await addLinesToAuthoritativeCart({
+        lines: [{
+          merchandiseId: row.variantId,
+          quantity: 1,
+          attributes: [
+            { key: "Size", value: row.actualOption || row.size },
+            { key: "_Setup Size", value: row.size },
+            { key: "_Variant Option", value: row.actualOption || row.size },
+            { key: "_Mattress", value: mattressTruth.mattressTitle || mattressHeroTitle },
+            { key: "_Source", value: "Pod Learn · Mattress Only" },
+          ],
+        }],
+        sourcePage: "pod-learn-mattress-only",
+      });
+      const confirmed = (result?.items || []).some((item) => String(item?.merchandiseId || "") === row.variantId);
+      if (!confirmed) throw Object.assign(new Error("Shopify did not confirm the mattress line."), { code: "CART_CONFIRMATION_MISSING" });
+      showCartFeedback("Mattress in Cart");
+    } catch (error) {
+      console.warn("[cart] mattress-only add failed", { code: error?.code || error?.name || "CART_MUTATION_FAILED" });
+      setLearnCartError("We couldn't add that mattress. Your size is still selected so you can try again.");
+    } finally {
+      setLearnCartBusy(false);
+    }
+  }, [addLinesToAuthoritativeCart, learnCartBusy, mattressHeroTitle, mattressTruth.mattressTitle, showCartFeedback]);
+
+  useEffect(() => {
+    if (openStage !== "build" || buildSelectionState?.stepKey !== "review") return;
+    const key = [pid, buildSelectionState.size, buildSelectionState.baseType, buildSelectionState.motionType, ...(buildSelectionState.selectedEssentials || [])].join("::");
+    if (!key || reviewCoachKeyRef.current === key) return;
+    reviewCoachKeyRef.current = key;
+
+    const facts = buildBoundedPodReviewContext({
+      assessment,
+      rank,
+      restTest: {
+        ratings: guidedRestTest.state.ratings,
+        favorite: guidedRestTest.state.favorite ? "Favorite" : "",
+        bestPosition: guidedRestTest.state.preferredPosition,
+      },
+      selection: {
+        mattress: buildSelectionState.mattressLabel,
+        size: buildSelectionState.size,
+        base: buildSelectionState.selectedBaseLabel,
+        motion: buildSelectionState.selectedMotionLabel,
+      },
+      essentials: {
+        selected: buildSelectionState.selectedEssentials,
+        skipped: buildSelectionState.skippedEssentials,
+      },
+      cart: cartItems,
+      progress: "Review Your SnoozePod",
+    });
+
+    void getPodReviewCoaching({ api, facts }).then((hud) => speakPod(hud.speech, {
+      captions: hud.captions,
+      state: hud.state,
+      priority: hud.priority,
+      ttlMs: hud.ttlMs,
+      actions: hud.actions,
+      calm: true,
+      key: `pod-review::${key}`,
+    }));
+  }, [assessment, buildSelectionState, cartItems, guidedRestTest.state.favorite, guidedRestTest.state.preferredPosition, guidedRestTest.state.ratings, openStage, pid, rank, speakPod]);
 
   const goToDetailsStage = useCallback(async () => {
     setShowRestChooser(false);
@@ -2549,9 +2659,15 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     if (openStage === "details") {
       return (
         <PodLearnPanel
-          learnSleepNutritionItems={learnSleepNutritionItems}
-          learnPricingRows={learnPricingRows}
-          learnFitItems={learnFitItems}
+          supportItems={learnSupportItems}
+          pricingRows={learnPricingRows}
+          recommendation={learnRecommendation}
+          selectedSize={learnSelectedSize}
+          onSelectSize={(size) => { setLearnSelectedSize(size); setLearnCartError(""); }}
+          onAddMattress={addLearnMattressToCart}
+          mattressInCart={mattressInCart}
+          addingMattress={learnCartBusy}
+          cartError={learnCartError}
         />
       );
     }
@@ -2576,6 +2692,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
           onViewSnoozePod={() => navigate("/cart")}
           onViewResults={null}
           requestedStepKey={buildStepKey}
+          mattressAlreadyInCart={mattressHandleInCart}
         />
       );
     }
@@ -2632,9 +2749,15 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     guidedRestTest,
     goToPodHome,
     buildStepKey,
-    learnSleepNutritionItems,
+    learnSupportItems,
     learnPricingRows,
-    learnFitItems,
+    learnRecommendation,
+    learnSelectedSize,
+    addLearnMattressToCart,
+    mattressInCart,
+    learnCartBusy,
+    learnCartError,
+    mattressHandleInCart,
     goToBuildStage,
     pid,
     shopperId,
@@ -2840,9 +2963,9 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
                   podTitle={title}
                   mattressTitle={mattressDisplayTitle}
                   helperText=""
-                  isRecommended={isRecommended}
+                  isRecommended={openStage === "rest" && isRecommended}
                   voiceState={voiceState}
-                  badges={openStage === "details" || openStage === "build" ? headerBadges : headerBadges.slice(0, isRecommended ? 2 : 1)}
+                  badges={openStage === "rest" ? headerBadges.slice(0, isRecommended ? 2 : 1) : []}
                   restStatus={restStatus}
                 />
               </ShowroomPanel>
