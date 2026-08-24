@@ -349,7 +349,7 @@ function isHudPriority(x) {
 function clampTtlMs(v, def = 5000) {
   const n = Number(v);
   if (!Number.isFinite(n) || n <= 0) return def;
-  return Math.max(1000, Math.min(n, 15000));
+  return Math.max(1000, Math.min(n, 30000));
 }
 
 function validateHudContract(raw) {

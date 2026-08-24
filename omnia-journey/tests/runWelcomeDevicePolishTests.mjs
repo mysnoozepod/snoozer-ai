@@ -37,6 +37,7 @@ const whatToExpectFallbacks = read(
   "omnia-journey/src/lib/snoozer/hud/whatToExpectFallbacks.js"
 );
 const fetchHudScript = read("omnia-journey/src/lib/snoozer/hud/fetchHudScript.js");
+const responseContract = read("utils/responseContract.js");
 assert.match(whatToExpect, /lg:grid-cols-4/);
 assert.match(whatToExpect, /orientationJobId/);
 assert.match(whatToExpect, /voiceState\?\.loading \|\| voiceState\?\.playing/);
@@ -48,6 +49,7 @@ assert.doesNotMatch(whatToExpect, /Welcome to your Snooze Session/);
 assert.match(whatToExpectFallbacks, /Let’s start with your Snooze Assessment\./);
 assert.match(whatToExpectFallbacks, /Let’s take a look at your recommended pods\./);
 assert.match(fetchHudScript, /Math\.min\(30000,/);
+assert.match(responseContract, /Math\.min\(n, 30000\)/);
 
 const results = read("omnia-journey/src/pages/Results.jsx");
 assert.match(results, /rankedPods\.slice\(1, 3\)/);
