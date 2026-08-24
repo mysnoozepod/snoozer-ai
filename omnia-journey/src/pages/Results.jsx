@@ -11,16 +11,12 @@ import { api } from "@/lib/api";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import { getShopperId } from "@/state/sessionStore";
-import { canNavigateTo, canUseAskSnoozer } from "@/device/deviceActionGuards";
+import { canNavigateTo } from "@/device/deviceActionGuards";
 import { makePodRoute } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import {
   ArrowRight,
-  CheckCircle2,
-  Headphones,
   ImageOff,
-  MessageSquare,
-  Star,
 } from "lucide-react";
 import {
   ShowroomBrandMark,
@@ -201,13 +197,6 @@ function formatPodLabel(podOrId) {
   )}`;
 }
 
-function rankBadgeLabel(rank) {
-  if (rank === 1) return "Start Here";
-  if (rank === 2) return "Compare Next";
-  if (rank === 3) return "Also Try";
-  return "";
-}
-
 function joinReadableList(items = []) {
   const list = items.map((item) => normalizeText(item)).filter(Boolean);
   if (!list.length) return "";
@@ -242,12 +231,6 @@ function buildResultsVoiceScript({ leadPodId, comparePodIds = [] }) {
     return `Start with SnoozePod ${leadPodId}. Then compare your next match. You can explore other pods later, and Ask Snoozer or your sleep expert stay available throughout the showroom.`;
   }
   return `Start with SnoozePod ${leadPodId}. Ask Snoozer and your sleep expert stay available while you test.`;
-}
-
-function buildCardCtaLabel(rank, podId) {
-  if (rank === 1) return `Go to SnoozePod ${podId}`;
-  if (rank === 2) return `Compare SnoozePod ${podId}`;
-  return `View SnoozePod ${podId}`;
 }
 
 function buildReasonContext(pod, recommendationMeta = {}) {
@@ -434,97 +417,6 @@ function buildPodReasonText({ pod, recommendedRank, recommendationMeta }) {
   }
   if (orderedReasons.includes("requested_standard_motion")) return "Useful adjustable setup to compare.";
   return "Good compare option before you decide.";
-}
-
-function buildLeadReasonCards({ pod, recommendationMeta }) {
-  const scoreReasons = Array.isArray(pod?.diagnostics?.scoreReasons)
-    ? pod.diagnostics.scoreReasons
-    : [];
-
-  const cards = [];
-  const push = (title, body, icon = CheckCircle2) => {
-    if (!title || !body) return;
-    if (cards.some((card) => card.title === title)) return;
-    cards.push({ title, body, icon });
-  };
-
-  for (const reasonKey of scoreReasons) {
-    switch (reasonKey) {
-      case "back_or_stomach_support":
-        push(
-          "Lower back support match",
-          "Built to feel more supportive through the middle of the mattress while you settle in."
-        );
-        break;
-      case "side_sleeper_pressure_relief":
-        push(
-          "Shoulder and hip comfort",
-          "A strong first pod to notice shoulder and hip pressure before you compare the next match."
-        );
-        break;
-      case "partner_friendly":
-      case "split_requires_dual":
-        push(
-          "Couple-friendly setup",
-          "A smart compare point if you share the bed or want more flexibility side to side."
-        );
-        break;
-      case "primary_mattress_exact":
-      case "primary_mattress_family":
-        push(
-          "Closest feel match",
-          "This pod stays closest to the mattress feel your assessment pointed to first."
-        );
-        break;
-      case "requested_standard_motion":
-      case "requested_half_split":
-      case "requested_full_split":
-        push(
-          "Motion setup match",
-          "Its on-floor setup lines up with the motion path you selected in the assessment."
-        );
-        break;
-      case "firmness_firm_match":
-      case "firmness_soft_match":
-        push(
-          "Feel preference match",
-          "This pod stays close to the firmness profile you said you wanted to try first."
-        );
-        break;
-      case "fixture_size_match":
-        push(
-          "Right size on the floor",
-          "You can test a setup that stays close to the size you selected."
-        );
-        break;
-      default:
-        break;
-    }
-  }
-
-  const firmness = normalizeText(recommendationMeta?.firmness);
-  if (firmness) {
-    push(
-      `${firmness} comfort path`,
-      `It gives you a clear first read on the ${firmness.toLowerCase()} feel you selected.`
-    );
-  }
-
-  push(
-    "Great all-around fit",
-    "A strong first pod to learn what your body wants before you compare the next two."
-  );
-
-  return cards.slice(0, 3);
-}
-
-function buildAllMatchesList(rankedPods = []) {
-  return rankedPods.map((pod, index) => ({
-    podId: toPodId(pod?.podId ?? pod?.id),
-    mattress: extractDisplayMattress(pod),
-    imageUrl: getPodImageFromPod(pod),
-    index: index + 1,
-  }));
 }
 
 function useTypingText(fullText, { enabled = true, speedMs = 18 } = {}) {
@@ -780,13 +672,7 @@ export default function Results() {
   }, [pods]);
 
   const leadPod = rankedPods[0] || null;
-  const topThreePods = rankedPods.slice(0, 3);
-  const secondaryPods = rankedPods.slice(3, 5);
   const comparisonPods = rankedPods.slice(1, 3);
-  const leadReasonCards = useMemo(
-    () => buildLeadReasonCards({ pod: leadPod, recommendationMeta: recs?.meta || {} }).slice(0, 2),
-    [leadPod, recs?.meta]
-  );
   const recommendedRankByPodId = useMemo(() => {
     const map = {};
     rankedPods.slice(0, 3).forEach((p, index) => {
@@ -919,8 +805,6 @@ export default function Results() {
     [device, navigate, noteUserInteraction, runHudAction]
   );
 
-  const canOpenAskSnoozer = canUseAskSnoozer(device);
-
   const leadImageUrl = leadPod ? resolveImageUrl(leadPod) : "";
   const leadImageStatus = leadPod ? getImageStatus(leadPod) : "idle";
 
@@ -930,64 +814,45 @@ export default function Results() {
         <ShowroomBrandMark imageClassName="w-[190px] md:w-[220px]" />
       </ShowroomTopRail>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-3 pt-1 md:px-6 md:pt-2">
-        <ShowroomFrame className="flex shrink-0 flex-col p-2 md:p-2.5">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-3 pt-1 md:px-6 md:pt-2 lg:overflow-hidden">
+        <ShowroomFrame className="flex min-h-0 shrink-0 flex-col p-2 md:p-2.5 lg:flex-1">
           {loading ? (
             <div className="rounded-[28px] border border-white/80 bg-white/92 px-6 py-10 text-center text-slate-600 shadow-sm">
               Preparing your pod matches
             </div>
           ) : rankedPods.length ? (
-            <div className="flex shrink-0 flex-col gap-3">
+            <div className="flex min-h-0 flex-1 flex-col">
               <motion.div
                 className="shrink-0"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
               >
-                <ShowroomPanel className="overflow-hidden p-3.5 md:p-4" tone="soft">
-                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1.16fr)_270px] lg:items-stretch">
-                    <div className="grid gap-3 lg:grid-cols-[minmax(0,0.98fr)_minmax(280px,0.92fr)] lg:items-center">
+                <ShowroomPanel className="min-h-0 overflow-hidden p-3.5 md:p-4 lg:h-full" tone="soft">
+                  <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)] lg:items-stretch">
+                    <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(300px,1.1fr)] lg:items-center">
                       <div className="min-w-0">
-                        <h1 className="mt-2 text-[1.95rem] font-black tracking-tight text-slate-900 md:text-[2.35rem]">
-                          Recommended Pods To Test
+                        <h1 className="text-[1.95rem] font-black tracking-tight text-slate-900 md:text-[2.35rem]">
+                          Your Recommended Pods
                         </h1>
                         <p className="mt-2 max-w-xl text-[0.92rem] leading-6 text-slate-600 md:text-[0.98rem]">
                           {heroLine} {heroSupportLine}
                         </p>
 
-                        <div className="mt-4 text-[0.74rem] font-black uppercase tracking-[0.22em] text-[#2f57e8]">
+                        <div className="mt-5 text-[0.74rem] font-black uppercase tracking-[0.22em] text-[#2f57e8]">
                           Top Recommendation
                         </div>
-                        <div className="mt-1 text-[1.72rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[2rem]">
+                        <div className="mt-1 whitespace-nowrap text-[2rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[2.45rem]">
                           SnoozePod {leadPodId}
                         </div>
-                        <div className="mt-1 text-[1rem] font-extrabold text-slate-700 md:text-[1.08rem]">
+                        <div className="mt-2 text-[1.02rem] font-extrabold leading-tight text-slate-700 md:text-[1.12rem]">
                           {extractDisplayMattress(leadPod)}
-                        </div>
-
-                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                          {leadReasonCards.map((item) => {
-                            const Icon = item.icon || CheckCircle2;
-                            return (
-                              <div
-                                key={item.title}
-                                className="flex items-center gap-2 rounded-[18px] border border-slate-200 bg-white px-3.5 py-3 shadow-sm"
-                              >
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">
-                                  <Icon className="h-4 w-4" />
-                                </div>
-                                <div className="min-w-0 text-[0.82rem] font-black leading-5 text-slate-800">
-                                  {item.title}
-                                </div>
-                              </div>
-                            );
-                          })}
                         </div>
 
                         <button
                           type="button"
                           onClick={() => openPodMode(leadPodId)}
-                          className="mt-4 inline-flex items-center justify-center gap-3 rounded-[18px] bg-[#1A66D2] px-5 py-3 text-sm font-black text-white shadow-[0_22px_46px_rgba(26,102,210,0.24)] transition hover:bg-[#1550A0]"
+                          className="mt-5 inline-flex w-full items-center justify-center gap-3 rounded-[18px] bg-[#1A66D2] px-5 py-3.5 text-sm font-black text-white shadow-[0_22px_46px_rgba(26,102,210,0.24)] transition hover:bg-[#1550A0] sm:w-auto"
                         >
                           {canNavigateTo(device, makePodRoute(leadPodId) || "/pod/pod-1")
                             ? "Go to"
@@ -997,7 +862,7 @@ export default function Results() {
                         </button>
                       </div>
 
-                      <div className="rounded-[24px] border border-white/80 bg-white p-2.5 shadow-sm">
+                      <div className="rounded-[26px] border border-white/80 bg-white p-3 shadow-sm">
                         <ResultImageCard
                           imageUrl={leadImageUrl}
                           imageStatus={leadImageStatus}
@@ -1009,12 +874,12 @@ export default function Results() {
                       </div>
                     </div>
 
-                    <div className="rounded-[24px] border border-white/80 bg-white/96 p-3 shadow-sm">
-                      <ShowroomEyebrow className="text-[0.7rem]">Compare Next</ShowroomEyebrow>
-                      <div className="mt-1 text-[1rem] font-black tracking-tight text-slate-900">
-                        Your next two pods
+                    <div className="flex min-h-0 flex-col rounded-[26px] border border-white/80 bg-white/96 p-3.5 shadow-sm">
+                      <ShowroomEyebrow className="text-[0.72rem]">Next To Try</ShowroomEyebrow>
+                      <div className="mt-1 text-[1.08rem] font-black tracking-tight text-slate-900">
+                        Compare while the feel is fresh
                       </div>
-                      <div className="mt-3 space-y-2.5">
+                      <div className="mt-3 grid min-h-0 flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
                         {comparisonPods.map((pod, index) => {
                           const id = toPodId(pod?.podId ?? pod?.id);
                           return (
@@ -1040,87 +905,6 @@ export default function Results() {
                   </div>
                 </ShowroomPanel>
               </motion.div>
-
-              <ShowroomPanel className="p-3 md:p-3.5" tone="frost">
-                <div className="grid gap-3 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,0.82fr)_minmax(0,1.28fr)] lg:items-center">
-                  {canOpenAskSnoozer ? (
-                    <ResultsSupportAction
-                      icon={MessageSquare}
-                      title="Ask Snoozer"
-                      description="Get help or learn more."
-                      onClick={() => {
-                        noteUserInteraction?.();
-                        navigate("/ask-snoozer", {
-                          state: {
-                            from: "/results",
-                          },
-                        });
-                      }}
-                    />
-                  ) : null}
-
-                  <ResultsSupportAction
-                    icon={Headphones}
-                    title="Talk to Human"
-                    description="We’re here if you need us."
-                    onClick={() => {
-                      noteUserInteraction?.();
-                      if (canOpenAskSnoozer) {
-                        navigate("/ask-snoozer", {
-                          state: {
-                            from: "/results",
-                            prefill: "I need human help.",
-                            autoSend: true,
-                          },
-                        });
-                        return;
-                      }
-
-                      runHudAction("view_results", {
-                        fallback: {
-                          speech:
-                            "A sleep specialist can help you from here. Keep your Snooze Code handy.",
-                          captions:
-                            "A sleep specialist can help you from here. Keep your Snooze Code handy.",
-                          state: "speaking",
-                          priority: "normal",
-                          ttlMs: 4200,
-                          actions: [],
-                        },
-                      }).catch(() => {});
-                    }}
-                  />
-
-                  <div className="rounded-[22px] border border-white/80 bg-white/92 px-3.5 py-3 shadow-sm">
-                    <div className="text-[0.82rem] font-black tracking-tight text-[#2f57e8] md:text-[0.9rem]">
-                      Also available to test
-                    </div>
-                    {secondaryPods.length ? (
-                      <div className="mt-2.5 grid gap-2 sm:grid-cols-2">
-                        {secondaryPods.map((pod, index) => {
-                          const id = toPodId(pod?.podId ?? pod?.id);
-                          return (
-                            <SecondaryMatchStrip
-                              key={id}
-                              index={topThreePods.length + index + 1}
-                              podId={id}
-                              displayMattress={extractDisplayMattress(pod)}
-                              imageUrl={resolveImageUrl(pod)}
-                              imageStatus={getImageStatus(pod)}
-                              canOpen={canNavigateTo(device, makePodRoute(id) || "/pod/pod-1")}
-                              onOpen={() => openPodMode(id)}
-                            />
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="mt-2.5 text-sm font-medium text-slate-500">
-                        Your top three pods are ready to test now.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </ShowroomPanel>
             </div>
           ) : (
             <div className="rounded-[28px] border border-red-200 bg-red-50 px-6 py-10 text-center text-red-700 shadow-sm">
@@ -1130,24 +914,6 @@ export default function Results() {
         </ShowroomFrame>
       </div>
     </ShowroomPageShell>
-  );
-}
-
-function ResultsSupportAction({ icon: Icon, title, description, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex items-center gap-3 rounded-[22px] border border-white/80 bg-white/92 px-3.5 py-3 text-left shadow-sm transition hover:border-indigo-100 hover:bg-slate-50"
-    >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">
-        {Icon ? <Icon className="h-5 w-5" /> : null}
-      </div>
-      <div className="min-w-0">
-        <div className="text-[0.98rem] font-black text-slate-900">{title}</div>
-        <div className="mt-0.5 text-[0.84rem] leading-5 text-slate-500">{description}</div>
-      </div>
-    </button>
   );
 }
 
@@ -1185,104 +951,6 @@ function ResultImageCard({ displayMattress, imageUrl, imageStatus }) {
   );
 }
 
-function RecommendationOrderCard({
-  rank,
-  podId,
-  displayMattress,
-  imageUrl,
-  imageStatus,
-  reasonText,
-  onOpen,
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className={[
-        "flex h-full flex-col rounded-[26px] border bg-white p-3.5 text-left shadow-sm transition hover:border-indigo-100 hover:shadow-md",
-        rank === 1 ? "border-[#dbe6ff]" : "border-slate-200",
-      ].join(" ")}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="inline-flex rounded-full border border-[#dfe7ff] bg-[#f7faff] px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-[#2f57e8]">
-          {rankBadgeLabel(rank)}
-        </div>
-        <div className="text-sm font-bold text-slate-500">SnoozePod {podId}</div>
-      </div>
-
-      <div className="mt-3">
-        <ResultImageCard
-          displayMattress={displayMattress}
-          imageUrl={imageUrl}
-          imageStatus={imageStatus}
-        />
-      </div>
-
-      <div className="mt-3 text-[1.18rem] font-black leading-tight tracking-tight text-slate-900">
-        {displayMattress}
-      </div>
-      <div className="mt-2 text-[0.84rem] leading-5 text-slate-600">{reasonText}</div>
-
-      <div className="mt-auto pt-4 text-sm font-black text-[#2f57e8]">
-        {buildCardCtaLabel(rank, podId)}
-      </div>
-    </button>
-  );
-}
-
-function SecondaryMatchStrip({
-  index,
-  podId,
-  displayMattress,
-  imageUrl,
-  imageStatus,
-  canOpen = true,
-  onOpen,
-}) {
-  const className = [
-    "flex items-center gap-2.5 rounded-[20px] border border-slate-200 bg-white p-2.5 text-left shadow-sm",
-    canOpen ? "transition hover:border-indigo-100 hover:shadow-md" : "",
-  ].join(" ");
-
-  const content = (
-    <>
-      <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-xs font-black text-[#2f57e8]">
-        {index}
-      </div>
-      <div className="w-[58px] shrink-0">
-        <ResultImageCard
-          displayMattress={displayMattress}
-          imageUrl={imageUrl}
-          imageStatus={imageStatus}
-        />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="text-[0.96rem] font-black leading-tight text-slate-900">
-          SnoozePod {podId}
-        </div>
-        <div className="mt-0.5 text-[0.78rem] leading-4 text-slate-500">{displayMattress}</div>
-      </div>
-      {canOpen ? (
-        <ArrowRight className="h-4 w-4 shrink-0 text-[#2f57e8]" />
-      ) : (
-        <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-          In showroom
-        </span>
-      )}
-    </>
-  );
-
-  if (!canOpen) {
-    return <div className={className}>{content}</div>;
-  }
-
-  return (
-    <button type="button" onClick={onOpen} className={className}>
-      {content}
-    </button>
-  );
-}
-
 function CompareNextTile({
   index,
   id,
@@ -1294,36 +962,39 @@ function CompareNextTile({
   onOpen,
 }) {
   const className = [
-    "flex items-center gap-2.5 rounded-[20px] border border-slate-200 bg-white p-2.5 text-left shadow-sm",
+    "grid min-h-[152px] grid-cols-[112px_minmax(0,1fr)] items-center gap-3 rounded-[22px] border border-slate-200 bg-white p-3 text-left shadow-sm",
     canOpen ? "transition hover:border-indigo-100 hover:shadow-md" : "",
   ].join(" ");
 
   const content = (
     <>
-      <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-xs font-black text-[#2f57e8]">
-        {index}
-      </div>
-      <div className="w-[60px] shrink-0">
+      <div className="min-w-0">
         <ResultImageCard
           displayMattress={displayMattress}
           imageUrl={imageUrl}
           imageStatus={imageStatus}
         />
       </div>
-      <div className="min-w-0 flex-1">
-        <div className="text-[1.02rem] font-black tracking-tight text-slate-900">
-          SnoozePod {id}
+      <div className="min-w-0">
+        <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#eef3ff] text-xs font-black text-[#2f57e8]">
+          {index}
         </div>
-        <div className="mt-0.5 text-[11px] font-semibold text-slate-600">{displayMattress}</div>
-        <div className="mt-1 text-[11px] leading-4 text-slate-500">{reasonText}</div>
+        <div className="mt-2 whitespace-nowrap text-[1.12rem] font-black tracking-tight text-slate-900">
+          SnoozePod&nbsp;{id}
+        </div>
+        <div className="mt-1 text-[0.78rem] font-semibold leading-4 text-slate-600">{displayMattress}</div>
+        <div className="mt-1.5 text-[0.72rem] leading-4 text-slate-500">{reasonText}</div>
+        {canOpen ? (
+          <div className="mt-2 inline-flex items-center gap-1 text-xs font-black text-[#2f57e8]">
+            View pod
+            <ArrowRight className="h-3.5 w-3.5" />
+          </div>
+        ) : (
+          <span className="mt-2 block text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+            In showroom
+          </span>
+        )}
       </div>
-      {canOpen ? (
-        <ArrowRight className="h-4 w-4 shrink-0 text-[#2f57e8]" />
-      ) : (
-        <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-          In showroom
-        </span>
-      )}
     </>
   );
 
@@ -1334,93 +1005,6 @@ function CompareNextTile({
   return (
     <button type="button" onClick={onOpen} className={className}>
       {content}
-    </button>
-  );
-}
-
-function SecondaryPodCard({
-  id,
-  displayMattress,
-  imageUrl,
-  imageStatus,
-  reasonText,
-  onOpen,
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex h-full flex-col rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm md:p-5"
-    >
-      <span className="inline-flex w-fit items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[12px] font-bold leading-tight text-blue-900">
-        <Star className="mr-1.5 h-3.5 w-3.5" />
-        Compare Next
-      </span>
-
-      <div className="mt-3 text-sm font-semibold text-gray-500">SnoozePod {id}</div>
-      <div className="mt-3">
-        <ResultImageCard
-          displayMattress={displayMattress}
-          imageUrl={imageUrl}
-          imageStatus={imageStatus}
-        />
-      </div>
-
-      <div className="mt-4 min-h-[64px] text-[20px] font-extrabold leading-tight tracking-tight text-gray-900">
-        {displayMattress}
-      </div>
-
-      <div className="mt-2 min-h-[92px] text-sm leading-6 text-gray-600">{reasonText}</div>
-
-      <button
-        type="button"
-        onClick={onOpen}
-        className="mt-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-extrabold text-gray-900 transition hover:bg-gray-50"
-      >
-        Compare SnoozePod {id}
-        <ArrowRight className="h-4 w-4" />
-      </button>
-    </motion.div>
-  );
-}
-
-function CompactMatchCard({ index, podId, mattress, imageUrl, onOpen }) {
-  const [imgFailed, setImgFailed] = useState(false);
-
-  useEffect(() => {
-    setImgFailed(false);
-  }, [imageUrl]);
-
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="flex items-center gap-2 rounded-[18px] border border-slate-200 bg-white p-2 text-left shadow-sm transition hover:border-indigo-100 hover:shadow-md"
-    >
-      <div className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[11px] font-black text-[#2f57e8]">
-        {index}
-      </div>
-      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-[14px] border border-slate-200 bg-slate-50">
-        {imageUrl && !imgFailed ? (
-          <img
-            src={imageUrl}
-            alt={mattress}
-            className="h-full w-full object-cover"
-            loading="lazy"
-            decoding="async"
-            onError={() => setImgFailed(true)}
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-            Pod
-          </div>
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="text-[0.82rem] font-black text-slate-900">SnoozePod {podId}</div>
-        <div className="mt-0.5 text-[11px] leading-4 text-slate-500">{mattress}</div>
-      </div>
-      <ArrowRight className="h-4 w-4 shrink-0 text-[#2f57e8]" />
     </button>
   );
 }

@@ -109,10 +109,11 @@ function LayoutShell() {
     pathname.startsWith("/ask-snoozer");
   const pageUsesPodViewportShell =
     pathname.startsWith("/pod/") || pathname.startsWith("/dev/pod-lab");
+  const isWhatToExpectRoute = pathname.startsWith("/what-to-expect");
 
   const showPersistentHudOverlay =
     hudOpen &&
-    !pageOwnsSnoozerVisual &&
+    (!pageOwnsSnoozerVisual || isWhatToExpectRoute) &&
     Boolean(currentJob?.captions || currentJob?.speech);
 
   useEffect(() => {
@@ -310,19 +311,22 @@ function LayoutShell() {
 
         {showPersistentHudOverlay && (
           <div
+            data-testid="persistent-snoozer-hud"
             style={{
               position: "fixed",
               right: 20,
               bottom: showBars ? 92 : 20,
               zIndex: 50,
-              width: "min(360px, calc(100vw - 24px))",
+              width: isWhatToExpectRoute
+                ? "min(560px, calc(100vw - 24px))"
+                : "min(360px, calc(100vw - 24px))",
             }}
           >
             <SnoozerHUD
               shopperId={shopperId || "guest"}
               mode="showroom"
               chrome="card"
-              size="md"
+              size={isWhatToExpectRoute ? "lg" : "md"}
               title="Snoozer"
               subtitle="Ready"
               speech={currentJob?.speech || currentJob?.captions || ""}
@@ -331,8 +335,8 @@ function LayoutShell() {
               actions={Array.isArray(currentJob?.actions) ? currentJob.actions : []}
               busy={Boolean(voiceState?.loading)}
               error={String(voiceState?.error || "")}
-              showHeader={true}
-              showTranscriptToggle={true}
+              showHeader={!isWhatToExpectRoute}
+              showTranscriptToggle={!isWhatToExpectRoute}
               showInput={false}
             />
           </div>

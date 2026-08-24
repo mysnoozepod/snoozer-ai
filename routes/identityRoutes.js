@@ -1,3 +1,10 @@
+function isDevelopmentWelcomeCode(sourceSurface = "", value = "") {
+  return (
+    String(sourceSurface || "").trim().toLowerCase() === "showroom_welcome" &&
+    /^\d{4}$/.test(String(value || "").trim())
+  );
+}
+
 async function handleIdentityRoutes({ event, method, routePath, traceId, deps = {} }) {
   const {
     safeJsonBody,
@@ -195,6 +202,13 @@ async function handleIdentityRoutes({ event, method, routePath, traceId, deps = 
   if (method === "POST" && routePath === "/identity/check-in") {
     const body = safeJsonBody(event);
     const sourceSurface = cleanIdentityValue(body?.sourceSurface) || "identity_checkin";
+    const requestedCode = cleanIdentityValue(
+      body?.snoozeCode || body?.accessCode || body?.code
+    );
+    const allowDevelopmentWelcomeProfile = isDevelopmentWelcomeCode(
+      sourceSurface,
+      requestedCode
+    );
     const identitySessionId = deriveEffectiveThreadId(event, {
       sessionId: body?.sessionId,
       thread_id: body?.threadId,
@@ -237,7 +251,7 @@ async function handleIdentityRoutes({ event, method, routePath, traceId, deps = 
     );
     const canonicalProfile = canonicalProfileResult?.profile || null;
 
-    if (!canonicalProfile) {
+    if (!canonicalProfile && !allowDevelopmentWelcomeProfile) {
       log("snooze.identity.checkin.not_found", "not_found", {
         traceId,
         route: "/identity/check-in",
@@ -287,12 +301,19 @@ async function handleIdentityRoutes({ event, method, routePath, traceId, deps = 
       { traceId, route: "/identity/check-in" }
     );
 
-    log("customer.profile.zoho.identity.skipped", "NO_MATERIAL_ZOHO_CHANGE", {
-      traceId,
-      route: "/identity/check-in",
-      shopperId: resolvedIdentity.shopperId || null,
-      reason: "NO_MATERIAL_ZOHO_CHANGE",
-    });
+    if (canonicalProfile) {
+      log("customer.profile.zoho.identity.skipped", "NO_MATERIAL_ZOHO_CHANGE", {
+        traceId,
+        route: "/identity/check-in",
+        shopperId: resolvedIdentity.shopperId || null,
+        reason: "NO_MATERIAL_ZOHO_CHANGE",
+      });
+    } else {
+      await maybeSyncIdentityProfileToZoho(checkInPatch, {
+        traceId,
+        route: "/identity/check-in",
+      });
+    }
 
     const summary = await buildCheckInSummary(
       customerProfileService && typeof customerProfileService.mergeCustomerProfile === "function"
@@ -319,4 +340,5 @@ async function handleIdentityRoutes({ event, method, routePath, traceId, deps = 
 
 module.exports = {
   handleIdentityRoutes,
+  isDevelopmentWelcomeCode,
 };

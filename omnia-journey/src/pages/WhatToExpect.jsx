@@ -2,22 +2,20 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  ArrowRight,
   BedDouble,
   ClipboardList,
   Layers3,
   PackageCheck,
-  ShieldCheck,
 } from "lucide-react";
 
 import { getAssessment } from "@/lib/api";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
+import { getWhatToExpectFallback } from "@/lib/snoozer/hud/whatToExpectFallbacks";
 import { getShopperId } from "@/state/sessionStore";
 import {
   ShowroomBrandMark,
   ShowroomFrame,
   ShowroomPageShell,
-  ShowroomPanel,
   ShowroomTopRail,
 } from "@/components/showroom/ShowroomPrimitives";
 
@@ -78,13 +76,11 @@ function hasCompletedAssessment(snapshot) {
   return false;
 }
 
-function StepCard({ step, title, body, detail, icon: Icon, onClick }) {
-  const Component = onClick ? "button" : "div";
+function StepCard({ step, title, body, detail, icon: Icon }) {
   return (
-    <Component
-      type={onClick ? "button" : undefined}
-      onClick={onClick}
-      className="flex h-full flex-col rounded-[24px] border border-white/80 bg-white px-4 py-3 text-center shadow-[0_16px_36px_rgba(45,71,136,0.085)] transition hover:-translate-y-0.5 hover:border-[#c6d4ff] md:px-4.5 md:py-3.5"
+    <div
+      data-testid={`what-step-${step}`}
+      className="flex h-full min-h-[248px] flex-col rounded-[26px] border border-white/80 bg-white px-5 py-5 text-center shadow-[0_18px_40px_rgba(45,71,136,0.09)]"
     >
       <div className="text-[0.78rem] font-black uppercase tracking-[0.22em] text-[#1A66D2]">
         Step {step}
@@ -114,62 +110,32 @@ function StepCard({ step, title, body, detail, icon: Icon, onClick }) {
           {detail}
         </div>
       ) : null}
-    </Component>
+    </div>
   );
-}
-
-function buildFallbackWhatToExpectScript(assessmentComplete) {
-  if (assessmentComplete) {
-    return {
-      speech:
-        "Your assessment is already done. Start with your recommended pod, compare the next two at your own pace, use the head towels before testing pillows or mattresses, and ask Snoozer or your sleep expert anytime.",
-      captions:
-        "Your assessment is already done. Start with your recommended pod, compare the next two at your own pace, use the head towels before testing pillows or mattresses, and ask Snoozer or your sleep expert anytime.",
-      state: "speaking",
-      priority: "normal",
-      ttlMs: 7600,
-      voiceStyle: "default",
-      actions: [],
-    };
-  }
-
-  return {
-    speech:
-      "Start with your Snooze Assessment, then test the recommended pods at your own pace. Use the head towels from the Welcome Kiosk before trying pillows or mattresses, and remember that Snoozer and your sleep expert stay available the whole time.",
-    captions:
-      "Start with your Snooze Assessment, then test the recommended pods at your own pace. Use the head towels from the Welcome Kiosk before trying pillows or mattresses, and remember that Snoozer and your sleep expert stay available the whole time.",
-    state: "speaking",
-    priority: "normal",
-    ttlMs: 7800,
-    voiceStyle: "default",
-    actions: [],
-  };
 }
 
 export default function WhatToExpect() {
   const navigate = useNavigate();
-  const { noteUserInteraction, runHudAction, voiceState } = useShowroomHud();
+  const { currentJob, queue, runHudAction, voiceState } = useShowroomHud();
 
   const shopperId = getShopperId() || "";
 
-  const [checking, setChecking] = useState(false);
   const [snapshot, setSnapshot] = useState(() => {
     const raw = safeGet("snooze.snapshot");
     const parsed = raw ? safeParseJson(raw) : null;
     return isValidSnapshot(parsed) ? parsed : null;
   });
+  const [checking, setChecking] = useState(() => Boolean(shopperId && !snapshot));
+  const [orientationJobId, setOrientationJobId] = useState("");
 
-  const introTimerRef = useRef(null);
   const announcedKeyRef = useRef("");
+  const orientationSeenRef = useRef(false);
+  const navigatedRef = useRef(false);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
-      if (introTimerRef.current) {
-        window.clearTimeout(introTimerRef.current);
-        introTimerRef.current = null;
-      }
     };
   }, []);
 
@@ -219,7 +185,7 @@ export default function WhatToExpect() {
   }, [snapshot]);
 
   const voiceScript = useMemo(() => {
-    return buildFallbackWhatToExpectScript(assessmentComplete);
+    return getWhatToExpectFallback(assessmentComplete);
   }, [assessmentComplete]);
 
   useEffect(() => {
@@ -230,39 +196,51 @@ export default function WhatToExpect() {
 
     if (announcedKeyRef.current === announcementKey) return;
 
-    if (introTimerRef.current) {
-      window.clearTimeout(introTimerRef.current);
-      introTimerRef.current = null;
-    }
+    announcedKeyRef.current = announcementKey;
+    orientationSeenRef.current = false;
+    navigatedRef.current = false;
 
-    introTimerRef.current = window.setTimeout(() => {
-      if (!isMountedRef.current) return;
-
+    void (async () => {
       const scriptKey = assessmentComplete ? "whattoexpect.assessment_complete" : "whattoexpect.default";
 
-      runHudAction(assessmentComplete ? "view_results" : "start_assessment", {
-        scriptKey,
-        shopperId: shopperId || "guest",
-        fallback: voiceScript,
-        overrides: {
-          interruptible: true,
-          replaceCurrent: true,
-          force: true,
-        },
-      }).catch((err) => {
+      try {
+        const job = await runHudAction(assessmentComplete ? "view_results" : "start_assessment", {
+          scriptKey,
+          shopperId: shopperId || "guest",
+          fallback: voiceScript,
+          overrides: {
+            interruptible: true,
+            replaceCurrent: true,
+            force: true,
+          },
+        });
+        if (!isMountedRef.current) return;
+        setOrientationJobId(String(job?.id || ""));
+      } catch (err) {
         console.warn("What To Expect HUD intro failed.", err);
-      });
-
-      announcedKeyRef.current = announcementKey;
-    }, 250);
-
-    return () => {
-      if (introTimerRef.current) {
-        window.clearTimeout(introTimerRef.current);
-        introTimerRef.current = null;
       }
-    };
+    })();
   }, [assessmentComplete, checking, shopperId, runHudAction, voiceScript]);
+
+  useEffect(() => {
+    if (!orientationJobId || navigatedRef.current) return;
+
+    const isActive = String(currentJob?.id || "") === orientationJobId;
+    const isQueued = Array.isArray(queue)
+      ? queue.some((job) => String(job?.id || "") === orientationJobId)
+      : false;
+
+    if (isActive || isQueued) {
+      orientationSeenRef.current = true;
+      return;
+    }
+
+    if (!orientationSeenRef.current) return;
+    if (voiceState?.loading || voiceState?.playing) return;
+
+    navigatedRef.current = true;
+    navigate(assessmentComplete ? "/results" : "/assessment", { replace: true });
+  }, [assessmentComplete, currentJob, navigate, orientationJobId, queue, voiceState?.loading, voiceState?.playing]);
 
   const currentPageVoiceState = useMemo(() => {
     const expectedText = String(voiceScript.speech || "").trim();
@@ -276,25 +254,6 @@ export default function WhatToExpect() {
     };
   }, [voiceScript.speech, voiceState]);
 
-  const ctaReady = assessmentComplete || !checking || Boolean(snapshot) || !shopperId;
-  const primaryLabel = assessmentComplete ? "Go to My Recommended Pods" : "Start Your Snooze Assessment";
-
-  const primaryAction = () => {
-    noteUserInteraction?.();
-
-    if (assessmentComplete) {
-      navigate("/results");
-      return;
-    }
-
-    navigate("/assessment");
-  };
-
-  const secondaryAction = () => {
-    noteUserInteraction?.();
-    navigate("/assessment");
-  };
-
   return (
     <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
       <ShowroomTopRail className="justify-center pt-4 md:pt-5">
@@ -304,22 +263,20 @@ export default function WhatToExpect() {
       <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4 pt-2 md:px-6">
         <ShowroomFrame className="shrink-0 p-3.5 md:p-4">
           <motion.div
-            className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_288px] lg:items-start"
+            className="min-w-0"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            <div className="min-w-0">
-              <div className="min-w-0">
-                <h1 className="text-[2.2rem] font-black tracking-tight text-slate-900 md:text-[2.75rem] xl:text-[3.15rem]">
-                  Your guided showroom path.
-                </h1>
-                <p className="mt-2 max-w-3xl text-[0.92rem] leading-6 text-slate-700 md:text-[0.96rem]">
-                  Start with your match, test your top pods, then build the setup that feels right.
-                </p>
-              </div>
+            <div className="min-w-0 text-center">
+              <h1 className="text-[2.2rem] font-black tracking-tight text-slate-900 md:text-[2.75rem] xl:text-[3.15rem]">
+                Your guided showroom path.
+              </h1>
+              <p className="mx-auto mt-2 max-w-3xl text-[0.92rem] leading-6 text-slate-700 md:text-[0.96rem]">
+                Four simple steps take you from your sleep profile to the setup that feels right.
+              </p>
 
-              <div className="mt-4 grid grid-cols-1 gap-2.5 md:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
                 <StepCard
                   step="1"
                   title="Assessment"
@@ -349,60 +306,6 @@ export default function WhatToExpect() {
                   icon={Layers3}
                 />
               </div>
-            </div>
-
-            <div className="space-y-2.5 lg:self-start">
-              <ShowroomPanel className="p-4 shadow-[0_20px_52px_rgba(47,72,137,0.10)] md:p-4.5">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">
-                    <ShieldCheck className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#1A66D2]">
-                      Next Step
-                    </div>
-                    <div className="mt-1.5 text-[1.25rem] font-black tracking-tight text-slate-900">
-                      {assessmentComplete ? "Your assessment is already complete." : "Start with your Snooze Assessment."}
-                    </div>
-                    <p className="mt-2 text-[0.9rem] leading-5 text-slate-600">
-                      {assessmentComplete
-                        ? "You can go straight to your recommended pods and keep Ask Snoozer or your sleep expert nearby the whole way."
-                        : "This is the fastest way to turn your showroom visit into clear pod recommendations."}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-3 space-y-2.5">
-                  {ctaReady ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={primaryAction}
-                        disabled={checking}
-                        className="inline-flex w-full items-center justify-center gap-3 rounded-[18px] bg-[#1A66D2] px-6 py-3.5 text-[0.96rem] font-black text-white shadow-[0_22px_46px_rgba(26,102,210,0.24)] transition hover:bg-[#1550A0] disabled:cursor-not-allowed disabled:opacity-70"
-                      >
-                        {primaryLabel}
-                        <ArrowRight className="h-5 w-5" />
-                      </button>
-
-                      {assessmentComplete ? null : (
-                        <button
-                          type="button"
-                          onClick={secondaryAction}
-                          disabled={checking}
-                          className="w-full rounded-[18px] border border-[#B7CBEF] bg-white px-6 py-3 text-sm font-black text-[#335C97] transition hover:bg-[#EEF4FF]"
-                        >
-                          Retake Snooze Assessment
-                        </button>
-                      )}
-                    </>
-                  ) : (
-                    <div className="rounded-[18px] bg-[#1A66D2] px-6 py-3.5 text-center text-base font-black text-white">
-                      Preparing Your Next Step
-                    </div>
-                  )}
-                </div>
-              </ShowroomPanel>
             </div>
           </motion.div>
 

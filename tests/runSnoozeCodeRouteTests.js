@@ -319,6 +319,48 @@ async function testAssessmentWithExistingAccessCodeSavesUnderCanonicalProfile() 
   assert(profileStore.get("shopper#8862"), "profile should be stored under shopper#8862");
 }
 
+async function testAssessmentSnapshotPassesStoredAssessmentToProfileResolver() {
+  const { handleAssessmentRoutes } = require("../routes/assessmentRoutes");
+  const storedAssessment = {
+    shopperId: "2468",
+    answers: { firmness: "Soft" },
+    updatedAt: "2026-08-24T00:00:00.000Z",
+  };
+  let resolverInput = null;
+
+  const result = await handleAssessmentRoutes({
+    event: {},
+    method: "GET",
+    routePath: "/assessment/2468",
+    traceId: "assessment-snapshot-unit",
+    deps: {
+      response: (_event, statusCode, body) => ({ statusCode, body }),
+      log: () => {},
+      getAssessmentResult: async (shopperId) => {
+        assert.strictEqual(shopperId, "2468", "snapshot should read assessment by canonical shopper id");
+        return storedAssessment;
+      },
+      getAssessmentSnapshot: async (shopperId, options) => {
+        resolverInput = { shopperId, options };
+        return {
+          statusCode: 200,
+          body: {
+            ok: true,
+            shopperId,
+            exists: Boolean(options?.assessment),
+            shopperState: options?.assessment ? "ASSESSED" : "NEW",
+            assessment: options?.assessment || null,
+          },
+        };
+      },
+    },
+  });
+
+  assert.strictEqual(result.statusCode, 200, "assessment snapshot should resolve successfully");
+  assert.strictEqual(result.body.shopperState, "ASSESSED", "stored assessment should select the completed path");
+  assert.deepStrictEqual(resolverInput?.options?.assessment, storedAssessment, "profile resolver should receive Dynamo assessment state");
+}
+
 async function testIdentityCheckInReturnsSummaryAndMissesSafely() {
   resetStores();
   resetModules();
@@ -364,6 +406,70 @@ async function testIdentityCheckInReturnsSummaryAndMissesSafely() {
   );
   assert.strictEqual(miss.ok, false, "unknown Snooze Code should not create a profile");
   assert.strictEqual(miss.code, "SNOOZE_CODE_NOT_FOUND", "unknown code should be explicit");
+}
+
+async function testDevelopmentWelcomeCheckInCreatesCanonicalFourDigitProfile() {
+  resetStores();
+  resetModules();
+
+  const first = unwrapData(
+    await invokeLambda("POST", "/identity/check-in", {
+      snoozeCode: "4321",
+      sessionId: "welcome-device-4321",
+      sourceSurface: "showroom_welcome",
+    })
+  );
+
+  assert.strictEqual(first.ok, true, "Welcome development check-in should accept a new four-digit code");
+  assert.strictEqual(first.shopperId, "4321", "four-digit code should remain the canonical shopper id");
+  assert.strictEqual(first.snoozeCode, "4321", "four-digit code should remain the Snooze Code");
+  assert.strictEqual(first.profileId, "shopper#4321", "new Welcome shopper should use the canonical profile key");
+
+  const profile = profileStore.get("shopper#4321");
+  assert(profile, "new Welcome shopper should create one canonical profile");
+  assert.strictEqual(profile.shopperId, "4321", "canonical profile should retain the entered code");
+  assert.strictEqual(profile.sourceSurface, "showroom_welcome", "showroom source metadata should be preserved");
+  assert.strictEqual(zohoSyncCalls.length, 1, "new canonical Welcome profile should follow the existing Zoho sync path");
+  assert.strictEqual(zohoSyncCalls[0]?.shopperId, "4321", "Zoho sync should use the canonical shopper id");
+
+  const second = unwrapData(
+    await invokeLambda("POST", "/identity/check-in", {
+      snoozeCode: "4321",
+      sessionId: "welcome-device-4321-return",
+      sourceSurface: "showroom_welcome",
+    })
+  );
+
+  assert.strictEqual(second.ok, true, "repeat Welcome check-in should load the existing profile");
+  assert.strictEqual(
+    [...profileStore.keys()].filter((key) => key === "shopper#4321").length,
+    1,
+    "repeat check-in should not create a competing canonical profile"
+  );
+  assert.strictEqual(zohoSyncCalls.length, 1, "returning check-in should not create another Zoho contact");
+}
+
+async function testDevelopmentWelcomeAllowanceStaysNarrow() {
+  resetStores();
+  resetModules();
+
+  const wrongSurface = unwrapData(
+    await invokeLambda("POST", "/identity/check-in", {
+      snoozeCode: "5678",
+      sourceSurface: "shopify_header",
+    })
+  );
+  assert.strictEqual(wrongSurface.ok, false, "unknown four-digit codes should remain restricted outside Welcome");
+
+  const sixDigit = unwrapData(
+    await invokeLambda("POST", "/identity/check-in", {
+      snoozeCode: "654321",
+      sourceSurface: "showroom_welcome",
+    })
+  );
+  assert.strictEqual(sixDigit.ok, false, "unknown six-digit production codes should not be auto-created");
+  assert.strictEqual(profileStore.has("shopper#5678"), false, "restricted four-digit miss should not create a profile");
+  assert.strictEqual(profileStore.has("shopper#654321"), false, "six-digit miss should not create a profile");
 }
 
 async function testHudWithSnoozeCodeEnrichesCanonicalProfile() {
@@ -481,15 +587,28 @@ async function main() {
   patchShopify();
   patchZohoSync();
 
-  const tests = [
+  const allTests = [
     ["assessment_with_generated_shopify_id_issues_snooze_code", testAssessmentWithGeneratedShopifyIdIssuesSnoozeCode],
     ["assessment_with_existing_access_code_saves_under_canonical_profile", testAssessmentWithExistingAccessCodeSavesUnderCanonicalProfile],
+    ["assessment_snapshot_passes_stored_assessment_to_profile_resolver", testAssessmentSnapshotPassesStoredAssessmentToProfileResolver],
     ["identity_checkin_returns_summary_and_misses_safely", testIdentityCheckInReturnsSummaryAndMissesSafely],
+    ["development_welcome_checkin_creates_canonical_four_digit_profile", testDevelopmentWelcomeCheckInCreatesCanonicalFourDigitProfile],
+    ["development_welcome_allowance_stays_narrow", testDevelopmentWelcomeAllowanceStaysNarrow],
     ["hud_with_snooze_code_enriches_canonical_profile", testHudWithSnoozeCodeEnrichesCanonicalProfile],
     ["hud_without_snooze_code_uses_temporary_session_profile", testHudWithoutSnoozeCodeUsesTemporarySessionProfile],
     ["ask_snoozer_with_legacy_code_treats_it_as_canonical", testAskSnoozerWithLegacyCodeTreatsItAsCanonical],
     ["rewards_balance_uses_canonical_legacy_code", testRewardsBalanceUsesCanonicalLegacyCode],
   ];
+  const welcomeDeviceTests = new Set([
+    "assessment_with_existing_access_code_saves_under_canonical_profile",
+    "assessment_snapshot_passes_stored_assessment_to_profile_resolver",
+    "identity_checkin_returns_summary_and_misses_safely",
+    "development_welcome_checkin_creates_canonical_four_digit_profile",
+    "development_welcome_allowance_stays_narrow",
+  ]);
+  const tests = process.env.WELCOME_DEVICE_ONLY === "1"
+    ? allTests.filter(([name]) => welcomeDeviceTests.has(name))
+    : allTests;
 
   const failures = [];
 

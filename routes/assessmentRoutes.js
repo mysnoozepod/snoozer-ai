@@ -394,7 +394,17 @@ async function handleAssessmentRoutes({ event, method, routePath, traceId, deps 
 
     if (typeof getAssessmentSnapshot === "function") {
       try {
-        const out = await getAssessmentSnapshot(shopperId);
+        let storedAssessment = null;
+        try {
+          storedAssessment = await getAssessmentResult(shopperId);
+        } catch (error) {
+          log("assessment.snapshot.dynamo.error", error.message, { traceId, shopperId });
+        }
+
+        const out = await getAssessmentSnapshot(shopperId, {
+          assessment: storedAssessment,
+          includeAssessment: true,
+        });
         return response(event, out.statusCode || 200, out.body || {});
       } catch (e) {
         log("assessment.snapshot.error", e.message, { traceId, shopperId });

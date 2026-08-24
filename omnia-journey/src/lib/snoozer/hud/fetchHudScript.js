@@ -52,7 +52,7 @@ function markScriptFailure(reason, { openBreaker = false, retrievalMs = 0 } = {}
 function clampTtlMs(value, fallback = 5000) {
   const ttl = Number(value);
   if (!Number.isFinite(ttl) || ttl <= 0) return fallback;
-  return Math.max(1000, Math.min(15000, Math.round(ttl)));
+  return Math.max(1000, Math.min(30000, Math.round(ttl)));
 }
 
 function normalizeHudState(value, fallback = "speaking") {

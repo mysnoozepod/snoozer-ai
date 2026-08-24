@@ -1,10 +1,10 @@
 {
   "id": "what_to_expect_assessment_complete",
-  "speech": "Your Snooze Assessment is already on file. Next, head to your Snooze Test and try the recommended pods first. When you're ready, complete your sleep setup and finish your selection.",
-  "captions": "Your Snooze Assessment is already on file. Next, head to your Snooze Test and try the recommended pods first. When you're ready, complete your sleep setup and finish your selection.",
+  "speech": "Welcome to your Snooze Session. You’ve already completed your Snooze Assessment, so your matches are ready. I’ll start you with your best-matched SnoozePod, then give you two more to compare while the feel is fresh. After your pod tests, explore Sleep Essentials like pillows, bedding, and protectors. Finally, you’ll build the sleep setup that feels right for you. Let’s take a look at your recommended pods.",
+  "captions": "Welcome to your Snooze Session. You’ve already completed your Snooze Assessment, so your matches are ready. I’ll start you with your best-matched SnoozePod, then give you two more to compare while the feel is fresh. After your pod tests, explore Sleep Essentials like pillows, bedding, and protectors. Finally, you’ll build the sleep setup that feels right for you. Let’s take a look at your recommended pods.",
   "state": "speaking",
   "priority": "normal",
-  "ttlMs": 6500,
+  "ttlMs": 30000,
   "voiceStyle": "default",
   "actions": []
 }

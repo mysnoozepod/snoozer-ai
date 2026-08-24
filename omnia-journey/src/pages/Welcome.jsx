@@ -26,7 +26,9 @@ function safeRemove(key) {
 }
 
 function normalizeAccessCode(raw) {
-  return String(raw || "").trim();
+  return String(raw || "")
+    .replace(/\D+/g, "")
+    .slice(0, 4);
 }
 
 export default function Welcome() {
@@ -34,7 +36,10 @@ export default function Welcome() {
   const device = useDeviceMode();
   const { noteUserInteraction, runHudAction } = useShowroomHud();
 
-  const [code, setCode] = useState(() => getAccessCode() || "");
+  const [code, setCode] = useState(() => {
+    const storedCode = String(getAccessCode() || "").trim();
+    return /^\d{4}$/.test(storedCode) ? storedCode : "";
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const canOpenAskSnoozer = canUseAskSnoozer(device);
@@ -55,12 +60,12 @@ export default function Welcome() {
     };
   }, []);
 
-  const handleStart = async () => {
+  const handleStart = async (candidateCode = code) => {
     if (loading || hasStartedRef.current) return;
 
-    const trimmed = normalizeAccessCode(code);
-    if (!trimmed) {
-      setError("Enter a valid Snooze Code.");
+    const trimmed = normalizeAccessCode(candidateCode);
+    if (!/^\d{4}$/.test(trimmed)) {
+      setError("Enter all four digits of your Snooze Code.");
       return;
     }
 
@@ -123,9 +128,7 @@ export default function Welcome() {
       console.error("Welcome start failed:", err);
       clearTransitionTimer();
       setError(
-        err?.code === "SNOOZE_CODE_NOT_FOUND"
-          ? "Snooze Code not found."
-          : "Unable to start your Snooze Session right now."
+        "We couldn’t start your Snooze Session. Please check your code and try again."
       );
       hasStartedRef.current = false;
       setLoading(false);
@@ -133,8 +136,8 @@ export default function Welcome() {
   };
 
   const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      handleStart();
+    if (event.key === "Enter" && /^\d{4}$/.test(code)) {
+      void handleStart(code);
     }
   };
 
@@ -188,11 +191,19 @@ export default function Welcome() {
                   <LockKeyhole className="h-5 w-5 text-slate-400" />
                   <input
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={4}
+                    autoComplete="one-time-code"
                     placeholder="Enter Snooze Code"
                     value={code}
                     onChange={(event) => {
-                      setCode(event.target.value);
+                      const nextCode = normalizeAccessCode(event.target.value);
+                      setCode(nextCode);
                       if (error) setError("");
+                      if (nextCode.length === 4) {
+                        void handleStart(nextCode);
+                      }
                     }}
                     onKeyDown={handleKeyDown}
                     disabled={loading}
@@ -202,15 +213,28 @@ export default function Welcome() {
 
                 {error ? <p className="mt-3 text-sm font-semibold text-red-600">{error}</p> : null}
 
-                <button
-                  type="button"
-                  onClick={handleStart}
-                  disabled={loading}
-                  className="mt-3.5 inline-flex w-full items-center justify-center gap-3 rounded-[18px] bg-[#2f57e8] px-6 py-3.5 text-base font-black text-white shadow-[0_22px_46px_rgba(47,87,232,0.26)] transition hover:bg-[#2749cb] disabled:cursor-not-allowed disabled:opacity-70 md:text-[1.02rem]"
-                >
-                  {loading ? "Starting Your Snooze Session" : "Start Your Snooze Session"}
-                  <ArrowRight className="h-5 w-5" />
-                </button>
+                {loading ? (
+                  <div
+                    className="mt-3.5 flex w-full items-center justify-center rounded-[18px] bg-[#eef3ff] px-6 py-3.5 text-base font-black text-[#2f57e8] md:text-[1.02rem]"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    Loading your Snooze Session…
+                  </div>
+                ) : error && code.length === 4 ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleStart(code)}
+                    className="mt-3.5 inline-flex w-full items-center justify-center gap-3 rounded-[18px] bg-[#2f57e8] px-6 py-3.5 text-base font-black text-white shadow-[0_22px_46px_rgba(47,87,232,0.26)] transition hover:bg-[#2749cb] md:text-[1.02rem]"
+                  >
+                    Try Again
+                    <ArrowRight className="h-5 w-5" />
+                  </button>
+                ) : (
+                  <p className="mt-3 text-center text-sm font-semibold text-slate-500">
+                    Your session starts automatically after the fourth digit.
+                  </p>
+                )}
               </div>
 
               <div className="mt-2.5 grid gap-2.5 rounded-[24px] border border-white/70 bg-white/86 p-2.5 shadow-sm lg:grid-cols-[minmax(0,1.06fr)_minmax(224px,0.94fr)]">
