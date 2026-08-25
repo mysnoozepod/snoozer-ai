@@ -28,6 +28,7 @@ assert.match(welcome, /nextCode\.length === 4/);
 assert.match(welcome, /handleStart\(nextCode\)/);
 assert.match(welcome, /hasStartedRef\.current/);
 assert.match(welcome, /Loading your Snooze Session…/);
+assert.doesNotMatch(welcome, /starts automatically after the fourth digit/i);
 assert.match(welcome, /Personalize Your Experience/);
 assert.match(welcome, /rewards, recommendations, and special discounts!/);
 assert.doesNotMatch(welcome, /===\s*["']1234["']/);

@@ -73,3 +73,16 @@ export function buildSleepEssentialsPath({ category, returnTo } = {}) {
   if (safeReturn) params.set("returnTo", safeReturn);
   return `/sleep-essentials?${params.toString()}`;
 }
+
+export function getSleepEssentialsFinishPath(value, fallback = "/results") {
+  const safeReturn = getSafeSleepEssentialsReturnPath(value, "");
+  if (!safeReturn) return fallback;
+
+  try {
+    const url = new URL(safeReturn, "https://showroom.mysnoozepod.com");
+    const podId = url.pathname.split("/").filter(Boolean).at(-1) || "";
+    return buildPodCustomizeReturnPath(podId, "review");
+  } catch {
+    return fallback;
+  }
+}

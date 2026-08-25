@@ -50,7 +50,7 @@ export const APPROVED_MOTION_VISUALS = Object.freeze({
 });
 
 const ESSENTIAL_STEP_KEYS = Object.freeze(["pillows", "sheets", "protector"]);
-const ESSENTIAL_CARD_KEYS = Object.freeze(["pillows", "protector", "sheets"]);
+const ESSENTIAL_CARD_KEYS = Object.freeze(["pillows", "sheets", "protector"]);
 const CANONICAL_ESSENTIAL_CATEGORY_IDS = Object.freeze({
   pillows: "pillows",
   sheets: "sheets_bedding",
@@ -173,6 +173,29 @@ export function pickVariantForSize(product, size) {
   return resolution.ok ? resolution.variant : null;
 }
 
+export function resolveMattressSizeFromCart({ cartItems, mattressProduct, mattressHandle }) {
+  const productVariantIds = new Set(
+    normalizeVariants(mattressProduct)
+      .map((variant) => safeVariantId(variant))
+      .filter(Boolean)
+  );
+  const canonicalHandle = String(mattressProduct?.handle || mattressHandle || "").trim();
+  const matchingLines = (Array.isArray(cartItems) ? cartItems : []).filter((item) => {
+    const merchandiseId = String(item?.merchandiseId || item?.variantId || "").trim();
+    const handle = String(item?.handle || "").trim();
+    return productVariantIds.has(merchandiseId) || (canonicalHandle && handle === canonicalHandle);
+  });
+
+  for (const candidateSize of SIZE_OPTIONS) {
+    const variant = pickVariantForSize(mattressProduct, candidateSize);
+    const variantId = safeVariantId(variant);
+    if (variantId && matchingLines.some((item) => String(item?.merchandiseId || item?.variantId || "") === variantId)) {
+      return candidateSize;
+    }
+  }
+  return "";
+}
+
 function safeVariantId(variant) {
   if (!variant) return null;
   if (
@@ -243,6 +266,22 @@ function buildEssentialChoice(product, variant, actualOption) {
   };
 }
 
+function resolveCuratedSheetVariant(product, size) {
+  const requestedSize = String(size || "").trim().toLowerCase();
+  if (!requestedSize) return null;
+
+  return normalizeVariants(product).find((variant) => {
+    if (!safeVariantId(variant)) return false;
+    const selectedValues = Array.isArray(variant?.selectedOptions)
+      ? variant.selectedOptions.map((option) => String(option?.value || "").trim().toLowerCase())
+      : [];
+    if (selectedValues.includes(requestedSize)) return true;
+
+    const title = String(variant?.title || "").trim().toLowerCase();
+    return title === requestedSize || title.startsWith(`${requestedSize} /`);
+  }) || null;
+}
+
 function buildEssentialChoices(products, category, size, motionType) {
   const config = ESSENTIAL_CATEGORY_CONFIG[category];
   if (!config) return [];
@@ -263,18 +302,21 @@ function buildEssentialChoices(products, category, size, motionType) {
       setupSize: size,
       motionType,
     });
-    if (resolution.ok) {
+    const curatedSheetVariant =
+      category === "sheets" && !resolution.ok
+        ? resolveCuratedSheetVariant(product, size)
+        : null;
+    if (resolution.ok || curatedSheetVariant) {
+      const variant = resolution.ok ? resolution.variant : curatedSheetVariant;
       const choice = buildEssentialChoice(
         product,
-        resolution.variant,
-        resolution.actualOption
+        variant,
+        resolution.ok ? resolution.actualOption : variant?.title
       );
       if (choice) choices.push(choice);
     }
   }
-  // Customize intentionally presents the single highest-ranked approved match.
-  // The dedicated Sleep Essentials route remains the place to browse the catalog.
-  return choices.slice(0, 1);
+  return choices;
 }
 
 function motionAvailabilityForSelection(size, isDualComfort) {
@@ -971,8 +1013,16 @@ export default function PodBuilder({
     () => sanitizeSelections(compatibleSavedBuild, defaults, supportsSplitMotion, isDualComfort),
     [compatibleSavedBuild, defaults, supportsSplitMotion, isDualComfort]
   );
+  const cartMattressSize = useMemo(
+    () => resolveMattressSizeFromCart({
+      cartItems,
+      mattressProduct,
+      mattressHandle: fixedMattressHandle,
+    }),
+    [cartItems, fixedMattressHandle, mattressProduct]
+  );
 
-  const [size, setSize] = useState(initialSelections.size);
+  const [size, setSize] = useState(cartMattressSize || initialSelections.size);
   const [baseType, setBaseType] = useState(initialSelections.baseType);
   const [motionType, setMotionType] = useState(initialSelections.motionType);
   const [dcLeft, setDcLeft] = useState(initialSelections.dcLeft);
@@ -1033,13 +1083,19 @@ export default function PodBuilder({
         : {};
 
     return {
-      size: Boolean(savedConfirmed.size || compatibleSavedBuild?.sizeConfirmed || isLayoutSeededStep),
+      size: Boolean(cartMattressSize || savedConfirmed.size || compatibleSavedBuild?.sizeConfirmed || isLayoutSeededStep),
       base: Boolean(savedConfirmed.base || isLayoutSeededStep),
       motion: Boolean(savedConfirmed.motion || isLayoutSeededStep),
       comfortLeft: Boolean(savedConfirmed.comfortLeft || isLayoutSeededStep),
       comfortRight: Boolean(savedConfirmed.comfortRight || isLayoutSeededStep),
     };
   });
+
+  useEffect(() => {
+    if (!cartMattressSize) return;
+    setSize((current) => current === cartMattressSize ? current : cartMattressSize);
+    setConfirmedSelections((current) => current.size ? current : { ...current, size: true });
+  }, [cartMattressSize]);
 
   const openSleepEssentials = useCallback(
     (category) => {
@@ -1262,6 +1318,19 @@ export default function PodBuilder({
       ),
     [configuredMotionType, essentialProducts.itemsByCategory, size]
   );
+  const cartVariantIds = useMemo(
+    () => new Set(cartItems.map((item) => String(item?.merchandiseId || item?.variantId || "")).filter(Boolean)),
+    [cartItems]
+  );
+  const recommendedEssentialChoices = useMemo(
+    () => Object.fromEntries(
+      ESSENTIAL_STEP_KEYS.map((category) => {
+        const choices = essentialChoicesByCategory[category] || [];
+        return [category, choices.find((choice) => cartVariantIds.has(choice.variantId)) || choices[0] || null];
+      })
+    ),
+    [cartVariantIds, essentialChoicesByCategory]
+  );
   const selectedEssentialChoices = useMemo(
     () =>
       Object.fromEntries(
@@ -1317,6 +1386,39 @@ export default function PodBuilder({
       return changed ? next : current;
     });
   }, [essentialProducts.status, selectedEssentialChoices]);
+
+  useEffect(() => {
+    if (essentialProducts.status !== "ready") return;
+    setSelectedEssentials((current) => {
+      let changed = false;
+      const next = { ...current };
+      for (const category of ESSENTIAL_STEP_KEYS) {
+        const cartChoice = (essentialChoicesByCategory[category] || []).find((choice) =>
+          cartVariantIds.has(choice.variantId)
+        );
+        if (!cartChoice) continue;
+        if (current[category]?.variantId === cartChoice.variantId) continue;
+        next[category] = {
+          handle: cartChoice.handle,
+          variantId: cartChoice.variantId,
+          quantity: category === "pillows" ? current[category]?.quantity || 1 : 1,
+        };
+        changed = true;
+      }
+      return changed ? next : current;
+    });
+    setSkippedEssentials((current) => {
+      let changed = false;
+      const next = { ...current };
+      for (const category of ESSENTIAL_STEP_KEYS) {
+        if (!(essentialChoicesByCategory[category] || []).some((choice) => cartVariantIds.has(choice.variantId))) continue;
+        if (!current[category]) continue;
+        next[category] = false;
+        changed = true;
+      }
+      return changed ? next : current;
+    });
+  }, [cartVariantIds, essentialChoicesByCategory, essentialProducts.status]);
   const sizeConfirmed = Boolean(confirmedSelections.size);
   const baseConfirmed = Boolean(confirmedSelections.base);
   const motionConfirmed = !showMotion || Boolean(confirmedSelections.motion);
@@ -2258,8 +2360,7 @@ export default function PodBuilder({
 
     if (stepKey === "essentials") {
       const visibleCategories = ESSENTIAL_CARD_KEYS
-        .map((category) => ({ category, choice: essentialChoicesByCategory[category]?.[0] || null }))
-        .filter(({ choice }) => Boolean(choice));
+        .map((category) => ({ category, choice: recommendedEssentialChoices[category] || null }));
 
       const selectChoice = (category, choice) => {
         setSelectedEssentials((current) => ({
@@ -2296,10 +2397,7 @@ export default function PodBuilder({
 
       return (
         <div className="flex h-full min-h-0 flex-col" data-sleep-essentials-step="combined">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <p className="text-[0.92rem] font-bold text-slate-700">
-              {essentialProducts.status === "loading" ? "Loading approved Shopify options..." : "Choose your finishing touches."}
-            </p>
+          <div className="mb-2 flex items-center justify-end">
             <button type="button" onClick={() => openSleepEssentials("all")} className="inline-flex min-h-[40px] items-center gap-1 rounded-[12px] border border-[#dfe7fb] bg-white px-3 text-[0.75rem] font-black text-[#315cf6]">
               View All Sleep Essentials <ArrowRight className="h-4 w-4" />
             </button>
@@ -2307,10 +2405,20 @@ export default function PodBuilder({
 
           {essentialProducts.status === "loading" ? (
             <div className="flex min-h-[120px] flex-1 items-center justify-center rounded-[18px] border border-[#dfe7fb] bg-[#f8faff] text-sm font-semibold text-slate-600">Preparing approved options…</div>
-          ) : visibleCategories.length ? (
-            <div className="grid min-h-0 flex-1 grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3 overflow-hidden">
+          ) : (
+            <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden md:grid-cols-3" data-sleep-essentials-card-row="three">
               {visibleCategories.map(({ category, choice }) => {
-                const active = selectedEssentialChoices[category]?.variantId === choice.variantId;
+                const active = Boolean(choice && selectedEssentialChoices[category]?.variantId === choice.variantId);
+                if (!choice) {
+                  return (
+                    <div key={category} className="flex min-h-[220px] min-w-0 flex-col items-center justify-center rounded-[20px] border border-dashed border-[#cbd7f7] bg-[#f8faff] p-4 text-center" data-sleep-essentials-card={category} data-sleep-essentials-unavailable="true">
+                      <PackageCheck className="h-9 w-9 text-[#8ba6ef]" />
+                      <span className="mt-3 text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">{ESSENTIAL_CATEGORY_CONFIG[category].recommendationLabel}</span>
+                      <span className="mt-2 text-base font-black text-slate-900">No approved match available</span>
+                      <button type="button" onClick={() => openSleepEssentials(CANONICAL_ESSENTIAL_CATEGORY_IDS[category])} className="mt-3 min-h-[38px] rounded-full bg-white px-3 text-[0.75rem] font-black text-[#315cf6]">View All</button>
+                    </div>
+                  );
+                }
                 return (
                   <button
                     key={category}
@@ -2336,16 +2444,12 @@ export default function PodBuilder({
                     <span className="mt-2 flex w-full items-center justify-between gap-2">
                       <span className="text-[1.05rem] font-black text-slate-950">{money(choice.price)}</span>
                       <span className={`inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 text-[0.74rem] font-black ${active ? "bg-[#315cf6] text-white" : "bg-[#edf2ff] text-[#315cf6]"}`}>
-                        <CheckCircle2 className="h-4 w-4" /> {active ? "Selected" : "Select"}
+                        <CheckCircle2 className="h-4 w-4" /> {active ? "Added" : "+ Add"}
                       </span>
                     </span>
                   </button>
                 );
               })}
-            </div>
-          ) : (
-            <div className="flex min-h-[120px] flex-1 items-center justify-center rounded-[18px] border border-[#dfe7fb] bg-[#f8faff] px-5 text-center">
-              <div><PackageCheck className="mx-auto h-8 w-8 text-[#315cf6]" /><p className="mt-2 font-black text-slate-900">No approved Sleep Essentials are available for this setup right now.</p><p className="mt-1 text-sm text-slate-600">You can continue with the core mattress and base setup.</p></div>
             </div>
           )}
 
@@ -2721,13 +2825,9 @@ export default function PodBuilder({
               <div className="mt-0.5 text-[0.76rem] font-black text-[#315cf6]">{currentStepMeta.title}</div>
             ) : null}
           </div>
-          {stepKey !== "success" ? (
+          {stepKey === "review" ? (
             <p className="max-w-[34rem] text-right text-[clamp(0.74rem,0.9vw,0.84rem)] font-semibold leading-snug text-slate-600">
-              {stepKey === "review"
-                ? currentStepMeta.description
-                : stepKey === "essentials"
-                  ? "One approved match per category. Select any you want to add."
-                  : `Choose your size, motion setup, and sleep essentials to build the complete system that fits you. ${currentStepMeta.description}`}
+              {currentStepMeta.description}
             </p>
           ) : null}
         </div>

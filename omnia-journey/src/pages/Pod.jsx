@@ -1124,6 +1124,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const setRecommendations = useStore((state) => state.setRecommendations);
   const cartItems = useStore((state) => state.cart || []);
   const addLinesToAuthoritativeCart = useStore((state) => state.addLinesToAuthoritativeCart);
+  const removeFromCart = useStore((state) => state.removeFromCart);
   const { noteUserInteraction, voiceState, speakPod, cancelPodVoice, resetPodVoiceKeys } =
     usePodHudGuidance({ shopperId });
 
@@ -1157,6 +1158,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const [selectedBaseHandle, setSelectedBaseHandle] = useState(undefined);
   const [buildPreviewData, setBuildPreviewData] = useState(null);
   const [buildSelectionState, setBuildSelectionState] = useState(null);
+  const hydratedPodIdRef = useRef(pid);
 
   const {
     buildStepKey,
@@ -1188,6 +1190,24 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     storagePrefix,
     defaultDetailsActionId: DEFAULT_DETAILS_ACTION_ID,
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const requestedStage = params.get("stage");
+    const requestedBuildStep = params.get("buildStep");
+
+    if (["rest", "details", "build", "ask", "human"].includes(requestedStage)) {
+      setOpenStage(requestedStage);
+    }
+
+    if (
+      requestedStage === "build" &&
+      ["size", "base", "motion", "essentials", "review"].includes(requestedBuildStep)
+    ) {
+      setBuildStepKey(requestedBuildStep);
+      setShowRestChooser(false);
+    }
+  }, [location.search, setBuildStepKey, setOpenStage, setShowRestChooser]);
 
   const restAdvanceTimeoutRef = useRef(null);
   const restVacancyTimeoutRef = useRef(null);
@@ -1307,7 +1327,10 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     setBuildPreviewData(null);
     setBuildSelectionState(null);
     setMattressImageFallback(sanitizedFound?.fallbackImageUrl || "");
-    resetForPodChange();
+    if (hydratedPodIdRef.current !== pid) {
+      hydratedPodIdRef.current = pid;
+      resetForPodChange();
+    }
   }, [recs, pid, resetForPodChange, resetPodVoiceKeys]);
 
   const effectiveMattressHandle = useMemo(() => {
@@ -2548,6 +2571,14 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     setLearnCartBusy(true);
     setLearnCartError("");
     try {
+      const mattressHandle = String(mattressProduct?.handle || activePod?.mattressHandle || "");
+      const existingMattressLines = cartItems.filter((item) =>
+        mattressHandle && String(item?.handle || "") === mattressHandle
+      );
+      if (existingMattressLines.some((item) => String(item?.merchandiseId || "") === row.variantId)) {
+        showCartFeedback("Mattress in Cart");
+        return;
+      }
       const result = await addLinesToAuthoritativeCart({
         lines: [{
           merchandiseId: row.variantId,
@@ -2564,6 +2595,10 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
       });
       const confirmed = (result?.items || []).some((item) => String(item?.merchandiseId || "") === row.variantId);
       if (!confirmed) throw Object.assign(new Error("Shopify did not confirm the mattress line."), { code: "CART_CONFIRMATION_MISSING" });
+      for (const item of existingMattressLines) {
+        if (String(item?.merchandiseId || "") === row.variantId) continue;
+        await removeFromCart?.(item.lineId || item.id);
+      }
       showCartFeedback("Mattress in Cart");
     } catch (error) {
       console.warn("[cart] mattress-only add failed", { code: error?.code || error?.name || "CART_MUTATION_FAILED" });
@@ -2571,7 +2606,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     } finally {
       setLearnCartBusy(false);
     }
-  }, [addLinesToAuthoritativeCart, learnCartBusy, mattressHeroTitle, mattressTruth.mattressTitle, showCartFeedback]);
+  }, [activePod?.mattressHandle, addLinesToAuthoritativeCart, cartItems, learnCartBusy, mattressHeroTitle, mattressProduct?.handle, mattressTruth.mattressTitle, removeFromCart, showCartFeedback]);
 
   useEffect(() => {
     if (openStage !== "build" || buildSelectionState?.stepKey !== "review") return;

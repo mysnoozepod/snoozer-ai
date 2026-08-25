@@ -20,6 +20,10 @@ assert.ok(podSource.includes('setOpenStage("ask")'), "Ask Snoozer must remain in
 assert.ok(podSource.includes('setOpenStage("human")'), "Talk to Human must remain inside the mounted Pod runtime");
 assert.ok(podSource.includes('setOpenStage("rest")'), "completion must return to the Rest Test rating surface");
 assert.ok(podSource.includes("restStatus={restStatus}"), "the Pod hero must receive live Rest Test status");
+assert.ok(
+  podSource.includes("hydratedPodIdRef.current !== pid"),
+  "recommendation hydration must preserve the current Pod and Rest Test session"
+);
 
 for (const label of ["Rest Test", "Learn", "Customize", "Ask Snoozer", "Talk to Human"]) {
   assert.ok(navSource.includes(`label="${label}"`), `${label} must appear in Pod navigation`);

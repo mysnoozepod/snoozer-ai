@@ -230,11 +230,7 @@ export default function Welcome() {
                     Try Again
                     <ArrowRight className="h-5 w-5" />
                   </button>
-                ) : (
-                  <p className="mt-3 text-center text-sm font-semibold text-slate-500">
-                    Your session starts automatically after the fourth digit.
-                  </p>
-                )}
+                ) : null}
               </div>
 
               <div className="mt-2.5 grid gap-2.5 rounded-[24px] border border-white/70 bg-white/86 p-2.5 shadow-sm lg:grid-cols-[minmax(0,1.06fr)_minmax(224px,0.94fr)]">
