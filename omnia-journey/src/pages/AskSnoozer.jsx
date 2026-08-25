@@ -172,7 +172,7 @@ export default function AskSnoozer() {
   const device = useDeviceMode();
   const transcriptRef = useRef(null);
   const textareaRef = useRef(null);
-  const overlayWasOpenRef = useRef(false);
+  const hudLifecycleRef = useRef(null);
   const handledPrefillLocationRef = useRef("");
   const humanHelpTimerRef = useRef(null);
 
@@ -218,15 +218,23 @@ export default function AskSnoozer() {
   }, []);
 
   useEffect(() => {
-    overlayWasOpenRef.current = hudOpen !== false;
-    closeSnoozer?.();
+    const lifecycle = {
+      wasOpen: hudOpen !== false,
+      close: closeSnoozer,
+      open: openSnoozer,
+    };
+    hudLifecycleRef.current = lifecycle;
+    lifecycle.close?.();
 
     return () => {
-      if (overlayWasOpenRef.current) {
-        openSnoozer?.();
+      if (lifecycle.wasOpen) {
+        lifecycle.open?.();
       }
+      hudLifecycleRef.current = null;
     };
-  }, [closeSnoozer, hudOpen, openSnoozer]);
+    // HUD ownership is acquired once for the lifetime of this dedicated page.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const transcriptNode = transcriptRef.current;

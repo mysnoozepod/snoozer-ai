@@ -355,7 +355,15 @@ function isPronounOnlyReference(text = "") {
 }
 
 function isRecommendationQuery(text = "") {
-  return includesAny(text, RECOMMENDATION_TERMS);
+  const normalized = normalizeAskSnoozerText(text);
+  if (includesAny(normalized, RECOMMENDATION_TERMS)) return true;
+
+  const productReference = "(?:mattress|pod|bed|base|setup)";
+  const recommendationVerb = "(?:recommend(?:ed)?|suggest(?:ed)?|pick(?:ed)?|chose|chosen)";
+  return (
+    new RegExp(`\\b${productReference}\\b.*\\b${recommendationVerb}\\b`).test(normalized) ||
+    new RegExp(`\\b${recommendationVerb}\\b.*\\b${productReference}\\b`).test(normalized)
+  );
 }
 
 function isSessionGuidanceQuery(text = "") {
@@ -672,6 +680,17 @@ function routeAskSnoozerQuestion({
   const shouldUseOpenAI =
     intentGroup === "sleep_education" ||
     (intentGroup === "fallback" && normalized && !isNonsenseFallback(normalized));
+  const protectedTruthRequired = [
+    "policy",
+    "identity_guidance",
+    "recommendation",
+    "session_guidance",
+    "rest_test_guidance",
+    "build_guidance",
+    "commerce",
+    "product_education",
+    "catalog_boundary",
+  ].includes(intentGroup);
   const knowledgeKeys =
     intentGroup === "policy" && slots.policyTopic
       ? (getKnowledgeManifestEntry("policies", slots.policyTopic)?.sourceKeys || []).slice()
@@ -693,6 +712,7 @@ function routeAskSnoozerQuestion({
     slots,
     missingSlots,
     sourceOfTruth,
+    protectedTruthRequired,
     shouldUseOpenAI,
     shouldAskClarifyingQuestion,
     knowledgeKeys,

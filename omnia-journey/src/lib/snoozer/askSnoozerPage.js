@@ -5,6 +5,10 @@ import { getStoredShopifyCartIdentity } from "@/lib/session/shopifyCartState";
 import { useStore } from "@/lib/useStore";
 
 const ASK_SNOOZER_ROUTE = "/ask-snoozer";
+const ASK_SNOOZER_REQUEST_TIMEOUT_MS = Math.max(
+  5000,
+  Number(import.meta.env.VITE_ASK_SNOOZER_TIMEOUT_MS || 15000)
+);
 const ASK_SNOOZER_CONVERSATION_KEY = "snooze.askSnoozer.conversationId";
 const ASK_SNOOZER_HISTORY_LIMIT = 10;
 const FALLBACK_MESSAGE =
@@ -199,12 +203,24 @@ function readContext() {
   ]);
   const cartIdentity = getStoredShopifyCartIdentity();
   const cartId = firstNonEmptyString([cartIdentity.cartId, session?.cartId]);
+  const cartLines = (Array.isArray(storeState?.snoozepod) ? storeState.snoozepod : [])
+    .slice(0, 8)
+    .map((line) => ({
+      title: firstNonEmptyString([line?.title, line?.productTitle]) || null,
+      variantTitle: firstNonEmptyString([line?.variantTitle, line?.size]) || null,
+      quantity: Math.max(1, Number(line?.quantity) || 1),
+      handle: firstNonEmptyString([line?.handle, line?.productHandle]) || null,
+    }));
 
   return {
     assessment: assessment || null,
     recommendation: recommendation || null,
     sessionPrep: sessionPrep || null,
     cartId: cartId || null,
+    cartSummary: {
+      totalQuantity: cartLines.reduce((sum, line) => sum + line.quantity, 0),
+      lines: cartLines,
+    },
   };
 }
 
@@ -754,23 +770,34 @@ function normalizeSuccessResponse(payload, { conversationId, requestId, message 
 
 async function postAskSnoozer(payload) {
   const requestId = createId("request");
-  const response = await fetch(buildApiUrl("/ask-snoozer"), {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      ...(payload?.identity?.sessionId
-        ? { "x-session-id": String(payload.identity.sessionId) }
-        : {}),
-      "x-request-id": requestId,
-    },
-    body: JSON.stringify({
-      ...payload,
-      thread_id: payload.conversationId,
-      shopperId: payload.identity?.shopperId || null,
-      sessionId: payload.identity?.sessionId || null,
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(
+    () => controller.abort(),
+    ASK_SNOOZER_REQUEST_TIMEOUT_MS
+  );
+  let response;
+  try {
+    response = await fetch(buildApiUrl("/ask-snoozer"), {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...(payload?.identity?.sessionId
+          ? { "x-session-id": String(payload.identity.sessionId) }
+          : {}),
+        "x-request-id": requestId,
+      },
+      body: JSON.stringify({
+        ...payload,
+        thread_id: payload.conversationId,
+        shopperId: payload.identity?.shopperId || null,
+        sessionId: payload.identity?.sessionId || null,
+      }),
+    });
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 
   const contentType = String(response.headers.get("content-type") || "").toLowerCase();
   const responseBody = contentType.includes("application/json")

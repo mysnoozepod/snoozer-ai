@@ -1,3 +1,13 @@
+function buildBoundedConversationHistory(history = []) {
+  return (Array.isArray(history) ? history : [])
+    .slice(-8)
+    .map((entry) => ({
+      role: String(entry?.role || "").trim() === "assistant" ? "assistant" : "user",
+      content: String(entry?.content || "").trim().slice(0, 500),
+    }))
+    .filter((entry) => entry.content);
+}
+
 async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps = {} }) {
   const {
     safeJsonBody,
@@ -30,10 +40,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     attachStoredProfileContext,
     customerProfileService,
     buildIdentityProfilePatch,
-    safeUpsertCustomerProfile,
-    logProfileRouteOutcome,
-    safeUpsertIdentityAliases,
-    maybeSyncProfileToZohoForInteraction,
+    enqueueAskSnoozerAsyncWrites,
     STRICT_POD_ANCHOR,
     routeAskSnoozerQuestion,
     maybeBuildAskSnoozerCanonicalAnswer,
@@ -202,6 +209,15 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     context.accessCode = askIdentity?.accessCode || context?.accessCode || null;
     context.profileId = askIdentity?.profileId || context?.profileId || null;
     context.sessionId = effectiveSessionId;
+    context.path =
+      payload?.page?.route || context?.path || context?.route || "/ask-snoozer";
+    context.pageType =
+      payload?.page?.pageType || context?.pageType || context?.page_type || "ask_snoozer";
+    context.device =
+      payload?.page?.device && typeof payload.page.device === "object"
+        ? payload.page.device
+        : context?.device || null;
+    context.recentConversation = buildBoundedConversationHistory(payload?.history);
 
     // 3) Attach assessment and canonical recommendation context
     let storedAssessment = null;
@@ -380,19 +396,16 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
               : [],
           };
 
-    const askProfileUpsertResult = await safeUpsertCustomerProfile(askProfilePatch, {
+    const asyncWritePayload = {
       traceId,
-      route: "/ask-snoozer",
-    });
-    logProfileRouteOutcome("ask", askProfileUpsertResult, {
-      traceId,
-      route: "/ask-snoozer",
-      shopperId: shopperId || null,
-      sessionId: effectiveSessionId || null,
-    });
-    await safeUpsertIdentityAliases(
-      askIdentity,
-      {
+      identityLookup: {
+        profileId: askIdentity?.profileId || undefined,
+        shopperId: shopperId || undefined,
+        sessionId: effectiveSessionId || undefined,
+        threadId: effectiveSessionId || undefined,
+      },
+      identity: askIdentity,
+      aliasContext: {
         sourceShopperId:
           payload?.sourceShopperId ||
           payload?.context?.sourceShopperId ||
@@ -404,20 +417,32 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         lastIntent: askSnoozerClassification?.intent || "",
         leadStage: askProfilePatch?.leadStage || "",
       },
-      { traceId, route: "/ask-snoozer" }
-    );
-    await maybeSyncProfileToZohoForInteraction({
-      channel: "ask",
-      traceId,
-      route: "/ask-snoozer",
-      previousProfile: previousAskProfile,
-      nextPatch: askProfilePatch,
+      profilePatch: askProfilePatch,
       policyContext: {
         route: "/ask-snoozer",
         lastIntent: askSnoozerClassification?.intent || "",
         lastIntentGroup: askSnoozerClassification?.intent_group || "",
       },
-    });
+    };
+    const asyncWriteResult =
+      typeof enqueueAskSnoozerAsyncWrites === "function"
+        ? await enqueueAskSnoozerAsyncWrites(asyncWritePayload)
+        : {
+            ok: false,
+            skipped: true,
+            reason: "ASK_SNOOZER_ASYNC_QUEUE_NOT_CONFIGURED",
+          };
+    log(
+      "ask-snoozer.async-writes.enqueue",
+      asyncWriteResult?.ok ? "queued" : "skipped",
+      {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId || null,
+        messageId: asyncWriteResult?.messageId || null,
+        reason: asyncWriteResult?.reason || null,
+      }
+    );
 
     // 3.5) STRICT POD ANCHOR: fail fast if pod mode lacks anchors
     if (STRICT_POD_ANCHOR && String(mode || "").toLowerCase() === "pod") {
@@ -498,6 +523,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       intent: askSnoozerDecision.intent,
       confidence: askSnoozerDecision.confidence,
       sourceOfTruth: askSnoozerDecision.sourceOfTruth,
+      protectedTruthRequired: askSnoozerDecision.protectedTruthRequired,
       shouldUseOpenAI: askSnoozerDecision.shouldUseOpenAI,
       shouldAskClarifyingQuestion: askSnoozerDecision.shouldAskClarifyingQuestion,
       reason: null,
@@ -516,6 +542,24 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       fallbackUsed: false,
       reason: null,
     });
+    const outcomeLogFields = (envelope = {}, failureReason = "") => {
+      const metrics = isObject(envelope?.meta?.metrics)
+        ? envelope.meta.metrics
+        : {};
+      return {
+        answerPath: envelope?.meta?.path || "deterministic",
+        retrievalMs: safeNumber(
+          metrics.retrievalMs ?? envelope?.meta?.retrievalMs,
+          0
+        ),
+        modelMs: safeNumber(metrics.modelMs ?? envelope?.meta?.modelMs, 0),
+        totalMs: safeNumber(
+          metrics.totalMs ?? envelope?.meta?.totalMs ?? Date.now() - startedAt,
+          Date.now() - startedAt
+        ),
+        failureReason: failureReason || null,
+      };
+    };
 
     const canonicalAnswer = maybeBuildAskSnoozerCanonicalAnswer(msg, context);
     if (canonicalAnswer) {
@@ -627,6 +671,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         missingSlots: [],
         fallbackUsed: false,
         reason: canonicalAnswer.reason || "",
+        ...outcomeLogFields(env, canonicalAnswer.reason || ""),
       });
 
       if (wantHud) {
@@ -723,6 +768,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         missingSlots: ["assessment"],
         fallbackUsed: false,
         reason: "missing_assessment",
+        ...outcomeLogFields(env, "missing_assessment"),
       });
 
       if (wantHud) {
@@ -869,6 +915,11 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         reason:
           policy?.reason ||
           (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
+        ...outcomeLogFields(
+          env,
+          policy?.reason ||
+            (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing")
+        ),
       });
       log("ask-snoozer.fulfillment.result", "resolved", {
         traceId,
@@ -1128,6 +1179,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           : askSnoozerDecision.missingSlots,
         fallbackUsed: Boolean(commerceResolution?.fallbackUsed),
         reason: commerceResolution?.reason || "",
+        ...outcomeLogFields(env, commerceResolution?.reason || ""),
       });
       log("ask-snoozer.fulfillment.result", "resolved", {
         traceId,
@@ -1279,6 +1331,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         missingSlots: [],
         fallbackUsed: false,
         reason: deterministicGuidanceAnswer.reason || "",
+        ...outcomeLogFields(env, deterministicGuidanceAnswer.reason || ""),
       });
 
       if (wantHud) {
@@ -1428,6 +1481,12 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           deterministicCommerceAnswer?.metaExtra?.reason ||
           deterministicCommerceAnswer?.reason ||
           "",
+        ...outcomeLogFields(
+          env,
+          deterministicCommerceAnswer?.metaExtra?.reason ||
+            deterministicCommerceAnswer?.reason ||
+            ""
+        ),
       });
 
       if (wantHud) {
@@ -1545,6 +1604,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         missingSlots: askSnoozerDecision.missingSlots,
         fallbackUsed: false,
         reason: deterministicFaqAnswer.reason || "",
+        ...outcomeLogFields(env, deterministicFaqAnswer.reason || ""),
       });
 
       if (wantHud) {
@@ -1634,6 +1694,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         missingSlots: askSnoozerDecision.missingSlots,
         fallbackUsed: false,
         reason: "fallback_guard",
+        ...outcomeLogFields(env, "fallback_guard"),
       });
 
       if (wantHud) {
@@ -1662,6 +1723,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             thread_id: effectiveSessionId,
             mode,
             context,
+            allowGeneralConversation:
+              askSnoozerDecision.protectedTruthRequired === false,
           }),
           MODEL_TIMEOUT_MS,
           "OPENAI_TIMEOUT",
@@ -1783,8 +1846,12 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
       log("ask-snoozer.metrics", "completed", {
         traceId,
+        shopperId: shopperId || null,
         sessionId: effectiveSessionId,
         mode,
+        intentGroup: askSnoozerDecision.intentGroup,
+        answerPath: env.meta?.path || "model",
+        sourceOfTruth: "openai",
         retrievalMs: env.meta?.metrics?.retrievalMs || 0,
         modelMs,
         totalMs: latencyMs,
@@ -1804,7 +1871,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         factsResolved: false,
         missingSlots: askSnoozerDecision.missingSlots,
         fallbackUsed,
+        failureReason: fallbackUsed ? "openai_fallback" : null,
         reason: fallbackUsed ? "openai_fallback" : "openai",
+        ...outcomeLogFields(env, fallbackUsed ? "openai_fallback" : ""),
       });
 
       if (wantHud) {
@@ -1881,12 +1950,17 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
       log("ask-snoozer.metrics", "fallback", {
         traceId,
+        shopperId: shopperId || null,
         sessionId: effectiveSessionId,
         mode,
+        intentGroup: askSnoozerDecision.intentGroup,
+        answerPath: "fallback",
+        sourceOfTruth: "fallback",
         retrievalMs: 0,
         modelMs: isTimeout ? MODEL_TIMEOUT_MS : 0,
         totalMs: latencyMs,
         fallbackUsed: true,
+        failureReason: isTimeout ? "timeout_fallback" : "ask_snoozer_failed",
         timeoutMs: isTimeout ? MODEL_TIMEOUT_MS : null,
         path: "fallback",
       });

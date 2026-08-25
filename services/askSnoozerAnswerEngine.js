@@ -12,8 +12,11 @@ const {
 } = require("./snoozerVoice");
 const { formatCustomerProductTitle } = require("./askSnoozerResponsePresenter");
 
-const MAX_REPLY_CHARS = 205;
-const MAX_FACTS = 3;
+const MAX_DISPLAY_REPLY_CHARS = 520;
+const MAX_DISPLAY_SENTENCES = 5;
+const MAX_VOICE_REPLY_CHARS = 240;
+const MAX_VOICE_SENTENCES = 2;
+const MAX_FACTS = 5;
 
 const STOP_WORDS = new Set([
   "a",
@@ -119,7 +122,11 @@ function previewText(text, maxChars = 160) {
   return `${cleaned.slice(0, maxChars - 3).trim()}...`;
 }
 
-function clampReply(text, fallback = "") {
+function clampReply(
+  text,
+  fallback = "",
+  { maxChars = MAX_DISPLAY_REPLY_CHARS, maxSentences = MAX_DISPLAY_SENTENCES } = {}
+) {
   const cleaned = cleanAnswerText(text || fallback);
   if (!cleaned) return "";
 
@@ -128,9 +135,20 @@ function clampReply(text, fallback = "") {
     .map((item) => item.trim())
     .filter(Boolean);
 
-  const joined = sentences.slice(0, 2).join(" ").trim();
-  if (joined && joined.length <= MAX_REPLY_CHARS) return joined;
-  return `${cleaned.slice(0, MAX_REPLY_CHARS - 3).trim().replace(/[,:;]$/, "")}...`;
+  const joined = sentences.slice(0, maxSentences).join(" ").trim();
+  if (joined && joined.length <= maxChars) return joined;
+  return `${cleaned.slice(0, maxChars - 3).trim().replace(/[,:;]$/, "")}...`;
+}
+
+function clampAskSnoozerVoiceReply(text, fallback = "") {
+  return clampReply(text, fallback, {
+    maxChars: MAX_VOICE_REPLY_CHARS,
+    maxSentences: MAX_VOICE_SENTENCES,
+  });
+}
+
+function clampAskSnoozerDisplayReply(text, fallback = "") {
+  return clampReply(text, fallback);
 }
 
 function ensureSentence(text) {
@@ -2640,4 +2658,6 @@ function buildAskSnoozerAnswer({
 
 module.exports = {
   buildAskSnoozerAnswer,
+  clampAskSnoozerDisplayReply,
+  clampAskSnoozerVoiceReply,
 };

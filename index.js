@@ -143,7 +143,15 @@ const {
   routeAskSnoozerQuestion,
   resolveAskSnoozerCommerceResponse,
 } = require("./services/askSnoozerQualityGate");
-const { buildAskSnoozerAnswer } = require("./services/askSnoozerAnswerEngine");
+const {
+  buildAskSnoozerAnswer,
+  clampAskSnoozerVoiceReply,
+} = require("./services/askSnoozerAnswerEngine");
+const {
+  enqueueAskSnoozerAsyncWrites,
+  isAskSnoozerAsyncWriteEvent,
+  parseAskSnoozerAsyncWriteRecord,
+} = require("./services/askSnoozerAsyncWrites");
 const {
   HUD_SAFE_PAGE_ROUTES,
   HUD_SAFE_COLLECTION_ROUTES,
@@ -224,7 +232,7 @@ const STRICT_POD_ANCHOR = (process.env.STRICT_POD_ANCHOR || "1") === "1";
 // Production thresholds
 const S3_RETRIEVAL_TIMEOUT_MS = Number(process.env.S3_RETRIEVAL_TIMEOUT_MS || 300);
 const SHOPIFY_TIMEOUT_MS = Number(process.env.SHOPIFY_TIMEOUT_MS || 800);
-const MODEL_TIMEOUT_MS = Number(process.env.MODEL_TIMEOUT_MS || 2500);
+const MODEL_TIMEOUT_MS = Math.max(1000, Number(process.env.MODEL_TIMEOUT_MS || 7000));
 const POLLY_TIMEOUT_MS = Number(process.env.POLLY_TIMEOUT_MS || 2000);
 
 // Strict HUD defaults
@@ -709,6 +717,11 @@ async function buildHudFromAny(input, { ok, mode, context, aiResult, payload, de
   }
 
   const explicitHud = aiResult?.hud && typeof aiResult.hud === "object" ? aiResult.hud : {};
+  const voiceSpeech = clampAskSnoozerVoiceReply(
+    typeof explicitHud.speech === "string" && explicitHud.speech.trim()
+      ? explicitHud.speech
+      : scriptPayload?.speech || defaultSpeech || HUD_DEFAULTS.speech
+  );
 
   const baseHud = buildHudResponseFromEnvelope(input, {
     state:
@@ -727,10 +740,7 @@ async function buildHudFromAny(input, { ok, mode, context, aiResult, payload, de
       normalizeHudVoiceStyleValue(explicitHud.voiceStyle, "") ||
       scriptPayload?.voiceStyle ||
       override.voiceStyle,
-    speech:
-      typeof explicitHud.speech === "string" && explicitHud.speech.trim()
-        ? explicitHud.speech
-        : scriptPayload?.speech || null,
+    speech: voiceSpeech || null,
     captions:
       typeof explicitHud.captions === "string" && explicitHud.captions.trim()
         ? explicitHud.captions
@@ -743,7 +753,7 @@ async function buildHudFromAny(input, { ok, mode, context, aiResult, payload, de
   });
 
   const strictHud = enforceHudContract(baseHud, {
-    speech: defaultSpeech || HUD_DEFAULTS.speech,
+    speech: voiceSpeech || HUD_DEFAULTS.speech,
     captions: defaultSpeech || HUD_DEFAULTS.captions,
     state: override.state,
     priority: override.priority,
@@ -4337,6 +4347,94 @@ async function maybeSyncProfileToZohoForInteraction({
   }
 }
 
+async function processAskSnoozerAsyncWrites(event = {}) {
+  const records = Array.isArray(event?.Records) ? event.Records : [];
+  const batchItemFailures = [];
+
+  for (const record of records) {
+    const messageId = cleanIdentityValue(record?.messageId) || "unknown";
+    const payload = parseAskSnoozerAsyncWriteRecord(record);
+
+    if (!payload) {
+      log("ask-snoozer.async-writes.invalid", "discarded", { messageId });
+      continue;
+    }
+
+    const traceId = cleanIdentityValue(payload?.traceId) || messageId;
+    const profilePatch = isObject(payload?.profilePatch) ? payload.profilePatch : {};
+    const identity = isObject(payload?.identity) ? payload.identity : {};
+    const aliasContext = isObject(payload?.aliasContext) ? payload.aliasContext : {};
+    const identityLookup = isObject(payload?.identityLookup) ? payload.identityLookup : {};
+    const policyContext = isObject(payload?.policyContext) ? payload.policyContext : {};
+
+    try {
+      const previousProfileResult = await safeGetCustomerProfile(identityLookup, {
+        traceId,
+        route: "/ask-snoozer:async-writes",
+      });
+      const previousProfile = previousProfileResult?.profile || null;
+
+      const profileResult = await safeUpsertCustomerProfile(profilePatch, {
+        traceId,
+        route: "/ask-snoozer:async-writes",
+      });
+      logProfileRouteOutcome("ask_async", profileResult, {
+        traceId,
+        route: "/ask-snoozer:async-writes",
+        shopperId: profilePatch?.shopperId || null,
+        sessionId: profilePatch?.sessionId || profilePatch?.threadId || null,
+      });
+      if (profileResult?.reason === "CUSTOMER_PROFILE_UPSERT_FAILED") {
+        throw new Error(profileResult.reason);
+      }
+
+      const aliasResult = await safeUpsertIdentityAliases(identity, aliasContext, {
+        traceId,
+        route: "/ask-snoozer:async-writes",
+      });
+      const aliasFailures = (Array.isArray(aliasResult) ? aliasResult : []).filter(
+        (result) => result?.reason === "CUSTOMER_PROFILE_UPSERT_FAILED"
+      );
+      if (aliasFailures.length) {
+        throw new Error("IDENTITY_ALIAS_UPSERT_FAILED");
+      }
+
+      const zohoResult = await maybeSyncProfileToZohoForInteraction({
+        channel: "ask_async",
+        traceId,
+        route: "/ask-snoozer:async-writes",
+        previousProfile,
+        nextPatch: profilePatch,
+        policyContext,
+      });
+      if (zohoResult?.reason === "ZOHO_SYNC_FAILED") {
+        throw new Error(zohoResult.reason);
+      }
+
+      log("ask-snoozer.async-writes", "completed", {
+        traceId,
+        messageId,
+        shopperId: profilePatch?.shopperId || null,
+        sessionId: profilePatch?.sessionId || profilePatch?.threadId || null,
+        profileWritten: Boolean(profileResult?.ok && !profileResult?.skipped),
+        aliasesWritten: (Array.isArray(aliasResult) ? aliasResult : []).some(
+          (result) => result?.ok && !result?.skipped
+        ),
+        zohoSynced: Boolean(zohoResult?.ok && !zohoResult?.skipped),
+      });
+    } catch (error) {
+      log("ask-snoozer.async-writes", "failed", {
+        traceId,
+        messageId,
+        reason: error?.message || "ASYNC_WRITE_FAILED",
+      });
+      batchItemFailures.push({ itemIdentifier: messageId });
+    }
+  }
+
+  return { batchItemFailures };
+}
+
 const SNOOZE_CODE_LEAD_STAGE_BY_REASON = Object.freeze({
   assessment_completed: "assessment_completed",
   save_results: "assessment_completed",
@@ -6443,6 +6541,7 @@ async function handle(event = {}) {
       logProfileRouteOutcome,
       safeUpsertIdentityAliases,
       maybeSyncProfileToZohoForInteraction,
+      enqueueAskSnoozerAsyncWrites,
       STRICT_POD_ANCHOR,
       routeAskSnoozerQuestion,
       maybeBuildAskSnoozerCanonicalAnswer,
@@ -6534,6 +6633,10 @@ async function handle(event = {}) {
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 exports.lambdaHandler = async (event) => {
   try {
+    if (isAskSnoozerAsyncWriteEvent(event)) {
+      return await processAskSnoozerAsyncWrites(event);
+    }
+
     const out = await handle(event);
 
     return {

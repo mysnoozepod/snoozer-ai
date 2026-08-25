@@ -43,6 +43,7 @@ const axios = require("axios");
 const { S3Client, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
 
 const { initializeSession, rememberTurn, getLastTurns } = require("./conversationState.js");
+const { clampAskSnoozerDisplayReply } = require("./askSnoozerAnswerEngine");
 
 // Shopify service (used deterministically for variant resolution by size)
 let shopifySvc = null;
@@ -83,8 +84,16 @@ const FAST_MODEL = process.env.OPENAI_FAST_MODEL || "gpt-4o-mini";
 const FINAL_MODEL = process.env.OPENAI_FINAL_MODEL || "gpt-4o";
 
 // Timeouts / TTLs
-const AXIOS_TIMEOUT_MS = Math.max(8000, Number(process.env.OPENAI_TIMEOUT_MS || 30000));
-const FAST_TIMEOUT_MS = Math.max(8000, Number(process.env.FAST_PATH_TIMEOUT_MS || 12000));
+const MODEL_TIMEOUT_MS = Math.max(1000, Number(process.env.MODEL_TIMEOUT_MS || 7000));
+const OPENAI_REQUEST_CEILING_MS = Math.max(750, MODEL_TIMEOUT_MS - 1000);
+const AXIOS_TIMEOUT_MS = Math.max(
+  500,
+  Math.min(OPENAI_REQUEST_CEILING_MS, Number(process.env.OPENAI_TIMEOUT_MS || 5500))
+);
+const FAST_TIMEOUT_MS = Math.max(
+  500,
+  Math.min(AXIOS_TIMEOUT_MS, Number(process.env.FAST_PATH_TIMEOUT_MS || AXIOS_TIMEOUT_MS))
+);
 const S3_RETRIEVAL_TIMEOUT_MS = Math.max(50, Number(process.env.S3_RETRIEVAL_TIMEOUT_MS || 300));
 
 const BASE_PROMPT_TTL_MS = Number(process.env.BASE_PROMPT_TTL_MS || 300000);
@@ -110,8 +119,14 @@ const POD_PRODUCT_DOC_KEY_BY_HANDLE = Object.freeze({
 const MAX_TOTAL_MESSAGE_CHARS = Number(process.env.MAX_TOTAL_MESSAGE_CHARS || 60000);
 
 // OpenAI retry
-const OPENAI_RUN_MAX_RETRIES = Math.max(0, Number(process.env.OPENAI_RUN_MAX_RETRIES || 1));
-const OPENAI_RUN_MAX_WAIT_MS = Math.max(0, Number(process.env.OPENAI_RUN_MAX_WAIT_MS || 4500));
+const OPENAI_RUN_MAX_RETRIES = Math.min(
+  1,
+  Math.max(0, Number(process.env.OPENAI_RUN_MAX_RETRIES || 0))
+);
+const OPENAI_RUN_MAX_WAIT_MS = Math.min(
+  500,
+  Math.max(0, Number(process.env.OPENAI_RUN_MAX_WAIT_MS || 0))
+);
 
 // STRICT pod anchoring (fail fast instead of drifting)
 const STRICT_POD_ANCHOR = String(process.env.STRICT_POD_ANCHOR || "1") === "1";
@@ -123,7 +138,7 @@ const STRICT_DETERMINISTIC_RETRIEVAL =
 // Guardrails for the model path only (model is NOT allowed to do commerce)
 const CONCISE_GUARDRAILS = [
   "INSTRUCTIONS:",
-  "- Keep replies concise unless asked for more detail.",
+  "- Use 2 to 5 concise sentences when useful; answer first, then explain and offer a next step.",
   "- Do NOT guess prices, availability, financing math, or checkout details.",
   "- If asked price/cart/checkout, say: “I’ll pull live pricing/checkout for you” and ask what size they want if needed.",
   "- If you do not have relevant showroom knowledge loaded, say you don't have it and offer options instead.",
@@ -135,7 +150,7 @@ const PREMIUM_ANSWER_GUARDRAILS = [
   "INSTRUCTIONS:",
   "- You are Snoozer, a premium in-showroom sleep guide for MySnoozePod.",
   "- Give direct, useful answers. No generic chatbot filler.",
-  "- Keep replies concise enough for showroom use unless asked for more detail.",
+  "- Use 2 to 5 concise sentences when useful; do not become verbose.",
   "- Use shopper/session/canonical context when it is present, but never override canonical pod, mattress, base, or motion decisions.",
   "- Do NOT guess prices, availability, financing math, checkout details, delivery promises, discounts, warranty terms, variant IDs, or policies.",
   "- If asked price/cart/checkout, say live Shopify checkout/pricing has to confirm it and ask what size they want if needed.",
@@ -212,9 +227,9 @@ const SAFE_FALLBACK =
 function safeReply(text, fallback = SAFE_FALLBACK) {
   if (typeof text === "string") {
     const t = text.trim();
-    if (t) return t;
+    if (t) return clampAskSnoozerDisplayReply(t, fallback);
   }
-  return fallback;
+  return clampAskSnoozerDisplayReply(fallback);
 }
 
 function normalizeRole(role) {
@@ -667,6 +682,125 @@ function summarizeCanonicalRecommendationForPrompt(context = {}) {
 
   try {
     return JSON.stringify(summary);
+  } catch {
+    return "";
+  }
+}
+
+function pickCompactFields(source = {}, keys = []) {
+  if (!isObject(source)) return {};
+  const output = {};
+  for (const key of keys) {
+    const value = source[key];
+    if (value == null || value === "") continue;
+    if (typeof value === "string") {
+      output[key] = value.trim().slice(0, 240);
+    } else if (typeof value === "number" || typeof value === "boolean") {
+      output[key] = value;
+    } else if (Array.isArray(value)) {
+      output[key] = value
+        .slice(0, 6)
+        .map((item) =>
+          typeof item === "string" || typeof item === "number"
+            ? String(item).slice(0, 160)
+            : null
+        )
+        .filter(Boolean);
+    }
+  }
+  return output;
+}
+
+function summarizeBoundedShopperContextForPrompt(context = {}, userMessage = "") {
+  const safeContext = isObject(context) ? context : {};
+  const canonical = isObject(safeContext.canonicalRecommendation)
+    ? safeContext.canonicalRecommendation
+    : {};
+  const assessment = isObject(safeContext.assessment) ? safeContext.assessment : {};
+  const normalizedAssessment = isObject(canonical.normalizedAssessment)
+    ? canonical.normalizedAssessment
+    : assessment;
+  const selection = isObject(safeContext.selection)
+    ? safeContext.selection
+    : isObject(safeContext.buildSelection)
+      ? safeContext.buildSelection
+      : {};
+  const restTest = isObject(safeContext.restTest) ? safeContext.restTest : {};
+  const cartSummary = isObject(safeContext.cartSummary) ? safeContext.cartSummary : {};
+  const currentMessage = String(userMessage || "").trim();
+  const recentConversation = (Array.isArray(safeContext.recentConversation)
+    ? safeContext.recentConversation
+    : [])
+    .slice(-8)
+    .map((turn) => ({
+      role: String(turn?.role || "").trim() === "assistant" ? "assistant" : "user",
+      content: String(turn?.content || "").trim().slice(0, 500),
+    }))
+    .filter((turn, index, turns) => {
+      if (!turn.content) return false;
+      return !(
+        index === turns.length - 1 &&
+        turn.role === "user" &&
+        turn.content === currentMessage
+      );
+    });
+
+  const bounded = {
+    identity: pickCompactFields(safeContext, ["shopperId", "snoozeCode"]),
+    assessment: pickCompactFields(normalizedAssessment, [
+      "size",
+      "sleepPosition",
+      "position",
+      "temperature",
+      "sleepsHot",
+      "firmness",
+      "pressureRelief",
+      "partner",
+      "motionKey",
+      "motionLabel",
+    ]),
+    recommendation: pickCompactFields(canonical, [
+      "topPodId",
+      "topPodName",
+      "topPodIds",
+      "primaryMattressHandle",
+      "primaryMattressTitle",
+      "baseHandle",
+      "baseTitle",
+      "motionKey",
+      "motionLabel",
+      "reasonKeys",
+      "warnings",
+    ]),
+    current: {
+      ...pickCompactFields(safeContext, ["path", "pageType", "podId", "currentProductHandle"]),
+      device: pickCompactFields(safeContext.device, ["deviceId", "deviceMode", "podId", "zoneId"]),
+    },
+    restTest: pickCompactFields(restTest, ["favorite", "bestPosition", "preferredPosition", "ratings"]),
+    selection: pickCompactFields(selection, [
+      "mattress",
+      "mattressHandle",
+      "size",
+      "base",
+      "baseHandle",
+      "motion",
+      "motionKey",
+      "selectedEssentials",
+    ]),
+    cart: {
+      ...pickCompactFields(safeContext, ["cartId"]),
+      ...pickCompactFields(cartSummary, ["totalQuantity", "subtotal"]),
+      lines: (Array.isArray(cartSummary.lines) ? cartSummary.lines : [])
+        .slice(0, 6)
+        .map((line) =>
+          pickCompactFields(line, ["title", "variantTitle", "quantity", "handle"])
+        ),
+    },
+    recentConversation,
+  };
+
+  try {
+    return JSON.stringify(bounded).slice(0, 5000);
   } catch {
     return "";
   }
@@ -2098,7 +2232,7 @@ async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL }) {
         attempt < OPENAI_RUN_MAX_RETRIES &&
         (code === 429 ||
           (typeof code === "number" && code >= 500) ||
-          ["ETIMEDOUT", "ECONNRESET", "ECONNABORTED"].includes(code));
+          ["ECONNRESET"].includes(code));
 
       logEvent(retriable ? "openai.retry" : "openai.fail", {
         reqId,
@@ -2189,6 +2323,19 @@ async function modelPath(userMessage, { reqId, thread_id, mode, context, intent,
   const systemContextLines = [modeInstructions];
   if (knowledge.snippets.length) systemContextLines.push("", "CONTEXT:", knowledge.snippets.join("\n\n"));
 
+  const boundedShopperContext = summarizeBoundedShopperContextForPrompt(
+    context,
+    userMessage
+  );
+  if (boundedShopperContext) {
+    systemContextLines.push(
+      "",
+      "BOUNDED SHOPPER CONTEXT:",
+      boundedShopperContext,
+      "Use this only for continuity and personalization. Never infer missing commerce, product, compatibility, or policy facts."
+    );
+  }
+
   if (context && Array.isArray(context.explore) && context.explore.length) {
     try {
       const compactExplore = JSON.stringify(context.explore.slice(0, 10));
@@ -2273,10 +2420,36 @@ async function modelPath(userMessage, { reqId, thread_id, mode, context, intent,
 // ──────────────────────────────
 // Orchestrator: deterministic routing first
 // ──────────────────────────────
-async function fastPath(userMessage, { reqId, thread_id, mode, context } = {}) {
+async function fastPath(
+  userMessage,
+  { reqId, thread_id, mode, context, allowGeneralConversation = false } = {}
+) {
   const pathStartedAt = Date.now();
   const normalizedContext = normalizeIncomingContext(context || {});
   const m = String(mode || "").toLowerCase();
+
+  if (allowGeneralConversation) {
+    logEvent("route.model.general_conversation", {
+      reqId,
+      mode,
+      protectedTruthRequired: false,
+    });
+    return await modelPath(userMessage, {
+      reqId,
+      thread_id,
+      mode,
+      context: normalizedContext,
+      intent: "general_conversation",
+      retrievalMeta: {
+        ok: true,
+        ms: 0,
+        catalog: null,
+        canon: null,
+        routingRules: [],
+        errors: [],
+      },
+    });
+  }
 
   const retrievalMeta = await preloadDeterministicMeta(reqId);
 
@@ -2388,7 +2561,16 @@ async function fastPath(userMessage, { reqId, thread_id, mode, context } = {}) {
 // ──────────────────────────────
 // Public entrypoints
 // ──────────────────────────────
-async function getSnoozerResponse(userMessage, { thread_id = null, reqId, mode, context } = {}) {
+async function getSnoozerResponse(
+  userMessage,
+  {
+    thread_id = null,
+    reqId,
+    mode,
+    context,
+    allowGeneralConversation = false,
+  } = {}
+) {
   const sid =
     thread_id ||
     `local_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -2399,7 +2581,13 @@ async function getSnoozerResponse(userMessage, { thread_id = null, reqId, mode, 
     // ignore
   }
 
-  return await fastPath(userMessage, { reqId, thread_id: sid, mode, context });
+  return await fastPath(userMessage, {
+    reqId,
+    thread_id: sid,
+    mode,
+    context,
+    allowGeneralConversation,
+  });
 }
 
 async function runSnoozer({ message, mode, context, thread_id } = {}) {
