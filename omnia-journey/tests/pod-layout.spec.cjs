@@ -11,6 +11,7 @@ const CASES = [
   { id: "pod-4-build-size", route: "/pod/pod-4", state: "build-size" },
   { id: "pod-4-build-base", route: "/pod/pod-4", state: "build-base" },
   { id: "pod-4-build-motion", route: "/pod/pod-4", state: "build-motion" },
+  { id: "pod-4-build-essentials", route: "/pod/pod-4", state: "build-essentials" },
   { id: "pod-4-build-review", route: "/pod/pod-4", state: "build-review" },
   { id: "pod-4-build-success", route: "/pod/pod-4", state: "build-success" },
   { id: "pod-5-build-review", route: "/pod/pod-5", state: "build-review" },
@@ -38,7 +39,7 @@ const VIEWPORTS = [
   { name: "staging-short-1280x560", width: 1280, height: 560, textRoutesOnly: true },
 ];
 
-const TEXT_ROUTE_STATES = new Set(["pod-home", "learn", "build-review", "build-success"]);
+const TEXT_ROUTE_STATES = new Set(["pod-home", "learn", "build-essentials", "build-review", "build-success"]);
 
 function shouldRunCase(viewport, testCase) {
   return !viewport.textRoutesOnly || TEXT_ROUTE_STATES.has(testCase.state);
@@ -303,8 +304,8 @@ for (const viewport of VIEWPORTS) {
 
         if (testCase.state === "build-review") {
           await expect(page.getByRole("heading", { name: "Review Your SnoozePod" })).toBeVisible();
-          await expect(page.locator('[data-pod-builder-summary-row="core"]')).toHaveCount(4);
-          await expect(page.locator('[data-pod-builder-summary-row="essential"]')).toHaveCount(3);
+          await expect(page.locator('[data-pod-builder-summary-row="mattress"]')).toHaveCount(1);
+          await expect(page.locator('[data-pod-builder-summary-row="base-motion"]')).toHaveCount(1);
           await expect(page.locator('[data-pod-builder-commerce-summary="true"]')).toBeVisible();
           const totalLabel = page.getByText("Est. Total");
           const commerceUnavailable = page
@@ -321,8 +322,8 @@ for (const viewport of VIEWPORTS) {
 
           const reviewContainment = await page.evaluate(() => {
             const summary = document.querySelector('[data-pod-builder-review-summary="true"]');
-            const action = document.querySelector('[data-pod-builder-action-row="true"]');
-            if (!summary || !action) return { ok: false, reason: "missing review summary or action row" };
+            const action = document.querySelector('[data-pod-builder-commerce-summary="true"]');
+            if (!summary || !action) return { ok: false, reason: "missing review summary or commerce action" };
             const coreGroup = document.querySelector('[data-pod-builder-summary-group="core"]');
             const essentialsGroup = document.querySelector('[data-pod-builder-summary-group="essentials"]');
             const summaryRows = Array.from(document.querySelectorAll("[data-pod-builder-summary-row]"));
@@ -332,6 +333,8 @@ for (const viewport of VIEWPORTS) {
             const essentialsRect = essentialsGroup?.getBoundingClientRect();
             const actionStyle = getComputedStyle(action);
             const state = action.closest('[data-pod-builder-state="review"]');
+            const stateRect = state.getBoundingClientRect();
+            const actionButtons = Array.from(action.querySelectorAll("button"));
             const rowFailures = summaryRows
               .map((row) => {
                 const rect = row.getBoundingClientRect();
@@ -353,12 +356,16 @@ for (const viewport of VIEWPORTS) {
             return {
               ok:
                 coreRect &&
-                essentialsRect &&
-                coreRect.bottom <= essentialsRect.top + 0.5 &&
-                summaryRect.bottom <= actionRect.top + 0.5 &&
+                (!essentialsRect || coreRect.bottom <= essentialsRect.top + 0.5) &&
+                summaryRect.bottom <= stateRect.bottom + 0.5 &&
                 actionRect.bottom <= window.innerHeight + 0.5 &&
+                actionRect.bottom <= stateRect.bottom + 0.5 &&
                 state.scrollHeight <= state.clientHeight &&
                 !["absolute", "fixed", "sticky"].includes(actionStyle.position) &&
+                actionButtons.every((button) => {
+                  const rect = button.getBoundingClientRect();
+                  return rect.top >= actionRect.top - 0.5 && rect.bottom <= actionRect.bottom + 0.5;
+                }) &&
                 rowFailures.length === 0,
               summaryRect: summaryRect.toJSON(),
               actionRect: actionRect.toJSON(),
@@ -373,6 +380,46 @@ for (const viewport of VIEWPORTS) {
             };
           });
           expect(reviewContainment.ok, JSON.stringify(reviewContainment, null, 2)).toBeTruthy();
+        }
+
+        if (testCase.state === "build-essentials") {
+          await expect(page.locator('[data-sleep-essentials-card-row="three"]')).toBeVisible();
+          await expect(page.locator('[data-sleep-essentials-card]')).toHaveCount(3);
+          await expect(page.getByRole("button", { name: "Continue to Review", exact: true })).toBeVisible();
+
+          const essentialsContainment = await page.evaluate(() => {
+            const row = document.querySelector('[data-sleep-essentials-card-row="three"]');
+            const action = document.querySelector('[data-pod-builder-state="essentials"] [data-pod-builder-action-row="true"]');
+            const cards = Array.from(document.querySelectorAll('[data-sleep-essentials-card]'));
+            if (!row || !action || cards.length !== 3) return { ok: false, reason: "missing essentials cards or action row" };
+            const rowRect = row.getBoundingClientRect();
+            const actionRect = action.getBoundingClientRect();
+            const cardResults = cards.map((card) => {
+              const rect = card.getBoundingClientRect();
+              const cardAction = card.querySelector('[data-sleep-essentials-card-action="true"]');
+              const actionRectInside = cardAction?.getBoundingClientRect();
+              return {
+                rect: rect.toJSON(),
+                scrollHeight: card.scrollHeight,
+                clientHeight: card.clientHeight,
+                actionRect: actionRectInside?.toJSON(),
+                ok:
+                  rect.top >= rowRect.top - 0.5 &&
+                  rect.bottom <= rowRect.bottom + 0.5 &&
+                  rect.bottom <= actionRect.top + 0.5 &&
+                  card.scrollHeight <= card.clientHeight &&
+                  (!actionRectInside || actionRectInside.bottom <= rect.bottom + 0.5),
+              };
+            });
+            return {
+              ok: actionRect.bottom <= window.innerHeight + 0.5 && cardResults.every((item) => item.ok),
+              rowRect: rowRect.toJSON(),
+              actionRect: actionRect.toJSON(),
+              cards: cardResults,
+              viewport: { width: innerWidth, height: innerHeight },
+            };
+          });
+          expect(essentialsContainment.ok, JSON.stringify(essentialsContainment, null, 2)).toBeTruthy();
         }
 
         if (testCase.state === "build-success") {
@@ -450,3 +497,116 @@ test("pod-4 queen adjustable standard setup is gated by resolved commerce lines"
     "Pod 4 cannot present Queen + Adjustable Base + Standard Motion as addable without resolved variants"
   ).toBeTruthy();
 });
+
+for (const viewport of [
+  { name: "staging-observed", width: 1920, height: 899 },
+  { name: "staging-zoomed", width: 1280, height: 585 },
+]) {
+  test(`${viewport.name} cart-banner essentials remain actionable through review`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.addInitScript(() => {
+      sessionStorage.setItem("snooze.cart", JSON.stringify([{
+        id: "gid://shopify/ProductVariant/9001",
+        merchandiseId: "gid://shopify/ProductVariant/9001",
+        handle: "12-all-foam-mattress",
+        title: '12" All Foam Mattress',
+        quantity: 1,
+        unitPrice: 1599,
+      }]));
+    });
+    await page.route("**/sleepEssentials/catalog", async (route) => {
+      const makeProduct = (handle, title, variantId, variantTitle, amount) => ({
+        handle,
+        title,
+        available: true,
+        imageUrl: "/no-image.svg",
+        variants: [{
+          id: `gid://shopify/ProductVariant/${variantId}`,
+          title: variantTitle,
+          availableForSale: true,
+          price: { amount: String(amount), currencyCode: "USD" },
+        }],
+      });
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          catalog: {
+            categories: [
+              { id: "pillows", products: [makeProduct("layout-pillow", "CarbonCool Omniphase Pillow", 9101, "Queen", 169)] },
+              { id: "sheets_bedding", products: [makeProduct("layout-sheets", "Hyper-Cotton Sheet Set", 9102, "Queen / Bright White", 180)] },
+              { id: "protectors", products: [makeProduct("layout-protector", "Ver-Tex Mattress Protector", 9103, "Queen", 230)] },
+            ],
+          },
+        }),
+      });
+    });
+
+    await page.goto("/pod/pod-4?podLayoutState=build-essentials&cartBanner=1", { waitUntil: "domcontentloaded" });
+    await ensureRendered(page);
+    await expect(page.locator('[data-mattress-cart-continuity="true"]')).toBeVisible();
+    const cards = page.locator('[data-sleep-essentials-card]');
+    await expect(cards).toHaveCount(3);
+
+    for (let index = 0; index < 3; index += 1) {
+      const card = cards.nth(index);
+      await expect(card.locator('[data-sleep-essentials-card-action="true"]')).toBeVisible();
+      await card.click();
+      await expect(card).toContainText("Added");
+    }
+
+    const essentialsFit = await page.evaluate(() => {
+      const state = document.querySelector('[data-pod-builder-state="essentials"]');
+      const row = document.querySelector('[data-sleep-essentials-card-row="three"]');
+      const action = state?.querySelector('[data-pod-builder-action-row="true"]');
+      const cardActions = Array.from(document.querySelectorAll('[data-sleep-essentials-card-action="true"]'));
+      if (!state || !row || !action || cardActions.length !== 3) return { ok: false };
+      const rowRect = row.getBoundingClientRect();
+      const actionRect = action.getBoundingClientRect();
+      return {
+        ok:
+          state.scrollHeight <= state.clientHeight &&
+          rowRect.bottom <= actionRect.top + 0.5 &&
+          actionRect.bottom <= innerHeight + 0.5 &&
+          cardActions.every((item) => {
+            const rect = item.getBoundingClientRect();
+            const cardRect = item.closest('[data-sleep-essentials-card]').getBoundingClientRect();
+            return rect.bottom <= cardRect.bottom + 0.5;
+          }),
+        state: { scrollHeight: state.scrollHeight, clientHeight: state.clientHeight },
+        rowRect: rowRect.toJSON(),
+        actionRect: actionRect.toJSON(),
+      };
+    });
+    expect(essentialsFit.ok, JSON.stringify(essentialsFit, null, 2)).toBeTruthy();
+
+    await page.getByRole("button", { name: "Continue to Review", exact: true }).click();
+    await expect(page.locator('[data-pod-builder-state="review"]')).toBeVisible();
+    await expect(page.locator('[data-pod-builder-summary-row="essential"]')).toHaveCount(3);
+    await expect(page.locator('[data-pod-layout-primary-action="build-add"]')).toBeVisible();
+    await expect(page.getByRole("button", { name: "Back to essentials", exact: true })).toBeVisible();
+
+    const reviewFit = await page.evaluate(() => {
+      const state = document.querySelector('[data-pod-builder-state="review"]');
+      const layout = document.querySelector('[data-pod-builder-review-layout="decision"]');
+      const children = Array.from(layout?.children || []);
+      if (!state || !layout || children.length !== 2) return { ok: false };
+      const stateRect = state.getBoundingClientRect();
+      return {
+        ok:
+          state.scrollHeight <= state.clientHeight &&
+          children.every((item) => {
+            const rect = item.getBoundingClientRect();
+            return rect.top >= stateRect.top - 0.5 && rect.bottom <= stateRect.bottom + 0.5;
+          }) &&
+          Array.from(layout.querySelectorAll("button")).every((button) => {
+            const rect = button.getBoundingClientRect();
+            return rect.bottom <= stateRect.bottom + 0.5 && rect.height >= 44;
+          }),
+        state: { scrollHeight: state.scrollHeight, clientHeight: state.clientHeight, rect: stateRect.toJSON() },
+        children: children.map((item) => item.getBoundingClientRect().toJSON()),
+      };
+    });
+    expect(reviewFit.ok, JSON.stringify(reviewFit, null, 2)).toBeTruthy();
+  });
+}

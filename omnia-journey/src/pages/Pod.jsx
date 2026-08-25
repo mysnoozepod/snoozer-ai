@@ -1135,6 +1135,9 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     labMode || (canUseLayoutHarness && rawLayoutState)
       ? normalizePodLabState(rawLayoutState)
       : "";
+  const showLabMattressCartBanner = Boolean(
+    effectiveLabState && new URLSearchParams(location.search).get("cartBanner") === "1"
+  );
   const pid = normalizeCanonicalPodId(effectivePodId) || "pod-1";
   const podNumber = getPodNumber(pid) || "1";
   const currentPodRoute = makePodRoute(pid) || "/pod/pod-1";
@@ -2727,7 +2730,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
           onViewSnoozePod={() => navigate("/cart")}
           onViewResults={null}
           requestedStepKey={buildStepKey}
-          mattressAlreadyInCart={mattressHandleInCart}
+          mattressAlreadyInCart={mattressHandleInCart || showLabMattressCartBanner}
         />
       );
     }
@@ -2793,6 +2796,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     learnCartBusy,
     learnCartError,
     mattressHandleInCart,
+    showLabMattressCartBanner,
     goToBuildStage,
     pid,
     shopperId,

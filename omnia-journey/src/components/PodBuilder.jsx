@@ -833,11 +833,12 @@ function BuilderMediaPreview({
   icon: Icon = BedDouble,
   className = "",
   imgClassName = "h-full w-full object-cover",
+  ...props
 }) {
   const safeSrc = sanitizeImageUrl(src);
 
   return (
-    <div className={className}>
+    <div className={className} {...props}>
       {safeSrc ? (
         <img src={safeSrc} alt={alt} className={imgClassName} loading="lazy" decoding="async" />
       ) : (
@@ -2109,7 +2110,8 @@ export default function PodBuilder({
         "flex min-h-[52px] items-center justify-between gap-3 border-t border-[#dfe7fb] pt-2",
         reserveSpace ? "shrink-0" : "mt-auto",
       ].join(" ")}
-      data-pod-builder-action-row={reserveSpace ? "true" : undefined}
+      data-pod-builder-action-row="true"
+      data-pod-builder-action-row-reserved={reserveSpace ? "true" : undefined}
     >
       <button
         type="button"
@@ -2397,8 +2399,8 @@ export default function PodBuilder({
 
       return (
         <div className="flex h-full min-h-0 flex-col" data-sleep-essentials-step="combined">
-          <div className="mb-2 flex items-center justify-end">
-            <button type="button" onClick={() => openSleepEssentials("all")} className="inline-flex min-h-[40px] items-center gap-1 rounded-[12px] border border-[#dfe7fb] bg-white px-3 text-[0.75rem] font-black text-[#315cf6]">
+          <div className="mb-2 flex shrink-0 items-center justify-end" data-sleep-essentials-catalog-action="true">
+            <button type="button" onClick={() => openSleepEssentials("all")} className="inline-flex min-h-[44px] items-center gap-1 rounded-[12px] border border-[#dfe7fb] bg-white px-3 text-[0.75rem] font-black text-[#315cf6]">
               View All Sleep Essentials <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -2415,7 +2417,7 @@ export default function PodBuilder({
                       <PackageCheck className="h-9 w-9 text-[#8ba6ef]" />
                       <span className="mt-3 text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">{ESSENTIAL_CATEGORY_CONFIG[category].recommendationLabel}</span>
                       <span className="mt-2 text-base font-black text-slate-900">No approved match available</span>
-                      <button type="button" onClick={() => openSleepEssentials(CANONICAL_ESSENTIAL_CATEGORY_IDS[category])} className="mt-3 min-h-[38px] rounded-full bg-white px-3 text-[0.75rem] font-black text-[#315cf6]">View All</button>
+                      <button type="button" onClick={() => openSleepEssentials(CANONICAL_ESSENTIAL_CATEGORY_IDS[category])} className="mt-3 min-h-[44px] rounded-full bg-white px-3 text-[0.75rem] font-black text-[#315cf6]">View All</button>
                     </div>
                   );
                 }
@@ -2434,14 +2436,15 @@ export default function PodBuilder({
                       icon={PackageCheck}
                       className="min-h-[116px] w-full flex-1 overflow-hidden rounded-[14px] bg-[#f6f8ff]"
                       imgClassName="h-full w-full object-contain p-2"
+                      data-sleep-essentials-card-image="true"
                     />
-                    <span className="mt-2 text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">
+                    <span className="mt-2 text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#315cf6]" data-sleep-essentials-card-category="true">
                       {ESSENTIAL_CATEGORY_CONFIG[category].recommendationLabel}
                     </span>
-                    <span className="mt-1 line-clamp-2 text-[clamp(0.95rem,1.25vw,1.12rem)] font-black leading-tight text-slate-950">
+                    <span className="mt-1 line-clamp-2 text-[clamp(0.95rem,1.25vw,1.12rem)] font-black leading-tight text-slate-950" data-sleep-essentials-card-name="true">
                       {choice.title}
                     </span>
-                    <span className="mt-2 flex w-full items-center justify-between gap-2">
+                    <span className="mt-2 flex w-full items-center justify-between gap-2" data-sleep-essentials-card-action="true">
                       <span className="text-[1.05rem] font-black text-slate-950">{money(choice.price)}</span>
                       <span className={`inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 text-[0.74rem] font-black ${active ? "bg-[#315cf6] text-white" : "bg-[#edf2ff] text-[#315cf6]"}`}>
                         <CheckCircle2 className="h-4 w-4" /> {active ? "Added" : "+ Add"}
@@ -2747,7 +2750,7 @@ export default function PodBuilder({
 
           <div className="mt-2 grid gap-2 sm:grid-cols-2" data-pod-builder-summary-group="core">
             <div className="flex min-w-0 items-center gap-3 rounded-[16px] border border-[#e2e8f7] bg-[#f8faff] p-2.5" data-pod-builder-summary-row="mattress">
-              <BuilderMediaPreview src={mattressImage} alt={mattressLabel} icon={BedDouble} className="h-[clamp(52px,8vh,78px)] w-[clamp(72px,9vw,105px)] shrink-0 overflow-hidden rounded-[12px] bg-white" imgClassName="h-full w-full object-contain p-1.5" />
+              <BuilderMediaPreview src={mattressImage} alt={mattressLabel} icon={BedDouble} className="h-[clamp(52px,8vh,78px)] w-[clamp(72px,9vw,105px)] shrink-0 overflow-hidden rounded-[12px] bg-white" imgClassName="h-full w-full object-contain p-1.5" data-pod-builder-summary-image="core" />
               <div className="min-w-0 flex-1">
                 <div className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">Mattress</div>
                 <div className="mt-0.5 line-clamp-2 text-[clamp(0.9rem,1.15vw,1.05rem)] font-black leading-tight text-slate-950">{mattressLabel}</div>
@@ -2756,7 +2759,7 @@ export default function PodBuilder({
             </div>
 
             <div className="flex min-w-0 items-center gap-3 rounded-[16px] border border-[#e2e8f7] bg-[#f8faff] p-2.5" data-pod-builder-summary-row="base-motion">
-              <BuilderMediaPreview src={selectedBaseImage} alt={selectedBaseLabel} icon={SlidersHorizontal} className="h-[clamp(52px,8vh,78px)] w-[clamp(72px,9vw,105px)] shrink-0 overflow-hidden rounded-[12px] bg-white" imgClassName="h-full w-full object-contain p-1.5" />
+              <BuilderMediaPreview src={selectedBaseImage} alt={selectedBaseLabel} icon={SlidersHorizontal} className="h-[clamp(52px,8vh,78px)] w-[clamp(72px,9vw,105px)] shrink-0 overflow-hidden rounded-[12px] bg-white" imgClassName="h-full w-full object-contain p-1.5" data-pod-builder-summary-image="core" />
               <div className="min-w-0 flex-1">
                 <div className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">Base / Motion</div>
                 <div className="mt-0.5 line-clamp-2 text-[clamp(0.9rem,1.15vw,1.05rem)] font-black leading-tight text-slate-950">{selectedBaseLabel}</div>
@@ -2771,7 +2774,7 @@ export default function PodBuilder({
               <div className="grid gap-2 sm:grid-cols-3">
                 {selectedReviewEssentials.map((item) => (
                   <div key={item.category} className="flex min-w-0 items-center gap-2 rounded-[14px] border border-[#e2e8f7] bg-white p-2" data-pod-builder-summary-row="essential">
-                    <BuilderMediaPreview src={item.image} alt={item.value} icon={PackageCheck} className="h-[clamp(44px,7vh,64px)] w-[clamp(44px,7vh,64px)] shrink-0 overflow-hidden rounded-[10px] bg-[#f6f8ff]" imgClassName="h-full w-full object-contain p-1" />
+                    <BuilderMediaPreview src={item.image} alt={item.value} icon={PackageCheck} className="h-[clamp(44px,7vh,64px)] w-[clamp(44px,7vh,64px)] shrink-0 overflow-hidden rounded-[10px] bg-[#f6f8ff]" imgClassName="h-full w-full object-contain p-1" data-pod-builder-summary-image="essential" />
                     <div className="min-w-0 flex-1">
                       <div className="text-[0.6rem] font-black uppercase tracking-[0.1em] text-slate-500">{item.label}</div>
                       <div className="line-clamp-2 text-[0.78rem] font-black leading-tight text-slate-950">{item.value}</div>
@@ -2799,7 +2802,7 @@ export default function PodBuilder({
           <Button type="button" onClick={addToPlan} disabled={!canAdd || isAddingToCart} data-pod-layout-build-action="true" data-pod-layout-primary-action="build-add" className="mt-4 min-h-[54px] w-full rounded-[15px] px-4 text-[0.95rem] font-black">
             {isAddingToCart ? "Adding..." : primaryCtaLabel}<ArrowRight className="ml-2 h-4 w-4" />
           </Button>
-          <button type="button" onClick={goBack} className="mt-2 min-h-[42px] w-full rounded-[12px] text-[0.82rem] font-black text-slate-600">Back to essentials</button>
+          <button type="button" onClick={goBack} className="mt-2 min-h-[44px] w-full rounded-[12px] text-[0.82rem] font-black text-slate-600">Back to essentials</button>
         </aside>
       </div>
     );
@@ -2810,13 +2813,13 @@ export default function PodBuilder({
       className="flex min-h-0 w-full flex-1 flex-col gap-2"
       data-pod-builder-state={stepKey}
     >
-      <div className="min-h-0 flex-1 rounded-[22px] border border-[#dfe7fb] bg-white/96 p-3 shadow-[0_18px_46px_rgba(45,71,136,0.09)]">
+      <div className="flex min-h-0 flex-1 flex-col rounded-[22px] border border-[#dfe7fb] bg-white/96 p-3 shadow-[0_18px_46px_rgba(45,71,136,0.09)]">
         {mattressAlreadyInCart && stepKey !== "success" ? (
-          <div className="mb-2 rounded-[14px] border border-emerald-200 bg-emerald-50 px-3 py-2 text-[0.8rem] font-bold text-emerald-800" data-mattress-cart-continuity="true">
+          <div className="mb-2 shrink-0 rounded-[14px] border border-emerald-200 bg-emerald-50 px-3 py-2 text-[0.8rem] font-bold text-emerald-800" data-mattress-cart-continuity="true">
             Your mattress is already in your cart — let’s finish your setup.
           </div>
         ) : null}
-        <div className="mb-2 flex items-start justify-between gap-4">
+        <div className="mb-2 flex shrink-0 items-start justify-between gap-4">
           <div className="min-w-0">
             <h2 className="text-[clamp(1.18rem,1.75vw,1.62rem)] font-black leading-tight tracking-tight text-slate-950">
               {stepKey === "review" ? "Review Your SnoozePod" : "Customize Your SnoozePod"}
@@ -2826,12 +2829,12 @@ export default function PodBuilder({
             ) : null}
           </div>
           {stepKey === "review" ? (
-            <p className="max-w-[34rem] text-right text-[clamp(0.74rem,0.9vw,0.84rem)] font-semibold leading-snug text-slate-600">
+            <p className="max-w-[34rem] text-right text-[clamp(0.74rem,0.9vw,0.84rem)] font-semibold leading-snug text-slate-600" data-pod-builder-review-description="true">
               {currentStepMeta.description}
             </p>
           ) : null}
         </div>
-        <div className="min-h-0 h-[calc(100%-48px)]">{renderCurrentStep()}</div>
+        <div className="flex min-h-0 flex-1" data-pod-builder-step-content="true">{renderCurrentStep()}</div>
       </div>
     </div>
   );
