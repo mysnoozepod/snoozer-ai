@@ -140,11 +140,11 @@ test("duration click plays, pauses, resumes, persists, and stops the jazz track"
 
 test("approved Rest Test assets return HTTP 200", async ({ request }) => {
   const paths = [
-    "/rest-test-soft-jazz.mp3",
-    "/rest-test-back-flat.png",
-    "/rest-test-side-flat.png",
-    "/rest-test-zero-gravity.png",
-    "/rest-test-snore.png",
+    "/assets/rest-test-soft-jazz.mp3",
+    "/assets/rest-test-back-flat.png",
+    "/assets/rest-test-side-flat.png",
+    "/assets/rest-test-zero-gravity.png",
+    "/assets/rest-test-snore.png",
   ];
   for (const assetPath of paths) {
     const response = await request.get(assetPath);

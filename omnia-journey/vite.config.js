@@ -38,24 +38,22 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
-    assetsDir: "",              // put emitted assets at the ROOT of dist/
+    assetsDir: "assets",        // Amplify explicitly passes /assets/* through before the SPA fallback
     cssCodeSplit: true,         // keep CSS separate so Tailwind utilities are preserved
     sourcemap: false,
     emptyOutDir: true,
     rollupOptions: {
-      // Keep a single JS entry, but fingerprint JS/CSS so a manual Amplify
-      // deployment cannot reuse the previous showroom bundle from browser/CDN cache.
+      // Keep emitted application assets under /assets so the existing Amplify
+      // routing contract serves them instead of rewriting them to index.html.
+      // Fingerprint JS/CSS so manual deployments cannot reuse a stale bundle.
       output: {
         manualChunks: undefined,
-        entryFileNames: "app-[hash].js",
-        // Put all other assets (including CSS) at root with their original names
+        entryFileNames: "assets/app-[hash].js",
         assetFileNames: (assetInfo) => {
-          // Keep the main stylesheet at root and fingerprint it with the build.
           if (assetInfo.name && assetInfo.name.endsWith(".css")) {
-            return "index-[hash][extname]";
+            return "assets/index-[hash][extname]";
           }
-          // images/fonts/etc keep their original names at root
-          return "[name][extname]";
+          return "assets/[name][extname]";
         },
       },
     },

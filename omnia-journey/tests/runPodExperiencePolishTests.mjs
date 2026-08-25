@@ -106,6 +106,8 @@ assert.match(welcomeSource, /introJobId/);
 assert.doesNotMatch(welcomeSource, /setTimeout/);
 assert.match(layoutSource, /hudOpen &&\s*!pageOwnsSnoozerVisual/);
 assert.doesNotMatch(layoutSource, /!pageOwnsSnoozerVisual \|\| isWhatToExpectRoute/);
-assert.match(viteSource, /entryFileNames: "app-\[hash\]\.js"/);
+assert.match(viteSource, /entryFileNames: "assets\/app-\[hash\]\.js"/);
+assert.match(viteSource, /return "assets\/index-\[hash\]\[extname\]"/);
+assert.match(viteSource, /return "assets\/\[name\]\[extname\]"/);
 
 console.log("Pod experience polish tests passed: Learn truth, authoritative cart, combined essentials, review coaching, captions, and route-entry voice.");
