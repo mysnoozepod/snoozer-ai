@@ -34,7 +34,7 @@ function normalizeAccessCode(raw) {
 export default function Welcome() {
   const navigate = useNavigate();
   const device = useDeviceMode();
-  const { noteUserInteraction, runHudAction } = useShowroomHud();
+  const { currentJob, noteUserInteraction, queue, runHudAction, voiceState } = useShowroomHud();
 
   const [code, setCode] = useState(() => {
     const storedCode = String(getAccessCode() || "").trim();
@@ -42,23 +42,24 @@ export default function Welcome() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [introJobId, setIntroJobId] = useState("");
   const canOpenAskSnoozer = canUseAskSnoozer(device);
 
   const hasStartedRef = useRef(false);
-  const transitionTimerRef = useRef(null);
-
-  const clearTransitionTimer = () => {
-    if (transitionTimerRef.current) {
-      window.clearTimeout(transitionTimerRef.current);
-      transitionTimerRef.current = null;
-    }
-  };
+  const introSeenRef = useRef(false);
+  const navigatedRef = useRef(false);
 
   useEffect(() => {
-    return () => {
-      clearTransitionTimer();
-    };
-  }, []);
+    if (!introJobId || navigatedRef.current) return;
+    const isActive = String(currentJob?.id || "") === introJobId;
+    const isQueued = Array.isArray(queue)
+      ? queue.some((job) => String(job?.id || "") === introJobId)
+      : false;
+    if (isActive || isQueued) introSeenRef.current = true;
+    if (!introSeenRef.current || voiceState?.loading || voiceState?.playing || isActive || isQueued) return;
+    navigatedRef.current = true;
+    navigate("/what-to-expect");
+  }, [currentJob, introJobId, navigate, queue, voiceState?.loading, voiceState?.playing]);
 
   const handleStart = async (candidateCode = code) => {
     if (loading || hasStartedRef.current) return;
@@ -116,17 +117,16 @@ export default function Welcome() {
         return null;
       });
 
-      clearTransitionTimer();
-      const resolvedIntroMs = Number(introJob?.ttlMs) || 4200;
-      const baseTransitionMs = Math.max(3600, Math.min(resolvedIntroMs + 1800, 7600));
-      const transitionMs = Math.min(baseTransitionMs + 2000, 9600);
-
-      transitionTimerRef.current = window.setTimeout(() => {
+      const jobId = String(introJob?.id || "");
+      if (jobId) {
+        introSeenRef.current = true;
+        setIntroJobId(jobId);
+      } else {
+        navigatedRef.current = true;
         navigate("/what-to-expect");
-      }, transitionMs);
+      }
     } catch (err) {
       console.error("Welcome start failed:", err);
-      clearTransitionTimer();
       setError(
         "We couldn’t start your Snooze Session. Please check your code and try again."
       );

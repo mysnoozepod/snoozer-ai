@@ -15,6 +15,9 @@ const learnSource = read("src/components/pod/PodLearnPanel.jsx");
 const routeGuardSource = read("src/hooks/useHudRouteVoiceGuard.js");
 const voiceQueueSource = read("src/lib/snoozer/voice/VoiceQueueContext.jsx");
 const whatSource = read("src/pages/WhatToExpect.jsx");
+const welcomeSource = read("src/pages/Welcome.jsx");
+const layoutSource = read("src/Layout.jsx");
+const viteSource = read("vite.config.js");
 const sleepEssentialsSource = read("src/lib/sleepEssentials.js");
 
 const supportItems = supportModule.buildMattressSupportItems({
@@ -33,13 +36,19 @@ assert.match(podSource, /gid:\/\/shopify\/ProductVariant\//);
 
 assert.match(builderSource, /key: "essentials", label: "Essentials"/);
 assert.match(builderSource, /Complete Your Sleep Setup/);
-assert.match(builderSource, /choices\.slice\(0, 3\)/);
+assert.match(builderSource, /return choices\.slice\(0, 1\)/);
+assert.match(builderSource, /ESSENTIAL_CARD_KEYS = Object\.freeze\(\["pillows", "protector", "sheets"\]\)/);
+assert.match(builderSource, /data-sleep-essentials-card=\{category\}/);
+assert.doesNotMatch(builderSource, /gap-2 overflow-y-auto lg:grid-cols-3/);
 assert.match(builderSource, /No approved Sleep Essentials are available/);
 assert.match(builderSource, /View All Sleep Essentials/);
 assert.match(sleepEssentialsSource, /\["essentials", "pillows", "sheets", "protector", "review"\]/);
 assert.match(builderSource, /exactMattressAlreadyInCart \? \[\] : \[/);
 assert.match(builderSource, /await removeFromCart\?\.\(item\.lineId \|\| item\.id\)/);
 assert.match(builderSource, /data-mattress-cart-continuity/);
+assert.match(builderSource, /data-pod-builder-review-layout="decision"/);
+assert.match(builderSource, /essentialReviewRows\.filter\(\(item\) => item\.value !== "Skipped"\)/);
+assert.match(podSource, /primaryCtaLabel="Add Selected Setup to Cart"/);
 
 const facts = coaching.buildBoundedPodReviewContext({
   assessment: { position: "back", firmness: "medium" },
@@ -87,8 +96,16 @@ await coaching.getPodReviewCoaching({ api: failingApi, facts });
 assert.equal(circuitCalls, 2);
 
 assert.match(routeGuardSource, /useLayoutEffect/);
+assert.match(routeGuardSource, /fadeMs: 0/);
 assert.match(voiceQueueSource, /controller\.handleRouteChange\(\{ allowContinuation, maxCarryoverMs \}\)/);
+assert.match(voiceQueueSource, /createSilentUnlockUrl/);
+assert.match(voiceQueueSource, /data-snoozer-voice-audio/);
 assert.match(whatSource, /isMountedRef\.current = true/);
 assert.match(whatSource, /assessmentComplete \? "\/results" : "\/assessment"/);
+assert.match(welcomeSource, /introJobId/);
+assert.doesNotMatch(welcomeSource, /setTimeout/);
+assert.match(layoutSource, /hudOpen &&\s*!pageOwnsSnoozerVisual/);
+assert.doesNotMatch(layoutSource, /!pageOwnsSnoozerVisual \|\| isWhatToExpectRoute/);
+assert.match(viteSource, /entryFileNames: "app-\[hash\]\.js"/);
 
 console.log("Pod experience polish tests passed: Learn truth, authoritative cart, combined essentials, review coaching, captions, and route-entry voice.");

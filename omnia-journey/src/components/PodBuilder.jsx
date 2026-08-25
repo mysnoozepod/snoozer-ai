@@ -50,6 +50,7 @@ export const APPROVED_MOTION_VISUALS = Object.freeze({
 });
 
 const ESSENTIAL_STEP_KEYS = Object.freeze(["pillows", "sheets", "protector"]);
+const ESSENTIAL_CARD_KEYS = Object.freeze(["pillows", "protector", "sheets"]);
 const CANONICAL_ESSENTIAL_CATEGORY_IDS = Object.freeze({
   pillows: "pillows",
   sheets: "sheets_bedding",
@@ -58,16 +59,19 @@ const CANONICAL_ESSENTIAL_CATEGORY_IDS = Object.freeze({
 const ESSENTIAL_CATEGORY_CONFIG = Object.freeze({
   pillows: {
     label: "Pillows",
+    recommendationLabel: "Recommended Pillow",
     singular: "Pillow",
     max: 3,
   },
   sheets: {
     label: "Sheets",
+    recommendationLabel: "Recommended Sheets / Bedding",
     singular: "Sheet set",
     max: 3,
   },
   protector: {
     label: "Mattress Protectors",
+    recommendationLabel: "Recommended Mattress Protector",
     singular: "Mattress protector",
     max: 2,
   },
@@ -268,7 +272,9 @@ function buildEssentialChoices(products, category, size, motionType) {
       if (choice) choices.push(choice);
     }
   }
-  return choices.slice(0, config.max);
+  // Customize intentionally presents the single highest-ranked approved match.
+  // The dedicated Sleep Essentials route remains the place to browse the catalog.
+  return choices.slice(0, 1);
 }
 
 function motionAvailabilityForSelection(size, isDualComfort) {
@@ -1048,9 +1054,6 @@ export default function PodBuilder({
     async ({ category, action, choice = null }) => {
       const categoryId = CANONICAL_ESSENTIAL_CATEGORY_IDS[category];
       if (!sleepEssentialsJourneyId || !categoryId) {
-        const message = "Enter your Snooze Code to save Sleep Essentials progress.";
-        setCartError(message);
-        onCue?.(message, "warning");
         return false;
       }
 
@@ -1071,7 +1074,6 @@ export default function PodBuilder({
           categoryId,
           code: error?.code || "REWARD_ACCESSORIES_PROGRESS_FAILED",
         });
-        setCartError(message);
         onCue?.(message, "warning");
         return false;
       } finally {
@@ -1459,11 +1461,13 @@ export default function PodBuilder({
         const choice = selectedEssentialChoices[category];
         const quantity = category === "pillows" ? choice?.quantity || 1 : 1;
         return {
+          category,
           label: ESSENTIAL_CATEGORY_CONFIG[category].singular,
           value: choice
             ? `${choice.title}${quantity > 1 ? ` ×${quantity}` : ""}`
             : "Skipped",
           price: choice ? choice.price * quantity : null,
+          image: choice?.image || "",
         };
       }),
     [selectedEssentialChoices]
@@ -2253,9 +2257,9 @@ export default function PodBuilder({
     }
 
     if (stepKey === "essentials") {
-      const visibleCategories = ESSENTIAL_STEP_KEYS
-        .map((category) => ({ category, choices: essentialChoicesByCategory[category] || [] }))
-        .filter(({ choices }) => choices.length > 0);
+      const visibleCategories = ESSENTIAL_CARD_KEYS
+        .map((category) => ({ category, choice: essentialChoicesByCategory[category]?.[0] || null }))
+        .filter(({ choice }) => Boolean(choice));
 
       const selectChoice = (category, choice) => {
         setSelectedEssentials((current) => ({
@@ -2293,8 +2297,8 @@ export default function PodBuilder({
       return (
         <div className="flex h-full min-h-0 flex-col" data-sleep-essentials-step="combined">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <p className="text-[0.78rem] font-semibold text-slate-600">
-              {essentialProducts.status === "loading" ? "Loading approved Shopify options..." : "A few approved finishing touches for this setup."}
+            <p className="text-[0.92rem] font-bold text-slate-700">
+              {essentialProducts.status === "loading" ? "Loading approved Shopify options..." : "Choose your finishing touches."}
             </p>
             <button type="button" onClick={() => openSleepEssentials("all")} className="inline-flex min-h-[40px] items-center gap-1 rounded-[12px] border border-[#dfe7fb] bg-white px-3 text-[0.75rem] font-black text-[#315cf6]">
               View All Sleep Essentials <ArrowRight className="h-4 w-4" />
@@ -2304,24 +2308,40 @@ export default function PodBuilder({
           {essentialProducts.status === "loading" ? (
             <div className="flex min-h-[120px] flex-1 items-center justify-center rounded-[18px] border border-[#dfe7fb] bg-[#f8faff] text-sm font-semibold text-slate-600">Preparing approved options…</div>
           ) : visibleCategories.length ? (
-            <div className="grid min-h-0 flex-1 gap-2 overflow-y-auto lg:grid-cols-3">
-              {visibleCategories.map(({ category, choices }) => (
-                <section key={category} className="rounded-[16px] border border-[#dfe7fb] bg-white p-2.5" data-sleep-essentials-category={category}>
-                  <div className="mb-2 text-[0.68rem] font-black uppercase tracking-[0.15em] text-[#315cf6]">{ESSENTIAL_CATEGORY_CONFIG[category].label}</div>
-                  <div className="grid gap-1.5">
-                    {choices.slice(0, 3).map((choice) => {
-                      const active = selectedEssentialChoices[category]?.variantId === choice.variantId;
-                      return (
-                        <button key={choice.variantId} type="button" onClick={() => selectChoice(category, choice)} className={`flex min-h-[68px] items-center gap-2 rounded-[13px] border p-2 text-left ${active ? "border-[#315cf6] bg-[#eef3ff]" : "border-[#e2e8f7] bg-white"}`}>
-                          <BuilderMediaPreview src={choice.image} alt={choice.title} icon={PackageCheck} className="h-12 w-12 shrink-0 overflow-hidden rounded-[9px] bg-[#f6f8ff]" imgClassName="h-full w-full object-contain p-1" />
-                          <span className="min-w-0 flex-1"><span className="line-clamp-2 block text-[0.75rem] font-black leading-tight text-slate-950">{choice.title}</span><span className="mt-0.5 block text-[0.76rem] font-black text-[#315cf6]">{money(choice.price)}</span></span>
-                          <CheckCircle2 className={active ? "h-4 w-4 shrink-0 text-[#315cf6]" : "h-4 w-4 shrink-0 text-slate-200"} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
-              ))}
+            <div className="grid min-h-0 flex-1 grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3 overflow-hidden">
+              {visibleCategories.map(({ category, choice }) => {
+                const active = selectedEssentialChoices[category]?.variantId === choice.variantId;
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => selectChoice(category, choice)}
+                    className={`group flex min-h-[220px] min-w-0 flex-col rounded-[20px] border p-3 text-left shadow-sm transition ${active ? "border-[#315cf6] bg-[#eef3ff] ring-2 ring-[#315cf6]/15" : "border-[#dfe7fb] bg-white hover:-translate-y-0.5 hover:shadow-md"}`}
+                    data-sleep-essentials-card={category}
+                    aria-pressed={active}
+                  >
+                    <BuilderMediaPreview
+                      src={choice.image}
+                      alt={choice.title}
+                      icon={PackageCheck}
+                      className="min-h-[116px] w-full flex-1 overflow-hidden rounded-[14px] bg-[#f6f8ff]"
+                      imgClassName="h-full w-full object-contain p-2"
+                    />
+                    <span className="mt-2 text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">
+                      {ESSENTIAL_CATEGORY_CONFIG[category].recommendationLabel}
+                    </span>
+                    <span className="mt-1 line-clamp-2 text-[clamp(0.95rem,1.25vw,1.12rem)] font-black leading-tight text-slate-950">
+                      {choice.title}
+                    </span>
+                    <span className="mt-2 flex w-full items-center justify-between gap-2">
+                      <span className="text-[1.05rem] font-black text-slate-950">{money(choice.price)}</span>
+                      <span className={`inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 text-[0.74rem] font-black ${active ? "bg-[#315cf6] text-white" : "bg-[#edf2ff] text-[#315cf6]"}`}>
+                        <CheckCircle2 className="h-4 w-4" /> {active ? "Selected" : "Select"}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <div className="flex min-h-[120px] flex-1 items-center justify-center rounded-[18px] border border-[#dfe7fb] bg-[#f8faff] px-5 text-center">
@@ -2611,114 +2631,72 @@ export default function PodBuilder({
       );
     }
 
+    const selectedReviewEssentials = essentialReviewRows.filter((item) => item.value !== "Skipped");
+
     return (
-      <div className="flex h-full min-h-0 flex-col gap-2" data-pod-builder-review-layout="compact">
-        <div className="grid min-h-0 flex-1 gap-2.5 lg:grid-cols-[1.35fr_0.65fr]">
-          <div
-            className="grid min-h-0 content-start gap-1.5 rounded-[18px] border border-[#dfe7fb] bg-white/96 p-2.5 shadow-sm"
-            data-pod-builder-review-summary="true"
-          >
-            <section className="min-h-0" data-pod-builder-summary-group="core">
-              <div className="mb-1 text-[0.62rem] font-black uppercase tracking-[0.15em] text-[#315cf6]">
-                Core Setup
-              </div>
-              <div className="grid gap-1 md:grid-cols-4">
-                {coreReviewRows.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex min-h-[40px] min-w-0 items-center gap-1.5 rounded-[10px] bg-[#f6f8ff] px-2"
-                    data-pod-builder-summary-row="core"
-                  >
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#315cf6]" />
-                    <div className="min-w-0 flex-1 leading-tight">
-                      <div className="text-[0.54rem] font-black uppercase tracking-[0.09em] text-slate-500">
-                        {item.label}
-                      </div>
-                      <div className="text-[0.65rem] font-bold text-slate-950">{item.value}</div>
-                    </div>
-                    {item.price > 0 ? (
-                      <span className="shrink-0 text-[0.72rem] font-black text-[#315cf6]">
-                        {money(item.price)}
-                      </span>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </section>
-            <section
-              className="min-h-0 border-t border-[#e7ecfa] pt-1.5"
-              data-pod-builder-summary-group="essentials"
-              data-sleep-essentials-status="reviewed"
-            >
-              <div className="mb-1 text-[0.62rem] font-black uppercase tracking-[0.15em] text-[#315cf6]">
-                Sleep Essentials
-              </div>
-              <div className="grid gap-1 sm:grid-cols-3">
-                {essentialReviewRows.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex min-h-[34px] min-w-0 items-center gap-1.5 rounded-[10px] bg-[#f6f8ff] px-2"
-                    data-pod-builder-summary-row="essential"
-                  >
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#315cf6]" />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[0.58rem] font-black uppercase tracking-[0.1em] text-slate-500">
-                        {item.label}
-                      </div>
-                      <div className="text-[0.64rem] font-bold leading-tight text-slate-950">
-                        {item.value}
-                      </div>
-                    </div>
-                    {item.price > 0 ? (
-                      <span className="shrink-0 text-[0.68rem] font-black text-[#315cf6]">
-                        {money(item.price)}
-                      </span>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </section>
+      <div className="grid h-full min-h-0 gap-3 lg:grid-cols-[minmax(0,1.3fr)_minmax(280px,0.7fr)]" data-pod-builder-review-layout="decision">
+        <section className="flex min-h-0 flex-col justify-center rounded-[20px] border border-[#dfe7fb] bg-white p-3 shadow-sm" data-pod-builder-review-summary="true">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-[clamp(1.15rem,1.7vw,1.5rem)] font-black tracking-tight text-slate-950">Your SnoozePod</h3>
+            <span className="rounded-full bg-[#edf2ff] px-3 py-1 text-[0.7rem] font-black uppercase tracking-[0.12em] text-[#315cf6]">Ready to review</span>
           </div>
 
-          <div
-            className="flex min-h-0 flex-col rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm"
-            data-pod-builder-commerce-summary="true"
-          >
-            {commerceReady ? (
-              <div className="grid gap-2">
-                <div
-                  className="flex min-h-[44px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-[#f8faff] px-3"
-                >
-                  <span className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                    Est. Monthly
-                  </span>
-                  <span className="text-[1rem] font-black text-[#315cf6]">{money(monthly)}/mo</span>
-                </div>
-                <div className="flex min-h-[44px] items-center justify-between gap-3 rounded-[14px] border border-[#dfe7fb] bg-white px-3">
-                  <span className="text-[0.68rem] font-black uppercase tracking-[0.16em] text-slate-500">
-                    Est. Total
-                  </span>
-                  <span className="text-[1rem] font-black text-slate-950">{money(previewTotal)}</span>
-                </div>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2" data-pod-builder-summary-group="core">
+            <div className="flex min-w-0 items-center gap-3 rounded-[16px] border border-[#e2e8f7] bg-[#f8faff] p-2.5" data-pod-builder-summary-row="mattress">
+              <BuilderMediaPreview src={mattressImage} alt={mattressLabel} icon={BedDouble} className="h-[clamp(52px,8vh,78px)] w-[clamp(72px,9vw,105px)] shrink-0 overflow-hidden rounded-[12px] bg-white" imgClassName="h-full w-full object-contain p-1.5" />
+              <div className="min-w-0 flex-1">
+                <div className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">Mattress</div>
+                <div className="mt-0.5 line-clamp-2 text-[clamp(0.9rem,1.15vw,1.05rem)] font-black leading-tight text-slate-950">{mattressLabel}</div>
+                <div className="mt-1 flex items-center justify-between gap-2 text-[0.84rem] font-bold text-slate-600"><span>{size}</span><span className="font-black text-slate-950">{mattressPrice > 0 ? money(mattressPrice) : "Unavailable"}</span></div>
               </div>
-            ) : (
-              <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-3 py-3 text-[0.86rem] font-semibold leading-snug text-amber-900">
-                {commerceUnavailableMessage || "This setup is not ready to add yet."}
+            </div>
+
+            <div className="flex min-w-0 items-center gap-3 rounded-[16px] border border-[#e2e8f7] bg-[#f8faff] p-2.5" data-pod-builder-summary-row="base-motion">
+              <BuilderMediaPreview src={selectedBaseImage} alt={selectedBaseLabel} icon={SlidersHorizontal} className="h-[clamp(52px,8vh,78px)] w-[clamp(72px,9vw,105px)] shrink-0 overflow-hidden rounded-[12px] bg-white" imgClassName="h-full w-full object-contain p-1.5" />
+              <div className="min-w-0 flex-1">
+                <div className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">Base / Motion</div>
+                <div className="mt-0.5 line-clamp-2 text-[clamp(0.9rem,1.15vw,1.05rem)] font-black leading-tight text-slate-950">{selectedBaseLabel}</div>
+                <div className="mt-1 flex items-center justify-between gap-2 text-[0.82rem] font-bold text-slate-600"><span>{showMotion ? selectedMotionLabel : "No motion"}</span>{wantsBase && basePrice > 0 ? <span className="font-black text-slate-950">{money(basePrice)}</span> : null}</div>
               </div>
-            )}
-            {cartError && cartError !== commerceUnavailableMessage ? (
-              <div className="mt-3 rounded-[14px] border border-amber-200 bg-amber-50 px-3 py-2 text-[0.8rem] font-semibold leading-snug text-amber-900">
-                {cartError}
-              </div>
-            ) : null}
+            </div>
           </div>
-        </div>
-        {renderStageControls({
-          primaryLabel: isAddingToCart ? "Adding..." : primaryCtaLabel,
-          onPrimary: addToPlan,
-          primaryDisabled: !canAdd || isAddingToCart,
-          reserveSpace: true,
-        })}
+
+          {selectedReviewEssentials.length ? (
+            <div className="mt-2 min-h-0" data-pod-builder-summary-group="essentials" data-sleep-essentials-status="reviewed">
+              <div className="mb-1.5 text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">Sleep Essentials</div>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {selectedReviewEssentials.map((item) => (
+                  <div key={item.category} className="flex min-w-0 items-center gap-2 rounded-[14px] border border-[#e2e8f7] bg-white p-2" data-pod-builder-summary-row="essential">
+                    <BuilderMediaPreview src={item.image} alt={item.value} icon={PackageCheck} className="h-[clamp(44px,7vh,64px)] w-[clamp(44px,7vh,64px)] shrink-0 overflow-hidden rounded-[10px] bg-[#f6f8ff]" imgClassName="h-full w-full object-contain p-1" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[0.6rem] font-black uppercase tracking-[0.1em] text-slate-500">{item.label}</div>
+                      <div className="line-clamp-2 text-[0.78rem] font-black leading-tight text-slate-950">{item.value}</div>
+                      <div className="mt-0.5 text-[0.78rem] font-black text-[#315cf6]">{money(item.price)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </section>
+
+        <aside className="flex min-h-0 flex-col justify-center rounded-[20px] border border-[#ccd9ff] bg-[linear-gradient(145deg,#f7f9ff,#ffffff)] p-4 shadow-[0_16px_36px_rgba(49,92,246,0.1)]" data-pod-builder-commerce-summary="true">
+          {commerceReady ? (
+            <>
+              <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">Est. Monthly</div>
+              <div className="mt-0.5 text-[clamp(1.8rem,3.2vw,2.65rem)] font-black leading-none tracking-tight text-[#315cf6]">{money(monthly)}<span className="text-[0.9rem] text-slate-500">/mo</span></div>
+              <div className="mt-3 border-t border-[#dfe7fb] pt-3 text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">Est. Total</div>
+              <div className="mt-0.5 text-[clamp(1.65rem,2.8vw,2.35rem)] font-black leading-none tracking-tight text-slate-950">{money(previewTotal)}</div>
+            </>
+          ) : (
+            <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-3 py-3 text-[0.86rem] font-semibold leading-snug text-amber-900">{commerceUnavailableMessage || "This setup is not ready to add yet."}</div>
+          )}
+          {cartError && cartError !== commerceUnavailableMessage ? <div className="mt-3 rounded-[12px] border border-amber-200 bg-amber-50 px-3 py-2 text-[0.78rem] font-semibold text-amber-900">{cartError}</div> : null}
+          <Button type="button" onClick={addToPlan} disabled={!canAdd || isAddingToCart} data-pod-layout-build-action="true" data-pod-layout-primary-action="build-add" className="mt-4 min-h-[54px] w-full rounded-[15px] px-4 text-[0.95rem] font-black">
+            {isAddingToCart ? "Adding..." : primaryCtaLabel}<ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+          <button type="button" onClick={goBack} className="mt-2 min-h-[42px] w-full rounded-[12px] text-[0.82rem] font-black text-slate-600">Back to essentials</button>
+        </aside>
       </div>
     );
   };
@@ -2747,7 +2725,9 @@ export default function PodBuilder({
             <p className="max-w-[34rem] text-right text-[clamp(0.74rem,0.9vw,0.84rem)] font-semibold leading-snug text-slate-600">
               {stepKey === "review"
                 ? currentStepMeta.description
-                : `Choose your size, motion setup, and sleep essentials to build the complete system that fits you. ${currentStepMeta.description}`}
+                : stepKey === "essentials"
+                  ? "One approved match per category. Select any you want to add."
+                  : `Choose your size, motion setup, and sleep essentials to build the complete system that fits you. ${currentStepMeta.description}`}
             </p>
           ) : null}
         </div>

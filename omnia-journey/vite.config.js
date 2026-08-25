@@ -43,15 +43,16 @@ export default defineConfig({
     sourcemap: false,
     emptyOutDir: true,
     rollupOptions: {
-      // prevent chunk-splitting so we only emit one JS entry file (app.js)
+      // Keep a single JS entry, but fingerprint JS/CSS so a manual Amplify
+      // deployment cannot reuse the previous showroom bundle from browser/CDN cache.
       output: {
         manualChunks: undefined,
-        entryFileNames: "app.js",
+        entryFileNames: "app-[hash].js",
         // Put all other assets (including CSS) at root with their original names
         assetFileNames: (assetInfo) => {
-          // Force the main CSS bundle to be index.css at root
+          // Keep the main stylesheet at root and fingerprint it with the build.
           if (assetInfo.name && assetInfo.name.endsWith(".css")) {
-            return "index.css";
+            return "index-[hash][extname]";
           }
           // images/fonts/etc keep their original names at root
           return "[name][extname]";

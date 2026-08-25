@@ -22,6 +22,9 @@ export function useHudRouteVoiceGuard(options = {}) {
         maxCarryoverMs: Number.isFinite(options.maxCarryoverMs)
           ? options.maxCarryoverMs
           : 3000,
+        // Layout effects run before the entering page can enqueue narration.
+        // Finish route cleanup synchronously so it cannot erase that new job.
+        fadeMs: 0,
       });
     }
 

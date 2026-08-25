@@ -63,6 +63,7 @@ export function createAmbientAudioController({ track = "", volume = 0.38, duckMu
       clearFade(element);
       safeCall(() => element.pause());
       if (reset) safeCall(() => { element.currentTime = 0; });
+      safeCall(() => element.remove());
       retiring.delete(element);
     };
     fadeMs > 0 ? fadeElement(element, 0, fadeMs, finish) : finish();
@@ -90,9 +91,9 @@ export function createAmbientAudioController({ track = "", volume = 0.38, duckMu
 
     if (activeTrack === selectedTrack && audio) {
       const playPromise = safeCall(() => audio.play());
-      status = "playing";
+      status = "starting";
       fadeElement(audio, appliedVolume(), fadeMs);
-      playPromise?.catch?.(() => { status = "blocked"; });
+      playPromise?.then?.(() => { status = "playing"; }).catch?.(() => { status = "blocked"; });
       return { ok: true, started: false, reused: true, track: activeTrack, status, playPromise };
     }
 
@@ -106,16 +107,26 @@ export function createAmbientAudioController({ track = "", volume = 0.38, duckMu
     const next = new Audio(selectedTrack);
     next.loop = true;
     next.preload = "auto";
+    safeCall(() => next.setAttribute?.("data-rest-test-ambient-audio", "jazz"));
+    safeCall(() => next.setAttribute?.("aria-hidden", "true"));
+    if (next.style) next.style.display = "none";
+    safeCall(() => document.body.appendChild(next));
     next.volume = previous && fadeMs > 0 ? 0 : appliedVolume();
     audio = next;
     activeTrack = selectedTrack;
     const playPromise = safeCall(() => next.play());
-    status = "playing";
+    status = "starting";
 
     if (previous) retire(previous, Math.max(0, Number(fadeMs) || 0));
     if (fadeMs > 0) fadeElement(next, appliedVolume(), fadeMs);
-    playPromise?.catch?.(() => {
-      if (audio === next) status = "blocked";
+    playPromise?.then?.(() => {
+      if (audio === next) status = "playing";
+    }).catch?.(() => {
+      if (audio === next) {
+        status = "blocked";
+        audio = null;
+        activeTrack = "";
+      }
       retire(next, 0);
     });
 
@@ -148,7 +159,7 @@ export function createAmbientAudioController({ track = "", volume = 0.38, duckMu
       trackId: (activeTrack || selectedTrack).includes("soft-jazz") ? "jazz" : "unknown",
       hasAudio: Boolean(audio),
       muted: false,
-      volume: targetVolume,
+      volume: Number(audio?.volume ?? targetVolume),
       currentTime: Number(audio?.currentTime || 0),
       paused: audio ? Boolean(audio.paused) : true,
       ducked,

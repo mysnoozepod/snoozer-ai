@@ -30,6 +30,31 @@ function readInitialMutedState() {
   }
 }
 
+function createSilentUnlockUrl() {
+  const sampleCount = 80;
+  const buffer = new ArrayBuffer(44 + sampleCount);
+  const view = new DataView(buffer);
+  const writeText = (offset, value) => {
+    for (let index = 0; index < value.length; index += 1) {
+      view.setUint8(offset + index, value.charCodeAt(index));
+    }
+  };
+  writeText(0, "RIFF");
+  view.setUint32(4, 36 + sampleCount, true);
+  writeText(8, "WAVEfmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, 8000, true);
+  view.setUint32(28, 8000, true);
+  view.setUint16(32, 1, true);
+  view.setUint16(34, 8, true);
+  writeText(36, "data");
+  view.setUint32(40, sampleCount, true);
+  new Uint8Array(buffer, 44).fill(128);
+  return URL.createObjectURL(new Blob([buffer], { type: "audio/wav" }));
+}
+
 export function VoiceQueueProvider({
   children,
   fetchAudioForJob,
@@ -46,6 +71,7 @@ export function VoiceQueueProvider({
   const currentJobRef = useRef(null);
   const activeRunTokenRef = useRef(0);
   const ttsActiveRef = useRef(false);
+  const unlockUrlRef = useRef("");
 
   const [muted, setMutedState] = useState(readInitialMutedState);
   const [voiceState, setVoiceState] = useState(buildDefaultVoiceState);
@@ -69,6 +95,28 @@ export function VoiceQueueProvider({
   }
 
   const controller = controllerRef.current;
+
+  const ensureAudioElement = useCallback(() => {
+    if (audioRef.current) return audioRef.current;
+    const audio = new Audio();
+    audio.preload = "auto";
+    audio.setAttribute("data-snoozer-voice-audio", "true");
+    audio.setAttribute("aria-hidden", "true");
+    audio.style.display = "none";
+    document.body.appendChild(audio);
+    audioRef.current = audio;
+    return audio;
+  }, []);
+
+  const releaseUnlockUrl = useCallback(() => {
+    if (!unlockUrlRef.current) return;
+    try {
+      URL.revokeObjectURL(unlockUrlRef.current);
+    } catch {
+      // ignore
+    }
+    unlockUrlRef.current = "";
+  }, []);
 
   useEffect(() => {
     return controller.subscribe((next) => {
@@ -156,10 +204,6 @@ export function VoiceQueueProvider({
         // ignore
       }
 
-      if (audioRef.current === target) {
-        audioRef.current = null;
-      }
-
       releaseCurrentAudioSource();
     },
     [detachAudioEvents, releaseCurrentAudioSource]
@@ -178,7 +222,6 @@ export function VoiceQueueProvider({
         return;
       }
 
-      audioRef.current = null;
       detachAudioEvents(audio);
 
       if (fadeDurationMs > 0) {
@@ -416,8 +459,10 @@ export function VoiceQueueProvider({
     }
 
     try {
-      const audio = new Audio(fresh.audioUrl);
-      audioRef.current = audio;
+      const audio = ensureAudioElement();
+      releaseUnlockUrl();
+      audio.src = fresh.audioUrl;
+      audio.load();
       currentAudioCleanupRef.current =
         typeof audioPayload?.cleanup === "function" ? audioPayload.cleanup : null;
 
@@ -479,6 +524,8 @@ export function VoiceQueueProvider({
     invalidateRunToken,
     completeCurrentAndContinue,
     releaseAudioElement,
+    ensureAudioElement,
+    releaseUnlockUrl,
   ]);
 
   maybeRunNextRef.current = maybeRunNext;
@@ -721,15 +768,48 @@ export function VoiceQueueProvider({
     setVoiceStatePartial({
       blocked: false,
     });
-  }, [setVoiceStatePartial]);
+    if (muted || currentJobRef.current) return;
+
+    const audio = ensureAudioElement();
+    releaseUnlockUrl();
+    const unlockUrl = createSilentUnlockUrl();
+    unlockUrlRef.current = unlockUrl;
+    audio.src = unlockUrl;
+    audio.volume = 0.01;
+    audio.load();
+    const playPromise = audio.play();
+    playPromise?.then?.(() => {
+      window.setTimeout(() => {
+        if (audioRef.current !== audio || currentJobRef.current || audio.src !== unlockUrl) return;
+        try {
+          audio.pause();
+          audio.removeAttribute("src");
+          audio.load();
+          audio.volume = 1;
+        } catch {
+          // ignore
+        }
+        releaseUnlockUrl();
+      }, 40);
+    }).catch?.(() => {
+      releaseUnlockUrl();
+    });
+  }, [ensureAudioElement, muted, releaseUnlockUrl, setVoiceStatePartial]);
 
   useEffect(() => {
     return () => {
       clearCaptionTimer();
       invalidateRunToken();
       stopAudioElement(0).catch(() => {});
+      releaseUnlockUrl();
+      try {
+        audioRef.current?.remove();
+      } catch {
+        // ignore
+      }
+      audioRef.current = null;
     };
-  }, [clearCaptionTimer, invalidateRunToken, stopAudioElement]);
+  }, [clearCaptionTimer, invalidateRunToken, releaseUnlockUrl, stopAudioElement]);
 
   const value = useMemo(
     () => ({

@@ -2,9 +2,9 @@ import { buildApiUrl } from "@/lib/apiBase";
 
 const AUDIO_CACHE = new Map();
 const AUDIO_CACHE_MAX = 48;
-const HUD_AUDIO_TIMEOUT_MS = Number(import.meta.env.VITE_HUD_AUDIO_TIMEOUT_MS || 2000);
+const HUD_AUDIO_TIMEOUT_MS = Number(import.meta.env.VITE_HUD_AUDIO_TIMEOUT_MS || 4500);
 const HUD_AUDIO_LONG_TIMEOUT_MS = Number(
-  import.meta.env.VITE_HUD_AUDIO_LONG_TIMEOUT_MS || 4500
+  import.meta.env.VITE_HUD_AUDIO_LONG_TIMEOUT_MS || 7500
 );
 const HUD_AUDIO_LONG_TEXT_THRESHOLD = Number(
   import.meta.env.VITE_HUD_AUDIO_LONG_TEXT_THRESHOLD || 220

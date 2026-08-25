@@ -153,6 +153,8 @@ function RestVisual({ stage, paused }) {
           key={stage.id}
           src={stage.visual}
           alt={`Snoozer demonstrating ${stage.positionLabel}`}
+          data-testid="rest-test-pose"
+          data-rest-test-pose-stage={stage.id}
           onError={() => setFailedSrc(stage.visual)}
           className={[
             "rest-test-visual-enter h-full max-h-[280px] w-full object-contain p-1",
@@ -189,6 +191,8 @@ function ActiveRestTest({ controller }) {
       data-rest-test-audio-track={controller.audioSnapshot?.trackId || state.activeTrackId}
       data-rest-test-audio-volume={controller.audioSnapshot?.volume ?? state.volume}
       data-rest-test-audio-time={controller.audioSnapshot?.currentTime || state.audioPlaybackPosition || 0}
+      data-rest-test-audio-paused={controller.audioSnapshot?.paused ? "true" : "false"}
+      data-rest-test-audio-present={controller.audioSnapshot?.hasAudio ? "true" : "false"}
       className="relative h-full min-h-0 overflow-y-auto p-[8px] lg:overflow-hidden"
     >
       <div className="grid h-full min-h-[190px] gap-3 lg:grid-cols-[minmax(300px,0.92fr)_minmax(0,1.08fr)]">

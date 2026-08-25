@@ -57,18 +57,8 @@ test("What To Expect centers all four orientation steps without navigation contr
   await expect(page.getByRole("button", { name: /assessment|recommended pods/i })).toHaveCount(0);
   await expect(page.locator("body")).toContainText("Welcome to your Snooze Session");
 
-  const hudBox = await page.getByTestId("persistent-snoozer-hud").boundingBox();
-  expect(hudBox).not.toBeNull();
-  for (let step = 1; step <= 4; step += 1) {
-    const cardBox = await page.getByTestId(`what-step-${step}`).boundingBox();
-    expect(cardBox).not.toBeNull();
-    const overlaps =
-      hudBox.x < cardBox.x + cardBox.width &&
-      hudBox.x + hudBox.width > cardBox.x &&
-      hudBox.y < cardBox.y + cardBox.height &&
-      hudBox.y + hudBox.height > cardBox.y;
-    expect(overlaps).toBe(false);
-  }
+  await expect(page.getByTestId("persistent-snoozer-hud")).toHaveCount(0);
+  await expect(page.locator("[data-testid^='what-step-']")).toHaveCount(4);
   await expectNoDocumentScroll(page);
 });
 
@@ -99,7 +89,6 @@ test("What To Expect triggers HUD/TTS and follows completion for new and existin
 
     await page.goto("/what-to-expect", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: "Your guided showroom path." })).toBeVisible();
-    await expect(page.locator("body")).toContainText("Welcome to your Snooze Session");
     await expect.poll(() => requests.filter((request) => request === "hud-tts").length).toBeGreaterThan(0);
     await expect(page).toHaveURL(branch === "existing" ? /\/results$/ : /\/assessment$/);
     await context.close();

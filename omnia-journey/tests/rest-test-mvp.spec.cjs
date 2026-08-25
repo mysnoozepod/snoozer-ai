@@ -96,7 +96,7 @@ test("duration selection starts the automatic Rest Test flow", async ({ page }) 
   await expect(page.locator('[data-rest-test-state="active"]')).toBeVisible({ timeout: 20_000 });
 });
 
-test("duration click unlocks the persistent jazz track", async ({ page }) => {
+test("duration click plays, pauses, resumes, persists, and stops the jazz track", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 585 });
   await page.goto("/pod/pod-4?podLayoutState=rest-selection&restTestState=entry");
   await waitForPod(page);
@@ -104,11 +104,38 @@ test("duration click unlocks the persistent jazz track", async ({ page }) => {
   await page.getByTestId("rest-duration-quick").click();
   const panel = page.locator('[data-rest-test-state="positioning"], [data-rest-test-state="active"]');
   await expect(panel).toHaveAttribute("data-rest-test-audio-track", "jazz");
-  await expect(panel).toHaveAttribute("data-rest-test-audio-status", /playing|paused/);
+  await expect(panel).toHaveAttribute("data-rest-test-audio-status", /starting|playing/);
   expect(Number(await panel.getAttribute("data-rest-test-audio-volume"))).toBeGreaterThan(0);
+  const audio = page.locator('audio[data-rest-test-ambient-audio="jazz"]');
+  await expect(audio).toHaveCount(1);
+  await expect.poll(() => audio.evaluate((node) => node.currentTime)).toBeGreaterThan(0.25);
+  await expect(audio).toHaveJSProperty("paused", false);
+
   const active = page.locator('[data-rest-test-state="active"]');
   await expect(active).toBeVisible({ timeout: 20_000 });
   await expect(active).toHaveAttribute("data-rest-test-audio-track", "jazz");
+
+  await page.getByTestId("rest-pause-test").click();
+  await expect(audio).toHaveJSProperty("paused", true);
+  const pausedAt = await audio.evaluate((node) => node.currentTime);
+  await page.waitForTimeout(350);
+  expect(await audio.evaluate((node) => node.currentTime)).toBeCloseTo(pausedAt, 1);
+
+  await page.getByTestId("rest-resume-active").click();
+  await expect.poll(() => audio.evaluate((node) => node.paused)).toBe(false);
+  const resumedAt = await audio.evaluate((node) => node.currentTime);
+  await expect.poll(() => audio.evaluate((node) => node.currentTime)).toBeGreaterThan(resumedAt + 0.2);
+
+  await page.getByRole("button", { name: "Learn", exact: true }).click();
+  await expect(audio).toHaveCount(1);
+  await expect(audio).toHaveJSProperty("paused", false);
+  const learnAt = await audio.evaluate((node) => node.currentTime);
+  await expect.poll(() => audio.evaluate((node) => node.currentTime)).toBeGreaterThan(learnAt + 0.2);
+
+  await page.getByRole("button", { name: "Rest Test", exact: true }).click();
+  await page.getByTestId("rest-end-test").click();
+  await page.getByTestId("rest-confirm-end").click();
+  await expect(audio).toHaveCount(0);
 });
 
 test("approved Rest Test assets return HTTP 200", async ({ request }) => {
@@ -122,7 +149,26 @@ test("approved Rest Test assets return HTTP 200", async ({ request }) => {
   for (const assetPath of paths) {
     const response = await request.get(assetPath);
     expect(response.status(), assetPath).toBe(200);
+    expect(response.headers()["content-type"], assetPath).toMatch(
+      assetPath.endsWith(".mp3") ? /^audio\// : /^image\//
+    );
   }
+});
+
+test("the Rest Test pose changes with the current stage", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 585 });
+  await page.goto("/pod/pod-4?podLayoutState=rest-selection&restTestState=back");
+  await waitForPod(page);
+  const pose = page.getByTestId("rest-test-pose");
+  await expect(pose).toHaveAttribute("data-rest-test-pose-stage", "back_flat");
+  const backSource = await pose.getAttribute("src");
+
+  await page.goto("/pod/pod-4?podLayoutState=rest-selection&restTestState=side");
+  await waitForPod(page);
+  await expect(pose).toHaveAttribute("data-rest-test-pose-stage", "side_flat");
+  const sideSource = await pose.getAttribute("src");
+  expect(sideSource).not.toBe(backSource);
+  expect(await pose.evaluate((node) => node.naturalWidth)).toBeGreaterThan(0);
 });
 
 for (const podId of ["pod-1", "pod-2", "pod-4"]) {

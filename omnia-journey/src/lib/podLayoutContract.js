@@ -7,6 +7,7 @@ export const POD_LAYOUT_LAB_STATES = Object.freeze([
   "build-base",
   "build-motion",
   "build-comfort",
+  "build-essentials",
   "build-review",
   "build-success",
 ]);

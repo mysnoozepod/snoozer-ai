@@ -252,8 +252,12 @@ export default function WhatToExpect() {
     return {
       blocked: isCurrentAttempt ? Boolean(voiceState?.blocked) : false,
       error: isCurrentAttempt ? String(voiceState?.error || "") : "",
+      captionsOnly:
+        Boolean(isCurrentAttempt && currentJob) &&
+        !voiceState?.loading &&
+        !voiceState?.playing,
     };
-  }, [voiceScript.speech, voiceState]);
+  }, [currentJob, voiceScript.speech, voiceState]);
 
   return (
     <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
@@ -310,9 +314,14 @@ export default function WhatToExpect() {
             </div>
           </motion.div>
 
-          {currentPageVoiceState.blocked || currentPageVoiceState.error ? (
-            <div className="mt-5 border-t border-slate-200 pt-4">
-              <div className="flex flex-wrap items-center justify-end gap-2 text-sm text-gray-600">
+          {currentPageVoiceState.blocked || currentPageVoiceState.error || currentPageVoiceState.captionsOnly ? (
+            <div className="mt-3 border-t border-slate-200 pt-2" aria-live="polite">
+              <div className="flex min-h-[36px] flex-wrap items-center justify-center gap-2 text-center text-sm text-gray-600">
+                {currentPageVoiceState.captionsOnly ? (
+                  <span className="line-clamp-2 max-w-4xl text-[0.78rem] font-semibold leading-snug text-slate-600">
+                    {voiceScript.captions || voiceScript.speech}
+                  </span>
+                ) : null}
                 {currentPageVoiceState.blocked ? (
                   <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
                     Tap to enable Snoozer voice
