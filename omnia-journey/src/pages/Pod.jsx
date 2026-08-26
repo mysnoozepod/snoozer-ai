@@ -1476,6 +1476,51 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   );
   const mattressHeroTitle = mattressProduct?.title || activePod?.subtitle || "Mattress";
 
+  const snoozerPodExploreContext = useMemo(() => {
+    const items = [];
+    const seen = new Set();
+    const addItem = ({ handle, title, variantId }) => {
+      const normalizedHandle = String(handle || "").trim();
+      if (!normalizedHandle || seen.has(normalizedHandle)) return;
+      seen.add(normalizedHandle);
+      items.push({
+        handle: normalizedHandle,
+        title: String(title || normalizedHandle).trim(),
+        firstAvailableVariantId: variantId || null,
+      });
+    };
+
+    addItem({
+      handle: effectiveMattressHandle || activePod?.mattressHandle,
+      title: mattressProduct?.title || activePod?.subtitle || mattressHeroTitle,
+      variantId: mattressVariantId,
+    });
+    addItem({
+      handle: effectiveBaseHandle || activePod?.baseHandle,
+      title:
+        baseProduct?.title ||
+        activePod?.displayedIn?.baseLabel ||
+        activePod?.baseTitle ||
+        "",
+      variantId: baseVariantId,
+    });
+
+    return items;
+  }, [
+    activePod?.baseHandle,
+    activePod?.baseTitle,
+    activePod?.displayedIn?.baseLabel,
+    activePod?.mattressHandle,
+    activePod?.subtitle,
+    baseProduct?.title,
+    baseVariantId,
+    effectiveBaseHandle,
+    effectiveMattressHandle,
+    mattressHeroTitle,
+    mattressProduct?.title,
+    mattressVariantId,
+  ]);
+
   const hasAdjustableBase = useMemo(
     () => detectAdjustableBase(activePod, baseProduct, effectiveBaseHandle),
     [activePod, baseProduct, effectiveBaseHandle]
@@ -2754,6 +2799,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
             podId={pid}
             shopperId={shopperId}
             assessment={assessment}
+            exploreContext={snoozerPodExploreContext}
             context={{ podId: pid, sourceSurface: humanMode ? "pod-human-help" : "pod-ask-snoozer" }}
             showInput
             showHeader={false}
@@ -2800,6 +2846,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     goToBuildStage,
     pid,
     shopperId,
+    snoozerPodExploreContext,
   ]);
 
   const isDefaultPodDashboard = false;
