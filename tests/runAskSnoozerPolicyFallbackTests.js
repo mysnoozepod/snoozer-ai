@@ -154,6 +154,65 @@ async function testFinancingPolicyFallback() {
   );
 }
 
+async function testCurrentDeliveryAndWarrantyPolicyFormats() {
+  resetStores();
+  const delivery = await invokeAskSnoozer({
+    message: "How long does delivery take?",
+    sessionId: "policy-delivery-current-format-1",
+  });
+  const warranty = await invokeAskSnoozer({
+    message: "What is not covered by the warranty?",
+    sessionId: "policy-warranty-current-format-1",
+  });
+
+  assert.strictEqual(openAiCalls.length, 0, "current policy documents should not call OpenAI");
+  assert.match(delivery.reply, /3.?7 business days/i, "delivery timing should come from the current labeled policy");
+  assert.match(warranty.reply, /normal wear|misuse|stains/i, "warranty exclusions should come from the current labeled policy");
+  assert.strictEqual(delivery.status, "completed", "grounded delivery answer must not be a fallback");
+  assert.strictEqual(warranty.status, "completed", "grounded warranty answer must not be a fallback");
+}
+
+async function testPodHudDoesNotReuseStoredCheckoutHandoff() {
+  resetStores();
+  const sessionId = "pod-hud-boundary-1";
+  sessionStore.set(sessionId, {
+    sessionId,
+    context: {
+      path: "/checkout/guest",
+      pageType: "checkout",
+      hudPage: "checkout",
+      hudEvent: "handoff",
+      hudScriptKey: "hud/checkout/handoff.json",
+    },
+  });
+
+  const body = await invokeAskSnoozer({
+    message: "Hello from this pod",
+    mode: "pod",
+    sessionId,
+    context: {
+      podId: "pod-4",
+      explore: [
+        {
+          handle: "12-all-foam-mattress",
+          title: '12" All Foam Mattress',
+          variantId: "gid://shopify/ProductVariant/1",
+        },
+      ],
+    },
+  });
+  const currentRequestContext = openAiCalls[0]?.options?.context || {};
+
+  assert.match(body.speech || "", /mocked fallback: Hello from this pod/i, "HUD speech should use the current answer");
+  assert.match(body.captions || "", /mocked fallback: Hello from this pod/i, "HUD captions should use the current answer");
+  assert.notStrictEqual(body.state, "celebrate", "Pod HUD must not inherit checkout celebration state");
+  assert.strictEqual(currentRequestContext.path, "/pod/pod-4", "current request path should be the Pod route");
+  assert.strictEqual(currentRequestContext.pageType, "pod", "current request page type should be Pod");
+  assert.strictEqual(currentRequestContext.hudPage, null, "stale checkout HUD page should be cleared");
+  assert.strictEqual(currentRequestContext.hudEvent, null, "stale checkout HUD event should be cleared");
+  assert.strictEqual(currentRequestContext.hudScriptKey, null, "stale checkout HUD script should be cleared");
+}
+
 async function testCanonicalRecommendationStillWins() {
   resetStores();
   const assessment = {
@@ -210,6 +269,8 @@ async function main() {
   try {
     await testSleepTrialPolicyFallback();
     await testFinancingPolicyFallback();
+    await testCurrentDeliveryAndWarrantyPolicyFormats();
+    await testPodHudDoesNotReuseStoredCheckoutHandoff();
     await testCanonicalRecommendationStillWins();
     await testMissingAssessmentRecommendationFallback();
     console.log("All /ask-snoozer policy fallback tests passed.");

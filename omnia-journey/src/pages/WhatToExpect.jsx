@@ -300,7 +300,6 @@ export default function WhatToExpect() {
                   step="3"
                   title="Sleep Essentials"
                   body="Compare pillows, bedding, and protectors as part of the sleep experience."
-                  detail="Use the head towels before you test pillows or mattresses."
                   icon={PackageCheck}
                 />
                 <StepCard

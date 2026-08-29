@@ -204,15 +204,34 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     context = normalizePodAnchors(context, payload);
 
     // Always stamp these top-level
+    const currentPage = isObject(payload?.page) ? payload.page : {};
+    const currentMode = String(mode || "").trim().toLowerCase();
+    const currentPodId = String(context?.podId || context?.pod_id || "").trim();
+    const currentHudPage =
+      payload?.hudPage || currentPage?.hudPage || callerContext?.hudPage || null;
+    const currentHudEvent =
+      payload?.hudEvent || payload?.event || currentPage?.hudEvent || callerContext?.hudEvent || null;
+    const currentHudScriptKey =
+      payload?.hudScriptKey || payload?.scriptKey || currentPage?.hudScriptKey || callerContext?.hudScriptKey || null;
+
     context.shopperId = shopperId;
     context.snoozeCode = askIdentity?.snoozeCode || context?.snoozeCode || null;
     context.accessCode = askIdentity?.accessCode || context?.accessCode || null;
     context.profileId = askIdentity?.profileId || context?.profileId || null;
     context.sessionId = effectiveSessionId;
     context.path =
-      payload?.page?.route || context?.path || context?.route || "/ask-snoozer";
+      currentPage?.route ||
+      callerContext?.path ||
+      callerContext?.route ||
+      (currentMode === "pod" && currentPodId ? `/pod/${currentPodId}` : "/ask-snoozer");
     context.pageType =
-      payload?.page?.pageType || context?.pageType || context?.page_type || "ask_snoozer";
+      currentPage?.pageType ||
+      callerContext?.pageType ||
+      callerContext?.page_type ||
+      (currentMode === "pod" ? "pod" : "ask_snoozer");
+    context.hudPage = currentHudPage;
+    context.hudEvent = currentHudEvent;
+    context.hudScriptKey = currentHudScriptKey;
     context.device =
       payload?.page?.device && typeof payload.page.device === "object"
         ? payload.page.device
@@ -546,6 +565,12 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       const metrics = isObject(envelope?.meta?.metrics)
         ? envelope.meta.metrics
         : {};
+      const fallbackUsed = Boolean(
+        metrics.fallbackUsed ||
+          ["fallback", "error", "completed_with_fallback"].includes(
+            String(envelope?.status || "").trim().toLowerCase()
+          )
+      );
       return {
         answerPath: envelope?.meta?.path || "deterministic",
         retrievalMs: safeNumber(
@@ -557,7 +582,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           metrics.totalMs ?? envelope?.meta?.totalMs ?? Date.now() - startedAt,
           Date.now() - startedAt
         ),
-        failureReason: failureReason || null,
+        failureReason: fallbackUsed
+          ? failureReason || envelope?.meta?.reason || "fallback"
+          : null,
       };
     };
 
@@ -809,6 +836,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       });
       const mergedContext =
         sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+      const policyFallbackUsed = !policy?.answerGrounded;
 
       if (!policy?.retrieved) {
         log("ask-snoozer.knowledge.missing", "policy_source_missing", {
@@ -844,7 +872,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           retrievalMs: 0,
           modelMs: 0,
           totalMs: latencyMs,
-          fallbackUsed: !policy?.retrieved,
+          fallbackUsed: policyFallbackUsed,
         },
       });
 
@@ -878,7 +906,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           answerType: "policy_answer",
           sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
           factsResolved: Boolean(policy?.answerGrounded),
-          fallbackUsed: !policy?.retrieved,
+          fallbackUsed: policyFallbackUsed,
           reason:
             policy?.reason ||
             (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
@@ -887,7 +915,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           retrievalMs: 0,
           modelMs: 0,
           totalMs: latencyMs,
-          fallbackUsed: !policy?.retrieved,
+          fallbackUsed: policyFallbackUsed,
         },
       };
 
@@ -911,7 +939,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
         factsResolved: Boolean(policy?.answerGrounded),
         missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed: !policy?.retrieved,
+        fallbackUsed: policyFallbackUsed,
         reason:
           policy?.reason ||
           (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),
@@ -932,7 +960,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         sourceOfTruth: policy?.retrieved ? "s3_policy" : "fallback",
         factsResolved: Boolean(policy?.answerGrounded),
         missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed: !policy?.retrieved,
+        fallbackUsed: policyFallbackUsed,
         reason:
           policy?.reason ||
           (policy?.retrieved ? "approved_policy_detail_missing" : "policy_source_missing"),

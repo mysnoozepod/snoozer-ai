@@ -727,24 +727,6 @@ function summarizeBoundedShopperContextForPrompt(context = {}, userMessage = "")
       : {};
   const restTest = isObject(safeContext.restTest) ? safeContext.restTest : {};
   const cartSummary = isObject(safeContext.cartSummary) ? safeContext.cartSummary : {};
-  const currentMessage = String(userMessage || "").trim();
-  const recentConversation = (Array.isArray(safeContext.recentConversation)
-    ? safeContext.recentConversation
-    : [])
-    .slice(-8)
-    .map((turn) => ({
-      role: String(turn?.role || "").trim() === "assistant" ? "assistant" : "user",
-      content: String(turn?.content || "").trim().slice(0, 500),
-    }))
-    .filter((turn, index, turns) => {
-      if (!turn.content) return false;
-      return !(
-        index === turns.length - 1 &&
-        turn.role === "user" &&
-        turn.content === currentMessage
-      );
-    });
-
   const bounded = {
     identity: pickCompactFields(safeContext, ["shopperId", "snoozeCode"]),
     assessment: pickCompactFields(normalizedAssessment, [
@@ -758,19 +740,6 @@ function summarizeBoundedShopperContextForPrompt(context = {}, userMessage = "")
       "partner",
       "motionKey",
       "motionLabel",
-    ]),
-    recommendation: pickCompactFields(canonical, [
-      "topPodId",
-      "topPodName",
-      "topPodIds",
-      "primaryMattressHandle",
-      "primaryMattressTitle",
-      "baseHandle",
-      "baseTitle",
-      "motionKey",
-      "motionLabel",
-      "reasonKeys",
-      "warnings",
     ]),
     current: {
       ...pickCompactFields(safeContext, ["path", "pageType", "podId", "currentProductHandle"]),
@@ -796,14 +765,44 @@ function summarizeBoundedShopperContextForPrompt(context = {}, userMessage = "")
           pickCompactFields(line, ["title", "variantTitle", "quantity", "handle"])
         ),
     },
-    recentConversation,
+    explore: (Array.isArray(safeContext.explore) ? safeContext.explore : [])
+      .slice(0, 8)
+      .map((item) =>
+        pickCompactFields(item, [
+          "handle",
+          "title",
+          "variantId",
+          "selectedVariantId",
+          "variantTitle",
+        ])
+      ),
   };
 
   try {
-    return JSON.stringify(bounded).slice(0, 5000);
+    return JSON.stringify(bounded).slice(0, 3200);
   } catch {
     return "";
   }
+}
+
+function buildBoundedModelHistory(memory = [], recentConversation = [], userMessage = "") {
+  const currentMessage = String(userMessage || "").trim();
+  const combined = [...(Array.isArray(memory) ? memory : []), ...(Array.isArray(recentConversation) ? recentConversation : [])];
+  const seen = new Set();
+
+  return combined
+    .map((turn) => ({
+      role: String(turn?.role || "").trim() === "assistant" ? "assistant" : "user",
+      content: String(turn?.content || "").trim().slice(0, 700),
+    }))
+    .filter((turn) => {
+      if (!turn.content || (turn.role === "user" && turn.content === currentMessage)) return false;
+      const key = `${turn.role}:${turn.content}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(-MAX_HISTORY_TURNS);
 }
 
 function resolveHandleFromContext(message = "", context = {}) {
@@ -897,8 +896,9 @@ function getPodIdFromContext(context) {
   if (!context || typeof context !== "object") return null;
   const direct = context.podId ?? context.pod_id ?? context.zone?.podId ?? null;
   if (direct != null) {
-    const s = String(direct).trim();
-    if (s) return s;
+    const s = String(direct).trim().toLowerCase();
+    const match = s.match(/^(?:pod-)?([1-9]\d*)$/);
+    if (match) return `pod-${match[1]}`;
   }
   return null;
 }
@@ -1416,7 +1416,7 @@ async function getKnowledgeContext({ mode, query, context, intent, retrievalMeta
 
     const podId = getPodIdFromContext(context || {});
     if (podId) {
-      const podKey = `pods/pod-${podId}.md`;
+      const podKey = `pods/${podId}.md`;
       const podTxtResult = await getObjectText(KNOWLEDGE_BUCKET, podKey);
       if (podTxtResult?.value) {
         if (podTxtResult.cacheHit) cacheHits += 1;
@@ -2253,6 +2253,11 @@ async function modelPath(userMessage, { reqId, thread_id, mode, context, intent,
   const retrievalMs = safeNumber(retrievalMeta?.ms, 0);
   const base = await getBasePromptOnce(reqId);
   const memory = getLastTurns(thread_id, MAX_HISTORY_TURNS);
+  const boundedHistory = buildBoundedModelHistory(
+    memory,
+    context?.recentConversation,
+    userMessage
+  );
 
   const knowledgeStep = await measureStep("knowledge_context", () =>
     getKnowledgeContext(
@@ -2336,15 +2341,6 @@ async function modelPath(userMessage, { reqId, thread_id, mode, context, intent,
     );
   }
 
-  if (context && Array.isArray(context.explore) && context.explore.length) {
-    try {
-      const compactExplore = JSON.stringify(context.explore.slice(0, 10));
-      systemContextLines.push("", "UI CONTEXT (handles + variants):", compactExplore.slice(0, 1400));
-    } catch {
-      // ignore
-    }
-  }
-
   const canonicalRecommendationSummary = summarizeCanonicalRecommendationForPrompt(context);
   if (canonicalRecommendationSummary) {
     systemContextLines.push(
@@ -2358,7 +2354,7 @@ async function modelPath(userMessage, { reqId, thread_id, mode, context, intent,
   const messages = [
     { role: "system", content: base },
     { role: "system", content: systemContextLines.join("\n") },
-    ...memory.map((t) => ({ role: t.role, content: t.content })),
+    ...boundedHistory,
     { role: "user", content: String(userMessage || "").trim() },
   ];
 

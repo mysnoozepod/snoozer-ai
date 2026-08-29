@@ -536,22 +536,6 @@ function formatFeatureLabelForFamily(family) {
   return "Balanced";
 }
 
-function formatHeroFeelBadge(family) {
-  if (family === "dual") return "Dual Comfort";
-  if (family === "hybrid") return "Hybrid Feel";
-  if (family === "foam") return "All-Foam Feel";
-  return "Balanced Feel";
-}
-
-function formatBenefitBadge(benefits = [], reason = "") {
-  const text = `${joinReadableList(benefits)} ${reason}`.toLowerCase();
-  if (text.includes("pressure")) return "Pressure Relief";
-  if (text.includes("back")) return "Lower Back Support";
-  if (text.includes("cool")) return "Cooling";
-  if (text.includes("motion")) return "Motion Control";
-  return "Comfort Match";
-}
-
 function buildPodReasonContext(pod, recommendationMeta = {}) {
   return {
     hasPartner: recommendationMeta?.hasPartner === true,
@@ -1787,42 +1771,6 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const mattressDisplayTitle = /mattress/i.test(mattressTruth.mattressTitle || mattressHeroTitle)
     ? (mattressTruth.mattressTitle || mattressHeroTitle)
     : `${mattressTruth.mattressTitle || mattressHeroTitle} Mattress`;
-  const headerBadges = useMemo(() => {
-    const items = [];
-
-    if (isRecommended) {
-      items.push({ label: "Best First Match", tone: "primary" });
-    }
-
-    items.push({
-      label: formatHeroFeelBadge(mattressTruth.family),
-      tone: "soft",
-    });
-
-    items.push({
-      label: formatBenefitBadge(benefits, whyThisPodReason),
-      tone: "accent",
-    });
-
-    items.push({
-      label: isRecommended ? "Compare Next" : "Compare Pod",
-      tone: "soft",
-    });
-
-    return items.slice(0, 4);
-  }, [isRecommended, mattressTruth.family, benefits, whyThisPodReason]);
-  const podHomeBadges = useMemo(() => {
-    const prioritized = headerBadges.filter(
-      (badge) => badge.label === "Best First Match" || /feel$/i.test(badge.label)
-    );
-
-    if (prioritized.length >= 2) return prioritized.slice(0, 2);
-    if (prioritized.length === 1) {
-      const fallback = headerBadges.find((badge) => badge.label !== prioritized[0].label);
-      return fallback ? [prioritized[0], fallback] : prioritized;
-    }
-    return headerBadges.slice(0, 2);
-  }, [headerBadges]);
   const restCoachCopy =
     "Start with 7 minutes for a quick check, or choose 15 if you want more time to settle in.";
 
@@ -2924,7 +2872,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
         isRecommended={isRecommended}
         mattressImage={mattressImage}
         voiceState={voiceState}
-        badges={podHomeBadges}
+        badges={[]}
         coachCopy={restCoachCopy}
         dashboardTestingModes={dashboardTestingModes}
         onChooseMode={handleChooseRestMode}
@@ -2935,7 +2883,6 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
       mattressDisplayTitle,
       isRecommended,
       mattressImage,
-      podHomeBadges,
       restCoachCopy,
       dashboardTestingModes,
       handleChooseRestMode,
@@ -3051,7 +2998,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
                   helperText=""
                   isRecommended={openStage === "rest" && isRecommended}
                   voiceState={voiceState}
-                  badges={openStage === "rest" ? headerBadges.slice(0, isRecommended ? 2 : 1) : []}
+                  badges={[]}
                   restStatus={restStatus}
                 />
               </ShowroomPanel>

@@ -212,6 +212,63 @@ function safeVariantId(variant) {
   return id;
 }
 
+function normalizeCartMatchValue(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function cartLineHasDesiredAttributes(item, spec) {
+  const current = new Map(
+    (Array.isArray(item?.attributes) ? item.attributes : []).map((attribute) => [
+      String(attribute?.key || "").trim(),
+      String(attribute?.value || "").trim(),
+    ])
+  );
+
+  return spec.line.attributes.every(
+    (attribute) =>
+      current.get(String(attribute.key || "").trim()) ===
+      String(attribute.value || "").trim()
+  );
+}
+
+function relatedCartLines(cartItems, spec) {
+  const desiredHandle = normalizeCartMatchValue(spec.handle);
+  const desiredVariant = String(spec.line.merchandiseId || "").trim();
+  return (Array.isArray(cartItems) ? cartItems : []).filter((item) => {
+    const itemHandle = normalizeCartMatchValue(item?.handle);
+    const itemVariant = String(item?.merchandiseId || "").trim();
+    return itemVariant === desiredVariant || (desiredHandle && itemHandle === desiredHandle);
+  });
+}
+
+function exactCartLines(cartItems, spec) {
+  const desiredVariant = String(spec.line.merchandiseId || "").trim();
+  return relatedCartLines(cartItems, spec).filter(
+    (item) =>
+      String(item?.merchandiseId || "").trim() === desiredVariant &&
+      cartLineHasDesiredAttributes(item, spec)
+  );
+}
+
+function classifyDesiredCartState(cartItems, specs) {
+  if (!Array.isArray(specs) || !specs.length) return "none";
+  let hasRelatedLine = false;
+
+  const exact = specs.every((spec) => {
+    const related = relatedCartLines(cartItems, spec);
+    const matching = exactCartLines(cartItems, spec);
+    if (related.length) hasRelatedLine = true;
+    return (
+      related.length === 1 &&
+      matching.length === 1 &&
+      Number(matching[0]?.quantity || 0) === Number(spec.line.quantity || 0)
+    );
+  });
+
+  if (exact) return "exact";
+  return hasRelatedLine ? "partial" : "none";
+}
+
 function normalizeSavedEssentials(value) {
   const source = value && typeof value === "object" ? value : {};
   return Object.fromEntries(
@@ -972,6 +1029,8 @@ export default function PodBuilder({
   );
   const cartItems = useStore((state) => state.cart || []);
   const removeFromCart = useStore((state) => state.removeFromCart);
+  const updateCart = useStore((state) => state.updateCart);
+  const syncCartFromShopify = useStore((state) => state.syncCartFromShopify);
 
   const fixedMattressType = useMemo(() => inferMattressTypeFromPod(pod), [pod]);
   const fixedMattressHandle = useMemo(
@@ -1495,6 +1554,106 @@ export default function PodBuilder({
     essentialsReady &&
     commerceReady &&
     (!isDualComfort || Boolean(dcLeft && dcRight));
+  const desiredCartSpecs = useMemo(() => {
+    if (!mattressMerchId) return [];
+    const podIdValue = String(pod?.podId ?? pod?.id ?? "").trim();
+    const specs = [
+      {
+        key: "mattress",
+        handle: fixedMattressHandle,
+        line: {
+          merchandiseId: mattressMerchId,
+          quantity: 1,
+          attributes: [
+            { key: "Size", value: mattressResolution.actualOption },
+            { key: "_Setup Size", value: size },
+            { key: "_Variant Option", value: mattressResolution.actualOption },
+            { key: "_Mattress", value: mattressLabel },
+            ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
+            ...(isDualComfort
+              ? [
+                  { key: "Left Feel", value: dcLeft },
+                  { key: "Right Feel", value: dcRight },
+                ]
+              : []),
+            ...(podIdValue ? [{ key: "_SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
+          ],
+        },
+      },
+    ];
+
+    if (wantsBase && baseMerchId) {
+      specs.push({
+        key: "base",
+        handle: selectedBaseHandle,
+        line: {
+          merchandiseId: baseMerchId,
+          quantity: 1,
+          attributes: [
+            { key: "Size", value: baseResolution.actualOption },
+            { key: "_Setup Size", value: size },
+            { key: "_Variant Option", value: baseResolution.actualOption },
+            { key: "_Base", value: selectedBaseLabel },
+            ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
+            ...(podIdValue ? [{ key: "_SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
+          ],
+        },
+      });
+    }
+
+    for (const category of ESSENTIAL_STEP_KEYS) {
+      const choice = selectedEssentialChoices[category];
+      if (!choice) continue;
+      specs.push({
+        key: category,
+        handle: choice.handle,
+        line: {
+          merchandiseId: choice.variantId,
+          quantity: choice.quantity,
+          attributes: [
+            { key: "_Sleep Essential", value: ESSENTIAL_CATEGORY_CONFIG[category].singular },
+            { key: "_Product", value: choice.title },
+            { key: "_Option", value: choice.actualOption },
+            { key: "_Variant Option", value: choice.actualOption },
+            ...(category === "pillows" ? [{ key: "Pillow Size", value: choice.actualOption }] : []),
+            ...(category !== "pillows" ? [{ key: "_Setup Size", value: size }] : []),
+            ...(podIdValue ? [{ key: "_SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
+          ],
+        },
+      });
+    }
+
+    return specs;
+  }, [
+    baseMerchId,
+    baseResolution.actualOption,
+    dcLeft,
+    dcRight,
+    fixedMattressHandle,
+    isDualComfort,
+    mattressLabel,
+    mattressMerchId,
+    mattressResolution.actualOption,
+    pod?.id,
+    pod?.podId,
+    selectedBaseHandle,
+    selectedBaseLabel,
+    selectedEssentialChoices,
+    selectedMotionLabel,
+    showMotion,
+    size,
+    wantsBase,
+  ]);
+  const desiredCartState = useMemo(
+    () => classifyDesiredCartState(cartItems, desiredCartSpecs),
+    [cartItems, desiredCartSpecs]
+  );
+  const reviewCartCtaLabel =
+    desiredCartState === "exact"
+      ? "Continue to Cart"
+      : desiredCartState === "partial"
+        ? "Add Missing Items / Update Cart"
+        : primaryCtaLabel;
   const selectionSummary = useMemo(
     () => [
       `Mattress: ${mattressLabel}`,
@@ -1916,87 +2075,55 @@ export default function PodBuilder({
       return;
     }
 
-    const podIdValue = String(pod?.podId ?? pod?.id ?? "").trim();
-
-    const mattressHandleKey = String(fixedMattressHandle || "");
-    const mattressMerchandiseKey = String(mattressMerchId || "");
-    const existingMattressLines = cartItems.filter((item) =>
-      (mattressHandleKey && String(item?.handle || "") === mattressHandleKey) ||
-      (mattressMerchandiseKey && String(item?.merchandiseId || "") === mattressMerchandiseKey)
-    );
-    const exactMattressAlreadyInCart = existingMattressLines.some(
-      (item) => String(item?.merchandiseId || "") === String(mattressMerchId || "")
-    );
-    const lines = exactMattressAlreadyInCart ? [] : [
-      {
-        merchandiseId: mattressMerchId,
-        quantity: 1,
-        attributes: [
-          { key: "Size", value: mattressResolution.actualOption },
-          { key: "_Setup Size", value: size },
-          { key: "_Variant Option", value: mattressResolution.actualOption },
-          { key: "_Mattress", value: mattressLabel },
-          ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
-          ...(isDualComfort
-            ? [
-                { key: "Left Feel", value: dcLeft },
-                { key: "Right Feel", value: dcRight },
-              ]
-            : []),
-          ...(podIdValue ? [{ key: "_SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
-        ],
-      },
-    ];
-
-    if (wantsBase && baseMerchId) {
-      lines.push({
-        merchandiseId: baseMerchId,
-        quantity: 1,
-        attributes: [
-          { key: "Size", value: baseResolution.actualOption },
-          { key: "_Setup Size", value: size },
-          { key: "_Variant Option", value: baseResolution.actualOption },
-          { key: "_Base", value: selectedBaseLabel },
-          ...(showMotion ? [{ key: "Motion", value: selectedMotionLabel }] : []),
-          ...(podIdValue ? [{ key: "_SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
-        ],
-      });
-    }
-
-    for (const category of ESSENTIAL_STEP_KEYS) {
-      const choice = selectedEssentialChoices[category];
-      if (!choice) continue;
-      lines.push({
-        merchandiseId: choice.variantId,
-        quantity: choice.quantity,
-        attributes: [
-          { key: "_Sleep Essential", value: ESSENTIAL_CATEGORY_CONFIG[category].singular },
-          { key: "_Product", value: choice.title },
-          { key: "_Option", value: choice.actualOption },
-          { key: "_Variant Option", value: choice.actualOption },
-          ...(category === "pillows" ? [{ key: "Pillow Size", value: choice.actualOption }] : []),
-          ...(category !== "pillows" ? [{ key: "_Setup Size", value: size }] : []),
-          ...(podIdValue ? [{ key: "_SnoozePod", value: `SnoozePod ${podIdValue}` }] : []),
-        ],
-      });
+    if (desiredCartState === "exact") {
+      onCue?.("Your selected setup is already in the Shopify cart.", "tip");
+      onViewSnoozePod?.();
+      return;
     }
 
     setCartError("");
     setIsAddingToCart(true);
 
     try {
-      for (const item of existingMattressLines) {
-        if (String(item?.merchandiseId || "") === String(mattressMerchId || "")) continue;
-        await removeFromCart?.(item.lineId || item.id);
+      const synced = await syncCartFromShopify?.({ sourcePage: "pod-build-review" });
+      const authoritativeCart = Array.isArray(synced?.items)
+        ? synced.items
+        : useStore.getState().cart || [];
+      const removedLineIds = new Set();
+      const missingLines = [];
+
+      for (const spec of desiredCartSpecs) {
+        const related = relatedCartLines(authoritativeCart, spec).filter(
+          (item) => !removedLineIds.has(String(item?.lineId || item?.id || ""))
+        );
+        const matching = related.filter((item) =>
+          exactCartLines([item], spec).length === 1
+        );
+        const keeper = matching[0] || null;
+        const keeperId = String(keeper?.lineId || keeper?.id || "");
+
+        for (const item of related) {
+          const lineId = String(item?.lineId || item?.id || "");
+          if (keeper && lineId === keeperId) continue;
+          await removeFromCart?.(lineId);
+          removedLineIds.add(lineId);
+        }
+
+        if (!keeper) {
+          missingLines.push(spec.line);
+        } else if (Number(keeper.quantity || 0) !== Number(spec.line.quantity || 0)) {
+          await updateCart?.(keeperId, spec.line.quantity);
+        }
       }
-      if (lines.length) {
+
+      if (missingLines.length) {
         await addLinesToAuthoritativeCart?.({
-          lines,
-          sourcePage: "pod-build",
+          lines: missingLines,
+          sourcePage: "pod-build-review",
         });
       }
       setGuidedStep("success");
-      onCue?.("Added to cart.", "success");
+      onCue?.("Your selected setup is now exact in the Shopify cart.", "success");
 
       if (sleepEssentialsJourneyId && essentialsReady) {
         void api
@@ -2018,8 +2145,8 @@ export default function PodBuilder({
       const errorCode = err?.code || err?.name || err?.status || "CART_MUTATION_FAILED";
       console.warn("[cart] pod build add failed", {
         operation: "cart_line_add",
-        sourcePage: "pod-build",
-        requestedLineCount: lines.length,
+        sourcePage: "pod-build-review",
+        requestedLineCount: desiredCartSpecs.length,
         mattressMerchId,
         baseMerchId: wantsBase ? baseMerchId : null,
         errorCode,
@@ -2033,31 +2160,21 @@ export default function PodBuilder({
     }
   }, [
     addLinesToAuthoritativeCart,
-    cartItems,
-    fixedMattressHandle,
     removeFromCart,
+    syncCartFromShopify,
+    updateCart,
     baseMerchId,
-    baseResolution.actualOption,
     canAdd,
     commerceUnavailableMessage,
-    dcLeft,
-    dcRight,
+    desiredCartSpecs,
+    desiredCartState,
     isAddingToCart,
-    isDualComfort,
-    mattressLabel,
     mattressMerchId,
-    mattressResolution.actualOption,
     onCue,
-    pod?.id,
-    pod?.podId,
-    selectedBaseLabel,
-    selectedMotionLabel,
-    selectedEssentialChoices,
+    onViewSnoozePod,
     sleepEssentialsJourneyId,
     essentialsReady,
     setGuidedStep,
-    showMotion,
-    size,
     wantsBase,
   ]);
 
@@ -2408,12 +2525,12 @@ export default function PodBuilder({
           {essentialProducts.status === "loading" ? (
             <div className="flex min-h-[120px] flex-1 items-center justify-center rounded-[18px] border border-[#dfe7fb] bg-[#f8faff] text-sm font-semibold text-slate-600">Preparing approved options…</div>
           ) : (
-            <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden md:grid-cols-3" data-sleep-essentials-card-row="three">
+            <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden md:grid-cols-3" data-sleep-essentials-card-row="three">
               {visibleCategories.map(({ category, choice }) => {
                 const active = Boolean(choice && selectedEssentialChoices[category]?.variantId === choice.variantId);
                 if (!choice) {
                   return (
-                    <div key={category} className="flex min-h-[220px] min-w-0 flex-col items-center justify-center rounded-[20px] border border-dashed border-[#cbd7f7] bg-[#f8faff] p-4 text-center" data-sleep-essentials-card={category} data-sleep-essentials-unavailable="true">
+                    <div key={category} className="flex min-h-[286px] min-w-0 flex-col items-center justify-center rounded-[20px] border border-dashed border-[#cbd7f7] bg-[#f8faff] p-5 text-center" data-sleep-essentials-card={category} data-sleep-essentials-unavailable="true">
                       <PackageCheck className="h-9 w-9 text-[#8ba6ef]" />
                       <span className="mt-3 text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">{ESSENTIAL_CATEGORY_CONFIG[category].recommendationLabel}</span>
                       <span className="mt-2 text-base font-black text-slate-900">No approved match available</span>
@@ -2426,7 +2543,7 @@ export default function PodBuilder({
                     key={category}
                     type="button"
                     onClick={() => selectChoice(category, choice)}
-                    className={`group flex min-h-[220px] min-w-0 flex-col rounded-[20px] border p-3 text-left shadow-sm transition ${active ? "border-[#315cf6] bg-[#eef3ff] ring-2 ring-[#315cf6]/15" : "border-[#dfe7fb] bg-white hover:-translate-y-0.5 hover:shadow-md"}`}
+                    className={`group flex min-h-[286px] min-w-0 flex-col rounded-[20px] border p-4 text-left shadow-sm transition ${active ? "border-[#315cf6] bg-[#eef3ff] ring-2 ring-[#315cf6]/15" : "border-[#dfe7fb] bg-white hover:-translate-y-0.5 hover:shadow-md"}`}
                     data-sleep-essentials-card={category}
                     aria-pressed={active}
                   >
@@ -2434,19 +2551,19 @@ export default function PodBuilder({
                       src={choice.image}
                       alt={choice.title}
                       icon={PackageCheck}
-                      className="min-h-[116px] w-full flex-1 overflow-hidden rounded-[14px] bg-[#f6f8ff]"
+                      className="min-h-[150px] w-full flex-1 overflow-hidden rounded-[14px] bg-[#f6f8ff]"
                       imgClassName="h-full w-full object-contain p-2"
                       data-sleep-essentials-card-image="true"
                     />
-                    <span className="mt-2 text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#315cf6]" data-sleep-essentials-card-category="true">
+                    <span className="mt-3 text-[0.76rem] font-black uppercase tracking-[0.14em] text-[#315cf6]" data-sleep-essentials-card-category="true">
                       {ESSENTIAL_CATEGORY_CONFIG[category].recommendationLabel}
                     </span>
-                    <span className="mt-1 line-clamp-2 text-[clamp(0.95rem,1.25vw,1.12rem)] font-black leading-tight text-slate-950" data-sleep-essentials-card-name="true">
+                    <span className="mt-1.5 line-clamp-2 text-[clamp(1.02rem,1.3vw,1.18rem)] font-black leading-[1.08] text-slate-950" data-sleep-essentials-card-name="true">
                       {choice.title}
                     </span>
-                    <span className="mt-2 flex w-full items-center justify-between gap-2" data-sleep-essentials-card-action="true">
-                      <span className="text-[1.05rem] font-black text-slate-950">{money(choice.price)}</span>
-                      <span className={`inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3 text-[0.74rem] font-black ${active ? "bg-[#315cf6] text-white" : "bg-[#edf2ff] text-[#315cf6]"}`}>
+                    <span className="mt-3 flex w-full items-center justify-between gap-3" data-sleep-essentials-card-action="true">
+                      <span className="text-[1.1rem] font-black text-slate-950">{money(choice.price)}</span>
+                      <span className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 text-[0.78rem] font-black ${active ? "bg-[#315cf6] text-white" : "bg-[#edf2ff] text-[#315cf6]"}`}>
                         <CheckCircle2 className="h-4 w-4" /> {active ? "Added" : "+ Add"}
                       </span>
                     </span>
@@ -2800,7 +2917,7 @@ export default function PodBuilder({
           )}
           {cartError && cartError !== commerceUnavailableMessage ? <div className="mt-3 rounded-[12px] border border-amber-200 bg-amber-50 px-3 py-2 text-[0.78rem] font-semibold text-amber-900">{cartError}</div> : null}
           <Button type="button" onClick={addToPlan} disabled={!canAdd || isAddingToCart} data-pod-layout-build-action="true" data-pod-layout-primary-action="build-add" className="mt-4 min-h-[54px] w-full rounded-[15px] px-4 text-[0.95rem] font-black">
-            {isAddingToCart ? "Adding..." : primaryCtaLabel}<ArrowRight className="ml-2 h-4 w-4" />
+            {isAddingToCart ? "Updating Cart..." : reviewCartCtaLabel}<ArrowRight className="ml-2 h-4 w-4" />
           </Button>
           <button type="button" onClick={goBack} className="mt-2 min-h-[44px] w-full rounded-[12px] text-[0.82rem] font-black text-slate-600">Back to essentials</button>
         </aside>

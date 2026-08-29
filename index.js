@@ -487,9 +487,15 @@ function extractHudActionTypes(...actionLists) {
 }
 
 function inferHudScriptRequest({ ok, mode, context, payload, aiResult, normalized }) {
+  const payloadPage =
+    typeof payload?.page === "string"
+      ? payload.page
+      : payload?.page && typeof payload.page === "object"
+        ? payload.page.hudPage
+        : null;
   const explicitPage =
     normalizeHudPageValue(aiResult?.hud?.page) ||
-    normalizeHudPageValue(payload?.page || payload?.hudPage) ||
+    normalizeHudPageValue(payloadPage || payload?.hudPage) ||
     normalizeHudPageValue(context?.hudPage);
   const explicitEvent =
     normalizeHudEventValue(aiResult?.hud?.event) ||

@@ -302,6 +302,31 @@ function extractBulletItemsUnderHeading(raw, headings = []) {
     .slice(0, 3);
 }
 
+function extractLabeledPolicyDetails(raw) {
+  const details = new Map();
+  const lines = stripFrontMatter(raw).split("\n");
+
+  for (const line of lines) {
+    if (/^\s*assistant notes\s*:/i.test(line)) break;
+    const match = line.match(/^\s*(?:[-*•])\s*([^:]+):\s*(.+?)\s*$/);
+    if (!match) continue;
+
+    const label = normalizeAskSnoozerText(match[1]);
+    const value = cleanShopperText(match[2]);
+    if (label && value) details.set(label, value);
+  }
+
+  return details;
+}
+
+function getLabeledPolicyDetail(details, labels = []) {
+  for (const label of labels) {
+    const normalizedLabel = normalizeAskSnoozerText(label);
+    if (details.has(normalizedLabel)) return details.get(normalizedLabel);
+  }
+  return "";
+}
+
 function hasAnyQueryTerm(query, terms = []) {
   const normalizedQuery = normalizeAskSnoozerText(query);
   return terms.some((term) => normalizedQuery.includes(normalizeAskSnoozerText(term)));
@@ -675,6 +700,11 @@ function buildReturnsReply(raw, query) {
 
 function buildDeliveryReply(raw, query) {
   const normalizedQuery = normalizeAskSnoozerText(query);
+  const labeled = extractLabeledPolicyDetails(raw);
+  const typicalWindow = getLabeledPolicyDetail(labeled, ["Typical window"]);
+  const schedulingDetail = getLabeledPolicyDetail(labeled, ["Scheduling"]);
+  const setupOption = getLabeledPolicyDetail(labeled, ["Threshold vs. Setup"]);
+  const delayDetail = getLabeledPolicyDetail(labeled, ["Delays"]);
   const overview = extractSection(raw, ["Overview"]);
   const options = extractSection(raw, ["Delivery Options"]);
   const fees = extractSection(raw, ["Delivery Fees", "Is delivery free"]);
@@ -700,10 +730,13 @@ function buildDeliveryReply(raw, query) {
     normalizedQuery.includes("remove")
   ) {
     const setupDetail = options || extractFaqSection(raw, ["do you offer setup", "will you remove my old mattress"]);
-    if (setupDetail) {
+    const groundedSetupDetail = setupOption || setupDetail;
+    if (groundedSetupDetail) {
       return buildGroundedResult(
-        "You can add in-room setup, assembly, and packaging removal, and old mattress removal is available on request.",
-        setupDetail,
+        setupOption
+          ? setupOption
+          : "Setup options vary by order and service area. Confirm the available delivery option before checkout.",
+        groundedSetupDetail,
         { fallback: buildFallbackPolicyReply("delivery") }
       );
     }
@@ -715,22 +748,28 @@ function buildDeliveryReply(raw, query) {
     normalizedQuery.includes("how long")
   ) {
     const timing =
+      [typicalWindow, schedulingDetail].filter(Boolean).join(" ") ||
       extractFaqSection(raw, ["how long does delivery take", "how do i track"]) ||
       scheduling ||
       overview;
     if (timing) {
       return buildGroundedResult(
-        "The current delivery guidance says most orders arrive in about 3 to 7 business days, and scheduling is handled by text or email once the order is ready. Before checkout, confirm the delivery option shown for your order.",
+        [typicalWindow, schedulingDetail].filter(Boolean).join(" ") ||
+          "Check the delivery window and scheduling details shown for your order before checkout.",
         timing,
         { fallback: buildFallbackPolicyReply("delivery") }
       );
     }
   }
 
-  if (overview || options) {
+  const labeledOverview = [typicalWindow, schedulingDetail, setupOption, delayDetail]
+    .filter(Boolean)
+    .join(" ");
+  if (labeledOverview || overview || options) {
     return buildGroundedResult(
-      "Orders are delivered through trusted local carriers, with standard delivery usually running 3 to 7 business days. White-glove setup and old mattress removal can also be added when needed. Before checkout, confirm the delivery option shown for your order.",
-      `${overview}\n${options}`.trim(),
+      labeledOverview ||
+        "Delivery timing and service options depend on the approved guidance for the order. Confirm the option shown before checkout.",
+      labeledOverview || `${overview}\n${options}`.trim(),
       { fallback: buildFallbackPolicyReply("delivery") }
     );
   }
@@ -743,12 +782,28 @@ function buildDeliveryReply(raw, query) {
 
 function buildWarrantyReply(raw, query) {
   const normalizedQuery = normalizeAskSnoozerText(query);
+  const labeled = extractLabeledPolicyDetails(raw);
+  const coverageDetail = getLabeledPolicyDetail(labeled, ["Coverage"]);
+  const termDetail = getLabeledPolicyDetail(labeled, ["Term"]);
+  const labeledExclusions = getLabeledPolicyDetail(labeled, [
+    "What’s not covered",
+    "What's not covered",
+    "What is not covered",
+  ]);
+  const claimSteps = getLabeledPolicyDetail(labeled, ["Claim steps"]);
   const warrantyBullets = extractBulletItemsUnderHeading(raw, ["Mattress Warranty"]);
   const motionBaseBullets = extractBulletItemsUnderHeading(raw, ["Motion Base Warranty"]);
   const claimSection = extractSection(raw, ["How to Claim"]);
   const exclusions = extractSection(raw, ["Exclusions"]);
 
   if (hasAnyQueryTerm(normalizedQuery, ["adjustable base", "motion base", "base"])) {
+    if (termDetail) {
+      return buildGroundedResult(
+        `${termDetail} Share the product name or model so the applicable warranty can be confirmed.`,
+        termDetail,
+        { fallback: buildFallbackPolicyReply("warranty") }
+      );
+    }
     if (motionBaseBullets.length > 0) {
       return buildGroundedResult(
         "Motion bases carry a 10-year limited warranty. The first year includes full coverage, and later coverage is limited to parts.",
@@ -758,8 +813,13 @@ function buildWarrantyReply(raw, query) {
     }
   }
 
-  if (normalizedQuery.includes("cover")) {
+  if (
+    normalizedQuery.includes("cover") &&
+    !normalizedQuery.includes("not covered") &&
+    !normalizedQuery.includes("excluded")
+  ) {
     const coverage =
+      coverageDetail ||
       extractFaqSection(raw, ["what does the warranty cover"]) ||
       (warrantyBullets[1]
         ? `It covers ${warrantyBullets[1].replace(/^Covers\s+/i, "").replace(/including:\s*$/i, "including qualifying defects.")}`
@@ -774,10 +834,11 @@ function buildWarrantyReply(raw, query) {
   }
 
   if (normalizedQuery.includes("claim")) {
-    const claims = claimSection || extractFaqSection(raw, ["how do i file a warranty claim"]);
+    const claims = claimSteps || claimSection || extractFaqSection(raw, ["how do i file a warranty claim"]);
     if (claims) {
       return buildGroundedResult(
-        "The warranty guidance says to contact MySnoozePod Customer Care with proof of purchase and photos of the issue. From there, the claim can lead to repair, replacement, or a comparable substitute.",
+        claimSteps ||
+          "Contact MySnoozePod Customer Care with the documentation requested in the warranty guidance.",
         claims,
         { fallback: buildFallbackPolicyReply("warranty") }
       );
@@ -785,13 +846,23 @@ function buildWarrantyReply(raw, query) {
   }
 
   if (normalizedQuery.includes("not covered") || normalizedQuery.includes("excluded")) {
-    if (exclusions) {
+    const exclusionDetail = labeledExclusions || exclusions;
+    if (exclusionDetail) {
       return buildGroundedResult(
-        "The warranty does not cover normal wear, stains, misuse, or unauthorized modifications. It is meant for defects in materials or workmanship, not comfort preference changes.",
-        exclusions,
+        labeledExclusions ||
+          "The approved warranty guidance lists exclusions that should be reviewed for the specific product.",
+        exclusionDetail,
         { fallback: buildFallbackPolicyReply("warranty") }
       );
     }
+  }
+
+  if (coverageDetail || termDetail) {
+    return buildGroundedResult(
+      [coverageDetail, termDetail].filter(Boolean).join(" "),
+      [coverageDetail, termDetail].filter(Boolean).join(" "),
+      { fallback: buildFallbackPolicyReply("warranty") }
+    );
   }
 
   if (warrantyBullets.length > 0) {

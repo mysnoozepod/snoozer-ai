@@ -55,10 +55,6 @@ export function PodRouteHeroHeader({
               />
             ))}
           </div>
-        ) : isRecommended ? (
-          <div className="mt-[7px]">
-            <HeaderBadge label="Best First Match" tone="primary" />
-          </div>
         ) : null}
 
         {helperText ? (
