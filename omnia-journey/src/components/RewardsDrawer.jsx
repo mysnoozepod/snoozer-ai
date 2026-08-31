@@ -16,11 +16,11 @@ function formatDate(value) {
   return Number.isNaN(parsed.getTime()) ? "" : parsed.toLocaleDateString();
 }
 
-function formatMoney(minor, currency = "USD") {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-  }).format(Number(minor || 0) / 100);
+function cleanMilestoneLabel(value) {
+  return String(value || "Milestone")
+    .replace(/^completed:\s*/i, "")
+    .replace(/\s+completed$/i, "")
+    .trim();
 }
 
 export default function RewardsDrawer({ shopperId, open, onClose, onHud }) {
@@ -32,9 +32,13 @@ export default function RewardsDrawer({ shopperId, open, onClose, onHud }) {
     if (open && shopperId) void refreshRewardsState();
   }, [open, shopperId]);
 
-  const completedCount = useMemo(
-    () => rewards.summary?.milestones?.filter((item) => item.completed).length || 0,
+  const completedMilestones = useMemo(
+    () => (rewards.summary?.milestones || []).filter((item) => item.completed),
     [rewards.summary]
+  );
+  const unlockedOffers = useMemo(
+    () => (rewards.offers || []).filter((offer) => offer.unlocked && offer.status !== "expired"),
+    [rewards.offers]
   );
 
   async function applyOffer(offer) {
@@ -117,7 +121,7 @@ export default function RewardsDrawer({ shopperId, open, onClose, onHud }) {
             <div style={{ color: "#315efb", fontWeight: 800, letterSpacing: ".12em" }}>
               MY REWARDS
             </div>
-            <h2 style={{ margin: "4px 0 0", fontSize: 28 }}>Your earned sleep value</h2>
+            <h2 style={{ margin: "4px 0 0", fontSize: 28 }}>Reward summary</h2>
           </div>
           <button type="button" onClick={onClose} style={{ minHeight: 44, padding: "0 14px" }}>
             Close
@@ -152,34 +156,36 @@ export default function RewardsDrawer({ shopperId, open, onClose, onHud }) {
                 {points} Sleep Points
               </div>
               <div style={{ marginTop: 4, fontSize: 18, fontWeight: 800 }}>{badge}</div>
-              <p style={{ marginBottom: 0, color: "#526179" }}>
-                {progress?.complete
-                  ? "Your showroom reward journey is complete."
-                  : `${progress?.pointsRemaining || 0} points to ${progress?.nextBadgeLabel}.`}
-              </p>
+              {!progress?.complete && progress?.nextBadgeLabel ? (
+                <p style={{ marginBottom: 0, color: "#526179" }}>
+                  {progress?.pointsRemaining || 0} points to {progress.nextBadgeLabel}.
+                </p>
+              ) : null}
             </section>
 
             <section style={{ marginTop: 16 }}>
-              <h3>Showroom milestones ({completedCount}/{summary.milestones?.length || 0})</h3>
+              <h3>Completed milestones</h3>
               <div style={{ display: "grid", gap: 8 }}>
-                {(summary.milestones || []).map((milestone) => (
+                {completedMilestones.map((milestone) => (
                   <div
                     key={milestone.id}
-                    style={{ padding: 12, borderRadius: 12, background: "#fff" }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, background: "#fff" }}
                   >
-                    <strong>{milestone.completed ? "Completed: " : ""}{milestone.label}</strong>
-                    <div style={{ color: "#657087" }}>
-                      {milestone.completed ? "Confirmed" : `${milestone.pointAward} points available`}
-                    </div>
+                    <span aria-hidden="true" style={{ color: "#12805c", fontWeight: 900 }}>✓</span>
+                    <strong>{cleanMilestoneLabel(milestone.label)}</strong>
                   </div>
                 ))}
+                {!completedMilestones.length ? (
+                  <p style={{ margin: 0, color: "#657087" }}>No completed milestones yet.</p>
+                ) : null}
               </div>
             </section>
 
+            {unlockedOffers.length ? (
             <section style={{ marginTop: 16 }}>
-              <h3>Earned offers</h3>
+              <h3>Unlocked offers</h3>
               <div style={{ display: "grid", gap: 10 }}>
-                {(rewards.offers || []).map((offer) => (
+                {unlockedOffers.map((offer) => (
                   <div key={offer.id} style={{ padding: 14, borderRadius: 12, background: "#fff" }}>
                     <strong>{offer.label}</strong>
                     <p style={{ margin: "6px 0", color: "#526179" }}>{offer.description}</p>
@@ -190,20 +196,19 @@ export default function RewardsDrawer({ shopperId, open, onClose, onHud }) {
                           ? `Available through ${formatDate(offer.expiresAt)}`
                           : offer.eligibility}
                     </small>
-                    {offer.unlocked && (
-                      <button
-                        type="button"
-                        disabled={workingOfferId === offer.id}
-                        onClick={() => applyOffer(offer)}
-                        style={{ width: "100%", minHeight: 46, marginTop: 10 }}
-                      >
-                        {workingOfferId === offer.id ? "Checking cart..." : "Apply to showroom cart"}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      disabled={workingOfferId === offer.id}
+                      onClick={() => applyOffer(offer)}
+                      style={{ width: "100%", minHeight: 46, marginTop: 10 }}
+                    >
+                      {workingOfferId === offer.id ? "Checking cart..." : "Check offer for this cart"}
+                    </button>
                   </div>
                 ))}
               </div>
             </section>
+            ) : null}
 
             {rewards.gift?.status && rewards.gift.status !== "locked" && (
               <section style={{ marginTop: 16, padding: 16, borderRadius: 14, background: "#eafbf3" }}>
@@ -223,22 +228,6 @@ export default function RewardsDrawer({ shopperId, open, onClose, onHud }) {
               </div>
             )}
 
-            <section style={{ marginTop: 16 }}>
-              <h3>Reward history</h3>
-              {(rewards.history || []).length ? (
-                <div style={{ display: "grid", gap: 8 }}>
-                  {rewards.history.map((entry) => (
-                    <div key={entry.id} style={{ padding: 10, borderRadius: 10, background: "#fff" }}>
-                      <strong>{entry.entryType?.replaceAll("_", " ")}</strong>
-                      {entry.pointDelta ? `: +${entry.pointDelta} points` : ""}
-                      <div style={{ color: "#657087" }}>{formatDate(entry.occurredAt)}</div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p>No reward history yet.</p>
-              )}
-            </section>
           </>
         )}
       </aside>

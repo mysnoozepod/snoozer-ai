@@ -2720,7 +2720,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
             }
           }}
           primaryCtaLabel="Add Selected Setup to Cart"
-          onViewSnoozePod={() => navigate("/cart")}
+          onViewSnoozePod={() => navigate("/cart", { state: { originPodId: pid } })}
           onViewResults={null}
           requestedStepKey={buildStepKey}
           mattressAlreadyInCart={mattressHandleInCart || showLabMattressCartBanner}
@@ -2949,7 +2949,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
               className={cartPulse ? "scale-[1.01] border-indigo-300 ring-4 ring-indigo-100" : ""}
               onClick={() => {
                 noteUserInteraction?.();
-                navigate("/cart");
+                navigate("/cart", { state: { originPodId: pid } });
               }}
             />
 

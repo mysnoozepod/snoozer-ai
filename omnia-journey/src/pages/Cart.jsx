@@ -1,19 +1,19 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
 import {
   CHECKOUT_LOUNGE_MESSAGE,
   canInitiateCheckout,
-  canOpenCheckoutUrl,
   canViewFinancing,
   canViewPodNavigation,
   shouldShowCheckoutLoungeHandoff,
 } from "@/device/deviceActionGuards";
+import { emitDeviceHumanHelp } from "@/device/deviceActivityTracker";
 import { getPodNumber, makePodRoute, normalizePodId } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { useStore } from "@/lib/useStore";
 import { useSnoozer } from "@/Layout";
-import { getSessionState, getShopperId } from "@/state/sessionStore";
+import { getShopperId } from "@/state/sessionStore";
 import {
   refreshRewardsState,
   useRewardsState,
@@ -35,6 +35,14 @@ function safeGet(key) {
   }
 }
 
+function safeSet(key, value) {
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // Session storage is a convenience; cart truth remains in Shopify.
+  }
+}
+
 function safeParseJson(str) {
   try {
     return JSON.parse(str);
@@ -44,10 +52,13 @@ function safeParseJson(str) {
 }
 
 function toPodId(v) {
-  const normalized = normalizePodId(v);
-  if (normalized) return getPodNumber(normalized) || "1";
-  const s = String(v ?? "").trim();
-  return s || "1";
+  const raw = String(v ?? "").trim();
+  const normalized = normalizePodId(raw);
+  if (normalized) return getPodNumber(normalized);
+  const podMatch = raw.match(/\bpod[-\s]*([1-5])\b/i);
+  if (podMatch) return podMatch[1];
+  const snoozePodMatch = raw.match(/\bsnoozepod\s*([1-5])\b/i);
+  return snoozePodMatch?.[1] || null;
 }
 
 function formatMoney(amount, currency = "USD") {
@@ -85,59 +96,35 @@ function attributeValue(attrs, keys) {
   return found?.value || "";
 }
 
-function pickTechnicalAttributes(attrs) {
+function pickShopperAttributes(attrs) {
   const allow = new Set([
-    "SnoozePod",
-    "_SnoozePod",
     "Size",
-    "Mattress",
-    "_Mattress",
     "Base",
-    "_Base",
     "Motion",
     "Dual Comfort",
     "Left Feel",
     "Right Feel",
-    "Product",
-    "_Product",
-    "Option",
-    "_Option",
     "Setup Size",
-    "_Setup Size",
     "Variant Option",
-    "_Variant Option",
     "Pillow Size",
     "Sleep Essential",
-    "_Sleep Essential",
   ]);
 
   const order = [
-    "SnoozePod",
-    "_SnoozePod",
     "Size",
     "Setup Size",
-    "_Setup Size",
     "Variant Option",
-    "_Variant Option",
-    "Mattress",
-    "_Mattress",
     "Base",
-    "_Base",
     "Motion",
     "Dual Comfort",
     "Left Feel",
     "Right Feel",
-    "Product",
-    "_Product",
-    "Option",
-    "_Option",
     "Pillow Size",
     "Sleep Essential",
-    "_Sleep Essential",
   ];
 
   return normalizeAttributes(attrs)
-    .filter((attr) => allow.has(attr.key))
+    .filter((attr) => !attr.key.startsWith("_") && allow.has(attr.key))
     .sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
 }
 
@@ -145,10 +132,6 @@ function cleanValue(value) {
   return String(value || "")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function displayAttributeKey(key) {
-  return String(key || "").replace(/^_+/, "");
 }
 
 function cartLineConfiguration(item) {
@@ -196,6 +179,15 @@ function cartLineConfiguration(item) {
   return pieces.filter(Boolean).join(" · ") || "Configured for your SnoozePod";
 }
 
+function originatingPodFromCart(items) {
+  for (const item of Array.isArray(items) ? items : []) {
+    const value = attributeValue(item?.attributes, ["_SnoozePod", "SnoozePod"]);
+    const podId = toPodId(value);
+    if (podId) return podId;
+  }
+  return null;
+}
+
 function mutationMessage(operation, checkoutLoading, cartSyncing) {
   if (checkoutLoading) return "Refreshing checkout...";
   if (cartSyncing) return "Syncing your SnoozePod...";
@@ -228,7 +220,6 @@ export default function Cart() {
   const prepareCheckoutCart = useStore((s) => s.prepareCheckoutCart);
 
   const cartId = useStore((s) => s.cartId || null);
-  const checkoutUrl = useStore((s) => s.checkoutUrl || null);
   const recommendations = useStore((s) => s.recommendations);
   const syncCartFromShopify = useStore((s) => s.syncCartFromShopify);
   const cartMutationPending = useStore((s) => s.cartMutationPending);
@@ -239,13 +230,12 @@ export default function Cart() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [cartSyncing, setCartSyncing] = useState(false);
   const [toast, setToast] = useState("");
-  const [expandedLines, setExpandedLines] = useState({});
+  const [checkoutFailed, setCheckoutFailed] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  const checkoutLockRef = useRef(false);
 
   const shopperId = getShopperId() || "guest";
   const checkoutAllowed = canInitiateCheckout(device);
-  const checkoutUrlAllowed = canOpenCheckoutUrl(device);
-  const podNavigationAllowed = canViewPodNavigation(device);
   const financingAllowed = canViewFinancing(device);
   const showCheckoutHandoff =
     shouldShowCheckoutLoungeHandoff(device) || Boolean(location.state?.checkoutHandoff);
@@ -262,23 +252,30 @@ export default function Cart() {
   }, [shopperId]);
 
   const continuePodId = useMemo(() => {
+    const locationPodId = toPodId(location.state?.originPodId);
+    if (locationPodId) return locationPodId;
+
+    const cartPodId = originatingPodFromCart(cartItems);
+    if (cartPodId) return cartPodId;
+
+    const storedPodId = toPodId(safeGet("snooze.cartOriginPodId"));
+    if (storedPodId) return storedPodId;
+
     const parsed =
       recommendations && typeof recommendations === "object"
         ? recommendations
         : safeParseJson(safeGet("snooze.recommendations"));
     const pods = Array.isArray(parsed?.pods) ? parsed.pods : [];
     const first = pods[0] || null;
-    return first ? toPodId(first.podId ?? first.id) : "1";
-  }, [recommendations]);
+    return first ? toPodId(first.podId ?? first.id) : null;
+  }, [cartItems, location.state, recommendations]);
   const continuePodRoute = useMemo(
-    () => makePodRoute(continuePodId) || "/pod/pod-1",
+    () => makePodRoute(continuePodId),
     [continuePodId]
   );
-
-  const bestCheckoutUrl = useMemo(() => {
-    const legacy = getSessionState?.() || {};
-    return checkoutUrl || legacy?.checkoutUrl || null;
-  }, [checkoutUrl]);
+  const podNavigationAllowed = Boolean(
+    continuePodRoute && canViewPodNavigation(device, continuePodRoute)
+  );
 
   const total = useMemo(() => {
     return (Array.isArray(cartItems) ? cartItems : []).reduce((acc, item) => {
@@ -298,9 +295,7 @@ export default function Cart() {
   const activeMessage = mutationMessage(cartMutationOperation, checkoutLoading, cartSyncing);
   const rewardPoints = Number(rewards?.summary?.availableSleepPoints || 0);
   const rewardStatus =
-    rewards.status === "ready"
-      ? "Rewards available"
-      : rewards.status === "loading"
+    rewards.status === "loading"
         ? "Checking rewards..."
         : rewards.status === "error"
           ? "Rewards unavailable"
@@ -332,8 +327,12 @@ export default function Cart() {
     if (shopperId && shopperId !== "guest") void refreshRewardsState();
   }, [shopperId]);
 
+  useEffect(() => {
+    if (continuePodId) safeSet("snooze.cartOriginPodId", continuePodId);
+  }, [continuePodId]);
+
   async function handleCheckout() {
-    if (checkoutLoading) return;
+    if (checkoutLockRef.current || checkoutLoading) return;
 
     if (!checkoutAllowed) {
       setToast(CHECKOUT_LOUNGE_MESSAGE);
@@ -345,8 +344,10 @@ export default function Cart() {
       return;
     }
 
+    checkoutLockRef.current = true;
     setCheckoutLoading(true);
     setToast("");
+    setCheckoutFailed(false);
 
     try {
       try {
@@ -359,7 +360,7 @@ export default function Cart() {
       const newCheckoutUrl = prepared?.checkoutUrl || null;
 
       if (!newCheckoutUrl) {
-        setToast("Checkout is temporarily unavailable. Please try again.");
+        setCheckoutFailed(true);
         api
           .trackCRMEvent({
             shopperId,
@@ -380,10 +381,20 @@ export default function Cart() {
         })
         .catch(() => {});
 
+      void Promise.resolve(
+        snoozer?.sayHud?.({
+          speech: "Your SnoozePod is ready. Continuing to secure checkout.",
+          captions: "Your SnoozePod is ready. Continuing to secure checkout.",
+          state: "celebrate",
+          priority: "high",
+          ttlMs: 5000,
+          actions: [],
+        })
+      ).catch(() => {});
       window.location.assign(newCheckoutUrl);
     } catch (err) {
       console.error("Checkout failed:", err);
-      setToast("Checkout is temporarily unavailable. Your cart is still saved. Please try again.");
+      setCheckoutFailed(true);
       api
         .trackCRMEvent({
           shopperId,
@@ -393,6 +404,7 @@ export default function Cart() {
         })
         .catch(() => {});
     } finally {
+      checkoutLockRef.current = false;
       setCheckoutLoading(false);
     }
   }
@@ -432,59 +444,89 @@ export default function Cart() {
     }
   }
 
+  async function retryCartRefresh() {
+    if (busy) return;
+    clearCartError?.();
+    setCheckoutFailed(false);
+    setCartSyncing(true);
+    setToast("");
+    try {
+      await syncCartFromShopify?.({ sourcePage: "cart-page-retry" });
+      setToast("Cart refreshed from Shopify.");
+    } catch {
+      setCheckoutFailed(true);
+    } finally {
+      setCartSyncing(false);
+    }
+  }
+
+  function handleTalkToHuman() {
+    emitDeviceHumanHelp(true, { reason: "humanHelp", sourcePage: "cart-page" });
+    window.setTimeout(() => {
+      emitDeviceHumanHelp(false, { reason: "humanHelp", sourcePage: "cart-page" });
+    }, 90000);
+    setToast("Please ask a showroom sleep specialist for checkout help. Your cart is saved.");
+  }
+
   return (
-    <ShowroomPageShell className="pb-8">
+    <ShowroomPageShell className="pb-6">
       <ShowroomTopRail className="items-center">
         <ShowroomBrandMark />
-        <span
-          className={`inline-flex min-h-[44px] items-center rounded-full px-5 text-sm font-black ${
-            cartItems.length
-              ? "border border-emerald-100 bg-emerald-50 text-emerald-800"
-              : "border border-slate-200 bg-white text-slate-600"
-          }`}
-        >
-          {cartItems.length ? "Checkout ready" : "Cart empty"}
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => snoozer?.openRewards?.()}
+            className="inline-flex min-h-[44px] items-center rounded-full border border-violet-200 bg-violet-50 px-4 text-sm font-black text-violet-800"
+          >
+            {rewards.status === "loading" ? "Sleep Points" : `${rewardPoints} Sleep Points`}
+          </button>
+          <span
+            className={`hidden min-h-[44px] items-center rounded-full px-4 text-sm font-black sm:inline-flex ${
+              cartItems.length
+                ? "border border-emerald-100 bg-emerald-50 text-emerald-800"
+                : "border border-slate-200 bg-white text-slate-600"
+            }`}
+          >
+            {cartItems.length ? "Ready to review" : "Cart empty"}
+          </span>
+        </div>
       </ShowroomTopRail>
 
-      <div className="mx-auto max-w-[1460px] px-4 pb-6 pt-2 md:px-6">
-        <ShowroomFrame className="overflow-visible p-4 md:p-6">
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
+      <div className="mx-auto max-w-[1460px] px-4 pb-4 pt-2 md:px-6">
+        <ShowroomFrame className="overflow-visible p-4 md:p-5">
+          <div
+            className={`grid gap-4 ${
+              cartItems.length ? "xl:grid-cols-[minmax(0,1fr)_400px]" : ""
+            }`}
+          >
             <section className="min-w-0">
-              <h1 className="text-[2.25rem] font-black tracking-tight text-slate-950 md:text-[3rem]">
-                Review your SnoozePod before checkout.
-              </h1>
-              <p className="mt-2 max-w-3xl text-[1rem] leading-7 text-slate-600">
-                Everything look good? You&apos;re one step away from better sleep.
-              </p>
-
-              <div className="mt-5 flex flex-wrap items-center gap-2 rounded-[18px] border border-slate-200 bg-white/80 p-2 shadow-[0_16px_36px_rgba(15,23,42,0.06)]">
+              <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+                <div>
+                  <ShowroomEyebrow>Checkout</ShowroomEyebrow>
+                  <h1 className="mt-1 text-[1.9rem] font-black tracking-tight text-slate-950 md:text-[2.35rem]">
+                    Review Your SnoozePod
+                  </h1>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
                 {podNavigationAllowed ? (
                   <Link
                     to={continuePodRoute}
-                    className="inline-flex min-h-[44px] items-center justify-center rounded-[14px] px-4 text-sm font-black text-[#1A66D2] transition hover:bg-blue-50"
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-[14px] border border-blue-100 bg-white px-4 text-sm font-black text-[#1A66D2] transition hover:bg-blue-50"
                   >
                     ← Back to SnoozePod
-                  </Link>
-                ) : null}
-                {financingAllowed ? (
-                  <Link
-                    to="/financing"
-                    className="inline-flex min-h-[44px] items-center justify-center rounded-[14px] px-4 text-sm font-black text-[#1A66D2] transition hover:bg-blue-50"
-                  >
-                    Financing
                   </Link>
                 ) : null}
                 {cartItems.length > 0 ? (
                   <button
                     type="button"
                     onClick={() => setConfirmClear(true)}
-                    className="ml-auto inline-flex min-h-[44px] items-center justify-center rounded-[14px] px-4 text-sm font-black text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-[14px] px-3 text-sm font-black text-red-600 transition hover:bg-red-50 disabled:opacity-60"
                     disabled={busy}
                   >
                     Clear Cart
                   </button>
                 ) : null}
+                </div>
               </div>
 
               {confirmClear ? (
@@ -511,35 +553,31 @@ export default function Cart() {
                 </div>
               ) : null}
 
-              {cartError ? (
+              {cartError || checkoutFailed ? (
                 <div
                   role="alert"
-                  className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950"
+                  className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950"
                 >
-                  <span>
-                    {typeof cartError === "string"
-                      ? cartError
-                      : cartError?.message || "The cart could not be refreshed."}
+                  <span className="font-bold">
+                    We couldn&apos;t refresh your cart right now. Your selections are still saved.
                   </span>
-                  <button
-                    type="button"
-                    className="min-h-[44px] rounded-[14px] border border-amber-300 bg-white px-4 font-black"
-                    onClick={async () => {
-                      clearCartError?.();
-                      setCartSyncing(true);
-                      try {
-                        await syncCartFromShopify?.({ sourcePage: "cart-page-retry" });
-                        setToast("Cart refreshed from Shopify.");
-                      } catch {
-                        setToast("Your cart could not be restored. Please try again.");
-                      } finally {
-                        setCartSyncing(false);
-                      }
-                    }}
-                    disabled={cartMutationPending}
-                  >
-                    Retry
-                  </button>
+                  <span className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      className="min-h-[44px] rounded-[14px] border border-amber-300 bg-white px-4 font-black"
+                      onClick={checkoutFailed ? handleCheckout : retryCartRefresh}
+                      disabled={busy}
+                    >
+                      Try Again
+                    </button>
+                    <button
+                      type="button"
+                      className="min-h-[44px] rounded-[14px] px-4 font-black text-amber-950"
+                      onClick={handleTalkToHuman}
+                    >
+                      Talk to Human
+                    </button>
+                  </span>
                 </div>
               ) : null}
 
@@ -549,25 +587,36 @@ export default function Cart() {
                 </div>
               ) : null}
 
-              <div className="mt-5 space-y-3">
+              <div className="mt-3 space-y-3" aria-busy={busy ? "true" : "false"}>
                 {cartItems.length === 0 ? (
-                  <ShowroomPanel className="p-7">
-                    <div className="text-[1.35rem] font-black text-slate-950">
+                  <ShowroomPanel className="p-7 md:p-10">
+                    <div className="text-[1.6rem] font-black text-slate-950">
                       {cartSyncing ? "Checking your cart..." : "Your cart is empty."}
                     </div>
-                    <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
-                      {podNavigationAllowed
-                        ? "Add your mattress, base, and sleep essentials from a pod, then come back here for checkout review."
-                        : "A sleep specialist can help you add your showroom setup."}
-                    </p>
                     {podNavigationAllowed ? (
-                      <Link
-                        to={continuePodRoute}
-                        className="mt-5 inline-flex min-h-[48px] items-center rounded-[16px] bg-[#1A66D2] px-5 text-sm font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.22)] transition hover:bg-[#1550A0]"
+                      <div className="mt-5 flex flex-wrap gap-3">
+                        <Link
+                          to={continuePodRoute}
+                          className="inline-flex min-h-[50px] items-center rounded-[16px] bg-[#1A66D2] px-5 text-sm font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.22)] transition hover:bg-[#1550A0]"
+                        >
+                          Return to SnoozePod
+                        </Link>
+                        <Link
+                          to={`${continuePodRoute}?stage=build&buildStep=essentials`}
+                          className="inline-flex min-h-[50px] items-center rounded-[16px] border border-blue-200 bg-white px-5 text-sm font-black text-[#1A66D2]"
+                        >
+                          Browse Sleep Essentials
+                        </Link>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleTalkToHuman}
+                        className="mt-5 inline-flex min-h-[50px] items-center rounded-[16px] bg-[#1A66D2] px-5 text-sm font-black text-white"
                       >
-                        Go to SnoozePod {continuePodId}
-                      </Link>
-                    ) : null}
+                        Talk to Human
+                      </button>
+                    )}
                   </ShowroomPanel>
                 ) : (
                   cartItems.map((item, idx) => {
@@ -576,16 +625,15 @@ export default function Cart() {
                     const image = safeImage(item);
                     const qty = Number(item.quantity ?? item.qty ?? 1) || 1;
                     const unit = Number(item.unitPrice ?? item.price ?? 0) || 0;
-                    const technical = pickTechnicalAttributes(item?.attributes);
-                    const expanded = Boolean(expandedLines[id]);
+                    const shopperAttributes = pickShopperAttributes(item?.attributes);
 
                     return (
                       <ShowroomPanel key={id} className="p-3 md:p-4">
-                        <div className="grid gap-4 md:grid-cols-[120px_minmax(0,1fr)_160px_170px] md:items-center">
+                        <div className="grid gap-4 md:grid-cols-[112px_minmax(0,1fr)_135px_170px] md:items-center">
                           <img
                             src={image}
                             alt={title}
-                            className="h-[104px] w-[120px] rounded-[18px] border border-slate-200 bg-white object-cover"
+                            className="h-[96px] w-[112px] rounded-[18px] border border-slate-200 bg-white object-contain p-1"
                             onError={(e) => {
                               e.currentTarget.src = "/no-image.svg";
                             }}
@@ -598,16 +646,17 @@ export default function Cart() {
                             <p className="mt-1 text-sm font-semibold leading-5 text-slate-600">
                               {cartLineConfiguration(item)}
                             </p>
-                            {technical.length ? (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setExpandedLines((prev) => ({ ...prev, [id]: !prev[id] }))
-                                }
-                                className="mt-2 min-h-[36px] rounded-full text-sm font-black text-[#1A66D2]"
-                              >
-                                {expanded ? "Hide details" : "View details"}
-                              </button>
+                            {shopperAttributes.length ? (
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {shopperAttributes.map((attr) => (
+                                  <span
+                                    key={`${id}-${attr.key}-${attr.value}`}
+                                    className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700"
+                                  >
+                                    {attr.key}: {attr.value}
+                                  </span>
+                                ))}
+                              </div>
                             ) : null}
                           </div>
 
@@ -655,18 +704,6 @@ export default function Cart() {
                           </div>
                         </div>
 
-                        {expanded && technical.length ? (
-                          <div className="mt-3 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3">
-                            {technical.map((attr) => (
-                              <span
-                                key={`${id}-${attr.key}-${attr.value}`}
-                                className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700"
-                              >
-                                {displayAttributeKey(attr.key)}: {attr.value}
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
                       </ShowroomPanel>
                     );
                   })
@@ -674,6 +711,7 @@ export default function Cart() {
               </div>
             </section>
 
+            {cartItems.length ? (
             <aside className="space-y-3 xl:sticky xl:top-4 xl:self-start">
               <ShowroomPanel className="p-5 md:p-6">
                 <ShowroomEyebrow>Your Total</ShowroomEyebrow>
@@ -691,9 +729,13 @@ export default function Cart() {
                         Rewards
                       </div>
                       <div className="mt-1 text-lg font-black text-violet-800">
-                        {rewardPoints} Sleep Points
+                        {rewards.status === "ready"
+                          ? `${rewardPoints} Sleep Points earned`
+                          : `${rewardPoints} Sleep Points`}
                       </div>
-                      <p className="mt-1 text-xs font-semibold text-violet-700">{rewardStatus}</p>
+                      {rewards.status !== "ready" ? (
+                        <p className="mt-1 text-xs font-semibold text-violet-700">{rewardStatus}</p>
+                      ) : null}
                     </div>
                     <button
                       type="button"
@@ -711,9 +753,9 @@ export default function Cart() {
                     className="mt-4 flex min-h-[68px] items-center justify-between rounded-[20px] border border-blue-100 bg-blue-50 px-4 text-sm font-black text-slate-900"
                   >
                     <span>
-                      Flexible financing available
-                      <span className="mt-1 block text-xs font-semibold text-slate-600">
-                        Review available payment options.
+                        Flexible financing available
+                        <span className="mt-1 block text-xs font-semibold text-slate-600">
+                          View financing options
                       </span>
                     </span>
                     <span className="text-xl text-[#1A66D2]">›</span>
@@ -729,15 +771,9 @@ export default function Cart() {
                     <span>Shipping</span>
                     <span className="font-semibold">Calculated at checkout</span>
                   </div>
-                  <div className="flex items-end justify-between gap-3 border-t border-slate-200 pt-4">
-                    <span className="text-lg font-black text-slate-950">Total</span>
-                    <span className="text-right">
-                      <span className="mr-2 text-xs font-black uppercase text-slate-500">USD</span>
-                      <span className="text-[1.8rem] font-black text-slate-950">
-                        {formatMoney(total)}
-                      </span>
-                    </span>
-                  </div>
+                  <p className="border-t border-slate-200 pt-3 text-xs font-semibold leading-5 text-slate-500">
+                    Final shipping and tax are calculated by Shopify during secure checkout.
+                  </p>
                 </div>
 
                 {showCheckoutHandoff ? (
@@ -763,7 +799,7 @@ export default function Cart() {
                     disabled={busy || !cartItems.length}
                     className="mt-5 inline-flex min-h-[58px] w-full items-center justify-center rounded-[18px] bg-[#1A66D2] px-6 text-base font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.22)] transition hover:bg-[#1550A0] disabled:opacity-60"
                   >
-                    {checkoutLoading ? "Refreshing checkout..." : "Continue to Checkout"}
+                    {checkoutLoading ? "Refreshing checkout..." : "Continue to Secure Checkout →"}
                   </button>
                 )}
 
@@ -771,30 +807,23 @@ export default function Cart() {
                   Secure checkout powered by Shopify
                 </div>
 
-                {bestCheckoutUrl && checkoutUrlAllowed ? (
-                  <a
-                    href={bestCheckoutUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center rounded-[14px] border border-slate-200 bg-white text-sm font-black text-slate-700"
-                  >
-                    Open current checkout link
-                  </a>
-                ) : null}
               </ShowroomPanel>
 
-              <ShowroomPanel className="flex items-center gap-3 p-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-xl">
-                  💤
-                </div>
+              <ShowroomPanel className="flex flex-wrap items-center justify-between gap-3 p-4">
                 <div>
-                  <div className="font-black text-slate-950">Give everything one last look.</div>
-                  <p className="mt-1 text-sm leading-5 text-slate-600">
-                    Snoozer is here if you need anything before checkout.
-                  </p>
+                  <div className="font-black text-slate-950">Need purchase help?</div>
+                  <p className="mt-1 text-sm text-slate-600">Pricing, financing, or checkout assistance.</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleTalkToHuman}
+                  className="min-h-[44px] rounded-[14px] border border-blue-200 bg-white px-4 text-sm font-black text-[#1A66D2]"
+                >
+                  Talk to Human
+                </button>
               </ShowroomPanel>
             </aside>
+            ) : null}
           </div>
         </ShowroomFrame>
 

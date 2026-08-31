@@ -289,7 +289,7 @@ function LayoutShell() {
           onClose={() => setDrawerOpen(false)}
           onHud={sayHud}
         />
-        {shopperId && pathname !== "/checkout" && (
+        {shopperId && pathname !== "/checkout" && pathname !== "/cart" && (
           <RewardsPill shopperId={shopperId} onClick={() => setDrawerOpen(true)} />
         )}
 
