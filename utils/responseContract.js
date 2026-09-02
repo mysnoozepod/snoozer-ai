@@ -240,6 +240,7 @@ function normalizeSnoozerResponse(raw, opts = {}) {
       : isObj(safe?.metadata?.qualityGate)
       ? safe.metadata.qualityGate
       : null;
+  const answerMeta = isObj(safe?.meta) ? safe.meta : {};
 
   const source = (() => {
     const src = isObj(safe?.metadata?.source)
@@ -294,6 +295,12 @@ function normalizeSnoozerResponse(raw, opts = {}) {
       source,
       metrics,
       ...(qualityGate ? { qualityGate } : {}),
+      answerStrategy: safeString(answerMeta.answer_strategy),
+      answerSourceType: safeString(answerMeta.answer_source_type),
+      answerSourceKey: answerMeta.answer_source_key ?? null,
+      answerGrounded: Boolean(answerMeta.answer_grounded),
+      answerFactsCount: Number(answerMeta.answer_facts_count || 0),
+      reason: safeString(answerMeta.reason),
     },
   };
 }

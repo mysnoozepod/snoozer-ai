@@ -1114,7 +1114,6 @@
 
 {%- assign snoozer_assessment_url = '/pages/snooze-assessment' -%}
 {%- assign snoozer_mattresses_url = '/collections/mattresses' -%}
-{%- assign snoozer_bases_url = '/products/premium-motion-adjustable-base' -%}
 {%- assign snoozer_booking_url = '/pages/book-a-snooze-session' -%}
 {%- assign snoozer_expectations_url = '/pages/book-a-snooze-session' -%}
 
@@ -1194,10 +1193,10 @@
     <div class="header__snoozer-chip-zone">
       <p class="header__snoozer-section-label">Good places to start</p>
       <div class="header__snoozer-chip-list" data-snoozer-chip-list aria-label="Suggested Snoozer prompts">
-        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Cooling and airflow matter most here. I can help narrow the right feel and setup.">I sleep hot</button>
-        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Better support should help alignment without making comfort feel rigid.">I need better support</button>
-        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Sleep position and gentle elevation can both help when snoring is part of the picture.">I snore</button>
-        <button type="button" class="header__snoozer-chip" data-snoozer-chip data-snoozer-response-text="Compare feel, support, cooling, and adjustability before you compare price.">Help me compare mattresses</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip>I sleep hot</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip>I need better support</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip>I snore</button>
+        <button type="button" class="header__snoozer-chip" data-snoozer-chip>Help me compare mattresses</button>
       </div>
     </div>
     <div class="header__snoozer-response-card">
@@ -1499,17 +1498,17 @@
     const shells = Array.from(document.querySelectorAll('[data-snoozer-shell]'));
     const header = document.querySelector('.header');
     const requestPageType = {{ request.page_type | json }};
-    const HUD_ASK_TIMEOUT_MS = 3000;
+    const ASK_SNOOZER_TIMEOUT_MS = 15000;
     const SNOOZER_SESSION_STORAGE_KEY = 'mysnoozepod_snoozer_session_id';
     let lastPointerOpen = 0;
     const routes = {
       assessment: {{ snoozer_assessment_url | json }},
       mattresses: {{ snoozer_mattresses_url | json }},
-      bases: {{ snoozer_bases_url | json }},
       booking: {{ snoozer_booking_url | json }},
       expectations: {{ snoozer_expectations_url | json }}
     };
     const routeAliases = {
+      '/assessment': routes.assessment,
       '/pages/book-your-snooze-session': routes.booking,
       '/pages/booking-a-snooze-session': routes.booking
     };
@@ -1517,233 +1516,14 @@
     const knownStaticHrefs = [
       routes.assessment,
       routes.mattresses,
-      routes.bases,
       routes.booking,
       routes.expectations
     ].filter(Boolean);
     const liveFallbackChips = [
       { label: 'I sleep hot', value: 'I sleep hot' },
       { label: 'I need better support', value: 'I need better support' },
-      { label: 'Help me compare mattresses', value: 'help me compare mattresses' },
-      { label: 'Take Snooze Assessment', value: 'take snooze assessment' }
-    ];
-    const defaultChips = [
-      { label: 'I sleep hot', state: 'sleep_hot' },
-      { label: 'I need better support', state: 'firm_support' },
-      { label: 'I snore', state: 'snoring_elevation' },
-      { label: 'Help me compare mattresses', state: 'compare_mattresses' }
-    ];
-    const defaultCards = [
-      {
-        label: 'Take Snooze Assessment',
-        copy: 'Start with your sleep profile.',
-        href: routes.assessment,
-        placeholder: true
-      },
-      {
-        label: 'View Mattresses',
-        copy: 'Compare feel, support, and cooling.',
-        href: routes.mattresses
-      },
-      {
-        label: 'Book a Snooze Session',
-        copy: 'Visit with a clearer starting point.',
-        href: routes.booking
-      }
-    ];
-    const stateDefinitions = {
-      default: {
-        response: defaultResponse,
-        chips: defaultChips,
-        cards: defaultCards
-      },
-      sleep_hot: {
-        response: 'Cooling and airflow matter most here. Start with breathable comfort and the right support level.',
-        chips: [
-          { label: 'Show cooling options', state: 'sleep_hot' },
-          { label: 'Compare foam vs hybrid', state: 'compare_mattresses' },
-          { label: 'Take Snooze Assessment', state: 'assessment_help' }
-        ],
-        cards: [
-          {
-            label: 'View Cooling Mattresses',
-            copy: 'Start with airflow and temperature comfort.',
-            href: routes.mattresses
-          },
-          {
-            label: 'Compare Foam vs Hybrid',
-            copy: 'See which build fits your sleep style.',
-            href: routes.mattresses
-          },
-          {
-            label: 'Take Snooze Assessment',
-            copy: 'Get a better guided match.',
-            href: routes.assessment,
-            placeholder: true
-          }
-        ]
-      },
-      firm_support: {
-        response: 'Firm support can help with alignment, but the right feel still matters. You want supportive, not punishing.',
-        chips: [
-          { label: 'Compare firm options', state: 'firm_support' },
-          { label: 'I sleep on my back', state: 'firm_support' },
-          { label: 'I sleep on my stomach', state: 'firm_support' }
-        ],
-        cards: [
-          {
-            label: 'View Supportive Mattresses',
-            copy: 'Focus on alignment and pressure relief.',
-            href: routes.mattresses
-          },
-          {
-            label: 'Take Snooze Assessment',
-            copy: 'Match support to your body and sleep style.',
-            href: routes.assessment,
-            placeholder: true
-          },
-          {
-            label: 'Book a Snooze Session',
-            copy: 'Test firmness before deciding.',
-            href: routes.booking
-          }
-        ]
-      },
-      snoring_elevation: {
-        response: 'Snoring can be affected by sleep position and elevation. An adjustable base may help you test a better setup.',
-        chips: [
-          { label: 'Show adjustable bases', state: 'snoring_elevation' },
-          { label: 'Learn about elevation', state: 'snoring_elevation' },
-          { label: 'Book a Snooze Session', state: 'booking_help' }
-        ],
-        cards: [
-          {
-            label: 'View Adjustable Base',
-            copy: 'Explore head-up comfort and positioning.',
-            href: routes.bases
-          },
-          {
-            label: 'Book a Snooze Session',
-            copy: 'Try elevation in person.',
-            href: routes.booking
-          },
-          {
-            label: 'Take Snooze Assessment',
-            copy: 'Build your sleep profile first.',
-            href: routes.assessment,
-            placeholder: true
-          }
-        ]
-      },
-      compare_mattresses: {
-        response: 'Compare by feel, support, cooling, and adjustability - not just price.',
-        chips: [
-          { label: 'Compare foam and hybrid', state: 'compare_mattresses' },
-          { label: 'Help me choose firmness', state: 'firm_support' },
-          { label: 'Take Snooze Assessment', state: 'assessment_help' }
-        ],
-        cards: [
-          {
-            label: 'View Mattresses',
-            copy: 'Compare the main options.',
-            href: routes.mattresses
-          },
-          {
-            label: 'Take Snooze Assessment',
-            copy: 'Narrow the choices faster.',
-            href: routes.assessment,
-            placeholder: true
-          },
-          {
-            label: 'Book a Snooze Session',
-            copy: 'Test your top options.',
-            href: routes.booking
-          }
-        ]
-      },
-      assessment_help: {
-        response: 'The Snooze Assessment is the fastest way to narrow your fit without guessing.',
-        chips: [
-          { label: 'Start assessment', state: 'assessment_help' },
-          { label: 'What does it ask?', state: 'assessment_help' },
-          { label: 'Can I skip it?', state: 'assessment_help' }
-        ],
-        cards: [
-          {
-            label: 'Take Snooze Assessment',
-            copy: 'Build your sleep profile.',
-            href: routes.assessment,
-            placeholder: true
-          },
-          {
-            label: 'View Mattresses',
-            copy: 'Browse first if you prefer.',
-            href: routes.mattresses
-          },
-          {
-            label: 'Book a Snooze Session',
-            copy: 'Get guided in-person testing.',
-            href: routes.booking
-          }
-        ]
-      },
-      booking_help: {
-        response: 'You can book a private Snooze Session to test your fit in the showroom or continue virtually.',
-        chips: [
-          { label: 'Book in showroom', state: 'booking_help' },
-          { label: 'Virtual support', state: 'booking_help' },
-          { label: 'What should I expect?', state: 'booking_help' }
-        ],
-        cards: [
-          {
-            label: 'Book a Snooze Session',
-            copy: 'Reserve guided test time.',
-            href: routes.booking
-          },
-          {
-            label: 'What To Expect',
-            copy: 'See how the visit works.',
-            href: routes.expectations
-          },
-          {
-            label: 'Take Snooze Assessment',
-            copy: 'Prepare your sleep profile first.',
-            href: routes.assessment,
-            placeholder: true
-          }
-        ]
-      },
-      fallback: {
-        response: fallbackResponse,
-        chips: defaultChips,
-        cards: defaultCards
-      }
-    };
-    const keywordMatchers = [
-      {
-        state: 'assessment_help',
-        keywords: ['assessment', 'quiz', 'profile', 'match', 'recommend me']
-      },
-      {
-        state: 'snoring_elevation',
-        keywords: ['snore', 'snoring', 'elevation', 'adjustable', 'head up', 'apnea']
-      },
-      {
-        state: 'sleep_hot',
-        keywords: ['hot', 'cooling', 'sweat', 'warm', 'airflow']
-      },
-      {
-        state: 'compare_mattresses',
-        keywords: ['compare', 'difference', 'best mattress', 'options', 'which one']
-      },
-      {
-        state: 'firm_support',
-        keywords: ['firm', 'back pain', 'support', 'alignment', 'sturdy']
-      },
-      {
-        state: 'booking_help',
-        keywords: ['book', 'appointment', 'showroom', 'visit', 'session', 'test', 'try']
-      }
+      { label: 'I snore', value: 'I snore' },
+      { label: 'Help me compare mattresses', value: 'Help me compare mattresses' }
     ];
 
     function setResponse(shell, text) {
@@ -1772,10 +1552,6 @@
       if (!input) return;
 
       input.placeholder = normalizeText(text) || defaultInputPlaceholder;
-    }
-
-    function getStateDefinition(stateName) {
-      return stateDefinitions[stateName] || stateDefinitions.fallback;
     }
 
     function clearNode(node) {
@@ -2027,9 +1803,6 @@
 
       if (href === routes.assessment) return 'Start with your sleep profile.';
       if (href === routes.booking) return 'Visit with a clearer starting point.';
-      if (href === routes.bases || handle === 'premium-motion-adjustable-base') {
-        return 'Explore elevation and motion.';
-      }
       if (href === routes.mattresses || handle === 'mattresses') {
         return 'Compare feel, support, and cooling.';
       }
@@ -2109,6 +1882,15 @@
       };
     }
 
+    function buildInitialPayload() {
+      const payload = buildLiveFallbackPayload();
+      payload.reply = defaultResponse;
+      payload.intent = 'ready';
+      payload.meta.source = 'initial';
+      payload.meta.error = '';
+      return payload;
+    }
+
     function normalizeLiveChip(chip) {
       const label = normalizeText(chip && chip.label);
       const value = normalizeText(chip && (chip.value || chip.label));
@@ -2123,7 +1905,7 @@
 
     function normalizeLiveCard(item) {
       const label = normalizeText(item && item.label);
-      const href = normalizeHrefPath(item && item.href);
+      const href = normalizeHrefPath(item && (item.href || item.target || item.url));
 
       if (!label || !isSafeInternalHref(href)) return null;
 
@@ -2139,7 +1921,7 @@
       const title = normalizeText(item && (item.title || item.label));
       const handle = normalizeText(item && item.handle);
       const href = normalizeHrefPath((item && item.href) || (handle ? `/products/${handle}` : ''));
-      const reason = normalizeText(item && item.reason);
+      const reason = normalizeText(item && (item.reason || item.subtitle));
       const tags = toArray(item && item.tags)
         .map((tag) => normalizeText(tag))
         .filter(Boolean)
@@ -2197,7 +1979,12 @@
       return {
         status: normalizeText(raw.status) || 'ok',
         reply,
-        intent: normalizeText(raw.intent) || 'live',
+        intent: normalizeText(
+          raw.intent ||
+          (raw.meta && raw.meta.intent) ||
+          (raw.meta && raw.meta.qualityGate && raw.meta.qualityGate.intent) ||
+          (raw.metadata && raw.metadata.qualityGate && raw.metadata.qualityGate.intent)
+        ) || 'live',
         chips,
         actions,
         products,
@@ -2331,36 +2118,6 @@
       label.textContent = hasProductCard ? 'Good starting points' : 'Recommended next';
     }
 
-    function renderState(shell, stateName, selectedLabel = '') {
-      if (!shell) return;
-
-      const state = getStateDefinition(stateName);
-      const chipList = shell.querySelector('[data-snoozer-chip-list]');
-      const actions = shell.querySelector('[data-snoozer-actions]');
-
-      shell.dataset.snoozerState = stateName;
-      setResponse(shell, state.response);
-      setLastQuery(shell, '');
-      setInputPlaceholder(shell, defaultInputPlaceholder);
-
-      clearNode(chipList);
-      state.chips.forEach((chip) => {
-        const chipButton = createChip(chip, selectedLabel);
-        if (chipButton) {
-          chipList.appendChild(chipButton);
-        }
-      });
-
-      clearNode(actions);
-      state.cards.forEach((card) => {
-        const actionCard = createAction(card);
-        if (actionCard) {
-          actions.appendChild(actionCard);
-        }
-      });
-      syncResultsZone(shell, state.cards);
-    }
-
     function renderLivePayload(shell, payload, selectedLabel = '') {
       if (!shell) return;
 
@@ -2393,17 +2150,6 @@
       syncResultsZone(shell, cards);
     }
 
-    function resolveStateFromQuery(query) {
-      const normalized = (query || '').trim().toLowerCase();
-      if (!normalized) return 'default';
-
-      const match = keywordMatchers.find((matcher) => {
-        return matcher.keywords.some((keyword) => normalized.includes(keyword));
-      });
-
-      return match ? match.state : 'fallback';
-    }
-
     async function submitLiveQuery(shell, query) {
       if (!shell || shell.dataset.snoozerBusy === 'true') return;
 
@@ -2422,25 +2168,40 @@
       const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const timeoutId = window.setTimeout(() => {
         if (controller) controller.abort();
-      }, HUD_ASK_TIMEOUT_MS);
+      }, ASK_SNOOZER_TIMEOUT_MS);
 
       try {
         const storedIdentity = getStoredSnoozeIdentity();
-        const response = await fetch(buildApiUrl('/hud/ask'), {
+        const pagePath = window.location && window.location.pathname ? window.location.pathname : '/';
+        const currentProductHandle = pagePath.startsWith('/products/')
+          ? pagePath.split('/').filter(Boolean)[1] || ''
+          : '';
+        const sessionId = getSessionId();
+        const response = await fetch(buildApiUrl('/ask-snoozer'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            query: normalizedQuery,
-            path: window.location && window.location.pathname ? window.location.pathname : '/',
-            page_type: getPageType(),
-            surface: 'shopify_header',
-            session_id: getSessionId(),
+            message: normalizedQuery,
+            source: 'shopify_header',
+            sessionId: sessionId,
+            thread_id: sessionId,
             shopperId: storedIdentity.shopperId || undefined,
             snoozeCode: storedIdentity.snoozeCode || undefined,
             accessCode: storedIdentity.accessCode || undefined,
-            sourceShopperId: storedIdentity.sourceShopperId || undefined
+            sourceShopperId: storedIdentity.sourceShopperId || undefined,
+            context: {
+              path: pagePath,
+              page_type: getPageType(),
+              pageType: getPageType(),
+              surface: 'shopify_header',
+              currentProductHandle: currentProductHandle || undefined,
+              shopperId: storedIdentity.shopperId || undefined,
+              snoozeCode: storedIdentity.snoozeCode || undefined,
+              accessCode: storedIdentity.accessCode || undefined,
+              sourceShopperId: storedIdentity.sourceShopperId || undefined
+            }
           }),
           signal: controller ? controller.signal : undefined
         });
@@ -2449,7 +2210,7 @@
         const payload = normalizeLivePayload(rawPayload);
 
         if (!response.ok) {
-          throw new Error('HUD_ASK_INVALID_RESPONSE');
+          throw new Error('ASK_SNOOZER_INVALID_RESPONSE');
         }
 
         renderLivePayload(shell, payload, normalizedQuery);
@@ -2658,7 +2419,8 @@
     shells.forEach((shell) => {
       const form = shell.querySelector('[data-snoozer-form]');
       const input = shell.querySelector('[data-snoozer-input]');
-      renderState(shell, 'default');
+      renderLivePayload(shell, buildInitialPayload(), '');
+      setInputPlaceholder(shell, defaultInputPlaceholder);
 
       if (!form || !input) return;
 

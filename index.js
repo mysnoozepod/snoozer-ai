@@ -4945,6 +4945,9 @@ function buildAskSnoozerQualityGateObject(decision = null, overrides = {}) {
     shouldAskClarifyingQuestion: Boolean(
       safeOverrides.shouldAskClarifyingQuestion ?? safeDecision.shouldAskClarifyingQuestion
     ),
+    protectedTruthRequired: Boolean(
+      safeOverrides.protectedTruthRequired ?? safeDecision.protectedTruthRequired
+    ),
     answerType:
       String(safeOverrides.answerType || safeDecision.answerType || "fallback").trim() || "fallback",
     factsResolved: Boolean(safeOverrides.factsResolved),
@@ -6057,6 +6060,136 @@ async function triggerScene({ podId, scene }) {
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Main
 // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+function getAskSnoozerRouteDeps() {
+  return {
+    safeJsonBody,
+    isDebugRequest,
+    deriveEffectiveThreadId,
+    cleanIdentityValue,
+    safeResolveSnoozeIdentity,
+    log,
+    wantsHudResponse,
+    buildErrorResponse,
+    normalizeSnoozerResponse,
+    logContractResponse,
+    buildHudFromAny,
+    flatResponse,
+    getSessionItem,
+    nowIso,
+    buildDefaultSCO,
+    putSessionItemIfMissing,
+    ttlEpochSeconds,
+    deepMerge,
+    normalizePodAnchors,
+    getAssessmentResult,
+    recsService,
+    getSeedRecommendations,
+    resolveCanonicalRecommendationContext,
+    attachCanonicalRecommendationContext,
+    pickAskSnoozerAssessmentInput,
+    buildAskSnoozerClassification,
+    safeGetCustomerProfile,
+    attachStoredProfileContext,
+    customerProfileService,
+    buildIdentityProfilePatch,
+    safeUpsertCustomerProfile,
+    logProfileRouteOutcome,
+    safeUpsertIdentityAliases,
+    maybeSyncProfileToZohoForInteraction,
+    enqueueAskSnoozerAsyncWrites,
+    STRICT_POD_ANCHOR,
+    routeAskSnoozerQuestion,
+    maybeBuildAskSnoozerCanonicalAnswer,
+    saveSessionContext,
+    buildSuccessResponse,
+    maybeBuildAskSnoozerDeterministicGuidanceAnswer,
+    maybeBuildAskSnoozerCommerceAnswer,
+    queryExplicitlyRequestsAskSnoozerCommerce,
+    resolveAskSnoozerCommerceResponse,
+    shopifySvc,
+    resolveAskSnoozerPolicyAnswer,
+    buildAskSnoozerPolicyChips,
+    buildAskSnoozerAction,
+    buildAskSnoozerMissingAssessmentChips,
+    buildAskSnoozerClarificationReply,
+    buildAskSnoozerMissingRecommendationReply,
+    buildAskSnoozerFallbackReply,
+    buildAskSnoozerQualityGateObject,
+    maybeBuildAskSnoozerDeterministicFaqAnswer,
+    S3_RETRIEVAL_TIMEOUT_MS,
+    MODEL_TIMEOUT_MS,
+    measureStep,
+    withTimeout,
+    isObject,
+    safeNumber,
+    normalizeContextPatch,
+    normalizeHudStateValue,
+    normalizeHudPriorityValue,
+    normalizeHudVoiceStyleValue,
+    isTimeoutError,
+  };
+}
+
+async function runSharedAskSnoozer({
+  event,
+  traceId,
+  body = {},
+  query = "",
+  path: pagePath = "/",
+  pageType = "unknown",
+  surface = "shopify_header",
+  sessionId = "",
+} = {}) {
+  const incomingContext = isObject(body?.context) ? body.context : {};
+  const sharedPayload = {
+    message: String(query || body?.message || "").trim(),
+    source: surface,
+    sessionId,
+    thread_id: sessionId,
+    shopperId: body?.shopperId || body?.shopper_id || incomingContext?.shopperId,
+    snoozeCode: body?.snoozeCode || body?.code || incomingContext?.snoozeCode,
+    accessCode: body?.accessCode || incomingContext?.accessCode,
+    sourceShopperId: body?.sourceShopperId || incomingContext?.sourceShopperId,
+    visitorId: body?.visitorId || incomingContext?.visitorId,
+    context: {
+      ...incomingContext,
+      path: pagePath,
+      page_type: pageType,
+      pageType,
+      surface,
+      currentProductHandle:
+        body?.currentProductHandle || incomingContext?.currentProductHandle || "",
+    },
+  };
+  const headers = { ...(event?.headers || {}) };
+  Object.keys(headers).forEach((key) => {
+    if (String(key).toLowerCase() === "x-hud") delete headers[key];
+  });
+  const sharedEvent = {
+    ...event,
+    httpMethod: "POST",
+    headers,
+    body: JSON.stringify(sharedPayload),
+  };
+  const response = await askSnoozerRoutes.handleAskSnoozerRoutes({
+    event: sharedEvent,
+    method: "POST",
+    routePath: "/ask-snoozer",
+    traceId,
+    deps: getAskSnoozerRouteDeps(),
+  });
+
+  if (!response || Number(response.statusCode || 500) >= 500) {
+    throw new Error("SHARED_ASK_REQUEST_FAILED");
+  }
+
+  try {
+    return typeof response.body === "string" ? JSON.parse(response.body) : response.body;
+  } catch {
+    throw new Error("SHARED_ASK_INVALID_RESPONSE");
+  }
+}
+
 async function handle(event = {}) {
   const method = (event.httpMethod || event.requestContext?.http?.method || "GET").toUpperCase();
 
@@ -6122,6 +6255,7 @@ async function handle(event = {}) {
       elapsedMs,
       isCanonicalSnoozeIdentity,
       rawJsonResponse,
+      runSharedAskSnoozer,
     },
   });
   if (hudRouteResponse) return hudRouteResponse;
@@ -6512,73 +6646,7 @@ async function handle(event = {}) {
     method,
     routePath,
     traceId,
-    deps: {
-      safeJsonBody,
-      isDebugRequest,
-      deriveEffectiveThreadId,
-      cleanIdentityValue,
-      safeResolveSnoozeIdentity,
-      log,
-      wantsHudResponse,
-      buildErrorResponse,
-      normalizeSnoozerResponse,
-      logContractResponse,
-      buildHudFromAny,
-      flatResponse,
-      getSessionItem,
-      nowIso,
-      buildDefaultSCO,
-      putSessionItemIfMissing,
-      ttlEpochSeconds,
-      deepMerge,
-      normalizePodAnchors,
-      getAssessmentResult,
-      recsService,
-      getSeedRecommendations,
-      resolveCanonicalRecommendationContext,
-      attachCanonicalRecommendationContext,
-      pickAskSnoozerAssessmentInput,
-      buildAskSnoozerClassification,
-      safeGetCustomerProfile,
-      attachStoredProfileContext,
-      customerProfileService,
-      buildIdentityProfilePatch,
-      safeUpsertCustomerProfile,
-      logProfileRouteOutcome,
-      safeUpsertIdentityAliases,
-      maybeSyncProfileToZohoForInteraction,
-      enqueueAskSnoozerAsyncWrites,
-      STRICT_POD_ANCHOR,
-      routeAskSnoozerQuestion,
-      maybeBuildAskSnoozerCanonicalAnswer,
-      saveSessionContext,
-      buildSuccessResponse,
-      maybeBuildAskSnoozerDeterministicGuidanceAnswer,
-      maybeBuildAskSnoozerCommerceAnswer,
-      queryExplicitlyRequestsAskSnoozerCommerce,
-      resolveAskSnoozerCommerceResponse,
-      shopifySvc,
-      resolveAskSnoozerPolicyAnswer,
-      buildAskSnoozerPolicyChips,
-      buildAskSnoozerAction,
-      buildAskSnoozerMissingAssessmentChips,
-      buildAskSnoozerClarificationReply,
-      buildAskSnoozerMissingRecommendationReply,
-      buildAskSnoozerFallbackReply,
-      buildAskSnoozerQualityGateObject,
-      maybeBuildAskSnoozerDeterministicFaqAnswer,
-      S3_RETRIEVAL_TIMEOUT_MS,
-      MODEL_TIMEOUT_MS,
-      measureStep,
-      withTimeout,
-      isObject,
-      safeNumber,
-      normalizeContextPatch,
-      normalizeHudStateValue,
-      normalizeHudPriorityValue,
-      normalizeHudVoiceStyleValue,
-      isTimeoutError,
-    },
+    deps: getAskSnoozerRouteDeps(),
   });
   if (askSnoozerRouteResponse) return askSnoozerRouteResponse;
 

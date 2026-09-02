@@ -117,6 +117,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       shopperId,
       mode,
       effectiveSessionId,
+      surface: askSourceSurface,
       debug,
     });
 
@@ -538,6 +539,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       traceId,
       shopperId: shopperId || null,
       sessionId: effectiveSessionId,
+      surface: askSourceSurface,
       intentGroup: askSnoozerDecision.intentGroup,
       intent: askSnoozerDecision.intent,
       confidence: askSnoozerDecision.confidence,
@@ -572,6 +574,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           )
       );
       return {
+        surface: askSourceSurface,
         answerPath: envelope?.meta?.path || "deterministic",
         retrievalMs: safeNumber(
           metrics.retrievalMs ?? envelope?.meta?.retrievalMs,
@@ -590,7 +593,42 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
     const canonicalAnswer = maybeBuildAskSnoozerCanonicalAnswer(msg, context);
     if (canonicalAnswer) {
-      const latencyMs = Date.now() - startedAt;
+      let latencyMs = Date.now() - startedAt;
+      let canonicalProducts = [];
+
+      if (
+        canonicalAnswer.answer_strategy === "canonical_recommendation" &&
+        typeof shopifySvc?.fetchProductsByHandles === "function"
+      ) {
+        const canonicalHandles = Array.from(
+          new Set(
+            [
+              context?.canonicalRecommendation?.primaryMattressHandle,
+              context?.canonicalRecommendation?.baseHandle,
+            ]
+              .map((handle) => String(handle || "").trim())
+              .filter(Boolean)
+          )
+        ).slice(0, 3);
+
+        if (canonicalHandles.length) {
+          try {
+            const result = await shopifySvc.fetchProductsByHandles({
+              handles: canonicalHandles,
+              lite: false,
+            });
+            canonicalProducts = Array.isArray(result?.items) ? result.items : [];
+          } catch (error) {
+            log("ask-snoozer.canonical.products.error", error.message, {
+              traceId,
+              sessionId: effectiveSessionId,
+              handles: canonicalHandles,
+              code: error?.code || null,
+            });
+          }
+        }
+      }
+      latencyMs = Date.now() - startedAt;
 
       if (sco && typeof sco === "object") {
         try {
@@ -615,7 +653,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             : "canonical_recommendation",
         text: canonicalAnswer.reply || "",
         context: mergedContext,
-        products: [],
+        products: canonicalProducts,
         actions: [],
         metrics: {
           retrievalMs: 0,
