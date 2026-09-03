@@ -324,7 +324,7 @@ async function testKnownCode1234ResolvesToCanonicalProfile() {
   assert.strictEqual(payload.profileId, "shopper#1234", "profileId should stay canonical");
 }
 
-async function testAskSnoozerSessionAliasLinksToShopper1234() {
+async function testAskSnoozerCarriesCanonicalIdentityForShopper1234() {
   resetStores();
   resetModules();
 
@@ -373,14 +373,9 @@ async function testAskSnoozerSessionAliasLinksToShopper1234() {
 
   assert.strictEqual(payload.ok, true, "Ask Snoozer should succeed");
   assert.strictEqual(payload.context?.shopperId, "1234", "Ask Snoozer should use canonical shopper id");
+  assert.strictEqual(payload.context?.profileId, "shopper#1234", "Ask Snoozer should retain the canonical profile id");
+  assert.strictEqual(payload.context?.sessionId, "phase3-ask-1234", "Ask Snoozer should retain the visit session id");
   assert.strictEqual(openAiCalls.length, 0, "grounded recommendation should not need OpenAI");
-
-  const sessionAlias = profileStore.get("alias#session:phase3-ask-1234");
-  const threadAlias = profileStore.get("alias#thread:phase3-ask-1234");
-  assert(sessionAlias, "session alias should be stored");
-  assert(threadAlias, "thread alias should be stored");
-  assert.strictEqual(sessionAlias.aliasOfShopperId, "1234", "session alias should point to canonical shopper");
-  assert.strictEqual(threadAlias.aliasOfShopperId, "1234", "thread alias should point to canonical shopper");
 }
 
 async function testTemporaryAliasesAndRepeatedCallsDoNotCreateCompetingCanonicalProfiles() {
@@ -407,13 +402,13 @@ async function testTemporaryAliasesAndRepeatedCallsDoNotCreateCompetingCanonical
   assert.strictEqual(assessmentBody.ok, true, "assessment should succeed");
   assert.strictEqual(assessmentBody.shopperId, "1234", "existing code should win");
 
-  await invokeLambda("POST", "/ask-snoozer", {
+  const firstAsk = await invokeLambda("POST", "/ask-snoozer", {
     snoozeCode: "1234",
     sessionId: "phase3-repeat-1",
     message: "What do you recommend?",
     context: { assessment },
   });
-  await invokeLambda("POST", "/ask-snoozer", {
+  const secondAsk = await invokeLambda("POST", "/ask-snoozer", {
     snoozeCode: "1234",
     sessionId: "phase3-repeat-2",
     message: "Explain my results.",
@@ -430,11 +425,10 @@ async function testTemporaryAliasesAndRepeatedCallsDoNotCreateCompetingCanonical
     profileStore.get("alias#shopper:shopify-assessment-phase3-temp-1234"),
     "temporary Shopify assessment id should become an alias, not a competing shopper profile"
   );
-  assert(
-    profileStore.get("alias#session:phase3-repeat-1") &&
-      profileStore.get("alias#session:phase3-repeat-2"),
-    "repeat ask sessions should each resolve back to the same canonical shopper"
-  );
+  assert.strictEqual(firstAsk.context?.shopperId, "1234", "first Ask session should use the canonical shopper");
+  assert.strictEqual(secondAsk.context?.shopperId, "1234", "second Ask session should use the canonical shopper");
+  assert.strictEqual(firstAsk.context?.profileId, "shopper#1234", "first Ask session should use the canonical profile");
+  assert.strictEqual(secondAsk.context?.profileId, "shopper#1234", "second Ask session should use the canonical profile");
 
   const shopperKeys = [...profileStore.keys()].filter((key) => key.startsWith("shopper#"));
   assert.deepStrictEqual(
@@ -457,7 +451,7 @@ async function main() {
 
   const tests = [
     ["known_code_1234_resolves_to_canonical_profile", testKnownCode1234ResolvesToCanonicalProfile],
-    ["ask_snoozer_session_alias_links_to_shopper_1234", testAskSnoozerSessionAliasLinksToShopper1234],
+    ["ask_snoozer_carries_canonical_identity_for_shopper_1234", testAskSnoozerCarriesCanonicalIdentityForShopper1234],
     ["temporary_aliases_and_repeated_calls_do_not_create_competing_canonical_profiles", testTemporaryAliasesAndRepeatedCallsDoNotCreateCompetingCanonicalProfiles],
   ];
 

@@ -491,6 +491,31 @@ export const useStore = create((set, get) => ({
   progress: load(STORAGE_KEYS.progress, DEFAULT_PROGRESS),
   xp: load(STORAGE_KEYS.xp, 0),
 
+  resetShopperScopedState: () => {
+    set({
+      filters: {},
+      exploreItems: [],
+      cart: [],
+      cartOwnerShopperId: null,
+      snoozepod: [],
+      snoozepodMeta: { ...DEFAULT_SNOOZEPOD_META },
+      assessment: null,
+      assessmentSummary: "",
+      recommendations: null,
+      recommendedProducts: [],
+      recommendedProductHandles: [],
+      progress: { ...DEFAULT_PROGRESS },
+      xp: 0,
+      badges: {
+        Explore: false,
+        Compare: false,
+        Financing: false,
+        FAQs: false,
+        Cart: false,
+      },
+    });
+  },
+
   setTab: (tab) => {
     set((state) => ({
       activeTab: tab,
@@ -989,8 +1014,9 @@ export const useStore = create((set, get) => ({
       const serverLines = authoritative ? serverCartToMutationLines(authoritative) : [];
       const reusable =
         authoritative?.checkoutUrl && cartLinesEqual(desiredLines, serverLines);
+      let reconciled;
       if (reusable) {
-        return get().applyAuthoritativeCartPayload({ cart: authoritative }, {
+        reconciled = get().applyAuthoritativeCartPayload({ cart: authoritative }, {
           fallbackCartId: cartId,
           sourcePage,
           operation: "checkout_reuse",
@@ -999,7 +1025,7 @@ export const useStore = create((set, get) => ({
         });
       }
 
-      if (authoritative && !cartLinesEqual(desiredLines, serverLines)) {
+      if (!reusable && authoritative && !cartLinesEqual(desiredLines, serverLines)) {
         console.warn("[cart]", {
           operation: "checkout_attribute_mismatch",
           sourcePage,
@@ -1008,12 +1034,25 @@ export const useStore = create((set, get) => ({
         });
       }
 
-      const replacement = shopperId
-        ? await api.replaceShopperCart({ lines: desiredLines })
-        : await api.createCart({ lines: desiredLines });
-      return get().applyAuthoritativeCartPayload(replacement, {
+      if (!reusable) {
+        const replacement = shopperId
+          ? await api.replaceShopperCart({ lines: desiredLines })
+          : await api.createCart({ lines: desiredLines });
+        reconciled = get().applyAuthoritativeCartPayload(replacement, {
+          sourcePage,
+          operation: "checkout_cart_recreate",
+          requestedLineCount: desiredLines.length,
+          startedAt,
+        });
+      }
+
+      if (!shopperId) return reconciled;
+
+      const correlated = await api.prepareShopperCheckout();
+      return get().applyAuthoritativeCartPayload(correlated, {
+        fallbackCartId: reconciled?.cartId || cartId,
         sourcePage,
-        operation: "checkout_cart_recreate",
+        operation: "checkout_identity_correlation",
         requestedLineCount: desiredLines.length,
         startedAt,
       });

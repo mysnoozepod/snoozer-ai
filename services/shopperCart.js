@@ -2,6 +2,11 @@ const { resolveRewardsIdentity } = require("./rewards/identity");
 const customerProfile = require("./customerProfile");
 const shopify = require("./shopify");
 
+const SHOPPER_CORRELATION_ATTRIBUTE_KEYS = Object.freeze({
+  snoozeCode: "snooze_code__",
+  sessionId: "snooze_session__",
+});
+
 function clean(value) {
   return String(value == null ? "" : value).trim();
 }
@@ -89,6 +94,37 @@ async function resolveShopperCart(event, options = {}) {
   }
 }
 
+function buildShopperCorrelationAttributes(identity = {}) {
+  return [
+    { key: SHOPPER_CORRELATION_ATTRIBUTE_KEYS.snoozeCode, value: clean(identity.snoozeCode) },
+    { key: SHOPPER_CORRELATION_ATTRIBUTE_KEYS.sessionId, value: clean(identity.sessionId) },
+  ].filter((attribute) => attribute.value);
+}
+
+async function prepareShopperCheckout(event, options = {}) {
+  const identity = await identityFor(event, options);
+  const cartId = clean(identity.profile?.shopifyCartId);
+  if (!validCartId(cartId)) {
+    const error = new Error("No active Shopify cart belongs to this Snooze Profile.");
+    error.code = "SHOPPER_CART_NOT_FOUND";
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const client = options.shopify || shopify;
+  const attributes = buildShopperCorrelationAttributes(identity);
+  const cart = await client.updateCartAttributes({ cartId, attributes });
+  await persistCart(identity, cart, options);
+  return cartResponse(identity, cart, {
+    restored: true,
+    correlation: {
+      snoozeCode: Boolean(identity.snoozeCode),
+      sessionId: Boolean(identity.sessionId),
+      privateAttributes: true,
+    },
+  });
+}
+
 async function addShopperCartLines(event, lines, options = {}) {
   const identity = await identityFor(event, options);
   const client = options.shopify || shopify;
@@ -170,8 +206,11 @@ module.exports = {
   clearShopperCart,
   removeShopperCartLines,
   replaceShopperCart,
+  prepareShopperCheckout,
   resolveShopperCart,
   updateShopperCartLines,
   isExpiredCartError,
   validCartId,
+  buildShopperCorrelationAttributes,
+  SHOPPER_CORRELATION_ATTRIBUTE_KEYS,
 };

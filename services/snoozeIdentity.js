@@ -83,7 +83,19 @@ function buildIdentityAliases(input = {}, options = {}) {
     .concat(input?.sessionId)
     .concat(input?.threadId);
 
-  return uniqueStrings(aliases).filter((value) => value !== canonicalShopperId);
+  return uniqueStrings(aliases).filter((value) => {
+    if (value === canonicalShopperId) return false;
+    // A different valid Snooze Code is another customer, never an alias.
+    if (canonicalShopperId && isStableAccessStyleShopperId(value)) return false;
+    return true;
+  });
+}
+
+function safeSourceShopperId(value, canonicalShopperId) {
+  const source = cleanString(value);
+  if (!source || source === canonicalShopperId) return "";
+  if (isStableAccessStyleShopperId(source)) return "";
+  return source;
 }
 
 function buildAliasProfilePatches(identity = {}, input = {}) {
@@ -238,8 +250,8 @@ async function resolveCanonicalIdentity(input = {}, options = {}) {
       identitySource,
       isTemporary: false,
       sourceShopperId:
-        cleanString(sourceShopperId) ||
-        (directShopperId && directShopperId !== canonicalCode ? directShopperId : ""),
+        safeSourceShopperId(sourceShopperId, canonicalCode) ||
+        safeSourceShopperId(directShopperId, canonicalCode),
       aliases: buildIdentityAliases(
         {
           sourceShopperId,

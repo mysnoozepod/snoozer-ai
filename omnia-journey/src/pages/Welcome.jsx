@@ -6,7 +6,8 @@ import { ArrowRight, CircleHelp, LockKeyhole, ShieldCheck } from "lucide-react";
 import { canUseAskSnoozer } from "@/device/deviceActionGuards";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { checkInSnoozeCode, getAssessment } from "@/lib/api";
-import { getAccessCode, setAccessCode } from "@/state/sessionStore";
+import { getAccessCode } from "@/state/sessionStore";
+import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import {
   ShowroomBrandMark,
@@ -16,14 +17,6 @@ import {
   ShowroomPanel,
   ShowroomTopRail,
 } from "@/components/showroom/ShowroomPrimitives";
-
-function safeRemove(key) {
-  try {
-    sessionStorage.removeItem(key);
-  } catch {
-    // ignore
-  }
-}
 
 function normalizeAccessCode(raw) {
   return String(raw || "")
@@ -36,6 +29,7 @@ export default function Welcome() {
   const device = useDeviceMode();
   const { currentJob, noteUserInteraction, queue, runHudAction, voiceState } = useShowroomHud();
 
+  const resetShopperScopedState = useStore((state) => state.resetShopperScopedState);
   const [code, setCode] = useState(() => {
     const storedCode = String(getAccessCode() || "").trim();
     return /^\d{4}$/.test(storedCode) ? storedCode : "";
@@ -76,15 +70,12 @@ export default function Welcome() {
     noteUserInteraction?.();
 
     try {
-      safeRemove("snooze.snapshot");
-      safeRemove("snooze.shopperState");
-
       const checkIn = await checkInSnoozeCode({
         snoozeCode: trimmed,
         sourceSurface: "showroom_welcome",
       });
       const canonicalCode = checkIn.snoozeCode || checkIn.shopperId || trimmed;
-      setAccessCode(canonicalCode);
+      if (checkIn.shopperChanged) resetShopperScopedState?.();
       getAssessment(canonicalCode).catch(() => {
         // ignore background hydrate miss
       });

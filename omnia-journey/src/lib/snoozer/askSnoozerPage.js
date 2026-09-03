@@ -181,6 +181,7 @@ function readIdentity(sessionId) {
     snoozeCode: accessCode || null,
     shopperId: shopperId || null,
     accessCode: accessCode || null,
+    profileId: session?.profileId || null,
     sessionId: sessionId || null,
   };
 }
@@ -786,12 +787,17 @@ async function postAskSnoozer(payload) {
         ...(payload?.identity?.sessionId
           ? { "x-session-id": String(payload.identity.sessionId) }
           : {}),
+        ...(payload?.identity?.snoozeCode
+          ? { "x-snooze-code": String(payload.identity.snoozeCode) }
+          : {}),
         "x-request-id": requestId,
       },
       body: JSON.stringify({
         ...payload,
         thread_id: payload.conversationId,
         shopperId: payload.identity?.shopperId || null,
+        snoozeCode: payload.identity?.snoozeCode || null,
+        profileId: payload.identity?.profileId || null,
         sessionId: payload.identity?.sessionId || null,
       }),
     });

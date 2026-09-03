@@ -1528,8 +1528,9 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     return {
       shopperId: session.shopperId || shopperId || null,
       sessionId: session.sessionId || session.threadId || null,
-      snoozeCode: session.accessCode || session.shopperId || null,
-      accessCode: session.accessCode || null,
+      snoozeCode: session.snoozeCode || session.accessCode || session.shopperId || null,
+      accessCode: session.accessCode || session.snoozeCode || null,
+      profileId: session.profileId || null,
       podId: pid,
       mattressId: effectiveMattressHandle || activePod?.mattressHandle || null,
     };

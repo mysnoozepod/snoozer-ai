@@ -26,10 +26,12 @@
 // - getProductById() now falls back to exact-handle search from listProducts when getProduct misses
 
 import {
+  getCanonicalIdentity,
   getSessionState,
-  setAccessCode,
+  setCanonicalIdentity,
   setSessionLinkId,
 } from "@/state/sessionStore";
+import { didCanonicalShopperChange } from "@/state/identitySession.mjs";
 import { buildApiUrl, resolveApiBase } from "@/lib/apiBase";
 import { persistShopifyCartIdentity } from "@/lib/session/shopifyCartState";
 
@@ -85,34 +87,11 @@ export async function ensureSession({ force = false } = {}) {
 
   if (_sessionPromise && !force) return _sessionPromise;
 
-  _sessionPromise = (async () => {
-    const raw = await retryableRequest("/session/start", {
-      method: "POST",
-      body: { origin: "web" },
-    });
-
-    const data = unwrap(raw) || raw || {};
-    const id = data.sessionId || data.session_id || data.id || null;
+  _sessionPromise = startSessionId().then((id) => {
     if (!id) return null;
-
-    try {
-      sessionStorage.setItem(SESSION_KEY, String(id));
-    } catch {
-      // ignore
-    }
-    try {
-      localStorage.setItem(SESSION_KEY, String(id));
-    } catch {
-      // ignore
-    }
-    try {
-      setSessionLinkId(String(id));
-    } catch {
-      // ignore
-    }
-
-    return String(id);
-  })();
+    persistSessionId(id);
+    return id;
+  });
 
   try {
     return await _sessionPromise;
@@ -1043,6 +1022,35 @@ function getStoredRewardIdentityLink() {
   }
 }
 
+async function startSessionId() {
+  const raw = await retryableRequest("/session/start", {
+    method: "POST",
+    body: { origin: "web" },
+  });
+  const data = unwrap(raw) || raw || {};
+  const id = data.sessionId || data.session_id || data.id || null;
+  return id ? String(id) : null;
+}
+
+function persistSessionId(id) {
+  if (!id) return;
+  try {
+    sessionStorage.setItem(SESSION_KEY, String(id));
+  } catch {
+    // ignore
+  }
+  try {
+    localStorage.setItem(SESSION_KEY, String(id));
+  } catch {
+    // ignore
+  }
+  try {
+    setSessionLinkId(String(id));
+  } catch {
+    // ignore
+  }
+}
+
 function storeRewardIdentityLink(linkKey) {
   try {
     sessionStorage.setItem(REWARD_IDENTITY_LINK_KEY, linkKey);
@@ -1059,7 +1067,12 @@ export async function checkInSnoozeCode({
   const requestedCode = String(snoozeCode || accessCode || "").trim();
   if (!requestedCode) throw new Error("Enter a valid Snooze Code.");
 
-  const sessionId = await ensureSession();
+  const previousIdentity = getCanonicalIdentity();
+  const shopperSwitch = didCanonicalShopperChange(previousIdentity, {
+    snoozeCode: requestedCode,
+    shopperId: requestedCode,
+  });
+  const sessionId = shopperSwitch ? await startSessionId() : await ensureSession();
   if (!sessionId) throw new Error("Unable to start a secure showroom session.");
 
   const raw = await retryableRequest("/identity/check-in", {
@@ -1085,13 +1098,25 @@ export async function checkInSnoozeCode({
     throw new Error("The Snooze Profile could not be verified.");
   }
 
-  setAccessCode(canonicalCode);
-  setSessionLinkId(sessionId);
+  const canonicalIdentity = setCanonicalIdentity({
+    ...data,
+    snoozeCode: canonicalCode,
+    shopperId: data.shopperId || canonicalCode,
+    sessionId,
+    threadId: shopperSwitch ? sessionId : previousIdentity.threadId,
+  });
+  persistSessionId(sessionId);
   const linkKey = `${canonicalCode}:${sessionId}`;
   _rewardIdentityLinkKey = linkKey;
   storeRewardIdentityLink(linkKey);
 
-  return { ...data, snoozeCode: canonicalCode, sessionId };
+  return {
+    ...data,
+    ...canonicalIdentity,
+    snoozeCode: canonicalCode,
+    sessionId,
+    shopperChanged: canonicalIdentity.shopperChanged,
+  };
 }
 
 export async function ensureRewardIdentityLink() {
@@ -1233,6 +1258,13 @@ export async function resolveShopperCart() {
   return rewardRequest("/shopify/cart/owned/resolve", { method: "POST", body: {} });
 }
 
+export async function prepareShopperCheckout() {
+  return rewardRequest("/shopify/cart/owned/prepareCheckout", {
+    method: "POST",
+    body: {},
+  });
+}
+
 export async function addLinesToShopperCart({ lines = [] } = {}) {
   return rewardRequest("/shopify/cart/owned/addLines", {
     method: "POST",
@@ -1346,6 +1378,7 @@ async function askSnoozerInternal({
 
   const start = Date.now();
   console.log("🧠 [askSnoozer] →", message, "| mode:", mode);
+  const canonicalIdentity = getCanonicalIdentity();
 
   const ctx = context && typeof context === "object" ? { ...context } : {};
 
@@ -1358,7 +1391,9 @@ async function askSnoozerInternal({
     message,
     thread_id,
     mode,
-    shopperId,
+    shopperId: canonicalIdentity.shopperId || shopperId,
+    snoozeCode: canonicalIdentity.snoozeCode || undefined,
+    profileId: canonicalIdentity.profileId || undefined,
     sessionId: sid || sessionId || null,
     zone,
     ...(derivedPodId ? { podId: derivedPodId } : {}),
@@ -1544,9 +1579,17 @@ export async function getAssessmentQuestions() {
 
 export const saveAssessment = (shopperId, answers, origin) =>
   (async () => {
+    const identity = getCanonicalIdentity();
     const raw = await retryableRequest("/assessment", {
       method: "POST",
-      body: { shopperId, answers, origin },
+      body: {
+        shopperId: identity.shopperId || shopperId,
+        snoozeCode: identity.snoozeCode || undefined,
+        profileId: identity.profileId || undefined,
+        sessionId: identity.sessionId || undefined,
+        answers,
+        origin,
+      },
     });
     return unwrap(raw);
   })();
@@ -1628,6 +1671,7 @@ export const api = {
   removeCartLines,
   clearCart,
   resolveShopperCart,
+  prepareShopperCheckout,
   addLinesToShopperCart,
   updateShopperCartLines,
   removeShopperCartLines,

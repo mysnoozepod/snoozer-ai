@@ -12,6 +12,11 @@
 // on top of the canonical session state.
 
 import { useSyncExternalStore } from "react";
+import {
+  clearShopperScopedStorage,
+  didCanonicalShopperChange,
+  normalizeCanonicalIdentity,
+} from "./identitySession.mjs";
 
 const STORAGE_KEY = "snooze.sessionState.v1";
 
@@ -22,6 +27,8 @@ const LEGACY_KEYS = {
   cartId: "snooze.cartId",
   checkoutUrl: "snooze.checkoutUrl",
   accessCode: "snooze.accessCode",
+  snoozeCode: "snooze.snoozeCode",
+  profileId: "snooze.profileId",
 
   shopifyCartId: "snooze.shopify.cartId",
   shopifyCheckoutUrl: "snooze.shopify.checkoutUrl",
@@ -34,6 +41,9 @@ const DEFAULT_STATE = Object.freeze({
   threadId: null,
   sessionId: null,
   shopperId: null,
+  snoozeCode: null,
+  accessCode: null,
+  profileId: null,
   cartId: null,
   checkoutUrl: null,
   lastCartUpdatedAt: null,
@@ -168,6 +178,19 @@ function migrateLegacyInto(state) {
     else if (accessCode) out.shopperId = accessCode;
   }
 
+  if (!out.snoozeCode) {
+    const snoozeCode = safeGetItem(LEGACY_KEYS.snoozeCode);
+    const accessCode = safeGetItem(LEGACY_KEYS.accessCode);
+    out.snoozeCode = snoozeCode || accessCode || out.shopperId || null;
+  }
+
+  if (!out.accessCode) out.accessCode = out.snoozeCode || out.shopperId || null;
+
+  if (!out.profileId) {
+    const profileId = safeGetItem(LEGACY_KEYS.profileId);
+    if (profileId) out.profileId = profileId;
+  }
+
   if (!out.sessionId) {
     const legacySessionId = safeGetItem(LEGACY_KEYS.sessionId);
     if (legacySessionId) out.sessionId = legacySessionId;
@@ -229,10 +252,27 @@ function persistCanonicalMirrors(next) {
 
   if (next.shopperId) {
     safeSetItem(LEGACY_KEYS.shopperId, String(next.shopperId));
-    safeSetItem(LEGACY_KEYS.accessCode, String(next.shopperId));
   } else {
     safeRemoveItem(LEGACY_KEYS.shopperId);
+  }
+
+  const accessCode = next.snoozeCode || next.accessCode;
+  if (accessCode) {
+    safeSetItem(LEGACY_KEYS.accessCode, String(accessCode));
+  } else {
     safeRemoveItem(LEGACY_KEYS.accessCode);
+  }
+
+  if (next.snoozeCode) {
+    safeSetItem(LEGACY_KEYS.snoozeCode, String(next.snoozeCode));
+  } else {
+    safeRemoveItem(LEGACY_KEYS.snoozeCode);
+  }
+
+  if (next.profileId) {
+    safeSetItem(LEGACY_KEYS.profileId, String(next.profileId));
+  } else {
+    safeRemoveItem(LEGACY_KEYS.profileId);
   }
 
   if (next.cartId) {
@@ -311,6 +351,8 @@ export function resetSessionState() {
   safeRemoveItem(LEGACY_KEYS.sessionId);
   safeRemoveItem(LEGACY_KEYS.shopperId);
   safeRemoveItem(LEGACY_KEYS.accessCode);
+  safeRemoveItem(LEGACY_KEYS.snoozeCode);
+  safeRemoveItem(LEGACY_KEYS.profileId);
   safeRemoveItem(LEGACY_KEYS.cartId);
   safeRemoveItem(LEGACY_KEYS.checkoutUrl);
   safeRemoveItem(LEGACY_KEYS.shopifyCartId);
@@ -334,6 +376,34 @@ export function setShopperId(shopperId) {
   setSessionState({ shopperId: id });
 }
 
+export function getCanonicalIdentity() {
+  return normalizeCanonicalIdentity(getSessionState(), getSessionState());
+}
+
+export function setCanonicalIdentity(identity = {}) {
+  const previous = getCanonicalIdentity();
+  const normalized = normalizeCanonicalIdentity(identity, previous);
+  const shopperChanged = didCanonicalShopperChange(previous, normalized);
+
+  if (shopperChanged) {
+    clearShopperScopedStorage(typeof sessionStorage === "undefined" ? null : sessionStorage);
+  }
+
+  setSessionState({
+    shopperId: normalized.shopperId,
+    snoozeCode: normalized.snoozeCode,
+    accessCode: normalized.accessCode,
+    profileId: normalized.profileId,
+    sessionId: normalized.sessionId,
+    threadId: shopperChanged
+      ? normalized.threadId || normalized.sessionId
+      : normalized.threadId,
+    ...(shopperChanged ? { context: null, contextPatch: null } : {}),
+  });
+
+  return { ...getCanonicalIdentity(), shopperChanged };
+}
+
 export function getShopperId() {
   const shopperId = String(getSessionState()?.shopperId || "").trim();
   if (shopperId) return shopperId;
@@ -344,12 +414,13 @@ export function getShopperId() {
 }
 
 export function getAccessCode() {
-  return getShopperId();
+  const state = getSessionState();
+  return state?.snoozeCode || state?.accessCode || getShopperId();
 }
 
 export function setAccessCode(accessCode) {
-  setShopperId(accessCode);
-  return getShopperId();
+  setCanonicalIdentity({ snoozeCode: accessCode, shopperId: accessCode });
+  return getAccessCode();
 }
 
 export function setSessionLinkId(sessionId) {
@@ -548,6 +619,8 @@ export const sessionStore = {
   reset: resetSessionState,
   ensureThreadId: ensureSessionThreadId,
   setShopperId,
+  getCanonicalIdentity,
+  setCanonicalIdentity,
   getShopperId,
   getAccessCode,
   setAccessCode,

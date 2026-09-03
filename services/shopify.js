@@ -465,6 +465,7 @@ const CART_FIELDS = `
   checkoutUrl
   createdAt
   updatedAt
+  attributes { key value }
   cost {
     subtotalAmount { amount currencyCode }
     totalAmount { amount currencyCode }
@@ -992,7 +993,7 @@ function normalizeCartLinesInput(lines = []) {
   return safeLines;
 }
 
-async function createCart({ lines = [], note = null, buyerIdentity = null } = {}) {
+async function createCart({ lines = [], note = null, buyerIdentity = null, attributes = [] } = {}) {
   requireShopifyConfig();
 
   const safeLines = normalizeCartLinesInput(lines);
@@ -1020,6 +1021,7 @@ async function createCart({ lines = [], note = null, buyerIdentity = null } = {}
     lines: safeLines,
     note: note || undefined,
     buyerIdentity: buyerIdentity || undefined,
+    attributes: normalizeCartAttributes(attributes),
   };
 
   const data = await sfQuery(MUTATION, { input }, { label: "sf.cartCreate" });
@@ -1098,6 +1100,47 @@ async function applyDiscountCodes({ cartId, discountCodes = [] } = {}) {
       userErrors,
     });
   }
+  return payload.cart;
+}
+
+async function updateCartAttributes({ cartId, attributes = [] } = {}) {
+  requireShopifyConfig();
+
+  if (!cartId || !isValidCartGid(String(cartId))) {
+    throw buildShopifyError(
+      "cartId is required and must be a valid Shopify Cart GID.",
+      "INVALID_CART_ID"
+    );
+  }
+
+  const normalizedAttributes = normalizeCartAttributes(attributes) || [];
+  if (!normalizedAttributes.length) {
+    throw buildShopifyError("At least one cart attribute is required.", "NO_CART_ATTRIBUTES");
+  }
+
+  const MUTATION = `
+    mutation CartAttributesUpdate($cartId: ID!, $attributes: [AttributeInput!]!) {
+      cartAttributesUpdate(cartId: $cartId, attributes: $attributes) {
+        cart { ${CART_FIELDS} }
+        userErrors { field message }
+      }
+    }
+  `;
+
+  const data = await sfQuery(
+    MUTATION,
+    { cartId: String(cartId), attributes: normalizedAttributes },
+    { label: "sf.cartAttributesUpdate" }
+  );
+  const payload = data?.cartAttributesUpdate;
+  const userErrors = payload?.userErrors || [];
+
+  if (!payload?.cart || userErrors.length) {
+    const message = userErrors.map((error) => error.message).join("; ") ||
+      "Failed to update cart attributes";
+    throw buildShopifyError(message, "CART_ATTRIBUTES_UPDATE_FAILED", { userErrors });
+  }
+
   return payload.cart;
 }
 
@@ -1346,6 +1389,7 @@ module.exports = {
 
   // cart
   createCart,
+  updateCartAttributes,
   getCart,
   isValidCartGid,
   applyDiscountCodes,

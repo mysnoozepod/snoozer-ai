@@ -862,6 +862,8 @@ async function handleShopifyRoute({ event, method, routePath }) {
       let result;
       if (routePath === "/shopify/cart/owned/resolve") {
         result = await shopperCart.resolveShopperCart(event);
+      } else if (routePath === "/shopify/cart/owned/prepareCheckout") {
+        result = await shopperCart.prepareShopperCheckout(event);
       } else if (routePath === "/shopify/cart/owned/addLines") {
         const normalized = normalizeLinesFromBody(body);
         if (!normalized.lines) {

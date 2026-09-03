@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { askSnoozer } from "@/lib/api";
 import {
   ensureSessionThreadId,
+  getCanonicalIdentity,
   getSessionState,
   getShopperId,
   setSessionLinkId,
@@ -196,13 +197,18 @@ export default function useSnoozerSession(defaultMode = "explore") {
       }
 
       try {
+        const canonicalIdentity = getCanonicalIdentity();
         const res = await askSnoozer(cleanText, {
           thread_id: threadId,
           mode: payloadMode,
-          shopperId,
+          shopperId: canonicalIdentity.shopperId || shopperId,
           sessionId: sessionIdRef.current,
           zone,
-          context: ctx,
+          context: {
+            ...ctx,
+            snoozeCode: canonicalIdentity.snoozeCode || undefined,
+            profileId: canonicalIdentity.profileId || undefined,
+          },
         });
 
         const reply = res?.reply || "No response from Snoozer.";

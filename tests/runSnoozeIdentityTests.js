@@ -95,6 +95,22 @@ async function testIssueSnoozeCodeFromTemporaryShopifyIdentity() {
   );
 }
 
+async function testDifferentSnoozeCodesNeverBecomeAliases() {
+  const identity = await snoozeIdentity.resolveCanonicalIdentity({
+    snoozeCode: "654321",
+    shopperId: "123456",
+    sourceShopperId: "123456",
+    sessionId: "session_for_654321",
+  });
+
+  assert.strictEqual(identity.shopperId, "654321", "requested code should be canonical");
+  assert.strictEqual(identity.sourceShopperId, null, "another Snooze Code is not a source alias");
+  assert(
+    !identity.aliases.includes("123456"),
+    "a different valid Snooze Code must never be linked as an alias"
+  );
+}
+
 async function main() {
   const tests = [
     ["normalize_six_digit_code", testNormalizeSixDigitCode],
@@ -103,6 +119,7 @@ async function main() {
     ["stable_snooze_code_wins_over_generated_shopify_id", testStableSnoozeCodeWinsOverGeneratedShopifyId],
     ["stored_session_alias_resolves_canonical_identity", testStoredSessionAliasResolvesCanonicalIdentity],
     ["issue_snooze_code_from_temporary_shopify_identity", testIssueSnoozeCodeFromTemporaryShopifyIdentity],
+    ["different_snooze_codes_never_become_aliases", testDifferentSnoozeCodesNeverBecomeAliases],
   ];
 
   const failures = [];

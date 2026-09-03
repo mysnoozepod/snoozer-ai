@@ -14,6 +14,7 @@
     "test:ask-snoozer": "node scripts/runAskSnoozerGoldenTests.js",
     "test:ask-snoozer-copy": "node scripts/runAskSnoozerGoldenTests.js --copy-only",
     "test:snoozer-surface-parity": "node tests/runSnoozerSurfaceParityTests.js",
+    "test:shopper-session-continuity": "node tests/runShopperSessionContinuityTests.js",
     "test:rewards-production": "node tests/runRewardsProductionTests.js",
     "validate:ask-snoozer-knowledge": "node scripts/validateAskSnoozerKnowledgeManifest.js",
     "package:lambda": "tar -a -cf snoozer-backend.zip index.js package.json package-lock.json data handlers routes services utils node_modules faqs.json knowledge_base.json",
