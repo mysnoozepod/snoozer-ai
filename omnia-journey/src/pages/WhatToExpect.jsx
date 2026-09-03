@@ -76,11 +76,17 @@ function hasCompletedAssessment(snapshot) {
   return false;
 }
 
-function StepCard({ step, title, body, detail, icon: Icon }) {
+function StepCard({ step, title, body, detail, icon: Icon, active = false }) {
   return (
     <div
       data-testid={`what-step-${step}`}
-      className="flex h-full min-h-[248px] flex-col rounded-[26px] border border-white/80 bg-white px-5 py-5 text-center shadow-[0_18px_40px_rgba(45,71,136,0.09)]"
+      aria-current={active ? "step" : undefined}
+      className={[
+        "flex h-full min-h-[248px] flex-col rounded-[26px] border px-5 py-5 text-center transition",
+        active
+          ? "border-[#9db6ff] bg-[linear-gradient(180deg,#f5f8ff_0%,#ffffff_100%)] shadow-[0_22px_48px_rgba(47,87,232,0.17)] ring-2 ring-[#dbe5ff]"
+          : "border-white/80 bg-white shadow-[0_18px_40px_rgba(45,71,136,0.09)]",
+      ].join(" ")}
     >
       <div className="text-[0.78rem] font-black uppercase tracking-[0.22em] text-[#1A66D2]">
         Step {step}
@@ -116,7 +122,7 @@ function StepCard({ step, title, body, detail, icon: Icon }) {
 
 export default function WhatToExpect() {
   const navigate = useNavigate();
-  const { currentJob, queue, runHudAction, voiceState } = useShowroomHud();
+  const { currentJob, queue, say, voiceState } = useShowroomHud();
 
   const shopperId = getShopperId() || "";
 
@@ -191,7 +197,7 @@ export default function WhatToExpect() {
 
   useEffect(() => {
     if (checking) return;
-    if (!runHudAction) return;
+    if (!say) return;
 
     const announcementKey = `${shopperId || "guest"}::${assessmentComplete ? "complete" : "default"}`;
 
@@ -205,23 +211,32 @@ export default function WhatToExpect() {
       const scriptKey = assessmentComplete ? "whattoexpect.assessment_complete" : "whattoexpect.default";
 
       try {
-        const job = await runHudAction(assessmentComplete ? "view_results" : "start_assessment", {
-          scriptKey,
-          shopperId: shopperId || "guest",
-          fallback: voiceScript,
-          overrides: {
-            interruptible: true,
-            replaceCurrent: true,
-            force: true,
-          },
+        const job = await say({
+          ...voiceScript,
+          actionType: assessmentComplete ? "view_results" : "start_assessment",
+          interruptible: true,
+          replaceCurrent: true,
+          force: true,
+          metadata: { scriptKey, presentationSource: "what-to-expect" },
         });
         if (!isMountedRef.current) return;
-        setOrientationJobId(String(job?.id || ""));
+        const jobId = String(job?.id || "");
+        if (jobId) {
+          orientationSeenRef.current = true;
+          setOrientationJobId(jobId);
+          return;
+        }
+
+        navigatedRef.current = true;
+        navigate(assessmentComplete ? "/results" : "/assessment", { replace: true });
       } catch (err) {
         console.warn("What To Expect HUD intro failed.", err);
+        if (!isMountedRef.current || navigatedRef.current) return;
+        navigatedRef.current = true;
+        navigate(assessmentComplete ? "/results" : "/assessment", { replace: true });
       }
     })();
-  }, [assessmentComplete, checking, shopperId, runHudAction, voiceScript]);
+  }, [assessmentComplete, checking, navigate, shopperId, say, voiceScript]);
 
   useEffect(() => {
     if (!orientationJobId || navigatedRef.current) return;
@@ -252,10 +267,7 @@ export default function WhatToExpect() {
     return {
       blocked: isCurrentAttempt ? Boolean(voiceState?.blocked) : false,
       error: isCurrentAttempt ? String(voiceState?.error || "") : "",
-      captionsOnly:
-        Boolean(isCurrentAttempt && currentJob) &&
-        !voiceState?.loading &&
-        !voiceState?.playing,
+      showCaptions: Boolean(isCurrentAttempt && currentJob),
     };
   }, [currentJob, voiceScript.speech, voiceState]);
 
@@ -284,39 +296,38 @@ export default function WhatToExpect() {
               <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
                 <StepCard
                   step="1"
-                  title="Assessment"
+                  title="Build Your Sleep Profile"
                   body="Answer a few sleep questions to create your personalized sleep profile."
-                  detail={assessmentComplete ? "" : "You’re here"}
+                  detail="You’re here"
                   icon={ClipboardList}
+                  active
                 />
                 <StepCard
                   step="2"
-                  title="Test Recommended Pods"
-                  body="Start with your best match, then compare."
-                  detail="Test one pod at a time while the feel stays fresh."
+                  title="Visit Your Recommended Pods"
+                  body="Walk to your first match, then visit two more recommended pods."
                   icon={BedDouble}
                 />
                 <StepCard
                   step="3"
-                  title="Sleep Essentials"
-                  body="Compare pillows, bedding, and protectors as part of the sleep experience."
+                  title="Explore Sleep Essentials"
+                  body="Try pillows, bedding, and protectors for your sleep experience."
                   icon={PackageCheck}
                 />
                 <StepCard
                   step="4"
                   title="Build Your Sleep Setup"
                   body="Choose your mattress, base, and comfort options."
-                  detail="Once you know your feel, the final setup gets easier."
                   icon={Layers3}
                 />
               </div>
             </div>
           </motion.div>
 
-          {currentPageVoiceState.blocked || currentPageVoiceState.error || currentPageVoiceState.captionsOnly ? (
+          {currentPageVoiceState.blocked || currentPageVoiceState.error || currentPageVoiceState.showCaptions ? (
             <div className="mt-3 border-t border-slate-200 pt-2" aria-live="polite">
               <div className="flex min-h-[36px] flex-wrap items-center justify-center gap-2 text-center text-sm text-gray-600">
-                {currentPageVoiceState.captionsOnly ? (
+                {currentPageVoiceState.showCaptions ? (
                   <span className="line-clamp-2 max-w-4xl text-[0.78rem] font-semibold leading-snug text-slate-600">
                     {voiceScript.captions || voiceScript.speech}
                   </span>

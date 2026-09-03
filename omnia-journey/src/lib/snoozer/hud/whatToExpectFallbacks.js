@@ -1,8 +1,8 @@
 const INCOMPLETE_ASSESSMENT_COPY =
-  "Welcome to your Snooze Session. Here’s how your showroom visit works. First, we’ll start with a few questions about how you sleep so I can build your sleep profile. Then I’ll guide you to the SnoozePods I want you to test first. After that, explore Sleep Essentials like pillows, bedding, and protectors. Finally, you’ll build the sleep setup that feels right for you. Let’s start with your Snooze Assessment.";
+  "Welcome to your Snooze Session. First, we’ll build your sleep profile. Then I’ll guide you to your recommended SnoozePods in the showroom. After that, explore Sleep Essentials and build the sleep setup that feels right for you. Let’s start with your Snooze Assessment.";
 
 const COMPLETE_ASSESSMENT_COPY =
-  "Welcome to your Snooze Session. You’ve already completed your Snooze Assessment, so your matches are ready. I’ll start you with your best-matched SnoozePod, then give you two more to compare while the feel is fresh. After your pod tests, explore Sleep Essentials like pillows, bedding, and protectors. Finally, you’ll build the sleep setup that feels right for you. Let’s take a look at your recommended pods.";
+  "Welcome to your Snooze Session. Your sleep profile is complete, so your matches are ready. I’ll show you which SnoozePod to visit first and two more that are also recommended. After your pod visits, explore Sleep Essentials and build your sleep setup. Let’s take a look at your recommended pods.";
 
 function buildOrientationFallback(copy) {
   return {
@@ -10,7 +10,7 @@ function buildOrientationFallback(copy) {
     captions: copy,
     state: "speaking",
     priority: "normal",
-    ttlMs: 30000,
+    ttlMs: 6500,
     voiceStyle: "default",
     actions: [],
   };

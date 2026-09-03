@@ -14,6 +14,7 @@ import RewardsPill from "./components/RewardsPill.jsx";
 import HeaderContextBar from "./components/HeaderContextBar.jsx";
 import FooterControlBar from "./components/FooterControlBar.jsx";
 import SnoozerHUD from "./components/SnoozerHUD.jsx";
+import HumanAssistanceControl from "./components/HumanAssistanceControl.jsx";
 
 import { useHudRouteVoiceGuard } from "@/hooks/useHudRouteVoiceGuard";
 import {
@@ -109,6 +110,14 @@ function LayoutShell() {
     pathname.startsWith("/ask-snoozer");
   const pageUsesPodViewportShell =
     pathname.startsWith("/pod/") || pathname.startsWith("/dev/pod-lab");
+  const showHumanAssistance =
+    !pathname.startsWith("/cart") &&
+    !pathname.startsWith("/checkout") &&
+    !pathname.startsWith("/dev/");
+  const humanAssistanceNeedsFooterClearance =
+    pageUsesPodViewportShell ||
+    pathname.startsWith("/sleep-essentials") ||
+    pathname.startsWith("/ask-snoozer");
   const showPersistentHudOverlay =
     hudOpen &&
     !pageOwnsSnoozerVisual &&
@@ -337,6 +346,23 @@ function LayoutShell() {
             />
           </div>
         )}
+
+        {showHumanAssistance ? (
+          <div
+            data-testid="persistent-human-assistance"
+            style={{
+              position: "fixed",
+              left: 16,
+              bottom: humanAssistanceNeedsFooterClearance || showBars ? 92 : 16,
+              zIndex: 45,
+            }}
+          >
+            <HumanAssistanceControl
+              hideTrigger={pathname.startsWith("/welcome")}
+              sourcePage={pathname}
+            />
+          </div>
+        ) : null}
 
         {showBars && (
           <FooterControlBar

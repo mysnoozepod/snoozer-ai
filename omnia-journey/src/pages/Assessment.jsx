@@ -5,20 +5,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardList,
   LockKeyhole,
-  Sparkles,
-  Timer,
 } from "lucide-react";
 import { getAssessmentQuestions, saveAssessment } from "@/lib/api";
-import { canViewCart } from "@/device/deviceActionGuards";
 import { emitDeviceAssessmentSubmission } from "@/device/deviceActivityTracker";
-import { useDeviceMode } from "@/device/useDeviceMode";
 import { refreshRewardsState } from "@/state/rewardsStore";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import { getShopperId } from "@/state/sessionStore";
 import {
   ShowroomBrandMark,
-  ShowroomCartBadge,
   ShowroomEyebrow,
   ShowroomFrame,
   ShowroomPageShell,
@@ -367,29 +362,6 @@ function buildQuestionSpeech(question) {
   return String(question.text || "").trim();
 }
 
-function questionSupportText(question) {
-  if (!question) return "";
-
-  switch (question.id) {
-    case "size":
-      return "This keeps your recommended pods and base options grounded in the size you actually want to shop.";
-    case "baseType":
-      return "Your base choice changes motion options and which setups are worth testing in the showroom.";
-    case "motionMode":
-      return "Split and standard motion matter most when you want an adjustable setup or share the bed.";
-    case "sleepPartner":
-      return "Sharing the bed affects motion, comfort flexibility, and how we rank partner-friendly pods.";
-    case "sleepPosition":
-      return "Your main sleep position helps Snoozer look for pressure relief or support in the right places.";
-    case "temperature":
-      return "Sleeping hot changes which mattress feels and materials deserve extra attention.";
-    case "firmness":
-      return "Your comfort preference helps Snoozer choose where to start before you compare the next pods.";
-    default:
-      return "Answer this so Snoozer can keep narrowing your best first test.";
-  }
-}
-
 function questionSectionLabel(question) {
   if (!question) return "Snooze Assessment";
 
@@ -413,7 +385,6 @@ function questionSectionLabel(question) {
 }
 
 export default function Assessment() {
-  const device = useDeviceMode();
   const [title, setTitle] = useState("Snooze Assessment");
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -443,13 +414,7 @@ export default function Assessment() {
     return getShopperId() || "guest";
   }, []);
 
-  const snoozepod = useStore((state) => state.snoozepod || []);
   const { setAssessment, setAssessmentSummary } = useStore();
-  const snoozepodCount = useMemo(
-    () => snoozepod.reduce((sum, item) => sum + (Number(item?.quantity) || 0), 0),
-    [snoozepod]
-  );
-  const showCartBadge = canViewCart(device);
 
   const introSpokenRef = useRef(false);
   const submitTriggeredRef = useRef(false);
@@ -1075,20 +1040,12 @@ export default function Assessment() {
   const displayTitle = normalizeTitle(title);
   const currentIsMotionQuestion = current?.id === "motionMode";
   const currentSection = questionSectionLabel(current);
-  const currentSupportText = questionSupportText(current);
 
   if (loading) {
     return (
       <ShowroomPageShell className="pb-8">
         <ShowroomTopRail>
           <ShowroomBrandMark />
-          {showCartBadge ? (
-            <ShowroomCartBadge
-              count={snoozepodCount}
-              quiet
-              onClick={() => navigate("/cart")}
-            />
-          ) : null}
         </ShowroomTopRail>
         <div className="mx-auto max-w-[1380px] px-4 pb-6 pt-3 md:px-6">
           <ShowroomFrame className="p-5 md:p-7">
@@ -1111,13 +1068,6 @@ export default function Assessment() {
       <ShowroomPageShell className="pb-8">
         <ShowroomTopRail>
           <ShowroomBrandMark />
-          {showCartBadge ? (
-            <ShowroomCartBadge
-              count={snoozepodCount}
-              quiet
-              onClick={() => navigate("/cart")}
-            />
-          ) : null}
         </ShowroomTopRail>
         <div className="mx-auto max-w-[1180px] px-4 pb-6 pt-3 md:px-6">
           <ShowroomFrame className="p-6 md:p-8">
@@ -1138,19 +1088,9 @@ export default function Assessment() {
   }
 
   return (
-    <ShowroomPageShell className="h-auto min-h-[100dvh] max-h-none overflow-y-auto pb-4 md:pb-5">
-      <ShowroomTopRail className="pt-2 md:pt-3">
+      <ShowroomPageShell className="h-auto min-h-[100dvh] max-h-none overflow-y-auto pb-4 md:pb-5">
+      <ShowroomTopRail className="justify-center pt-2 md:pt-3">
         <ShowroomBrandMark />
-        {showCartBadge ? (
-          <ShowroomCartBadge
-            count={snoozepodCount}
-            quiet
-            onClick={() => {
-              noteUserInteraction?.();
-              navigate("/cart");
-            }}
-          />
-        ) : null}
       </ShowroomTopRail>
 
       <div className="mx-auto max-w-[1340px] px-4 pb-4 pt-1 md:px-6 md:pb-5">
@@ -1162,9 +1102,6 @@ export default function Assessment() {
                 <h1 className="mt-2 text-[2.35rem] font-black leading-[0.94] tracking-tight text-slate-900 md:text-[2.7rem]">
                   One question at a time.
                 </h1>
-                <p className="mt-2 text-[0.94rem] leading-5 text-slate-600">
-                  Answer what feels closest. Snoozer will build your match order.
-                </p>
 
                 <div className="mt-3 flex justify-center">
                   <div className="relative">
@@ -1177,21 +1114,6 @@ export default function Assessment() {
                       transition={{ duration: 3, repeat: Infinity }}
                       loading="lazy"
                       decoding="async"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-3 rounded-[20px] border border-white/80 bg-white/92 px-3.5 py-3 shadow-sm">
-                  <div className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
-                    Progress
-                  </div>
-                  <div className="mt-1 text-base font-black text-slate-900 md:text-lg">
-                    {progress}% complete
-                  </div>
-                  <div className="mt-2.5 h-2 w-full rounded-full bg-[#dfe8fb]">
-                    <div
-                      className="h-2 rounded-full transition-all"
-                      style={{ width: `${progress}%`, background: BRAND.primary }}
                     />
                   </div>
                 </div>
@@ -1211,14 +1133,10 @@ export default function Assessment() {
                     <ClipboardList className="h-3.5 w-3.5" />
                     {currentSection}
                   </div>
-                  <div className="mt-1.5 max-w-3xl text-[0.88rem] leading-5 text-slate-600">
-                    {currentSupportText}
-                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 rounded-full border border-[#d9e4ff] bg-[#f7faff] px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                  <Timer className="h-3.5 w-3.5 text-[#2f57e8]" />
-                  {doneCount} answered
+                <div className="rounded-full border border-[#d9e4ff] bg-[#f7faff] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#2f57e8]">
+                  Question {Math.min(step + 1, visibleQuestions.length || 1)} of {visibleQuestions.length || 1}
                 </div>
               </div>
 
@@ -1258,13 +1176,6 @@ export default function Assessment() {
                         <h2 className="mt-2.5 text-[1.7rem] font-black leading-tight text-slate-900 md:text-[1.85rem]">
                           {current.text}
                         </h2>
-
-                        {currentIsMotionQuestion ? (
-                          <p className="mt-2 text-sm leading-5 text-slate-600">
-                            Pick the adjustable motion setup that feels most realistic for how
-                            you want to relax and sleep.
-                          </p>
-                        ) : null}
 
                         <div className="mt-4">
                           {currentIsMotionQuestion ? (
@@ -1375,11 +1286,6 @@ export default function Assessment() {
                 >
                   Back
                 </Button>
-
-                <div className="inline-flex items-center gap-2 rounded-full bg-[#eef3ff] px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#2f57e8]">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Done {doneCount}/{visibleQuestions.length || 1}
-                </div>
 
                 {step === visibleQuestions.length - 1 ? (
                   <Button

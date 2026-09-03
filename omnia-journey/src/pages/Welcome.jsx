@@ -1,18 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, CircleHelp, LockKeyhole, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 
-import { canUseAskSnoozer } from "@/device/deviceActionGuards";
-import { useDeviceMode } from "@/device/useDeviceMode";
 import { checkInSnoozeCode, getAssessment } from "@/lib/api";
 import { getAccessCode } from "@/state/sessionStore";
 import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import {
+  BRANDY_AVATAR_SRC,
+  requestHumanAssistance,
+} from "@/components/HumanAssistanceControl";
+import {
   ShowroomBrandMark,
   ShowroomFrame,
-  ShowroomInlineAction,
   ShowroomPageShell,
   ShowroomPanel,
   ShowroomTopRail,
@@ -26,22 +27,23 @@ function normalizeAccessCode(raw) {
 
 export default function Welcome() {
   const navigate = useNavigate();
-  const device = useDeviceMode();
   const { currentJob, noteUserInteraction, queue, runHudAction, voiceState } = useShowroomHud();
 
   const resetShopperScopedState = useStore((state) => state.resetShopperScopedState);
-  const [code, setCode] = useState(() => {
+  const [digits, setDigits] = useState(() => {
     const storedCode = String(getAccessCode() || "").trim();
-    return /^\d{4}$/.test(storedCode) ? storedCode : "";
+    const initialCode = /^\d{4}$/.test(storedCode) ? storedCode : "";
+    return Array.from({ length: 4 }, (_, index) => initialCode[index] || "");
   });
+  const code = digits.join("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [introJobId, setIntroJobId] = useState("");
-  const canOpenAskSnoozer = canUseAskSnoozer(device);
 
   const hasStartedRef = useRef(false);
   const introSeenRef = useRef(false);
   const navigatedRef = useRef(false);
+  const digitInputRefs = useRef([]);
 
   useEffect(() => {
     if (!introJobId || navigatedRef.current) return;
@@ -126,9 +128,66 @@ export default function Welcome() {
     }
   };
 
-  const handleKeyDown = (event) => {
+  const handleDigitChange = (index, rawValue) => {
+    const nextDigit = normalizeAccessCode(rawValue).slice(-1);
+    const nextDigits = [...digits];
+    nextDigits[index] = nextDigit;
+    setDigits(nextDigits);
+    if (error) setError("");
+
+    if (nextDigit && index < nextDigits.length - 1) {
+      digitInputRefs.current[index + 1]?.focus();
+    }
+
+    const nextCode = nextDigits.join("");
+    if (nextDigits.every(Boolean) && nextCode.length === 4) {
+      void handleStart(nextCode);
+    }
+  };
+
+  const handleDigitKeyDown = (index, event) => {
+    if (event.key === "Backspace" && !digits[index] && index > 0) {
+      event.preventDefault();
+      digitInputRefs.current[index - 1]?.focus();
+      digitInputRefs.current[index - 1]?.select();
+      return;
+    }
+
+    if (event.key === "ArrowLeft" && index > 0) {
+      event.preventDefault();
+      digitInputRefs.current[index - 1]?.focus();
+      return;
+    }
+
+    if (event.key === "ArrowRight" && index < digits.length - 1) {
+      event.preventDefault();
+      digitInputRefs.current[index + 1]?.focus();
+      return;
+    }
+
     if (event.key === "Enter" && /^\d{4}$/.test(code)) {
       void handleStart(code);
+    }
+  };
+
+  const handleCodePaste = (index, event) => {
+    const pastedDigits = normalizeAccessCode(event.clipboardData?.getData("text"));
+    if (!pastedDigits) return;
+    event.preventDefault();
+
+    const nextDigits = pastedDigits.length === 4 ? ["", "", "", ""] : [...digits];
+    const startIndex = pastedDigits.length === 4 ? 0 : index;
+    pastedDigits.split("").forEach((digit, offset) => {
+      if (startIndex + offset < 4) nextDigits[startIndex + offset] = digit;
+    });
+
+    setDigits(nextDigits);
+    if (error) setError("");
+    digitInputRefs.current[Math.min(startIndex + pastedDigits.length, 3)]?.focus();
+
+    const nextCode = nextDigits.join("");
+    if (nextDigits.every(Boolean) && nextCode.length === 4) {
+      void handleStart(nextCode);
     }
   };
 
@@ -178,29 +237,34 @@ export default function Welcome() {
               </p>
 
               <div className="mt-4 max-w-[660px] rounded-[26px] border border-[#d3e0ff] bg-white/92 p-3.5 shadow-[0_22px_52px_rgba(48,86,184,0.08)] md:p-4">
-                <label className="flex items-center gap-3 rounded-[18px] border border-[#b8cbff] bg-white px-4 py-3 shadow-sm md:px-5 md:py-3.5">
-                  <LockKeyhole className="h-5 w-5 text-slate-400" />
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={4}
-                    autoComplete="one-time-code"
-                    placeholder="Enter Snooze Code"
-                    value={code}
-                    onChange={(event) => {
-                      const nextCode = normalizeAccessCode(event.target.value);
-                      setCode(nextCode);
-                      if (error) setError("");
-                      if (nextCode.length === 4) {
-                        void handleStart(nextCode);
-                      }
-                    }}
-                    onKeyDown={handleKeyDown}
-                    disabled={loading}
-                    className="w-full bg-transparent text-[1.02rem] font-semibold text-slate-900 outline-none placeholder:text-slate-400 md:text-[1.08rem]"
-                  />
-                </label>
+                <fieldset>
+                  <legend className="text-sm font-black text-[#2f57e8] md:text-base">
+                    Enter Snooze Code
+                  </legend>
+                  <div className="mt-3 grid max-w-[460px] grid-cols-4 gap-3 md:gap-4">
+                    {digits.map((digit, index) => (
+                      <input
+                        key={index}
+                        ref={(element) => {
+                          digitInputRefs.current[index] = element;
+                        }}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={1}
+                        autoComplete={index === 0 ? "one-time-code" : "off"}
+                        aria-label={`Snooze Code digit ${index + 1}`}
+                        value={digit}
+                        onChange={(event) => handleDigitChange(index, event.target.value)}
+                        onKeyDown={(event) => handleDigitKeyDown(index, event)}
+                        onPaste={(event) => handleCodePaste(index, event)}
+                        onFocus={(event) => event.target.select()}
+                        disabled={loading}
+                        className="h-[72px] min-w-0 rounded-[20px] border border-[#9db6ff] bg-white text-center text-[2rem] font-black text-slate-900 shadow-sm outline-none transition focus:border-[#2f57e8] focus:ring-4 focus:ring-blue-100 disabled:bg-[#f4f7ff] md:h-[82px] md:text-[2.25rem]"
+                      />
+                    ))}
+                  </div>
+                </fieldset>
 
                 {error ? <p className="mt-3 text-sm font-semibold text-red-600">{error}</p> : null}
 
@@ -239,25 +303,30 @@ export default function Welcome() {
                   </div>
                 </div>
 
-                <div className="space-y-2.5">
-                  <ShowroomInlineAction
-                    icon={CircleHelp}
-                    label="Forgot your Snooze Code?"
-                    description={
-                      canOpenAskSnoozer
-                        ? "Open Ask Snoozer for help."
-                        : "A sleep specialist can help you recover it."
-                    }
-                    onClick={() => {
-                      noteUserInteraction?.();
-                      if (canOpenAskSnoozer) {
-                        navigate("/ask-snoozer", { state: { from: "/welcome" } });
-                        return;
-                      }
-                      setError("A sleep specialist can help you recover your Snooze Code.");
-                    }}
+                <button
+                  type="button"
+                  onClick={() => {
+                    noteUserInteraction?.();
+                    requestHumanAssistance({ sourcePage: "/welcome" });
+                  }}
+                  className="flex w-full items-center gap-3 rounded-[22px] border border-white/70 bg-white/92 px-4 py-3 text-left shadow-sm transition hover:border-indigo-100 hover:bg-white focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-100"
+                >
+                  <img
+                    src={BRANDY_AVATAR_SRC}
+                    alt="Brandy"
+                    className="h-12 w-12 shrink-0 rounded-full border-2 border-[#e9efff] object-cover shadow-sm"
+                    loading="lazy"
+                    decoding="async"
                   />
-                </div>
+                  <span className="min-w-0">
+                    <span className="block text-[0.94rem] font-black text-slate-900">
+                      Need Human Help?
+                    </span>
+                    <span className="mt-0.5 block text-[0.78rem] leading-5 text-slate-600">
+                      Talk to Brandy, your dedicated Human Assistant.
+                    </span>
+                  </span>
+                </button>
               </div>
             </div>
           </motion.div>
