@@ -15,6 +15,12 @@
 
 const axios = require("axios");
 const { getAssetPreview, slugify } = require("./assetLoader");
+const {
+  SHOPIFY_STOREFRONT_API_VERSION,
+  SHOPIFY_ADMIN_API_VERSION,
+  buildStorefrontGraphqlEndpoint,
+  buildAdminApiBaseUrl,
+} = require("./shopifyApiConfig");
 
 // ──────────────────────────────
 // Config
@@ -22,7 +28,6 @@ const { getAssetPreview, slugify } = require("./assetLoader");
 const SHOPIFY_DOMAIN = (process.env.SHOPIFY_DOMAIN || "").trim();
 const SHOPIFY_STOREFRONT_TOKEN = (process.env.SHOPIFY_STOREFRONT_TOKEN || "").trim();
 const SHOPIFY_ADMIN_TOKEN = (process.env.SHOPIFY_ADMIN_TOKEN || "").trim();
-const SHOPIFY_API_VERSION = (process.env.SHOPIFY_API_VERSION || "2024-01").trim();
 
 const SHOPIFY_CACHE_TTL_SEC = Number(process.env.SHOPIFY_CACHE_TTL_SEC || 90);
 const SHOPIFY_LIST_CACHE_TTL_SEC = Number(
@@ -79,7 +84,7 @@ function getStorefrontClient() {
   if (getStorefrontClient._client) return getStorefrontClient._client;
 
   const storefront = axios.create({
-    baseURL: `https://${domain}/api/${SHOPIFY_API_VERSION}/graphql.json`,
+    baseURL: buildStorefrontGraphqlEndpoint(domain),
     headers: {
       "X-Shopify-Storefront-Access-Token": sfToken,
       "Content-Type": "application/json",
@@ -97,7 +102,7 @@ function getAdminClientOptional() {
   if (getAdminClientOptional._client) return getAdminClientOptional._client;
 
   const admin = axios.create({
-    baseURL: `https://${SHOPIFY_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}`,
+    baseURL: buildAdminApiBaseUrl(SHOPIFY_DOMAIN),
     headers: {
       "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN,
       "Content-Type": "application/json",
@@ -171,7 +176,7 @@ async function withRetry(fn, { label, max = SHOPIFY_RETRY_MAX } = {}) {
 // In-memory cache
 // ──────────────────────────────
 const cache = new Map();
-const ck = (key) => `shopify:${SHOPIFY_DOMAIN}:${SHOPIFY_API_VERSION}:${key}`;
+const ck = (key) => `shopify:${SHOPIFY_DOMAIN}:${SHOPIFY_STOREFRONT_API_VERSION}:${key}`;
 
 function setCache(key, value, ttlSec) {
   cache.set(ck(key), { value, exp: Date.now() + ttlSec * 1000 });
@@ -599,7 +604,7 @@ async function fetchProducts({
       source: "shopify",
       event: "shopify.products.list.args",
       domain,
-      apiVersion: SHOPIFY_API_VERSION,
+      apiVersion: SHOPIFY_STOREFRONT_API_VERSION,
       collection,
       first: firstPage,
       after,
@@ -699,7 +704,7 @@ async function fetchProducts({
         source: "shopify",
         event: "shopify.products.list.empty",
         domain,
-        apiVersion: SHOPIFY_API_VERSION,
+        apiVersion: SHOPIFY_STOREFRONT_API_VERSION,
         collection,
         q: queryString,
         qTokens: tokens,
@@ -725,7 +730,7 @@ async function fetchProducts({
     page_info: { next, prev: null },
     meta: {
       source: "storefront",
-      apiVersion: SHOPIFY_API_VERSION,
+      apiVersion: SHOPIFY_STOREFRONT_API_VERSION,
       fromCache: false,
       lite: !!lite,
       q: queryString,
@@ -761,7 +766,7 @@ async function fetchProduct({ idOrHandle }) {
       product: cached,
       meta: {
         source: "storefront",
-        apiVersion: SHOPIFY_API_VERSION,
+        apiVersion: SHOPIFY_STOREFRONT_API_VERSION,
         fromCache: true,
         timeoutMs: STOREFRONT_TIMEOUT_MS,
       },
@@ -809,7 +814,7 @@ async function fetchProduct({ idOrHandle }) {
     product,
     meta: {
       source: "storefront",
-      apiVersion: SHOPIFY_API_VERSION,
+      apiVersion: SHOPIFY_STOREFRONT_API_VERSION,
       fromCache: false,
       timeoutMs: STOREFRONT_TIMEOUT_MS,
     },
@@ -829,7 +834,7 @@ async function fetchProductsByHandles({ handles = [], lite = SHOPIFY_LIST_LITE_D
       items: [],
       meta: {
         source: "storefront",
-        apiVersion: SHOPIFY_API_VERSION,
+        apiVersion: SHOPIFY_STOREFRONT_API_VERSION,
         fromCache: false,
         lite: !!lite,
         timeoutMs: STOREFRONT_TIMEOUT_MS,
@@ -911,7 +916,7 @@ async function fetchProductsByHandles({ handles = [], lite = SHOPIFY_LIST_LITE_D
     items,
     meta: {
       source: "storefront",
-      apiVersion: SHOPIFY_API_VERSION,
+      apiVersion: SHOPIFY_STOREFRONT_API_VERSION,
       fromCache: false,
       lite: !!lite,
       timeoutMs: STOREFRONT_TIMEOUT_MS,
@@ -1383,6 +1388,10 @@ async function createDiscountCode({ code, priceRuleId }) {
 }
 
 module.exports = {
+  SHOPIFY_STOREFRONT_API_VERSION,
+  SHOPIFY_ADMIN_API_VERSION,
+  buildStorefrontGraphqlEndpoint,
+  buildAdminApiBaseUrl,
   fetchProducts,
   fetchProduct,
   fetchProductsByHandles,
