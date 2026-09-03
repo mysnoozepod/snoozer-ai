@@ -1630,6 +1630,23 @@
       return 'unknown';
     }
 
+    function createSnoozerSessionId() {
+      return `snoozer_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function persistSnoozerSessionId(sessionId) {
+      const normalizedSessionId = normalizeText(sessionId);
+      if (!normalizedSessionId) return;
+
+      window.MySnoozePod = window.MySnoozePod || {};
+      window.MySnoozePod.sessionId = normalizedSessionId;
+      try {
+        window.sessionStorage.setItem(SNOOZER_SESSION_STORAGE_KEY, normalizedSessionId);
+      } catch (error) {
+        // ignore
+      }
+    }
+
     function getSessionId() {
       const globalConfig = window.MySnoozePod || {};
       const existingGlobal = normalizeText(globalConfig.sessionId || globalConfig.session_id);
@@ -1639,11 +1656,11 @@
         const existingStored = normalizeText(window.sessionStorage.getItem(SNOOZER_SESSION_STORAGE_KEY));
         if (existingStored) return existingStored;
 
-        const nextId = `snoozer_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
-        window.sessionStorage.setItem(SNOOZER_SESSION_STORAGE_KEY, nextId);
+        const nextId = createSnoozerSessionId();
+        persistSnoozerSessionId(nextId);
         return nextId;
       } catch (error) {
-        return `snoozer_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+        return createSnoozerSessionId();
       }
     }
 
@@ -1666,6 +1683,7 @@
     function getStoredSnoozeIdentity() {
       let snoozeCode = '';
       let shopperId = '';
+      let profileId = '';
 
       try {
         const params = new URLSearchParams(window.location.search || '');
@@ -1699,10 +1717,13 @@
         safeStorageGet(localStorage, 'snoozer_shopper_id') ||
         safeStorageGet(sessionStorage, 'snooze.assessmentShopperId');
 
+      profileId = safeStorageGet(sessionStorage, 'snooze.profileId');
+
       return {
         snoozeCode: snoozeCode || '',
         accessCode: snoozeCode || '',
         shopperId: snoozeCode || shopperId || '',
+        profileId: profileId || '',
         sourceShopperId:
           shopperId && snoozeCode && shopperId !== snoozeCode
             ? shopperId
@@ -1711,10 +1732,12 @@
     }
 
     function persistStoredSnoozeIdentity(identity) {
+      const previousIdentity = getStoredSnoozeIdentity();
       const normalizedCode = normalizeText(
         identity && (identity.snoozeCode || identity.accessCode || identity.shopperId)
       );
       const normalizedShopperId = normalizeText(identity && identity.shopperId) || normalizedCode;
+      const normalizedProfileId = normalizeText(identity && identity.profileId);
 
       if (!normalizedCode || !normalizedShopperId) return;
 
@@ -1731,6 +1754,14 @@
       safeStorageSet(window.sessionStorage, 'snooze.assessmentShopperId', normalizedShopperId);
       safeStorageSet(window.sessionStorage, 'snoozer_shopper_id', normalizedShopperId);
       safeStorageSet(window.localStorage, 'snoozer_shopper_id', normalizedShopperId);
+      if (normalizedProfileId) {
+        safeStorageSet(window.sessionStorage, 'snooze.profileId', normalizedProfileId);
+      }
+
+      return Boolean(
+        previousIdentity.snoozeCode &&
+        previousIdentity.snoozeCode !== normalizedCode
+      );
     }
 
     function normalizeCheckInPayload(rawPayload) {
@@ -1770,6 +1801,23 @@
         if (input && code) {
           input.value = code;
         }
+      });
+    }
+
+    function resetSnoozerShellIdentityState() {
+      shells.forEach((shell) => {
+        setResponse(shell, defaultResponse);
+        setLastQuery(shell, '');
+        setInputPlaceholder(shell, defaultInputPlaceholder);
+        clearNode(shell.querySelector('[data-snoozer-actions]'));
+        syncResultsZone(shell, []);
+
+        const chipList = shell.querySelector('[data-snoozer-chip-list]');
+        clearNode(chipList);
+        liveFallbackChips.forEach((chip) => {
+          const chipButton = createChip(chip, '');
+          if (chipButton && chipList) chipList.appendChild(chipButton);
+        });
       });
     }
 
@@ -2190,6 +2238,7 @@
             shopperId: storedIdentity.shopperId || undefined,
             snoozeCode: storedIdentity.snoozeCode || undefined,
             accessCode: storedIdentity.accessCode || undefined,
+            profileId: storedIdentity.profileId || undefined,
             sourceShopperId: storedIdentity.sourceShopperId || undefined,
             context: {
               path: pagePath,
@@ -2200,6 +2249,7 @@
               shopperId: storedIdentity.shopperId || undefined,
               snoozeCode: storedIdentity.snoozeCode || undefined,
               accessCode: storedIdentity.accessCode || undefined,
+              profileId: storedIdentity.profileId || undefined,
               sourceShopperId: storedIdentity.sourceShopperId || undefined
             }
           }),
@@ -2299,7 +2349,10 @@
       }
 
       const storedIdentity = getStoredSnoozeIdentity();
-      const sessionId = getSessionId();
+      const shopperSwitch = Boolean(
+        storedIdentity.snoozeCode && storedIdentity.snoozeCode !== rawCode
+      );
+      const sessionId = shopperSwitch ? createSnoozerSessionId() : getSessionId();
       form.dataset.busy = 'true';
       setCheckInStatus(form, 'Checking in to your Snooze Profile...', false);
 
@@ -2315,7 +2368,10 @@
           body: JSON.stringify({
             snoozeCode: rawCode,
             accessCode: rawCode,
-            shopperId: storedIdentity.shopperId || undefined,
+            shopperId:
+              storedIdentity.shopperId === rawCode
+                ? storedIdentity.shopperId
+                : undefined,
             sourceSurface: 'shopify_header_checkin',
             sessionId: sessionId,
             threadId: sessionId
@@ -2337,7 +2393,11 @@
           return;
         }
 
-        persistStoredSnoozeIdentity(normalizedPayload);
+        const shopperChanged = persistStoredSnoozeIdentity(normalizedPayload);
+        if (shopperChanged) {
+          persistSnoozerSessionId(sessionId);
+          resetSnoozerShellIdentityState();
+        }
         syncCheckInForms(normalizedPayload);
         setCheckInStatus(form, 'Snooze Profile unlocked', false);
       } catch (error) {
