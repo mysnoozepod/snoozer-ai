@@ -29,6 +29,7 @@ const podBuilder = read("omnia-journey/src/components/PodBuilder.jsx");
 const cartPage = read("omnia-journey/src/pages/Cart.jsx");
 const checkoutPage = read("omnia-journey/src/pages/Checkout.jsx");
 const resetPolicies = read("omnia-journey/src/device/resetPolicies.js");
+const shopifyRoutes = read("routes/shopifyRoutes.js");
 
 assertIncludes(
   api,
@@ -75,6 +76,11 @@ assertIncludes(
   useStore,
   "cartSyncPending",
   "cart UI must expose global authoritative refresh activity to block conflicting mutations."
+);
+assertIncludes(
+  useStore,
+  "redactShopifyCartGid(cartId || cart?.id)",
+  "Cart diagnostics must redact the Shopify cart credential."
 );
 
 assertIncludes(
@@ -139,6 +145,12 @@ assertIncludes(
   cartPage,
   "cartSyncPending",
   "Cart page must block line mutations while an authoritative refresh is active."
+);
+
+assertIncludes(
+  shopifyRoutes,
+  "(?:\\?key=[^#\\s]+)?",
+  "Backend cart routes must accept Shopify's keyed cart ID for write mutations."
 );
 
 assertIncludes(

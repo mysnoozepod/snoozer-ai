@@ -5,6 +5,11 @@ import {
   createCartAuthorityCoordinator,
   findConfirmedCartItem,
 } from "../src/lib/cart/cartAuthority.mjs";
+import {
+  extractShopifyCartGid,
+  isShopifyCartGid,
+  redactShopifyCartGid,
+} from "../src/lib/cart/cartId.mjs";
 
 const variant = (id) => `gid://shopify/ProductVariant/${id}`;
 const line = (lineId, variantId, quantity = 1, attributes = []) => ({
@@ -66,12 +71,24 @@ function testMutationInvalidatesOverlappingPodAndCartReads() {
   assert.equal(coordinator.shouldApplySync(laterPodRead), true);
 }
 
+function testShopifyCartCredentialSurvivesNormalization() {
+  const keyedCartId = "gid://shopify/Cart/cart-token?key=cart-secret";
+  assert.equal(isShopifyCartGid(keyedCartId), true);
+  assert.equal(extractShopifyCartGid({ cart: { id: keyedCartId } }), keyedCartId);
+  assert.equal(extractShopifyCartGid(`Shopify returned ${keyedCartId}`), keyedCartId);
+  assert.equal(
+    redactShopifyCartGid(keyedCartId),
+    "gid://shopify/Cart/cart-token?key=[redacted]"
+  );
+}
+
 const tests = [
   ["Pod quick-add updates header count from confirmed quantities", testPodQuickAddCountUsesConfirmedQuantity],
   ["three confirmed items rebind stale line and remove to two", testConfirmedLineRebindSupportsRemove],
   ["confirmed-line lookup does not guess a different variant configuration", testLineRebindNeverGuessesDifferentConfiguration],
   ["quantity change persists in refreshed confirmed state", testQuantityPersistsFromLatestConfirmedCart],
   ["Pod and Cart reads cannot overwrite a concurrent confirmed mutation", testMutationInvalidatesOverlappingPodAndCartReads],
+  ["Shopify cart credential survives mutation-path normalization", testShopifyCartCredentialSurvivesNormalization],
 ];
 
 let failures = 0;

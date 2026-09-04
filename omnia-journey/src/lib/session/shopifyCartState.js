@@ -1,4 +1,11 @@
 import { getSessionState, setCartIdentity } from "@/state/sessionStore";
+import {
+  extractShopifyCartGid,
+  isShopifyCartGid,
+  redactShopifyCartGid,
+} from "@/lib/cart/cartId.mjs";
+
+export { extractShopifyCartGid, isShopifyCartGid, redactShopifyCartGid };
 
 const LEGACY_KEYS = {
   cartId: "snooze.cartId",
@@ -29,44 +36,6 @@ function safeRemove(key) {
   } catch {
     // ignore
   }
-}
-
-export function isShopifyCartGid(value) {
-  return /^gid:\/\/shopify\/Cart\/[^/?#\s]+$/i.test(String(value || "").trim());
-}
-
-export function extractShopifyCartGid(value) {
-  if (!value) return "";
-
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (!trimmed) return "";
-    if (isShopifyCartGid(trimmed)) return trimmed;
-
-    const match = trimmed.match(/gid:\/\/shopify\/Cart\/[^/?#\s]+/i);
-    return match?.[0] && isShopifyCartGid(match[0]) ? match[0] : "";
-  }
-
-  if (typeof value === "object") {
-    const candidates = [
-      value?.id,
-      value?.cartId,
-      value?.cart?.id,
-      value?.data?.id,
-      value?.data?.cartId,
-      value?.data?.cart?.id,
-      value?.result?.cart?.id,
-      value?.contextPatch?.ids?.cartId,
-      value?.contextPatch?.cartId,
-    ];
-
-    for (const candidate of candidates) {
-      const gid = extractShopifyCartGid(candidate);
-      if (gid) return gid;
-    }
-  }
-
-  return "";
 }
 
 export function normalizeCheckoutUrl(value) {

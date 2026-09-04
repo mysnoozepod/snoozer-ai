@@ -12,6 +12,7 @@
 // on top of the canonical session state.
 
 import { useSyncExternalStore } from "react";
+import { extractShopifyCartGid } from "@/lib/cart/cartId.mjs";
 import {
   clearShopperScopedStorage,
   didCanonicalShopperChange,
@@ -120,42 +121,8 @@ function mergeState(base, patch) {
   return out;
 }
 
-function isValidCartGid(value) {
-  return /^gid:\/\/shopify\/Cart\/[^/?#\s]+$/i.test(String(value || "").trim());
-}
-
 function extractCartGid(value) {
-  if (!value) return null;
-
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-    if (isValidCartGid(trimmed)) return trimmed;
-
-    const match = trimmed.match(/gid:\/\/shopify\/Cart\/[^/?#\s]+/i);
-    return match?.[0] && isValidCartGid(match[0]) ? match[0] : null;
-  }
-
-  if (typeof value === "object") {
-    const candidates = [
-      value?.id,
-      value?.cartId,
-      value?.cart?.id,
-      value?.data?.id,
-      value?.data?.cartId,
-      value?.data?.cart?.id,
-      value?.result?.cart?.id,
-      value?.contextPatch?.ids?.cartId,
-      value?.contextPatch?.cartId,
-    ];
-
-    for (const candidate of candidates) {
-      const gid = extractCartGid(candidate);
-      if (gid) return gid;
-    }
-  }
-
-  return null;
+  return extractShopifyCartGid(value) || null;
 }
 
 function normalizeCheckoutUrl(value) {

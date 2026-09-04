@@ -51,7 +51,6 @@ export function usePodCart() {
       console.warn("[cart] pod header restore failed", {
         operation: "cart_fetch",
         sourcePage: "pod-header",
-        cartId,
         errorCode: err?.code || err?.name || err?.status || "CART_FETCH_FAILED",
       });
     });

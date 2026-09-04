@@ -1,13 +1,14 @@
 // src/lib/useStore.js
 import { create } from "zustand";
 import { api } from "@/lib/api";
-import { getSessionState } from "@/state/sessionStore";
+import { getSessionState, getShopperId } from "@/state/sessionStore";
 import { emitDeviceCartMutation } from "@/device/deviceActivityTracker";
 import {
   clearStoredShopifyCartIdentity,
   extractShopifyCartGid,
   getStoredShopifyCartIdentity,
   persistShopifyCartIdentity,
+  redactShopifyCartGid,
 } from "@/lib/session/shopifyCartState";
 import {
   cartItemIdentity,
@@ -116,6 +117,10 @@ function toVariantGid(v) {
 
 function extractCartGid(v) {
   return extractShopifyCartGid(v) || null;
+}
+
+function currentShopperId() {
+  return String(getShopperId() || getSessionState()?.shopperId || "").trim();
 }
 
 function markCartMutation(active, operation) {
@@ -450,7 +455,7 @@ function logCartOperation({
   const items = cart ? shopifyCartToItems(cart) : [];
   const payload = {
     operation,
-    cartId: extractCartGid(cartId || cart?.id) || null,
+    cartId: redactShopifyCartGid(cartId || cart?.id) || null,
     sourcePage,
     requestedLineCount,
     returnedLineCount: cart ? cartLineCount(cart, items) : 0,
@@ -644,7 +649,7 @@ export const useStore = create((set, get) => ({
     const cartId = meta.cartId || extractCartGid(fallbackCartId) || extractCartGid(cart?.id);
     const checkoutUrl = meta.checkoutUrl || cart?.checkoutUrl || null;
     const items = cart ? shopifyCartToItems(cart) : get().cart || [];
-    const cartOwnerShopperId = String(getSessionState()?.shopperId || "").trim() || null;
+    const cartOwnerShopperId = currentShopperId() || null;
 
     if (cartId || checkoutUrl) {
       get().setCartMeta({ cartId, checkoutUrl });
@@ -682,7 +687,7 @@ export const useStore = create((set, get) => ({
 
     const startedAt = Date.now();
     const state = get();
-    const shopperId = String(getSessionState()?.shopperId || "").trim();
+    const shopperId = currentShopperId();
     const cartId = extractCartGid(state.cartId) || getStoredCartGid();
     const syncToken = cartAuthorityCoordinator.beginSync();
 
@@ -794,7 +799,7 @@ export const useStore = create((set, get) => ({
         // session best-effort only; cart mutation still owns success/failure
       }
 
-      const shopperId = String(getSessionState()?.shopperId || "").trim();
+      const shopperId = currentShopperId();
       const response = shopperId
         ? await api.addLinesToShopperCart({ lines: finalLines })
         : existingCartId
@@ -895,7 +900,7 @@ export const useStore = create((set, get) => ({
 
     const state = get();
     const requestedItem = findCartItemByAnyId(state.cart, key);
-    const shopperId = String(getSessionState()?.shopperId || "").trim();
+    const shopperId = currentShopperId();
     let cartId = extractCartGid(state.cartId) || getStoredCartGid();
 
     if (!requestedItem || (!shopperId && !cartId)) {
@@ -970,7 +975,7 @@ export const useStore = create((set, get) => ({
 
     const state = get();
     const requestedItem = findCartItemByAnyId(state.cart, key);
-    const shopperId = String(getSessionState()?.shopperId || "").trim();
+    const shopperId = currentShopperId();
     let cartId = extractCartGid(state.cartId) || getStoredCartGid();
 
     if (!requestedItem || (!shopperId && !cartId)) {
@@ -1056,7 +1061,7 @@ export const useStore = create((set, get) => ({
 
   clearCart: async () => serializeCartMutation(set, "cart_clear", async () => {
     const state = get();
-    const shopperId = String(getSessionState()?.shopperId || "").trim();
+    const shopperId = currentShopperId();
     const cartId = extractCartGid(state.cartId) || getStoredCartGid();
     if (!cartId && !shopperId) return { ok: true, skipped: true, reason: "CART_ALREADY_EMPTY" };
 
@@ -1116,7 +1121,7 @@ export const useStore = create((set, get) => ({
         throw Object.assign(new Error("Your cart is empty."), { code: "CART_EMPTY" });
       }
 
-      const shopperId = String(getSessionState()?.shopperId || "").trim();
+      const shopperId = currentShopperId();
       const cartId = extractCartGid(get().cartId) || getStoredCartGid();
       let authoritative = null;
       try {

@@ -28,11 +28,13 @@
 import {
   getCanonicalIdentity,
   getSessionState,
+  getShopperId,
   setCanonicalIdentity,
   setSessionLinkId,
 } from "@/state/sessionStore";
 import { didCanonicalShopperChange } from "@/state/identitySession.mjs";
 import { buildApiUrl, resolveApiBase } from "@/lib/apiBase";
+import { extractShopifyCartGid as extractCartGid } from "@/lib/cart/cartId.mjs";
 import { persistShopifyCartIdentity } from "@/lib/session/shopifyCartState";
 
 const API_BASE = resolveApiBase();
@@ -617,46 +619,6 @@ function toVariantGid(id) {
   return null;
 }
 
-function isValidCartGid(id) {
-  if (!id) return false;
-  const s = String(id).trim();
-  return /^gid:\/\/shopify\/Cart\/[^/?#\s]+$/i.test(s);
-}
-
-function extractCartGid(value) {
-  if (!value) return null;
-
-  if (typeof value === "string") {
-    const s = value.trim();
-    if (!s) return null;
-    if (isValidCartGid(s)) return s;
-
-    const match = s.match(/gid:\/\/shopify\/Cart\/[^/?#\s]+/i);
-    return match?.[0] && isValidCartGid(match[0]) ? match[0] : null;
-  }
-
-  if (typeof value === "object") {
-    const candidates = [
-      value?.id,
-      value?.cartId,
-      value?.cart?.id,
-      value?.data?.id,
-      value?.data?.cartId,
-      value?.data?.cart?.id,
-      value?.result?.cart?.id,
-      value?.contextPatch?.ids?.cartId,
-      value?.contextPatch?.cartId,
-    ];
-
-    for (const candidate of candidates) {
-      const gid = extractCartGid(candidate);
-      if (gid) return gid;
-    }
-  }
-
-  return null;
-}
-
 function persistCartIdentity(cartId, checkoutUrl = null) {
   const persisted = persistShopifyCartIdentity({ cartId, checkoutUrl });
   return persisted.cartId || extractCartGid(cartId);
@@ -1001,7 +963,7 @@ export async function clearCart({ cartId } = {}) {
 // ─────────────────────────────────────────────────────────────
 function rewardIdentityHeaders() {
   const state = getSessionState();
-  const snoozeCode = String(state?.shopperId || "").trim();
+  const snoozeCode = String(getShopperId() || state?.shopperId || "").trim();
   const sessionId = String(state?.sessionId || getSessionId() || "").trim();
   return {
     ...(snoozeCode ? { "x-snooze-code": snoozeCode } : {}),

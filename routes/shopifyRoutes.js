@@ -211,12 +211,12 @@ function toVariantGid(raw) {
   return null;
 }
 
-// Cart GID: gid://shopify/Cart/<token>
+// Cart GID: gid://shopify/Cart/<token>?key=<secret>
 function isValidCartGid(id) {
   if (typeof id !== "string") return false;
   const s = id.trim();
   if (!s) return false;
-  return /^gid:\/\/shopify\/Cart\/[A-Za-z0-9+/=._-]+$/.test(s);
+  return /^gid:\/\/shopify\/Cart\/[^/#?\s]+(?:\?key=[^#\s]+)?$/i.test(s);
 }
 
 // ─────────────────────────────────────────────────────────────
