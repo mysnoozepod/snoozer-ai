@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   BedDouble,
@@ -14,11 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import * as api from "@/lib/api";
-import {
-  buildPodCustomizeReturnPath,
-  buildSleepEssentialsPath,
-  getSleepEssentialsJourneyId,
-} from "@/lib/sleepEssentials";
+import { getSleepEssentialsJourneyId } from "@/lib/sleepEssentials";
 import { useStore } from "@/lib/useStore";
 import { getShopperId } from "@/state/sessionStore";
 import { refreshRewardsState } from "@/state/rewardsStore";
@@ -1023,7 +1018,6 @@ export default function PodBuilder({
   requestedStepKey,
   mattressAlreadyInCart = false,
 }) {
-  const navigate = useNavigate();
   const addLinesToAuthoritativeCart = useStore(
     (state) => state.addLinesToAuthoritativeCart
   );
@@ -1044,12 +1038,6 @@ export default function PodBuilder({
     () => getSleepEssentialsJourneyId(getShopperId()),
     [shopperKey]
   );
-  const canonicalPodId = useMemo(() => {
-    const raw = String(pod?.podId ?? pod?.id ?? "").trim().toLowerCase();
-    if (/^pod-[1-5]$/.test(raw)) return raw;
-    const numeric = raw.replace(/^pod-/, "");
-    return /^[1-5]$/.test(numeric) ? `pod-${numeric}` : "";
-  }, [pod?.id, pod?.podId]);
   const assessmentSignature = useMemo(() => buildAssessmentSignature(assessment), [assessment]);
 
   const savedBuild = useMemo(() => readSavedBuild(pod), [pod]);
@@ -1156,15 +1144,6 @@ export default function PodBuilder({
     setSize((current) => current === cartMattressSize ? current : cartMattressSize);
     setConfirmedSelections((current) => current.size ? current : { ...current, size: true });
   }, [cartMattressSize]);
-
-  const openSleepEssentials = useCallback(
-    (category) => {
-      const returnStep = stepKey === "essentials" ? "essentials" : "review";
-      const returnTo = buildPodCustomizeReturnPath(canonicalPodId, returnStep);
-      navigate(buildSleepEssentialsPath({ category, returnTo }));
-    },
-    [canonicalPodId, navigate, stepKey]
-  );
 
   const recordEssentialProgress = useCallback(
     async ({ category, action, choice = null }) => {
@@ -2516,10 +2495,8 @@ export default function PodBuilder({
 
       return (
         <div className="flex h-full min-h-0 flex-col" data-sleep-essentials-step="combined">
-          <div className="mb-2 flex shrink-0 items-center justify-end" data-sleep-essentials-catalog-action="true">
-            <button type="button" onClick={() => openSleepEssentials("all")} className="inline-flex min-h-[44px] items-center gap-1 rounded-[12px] border border-[#dfe7fb] bg-white px-3 text-[0.75rem] font-black text-[#315cf6]">
-              View All Sleep Essentials <ArrowRight className="h-4 w-4" />
-            </button>
+          <div className="mb-2 flex min-h-[38px] shrink-0 items-center justify-center rounded-[12px] border border-[#dfe7fb] bg-[#f8faff] px-3 text-center text-[0.76rem] font-black text-[#315cf6]" data-sleep-essentials-station-handoff="true">
+            Explore more at the Sleep Essentials station
           </div>
 
           {essentialProducts.status === "loading" ? (
@@ -2530,11 +2507,11 @@ export default function PodBuilder({
                 const active = Boolean(choice && selectedEssentialChoices[category]?.variantId === choice.variantId);
                 if (!choice) {
                   return (
-                    <div key={category} className="flex min-h-[286px] min-w-0 flex-col items-center justify-center rounded-[20px] border border-dashed border-[#cbd7f7] bg-[#f8faff] p-5 text-center" data-sleep-essentials-card={category} data-sleep-essentials-unavailable="true">
+                    <div key={category} className="flex min-h-[200px] min-w-0 flex-col items-center justify-center rounded-[20px] border border-dashed border-[#cbd7f7] bg-[#f8faff] p-4 text-center" data-sleep-essentials-card={category} data-sleep-essentials-unavailable="true">
                       <PackageCheck className="h-9 w-9 text-[#8ba6ef]" />
                       <span className="mt-3 text-[0.72rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">{ESSENTIAL_CATEGORY_CONFIG[category].recommendationLabel}</span>
                       <span className="mt-2 text-base font-black text-slate-900">No approved match available</span>
-                      <button type="button" onClick={() => openSleepEssentials(CANONICAL_ESSENTIAL_CATEGORY_IDS[category])} className="mt-3 min-h-[44px] rounded-full bg-white px-3 text-[0.75rem] font-black text-[#315cf6]">View All</button>
+                      <span className="mt-2 text-[0.74rem] font-semibold text-slate-600">Explore more at the Sleep Essentials station.</span>
                     </div>
                   );
                 }
@@ -2543,7 +2520,7 @@ export default function PodBuilder({
                     key={category}
                     type="button"
                     onClick={() => selectChoice(category, choice)}
-                    className={`group flex min-h-[286px] min-w-0 flex-col rounded-[20px] border p-4 text-left shadow-sm transition ${active ? "border-[#315cf6] bg-[#eef3ff] ring-2 ring-[#315cf6]/15" : "border-[#dfe7fb] bg-white hover:-translate-y-0.5 hover:shadow-md"}`}
+                    className={`group flex min-h-[200px] min-w-0 flex-col rounded-[20px] border p-3 text-left shadow-sm transition ${active ? "border-[#315cf6] bg-[#eef3ff] ring-2 ring-[#315cf6]/15" : "border-[#dfe7fb] bg-white hover:-translate-y-0.5 hover:shadow-md"}`}
                     data-sleep-essentials-card={category}
                     aria-pressed={active}
                   >
@@ -2551,18 +2528,18 @@ export default function PodBuilder({
                       src={choice.image}
                       alt={choice.title}
                       icon={PackageCheck}
-                      className="min-h-[150px] w-full flex-1 overflow-hidden rounded-[14px] bg-[#f6f8ff]"
+                      className="min-h-[96px] w-full flex-1 overflow-hidden rounded-[14px] bg-[#f6f8ff]"
                       imgClassName="h-full w-full object-contain p-2"
                       data-sleep-essentials-card-image="true"
                     />
-                    <span className="mt-3 text-[0.76rem] font-black uppercase tracking-[0.14em] text-[#315cf6]" data-sleep-essentials-card-category="true">
+                    <span className="mt-2 text-[0.7rem] font-black uppercase tracking-[0.14em] text-[#315cf6]" data-sleep-essentials-card-category="true">
                       {ESSENTIAL_CATEGORY_CONFIG[category].recommendationLabel}
                     </span>
-                    <span className="mt-1.5 line-clamp-2 text-[clamp(1.02rem,1.3vw,1.18rem)] font-black leading-[1.08] text-slate-950" data-sleep-essentials-card-name="true">
+                    <span className="mt-1 line-clamp-2 text-[clamp(0.94rem,1.2vw,1.08rem)] font-black leading-[1.08] text-slate-950" data-sleep-essentials-card-name="true">
                       {choice.title}
                     </span>
-                    <span className="mt-3 flex w-full items-center justify-between gap-3" data-sleep-essentials-card-action="true">
-                      <span className="text-[1.1rem] font-black text-slate-950">{money(choice.price)}</span>
+                    <span className="mt-2 flex w-full items-center justify-between gap-3" data-sleep-essentials-card-action="true">
+                      <span className="text-[1rem] font-black text-slate-950">{money(choice.price)}</span>
                       <span className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 text-[0.78rem] font-black ${active ? "bg-[#315cf6] text-white" : "bg-[#edf2ff] text-[#315cf6]"}`}>
                         <CheckCircle2 className="h-4 w-4" /> {active ? "Added" : "+ Add"}
                       </span>
@@ -2651,23 +2628,8 @@ export default function PodBuilder({
             ) : null}
           </div>
 
-          <div className="mb-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" aria-label="Sleep Essentials showroom links">
-            {[
-              ["Browse Pillows", "pillows"],
-              ["Shop Sheets and Bedding", "sheets_bedding"],
-              ["Explore Mattress Protectors", "protectors"],
-              ["View All Sleep Essentials", CANONICAL_ESSENTIAL_CATEGORY_IDS[stepKey]],
-            ].map(([label, category]) => (
-              <button
-                key={label}
-                type="button"
-                onClick={() => openSleepEssentials(category)}
-                className="inline-flex min-h-[44px] items-center justify-between rounded-[12px] border border-[#dfe7fb] bg-white px-3 text-left text-[0.72rem] font-black text-[#315cf6] transition hover:border-[#9bb1ff]"
-              >
-                <span>{label}</span>
-                <ArrowRight className="h-4 w-4 shrink-0" />
-              </button>
-            ))}
+          <div className="mb-2 flex min-h-[40px] items-center justify-center rounded-[12px] border border-[#dfe7fb] bg-[#f8faff] px-3 text-center text-[0.74rem] font-black text-[#315cf6]" data-sleep-essentials-station-handoff="true">
+            Explore more at the Sleep Essentials station
           </div>
 
           {essentialProducts.status === "error" || (essentialProducts.status === "ready" && !choices.length) ? (
@@ -2790,55 +2752,55 @@ export default function PodBuilder({
     if (stepKey === "success") {
       return (
         <div
-          className="grid h-full min-h-0 gap-3 lg:grid-cols-[1.35fr_0.65fr]"
-          data-pod-builder-success-layout="compact"
+          className="grid h-full min-h-0 gap-3 rounded-[22px] border border-[#dfe7fb] bg-[linear-gradient(145deg,#f7faff,#ffffff)] p-3 lg:grid-cols-[minmax(0,1.05fr)_minmax(300px,0.95fr)]"
+          data-pod-builder-success-layout="balanced"
         >
           <div className="flex min-h-0 flex-col gap-2">
             <div
-              className="flex min-h-[64px] shrink-0 items-center gap-3 rounded-[18px] border border-emerald-200 bg-emerald-50/80 px-4 py-2.5"
+              className="flex min-h-[88px] shrink-0 items-center gap-4 rounded-[18px] border border-emerald-200 bg-emerald-50/80 px-5 py-3"
               data-pod-builder-success-banner="true"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
-                <CheckCircle2 className="h-6 w-6" />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm">
+                <CheckCircle2 className="h-7 w-7" />
               </div>
               <div className="min-w-0">
-                <div className="text-[clamp(1.08rem,1.55vw,1.35rem)] font-black tracking-tight text-slate-950">
+                <div className="text-[clamp(1.35rem,2vw,1.75rem)] font-black tracking-tight text-slate-950">
                   Your setup is in the cart.
                 </div>
-                <p className="text-[0.78rem] font-semibold leading-snug text-slate-600">
-                  Open the cart or customize another setup.
+                <p className="mt-1 text-[0.82rem] font-semibold leading-snug text-slate-600">
+                  Review your selections, then continue when you are ready.
                 </p>
               </div>
             </div>
             <div
-              className="grid min-h-0 flex-1 content-start gap-1.5 sm:grid-cols-2"
+              className="grid min-h-0 flex-1 content-center gap-2 sm:grid-cols-2"
               data-pod-builder-success-summary="true"
             >
               {successSummaryRows.map((item) => (
                 <div
                   key={item.label}
-                  className="flex min-h-[40px] min-w-0 items-center gap-2 rounded-[12px] border border-[#dfe7fb] bg-white px-3"
+                  className="flex min-h-[58px] min-w-0 items-center gap-2.5 rounded-[14px] border border-[#dfe7fb] bg-white px-3.5 py-2"
                 >
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-[#315cf6]" />
                   <div className="min-w-0 leading-tight">
                     <div className="text-[0.56rem] font-black uppercase tracking-[0.1em] text-slate-500">
                       {item.label}
                     </div>
-                    <div className="text-[0.7rem] font-bold text-slate-900">{item.value}</div>
+                    <div className="mt-0.5 line-clamp-2 text-[0.76rem] font-bold leading-tight text-slate-900">{item.value}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
           <div
-            className="flex min-h-0 flex-col justify-center gap-3 rounded-[18px] border border-[#dfe7fb] bg-[#f8faff] p-3"
+            className="flex min-h-0 flex-col justify-center gap-3 rounded-[18px] border border-[#cbd9ff] bg-white p-5 shadow-[0_16px_34px_rgba(49,92,246,0.1)]"
             data-pod-builder-success-actions="true"
           >
             <Button
               type="button"
               onClick={viewCart}
               data-pod-layout-primary-action="build-open-cart"
-              className="min-h-[48px] w-full rounded-[14px] px-5 text-[0.9rem] font-black"
+              className="min-h-[62px] w-full rounded-[16px] px-6 text-[1.05rem] font-black shadow-[0_14px_30px_rgba(49,92,246,0.22)]"
             >
               Open Cart
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -2846,7 +2808,7 @@ export default function PodBuilder({
             <button
               type="button"
               onClick={resetBuild}
-              className="inline-flex min-h-[48px] w-full items-center justify-center rounded-[14px] border border-[#dfe7fb] bg-white px-4 text-[0.88rem] font-black text-slate-800"
+              className="inline-flex min-h-[52px] w-full items-center justify-center rounded-[14px] border border-[#dfe7fb] bg-[#f8faff] px-4 text-[0.92rem] font-black text-slate-800"
             >
               Build Another
             </button>

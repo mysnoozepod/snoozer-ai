@@ -198,7 +198,7 @@ test("active Rest Test persists across every Pod experience tab", async ({ page 
 
   const evidenceDir = path.join(OUTPUT_ROOT, "persistence");
   await fs.mkdir(evidenceDir, { recursive: true });
-  for (const tab of ["Learn", "Customize", "Ask Snoozer", "Talk to Human"]) {
+  for (const tab of ["Learn", "Customize", "Ask Snoozer"]) {
     await page.getByRole("button", { name: tab, exact: true }).click();
     await expect(status).toBeVisible();
     await page.screenshot({
@@ -206,6 +206,9 @@ test("active Rest Test persists across every Pod experience tab", async ({ page 
       fullPage: false,
     });
   }
+
+  await page.getByRole("button", { name: "Human Assistance — Talk to Brandy" }).click();
+  await expect(status).toBeVisible();
 
   await page.waitForTimeout(1_100);
   const continuedTime = await status.locator(".tabular-nums").textContent();

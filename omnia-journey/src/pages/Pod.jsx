@@ -2,15 +2,8 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
-  ArrowLeft,
-  MessageSquare,
-  BedDouble,
-  CheckCircle2,
   Heart,
-  HelpCircle,
-  Headphones,
   Scale,
-  Smile,
   X,
 } from "lucide-react";
 
@@ -44,6 +37,7 @@ import { PodHome } from "@/components/pod/PodHome";
 import { PodLearnPanel } from "@/components/pod/PodLearnPanel";
 import { GuidedRestTest } from "@/components/pod/PodRestPanels";
 import SnoozerPanel from "@/components/SnoozerPanel";
+import HumanAssistanceControl from "@/components/HumanAssistanceControl";
 import {
   BASE_OPTIONS_UI,
   generateShowroomRecommendations,
@@ -2729,18 +2723,15 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
       );
     }
 
-    if (openStage === "ask" || openStage === "human") {
-      const humanMode = openStage === "human";
+    if (openStage === "ask") {
       return (
         <ShowroomPanel className="h-full min-h-0 overflow-auto p-4" tone="frost">
           <div className="mb-3">
             <h2 className="text-[clamp(1.35rem,2vw,1.8rem)] font-black text-slate-950">
-              {humanMode ? "Talk to a Human" : "Ask Snoozer"}
+              Ask Snoozer
             </h2>
             <p className="mt-1 text-sm font-semibold text-slate-600">
-              {humanMode
-                ? "Tell Snoozer what you need and a showroom team member can take it from here."
-                : "Ask about this mattress, your Rest Test, or the setup you are customizing."}
+              Ask about this mattress, your Rest Test, or the setup you are customizing.
             </p>
           </div>
           <SnoozerPanel
@@ -2749,11 +2740,11 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
             shopperId={shopperId}
             assessment={assessment}
             exploreContext={snoozerPodExploreContext}
-            context={{ podId: pid, sourceSurface: humanMode ? "pod-human-help" : "pod-ask-snoozer" }}
+            context={{ podId: pid, sourceSurface: "pod-ask-snoozer" }}
             showInput
             showHeader={false}
-            initialCaption={humanMode ? "Tell me what help you need." : "What would you like to know?"}
-            inputPlaceholder={humanMode ? "Describe the help you need" : "Ask Snoozer about this pod"}
+            initialCaption="What would you like to know?"
+            inputPlaceholder="Ask Snoozer about this pod"
           />
         </ShowroomPanel>
       );
@@ -2810,9 +2801,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
         ? "customize"
         : openStage === "ask"
           ? "ask"
-          : openStage === "human"
-            ? "human"
-        : "rest";
+          : "rest";
   const restStatus = guidedRestTest.isActive
     ? {
         paused: guidedRestTest.state.phase === "paused",
@@ -2929,36 +2918,38 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
         className="mx-auto h-[var(--pod-header-height)] w-full max-w-[1380px] shrink-0 px-[var(--pod-outer-x)] py-[6px]"
       >
         <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[20px] border border-white/80 bg-white/94 px-[14px] shadow-[0_18px_46px_rgba(40,63,126,0.1)] backdrop-blur md:px-[18px]">
-          <button
-            type="button"
-            onClick={() => navigate("/results")}
-            className="inline-flex min-h-[44px] w-fit items-center gap-2 rounded-[12px] px-3 text-sm font-black text-slate-800 hover:bg-slate-50"
-          >
-            <ArrowLeft className="h-5 w-5" />
-            Back to results
-          </button>
+          <div className="min-w-0">
+            {cartNotice ? (
+              <div className="w-fit max-w-full truncate rounded-full border border-indigo-100 bg-[#f2f6ff] px-3 py-2 text-xs font-bold text-indigo-900" role="status" aria-live="polite">
+                {cartNotice}
+              </div>
+            ) : null}
+          </div>
 
           <ShowroomBrandMark
             className="justify-self-center"
             imageClassName="w-[clamp(170px,18vw,220px)]"
           />
 
-          <div className="justify-self-end flex flex-col items-end gap-2">
-            <ShowroomCartBadge
-              count={snoozepodCount}
-              quiet
-              className={cartPulse ? "scale-[1.01] border-indigo-300 ring-4 ring-indigo-100" : ""}
-              onClick={() => {
-                noteUserInteraction?.();
-                navigate("/cart", { state: { originPodId: pid } });
-              }}
+          <div className="flex items-center justify-self-end gap-2" data-pod-header-actions="true">
+            <HumanAssistanceControl
+              compact
+              showNoticeMessage={false}
+              sourcePage={`/pod/${pid}`}
             />
 
-            {cartNotice ? (
-              <div className="rounded-2xl border border-indigo-100 bg-white/95 px-3 py-2 text-sm font-semibold text-indigo-900 shadow-sm backdrop-blur">
-                {cartNotice}
-              </div>
-            ) : null}
+            <div className="flex flex-col items-end gap-2">
+              <ShowroomCartBadge
+                count={snoozepodCount}
+                quiet
+                className={cartPulse ? "scale-[1.01] border-indigo-300 ring-4 ring-indigo-100" : ""}
+                onClick={() => {
+                  noteUserInteraction?.();
+                  navigate("/cart", { state: { originPodId: pid } });
+                }}
+              />
+
+            </div>
           </div>
         </div>
       </div>
@@ -2977,11 +2968,6 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
             onAskSnoozer={() => {
               noteUserInteraction?.();
               setOpenStage("ask");
-              setShowRestChooser(false);
-            }}
-            onTalkToHuman={() => {
-              noteUserInteraction?.();
-              setOpenStage("human");
               setShowRestChooser(false);
             }}
           />

@@ -18,6 +18,8 @@ export function requestHumanAssistance(detail = {}) {
 export default function HumanAssistanceControl({
   hideTrigger = false,
   sourcePage = "showroom",
+  compact = false,
+  showNoticeMessage = true,
 }) {
   const [showNotice, setShowNotice] = useState(false);
   const noticeTimerRef = useRef(null);
@@ -71,28 +73,42 @@ export default function HumanAssistanceControl({
         <button
           type="button"
           onClick={() => requestHelp({ sourcePage })}
-          className="group flex min-h-12 items-center gap-2.5 rounded-full border border-white/90 bg-white/95 py-1.5 pl-1.5 pr-4 text-left shadow-[0_12px_30px_rgba(34,57,112,0.2)] backdrop-blur-md transition hover:border-indigo-100 hover:shadow-[0_16px_36px_rgba(34,57,112,0.24)] focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200"
+          className={[
+            "group flex items-center rounded-full border border-white/90 bg-white/95 text-left backdrop-blur-md transition hover:border-indigo-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200",
+            compact
+              ? "min-h-11 gap-2 py-1 pl-1 pr-3 shadow-[0_8px_20px_rgba(34,57,112,0.14)]"
+              : "min-h-12 gap-2.5 py-1.5 pl-1.5 pr-4 shadow-[0_12px_30px_rgba(34,57,112,0.2)] hover:shadow-[0_16px_36px_rgba(34,57,112,0.24)]",
+          ].join(" ")}
           aria-label="Human Assistance — Talk to Brandy"
         >
           <img
             src={BRANDY_AVATAR_SRC}
             alt=""
-            className="h-10 w-10 shrink-0 rounded-full border-2 border-white object-cover shadow-sm"
+            className={[
+              "shrink-0 rounded-full border-2 border-white object-cover shadow-sm",
+              compact ? "h-9 w-9" : "h-10 w-10",
+            ].join(" ")}
             loading="lazy"
             decoding="async"
           />
           <span className="leading-tight">
-            <span className="block text-[0.72rem] font-black uppercase tracking-[0.12em] text-[#2f57e8]">
-              Human Assistance
+            <span className={[
+              "block font-black uppercase tracking-[0.12em] text-[#2f57e8]",
+              compact ? "text-[0.66rem]" : "text-[0.72rem]",
+            ].join(" ")}>
+              {compact ? "Human Help" : "Human Assistance"}
             </span>
-            <span className="mt-0.5 block text-xs font-bold text-slate-700">
+            <span className={[
+              "mt-0.5 block font-bold text-slate-700",
+              compact ? "text-[0.7rem]" : "text-xs",
+            ].join(" ")}>
               Talk to Brandy
             </span>
           </span>
         </button>
       ) : null}
 
-      {showNotice ? (
+      {showNotice && showNoticeMessage ? (
         <div
           role="status"
           aria-live="polite"

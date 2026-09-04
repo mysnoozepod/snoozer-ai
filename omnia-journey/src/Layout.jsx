@@ -113,7 +113,8 @@ function LayoutShell() {
   const showHumanAssistance =
     !pathname.startsWith("/cart") &&
     !pathname.startsWith("/checkout") &&
-    !pathname.startsWith("/dev/");
+    !pathname.startsWith("/dev/") &&
+    !pathname.startsWith("/pod/");
   const humanAssistanceNeedsFooterClearance =
     pageUsesPodViewportShell ||
     pathname.startsWith("/sleep-essentials") ||

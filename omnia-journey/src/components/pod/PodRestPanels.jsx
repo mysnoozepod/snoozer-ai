@@ -17,13 +17,6 @@ import {
   REST_TEST_STAGES,
 } from "@/lib/restTestProgram.mjs";
 
-function formatTime(totalSeconds) {
-  const total = Math.max(0, Number(totalSeconds) || 0);
-  const minutes = Math.floor(total / 60);
-  const seconds = total % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
 export function PodRestStartSection({ podLabel, flowOptions = [], onChooseMode }) {
   const ids = flowOptions.length ? flowOptions.map((flow) => flow.id).slice(0, 2) : ["quick", "deep"];
   const cards = ids.map((id) => {
@@ -199,7 +192,7 @@ function ActiveRestTest({ controller }) {
         <RestVisual stage={stage} paused={isPaused} />
 
         <div className="flex min-h-0 min-w-0 flex-col rounded-[16px] border border-white/80 bg-white/78 px-3 py-2">
-          <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
             <div className="min-w-0">
               <div className="text-[0.66rem] font-black uppercase tracking-[0.18em] text-[#355ff1]">
                 Stage {stageNumber} of {REST_TEST_STAGES.length} / {statusLabel}
@@ -207,12 +200,6 @@ function ActiveRestTest({ controller }) {
               <h2 className="mt-1 text-[clamp(1.4rem,2.4vw,2rem)] font-black leading-tight tracking-tight text-slate-950">
                 {stage.name}
               </h2>
-            </div>
-            <div className="shrink-0 text-right">
-              <div className="text-[clamp(2rem,3.8vw,3rem)] font-black leading-none tabular-nums text-slate-950">
-                {formatTime(state.stageRemainingSeconds)}
-              </div>
-              <div className="mt-0.5 text-[0.62rem] font-bold uppercase tracking-[0.12em] text-slate-500">active time</div>
             </div>
           </div>
 

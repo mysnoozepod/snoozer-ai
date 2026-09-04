@@ -423,7 +423,7 @@ for (const viewport of VIEWPORTS) {
         }
 
         if (testCase.state === "build-success") {
-          await expect(page.locator('[data-pod-builder-success-layout="compact"]')).toBeVisible();
+          await expect(page.locator('[data-pod-builder-success-layout="balanced"]')).toBeVisible();
           await expect(page.locator('[data-pod-builder-success-banner="true"]')).toBeVisible();
           await expect(page.getByText("Your setup is in the cart.", { exact: true })).toHaveCount(1);
           await expect(page.getByRole("button", { name: "Open Cart" })).toBeVisible();
@@ -432,9 +432,9 @@ for (const viewport of VIEWPORTS) {
           await expect(page.getByText("This setup is saved in the showroom cart.", { exact: false })).toHaveCount(0);
 
           const successContainment = await page.evaluate(() => {
-            const layout = document.querySelector('[data-pod-builder-success-layout="compact"]');
+            const layout = document.querySelector('[data-pod-builder-success-layout="balanced"]');
             const actions = document.querySelector('[data-pod-builder-success-actions="true"]');
-            if (!layout || !actions) return { ok: false, reason: "missing compact success layout" };
+            if (!layout || !actions) return { ok: false, reason: "missing balanced success layout" };
             const layoutRect = layout.getBoundingClientRect();
             const actionRect = actions.getBoundingClientRect();
             const layoutStyle = getComputedStyle(layout);
