@@ -23,6 +23,7 @@ function assertNotIncludes(source, needle, message) {
 
 const api = read("omnia-journey/src/lib/api.js");
 const useStore = read("omnia-journey/src/lib/useStore.js");
+const cartAuthority = read("omnia-journey/src/lib/cart/cartAuthority.mjs");
 const usePodCart = read("omnia-journey/src/hooks/usePodCart.js");
 const podBuilder = read("omnia-journey/src/components/PodBuilder.jsx");
 const cartPage = read("omnia-journey/src/pages/Cart.jsx");
@@ -60,11 +61,42 @@ assertIncludes(
   "cartTotalQuantity",
   "useStore must derive total quantity from the Shopify cart payload."
 );
+assertIncludes(
+  useStore,
+  "fetchAuthoritativeCartPayload({ shopperId, cartId })",
+  "quantity and remove mutations must preflight the current profile-owned Shopify cart."
+);
+assertIncludes(
+  useStore,
+  "cartAuthorityCoordinator.shouldApplySync(syncToken)",
+  "stale cart reads must not overwrite a concurrent Shopify-confirmed mutation."
+);
+assertIncludes(
+  useStore,
+  "cartSyncPending",
+  "cart UI must expose global authoritative refresh activity to block conflicting mutations."
+);
+
+assertIncludes(
+  cartAuthority,
+  "plannedCartLineKey(requestedItem)",
+  "stale cart-line references must rebind by exact variant and attributes."
+);
+assertIncludes(
+  cartAuthority,
+  "token.mutationEpoch === mutationEpoch",
+  "cart authority coordinator must invalidate reads that overlap mutations."
+);
 
 assertIncludes(
   usePodCart,
   "state.cart",
   "Pod header cart count must read authoritative cart state."
+);
+assertIncludes(
+  usePodCart,
+  "confirmedCartItemCount(cart)",
+  "Pod header cart count must use Shopify-confirmed quantities."
 );
 assertNotIncludes(
   usePodCart,
@@ -102,6 +134,11 @@ assertIncludes(
   cartPage,
   "item.lineId",
   "Cart page must prefer Shopify cart line IDs for updates/removals."
+);
+assertIncludes(
+  cartPage,
+  "cartSyncPending",
+  "Cart page must block line mutations while an authoritative refresh is active."
 );
 
 assertIncludes(

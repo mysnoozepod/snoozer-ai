@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { confirmedCartItemCount } from "@/lib/cart/cartAuthority.mjs";
 import { useStore } from "@/lib/useStore";
 
 export function usePodCart() {
@@ -7,7 +8,7 @@ export function usePodCart() {
   const cartId = useStore((state) => state.cartId || null);
   const syncCartFromShopify = useStore((state) => state.syncCartFromShopify);
   const snoozepodCount = useMemo(
-    () => cart.reduce((sum, item) => sum + Math.max(0, Number(item?.quantity) || 0), 0),
+    () => confirmedCartItemCount(cart),
     [cart]
   );
 

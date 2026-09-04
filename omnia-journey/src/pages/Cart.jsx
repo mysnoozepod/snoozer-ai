@@ -223,6 +223,7 @@ export default function Cart() {
   const recommendations = useStore((s) => s.recommendations);
   const syncCartFromShopify = useStore((s) => s.syncCartFromShopify);
   const cartMutationPending = useStore((s) => s.cartMutationPending);
+  const cartSyncPending = useStore((s) => s.cartSyncPending);
   const cartMutationOperation = useStore((s) => s.cartMutationOperation);
   const cartError = useStore((s) => s.cartError);
   const clearCartError = useStore((s) => s.clearCartError);
@@ -239,7 +240,7 @@ export default function Cart() {
   const financingAllowed = canViewFinancing(device);
   const showCheckoutHandoff =
     shouldShowCheckoutLoungeHandoff(device) || Boolean(location.state?.checkoutHandoff);
-  const busy = checkoutLoading || cartMutationPending;
+  const busy = checkoutLoading || cartMutationPending || cartSyncPending || cartSyncing;
 
   const displaySnoozeCode = useMemo(() => {
     const stored =
