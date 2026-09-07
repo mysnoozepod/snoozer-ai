@@ -164,6 +164,35 @@ export function ShowroomTopRail({ className, children }) {
   );
 }
 
+export function ShowroomDownstreamHeader({
+  className,
+  rewards,
+  notice,
+  humanHelp,
+  cart,
+  brandImageClassName = "w-[clamp(170px,18vw,220px)]",
+}) {
+  return (
+    <div
+      data-showroom-downstream-header="true"
+      className={cn(
+        "grid min-h-[60px] w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[20px] border border-white/80 bg-white/94 px-3 py-2 shadow-[0_18px_46px_rgba(40,63,126,0.1)] backdrop-blur md:px-[18px]",
+        className
+      )}
+    >
+      <div className="flex min-w-0 items-center gap-2 justify-self-start" data-showroom-header-region="rewards">
+        {rewards}
+        {notice}
+      </div>
+      <ShowroomBrandMark className="justify-self-center" imageClassName={brandImageClassName} />
+      <div className="flex min-w-0 items-center justify-self-end gap-2" data-showroom-header-region="actions">
+        {humanHelp}
+        {cart}
+      </div>
+    </div>
+  );
+}
+
 export function ShowroomCartBadge({
   className,
   count = 0,

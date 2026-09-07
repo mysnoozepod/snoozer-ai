@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, BedSingle, CheckCircle2, Loader2, ShoppingCart } from "lucide-react";
+import { ArrowLeft, ArrowRight, BedSingle, CheckCircle2, Loader2 } from "lucide-react";
 
 import { useSnoozer } from "@/Layout";
+import HumanAssistanceControl from "@/components/HumanAssistanceControl";
+import RewardsPill from "@/components/RewardsPill";
 import {
   completeRewardAccessories,
   getRewardAccessoriesProgress,
@@ -17,16 +19,15 @@ import {
   SLEEP_ESSENTIAL_CATEGORIES,
 } from "@/lib/sleepEssentials";
 import { useStore } from "@/lib/useStore";
+import { confirmedCartItemCount } from "@/lib/cart/cartAuthority.mjs";
 import { getShopperId } from "@/state/sessionStore";
 import { refreshRewardsState } from "@/state/rewardsStore";
 import {
-  ShowroomBrandMark,
+  ShowroomCartBadge,
+  ShowroomDownstreamHeader,
   ShowroomPageShell,
   ShowroomPanel,
-  ShowroomTopRail,
 } from "@/components/showroom/ShowroomPrimitives";
-
-const INITIAL_PRODUCT_LIMIT = 3;
 
 function formatMoney(value, currency = "USD") {
   const amount = Number(value);
@@ -78,7 +79,7 @@ function buildCategoryGuidance(assessment, categoryId) {
     const position = readAssessmentValue(assessment, "sleepPosition", "position", "primarySleepPosition");
     return position
       ? `You told me you sleep mostly ${position.toLowerCase()}. Start with these approved pillow options and compare what feels supportive.`
-      : "Here are three approved pillow options to compare without overcomplicating the choice.";
+      : "Here are the approved showroom pillow options to compare without overcomplicating the choice.";
   }
   if (categoryId === "sheets_bedding") {
     const temperature = readAssessmentValue(assessment, "sleepTemperature", "temperature", "sleepsHot");
@@ -115,7 +116,7 @@ function getSavedPodSelections(returnTo) {
 export default function SleepEssentials() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { sayHud } = useSnoozer() || {};
+  const { sayHud, openRewards } = useSnoozer() || {};
   const shopperId = getShopperId() || "";
   const journeyId = getSleepEssentialsJourneyId(shopperId);
   const activeCategoryId = normalizeSleepEssentialsCategory(searchParams.get("category"));
@@ -131,7 +132,6 @@ export default function SleepEssentials() {
   const [catalog, setCatalog] = useState(null);
   const [progress, setProgress] = useState(null);
   const [selectedVariants, setSelectedVariants] = useState({});
-  const [expandedCategories, setExpandedCategories] = useState({});
   const [loading, setLoading] = useState(true);
   const [workingKey, setWorkingKey] = useState("");
   const [error, setError] = useState("");
@@ -141,10 +141,7 @@ export default function SleepEssentials() {
     () => new Set((cart || []).map((item) => String(item?.merchandiseId || item?.variantId || "")).filter(Boolean)),
     [cart]
   );
-  const cartCount = useMemo(
-    () => (cart || []).reduce((sum, item) => sum + Math.max(1, Number(item?.quantity) || 1), 0),
-    [cart]
-  );
+  const cartCount = useMemo(() => confirmedCartItemCount(cart), [cart]);
 
   const hydrate = useCallback(async () => {
     setLoading(true);
@@ -188,7 +185,6 @@ export default function SleepEssentials() {
     SLEEP_ESSENTIAL_CATEGORIES.find((category) => category.id === activeCategoryId) ||
     SLEEP_ESSENTIAL_CATEGORIES[0];
   const products = Array.isArray(activeCategory?.products) ? activeCategory.products : [];
-  const displayedProducts = expandedCategories[activeCategoryId] ? products : products.slice(0, INITIAL_PRODUCT_LIMIT);
   const reviewedCategories = normalizeReviewedCategories(progress);
   const allReviewed = SLEEP_ESSENTIAL_CATEGORIES.every((category) => reviewedCategories.has(category.id));
   const guidance = buildCategoryGuidance(assessment, activeCategoryId);
@@ -313,28 +309,24 @@ export default function SleepEssentials() {
 
   return (
     <ShowroomPageShell className="min-h-screen pb-4">
-      <ShowroomTopRail className="mx-auto max-w-[1480px] justify-between px-5 py-2.5">
-        <button type="button" onClick={() => navigate(returnTo)} className="inline-flex min-h-11 items-center gap-2 rounded-2xl px-4 font-extrabold text-slate-800 hover:bg-white">
-          <ArrowLeft className="h-5 w-5" /> {enteredFromPod ? "Return to Pod" : "Back to showroom"}
-        </button>
-        <ShowroomBrandMark imageClassName="w-[172px] md:w-[195px]" />
-        <button type="button" onClick={() => navigate("/cart")} className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-white bg-white/80 px-4 font-extrabold text-slate-900 shadow-sm" data-sleep-essentials-cart-count={cartCount}>
-          <ShoppingCart className="h-5 w-5 text-[#2f57e8]" /> {cartCount} items
-        </button>
-      </ShowroomTopRail>
+      <div className="mx-auto w-full max-w-[1480px] px-5 py-2.5">
+        <ShowroomDownstreamHeader
+          rewards={shopperId ? <RewardsPill shopperId={shopperId} onClick={openRewards} placement="inline" /> : null}
+          humanHelp={<HumanAssistanceControl compact showNoticeMessage={false} sourcePage="/sleep-essentials" />}
+          cart={<ShowroomCartBadge count={cartCount} quiet onClick={() => navigate("/cart")} />}
+        />
+      </div>
 
       <main className="mx-auto w-full max-w-[1480px] px-5" data-sleep-essentials-device="curated">
         <ShowroomPanel className="p-4 md:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
+              <button type="button" onClick={() => navigate(returnTo)} className="mb-2 inline-flex min-h-10 items-center gap-2 rounded-xl pr-3 text-sm font-extrabold text-slate-700 hover:bg-[#eef3ff]">
+                <ArrowLeft className="h-5 w-5" /> {enteredFromPod ? "Return to Pod" : "Back to showroom"}
+              </button>
               <div className="text-xs font-black uppercase tracking-[0.2em] text-[#2f57e8]">Sleep Essentials</div>
               <h1 className="mt-1 text-[clamp(1.75rem,3vw,2.6rem)] font-black leading-none tracking-tight text-slate-950">Finish your sleep setup.</h1>
             </div>
-            {products.length > INITIAL_PRODUCT_LIMIT ? (
-              <button type="button" onClick={() => setExpandedCategories((current) => ({ ...current, [activeCategoryId]: !current[activeCategoryId] }))} className="min-h-10 rounded-xl px-3 text-sm font-black text-[#315cf6] hover:bg-[#eef3ff]">
-                {expandedCategories[activeCategoryId] ? "Show Curated" : "View More"}
-              </button>
-            ) : null}
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-3" role="tablist" aria-label="Sleep Essential categories">
@@ -360,9 +352,9 @@ export default function SleepEssentials() {
 
           {loading ? (
             <ShowroomPanel className="flex min-h-64 items-center justify-center gap-3 text-slate-600"><Loader2 className="h-6 w-6 animate-spin" /> Loading live Sleep Essentials...</ShowroomPanel>
-          ) : displayedProducts.length ? (
+          ) : products.length ? (
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3" data-sleep-essentials-product-grid="true">
-              {displayedProducts.map((product) => {
+              {products.map((product) => {
                 const variants = getAvailableVariants(product);
                 const cartVariant = variants.find((variant) => cartVariantIds.has(getVariantId(variant, product)));
                 const selectedVariant = variants.find((variant) => getVariantId(variant, product) === selectedVariants[product.handle]) || cartVariant || variants[0] || null;

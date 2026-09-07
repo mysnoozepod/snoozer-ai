@@ -110,11 +110,13 @@ function LayoutShell() {
     pathname.startsWith("/ask-snoozer");
   const pageUsesPodViewportShell =
     pathname.startsWith("/pod/") || pathname.startsWith("/dev/pod-lab");
+  const pageUsesDownstreamHeader =
+    pathname.startsWith("/pod/") || pathname.startsWith("/sleep-essentials");
   const showHumanAssistance =
     !pathname.startsWith("/cart") &&
     !pathname.startsWith("/checkout") &&
     !pathname.startsWith("/dev/") &&
-    !pathname.startsWith("/pod/");
+    !pageUsesDownstreamHeader;
   const humanAssistanceNeedsFooterClearance =
     pageUsesPodViewportShell ||
     pathname.startsWith("/sleep-essentials") ||
@@ -299,7 +301,7 @@ function LayoutShell() {
           onClose={() => setDrawerOpen(false)}
           onHud={sayHud}
         />
-        {shopperId && pathname !== "/checkout" && pathname !== "/cart" && (
+        {shopperId && pathname !== "/checkout" && pathname !== "/cart" && !pageUsesDownstreamHeader && (
           <RewardsPill shopperId={shopperId} onClick={() => setDrawerOpen(true)} />
         )}
 

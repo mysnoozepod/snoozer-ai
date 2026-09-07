@@ -24,12 +24,14 @@ import {
   subtitleForSize,
 } from "@/components/PodBuilder";
 import {
-  ShowroomBrandMark,
   ShowroomCartBadge,
+  ShowroomDownstreamHeader,
   ShowroomFrame,
   ShowroomPageShell,
   ShowroomPanel,
 } from "@/components/showroom/ShowroomPrimitives";
+import { useSnoozer } from "@/Layout";
+import RewardsPill from "@/components/RewardsPill";
 import BuildYourPodPanel from "@/components/pod/BuildYourPodPanel";
 import { PodFooterNav } from "@/components/pod/PodFooterNav";
 import { PodRouteHeroHeader } from "@/components/pod/PodHeader";
@@ -1092,6 +1094,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const { podId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const { openRewards } = useSnoozer() || {};
   const deviceState = useDeviceMode();
   const canUseLayoutHarness = canViewAdminDiagnostics(deviceState);
   const shopperId = useMemo(() => {
@@ -2917,29 +2920,23 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
         data-pod-layout-region="top-header"
         className="mx-auto h-[var(--pod-header-height)] w-full max-w-[1380px] shrink-0 px-[var(--pod-outer-x)] py-[6px]"
       >
-        <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-[20px] border border-white/80 bg-white/94 px-[14px] shadow-[0_18px_46px_rgba(40,63,126,0.1)] backdrop-blur md:px-[18px]">
-          <div className="min-w-0">
-            {cartNotice ? (
+        <ShowroomDownstreamHeader
+          className="h-full min-h-0"
+          rewards={shopperId !== "guest" ? <RewardsPill shopperId={shopperId} onClick={openRewards} placement="inline" /> : null}
+          notice={cartNotice ? (
               <div className="w-fit max-w-full truncate rounded-full border border-indigo-100 bg-[#f2f6ff] px-3 py-2 text-xs font-bold text-indigo-900" role="status" aria-live="polite">
                 {cartNotice}
               </div>
             ) : null}
-          </div>
-
-          <ShowroomBrandMark
-            className="justify-self-center"
-            imageClassName="w-[clamp(170px,18vw,220px)]"
-          />
-
-          <div className="flex items-center justify-self-end gap-2" data-pod-header-actions="true">
+          humanHelp={(
             <HumanAssistanceControl
               compact
               showNoticeMessage={false}
               sourcePage={`/pod/${pid}`}
             />
-
-            <div className="flex flex-col items-end gap-2">
-              <ShowroomCartBadge
+          )}
+          cart={(
+            <ShowroomCartBadge
                 count={snoozepodCount}
                 quiet
                 className={cartPulse ? "scale-[1.01] border-indigo-300 ring-4 ring-indigo-100" : ""}
@@ -2948,10 +2945,8 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
                   navigate("/cart", { state: { originPodId: pid } });
                 }}
               />
-
-            </div>
-          </div>
-        </div>
+          )}
+        />
       </div>
 
       {!loading && activePod ? (

@@ -2,7 +2,20 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const readSource = (path) => readFile(new URL(path, import.meta.url), "utf8");
-const [builderSource, pageSource, podSource, welcomeSource, sleepLibSource, variantSource, apiSource] = await Promise.all([
+const [
+  builderSource,
+  pageSource,
+  podSource,
+  welcomeSource,
+  sleepLibSource,
+  variantSource,
+  apiSource,
+  layoutSource,
+  rewardsPillSource,
+  primitivesSource,
+  catalogServiceSource,
+  catalogManifestSource,
+] = await Promise.all([
   readSource("../src/components/PodBuilder.jsx"),
   readSource("../src/pages/SleepEssentials.jsx"),
   readSource("../src/pages/Pod.jsx"),
@@ -10,6 +23,11 @@ const [builderSource, pageSource, podSource, welcomeSource, sleepLibSource, vari
   readSource("../src/lib/sleepEssentials.js"),
   readSource("../src/lib/cart/variantResolution.mjs"),
   readSource("../src/lib/api.js"),
+  readSource("../src/Layout.jsx"),
+  readSource("../src/components/RewardsPill.jsx"),
+  readSource("../src/components/showroom/ShowroomPrimitives.jsx"),
+  readSource("../../services/sleepEssentialsCatalog.js"),
+  readSource("../../data/sleep-essentials-catalog.v1.json"),
 ]);
 
 for (const expected of [
@@ -41,9 +59,9 @@ assert.equal(builderSource.includes("Choose your size, motion setup, and sleep e
 
 for (const expected of [
   'data-sleep-essentials-device="curated"',
-  "products.slice(0, INITIAL_PRODUCT_LIMIT)",
   'role="tablist"',
   'data-sleep-essentials-product-grid="true"',
+  "products.map((product)",
   '"✓ In Cart"',
   '"Add to Cart"',
   "syncCartFromShopify",
@@ -53,9 +71,36 @@ for (const expected of [
   "recordedCategoryViewsRef",
   "Finish Sleep Essentials",
   "getSleepEssentialsFinishPath",
+  "confirmedCartItemCount(cart)",
+  "ShowroomDownstreamHeader",
+  'placement="inline"',
 ]) {
   assert.ok(pageSource.includes(expected), `missing dedicated Sleep Essentials contract: ${expected}`);
 }
+
+for (const removed of [
+  "INITIAL_PRODUCT_LIMIT",
+  "expandedCategories",
+  "products.slice(",
+  "View More",
+  "Show Curated",
+]) {
+  assert.equal(pageSource.includes(removed), false, `removed assortment limiter still present: ${removed}`);
+}
+
+const catalogManifest = JSON.parse(catalogManifestSource);
+const approvedHandles = catalogManifest.categories.flatMap((category) => category.handles);
+assert.ok(approvedHandles.length <= 12, "current approved showroom assortment must stay within the device cap");
+assert.ok(catalogServiceSource.includes("SHOWROOM_PRODUCT_LIMIT = 12"));
+assert.ok(catalogServiceSource.includes("selectShowroomAssortment(document, new Set(byHandle.keys()))"));
+assert.ok(catalogServiceSource.includes("document.categories.map"));
+assert.equal(catalogServiceSource.includes("slice(0, 3)"), false, "backend must not impose a category allocation");
+assert.ok(layoutSource.includes("pageUsesDownstreamHeader"));
+assert.ok(layoutSource.includes("!pageUsesDownstreamHeader"));
+assert.ok(primitivesSource.includes('data-showroom-downstream-header="true"'));
+assert.ok(rewardsPillSource.includes('placement === "inline"'));
+assert.ok(podSource.includes("ShowroomDownstreamHeader"), "Pod must use the shared downstream header");
+assert.ok(podSource.includes('placement="inline"'), "Pod rewards must be integrated into its header");
 
 for (const removed of [
   "Save choice",
