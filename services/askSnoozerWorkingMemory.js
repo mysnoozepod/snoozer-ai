@@ -263,9 +263,15 @@ function isContextualPriceFragment(query = "", workingMemory = null) {
   if (!isContinuablePriceGoal(workingMemory?.activeGoal)) return false;
   const text = normalizeAskSnoozerText(query);
   if (!text) return false;
+  if (isPriceLikeQuery(text)) return true;
+
+  const words = text.split(/\s+/).filter(Boolean);
+  const isTerseFragment =
+    words.length <= 5 || /^(?:make that|switch(?: it)? to|change(?: it)? to|go with)\b/.test(text);
+  if (!isTerseFragment) return false;
+
   return Boolean(
-    isPriceLikeQuery(text) ||
-      parseAskSnoozerSizeLabel(text) ||
+    parseAskSnoozerSizeLabel(text) ||
       resolveExplicitProductHandle(text) ||
       Object.keys(resolveExplicitBaseSelection(text)).length
   );

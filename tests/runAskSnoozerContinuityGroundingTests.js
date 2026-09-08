@@ -384,6 +384,25 @@ async function testAllFoamGoalSwitchAndKnowledgeMatch() {
   assert.strictEqual(getGoal(quoteSession).status, "completed");
   assert.match(responseText(switched), /All Foam/i);
 
+  const shopifyCallsBeforeEducation = shopifyCalls.length;
+  const postQuoteKnowledge = await invoke({
+    sessionId: quoteSession,
+    message: "What is the 12-inch All Foam mattress good for?",
+    context: {
+      podId: "1",
+      path: "/pod/1",
+      explore: [{ handle: "12-dual-comfort-hybrid", title: "12-inch Dual Comfort Hybrid" }],
+    },
+    testCaseId: "post-quote-product-knowledge-match",
+  });
+  assert.strictEqual(postQuoteKnowledge?.metadata?.answerSourceType, "s3_product");
+  assert.strictEqual(postQuoteKnowledge?.metadata?.resolvedRequestedProductHandle, "12-all-foam-mattress");
+  assert.strictEqual(
+    shopifyCalls.length,
+    shopifyCallsBeforeEducation,
+    "a full product question after a completed quote must not be treated as a quote fragment"
+  );
+
   const knowledgeSession = "continuity-product-knowledge";
   const knowledge = await invoke({
     sessionId: knowledgeSession,
