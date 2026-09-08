@@ -1406,7 +1406,7 @@ function buildPolicyReply({ query = "", policySubtype = "", facts = [] } = {}) {
       return {
         reply: joinUniqueSentences([
           trialFact?.text
-            ? "We offer a 100-night sleep trial on mattress purchases."
+            ? "Under our return policy, mattress purchases include a 100-night sleep trial."
             : topFact,
           finalSaleFact?.text
             ? "Motion bases, adjustable frames, bedding, pillows, and accessories are final sale."
@@ -1825,7 +1825,7 @@ function buildProductReply({ intent = "", products = [] } = {}) {
       };
     case "snoring":
       return {
-        reply: buildSnoozerVoiceReply("adjustable_base"),
+        reply: buildSnoozerVoiceReply("adjustable_base", { maxChars: 320 }),
         grounded: true,
       };
     case "accessory_help":

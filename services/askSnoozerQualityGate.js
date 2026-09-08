@@ -505,7 +505,19 @@ function extractSlots(query = "", context = {}, classification = null) {
     baseHandle = String(activeGoal.baseHandle || "").trim();
   }
 
-  if (scope === "unclear" && activeGoal?.scope) scope = String(activeGoal.scope).trim();
+  const explicitlyOverridesActiveScope =
+    /\b(?:full pod|snoozepod|setup|mattress only|base only|mattress (?:and|plus) base)\b/.test(
+      normalized
+    );
+  if (
+    activeGoal?.scope &&
+    isContextualPriceFragment(query, workingMemory) &&
+    !explicitlyOverridesActiveScope
+  ) {
+    scope = String(activeGoal.scope).trim();
+  } else if (scope === "unclear" && activeGoal?.scope) {
+    scope = String(activeGoal.scope).trim();
+  }
 
   if (!productHandle && currentProductHandle && !currentIsBase && isPronounOnlyReference(normalized)) {
     productHandle = currentProductHandle;

@@ -589,7 +589,7 @@ async function main() {
       body: { message: "What happens if I need help during my session?", sessionId: "golden-8" },
       expected: {
         intentGroup: "support",
-        sourceOfTruth: "fallback",
+        sourceOfTruth: "deterministic_support",
         slots: {},
         replyIncludes: ["contact", "support"],
         replyExcludes: ["backend", "deterministic"],

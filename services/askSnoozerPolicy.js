@@ -636,6 +636,20 @@ function buildReturnsReply(raw, query) {
     }
   }
 
+  if (
+    hasAnyQueryTerm(normalizedQuery, ["sleep trial", "comfort trial", "mattress trial", "trial"]) &&
+    (overview || eligibility || trialStartSection)
+  ) {
+    return buildGroundedResult(
+      "Under our return policy, mattresses include a 100-night sleep trial and may be returned or exchanged one time within that window.",
+      `${overview}\n${eligibility}\n${trialStartSection}`.trim(),
+      {
+        fallback: buildFallbackPolicyReply("returns"),
+        reason: "policy_answer_resolved",
+      }
+    );
+  }
+
   if (normalizedQuery.includes("refund")) {
     if (
       refundSection &&

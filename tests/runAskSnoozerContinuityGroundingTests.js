@@ -333,6 +333,7 @@ async function testPendingPriceQuoteTranscriptAndColdStart() {
     testCaseId: "price-quote-all-foam-fragment",
   });
   assert.match(responseText(allFoam), /All Foam/i);
+  assert.match(responseText(allFoam), /\$5,400/i);
   assert.strictEqual(getGoal(sessionId).productHandle, "12-all-foam-mattress");
   assert.strictEqual(getGoal(sessionId).size, "King");
   assert.strictEqual(getGoal(sessionId).motionKey, "standard");
@@ -383,6 +384,7 @@ async function testAllFoamGoalSwitchAndKnowledgeMatch() {
   assert.strictEqual(getGoal(quoteSession).motionKey, "standard");
   assert.strictEqual(getGoal(quoteSession).status, "completed");
   assert.match(responseText(switched), /All Foam/i);
+  assert.match(responseText(switched), /\$5,400/i);
 
   const shopifyCallsBeforeEducation = shopifyCalls.length;
   const postQuoteKnowledge = await invoke({
