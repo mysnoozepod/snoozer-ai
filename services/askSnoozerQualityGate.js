@@ -10,9 +10,16 @@ const {
 const {
   classifyAskSnoozerIntent,
   classifyAskSnoozerPolicySubtype,
+  isAskSnoozerRecommendationQuery,
   normalizeAskSnoozerText,
   parseAskSnoozerSizeLabel,
 } = require("./askSnoozerIntents");
+const {
+  calculatePriceQuoteMissingSlots,
+  getSlotValue,
+  isContextualPriceFragment,
+  isContinuablePriceGoal,
+} = require("./askSnoozerWorkingMemory");
 
 const RECOMMENDATION_TERMS = Object.freeze([
   "what do you recommend",
@@ -262,6 +269,7 @@ function buildBaseMatcherList() {
       patterns: [
         /\bpremium motion adjustable base\b/i,
         /\bpremium motion base\b/i,
+        /\bpremium motion\b/i,
         /\badjustable base\b/i,
         /\bmotion base\b/i,
         /\bstandard motion\b/i,
@@ -335,6 +343,7 @@ function resolveCommerceScope(query = "") {
     normalized.includes("dual comfort");
   const mentionsBase =
     /\bbase\b/.test(normalized) ||
+    normalized.includes("premium motion") ||
     normalized.includes("platform") ||
     normalized.includes("storage") ||
     normalized.includes("adjustable");
@@ -355,15 +364,7 @@ function isPronounOnlyReference(text = "") {
 }
 
 function isRecommendationQuery(text = "") {
-  const normalized = normalizeAskSnoozerText(text);
-  if (includesAny(normalized, RECOMMENDATION_TERMS)) return true;
-
-  const productReference = "(?:mattress|pod|bed|base|setup)";
-  const recommendationVerb = "(?:recommend(?:ed)?|suggest(?:ed)?|pick(?:ed)?|chose|chosen)";
-  return (
-    new RegExp(`\\b${productReference}\\b.*\\b${recommendationVerb}\\b`).test(normalized) ||
-    new RegExp(`\\b${recommendationVerb}\\b.*\\b${productReference}\\b`).test(normalized)
-  );
+  return isAskSnoozerRecommendationQuery(text);
 }
 
 function isSessionGuidanceQuery(text = "") {
@@ -374,8 +375,9 @@ function isSupportQuery(text = "") {
   return includesAny(text, SUPPORT_TERMS);
 }
 
-function isCommerceQuery(text = "", classification = null) {
+function isCommerceQuery(text = "", classification = null, context = {}) {
   const normalized = normalizeAskSnoozerText(text);
+  if (isContextualPriceFragment(text, context?.askSnoozerWorkingMemory)) return true;
   const intentGroup = String(classification?.intent_group || "").trim();
   const policySubtype = String(classification?.policy_subtype || "").trim();
   if (intentGroup === "policy_support" && policySubtype && policySubtype !== "pricing") {
@@ -465,15 +467,45 @@ function extractSlots(query = "", context = {}, classification = null) {
     ? context.canonicalRecommendation
     : null;
   const currentProductHandle = extractCurrentProductHandle(context);
+  const workingMemory = isObject(context?.askSnoozerWorkingMemory)
+    ? context.askSnoozerWorkingMemory
+    : {};
+  const activeGoal = isContinuablePriceGoal(workingMemory?.activeGoal)
+    ? workingMemory.activeGoal
+    : null;
   const currentProduct = getProductMap().get(currentProductHandle) || null;
   const currentIsBase = String(currentProduct?.catalogType || "").trim() === "base";
   let productHandle = matchHandleByPatterns(normalized, buildHandleMatcherList());
   let baseHandle = matchHandleByPatterns(normalized, buildBaseMatcherList());
-  const size = parseAskSnoozerSizeLabel(query) || String(canonicalRecommendation?.normalizedAssessment?.size || "").trim();
-  const scope = resolveCommerceScope(query);
-  const motionKey = resolveMotionKey(query, context);
+  const size =
+    parseAskSnoozerSizeLabel(query) ||
+    String(getSlotValue(workingMemory, "size") || "").trim() ||
+    String(canonicalRecommendation?.normalizedAssessment?.size || "").trim();
+  let scope = resolveCommerceScope(query);
+  let motionKey =
+    resolveMotionKey(query, context) ||
+    String(activeGoal?.motionKey || getSlotValue(workingMemory, "motionKey") || "").trim();
   const policyTopic = resolvePolicyTopic(query, classification?.policy_subtype || "");
   const sessionTopic = isSessionGuidanceQuery(normalized) ? "where_to_start" : "";
+
+  if (!productHandle && activeGoal?.productHandle) {
+    productHandle = String(activeGoal.productHandle).trim();
+  }
+
+  const sessionProductSlot = workingMemory?.slots?.productHandle;
+  if (
+    !productHandle &&
+    isObject(sessionProductSlot) &&
+    ["current_message", "current_conversation"].includes(String(sessionProductSlot.provenance || ""))
+  ) {
+    productHandle = String(sessionProductSlot.value || "").trim();
+  }
+
+  if (!baseHandle && activeGoal && Object.prototype.hasOwnProperty.call(activeGoal, "baseHandle")) {
+    baseHandle = String(activeGoal.baseHandle || "").trim();
+  }
+
+  if (scope === "unclear" && activeGoal?.scope) scope = String(activeGoal.scope).trim();
 
   if (!productHandle && currentProductHandle && !currentIsBase && isPronounOnlyReference(normalized)) {
     productHandle = currentProductHandle;
@@ -526,6 +558,10 @@ function buildMissingSlots(decision, query = "", context = {}) {
   }
 
   if (decision.intentGroup === "commerce") {
+    const activeGoal = context?.askSnoozerWorkingMemory?.activeGoal;
+    if (isContinuablePriceGoal(activeGoal)) {
+      return calculatePriceQuoteMissingSlots(activeGoal);
+    }
     const priceLike = includesAny(normalized, COMMERCE_TERMS);
     if (priceLike && !slots.productHandle && slots.scope !== "base_only") {
       missing.push("productHandle");
@@ -642,7 +678,7 @@ function routeAskSnoozerQuestion({
     intentGroup = "support";
   } else if (isUnknownProductQuery(normalized, slots)) {
     intentGroup = "catalog_boundary";
-  } else if (isCommerceQuery(normalized, resolvedClassification)) {
+  } else if (isCommerceQuery(normalized, resolvedClassification, context)) {
     intentGroup = "commerce";
   } else if (
     String(resolvedClassification?.intent_group || "").trim() === "policy_support" &&

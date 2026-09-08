@@ -346,6 +346,11 @@ function extractProductHandleFromPath(pathValue = "") {
   }
 }
 
+function extractProductHandleFromKnowledgeKey(key = "") {
+  const match = String(key || "").trim().match(/products\/(?:mattress|bases|pillows|bedding)\/([^/?#]+)\.md$/i);
+  return match ? String(match[1] || "").trim().toLowerCase() : "";
+}
+
 function getAskSnoozerProductDocKey(handle = "") {
   const normalized = String(handle || "").trim().toLowerCase();
   const keys = PRODUCT_DOC_KEYS_BY_HANDLE[normalized];
@@ -1229,6 +1234,7 @@ async function resolveAskSnoozerSupplementalSources({
   query = "",
   path = "/",
   products = [],
+  requestedProductHandle = "",
   traceId = "",
   timeoutMs = DEFAULT_TIMEOUT_MS,
 } = {}) {
@@ -1300,15 +1306,20 @@ async function resolveAskSnoozerSupplementalSources({
       intentGroup
     )
   ) {
+    const authoritativeHandle = String(requestedProductHandle || "").trim().toLowerCase();
     const productHandles = Array.from(
       new Set(
-        []
+        (authoritativeHandle ? [authoritativeHandle] : [])
           .concat(
-            Array.isArray(products)
-              ? products.map((product) => String(product?.handle || "").trim().toLowerCase())
-              : []
+            authoritativeHandle
+              ? []
+              : Array.isArray(products)
+                ? products.map((product) => String(product?.handle || "").trim().toLowerCase())
+                : []
           )
-          .concat(extractProductHandleFromPath(path))
+          .concat(
+            authoritativeHandle ? [] : extractProductHandleFromPath(path)
+          )
           .filter(Boolean)
       )
     ).slice(0, 3);
@@ -1319,7 +1330,12 @@ async function resolveAskSnoozerSupplementalSources({
         traceId,
       });
       if (knowledgeSources.length) {
-        sources.push(...knowledgeSources);
+        sources.push(
+          ...knowledgeSources.filter((source) => {
+            if (!authoritativeHandle) return true;
+            return extractProductHandleFromKnowledgeKey(source?.source_key) === authoritativeHandle;
+          })
+        );
       }
     }
   }
@@ -1327,6 +1343,9 @@ async function resolveAskSnoozerSupplementalSources({
   return {
     sources,
     retrieved: sources.length > 0,
+    loadedProductKnowledgeHandles: Array.from(
+      new Set(sources.map((source) => extractProductHandleFromKnowledgeKey(source?.source_key)).filter(Boolean))
+    ),
   };
 }
 

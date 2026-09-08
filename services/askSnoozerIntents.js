@@ -1,4 +1,11 @@
 const ASK_SNOOZER_INTENT_TAXONOMY = Object.freeze({
+  recommendation: Object.freeze({
+    strategy: "canonical_recommendation",
+    route_family: "recommendation",
+    allowed_product_families: ["mattress", "base"],
+    fallback_behavior: "assessment_first",
+    default_action_bias: ["assessment"],
+  }),
   product_fit: Object.freeze({
     strategy: "recommend_products",
     route_family: "products",
@@ -598,6 +605,39 @@ function includesAny(text, phrases = []) {
   return phrases.some((phrase) => text.includes(phrase));
 }
 
+function isAskSnoozerRecommendationQuery(value = "") {
+  const text = normalizeAskSnoozerText(value);
+  if (!text) return false;
+
+  if (
+    /\b(?:what|which)\s+(?:snooze\s*pod|pod|mattress|bed|setup)\b.*\b(?:recommend|suggest|try|start|get|choose|pick)\b/.test(
+      text
+    ) ||
+    /\b(?:recommend|suggest|choose|pick)\w*\b.*\b(?:snooze\s*pod|pod|mattress|bed|setup)\b/.test(
+      text
+    )
+  ) {
+    return true;
+  }
+
+  return [
+    /\bwhat do you recommend\b/,
+    /\bwhat should i try (?:first|next)\b/,
+    /\bbased on (?:everything|all).*\bwhat should i try\b/,
+    /\bwhat (?:was|is) my recommendation\b/,
+    /\bwhat did you recommend(?: for me)?\b/,
+    /\bwhat did snoozer recommend\b/,
+    /\bwhy (?:this|that) (?:snooze\s*pod|pod|mattress|bed|setup)\b/,
+    /\bremind me (?:what|which).*(?:recommend|suggest)/,
+    /\bwhy .*(?:recommend|suggest)/,
+    /\b(?:which|what) mattress (?:fits|is right for) (?:me|us)\b/,
+    /\brecommended for me\b/,
+    /\bexplain (?:my|the) (?:results|recommendation)\b/,
+    /\bhelp me decide\b/,
+    /\b(?:do not|dont|don't) know what to choose\b/,
+  ].some((pattern) => pattern.test(text));
+}
+
 function looksLikeAskSnoozerNamedProductAlias(text) {
   return (
     /(?:^|\b)(?:10|ten|12|twelve|14|fourteen)\s*(?:["â€]|inch|in|-inch)?\s*(?:all foam|dual comfort|hybrid)(?:\s*mattress)?(?:\b|$)/.test(text) ||
@@ -811,6 +851,19 @@ function classifyAskSnoozerIntent(input, context = {}) {
       ].filter(Boolean),
       productBias: ["dual_comfort", "partner_flexibility", "split_options"],
       actionBias: ["assessment", "booking"],
+      notes,
+      sizeLabel,
+      budgetSignal,
+    });
+  }
+
+  if (isAskSnoozerRecommendationQuery(text)) {
+    return buildClassification({
+      intent: "canonical_recommendation",
+      intentGroup: "recommendation",
+      confidenceLabel: "high",
+      signals: ["recommendation"],
+      actionBias: ["assessment"],
       notes,
       sizeLabel,
       budgetSignal,
@@ -1094,6 +1147,7 @@ module.exports = {
   classifyAskSnoozerIntent,
   classifyAskSnoozerPolicySubtype,
   hasAskSnoozerBudgetSignal,
+  isAskSnoozerRecommendationQuery,
   normalizeAskSnoozerText,
   parseAskSnoozerSizeLabel,
 };

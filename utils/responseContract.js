@@ -300,6 +300,10 @@ function normalizeSnoozerResponse(raw, opts = {}) {
       answerSourceKey: answerMeta.answer_source_key ?? null,
       answerGrounded: Boolean(answerMeta.answer_grounded),
       answerFactsCount: Number(answerMeta.answer_facts_count || 0),
+      resolvedRequestedProductHandle: answerMeta.resolved_requested_product_handle ?? null,
+      loadedProductKnowledgeHandles: Array.isArray(answerMeta.loaded_product_knowledge_handles)
+        ? answerMeta.loaded_product_knowledge_handles
+        : [],
       reason: safeString(answerMeta.reason),
     },
   };

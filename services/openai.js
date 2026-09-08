@@ -44,6 +44,10 @@ const { S3Client, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/c
 
 const { initializeSession, rememberTurn, getLastTurns } = require("./conversationState.js");
 const { clampAskSnoozerDisplayReply } = require("./askSnoozerAnswerEngine");
+const {
+  resolveExplicitProductHandle,
+  resolveRequestedProductHandle,
+} = require("./askSnoozerWorkingMemory");
 
 // Shopify service (used deterministically for variant resolution by size)
 let shopifySvc = null;
@@ -318,6 +322,7 @@ function buildDeterministicFallbackContract({
   retrievalMs = 0,
   modelMs = 0,
   raw = null,
+  meta = null,
 }) {
   return toContract({
     reply,
@@ -333,6 +338,7 @@ function buildDeterministicFallbackContract({
         totalMs: latency_ms,
         fallbackUsed: true,
       }),
+      ...(isObject(meta) ? meta : {}),
     },
     thread_id,
     status: "completed",
@@ -727,9 +733,13 @@ function summarizeBoundedShopperContextForPrompt(context = {}, userMessage = "")
       : {};
   const restTest = isObject(safeContext.restTest) ? safeContext.restTest : {};
   const cartSummary = isObject(safeContext.cartSummary) ? safeContext.cartSummary : {};
-  const bounded = {
-    identity: pickCompactFields(safeContext, ["shopperId", "snoozeCode"]),
-    assessment: pickCompactFields(normalizedAssessment, [
+  const workingMemory = isObject(safeContext.askSnoozerWorkingMemory)
+    ? safeContext.askSnoozerWorkingMemory
+    : {};
+  const activeSlots = isObject(workingMemory.slots) ? workingMemory.slots : {};
+  const activeGoal = isObject(workingMemory.activeGoal) ? workingMemory.activeGoal : {};
+  const effectiveAssessment = {
+    ...pickCompactFields(normalizedAssessment, [
       "size",
       "sleepPosition",
       "position",
@@ -741,6 +751,31 @@ function summarizeBoundedShopperContextForPrompt(context = {}, userMessage = "")
       "motionKey",
       "motionLabel",
     ]),
+  };
+  if (activeSlots?.size?.value) effectiveAssessment.size = activeSlots.size.value;
+  if (activeSlots?.firmness?.value) effectiveAssessment.firmness = activeSlots.firmness.value;
+  if (activeSlots?.painPoints?.value) effectiveAssessment.painPoints = activeSlots.painPoints.value;
+  const bounded = {
+    identity: pickCompactFields(safeContext, ["shopperId", "snoozeCode"]),
+    assessment: effectiveAssessment,
+    activeConversation: {
+      turnIndex: Number(workingMemory.turnIndex || 0) || undefined,
+      goal: pickCompactFields(activeGoal, [
+        "intent",
+        "status",
+        "scope",
+        "productHandle",
+        "size",
+        "firmness",
+        "baseHandle",
+        "motionKey",
+        "missingSlots",
+      ]),
+      slotProvenance: isObject(activeGoal.slotProvenance) ? activeGoal.slotProvenance : {},
+      conflicts: (Array.isArray(workingMemory.conflicts) ? workingMemory.conflicts : [])
+        .slice(0, 5)
+        .map((entry) => pickCompactFields(entry, ["slot", "conversationValue", "savedValue"])),
+    },
     current: {
       ...pickCompactFields(safeContext, ["path", "pageType", "podId", "currentProductHandle"]),
       device: pickCompactFields(safeContext.device, ["deviceId", "deviceMode", "podId", "zoneId"]),
@@ -1410,6 +1445,7 @@ async function getKnowledgeContext({ mode, query, context, intent, retrievalMeta
 
   const catalog = retrievalMeta?.catalog || null;
   const routingRules = Array.isArray(retrievalMeta?.routingRules) ? retrievalMeta.routingRules : [];
+  const requestedProductHandle = resolveRequestedProductHandle(query, context || {});
 
   if (m === "pod") {
     let used = 0;
@@ -1434,8 +1470,7 @@ async function getKnowledgeContext({ mode, query, context, intent, retrievalMeta
       }
     }
 
-    const explore = Array.isArray(context?.explore) ? context.explore : [];
-    const firstHandle = explore[0]?.handle ? String(explore[0].handle).trim() : null;
+    const firstHandle = requestedProductHandle || null;
 
     if (firstHandle) {
       if (!catalogHasHandle(catalog, firstHandle)) {
@@ -1472,6 +1507,10 @@ async function getKnowledgeContext({ mode, query, context, intent, retrievalMeta
       retrievalMs: elapsedMs(startedAt),
       cacheHits,
       misses,
+      requestedProductHandle: requestedProductHandle || null,
+      loadedProductKnowledgeHandles: keys
+        .map((key) => String(key).match(/products\/(?:mattress|bases)\/([^/]+)\.md$/i)?.[1] || "")
+        .filter(Boolean),
     });
 
     return {
@@ -1482,6 +1521,62 @@ async function getKnowledgeContext({ mode, query, context, intent, retrievalMeta
       cacheHits,
       misses,
       errors,
+      requestedProductHandle: requestedProductHandle || null,
+      loadedProductKnowledgeHandles: keys
+        .map((key) => String(key).match(/products\/(?:mattress|bases)\/([^/]+)\.md$/i)?.[1] || "")
+        .filter(Boolean),
+    };
+  }
+
+  const explicitProductHandle = resolveExplicitProductHandle(query);
+  const queryHasProductReference = /\b(?:it|this|that|mattress|foam|hybrid|dual comfort)\b/i.test(
+    String(query || "")
+  );
+  const authoritativeProductHandle =
+    explicitProductHandle || (queryHasProductReference ? requestedProductHandle : "");
+  if (authoritativeProductHandle) {
+    if (!catalogHasHandle(catalog, authoritativeProductHandle)) {
+      return {
+        snippets: [],
+        keys: [],
+        retrievalOk: false,
+        ms: elapsedMs(startedAt),
+        cacheHits,
+        misses,
+        errors: [new Error(`Handle not allowed by catalog: ${authoritativeProductHandle}`)],
+        requestedProductHandle: authoritativeProductHandle,
+        loadedProductKnowledgeHandles: [],
+      };
+    }
+    const key =
+      POD_PRODUCT_DOC_KEY_BY_HANDLE[String(authoritativeProductHandle).trim().toLowerCase()] ||
+      `products/${String(authoritativeProductHandle).trim().toLowerCase()}.md`;
+    const loaded = await getObjectText(KNOWLEDGE_BUCKET, key);
+    if (!loaded?.value) {
+      return {
+        snippets: [],
+        keys: [],
+        retrievalOk: false,
+        ms: elapsedMs(startedAt),
+        cacheHits,
+        misses: misses + 1,
+        errors: [new Error(`Missing product knowledge: ${key}`)],
+        requestedProductHandle: authoritativeProductHandle,
+        loadedProductKnowledgeHandles: [],
+      };
+    }
+    if (loaded.cacheHit) cacheHits += 1;
+    else misses += 1;
+    return {
+      snippets: [`### PRODUCT CARD: ${key}\n${loaded.value.trim().slice(0, limitBytes)}`],
+      keys: [`${KNOWLEDGE_BUCKET}/${key}`],
+      retrievalOk: true,
+      ms: elapsedMs(startedAt),
+      cacheHits,
+      misses,
+      errors: [],
+      requestedProductHandle: authoritativeProductHandle,
+      loadedProductKnowledgeHandles: [authoritativeProductHandle],
     };
   }
 
@@ -2290,6 +2385,43 @@ async function modelPath(userMessage, { reqId, thread_id, mode, context, intent,
   const knowledge = knowledgeStep.value;
   const totalRetrievalMs = retrievalMs + safeNumber(knowledge.ms, knowledgeStep.ms);
 
+  const requestedProductHandle = String(knowledge.requestedProductHandle || "")
+    .trim()
+    .toLowerCase();
+  const loadedProductKnowledgeHandles = Array.isArray(knowledge.loadedProductKnowledgeHandles)
+    ? knowledge.loadedProductKnowledgeHandles.map((handle) => String(handle || "").trim().toLowerCase())
+    : [];
+  if (requestedProductHandle && !loadedProductKnowledgeHandles.includes(requestedProductHandle)) {
+    logEvent("retrieval.block_model", {
+      reqId,
+      intent,
+      mode,
+      reason: "product_knowledge_handle_mismatch",
+      requestedProductHandle,
+      loadedProductKnowledgeHandles,
+    });
+
+    return buildDeterministicFallbackContract({
+      reply:
+        "I do not have the matching product guide loaded cleanly right now, so I will not guess about that mattress.",
+      thread_id,
+      context,
+      error: "E_PRODUCT_KNOWLEDGE_MISMATCH",
+      latency_ms: elapsedMs(t0),
+      retrievalMs: totalRetrievalMs,
+      meta: {
+        resolved_requested_product_handle: requestedProductHandle,
+        loaded_product_knowledge_handles: loadedProductKnowledgeHandles,
+      },
+      raw: {
+        intent,
+        kbKeys: knowledge.keys,
+        requestedProductHandle,
+        loadedProductKnowledgeHandles,
+      },
+    });
+  }
+
   if (requiresDeterministicKnowledge(intent) && !knowledge.retrievalOk) {
     logEvent("retrieval.block_model", {
       reqId,
@@ -2402,6 +2534,10 @@ async function modelPath(userMessage, { reqId, thread_id, mode, context, intent,
       modelMs: modelStep.ms,
       totalMs: elapsedMs(t0),
       fallbackUsed: false,
+      resolved_requested_product_handle: knowledge.requestedProductHandle || null,
+      loaded_product_knowledge_handles: Array.isArray(knowledge.loadedProductKnowledgeHandles)
+        ? knowledge.loadedProductKnowledgeHandles
+        : [],
     },
     thread_id,
     status: "completed",

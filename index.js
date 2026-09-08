@@ -153,6 +153,13 @@ const {
   parseAskSnoozerAsyncWriteRecord,
 } = require("./services/askSnoozerAsyncWrites");
 const {
+  applyAskSnoozerWorkingMemory,
+  buildWorkingMemoryLogMetadata,
+  completeAskSnoozerPriceGoal,
+  resolveRequestedProductHandle,
+  safeResponseFingerprint,
+} = require("./services/askSnoozerWorkingMemory");
+const {
   HUD_SAFE_PAGE_ROUTES,
   HUD_SAFE_COLLECTION_ROUTES,
   HUD_HREF_ALIASES,
@@ -5302,12 +5309,18 @@ function formatAskSnoozerCustomerTitle(value = "") {
 function buildAskSnoozerGuidanceHandles({
   classification = null,
   canonicalRecommendation = null,
+  requestedProductHandle = "",
+  activeGoalProductHandle = "",
   currentProductHandle = "",
+  currentPodProductHandle = "",
 } = {}) {
   const handles = [];
   const intentGroup = String(classification?.intent_group || "").trim();
 
+  if (requestedProductHandle) handles.push(requestedProductHandle);
+  if (activeGoalProductHandle) handles.push(activeGoalProductHandle);
   if (currentProductHandle) handles.push(currentProductHandle);
+  if (currentPodProductHandle) handles.push(currentPodProductHandle);
   if (canonicalRecommendation?.primaryMattressHandle) {
     handles.push(canonicalRecommendation.primaryMattressHandle);
   }
@@ -5478,11 +5491,25 @@ async function maybeBuildAskSnoozerDeterministicGuidanceAnswer({
   }
 
   const currentProductHandle = extractAskSnoozerCurrentProductHandle(context);
+  const requestedProductHandle =
+    String(resolvedDecision?.slots?.productHandle || "").trim() ||
+    resolveRequestedProductHandle(query, context);
+  const activeGoalProductHandle = String(
+    context?.askSnoozerWorkingMemory?.activeGoal?.productHandle || ""
+  ).trim();
+  const currentPodProductHandle = String(
+    (Array.isArray(context?.explore) ? context.explore : []).find(
+      (item) => getAskSnoozerShowroomProduct(item?.handle)?.catalogType === "mattress"
+    )?.handle || ""
+  ).trim();
   const stubProducts = buildAskSnoozerStubProducts(
     buildAskSnoozerGuidanceHandles({
       classification: resolvedClassification,
       canonicalRecommendation,
+      requestedProductHandle,
+      activeGoalProductHandle,
       currentProductHandle,
+      currentPodProductHandle,
     })
   );
 
@@ -5491,9 +5518,36 @@ async function maybeBuildAskSnoozerDeterministicGuidanceAnswer({
     query,
     path: normalizeAskSnoozerContextPath(context?.path),
     products: stubProducts,
+    requestedProductHandle,
     traceId,
     timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
   });
+
+  const loadedProductKnowledgeHandles = Array.isArray(supplemental?.loadedProductKnowledgeHandles)
+    ? supplemental.loadedProductKnowledgeHandles
+    : [];
+  if (
+    requestedProductHandle &&
+    !loadedProductKnowledgeHandles.includes(String(requestedProductHandle).trim().toLowerCase())
+  ) {
+    return {
+      classification: resolvedClassification,
+      reply:
+        "I do not have the matching product guide loaded cleanly right now, so I will not guess about that mattress.",
+      answer_grounded: false,
+      answer_source_type: "fallback",
+      answer_source_key: null,
+      answer_facts_count: 0,
+      matched_preview: "",
+      extracted_facts: [],
+      answer_strategy: "safe_fallback",
+      reason: "product_knowledge_handle_mismatch",
+      chips_override: null,
+      products: [],
+      resolved_requested_product_handle: requestedProductHandle,
+      loaded_product_knowledge_handles: loadedProductKnowledgeHandles,
+    };
+  }
 
   const answer = buildAskSnoozerAnswer({
     query,
@@ -5508,7 +5562,7 @@ async function maybeBuildAskSnoozerDeterministicGuidanceAnswer({
         title: product.title,
         label: product.label,
       })),
-      currentProductHandle,
+      currentProductHandle: requestedProductHandle || currentProductHandle,
       sizeLabel:
         String(
           resolvedClassification?.size_label ||
@@ -5516,7 +5570,7 @@ async function maybeBuildAskSnoozerDeterministicGuidanceAnswer({
             canonicalRecommendation?.normalizedAssessment?.size ||
             ""
         ).trim() || "",
-      answerSourceType: currentProductHandle ? "s3_product" : "canonical_profile",
+      answerSourceType: requestedProductHandle || currentProductHandle ? "s3_product" : "canonical_profile",
     },
     canonicalRecommendation,
   });
@@ -5536,6 +5590,8 @@ async function maybeBuildAskSnoozerDeterministicGuidanceAnswer({
     reason: answer.reason || (answer.answer_grounded ? "product_education_resolved" : "no_source"),
     chips_override: Array.isArray(answer.chips_override) ? answer.chips_override : null,
     products: [],
+    resolved_requested_product_handle: requestedProductHandle || null,
+    loaded_product_knowledge_handles: loadedProductKnowledgeHandles,
   };
 }
 
@@ -6097,6 +6153,10 @@ function getAskSnoozerRouteDeps() {
     safeUpsertIdentityAliases,
     maybeSyncProfileToZohoForInteraction,
     enqueueAskSnoozerAsyncWrites,
+    applyAskSnoozerWorkingMemory,
+    buildWorkingMemoryLogMetadata,
+    completeAskSnoozerPriceGoal,
+    safeResponseFingerprint,
     STRICT_POD_ANCHOR,
     routeAskSnoozerQuestion,
     maybeBuildAskSnoozerCanonicalAnswer,

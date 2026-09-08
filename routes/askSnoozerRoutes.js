@@ -41,6 +41,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     customerProfileService,
     buildIdentityProfilePatch,
     enqueueAskSnoozerAsyncWrites,
+    applyAskSnoozerWorkingMemory,
+    buildWorkingMemoryLogMetadata,
+    completeAskSnoozerPriceGoal,
+    safeResponseFingerprint,
     STRICT_POD_ANCHOR,
     routeAskSnoozerQuestion,
     maybeBuildAskSnoozerCanonicalAnswer,
@@ -76,6 +80,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
   if (method === "POST" && (routePath === "/ask-snoozer" || routePath === "/ask")) {
     const startedAt = Date.now();
     const payload = safeJsonBody(event);
+    const testCaseId = String(payload?.testCaseId || payload?.test_case_id || "").trim() || null;
 
     const debug = isDebugRequest(event);
 
@@ -323,7 +328,6 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       context,
       storedAssessment,
     });
-    const askSnoozerClassification = buildAskSnoozerClassification(msg, context);
     const previousAskProfileResult = await safeGetCustomerProfile(
       {
         profileId: askIdentity?.profileId || undefined,
@@ -341,6 +345,34 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       },
       previousAskProfile
     );
+
+    if (typeof applyAskSnoozerWorkingMemory === "function") {
+      context = applyAskSnoozerWorkingMemory({ query: msg, context });
+      const memoryPatch = {
+        askSnoozerWorkingMemory: context.askSnoozerWorkingMemory,
+      };
+      try {
+        const merged = sco && typeof sco === "object" ? deepMerge(sco, memoryPatch) : memoryPatch;
+        await saveSessionContext(effectiveSessionId, merged);
+        sco = merged;
+        log("ask-snoozer.working-memory", "persisted", {
+          traceId,
+          testCaseId,
+          sessionId: effectiveSessionId,
+          ...(typeof buildWorkingMemoryLogMetadata === "function"
+            ? buildWorkingMemoryLogMetadata(context)
+            : {}),
+        });
+      } catch (error) {
+        log("ask-snoozer.working-memory.error", error.message, {
+          traceId,
+          testCaseId,
+          sessionId: effectiveSessionId,
+        });
+      }
+    }
+
+    const askSnoozerClassification = buildAskSnoozerClassification(msg, context);
 
     const askProfilePatch =
       customerProfileService &&
@@ -537,6 +569,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     });
     log("ask-snoozer.router.decision", "routed", {
       traceId,
+      testCaseId,
       shopperId: shopperId || null,
       sessionId: effectiveSessionId,
       surface: askSourceSurface,
@@ -548,9 +581,13 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       shouldUseOpenAI: askSnoozerDecision.shouldUseOpenAI,
       shouldAskClarifyingQuestion: askSnoozerDecision.shouldAskClarifyingQuestion,
       reason: null,
+      ...(typeof buildWorkingMemoryLogMetadata === "function"
+        ? buildWorkingMemoryLogMetadata(context)
+        : {}),
     });
     log("ask-snoozer.slots.extracted", "slots", {
       traceId,
+      testCaseId,
       shopperId: shopperId || null,
       sessionId: effectiveSessionId,
       intentGroup: askSnoozerDecision.intentGroup,
@@ -562,6 +599,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       factsResolved: false,
       fallbackUsed: false,
       reason: null,
+      resolvedRequestedProductHandle: askSnoozerDecision.slots?.productHandle || null,
+      ...(typeof buildWorkingMemoryLogMetadata === "function"
+        ? buildWorkingMemoryLogMetadata(context)
+        : {}),
     });
     const outcomeLogFields = (envelope = {}, failureReason = "") => {
       const metrics = isObject(envelope?.meta?.metrics)
@@ -574,6 +615,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           )
       );
       return {
+        testCaseId,
         surface: askSourceSurface,
         answerPath: envelope?.meta?.path || "deterministic",
         retrievalMs: safeNumber(
@@ -588,6 +630,22 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         failureReason: fallbackUsed
           ? failureReason || envelope?.meta?.reason || "fallback"
           : null,
+        responseFingerprint:
+          typeof safeResponseFingerprint === "function"
+            ? safeResponseFingerprint(envelope?.reply || envelope?.message?.text || "")
+            : null,
+        canonicalTopPodId: context?.canonicalRecommendation?.topPodId || null,
+        canonicalPrimaryMattressHandle:
+          context?.canonicalRecommendation?.primaryMattressHandle || null,
+        resolvedRequestedProductHandle:
+          envelope?.meta?.resolved_requested_product_handle ||
+          askSnoozerDecision?.slots?.productHandle ||
+          null,
+        loadedProductKnowledgeHandles:
+          envelope?.meta?.loaded_product_knowledge_handles || [],
+        ...(typeof buildWorkingMemoryLogMetadata === "function"
+          ? buildWorkingMemoryLogMetadata(context)
+          : {}),
       };
     };
 
@@ -1131,6 +1189,29 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         decision: askSnoozerDecision,
         fetchProductsByHandles: shopifySvc?.fetchProductsByHandles,
       });
+      if (typeof completeAskSnoozerPriceGoal === "function") {
+        context = completeAskSnoozerPriceGoal(context, {
+          completed: Boolean(
+            commerceResolution?.factsResolved &&
+              commerceResolution?.sourceOfTruth === "shopify"
+          ),
+        });
+        try {
+          const memoryPatch = {
+            askSnoozerWorkingMemory: context.askSnoozerWorkingMemory,
+          };
+          const merged = sco && typeof sco === "object" ? deepMerge(sco, memoryPatch) : memoryPatch;
+          await saveSessionContext(effectiveSessionId, merged);
+          sco = merged;
+        } catch (error) {
+          log("ask-snoozer.working-memory.error", error.message, {
+            traceId,
+            testCaseId,
+            sessionId: effectiveSessionId,
+            phase: "commerce_completion",
+          });
+        }
+      }
       const latencyMs = Date.now() - startedAt;
       const mergedContext =
         sco && typeof sco === "object" ? deepMerge(sco, context) : context;
@@ -1337,6 +1418,15 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         answer_source_type:
           deterministicGuidanceAnswer.answer_source_type || "s3_product",
         answer_source_key: deterministicGuidanceAnswer.answer_source_key || null,
+        resolved_requested_product_handle:
+          deterministicGuidanceAnswer.resolved_requested_product_handle ||
+          askSnoozerDecision.slots?.productHandle ||
+          null,
+        loaded_product_knowledge_handles: Array.isArray(
+          deterministicGuidanceAnswer.loaded_product_knowledge_handles
+        )
+          ? deterministicGuidanceAnswer.loaded_product_knowledge_handles
+          : [],
         answer_facts_count: Number(deterministicGuidanceAnswer.answer_facts_count || 0),
         matched_preview: deterministicGuidanceAnswer.matched_preview || "",
         extracted_facts: Array.isArray(deterministicGuidanceAnswer.extracted_facts)
@@ -1818,6 +1908,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           : null;
 
       const patch = rawPatch ? normalizeContextPatch(rawPatch, aiResult) : null;
+      if (patch && Object.prototype.hasOwnProperty.call(patch, "askSnoozerWorkingMemory")) {
+        delete patch.askSnoozerWorkingMemory;
+      }
 
       if (patch && sco && typeof sco === "object") {
         try {

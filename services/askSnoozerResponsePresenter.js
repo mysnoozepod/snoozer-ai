@@ -148,6 +148,16 @@ function buildClarificationReply(decision = {}) {
     return "What size should I price - Queen, King, Split King, or another size?";
   }
 
+  if (missingSlots.includes("motionKey")) {
+    const motionChoices =
+      cleanText(slots.size) === "King"
+        ? ["Standard Motion", "Half Split Motion", "Full Split Motion"]
+        : cleanText(slots.size) === "Queen"
+          ? ["Standard Motion", "Half Split Motion"]
+          : ["Standard Motion"];
+    return `Which motion setup do you want - ${formatChoiceList(motionChoices)}?`;
+  }
+
   if (missingSlots.includes("policyTopic")) {
     return "Do you want the return policy, delivery, financing, warranty, or privacy details?";
   }

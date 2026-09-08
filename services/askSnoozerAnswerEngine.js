@@ -1,4 +1,7 @@
-const { normalizeAskSnoozerText } = require("./askSnoozerIntents");
+const {
+  isAskSnoozerRecommendationQuery,
+  normalizeAskSnoozerText,
+} = require("./askSnoozerIntents");
 const {
   cleanShopperText,
   normalizeMarkdown,
@@ -2139,37 +2142,7 @@ function buildSessionPrepReply({ query = "", context = null, canonicalRecommenda
 }
 
 function queryLooksLikeRecommendationQuestion(query = "") {
-  const normalizedQuery = normalizeAskSnoozerText(query);
-  return (
-    includesTerm(normalizedQuery, "what do you recommend") ||
-    includesTerm(normalizedQuery, "recommend for me") ||
-    includesTerm(normalizedQuery, "what should i try first") ||
-    includesTerm(normalizedQuery, "what should i try") ||
-    includesTerm(normalizedQuery, "explain my results") ||
-    includesTerm(normalizedQuery, "explain the results") ||
-    includesTerm(normalizedQuery, "why this pod") ||
-    includesTerm(normalizedQuery, "why is this pod recommended") ||
-    includesTerm(normalizedQuery, "why was this pod recommended") ||
-    includesTerm(normalizedQuery, "why is this recommended") ||
-    includesTerm(normalizedQuery, "why was this recommended") ||
-    includesTerm(normalizedQuery, "recommended for me") ||
-    includesTerm(normalizedQuery, "why this snoozepod") ||
-    includesTerm(normalizedQuery, "which mattress fits me") ||
-    includesTerm(normalizedQuery, "which mattress is right for me") ||
-    includesTerm(normalizedQuery, "which mattress fits us") ||
-    includesTerm(normalizedQuery, "what mattress fits me") ||
-    includesTerm(normalizedQuery, "what mattress should i try") ||
-    includesTerm(normalizedQuery, "what pod should i try") ||
-    includesTerm(normalizedQuery, "what should i try first") ||
-    includesTerm(normalizedQuery, "which pod should i try first") ||
-    includesTerm(normalizedQuery, "what pod should i start with") ||
-    includesTerm(normalizedQuery, "what did snoozer recommend") ||
-    includesTerm(normalizedQuery, "explain my recommendation") ||
-    includesTerm(normalizedQuery, "help me decide") ||
-    includesTerm(normalizedQuery, "do not know what to choose") ||
-    includesTerm(normalizedQuery, "dont know what to choose") ||
-    includesTerm(normalizedQuery, "don't know what to choose")
-  );
+  return isAskSnoozerRecommendationQuery(query);
 }
 
 function formatCanonicalReasonLabels(reasonKeys = []) {
