@@ -3,6 +3,10 @@ import { buildApiUrl as buildSharedApiUrl } from "@/lib/apiBase";
 import { getAccessCode, getSessionState, getShopperId } from "@/state/sessionStore";
 import { getStoredShopifyCartIdentity } from "@/lib/session/shopifyCartState";
 import { useStore } from "@/lib/useStore";
+import {
+  normalizeAskStationAction,
+  normalizeAskStationProduct,
+} from "./askSnoozerStationContract.mjs";
 
 const ASK_SNOOZER_ROUTE = "/ask-snoozer";
 const ASK_SNOOZER_REQUEST_TIMEOUT_MS = Math.max(
@@ -204,7 +208,7 @@ function readContext() {
   ]);
   const cartIdentity = getStoredShopifyCartIdentity();
   const cartId = firstNonEmptyString([cartIdentity.cartId, session?.cartId]);
-  const cartLines = (Array.isArray(storeState?.snoozepod) ? storeState.snoozepod : [])
+  const cartLines = (Array.isArray(storeState?.cart) ? storeState.cart : [])
     .slice(0, 8)
     .map((line) => ({
       title: firstNonEmptyString([line?.title, line?.productTitle]) || null,
@@ -316,18 +320,7 @@ function normalizeActionType(value) {
 
 function normalizeActions(raw) {
   return (Array.isArray(raw) ? raw : [])
-    .map((action) => {
-      if (!action || typeof action !== "object") return null;
-      const label = firstNonEmptyString([action.label, action.title, action.text]);
-      if (!label) return null;
-      return {
-        type: normalizeActionType(action.type),
-        label,
-        target: firstNonEmptyString([action.target, action.url]) || null,
-        payload:
-          action.payload && typeof action.payload === "object" ? action.payload : {},
-      };
-    })
+    .map(normalizeAskStationAction)
     .filter(Boolean)
     .slice(0, 4);
 }
@@ -402,7 +395,7 @@ function normalizeRecommendations(root) {
         ? root.data.products
         : [];
 
-  return source.map(normalizeRecommendation).filter(Boolean).slice(0, 6);
+  return source.map(normalizeAskStationProduct).filter(Boolean).slice(0, 6);
 }
 
 function extractReplyContent(root, top) {
@@ -837,6 +830,7 @@ export async function sendAskSnoozerMessage({
   history,
   referrerRoute = null,
   deviceContext = null,
+  comparisonProductHandles = [],
 } = {}) {
   const trimmedMessage = String(message || "").trim();
   if (!trimmedMessage) {
@@ -865,6 +859,12 @@ export async function sendAskSnoozerMessage({
         device: operationalDeviceContext,
       }
     : requestContext;
+  if (Array.isArray(comparisonProductHandles) && comparisonProductHandles.length) {
+    mergedContext.comparisonProductHandles = comparisonProductHandles
+      .map((handle) => String(handle || "").trim())
+      .filter(Boolean)
+      .slice(0, 2);
+  }
   const requestPayload = {
     message: trimmedMessage,
     conversationId,
