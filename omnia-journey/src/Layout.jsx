@@ -112,6 +112,8 @@ function LayoutShell() {
     pathname.startsWith("/pod/") || pathname.startsWith("/dev/pod-lab");
   const pageUsesDownstreamHeader =
     pathname.startsWith("/pod/") || pathname.startsWith("/sleep-essentials");
+  const pageOwnsRewardsControl =
+    pageUsesDownstreamHeader || pathname.startsWith("/ask-snoozer");
   const showHumanAssistance =
     !pathname.startsWith("/cart") &&
     !pathname.startsWith("/checkout") &&
@@ -301,7 +303,7 @@ function LayoutShell() {
           onClose={() => setDrawerOpen(false)}
           onHud={sayHud}
         />
-        {shopperId && pathname !== "/checkout" && pathname !== "/cart" && !pageUsesDownstreamHeader && (
+        {shopperId && pathname !== "/checkout" && pathname !== "/cart" && !pageOwnsRewardsControl && (
           <RewardsPill shopperId={shopperId} onClick={() => setDrawerOpen(true)} />
         )}
 
