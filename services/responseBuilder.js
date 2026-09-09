@@ -214,9 +214,6 @@ function pickVariantIds(shopifyProduct) {
   const variantIdRaw =
     shopifyProduct?.variantId ||
     shopifyProduct?.merchandiseId ||
-    shopifyProduct?.firstAvailableVariantId ||
-    shopifyProduct?.variants?.[0]?.id ||
-    shopifyProduct?.variants?.[0]?.variantId ||
     null;
 
   const firstAvailableVariantIdRaw =
@@ -228,7 +225,6 @@ function pickVariantIds(shopifyProduct) {
   const merchandiseIdRaw =
     shopifyProduct?.merchandiseId ||
     shopifyProduct?.variantId ||
-    firstAvailableVariantIdRaw ||
     null;
 
   const variantId = variantIdRaw ? String(variantIdRaw).trim() : null;
@@ -242,6 +238,37 @@ function pickVariantIds(shopifyProduct) {
     numericVariantId: toNumericShopifyId(variantId),
     numericFirstAvailableVariantId: toNumericShopifyId(firstAvailableVariantId),
   };
+}
+
+function normalizeSelectedOptions(options = []) {
+  return (Array.isArray(options) ? options : [])
+    .map((option) => ({
+      name: safeText(option?.name || "", 80).trim(),
+      value: safeText(option?.value || "", 120).trim(),
+    }))
+    .filter((option) => option.name && option.value)
+    .slice(0, 8);
+}
+
+function normalizeProductVariants(shopifyProduct = {}) {
+  return (Array.isArray(shopifyProduct.variants) ? shopifyProduct.variants : [])
+    .map((variant) => {
+      const id = String(variant?.id || variant?.variantId || variant?.merchandiseId || "").trim();
+      if (!/^gid:\/\/shopify\/ProductVariant\/[^\s/?#]+$/.test(id)) return null;
+      const amount = Number(variant?.price?.amount ?? variant?.price);
+      return {
+        id,
+        title: safeText(variant?.title || "", 160).trim() || null,
+        available: variant?.available === true || variant?.availableForSale === true,
+        price: Number.isFinite(amount) ? amount : null,
+        currencyCode:
+          String(variant?.price?.currencyCode || variant?.currencyCode || "USD").trim() || "USD",
+        selectedOptions: normalizeSelectedOptions(variant?.selectedOptions),
+        image: variant?.image ? pickImage(variant) : null,
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 50);
 }
 
 function normalizeProduct(shopifyProduct) {
@@ -264,6 +291,18 @@ function normalizeProduct(shopifyProduct) {
   const image = pickImage(shopifyProduct);
   const price = parsePrice(shopifyProduct);
   const variants = pickVariantIds(shopifyProduct);
+  const productVariants = normalizeProductVariants(shopifyProduct);
+  const rangeMin = Number(shopifyProduct?.priceRange?.min ?? shopifyProduct?.priceRange?.minVariantPrice?.amount);
+  const rangeMax = Number(shopifyProduct?.priceRange?.max ?? shopifyProduct?.priceRange?.maxVariantPrice?.amount);
+  const rangeCurrency =
+    String(
+      shopifyProduct?.priceRange?.currencyCode ||
+        shopifyProduct?.priceRange?.minVariantPrice?.currencyCode ||
+        shopifyProduct?.priceRange?.maxVariantPrice?.currencyCode ||
+        price.currency ||
+        "USD"
+    ).trim() || "USD";
+  const explicitVariantResolved = shopifyProduct?.exactVariantResolved === true;
 
   return {
     id,
@@ -271,7 +310,35 @@ function normalizeProduct(shopifyProduct) {
     title: shopifyProduct.title || shopifyProduct.name || "Untitled product",
     subtitle: shopifyProduct.subtitle || shopifyProduct.vendor || null,
     price,
+    priceRange: {
+      min: Number.isFinite(rangeMin) ? rangeMin : price.amount,
+      max: Number.isFinite(rangeMax) ? rangeMax : price.amount,
+      currencyCode: rangeCurrency,
+    },
     image,
+    imageUrl: image.url,
+    url:
+      shopifyProduct.url ||
+      shopifyProduct.href ||
+      shopifyProduct.onlineStoreUrl ||
+      (shopifyProduct.handle ? `/products/${shopifyProduct.handle}` : null),
+    href:
+      shopifyProduct.href ||
+      shopifyProduct.url ||
+      shopifyProduct.onlineStoreUrl ||
+      (shopifyProduct.handle ? `/products/${shopifyProduct.handle}` : null),
+    available:
+      typeof shopifyProduct.available === "boolean"
+        ? shopifyProduct.available
+        : typeof shopifyProduct.availableForSale === "boolean"
+          ? shopifyProduct.availableForSale
+          : productVariants.some((variant) => variant.available),
+    variants: productVariants,
+    selectedOptions: normalizeSelectedOptions(shopifyProduct.selectedOptions),
+    exactVariantResolved: explicitVariantResolved,
+    variantId: explicitVariantResolved ? variants.variantId : null,
+    merchandiseId: explicitVariantResolved ? variants.merchandiseId : null,
+    firstAvailableVariantId: variants.firstAvailableVariantId,
     tags: Array.isArray(shopifyProduct.tags) ? shopifyProduct.tags : [],
     meta: {
       shopifyId: shopifyProductGid || (idRaw ? String(idRaw) : null),
@@ -285,8 +352,8 @@ function normalizeProduct(shopifyProduct) {
           : true,
       url: shopifyProduct.onlineStoreUrl || shopifyProduct?.meta?.url || null,
       previewUrl: shopifyProduct.previewUrl || shopifyProduct?.meta?.previewUrl || null,
-      variantId: variants.variantId || null,
-      merchandiseId: variants.merchandiseId || null,
+      variantId: explicitVariantResolved ? variants.variantId || null : null,
+      merchandiseId: explicitVariantResolved ? variants.merchandiseId || null : null,
       firstAvailableVariantId: variants.firstAvailableVariantId || null,
       numericVariantId: variants.numericVariantId || null,
       numericFirstAvailableVariantId: variants.numericFirstAvailableVariantId || null,

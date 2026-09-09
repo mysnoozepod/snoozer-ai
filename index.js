@@ -166,6 +166,9 @@ const {
   canonicalizeHudHref,
 } = require("./services/askSnoozerRoutes");
 const { loadShowroomManifest } = require("./services/showroomManifest");
+const {
+  resolveAskSnoozerStationResponse,
+} = require("./services/askSnoozerStation");
 
 let getHudScriptPayload = null;
 let hudScriptSafeTimeoutMs = Number(
@@ -6166,7 +6169,10 @@ function getAskSnoozerRouteDeps() {
     maybeBuildAskSnoozerCommerceAnswer,
     queryExplicitlyRequestsAskSnoozerCommerce,
     resolveAskSnoozerCommerceResponse,
+    resolveAskSnoozerStationResponse,
     shopifySvc,
+    rewardProgramService,
+    loadShowroomManifest,
     resolveAskSnoozerPolicyAnswer,
     buildAskSnoozerPolicyChips,
     buildAskSnoozerAction,

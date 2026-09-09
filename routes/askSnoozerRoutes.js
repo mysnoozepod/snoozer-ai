@@ -54,7 +54,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     maybeBuildAskSnoozerCommerceAnswer,
     queryExplicitlyRequestsAskSnoozerCommerce,
     resolveAskSnoozerCommerceResponse,
+    resolveAskSnoozerStationResponse,
     shopifySvc,
+    rewardProgramService,
+    loadShowroomManifest,
     resolveAskSnoozerPolicyAnswer,
     buildAskSnoozerPolicyChips,
     buildAskSnoozerAction,
@@ -553,6 +556,128 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             payload,
             defaultSpeech:
               "Pod mode is missing required context. The UI must send the pod items so Snoozer can stay deterministic.",
+            traceId,
+          });
+          return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+        }
+
+        return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+      }
+    }
+
+    // Dedicated-station starter lanes stay inside the authoritative Ask route.
+    // They use verified rewards/Shopify/canon data and return the existing envelope.
+    if (
+      String(mode || "").toLowerCase() === "ask_snoozer_page" &&
+      typeof resolveAskSnoozerStationResponse === "function"
+    ) {
+      let stationManifest = null;
+      try {
+        stationManifest = typeof loadShowroomManifest === "function" ? loadShowroomManifest() : null;
+      } catch (error) {
+        log("ask-snoozer.station.manifest.error", error.message, {
+          traceId,
+          sessionId: effectiveSessionId,
+        });
+      }
+
+      const stationAnswer = await resolveAskSnoozerStationResponse({
+        query: msg,
+        context,
+        identity: askIdentity,
+        rewardsService: rewardProgramService,
+        shopify: shopifySvc,
+        manifest: stationManifest,
+        fetchProductsByHandles: shopifySvc?.fetchProductsByHandles,
+      });
+
+      if (stationAnswer) {
+        const latencyMs = Date.now() - startedAt;
+        const contextWithStation = deepMerge(context, stationAnswer.contextPatch || {});
+        const mergedContext =
+          sco && typeof sco === "object" ? deepMerge(sco, contextWithStation) : contextWithStation;
+        const env = buildSuccessResponse({
+          requestId: traceId,
+          latencyMs,
+          model: `deterministic_station_${stationAnswer.intent}`,
+          text: stationAnswer.reply,
+          context: mergedContext,
+          products: stationAnswer.products,
+          actions: stationAnswer.actions,
+          metrics: {
+            retrievalMs: latencyMs,
+            modelMs: 0,
+            totalMs: latencyMs,
+            fallbackUsed: stationAnswer.fallbackUsed,
+          },
+        });
+        env.reply = stationAnswer.reply;
+        env.thread_id = effectiveSessionId;
+        env.sessionId = effectiveSessionId;
+        env.status = stationAnswer.fallbackUsed ? "completed_with_fallback" : "answered";
+        env.chips = stationAnswer.chips;
+        env.meta = {
+          path: "deterministic_station",
+          intent: stationAnswer.intent,
+          source: stationAnswer.source,
+          answer_strategy: `deterministic_station_${stationAnswer.intent}`,
+          answer_grounded: Boolean(stationAnswer.grounded),
+          answer_source_type: stationAnswer.source,
+          answer_source_key: stationAnswer.intent,
+          answer_facts_count: stationAnswer.grounded ? 1 : 0,
+          reason: stationAnswer.reason,
+          qualityGate: {
+            intent: stationAnswer.intent,
+            intentGroup: "station",
+            sourceOfTruth: stationAnswer.source,
+            answerType: "station_answer",
+            protectedTruthRequired: true,
+            factsResolved: Boolean(stationAnswer.grounded),
+            fallbackUsed: Boolean(stationAnswer.fallbackUsed),
+            missingSlots: [],
+            reason: stationAnswer.reason,
+          },
+          metrics: {
+            retrievalMs: latencyMs,
+            modelMs: 0,
+            totalMs: latencyMs,
+            fallbackUsed: Boolean(stationAnswer.fallbackUsed),
+          },
+        };
+
+        const normalized = normalizeSnoozerResponse(env, {
+          traceId,
+          sessionId: effectiveSessionId,
+          routePath,
+          startedAtMs: startedAt,
+          debug,
+        });
+        normalized.voice = {
+          speak: true,
+          speech: stationAnswer.speech,
+          ttsEndpoint: "/hud/tts",
+          audioUrl: null,
+        };
+        logContractResponse(normalized);
+        log("ask-snoozer.station", "answered", {
+          traceId,
+          shopperId: shopperId || null,
+          sessionId: effectiveSessionId,
+          intent: stationAnswer.intent,
+          sourceOfTruth: stationAnswer.source,
+          factsResolved: Boolean(stationAnswer.grounded),
+          fallbackUsed: Boolean(stationAnswer.fallbackUsed),
+          reason: stationAnswer.reason || null,
+          productCount: stationAnswer.products.length,
+        });
+
+        if (wantHud) {
+          const hud = await buildHudFromAny(normalized, {
+            ok: normalized.ok,
+            mode,
+            context: mergedContext,
+            payload,
+            defaultSpeech: stationAnswer.speech,
             traceId,
           });
           return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
@@ -1217,6 +1342,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         sco && typeof sco === "object" ? deepMerge(sco, context) : context;
       const products = Array.isArray(commerceResolution?.products)
         ? commerceResolution.products.map((entry) => ({
+            ...(entry?.product && typeof entry.product === "object" ? entry.product : {}),
             type: "product",
             label: entry?.title || entry?.handle || "",
             title: entry?.title || entry?.handle || "",
@@ -1225,6 +1351,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             product_id: String(entry?.product?.id || "").trim() || undefined,
             variant_id: entry?.variantId || undefined,
             variant_title: entry?.variantTitle || undefined,
+            variantId: entry?.variantId || undefined,
+            merchandiseId: entry?.variantId || undefined,
+            selectedOptions: Array.isArray(entry?.selectedOptions) ? entry.selectedOptions : [],
+            exactVariantResolved: Boolean(entry?.exactVariantResolved && entry?.variantId),
           }))
         : [];
       const env = buildSuccessResponse({

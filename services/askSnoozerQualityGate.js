@@ -837,19 +837,29 @@ function buildResolvedProducts(products = [], sizeLabel = "") {
   return products
     .filter(Boolean)
     .map((product) => {
+      const availableVariants = Array.isArray(product?.variants)
+        ? product.variants.filter(
+            (item) => item?.available === true || item?.availableForSale === true
+          )
+        : [];
+      const matchedVariant = findVariantForSize(product, sizeLabel);
       const variant =
-        findVariantForSize(product, sizeLabel) ||
-        (Array.isArray(product?.variants)
-          ? product.variants.find((item) => item?.available) || product.variants[0]
-          : null);
+        matchedVariant &&
+        (matchedVariant.available === true || matchedVariant.availableForSale === true)
+          ? matchedVariant
+          : !String(sizeLabel || "").trim() && availableVariants.length === 1
+            ? availableVariants[0]
+            : null;
       return {
         product,
         handle: String(product?.handle || "").trim(),
         title: String(product?.title || product?.label || "").trim(),
         href: `/products/${String(product?.handle || "").trim()}`,
         variant,
-        variantId: String(variant?.id || product?.variantId || "").trim(),
+        variantId: String(variant?.id || "").trim(),
         variantTitle: String(variant?.title || "").trim(),
+        selectedOptions: Array.isArray(variant?.selectedOptions) ? variant.selectedOptions : [],
+        exactVariantResolved: Boolean(variant),
         price: inferVariantPrice(variant, product),
         currencyCode: inferCurrencyCode(variant, product),
         available:
