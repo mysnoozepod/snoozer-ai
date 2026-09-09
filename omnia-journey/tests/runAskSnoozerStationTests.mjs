@@ -31,7 +31,8 @@ check(heroIndex >= 0 && heroIndex < transcriptIndex && transcriptIndex < compose
 check((page.match(/src="\/snoozer-avatar\.png"/g) || []).length === 1, "only one Snoozer avatar renders");
 check(!page.includes("<footer") && !page.includes("View Results</ Beneath"), "Ask page has no footer band");
 check(page.includes("ShowroomDownstreamHeader") && page.includes("RewardsPill") && page.includes("ShowroomCartBadge"), "header has rewards, centered brand primitive, and cart");
-check(layout.includes('pageUsesDownstreamHeader || pathname.startsWith("/ask-snoozer")') && layout.includes("!pageOwnsRewardsControl"), "shared floating Rewards control is suppressed when Ask owns the header control");
+check(layout.includes("pageUsesDownstreamHeader || pageUsesAskStation") && layout.includes("!pageOwnsRewardsControl"), "shared floating Rewards control is suppressed when Ask owns the header control");
+check(layout.includes('right: pageUsesAskStation ? 16 : "auto"') && layout.includes("bottom: pageUsesAskStation") && page.includes('className="flex min-h-0 flex-col pb-24"'), "Ask places Brandy at lower right with reserved space below the composer");
 check(page.includes("getRewardSummary()") && page.includes("Number.isFinite(points)"), "reward pill reads actual summary and gates numeric display");
 check(page.includes('onClick={() => sendMessage("Find Rewards")}'), "reward pill initiates the authoritative Ask behavior");
 check(page.includes("state.cart || []") && page.includes("cartItemCount(cart)"), "cart pill uses authoritative cart state");

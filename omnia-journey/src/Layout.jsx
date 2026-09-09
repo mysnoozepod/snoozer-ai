@@ -112,8 +112,9 @@ function LayoutShell() {
     pathname.startsWith("/pod/") || pathname.startsWith("/dev/pod-lab");
   const pageUsesDownstreamHeader =
     pathname.startsWith("/pod/") || pathname.startsWith("/sleep-essentials");
+  const pageUsesAskStation = pathname.startsWith("/ask-snoozer");
   const pageOwnsRewardsControl =
-    pageUsesDownstreamHeader || pathname.startsWith("/ask-snoozer");
+    pageUsesDownstreamHeader || pageUsesAskStation;
   const showHumanAssistance =
     !pathname.startsWith("/cart") &&
     !pathname.startsWith("/checkout") &&
@@ -121,8 +122,7 @@ function LayoutShell() {
     !pageUsesDownstreamHeader;
   const humanAssistanceNeedsFooterClearance =
     pageUsesPodViewportShell ||
-    pathname.startsWith("/sleep-essentials") ||
-    pathname.startsWith("/ask-snoozer");
+    pathname.startsWith("/sleep-essentials");
   const showPersistentHudOverlay =
     hudOpen &&
     !pageOwnsSnoozerVisual &&
@@ -357,8 +357,13 @@ function LayoutShell() {
             data-testid="persistent-human-assistance"
             style={{
               position: "fixed",
-              left: 16,
-              bottom: humanAssistanceNeedsFooterClearance || showBars ? 92 : 16,
+              left: pageUsesAskStation ? "auto" : 16,
+              right: pageUsesAskStation ? 16 : "auto",
+              bottom: pageUsesAskStation
+                ? 16
+                : humanAssistanceNeedsFooterClearance || showBars
+                  ? 92
+                  : 16,
               zIndex: 45,
             }}
           >

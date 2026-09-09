@@ -279,7 +279,7 @@ export default function AskSnoozer() {
   }
 
   return (
-    <ShowroomPageShell className="flex min-h-0 flex-col pb-3">
+    <ShowroomPageShell className="flex min-h-0 flex-col pb-24">
       <ShowroomTopRail className="items-center pt-2 md:pt-3">
         <ShowroomDownstreamHeader
           rewards={<RewardsPill status={rewardState.status} points={rewardState.points} onClick={() => sendMessage("Find Rewards")} />}
