@@ -443,12 +443,129 @@ async function testShopifyPriceAndAvailabilityAuthority() {
   assert(shopifyCalls.some((handles) => handles.includes("12-all-foam-mattress")));
 }
 
+async function testPreferenceStatementsDoNotStartCommerce() {
+  resetStores();
+  seedAssessment();
+
+  const cases = [
+    ["preference-king", "King", "size", "King"],
+    ["preference-natural-king", "I want a King.", "size", "King"],
+    ["preference-medium", "Medium, not too soft.", "firmness", "Medium"],
+    ["preference-hot", "I sleep hot.", null, null],
+  ];
+
+  for (const [sessionId, message, slotName, expectedValue] of cases) {
+    shopifyCalls.length = 0;
+    const body = await invoke({
+      sessionId,
+      message,
+      testCaseId: sessionId,
+    });
+    const memory = getMemory(sessionId);
+    assert.strictEqual(memory?.activeGoal || null, null, `${message} must not start a quote`);
+    assert.strictEqual(shopifyCalls.length, 0, `${message} must not invoke Shopify`);
+    assert.doesNotMatch(responseText(body), /\$\s?\d/, `${message} must not quote a price`);
+    if (slotName) {
+      assert.strictEqual(memory?.slots?.[slotName]?.value, expectedValue);
+      assert.strictEqual(memory?.slots?.[slotName]?.provenance, "current_message");
+    }
+  }
+
+  assert.strictEqual(resultsStore.get("1234").answers.size, "Queen");
+  assert.strictEqual(resultsStore.get("1234").answers.firmness, "Soft");
+}
+
+async function testActiveQuoteStillConsumesStandaloneSize() {
+  resetStores();
+  seedAssessment();
+  const sessionId = "active-quote-size";
+  sessionStore.set(sessionId, {
+    sessionId,
+    context: {
+      askSnoozerWorkingMemory: {
+        version: 1,
+        turnIndex: 1,
+        slots: {
+          productHandle: { value: "12-all-foam-mattress", provenance: "current_conversation" },
+          baseHandle: { value: "platform-base", provenance: "current_conversation" },
+          motionKey: { value: "none", provenance: "current_conversation" },
+        },
+        activeGoal: {
+          intent: "price_quote",
+          status: "collecting_slots",
+          scope: "full_pod",
+          productHandle: "12-all-foam-mattress",
+          size: null,
+          baseHandle: "platform-base",
+          motionKey: "none",
+          missingSlots: ["size"],
+        },
+        conflicts: [],
+      },
+    },
+  });
+
+  const body = await invoke({
+    sessionId,
+    message: "King",
+    testCaseId: "active-quote-king",
+  });
+  assert.strictEqual(getGoal(sessionId)?.intent, "price_quote");
+  assert.strictEqual(getGoal(sessionId)?.size, "King");
+  assert.strictEqual(getGoal(sessionId)?.status, "completed");
+  assert.strictEqual(body?.metadata?.qualityGate?.sourceOfTruth, "shopify");
+  assert(shopifyCalls.length > 0, "active quote fragment should invoke Shopify");
+}
+
+async function testCasualKnownProductEducationGrounding() {
+  resetStores();
+  seedAssessment();
+  const pageContext = {
+    podId: "1",
+    path: "/pod/1",
+    explore: [{ handle: "12-dual-comfort-hybrid", title: "12-inch Dual Comfort Hybrid" }],
+  };
+  const cases = [
+    ["Tell me about the 12-inch All Foam.", "12-all-foam-mattress"],
+    ["Tell me about Dual Comfort.", "12-dual-comfort-hybrid"],
+    ["Tell me about the 14-inch Hybrid.", "14-hybrid"],
+  ];
+
+  for (const [message, expectedHandle] of cases) {
+    const body = await invoke({
+      sessionId: `education-${expectedHandle}`,
+      message,
+      context: pageContext,
+      testCaseId: `education-${expectedHandle}`,
+    });
+    assert.strictEqual(body?.metadata?.answerSourceType, "s3_product");
+    assert.strictEqual(body?.metadata?.resolvedRequestedProductHandle, expectedHandle);
+    assert.deepStrictEqual(body?.metadata?.loadedProductKnowledgeHandles, [expectedHandle]);
+    assert.strictEqual(shopifyCalls.length, 0, "product education must not invoke Shopify");
+  }
+
+  const unknown = await invoke({
+    sessionId: "education-unknown-brand",
+    message: "Tell me about Purple mattress.",
+    context: pageContext,
+    testCaseId: "education-unknown-brand",
+  });
+  assert.notStrictEqual(
+    unknown?.metadata?.resolvedRequestedProductHandle,
+    "12-all-foam-mattress"
+  );
+  assert.deepStrictEqual(unknown?.metadata?.loadedProductKnowledgeHandles || [], []);
+}
+
 const tests = [
   ["canonical_page_conflict_and_recommendation_recall", testCanonicalPageConflictAndRecall],
   ["king_medium_profile_precedence_model_parity_and_pain_preservation", testSessionSlotPrecedenceAndPainPreservation],
   ["pending_price_quote_standard_how_much_and_cold_start", testPendingPriceQuoteTranscriptAndColdStart],
   ["all_foam_goal_switch_and_exact_product_knowledge", testAllFoamGoalSwitchAndKnowledgeMatch],
   ["shopify_price_and_availability_authority", testShopifyPriceAndAvailabilityAuthority],
+  ["preference_statements_do_not_start_commerce", testPreferenceStatementsDoNotStartCommerce],
+  ["active_quote_still_consumes_standalone_size", testActiveQuoteStillConsumesStandaloneSize],
+  ["casual_known_product_education_is_exactly_grounded", testCasualKnownProductEducationGrounding],
 ];
 
 async function main() {

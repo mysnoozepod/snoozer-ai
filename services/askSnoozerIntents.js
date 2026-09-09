@@ -691,6 +691,7 @@ function looksLikeProductQuestion(text, pageType) {
 
   const hasQuestionSignal =
     includesAny(text, PRODUCT_QUESTION_TERMS) ||
+    /\b(?:tell me about|what can you tell me about|learn about|explain)\b/.test(text) ||
     /\b(?:does|can|is|what|which)\b/.test(text);
 
   return hasQuestionSignal || bareCurrentProductReference;
@@ -998,14 +999,30 @@ function classifyAskSnoozerIntent(input, context = {}) {
     });
   }
 
-  if (budgetSignal || sizeLabel || includesAny(text, SIZE_HELP_TERMS)) {
-    const intent = budgetSignal ? "budget_value" : inferLegacyIntentFromSize(sizeLabel);
+  if (budgetSignal) {
     return buildClassification({
-      intent,
+      intent: "budget_value",
       intentGroup: "size_price",
-      confidenceLabel: sizeLabel || budgetSignal ? "high" : "medium",
-      signals: [budgetSignal ? "budget" : "", sizeLabel ? "size" : "size_help"].filter(Boolean),
+      confidenceLabel: "high",
+      signals: ["budget", sizeLabel ? "size" : ""].filter(Boolean),
       productBias: sizeLabel ? [normalizeAskSnoozerText(sizeLabel), "verified_variants"] : ["value"],
+      actionBias: ["assessment"],
+      notes,
+      sizeLabel,
+      budgetSignal,
+    });
+  }
+
+  if (sizeLabel || includesAny(text, SIZE_HELP_TERMS)) {
+    const sizeEducationSignal =
+      includesAny(text, SIZE_HELP_TERMS) ||
+      /\b(?:what|which|why|how|explain|difference|dimensions?|wide|long)\b/.test(text);
+    return buildClassification({
+      intent: sizeEducationSignal ? "size_help" : "preference_context",
+      intentGroup: "product_fit",
+      confidenceLabel: sizeLabel ? "high" : "medium",
+      signals: [sizeLabel ? "size" : "", sizeEducationSignal ? "size_help" : "preference"].filter(Boolean),
+      productBias: sizeLabel ? [normalizeAskSnoozerText(sizeLabel)] : [],
       actionBias: ["assessment"],
       notes,
       sizeLabel,
