@@ -15,6 +15,7 @@
 
 const axios = require("axios");
 const { getAssetPreview, slugify } = require("./assetLoader");
+const { getIntegrationCredentials } = require("./integrationSecrets");
 const {
   SHOPIFY_STOREFRONT_API_VERSION,
   SHOPIFY_ADMIN_API_VERSION,
@@ -26,8 +27,6 @@ const {
 // Config
 // ──────────────────────────────
 const SHOPIFY_DOMAIN = (process.env.SHOPIFY_DOMAIN || "").trim();
-const SHOPIFY_STOREFRONT_TOKEN = (process.env.SHOPIFY_STOREFRONT_TOKEN || "").trim();
-const SHOPIFY_ADMIN_TOKEN = (process.env.SHOPIFY_ADMIN_TOKEN || "").trim();
 
 const SHOPIFY_CACHE_TTL_SEC = Number(process.env.SHOPIFY_CACHE_TTL_SEC || 90);
 const SHOPIFY_LIST_CACHE_TTL_SEC = Number(
@@ -63,10 +62,12 @@ const SHOPIFY_HANDLES_BATCH_SIZE = Math.max(
 // ──────────────────────────────
 // Runtime-required config (validated on use)
 // ──────────────────────────────
-function requireShopifyConfig() {
+async function requireShopifyConfig() {
+  const credentials = await getIntegrationCredentials("shopify");
+  const storefrontToken = String(credentials?.SHOPIFY_STOREFRONT_TOKEN || "").trim();
   const missing = [];
   if (!SHOPIFY_DOMAIN) missing.push("SHOPIFY_DOMAIN");
-  if (!SHOPIFY_STOREFRONT_TOKEN) missing.push("SHOPIFY_STOREFRONT_TOKEN");
+  if (!storefrontToken) missing.push("SHOPIFY_STOREFRONT_TOKEN");
 
   if (missing.length) {
     const err = new Error(`Missing required Shopify config: ${missing.join(", ")}`);
@@ -75,13 +76,19 @@ function requireShopifyConfig() {
     throw err;
   }
 
-  return { domain: SHOPIFY_DOMAIN, sfToken: SHOPIFY_STOREFRONT_TOKEN };
+  return { domain: SHOPIFY_DOMAIN, sfToken: storefrontToken };
 }
 
-function getStorefrontClient() {
-  const { domain, sfToken } = requireShopifyConfig();
+async function getStorefrontClient() {
+  const { domain, sfToken } = await requireShopifyConfig();
 
-  if (getStorefrontClient._client) return getStorefrontClient._client;
+  if (
+    getStorefrontClient._client &&
+    getStorefrontClient._domain === domain &&
+    getStorefrontClient._token === sfToken
+  ) {
+    return getStorefrontClient._client;
+  }
 
   const storefront = axios.create({
     baseURL: buildStorefrontGraphqlEndpoint(domain),
@@ -93,24 +100,36 @@ function getStorefrontClient() {
   });
 
   getStorefrontClient._client = storefront;
+  getStorefrontClient._domain = domain;
+  getStorefrontClient._token = sfToken;
   return storefront;
 }
 
-function getAdminClientOptional() {
-  if (!SHOPIFY_DOMAIN || !SHOPIFY_ADMIN_TOKEN) return null;
+async function getAdminClientOptional() {
+  const credentials = await getIntegrationCredentials("shopify");
+  const adminToken = String(credentials?.SHOPIFY_ADMIN_TOKEN || "").trim();
+  if (!SHOPIFY_DOMAIN || !adminToken) return null;
 
-  if (getAdminClientOptional._client) return getAdminClientOptional._client;
+  if (
+    getAdminClientOptional._client &&
+    getAdminClientOptional._domain === SHOPIFY_DOMAIN &&
+    getAdminClientOptional._token === adminToken
+  ) {
+    return getAdminClientOptional._client;
+  }
 
   const admin = axios.create({
     baseURL: buildAdminApiBaseUrl(SHOPIFY_DOMAIN),
     headers: {
-      "X-Shopify-Access-Token": SHOPIFY_ADMIN_TOKEN,
+      "X-Shopify-Access-Token": adminToken,
       "Content-Type": "application/json",
     },
     timeout: ADMIN_TIMEOUT_MS,
   });
 
   getAdminClientOptional._client = admin;
+  getAdminClientOptional._domain = SHOPIFY_DOMAIN;
+  getAdminClientOptional._token = adminToken;
   return admin;
 }
 
@@ -525,7 +544,7 @@ function extractShopifyGraphQLError(err) {
 }
 
 async function sfQuery(query, variables = {}, { label = "storefront.query" } = {}) {
-  const storefront = getStorefrontClient();
+  const storefront = await getStorefrontClient();
 
   try {
     const run = () => storefront.post("", { query, variables });
@@ -593,7 +612,7 @@ async function fetchProducts({
   q = "",
   lite = SHOPIFY_LIST_LITE_DEFAULT,
 } = {}) {
-  const { domain } = requireShopifyConfig();
+  const { domain } = await requireShopifyConfig();
 
   const firstPage = Math.max(1, Math.min(Number(limit) || 20, SHOPIFY_MAX_PAGE_SIZE));
   const after = pageInfo || null;
@@ -755,7 +774,7 @@ async function fetchProducts({
 
 async function fetchProduct({ idOrHandle }) {
   if (!idOrHandle) throw buildShopifyError("idOrHandle is required", "MISSING_ID_OR_HANDLE");
-  requireShopifyConfig();
+  await requireShopifyConfig();
 
   const key = `one:${String(idOrHandle).trim()}`;
   const cached = getCache(key);
@@ -823,7 +842,7 @@ async function fetchProduct({ idOrHandle }) {
 
 // New: fetch products by an array of handles (batched via GraphQL aliases)
 async function fetchProductsByHandles({ handles = [], lite = SHOPIFY_LIST_LITE_DEFAULT } = {}) {
-  requireShopifyConfig();
+  await requireShopifyConfig();
 
   const list = Array.from(
     new Set((handles || []).map((h) => String(h || "").trim()).filter((h) => h.length > 0))
@@ -999,7 +1018,7 @@ function normalizeCartLinesInput(lines = []) {
 }
 
 async function createCart({ lines = [], note = null, buyerIdentity = null, attributes = [] } = {}) {
-  requireShopifyConfig();
+  await requireShopifyConfig();
 
   const safeLines = normalizeCartLinesInput(lines);
   if (safeLines.length === 0) {
@@ -1043,7 +1062,7 @@ async function createCart({ lines = [], note = null, buyerIdentity = null, attri
 }
 
 async function getCart({ cartId } = {}) {
-  requireShopifyConfig();
+  await requireShopifyConfig();
 
   if (!cartId || !isValidCartGid(String(cartId))) {
     throw buildShopifyError(
@@ -1063,7 +1082,7 @@ async function getCart({ cartId } = {}) {
 }
 
 async function applyDiscountCodes({ cartId, discountCodes = [] } = {}) {
-  requireShopifyConfig();
+  await requireShopifyConfig();
 
   if (!cartId || !isValidCartGid(String(cartId))) {
     throw buildShopifyError(
@@ -1109,7 +1128,7 @@ async function applyDiscountCodes({ cartId, discountCodes = [] } = {}) {
 }
 
 async function updateCartAttributes({ cartId, attributes = [] } = {}) {
-  requireShopifyConfig();
+  await requireShopifyConfig();
 
   if (!cartId || !isValidCartGid(String(cartId))) {
     throw buildShopifyError(
@@ -1150,7 +1169,7 @@ async function updateCartAttributes({ cartId, attributes = [] } = {}) {
 }
 
 async function addCartLines({ cartId, lines = [] } = {}) {
-  requireShopifyConfig();
+  await requireShopifyConfig();
 
   if (!cartId || !isValidCartGid(String(cartId))) {
     throw buildShopifyError(
@@ -1194,7 +1213,7 @@ async function addCartLines({ cartId, lines = [] } = {}) {
 }
 
 async function updateCartLines({ cartId, lines = [] } = {}) {
-  requireShopifyConfig();
+  await requireShopifyConfig();
 
   if (!cartId || !isValidCartGid(String(cartId))) {
     throw buildShopifyError(
@@ -1247,7 +1266,7 @@ async function updateCartLines({ cartId, lines = [] } = {}) {
 }
 
 async function removeCartLines({ cartId, lineIds = [] } = {}) {
-  requireShopifyConfig();
+  await requireShopifyConfig();
 
   if (!cartId || !isValidCartGid(String(cartId))) {
     throw buildShopifyError(
@@ -1322,8 +1341,8 @@ async function clearCart({ cartId } = {}) {
 // ──────────────────────────────
 // Admin helpers (optional)
 // ──────────────────────────────
-function requireAdmin() {
-  const admin = getAdminClientOptional();
+async function requireAdmin() {
+  const admin = await getAdminClientOptional();
   if (!admin) {
     throw buildShopifyError(
       "Shopify Admin client not configured (SHOPIFY_ADMIN_TOKEN or SHOPIFY_DOMAIN missing).",
@@ -1334,7 +1353,7 @@ function requireAdmin() {
 }
 
 async function listPriceRules() {
-  const a = requireAdmin();
+  const a = await requireAdmin();
 
   try {
     const res = await withRetry(() => a.get("/price_rules.json"), { label: "admin.listPriceRules" });
@@ -1356,7 +1375,7 @@ async function listPriceRules() {
 }
 
 async function createDiscountCode({ code, priceRuleId }) {
-  const a = requireAdmin();
+  const a = await requireAdmin();
   if (!priceRuleId) {
     throw buildShopifyError("priceRuleId is required", "MISSING_PRICE_RULE_ID");
   }

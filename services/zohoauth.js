@@ -1,4 +1,8 @@
 const axios = require("axios");
+const {
+  getIntegrationCredentials,
+  getSecretId,
+} = require("./integrationSecrets");
 
 const EXPIRY_SKEW_SEC = Number(process.env.ZOHO_TOKEN_EXPIRY_SKEW_SEC || 90);
 
@@ -65,6 +69,7 @@ function detectAliasSet(resolvedEnvNames = {}) {
 }
 
 function resolveZohoConfig() {
+  const secretId = getSecretId("zoho");
   const clientId = getEnvAny(...ZOHO_ENV_ALIASES.clientId);
   const clientSecret = getEnvAny(...ZOHO_ENV_ALIASES.clientSecret);
   const refreshToken = getEnvAny(...ZOHO_ENV_ALIASES.refreshToken);
@@ -79,10 +84,11 @@ function resolveZohoConfig() {
     oauthDomain: normalizeBaseUrl(oauthDomain.value),
     apiDomain: normalizeBaseUrl(apiDomain.value),
     crmBase: normalizeBaseUrl(crmBase.value),
+    secretId: secretId || null,
     resolvedEnvNames: {
-      clientId: clientId.key,
-      clientSecret: clientSecret.key,
-      refreshToken: refreshToken.key,
+      clientId: secretId ? "ZOHO_SECRET_ID" : clientId.key,
+      clientSecret: secretId ? "ZOHO_SECRET_ID" : clientSecret.key,
+      refreshToken: secretId ? "ZOHO_SECRET_ID" : refreshToken.key,
       oauthDomain: oauthDomain.key,
       apiDomain: apiDomain.key,
       crmBase: crmBase.key,
@@ -90,6 +96,31 @@ function resolveZohoConfig() {
   };
 
   return config;
+}
+
+function getMissingRequiredKeys(config = {}, { acceptSecretPointer = false } = {}) {
+  const secretConfigured = acceptSecretPointer && Boolean(config.secretId);
+  const missingRequiredKeys = [];
+  if (!config.clientId && !secretConfigured) missingRequiredKeys.push("ZCRM_CLIENT_ID");
+  if (!config.clientSecret && !secretConfigured) missingRequiredKeys.push("ZCRM_CLIENT_SECRET");
+  if (!config.refreshToken && !secretConfigured) missingRequiredKeys.push("ZCRM_REFRESH_TOKEN");
+  if (!config.oauthDomain) missingRequiredKeys.push("ZCRM_OAUTH_DOMAIN");
+  if (!config.crmBase && !config.apiDomain) {
+    missingRequiredKeys.push("ZOHO_CRM_BASE|ZCRM_API_DOMAIN");
+  }
+  return missingRequiredKeys;
+}
+
+async function resolveZohoRuntimeConfig() {
+  const config = resolveZohoConfig();
+  if (!config.secretId) return config;
+  const credentials = await getIntegrationCredentials("zoho");
+  return {
+    ...config,
+    clientId: trimToString(credentials?.ZCRM_CLIENT_ID),
+    clientSecret: trimToString(credentials?.ZCRM_CLIENT_SECRET),
+    refreshToken: trimToString(credentials?.ZCRM_REFRESH_TOKEN),
+  };
 }
 
 function getZohoApiBase(input) {
@@ -105,21 +136,16 @@ function getZohoApiBase(input) {
 
 function getZohoConfigStatus() {
   const config = resolveZohoConfig();
-  const missingRequiredKeys = [];
-
-  if (!config.clientId) missingRequiredKeys.push("ZCRM_CLIENT_ID");
-  if (!config.clientSecret) missingRequiredKeys.push("ZCRM_CLIENT_SECRET");
-  if (!config.refreshToken) missingRequiredKeys.push("ZCRM_REFRESH_TOKEN");
-  if (!config.oauthDomain) missingRequiredKeys.push("ZCRM_OAUTH_DOMAIN");
-  if (!config.crmBase && !config.apiDomain) {
-    missingRequiredKeys.push("ZOHO_CRM_BASE|ZCRM_API_DOMAIN");
-  }
+  const missingRequiredKeys = getMissingRequiredKeys(config, {
+    acceptSecretPointer: true,
+  });
 
   return {
     enabled: missingRequiredKeys.length === 0,
     missingRequiredKeys,
     resolvedEnvNames: config.resolvedEnvNames,
     aliasSet: detectAliasSet(config.resolvedEnvNames),
+    credentialSource: config.secretId ? "secrets_manager" : "environment",
     config,
   };
 }
@@ -131,6 +157,7 @@ function logZohoConfigStatus(scope = "zoho") {
     missingRequiredKeys: status.missingRequiredKeys,
     resolvedEnvNames: status.resolvedEnvNames,
     aliasSet: status.aliasSet,
+    credentialSource: status.credentialSource,
   });
 
   if (signature !== lastZohoConfigLogSignature) {
@@ -143,6 +170,7 @@ function logZohoConfigStatus(scope = "zoho") {
         missingRequiredKeys: status.missingRequiredKeys,
         resolvedEnvNames: status.resolvedEnvNames,
         aliasSet: status.aliasSet,
+        credentialSource: status.credentialSource,
       })
     );
   }
@@ -175,7 +203,15 @@ async function refreshZohoToken() {
 
   inflightRefresh = (async () => {
     try {
-      const tokenUrl = joinUrl(status.config.oauthDomain, "/oauth/v2/token");
+      const runtimeConfig = await resolveZohoRuntimeConfig();
+      const missingRequiredKeys = getMissingRequiredKeys(runtimeConfig);
+      if (missingRequiredKeys.length) {
+        const error = new Error("Zoho config incomplete");
+        error.code = "ZOHO_CONFIG_INCOMPLETE";
+        error.missingRequiredKeys = missingRequiredKeys;
+        throw error;
+      }
+      const tokenUrl = joinUrl(runtimeConfig.oauthDomain, "/oauth/v2/token");
 
       console.log(
         JSON.stringify({
@@ -186,9 +222,9 @@ async function refreshZohoToken() {
 
       const res = await axios.post(tokenUrl, null, {
         params: {
-          refresh_token: status.config.refreshToken,
-          client_id: status.config.clientId,
-          client_secret: status.config.clientSecret,
+          refresh_token: runtimeConfig.refreshToken,
+          client_id: runtimeConfig.clientId,
+          client_secret: runtimeConfig.clientSecret,
           grant_type: "refresh_token",
         },
         timeout: 12_000,
@@ -223,18 +259,12 @@ async function refreshZohoToken() {
         err?.response?.data?.data?.[0]?.code ||
         err?.response?.data?.code ||
         null;
-      const responseMessage =
-        err?.response?.data?.data?.[0]?.message ||
-        err?.response?.data?.message ||
-        err.message;
-
       console.error(
         JSON.stringify({
           source: "zoho.auth",
           event: "refresh_failed",
           status: err?.response?.status || null,
           code: responseCode,
-          message: responseMessage,
         })
       );
 
@@ -253,6 +283,7 @@ module.exports = {
   logZohoConfigStatus,
   refreshZohoToken,
   resolveZohoConfig,
+  resolveZohoRuntimeConfig,
 };
 
 Object.defineProperty(module.exports, "API_DOMAIN", {

@@ -50,14 +50,13 @@ function getZohoConfigSnapshot() {
   return {
     OAUTH_DOMAIN: config.oauthDomain,
     API_DOMAIN: config.apiDomain,
-    CLIENT_ID: config.clientId,
-    CLIENT_SECRET: config.clientSecret,
-    REFRESH_TOKEN: config.refreshToken,
     ZOHO_BASE_URL: config.crmBase,
     enabled: status.enabled,
     missingRequiredKeys: status.missingRequiredKeys.slice(),
     resolvedEnvNames: { ...status.resolvedEnvNames },
     aliasSet: status.aliasSet,
+    credentialSource: status.credentialSource,
+    secretId: config.secretId || null,
   };
 }
 

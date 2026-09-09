@@ -41,6 +41,7 @@
 
 const axios = require("axios");
 const { S3Client, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
+const { getIntegrationCredentials } = require("./integrationSecrets");
 
 const { initializeSession, rememberTurn, getLastTurns } = require("./conversationState.js");
 const { clampAskSnoozerDisplayReply } = require("./askSnoozerAnswerEngine");
@@ -83,7 +84,6 @@ const ROUTING_RULES_KEY = process.env.ROUTING_RULES_KEY || "meta/routing_rules.j
 const CATALOG_KEY = process.env.CATALOG_KEY || "meta/catalog.json";
 const CANON_KEY = process.env.CANON_KEY || "meta/canon.json";
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const FAST_MODEL = process.env.OPENAI_FAST_MODEL || "gpt-4o-mini";
 const FINAL_MODEL = process.env.OPENAI_FINAL_MODEL || "gpt-4o";
 
@@ -169,15 +169,10 @@ const PREMIUM_ANSWER_GUARDRAILS = [
 const openai = axios.create({
   baseURL: "https://api.openai.com/v1",
   headers: {
-    Authorization: `Bearer ${OPENAI_API_KEY || ""}`,
     "Content-Type": "application/json",
   },
   timeout: AXIOS_TIMEOUT_MS,
 });
-
-if (!OPENAI_API_KEY) {
-  console.log("❌ OPENAI_API_KEY is missing. Snoozer model path will be disabled.");
-}
 
 // ──────────────────────────────
 // Logging / helpers
@@ -2265,7 +2260,8 @@ async function deterministicUpdateCartQtyPath(
 // Model path (NO TOOLS, NO COMMERCE) + retrieval enforcement
 // ──────────────────────────────
 async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL }) {
-  if (!OPENAI_API_KEY) {
+  const { OPENAI_API_KEY: apiKey } = await getIntegrationCredentials("openai");
+  if (!apiKey) {
     const err = new Error("OPENAI_API_KEY missing");
     err.code = "OPENAI_KEY_MISSING";
     throw err;
@@ -2291,7 +2287,10 @@ async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL }) {
         ...summarizePayload(payload.messages),
       });
 
-      const resp = await openai.post("/chat/completions", payload, { timeout: FAST_TIMEOUT_MS });
+      const resp = await openai.post("/chat/completions", payload, {
+        timeout: FAST_TIMEOUT_MS,
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
 
       const data = resp.data || {};
       const choice = data.choices?.[0] || {};
@@ -2440,18 +2439,6 @@ async function modelPath(userMessage, { reqId, thread_id, mode, context, intent,
       latency_ms: elapsedMs(t0),
       retrievalMs: totalRetrievalMs,
       raw: { intent, kbKeys: knowledge.keys, retrievalOk: knowledge.retrievalOk },
-    });
-  }
-
-  if (!OPENAI_API_KEY) {
-    return buildDeterministicFallbackContract({
-      reply: "I can help with pricing and cart right now, but chat replies are temporarily unavailable.",
-      thread_id,
-      context,
-      error: "OPENAI_KEY_MISSING",
-      latency_ms: elapsedMs(t0),
-      retrievalMs: totalRetrievalMs,
-      raw: { intent, mode },
     });
   }
 
