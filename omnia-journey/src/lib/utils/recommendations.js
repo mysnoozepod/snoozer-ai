@@ -152,6 +152,14 @@ function normalizeMotionMode(value) {
   return "";
 }
 
+function normalizeBaseType(value) {
+  const v = lower(value);
+  if (v.includes("adjust")) return "adjustable";
+  if (v.includes("platform")) return "platform";
+  if (v.includes("storage")) return "storage";
+  return "none";
+}
+
 export function isDualComfortHandle(handle) {
   const h = lower(handle);
   return h.includes("dual") && h.includes("comfort");
@@ -351,7 +359,8 @@ export function resolvePodSelectionToHandles(pod, selection = {}) {
 function validateMotion({ size, motionMode }) {
   const warnings = [];
   const s = lower(size);
-  const m = lower(motionMode);
+  let normalizedMotionMode = normalizeMotionMode(motionMode) || "No Motion";
+  let m = lower(normalizedMotionMode);
 
   let forcedMattressHandle = null;
 
@@ -361,13 +370,19 @@ function validateMotion({ size, motionMode }) {
 
   if (isFullSplit && s !== "king") {
     warnings.push("Full Split Motion is only available in King setups.");
+    normalizedMotionMode = s === "queen" ? "Half Split Motion" : "Standard Motion";
+    m = lower(normalizedMotionMode);
   }
 
   if (isHalfSplit && s !== "queen" && s !== "king") {
     warnings.push("Half Split Motion is only available in Queen or King sizes.");
   }
 
-  if (isAnySplit) {
+  const effectiveHalfSplit = m.includes("half split");
+  const effectiveFullSplit = m.includes("full split");
+  const effectiveAnySplit = effectiveHalfSplit || effectiveFullSplit;
+
+  if (effectiveAnySplit) {
     forcedMattressHandle = HANDLES.mattresses.dualComfort;
   }
 
@@ -375,9 +390,10 @@ function validateMotion({ size, motionMode }) {
     motionOk: warnings.length === 0,
     warnings,
     forcedMattressHandle,
-    isAnySplit,
-    isHalfSplit,
-    isFullSplit,
+    normalizedMotionMode,
+    isAnySplit: effectiveAnySplit,
+    isHalfSplit: effectiveHalfSplit,
+    isFullSplit: effectiveFullSplit,
   };
 }
 
@@ -632,6 +648,15 @@ export async function generateShowroomRecommendations(results = {}, opts = {}) {
     )
   );
 
+  const baseType = normalizeBaseType(
+    firstNonEmpty(
+      results?.baseType,
+      results?.answers?.baseType,
+      results?.base,
+      results?.answers?.base
+    )
+  );
+
   const firmness = normalizeFirmness(
     firstNonEmpty(
       results?.firmness,
@@ -665,13 +690,15 @@ export async function generateShowroomRecommendations(results = {}, opts = {}) {
   );
 
   const motionCheck = validateMotion({ size, motionMode });
+  const resolvedMotionMode = motionCheck.normalizedMotionMode;
+  const selectedBaseHandle = getBaseHandleForType(baseType);
   const primaryMattressHandle =
     motionCheck.forcedMattressHandle || choosePrimaryMattress({ firmness, position });
   const primaryMattressFamily = mattressFamilyFromHandle(primaryMattressHandle);
 
   const shopperProfile = {
     size,
-    requestedMotionMode: motionMode,
+    requestedMotionMode: resolvedMotionMode,
     firmness,
     position,
     hasPartner,
@@ -717,9 +744,13 @@ export async function generateShowroomRecommendations(results = {}, opts = {}) {
         title: `SnoozePod ${pod.podId}`,
         displayMattress: storeMattressLabel,
         subtitle: `In-store: ${storeSizeLine} • ${storeMattressLabel}`,
-        baseType: resolvedBaseType,
-        motionType: resolvedMotionType,
-        hasAdjustableBase: resolvedHasAdjustableBase,
+        baseHandle: selectedBaseHandle,
+        baseType,
+        motionType: motionTypeFromDisplay(resolvedMotionMode),
+        hasAdjustableBase: baseType === "adjustable",
+        fixtureBaseHandle: pod.baseHandle,
+        fixtureBaseType: resolvedBaseType,
+        fixtureMotionType: resolvedMotionType,
         flags: {
           isDualComfortMattress: isDualComfortHandle(pod.mattressHandle),
           isAdjustableFixture: resolvedHasAdjustableBase,
@@ -753,7 +784,9 @@ export async function generateShowroomRecommendations(results = {}, opts = {}) {
   return {
     meta: {
       size,
-      motionMode,
+      motionMode: resolvedMotionMode,
+      baseHandle: selectedBaseHandle,
+      baseType,
       firmness,
       position,
       hasPartner,

@@ -107,12 +107,19 @@ function normalizeMetrics(rawMeta = {}, startedAtMs) {
   const fallbackUsed = Boolean(
     pickFirst(rawMeta?.fallbackUsed, rawMeta?.fallback_used, false)
   );
+  const modelCallCount = clampInt(
+    pickFirst(rawMeta?.modelCallCount, rawMeta?.model_call_count),
+    0,
+    10,
+    0
+  );
 
   return {
     retrievalMs,
     modelMs,
     totalMs,
     fallbackUsed,
+    modelCallCount,
   };
 }
 
@@ -225,7 +232,11 @@ function normalizeSnoozerResponse(raw, opts = {}) {
     error = { code: "UNKNOWN_ERROR", message: "Unknown error" };
   }
 
-  const metrics = normalizeMetrics(safe?.meta || safe?.metadata || {}, startedAtMs);
+  const rawMetrics = safe?.meta || safe?.metadata || {};
+  const metrics = normalizeMetrics(
+    isObj(rawMetrics?.metrics) ? { ...rawMetrics, ...rawMetrics.metrics } : rawMetrics,
+    startedAtMs
+  );
 
   const model = pickFirst(
     safe?.metadata?.model,
@@ -305,6 +316,7 @@ function normalizeSnoozerResponse(raw, opts = {}) {
         ? answerMeta.loaded_product_knowledge_handles
         : [],
       reason: safeString(answerMeta.reason),
+      ...(isObj(answerMeta.composition) ? { composition: answerMeta.composition } : {}),
     },
   };
 }

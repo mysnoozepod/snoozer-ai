@@ -166,7 +166,17 @@ async function testCanonicalAssessmentFlow() {
     "canonical result should lead with the matched mattress"
   );
   assert(/SnoozePod 4/i.test(String(resolved.result.summary || "")), "canonical summary should name the first pod");
-  assert(/12" All Foam/i.test(String(resolved.result.summary || "")), "canonical summary should name the matched mattress");
+  assert(/12(?:"|-inch) All Foam/i.test(String(resolved.result.summary || "")), "canonical summary should name the matched mattress");
+  assert.strictEqual(
+    canonical.recommendation.primaryMattressTitle,
+    '12" All Foam Mattress',
+    "canonical snapshot should retain the shopper-facing mattress name"
+  );
+  assert.strictEqual(
+    canonical.recommendation.primaryMattressShopifyPath,
+    "/products/12-all-foam-mattress",
+    "canonical snapshot should retain the Shopify product relationship"
+  );
   assert(/Mattress Only|No Base/i.test(String(resolved.result.summary || "")), "canonical summary should preserve explicit no-base intent");
   assertNoBannedPhrases(resolved.result.summary, "canonical assessment summary");
   assertNoBannedPhrases(resolved.result.recommendedProducts[0].blurb, "canonical mattress blurb");

@@ -395,6 +395,10 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
   const baseHandle = Object.prototype.hasOwnProperty.call(explicitBase, "baseHandle")
     ? explicitBase.baseHandle
     : previousDeal.activeBaseHandle ?? null;
+  const recentBaseHandle = Object.prototype.hasOwnProperty.call(explicitBase, "baseHandle") &&
+    explicitBase.baseHandle !== previousDeal.activeBaseHandle
+      ? previousDeal.activeBaseHandle || previousDeal.recentBaseHandle || null
+      : previousDeal.recentBaseHandle || null;
   const motionKey = explicitBase.motionKey || previousDeal.activeMotionKey || null;
   const stage = inferBuyingStage(query, previousDeal.stage);
 
@@ -407,6 +411,7 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
     comparisonProductHandles,
     activeSize: size,
     activeBaseHandle: baseHandle,
+    recentBaseHandle,
     activeMotionKey: motionKey,
     activeQuote: isObject(previousDeal.activeQuote) ? previousDeal.activeQuote : null,
     compatibilityStatus: clean(previousDeal.compatibilityStatus) || "unknown",
@@ -549,6 +554,11 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
   const previousDeal = isObject(memory.activeDeal) ? memory.activeDeal : {};
   const plan = isObject(outcome.plan) ? outcome.plan : {};
   const quote = isObject(outcome.quote) ? outcome.quote : null;
+  const quoteChangesBase = Boolean(
+    quote &&
+    Object.prototype.hasOwnProperty.call(quote, "baseHandle") &&
+    quote.baseHandle !== previousDeal.activeBaseHandle
+  );
   const activeDeal = {
     ...previousDeal,
     stage: clean(plan.stage) || previousDeal.stage || "exploring",
@@ -564,6 +574,9 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
       quote && Object.prototype.hasOwnProperty.call(quote, "baseHandle")
         ? quote.baseHandle
         : previousDeal.activeBaseHandle ?? null,
+    recentBaseHandle: quoteChangesBase
+      ? previousDeal.activeBaseHandle || previousDeal.recentBaseHandle || null
+      : previousDeal.recentBaseHandle || null,
     activeMotionKey: quote?.motionKey || plan?.knownFacts?.motionKey || previousDeal.activeMotionKey || null,
     activeQuote: quote?.ok ? quote : previousDeal.activeQuote || null,
     compatibilityStatus:

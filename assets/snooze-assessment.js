@@ -1560,10 +1560,15 @@
             ? recommendation.warnings.slice()
             : [],
         primaryMattressHandle: normalizeText(recommendation.primaryMattressHandle),
+        primaryMattressTitle: normalizeText(recommendation.primaryMattressTitle),
+        primaryMattressShopifyPath: normalizeText(recommendation.primaryMattressShopifyPath),
+        primaryVariantId: normalizeText(recommendation.primaryVariantId),
         baseHandle: recommendation.baseHandle == null ? null : normalizeText(recommendation.baseHandle),
         baseType:
-          normalizeText(normalizedAssessment.baseTypeLabel) ||
-          baseTypeLabelFromCanonicalKey(normalizedAssessment.baseType),
+          recommendation.baseHandle == null
+            ? "Mattress Only"
+            : normalizeText(normalizedAssessment.baseTypeLabel) ||
+              baseTypeLabelFromCanonicalKey(normalizedAssessment.baseType),
         manifestVersion: normalizeText(resolved && resolved.manifestVersion),
         reasonKeys: Array.isArray(recommendation.reasonKeys) ? recommendation.reasonKeys.slice() : [],
         source: "canonical_resolver",
@@ -1576,7 +1581,12 @@
           baseType: normalizeText(pod && pod.baseTypeKey),
           motionType: normalizeText(pod && pod.defaultMotionKey),
           hasAdjustableBase: Boolean(pod && pod.hasAdjustableBase),
-          displayMattress: mattressLabelFromHandle(pod && pod.mattressHandle),
+          displayMattress:
+            normalizeText(
+              normalizeText(pod && pod.mattressHandle) === normalizeText(recommendation.primaryMattressHandle)
+                ? recommendation.primaryMattressTitle
+                : ""
+            ) || mattressLabelFromHandle(pod && pod.mattressHandle),
           displayedIn: {
             size: normalizeText((pod && pod.displayedIn && pod.displayedIn.size) || normalizedAssessment.size),
             baseLabel:

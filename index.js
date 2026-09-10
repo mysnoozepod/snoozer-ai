@@ -165,6 +165,9 @@ const {
   resolveAskSnoozerAdvisorTurn,
 } = require("./services/askSnoozerConversationOrchestrator");
 const {
+  resolveAskSnoozerVisitLifecycle,
+} = require("./services/askSnoozerVisitLifecycle");
+const {
   HUD_SAFE_PAGE_ROUTES,
   HUD_SAFE_COLLECTION_ROUTES,
   HUD_HREF_ALIASES,
@@ -6176,6 +6179,16 @@ function getAskSnoozerRouteDeps() {
     completeAskSnoozerPriceGoal,
     planAskSnoozerTurn,
     resolveAskSnoozerAdvisorTurn,
+    composeTrustedAdvisorResponse: async (args) => {
+      const service = getOpenAiSvc();
+      if (!service || typeof service.composeTrustedAdvisorResponse !== "function") {
+        const error = new Error("Trusted-advisor composer is unavailable.");
+        error.code = "E_ADVISOR_COMPOSER_UNAVAILABLE";
+        throw error;
+      }
+      return service.composeTrustedAdvisorResponse(args);
+    },
+    resolveAskSnoozerVisitLifecycle,
     safeResponseFingerprint,
     STRICT_POD_ANCHOR,
     routeAskSnoozerQuestion,

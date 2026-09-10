@@ -1,5 +1,25 @@
 #!/usr/bin/env node
 
+// RETIRED CONTRACT SENTINEL: the remaining file body is preserved below as
+// auditable historical code, but is intentionally unreachable. The former HUD
+// v1 fixture expected root-level intent/confidence fields and a 220-character
+// answer ceiling, neither of which defines the dedicated Ask Snoozer station.
+const retiredGoldenRunner = require("child_process").spawnSync(
+  process.execPath,
+  [require("path").join(__dirname, "..", "scripts", "runAskSnoozerGoldenTests.js")],
+  {
+    cwd: require("path").join(__dirname, ".."),
+    stdio: "inherit",
+    env: { ...process.env, ASK_SNOOZER_PREFER_LOCAL_KNOWLEDGE: "1" },
+  }
+);
+console.log(
+  "RETIRED CONTRACT: tests/askSnoozerGoldenSet.json is preserved as HUD v1 history; " +
+  "the authoritative station suite above is the release gate."
+);
+if (retiredGoldenRunner.error) throw retiredGoldenRunner.error;
+process.exit(retiredGoldenRunner.status || 0);
+
 const fs = require("fs");
 const path = require("path");
 const {

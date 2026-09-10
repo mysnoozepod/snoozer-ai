@@ -47,6 +47,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     completeAskSnoozerPriceGoal,
     planAskSnoozerTurn,
     resolveAskSnoozerAdvisorTurn,
+    composeTrustedAdvisorResponse,
+    resolveAskSnoozerVisitLifecycle,
     safeResponseFingerprint,
     STRICT_POD_ANCHOR,
     routeAskSnoozerQuestion,
@@ -250,8 +252,36 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     context.device =
       payload?.page?.device && typeof payload.page.device === "object"
         ? payload.page.device
-        : context?.device || null;
-    context.recentConversation = buildBoundedConversationHistory(payload?.history);
+      : context?.device || null;
+
+    const visitResolution = typeof resolveAskSnoozerVisitLifecycle === "function"
+      ? resolveAskSnoozerVisitLifecycle({
+          context,
+          storedContext: sco,
+          sessionId: effectiveSessionId,
+          shopperId,
+          forceNewVisit: payload?.startNewVisit === true,
+        })
+      : { context, metadata: null };
+    context = visitResolution.context;
+    const visitMetadata = visitResolution.metadata;
+    if (visitMetadata) {
+      log("ask-snoozer.visit-lifecycle", visitMetadata.rotated ? "rotated" : "resolved", {
+        traceId,
+        shopperId: shopperId || null,
+        sessionId: effectiveSessionId,
+        ...visitMetadata,
+      });
+    }
+    const incomingConversation = buildBoundedConversationHistory(payload?.history);
+    context.recentConversation = incomingConversation.length
+      ? incomingConversation
+      : Array.isArray(context.recentConversation)
+        ? context.recentConversation
+        : [];
+    // From this point forward the lifecycle-resolved context is authoritative.
+    // Assign rather than deep-merge so expired active keys stay cleared.
+    sco = context;
 
     // 3) Attach assessment and canonical recommendation context
     let storedAssessment = null;
@@ -357,9 +387,14 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
     let askSnoozerPlan = null;
     if (typeof applyAskSnoozerWorkingMemory === "function") {
+      const preTurnReferenceContext = context;
       context = applyAskSnoozerWorkingMemory({ query: msg, context });
       if (typeof planAskSnoozerTurn === "function") {
-        askSnoozerPlan = planAskSnoozerTurn({ query: msg, context });
+        askSnoozerPlan = planAskSnoozerTurn({
+          query: msg,
+          context,
+          referenceContext: preTurnReferenceContext,
+        });
         context.askSnoozerWorkingMemory.lastPlan = askSnoozerPlan;
       }
       const memoryPatch = {
@@ -585,6 +620,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             context,
             plan: askSnoozerPlan,
             fetchProductsByHandles: shopifySvc?.fetchProductsByHandles,
+            composeAdvisorResponse: composeTrustedAdvisorResponse,
+            requestId: traceId,
           })
         : null;
     if (advisorAnswer) {
@@ -614,7 +651,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         actions: advisorAnswer.actions,
         metrics: {
           retrievalMs: advisorAnswer.quote ? latencyMs : 0,
-          modelMs: 0,
+          modelMs: advisorAnswer.modelMs || 0,
           totalMs: latencyMs,
           fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
         },
@@ -647,6 +684,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         semantics: {
           questionAnswered: !advisorAnswer.fallbackUsed,
           activeGoalAdvanced: !advisorAnswer.fallbackUsed,
+          activeGoal: context?.askSnoozerWorkingMemory?.activeGoal?.intent || null,
           stage: advisorAnswer.plan.stage,
           plannerTask: advisorAnswer.plan.taskType,
           plannerConfidence: advisorAnswer.plan.confidence,
@@ -663,12 +701,21 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         },
         quote: advisorAnswer.quote,
         responseGate: advisorAnswer.gate,
+        composition: {
+          mode: advisorAnswer.compositionMode,
+          modelCallCount: advisorAnswer.modelCallCount,
+          model: advisorAnswer.model,
+          fallbackUsed: Boolean(advisorAnswer.compositionFallbackUsed),
+          gate: advisorAnswer.modelGate,
+          referenceResolution: advisorAnswer.plan.references?.resolution || null,
+          factPackComplete: (advisorAnswer.plan.neededFacts || []).length === 0,
+        },
         metrics: {
           retrievalMs: advisorAnswer.quote ? latencyMs : 0,
-          modelMs: 0,
+          modelMs: advisorAnswer.modelMs || 0,
           totalMs: latencyMs,
           fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
-          modelCallCount: 0,
+          modelCallCount: advisorAnswer.modelCallCount || 0,
         },
       };
       const normalized = normalizeSnoozerResponse(env, {
@@ -692,9 +739,20 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         shopperId: shopperId || null,
         ...env.meta.semantics,
         totalMs: latencyMs,
-        modelMs: 0,
-        modelCallCount: 0,
+        modelMs: advisorAnswer.modelMs || 0,
+        modelCallCount: advisorAnswer.modelCallCount || 0,
+        compositionMode: advisorAnswer.compositionMode,
+        compositionFallbackUsed: Boolean(advisorAnswer.compositionFallbackUsed),
+        modelGateViolations: advisorAnswer.modelGate?.violations || [],
+        referenceResolution: advisorAnswer.plan.references?.resolution || null,
+        factPackComplete: (advisorAnswer.plan.neededFacts || []).length === 0,
         fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
+        visitReused: Boolean(visitMetadata?.reused),
+        visitRotated: Boolean(visitMetadata?.rotated),
+        visitAgeMs: visitMetadata?.visitAgeMs ?? null,
+        visitRotationReason: visitMetadata?.rotationReason || null,
+        activeVisitId: visitMetadata?.visitId || null,
+        previousVisitId: visitMetadata?.previousVisitId || null,
       });
       if (wantHud) {
         const hud = await buildHudFromAny(normalized, {

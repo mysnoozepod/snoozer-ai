@@ -2709,6 +2709,82 @@ async function getSnoozerResponse(
   });
 }
 
+function parseTrustedAdvisorComposition(value = "") {
+  const source = String(value || "").trim();
+  const unfenced = source
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+  let parsed;
+  try {
+    parsed = JSON.parse(unfenced);
+  } catch {
+    const error = new Error("Trusted-advisor composer returned invalid JSON.");
+    error.code = "E_ADVISOR_COMPOSER_JSON";
+    throw error;
+  }
+  const displayText = String(parsed?.displayText || "").trim();
+  const speechText = String(parsed?.speechText || "").trim();
+  const probe = parsed?.probe == null ? null : String(parsed.probe).trim();
+  if (!displayText || !speechText || displayText.length > 1400 || speechText.length > 500) {
+    const error = new Error("Trusted-advisor composer violated its response contract.");
+    error.code = "E_ADVISOR_COMPOSER_CONTRACT";
+    throw error;
+  }
+  if (probe && ((probe.match(/\?/g) || []).length !== 1 || probe.length > 180)) {
+    const error = new Error("Trusted-advisor composer returned an invalid probe.");
+    error.code = "E_ADVISOR_COMPOSER_PROBE";
+    throw error;
+  }
+  if ((displayText.match(/\?/g) || []).length > 1 || (speechText.match(/\?/g) || []).length > 1) {
+    const error = new Error("Trusted-advisor composer returned more than one probe.");
+    error.code = "E_ADVISOR_COMPOSER_PROBE";
+    throw error;
+  }
+  return { displayText, speechText, probe };
+}
+
+async function composeTrustedAdvisorResponse({
+  requestId,
+  userMessage,
+  strategy,
+  factPack,
+  deterministicDraft,
+} = {}) {
+  const startedAt = Date.now();
+  const boundedPayload = JSON.stringify({
+    shopperQuestion: String(userMessage || "").slice(0, 1000),
+    strategy,
+    verifiedFactPack: factPack,
+    deterministicDraft,
+  }).slice(0, 18000);
+  const response = await callOpenAIChat({
+    reqId: requestId || `advisor_${Date.now().toString(36)}`,
+    messages: [
+      {
+        role: "system",
+        content: [
+          "You are the language composer for a mattress showroom advisor.",
+          "Return JSON only with displayText, speechText, and probe (string or null).",
+          "Rewrite the deterministic draft so it is natural, engaged, decisive, and shopper-friendly.",
+          "Use only the verified fact pack and deterministic draft. Never invent or change products, titles, sizes, prices, availability, compatibility, configuration, cart state, rewards, policies, or actions.",
+          "Do not expose implementation language. Do not diagnose or promise a medical outcome.",
+          "Ask at most one useful forward-moving question. Use null when a probe is not warranted.",
+          "Keep displayText complete and concise. Keep speechText natural for voice and no more than two short sentences.",
+        ].join(" "),
+      },
+      { role: "user", content: boundedPayload },
+    ],
+  });
+  const parsed = parseTrustedAdvisorComposition(response.text);
+  return {
+    ...parsed,
+    model: response.model,
+    tokens: response.tokens,
+    modelMs: Date.now() - startedAt,
+  };
+}
+
 async function runSnoozer({ message, mode, context, thread_id } = {}) {
   const reqId = `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
   const result = await getSnoozerResponse(message, { reqId, mode, context, thread_id });
@@ -2716,6 +2792,7 @@ async function runSnoozer({ message, mode, context, thread_id } = {}) {
 }
 
 module.exports = {
+  composeTrustedAdvisorResponse,
   getSnoozerResponse,
   runSnoozer,
   getCatalogOnce,
@@ -2724,4 +2801,5 @@ module.exports = {
   catalogHasHandle,
   resolveVariantFromCanon,
   resolveVariantByHandleAndSize,
+  parseTrustedAdvisorComposition,
 };
