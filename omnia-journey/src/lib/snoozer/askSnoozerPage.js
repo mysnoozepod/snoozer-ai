@@ -760,8 +760,28 @@ function normalizeSuccessResponse(payload, { conversationId, requestId, message 
           top?.traceId,
           requestId,
         ]) || createId("request"),
+      backendMetrics: normalizeObject(metaRoot?.metrics),
+      composition: normalizeObject(metaRoot?.composition),
+      quality: normalizeObject(metaRoot?.quality),
     },
   };
+}
+
+export async function sendAskSnoozerQualityTiming(payload = {}) {
+  try {
+    const response = await fetch(buildApiUrl("/ask-snoozer/quality-event"), {
+      method: "POST",
+      keepalive: true,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload && typeof payload === "object" ? payload : {}),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
 }
 
 async function postAskSnoozer(payload) {

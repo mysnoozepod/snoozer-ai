@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import { emitDeviceTtsActivity } from "@/device/deviceActivityTracker";
+import { emitAskSnoozerVoiceTiming } from "@/lib/snoozer/askSnoozerPerformance.mjs";
 import { VoiceQueueController } from "./voiceQueue";
 
 const VoiceQueueContext = createContext(null);
@@ -271,6 +272,7 @@ export function VoiceQueueProvider({
       if (!live || (jobId && live.id !== jobId)) return;
 
       clearCaptionTimer();
+      emitAskSnoozerVoiceTiming(live, "tts_complete");
       controller.completeCurrent("done");
       currentJobRef.current = null;
       releaseAudioElement(audioRef.current, { resetPlayback: false });
@@ -291,6 +293,7 @@ export function VoiceQueueProvider({
       if (!live || (jobId && live.id !== jobId)) return;
 
       clearCaptionTimer();
+      emitAskSnoozerVoiceTiming(live, "tts_error");
       controller.failCurrent("failed");
       currentJobRef.current = null;
       releaseAudioElement(audioRef.current, { resetPlayback: true });
@@ -343,6 +346,11 @@ export function VoiceQueueProvider({
       if (!fresh.startedAt) {
         controller.markStarted(fresh.id);
       }
+
+      emitAskSnoozerVoiceTiming(
+        controller.getSnapshot().currentJob || fresh,
+        "tts_unavailable"
+      );
 
       setVoiceStatePartial({
         loading: false,
@@ -410,6 +418,7 @@ export function VoiceQueueProvider({
 
       syncHudFromJob(freshMutedJob, "speaking");
       controller.markStarted(freshMutedJob.id);
+      emitAskSnoozerVoiceTiming(freshMutedJob, "tts_unavailable");
       setVoiceStatePartial({
         loading: false,
         playing: false,
@@ -469,6 +478,12 @@ export function VoiceQueueProvider({
       audio.onended = () => {
         if (!isActiveRun()) return;
         completeCurrentAndContinue(job.id);
+      };
+
+      audio.onplay = () => {
+        if (!isActiveRun()) return;
+        const playing = controller.getSnapshot().currentJob || fresh;
+        emitAskSnoozerVoiceTiming(playing, "tts_start");
       };
 
       audio.onerror = () => {

@@ -168,6 +168,14 @@ const {
   resolveAskSnoozerVisitLifecycle,
 } = require("./services/askSnoozerVisitLifecycle");
 const {
+  buildAskSnoozerClientTimingEvent,
+  emitAskSnoozerQualityTrace,
+  getAskSnoozerQualityConfig,
+} = require("./services/askSnoozerQualityTrace");
+const {
+  resolveAskSnoozerPresentationPolicy,
+} = require("./services/askSnoozerPresentationPolicy");
+const {
   HUD_SAFE_PAGE_ROUTES,
   HUD_SAFE_COLLECTION_ROUTES,
   HUD_HREF_ALIASES,
@@ -6189,6 +6197,10 @@ function getAskSnoozerRouteDeps() {
       return service.composeTrustedAdvisorResponse(args);
     },
     resolveAskSnoozerVisitLifecycle,
+    buildAskSnoozerClientTimingEvent,
+    emitAskSnoozerQualityTrace,
+    getAskSnoozerQualityConfig,
+    resolveAskSnoozerPresentationPolicy,
     safeResponseFingerprint,
     STRICT_POD_ANCHOR,
     routeAskSnoozerQuestion,

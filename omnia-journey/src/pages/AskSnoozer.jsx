@@ -8,7 +8,13 @@ import { emitDeviceActiveResponse, emitDeviceHumanHelp } from "@/device/deviceAc
 import { makePodRoute } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { getRewardSummary } from "@/lib/api";
-import { sendAskSnoozerMessage } from "@/lib/snoozer/askSnoozerPage";
+import { sendAskSnoozerMessage, sendAskSnoozerQualityTiming } from "@/lib/snoozer/askSnoozerPage";
+import {
+  ASK_SNOOZER_VOICE_TIMING_EVENT,
+  buildAskSnoozerDisplayTiming,
+  createAskSnoozerTurnTiming,
+  markAskSnoozerTiming,
+} from "@/lib/snoozer/askSnoozerPerformance.mjs";
 import { buildComparePrompt, buildProductAddAction, cartItemCount, formatProductPrice } from "@/lib/snoozer/askSnoozerStationContract.mjs";
 import { useStore } from "@/lib/useStore";
 import { useSessionStore } from "@/state/sessionStore";
@@ -185,6 +191,14 @@ export default function AskSnoozer() {
   }, [messages, pending]);
 
   useEffect(() => { emitDeviceActiveResponse(pending, { reason: "activeResponse" }); }, [pending]);
+  useEffect(() => {
+    const recordVoiceTiming = (event) => {
+      if (!event?.detail) return;
+      sendAskSnoozerQualityTiming(event.detail).catch(() => {});
+    };
+    window.addEventListener(ASK_SNOOZER_VOICE_TIMING_EVENT, recordVoiceTiming);
+    return () => window.removeEventListener(ASK_SNOOZER_VOICE_TIMING_EVENT, recordVoiceTiming);
+  }, []);
   useEffect(() => () => {
     if (humanHelpTimerRef.current) window.clearTimeout(humanHelpTimerRef.current);
     emitDeviceHumanHelp(false, { reason: "humanHelp" });
@@ -215,24 +229,45 @@ export default function AskSnoozer() {
     const content = String(rawMessage || "").trim();
     if (!content || pending) return;
     noteUserInteraction?.();
+    const turnTiming = createAskSnoozerTurnTiming(createMessageId("ask_timing"));
     const userMessage = { id: createMessageId("user"), role: "user", content, createdAt: nowIso() };
     const history = [...messages.map(messageToHistoryEntry), messageToHistoryEntry(userMessage)];
     setMessages((current) => [...current, userMessage]);
     setPending(true); setLastFailedPrompt(""); setDraft("");
+    window.requestAnimationFrame(() => markAskSnoozerTiming(turnTiming, "firstFeedbackAt"));
     try {
       const response = await sendAskSnoozerMessage({
         message: content, history, referrerRoute, comparisonProductHandles,
         deviceContext: { deviceId: device?.deviceId || null, deviceMode: device?.deviceMode || null, podId: device?.podId || null, zoneId: device?.zoneId || null, proximity: zoneExperience.proximityContext },
       });
+      markAskSnoozerTiming(turnTiming, "responseReceivedAt");
       const assistantMessage = {
         id: response?.reply?.id || createMessageId("assistant"), role: "assistant", content: extractResponseContent(response), createdAt: response?.reply?.createdAt || nowIso(),
         status: response?.status || "answered", chips: filterResponseChips(response?.chips), actions: filterDeviceActions(device, response?.actions),
         recommendations: Array.isArray(response?.recommendations) ? response.recommendations : [], canRetry: response?.ok === false, retryPrompt: content,
       };
       setMessages((current) => [...current, assistantMessage]);
+      window.requestAnimationFrame(() => {
+        markAskSnoozerTiming(turnTiming, "displayAt");
+        sendAskSnoozerQualityTiming(buildAskSnoozerDisplayTiming(turnTiming, response)).catch(() => {});
+      });
       setLastFailedPrompt(response?.ok === false ? content : "");
       if (response?.voice?.speak && response?.voice?.speech && typeof sayHud === "function") {
-        sayHud({ speech: response.voice.speech, captions: assistantMessage.content, state: "speaking", priority: "normal", ttlMs: 5000, actions: [] }).catch(() => {});
+        sayHud({
+          speech: response.voice.speech,
+          captions: assistantMessage.content,
+          state: "speaking",
+          priority: "normal",
+          ttlMs: 5000,
+          actions: [],
+          metadata: {
+            askSnoozerTimingId: turnTiming.id,
+            backendRequestId: response?.meta?.requestId || null,
+            requestStartedAt: turnTiming.requestStartedAt,
+            responseReceivedAt: turnTiming.responseReceivedAt,
+            responsePolicyVersion: response?.meta?.quality?.responsePolicyVersion || "baseline-v1",
+          },
+        }).catch(() => {});
       }
     } catch {
       setMessages((current) => [...current, { id: createMessageId("assistant"), role: "assistant", content: composeFallbackReply(), createdAt: nowIso(), status: "fallback", chips: [], actions: [], recommendations: [], canRetry: true, retryPrompt: content }]);

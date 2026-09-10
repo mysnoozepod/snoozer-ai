@@ -242,6 +242,7 @@ function resolveProtectedReference(query = "", context = {}) {
     : [];
   const canonical = resolveCanonicalHandle(context);
   const active = resolveActiveHandle(context);
+  const explicitActive = clean(deal.activeProductHandle).toLowerCase();
   const quoteHandles = Array.isArray(deal.activeQuote?.items)
     ? deal.activeQuote.items.map((item) => clean(item?.handle).toLowerCase()).filter(Boolean)
     : [];
@@ -268,10 +269,19 @@ function resolveProtectedReference(query = "", context = {}) {
     phrase = "cheaper one";
     handle = quoteHandles[0] || comparison[0] || canonical || active;
     source = "active_quote_or_comparison";
+  } else if (/\b(?:the )?other one\b/.test(text)) {
+    phrase = "the other one";
+    handle = comparison.find((candidate) => candidate !== explicitActive) || deal.recentProductHandle || null;
+    source = comparison.length >= 2 || deal.recentProductHandle ? "comparison_other" : "ambiguous_comparison";
   } else if (/\b(?:that one|this one)\b/.test(text)) {
     phrase = "that one";
-    handle = active || comparison[0] || canonical;
-    source = "active_product";
+    if (!explicitActive && comparison.length >= 2) {
+      handle = null;
+      source = "ambiguous_comparison";
+    } else {
+      handle = explicitActive || active || comparison[0] || canonical;
+      source = "active_product";
+    }
   }
   return {
     phrase,
@@ -320,6 +330,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   const explicitHandle = resolveExplicitProductHandle(query);
   const explicitBase = resolveExplicitBaseSelection(query);
   const parsedSize = parseAskSnoozerSizeLabel(query);
+  const correctionCue = /\b(?:no i meant|not that|other one|you misunderstood|that.s not what i meant|actually|changed my mind|instead|switch|make that|remove|without|mattress only|failed|try again|go back|return to)\b/.test(text);
   const size =
     parsedSize === "Full" && /\b(?:full|complete|whole) setup\b/.test(text)
       ? clean(deal.activeSize)
@@ -331,7 +342,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   );
   let taskType = "legacy";
 
-  if (/^(?:please )?(?:add|put)\b/.test(text) || /\b(?:add|put)\b.*\b(?:to|in) (?:my|the) cart\b/.test(text)) taskType = "cart_add";
+  if (/^(?:please )?(?:add|put)\b/.test(text) || /\b(?:add|adding|put|putting)\b.*\b(?:to|in) (?:my|the) cart\b/.test(text)) taskType = "cart_add";
   else if (/\b(?:what(?:'s| is) in|show|review|check)\b.*\bcart\b/.test(text)) taskType = "cart_review";
   else if (canonicalReference && /\b(?:cost|price|how much)\b/.test(text)) taskType = "price_quote";
   else if (canonicalReference) taskType = "canonical_recall";
@@ -356,6 +367,22 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   else if (/\b(?:compare|compares|compared|comparison|versus|\bvs\b)\b/.test(text)) taskType = "product_comparison";
   else if (/\b(?:tell me more|actually going to notice|what (?:will i|i will) notice|feel when|lie on)\b/.test(text)) taskType = "product_experience";
   else if (isExplicitMedical(text)) taskType = "medical_boundary";
+
+  if (referenceResolution.phrase && !referenceResolution.resolved) {
+    taskType = "reference_clarification";
+  } else if (taskType === "legacy" && correctionCue && referenceResolution.resolved) {
+    taskType = "product_experience";
+  } else if (taskType === "legacy" && correctionCue && explicitHandle) {
+    taskType = "product_experience";
+  } else if (taskType === "legacy" && correctionCue && parsedSize && deal.activeQuote) {
+    taskType = (deal.activeQuote.items || []).length > 1 ? "bundle_quote" : "price_quote";
+  } else if (taskType === "legacy" && correctionCue && explicitBase.explicitNoBase && deal.activeQuote) {
+    taskType = "price_quote";
+  } else if (taskType === "legacy" && correctionCue && Object.keys(explicitBase).length && deal.activeQuote) {
+    taskType = "bundle_quote";
+  } else if (taskType === "legacy" && /\b(?:you misunderstood|that.s not what i meant|no that.s wrong)\b/.test(text)) {
+    taskType = "correction_clarification";
+  }
 
   const quoteReferenceHandle = canonicalReference
     ? canonicalHandle
@@ -440,6 +467,26 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     needsPolicy: taskType === "medical_boundary",
     allowedActions: taskType === "cart_add" ? ["add_to_cart"] : [],
     probe: null,
+    recovery: correctionCue || (referenceResolution.phrase && !referenceResolution.resolved)
+      ? {
+          recognized: taskType !== "legacy",
+          type: referenceResolution.phrase
+            ? referenceResolution.resolved
+              ? "reference_correction"
+              : "ambiguous_reference"
+            : /\b(?:go back|return to)\b/.test(text)
+              ? "product_return"
+              : /\b(?:failed|try again)\b/.test(text)
+                ? "cart_retry"
+              : parsedSize
+              ? "size_change"
+              : Object.keys(explicitBase).length
+                ? "configuration_change"
+                : "shopper_correction",
+          acknowledgement: taskType !== "reference_clarification" && taskType !== "correction_clarification",
+          baseRemoved: Boolean(explicitBase.explicitNoBase),
+        }
+      : null,
     confidence: handled ? 0.96 : 0.55,
     stage,
     handled,
@@ -463,6 +510,7 @@ function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
     taskType: plan.taskType,
     continuationOf: plan.continuationOf || null,
     responseDepth: plan.responseDepth,
+    presentationPolicy: plan.presentationPolicy || null,
     activeGoal: activeMemory(context)?.activeGoal?.intent || null,
     preference: activeDeal(context)?.decision || null,
     referenceResolution: plan?.references?.resolution || null,
@@ -507,6 +555,7 @@ function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
     missingUnknown: plan.neededFacts || [],
     allowedActions: plan.allowedActions || [],
     resolvedReferences: plan?.references?.resolution || null,
+    presentationPolicy: plan.presentationPolicy || null,
   };
 }
 
@@ -623,19 +672,38 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
   const second = comparison.find((handle) => handle !== first) || (first === "14-hybrid" ? canonical : "14-hybrid");
   const firstTitle = titleFor(first);
   const secondTitle = titleFor(second);
+  const recoveryPrefix = plan?.recovery?.acknowledgement
+    ? plan.recovery.type === "size_change"
+      ? "Got it—I updated the size. "
+      : plan.recovery.type === "configuration_change"
+        ? plan.recovery.baseRemoved
+          ? "Got it—I removed the base from this quote. "
+          : "Got it—I updated the configuration. "
+        : plan.recovery.type === "product_return"
+          ? `Got it—we’re back to the ${activeTitle}. `
+          : plan.recovery.type === "cart_retry"
+            ? "Got it—the first cart action did not complete. "
+          : plan.recovery.type === "reference_correction"
+          ? `Got it—you mean the ${activeTitle}. `
+          : "Thanks for correcting me. "
+    : "";
 
   switch (plan.taskType) {
+    case "reference_clarification":
+      return "I have two products in view and do not want to guess. Which one do you mean?";
+    case "correction_clarification":
+      return "Thanks for correcting me. What should I change—the mattress, size, base, or motion setup?";
     case "canonical_recommendation":
     case "canonical_recall":
       return `I would start you with ${canonicalPodName(context)} and the ${titleFor(canonical)}. For a side sleeper focused on shoulder and hip comfort, its closer contour is the better first test. Lie on your side for several quiet minutes and notice whether those pressure points relax without your midsection sinking too far.`;
     case "product_experience":
       if (active === "14-hybrid") {
-        return `On the ${activeTitle}, you should notice a more lifted, responsive feel with easier movement and more airflow than an all-foam mattress. The useful test is whether ${pressureLanguage} eases without your midsection arching or feeling pushed up. If the surface feels too springy or pressure builds at your shoulder, the all-foam option is the better comparison.`;
+        return `${recoveryPrefix}On the ${activeTitle}, you should notice a more lifted, responsive feel with easier movement and more airflow than an all-foam mattress. The useful test is whether ${pressureLanguage} eases without your midsection arching or feeling pushed up. If the surface feels too springy or pressure builds at your shoulder, the all-foam option is the better comparison.`;
       }
       if (active === "12-dual-comfort-hybrid") {
-        return `On the ${activeTitle}, you should notice responsive support and easier movement than an all-foam mattress, with independent comfort choices for two sleepers. The useful test is whether ${pressureLanguage} eases on your preferred side while your midsection stays supported. If either sleeper feels pushed up or pressure builds, compare the other comfort setting before deciding.`;
+        return `${recoveryPrefix}On the ${activeTitle}, you should notice responsive support and easier movement than an all-foam mattress, with independent comfort choices for two sleepers. The useful test is whether ${pressureLanguage} eases on your preferred side while your midsection stays supported. If either sleeper feels pushed up or pressure builds, compare the other comfort setting before deciding.`;
       }
-      return `On the ${activeTitle}, you should notice a deeper, more even cradle around your shoulders and hips, with less bounce when you change position. The useful test is whether ${pressureLanguage} eases while your waist still feels supported. If you feel stuck or your hips drop too far, it is softer than you need.`;
+      return `${recoveryPrefix}On the ${activeTitle}, you should notice a deeper, more even cradle around your shoulders and hips, with less bounce when you change position. The useful test is whether ${pressureLanguage} eases while your waist still feels supported. If you feel stuck or your hips drop too far, it is softer than you need.`;
     case "product_comparison":
       return `The ${firstTitle} gives you a closer, steadier contour with less bounce, while the ${secondTitle} feels more lifted, springy, and breathable. For your shoulder and hip pressure, I would try the ${titleFor(canonical)} first; choose the 14-inch Hybrid only if you prefer more lift and easier movement enough to trade away some of that close contour.`;
     case "advisor_choice":
@@ -655,14 +723,14 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       return `Based on what you have told me, I would save the money unless you liked sleeping or relaxing with your head or feet elevated. The adjustable base adds positioning, not a better mattress fit, so it is optional rather than necessary for your shoulder and hip pressure.`;
     case "compatibility":
       if (quote?.compatibility?.status === "incompatible") {
-        return `That split-motion setup does not pair with ${activeTitle}. Split motion needs the dual-comfort mattress configuration. Standard Motion is the compatible adjustable option for this mattress.`;
+        return `${recoveryPrefix}That split-motion setup does not pair with ${activeTitle}. Split motion needs the dual-comfort mattress configuration. Standard Motion is the compatible adjustable option for this mattress.`;
       }
       return `Yes. The ${activeTitle} and ${titleFor(quote?.baseHandle || "premium-motion-adjustable-base")} are compatible in ${quote?.size || plan?.knownFacts?.size || "the selected"} size with ${quote?.motionKey === "standard" ? "Standard Motion" : "the selected configuration"}. The setup makes sense if you value elevation; otherwise the mattress-only option is the better value.`;
     case "preference_capture":
       if (/elevation|elevated|raised|head up|feet up/.test(text)) {
-        return `That matters. Since you liked the elevated position, the adjustable base is more than an extra feature for you; it supports a comfort preference you actually felt. I would keep Standard Motion in the setup unless independent movement on each side is important.`;
+        return `${recoveryPrefix}That matters. Since you liked the elevated position, the adjustable base is more than an extra feature for you; it supports a comfort preference you actually felt. I would keep Standard Motion in the setup unless independent movement on each side is important.`;
       }
-      return `I’ll use that as your current comfort preference. We can compare the active options against it without changing the mattress originally recommended from your assessment.`;
+      return `${recoveryPrefix}I’ll use that as your current comfort preference. We can compare the active options against it without changing the mattress originally recommended from your assessment.`;
     case "preference_recall":
       if (activeDeal(context)?.decision?.elevation === "liked") {
         return `You said you liked the elevated position. That is the clearest reason to keep Standard Motion in your setup; it supports a benefit you actually felt.`;
@@ -679,10 +747,10 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
   if (["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType)) {
     if (!quote?.ok) {
       if (quote?.compatibility?.status === "incompatible") {
-        return `That configuration is not compatible. Split motion needs the dual-comfort mattress. I can price Standard Motion with ${activeTitle}, or price the split setup with the dual-comfort mattress.`;
+        return `${recoveryPrefix}That configuration is not compatible. Split motion needs the dual-comfort mattress. I can price Standard Motion with ${activeTitle}, or price the split setup with the dual-comfort mattress.`;
       }
       if (quote?.missing?.includes("size")) return "What size should I price?";
-      return `I cannot confirm every exact item and price in the ${activeTitle} setup right now, so I will not give you a partial or mismatched total.`;
+      return `${recoveryPrefix}I cannot confirm every exact item and price in the ${activeTitle} setup right now, so I will not give you a partial or mismatched total.`;
     }
     const lines = quote.items.map((item) => `${item.title}: ${formatMoney(item.price, item.currencyCode)}`);
     if (plan.taskType === "savings_quote") {
@@ -692,9 +760,9 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
         : `The current quote is already mattress-only at ${formatMoney(quote.subtotal, quote.currencyCode)} before taxes, delivery, or active discounts.`;
     }
     if (quote.items.length === 1) {
-      return `The ${quote.size} ${quote.items[0].title} is ${formatMoney(quote.subtotal, quote.currencyCode)} before taxes, delivery, or active discounts.`;
+      return `${recoveryPrefix}The ${quote.size} ${quote.items[0].title} is ${formatMoney(quote.subtotal, quote.currencyCode)} before taxes, delivery, or active discounts.`;
     }
-    return `The ${quote.size} setup is ${formatMoney(quote.subtotal, quote.currencyCode)} before taxes, delivery, or active discounts. ${lines.join("; ")}.`;
+    return `${recoveryPrefix}The ${quote.size} setup is ${formatMoney(quote.subtotal, quote.currencyCode)} before taxes, delivery, or active discounts. ${lines.join("; ")}.`;
   }
 
   return "";

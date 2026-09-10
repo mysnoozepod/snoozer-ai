@@ -317,6 +317,7 @@ function normalizeSnoozerResponse(raw, opts = {}) {
         : [],
       reason: safeString(answerMeta.reason),
       ...(isObj(answerMeta.composition) ? { composition: answerMeta.composition } : {}),
+      ...(isObj(answerMeta.quality) ? { quality: answerMeta.quality } : {}),
     },
   };
 }
@@ -339,6 +340,7 @@ function logContractResponse(normalized) {
       latencyMs: meta.latencyMs || 0,
       retrievalMs: metrics.retrievalMs || 0,
       modelMs: metrics.modelMs || 0,
+      modelCallCount: metrics.modelCallCount || 0,
       fallbackUsed: Boolean(metrics.fallbackUsed),
       actions: Array.isArray(n.actions) ? n.actions.length : 0,
       products: Array.isArray(n.products) ? n.products.length : 0,

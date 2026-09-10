@@ -184,6 +184,10 @@ function LayoutShell() {
               ttlMs: Number(payload?.ttlMs) || 5000,
               voiceStyle: payload?.voiceStyle || "default",
               actions: Array.isArray(payload?.actions) ? payload.actions : [],
+              metadata:
+                payload?.metadata && typeof payload.metadata === "object"
+                  ? payload.metadata
+                  : {},
             };
 
       if (!normalized.speech && !normalized.captions) return null;

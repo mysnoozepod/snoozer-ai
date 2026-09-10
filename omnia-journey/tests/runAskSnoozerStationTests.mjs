@@ -39,6 +39,8 @@ check(page.includes("state.cart || []") && page.includes("cartItemCount(cart)"),
 check(page.includes("canMutateCart(device)") && page.includes("isDeviceActionAllowed(device, action)"), "cart actions preserve device guards");
 check(!page.includes("canInitiateCheckout") && !page.includes("checkoutUrl"), "Ask page has no checkout initiation path");
 check(page.includes("sayHud({") && page.includes(".catch(() => {})"), "voice failure cannot suppress visual output");
+check(page.includes("Working on that…") && page.includes("requestAnimationFrame"), "thinking state and first-visible-feedback boundary remain instrumented");
+check(page.includes("sendAskSnoozerQualityTiming") && page.includes("ASK_SNOOZER_VOICE_TIMING_EVENT"), "display and TTS timing events are reported without changing the UI");
 check(page.includes("canRetry: true") && page.includes("composeFallbackReply"), "network failure retains customer-safe retry");
 check(adapter.includes("storeState?.cart") && !adapter.includes("storeState?.snoozepod) ? storeState.snoozepod"), "Ask context uses authoritative cart lines");
 check(adapter.includes("normalizeAskStationProduct") && adapter.includes("normalizeAskStationAction"), "adapter uses the safe rich response contract");

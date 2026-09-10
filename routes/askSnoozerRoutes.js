@@ -49,6 +49,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     resolveAskSnoozerAdvisorTurn,
     composeTrustedAdvisorResponse,
     resolveAskSnoozerVisitLifecycle,
+    buildAskSnoozerClientTimingEvent,
+    emitAskSnoozerQualityTrace,
+    getAskSnoozerQualityConfig,
+    resolveAskSnoozerPresentationPolicy,
     safeResponseFingerprint,
     STRICT_POD_ANCHOR,
     routeAskSnoozerQuestion,
@@ -84,6 +88,21 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     normalizeHudVoiceStyleValue,
     isTimeoutError,
   } = deps;
+
+  if (method === "POST" && routePath === "/ask-snoozer/quality-event") {
+    const payload = safeJsonBody(event);
+    const qualityEvent = typeof buildAskSnoozerClientTimingEvent === "function"
+      ? buildAskSnoozerClientTimingEvent(payload)
+      : null;
+    if (qualityEvent) {
+      log("ask-snoozer.client-timing", qualityEvent.phase, qualityEvent);
+    }
+    return flatResponse(event, 202, {
+      ok: true,
+      traceId,
+      accepted: Boolean(qualityEvent),
+    });
+  }
 
   if (method === "POST" && (routePath === "/ask-snoozer" || routePath === "/ask")) {
     const startedAt = Date.now();
@@ -613,6 +632,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
     // Every turn is planned before routing. Nuanced continued turns use the
     // trusted-advisor composer; only clean station starters fall through.
+    const presentationPolicy = typeof resolveAskSnoozerPresentationPolicy === "function"
+      ? resolveAskSnoozerPresentationPolicy({ correlationId: effectiveSessionId })
+      : { version: "baseline-v1", assignment: "control", directives: ["preserve_current_structure"] };
+    if (askSnoozerPlan) askSnoozerPlan.presentationPolicy = presentationPolicy;
     const advisorAnswer =
       askSnoozerPlan?.handled && typeof resolveAskSnoozerAdvisorTurn === "function"
         ? await resolveAskSnoozerAdvisorTurn({
@@ -661,6 +684,38 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       env.sessionId = effectiveSessionId;
       env.status = advisorAnswer.fallbackUsed ? "completed_with_fallback" : "answered";
       env.chips = advisorAnswer.chips;
+      const qualityConfig = typeof getAskSnoozerQualityConfig === "function"
+        ? getAskSnoozerQualityConfig()
+        : null;
+      const qualityTrace = typeof emitAskSnoozerQualityTrace === "function"
+        ? emitAskSnoozerQualityTrace({
+            log,
+            config: qualityConfig || undefined,
+            traceId,
+            sessionId: effectiveSessionId,
+            surface: askSourceSurface,
+            deviceCategory: context?.device?.deviceMode || payload?.page?.device?.deviceMode || null,
+            query: msg,
+            reply: advisorAnswer.reply,
+            plan: advisorAnswer.plan,
+            context: mergedContext,
+            actions: advisorAnswer.actions,
+            chips: advisorAnswer.chips,
+            gate: advisorAnswer.gate,
+            modelGate: advisorAnswer.modelGate,
+            compositionMode: advisorAnswer.compositionMode,
+            compositionFallbackUsed: advisorAnswer.compositionFallbackUsed,
+            modelCallCount: advisorAnswer.modelCallCount,
+            totalMs: latencyMs,
+            modelMs: advisorAnswer.modelMs,
+            factPackComplete: (advisorAnswer.plan.neededFacts || []).length === 0,
+            quote: advisorAnswer.quote,
+            fallbackUsed: advisorAnswer.fallbackUsed,
+            visitMetadata,
+            regressionId: testCaseId,
+            responsePolicyVersion: presentationPolicy.version,
+          })
+        : null;
       env.meta = {
         path: "trusted_advisor_orchestrator",
         source: advisorAnswer.source,
@@ -710,6 +765,23 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           referenceResolution: advisorAnswer.plan.references?.resolution || null,
           factPackComplete: (advisorAnswer.plan.neededFacts || []).length === 0,
         },
+        quality: qualityTrace
+          ? {
+              traceVersion: qualityTrace.version,
+              outcomeVersion: qualityTrace.outcome.version,
+              recoveryVersion: qualityTrace.outcome.recovery.version,
+              responsePolicyVersion: qualityTrace.responsePolicyVersion,
+              presentationAssignment: presentationPolicy.assignment,
+              outcomeCategory: qualityTrace.outcome.category,
+              recoveryStatus: qualityTrace.recoveryStatus,
+              latencyBand: qualityTrace.latency.band,
+              alertSeverity: qualityTrace.alert.severity,
+            }
+          : {
+              traceVersion: null,
+              responsePolicyVersion: presentationPolicy.version,
+              presentationAssignment: presentationPolicy.assignment,
+            },
         metrics: {
           retrievalMs: advisorAnswer.quote ? latencyMs : 0,
           modelMs: advisorAnswer.modelMs || 0,
