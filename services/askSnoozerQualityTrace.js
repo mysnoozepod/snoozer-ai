@@ -105,6 +105,7 @@ function isGenericResponse(reply = "") {
   const text = normalizeQuestion(reply);
   return [
     "i do not want to guess without the right context",
+    "i do not want to guess without the right showroom context",
     "tell me more and i will help",
     "how can i help you today",
     "try asking that another way",
@@ -169,6 +170,8 @@ function classifyOutcome({
   repeated = false,
 } = {}) {
   const task = clean(plan.taskType) || "unknown";
+  const normalizedQuery = normalizeQuestion(plan.query || "");
+  const shopperEndedNaturally = /^(?:thanks|thank you|that s all|that is all|i m done|i am done|we re done|we are done|no thanks)$/.test(normalizedQuery);
   const corrections = correctionSignals(plan.query || "");
   const recoveryAttempted = Boolean(plan?.recovery) || corrections.length > 0 || compositionFallbackUsed;
   const referenceRequired = Boolean(referenceResolution?.phrase);
@@ -216,7 +219,7 @@ function classifyOutcome({
     category,
     advancementType,
     completed: complete,
-    naturalEnd: complete && questionCount(reply) === 0 && !actions.length && !chips.length,
+    naturalEnd: complete && shopperEndedNaturally,
     friction,
     recovery: {
       version: RECOVERY_MODEL_VERSION,

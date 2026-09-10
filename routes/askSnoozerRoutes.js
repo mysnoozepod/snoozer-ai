@@ -21,7 +21,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     normalizeSnoozerResponse,
     logContractResponse,
     buildHudFromAny,
-    flatResponse,
+    flatResponse: baseFlatResponse,
     getSessionItem,
     nowIso,
     buildDefaultSCO,
@@ -88,6 +88,21 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     normalizeHudVoiceStyleValue,
     isTimeoutError,
   } = deps;
+
+  let emitDeferredQualityTrace = null;
+  const flatResponse = (...args) => {
+    if (typeof emitDeferredQualityTrace === "function") {
+      try {
+        emitDeferredQualityTrace(args[2]);
+      } catch (error) {
+        log("ask-snoozer.quality-trace.error", "deferred", {
+          traceId,
+          error: String(error?.message || error),
+        });
+      }
+    }
+    return baseFlatResponse(...args);
+  };
 
   if (method === "POST" && routePath === "/ask-snoozer/quality-event") {
     const payload = safeJsonBody(event);
@@ -441,6 +456,72 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     }
 
     const askSnoozerClassification = buildAskSnoozerClassification(msg, context);
+    const presentationPolicy = typeof resolveAskSnoozerPresentationPolicy === "function"
+      ? resolveAskSnoozerPresentationPolicy({ correlationId: effectiveSessionId })
+      : { version: "baseline-v1", assignment: "control", directives: ["preserve_current_structure"] };
+    if (askSnoozerPlan) askSnoozerPlan.presentationPolicy = presentationPolicy;
+    let qualityTraceEmitted = false;
+    emitDeferredQualityTrace = (responseBody = {}) => {
+      if (qualityTraceEmitted || typeof emitAskSnoozerQualityTrace !== "function") return;
+      const metadata = responseBody?.metadata || responseBody?.meta || {};
+      const qualityGate = metadata?.qualityGate || {};
+      const metrics = metadata?.metrics || {};
+      const reply = String(
+        responseBody?.reply ||
+        responseBody?.message?.text ||
+        responseBody?.captions ||
+        responseBody?.speech ||
+        ""
+      ).trim();
+      const routeTask = String(
+        qualityGate?.intent ||
+        askSnoozerClassification?.intent ||
+        askSnoozerPlan?.taskType ||
+        "station_response"
+      ).trim();
+      const trace = emitAskSnoozerQualityTrace({
+        log,
+        config: typeof getAskSnoozerQualityConfig === "function" ? getAskSnoozerQualityConfig() : undefined,
+        traceId,
+        sessionId: effectiveSessionId,
+        surface: askSourceSurface,
+        deviceCategory: context?.device?.deviceMode || payload?.page?.device?.deviceMode || null,
+        query: msg,
+        reply,
+        plan: {
+          ...(askSnoozerPlan || {}),
+          taskType: routeTask,
+          answerMode: metadata?.answerStrategy || routeTask,
+          stage: context?.askSnoozerWorkingMemory?.activeDeal?.stage || askSnoozerPlan?.stage || "exploring",
+          responseDepth: askSnoozerPlan?.responseDepth || "standard",
+          presentationPolicy,
+        },
+        context,
+        actions: Array.isArray(responseBody?.actions) ? responseBody.actions : [],
+        chips: Array.isArray(responseBody?.chips) ? responseBody.chips : [],
+        gate: {
+          ok: responseBody?.ok !== false && qualityGate?.factsResolved !== false,
+          violations: [],
+        },
+        modelGate: metadata?.composition?.gate || null,
+        compositionMode: metadata?.composition?.mode || (Number(metrics?.modelCallCount) > 0 ? "model_assisted" : "deterministic"),
+        compositionFallbackUsed: Boolean(metadata?.composition?.fallbackUsed),
+        modelCallCount: metrics?.modelCallCount || 0,
+        totalMs: metrics?.totalMs || metadata?.latencyMs || (Date.now() - startedAt),
+        modelMs: metrics?.modelMs || 0,
+        factPackComplete: qualityGate?.factsResolved !== false,
+        quote: context?.askSnoozerWorkingMemory?.activeDeal?.activeQuote || null,
+        fallbackUsed: Boolean(
+          metrics?.fallbackUsed ||
+          qualityGate?.fallbackUsed ||
+          (routeTask === "fallback" && qualityGate?.factsResolved === false)
+        ),
+        visitMetadata,
+        regressionId: testCaseId,
+        responsePolicyVersion: presentationPolicy.version,
+      });
+      qualityTraceEmitted = Boolean(trace);
+    };
 
     const askProfilePatch =
       customerProfileService &&
@@ -632,10 +713,6 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
     // Every turn is planned before routing. Nuanced continued turns use the
     // trusted-advisor composer; only clean station starters fall through.
-    const presentationPolicy = typeof resolveAskSnoozerPresentationPolicy === "function"
-      ? resolveAskSnoozerPresentationPolicy({ correlationId: effectiveSessionId })
-      : { version: "baseline-v1", assignment: "control", directives: ["preserve_current_structure"] };
-    if (askSnoozerPlan) askSnoozerPlan.presentationPolicy = presentationPolicy;
     const advisorAnswer =
       askSnoozerPlan?.handled && typeof resolveAskSnoozerAdvisorTurn === "function"
         ? await resolveAskSnoozerAdvisorTurn({
@@ -716,6 +793,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             responsePolicyVersion: presentationPolicy.version,
           })
         : null;
+      qualityTraceEmitted = Boolean(qualityTrace);
       env.meta = {
         path: "trusted_advisor_orchestrator",
         source: advisorAnswer.source,

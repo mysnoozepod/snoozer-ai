@@ -57,6 +57,27 @@ assert.equal(JSON.stringify(trace).includes("123456-secret-session"), false);
 assert.equal(JSON.stringify(trace).includes("What did you recommend"), false);
 assert.equal(trace.outcome.category, "successful_advancement");
 assert.equal(trace.alert.severity, null);
+assert.equal(trace.outcome.naturalEnd, false);
+
+const generic = buildAskSnoozerQualityTrace(baseInput({
+  query: "Hello",
+  reply: "I do not want to guess without the right showroom context.",
+  plan: { taskType: "fallback", stage: "exploring", responseDepth: "standard", confidence: 0.42 },
+  chips: [],
+  fallbackUsed: true,
+}));
+assert.equal(generic.genericResponse, true);
+assert.equal(generic.outcome.naturalEnd, false);
+assert.equal(generic.alert.severity, "P2");
+
+const naturalEnd = buildAskSnoozerQualityTrace(baseInput({
+  query: "Thank you",
+  reply: "You’re welcome.",
+  plan: { taskType: "conversation_end", stage: "complete", responseDepth: "quick", confidence: 0.96 },
+  actions: [],
+  chips: [],
+}));
+assert.equal(naturalEnd.outcome.naturalEnd, true);
 
 const sampled = buildAskSnoozerQualityTrace(baseInput({
   query: "Email me at shopper@example.com or call 212-555-1212 using code 123456.",
