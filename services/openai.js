@@ -77,7 +77,7 @@ const s3 = new S3Client({ region: REGION });
 const PROMPT_BUCKET = process.env.S3_PROMPT_BUCKET || "snoozer-prompts-prod";
 const KNOWLEDGE_BUCKET = process.env.S3_KNOWLEDGE_BUCKET || "snoozer-knowledge-prod";
 const ROUTING_BUCKET = process.env.S3_ROUTING_BUCKET || KNOWLEDGE_BUCKET;
-const SYSTEM_PROMPT_KEY = process.env.SNOOZER_BASE_PROMPT_KEY || "system/default.md";
+const SYSTEM_PROMPT_KEY = process.env.SNOOZER_BASE_PROMPT_KEY || "system/trusted_advisor_v2.md";
 
 // Deterministic retrieval meta files
 const ROUTING_RULES_KEY = process.env.ROUTING_RULES_KEY || "meta/routing_rules.json";

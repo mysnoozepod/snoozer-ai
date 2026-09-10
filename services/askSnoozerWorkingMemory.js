@@ -4,7 +4,7 @@ const {
   parseAskSnoozerSizeLabel,
 } = require("./askSnoozerIntents");
 
-const WORKING_MEMORY_VERSION = 1;
+const WORKING_MEMORY_VERSION = 2;
 const PRICE_GOAL_INTENT = "price_quote";
 const ACTIVE_GOAL_STATUSES = new Set(["collecting_slots", "ready", "completed"]);
 
@@ -297,6 +297,134 @@ function buildConflicts(slots = {}, saved = {}) {
   return conflicts;
 }
 
+function normalizeCanonicalRecommendation(context = {}, previousDeal = {}) {
+  const canonical = isObject(context?.canonicalRecommendation)
+    ? context.canonicalRecommendation
+    : isObject(previousDeal?.canonicalRecommendation)
+      ? previousDeal.canonicalRecommendation
+      : null;
+  if (!canonical) return null;
+  return {
+    topPodId: clean(canonical.topPodId) || null,
+    primaryMattressHandle: clean(canonical.primaryMattressHandle).toLowerCase() || null,
+    baseHandle:
+      canonical.baseHandle == null ? null : clean(canonical.baseHandle).toLowerCase() || null,
+    motionKey: clean(canonical.motionKey).toLowerCase() || "none",
+    manifestVersion: clean(canonical.manifestVersion) || null,
+  };
+}
+
+function inferConversationTopic(query = "", previousTopic = "") {
+  const text = normalizeAskSnoozerText(query);
+  if (/\b(?:cart|add to cart|in my cart)\b/.test(text)) return "cart";
+  if (/\b(?:compatible|compatibility|work together|make sense together|pair together)\b/.test(text)) {
+    return "compatibility";
+  }
+  if (/\b(?:price|cost|how much|quote|save|savings)\b/.test(text)) return "pricing";
+  if (/\b(?:adjustable base|motion|elevation|head and foot|head or foot)\b/.test(text)) return "motion";
+  if (/\b(?:compare|versus|\bvs\b|which one)\b/.test(text)) return "comparison";
+  if (/\b(?:recommend|try first|best for me)\b/.test(text)) return "recommendation";
+  if (/\b(?:feel|notice|pressure|shoulder|hip|soft|medium|firm|comfort)\b/.test(text)) return "comfort";
+  return clean(previousTopic) || "discovery";
+}
+
+function inferBuyingStage(query = "", previousStage = "exploring") {
+  const text = normalizeAskSnoozerText(query);
+  if (/\b(?:add|put)\b.*\bcart\b|\bready to (?:buy|order)\b/.test(text)) return "ready";
+  if (/\b(?:need|worth|save|better value|more expensive)\b/.test(text)) return "evaluating_value";
+  if (/\b(?:price|cost|quote|setup|compatible|motion|base)\b/.test(text)) return "configuring";
+  if (/\b(?:compare|versus|\bvs\b|which one)\b/.test(text)) return "comparing";
+  if (/\b(?:recommend|try first|tell me more|notice)\b/.test(text)) return "narrowing";
+  return clean(previousStage) || "exploring";
+}
+
+function inferObjection(query = "") {
+  const text = normalizeAskSnoozerText(query);
+  if (/\b(?:save the money|need the|worth it|too expensive|more expensive)\b/.test(text)) {
+    return "value";
+  }
+  if (/\b(?:not sure|uncertain|confused)\b/.test(text)) return "uncertainty";
+  return null;
+}
+
+function inferDecision(query = "", previous = null) {
+  const text = normalizeAskSnoozerText(query);
+  if (/\b(?:did not|didn.t) notice.*(?:elevation|base|motion)\b/.test(text)) {
+    return { ...(isObject(previous) ? previous : {}), adjustableBase: "skip" };
+  }
+  if (/\b(?:liked|prefer|want).*(?:elevation|elevated|head up|feet up|raised)\b/.test(text)) {
+    return { ...(isObject(previous) ? previous : {}), adjustableBase: "keep", elevation: "liked" };
+  }
+  const firmness = resolveExplicitFirmness(query);
+  if (firmness) return { ...(isObject(previous) ? previous : {}), firmness };
+  return isObject(previous) ? previous : null;
+}
+
+function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, updatedAt = "" } = {}) {
+  const previousDeal = isObject(previous?.activeDeal) ? previous.activeDeal : {};
+  const canonicalRecommendation = normalizeCanonicalRecommendation(context, previousDeal);
+  const canonicalHandle = clean(canonicalRecommendation?.primaryMattressHandle).toLowerCase();
+  const explicitProductHandle = resolveExplicitProductHandle(query);
+  const text = normalizeAskSnoozerText(query);
+  const referencesCanonical = /\b(?:your recommendation|original recommendation|originally recommend|recommend for me again|remind me what you.*recommend)\b/.test(text);
+  const previousActive = clean(previousDeal.activeProductHandle).toLowerCase();
+  const previousRecent = clean(previousDeal.recentProductHandle).toLowerCase();
+  let activeProductHandle = previousActive || canonicalHandle || null;
+  let recentProductHandle = previousRecent || null;
+  if (explicitProductHandle && explicitProductHandle !== previousActive) {
+    recentProductHandle = previousActive || previousRecent || null;
+    activeProductHandle = explicitProductHandle;
+  } else if (referencesCanonical && canonicalHandle) {
+    if (previousActive && previousActive !== canonicalHandle) recentProductHandle = previousActive;
+    activeProductHandle = canonicalHandle;
+  }
+
+  let comparisonProductHandles = uniqueStrings(previousDeal.comparisonProductHandles || []);
+  if (/\b(?:compare|versus|\bvs\b|which one)\b/.test(text)) {
+    comparisonProductHandles = uniqueStrings([
+      ...comparisonProductHandles,
+      previousActive,
+      explicitProductHandle,
+      canonicalHandle,
+    ]).slice(-2);
+  }
+
+  const explicitBase = resolveExplicitBaseSelection(query);
+  const currentTopic = inferConversationTopic(query, previousDeal.currentTopic);
+  const size = getSlotValue({ slots }, "size") || previousDeal.activeSize || null;
+  const baseHandle = Object.prototype.hasOwnProperty.call(explicitBase, "baseHandle")
+    ? explicitBase.baseHandle
+    : previousDeal.activeBaseHandle ?? null;
+  const motionKey = explicitBase.motionKey || previousDeal.activeMotionKey || null;
+  const stage = inferBuyingStage(query, previousDeal.stage);
+
+  return {
+    stage,
+    goal: stage === "ready" ? "complete_configuration" : "advance_decision",
+    canonicalRecommendation,
+    activeProductHandle: activeProductHandle || null,
+    recentProductHandle: recentProductHandle || null,
+    comparisonProductHandles,
+    activeSize: size,
+    activeBaseHandle: baseHandle,
+    activeMotionKey: motionKey,
+    activeQuote: isObject(previousDeal.activeQuote) ? previousDeal.activeQuote : null,
+    compatibilityStatus: clean(previousDeal.compatibilityStatus) || "unknown",
+    currentTopic,
+    currentSubtopic:
+      currentTopic === "comfort" && resolveExplicitPainPoints(query).length
+        ? "pressure_points"
+        : clean(previousDeal.currentSubtopic) || null,
+    objection: inferObjection(query),
+    decision: inferDecision(query, previousDeal.decision),
+    missingInformation: [],
+    lastAnsweredQuestionType: clean(previousDeal.lastAnsweredQuestionType) || null,
+    lastProbe: clean(previousDeal.lastProbe) || null,
+    nextAction: clean(previousDeal.nextAction) || null,
+    updatedAt,
+  };
+}
+
 function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date() } = {}) {
   const updatedAt = nowIso(now);
   const previous = isObject(context?.askSnoozerWorkingMemory)
@@ -322,7 +450,11 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
     setSlot(slots, "productHandle", currentPodProductHandle, "current_page", updatedAt);
   }
 
-  const explicitSize = parseAskSnoozerSizeLabel(query);
+  const parsedSize = parseAskSnoozerSizeLabel(query);
+  const explicitSize =
+    parsedSize === "Full" && /\b(?:full|complete|whole) setup\b/.test(normalizeAskSnoozerText(query))
+      ? ""
+      : parsedSize;
   const explicitFirmness = resolveExplicitFirmness(query);
   const explicitProductHandle = resolveExplicitProductHandle(query);
   const explicitBase = resolveExplicitBaseSelection(query);
@@ -387,6 +519,17 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
     turnIndex: Math.max(0, Number(previous?.turnIndex || 0)) + 1,
     slots,
     activeGoal,
+    activeDeal: buildActiveDeal({ query, context, previous, slots, updatedAt }),
+    conversationFocus: {
+      topic: inferConversationTopic(query, previous?.conversationFocus?.topic),
+      relevantTurns: (Array.isArray(context?.recentConversation)
+        ? context.recentConversation
+        : Array.isArray(previous?.conversationFocus?.relevantTurns)
+          ? previous.conversationFocus.relevantTurns
+          : []
+      ).slice(-6),
+      updatedAt,
+    },
     conflicts: buildConflicts(slots, saved),
     updatedAt,
   };
@@ -394,6 +537,60 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
   return {
     ...context,
     askSnoozerWorkingMemory: workingMemory,
+  };
+}
+
+function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new Date() } = {}) {
+  const memory = isObject(context?.askSnoozerWorkingMemory)
+    ? context.askSnoozerWorkingMemory
+    : null;
+  if (!memory) return context;
+  const updatedAt = nowIso(now);
+  const previousDeal = isObject(memory.activeDeal) ? memory.activeDeal : {};
+  const plan = isObject(outcome.plan) ? outcome.plan : {};
+  const quote = isObject(outcome.quote) ? outcome.quote : null;
+  const activeDeal = {
+    ...previousDeal,
+    stage: clean(plan.stage) || previousDeal.stage || "exploring",
+    activeProductHandle:
+      clean(plan?.references?.requestedProductHandle).toLowerCase() ||
+      previousDeal.activeProductHandle ||
+      null,
+    comparisonProductHandles: uniqueStrings(
+      plan?.references?.comparisonProductHandles || previousDeal.comparisonProductHandles || []
+    ),
+    activeSize: quote?.size || plan?.knownFacts?.size || previousDeal.activeSize || null,
+    activeBaseHandle:
+      quote && Object.prototype.hasOwnProperty.call(quote, "baseHandle")
+        ? quote.baseHandle
+        : previousDeal.activeBaseHandle ?? null,
+    activeMotionKey: quote?.motionKey || plan?.knownFacts?.motionKey || previousDeal.activeMotionKey || null,
+    activeQuote: quote?.ok ? quote : previousDeal.activeQuote || null,
+    compatibilityStatus:
+      quote?.compatibility?.status || previousDeal.compatibilityStatus || "unknown",
+    lastAnsweredQuestionType: clean(plan.taskType) || previousDeal.lastAnsweredQuestionType || null,
+    lastProbe: clean(plan.probe) || null,
+    nextAction:
+      Array.isArray(outcome.actions) && outcome.actions.length
+        ? clean(outcome.actions[0]?.type)
+        : Array.isArray(outcome.chips) && outcome.chips.length
+          ? clean(outcome.chips[0]?.value)
+          : null,
+    missingInformation: Array.isArray(plan.neededFacts) ? plan.neededFacts : [],
+    updatedAt,
+  };
+  return {
+    ...context,
+    askSnoozerWorkingMemory: {
+      ...memory,
+      activeGoal:
+        quote?.ok && isObject(memory.activeGoal) && memory.activeGoal.intent === PRICE_GOAL_INTENT
+          ? { ...memory.activeGoal, status: "completed", updatedAt }
+          : memory.activeGoal,
+      activeDeal,
+      lastPlan: plan,
+      updatedAt,
+    },
   };
 }
 
@@ -438,6 +635,7 @@ function buildWorkingMemoryLogMetadata(context = {}) {
     ? context.askSnoozerWorkingMemory
     : {};
   const goal = isObject(memory?.activeGoal) ? memory.activeGoal : {};
+  const deal = isObject(memory?.activeDeal) ? memory.activeDeal : {};
   return {
     turnIndex: Number(memory?.turnIndex || 0) || null,
     activeGoalIntent: clean(goal?.intent) || null,
@@ -456,6 +654,15 @@ function buildWorkingMemoryLogMetadata(context = {}) {
     sessionConflicts: Array.isArray(memory?.conflicts)
       ? memory.conflicts.map((entry) => clean(entry?.slot)).filter(Boolean)
       : [],
+    stage: clean(deal.stage) || null,
+    activeProductHandle: clean(deal.activeProductHandle) || null,
+    recentProductHandle: clean(deal.recentProductHandle) || null,
+    comparisonProductHandles: Array.isArray(deal.comparisonProductHandles)
+      ? deal.comparisonProductHandles
+      : [],
+    activeQuoteReady: Boolean(deal.activeQuote?.cartReady),
+    compatibilityStatus: clean(deal.compatibilityStatus) || null,
+    currentTopic: clean(deal.currentTopic) || null,
   };
 }
 
@@ -476,6 +683,7 @@ module.exports = {
   buildWorkingMemoryLogMetadata,
   calculatePriceQuoteMissingSlots,
   completeAskSnoozerPriceGoal,
+  completeAskSnoozerAdvisorTurn,
   extractCurrentPodProductHandle,
   extractCurrentProductHandle,
   getSlotValue,

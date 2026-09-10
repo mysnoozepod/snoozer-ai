@@ -1,0 +1,154 @@
+{
+  "fixtureVersion": "1.0.0",
+  "name": "Ask Snoozer trusted-advisor commercial conversation",
+  "description": "Permanent multi-turn reproduction captured before the trusted-advisor orchestration fix.",
+  "shopper": {
+    "shopperId": "1234",
+    "sessionId": "trusted-advisor-fixture-session",
+    "assessment": {
+      "size": "Queen",
+      "motionMode": "No Motion",
+      "firmness": "Soft",
+      "sleepPosition": "Side",
+      "sleepPartner": "No",
+      "baseType": "No Base",
+      "temperature": "Hot",
+      "painPoints": ["Shoulders", "Hips"]
+    },
+    "canonicalRecommendation": {
+      "podId": "4",
+      "mattressHandle": "12-all-foam-mattress"
+    }
+  },
+  "commerceFixture": {
+    "currencyCode": "USD",
+    "products": {
+      "12-all-foam-mattress": {
+        "title": "12-inch All Foam Mattress",
+        "variants": {
+          "Queen": { "id": "gid://shopify/ProductVariant/fixture-foam-queen", "price": 1049 },
+          "King": { "id": "gid://shopify/ProductVariant/fixture-foam-king", "price": 1399 }
+        }
+      },
+      "14-hybrid": {
+        "title": "14-inch Hybrid Mattress",
+        "variants": {
+          "Queen": { "id": "gid://shopify/ProductVariant/fixture-hybrid-queen", "price": 2399 },
+          "King": { "id": "gid://shopify/ProductVariant/fixture-hybrid-king", "price": 3199 }
+        }
+      },
+      "premium-motion-adjustable-base": {
+        "title": "Premium Motion Adjustable Base",
+        "variants": {
+          "Queen": { "id": "gid://shopify/ProductVariant/fixture-base-queen", "price": 1899 },
+          "King": { "id": "gid://shopify/ProductVariant/fixture-base-king", "price": 2299 }
+        }
+      }
+    }
+  },
+  "turns": [
+    {
+      "id": "recommendation",
+      "message": "Based on my sleep profile, what mattress would you have me try first, and why?",
+      "expects": {
+        "contains": ["SnoozePod 4", "12-inch All Foam"],
+        "canonicalHandle": "12-all-foam-mattress",
+        "stage": "narrowing"
+      }
+    },
+    {
+      "id": "experience",
+      "message": "Tell me more about that mattress. What am I actually going to notice when I lie on it?",
+      "expects": {
+        "contains": ["shoulder", "hip"],
+        "activeProductHandle": "12-all-foam-mattress",
+        "completeSentence": true
+      }
+    },
+    {
+      "id": "comparison",
+      "message": "How does it compare to the 14-inch Hybrid?",
+      "expects": {
+        "contains": ["12-inch All Foam", "14-inch Hybrid", "pressure"],
+        "comparisonHandles": ["12-all-foam-mattress", "14-hybrid"],
+        "stage": "comparing",
+        "completeSentence": true
+      }
+    },
+    {
+      "id": "advisor-choice",
+      "message": "Which one would you choose for me if shoulder and hip pressure is my biggest issue?",
+      "expects": {
+        "contains": ["12-inch All Foam", "shoulder", "hip"],
+        "doesNotContain": ["back pain", "diagnose"],
+        "canonicalHandle": "12-all-foam-mattress"
+      }
+    },
+    {
+      "id": "canonical-king-price",
+      "message": "Okay, what would the King version of your recommendation cost?",
+      "expects": {
+        "contains": ["12-inch All Foam", "$1,399.00"],
+        "doesNotContain": ["14-inch Hybrid", "$3,199.00"],
+        "quoteHandles": ["12-all-foam-mattress"],
+        "size": "King",
+        "cartReady": true
+      }
+    },
+    {
+      "id": "bundle-price",
+      "message": "And what would it cost with Standard Motion?",
+      "expects": {
+        "contains": ["12-inch All Foam", "Premium Motion Adjustable Base", "$3,698.00"],
+        "quoteHandles": ["12-all-foam-mattress", "premium-motion-adjustable-base"],
+        "size": "King",
+        "motionKey": "standard",
+        "cartReady": true
+      }
+    },
+    {
+      "id": "motion-education",
+      "message": "What does Standard Motion actually do, and why would I want it?",
+      "expects": {
+        "contains": ["head", "foot"],
+        "topic": "motion",
+        "completeSentence": true
+      }
+    },
+    {
+      "id": "value-objection",
+      "message": "Do I really need the adjustable base, or would you tell me to save the money?",
+      "expects": {
+        "contains": ["save"],
+        "doesNotContain": ["showroom canon", "current verified", "verified adjustable option"],
+        "stage": "evaluating_value"
+      }
+    },
+    {
+      "id": "compatibility",
+      "message": "If I add the mattress and base, does that setup make sense together?",
+      "expects": {
+        "contains": ["compatible"],
+        "doesNotContain": ["threshold delivery"],
+        "compatibilityStatus": "compatible"
+      }
+    },
+    {
+      "id": "canonical-recall",
+      "message": "Remind me what you originally recommended for me.",
+      "expects": {
+        "contains": ["SnoozePod 4", "12-inch All Foam"],
+        "doesNotContain": ["14-inch Hybrid"],
+        "canonicalHandle": "12-all-foam-mattress"
+      }
+    }
+  ],
+  "globalAssertions": {
+    "noInternalLanguage": true,
+    "noTruncation": true,
+    "quoteCardConsistency": true,
+    "oneProbeMaximum": true,
+    "noGenericActionsWhenIrrelevant": true,
+    "noCheckoutWithoutExplicitRequest": true
+  }
+}

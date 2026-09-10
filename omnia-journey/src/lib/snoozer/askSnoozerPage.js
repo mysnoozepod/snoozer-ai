@@ -696,16 +696,18 @@ function normalizeSuccessResponse(payload, { conversationId, requestId, message 
     fallbackUsed: backendFallbackUsed,
   });
 
+  const chipsWereProvided = Array.isArray(root?.chips) || Array.isArray(root?.suggestedPrompts);
+  const actionsWereProvided = Array.isArray(root?.actions);
   const chips = normalizeChips(root?.chips || root?.suggestedPrompts);
   const actions = normalizeActions(root?.actions);
-  const safeChips = chips.length
+  const safeChips = chipsWereProvided
     ? chips
     : buildAdaptiveChips({
         message,
         qualityGate,
         recommendations,
       });
-  const safeActions = actions.length
+  const safeActions = actionsWereProvided
     ? actions
     : buildAdaptiveActions({
         message,

@@ -155,10 +155,15 @@ const {
 const {
   applyAskSnoozerWorkingMemory,
   buildWorkingMemoryLogMetadata,
+  completeAskSnoozerAdvisorTurn,
   completeAskSnoozerPriceGoal,
   resolveRequestedProductHandle,
   safeResponseFingerprint,
 } = require("./services/askSnoozerWorkingMemory");
+const {
+  planAskSnoozerTurn,
+  resolveAskSnoozerAdvisorTurn,
+} = require("./services/askSnoozerConversationOrchestrator");
 const {
   HUD_SAFE_PAGE_ROUTES,
   HUD_SAFE_COLLECTION_ROUTES,
@@ -995,7 +1000,16 @@ function deriveEffectiveThreadId(event, payload) {
   const cookies = parseCookies(event);
   const cookieSid = cookies.sessionId || cookies.sid || cookies.thread_id || null;
 
+  const codeSessionCandidate = String(
+    p.snoozeCode || p.accessCode || p.code || p?.context?.snoozeCode || p?.context?.accessCode || ""
+  ).replace(/\D+/g, "");
+  const codeSessionId =
+    p.preferSnoozeCodeSession === true && [4, 6].includes(codeSessionCandidate.length)
+      ? `visit_${crypto.createHash("sha256").update(codeSessionCandidate).digest("hex").slice(0, 24)}`
+      : null;
+
   return (
+    codeSessionId ||
     p.thread_id ||
     p.sessionId ||
     headerSid ||
@@ -6158,7 +6172,10 @@ function getAskSnoozerRouteDeps() {
     enqueueAskSnoozerAsyncWrites,
     applyAskSnoozerWorkingMemory,
     buildWorkingMemoryLogMetadata,
+    completeAskSnoozerAdvisorTurn,
     completeAskSnoozerPriceGoal,
+    planAskSnoozerTurn,
+    resolveAskSnoozerAdvisorTurn,
     safeResponseFingerprint,
     STRICT_POD_ANCHOR,
     routeAskSnoozerQuestion,

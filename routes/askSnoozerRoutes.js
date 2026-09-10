@@ -43,7 +43,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     enqueueAskSnoozerAsyncWrites,
     applyAskSnoozerWorkingMemory,
     buildWorkingMemoryLogMetadata,
+    completeAskSnoozerAdvisorTurn,
     completeAskSnoozerPriceGoal,
+    planAskSnoozerTurn,
+    resolveAskSnoozerAdvisorTurn,
     safeResponseFingerprint,
     STRICT_POD_ANCHOR,
     routeAskSnoozerQuestion,
@@ -89,7 +92,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
     const msg = payload.message || payload.prompt || payload.text || "";
     const mode = payload.mode || undefined;
-    const effectiveSessionId = deriveEffectiveThreadId(event, payload);
+    const effectiveSessionId = deriveEffectiveThreadId(event, {
+      ...payload,
+      preferSnoozeCodeSession: true,
+    });
     const askSourceSurface =
       payload.source ||
       payload?.context?.session?.source ||
@@ -349,8 +355,13 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       previousAskProfile
     );
 
+    let askSnoozerPlan = null;
     if (typeof applyAskSnoozerWorkingMemory === "function") {
       context = applyAskSnoozerWorkingMemory({ query: msg, context });
+      if (typeof planAskSnoozerTurn === "function") {
+        askSnoozerPlan = planAskSnoozerTurn({ query: msg, context });
+        context.askSnoozerWorkingMemory.lastPlan = askSnoozerPlan;
+      }
       const memoryPatch = {
         askSnoozerWorkingMemory: context.askSnoozerWorkingMemory,
       };
@@ -563,6 +574,140 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
         return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
       }
+    }
+
+    // Every turn is planned before routing. Nuanced continued turns use the
+    // trusted-advisor composer; only clean station starters fall through.
+    const advisorAnswer =
+      askSnoozerPlan?.handled && typeof resolveAskSnoozerAdvisorTurn === "function"
+        ? await resolveAskSnoozerAdvisorTurn({
+            query: msg,
+            context,
+            plan: askSnoozerPlan,
+            fetchProductsByHandles: shopifySvc?.fetchProductsByHandles,
+          })
+        : null;
+    if (advisorAnswer) {
+      if (typeof completeAskSnoozerAdvisorTurn === "function") {
+        context = completeAskSnoozerAdvisorTurn(context, advisorAnswer);
+      }
+      const latencyMs = Date.now() - startedAt;
+      const mergedContext = sco && typeof sco === "object" ? deepMerge(sco, context) : context;
+      try {
+        await saveSessionContext(effectiveSessionId, mergedContext);
+        sco = mergedContext;
+      } catch (error) {
+        log("ask-snoozer.working-memory.error", error.message, {
+          traceId,
+          testCaseId,
+          sessionId: effectiveSessionId,
+          phase: "advisor_completion",
+        });
+      }
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model: `trusted_advisor_${advisorAnswer.plan.taskType}`,
+        text: advisorAnswer.reply,
+        context: mergedContext,
+        products: advisorAnswer.products,
+        actions: advisorAnswer.actions,
+        metrics: {
+          retrievalMs: advisorAnswer.quote ? latencyMs : 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
+        },
+      });
+      env.reply = advisorAnswer.reply;
+      env.thread_id = effectiveSessionId;
+      env.sessionId = effectiveSessionId;
+      env.status = advisorAnswer.fallbackUsed ? "completed_with_fallback" : "answered";
+      env.chips = advisorAnswer.chips;
+      env.meta = {
+        path: "trusted_advisor_orchestrator",
+        source: advisorAnswer.source,
+        answer_strategy: advisorAnswer.plan.taskType,
+        answer_grounded: true,
+        answer_source_type: advisorAnswer.source,
+        answer_source_key: advisorAnswer.plan.references?.requestedProductHandle || null,
+        answer_facts_count: advisorAnswer.factPack?.products?.length || 1,
+        reason: advisorAnswer.fallbackUsed ? "response_consistency_correction" : "advisor_turn_resolved",
+        qualityGate: {
+          intent: advisorAnswer.plan.taskType,
+          intentGroup: "trusted_advisor",
+          sourceOfTruth: advisorAnswer.source,
+          answerType: advisorAnswer.quote ? "commerce_answer" : "advisor_answer",
+          protectedTruthRequired: advisorAnswer.plan.protectedReferences.length > 0,
+          factsResolved: !advisorAnswer.fallbackUsed,
+          fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
+          missingSlots: advisorAnswer.plan.neededFacts,
+          reason: advisorAnswer.fallbackUsed ? "response_consistency_correction" : "advisor_turn_resolved",
+        },
+        semantics: {
+          questionAnswered: !advisorAnswer.fallbackUsed,
+          activeGoalAdvanced: !advisorAnswer.fallbackUsed,
+          stage: advisorAnswer.plan.stage,
+          plannerTask: advisorAnswer.plan.taskType,
+          plannerConfidence: advisorAnswer.plan.confidence,
+          continuation: Boolean(advisorAnswer.plan.continuationOf),
+          canonicalPreserved: !advisorAnswer.gate.violations.includes("canonical_reference_lost"),
+          quoteConsistent: !advisorAnswer.gate.violations.some((item) => item.includes("price_")),
+          compatibilityResolved: advisorAnswer.quote?.compatibility?.status || null,
+          nextActionPresent: advisorAnswer.actions.length > 0 || advisorAnswer.chips.length > 0,
+          probeSelected: advisorAnswer.plan.probe || null,
+          responseDepth: advisorAnswer.plan.responseDepth,
+          internalLanguageBlocked: !advisorAnswer.gate.violations.some((item) => item.startsWith("internal_language")),
+          truncationPrevented: !advisorAnswer.gate.violations.includes("truncated_ending"),
+          conversationRegressionId: testCaseId,
+        },
+        quote: advisorAnswer.quote,
+        responseGate: advisorAnswer.gate,
+        metrics: {
+          retrievalMs: advisorAnswer.quote ? latencyMs : 0,
+          modelMs: 0,
+          totalMs: latencyMs,
+          fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
+          modelCallCount: 0,
+        },
+      };
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+      normalized.voice = {
+        speak: true,
+        speech: advisorAnswer.speech,
+        ttsEndpoint: "/hud/tts",
+        audioUrl: null,
+      };
+      logContractResponse(normalized);
+      log("ask-snoozer.semantic-outcome", "resolved", {
+        traceId,
+        testCaseId,
+        sessionId: effectiveSessionId,
+        shopperId: shopperId || null,
+        ...env.meta.semantics,
+        totalMs: latencyMs,
+        modelMs: 0,
+        modelCallCount: 0,
+        fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
+      });
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context: mergedContext,
+          payload,
+          defaultSpeech: advisorAnswer.speech,
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
     }
 
     // Dedicated-station starter lanes stay inside the authoritative Ask route.

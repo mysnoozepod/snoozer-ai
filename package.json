@@ -14,6 +14,8 @@
     "test:ask-snoozer": "node scripts/runAskSnoozerGoldenTests.js",
     "test:ask-snoozer-continuity": "node tests/runAskSnoozerContinuityGroundingTests.js",
     "test:ask-snoozer-station": "node tests/runAskSnoozerStationTests.js",
+    "test:ask-snoozer-advisor": "node tests/runAskSnoozerTrustedAdvisorTests.js",
+    "test:ask-snoozer-advisor:live": "node scripts/runAskSnoozerTrustedAdvisorLiveAcceptance.js",
     "test:integration-secrets": "node tests/runIntegrationSecretsTests.js",
     "test:ask-snoozer-copy": "node scripts/runAskSnoozerGoldenTests.js --copy-only",
     "test:snoozer-surface-parity": "node tests/runSnoozerSurfaceParityTests.js",
