@@ -79,6 +79,130 @@ const naturalEnd = buildAskSnoozerQualityTrace(baseInput({
 }));
 assert.equal(naturalEnd.outcome.naturalEnd, true);
 
+const stranded = buildAskSnoozerQualityTrace(baseInput({
+  query: "Okay.",
+  reply: "Standard Motion raises and lowers the head and foot of the bed.",
+  plan: {
+    taskType: "base_education",
+    stage: "configuring",
+    responseDepth: "standard",
+    confidence: 0.96,
+    commercialState: { goalReady: true, clearSubjectChange: false },
+    commercialCompletionAttempted: false,
+  },
+  context: {
+    recentConversation: [],
+    askSnoozerWorkingMemory: {
+      activeGoal: { intent: "price_quote", status: "ready", missingSlots: [] },
+    },
+  },
+  actions: [],
+  chips: [],
+}));
+assert.equal(stranded.commercialOpportunityStranded, true);
+assert.equal(stranded.readyGoalCompleted, false);
+assert.equal(stranded.outcome.category, "friction");
+assert.equal(stranded.alert.severity, "P1");
+
+const educational = buildAskSnoozerQualityTrace(baseInput({
+  query: "What is memory foam?",
+  reply: "Memory foam contours around the body and absorbs movement.",
+  plan: { taskType: "product_education", stage: "exploring", responseDepth: "standard", confidence: 0.96 },
+  context: { recentConversation: [] },
+  actions: [],
+  chips: [],
+}));
+assert.equal(educational.outcome.category, "neutral_complete");
+assert.equal(educational.justifiedNaturalEnding, true);
+
+const quote = {
+  ok: true,
+  cartReady: true,
+  subtotal: 3698,
+  currencyCode: "USD",
+  compatibility: { status: "compatible" },
+  items: [],
+};
+const completedReadyGoal = buildAskSnoozerQualityTrace(baseInput({
+  query: "Okay.",
+  reply: "That King configuration works together. The complete setup is $3,698.00.",
+  plan: {
+    taskType: "bundle_quote",
+    stage: "configuring",
+    responseDepth: "standard",
+    confidence: 0.96,
+    commercialState: { goalReady: true, clearSubjectChange: false },
+    commercialCompletionAttempted: true,
+    staleRouteOverride: true,
+  },
+  context: {
+    recentConversation: [],
+    askSnoozerWorkingMemory: {
+      activeGoal: { intent: "price_quote", status: "awaiting_decision", missingSlots: [] },
+    },
+  },
+  quote,
+  chips: [{ label: "Mattress only", value: "Price mattress only", type: "prompt" }],
+}));
+assert.equal(completedReadyGoal.readyGoalCompleted, true);
+assert.equal(completedReadyGoal.quotePresented, true);
+assert.equal(completedReadyGoal.compatibilityChecked, true);
+assert.equal(completedReadyGoal.contextualNextActionPresented, true);
+assert.equal(completedReadyGoal.staleRouteOverride, true);
+assert.equal(completedReadyGoal.outcome.category, "successful_advancement");
+
+const knownRepeat = buildAskSnoozerQualityTrace(baseInput({
+  query: "Price the setup.",
+  reply: "What size should I price?",
+  plan: { taskType: "price_quote", stage: "configuring", responseDepth: "standard", confidence: 0.96 },
+  context: {
+    recentConversation: [],
+    askSnoozerWorkingMemory: {
+      slots: { size: { value: "King", provenance: "current_conversation" } },
+      activeGoal: { intent: "price_quote", status: "collecting_slots", size: "King" },
+      conflicts: [],
+    },
+  },
+  actions: [],
+  chips: [],
+}));
+assert.equal(knownRepeat.knownQuestionRepeated, true);
+assert.equal(knownRepeat.outcome.category, "friction");
+assert.equal(knownRepeat.alert.severity, "P2");
+
+const validConfirmation = buildAskSnoozerQualityTrace(baseInput({
+  query: "Actually make it Queen.",
+  reply: "Just to confirm, Queen?",
+  plan: {
+    taskType: "price_quote",
+    stage: "configuring",
+    responseDepth: "standard",
+    confidence: 0.96,
+    recovery: { recognized: true, type: "size_change" },
+  },
+  context: {
+    recentConversation: [],
+    askSnoozerWorkingMemory: {
+      slots: { size: { value: "Queen", provenance: "current_message" } },
+      activeGoal: { intent: "price_quote", status: "collecting_slots", size: "Queen" },
+      conflicts: [{ slot: "size" }],
+    },
+  },
+  actions: [],
+  chips: [],
+}));
+assert.equal(validConfirmation.knownQuestionRepeated, false);
+
+const advisorNaturalDecision = buildAskSnoozerQualityTrace(baseInput({
+  query: "Do I need the motion base?",
+  reply: "You do not need the motion base unless elevation gives you a benefit you value.",
+  plan: { taskType: "value_judgment", stage: "evaluating_value", responseDepth: "standard", confidence: 0.96 },
+  context: { recentConversation: [] },
+  actions: [],
+  chips: [],
+}));
+assert.equal(advisorNaturalDecision.outcome.category, "successful_advancement");
+
 const sampled = buildAskSnoozerQualityTrace(baseInput({
   query: "Email me at shopper@example.com or call 212-555-1212 using code 123456.",
   config: getAskSnoozerQualityConfig({
@@ -129,17 +253,45 @@ assert.equal(clientTiming.phase, "tts_complete");
 assert.equal(clientTiming.timings.speechDurationMs, 4321);
 assert.equal(JSON.stringify(clientTiming).includes("must-not-appear"), false);
 
+const supersededTiming = buildAskSnoozerClientTimingEvent({
+  timingId: "timing-old",
+  requestId: "request-old",
+  phase: "tts_superseded",
+  speechSuperseded: true,
+  staleSpeechPrevented: true,
+  speechTerminalState: "superseded",
+  speechSupersededCount: 2,
+  speechQueueDepthAfterSupersession: 0,
+});
+assert.equal(supersededTiming.tts.superseded, true);
+assert.equal(supersededTiming.tts.terminalState, "superseded");
+assert.equal(supersededTiming.tts.staleSpeechPrevented, true);
+
 assert.deepEqual(aggregateAskSnoozerQualityTraces(null), {
   telemetryStatus: "missing",
   totalTurns: null,
 });
 assert.equal(aggregateAskSnoozerQualityTraces([]).telemetryStatus, "available_zero_events");
-const summary = aggregateAskSnoozerQualityTraces([trace, recovered, clientTiming]);
-assert.equal(summary.totalTurns, 2);
+const summary = aggregateAskSnoozerQualityTraces([
+  trace,
+  recovered,
+  stranded,
+  educational,
+  completedReadyGoal,
+  knownRepeat,
+  advisorNaturalDecision,
+  clientTiming,
+  supersededTiming,
+]);
+assert.equal(summary.totalTurns, 7);
 assert.equal(summary.deterministicPercent, 100);
 assert.equal(summary.recoveryAttempts, 1);
 assert.equal(summary.recoverySuccessRate, 100);
 assert.equal(summary.clientTiming.ttsCompleteCount, 1);
+assert.equal(summary.clientTiming.ttsSupersededCount, 1);
+assert.equal(summary.commercialStrandingCount, 1);
+assert.equal(summary.repeatedKnownQuestionCount, 1);
+assert.equal(summary.readyGoalCompletionRate, 50);
 assert.equal(summary.humanReview.status, "missing");
 
 const baseline = resolveAskSnoozerPresentationPolicy({ correlationId: "session", env: {} });

@@ -140,6 +140,40 @@ function repeatedQuestion(query = "", context = {}) {
   return matchingIndexes.length > (lastIsCurrent ? 1 : 0);
 }
 
+function knownQuestionRepeated(reply = "", plan = {}, context = {}) {
+  const text = normalizeQuestion(reply);
+  if (!text || correctionSignals(plan.query || "").length || plan?.recovery?.type === "size_change") {
+    return false;
+  }
+  const memory = isObject(context?.askSnoozerWorkingMemory)
+    ? context.askSnoozerWorkingMemory
+    : {};
+  const goal = isObject(memory.activeGoal) ? memory.activeGoal : {};
+  const deal = isObject(memory.activeDeal) ? memory.activeDeal : {};
+  const conflicts = new Set(
+    (Array.isArray(memory.conflicts) ? memory.conflicts : [])
+      .map((entry) => clean(entry?.slot))
+      .filter(Boolean)
+  );
+  const knownSize = clean(goal.size || memory?.slots?.size?.value || deal.activeSize);
+  if (
+    knownSize &&
+    !conflicts.has("size") &&
+    /\b(?:what|which) size\b|\bconfirm (?:the |your )?size\b/.test(text)
+  ) {
+    return true;
+  }
+  const knownProduct = clean(goal.productHandle || deal.activeProductHandle);
+  if (
+    knownProduct &&
+    !conflicts.has("productHandle") &&
+    /\bwhich (?:mattress|product|one) (?:do you|should i|are you)\b|\bwhat (?:mattress|product)\b/.test(text)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function responseDepthFit(depth = "standard", wordCount = 0) {
   if (!wordCount) return false;
   if (depth === "quick") return wordCount <= 70;
@@ -168,6 +202,8 @@ function classifyOutcome({
   compositionFallbackUsed = false,
   referenceResolution = null,
   repeated = false,
+  knownRepeated = false,
+  commercialSignals = {},
 } = {}) {
   const task = clean(plan.taskType) || "unknown";
   const normalizedQuery = normalizeQuestion(plan.query || "");
@@ -186,6 +222,10 @@ function classifyOutcome({
     : null;
   const friction = [];
   if (repeated) friction.push("repeated_question");
+  if (knownRepeated) friction.push("known_question_repeated");
+  if (commercialSignals.commercialOpportunityStranded) {
+    friction.push("commercial_opportunity_stranded");
+  }
   if (!referenceResolved) friction.push("unresolved_reference");
   if (!complete) friction.push("incomplete_response");
   if (fallbackUsed && !modelRejected) friction.push("fallback_used");
@@ -212,14 +252,16 @@ function classifyOutcome({
   let category = "neutral_complete";
   if (friction.some((item) => item !== "model_composition_rejected_and_recovered")) category = "friction";
   else if (recoveryAttempted) category = recoverySuccess ? "recovery" : "friction";
-  else if (advancementType && gatePassed && complete) category = "successful_advancement";
+  else if ((advancementType || commercialSignals.decisionAdvanced) && gatePassed && complete) {
+    category = "successful_advancement";
+  }
 
   return {
     version: OUTCOME_MODEL_VERSION,
     category,
     advancementType,
     completed: complete,
-    naturalEnd: complete && shopperEndedNaturally,
+    naturalEnd: Boolean(commercialSignals.justifiedNaturalEnding || (complete && shopperEndedNaturally)),
     friction,
     recovery: {
       version: RECOVERY_MODEL_VERSION,
@@ -244,18 +286,29 @@ function classifyFailureSeverity(trace = {}) {
     return { severity: "P0", codes };
   }
   if (
+    trace.commercialOpportunityStranded ||
     trace.multipleProbes ||
     trace.responseComplete === false ||
     (trace.referenceResolution?.phrase && !trace.referenceResolution?.resolved && trace.confidentCommercialAnswer) ||
     trace.outcome?.recovery?.success === false
   ) {
+    if (trace.commercialOpportunityStranded) codes.push("commercial_opportunity_stranded");
     if (trace.multipleProbes) codes.push("multiple_probes");
     if (trace.responseComplete === false) codes.push("incomplete_response");
     if (trace.referenceResolution?.phrase && !trace.referenceResolution?.resolved) codes.push("unresolved_protected_reference");
     if (trace.outcome?.recovery?.success === false) codes.push("failed_recovery");
     return { severity: "P1", codes };
   }
-  if (trace.composition?.rejected || trace.fallbackUsed || trace.genericResponse || trace.firewallPassed === false) {
+  if (
+    trace.knownQuestionRepeated ||
+    trace.repeatedQuestion ||
+    trace.composition?.rejected ||
+    trace.fallbackUsed ||
+    trace.genericResponse ||
+    trace.firewallPassed === false
+  ) {
+    if (trace.knownQuestionRepeated) codes.push("known_question_repeated");
+    if (trace.repeatedQuestion) codes.push("repeated_question");
     if (trace.composition?.rejected) codes.push("model_composition_rejected");
     if (trace.fallbackUsed) codes.push("fallback_used");
     if (trace.genericResponse) codes.push("generic_response");
@@ -303,6 +356,96 @@ function buildAskSnoozerQualityTrace({
     deterministicBucket(samplingKey, config.samplingSalt) < config.sanitizedTextSampleRate;
   const referenceResolution = plan?.references?.resolution || null;
   const repeated = repeatedQuestion(query, context);
+  const knownRepeated = knownQuestionRepeated(reply, { ...plan, query }, context);
+  const commercialState = isObject(plan?.commercialState) ? plan.commercialState : {};
+  const goal = isObject(context?.askSnoozerWorkingMemory?.activeGoal)
+    ? context.askSnoozerWorkingMemory.activeGoal
+    : {};
+  const quotePresented = Boolean(quote?.ok && responseComplete(reply));
+  const compatibilityChecked = ["compatible", "incompatible", "not_applicable"].includes(
+    clean(quote?.compatibility?.status)
+  );
+  const contextualNextActionPresented = Boolean(actions.length || chips.length);
+  const contextualNextActionAvailable = Boolean(
+    commercialState.goalReady ||
+      quotePresented ||
+      quote?.compatibility?.status === "incompatible" ||
+      ["price_quote", "bundle_quote", "savings_quote", "compatibility", "cart_add"].includes(
+        clean(plan.taskType)
+      )
+  );
+  const readyGoalCompleted = Boolean(
+    commercialState.goalReady &&
+      (quotePresented || quote?.compatibility?.status === "incompatible") &&
+      contextualNextActionPresented
+  );
+  const commercialOpportunityStranded = Boolean(
+    commercialState.goalReady &&
+      !readyGoalCompleted &&
+      commercialState.clearSubjectChange !== true
+  );
+  const activeGoalStillActionable = Boolean(
+    goal.intent === "price_quote" &&
+      ["collecting_slots", "ready", "resolving", "presented", "awaiting_decision"].includes(
+        clean(goal.status)
+      )
+  );
+  const decisionAdvanced = Boolean(
+    quotePresented ||
+      compatibilityChecked ||
+      contextualNextActionPresented ||
+      [
+        "canonical_recommendation",
+        "canonical_recall",
+        "product_comparison",
+        "advisor_choice",
+        "value_judgment",
+        "preference_capture",
+      ].includes(clean(plan.taskType))
+  );
+  const normalizedQuery = normalizeQuestion(query);
+  const explicitConversationEnd = /^(?:thanks|thank you|that s all|that is all|i m done|i am done|we re done|we are done|no thanks)$/.test(
+    normalizedQuery
+  );
+  const justifiedNaturalEnding = Boolean(
+    explicitConversationEnd ||
+      (!activeGoalStillActionable &&
+        !commercialState.goalReady &&
+        !commercialOpportunityStranded &&
+        !contextualNextActionPresented &&
+        responseComplete(reply) &&
+        !repeated &&
+        !knownRepeated &&
+        !isGenericResponse(reply) &&
+        ![
+          "canonical_recommendation",
+          "canonical_recall",
+          "product_comparison",
+          "advisor_choice",
+          "value_judgment",
+          "preference_capture",
+          "price_quote",
+          "bundle_quote",
+          "savings_quote",
+          "compatibility",
+          "cart_add",
+        ].includes(
+          clean(plan.taskType)
+        ))
+  );
+  const commercialSignals = {
+    readyGoalCompleted,
+    commercialOpportunityStranded,
+    justifiedNaturalEnding,
+    decisionAdvanced,
+    quotePresented,
+    compatibilityChecked,
+    contextualNextActionAvailable,
+    contextualNextActionPresented,
+    activeGoalStillActionable,
+    staleRouteOverride: Boolean(plan.staleRouteOverride),
+    commercialCompletionAttempted: Boolean(plan.commercialCompletionAttempted),
+  };
   const outcome = classifyOutcome({
     plan: { ...plan, query },
     reply,
@@ -314,6 +457,8 @@ function buildAskSnoozerQualityTrace({
     compositionFallbackUsed,
     referenceResolution,
     repeated,
+    knownRepeated,
+    commercialSignals,
   });
   const mode = compositionMode === "model_assisted" ? "model_assisted" : "deterministic";
   const wordCount = responseWordCount(reply);
@@ -355,6 +500,12 @@ function buildAskSnoozerQualityTrace({
       Array.isArray(gate?.violations) && gate.violations.some((item) => /price_|subtotal_/.test(item))
     ),
     compatibilityResult: clean(quote?.compatibility?.status) || null,
+    activeGoal: clean(goal.intent) || clean(commercialState.activeGoal) || null,
+    goalStatus: clean(goal.status) || clean(commercialState.goalStatus) || null,
+    goalReady: Boolean(commercialState.goalReady),
+    activeQuoteReady: Boolean(
+      quote?.cartReady || context?.askSnoozerWorkingMemory?.activeDeal?.activeQuote?.cartReady
+    ),
     consistencyGate: {
       passed: gate?.ok !== false,
       violations: Array.isArray(gate?.violations) ? gate.violations.slice(0, 8) : [],
@@ -381,7 +532,9 @@ function buildAskSnoozerQualityTrace({
     responseWordCount: wordCount,
     depthFit: responseDepthFit(plan.responseDepth, wordCount),
     repeatedQuestion: repeated,
+    knownQuestionRepeated: knownRepeated,
     genericResponse: isGenericResponse(reply),
+    ...commercialSignals,
     regressionId: clean(regressionId).replace(/[^a-z0-9_.:-]/gi, "").slice(0, 80) || null,
     questionFingerprint: safeCorrelationId(normalizeQuestion(query), config.samplingSalt),
     outcome,
@@ -404,7 +557,15 @@ function buildAskSnoozerQualityTrace({
 }
 
 function buildAskSnoozerClientTimingEvent(payload = {}, config = getAskSnoozerQualityConfig()) {
-  const allowedPhase = ["display", "tts_start", "tts_complete", "tts_unavailable", "tts_error"];
+  const allowedPhase = [
+    "display",
+    "tts_start",
+    "tts_complete",
+    "tts_unavailable",
+    "tts_error",
+    "tts_cancelled",
+    "tts_superseded",
+  ];
   const phase = allowedPhase.includes(clean(payload.phase)) ? clean(payload.phase) : "display";
   const number = (value, max = 120_000) => Math.round(clampNumber(value, 0, max, 0));
   return {
@@ -422,6 +583,8 @@ function buildAskSnoozerClientTimingEvent(payload = {}, config = getAskSnoozerQu
       responseToDisplayMs: number(payload.responseToDisplayMs),
       requestToDisplayMs: number(payload.requestToDisplayMs),
       responseToTtsStartMs: number(payload.responseToTtsStartMs),
+      speechWaitBeforeStartMs: number(payload.speechWaitBeforeStartMs),
+      speechQueueWaitMs: number(payload.speechQueueWaitMs),
       ttsPreparationMs: number(payload.ttsPreparationMs),
       speechDurationMs: number(payload.speechDurationMs, 300_000),
       totalPerceivedMs: number(payload.totalPerceivedMs, 300_000),
@@ -431,6 +594,13 @@ function buildAskSnoozerClientTimingEvent(payload = {}, config = getAskSnoozerQu
       played: Boolean(payload.ttsPlayed),
       captionsOnly: Boolean(payload.captionsOnly),
       interrupted: Boolean(payload.interrupted),
+      superseded: Boolean(payload.speechSuperseded),
+      staleSpeechPrevented: Boolean(payload.staleSpeechPrevented),
+      terminalState: clean(payload.speechTerminalState).slice(0, 32) || null,
+      queueDepthAtEnqueue: number(payload.speechQueueDepthAtEnqueue, 100),
+      queueDepthAfterSupersession: number(payload.speechQueueDepthAfterSupersession, 100),
+      supersededCount: number(payload.speechSupersededCount, 100),
+      activeSpeechTurnId: safeCorrelationId(payload.activeSpeechTurnId, config.samplingSalt),
     },
   };
 }
@@ -452,6 +622,9 @@ function buildQualityMetricEnvelope(trace = {}, environment = process.env.REWARD
             { Name: "LatencyBreaches", Unit: "Count" },
             { Name: "P0Failures", Unit: "Count" },
             { Name: "P1Failures", Unit: "Count" },
+            { Name: "SuccessfulAdvancements", Unit: "Count" },
+            { Name: "CommercialStranding", Unit: "Count" },
+            { Name: "ReadyGoalCompletions", Unit: "Count" },
           ],
         },
       ],
@@ -465,6 +638,9 @@ function buildQualityMetricEnvelope(trace = {}, environment = process.env.REWARD
     LatencyBreaches: trace?.latency?.band === "breach" ? 1 : 0,
     P0Failures: severity === "P0" ? 1 : 0,
     P1Failures: severity === "P1" ? 1 : 0,
+    SuccessfulAdvancements: trace?.outcome?.category === "successful_advancement" ? 1 : 0,
+    CommercialStranding: trace?.commercialOpportunityStranded ? 1 : 0,
+    ReadyGoalCompletions: trace?.readyGoalCompleted ? 1 : 0,
   };
 }
 
@@ -536,6 +712,26 @@ function aggregateAskSnoozerQualityTraces(events, reviews = null) {
     consistencyGateRejectionRate: rate(count((event) => event?.composition?.rejected), total),
     deterministicFallbackRate: rate(count((event) => event?.composition?.rejected && event?.composition?.mode === "deterministic"), total),
     fallbackRate: rate(count((event) => event?.fallbackUsed), total),
+    successfulAdvancementRate: rate(count((event) => event?.outcome?.category === "successful_advancement"), total),
+    neutralCompleteRate: rate(count((event) => event?.outcome?.category === "neutral_complete"), total),
+    frictionRate: rate(count((event) => event?.outcome?.category === "friction"), total),
+    recoveryRate: rate(count((event) => event?.outcome?.category === "recovery"), total),
+    readyGoalCompletionRate: rate(
+      count((event) => event?.readyGoalCompleted),
+      count((event) => event?.commercialState?.goalReady || event?.commercialCompletionAttempted || event?.readyGoalCompleted || event?.commercialOpportunityStranded)
+    ),
+    commercialStrandingCount: count((event) => event?.commercialOpportunityStranded),
+    repeatedKnownQuestionCount: count((event) => event?.knownQuestionRepeated),
+    quotePresentedWhenReadyRate: rate(
+      count((event) => event?.quotePresented && (event?.commercialCompletionAttempted || event?.readyGoalCompleted)),
+      count((event) => event?.commercialCompletionAttempted || event?.readyGoalCompleted || event?.commercialOpportunityStranded)
+    ),
+    compatibilityResolvedWhenPossibleRate: rate(
+      count((event) => event?.compatibilityChecked && (event?.commercialCompletionAttempted || event?.readyGoalCompleted)),
+      count((event) => event?.commercialCompletionAttempted || event?.readyGoalCompleted || event?.commercialOpportunityStranded)
+    ),
+    justifiedNaturalEndingRate: rate(count((event) => event?.justifiedNaturalEnding), total),
+    genericAnswerRate: rate(count((event) => event?.genericResponse), total),
     quoteConsistencyFailures: count((event) => event?.quoteConsistent === false),
     compatibilityConflicts: count((event) => event?.consistencyGate?.violations?.some((item) => /compatibility/.test(item))),
     languageFirewallViolations: count((event) => event?.firewallPassed === false),
@@ -553,9 +749,14 @@ function aggregateAskSnoozerQualityTraces(events, reviews = null) {
       displayCount: clientTimings.filter((event) => event.phase === "display").length,
       ttsStartCount: clientTimings.filter((event) => event.phase === "tts_start").length,
       ttsCompleteCount: clientTimings.filter((event) => event.phase === "tts_complete").length,
+      ttsSupersededCount: clientTimings.filter((event) => event.phase === "tts_superseded").length,
+      ttsCancelledCount: clientTimings.filter((event) => event.phase === "tts_cancelled").length,
       requestToFirstFeedbackAverageMs: average(clientTimings.map((event) => event?.timings?.requestToFirstFeedbackMs).filter((value) => value > 0)),
       responseToDisplayAverageMs: average(clientTimings.map((event) => event?.timings?.responseToDisplayMs).filter((value) => value > 0)),
       responseToTtsStartAverageMs: average(clientTimings.map((event) => event?.timings?.responseToTtsStartMs).filter((value) => value > 0)),
+      speechQueueWaitAverageMs: average(clientTimings.map((event) => event?.timings?.speechQueueWaitMs).filter((value) => value > 0)),
+      ttsPreparationAverageMs: average(clientTimings.map((event) => event?.timings?.ttsPreparationMs).filter((value) => value > 0)),
+      staleSpeechPreventedCount: clientTimings.filter((event) => event?.tts?.staleSpeechPrevented).length,
       speechDurationAverageMs: average(clientTimings.map((event) => event?.timings?.speechDurationMs).filter((value) => value > 0)),
     },
     humanReview: Array.isArray(reviews)
