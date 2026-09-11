@@ -74,7 +74,9 @@ function toNumericShopifyId(rawId) {
 function safeText(s, max = 5000) {
   const t = String(s || "");
   if (t.length <= max) return t;
-  return t.slice(0, max) + "...";
+  const bounded = t.slice(0, max + 1);
+  const sentenceEnd = Math.max(bounded.lastIndexOf("."), bounded.lastIndexOf("!"), bounded.lastIndexOf("?"));
+  return sentenceEnd > 0 ? bounded.slice(0, sentenceEnd + 1) : t;
 }
 
 function pickFirst(...vals) {

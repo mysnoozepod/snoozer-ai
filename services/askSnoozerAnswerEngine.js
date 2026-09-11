@@ -15,9 +15,9 @@ const {
 } = require("./snoozerVoice");
 const { formatCustomerProductTitle } = require("./askSnoozerResponsePresenter");
 
-const MAX_DISPLAY_REPLY_CHARS = 520;
-const MAX_DISPLAY_SENTENCES = 5;
-const MAX_VOICE_REPLY_CHARS = 240;
+const MAX_DISPLAY_REPLY_CHARS = 1800;
+const MAX_DISPLAY_SENTENCES = 9;
+const MAX_VOICE_REPLY_CHARS = 500;
 const MAX_VOICE_SENTENCES = 2;
 const MAX_FACTS = 5;
 
@@ -122,7 +122,14 @@ function previewText(text, maxChars = 160) {
   const cleaned = cleanAnswerText(text);
   if (!cleaned) return "";
   if (cleaned.length <= maxChars) return cleaned;
-  return `${cleaned.slice(0, maxChars - 3).trim()}...`;
+  const complete = cleaned.match(/[^.!?]+[.!?]+/g) || [];
+  const fitting = [];
+  for (const sentence of complete) {
+    const candidate = [...fitting, sentence.trim()].join(" ");
+    if (candidate.length > maxChars) break;
+    fitting.push(sentence.trim());
+  }
+  return fitting.join(" ") || complete[0]?.trim() || ensureSentence(cleaned);
 }
 
 function clampReply(
@@ -138,9 +145,15 @@ function clampReply(
     .map((item) => item.trim())
     .filter(Boolean);
 
-  const joined = sentences.slice(0, maxSentences).join(" ").trim();
-  if (joined && joined.length <= maxChars) return joined;
-  return `${cleaned.slice(0, maxChars - 3).trim().replace(/[,:;]$/, "")}...`;
+  const fitting = [];
+  for (const sentence of sentences.slice(0, maxSentences)) {
+    const completed = ensureSentence(sentence);
+    const candidate = [...fitting, completed].join(" ");
+    if (candidate.length > maxChars) break;
+    fitting.push(completed);
+  }
+  if (fitting.length) return fitting.join(" ");
+  return ensureSentence(sentences[0] || cleaned);
 }
 
 function clampAskSnoozerVoiceReply(text, fallback = "") {
@@ -843,8 +856,8 @@ function buildBundlePricingReply({ query = "", productContext = null } = {}) {
       sourceType,
       sourceKey,
       facts: [
-        `${mattressEntry.title} ${sizeLabel || mattressEntry?.variantTitle || ""} current verified price: ${mattressPrice}`.trim(),
-        `${baseEntry.title} ${sizeLabel || baseEntry?.variantTitle || ""} current verified price: ${basePrice}`.trim(),
+        `${mattressEntry.title} ${sizeLabel || mattressEntry?.variantTitle || ""} current price: ${mattressPrice}`.trim(),
+        `${baseEntry.title} ${sizeLabel || baseEntry?.variantTitle || ""} current price: ${basePrice}`.trim(),
         `Estimated pre-checkout subtotal: ${subtotal}`.trim(),
       ],
       strategy: "verified_bundle_price",
@@ -853,33 +866,33 @@ function buildBundlePricingReply({ query = "", productContext = null } = {}) {
 
   if (basePrice && !mattressEntry) {
     return {
-      reply: `${baseEntry.title} is ${basePrice} in the current verified ${sizeLabel || "matching"} size data. I still need the mattress model to give you a combined subtotal.`,
+      reply: `${baseEntry.title} is ${basePrice} in the current ${sizeLabel || "matching"} size. I still need the mattress name to give you a combined subtotal.`,
       grounded: true,
       sourceType,
       sourceKey,
-      facts: [`${baseEntry.title} ${sizeLabel || baseEntry?.variantTitle || ""} current verified price: ${basePrice}`.trim()],
+      facts: [`${baseEntry.title} ${sizeLabel || baseEntry?.variantTitle || ""} current price: ${basePrice}`.trim()],
       strategy: "verified_bundle_price",
     };
   }
 
   if (basePrice && mattressEntry && !mattressPrice) {
     return {
-      reply: `${baseEntry.title} is ${basePrice} in the current verified ${sizeLabel || "matching"} size data. I still need a verified mattress price before I can total the bundle.`,
+      reply: `${baseEntry.title} is ${basePrice} in the current ${sizeLabel || "matching"} size. I still need a current mattress price before I can total the bundle.`,
       grounded: true,
       sourceType,
       sourceKey,
-      facts: [`${baseEntry.title} ${sizeLabel || baseEntry?.variantTitle || ""} current verified price: ${basePrice}`.trim()],
+      facts: [`${baseEntry.title} ${sizeLabel || baseEntry?.variantTitle || ""} current price: ${basePrice}`.trim()],
       strategy: "verified_bundle_price",
     };
   }
 
   if (mattressPrice && baseEntry && !basePrice) {
     return {
-      reply: `${mattressEntry.title} is ${mattressPrice} in the current verified ${sizeLabel || "matching"} size data. I do not have a verified live base price for the same setup yet.`,
+      reply: `${mattressEntry.title} is ${mattressPrice} in the current ${sizeLabel || "matching"} size. I do not have a current base price for the same setup yet.`,
       grounded: true,
       sourceType,
       sourceKey,
-      facts: [`${mattressEntry.title} ${sizeLabel || mattressEntry?.variantTitle || ""} current verified price: ${mattressPrice}`.trim()],
+      facts: [`${mattressEntry.title} ${sizeLabel || mattressEntry?.variantTitle || ""} current price: ${mattressPrice}`.trim()],
       strategy: "verified_bundle_price",
     };
   }
@@ -1009,7 +1022,7 @@ function buildProductSpecificReply({
     );
     return {
       reply: matchedSize
-        ? `Yes - ${primaryTitle} has a ${matchedSize} option in the current Shopify variant data.`
+        ? `Yes - ${primaryTitle} currently has a ${matchedSize} option.`
         : `I do not see a verified ${sizeLabel} variant for ${primaryTitle} right now.`,
       grounded: true,
       sourceType,
@@ -1052,11 +1065,11 @@ function buildProductSpecificReply({
 
     if (!cheapestQuery && !explicitSize && multipleMatches && productNames.length > 1) {
       return {
-        reply: `I can check the live price, but I still need the mattress model. Do you mean ${productNames.slice(0, 2).join(" or ")}?`,
+        reply: `I can check the current price, but I still need the mattress name. Do you mean ${productNames.slice(0, 2).join(" or ")}?`,
         grounded: true,
         sourceType,
         sourceKey,
-        facts: productNames.slice(0, 2).map((name) => `${name} is a current Shopify pricing candidate.`),
+        facts: productNames.slice(0, 2).map((name) => `${name} is a current pricing option.`),
         strategy: "needs_product_clarification",
       };
     }
@@ -1096,7 +1109,7 @@ function buildProductSpecificReply({
           grounded: true,
           sourceType,
           sourceKey: bestPriceEntry.handle || sourceKey,
-          facts: [`${title} ${variantTitle || bestPriceEntry?.variantTitle || ""} current verified price: ${price}`.trim()],
+          facts: [`${title} ${variantTitle || bestPriceEntry?.variantTitle || ""} current price: ${price}`.trim()],
           strategy: "verified_price",
         };
       }
@@ -1109,7 +1122,7 @@ function buildProductSpecificReply({
           grounded: true,
           sourceType,
           sourceKey: bestPriceEntry.handle || sourceKey,
-          facts: [`${title} ${variantTitle || bestPriceEntry?.variantTitle || ""} current verified price: ${price}`.trim()],
+          facts: [`${title} ${variantTitle || bestPriceEntry?.variantTitle || ""} current price: ${price}`.trim()],
           strategy: "verified_price",
         };
       }
@@ -1119,7 +1132,7 @@ function buildProductSpecificReply({
         grounded: true,
         sourceType,
         sourceKey: bestPriceEntry.handle || sourceKey,
-        facts: [`${title} ${variantTitle || bestPriceEntry?.variantTitle || ""} current verified price: ${price}`.trim()],
+        facts: [`${title} ${variantTitle || bestPriceEntry?.variantTitle || ""} current price: ${price}`.trim()],
         strategy: "verified_price",
       };
     }
@@ -1352,7 +1365,7 @@ function buildProductSpecificReply({
   if (intent === "product_question" || currentHandle) {
     return {
       reply: joinUniqueSentences([
-        "Use the current page context as one comparison point, not the whole answer",
+        "I will keep the product you are viewing as one comparison point, not the whole answer",
         `${primaryTitle} is worth checking against your size, support, and base setup before you decide.`,
       ]),
       grounded: true,

@@ -40,8 +40,8 @@
       "premium-motion-adjustable-base": {
         "title": "Premium Motion Adjustable Base",
         "variants": {
-          "Queen": { "id": "gid://shopify/ProductVariant/fixture-base-queen", "price": 1899 },
-          "King": { "id": "gid://shopify/ProductVariant/fixture-base-king", "price": 2299 }
+          "Queen (2pc)": { "id": "gid://shopify/ProductVariant/fixture-base-queen", "price": 1899 },
+          "King (2pc)": { "id": "gid://shopify/ProductVariant/fixture-base-king", "price": 2299 }
         }
       }
     }

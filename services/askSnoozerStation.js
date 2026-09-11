@@ -266,10 +266,12 @@ function cartLineProduct(line = {}) {
 }
 
 function response(intent, reply, extra = {}) {
+  const spokenSource = clean(extra.speech || reply);
+  const spokenSentences = spokenSource.match(/[^.!?]+[.!?]+/g) || [spokenSource];
   return {
     intent,
     reply,
-    speech: clean(extra.speech || reply).slice(0, 320),
+    speech: clean(spokenSentences.slice(0, 2).join(" ")),
     products: Array.isArray(extra.products) ? extra.products : [],
     actions: Array.isArray(extra.actions) ? extra.actions : [],
     chips: Array.isArray(extra.chips) ? extra.chips : [],
@@ -329,7 +331,7 @@ async function cartResponse({ context, shopify }) {
   if (!CART_GID.test(cartId)) {
     return response(
       STARTER_INTENTS.cart,
-      "Your Shopify cart is empty right now. I can browse a few products or help narrow a recommendation next.",
+      "Your cart is empty right now. I can browse a few products or help narrow a recommendation next.",
       {
         source: "shopify",
         chips: [{ label: "Browse Products", value: "Browse Products" }],
@@ -342,7 +344,7 @@ async function cartResponse({ context, shopify }) {
     if (!lines.length) {
       return response(
         STARTER_INTENTS.cart,
-        "Your Shopify cart is empty right now. I can browse a few products or help narrow a recommendation next.",
+        "Your cart is empty right now. I can browse a few products or help narrow a recommendation next.",
         { source: "shopify", chips: [{ label: "Browse Products", value: "Browse Products" }] }
       );
     }
@@ -360,7 +362,7 @@ async function cartResponse({ context, shopify }) {
     const totalText = money(total?.amount, total?.currencyCode);
     return response(
       STARTER_INTENTS.cart,
-      `Your verified Shopify cart has ${totalQuantity} item${totalQuantity === 1 ? "" : "s"}: ${labels}.${totalText ? ` Current total: ${totalText}.` : ""}`,
+      `Your cart has ${totalQuantity} item${totalQuantity === 1 ? "" : "s"}: ${labels}.${totalText ? ` Current total: ${totalText}.` : ""}`,
       {
         speech: `Your cart has ${totalQuantity} item${totalQuantity === 1 ? "" : "s"}${totalText ? ` totaling ${totalText}` : ""}.`,
         products,
@@ -372,13 +374,13 @@ async function cartResponse({ context, shopify }) {
     if (["CART_NOT_FOUND", "INVALID_CART_ID"].includes(clean(error?.code).toUpperCase())) {
       return response(
         STARTER_INTENTS.cart,
-        "I could not find an active Shopify cart for this session. I can browse products or help rebuild it without guessing what was there.",
+        "I could not find an active cart for this session. I can browse products or help rebuild it without guessing what was there.",
         { source: "shopify", grounded: false, reason: "cart_not_found" }
       );
     }
     return response(
       STARTER_INTENTS.cart,
-      "I cannot verify the Shopify cart right now. I have not used a cached total or guessed what is inside it.",
+      "I cannot verify the cart right now. I have not used an old total or guessed what is inside it.",
       { source: "shopify", grounded: false, fallbackUsed: true, reason: "cart_unavailable" }
     );
   }
@@ -394,7 +396,7 @@ async function browseResponse({ query, context, manifest, fetchProductsByHandles
     if (!products.length) throw new Error("NO_VERIFIED_PRODUCTS");
     return response(
       STARTER_INTENTS.browse,
-      `Here are ${products.length} verified MySnoozePod options to explore. Prices and availability shown on the cards come from Shopify.`,
+      `Here are ${products.length} MySnoozePod options to explore. The cards show current prices and availability.`,
       {
         products,
         source: "shopify",
@@ -405,7 +407,7 @@ async function browseResponse({ query, context, manifest, fetchProductsByHandles
   } catch {
     return response(
       STARTER_INTENTS.browse,
-      "I cannot load verified products right now, so I will not invent a catalog or price. Please try again.",
+      "I cannot load the current products right now, so I will not guess at a price or availability. Please try again.",
       { source: "shopify", grounded: false, fallbackUsed: true, reason: "browse_unavailable" }
     );
   }
@@ -418,7 +420,7 @@ async function motionResponse({ query, manifest, fetchProductsByHandles }) {
   if (!base) {
     return response(
       STARTER_INTENTS.motion,
-      "I do not have a verified motion-base product in the current showroom catalog.",
+      "I do not have a motion-base option available to show right now.",
       { source: "canon", grounded: false, reason: "motion_base_missing" }
     );
   }
@@ -426,12 +428,12 @@ async function motionResponse({ query, manifest, fetchProductsByHandles }) {
     const fetched = await fetchProducts(fetchProductsByHandles, [base.handle]);
     const product = stationProduct(fetched[0], {
       query,
-      descriptor: "Verified adjustable base with motion and supported split-motion configurations.",
+      descriptor: "Adjustable base with Standard Motion and supported split-motion configurations.",
     });
     if (!product) throw new Error("MOTION_PRODUCT_UNAVAILABLE");
     return response(
       STARTER_INTENTS.motion,
-      `${product.title} is the current verified adjustable motion-base option. The showroom canon supports standard, half-split, and full-split motion configurations, subject to size and mattress compatibility. Tell me the size before I quote or add a configuration.`,
+      `${product.title} supports Standard Motion plus half-split and full-split configurations, subject to size and mattress compatibility. Tell me the size and mattress you want, and I can price the matching setup.`,
       {
         speech: `${product.title} is the current adjustable motion-base option. Tell me your size and I can check the exact configuration.`,
         products: [product],
@@ -441,7 +443,7 @@ async function motionResponse({ query, manifest, fetchProductsByHandles }) {
   } catch {
     return response(
       STARTER_INTENTS.motion,
-      "I found the approved motion-base path, but I cannot verify its live Shopify product data right now. I will not guess features, price, or availability.",
+      "I found the motion-base option, but I cannot confirm its current price or availability right now. I will not guess those details.",
       { source: "mixed", grounded: false, fallbackUsed: true, reason: "motion_product_unavailable" }
     );
   }
@@ -482,7 +484,7 @@ async function compareResponse({ query, context, manifest, fetchProductsByHandle
     });
     return response(
       STARTER_INTENTS.compare,
-      `${summaries.join(". ")}. This comparison does not change your canonical recommendation ranking.`,
+      `${summaries.join(". ")}. This comparison does not change the mattress saved from your assessment.`,
       {
         speech: `I compared ${products[0].title} and ${products[1].title}. The full verified comparison is on screen.`,
         products,

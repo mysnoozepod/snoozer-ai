@@ -28,6 +28,7 @@ const { loadShowroomManifest } = require("../services/showroomManifest");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAi = openai.getSnoozerResponse;
+const originalComposer = openai.composeTrustedAdvisorResponse;
 const originalFetchProducts = shopify.fetchProductsByHandles;
 const originalConsoleLog = console.log;
 
@@ -124,6 +125,16 @@ function patchDependencies() {
       actions: [],
     };
   };
+  openai.composeTrustedAdvisorResponse = async function mockedComposer(input = {}) {
+    return {
+      displayText: input.deterministicDraft.displayText,
+      speechText: input.deterministicDraft.speechText,
+      probe: null,
+      nextActionIntent: null,
+      confidence: 0.98,
+      model: "continuity-composer-stub",
+    };
+  };
 
   shopify.fetchProductsByHandles = async ({ handles = [] } = {}) => {
     shopifyCalls.push(handles.slice());
@@ -135,7 +146,10 @@ function patchDependencies() {
           ...product,
           id: `gid://shopify/Product/continuity-${productIndex}`,
           availableForSale: true,
-          variants: ["Queen", "King", "Split King"].map((size, sizeIndex) => ({
+          variants: (product.catalogType === "base"
+            ? ["Queen (2pc)", "King (2pc)"]
+            : ["Queen", "King", "Split King"]
+          ).map((size, sizeIndex) => ({
             id: `gid://shopify/ProductVariant/${productIndex}-${sizeIndex}`,
             title: size,
             availableForSale: true,
@@ -151,6 +165,7 @@ function patchDependencies() {
 function restoreDependencies() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
   openai.getSnoozerResponse = originalOpenAi;
+  openai.composeTrustedAdvisorResponse = originalComposer;
   shopify.fetchProductsByHandles = originalFetchProducts;
   console.log = originalConsoleLog;
 }

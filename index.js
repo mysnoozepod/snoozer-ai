@@ -6198,6 +6198,11 @@ function getAskSnoozerRouteDeps() {
       }
       return service.composeTrustedAdvisorResponse(args);
     },
+    loadTrustedAdvisorFactPack: async (args) => {
+      const service = getOpenAiSvc();
+      if (!service || typeof service.loadTrustedAdvisorFactPack !== "function") return null;
+      return service.loadTrustedAdvisorFactPack(args);
+    },
     resolveAskSnoozerVisitLifecycle,
     buildAskSnoozerClientTimingEvent,
     emitAskSnoozerQualityTrace,

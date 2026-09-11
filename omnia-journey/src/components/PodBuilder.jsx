@@ -1860,7 +1860,7 @@ export default function PodBuilder({
         const chosen = ESSENTIAL_STEP_KEYS.map((key) => selectedEssentialChoices[key]).filter(Boolean);
         return {
           title: "Complete Your Sleep Setup",
-          caption: "Only approved, available Shopify options are shown.",
+          caption: "Only approved, available options are shown.",
           items: chosen.map((choice) => `${choice.title} · ${money(choice.price)}`),
           nextAction: "Review your setup",
         };
@@ -2055,7 +2055,7 @@ export default function PodBuilder({
     }
 
     if (desiredCartState === "exact") {
-      onCue?.("Your selected setup is already in the Shopify cart.", "tip");
+      onCue?.("Your selected setup is already in your cart.", "tip");
       onViewSnoozePod?.();
       return;
     }
@@ -2102,7 +2102,7 @@ export default function PodBuilder({
         });
       }
       setGuidedStep("success");
-      onCue?.("Your selected setup is now exact in the Shopify cart.", "success");
+      onCue?.("Your selected setup is now correct in your cart.", "success");
 
       if (sleepEssentialsJourneyId && essentialsReady) {
         void api
@@ -2158,7 +2158,7 @@ export default function PodBuilder({
   ]);
 
   const viewCart = useCallback(() => {
-    onCue?.("Opening your Shopify cart.", "tip");
+    onCue?.("Opening your cart.", "tip");
     onViewSnoozePod?.();
   }, [onCue, onViewSnoozePod]);
 
@@ -2614,7 +2614,7 @@ export default function PodBuilder({
           <div className="mb-1.5 flex items-center justify-between gap-3">
             <p className="text-[0.78rem] font-semibold text-slate-600">
               {essentialProducts.status === "loading"
-                ? "Loading approved Shopify options..."
+                ? "Loading available options..."
                 : `${choices.length} compatible option${choices.length === 1 ? "" : "s"} available for this setup.`}
             </p>
             {selected ? (

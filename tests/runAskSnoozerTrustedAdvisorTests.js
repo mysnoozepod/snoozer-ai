@@ -36,6 +36,7 @@ const {
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAi = openai.getSnoozerResponse;
+const originalComposer = openai.composeTrustedAdvisorResponse;
 const originalFetchProducts = shopify.fetchProductsByHandles;
 const originalGetCart = shopify.getCart;
 const originalConsoleLog = console.log;
@@ -43,6 +44,7 @@ const originalConsoleLog = console.log;
 const sessionStore = new Map();
 const resultStore = new Map();
 const openAiCalls = [];
+const composerCalls = [];
 const performanceSamples = [];
 
 function mockedProducts() {
@@ -107,6 +109,17 @@ function patchDependencies() {
       actions: [],
     };
   };
+  openai.composeTrustedAdvisorResponse = async (input = {}) => {
+    composerCalls.push(input);
+    return {
+      displayText: input.deterministicDraft.displayText,
+      speechText: input.deterministicDraft.speechText,
+      probe: null,
+      nextActionIntent: null,
+      confidence: 0.98,
+      model: "trusted-advisor-composer-fixture",
+    };
+  };
 
   shopify.fetchProductsByHandles = async ({ handles = [] } = {}) => {
     const wanted = new Set(handles.map((handle) => String(handle)));
@@ -141,6 +154,7 @@ function patchDependencies() {
 function restoreDependencies() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
   openai.getSnoozerResponse = originalOpenAi;
+  openai.composeTrustedAdvisorResponse = originalComposer;
   shopify.fetchProductsByHandles = originalFetchProducts;
   shopify.getCart = originalGetCart;
   console.log = originalConsoleLog;
@@ -258,6 +272,7 @@ async function runExactTenTurnFixture() {
     }
   }
   assert.strictEqual(openAiCalls.length, 0, "bounded ten-turn flow should not call the model");
+  assert(composerCalls.length >= 5, "substantive advisor turns should use the model composer");
   return outputs;
 }
 
@@ -493,7 +508,7 @@ async function main() {
       const p95 = values.length ? values[Math.ceil(values.length * 0.95) - 1] : 0;
       console.log(`Local ${complexity} latency: avg=${average}ms p95=${p95}ms n=${values.length}`);
     }
-    console.log(`Bounded advisor model calls: ${openAiCalls.length}`);
+    console.log(`Bounded advisor composer calls: ${composerCalls.length}`);
   } finally {
     restoreDependencies();
   }

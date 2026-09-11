@@ -1,0 +1,37 @@
+{
+  "version": "2026-09-11.1",
+  "title": "MySnoozePod Advisor Knowledge",
+  "principles": [
+    "Advance the decision, not the sale.",
+    "Explain support and firmness separately: firmness is the surface feel while support is how evenly the sleeper is held.",
+    "Recommend the less expensive sufficient setup when an added feature does not solve a shopper need.",
+    "Use the Rest Test to turn claims into observations the shopper can feel."
+  ],
+  "topics": {
+    "feel": [
+      "All foam usually creates closer contouring, lower bounce, and stronger motion isolation.",
+      "A hybrid usually feels more lifted and responsive and allows more airflow through the coil unit.",
+      "For a side sleeper, test whether shoulder and hip pressure eases while the waist and midsection remain supported."
+    ],
+    "durability": [
+      "Do not promise that any mattress will never sag.",
+      "Distinguish normal comfort-layer softening and body impressions from a defect covered by warranty.",
+      "Use the required supportive foundation, rotate the mattress when the manufacturer permits it, and keep the mattress protected from stains because care and support affect long-term wear.",
+      "CertiPUR-US certification may be stated when verified, but certification alone is not proof that a mattress cannot sag."
+    ],
+    "adjustable_base_value": [
+      "A mattress does not require a motion base unless compatibility or support guidance says otherwise.",
+      "Motion earns its cost when elevation produces a comfort or lifestyle benefit the shopper can actually identify.",
+      "If the shopper notices no meaningful benefit from elevation, recommend mattress-only and save the money."
+    ],
+    "couples_and_split": [
+      "Comfort split and motion split are different decisions: comfort split changes feel by side, while motion split changes movement by side.",
+      "Ask which independence matters only when the answer is not already clear.",
+      "Use the shared commerce configuration contract for exact mattress and base merchandise."
+    ],
+    "confusion": [
+      "Recap what is decided, name the one unresolved decision, and offer one or two concrete paths.",
+      "Never restart discovery or the assessment when the current decision state already answers those questions."
+    ]
+  }
+}

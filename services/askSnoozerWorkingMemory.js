@@ -347,6 +347,10 @@ function inferBuyingStage(query = "", previousStage = "exploring") {
 
 function inferObjection(query = "") {
   const text = normalizeAskSnoozerText(query);
+  if (/\b(?:sag|sagging|body impression|wear out|durability|hold up)\b/.test(text)) return "durability";
+  if (/\b(?:not sure|uncertain|do i need|worth it|save the money)\b.*\b(?:motion|base)\b/.test(text)) {
+    return "base_value";
+  }
   if (/\b(?:save the money|need the|worth it|too expensive|more expensive)\b/.test(text)) {
     return "value";
   }
@@ -356,6 +360,9 @@ function inferObjection(query = "") {
 
 function inferDecision(query = "", previous = null) {
   const text = normalizeAskSnoozerText(query);
+  if (/\b(?:not sure|uncertain)\b.*\b(?:motion|base)\b/.test(text)) {
+    return { ...(isObject(previous) ? previous : {}), adjustableBase: "undecided" };
+  }
   if (/\b(?:did not|didn.t) notice.*(?:elevation|base|motion)\b/.test(text)) {
     return { ...(isObject(previous) ? previous : {}), adjustableBase: "skip" };
   }
@@ -420,6 +427,12 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
     activeBaseHandle: baseHandle,
     recentBaseHandle,
     activeMotionKey: motionKey,
+    baseDecision:
+      /\b(?:not sure|uncertain)\b.*\b(?:motion|base)\b/.test(text)
+        ? "undecided"
+        : explicitBase.explicitNoBase
+          ? "skip"
+          : clean(previousDeal.baseDecision) || null,
     activeQuote: isObject(previousDeal.activeQuote) ? previousDeal.activeQuote : null,
     compatibilityStatus: clean(previousDeal.compatibilityStatus) || "unknown",
     currentTopic,

@@ -1,0 +1,38 @@
+{
+  "version": "2026-09-11.1",
+  "setupSizeAliases": {
+    "Half Split Queen": "Queen",
+    "Half Split King": "King",
+    "Split King": "King"
+  },
+  "rules": [
+    {
+      "category": "adjustable_base",
+      "setupSize": "Queen",
+      "requestedOption": "Queen (2pc)"
+    },
+    {
+      "category": "adjustable_base",
+      "setupSize": "King",
+      "requestedOption": "King (2pc)"
+    },
+    {
+      "category": "mattress",
+      "setupSize": "King",
+      "motionType": "full_split",
+      "requestedOption": "Split King"
+    },
+    {
+      "category": "sheets",
+      "setupSize": "King",
+      "motionType": "full_split",
+      "requestedOption": "Split King"
+    },
+    {
+      "category": "protector",
+      "setupSize": "King",
+      "motionType": "full_split",
+      "requestedOption": "Split King"
+    }
+  ]
+}

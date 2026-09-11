@@ -70,7 +70,7 @@ async function main() {
     }),
   });
   assert.equal(rejected.ok, true);
-  assert.equal(rejected.compositionMode, "deterministic");
+  assert.equal(rejected.compositionMode, "model_fallback");
   assert.equal(rejected.compositionFallbackUsed, true);
   assert(rejected.modelGate.violations.some((item) => item.startsWith("unverified_price:")));
   assert(rejected.modelGate.violations.some((item) => item.startsWith("unverified_product:")));

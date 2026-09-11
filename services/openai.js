@@ -78,6 +78,7 @@ const PROMPT_BUCKET = process.env.S3_PROMPT_BUCKET || "snoozer-prompts-prod";
 const KNOWLEDGE_BUCKET = process.env.S3_KNOWLEDGE_BUCKET || "snoozer-knowledge-prod";
 const ROUTING_BUCKET = process.env.S3_ROUTING_BUCKET || KNOWLEDGE_BUCKET;
 const SYSTEM_PROMPT_KEY = process.env.SNOOZER_BASE_PROMPT_KEY || "system/trusted_advisor_v2.md";
+const ADVISOR_KNOWLEDGE_KEY = process.env.SNOOZER_ADVISOR_KNOWLEDGE_KEY || "advisor/mysnoozepod-selling-methodology-v1.json";
 
 // Deterministic retrieval meta files
 const ROUTING_RULES_KEY = process.env.ROUTING_RULES_KEY || "meta/routing_rules.json";
@@ -157,7 +158,7 @@ const PREMIUM_ANSWER_GUARDRAILS = [
   "- Use 2 to 5 concise sentences when useful; do not become verbose.",
   "- Use shopper/session/canonical context when it is present, but never override canonical pod, mattress, base, or motion decisions.",
   "- Do NOT guess prices, availability, financing math, checkout details, delivery promises, discounts, warranty terms, variant IDs, or policies.",
-  "- If asked price/cart/checkout, say live Shopify checkout/pricing has to confirm it and ask what size they want if needed.",
+  "- If asked price, cart, or checkout questions, use only supplied current commerce facts and ask for size only when it is actually missing.",
   "- Do NOT diagnose, treat, cure, or promise medical outcomes. For medical concerns, explain comfort/support testing and suggest a healthcare professional when appropriate.",
   "- If you do not have relevant showroom knowledge loaded, say you don't have it and offer options instead.",
   "- Preferred structure: answer first, explain why, name the tradeoff, then give a next step.",
@@ -2575,7 +2576,7 @@ async function fastPath(
   if (!retrievalMeta.ok) {
     return buildDeterministicFallbackContract({
       reply:
-        "Showroom knowledge is temporarily unavailable. I can’t safely answer that without the retrieval layer.",
+        "I do not have enough confirmed product information to answer that safely right now. Please try again in a moment.",
       thread_id,
       context: normalizedContext,
       error: "E_RETRIEVAL_META_FAILED",
@@ -2726,7 +2727,9 @@ function parseTrustedAdvisorComposition(value = "") {
   const displayText = String(parsed?.displayText || "").trim();
   const speechText = String(parsed?.speechText || "").trim();
   const probe = parsed?.probe == null ? null : String(parsed.probe).trim();
-  if (!displayText || !speechText || displayText.length > 1400 || speechText.length > 500) {
+  const nextActionIntent = parsed?.nextActionIntent == null ? null : String(parsed.nextActionIntent).trim();
+  const confidence = Number(parsed?.confidence);
+  if (!displayText || !speechText || displayText.length > 1800 || speechText.length > 500) {
     const error = new Error("Trusted-advisor composer violated its response contract.");
     error.code = "E_ADVISOR_COMPOSER_CONTRACT";
     throw error;
@@ -2741,7 +2744,99 @@ function parseTrustedAdvisorComposition(value = "") {
     error.code = "E_ADVISOR_COMPOSER_PROBE";
     throw error;
   }
-  return { displayText, speechText, probe };
+  return {
+    displayText,
+    speechText,
+    probe,
+    nextActionIntent: nextActionIntent || null,
+    confidence: Number.isFinite(confidence) ? Math.max(0, Math.min(1, confidence)) : null,
+  };
+}
+
+const TRUSTED_ADVISOR_PRODUCT_KEYS = Object.freeze({
+  "10-all-foam-mattress": "products/mattress/10-all-foam-mattress.md",
+  "12-all-foam-mattress": "products/mattress/12-all-foam-mattress.md",
+  "12-dual-comfort-hybrid": "products/mattress/12-dual-comfort-hybrid.md",
+  "14-hybrid": "products/mattress/14-hybrid.md",
+});
+
+function compactAdvisorLines(raw = "", { limit = 10, include = [] } = {}) {
+  const terms = (Array.isArray(include) ? include : []).map((item) => String(item).toLowerCase()).filter(Boolean);
+  return String(raw || "")
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^[\s\\#>*-]+/, "").replace(/[*_`]/g, "").replace(/&nbsp;/gi, " ").trim())
+    .filter((line) => line && line.length >= 12 && line.length <= 260)
+    .filter((line) => !/variant id|product id|\$\d|developer notes|retrieval trigger|source$/i.test(line))
+    .filter((line) => !terms.length || terms.some((term) => line.toLowerCase().includes(term)))
+    .slice(0, limit);
+}
+
+async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", query = "" } = {}) {
+  let advisorKnowledge = require("../data/ask-snoozer-advisor-knowledge.v1.json");
+  try {
+    const remote = await getObjectJson(KNOWLEDGE_BUCKET, ADVISOR_KNOWLEDGE_KEY);
+    if (remote.value && typeof remote.value === "object") advisorKnowledge = remote.value;
+  } catch {
+    // The packaged copy is the safe rollback when the remote knowledge object is unavailable.
+  }
+  const handles = [...new Set((Array.isArray(productHandles) ? productHandles : []).filter(Boolean))].slice(0, 4);
+  const productFacts = [];
+  for (const handle of handles) {
+    const key = TRUSTED_ADVISOR_PRODUCT_KEYS[handle];
+    if (!key) continue;
+    try {
+      const loaded = await getObjectText(KNOWLEDGE_BUCKET, key);
+      if (loaded.value) {
+        productFacts.push({
+          handle,
+          sourceKey: key,
+          status: "verified_fact",
+          facts: compactAdvisorLines(loaded.value, {
+            limit: 12,
+            include: ["feel", "pressure", "support", "foam", "coil", "airflow", "motion", "certipur", "care", "ideal", "split comfort"],
+          }),
+        });
+      }
+    } catch {
+      // Missing optional product knowledge remains UNKNOWN in the caller's fact pack.
+    }
+  }
+  const policyFacts = [];
+  if (taskType === "warranty_explanation" || /\bwarrant|coverage|sagging?\b/i.test(query)) {
+    try {
+      const loaded = await getObjectText(KNOWLEDGE_BUCKET, "faq/warranty.md");
+      if (loaded.value) {
+        policyFacts.push({
+          topic: "warranty",
+          sourceKey: "faq/warranty.md",
+          status: "verified_fact",
+          facts: compactAdvisorLines(loaded.value, { limit: 10, include: ["warranty", "cover", "softening", "sagging", "support", "stain", "original purchaser"] }),
+        });
+      }
+    } catch {
+      // An unavailable policy object must not become an invented policy term.
+    }
+    if (!policyFacts.length) {
+      const packagedWarranty = String(require("../faqs.json")?.warranty || "").trim();
+      if (packagedWarranty) {
+        policyFacts.push({
+          topic: "warranty",
+          sourceKey: "faqs.json#warranty",
+          status: "verified_fact",
+          facts: [packagedWarranty],
+        });
+      }
+    }
+  }
+  return {
+    version: advisorKnowledge.version || null,
+    sourceKey: ADVISOR_KNOWLEDGE_KEY,
+    status: "advisor_interpretation",
+    principles: advisorKnowledge.principles || [],
+    topicGuidance: advisorKnowledge.topics || {},
+    productFacts,
+    policyFacts,
+  };
 }
 
 async function composeTrustedAdvisorResponse({
@@ -2752,26 +2847,29 @@ async function composeTrustedAdvisorResponse({
   deterministicDraft,
 } = {}) {
   const startedAt = Date.now();
+  const trustedAdvisorPolicy = await getBasePromptOnce(requestId || `advisor_${Date.now().toString(36)}`);
   const boundedPayload = JSON.stringify({
     shopperQuestion: String(userMessage || "").slice(0, 1000),
     strategy,
     verifiedFactPack: factPack,
     deterministicDraft,
-  }).slice(0, 18000);
+  });
   const response = await callOpenAIChat({
     reqId: requestId || `advisor_${Date.now().toString(36)}`,
     messages: [
       {
         role: "system",
         content: [
+          trustedAdvisorPolicy,
           "You are the language composer for a mattress showroom advisor.",
-          "Return JSON only with displayText, speechText, and probe (string or null).",
+          "Return JSON only with displayText, speechText, probe (string or null), nextActionIntent (string or null), and confidence (0 to 1).",
           "Rewrite the deterministic draft so it is natural, engaged, decisive, and shopper-friendly.",
           "Honor the versioned presentation policy in the strategy only for wording and structure.",
           "Use only the verified fact pack and deterministic draft. Never invent or change products, titles, sizes, prices, availability, compatibility, configuration, cart state, rewards, policies, or actions.",
           "Do not expose implementation language. Do not diagnose or promise a medical outcome.",
           "Ask at most one useful forward-moving question. Use null when a probe is not warranted.",
-          "Keep displayText complete and concise. Keep speechText natural for voice and no more than two short sentences.",
+          "Use the supplied response depth: quick 1-3 sentences, standard 3-6, deep 5-9, compare enough to finish the tradeoff and conclusion, teach enough to be useful, and coach as short interactive guidance.",
+          "Keep displayText under 1800 characters and end on a complete sentence. Keep speechText natural for voice, no more than two short complete sentences, and do not copy a long display answer.",
         ].join(" "),
       },
       { role: "user", content: boundedPayload },
@@ -2794,6 +2892,7 @@ async function runSnoozer({ message, mode, context, thread_id } = {}) {
 
 module.exports = {
   composeTrustedAdvisorResponse,
+  loadTrustedAdvisorFactPack,
   getSnoozerResponse,
   runSnoozer,
   getCatalogOnce,

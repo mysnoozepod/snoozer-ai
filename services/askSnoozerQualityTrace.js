@@ -4,6 +4,11 @@ const QUALITY_TRACE_VERSION = "ask-snoozer-quality-v1";
 const OUTCOME_MODEL_VERSION = "ask-snoozer-outcome-v1";
 const RECOVERY_MODEL_VERSION = "ask-snoozer-recovery-v1";
 const DEFAULT_RESPONSE_POLICY_VERSION = "baseline-v1";
+const SHOPPER_LANGUAGE_BLOCKLIST = Object.freeze([
+  "shopify", "showroom canon", "canonical", "page context", "api", "backend", "s3",
+  "retrieval", "resolver", "database", "source of truth", "deterministic", "working memory",
+  "active goal", "current verified option", "verified adjustable option",
+]);
 
 const SEVERITY_DEFINITIONS = Object.freeze({
   P0: "Commercial truth, cart integrity, canonical identity, compatibility, or safety integrity failure.",
@@ -183,7 +188,7 @@ function responseDepthFit(depth = "standard", wordCount = 0) {
 }
 
 function classifyLatency(mode, totalMs, config) {
-  const modelAssisted = mode === "model_assisted";
+  const modelAssisted = String(mode || "").startsWith("model_");
   const elevated = modelAssisted ? config.modelElevatedMs : config.deterministicElevatedMs;
   const breach = modelAssisted ? config.modelBreachMs : config.deterministicBreachMs;
   if (totalMs > breach) return { band: "breach", elevatedMs: elevated, breachMs: breach };
@@ -196,6 +201,7 @@ function classifyOutcome({
   reply = "",
   actions = [],
   chips = [],
+  products = [],
   gate = {},
   modelGate = null,
   fallbackUsed = false,
@@ -226,6 +232,11 @@ function classifyOutcome({
   if (commercialSignals.commercialOpportunityStranded) {
     friction.push("commercial_opportunity_stranded");
   }
+  if (commercialSignals.explicitStateChangeAcknowledged === false) friction.push("explicit_state_change_not_acknowledged");
+  if (commercialSignals.confusionRecovered === false) friction.push("confusion_not_recovered");
+  if (commercialSignals.requestedScopePreserved === false) friction.push("requested_scope_not_preserved");
+  if (commercialSignals.partialActionSuppressed === false) friction.push("partial_action_not_suppressed");
+  if (commercialSignals.shopperLanguageClean === false) friction.push("shopper_language_violation");
   if (!referenceResolved) friction.push("unresolved_reference");
   if (!complete) friction.push("incomplete_response");
   if (fallbackUsed && !modelRejected) friction.push("fallback_used");
@@ -289,12 +300,18 @@ function classifyFailureSeverity(trace = {}) {
     trace.commercialOpportunityStranded ||
     trace.multipleProbes ||
     trace.responseComplete === false ||
+    trace.confusionRecovered === false ||
+    trace.requestedScopePreserved === false ||
+    trace.partialActionSuppressed === false ||
     (trace.referenceResolution?.phrase && !trace.referenceResolution?.resolved && trace.confidentCommercialAnswer) ||
     trace.outcome?.recovery?.success === false
   ) {
     if (trace.commercialOpportunityStranded) codes.push("commercial_opportunity_stranded");
     if (trace.multipleProbes) codes.push("multiple_probes");
     if (trace.responseComplete === false) codes.push("incomplete_response");
+    if (trace.confusionRecovered === false) codes.push("confusion_not_recovered");
+    if (trace.requestedScopePreserved === false) codes.push("requested_scope_not_preserved");
+    if (trace.partialActionSuppressed === false) codes.push("partial_action_not_suppressed");
     if (trace.referenceResolution?.phrase && !trace.referenceResolution?.resolved) codes.push("unresolved_protected_reference");
     if (trace.outcome?.recovery?.success === false) codes.push("failed_recovery");
     return { severity: "P1", codes };
@@ -335,6 +352,7 @@ function buildAskSnoozerQualityTrace({
   context = {},
   actions = [],
   chips = [],
+  products = [],
   gate = {},
   modelGate = null,
   compositionMode = "deterministic",
@@ -356,7 +374,13 @@ function buildAskSnoozerQualityTrace({
     deterministicBucket(samplingKey, config.samplingSalt) < config.sanitizedTextSampleRate;
   const referenceResolution = plan?.references?.resolution || null;
   const repeated = repeatedQuestion(query, context);
-  const knownRepeated = knownQuestionRepeated(reply, { ...plan, query }, context);
+  const renderedControlText = [
+    ...actions.flatMap((action) => [action?.label, action?.type]),
+    ...chips.flatMap((chip) => [chip?.label, chip?.value]),
+    ...products.flatMap((product) => [product?.title, product?.subtitle]),
+  ].map(clean).filter(Boolean).join(" ");
+  const finalVisibleText = `${clean(reply)} ${renderedControlText}`.trim();
+  const knownRepeated = knownQuestionRepeated(finalVisibleText, { ...plan, query }, context);
   const commercialState = isObject(plan?.commercialState) ? plan.commercialState : {};
   const goal = isObject(context?.askSnoozerWorkingMemory?.activeGoal)
     ? context.askSnoozerWorkingMemory.activeGoal
@@ -366,6 +390,20 @@ function buildAskSnoozerQualityTrace({
     clean(quote?.compatibility?.status)
   );
   const contextualNextActionPresented = Boolean(actions.length || chips.length);
+  const explicitStateChange = /\b(?:i need|i want|make it|go with|actually)\b.*\b(?:twin xl|twin|full|queen|king|soft|medium|firm)\b/.test(normalizeQuestion(query));
+  const knownSize = clean(context?.askSnoozerWorkingMemory?.activeDeal?.activeSize || plan?.knownFacts?.size);
+  const explicitStateChangeAcknowledged = !explicitStateChange || (knownSize && normalizeQuestion(reply).includes(normalizeQuestion(knownSize)));
+  const confusionEvent = /\b(?:confused|getting lost|i am lost|what am i choosing|simplify)\b/.test(normalizeQuestion(query));
+  const confusionRecovered = !confusionEvent || (
+    clean(plan.taskType) === "confusion_recovery" &&
+    responseComplete(reply) &&
+    /\b(?:looking at|already decided|open decision|only open|simple version)\b/.test(normalizeQuestion(reply))
+  );
+  const fullSetupRequested = ["mattress_plus_base", "full_pod"].includes(clean(commercialState.requestedScope)) || clean(plan.taskType) === "bundle_quote";
+  const partialPurchaseVisible = products.some((product) => product?.suppressAddToCart !== true && product?.exactVariantResolved === true) || actions.some((action) => action?.type === "add_to_cart");
+  const requestedScopePreserved = !(fullSetupRequested && quote?.ok === false && partialPurchaseVisible);
+  const partialActionSuppressed = !fullSetupRequested || quote?.ok === true || !partialPurchaseVisible;
+  const shopperLanguageClean = !SHOPPER_LANGUAGE_BLOCKLIST.some((phrase) => normalizeQuestion(finalVisibleText).includes(normalizeQuestion(phrase)));
   const contextualNextActionAvailable = Boolean(
     commercialState.goalReady ||
       quotePresented ||
@@ -400,7 +438,12 @@ function buildAskSnoozerQualityTrace({
         "product_comparison",
         "advisor_choice",
         "value_judgment",
-        "preference_capture",
+      "preference_capture",
+        "compound_product_base",
+        "durability_objection",
+        "hybrid_exploration",
+        "configuration_update",
+        "confusion_recovery",
       ].includes(clean(plan.taskType))
   );
   const normalizedQuery = normalizeQuestion(query);
@@ -445,6 +488,15 @@ function buildAskSnoozerQualityTrace({
     activeGoalStillActionable,
     staleRouteOverride: Boolean(plan.staleRouteOverride),
     commercialCompletionAttempted: Boolean(plan.commercialCompletionAttempted),
+    explicitStateChangeAcknowledged,
+    confusionRecovered,
+    knownInformationReasked: knownRepeated,
+    requestedScopePreserved,
+    partialActionSuppressed,
+    groundingSufficient: Boolean(factPackComplete && gate?.ok !== false),
+    modelCompositionUsed: compositionMode === "model_assisted" && Number(modelCallCount) > 0,
+    responseCompletedNaturally: responseComplete(reply),
+    shopperLanguageClean,
   };
   const outcome = classifyOutcome({
     plan: { ...plan, query },
@@ -460,7 +512,9 @@ function buildAskSnoozerQualityTrace({
     knownRepeated,
     commercialSignals,
   });
-  const mode = compositionMode === "model_assisted" ? "model_assisted" : "deterministic";
+  const mode = ["model_assisted", "model_fallback", "deterministic_recovery"].includes(compositionMode)
+    ? compositionMode
+    : "deterministic";
   const wordCount = responseWordCount(reply);
   const trace = {
     version: QUALITY_TRACE_VERSION,
@@ -513,7 +567,7 @@ function buildAskSnoozerQualityTrace({
     probeUsed: questionCount(reply) === 1,
     multipleProbes: questionCount(reply) > 1,
     nextActionOffered: Boolean(actions.length || chips.length),
-    firewallPassed: !(
+    firewallPassed: shopperLanguageClean && !(
       Array.isArray(gate?.violations) && gate.violations.some((item) => item.startsWith("internal_language"))
     ),
     medicalBoundaryTriggered: Boolean(plan.medicalBoundary || plan.taskType === "medical_boundary"),
@@ -691,7 +745,7 @@ function aggregateAskSnoozerQualityTraces(events, reviews = null) {
   );
   const total = traces.length;
   const count = (predicate) => traces.filter(predicate).length;
-  const modes = ["deterministic", "model_assisted"];
+  const modes = ["deterministic", "model_assisted", "model_fallback", "deterministic_recovery"];
   const latencyByMode = Object.fromEntries(modes.map((mode) => {
     const values = traces.filter((event) => event?.composition?.mode === mode).map((event) => event?.latency?.totalMs);
     return [mode, { count: values.length, averageMs: average(values), p95Ms: percentile(values) }];
@@ -706,6 +760,7 @@ function aggregateAskSnoozerQualityTraces(events, reviews = null) {
     totalTurns: total,
     deterministicPercent: rate(count((event) => event?.composition?.mode === "deterministic"), total),
     modelAssistedPercent: rate(count((event) => event?.composition?.mode === "model_assisted"), total),
+    modelFallbackPercent: rate(count((event) => event?.composition?.mode === "model_fallback"), total),
     latencyByMode,
     probeRate: rate(count((event) => event?.probeUsed), total),
     unresolvedReferenceRate: rate(count((event) => event?.referenceResolution?.phrase && !event?.referenceResolution?.resolved), total),

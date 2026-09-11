@@ -49,6 +49,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     planAskSnoozerTurn,
     resolveAskSnoozerAdvisorTurn,
     composeTrustedAdvisorResponse,
+    loadTrustedAdvisorFactPack,
     resolveAskSnoozerVisitLifecycle,
     buildAskSnoozerClientTimingEvent,
     emitAskSnoozerQualityTrace,
@@ -473,6 +474,17 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       const metadata = responseBody?.metadata || responseBody?.meta || {};
       const qualityGate = metadata?.qualityGate || {};
       const metrics = metadata?.metrics || {};
+      const executedModelCall = Boolean(
+        Number(metrics?.modelCallCount) > 0 ||
+        Number(metrics?.modelMs) > 0 ||
+        metadata?.path === "model" ||
+        qualityGate?.sourceOfTruth === "openai"
+      );
+      const effectiveModelCallCount = Number(metrics?.modelCallCount) > 0
+        ? Number(metrics.modelCallCount)
+        : executedModelCall
+          ? 1
+          : 0;
       const reply = String(
         responseBody?.reply ||
         responseBody?.message?.text ||
@@ -506,14 +518,19 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         context,
         actions: Array.isArray(responseBody?.actions) ? responseBody.actions : [],
         chips: Array.isArray(responseBody?.chips) ? responseBody.chips : [],
+        products: Array.isArray(responseBody?.products)
+          ? responseBody.products
+          : Array.isArray(responseBody?.recommendations)
+            ? responseBody.recommendations
+            : [],
         gate: {
           ok: responseBody?.ok !== false && qualityGate?.factsResolved !== false,
           violations: [],
         },
         modelGate: metadata?.composition?.gate || null,
-        compositionMode: metadata?.composition?.mode || (Number(metrics?.modelCallCount) > 0 ? "model_assisted" : "deterministic"),
+        compositionMode: metadata?.composition?.mode || (executedModelCall ? "model_assisted" : "deterministic"),
         compositionFallbackUsed: Boolean(metadata?.composition?.fallbackUsed),
-        modelCallCount: metrics?.modelCallCount || 0,
+        modelCallCount: effectiveModelCallCount,
         totalMs: metrics?.totalMs || metadata?.latencyMs || (Date.now() - startedAt),
         modelMs: metrics?.modelMs || 0,
         factPackComplete: qualityGate?.factsResolved !== false,
@@ -667,7 +684,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             sessionId: effectiveSessionId,
             thread_id: effectiveSessionId,
             reply:
-              "Pod mode is missing required context (podId + exploreContext). The UI must send the pod items so Snoozer can be deterministic.",
+              "I'm missing the products for this setup. Please reopen the Pod and try again.",
             error: {
               code: "E_POD_CONTEXT_MISSING",
               message: "Missing podId or exploreContext/explore array.",
@@ -708,7 +725,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             context,
             payload,
             defaultSpeech:
-              "Pod mode is missing required context. The UI must send the pod items so Snoozer can stay deterministic.",
+              "I'm missing the products for this setup. Please reopen the Pod and try again.",
             traceId,
           });
           return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
@@ -720,14 +737,26 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
     // Every turn is planned before routing. Nuanced continued turns use the
     // trusted-advisor composer; only clean station starters fall through.
+    const hasConversationHistory = Boolean(
+      (Array.isArray(context?.recentConversation) && context.recentConversation.length) ||
+      (Array.isArray(context?.askSnoozerWorkingMemory?.conversationFocus?.relevantTurns) &&
+        context.askSnoozerWorkingMemory.conversationFocus.relevantTurns.length)
+    );
+    const atomicCommerceLookup = Boolean(
+      ["price_quote", "bundle_quote", "savings_quote"].includes(askSnoozerPlan?.taskType) &&
+      !hasConversationHistory
+    );
     const advisorAnswer =
-      askSnoozerPlan?.handled && typeof resolveAskSnoozerAdvisorTurn === "function"
+      askSnoozerPlan?.handled &&
+      !atomicCommerceLookup &&
+      typeof resolveAskSnoozerAdvisorTurn === "function"
         ? await resolveAskSnoozerAdvisorTurn({
             query: msg,
             context,
             plan: askSnoozerPlan,
             fetchProductsByHandles: shopifySvc?.fetchProductsByHandles,
             composeAdvisorResponse: composeTrustedAdvisorResponse,
+            loadAdvisorKnowledge: loadTrustedAdvisorFactPack,
             requestId: traceId,
           })
         : null;
@@ -785,6 +814,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             context: mergedContext,
             actions: advisorAnswer.actions,
             chips: advisorAnswer.chips,
+            products: advisorAnswer.products,
             gate: advisorAnswer.gate,
             modelGate: advisorAnswer.modelGate,
             compositionMode: advisorAnswer.compositionMode,
@@ -809,6 +839,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         answer_source_type: advisorAnswer.source,
         answer_source_key: advisorAnswer.plan.references?.requestedProductHandle || null,
         answer_facts_count: advisorAnswer.factPack?.products?.length || 1,
+        resolved_requested_product_handle: advisorAnswer.plan.references?.requestedProductHandle || null,
+        loaded_product_knowledge_handles: (advisorAnswer.factPack?.productFacts || []).map((item) => item.handle).filter(Boolean),
         reason: advisorAnswer.fallbackUsed ? "response_consistency_correction" : "advisor_turn_resolved",
         qualityGate: {
           intent: advisorAnswer.plan.taskType,

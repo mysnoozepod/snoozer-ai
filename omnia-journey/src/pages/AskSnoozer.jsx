@@ -95,7 +95,7 @@ function ChatComposer({ draft, pending, canSend, textareaRef, onChange, onKeyDow
 
 function ProductCard({ item, siblings, imageFailed, mutationPending, canAdd, canView, onImageError, onAdd, onView, onCompare, onChoose }) {
   const price = formatProductPrice(item);
-  const addAction = canAdd ? buildProductAddAction(item) : null;
+  const addAction = canAdd && item?.suppressAddToCart !== true ? buildProductAddAction(item) : null;
   return (
     <div className="rounded-[18px] border border-slate-200 bg-slate-50/70 p-3 text-left">
       <div className="flex items-start gap-3">
@@ -288,7 +288,7 @@ export default function AskSnoozer() {
     if (action?.type === "add_to_cart") {
       if (!cartMutationAllowed || cartMutationPending) return;
       const success = await addToCart(action.payload);
-      setMessages((current) => [...current, { id: createMessageId("assistant"), role: "assistant", content: success ? `${action.payload?.title || "That product"} was added to your verified Shopify cart.` : "I could not confirm that cart addition. Your cart was not changed; please try again.", createdAt: nowIso(), status: success ? "answered" : "warning", chips: [], actions: [], recommendations: [], canRetry: false }]);
+      setMessages((current) => [...current, { id: createMessageId("assistant"), role: "assistant", content: success ? `${action.payload?.title || "That product"} was added to your cart.` : "I could not confirm that cart addition. Your cart was not changed; please try again.", createdAt: nowIso(), status: success ? "answered" : "warning", chips: [], actions: [], recommendations: [], canRetry: false }]);
       return;
     }
     switch (action?.type) {

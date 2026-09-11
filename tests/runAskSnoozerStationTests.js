@@ -133,7 +133,7 @@ async function run() {
     manifest,
     fetchProductsByHandles,
   });
-  check(compared.products.length === 2 && compared.reply.includes("does not change your canonical recommendation ranking"), "comparison preserves canonical ranking");
+  check(compared.products.length === 2 && compared.reply.includes("does not change the mattress saved from your assessment"), "comparison preserves the saved recommendation in shopper language");
   check(compared.reply.includes("starts at") && compared.source === "mixed", "comparison combines canon attributes with Shopify pricing");
 
   const extracted = extractHandles("Compare 12-all-foam-mattress with 14-hybrid", manifest, {});
