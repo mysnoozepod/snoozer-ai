@@ -497,6 +497,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     !canonicalReference;
   const atomicStandaloneCommerce =
     ["price_quote", "bundle_quote", "savings_quote"].includes(taskType) &&
+    !readyCommercialGoal &&
     Number(activeMemory(context)?.turnIndex || 0) <= 1 &&
     !continuation;
   const handled =
