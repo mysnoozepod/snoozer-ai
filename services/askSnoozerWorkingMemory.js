@@ -561,12 +561,10 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
   const previousDeal = isObject(memory.activeDeal) ? memory.activeDeal : {};
   const plan = isObject(outcome.plan) ? outcome.plan : {};
   const quote = isObject(outcome.quote) ? outcome.quote : null;
-  const compatibilityResolved = ["compatible", "incompatible", "not_applicable"].includes(
-    clean(quote?.compatibility?.status)
-  );
+  const incompatibilityPresented = clean(quote?.compatibility?.status) === "incompatible";
   const commercialResultPresented = Boolean(
     quote &&
-      (quote.ok || compatibilityResolved) &&
+      (quote.ok || incompatibilityPresented) &&
       ["price_quote", "bundle_quote", "savings_quote", "compatibility", "cart_add"].includes(
         clean(plan.taskType)
       )
@@ -630,6 +628,15 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
               status: "awaiting_decision",
               updatedAt,
             }
+          : plan.commercialCompletionAttempted &&
+              isObject(memory.activeGoal) &&
+              memory.activeGoal.intent === PRICE_GOAL_INTENT &&
+              memory.activeGoal.status === "resolving"
+            ? {
+                ...memory.activeGoal,
+                status: "ready",
+                updatedAt,
+              }
           : memory.activeGoal,
       activeDeal,
       lastPlan: plan,

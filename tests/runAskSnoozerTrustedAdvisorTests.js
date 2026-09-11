@@ -29,6 +29,10 @@ const {
   buildQuote,
   planAskSnoozerTurn,
 } = require("../services/askSnoozerConversationOrchestrator");
+const {
+  completeAskSnoozerAdvisorTurn,
+  markAskSnoozerPriceGoalResolving,
+} = require("../services/askSnoozerWorkingMemory");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAi = openai.getSnoozerResponse;
@@ -338,6 +342,29 @@ async function runBigPass4CommercialCompletion() {
   assert.strictEqual(incompatibleQuote.ok, false);
   assert.strictEqual(incompatibleQuote.compatibility.status, "incompatible");
   assert.strictEqual(incompatibleQuote.subtotal, null);
+
+  const resolvingContext = markAskSnoozerPriceGoalResolving(
+    JSON.parse(JSON.stringify(readyContext))
+  );
+  const unresolvedContext = completeAskSnoozerAdvisorTurn(resolvingContext, {
+    plan: { taskType: "bundle_quote", commercialCompletionAttempted: true },
+    quote: {
+      ok: false,
+      productHandle: "12-all-foam-mattress",
+      size: "King",
+      baseHandle: "premium-motion-adjustable-base",
+      motionKey: "standard",
+      compatibility: { status: "compatible" },
+    },
+    actions: [],
+    chips: [{ label: "Choose another option", value: "Show compatible options" }],
+  });
+  assert.strictEqual(
+    unresolvedContext.askSnoozerWorkingMemory.activeGoal.status,
+    "ready",
+    "an unresolved exact Shopify line must not be presented as decision-ready"
+  );
+  assert.strictEqual(unresolvedContext.askSnoozerWorkingMemory.activeDeal.activeQuote, null);
 
   const quotedContext = JSON.parse(JSON.stringify(readyContext));
   quotedContext.askSnoozerWorkingMemory.activeGoal.status = "awaiting_decision";
