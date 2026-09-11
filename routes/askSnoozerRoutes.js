@@ -742,9 +742,18 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       (Array.isArray(context?.askSnoozerWorkingMemory?.conversationFocus?.relevantTurns) &&
         context.askSnoozerWorkingMemory.conversationFocus.relevantTurns.length)
     );
+    const activeDeal = context?.askSnoozerWorkingMemory?.activeDeal || {};
+    const hasActiveDecisionState = Boolean(
+      hasConversationHistory ||
+      activeDeal.activeProductHandle ||
+      activeDeal.activeSize ||
+      activeDeal.activeBaseHandle ||
+      activeDeal.baseDecision ||
+      activeDeal.activeQuote?.items?.length
+    );
     const atomicCommerceLookup = Boolean(
       ["price_quote", "bundle_quote", "savings_quote"].includes(askSnoozerPlan?.taskType) &&
-      !hasConversationHistory
+      !hasActiveDecisionState
     );
     const advisorAnswer =
       askSnoozerPlan?.handled &&
