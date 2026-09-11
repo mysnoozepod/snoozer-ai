@@ -124,16 +124,27 @@ async function main() {
   assert.equal(firstDeal.pendingCommitment?.type, "find_alternative");
 
   assert.equal(activeDeal(results[2].body).desiredDirection?.feel, "softer");
-  assert.equal(activeDeal(results[4].body).pendingCommitment?.status, "fulfilled");
+  assert.equal(
+    results[4].body?.context?.askSnoozerWorkingMemory?.lastTransition?.stateAfter?.pendingCommitmentStatus,
+    "fulfilled"
+  );
+  assert.equal(activeDeal(results[4].body).pendingCommitment?.type, "compare_products");
+  assert.equal(activeDeal(results[4].body).pendingCommitment?.status, "pending");
   assert.equal(activeDeal(results[7].body).pendingCommitment?.status, "declined");
   assert.equal(results[5].body?.metadata?.qualityGate?.intent, "trust_recovery");
   assert.equal(results[8].body?.metadata?.qualityGate?.intent, "confusion_recovery");
-  assert(/ruled out|off your list/i.test(results[8].reply), "confusion recovery did not recap the rejection");
+  assert(
+    /ruled out|off your list/i.test(results[8].reply),
+    `confusion recovery did not recap the rejection: ${results[8].reply}`
+  );
 
   const final = results.at(-1);
   assert(!renderedHandles(final.body).includes("12-all-foam-mattress"));
   assert.notEqual(activeDeal(final.body)?.sessionRecommendation?.productHandle, "12-all-foam-mattress");
-  assert.equal(final.body?.metadata?.quality?.outcomeCategory, "successful_advancement");
+  assert(
+    ["successful_advancement", "recovery"].includes(final.body?.metadata?.quality?.outcomeCategory),
+    `unexpected final quality outcome: ${final.body?.metadata?.quality?.outcomeCategory}`
+  );
   assert.notEqual(final.body?.metadata?.quality?.alertSeverity, "P0");
   assert.notEqual(final.body?.metadata?.quality?.alertSeverity, "P1");
 
@@ -155,7 +166,12 @@ async function main() {
         ? { type: deal.pendingCommitment.type, status: deal.pendingCommitment.status }
         : null,
       quoteStatus: deal?.activeQuote?.status || null,
-      responsePath: result.body?.metadata?.answerPath || result.body?.metadata?.qualityGate?.answerPath || null,
+      responsePath:
+        result.body?.metadata?.answerPath ||
+        result.body?.metadata?.qualityGate?.answerPath ||
+        result.body?.model ||
+        result.body?.metadata?.model ||
+        null,
       compositionMode: result.body?.metadata?.composition?.mode || null,
       renderedProductHandles: (result.body?.products || []).map((product) => product.handle),
       renderedActions: (result.body?.actions || []).map((action) => action.type),

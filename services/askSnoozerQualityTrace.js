@@ -462,10 +462,14 @@ function buildAskSnoozerQualityTrace({
   const retainedPreferencePreserved = !retainedActs.length || retainedActs.every((act) =>
     clean(deal?.retainedPreferences?.[act.key]?.value) === clean(act.value)
   );
-  const pendingCommitmentResolved = !commitmentActs.length || commitmentActs.every((act) =>
-    clean(deal?.pendingCommitment?.id) === clean(act.commitmentId) &&
-    clean(deal?.pendingCommitment?.status) === (act.type === "accept_commitment" ? "fulfilled" : "declined")
-  );
+  const transitionCommitmentStatus = clean(transition?.stateAfter?.pendingCommitmentStatus);
+  const pendingCommitmentResolved = !commitmentActs.length || commitmentActs.every((act) => {
+    const expected = act.type === "accept_commitment" ? "fulfilled" : "declined";
+    return transitionCommitmentStatus === expected || (
+      clean(deal?.pendingCommitment?.id) === clean(act.commitmentId) &&
+      clean(deal?.pendingCommitment?.status) === expected
+    );
+  });
   const quoteHandles = [
     clean(deal?.activeQuote?.productHandle).toLowerCase(),
     ...(Array.isArray(deal?.activeQuote?.items)

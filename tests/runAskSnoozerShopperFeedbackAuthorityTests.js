@@ -190,6 +190,24 @@ async function main() {
   assert.equal(activeDeal(context).desiredDirection.feel, "softer");
   assert.equal(activeDeal(context).retainedPreferences.motion.value, "liked");
   assertRejectedNotRendered(context, fifth.outcome);
+  const fifthQuality = buildAskSnoozerQualityTrace({
+    traceId: "feedback-quality-commitment",
+    sessionId: "feedback-quality-commitment",
+    query: "Yes.",
+    reply: fifth.outcome.reply,
+    plan: fifth.plan,
+    context: { ...context, recentConversation: context.recentConversation.slice(0, -2) },
+    products: fifth.outcome.products,
+    actions: fifth.outcome.actions,
+    chips: fifth.outcome.chips,
+    gate: fifth.outcome.gate,
+    modelGate: fifth.outcome.modelGate,
+    compositionMode: fifth.outcome.compositionMode,
+    modelCallCount: fifth.outcome.modelCallCount,
+    factPackComplete: true,
+  });
+  assert.equal(fifthQuality.pendingCommitmentResolved, true);
+  assert.notEqual(fifthQuality.outcome.category, "friction");
 
   const sixth = await runTurn(context, "Stop telling me about the All Foam.", new Date(start.getTime() + 300_000));
   context = sixth.context;
