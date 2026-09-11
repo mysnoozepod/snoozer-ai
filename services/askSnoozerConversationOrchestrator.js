@@ -13,7 +13,7 @@ const {
   setupSizeForSelection,
 } = require("./commerceConfigurationResolver");
 
-const ORCHESTRATOR_VERSION = "2026-09-09.1";
+const ORCHESTRATOR_VERSION = "2026-09-11.2";
 const PRODUCT_VARIANT_GID = /^gid:\/\/shopify\/ProductVariant\/[^\s/?#]+$/;
 const INTERNAL_LANGUAGE = Object.freeze([
   "shopify",
@@ -201,6 +201,25 @@ function activeDeal(context = {}) {
   return isObject(activeMemory(context)?.activeDeal) ? activeMemory(context).activeDeal : {};
 }
 
+function interpretedActs(context = {}) {
+  const acts = activeMemory(context)?.lastTransition?.interpretedActs;
+  return Array.isArray(acts) ? acts : [];
+}
+
+function rejectedHandles(context = {}) {
+  return new Set(
+    (Array.isArray(activeDeal(context)?.rejectedProducts) ? activeDeal(context).rejectedProducts : [])
+      .filter((item) => clean(item?.status || "rejected") === "rejected")
+      .map((item) => clean(item?.handle).toLowerCase())
+      .filter(Boolean)
+  );
+}
+
+function activeSessionRecommendationHandle(context = {}) {
+  const handle = clean(activeDeal(context)?.sessionRecommendation?.productHandle).toLowerCase();
+  return handle && !rejectedHandles(context).has(handle) ? handle : "";
+}
+
 function resolveCanonicalHandle(context = {}) {
   return clean(
     activeDeal(context)?.canonicalRecommendation?.primaryMattressHandle ||
@@ -219,11 +238,14 @@ function canonicalPodName(context = {}) {
 }
 
 function resolveActiveHandle(context = {}) {
-  return clean(
-    activeDeal(context)?.activeProductHandle ||
-      activeDeal(context)?.recentProductHandle ||
-      resolveCanonicalHandle(context)
-  ).toLowerCase();
+  const rejected = rejectedHandles(context);
+  const candidates = [
+    activeDeal(context)?.activeProductHandle,
+    activeSessionRecommendationHandle(context),
+    activeDeal(context)?.recentProductHandle,
+    resolveCanonicalHandle(context),
+  ];
+  return candidates.map((value) => clean(value).toLowerCase()).find((handle) => handle && !rejected.has(handle)) || "";
 }
 
 function resolveComparisonHandles(query = "", context = {}) {
@@ -232,9 +254,11 @@ function resolveComparisonHandles(query = "", context = {}) {
   const existing = Array.isArray(deal.comparisonProductHandles) ? deal.comparisonProductHandles : [];
   const active = resolveActiveHandle(context);
   const canonical = resolveCanonicalHandle(context);
-  const resolved = unique(existing.concat(active, explicit, canonical));
+  const rejected = rejectedHandles(context);
+  const resolved = unique(existing.concat(active, explicit, canonical)).filter((handle) => !rejected.has(handle));
   if (/\b(?:compare|compares|comparison|versus|\bvs\b)\b/.test(normalizeAskSnoozerText(query)) && resolved.length === 1) {
-    resolved.push(resolved[0] === "14-hybrid" ? "12-all-foam-mattress" : "14-hybrid");
+    const fallback = resolved[0] === "14-hybrid" ? "12-dual-comfort-hybrid" : "14-hybrid";
+    if (!rejected.has(fallback)) resolved.push(fallback);
   }
   return resolved.slice(0, 2);
 }
@@ -318,7 +342,7 @@ function inferStage(taskType = "", previous = "exploring") {
   if (["price_quote", "bundle_quote", "compatibility"].includes(taskType)) return "configuring";
   if (["value_judgment", "savings_quote", "advisor_opinion", "compound_product_base", "durability_objection"].includes(taskType)) return "evaluating_value";
   if (["product_comparison", "firmness_compare", "advisor_choice"].includes(taskType)) return "comparing";
-  if (["canonical_recommendation", "canonical_recall", "product_experience", "hybrid_exploration", "configuration_update", "confusion_recovery"].includes(taskType)) return "narrowing";
+  if (["canonical_recommendation", "canonical_recall", "product_experience", "hybrid_exploration", "configuration_update", "confusion_recovery", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "commitment_declined", "commitment_resolution"].includes(taskType)) return "narrowing";
   return clean(previous) || "exploring";
 }
 
@@ -337,6 +361,14 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   const explicitHandle = resolveExplicitProductHandle(query);
   const explicitBase = resolveExplicitBaseSelection(query);
   const parsedSize = parseAskSnoozerSizeLabel(query);
+  const acts = interpretedActs(context);
+  const actTypes = new Set(acts.map((act) => clean(act?.type)));
+  const feedbackHandle = clean(
+    acts.find((act) => clean(act?.handle))?.handle ||
+      activeMemory(context)?.lastTransition?.stateBefore?.activeProductHandle
+  ).toLowerCase();
+  const acceptedCommitment = acts.find((act) => act.type === "accept_commitment") || null;
+  const declinedCommitment = acts.find((act) => act.type === "decline_commitment") || null;
   const correctionCue = /\b(?:no i meant|not that|other one|you misunderstood|that.s not what i meant|actually|changed my mind|instead|switch|make that|remove|without|mattress only|failed|try again|go back|return to)\b/.test(text);
   const size =
     parsedSize === "Full" && /\b(?:full|complete|whole) setup\b/.test(text)
@@ -350,7 +382,17 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   let taskType = "legacy";
   let staleRouteOverride = false;
 
-  if (/\b(?:i am|i'm|im) (?:confused|lost)|\b(?:wait,? )?what am i choosing|\bsimplify (?:this|it)\b/.test(text)) taskType = "confusion_recovery";
+  if (actTypes.has("reconsider_product")) taskType = "reconsider_product";
+  else if (actTypes.has("trust_risk")) taskType = "trust_recovery";
+  else if (acceptedCommitment?.commitmentType === "find_alternative" || actTypes.has("request_alternative")) taskType = "alternative_resolution";
+  else if (acceptedCommitment) taskType = "commitment_resolution";
+  else if (declinedCommitment) taskType = "commitment_declined";
+  else if (
+    actTypes.has("reject_product") ||
+    actTypes.has("product_feedback") ||
+    (actTypes.has("retain_preference") && actTypes.has("explicit_exclusion"))
+  ) taskType = "shopper_feedback";
+  else if (actTypes.has("confusion") || /\b(?:i am|i'm|im) (?:confused|lost)|\b(?:wait,? )?what am i choosing|\bsimplify (?:this|it)\b/.test(text)) taskType = "confusion_recovery";
   else if (explicitHandle && /\b(?:not sure|uncertain)\b.*\b(?:motion|base)\b/.test(text)) taskType = "compound_product_base";
   else if (/\b(?:sag|sagging|body impression|wear out|durability|hold up)\b/.test(text)) taskType = "durability_objection";
   else if (/\b(?:tell me about|show me|what about)\b.*\b(?:your )?hybrids\b|\byour hybrids\b/.test(text)) taskType = "hybrid_exploration";
@@ -434,6 +476,12 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       "configuration_update",
       "confusion_recovery",
       "warranty_explanation",
+      "shopper_feedback",
+      "alternative_resolution",
+      "trust_recovery",
+      "reconsider_product",
+      "commitment_declined",
+      "commitment_resolution",
     ].includes(taskType) ||
       /\b(?:return policy|returns?|warranty|delivery|financing|rewards?|snooze sessions?)\b/.test(text)
   );
@@ -463,7 +511,9 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     ? canonicalHandle
     : unresolvedExplicitProductSubject
       ? null
-      : referenceResolution.handle || explicitHandle || activeHandle || workingGoal?.productHandle || canonicalHandle;
+      : ["shopper_feedback", "trust_recovery"].includes(taskType)
+        ? feedbackHandle || explicitHandle || null
+        : referenceResolution.handle || explicitHandle || activeHandle || workingGoal?.productHandle || canonicalHandle;
   let comparisonHandles = resolveComparisonHandles(query, referenceContext);
   if (taskType === "hybrid_exploration") {
     comparisonHandles = unique([activeHandle, "12-dual-comfort-hybrid", "14-hybrid"]).slice(0, 3);
@@ -472,6 +522,10 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       ...comparisonHandles,
       activeHandle === "14-hybrid" ? "12-all-foam-mattress" : "14-hybrid",
     ]).slice(0, 2);
+  } else if (["alternative_resolution", "trust_recovery", "shopper_feedback"].includes(taskType)) {
+    comparisonHandles = unique(activeDeal(context)?.eligibleAlternativeHandles || []).filter(
+      (handle) => !rejectedHandles(context).has(handle)
+    ).slice(0, 3);
   }
   const needsCommerce = ["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(taskType);
   const needsCompatibility = ["bundle_quote", "compatibility", "cart_add"].includes(taskType);
@@ -525,6 +579,12 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     "compatibility",
     "bundle_quote",
     "warranty_explanation",
+    "shopper_feedback",
+    "alternative_resolution",
+    "trust_recovery",
+    "reconsider_product",
+    "commitment_declined",
+    "commitment_resolution",
   ].includes(taskType);
 
   return {
@@ -536,6 +596,9 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       activeProductHandle: activeHandle || null,
       requestedProductHandle: quoteReferenceHandle || null,
       comparisonProductHandles: comparisonHandles,
+      rejectedProductHandles: Array.from(rejectedHandles(context)),
+      sessionRecommendationHandle: activeSessionRecommendationHandle(context) || null,
+      feedbackProductHandle: feedbackHandle || null,
       resolution: referenceResolution,
     },
     protectedReferences: [...new Set([
@@ -550,6 +613,8 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       motionKey: explicitBase.motionKey || deal.activeMotionKey || workingGoal?.motionKey || null,
       painPoints: activeMemory(context)?.slots?.painPoints?.value || [],
       baseDecision: clean(deal.baseDecision || deal.decision?.adjustableBase) || null,
+      retainedPreferences: isObject(deal.retainedPreferences) ? deal.retainedPreferences : {},
+      desiredDirection: isObject(deal.desiredDirection) ? deal.desiredDirection : {},
     },
     neededFacts: needsCommerce && !size ? ["size"] : [],
     requiredSources: unique([
@@ -562,7 +627,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     needsModel: handled && modelEligible,
     needsCommerce,
     needsCompatibility,
-    needsKnowledge: ["product_experience", "product_comparison", "base_education", "advisor_choice", "compound_product_base", "durability_objection", "hybrid_exploration"].includes(taskType),
+    needsKnowledge: ["product_experience", "product_comparison", "base_education", "advisor_choice", "compound_product_base", "durability_objection", "hybrid_exploration", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product"].includes(taskType),
     needsPolicy: ["medical_boundary", "warranty_explanation"].includes(taskType),
     allowedActions: taskType === "cart_add" ? ["add_to_cart"] : [],
     commercialState: {
@@ -574,7 +639,10 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       activeGoalStillActionable: Boolean(continuingPriceGoal),
       clearSubjectChange: clearlyChangedSubject,
       requestedScope: clean(workingGoal?.scope) || null,
+      quoteInvalidation: clean(deal.activeQuote?.invalidationReason) || null,
     },
+    interpretedActs: acts,
+    pendingCommitment: isObject(deal.pendingCommitment) ? deal.pendingCommitment : null,
     staleRouteOverride,
     commercialCompletionAttempted: Boolean(
       readyCommercialGoal && ["price_quote", "bundle_quote", "compatibility"].includes(taskType)
@@ -614,6 +682,8 @@ function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
   const handles = unique([
     plan?.references?.canonicalRecommendation,
     plan?.references?.activeProductHandle,
+    plan?.references?.feedbackProductHandle,
+    plan?.references?.sessionRecommendationHandle,
     ...(plan?.references?.comparisonProductHandles || []),
     plan?.knownFacts?.baseHandle,
   ]);
@@ -635,6 +705,14 @@ function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
       activeDeal(context)?.recentProductHandle,
     ]),
     comparisonProducts: plan?.references?.comparisonProductHandles || [],
+    rejectedProducts: Array.isArray(activeDeal(context)?.rejectedProducts)
+      ? activeDeal(context).rejectedProducts
+      : [],
+    productFeedback: isObject(activeDeal(context)?.productFeedback) ? activeDeal(context).productFeedback : {},
+    retainedPreferences: isObject(activeDeal(context)?.retainedPreferences) ? activeDeal(context).retainedPreferences : {},
+    desiredDirection: isObject(activeDeal(context)?.desiredDirection) ? activeDeal(context).desiredDirection : {},
+    sessionRecommendation: activeDeal(context)?.sessionRecommendation || null,
+    pendingCommitment: activeDeal(context)?.pendingCommitment || null,
     recentTurns: (activeMemory(context)?.conversationFocus?.relevantTurns || context?.recentConversation || [])
       .slice(-6)
       .map((turn) => ({ role: clean(turn?.role), content: clean(turn?.content).slice(0, 600) })),
@@ -661,6 +739,16 @@ function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
         firmness: activeMemory(context)?.slots?.firmness?.value || null,
         activeProductHandle: activeDeal(context)?.activeProductHandle || null,
         baseDecision: plan?.knownFacts?.baseDecision || null,
+        sessionRecommendation: activeDeal(context)?.sessionRecommendation || null,
+        rejectedProducts: Array.isArray(activeDeal(context)?.rejectedProducts)
+          ? activeDeal(context).rejectedProducts
+          : [],
+        retainedPreferences: isObject(activeDeal(context)?.retainedPreferences)
+          ? activeDeal(context).retainedPreferences
+          : {},
+        desiredDirection: isObject(activeDeal(context)?.desiredDirection)
+          ? activeDeal(context).desiredDirection
+          : {},
       },
       explicitRecentStatements: [clean(query)].filter(Boolean),
       size: plan?.knownFacts?.size || null,
@@ -674,8 +762,22 @@ function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
     canonicalRecommendation: context?.canonicalRecommendation || null,
     recommendation: {
       canonicalProduct: resolveCanonicalHandle(context) || null,
+      sessionProduct: activeSessionRecommendationHandle(context) || null,
       reasons: context?.canonicalRecommendation?.reasons || context?.canonicalRecommendation?.recommendation?.reasons || [],
     },
+    sessionRecommendation: activeDeal(context)?.sessionRecommendation || null,
+    rejectedProducts: Array.isArray(activeDeal(context)?.rejectedProducts)
+      ? activeDeal(context).rejectedProducts
+      : [],
+    productFeedback: isObject(activeDeal(context)?.productFeedback) ? activeDeal(context).productFeedback : {},
+    retainedPreferences: isObject(activeDeal(context)?.retainedPreferences) ? activeDeal(context).retainedPreferences : {},
+    desiredDirection: isObject(activeDeal(context)?.desiredDirection) ? activeDeal(context).desiredDirection : {},
+    pendingCommitment: activeDeal(context)?.pendingCommitment || null,
+    eligibleAlternatives: (activeDeal(context)?.eligibleAlternativeHandles || [])
+      .filter((handle) => !rejectedHandles(context).has(handle))
+      .map((handle) => byHandle.get(handle))
+      .filter(Boolean),
+    explicitExclusions: Array.from(rejectedHandles(context)),
     conversation: conversationContext,
     products,
     productFacts: [],
@@ -844,6 +946,14 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
   const second = comparison.find((handle) => handle !== first) || (first === "14-hybrid" ? canonical : "14-hybrid");
   const firstTitle = titleFor(first);
   const secondTitle = titleFor(second);
+  const rejected = rejectedHandles(context);
+  const feedbackHandle = clean(plan?.references?.feedbackProductHandle).toLowerCase();
+  const feedbackTitle = titleFor(feedbackHandle);
+  const sessionHandle = activeSessionRecommendationHandle(context);
+  const sessionTitle = titleFor(sessionHandle);
+  const retainedMotion = activeDeal(context)?.retainedPreferences?.motion?.value === "liked";
+  const desired = activeDeal(context)?.desiredDirection || {};
+  const savedSize = plan?.knownFacts?.size || activeDeal(context)?.activeSize || null;
   const recoveryPrefix = plan?.recovery?.acknowledgement
     ? plan.recovery.type === "size_change"
       ? "Got it—I updated the size. "
@@ -861,12 +971,40 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
     : "";
 
   switch (plan.taskType) {
+    case "shopper_feedback": {
+      const reason = activeDeal(context)?.productFeedback?.[feedbackHandle]?.feel;
+      const feeling = reason === "too_firm"
+        ? "felt too firm to you"
+        : reason === "too_soft"
+          ? "felt too soft to you"
+          : "did not feel right to you";
+      const retained = [savedSize ? `${savedSize} size` : "", retainedMotion ? "the motion features you liked" : ""]
+        .filter(Boolean)
+        .join(" and ");
+      return `The ${feedbackTitle || "mattress"} ${feeling}, so I have taken it off your active list. ${retained ? `I am keeping your ${retained} in the search. ` : ""}Would you like me to find ${desired.feel === "softer" ? "another" : "a"} softer alternative from the mattresses available here?`;
+    }
+    case "alternative_resolution":
+      if (!sessionHandle) {
+        return "I have kept the mattress you ruled out off your list, but I do not have another eligible showroom mattress I can recommend confidently from the current selection. I will not invent an option that is not available.";
+      }
+      return `I have kept the mattress you ruled out off your list. The ${sessionTitle} is the strongest eligible next test${retainedMotion ? " while keeping the motion features you liked in the plan" : ""}. It gives you a genuinely different construction and feel, but I will not promise it is softer for your body until you try it. ${savedSize ? `I kept ${savedSize} as your size.` : ""}`.trim();
+    case "trust_recovery":
+      return `You are right to correct me. The ${feedbackTitle || "mattress you rejected"} is off your active list, and I will not recommend or price it again unless you ask to reconsider it. ${retainedMotion ? "I am keeping the motion features you liked. " : ""}${desired.feel === "softer" ? "The next step is a softer-feeling alternative from the mattresses actually available here." : "I will continue only with eligible alternatives."}`;
+    case "commitment_declined":
+      return `Got it—I will not take that next step. ${rejected.size ? "The mattress you ruled out stays off your list. " : ""}${savedSize ? `Your ${savedSize} size remains saved for this visit.` : "Your other current choices remain unchanged."}`;
+    case "commitment_resolution":
+      return `Got it—I am continuing with the ${clean(plan?.pendingCommitment?.type).replace(/_/g, " ") || "next step"} you accepted, using only the products and preferences still active in this visit.`;
+    case "reconsider_product":
+      return `The ${activeTitle} is back in consideration because you explicitly asked to revisit it. Your earlier feedback is still part of this visit, so we can compare it honestly without pretending that concern disappeared.`;
     case "reference_clarification":
       return "I have two products in view and do not want to guess. Which one do you mean?";
     case "correction_clarification":
       return "Thanks for correcting me. What should I change—the mattress, size, base, or motion setup?";
     case "canonical_recommendation":
     case "canonical_recall":
+      if (canonical && rejected.has(canonical)) {
+        return `Your assessment originally started with the ${titleFor(canonical)}, but you ruled it out during this visit. ${sessionHandle ? `Your current session recommendation is the ${sessionTitle}.` : "I will keep it as history and find an eligible alternative instead of putting it back on your list."}`;
+      }
       return `I would start you with ${canonicalPodName(context)} and the ${titleFor(canonical)}. For a side sleeper focused on shoulder and hip comfort, its closer contour is the better first test. Lie on your side for several quiet minutes and notice whether those pressure points relax without your midsection sinking too far.`;
     case "product_experience":
       if (active === "14-hybrid") {
@@ -877,16 +1015,18 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       }
       return `${recoveryPrefix}On the ${activeTitle}, you should notice a deeper, more even cradle around your shoulders and hips, with less bounce when you change position. The useful test is whether ${pressureLanguage} eases while your waist still feels supported. If you feel stuck or your hips drop too far, it is softer than you need.`;
     case "product_comparison":
-      return `The ${firstTitle} gives you a closer, steadier contour with less bounce, while the ${secondTitle} feels more lifted, springy, and breathable. For your shoulder and hip pressure, I would try the ${titleFor(canonical)} first; choose the 14-inch Hybrid only if you prefer more lift and easier movement enough to trade away some of that close contour.`;
+      return `The ${firstTitle} gives you a closer, steadier contour with less bounce, while the ${secondTitle} feels more lifted, springy, and breathable. For your current visit, I would start with the ${titleFor(sessionHandle || canonical || first || active)} and use your shoulder and hip pressure—not the original assessment alone—to decide.`;
     case "advisor_choice":
       if (/\bwould you buy\b/.test(text)) {
-        return `For the needs you have described, I would buy the ${titleFor(canonical)} and keep it mattress-only unless elevation clearly improved your comfort during the Rest Test. That is the less expensive setup, and the base is only worth adding if you can name a benefit you actually felt.`;
+        return `For the needs you have described, I would buy the ${titleFor(sessionHandle || canonical || active)} and keep it mattress-only unless elevation clearly improved your comfort during the Rest Test. That is the less expensive setup, and the base is only worth adding if you can name a benefit you actually felt.`;
       }
-      return `I would choose the ${titleFor(canonical)} for you. Shoulder and hip pressure is primarily a contouring test, and the foam option is the stronger fit for that need. The 14-inch Hybrid is the better alternative only if you dislike a close foam feel and want more lift and bounce.`;
+      return `I would choose the ${titleFor(sessionHandle || canonical || active)} for you based on what you have learned during this visit. Your shoulder and hip pressure during the Rest Test should make the final call, because your live comfort feedback matters more than the assessment starting point.`;
     case "durability_objection":
       return `That is a fair concern. The ${activeTitle} uses supportive base foam and CertiPUR-US certified foams, but neither construction nor certification is a promise that normal softening or body impressions can never happen. Use the support specified for the mattress, keep it protected, and rotate it when the care guidance allows; those basics help prevent uneven wear. If you want a more lifted feel and the reassurance of a coil support unit, compare a hybrid, but I would not move you away from the All Foam solely out of fear before you compare the feel and warranty tradeoff.`;
     case "hybrid_exploration":
-      return `Given your concern about long-term wear, the two hybrids worth comparing are the 12-inch Dual Comfort Hybrid and the 14-inch Hybrid. Both combine foam comfort with coil support and airflow; the Dual Comfort is the stronger choice for couples who want different comfort choices by side, while the 14-inch Hybrid is the simpler lifted, responsive alternative. A hybrid will feel easier to move on than the All Foam, but it will not give quite the same close contour or motion isolation. I would try the Dual Comfort next if split comfort matters; otherwise start with the 14-inch Hybrid and compare shoulder pressure directly against the All Foam.`;
+      return rejected.has("12-all-foam-mattress")
+        ? "The two hybrids worth comparing are the 12-inch Dual Comfort Hybrid and the 14-inch Hybrid. Both combine foam comfort with coil support and airflow; the Dual Comfort is the stronger choice for couples who want different comfort choices by side, while the 14-inch Hybrid is the simpler lifted, responsive alternative. Since you already ruled out the previous mattress, compare these two directly for shoulder pressure and ease of movement."
+        : "Given your concern about long-term wear, the two hybrids worth comparing are the 12-inch Dual Comfort Hybrid and the 14-inch Hybrid. Both combine foam comfort with coil support and airflow; the Dual Comfort is the stronger choice for couples who want different comfort choices by side, while the 14-inch Hybrid is the simpler lifted, responsive alternative. A hybrid will feel easier to move on than the All Foam, but it will not give quite the same close contour or motion isolation.";
     case "compound_product_base":
       return `The ${activeTitle} is your current mattress choice, and the motion base is still optional. The mattress does not need motion to deliver its comfort; the base earns its cost only if elevation gives you a benefit you can actually feel for relaxing, reading, or sleeping. I would compare the mattress-only price with Standard Motion before deciding, and I would save the money if elevation did not matter during your Rest Test.`;
     case "configuration_update": {
@@ -897,6 +1037,10 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
     case "confusion_recovery": {
       const size = plan?.knownFacts?.size || activeDeal(context)?.activeSize || "your selected size";
       const baseOpen = clean(plan?.knownFacts?.baseDecision) === "undecided" || clean(activeDeal(context)?.baseDecision) === "undecided";
+      if (rejected.size) {
+        const ruledOut = Array.from(rejected).map(titleFor).filter(Boolean).join(" and ");
+        return `Here is the simple version: you ruled out the ${ruledOut} because it did not feel right to you. ${retainedMotion ? "You still like the motion features. " : ""}${desired.feel === "softer" ? "We are now looking for a softer-feeling mattress" : "We are now looking for another eligible mattress"}${size ? ` in ${size}` : ""}.`;
+      }
       return `Here is the simple version: you are looking at the ${activeTitle} in ${size}. ${baseOpen ? "The only open decision is whether the motion base is worth adding." : "The mattress and size are already decided."} ${baseOpen ? "I can show the mattress-only price first or compare it with Standard Motion." : "I can price that setup next."}`;
     }
     case "warranty_explanation":
@@ -965,6 +1109,19 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
 }
 
 function buildContextualChips({ plan = {}, quote = null } = {}) {
+  if (["shopper_feedback", "trust_recovery"].includes(plan.taskType)) {
+    return [
+      { label: "Find a softer alternative", value: "Yes", type: "prompt" },
+      { label: "Not now", value: "No", type: "prompt" },
+    ];
+  }
+  if (plan.taskType === "alternative_resolution") {
+    return [
+      { label: "Compare eligible options", value: "Compare the eligible alternatives for me.", type: "prompt" },
+      { label: "Help me test it", value: "What should I notice when I try that one?", type: "prompt" },
+    ];
+  }
+  if (["commitment_declined", "commitment_resolution", "reconsider_product"].includes(plan.taskType)) return [];
   if (["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType) && !quote?.ok) {
     if (quote?.compatibility?.status === "incompatible") {
       return [
@@ -1049,6 +1206,36 @@ function adaptResponseDepth(reply = "", depth = "standard") {
 function validateResponseConsistency({ reply = "", quote = null, products = [], actions = [], plan = {}, factPack = null } = {}) {
   const violations = [];
   const lower = clean(reply).toLowerCase();
+  const rejected = new Set(
+    (Array.isArray(factPack?.explicitExclusions) ? factPack.explicitExclusions : plan?.references?.rejectedProductHandles || [])
+      .map((handle) => clean(handle).toLowerCase())
+      .filter(Boolean)
+  );
+  for (const product of products) {
+    const handle = clean(product?.handle).toLowerCase();
+    if (handle && rejected.has(handle)) violations.push(`rejected_product_card:${handle}`);
+  }
+  for (const action of actions) {
+    const handle = clean(action?.payload?.handle || action?.handle).toLowerCase();
+    if (handle && rejected.has(handle)) violations.push(`rejected_product_action:${handle}`);
+  }
+  const sessionRecommendationHandle = clean(factPack?.sessionRecommendation?.productHandle).toLowerCase();
+  if (sessionRecommendationHandle && rejected.has(sessionRecommendationHandle)) {
+    violations.push(`rejected_session_recommendation:${sessionRecommendationHandle}`);
+  }
+  const recommendationCue = /\b(?:recommend|suggest|choose|go with|start with|best option|good match|great fit|current choice|active choice)\b/;
+  const exclusionCue = /\b(?:ruled out|off (?:the|your) list|do not recommend|don.t recommend|will not recommend|not recommending|instead of|anything but|except|rejected|didn.t like|did not like|too firm|too soft)\b/;
+  const replySentences = clean(reply).toLowerCase().match(/[^.!?]+[.!?]?/g) || [];
+  for (const handle of rejected) {
+    const productTitle = titleFor(handle).toLowerCase();
+    const productStem = productTitle.replace(/\s+mattress$/i, "");
+    const positivelyReintroduced = replySentences.some((sentence) =>
+      (sentence.includes(productTitle) || sentence.includes(productStem)) &&
+      recommendationCue.test(sentence) &&
+      !exclusionCue.test(sentence)
+    );
+    if (positivelyReintroduced) violations.push(`rejected_product_recommendation:${handle}`);
+  }
   if (!plan.technicalLanguageAllowed) {
     for (const phrase of INTERNAL_LANGUAGE) {
       if (lower.includes(phrase)) violations.push(`internal_language:${phrase}`);
@@ -1158,8 +1345,17 @@ async function resolveAskSnoozerAdvisorTurn({
       rawProducts = await fetchByHandles(fetchProductsByHandles, quote.items.map((item) => item.handle));
     }
   } else if (["canonical_recommendation", "canonical_recall"].includes(resolvedPlan.taskType)) {
-    rawProducts = await fetchByHandles(fetchProductsByHandles, [resolveCanonicalHandle(context)]);
+    const canonicalHandle = resolveCanonicalHandle(context);
+    rawProducts = rejectedHandles(context).has(canonicalHandle)
+      ? []
+      : await fetchByHandles(fetchProductsByHandles, [canonicalHandle]);
+  } else if (["alternative_resolution", "reconsider_product"].includes(resolvedPlan.taskType)) {
+    rawProducts = await fetchByHandles(fetchProductsByHandles, [
+      activeSessionRecommendationHandle(context) || resolveActiveHandle(context),
+    ]);
   }
+  const rejected = rejectedHandles(context);
+  rawProducts = rawProducts.filter((product) => !rejected.has(clean(product?.handle).toLowerCase()));
   const byHandle = new Map(rawProducts.map((product) => [clean(product.handle).toLowerCase(), product]));
   const fullSetupRequested = Boolean(
     resolvedPlan.taskType === "bundle_quote" ||

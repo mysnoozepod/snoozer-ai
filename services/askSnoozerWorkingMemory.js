@@ -4,8 +4,9 @@ const {
   parseAskSnoozerSizeLabel,
 } = require("./askSnoozerIntents");
 
-const WORKING_MEMORY_VERSION = 2;
+const WORKING_MEMORY_VERSION = 3;
 const PRICE_GOAL_INTENT = "price_quote";
+const PENDING_COMMITMENT_TTL_MS = 15 * 60 * 1000;
 const ACTIVE_GOAL_STATUSES = new Set([
   "collecting_slots",
   "ready",
@@ -27,6 +28,139 @@ function uniqueStrings(values = []) {
   return Array.from(
     new Set((Array.isArray(values) ? values : []).map(clean).filter(Boolean))
   );
+}
+
+function normalizeHandle(value = "") {
+  return clean(value).toLowerCase();
+}
+
+function normalizeRejectedProducts(values = []) {
+  const byHandle = new Map();
+  for (const item of Array.isArray(values) ? values : []) {
+    const handle = normalizeHandle(item?.handle || item);
+    if (!handle) continue;
+    byHandle.set(handle, {
+      handle,
+      reason: clean(item?.reason) || "other",
+      turnId: clean(item?.turnId) || null,
+      rejectedAt: clean(item?.rejectedAt) || null,
+      reconsideredAt: clean(item?.reconsideredAt) || null,
+      status: clean(item?.status) === "reconsidered" ? "reconsidered" : "rejected",
+    });
+  }
+  return Array.from(byHandle.values());
+}
+
+function rejectedHandleSet(deal = {}) {
+  return new Set(
+    normalizeRejectedProducts(deal?.rejectedProducts)
+      .filter((item) => item.status === "rejected")
+      .map((item) => item.handle)
+  );
+}
+
+function activePendingCommitment(value, now = new Date()) {
+  if (!isObject(value) || clean(value.status || "pending") !== "pending") return null;
+  const expiresAt = Date.parse(clean(value.expiresAt));
+  if (Number.isFinite(expiresAt) && expiresAt <= new Date(now).getTime()) {
+    return { ...value, status: "expired", resolvedAt: nowIso(now) };
+  }
+  return { ...value, status: "pending" };
+}
+
+function resolveFeedbackReason(text = "") {
+  if (/\btoo firm\b|\bfelt (?:far )?too firm\b/.test(text)) return "too_firm";
+  if (/\btoo soft\b|\bfelt (?:far )?too soft\b/.test(text)) return "too_soft";
+  if (/\btoo hot\b|\bslept hot\b|\bmade me hot\b/.test(text)) return "too_hot";
+  if (/\buncomfortable\b|\bnot comfortable\b/.test(text)) return "uncomfortable";
+  if (/\bdid not like\b|\bdidn.t like\b|\bdon.t like\b|\bdont like\b/.test(text)) return "did_not_like";
+  if (/\bnot interested\b|\bdon.t want\b|\bdont want\b/.test(text)) return "not_interested";
+  if (/\banything (?:but|except)\b|\bstop (?:telling|showing|recommending)\b|\bdo not show\b|\bdon.t show\b/.test(text)) {
+    return "explicit_exclusion";
+  }
+  return "";
+}
+
+function resolveFeedbackSubject(query = "", previousDeal = {}) {
+  const explicit = resolveExplicitProductHandle(query);
+  if (explicit) return explicit;
+  const text = normalizeAskSnoozerText(query);
+  const shortReference = /\b(?:it|that one|this one|that mattress|this mattress|the first one)\b/.test(text);
+  if (!shortReference && !/\btoo (?:firm|soft|hot)\b|\bdidn.t like\b|\bdid not like\b/.test(text)) return "";
+  return normalizeHandle(
+    previousDeal?.activeProductHandle ||
+      previousDeal?.sessionRecommendation?.productHandle ||
+      previousDeal?.recentProductHandle
+  );
+}
+
+function interpretShopperActs({ query = "", previousDeal = {}, turnIndex = 1, now = new Date() } = {}) {
+  const text = normalizeAskSnoozerText(query);
+  const turnId = `turn-${Math.max(1, Number(turnIndex) || 1)}`;
+  const subjectHandle = resolveFeedbackSubject(query, previousDeal);
+  const pending = activePendingCommitment(previousDeal?.pendingCommitment, now);
+  const acts = [];
+  const add = (type, detail = {}) => acts.push({ type, ...detail });
+  const reconsider = /\b(?:actually|again|reconsider|go back|show me)\b.*\b(?:all foam|first mattress|first one)\b|\b(?:reconsider|show me)\b.*\bagain\b/.test(text);
+
+  if (reconsider && subjectHandle) {
+    add("reconsider_product", { handle: subjectHandle, turnId });
+  } else {
+    const reason = resolveFeedbackReason(text);
+    if (reason && subjectHandle) {
+      add("reject_product", { handle: subjectHandle, reason, turnId });
+      if (reason === "explicit_exclusion") add("explicit_exclusion", { handle: subjectHandle, turnId });
+    }
+    if (subjectHandle && ["too_firm", "too_soft", "too_hot", "uncomfortable", "did_not_like"].includes(reason)) {
+      add("product_feedback", {
+        handle: subjectHandle,
+        feedback: reason,
+        turnId,
+      });
+    }
+  }
+
+  if (/\b(?:like|liked|prefer|preferred)\b.*\b(?:motion|elevation|adjustable base|raised|head up|feet up)\b/.test(text)) {
+    add("retain_preference", { key: "motion", value: "liked", turnId });
+    if (subjectHandle) add("product_feedback", { handle: subjectHandle, feedback: "liked_motion", turnId });
+  }
+  if (/\b(?:did not|didn.t|don.t|dont) like\b.*\b(?:motion|elevation|adjustable base)\b/.test(text)) {
+    add("retain_preference", { key: "motion", value: "disliked", turnId });
+    if (subjectHandle) add("product_feedback", { handle: subjectHandle, feedback: "disliked_motion", turnId });
+  }
+
+  const direction = /\b(?:want|need|looking for|show me|find me)\b.*\bsofter\b|^softer[.!]?$/.test(text)
+    ? { key: "feel", value: "softer" }
+    : /\b(?:want|need|looking for|show me|find me)\b.*\bfirmer\b|^firmer[.!]?$/.test(text)
+      ? { key: "feel", value: "firmer" }
+      : /\b(?:want|need|looking for|show me|find me)\b.*\bcooler\b|^cooler[.!]?$/.test(text)
+        ? { key: "temperature", value: "cooler" }
+        : /\b(?:want|need|looking for|show me|find me)\b.*\b(?:more responsive|more bounce|bouncier)\b/.test(text)
+          ? { key: "response", value: "more_responsive" }
+          : /\b(?:want|need|looking for|show me|find me)\b.*\b(?:less motion|less movement)\b/.test(text)
+            ? { key: "motionTransfer", value: "less_motion" }
+            : null;
+  if (direction) add("desired_direction", { ...direction, turnId });
+
+  const requestsAlternative = /\b(?:show|find|recommend)\b.*\b(?:something else|another option|another mattress|anything else|any other mattress|alternative)\b|\bwhat else do you have\b|\banything (?:but|except)\b/.test(text) || Boolean(direction);
+  if (requestsAlternative) add("request_alternative", { turnId });
+
+  if (/\b(?:stop telling me|stop showing me|stop recommending|you are not listening|you.re not listening|you keep recommending|already said|this is confusing|store isn.t right|store is not right)\b/.test(text)) {
+    add("trust_risk", { turnId });
+  }
+  if (/\b(?:i am|i.m|im) confused\b|\bgetting lost\b|\bwhat am i choosing\b|\bsimplify (?:this|it)\b/.test(text)) {
+    add("confusion", { turnId });
+  }
+
+  const affirmative = /^(?:yes|yeah|yep|sure|please|do that|show me|go ahead|okay do it|ok do it)[.!]?$/.test(text);
+  const negative = /^(?:no|nope|no thanks|not now|don.t do that|dont do that)[.!]?$/.test(text);
+  if (pending?.status === "pending" && affirmative) {
+    add("accept_commitment", { commitmentId: pending.id, commitmentType: pending.type, turnId });
+  } else if (pending?.status === "pending" && negative) {
+    add("decline_commitment", { commitmentId: pending.id, commitmentType: pending.type, turnId });
+  }
+
+  return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending };
 }
 
 function nowIso(now = new Date()) {
@@ -107,6 +241,7 @@ function resolveExplicitBaseSelection(query = "") {
 function resolveExplicitFirmness(query = "") {
   const text = normalizeAskSnoozerText(query);
   if (!text) return "";
+  if (!/\bnot too (?:firm|soft)\b/.test(text) && /\btoo (?:firm|soft)\b|\bfelt (?:far )?too (?:firm|soft)\b/.test(text)) return "";
   if (/\bmedium\b|\bnot too soft\b|\bnot soft\b/.test(text)) return "Medium";
   if (/\bfirm\b|\bfirmer\b/.test(text)) return "Firm";
   if (/\bsoft\b|\bsofter\b/.test(text)) return "Soft";
@@ -374,6 +509,204 @@ function inferDecision(query = "", previous = null) {
   return isObject(previous) ? previous : null;
 }
 
+function eligibleAlternativeHandles(deal = {}) {
+  const rejected = rejectedHandleSet(deal);
+  const desired = isObject(deal?.desiredDirection) ? deal.desiredDirection : {};
+  const retained = isObject(deal?.retainedPreferences) ? deal.retainedPreferences : {};
+  return (loadShowroomManifest()?.products || [])
+    .filter((product) =>
+      clean(product?.catalogType) === "mattress" &&
+      product?.active !== false &&
+      product?.recommendable !== false &&
+      !rejected.has(normalizeHandle(product?.handle))
+    )
+    .map((product) => {
+      const handle = normalizeHandle(product?.handle);
+      let score = 0;
+      if (retained?.motion?.value === "liked" && product?.attributes?.supportsSplitMotion) score += 5;
+      if (desired?.temperature === "cooler" && product?.attributes?.cooling) score += 4;
+      if (desired?.response === "more_responsive" && /hybrid/.test(handle)) score += 4;
+      if (desired?.feel === "softer" && product?.attributes?.dualComfort) score += 3;
+      if (desired?.motionTransfer === "less_motion" && /all-foam/.test(handle)) score += 2;
+      if (/hybrid/.test(handle)) score += 1;
+      return { handle, score };
+    })
+    .sort((a, b) => b.score - a.score || a.handle.localeCompare(b.handle))
+    .map((item) => item.handle);
+}
+
+function invalidateQuoteForRejectedProduct(quote, rejected) {
+  if (!isObject(quote) || !rejected?.size) return quote || null;
+  const quoteHandles = uniqueStrings([
+    quote.productHandle,
+    ...(Array.isArray(quote.items) ? quote.items.map((item) => item?.handle) : []),
+  ]).map(normalizeHandle);
+  const rejectedQuoteHandle = quoteHandles.find((handle) => rejected.has(handle));
+  if (!rejectedQuoteHandle) return quote;
+  return {
+    ...quote,
+    ok: false,
+    cartReady: false,
+    status: "invalidated",
+    invalidationReason: "product_rejected",
+    invalidatedProductHandle: rejectedQuoteHandle,
+  };
+}
+
+function reduceShopperFeedbackState({ query = "", previousDeal = {}, baseDeal = {}, turnIndex = 1, now = new Date() } = {}) {
+  const updatedAt = nowIso(now);
+  const interpretation = interpretShopperActs({ query, previousDeal, turnIndex, now });
+  const acts = interpretation.acts;
+  const before = {
+    activeProductHandle: normalizeHandle(previousDeal?.activeProductHandle) || null,
+    rejectedProductHandles: Array.from(rejectedHandleSet(previousDeal)),
+    sessionRecommendationHandle: normalizeHandle(previousDeal?.sessionRecommendation?.productHandle) || null,
+    quoteStatus: clean(previousDeal?.activeQuote?.status) || (previousDeal?.activeQuote?.cartReady ? "ready" : null),
+    pendingCommitment: clean(previousDeal?.pendingCommitment?.type) || null,
+  };
+  let rejectedProducts = normalizeRejectedProducts(previousDeal?.rejectedProducts);
+  const productFeedback = isObject(previousDeal?.productFeedback) ? { ...previousDeal.productFeedback } : {};
+  const retainedPreferences = isObject(previousDeal?.retainedPreferences) ? { ...previousDeal.retainedPreferences } : {};
+  const desiredDirection = isObject(previousDeal?.desiredDirection) ? { ...previousDeal.desiredDirection } : {};
+  let pendingCommitment = interpretation.pendingCommitment || null;
+  let sessionRecommendation = isObject(previousDeal?.sessionRecommendation)
+    ? { ...previousDeal.sessionRecommendation }
+    : null;
+
+  for (const act of acts) {
+    if (act.type === "reconsider_product") {
+      rejectedProducts = rejectedProducts.map((item) =>
+        item.handle === act.handle
+          ? { ...item, status: "reconsidered", reconsideredAt: updatedAt }
+          : item
+      );
+      sessionRecommendation = {
+        productHandle: act.handle,
+        source: "shopper_reconsideration",
+        reason: "explicit_reconsideration",
+        updatedAt,
+      };
+    }
+    if (act.type === "reject_product") {
+      const existing = rejectedProducts.find((item) => item.handle === act.handle);
+      const next = {
+        ...(existing || {}),
+        handle: act.handle,
+        reason: act.reason || existing?.reason || "other",
+        turnId: act.turnId,
+        rejectedAt: updatedAt,
+        reconsideredAt: null,
+        status: "rejected",
+      };
+      rejectedProducts = rejectedProducts.filter((item) => item.handle !== act.handle).concat(next);
+      if (sessionRecommendation?.productHandle === act.handle) sessionRecommendation = null;
+    }
+    if (act.type === "product_feedback") {
+      const existing = isObject(productFeedback[act.handle]) ? productFeedback[act.handle] : {};
+      const observations = uniqueStrings([...(existing.observations || []), act.feedback]);
+      productFeedback[act.handle] = {
+        ...existing,
+        feel: ["too_firm", "too_soft", "uncomfortable"].includes(act.feedback) ? act.feedback : existing.feel || null,
+        temperature: act.feedback === "too_hot" ? "too_hot" : existing.temperature || null,
+        motion: act.feedback === "liked_motion" ? "liked" : act.feedback === "disliked_motion" ? "disliked" : existing.motion || null,
+        sentiment: act.feedback === "did_not_like" ? "disliked" : existing.sentiment || null,
+        observations,
+        updatedAt,
+        turnId: act.turnId,
+      };
+    }
+    if (act.type === "retain_preference") {
+      retainedPreferences[act.key] = { value: act.value, updatedAt, turnId: act.turnId };
+    }
+    if (act.type === "desired_direction") {
+      desiredDirection[act.key] = act.value;
+    }
+    if (act.type === "accept_commitment" && pendingCommitment?.id === act.commitmentId) {
+      pendingCommitment = { ...pendingCommitment, status: "fulfilled", resolvedAt: updatedAt };
+      const constraints = isObject(pendingCommitment?.payload?.constraints)
+        ? pendingCommitment.payload.constraints
+        : {};
+      Object.assign(desiredDirection, constraints.desiredDirection || {});
+      Object.assign(retainedPreferences, constraints.retainedPreferences || {});
+    }
+    if (act.type === "decline_commitment" && pendingCommitment?.id === act.commitmentId) {
+      pendingCommitment = { ...pendingCommitment, status: "declined", resolvedAt: updatedAt };
+    }
+  }
+
+  const rejected = new Set(rejectedProducts.filter((item) => item.status === "rejected").map((item) => item.handle));
+  const explicitReconsider = acts.find((act) => act.type === "reconsider_product")?.handle || null;
+  const wantsAlternative = acts.some((act) => act.type === "request_alternative") ||
+    acts.some((act) => act.type === "accept_commitment" && act.commitmentType === "find_alternative");
+  const candidateDeal = { ...baseDeal, rejectedProducts, retainedPreferences, desiredDirection };
+  const alternatives = eligibleAlternativeHandles(candidateDeal);
+  if (wantsAlternative && alternatives.length) {
+    sessionRecommendation = {
+      productHandle: alternatives[0],
+      source: "shopper_feedback",
+      reason: clean(desiredDirection.feel || desiredDirection.temperature || desiredDirection.response || "eligible_alternative"),
+      alternatives,
+      updatedAt,
+    };
+  }
+
+  let activeProductHandle = normalizeHandle(baseDeal?.activeProductHandle) || null;
+  if (activeProductHandle && rejected.has(activeProductHandle)) activeProductHandle = null;
+  if (explicitReconsider) activeProductHandle = explicitReconsider;
+  else if (wantsAlternative && sessionRecommendation?.productHandle) activeProductHandle = sessionRecommendation.productHandle;
+  if (sessionRecommendation?.productHandle && rejected.has(sessionRecommendation.productHandle)) sessionRecommendation = null;
+
+  const comparisonProductHandles = uniqueStrings(baseDeal?.comparisonProductHandles || [])
+    .map(normalizeHandle)
+    .filter((handle) => !rejected.has(handle));
+  const activeQuote = invalidateQuoteForRejectedProduct(baseDeal?.activeQuote, rejected);
+  if (activeQuote?.status === "invalidated" && !activeQuote.invalidatedAt) activeQuote.invalidatedAt = updatedAt;
+
+  if (
+    pendingCommitment?.status === "pending" &&
+    acts.length &&
+    !acts.some((act) => ["accept_commitment", "decline_commitment"].includes(act.type)) &&
+    !acts.some((act) => act.type === "product_feedback" && acts.length === 1)
+  ) {
+    pendingCommitment = { ...pendingCommitment, status: "superseded", resolvedAt: updatedAt };
+  }
+
+  const activeDeal = {
+    ...baseDeal,
+    activeProductHandle,
+    recentProductHandle:
+      acts.find((act) => act.type === "reject_product")?.handle ||
+      baseDeal?.recentProductHandle ||
+      null,
+    comparisonProductHandles,
+    activeQuote,
+    rejectedProducts,
+    productFeedback,
+    retainedPreferences,
+    desiredDirection,
+    sessionRecommendation,
+    eligibleAlternativeHandles: alternatives,
+    pendingCommitment,
+  };
+  const after = {
+    activeProductHandle: activeDeal.activeProductHandle || null,
+    rejectedProductHandles: Array.from(rejected),
+    sessionRecommendationHandle: normalizeHandle(sessionRecommendation?.productHandle) || null,
+    quoteStatus: clean(activeQuote?.status) || (activeQuote?.cartReady ? "ready" : null),
+    pendingCommitment: clean(pendingCommitment?.type) || null,
+    pendingCommitmentStatus: clean(pendingCommitment?.status) || null,
+  };
+  const stateDelta = {};
+  for (const key of Object.keys(after)) {
+    if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) stateDelta[key] = after[key];
+  }
+  return {
+    activeDeal,
+    interpretedActs: acts,
+    transition: { turnId: `turn-${turnIndex}`, stateBefore: before, stateDelta, stateAfter: after, updatedAt },
+  };
+}
+
 function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, updatedAt = "" } = {}) {
   const previousDeal = isObject(previous?.activeDeal) ? previous.activeDeal : {};
   const canonicalRecommendation = normalizeCanonicalRecommendation(context, previousDeal);
@@ -539,12 +872,39 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
     activeGoal.slotProvenance = buildGoalSlotProvenance(slots, activeGoal);
   }
 
+  const turnIndex = Math.max(0, Number(previous?.turnIndex || 0)) + 1;
+  const baseDeal = buildActiveDeal({ query, context, previous, slots, updatedAt });
+  const feedbackTransition = reduceShopperFeedbackState({
+    query,
+    previousDeal: isObject(previous?.activeDeal) ? previous.activeDeal : {},
+    baseDeal,
+    turnIndex,
+    now,
+  });
+  const rejected = rejectedHandleSet(feedbackTransition.activeDeal);
+  const rejectedGoalHandle = normalizeHandle(activeGoal?.productHandle);
+  if (activeGoal && rejectedGoalHandle && rejected.has(rejectedGoalHandle)) {
+    activeGoal = {
+      ...activeGoal,
+      status: "invalidated",
+      invalidationReason: "product_rejected",
+      invalidatedProductHandle: rejectedGoalHandle,
+      updatedAt,
+    };
+  }
+  const slotProductHandle = normalizeHandle(getSlotValue({ slots }, "productHandle"));
+  if (slotProductHandle && rejected.has(slotProductHandle)) delete slots.productHandle;
+  const sessionHandle = normalizeHandle(feedbackTransition.activeDeal?.sessionRecommendation?.productHandle);
+  if (sessionHandle && !rejected.has(sessionHandle)) {
+    setSlot(slots, "productHandle", sessionHandle, "session_recommendation", updatedAt);
+  }
+
   const workingMemory = {
     version: WORKING_MEMORY_VERSION,
-    turnIndex: Math.max(0, Number(previous?.turnIndex || 0)) + 1,
+    turnIndex,
     slots,
     activeGoal,
-    activeDeal: buildActiveDeal({ query, context, previous, slots, updatedAt }),
+    activeDeal: feedbackTransition.activeDeal,
     conversationFocus: {
       topic: inferConversationTopic(query, previous?.conversationFocus?.topic),
       relevantTurns: (Array.isArray(context?.recentConversation)
@@ -556,12 +916,51 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
       updatedAt,
     },
     conflicts: buildConflicts(slots, saved),
+    lastTransition: {
+      ...feedbackTransition.transition,
+      interpretedActs: feedbackTransition.interpretedActs,
+    },
     updatedAt,
   };
 
   return {
     ...context,
     askSnoozerWorkingMemory: workingMemory,
+  };
+}
+
+function buildPendingCommitmentFromOutcome(previousDeal = {}, outcome = {}, updatedAt = "") {
+  const plan = isObject(outcome?.plan) ? outcome.plan : {};
+  const existing = isObject(previousDeal?.pendingCommitment) ? previousDeal.pendingCommitment : null;
+  if (["commitment_declined", "reconsider_product", "commitment_resolution"].includes(clean(plan.taskType))) {
+    return existing;
+  }
+  const visibleOffer = [
+    clean(outcome?.probe),
+    clean(outcome?.reply),
+    ...(Array.isArray(outcome?.chips) ? outcome.chips.flatMap((chip) => [clean(chip?.label), clean(chip?.value)]) : []),
+  ].join(" ").toLowerCase();
+  const shouldOfferAlternative =
+    ["shopper_feedback", "trust_recovery"].includes(clean(plan.taskType)) &&
+    /(?:find|show|recommend|compare).*(?:softer|alternative|another mattress|another option)/.test(visibleOffer);
+  const shouldOfferComparison = clean(plan.taskType) === "alternative_resolution" &&
+    /compare.*(?:eligible|option|alternative)/.test(visibleOffer);
+  if (!shouldOfferAlternative && !shouldOfferComparison) return existing;
+  const createdMs = Date.parse(updatedAt) || Date.now();
+  return {
+    id: `commitment-${Math.max(1, Number(outcome?.turnIndex || 0) || createdMs)}`,
+    type: shouldOfferAlternative ? "find_alternative" : "compare_products",
+    payload: {
+      constraints: {
+        exclude: Array.from(rejectedHandleSet(previousDeal)),
+        desiredDirection: isObject(previousDeal?.desiredDirection) ? previousDeal.desiredDirection : {},
+        retainedPreferences: isObject(previousDeal?.retainedPreferences) ? previousDeal.retainedPreferences : {},
+      },
+    },
+    offeredOptions: ["yes", "no"],
+    createdAt: updatedAt,
+    expiresAt: new Date(createdMs + PENDING_COMMITMENT_TTL_MS).toISOString(),
+    status: "pending",
   };
 }
 
@@ -587,13 +986,16 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
     Object.prototype.hasOwnProperty.call(quote, "baseHandle") &&
     quote.baseHandle !== previousDeal.activeBaseHandle
   );
+  const rejected = rejectedHandleSet(previousDeal);
+  const requestedHandle = normalizeHandle(plan?.references?.requestedProductHandle);
+  const resolvedActiveHandle = requestedHandle && !rejected.has(requestedHandle)
+    ? requestedHandle
+    : normalizeHandle(previousDeal.activeProductHandle) || null;
+  const pendingCommitment = buildPendingCommitmentFromOutcome(previousDeal, outcome, updatedAt);
   const activeDeal = {
     ...previousDeal,
     stage: clean(plan.stage) || previousDeal.stage || "exploring",
-    activeProductHandle:
-      clean(plan?.references?.requestedProductHandle).toLowerCase() ||
-      previousDeal.activeProductHandle ||
-      null,
+    activeProductHandle: resolvedActiveHandle,
     comparisonProductHandles: uniqueStrings(
       plan?.references?.comparisonProductHandles || previousDeal.comparisonProductHandles || []
     ),
@@ -617,6 +1019,7 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
         : Array.isArray(outcome.chips) && outcome.chips.length
           ? clean(outcome.chips[0]?.value)
           : null,
+    pendingCommitment,
     missingInformation: Array.isArray(plan.neededFacts) ? plan.neededFacts : [],
     updatedAt,
   };
@@ -733,6 +1136,7 @@ function buildWorkingMemoryLogMetadata(context = {}) {
     : {};
   const goal = isObject(memory?.activeGoal) ? memory.activeGoal : {};
   const deal = isObject(memory?.activeDeal) ? memory.activeDeal : {};
+  const transition = isObject(memory?.lastTransition) ? memory.lastTransition : {};
   return {
     turnIndex: Number(memory?.turnIndex || 0) || null,
     activeGoalIntent: clean(goal?.intent) || null,
@@ -758,8 +1162,24 @@ function buildWorkingMemoryLogMetadata(context = {}) {
       ? deal.comparisonProductHandles
       : [],
     activeQuoteReady: Boolean(deal.activeQuote?.cartReady),
+    activeQuoteStatus: clean(deal.activeQuote?.status) || (deal.activeQuote?.cartReady ? "ready" : null),
     compatibilityStatus: clean(deal.compatibilityStatus) || null,
     currentTopic: clean(deal.currentTopic) || null,
+    interpretedActs: Array.isArray(transition.interpretedActs)
+      ? transition.interpretedActs.map((act) => clean(act?.type)).filter(Boolean)
+      : [],
+    stateBefore: isObject(transition.stateBefore) ? transition.stateBefore : {},
+    stateDelta: isObject(transition.stateDelta) ? transition.stateDelta : {},
+    stateAfter: isObject(transition.stateAfter) ? transition.stateAfter : {},
+    rejectedProductHandles: Array.from(rejectedHandleSet(deal)),
+    productFeedbackHandles: Object.keys(isObject(deal.productFeedback) ? deal.productFeedback : {}),
+    retainedPreferenceKeys: Object.keys(isObject(deal.retainedPreferences) ? deal.retainedPreferences : {}),
+    desiredDirection: isObject(deal.desiredDirection) ? deal.desiredDirection : {},
+    sessionRecommendationHandle: normalizeHandle(deal.sessionRecommendation?.productHandle) || null,
+    pendingCommitment: isObject(deal.pendingCommitment)
+      ? { type: clean(deal.pendingCommitment.type) || null, status: clean(deal.pendingCommitment.status) || null }
+      : null,
+    quoteInvalidation: clean(deal.activeQuote?.invalidationReason) || null,
   };
 }
 
@@ -776,6 +1196,7 @@ function safeResponseFingerprint(value = "") {
 module.exports = {
   PRICE_GOAL_INTENT,
   WORKING_MEMORY_VERSION,
+  PENDING_COMMITMENT_TTL_MS,
   applyAskSnoozerWorkingMemory,
   buildWorkingMemoryLogMetadata,
   calculatePriceQuoteMissingSlots,
@@ -788,6 +1209,8 @@ module.exports = {
   isContextualPriceFragment,
   isContinuablePriceGoal,
   isPriceLikeQuery,
+  interpretShopperActs,
+  eligibleAlternativeHandles,
   resolveExplicitBaseSelection,
   resolveExplicitFirmness,
   resolveExplicitPainPoints,
