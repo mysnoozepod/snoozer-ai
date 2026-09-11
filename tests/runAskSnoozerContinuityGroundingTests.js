@@ -311,7 +311,7 @@ async function testPendingPriceQuoteTranscriptAndColdStart() {
   });
   assert.strictEqual(getGoal(sessionId).baseHandle, "premium-motion-adjustable-base");
   assert.strictEqual(getGoal(sessionId).motionKey, "standard");
-  assert.strictEqual(getGoal(sessionId).status, "completed");
+  assert.strictEqual(getGoal(sessionId).status, "awaiting_decision");
   assert.match(responseText(standard), /\$5,400/i);
   assert.strictEqual(standard?.metadata?.qualityGate?.sourceOfTruth, "shopify");
 
@@ -323,7 +323,7 @@ async function testPendingPriceQuoteTranscriptAndColdStart() {
   assert.match(responseText(howMuch), /\$5,400/i);
   assert.strictEqual(getGoal(sessionId).size, "King");
   assert.strictEqual(getGoal(sessionId).motionKey, "standard");
-  assert.strictEqual(getGoal(sessionId).status, "completed");
+  assert.strictEqual(getGoal(sessionId).status, "awaiting_decision");
   assert.strictEqual(openAiCalls.length, 0, "price transcript must not delegate commerce truth to OpenAI");
   assert(shopifyCalls.length >= 2, "Shopify should resolve each completed quote turn");
 
@@ -382,7 +382,7 @@ async function testAllFoamGoalSwitchAndKnowledgeMatch() {
   assert.strictEqual(getGoal(quoteSession).size, "King");
   assert.strictEqual(getGoal(quoteSession).baseHandle, "premium-motion-adjustable-base");
   assert.strictEqual(getGoal(quoteSession).motionKey, "standard");
-  assert.strictEqual(getGoal(quoteSession).status, "completed");
+  assert.strictEqual(getGoal(quoteSession).status, "awaiting_decision");
   assert.match(responseText(switched), /All Foam/i);
   assert.match(responseText(switched), /\$5,400/i);
 
@@ -512,7 +512,7 @@ async function testActiveQuoteStillConsumesStandaloneSize() {
   });
   assert.strictEqual(getGoal(sessionId)?.intent, "price_quote");
   assert.strictEqual(getGoal(sessionId)?.size, "King");
-  assert.strictEqual(getGoal(sessionId)?.status, "completed");
+  assert.strictEqual(getGoal(sessionId)?.status, "awaiting_decision");
   assert.strictEqual(body?.metadata?.qualityGate?.sourceOfTruth, "shopify");
   assert(shopifyCalls.length > 0, "active quote fragment should invoke Shopify");
 }

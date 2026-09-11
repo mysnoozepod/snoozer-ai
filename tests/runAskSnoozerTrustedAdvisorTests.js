@@ -26,6 +26,7 @@ const openai = require("../services/openai");
 const shopify = require("../services/shopify");
 const {
   INTERNAL_LANGUAGE,
+  buildQuote,
   planAskSnoozerTurn,
 } = require("../services/askSnoozerConversationOrchestrator");
 
@@ -285,6 +286,112 @@ async function runCommercialProgression() {
   }
 }
 
+async function runBigPass4CommercialCompletion() {
+  const readyContext = {
+    canonicalRecommendation: { primaryMattressHandle: "12-all-foam-mattress" },
+    askSnoozerWorkingMemory: {
+      activeGoal: {
+        intent: "price_quote",
+        status: "ready",
+        scope: "mattress_plus_base",
+        productHandle: "12-all-foam-mattress",
+        size: "King",
+        baseHandle: "premium-motion-adjustable-base",
+        motionKey: "standard",
+        missingSlots: [],
+      },
+      activeDeal: {
+        activeProductHandle: "12-all-foam-mattress",
+        activeSize: "King",
+        activeBaseHandle: "premium-motion-adjustable-base",
+        activeMotionKey: "standard",
+        activeQuote: null,
+        compatibilityStatus: "unknown",
+        stage: "configuring",
+      },
+    },
+  };
+  const readyPlan = planAskSnoozerTurn({ query: "Okay.", context: readyContext });
+  assert.strictEqual(readyPlan.taskType, "bundle_quote");
+  assert.strictEqual(readyPlan.handled, true);
+  assert.strictEqual(readyPlan.staleRouteOverride, true);
+  assert.strictEqual(readyPlan.commercialCompletionAttempted, true);
+  const readyQuote = await buildQuote({
+    plan: { ...readyPlan, query: "Okay." },
+    context: readyContext,
+    fetchProductsByHandles: shopify.fetchProductsByHandles,
+  });
+  assert.strictEqual(readyQuote.ok, true);
+  assert.strictEqual(readyQuote.cartReady, true);
+  assert.strictEqual(readyQuote.compatibility.status, "compatible");
+  assert.strictEqual(readyQuote.subtotal, 3698);
+
+  const incompatibleContext = JSON.parse(JSON.stringify(readyContext));
+  incompatibleContext.askSnoozerWorkingMemory.activeGoal.motionKey = "half_split";
+  incompatibleContext.askSnoozerWorkingMemory.activeDeal.activeMotionKey = "half_split";
+  const incompatiblePlan = planAskSnoozerTurn({ query: "Okay.", context: incompatibleContext });
+  const incompatibleQuote = await buildQuote({
+    plan: { ...incompatiblePlan, query: "Okay." },
+    context: incompatibleContext,
+    fetchProductsByHandles: shopify.fetchProductsByHandles,
+  });
+  assert.strictEqual(incompatibleQuote.ok, false);
+  assert.strictEqual(incompatibleQuote.compatibility.status, "incompatible");
+  assert.strictEqual(incompatibleQuote.subtotal, null);
+
+  const quotedContext = JSON.parse(JSON.stringify(readyContext));
+  quotedContext.askSnoozerWorkingMemory.activeGoal.status = "awaiting_decision";
+  quotedContext.askSnoozerWorkingMemory.activeDeal.activeQuote = readyQuote;
+  quotedContext.askSnoozerWorkingMemory.activeDeal.compatibilityStatus = "compatible";
+  const educationPlan = planAskSnoozerTurn({
+    query: "What does the mattress feel like?",
+    context: quotedContext,
+  });
+  assert.strictEqual(educationPlan.taskType, "product_experience");
+  assert.strictEqual(educationPlan.staleRouteOverride, false);
+
+  const policyPlan = planAskSnoozerTurn({
+    query: "What's your return policy?",
+    context: readyContext,
+  });
+  assert.strictEqual(policyPlan.taskType, "legacy");
+  assert.strictEqual(policyPlan.commercialState.clearSubjectChange, true);
+  assert.strictEqual(policyPlan.staleRouteOverride, false);
+  assert.strictEqual(policyPlan.commercialCompletionAttempted, false);
+  assert.strictEqual(readyContext.askSnoozerWorkingMemory.activeGoal.status, "ready");
+
+  const sequenceSession = "big-pass-4-commercial-sequence";
+  const king = await invoke({
+    message: "What would the King version of your recommendation cost?",
+    sessionId: sequenceSession,
+    testCaseId: "big-pass-4-king",
+  });
+  assert.strictEqual(memory(king)?.activeGoal?.status, "awaiting_decision");
+  const motion = await invoke({
+    message: "And with Standard Motion?",
+    sessionId: sequenceSession,
+    testCaseId: "big-pass-4-motion",
+  });
+  assert.strictEqual(memory(motion)?.activeDeal?.compatibilityStatus, "compatible");
+  assert.strictEqual(memory(motion)?.activeDeal?.activeQuote?.subtotal, 3698);
+  assert((motion.chips || []).length > 0, "completed quote should offer a contextual next action");
+  const value = await invoke({
+    message: "Do I really need the base?",
+    sessionId: sequenceSession,
+    testCaseId: "big-pass-4-value",
+  });
+  assert.match(responseText(value), /save the money|optional|unless/i);
+  assert.strictEqual(memory(value)?.activeDeal?.activeQuote?.subtotal, 3698);
+  const mattressOnly = await invoke({
+    message: "Okay, mattress only.",
+    sessionId: sequenceSession,
+    testCaseId: "big-pass-4-mattress-only",
+  });
+  assert.strictEqual(memory(mattressOnly)?.activeDeal?.activeQuote?.subtotal, 1399);
+  assert.strictEqual(memory(mattressOnly)?.activeDeal?.activeQuote?.baseHandle, null);
+  assert.strictEqual(memory(mattressOnly)?.activeGoal?.status, "awaiting_decision");
+}
+
 function runPlannerAndDepthMatrix() {
   const context = {
     canonicalRecommendation: { primaryMattressHandle: "12-all-foam-mattress" },
@@ -343,10 +450,11 @@ async function main() {
     });
     const outputs = await runExactTenTurnFixture();
     await runCommercialProgression();
+    await runBigPass4CommercialCompletion();
     runPlannerAndDepthMatrix();
     await runCrossDeviceContinuity();
     console.log = originalConsoleLog;
-    console.log(`Ask Snoozer trusted-advisor tests passed (${outputs.length} exact turns, 12 commerce turns, 12 planner/depth cases, cross-device continuity).`);
+    console.log(`Ask Snoozer trusted-advisor tests passed (${outputs.length} exact turns, 12 commerce turns, Big Pass 4 completion, 12 planner/depth cases, cross-device continuity).`);
     for (const complexity of ["simple", "complex"]) {
       const values = performanceSamples
         .filter((sample) => sample.complexity === complexity)

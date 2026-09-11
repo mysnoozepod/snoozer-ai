@@ -6,7 +6,14 @@ const {
 
 const WORKING_MEMORY_VERSION = 2;
 const PRICE_GOAL_INTENT = "price_quote";
-const ACTIVE_GOAL_STATUSES = new Set(["collecting_slots", "ready", "completed"]);
+const ACTIVE_GOAL_STATUSES = new Set([
+  "collecting_slots",
+  "ready",
+  "resolving",
+  "presented",
+  "awaiting_decision",
+  "completed",
+]);
 
 function isObject(value) {
   return value && typeof value === "object" && !Array.isArray(value);
@@ -554,6 +561,16 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
   const previousDeal = isObject(memory.activeDeal) ? memory.activeDeal : {};
   const plan = isObject(outcome.plan) ? outcome.plan : {};
   const quote = isObject(outcome.quote) ? outcome.quote : null;
+  const compatibilityResolved = ["compatible", "incompatible", "not_applicable"].includes(
+    clean(quote?.compatibility?.status)
+  );
+  const commercialResultPresented = Boolean(
+    quote &&
+      (quote.ok || compatibilityResolved) &&
+      ["price_quote", "bundle_quote", "savings_quote", "compatibility", "cart_add"].includes(
+        clean(plan.taskType)
+      )
+  );
   const quoteChangesBase = Boolean(
     quote &&
     Object.prototype.hasOwnProperty.call(quote, "baseHandle") &&
@@ -597,11 +614,54 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
     askSnoozerWorkingMemory: {
       ...memory,
       activeGoal:
-        quote?.ok && isObject(memory.activeGoal) && memory.activeGoal.intent === PRICE_GOAL_INTENT
-          ? { ...memory.activeGoal, status: "completed", updatedAt }
+        commercialResultPresented &&
+        isObject(memory.activeGoal) &&
+        memory.activeGoal.intent === PRICE_GOAL_INTENT
+          ? {
+              ...memory.activeGoal,
+              productHandle: quote?.productHandle || memory.activeGoal.productHandle || null,
+              size: quote?.size || memory.activeGoal.size || null,
+              baseHandle:
+                quote && Object.prototype.hasOwnProperty.call(quote, "baseHandle")
+                  ? quote.baseHandle
+                  : memory.activeGoal.baseHandle ?? null,
+              motionKey: quote?.motionKey || memory.activeGoal.motionKey || null,
+              missingSlots: [],
+              status: "awaiting_decision",
+              updatedAt,
+            }
           : memory.activeGoal,
       activeDeal,
       lastPlan: plan,
+      updatedAt,
+    },
+  };
+}
+
+function markAskSnoozerPriceGoalResolving(context = {}, { now = new Date() } = {}) {
+  const memory = isObject(context?.askSnoozerWorkingMemory)
+    ? context.askSnoozerWorkingMemory
+    : null;
+  const activeGoal = isObject(memory?.activeGoal) ? memory.activeGoal : null;
+  if (
+    !memory ||
+    !activeGoal ||
+    activeGoal.intent !== PRICE_GOAL_INTENT ||
+    activeGoal.status !== "ready" ||
+    (Array.isArray(activeGoal.missingSlots) && activeGoal.missingSlots.length)
+  ) {
+    return context;
+  }
+  const updatedAt = nowIso(now);
+  return {
+    ...context,
+    askSnoozerWorkingMemory: {
+      ...memory,
+      activeGoal: {
+        ...activeGoal,
+        status: "resolving",
+        updatedAt,
+      },
       updatedAt,
     },
   };
@@ -615,7 +675,11 @@ function completeAskSnoozerPriceGoal(context = {}, { completed = false, now = ne
   const updatedAt = nowIso(now);
   const activeGoal = {
     ...memory.activeGoal,
-    status: completed ? "completed" : memory.activeGoal.missingSlots?.length ? "collecting_slots" : "ready",
+    status: completed
+      ? "completed"
+      : memory.activeGoal.missingSlots?.length
+        ? "collecting_slots"
+        : "ready",
     updatedAt,
   };
   return {
@@ -697,6 +761,7 @@ module.exports = {
   calculatePriceQuoteMissingSlots,
   completeAskSnoozerPriceGoal,
   completeAskSnoozerAdvisorTurn,
+  markAskSnoozerPriceGoalResolving,
   extractCurrentPodProductHandle,
   extractCurrentProductHandle,
   getSlotValue,

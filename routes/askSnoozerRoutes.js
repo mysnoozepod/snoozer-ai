@@ -45,6 +45,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     buildWorkingMemoryLogMetadata,
     completeAskSnoozerAdvisorTurn,
     completeAskSnoozerPriceGoal,
+    markAskSnoozerPriceGoalResolving,
     planAskSnoozerTurn,
     resolveAskSnoozerAdvisorTurn,
     composeTrustedAdvisorResponse,
@@ -429,6 +430,12 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           context,
           referenceContext: preTurnReferenceContext,
         });
+        if (
+          askSnoozerPlan?.commercialCompletionAttempted &&
+          typeof markAskSnoozerPriceGoalResolving === "function"
+        ) {
+          context = markAskSnoozerPriceGoalResolving(context);
+        }
         context.askSnoozerWorkingMemory.lastPlan = askSnoozerPlan;
       }
       const memoryPatch = {

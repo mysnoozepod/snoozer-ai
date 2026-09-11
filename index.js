@@ -157,6 +157,7 @@ const {
   buildWorkingMemoryLogMetadata,
   completeAskSnoozerAdvisorTurn,
   completeAskSnoozerPriceGoal,
+  markAskSnoozerPriceGoalResolving,
   resolveRequestedProductHandle,
   safeResponseFingerprint,
 } = require("./services/askSnoozerWorkingMemory");
@@ -6185,6 +6186,7 @@ function getAskSnoozerRouteDeps() {
     buildWorkingMemoryLogMetadata,
     completeAskSnoozerAdvisorTurn,
     completeAskSnoozerPriceGoal,
+    markAskSnoozerPriceGoalResolving,
     planAskSnoozerTurn,
     resolveAskSnoozerAdvisorTurn,
     composeTrustedAdvisorResponse: async (args) => {

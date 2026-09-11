@@ -326,7 +326,9 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   const workingGoal = activeMemory(context)?.activeGoal;
   const continuingPriceGoal =
     workingGoal?.intent === "price_quote" &&
-    ["collecting_slots", "ready", "completed"].includes(clean(workingGoal?.status));
+    ["collecting_slots", "ready", "resolving", "presented", "awaiting_decision", "completed"].includes(
+      clean(workingGoal?.status)
+    );
   const explicitHandle = resolveExplicitProductHandle(query);
   const explicitBase = resolveExplicitBaseSelection(query);
   const parsedSize = parseAskSnoozerSizeLabel(query);
@@ -341,6 +343,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       (/\b(?:it|that|this|one|setup|with|and what|which one|your recommendation)\b/.test(text) || deal.currentTopic)
   );
   let taskType = "legacy";
+  let staleRouteOverride = false;
 
   if (/^(?:please )?(?:add|put)\b/.test(text) || /\b(?:add|adding|put|putting)\b.*\b(?:to|in) (?:my|the) cart\b/.test(text)) taskType = "cart_add";
   else if (/\b(?:what(?:'s| is) in|show|review|check)\b.*\bcart\b/.test(text)) taskType = "cart_review";
@@ -351,7 +354,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     continuingPriceGoal &&
     text.split(/\s+/).filter(Boolean).length <= 4 &&
     (explicitHandle || Object.keys(explicitBase).length)
-  ) taskType = "bundle_quote";
+  ) taskType = explicitBase.explicitNoBase ? "price_quote" : "bundle_quote";
   else if (/\b(?:how much.*save|save.*how much|savings|difference in price)\b/.test(text)) taskType = "savings_quote";
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && /\b(?:with|plus|and)\b.*\b(?:motion|base)\b/.test(text)) taskType = "bundle_quote";
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && /\b(?:full setup|whole setup|complete setup)\b/.test(text)) taskType = "bundle_quote";
@@ -365,7 +368,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   else if (/\b(?:medium|soft|firm)\b.*\b(?:vs|versus|or|compare)\b/.test(text)) taskType = "firmness_compare";
   else if (/\b(?:which one (?:would you|you would) choose|what would you choose|would you buy|what would you do)\b/.test(text)) taskType = "advisor_choice";
   else if (/\b(?:compare|compares|compared|comparison|versus|\bvs\b)\b/.test(text)) taskType = "product_comparison";
-  else if (/\b(?:tell me more|actually going to notice|what (?:will i|i will) notice|feel when|lie on)\b/.test(text)) taskType = "product_experience";
+  else if (/\b(?:tell me more|actually going to notice|what (?:will i|i will) notice|what does .* feel like|feel when|lie on)\b/.test(text)) taskType = "product_experience";
   else if (isExplicitMedical(text)) taskType = "medical_boundary";
 
   if (referenceResolution.phrase && !referenceResolution.resolved) {
@@ -384,9 +387,58 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     taskType = "correction_clarification";
   }
 
+  const activeQuoteMatchesGoal = Boolean(
+    deal.activeQuote?.cartReady &&
+      (!workingGoal?.productHandle || deal.activeQuote.productHandle === workingGoal.productHandle) &&
+      (!workingGoal?.size || deal.activeQuote.size === workingGoal.size) &&
+      (workingGoal?.baseHandle === undefined || deal.activeQuote.baseHandle === workingGoal.baseHandle) &&
+      (!workingGoal?.motionKey || deal.activeQuote.motionKey === workingGoal.motionKey)
+  );
+  const readyCommercialGoal = Boolean(
+    workingGoal?.intent === "price_quote" &&
+      clean(workingGoal?.status) === "ready" &&
+      Array.isArray(workingGoal?.missingSlots) &&
+      workingGoal.missingSlots.length === 0 &&
+      !activeQuoteMatchesGoal
+  );
+  const clearlyChangedSubject = Boolean(
+    [
+      "canonical_recall",
+      "canonical_recommendation",
+      "product_experience",
+      "product_comparison",
+      "advisor_choice",
+      "base_education",
+      "value_judgment",
+      "preference_capture",
+      "preference_recall",
+      "firmness_compare",
+      "medical_boundary",
+      "cart_review",
+      "reference_clarification",
+      "correction_clarification",
+    ].includes(taskType) ||
+      /\b(?:return policy|returns?|warranty|delivery|financing|rewards?|snooze sessions?)\b/.test(text)
+  );
+  const alreadyCompletingCommercialGoal = [
+    "price_quote",
+    "bundle_quote",
+    "savings_quote",
+    "compatibility",
+    "cart_add",
+  ].includes(taskType);
+  if (readyCommercialGoal && !clearlyChangedSubject && !alreadyCompletingCommercialGoal) {
+    const goalIncludesBase = Boolean(
+      workingGoal?.baseHandle ||
+        ["mattress_plus_base", "full_pod", "base_only"].includes(clean(workingGoal?.scope))
+    );
+    taskType = goalIncludesBase ? "bundle_quote" : "price_quote";
+    staleRouteOverride = true;
+  }
+
   const quoteReferenceHandle = canonicalReference
     ? canonicalHandle
-    : referenceResolution.handle || explicitHandle || activeHandle || canonicalHandle;
+    : referenceResolution.handle || explicitHandle || activeHandle || workingGoal?.productHandle || canonicalHandle;
   const comparisonHandles = resolveComparisonHandles(query, referenceContext);
   const needsCommerce = ["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(taskType);
   const needsCompatibility = ["bundle_quote", "compatibility", "cart_add"].includes(taskType);
@@ -408,6 +460,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   // multi-turn continuation, where commercial memory and judgment matter.
   const freshStandaloneCommerce =
     needsCommerce &&
+    !readyCommercialGoal &&
     Number(activeMemory(context)?.turnIndex || 0) <= 1 &&
     !canonicalReference;
   const handled =
@@ -445,11 +498,11 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       referenceResolution.resolved ? referenceResolution.source : "",
     ].filter(Boolean))],
     knownFacts: {
-      size: size || null,
+      size: size || workingGoal?.size || null,
       baseHandle: Object.prototype.hasOwnProperty.call(explicitBase, "baseHandle")
         ? explicitBase.baseHandle
-        : deal.activeBaseHandle || null,
-      motionKey: explicitBase.motionKey || deal.activeMotionKey || null,
+        : deal.activeBaseHandle ?? workingGoal?.baseHandle ?? null,
+      motionKey: explicitBase.motionKey || deal.activeMotionKey || workingGoal?.motionKey || null,
       painPoints: activeMemory(context)?.slots?.painPoints?.value || [],
     },
     neededFacts: needsCommerce && !size ? ["size"] : [],
@@ -466,6 +519,19 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     needsKnowledge: ["product_experience", "product_comparison", "base_education"].includes(taskType),
     needsPolicy: taskType === "medical_boundary",
     allowedActions: taskType === "cart_add" ? ["add_to_cart"] : [],
+    commercialState: {
+      activeGoal: clean(workingGoal?.intent) || null,
+      goalStatus: clean(workingGoal?.status) || null,
+      goalReady: readyCommercialGoal,
+      activeQuoteReady: activeQuoteMatchesGoal,
+      compatibilityStatus: clean(deal.compatibilityStatus) || "unknown",
+      activeGoalStillActionable: Boolean(continuingPriceGoal),
+      clearSubjectChange: clearlyChangedSubject,
+    },
+    staleRouteOverride,
+    commercialCompletionAttempted: Boolean(
+      readyCommercialGoal && ["price_quote", "bundle_quote", "compatibility"].includes(taskType)
+    ),
     probe: null,
     recovery: correctionCue || (referenceResolution.phrase && !referenceResolution.resolved)
       ? {
@@ -578,16 +644,19 @@ function buildCompatibility({ mattressHandle = "", motionKey = "", baseHandle = 
 
 async function buildQuote({ plan = {}, context = {}, fetchProductsByHandles } = {}) {
   const deal = activeDeal(context);
-  const size = clean(plan?.knownFacts?.size || deal.activeSize);
-  const productHandle = clean(plan?.references?.requestedProductHandle || resolveCanonicalHandle(context));
+  const goal = activeMemory(context)?.activeGoal || {};
+  const size = clean(plan?.knownFacts?.size || deal.activeSize || goal.size);
+  const productHandle = clean(
+    plan?.references?.requestedProductHandle || goal.productHandle || resolveCanonicalHandle(context)
+  );
   const wantsBundle = ["bundle_quote", "compatibility", "savings_quote"].includes(plan.taskType) ||
     (plan.taskType === "cart_add" && /\b(?:full setup|mattress and base|both)\b/.test(normalizeAskSnoozerText(plan.query)));
   const explicitNoBase = plan?.knownFacts?.baseHandle === null && plan?.knownFacts?.motionKey === "none";
   const baseHandle = wantsBundle && !explicitNoBase
-    ? clean(plan?.knownFacts?.baseHandle || deal.activeBaseHandle || "premium-motion-adjustable-base")
+    ? clean(plan?.knownFacts?.baseHandle || deal.activeBaseHandle || goal.baseHandle || "premium-motion-adjustable-base")
     : "";
   const motionKey = baseHandle === "premium-motion-adjustable-base"
-    ? clean(plan?.knownFacts?.motionKey || deal.activeMotionKey || "standard")
+    ? clean(plan?.knownFacts?.motionKey || deal.activeMotionKey || goal.motionKey || "standard")
     : "none";
   const missing = [];
   if (!productHandle) missing.push("product");
@@ -762,7 +831,7 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
     if (quote.items.length === 1) {
       return `${recoveryPrefix}The ${quote.size} ${quote.items[0].title} is ${formatMoney(quote.subtotal, quote.currencyCode)} before taxes, delivery, or active discounts.`;
     }
-    return `${recoveryPrefix}The ${quote.size} setup is ${formatMoney(quote.subtotal, quote.currencyCode)} before taxes, delivery, or active discounts. ${lines.join("; ")}.`;
+    return `${recoveryPrefix}That ${quote.size} configuration works together. The complete setup is ${formatMoney(quote.subtotal, quote.currencyCode)} before taxes, delivery, or active discounts. ${lines.join("; ")}.`;
   }
 
   return "";
@@ -770,6 +839,12 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
 
 function buildContextualChips({ plan = {}, quote = null } = {}) {
   if (["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType) && !quote?.ok) {
+    if (quote?.compatibility?.status === "incompatible") {
+      return [
+        { label: "Price Standard Motion", value: "Price the compatible Standard Motion setup instead.", type: "prompt" },
+        { label: "Compare Split Option", value: "Show me the mattress that supports this split setup.", type: "prompt" },
+      ];
+    }
     return [
       { label: "Confirm my size", value: "Help me confirm the right size and price.", type: "prompt" },
       { label: "Talk to a human", value: "Talk to a human", type: "prompt" },
