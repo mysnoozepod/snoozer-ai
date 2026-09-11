@@ -89,6 +89,7 @@ function LayoutShell() {
     voiceState = {},
     onUserInteraction = null,
     noteUserInteraction: queueNoteUserInteraction = null,
+    supersedeConversationalSpeech = null,
   } = voiceQueue;
 
   useHudRouteVoiceGuard({
@@ -272,6 +273,7 @@ function LayoutShell() {
       replayHud,
       setHudMuted,
       noteUserInteraction,
+      supersedeConversationalSpeech,
     }),
     [
       shopperId,
@@ -284,6 +286,7 @@ function LayoutShell() {
       replayHud,
       setHudMuted,
       noteUserInteraction,
+      supersedeConversationalSpeech,
     ]
   );
 

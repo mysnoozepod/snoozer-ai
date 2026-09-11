@@ -13,6 +13,10 @@ import { VoiceQueueController } from "./voiceQueue";
 
 const VoiceQueueContext = createContext(null);
 
+export function isOrdinaryAskSnoozerSpeech(job) {
+  return job?.metadata?.audioScope === "ask_snoozer_conversation";
+}
+
 function buildDefaultVoiceState() {
   return {
     blocked: false,
@@ -73,6 +77,7 @@ export function VoiceQueueProvider({
   const activeRunTokenRef = useRef(0);
   const ttsActiveRef = useRef(false);
   const unlockUrlRef = useRef("");
+  const askSupersessionRef = useRef({ count: 0, queueDepthAfter: 0 });
 
   const [muted, setMutedState] = useState(readInitialMutedState);
   const [voiceState, setVoiceState] = useState(buildDefaultVoiceState);
@@ -286,6 +291,19 @@ export function VoiceQueueProvider({
     },
     [controller, clearCaptionTimer, releaseAudioElement, syncHudFromJob, setVoiceStatePartial]
   );
+
+  const emitSpeechTerminal = useCallback((job, terminalState, extra = {}) => {
+    if (!job) return null;
+    const phase = terminalState === "superseded" ? "tts_superseded" : "tts_cancelled";
+    return emitAskSnoozerVoiceTiming(job, phase, {
+      interrupted: Boolean(extra.interrupted),
+      speechTerminalState: terminalState,
+      speechSuperseded: terminalState === "superseded",
+      staleSpeechPrevented: terminalState === "superseded" && !extra.interrupted,
+      speechSupersededCount: Number(extra.supersededCount || 0),
+      speechQueueDepthAfterSupersession: Number(extra.queueDepthAfterSupersession || 0),
+    });
+  }, []);
 
   const failCurrentAndContinue = useCallback(
     (jobId, message = "Audio playback failed.") => {
@@ -589,11 +607,26 @@ export function VoiceQueueProvider({
         forceRequested && (!activeCritical || canInterruptCritical);
 
       if (shouldReplace) {
+        const before = controller.getSnapshot();
         clearCaptionTimer();
         invalidateRunToken();
         await stopAudioElement(fadeOutMs);
-        controller.interruptCurrent({ preserveQueue: false, reason: "replaced" });
-        controller.clearQueue();
+        const interrupted = controller.interruptCurrent({ preserveQueue: true, reason: "superseded" });
+        const removed = controller.clearQueue("superseded");
+        const supersededCount = removed.length + (interrupted ? 1 : 0);
+        if (isOrdinaryAskSnoozerSpeech(interrupted)) {
+          emitSpeechTerminal(interrupted, "superseded", {
+            interrupted: before.currentJob?.status === "playing",
+            supersededCount,
+            queueDepthAfterSupersession: 0,
+          });
+        }
+        for (const removedJob of removed.filter(isOrdinaryAskSnoozerSpeech)) {
+          emitSpeechTerminal(removedJob, "superseded", {
+            supersededCount,
+            queueDepthAfterSupersession: 0,
+          });
+        }
         currentJobRef.current = null;
         syncHudFromJob(null);
         setVoiceStatePartial({
@@ -615,8 +648,19 @@ export function VoiceQueueProvider({
         voiceStyle: response.voiceStyle || "default",
         allowContinuation: response.allowContinuation === true,
         interruptible: response.interruptible !== false,
-        metadata: response.metadata || {},
+        metadata: {
+          ...(response.metadata || {}),
+          ...(response?.metadata?.audioScope === "ask_snoozer_conversation"
+            ? {
+                speechSupersededCount: askSupersessionRef.current.count,
+                speechQueueDepthAfterSupersession: askSupersessionRef.current.queueDepthAfter,
+              }
+            : {}),
+        },
       });
+      if (response?.metadata?.audioScope === "ask_snoozer_conversation") {
+        askSupersessionRef.current = { count: 0, queueDepthAfter: controller.getSnapshot().queue.length };
+      }
 
       setVoiceStatePartial({
         blocked: false,
@@ -635,17 +679,83 @@ export function VoiceQueueProvider({
       syncHudFromJob,
       setVoiceStatePartial,
       fadeOutMs,
+      emitSpeechTerminal,
+    ]
+  );
+
+  const supersedeConversationalSpeech = useCallback(
+    async () => {
+      const before = controller.getSnapshot();
+      const removed = controller.supersedeQueued(isOrdinaryAskSnoozerSpeech, "superseded");
+      let interrupted = null;
+      if (controller.canInterruptCurrent(isOrdinaryAskSnoozerSpeech)) {
+        clearCaptionTimer();
+        invalidateRunToken();
+        await stopAudioElement(Math.min(controller.fadeOutMs, 120));
+        interrupted = controller.interruptCurrent({ preserveQueue: true, reason: "superseded" });
+        currentJobRef.current = null;
+        syncHudFromJob(null);
+        setVoiceStatePartial({
+          loading: false,
+          playing: false,
+          blocked: false,
+          error: "",
+          lastText: "",
+        });
+      }
+      const after = controller.getSnapshot();
+      const superseded = [interrupted, ...removed]
+        .filter(Boolean)
+        .filter(isOrdinaryAskSnoozerSpeech);
+      const supersededCount = superseded.length;
+      for (const job of superseded) {
+        emitSpeechTerminal(job, "superseded", {
+          interrupted: job.id === interrupted?.id && before.currentJob?.status === "playing",
+          supersededCount,
+          queueDepthAfterSupersession: after.queue.length + (after.currentJob ? 1 : 0),
+        });
+      }
+      askSupersessionRef.current = {
+        count: supersededCount,
+        queueDepthAfter: after.queue.length + (after.currentJob ? 1 : 0),
+      };
+      if (interrupted) maybeRunNextRef.current?.();
+      return {
+        supersededCount,
+        protectedCurrent: Boolean(before.currentJob && !interrupted),
+        queueDepthAfterSupersession: after.queue.length + (after.currentJob ? 1 : 0),
+      };
+    },
+    [
+      controller,
+      clearCaptionTimer,
+      invalidateRunToken,
+      stopAudioElement,
+      syncHudFromJob,
+      setVoiceStatePartial,
+      emitSpeechTerminal,
     ]
   );
 
   const interruptCurrent = useCallback(
     async ({ preserveQueue = true, reason = "cancelled", fadeMs } = {}) => {
+      const before = controller.getSnapshot();
       clearCaptionTimer();
       invalidateRunToken();
       await stopAudioElement(
         Number.isFinite(fadeMs) ? fadeMs : controller.fadeOutMs
       );
-      controller.interruptCurrent({ preserveQueue, reason });
+      const terminalState = /supersed|replac/i.test(reason) ? "superseded" : "cancelled";
+      const interrupted = controller.interruptCurrent({ preserveQueue: true, reason: terminalState });
+      const removed = preserveQueue ? [] : controller.clearQueue(terminalState);
+      const terminalJobs = [interrupted, ...removed].filter(Boolean).filter(isOrdinaryAskSnoozerSpeech);
+      for (const job of terminalJobs) {
+        emitSpeechTerminal(job, terminalState, {
+          interrupted: job.id === interrupted?.id && before.currentJob?.status === "playing",
+          supersededCount: terminalState === "superseded" ? terminalJobs.length : 0,
+          queueDepthAfterSupersession: preserveQueue ? controller.getSnapshot().queue.length : 0,
+        });
+      }
       currentJobRef.current = null;
       syncHudFromJob(null);
       setVoiceStatePartial({
@@ -660,12 +770,13 @@ export function VoiceQueueProvider({
         maybeRunNextRef.current?.();
       }
     },
-    [clearCaptionTimer, controller, invalidateRunToken, stopAudioElement, syncHudFromJob, setVoiceStatePartial]
+    [clearCaptionTimer, controller, invalidateRunToken, stopAudioElement, syncHudFromJob, setVoiceStatePartial, emitSpeechTerminal]
   );
 
   const handleRouteChange = useCallback(
     async ({ stop = true, clearQueue = true, fadeMs, allowContinuation, maxCarryoverMs } = {}) => {
       if (!stop) return;
+      const before = controller.getSnapshot();
 
       if (typeof allowContinuation === "boolean") {
         const decision = controller.handleRouteChange({ allowContinuation, maxCarryoverMs });
@@ -678,13 +789,19 @@ export function VoiceQueueProvider({
       clearCaptionTimer();
       invalidateRunToken();
       await stopAudioElement(Number.isFinite(fadeMs) ? fadeMs : controller.fadeOutMs);
-      controller.interruptCurrent({
-        preserveQueue: !clearQueue,
-        reason: "route-change",
+      const interrupted = controller.interruptCurrent({
+        preserveQueue: true,
+        reason: "cancelled",
       });
 
+      let removed = [];
       if (clearQueue) {
-        controller.clearQueue();
+        removed = controller.clearQueue("cancelled");
+      }
+      for (const job of [interrupted, ...removed].filter(Boolean).filter(isOrdinaryAskSnoozerSpeech)) {
+        emitSpeechTerminal(job, "cancelled", {
+          interrupted: job.id === interrupted?.id && before.currentJob?.status === "playing",
+        });
       }
 
       currentJobRef.current = null;
@@ -697,19 +814,25 @@ export function VoiceQueueProvider({
         lastText: "",
       });
     },
-    [clearCaptionTimer, controller, invalidateRunToken, stopAudioElement, syncHudFromJob, setVoiceStatePartial]
+    [clearCaptionTimer, controller, invalidateRunToken, stopAudioElement, syncHudFromJob, setVoiceStatePartial, emitSpeechTerminal]
   );
 
   const clearAll = useCallback(async () => {
+    const before = controller.getSnapshot();
     clearCaptionTimer();
     invalidateRunToken();
     await stopAudioElement(0);
-    controller.interruptCurrent({ preserveQueue: false, reason: "cancelled" });
-    controller.clearQueue();
+    const interrupted = controller.interruptCurrent({ preserveQueue: true, reason: "cancelled" });
+    const removed = controller.clearQueue("cancelled");
+    for (const job of [interrupted, ...removed].filter(Boolean).filter(isOrdinaryAskSnoozerSpeech)) {
+      emitSpeechTerminal(job, "cancelled", {
+        interrupted: job.id === interrupted?.id && before.currentJob?.status === "playing",
+      });
+    }
     currentJobRef.current = null;
     syncHudFromJob(null);
     resetVoiceState();
-  }, [clearCaptionTimer, controller, invalidateRunToken, stopAudioElement, syncHudFromJob, resetVoiceState]);
+  }, [clearCaptionTimer, controller, invalidateRunToken, stopAudioElement, syncHudFromJob, resetVoiceState, emitSpeechTerminal]);
 
   const replayCurrent = useCallback(async () => {
     const current = currentJobRef.current || snapshot.currentJob;
@@ -839,6 +962,7 @@ export function VoiceQueueProvider({
       setMuted,
       handleRouteChange,
       clearAll,
+      supersedeConversationalSpeech,
       noteUserInteraction,
       onUserInteraction: noteUserInteraction,
     }),
@@ -853,6 +977,7 @@ export function VoiceQueueProvider({
       setMuted,
       handleRouteChange,
       clearAll,
+      supersedeConversationalSpeech,
       noteUserInteraction,
     ]
   );

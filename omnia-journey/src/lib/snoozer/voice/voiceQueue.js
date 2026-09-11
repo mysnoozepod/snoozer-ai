@@ -30,7 +30,7 @@ export function createVoiceJob(input = {}) {
     interruptible: input.interruptible !== false,
     createdAt,
     expiresAt: createdAt + (Number.isFinite(input.ttlMs) ? input.ttlMs : DEFAULT_TTL_MS),
-    status: 'pending', // pending | preparing | playing | captions-only | done | cancelled | failed
+    status: 'pending', // pending | preparing | playing | captions-only | done | cancelled | superseded | failed
     audioUrl: input.audioUrl || null,
     durationMs: Number.isFinite(input.durationMs) ? input.durationMs : null,
     metadata: input.metadata || {},
@@ -84,7 +84,14 @@ export class VoiceQueueController {
   }
 
   enqueue(input) {
-    const job = createVoiceJob(input);
+    const queueDepthAtEnqueue = this.queue.length + (this.currentJob ? 1 : 0);
+    const job = createVoiceJob({
+      ...input,
+      metadata: {
+        ...(input?.metadata || {}),
+        speechQueueDepthAtEnqueue: queueDepthAtEnqueue,
+      },
+    });
 
     if (job.priority === 'high') {
       this.interruptCurrent({ reason: 'high-priority-job', preserveQueue: true });
@@ -99,7 +106,11 @@ export class VoiceQueueController {
 
   startPreparing(jobId) {
     if (this.currentJob?.id === jobId) {
-      this.currentJob = { ...this.currentJob, status: 'preparing' };
+      this.currentJob = {
+        ...this.currentJob,
+        status: 'preparing',
+        preparingStartedAt: this.currentJob.preparingStartedAt || now(),
+      };
       this.emit();
       return;
     }
@@ -193,9 +204,34 @@ export class VoiceQueueController {
     return interrupted;
   }
 
-  clearQueue() {
+  clearQueue(reason = 'cancelled') {
+    const removed = this.queue.map((job) => ({ ...job, status: reason }));
     this.queue = [];
     this.emit();
+    return removed;
+  }
+
+  supersedeQueued(predicate, reason = 'superseded') {
+    if (typeof predicate !== 'function') return [];
+    const removed = [];
+    this.queue = this.queue.filter((job) => {
+      if (!predicate(job)) return true;
+      removed.push({ ...job, status: reason });
+      return false;
+    });
+    if (removed.length) this.emit();
+    return removed;
+  }
+
+  canInterruptCurrent(predicate) {
+    const job = this.currentJob;
+    return Boolean(
+      job &&
+        typeof predicate === 'function' &&
+        predicate(job) &&
+        job.priority !== 'high' &&
+        job.interruptible !== false
+    );
   }
 
   handleRouteChange({ allowContinuation = true, maxCarryoverMs } = {}) {

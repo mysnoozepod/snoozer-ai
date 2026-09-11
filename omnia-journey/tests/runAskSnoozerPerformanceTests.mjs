@@ -41,10 +41,49 @@ const job = {
 };
 const start = buildAskSnoozerVoiceTiming(job, "tts_start", 1600);
 assert.equal(start.responseToTtsStartMs, 150);
+assert.equal(start.speechWaitBeforeStartMs, 130);
+assert.equal(start.speechQueueWaitMs, 0);
 assert.equal(start.ttsPreparationMs, 130);
 assert.equal(start.ttsPlayed, true);
 const complete = buildAskSnoozerVoiceTiming(job, "tts_complete", 4600);
 assert.equal(complete.speechDurationMs, 3000);
 assert.equal(complete.totalPerceivedMs, 3600);
+assert.equal(complete.speechTerminalState, "completed");
+
+const queuedJob = {
+  ...job,
+  createdAt: 1470,
+  preparingStartedAt: 3000,
+  startedAt: 3200,
+  metadata: {
+    ...job.metadata,
+    speechQueueDepthAtEnqueue: 2,
+    speechQueueDepthAfterSupersession: 0,
+    speechSupersededCount: 2,
+  },
+};
+const queuedStart = buildAskSnoozerVoiceTiming(queuedJob, "tts_start", 3200);
+assert.equal(queuedStart.speechWaitBeforeStartMs, 1730);
+assert.equal(queuedStart.speechQueueWaitMs, 1530);
+assert.equal(queuedStart.ttsPreparationMs, 200);
+assert.equal(queuedStart.speechQueueDepthAtEnqueue, 2);
+
+const superseded = buildAskSnoozerVoiceTiming(queuedJob, "tts_superseded", 2500, {
+  speechTerminalState: "superseded",
+  speechSuperseded: true,
+  staleSpeechPrevented: true,
+  speechSupersededCount: 2,
+});
+assert.equal(superseded.speechTerminalState, "superseded");
+assert.equal(superseded.speechSuperseded, true);
+assert.equal(superseded.staleSpeechPrevented, true);
+
+const interrupted = buildAskSnoozerVoiceTiming(job, "tts_superseded", 2500, {
+  speechTerminalState: "superseded",
+  speechSuperseded: true,
+  interrupted: true,
+});
+assert.equal(interrupted.ttsPlayed, true);
+assert.equal(interrupted.interrupted, true);
 
 console.log("Ask Snoozer client performance-boundary tests passed.");

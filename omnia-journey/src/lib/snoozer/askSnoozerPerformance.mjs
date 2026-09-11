@@ -54,7 +54,20 @@ export function buildAskSnoozerVoiceTiming(job, phase, timestamp = nowMs(), extr
   const requestStartedAt = Number(metadata.requestStartedAt || 0);
   const responseReceivedAt = Number(metadata.responseReceivedAt || 0);
   const startedAt = Number(job?.startedAt || timestamp);
+  const preparationStartedAt = Number(job?.preparingStartedAt || job?.createdAt || timestamp);
   const captionsOnly = phase === "tts_unavailable" || job?.status === "captions-only";
+  const terminalState = String(
+    extra.speechTerminalState ||
+      (phase === "tts_complete"
+        ? "completed"
+        : phase === "tts_error"
+          ? "failed"
+          : phase === "tts_superseded"
+            ? "superseded"
+            : phase === "tts_cancelled"
+              ? "cancelled"
+              : "")
+  ).trim();
   return {
     version: ASK_SNOOZER_CLIENT_TIMING_VERSION,
     phase,
@@ -63,13 +76,26 @@ export function buildAskSnoozerVoiceTiming(job, phase, timestamp = nowMs(), extr
     requestId: metadata.backendRequestId || null,
     responsePolicyVersion: metadata.responsePolicyVersion || "baseline-v1",
     responseToTtsStartMs: phase === "tts_start" ? safeDuration(timestamp, responseReceivedAt) : 0,
-    ttsPreparationMs: phase === "tts_start" ? safeDuration(timestamp, job?.createdAt) : 0,
+    speechWaitBeforeStartMs: phase === "tts_start" ? safeDuration(timestamp, job?.createdAt) : 0,
+    speechQueueWaitMs: phase === "tts_start" ? safeDuration(preparationStartedAt, job?.createdAt) : 0,
+    ttsPreparationMs: phase === "tts_start" ? safeDuration(timestamp, preparationStartedAt) : 0,
     speechDurationMs: phase === "tts_complete" ? safeDuration(timestamp, startedAt) : 0,
     totalPerceivedMs: requestStartedAt ? safeDuration(timestamp, requestStartedAt) : 0,
     ttsRequested: true,
-    ttsPlayed: phase === "tts_start" || (phase === "tts_complete" && !captionsOnly),
+    ttsPlayed:
+      phase === "tts_start" ||
+      (phase === "tts_complete" && !captionsOnly) ||
+      Boolean(extra.interrupted),
     captionsOnly,
     interrupted: Boolean(extra.interrupted),
+    speechSuperseded: Boolean(extra.speechSuperseded || phase === "tts_superseded"),
+    speechSupersededCount: Number(extra.speechSupersededCount ?? metadata.speechSupersededCount ?? 0) || 0,
+    speechQueueDepthAtEnqueue: Number(metadata.speechQueueDepthAtEnqueue || 0) || 0,
+    speechQueueDepthAfterSupersession:
+      Number(extra.speechQueueDepthAfterSupersession ?? metadata.speechQueueDepthAfterSupersession ?? 0) || 0,
+    speechTerminalState: terminalState || null,
+    staleSpeechPrevented: Boolean(extra.staleSpeechPrevented),
+    activeSpeechTurnId: metadata.askSnoozerTimingId || null,
   };
 }
 

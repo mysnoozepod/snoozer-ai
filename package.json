@@ -24,6 +24,7 @@
     "test:ask-snoozer-recovery": "node tests/runAskSnoozerRecoveryEvaluations.js",
     "test:ask-snoozer-quality-loop": "node tests/runAskSnoozerQualityLoopTests.js",
     "test:ask-snoozer-client-timing": "node omnia-journey/tests/runAskSnoozerPerformanceTests.mjs",
+    "test:ask-snoozer-audio-supersession": "node omnia-journey/tests/runVoiceQueueSupersessionTests.mjs",
     "report:ask-snoozer-quality": "node scripts/runAskSnoozerQualityReport.js",
     "accept:ask-snoozer-device-tts": "node scripts/runAskSnoozerDeviceTtsAcceptance.js",
     "test:integration-secrets": "node tests/runIntegrationSecretsTests.js",

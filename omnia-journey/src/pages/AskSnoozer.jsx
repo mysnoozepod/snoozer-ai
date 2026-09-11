@@ -144,6 +144,7 @@ export default function AskSnoozer() {
   const snoozer = useSnoozer();
   const sayHud = snoozer?.sayHud;
   const noteUserInteraction = snoozer?.noteUserInteraction;
+  const supersedeConversationalSpeech = snoozer?.supersedeConversationalSpeech;
   const closeSnoozer = snoozer?.closeSnoozer;
   const openSnoozer = snoozer?.openSnoozer;
   const hudOpen = snoozer?.hud?.open;
@@ -228,8 +229,11 @@ export default function AskSnoozer() {
   async function sendMessage(rawMessage, { comparisonProductHandles = [] } = {}) {
     const content = String(rawMessage || "").trim();
     if (!content || pending) return;
-    noteUserInteraction?.();
     const turnTiming = createAskSnoozerTurnTiming(createMessageId("ask_timing"));
+    const speechSupersession = typeof supersedeConversationalSpeech === "function"
+      ? Promise.resolve(supersedeConversationalSpeech()).catch(() => null)
+      : Promise.resolve(null);
+    noteUserInteraction?.();
     const userMessage = { id: createMessageId("user"), role: "user", content, createdAt: nowIso() };
     const history = [...messages.map(messageToHistoryEntry), messageToHistoryEntry(userMessage)];
     setMessages((current) => [...current, userMessage]);
@@ -253,6 +257,7 @@ export default function AskSnoozer() {
       });
       setLastFailedPrompt(response?.ok === false ? content : "");
       if (response?.voice?.speak && response?.voice?.speech && typeof sayHud === "function") {
+        await speechSupersession;
         sayHud({
           speech: response.voice.speech,
           captions: assistantMessage.content,
@@ -266,6 +271,8 @@ export default function AskSnoozer() {
             requestStartedAt: turnTiming.requestStartedAt,
             responseReceivedAt: turnTiming.responseReceivedAt,
             responsePolicyVersion: response?.meta?.quality?.responsePolicyVersion || "baseline-v1",
+            audioScope: "ask_snoozer_conversation",
+            conversationTurnId: turnTiming.id,
           },
         }).catch(() => {});
       }
