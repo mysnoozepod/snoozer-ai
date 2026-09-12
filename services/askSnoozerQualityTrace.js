@@ -258,6 +258,9 @@ function classifyOutcome({
   const advancementByTask = {
     canonical_recommendation: "recommendation_understood",
     canonical_recall: "recommendation_restored",
+    session_recommendation_recall: "current_recommendation_explained",
+    recommendation_explanation: "recommendation_reason_explained",
+    recommendation_acceptance: "recommendation_accepted",
     product_comparison: "comparison_completed",
     advisor_choice: "decision_guidance_completed",
     price_quote: "quote_understood",
@@ -265,6 +268,7 @@ function classifyOutcome({
     savings_quote: "lower_cost_option_understood",
     compatibility: "compatibility_resolved",
     value_judgment: "objection_or_value_tradeoff_resolved",
+    value_objection: "budget_or_value_tradeoff_resolved",
     cart_add: "requested_cart_action_resolved",
     preference_capture: "shopper_preference_updated",
     shopper_feedback: "shopper_feedback_preserved",
@@ -319,6 +323,10 @@ function classifyFailureSeverity(trace = {}) {
     trace.staleQuoteInvalidated === false ||
     trace.alternativeGrounded === false ||
     trace.sessionRecommendationUpdated === false ||
+    trace.sessionRecommendationGrounded === false ||
+    trace.rejectedCandidateSuppressed === false ||
+    trace.acceptedRecommendationPromoted === false ||
+    trace.adaptiveRecommendationStranded ||
     (trace.pendingCommitmentResolved === false && trace.contradictoryCommitmentBehavior) ||
     trace.commercialOpportunityStranded ||
     trace.multipleProbes ||
@@ -335,6 +343,10 @@ function classifyFailureSeverity(trace = {}) {
     if (trace.staleQuoteInvalidated === false) codes.push("stale_quote_not_invalidated");
     if (trace.alternativeGrounded === false) codes.push("alternative_not_grounded");
     if (trace.sessionRecommendationUpdated === false) codes.push("session_recommendation_not_updated");
+    if (trace.sessionRecommendationGrounded === false) codes.push("session_recommendation_not_grounded");
+    if (trace.rejectedCandidateSuppressed === false) codes.push("rejected_candidate_not_suppressed");
+    if (trace.acceptedRecommendationPromoted === false) codes.push("accepted_recommendation_not_promoted");
+    if (trace.adaptiveRecommendationStranded) codes.push("adaptive_recommendation_stranded");
     if (trace.pendingCommitmentResolved === false && trace.contradictoryCommitmentBehavior) codes.push("contradictory_commitment_behavior");
     if (trace.commercialOpportunityStranded) codes.push("commercial_opportunity_stranded");
     if (trace.multipleProbes) codes.push("multiple_probes");
@@ -351,6 +363,9 @@ function classifyFailureSeverity(trace = {}) {
     trace.subjectiveFeedbackPreserved === false ||
     trace.retainedPreferencePreserved === false ||
     trace.shopperDissatisfactionRecovered === false ||
+    trace.recommendationChangeExplained === false ||
+    trace.knownConfigurationPreserved === false ||
+    trace.unnecessaryReask ||
     trace.knownQuestionRepeated ||
     trace.repeatedQuestion ||
     trace.composition?.rejected ||
@@ -362,6 +377,9 @@ function classifyFailureSeverity(trace = {}) {
     if (trace.subjectiveFeedbackPreserved === false) codes.push("subjective_feedback_not_preserved");
     if (trace.retainedPreferencePreserved === false) codes.push("retained_preference_not_preserved");
     if (trace.shopperDissatisfactionRecovered === false) codes.push("shopper_dissatisfaction_not_recovered");
+    if (trace.recommendationChangeExplained === false) codes.push("recommendation_change_not_explained");
+    if (trace.knownConfigurationPreserved === false) codes.push("known_configuration_not_preserved");
+    if (trace.unnecessaryReask) codes.push("unnecessary_reask");
     if (trace.knownQuestionRepeated) codes.push("known_question_repeated");
     if (trace.repeatedQuestion) codes.push("repeated_question");
     if (trace.composition?.rejected) codes.push("model_composition_rejected");
@@ -399,6 +417,9 @@ function buildAskSnoozerQualityTrace({
   totalMs = 0,
   modelMs = 0,
   factPackComplete = false,
+  factPack = null,
+  modelInputChars = 0,
+  fallbackKind = null,
   quote = null,
   fallbackUsed = false,
   visitMetadata = null,
@@ -496,6 +517,34 @@ function buildAskSnoozerQualityTrace({
     clean(plan.taskType) === "trust_recovery" && explicitRejectionHonored && responseComplete(reply)
   );
   const sessionRecommendationUpdated = !alternativeRequested || Boolean(sessionRecommendationHandle || honestNoAlternative);
+  const rankedAlternatives = Array.isArray(deal?.rankedAlternatives) ? deal.rankedAlternatives : [];
+  const eligibleCandidatesResolved = !alternativeRequested || rankedAlternatives.length > 0 || honestNoAlternative;
+  const sessionRecommendationGrounded = !sessionRecommendationHandle || Boolean(
+    eligibleAlternatives.includes(sessionRecommendationHandle) && !rejected.has(sessionRecommendationHandle)
+  );
+  const originalRecommendationHandle = clean(deal?.canonicalRecommendation?.primaryMattressHandle).toLowerCase();
+  const beforeSessionRecommendationHandle = clean(transition?.stateBefore?.sessionRecommendationHandle).toLowerCase();
+  const sessionRecommendationChanged = Boolean(
+    sessionRecommendationHandle &&
+    sessionRecommendationHandle !== beforeSessionRecommendationHandle &&
+    (beforeSessionRecommendationHandle || originalRecommendationHandle)
+  );
+  const recommendationChangeExplained = !sessionRecommendationChanged || Boolean(
+    /\b(?:because|after|felt|asked for|kept|keeping|moved ahead|ruled out|matches?|fits?|gives?|offers?|softer|firmer|cooler|responsive|pressure relief|motion)\b/.test(normalizeQuestion(reply))
+  );
+  const acceptanceActs = acts.filter((act) => act.type === "accept_recommendation");
+  const acceptedRecommendationPromoted = !acceptanceActs.length || acceptanceActs.every((act) =>
+    clean(deal?.acceptedRecommendation?.productHandle).toLowerCase() === clean(act.handle).toLowerCase() &&
+    clean(deal?.activeConfiguration?.productHandle).toLowerCase() === clean(act.handle).toLowerCase()
+  );
+  const stateBeforeSize = clean(transition?.stateBefore?.activeSize || plan?.knownFacts?.size);
+  const knownConfigurationPreserved = !acceptanceActs.length || !stateBeforeSize || clean(deal?.activeSize || deal?.activeConfiguration?.size) === stateBeforeSize;
+  const exactQuoteReached = !["price_quote", "bundle_quote", "cart_add"].includes(clean(plan.taskType)) || Boolean(
+    quote?.ok && quote?.items?.length && quote.items.every((item) => /^gid:\/\/shopify\/ProductVariant\//.test(clean(item?.variantId)))
+  );
+  const adaptiveRecommendationStranded = Boolean(
+    alternativeRequested && eligibleCandidatesResolved && !sessionRecommendationHandle && !honestNoAlternative
+  );
   const contradictoryCommitmentBehavior = commitmentActs.length > 0 && rejectedProductReintroduced;
   const quotePresented = Boolean(quote?.ok && responseComplete(reply));
   const compatibilityChecked = ["compatible", "incompatible", "not_applicable"].includes(
@@ -547,9 +596,13 @@ function buildAskSnoozerQualityTrace({
       [
         "canonical_recommendation",
         "canonical_recall",
+        "session_recommendation_recall",
+        "recommendation_explanation",
+        "recommendation_acceptance",
         "product_comparison",
         "advisor_choice",
         "value_judgment",
+        "value_objection",
         "preference_capture",
         "compound_product_base",
         "durability_objection",
@@ -581,9 +634,13 @@ function buildAskSnoozerQualityTrace({
         ![
           "canonical_recommendation",
           "canonical_recall",
+          "session_recommendation_recall",
+          "recommendation_explanation",
+          "recommendation_acceptance",
           "product_comparison",
           "advisor_choice",
           "value_judgment",
+          "value_objection",
           "preference_capture",
           "price_quote",
           "bundle_quote",
@@ -626,6 +683,16 @@ function buildAskSnoozerQualityTrace({
     shopperDissatisfactionRecovered,
     sessionRecommendationUpdated,
     contradictoryCommitmentBehavior,
+    eligibleCandidatesResolved,
+    sessionRecommendationGrounded,
+    sessionRecommendationChanged,
+    recommendationChangeExplained,
+    rejectedCandidateSuppressed: !rejectedProductReintroduced,
+    acceptedRecommendationPromoted,
+    knownConfigurationPreserved,
+    unnecessaryReask: knownRepeated,
+    exactQuoteReached,
+    adaptiveRecommendationStranded,
   };
   const outcome = classifyOutcome({
     plan: { ...plan, query },
@@ -662,6 +729,15 @@ function buildAskSnoozerQualityTrace({
       mode,
       modelCallCount: Math.max(0, Number(modelCallCount) || 0),
       rejected: Boolean(compositionFallbackUsed && modelGate?.ok === false),
+      fallbackKind: clean(fallbackKind) || null,
+      modelInputChars: Math.max(0, Number(modelInputChars) || 0),
+    },
+    factPackBudget: {
+      totalChars: Math.max(0, Number(factPack?.budget?.totalChars || 0) || 0),
+      productChars: Math.max(0, Number(factPack?.budget?.productChars || 0) || 0),
+      historyChars: Math.max(0, Number(factPack?.budget?.historyChars || 0) || 0),
+      advisorChars: Math.max(0, Number(factPack?.budget?.advisorChars || 0) || 0),
+      policyChars: Math.max(0, Number(factPack?.budget?.policyChars || 0) || 0),
     },
     latency: {
       totalMs: Math.max(0, Number(totalMs) || 0),
@@ -893,6 +969,15 @@ function aggregateAskSnoozerQualityTraces(events, reviews = null) {
     const values = traces.filter((event) => event?.composition?.mode === mode).map((event) => event?.latency?.totalMs);
     return [mode, { count: values.length, averageMs: average(values), p95Ms: percentile(values) }];
   }));
+  const payloadByMode = Object.fromEntries(modes.map((mode) => {
+    const selected = traces.filter((event) => event?.composition?.mode === mode);
+    return [mode, {
+      factPackAverageChars: average(selected.map((event) => event?.factPackBudget?.totalChars)),
+      factPackP95Chars: percentile(selected.map((event) => event?.factPackBudget?.totalChars)),
+      modelInputAverageChars: average(selected.map((event) => event?.composition?.modelInputChars)),
+      modelInputP95Chars: percentile(selected.map((event) => event?.composition?.modelInputChars)),
+    }];
+  }));
   const recoveryAttempts = count((event) => event?.outcome?.recovery?.attempted);
   const recoverySuccesses = count((event) => event?.outcome?.recovery?.success === true);
   const reviewScores = Array.isArray(reviews)
@@ -904,7 +989,9 @@ function aggregateAskSnoozerQualityTraces(events, reviews = null) {
     deterministicPercent: rate(count((event) => event?.composition?.mode === "deterministic"), total),
     modelAssistedPercent: rate(count((event) => event?.composition?.mode === "model_assisted"), total),
     modelFallbackPercent: rate(count((event) => event?.composition?.mode === "model_fallback"), total),
+    rateLimitFallbackPercent: rate(count((event) => event?.composition?.fallbackKind === "rate_limit"), total),
     latencyByMode,
+    payloadByMode,
     probeRate: rate(count((event) => event?.probeUsed), total),
     unresolvedReferenceRate: rate(count((event) => event?.referenceResolution?.phrase && !event?.referenceResolution?.resolved), total),
     consistencyGateRejectionRate: rate(count((event) => event?.composition?.rejected), total),

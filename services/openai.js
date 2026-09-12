@@ -2725,8 +2725,9 @@ function parseTrustedAdvisorComposition(value = "") {
     throw error;
   }
   const displayText = String(parsed?.displayText || "").trim();
-  const speechText = String(parsed?.speechText || "").trim();
-  const probe = parsed?.probe == null ? null : String(parsed.probe).trim();
+  const sentenceMatches = displayText.match(/[^.!?]+[.!?]+/g) || [];
+  const speechText = String(parsed?.speechText || parsed?.spokenSummary || sentenceMatches.slice(0, 2).join(" ") || displayText).trim();
+  let probe = parsed?.probe == null ? null : String(parsed.probe).trim();
   const nextActionIntent = parsed?.nextActionIntent == null ? null : String(parsed.nextActionIntent).trim();
   const confidence = Number(parsed?.confidence);
   if (!displayText || !speechText || displayText.length > 1800 || speechText.length > 500) {
@@ -2734,6 +2735,8 @@ function parseTrustedAdvisorComposition(value = "") {
     error.code = "E_ADVISOR_COMPOSER_CONTRACT";
     throw error;
   }
+  if (probe && !probe.endsWith("?") && !/[.!]$/.test(probe)) probe = `${probe}?`;
+  if (probe && (displayText.match(/\?/g) || []).length === 1) probe = null;
   if (probe && ((probe.match(/\?/g) || []).length !== 1 || probe.length > 180)) {
     const error = new Error("Trusted-advisor composer returned an invalid probe.");
     error.code = "E_ADVISOR_COMPOSER_PROBE";
@@ -2779,7 +2782,7 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
   } catch {
     // The packaged copy is the safe rollback when the remote knowledge object is unavailable.
   }
-  const handles = [...new Set((Array.isArray(productHandles) ? productHandles : []).filter(Boolean))].slice(0, 4);
+  const handles = [...new Set((Array.isArray(productHandles) ? productHandles : []).filter(Boolean))].slice(0, 3);
   const productFacts = [];
   for (const handle of handles) {
     const key = TRUSTED_ADVISOR_PRODUCT_KEYS[handle];
@@ -2792,7 +2795,7 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
           sourceKey: key,
           status: "verified_fact",
           facts: compactAdvisorLines(loaded.value, {
-            limit: 12,
+            limit: 7,
             include: ["feel", "pressure", "support", "foam", "coil", "airflow", "motion", "certipur", "care", "ideal", "split comfort"],
           }),
         });
@@ -2832,8 +2835,20 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
     version: advisorKnowledge.version || null,
     sourceKey: ADVISOR_KNOWLEDGE_KEY,
     status: "advisor_interpretation",
-    principles: advisorKnowledge.principles || [],
-    topicGuidance: advisorKnowledge.topics || {},
+    principles: (advisorKnowledge.principles || []).slice(0, 4),
+    topicGuidance: (() => {
+      const topics = advisorKnowledge.topics || {};
+      const keys = taskType === "durability_objection" || /\bsag|durab|wear\b/i.test(query)
+        ? ["durability"]
+        : taskType === "base_education" || taskType === "value_judgment" || taskType === "value_objection"
+          ? ["adjustable_base_value"]
+          : taskType === "confusion_recovery"
+            ? ["confusion"]
+            : taskType === "compound_product_base" || /\bpartner|split\b/i.test(query)
+              ? ["couples_and_split"]
+              : ["feel"];
+      return Object.fromEntries(keys.filter((key) => topics[key] != null).map((key) => [key, topics[key]]));
+    })(),
     productFacts,
     policyFacts,
   };
@@ -2847,30 +2862,48 @@ async function composeTrustedAdvisorResponse({
   deterministicDraft,
 } = {}) {
   const startedAt = Date.now();
-  const trustedAdvisorPolicy = await getBasePromptOnce(requestId || `advisor_${Date.now().toString(36)}`);
+  const fullPolicy = await getBasePromptOnce(requestId || `advisor_${Date.now().toString(36)}`);
+  const policySentences = String(fullPolicy || "")
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length >= 20 && sentence.length <= 360)
+    .filter((sentence) => /\b(?:advisor|shopper|recommend|price|availability|compatib|cart|medical|truth|invent|pressure|decision)\b/i.test(sentence))
+    .slice(0, 12);
+  const trustedAdvisorPolicy = policySentences.join(" ").slice(0, 2400);
+  const compactStrategy = {
+    taskType: strategy?.taskType,
+    stage: strategy?.stage,
+    responseDepth: strategy?.responseDepth,
+    references: strategy?.references,
+    knownFacts: strategy?.knownFacts,
+    commercialState: strategy?.commercialState,
+    interpretedActs: strategy?.interpretedActs,
+    allowedActions: strategy?.allowedActions,
+    medicalBoundary: strategy?.medicalBoundary,
+  };
   const boundedPayload = JSON.stringify({
     shopperQuestion: String(userMessage || "").slice(0, 1000),
-    strategy,
+    strategy: compactStrategy,
     verifiedFactPack: factPack,
     deterministicDraft,
   });
+  const systemContent = [
+    trustedAdvisorPolicy,
+    "You are the language composer for a mattress showroom advisor.",
+    "Return JSON only with displayText, speechText, probe (string or null), nextActionIntent (string or null), and confidence (0 to 1).",
+    "Rewrite the deterministic draft so it is natural, engaged, decisive, and shopper-friendly.",
+    "Use only the verified fact pack and deterministic draft. Never invent or change products, titles, sizes, prices, availability, compatibility, configuration, cart state, rewards, policies, or actions.",
+    "Treat the original assessment recommendation as history and the current session recommendation as the active advice when shopper feedback changed it.",
+    "Do not expose implementation language. Do not diagnose or promise a medical outcome.",
+    "Ask at most one useful forward-moving question. Use null when a probe is not warranted.",
+    "Use the supplied response depth and finish the thought. Keep displayText under 1800 characters. Keep speechText to two short complete sentences.",
+  ].filter(Boolean).join(" ");
   const response = await callOpenAIChat({
     reqId: requestId || `advisor_${Date.now().toString(36)}`,
     messages: [
       {
         role: "system",
-        content: [
-          trustedAdvisorPolicy,
-          "You are the language composer for a mattress showroom advisor.",
-          "Return JSON only with displayText, speechText, probe (string or null), nextActionIntent (string or null), and confidence (0 to 1).",
-          "Rewrite the deterministic draft so it is natural, engaged, decisive, and shopper-friendly.",
-          "Honor the versioned presentation policy in the strategy only for wording and structure.",
-          "Use only the verified fact pack and deterministic draft. Never invent or change products, titles, sizes, prices, availability, compatibility, configuration, cart state, rewards, policies, or actions.",
-          "Do not expose implementation language. Do not diagnose or promise a medical outcome.",
-          "Ask at most one useful forward-moving question. Use null when a probe is not warranted.",
-          "Use the supplied response depth: quick 1-3 sentences, standard 3-6, deep 5-9, compare enough to finish the tradeoff and conclusion, teach enough to be useful, and coach as short interactive guidance.",
-          "Keep displayText under 1800 characters and end on a complete sentence. Keep speechText natural for voice, no more than two short complete sentences, and do not copy a long display answer.",
-        ].join(" "),
+        content: systemContent,
       },
       { role: "user", content: boundedPayload },
     ],
@@ -2881,6 +2914,9 @@ async function composeTrustedAdvisorResponse({
     model: response.model,
     tokens: response.tokens,
     modelMs: Date.now() - startedAt,
+    inputChars: systemContent.length + boundedPayload.length,
+    systemChars: systemContent.length,
+    factPackChars: JSON.stringify(factPack || {}).length,
   };
 }
 

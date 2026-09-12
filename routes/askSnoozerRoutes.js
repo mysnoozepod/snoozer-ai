@@ -737,27 +737,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
     // Every turn is planned before routing. Nuanced continued turns use the
     // trusted-advisor composer; only clean station starters fall through.
-    const hasConversationHistory = Boolean(
-      (Array.isArray(context?.recentConversation) && context.recentConversation.length) ||
-      (Array.isArray(context?.askSnoozerWorkingMemory?.conversationFocus?.relevantTurns) &&
-        context.askSnoozerWorkingMemory.conversationFocus.relevantTurns.length)
-    );
-    const activeDeal = context?.askSnoozerWorkingMemory?.activeDeal || {};
-    const hasActiveDecisionState = Boolean(
-      hasConversationHistory ||
-      activeDeal.activeProductHandle ||
-      activeDeal.activeSize ||
-      activeDeal.activeBaseHandle ||
-      activeDeal.baseDecision ||
-      activeDeal.activeQuote?.items?.length
-    );
-    const atomicCommerceLookup = Boolean(
-      ["price_quote", "bundle_quote", "savings_quote"].includes(askSnoozerPlan?.taskType) &&
-      !hasActiveDecisionState
-    );
     const advisorAnswer =
       askSnoozerPlan?.handled &&
-      !atomicCommerceLookup &&
       typeof resolveAskSnoozerAdvisorTurn === "function"
         ? await resolveAskSnoozerAdvisorTurn({
             query: msg,
@@ -832,6 +813,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             totalMs: latencyMs,
             modelMs: advisorAnswer.modelMs,
             factPackComplete: (advisorAnswer.plan.neededFacts || []).length === 0,
+            factPack: advisorAnswer.factPack,
+            modelInputChars: advisorAnswer.modelInputChars,
+            fallbackKind: advisorAnswer.fallbackKind,
             quote: advisorAnswer.quote,
             fallbackUsed: advisorAnswer.fallbackUsed,
             visitMetadata,
@@ -840,6 +824,13 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           })
         : null;
       qualityTraceEmitted = Boolean(qualityTrace);
+      const advisorFactsResolved = Boolean(
+        advisorAnswer.gate?.ok !== false &&
+        (advisorAnswer.plan.neededFacts || []).length === 0
+      );
+      const advisorReason = advisorAnswer.fallbackUsed
+        ? `model_fallback_${advisorAnswer.fallbackKind || "composer_error"}`
+        : "advisor_turn_resolved";
       env.meta = {
         path: "trusted_advisor_orchestrator",
         source: advisorAnswer.source,
@@ -850,21 +841,21 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         answer_facts_count: advisorAnswer.factPack?.products?.length || 1,
         resolved_requested_product_handle: advisorAnswer.plan.references?.requestedProductHandle || null,
         loaded_product_knowledge_handles: (advisorAnswer.factPack?.productFacts || []).map((item) => item.handle).filter(Boolean),
-        reason: advisorAnswer.fallbackUsed ? "response_consistency_correction" : "advisor_turn_resolved",
+        reason: advisorReason,
         qualityGate: {
           intent: advisorAnswer.plan.taskType,
           intentGroup: "trusted_advisor",
           sourceOfTruth: advisorAnswer.source,
           answerType: advisorAnswer.quote ? "commerce_answer" : "advisor_answer",
           protectedTruthRequired: advisorAnswer.plan.protectedReferences.length > 0,
-          factsResolved: !advisorAnswer.fallbackUsed,
+          factsResolved: advisorFactsResolved,
           fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
           missingSlots: advisorAnswer.plan.neededFacts,
-          reason: advisorAnswer.fallbackUsed ? "response_consistency_correction" : "advisor_turn_resolved",
+          reason: advisorReason,
         },
         semantics: {
-          questionAnswered: !advisorAnswer.fallbackUsed,
-          activeGoalAdvanced: !advisorAnswer.fallbackUsed,
+          questionAnswered: advisorFactsResolved,
+          activeGoalAdvanced: advisorFactsResolved,
           activeGoal: context?.askSnoozerWorkingMemory?.activeGoal?.intent || null,
           stage: advisorAnswer.plan.stage,
           plannerTask: advisorAnswer.plan.taskType,
@@ -887,9 +878,14 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           modelCallCount: advisorAnswer.modelCallCount,
           model: advisorAnswer.model,
           fallbackUsed: Boolean(advisorAnswer.compositionFallbackUsed),
+          fallbackKind: advisorAnswer.fallbackKind || null,
           gate: advisorAnswer.modelGate,
           referenceResolution: advisorAnswer.plan.references?.resolution || null,
           factPackComplete: (advisorAnswer.plan.neededFacts || []).length === 0,
+          inputChars: advisorAnswer.modelInputChars || 0,
+          systemChars: advisorAnswer.modelSystemChars || 0,
+          factPackChars: advisorAnswer.modelFactPackChars || advisorAnswer.factPack?.budget?.totalChars || 0,
+          factPackBudget: advisorAnswer.factPack?.budget || null,
         },
         quality: qualityTrace
           ? {
@@ -914,6 +910,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           totalMs: latencyMs,
           fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
           modelCallCount: advisorAnswer.modelCallCount || 0,
+          modelInputChars: advisorAnswer.modelInputChars || 0,
+          factPackChars: advisorAnswer.factPack?.budget?.totalChars || 0,
+          fallbackKind: advisorAnswer.fallbackKind || null,
         },
       };
       const normalized = normalizeSnoozerResponse(env, {
@@ -941,6 +940,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         modelCallCount: advisorAnswer.modelCallCount || 0,
         compositionMode: advisorAnswer.compositionMode,
         compositionFallbackUsed: Boolean(advisorAnswer.compositionFallbackUsed),
+        fallbackKind: advisorAnswer.fallbackKind || null,
+        modelInputChars: advisorAnswer.modelInputChars || 0,
+        factPackBudget: advisorAnswer.factPack?.budget || null,
         modelGateViolations: advisorAnswer.modelGate?.violations || [],
         referenceResolution: advisorAnswer.plan.references?.resolution || null,
         factPackComplete: (advisorAnswer.plan.neededFacts || []).length === 0,

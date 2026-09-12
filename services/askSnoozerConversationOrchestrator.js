@@ -13,7 +13,7 @@ const {
   setupSizeForSelection,
 } = require("./commerceConfigurationResolver");
 
-const ORCHESTRATOR_VERSION = "2026-09-11.2";
+const ORCHESTRATOR_VERSION = "2026-09-11.3";
 const PRODUCT_VARIANT_GID = /^gid:\/\/shopify\/ProductVariant\/[^\s/?#]+$/;
 const INTERNAL_LANGUAGE = Object.freeze([
   "shopify",
@@ -278,10 +278,14 @@ function resolveProtectedReference(query = "", context = {}) {
   let phrase = null;
   let handle = null;
   let source = null;
-  if (/\b(?:your recommendation|mattress you (?:showed|recommended)|original recommendation)\b/.test(text)) {
-    phrase = "your recommendation";
+  if (/\b(?:original recommendation|originally recommend|first recommendation)\b/.test(text)) {
+    phrase = "original recommendation";
     handle = canonical;
     source = "canonical_recommendation";
+  } else if (/\b(?:your recommendation|current recommendation|mattress you (?:showed|recommended))\b/.test(text)) {
+    phrase = "your recommendation";
+    handle = activeSessionRecommendationHandle(context) || canonical || active;
+    source = activeSessionRecommendationHandle(context) ? "session_recommendation" : "canonical_recommendation";
   } else if (/\b(?:the base we discussed|that base)\b/.test(text)) {
     phrase = "the base we discussed";
     handle = clean(deal.activeBaseHandle || deal.recentBaseHandle || quoteHandles.find((item) => /base/.test(item))).toLowerCase();
@@ -340,9 +344,9 @@ function responseDepth(text = "", taskType = "") {
 function inferStage(taskType = "", previous = "exploring") {
   if (["cart_add", "cart_review"].includes(taskType)) return "ready";
   if (["price_quote", "bundle_quote", "compatibility"].includes(taskType)) return "configuring";
-  if (["value_judgment", "savings_quote", "advisor_opinion", "compound_product_base", "durability_objection"].includes(taskType)) return "evaluating_value";
+  if (["value_judgment", "value_objection", "savings_quote", "advisor_opinion", "compound_product_base", "durability_objection"].includes(taskType)) return "evaluating_value";
   if (["product_comparison", "firmness_compare", "advisor_choice"].includes(taskType)) return "comparing";
-  if (["canonical_recommendation", "canonical_recall", "product_experience", "hybrid_exploration", "configuration_update", "confusion_recovery", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "commitment_declined", "commitment_resolution"].includes(taskType)) return "narrowing";
+  if (["canonical_recommendation", "canonical_recall", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance", "product_experience", "hybrid_exploration", "configuration_update", "confusion_recovery", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "commitment_declined", "commitment_resolution"].includes(taskType)) return "narrowing";
   return clean(previous) || "exploring";
 }
 
@@ -369,20 +373,24 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   ).toLowerCase();
   const acceptedCommitment = acts.find((act) => act.type === "accept_commitment") || null;
   const declinedCommitment = acts.find((act) => act.type === "decline_commitment") || null;
-  const correctionCue = /\b(?:no i meant|not that|other one|you misunderstood|that.s not what i meant|actually|changed my mind|instead|switch|make that|remove|without|mattress only|failed|try again|go back|return to)\b/.test(text);
+  const correctionCue = /\b(?:no i meant|not that|other one|you misunderstood|that.s not what i meant|actually|changed my mind|instead|switch|make that|remove|without|mattress[- ]only|failed|try again|go back|return to)\b/.test(text);
   const size =
     parsedSize === "Full" && /\b(?:full|complete|whole) setup\b/.test(text)
       ? clean(deal.activeSize)
       : parsedSize || clean(deal.activeSize);
-  const canonicalReference = /\b(?:your recommendation|originally recommend|original recommendation|recommend for me again|what did you recommend|remind me what you.*recommend(?:ed|ation)?)\b/.test(text);
+  const canonicalReference = /\b(?:originally recommend|original recommendation|first recommendation|what did (?:the assessment|you originally) recommend)\b/.test(text);
+  const priorActiveHandle = clean(activeMemory(context)?.lastTransition?.stateBefore?.activeProductHandle);
+  const hasPriorTurn = Number(activeMemory(context)?.turnIndex || 0) > 1;
   const continuation = Boolean(
-    activeHandle &&
+    (priorActiveHandle || hasPriorTurn) &&
+      activeHandle &&
       (/\b(?:it|that|this|one|setup|with|and what|which one|your recommendation)\b/.test(text) || deal.currentTopic)
   );
   let taskType = "legacy";
   let staleRouteOverride = false;
 
   if (actTypes.has("reconsider_product")) taskType = "reconsider_product";
+  else if (actTypes.has("accept_recommendation")) taskType = "recommendation_acceptance";
   else if (actTypes.has("trust_risk")) taskType = "trust_recovery";
   else if (acceptedCommitment?.commitmentType === "find_alternative" || actTypes.has("request_alternative")) taskType = "alternative_resolution";
   else if (acceptedCommitment) taskType = "commitment_resolution";
@@ -393,6 +401,14 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     (actTypes.has("retain_preference") && actTypes.has("explicit_exclusion"))
   ) taskType = "shopper_feedback";
   else if (actTypes.has("confusion") || /\b(?:i am|i'm|im) (?:confused|lost)|\b(?:wait,? )?what am i choosing|\bsimplify (?:this|it)\b/.test(text)) taskType = "confusion_recovery";
+  else if (/\b(?:why that one|why this one|why do you recommend (?:it|that)|why is that your recommendation)\b/.test(text)) taskType = "recommendation_explanation";
+  else if (/\b(?:what do you recommend now|what is your current recommendation|what's your current recommendation|which mattress now)\b/.test(text)) taskType = "session_recommendation_recall";
+  else if (/\b(?:remind me (?:what|which) (?:you )?|what did you )recommend(?:ed)?(?: for me)?\b/.test(text)) {
+    taskType = deal.sessionRecommendation?.productHandle
+      ? "session_recommendation_recall"
+      : "canonical_recall";
+  }
+  else if (actTypes.has("budget_value") || /\b(?:more than i want to spend|over my budget|too expensive|costs too much)\b/.test(text)) taskType = "value_objection";
   else if (explicitHandle && /\b(?:not sure|uncertain)\b.*\b(?:motion|base)\b/.test(text)) taskType = "compound_product_base";
   else if (/\b(?:sag|sagging|body impression|wear out|durability|hold up)\b/.test(text)) taskType = "durability_objection";
   else if (/\b(?:tell me about|show me|what about)\b.*\b(?:your )?hybrids\b|\byour hybrids\b/.test(text)) taskType = "hybrid_exploration";
@@ -409,8 +425,9 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   ) taskType = explicitBase.explicitNoBase ? "price_quote" : "bundle_quote";
   else if (/\b(?:how much.*save|save.*how much|savings|difference in price)\b/.test(text)) taskType = "savings_quote";
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && /\b(?:with|plus|and)\b.*\b(?:motion|base)\b/.test(text)) taskType = "bundle_quote";
+  else if (/\bwhat about with (?:the )?(?:motion|adjustable) base\b/.test(text) && (deal.activeProductHandle || deal.acceptedRecommendation?.productHandle)) taskType = "bundle_quote";
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && /\b(?:full setup|whole setup|complete setup)\b/.test(text)) taskType = "bundle_quote";
-  else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && (deal.activeBaseHandle || deal.activeQuote?.items?.length > 1) && !/\b(?:mattress only|without (?:the )?base|skip (?:the )?base)\b/.test(text)) taskType = "bundle_quote";
+  else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && (deal.activeBaseHandle || deal.activeQuote?.items?.length > 1) && !/\b(?:mattress[- ]only|without (?:the )?base|skip (?:the )?base)\b/.test(text)) taskType = "bundle_quote";
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text)) taskType = "price_quote";
   else if (/\bwarrant(?:y|ies)\b/.test(text)) taskType = "warranty_explanation";
   else if (/\b(?:make sense together|work together|work with|compatible|compatibility|pair together)\b/.test(text)) taskType = "compatibility";
@@ -458,11 +475,15 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     [
       "canonical_recall",
       "canonical_recommendation",
+      "session_recommendation_recall",
+      "recommendation_explanation",
+      "recommendation_acceptance",
       "product_experience",
       "product_comparison",
       "advisor_choice",
       "base_education",
       "value_judgment",
+      "value_objection",
       "preference_capture",
       "preference_recall",
       "firmness_compare",
@@ -513,7 +534,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       ? null
       : ["shopper_feedback", "trust_recovery"].includes(taskType)
         ? feedbackHandle || explicitHandle || null
-        : referenceResolution.handle || explicitHandle || activeHandle || workingGoal?.productHandle || canonicalHandle;
+        : referenceResolution.handle || explicitHandle || activeDeal(context)?.acceptedRecommendation?.productHandle || activeSessionRecommendationHandle(context) || activeHandle || workingGoal?.productHandle || canonicalHandle;
   let comparisonHandles = resolveComparisonHandles(query, referenceContext);
   if (taskType === "hybrid_exploration") {
     comparisonHandles = unique([activeHandle, "12-dual-comfort-hybrid", "14-hybrid"]).slice(0, 3);
@@ -541,27 +562,24 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   const missingProductReference =
     ["product_experience", "product_comparison", "advisor_choice", "firmness_compare", "durability_objection", "hybrid_exploration"].includes(taskType) &&
     ((!activeHandle && !explicitHandle) || unresolvedExplicitProductSubject);
-  // Keep established deterministic commerce handling for a fresh, standalone
-  // catalog question. The advisor owns canonical-reference requests and true
-  // multi-turn continuation, where commercial memory and judgment matter.
-  const freshStandaloneCommerce =
-    needsCommerce &&
-    !readyCommercialGoal &&
-    Number(activeMemory(context)?.turnIndex || 0) <= 1 &&
-    !canonicalReference;
   const atomicStandaloneCommerce =
     ["price_quote", "bundle_quote", "savings_quote"].includes(taskType) &&
-    !readyCommercialGoal &&
     Number(activeMemory(context)?.turnIndex || 0) <= 1 &&
     !continuation;
+  const atomicStandalonePolicy =
+    taskType === "warranty_explanation" &&
+    !activeHandle &&
+    Number(activeMemory(context)?.turnIndex || 0) <= 1 &&
+    !continuation;
+  const missingCommerceProduct = needsCommerce && !quoteReferenceHandle;
   const handled =
     taskType !== "legacy" &&
     taskType !== "cart_review" &&
     !ambiguousSetupPrice &&
     !missingCanonical &&
     !missingProductReference &&
-    !freshStandaloneCommerce &&
-    !atomicStandaloneCommerce;
+    !missingCommerceProduct &&
+    !atomicStandalonePolicy;
   const stage = inferStage(taskType, deal.stage);
   const depth = responseDepth(text, taskType);
   const modelEligible = [
@@ -569,6 +587,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     "product_comparison",
     "base_education",
     "value_judgment",
+    "value_objection",
     "advisor_choice",
     "firmness_compare",
     "compound_product_base",
@@ -585,6 +604,9 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     "reconsider_product",
     "commitment_declined",
     "commitment_resolution",
+    "session_recommendation_recall",
+    "recommendation_explanation",
+    "recommendation_acceptance",
   ].includes(taskType);
 
   return {
@@ -598,6 +620,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       comparisonProductHandles: comparisonHandles,
       rejectedProductHandles: Array.from(rejectedHandles(context)),
       sessionRecommendationHandle: activeSessionRecommendationHandle(context) || null,
+      acceptedRecommendationHandle: clean(deal?.acceptedRecommendation?.productHandle).toLowerCase() || null,
       feedbackProductHandle: feedbackHandle || null,
       resolution: referenceResolution,
     },
@@ -615,6 +638,8 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       baseDecision: clean(deal.baseDecision || deal.decision?.adjustableBase) || null,
       retainedPreferences: isObject(deal.retainedPreferences) ? deal.retainedPreferences : {},
       desiredDirection: isObject(deal.desiredDirection) ? deal.desiredDirection : {},
+      budgetContext: isObject(deal.budgetContext) ? deal.budgetContext : {},
+      activeConfiguration: isObject(deal.activeConfiguration) ? deal.activeConfiguration : {},
     },
     neededFacts: needsCommerce && !size ? ["size"] : [],
     requiredSources: unique([
@@ -624,10 +649,11 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     ]),
     answerMode: taskType,
     responseDepth: depth,
-    needsModel: handled && modelEligible,
+    needsModel: handled && modelEligible && !atomicStandaloneCommerce,
+    atomicCommerceLookup: atomicStandaloneCommerce,
     needsCommerce,
     needsCompatibility,
-    needsKnowledge: ["product_experience", "product_comparison", "base_education", "advisor_choice", "compound_product_base", "durability_objection", "hybrid_exploration", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product"].includes(taskType),
+    needsKnowledge: ["product_experience", "product_comparison", "base_education", "advisor_choice", "compound_product_base", "durability_objection", "hybrid_exploration", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance", "value_objection"].includes(taskType),
     needsPolicy: ["medical_boundary", "warranty_explanation"].includes(taskType),
     allowedActions: taskType === "cart_add" ? ["add_to_cart"] : [],
     commercialState: {
@@ -679,133 +705,84 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
 function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
   const manifest = loadShowroomManifest();
   const byHandle = new Map((manifest?.products || []).map((product) => [clean(product.handle), product]));
+  const deal = activeDeal(context);
   const handles = unique([
     plan?.references?.canonicalRecommendation,
     plan?.references?.activeProductHandle,
     plan?.references?.feedbackProductHandle,
     plan?.references?.sessionRecommendationHandle,
+    plan?.references?.acceptedRecommendationHandle,
     ...(plan?.references?.comparisonProductHandles || []),
+    ...((activeDeal(context)?.rankedAlternatives || []).slice(0, 3).map((candidate) => candidate?.handle)),
     plan?.knownFacts?.baseHandle,
   ]);
-  const products = handles.map((handle) => byHandle.get(handle)).filter(Boolean);
-  const conversationContext = {
-    stage: plan.stage || "exploring",
-    taskType: plan.taskType,
-    continuationOf: plan.continuationOf || null,
-    responseDepth: plan.responseDepth,
-    presentationPolicy: plan.presentationPolicy || null,
-    activeGoal: activeMemory(context)?.activeGoal?.intent || null,
-    preference: activeDeal(context)?.decision || null,
-    referenceResolution: plan?.references?.resolution || null,
-    currentTopic: activeDeal(context)?.currentTopic || null,
-    lastDecision: activeDeal(context)?.decision || null,
-    unresolvedDecision: activeDeal(context)?.baseDecision === "undecided" ? "adjustable_base_value" : null,
-    recentProducts: unique([
-      activeDeal(context)?.activeProductHandle,
-      activeDeal(context)?.recentProductHandle,
-    ]),
-    comparisonProducts: plan?.references?.comparisonProductHandles || [],
-    rejectedProducts: Array.isArray(activeDeal(context)?.rejectedProducts)
-      ? activeDeal(context).rejectedProducts
-      : [],
-    productFeedback: isObject(activeDeal(context)?.productFeedback) ? activeDeal(context).productFeedback : {},
-    retainedPreferences: isObject(activeDeal(context)?.retainedPreferences) ? activeDeal(context).retainedPreferences : {},
-    desiredDirection: isObject(activeDeal(context)?.desiredDirection) ? activeDeal(context).desiredDirection : {},
-    sessionRecommendation: activeDeal(context)?.sessionRecommendation || null,
-    pendingCommitment: activeDeal(context)?.pendingCommitment || null,
-    recentTurns: (activeMemory(context)?.conversationFocus?.relevantTurns || context?.recentConversation || [])
-      .slice(-6)
-      .map((turn) => ({ role: clean(turn?.role), content: clean(turn?.content).slice(0, 600) })),
-  };
-  const verifiedCommercialFacts = {
-    canonicalRecommendation: context?.canonicalRecommendation || null,
-    products,
-    quote: activeDeal(context)?.activeQuote || null,
-    compatibility: activeDeal(context)?.compatibilityStatus || "unknown",
-    cart: context?.cartSummary || null,
-    rewards: context?.rewards || null,
-  };
-  return {
+  const products = handles.map((handle) => byHandle.get(handle)).filter(Boolean).map((product) => ({
+    handle: clean(product.handle),
+    title: clean(product.title),
+    catalogType: clean(product.catalogType),
+    family: clean(product.family),
+    active: product.active !== false,
+    recommendable: product.recommendable !== false,
+    attributes: isObject(product.attributes) ? product.attributes : {},
+  }));
+  const recentTurns = (activeMemory(context)?.conversationFocus?.relevantTurns || context?.recentConversation || [])
+    .slice(-4)
+    .map((turn) => ({ role: clean(turn?.role), content: clean(turn?.content).slice(0, 280) }));
+  const factPack = {
+    version: 2,
+    shopperMessage: clean(query),
     shopper: {
-      profileFacts: {
-        sleepPosition:
-          context?.canonicalRecommendation?.normalizedAssessment?.sleepPosition ||
-          context?.assessment?.answers?.sleepPosition ||
-          null,
-        painPoints: plan?.knownFacts?.painPoints || [],
-      },
-      activeSessionFacts: {
-        size: plan?.knownFacts?.size || null,
-        firmness: activeMemory(context)?.slots?.firmness?.value || null,
-        activeProductHandle: activeDeal(context)?.activeProductHandle || null,
-        baseDecision: plan?.knownFacts?.baseDecision || null,
-        sessionRecommendation: activeDeal(context)?.sessionRecommendation || null,
-        rejectedProducts: Array.isArray(activeDeal(context)?.rejectedProducts)
-          ? activeDeal(context).rejectedProducts
-          : [],
-        retainedPreferences: isObject(activeDeal(context)?.retainedPreferences)
-          ? activeDeal(context).retainedPreferences
-          : {},
-        desiredDirection: isObject(activeDeal(context)?.desiredDirection)
-          ? activeDeal(context).desiredDirection
-          : {},
-      },
-      explicitRecentStatements: [clean(query)].filter(Boolean),
-      size: plan?.knownFacts?.size || null,
-      firmness: activeMemory(context)?.slots?.firmness?.value || null,
-      painPoints: plan?.knownFacts?.painPoints || [],
       sleepPosition:
         context?.canonicalRecommendation?.normalizedAssessment?.sleepPosition ||
         context?.assessment?.answers?.sleepPosition ||
         null,
+      painPoints: plan?.knownFacts?.painPoints || [],
     },
-    canonicalRecommendation: context?.canonicalRecommendation || null,
+    conversation: {
+      stage: plan.stage || "exploring",
+      taskType: plan.taskType,
+      continuationOf: plan.continuationOf || null,
+      responseDepth: plan.responseDepth,
+      activeGoal: activeMemory(context)?.activeGoal?.intent || null,
+      currentTopic: deal?.currentTopic || null,
+      unresolvedDecision: deal?.baseDecision === "undecided" ? "adjustable_base_value" : null,
+      recentTurns,
+    },
+    state: {
+      size: plan?.knownFacts?.size || deal?.activeSize || null,
+      firmness: activeMemory(context)?.slots?.firmness?.value || null,
+      activeProductHandle: deal?.activeProductHandle || null,
+      activeConfiguration: deal?.activeConfiguration || null,
+      baseDecision: plan?.knownFacts?.baseDecision || null,
+      budgetContext: deal?.budgetContext || {},
+      pendingCommitment: deal?.pendingCommitment || null,
+      restTestObservations: Array.isArray(deal?.restTestObservations) ? deal.restTestObservations.slice(-4) : [],
+    },
     recommendation: {
-      canonicalProduct: resolveCanonicalHandle(context) || null,
-      sessionProduct: activeSessionRecommendationHandle(context) || null,
-      reasons: context?.canonicalRecommendation?.reasons || context?.canonicalRecommendation?.recommendation?.reasons || [],
+      original: resolveCanonicalHandle(context) || null,
+      current: activeSessionRecommendationHandle(context) || deal?.activeProductHandle || null,
+      accepted: deal?.acceptedRecommendation || null,
+      rankedAlternatives: Array.isArray(deal?.rankedAlternatives) ? deal.rankedAlternatives.slice(0, 4) : [],
+      reasons: Array.isArray(deal?.recommendationReasons) ? deal.recommendationReasons : [],
+      excludedCandidates: Array.isArray(deal?.excludedCandidates) ? deal.excludedCandidates : [],
+      unknowns: Array.isArray(deal?.recommendationUnknowns) ? deal.recommendationUnknowns : [],
     },
-    sessionRecommendation: activeDeal(context)?.sessionRecommendation || null,
-    rejectedProducts: Array.isArray(activeDeal(context)?.rejectedProducts)
-      ? activeDeal(context).rejectedProducts
-      : [],
-    productFeedback: isObject(activeDeal(context)?.productFeedback) ? activeDeal(context).productFeedback : {},
-    retainedPreferences: isObject(activeDeal(context)?.retainedPreferences) ? activeDeal(context).retainedPreferences : {},
-    desiredDirection: isObject(activeDeal(context)?.desiredDirection) ? activeDeal(context).desiredDirection : {},
-    pendingCommitment: activeDeal(context)?.pendingCommitment || null,
-    eligibleAlternatives: (activeDeal(context)?.eligibleAlternativeHandles || [])
-      .filter((handle) => !rejectedHandles(context).has(handle))
-      .map((handle) => byHandle.get(handle))
-      .filter(Boolean),
-    explicitExclusions: Array.from(rejectedHandles(context)),
-    conversation: conversationContext,
+    feedback: {
+      rejectedProducts: Array.isArray(deal?.rejectedProducts) ? deal.rejectedProducts : [],
+      productFeedback: isObject(deal?.productFeedback) ? deal.productFeedback : {},
+      retainedPreferences: isObject(deal?.retainedPreferences) ? deal.retainedPreferences : {},
+      desiredDirection: isObject(deal?.desiredDirection) ? deal.desiredDirection : {},
+      explicitExclusions: Array.from(rejectedHandles(context)),
+    },
     products,
     productFacts: [],
     advisorKnowledge: null,
-    comparison: plan?.references?.comparisonProductHandles || [],
-    commerce: activeDeal(context)?.activeQuote || null,
-    compatibility: {
-      status: activeDeal(context)?.compatibilityStatus || "unknown",
-      source: "verified_fact",
-    },
-    policy: plan.medicalBoundary ? "general_comfort_only" : null,
+    commerce: deal?.activeQuote || null,
+    compatibility: { status: deal?.compatibilityStatus || "unknown", source: "verified_fact" },
     policyFacts: [],
-    rewards: context?.rewards || null,
-    cart: context?.cartSummary || null,
-    unresolved: plan.neededFacts || [],
-    prohibited: plan.technicalLanguageAllowed ? [] : INTERNAL_LANGUAGE,
-    query: clean(query),
-    verifiedCommercialFacts,
-    conversationContext,
-    permittedJudgment: {
-      compareVerifiedProducts: ["product_comparison", "firmness_compare", "advisor_choice"].includes(plan.taskType),
-      recommendLowerCost: ["value_judgment", "advisor_choice"].includes(plan.taskType),
-      explainExperience: ["product_experience", "base_education"].includes(plan.taskType),
-      introduceCommercialFacts: false,
-    },
-    missingUnknown: plan.neededFacts || [],
-    allowedActions: plan.allowedActions || [],
     missingInformation: plan.neededFacts || [],
+    prohibited: plan.technicalLanguageAllowed ? [] : INTERNAL_LANGUAGE,
+    allowedActions: plan.allowedActions || [],
     classifications: {
       productFacts: "verified_fact",
       commerce: "verified_fact",
@@ -815,12 +792,27 @@ function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
     resolvedReferences: plan?.references?.resolution || null,
     presentationPolicy: plan.presentationPolicy || null,
   };
+  factPack.budget = {
+    totalChars: JSON.stringify(factPack).length,
+    productChars: JSON.stringify(factPack.products).length,
+    historyChars: JSON.stringify(recentTurns).length,
+    advisorChars: 0,
+    policyChars: 0,
+  };
+  return factPack;
 }
 
 async function fetchByHandles(fetchProductsByHandles, handles = []) {
-  if (typeof fetchProductsByHandles !== "function") return [];
-  const response = await fetchProductsByHandles({ handles: unique(handles), lite: false });
-  return Array.isArray(response?.items) ? response.items : [];
+  if (typeof fetchProductsByHandles !== "function" || !handles.length) return [];
+  try {
+    const response = await fetchProductsByHandles({ handles: unique(handles), lite: false });
+    return Array.isArray(response?.items) ? response.items : [];
+  } catch (_error) {
+    // Catalog/state truth can still produce a safe advisory answer when live
+    // merchandise enrichment is unavailable. Commerce remains unresolved and
+    // cannot emit price or cart actions without exact variants.
+    return [];
+  }
 }
 
 function buildCompatibility({ mattressHandle = "", motionKey = "", baseHandle = "" } = {}) {
@@ -839,7 +831,11 @@ async function buildQuote({ plan = {}, context = {}, fetchProductsByHandles } = 
   const goal = activeMemory(context)?.activeGoal || {};
   const size = clean(plan?.knownFacts?.size || deal.activeSize || goal.size);
   const productHandle = clean(
-    plan?.references?.requestedProductHandle || goal.productHandle || resolveCanonicalHandle(context)
+    plan?.references?.requestedProductHandle ||
+      deal?.acceptedRecommendation?.productHandle ||
+      deal?.sessionRecommendation?.productHandle ||
+      goal.productHandle ||
+      resolveCanonicalHandle(context)
   );
   const wantsBundle = ["bundle_quote", "compatibility", "savings_quote"].includes(plan.taskType) ||
     (plan.taskType === "cart_add" && /\b(?:full setup|mattress and base|both)\b/.test(normalizeAskSnoozerText(plan.query)));
@@ -951,6 +947,17 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
   const feedbackTitle = titleFor(feedbackHandle);
   const sessionHandle = activeSessionRecommendationHandle(context);
   const sessionTitle = titleFor(sessionHandle);
+  const acceptedHandle = clean(activeDeal(context)?.acceptedRecommendation?.productHandle).toLowerCase();
+  const acceptedTitle = titleFor(acceptedHandle || sessionHandle || active);
+  const recommendationReasonCodes = new Set(
+    (activeDeal(context)?.recommendationReasons || []).map((reason) => clean(reason?.code))
+  );
+  const recommendationWhy = [
+    recommendationReasonCodes.has("softer_side_available") ? "it gives you a softer-side option after the previous mattress felt too firm" : "",
+    recommendationReasonCodes.has("retains_motion_preference") ? "it keeps the motion setup you liked available" : "",
+    recommendationReasonCodes.has("cooling_direction") ? "its verified construction better supports the cooler direction you asked for" : "",
+    recommendationReasonCodes.has("partner_friendly") ? "it supports different comfort needs for two sleepers" : "",
+  ].filter(Boolean);
   const retainedMotion = activeDeal(context)?.retainedPreferences?.motion?.value === "liked";
   const desired = activeDeal(context)?.desiredDirection || {};
   const savedSize = plan?.knownFacts?.size || activeDeal(context)?.activeSize || null;
@@ -971,6 +978,27 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
     : "";
 
   switch (plan.taskType) {
+    case "session_recommendation_recall":
+      if (!sessionHandle) {
+        return `Your original assessment recommendation is still ${titleFor(canonical)}, but I do not yet have a different current-session choice grounded in what you have told me. Tell me what you want to change, and I will narrow the eligible options.`;
+      }
+      return `My current recommendation is the ${sessionTitle}. ${recommendationWhy.length ? `It moved ahead because ${recommendationWhy.join(" and ")}.` : "It is the strongest eligible option after the feedback you gave me during this visit."}`;
+    case "recommendation_explanation":
+      return `I am recommending the ${sessionTitle || activeTitle} now because ${recommendationWhy.length ? recommendationWhy.join(" and ") : "it best fits the feedback and choices you have made during this visit"}. That is a current-visit recommendation, not a rewrite of what your assessment originally suggested.`;
+    case "recommendation_acceptance": {
+      const size = savedSize ? ` in ${savedSize}` : "";
+      const baseOpen = !activeDeal(context)?.activeConfiguration?.baseHandle && retainedMotion;
+      return `Got it—the ${acceptedTitle}${size} is now your mattress choice. ${baseOpen ? "I kept the motion preference open, so the next useful step is to compare mattress-only with Standard Motion." : savedSize ? "I can price the exact configuration next." : "Tell me the size you need, and I can continue to the exact configuration."}`;
+    }
+    case "value_objection": {
+      const activeQuote = quote?.ok ? quote : activeDeal(context)?.activeQuote;
+      const baseLine = activeQuote?.items?.find((item) => item.handle === activeQuote?.baseHandle);
+      if (activeQuote?.items?.length > 1 && baseLine) {
+        const mattressTotal = Number(activeQuote.subtotal) - Number(baseLine.price);
+        return `That is a fair concern. The complete setup is ${formatMoney(activeQuote.subtotal, activeQuote.currencyCode)}, but the mattress-only option is ${formatMoney(mattressTotal, activeQuote.currencyCode)} before taxes, delivery, or active discounts. I would keep the base only if elevation gave you a benefit you could clearly feel.`;
+      }
+      return `That is a fair concern. I will not push the more expensive setup just because it adds features. Let us protect the mattress fit first, then compare only the exact lower-cost configuration that still keeps the choices you said matter.`;
+    }
     case "shopper_feedback": {
       const reason = activeDeal(context)?.productFeedback?.[feedbackHandle]?.feel;
       const feeling = reason === "too_firm"
@@ -1122,6 +1150,24 @@ function buildContextualChips({ plan = {}, quote = null } = {}) {
     ];
   }
   if (["commitment_declined", "commitment_resolution", "reconsider_product"].includes(plan.taskType)) return [];
+  if (["session_recommendation_recall", "recommendation_explanation"].includes(plan.taskType)) {
+    return [
+      { label: "Help me test it", value: "What should I notice when I try that one?", type: "prompt" },
+      { label: "Choose this mattress", value: "That works. Let's go with that one.", type: "prompt" },
+    ];
+  }
+  if (plan.taskType === "recommendation_acceptance") {
+    return [
+      { label: "Price mattress only", value: "What is the mattress-only price?", type: "prompt" },
+      { label: "Compare with motion", value: "What about with the motion base?", type: "prompt" },
+    ];
+  }
+  if (plan.taskType === "value_objection") {
+    return [
+      { label: "Show lower-cost setup", value: "Show me the less expensive configuration.", type: "prompt" },
+      { label: "Mattress only", value: "What would the mattress cost without the base?", type: "prompt" },
+    ];
+  }
   if (["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType) && !quote?.ok) {
     if (quote?.compatibility?.status === "incompatible") {
       return [
@@ -1203,11 +1249,19 @@ function adaptResponseDepth(reply = "", depth = "standard") {
   return clean(firstSentence || complete);
 }
 
-function validateResponseConsistency({ reply = "", quote = null, products = [], actions = [], plan = {}, factPack = null } = {}) {
+function validateResponseConsistency({
+  reply = "",
+  quote = null,
+  products = [],
+  actions = [],
+  plan = {},
+  factPack = null,
+  requireCompleteCommerce = true,
+} = {}) {
   const violations = [];
   const lower = clean(reply).toLowerCase();
   const rejected = new Set(
-    (Array.isArray(factPack?.explicitExclusions) ? factPack.explicitExclusions : plan?.references?.rejectedProductHandles || [])
+    (Array.isArray(factPack?.feedback?.explicitExclusions) ? factPack.feedback.explicitExclusions : plan?.references?.rejectedProductHandles || [])
       .map((handle) => clean(handle).toLowerCase())
       .filter(Boolean)
   );
@@ -1219,7 +1273,7 @@ function validateResponseConsistency({ reply = "", quote = null, products = [], 
     const handle = clean(action?.payload?.handle || action?.handle).toLowerCase();
     if (handle && rejected.has(handle)) violations.push(`rejected_product_action:${handle}`);
   }
-  const sessionRecommendationHandle = clean(factPack?.sessionRecommendation?.productHandle).toLowerCase();
+  const sessionRecommendationHandle = clean(factPack?.recommendation?.current).toLowerCase();
   if (sessionRecommendationHandle && rejected.has(sessionRecommendationHandle)) {
     violations.push(`rejected_session_recommendation:${sessionRecommendationHandle}`);
   }
@@ -1245,32 +1299,39 @@ function validateResponseConsistency({ reply = "", quote = null, products = [], 
   if (clean(reply).endsWith("...")) violations.push("truncated_ending");
   if ((clean(reply).match(/\?/g) || []).length > 1) violations.push("too_many_probes");
   if (quote?.ok) {
-    const priceAnswer = ["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType);
+    const priceAnswer = requireCompleteCommerce && ["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType);
+    const mentionedPrices = (clean(reply).match(/\$\s?\d[\d,]*(?:\.\d{1,2})?/g) || [])
+      .map((amount) => Number(amount.replace(/[$,\s]/g, "")))
+      .filter(Number.isFinite);
+    const mentionsPrice = (value) => mentionedPrices.some((amount) => Math.abs(amount - Number(value)) < 0.005);
     for (const item of quote.items) {
       const card = products.find((product) => product.handle === item.handle);
-      if (!card || Number(card.price) !== Number(item.price)) violations.push(`price_card_mismatch:${item.handle}`);
-      if (priceAnswer && !lower.includes(formatMoney(item.price, item.currencyCode).toLowerCase())) {
+      if (priceAnswer && (!card || Number(card.price) !== Number(item.price))) violations.push(`price_card_mismatch:${item.handle}`);
+      if (priceAnswer && !mentionsPrice(item.price)) {
         violations.push(`price_reply_mismatch:${item.handle}`);
       }
     }
-    if (priceAnswer && quote.items.length > 1 && !lower.includes(formatMoney(quote.subtotal, quote.currencyCode).toLowerCase())) {
+    if (priceAnswer && quote.items.length > 1 && !mentionsPrice(quote.subtotal)) {
       violations.push("subtotal_reply_mismatch");
     }
   }
-  if (actions.some((action) => action.type === "add_to_cart") && !quote?.cartReady) {
+  if (requireCompleteCommerce && actions.some((action) => action.type === "add_to_cart") && !quote?.cartReady) {
     violations.push("unsafe_cart_action");
   }
-  if (plan?.protectedReferences?.includes("canonicalRecommendation")) {
+  if (requireCompleteCommerce && plan?.protectedReferences?.includes("canonicalRecommendation")) {
     const canonical = plan?.references?.canonicalRecommendation;
     if (canonical && !lower.includes(titleFor(canonical).toLowerCase())) violations.push("canonical_reference_lost");
   }
   const allowedPrices = new Set(
     (quote?.ok ? quote.items.concat([{ price: quote.subtotal, currencyCode: quote.currencyCode }]) : [])
-      .map((item) => formatMoney(item.price, item.currencyCode).toLowerCase())
-      .filter(Boolean)
+      .map((item) => Number(item.price))
+      .filter(Number.isFinite)
   );
-  for (const amount of clean(reply).match(/\$\d[\d,]*(?:\.\d{2})?/g) || []) {
-    if (!allowedPrices.has(amount.toLowerCase())) violations.push(`unverified_price:${amount}`);
+  for (const amount of clean(reply).match(/\$\s?\d[\d,]*(?:\.\d{1,2})?/g) || []) {
+    const numericAmount = Number(amount.replace(/[$,\s]/g, ""));
+    if (![...allowedPrices].some((allowed) => Math.abs(allowed - numericAmount) < 0.005)) {
+      violations.push(`unverified_price:${amount}`);
+    }
   }
   const verifiedProducts = Array.isArray(factPack?.products) ? factPack.products : [];
   const permittedTitles = new Set(
@@ -1339,7 +1400,10 @@ async function resolveAskSnoozerAdvisorTurn({
   }
   let quote = null;
   let rawProducts = [];
-  if (resolvedPlan.needsCommerce || resolvedPlan.taskType === "compatibility") {
+  if (resolvedPlan.taskType === "value_objection" && activeDeal(context)?.activeQuote?.ok) {
+    quote = activeDeal(context).activeQuote;
+    rawProducts = await fetchByHandles(fetchProductsByHandles, quote.items.map((item) => item.handle));
+  } else if (resolvedPlan.needsCommerce || resolvedPlan.taskType === "compatibility") {
     quote = await buildQuote({ plan: resolvedPlan, context, fetchProductsByHandles });
     if (quote?.items?.length) {
       rawProducts = await fetchByHandles(fetchProductsByHandles, quote.items.map((item) => item.handle));
@@ -1349,9 +1413,9 @@ async function resolveAskSnoozerAdvisorTurn({
     rawProducts = rejectedHandles(context).has(canonicalHandle)
       ? []
       : await fetchByHandles(fetchProductsByHandles, [canonicalHandle]);
-  } else if (["alternative_resolution", "reconsider_product"].includes(resolvedPlan.taskType)) {
+  } else if (["alternative_resolution", "reconsider_product", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance"].includes(resolvedPlan.taskType)) {
     rawProducts = await fetchByHandles(fetchProductsByHandles, [
-      activeSessionRecommendationHandle(context) || resolveActiveHandle(context),
+      clean(activeDeal(context)?.acceptedRecommendation?.productHandle) || activeSessionRecommendationHandle(context) || resolveActiveHandle(context),
     ]);
   }
   const rejected = rejectedHandles(context);
@@ -1362,7 +1426,9 @@ async function resolveAskSnoozerAdvisorTurn({
     ["mattress_plus_base", "full_pod"].includes(clean(resolvedPlan.commercialState?.requestedScope))
   );
   const suppressPartialProducts = Boolean(fullSetupRequested && !quote?.ok);
-  const products = suppressPartialProducts
+  const products = resolvedPlan.taskType === "value_objection"
+    ? []
+    : suppressPartialProducts
     ? []
     : quote?.items?.length
       ? quote.items.map((item) => quoteProductCard(item, byHandle.get(item.handle) || {}, {
@@ -1374,11 +1440,23 @@ async function resolveAskSnoozerAdvisorTurn({
   const composedBaseHandle = quote?.baseHandle || (resolvedPlan.taskType === "compatibility" ? "premium-motion-adjustable-base" : null);
   if (composedBaseHandle && !factPack.products.some((product) => product.handle === composedBaseHandle)) {
     const baseProduct = (loadShowroomManifest().products || []).find((product) => product.handle === composedBaseHandle);
-    if (baseProduct) factPack.products.push(baseProduct);
+    if (baseProduct) factPack.products.push({
+      handle: clean(baseProduct.handle),
+      title: clean(baseProduct.title),
+      catalogType: clean(baseProduct.catalogType),
+      family: clean(baseProduct.family),
+      active: baseProduct.active !== false,
+      recommendable: baseProduct.recommendable !== false,
+      attributes: isObject(baseProduct.attributes) ? baseProduct.attributes : {},
+    });
   }
-  factPack.verifiedCommercialFacts.quote = quote || factPack.verifiedCommercialFacts.quote;
-  factPack.verifiedCommercialFacts.compatibility = factPack.compatibility;
-  factPack.verifiedCommercialFacts.products = factPack.products;
+  factPack.budget = {
+    totalChars: JSON.stringify(factPack).length,
+    productChars: JSON.stringify(factPack.products || []).length,
+    historyChars: JSON.stringify(factPack.conversation?.recentTurns || []).length,
+    advisorChars: JSON.stringify(factPack.advisorKnowledge || factPack.productFacts || []).length,
+    policyChars: JSON.stringify(factPack.policyFacts || []).length,
+  };
   const deterministicReply = adaptResponseDepth(
     shopperFriendlyResponse({ query, plan: resolvedPlan, context, quote }),
     resolvedPlan.responseDepth
@@ -1411,6 +1489,10 @@ async function resolveAskSnoozerAdvisorTurn({
   let probe = null;
   let nextActionIntent = null;
   let compositionConfidence = null;
+  let modelInputChars = 0;
+  let modelSystemChars = 0;
+  let modelFactPackChars = 0;
+  let fallbackKind = null;
   if (deterministicGate.ok && resolvedPlan.needsModel && typeof composeAdvisorResponse === "function") {
     const modelStartedAt = Date.now();
     modelCallCount = 1;
@@ -1427,6 +1509,9 @@ async function resolveAskSnoozerAdvisorTurn({
       });
       modelMs = Date.now() - modelStartedAt;
       model = composed?.model || null;
+      modelInputChars = Number(composed?.inputChars || 0) || 0;
+      modelSystemChars = Number(composed?.systemChars || 0) || 0;
+      modelFactPackChars = Number(composed?.factPackChars || factPack?.budget?.totalChars || 0) || 0;
       modelGate = validateResponseConsistency({
         reply: composed?.displayText,
         quote,
@@ -1442,11 +1527,13 @@ async function resolveAskSnoozerAdvisorTurn({
         actions: [],
         plan: resolvedPlan,
         factPack,
+        requireCompleteCommerce: false,
       });
       if (!modelGate.ok || !speechGate.ok) {
         modelGate = { ok: false, violations: [...modelGate.violations, ...speechGate.violations.map((item) => `speech:${item}`)] };
         compositionFallbackUsed = true;
         compositionMode = "model_fallback";
+        fallbackKind = "validation";
       } else {
         reply = clean(composed.displayText);
         speech = clean(composed.speechText);
@@ -1468,6 +1555,11 @@ async function resolveAskSnoozerAdvisorTurn({
       modelMs = Date.now() - modelStartedAt;
       compositionFallbackUsed = true;
       compositionMode = "model_fallback";
+      fallbackKind = Number(error?.status || error?.statusCode) === 429 || /\b(?:429|rate.?limit|tokens per min|tpm)\b/i.test(clean(error?.code || error?.message))
+        ? "rate_limit"
+        : clean(error?.code) === "E_ADVISOR_COMPOSER_PROBE" || clean(error?.code) === "E_ADVISOR_COMPOSER_CONTRACT"
+          ? "validation"
+          : "composer_error";
       modelGate = { ok: false, violations: [`composer_error:${clean(error?.code || error?.message || "unknown")}`] };
     }
   }
@@ -1497,6 +1589,10 @@ async function resolveAskSnoozerAdvisorTurn({
       probe,
       nextActionIntent,
       compositionConfidence,
+      modelInputChars,
+      modelSystemChars,
+      modelFactPackChars,
+      fallbackKind,
     };
   }
   return {
@@ -1527,6 +1623,10 @@ async function resolveAskSnoozerAdvisorTurn({
     probe,
     nextActionIntent,
     compositionConfidence,
+    modelInputChars,
+    modelSystemChars,
+    modelFactPackChars,
+    fallbackKind,
   };
 }
 
