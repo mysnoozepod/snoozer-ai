@@ -1013,7 +1013,7 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
     }
     case "alternative_resolution":
       if (!sessionHandle) {
-        return "I have kept the mattress you ruled out off your list, but I do not have another eligible showroom mattress I can recommend confidently from the current selection. I will not invent an option that is not available.";
+        return "I have kept the mattresses you ruled out off your list, but I do not have another eligible showroom mattress I can recommend confidently from the current selection. I will not invent an option that is not available. We can revisit one ruled-out mattress or relax one requirement, such as feel or motion, and compare that tradeoff honestly.";
       }
       return `I have kept the mattress you ruled out off your list. The ${sessionTitle} is the strongest eligible next test${retainedMotion ? " while keeping the motion features you liked in the plan" : ""}. It gives you a genuinely different construction and feel, but I will not promise it is softer for your body until you try it. ${savedSize ? `I kept ${savedSize} as your size.` : ""}`.trim();
     case "trust_recovery":

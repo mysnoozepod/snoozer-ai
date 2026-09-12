@@ -99,22 +99,22 @@ function deal(context) {
 
 async function main() {
   const targetedScenarios = [
-    "eligible candidate filtering",
-    "explainable adaptive ranking",
-    "recommendation change explanation",
-    "recommendation acceptance",
-    "known size preservation",
-    "motion preference preservation",
-    "exact quote handoff",
-    "authoritative variant ids",
-    "no implicit cart mutation",
-    "value objection handling",
-    "mattress-only savings path",
-    "current versus original recommendation",
-    "explicit reconsideration",
-    "narrow compatibility invalidation",
-    "composer payload budget",
-    "fallback and quality accounting",
+    "adaptive recommendation",
+    "explain why it changed",
+    "original versus current",
+    "accept alternative",
+    "accept then price",
+    "accept then motion",
+    "value objection",
+    "drop base",
+    "add accepted mattress",
+    "reject new session recommendation",
+    "no valid alternative",
+    "compatibility invalidation",
+    "fact-pack compaction",
+    "probe-contract regression",
+    "throttling distinction",
+    "canonical reconsideration",
   ];
   assert.equal(targetedScenarios.length, 16);
   const direct = resolveAdaptiveSessionRecommendation({
@@ -134,6 +134,84 @@ async function main() {
   });
   assert.deepEqual(availabilityFiltered.eligibleCandidateHandles, ["14-hybrid"]);
   assert(availabilityFiltered.excludedCandidates.some((candidate) => candidate.reason === "live_unavailable"));
+  const secondRejection = resolveAdaptiveSessionRecommendation({
+    canonicalRecommendation: { primaryMattressHandle: "12-all-foam-mattress" },
+    rejectedProducts: [
+      { handle: "12-all-foam-mattress", status: "rejected" },
+      { handle: "12-dual-comfort-hybrid", status: "rejected" },
+    ],
+    desiredDirection: { feel: "softer" },
+    retainedPreferences: { motion: { value: "liked" } },
+    activeSize: "King",
+  });
+  assert.equal(secondRejection.sessionRecommendation.productHandle, "14-hybrid");
+  assert(!secondRejection.eligibleCandidateHandles.includes("12-all-foam-mattress"));
+  assert(!secondRejection.eligibleCandidateHandles.includes("12-dual-comfort-hybrid"));
+  const positiveRestTest = resolveAdaptiveSessionRecommendation({
+    rejectedProducts: [{ handle: "12-all-foam-mattress", status: "rejected" }],
+    restTestObservations: [{ productHandle: "14-hybrid", sentiment: "positive" }],
+    activeSize: "King",
+  });
+  assert.equal(positiveRestTest.sessionRecommendation.productHandle, "14-hybrid");
+  assert(positiveRestTest.recommendationReasons.some((reason) => reason.code === "positive_rest_test"));
+  const noAlternative = resolveAdaptiveSessionRecommendation({
+    rejectedProducts: [
+      "12-all-foam-mattress",
+      "10-all-foam-mattress",
+      "12-dual-comfort-hybrid",
+      "14-hybrid",
+    ].map((handle) => ({ handle, status: "rejected" })),
+    desiredDirection: { feel: "softer" },
+    activeSize: "King",
+  });
+  assert.equal(noAlternative.sessionRecommendation, null);
+  assert.equal(noAlternative.eligibleCandidateHandles.length, 0);
+  assert(noAlternative.excludedCandidates.every((candidate) => candidate.reason === "shopper_rejected"));
+
+  const noAlternativeContext = applyAskSnoozerWorkingMemory({
+    query: "What else would you recommend?",
+    now: new Date("2026-09-12T00:00:00.000Z"),
+    context: {
+      canonicalRecommendation: { primaryMattressHandle: "12-all-foam-mattress" },
+      askSnoozerWorkingMemory: {
+        turnIndex: 4,
+        activeDeal: {
+          activeSize: "King",
+          desiredDirection: { feel: "softer" },
+          rejectedProducts: [
+            "12-all-foam-mattress",
+            "10-all-foam-mattress",
+            "12-dual-comfort-hybrid",
+            "14-hybrid",
+          ].map((handle) => ({ handle, status: "rejected" })),
+        },
+      },
+    },
+  });
+  const noAlternativePlan = planAskSnoozerTurn({
+    query: "What else would you recommend?",
+    context: noAlternativeContext,
+  });
+  const noAlternativeOutcome = await resolveAskSnoozerAdvisorTurn({
+    query: "What else would you recommend?",
+    context: noAlternativeContext,
+    plan: noAlternativePlan,
+    fetchProductsByHandles,
+    composeAdvisorResponse: async ({ deterministicDraft, factPack }) => ({
+      displayText: deterministicDraft.displayText,
+      speechText: deterministicDraft.speechText,
+      probe: null,
+      model: "phase2-composer-test",
+      inputChars: factPack.budget.totalChars + 2200,
+      factPackChars: factPack.budget.totalChars,
+    }),
+    loadAdvisorKnowledge: async () => ({ principles: [], topicGuidance: {}, productFacts: [], policyFacts: [] }),
+  });
+  assert.equal(noAlternativePlan.taskType, "alternative_resolution");
+  assert.equal(noAlternativeOutcome.products.length, 0);
+  assert.equal(noAlternativeOutcome.actions.length, 0);
+  assert(/do not have another eligible|relax one requirement/i.test(noAlternativeOutcome.reply));
+  assert(!/plush model|topper/i.test(noAlternativeOutcome.reply));
 
   let context = {
     canonicalRecommendation: {

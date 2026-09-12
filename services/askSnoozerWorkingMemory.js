@@ -723,9 +723,12 @@ function reduceShopperFeedbackState({ query = "", previousDeal = {}, baseDeal = 
       desiredDirection[act.key] = act.value;
     }
     if (act.type === "budget_value") {
+      const hasExplicitAmount = act.maxAmount !== null && act.maxAmount !== undefined && clean(act.maxAmount) !== "";
       budgetContext = {
         concern: act.concern,
-        maxAmount: Number.isFinite(Number(act.maxAmount)) ? Number(act.maxAmount) : budgetContext.maxAmount || null,
+        maxAmount: hasExplicitAmount && Number.isFinite(Number(act.maxAmount))
+          ? Number(act.maxAmount)
+          : budgetContext.maxAmount ?? null,
         updatedAt,
         turnId: act.turnId,
       };
