@@ -70,6 +70,7 @@ import { POD_LAYOUT_CONTRACT, normalizePodLabState } from "@/lib/podLayoutContra
 import { measurePodLayout } from "@/lib/podLayoutMeasurement";
 import { buildMattressSupportItems } from "@/lib/sleepSupport";
 import { buildBoundedPodReviewContext, getPodReviewCoaching } from "@/lib/podReviewCoaching";
+import { useActiveJourney } from "@/journey/ActiveJourneyContext";
 
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import snoozerRestActiveImg from "@/assets/avatars/snoozer-rest-active.png";
@@ -1095,6 +1096,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { openRewards } = useSnoozer() || {};
+  const { activeJourney, recordEvent: recordJourneyEvent } = useActiveJourney();
   const deviceState = useDeviceMode();
   const canUseLayoutHarness = canViewAdminDiagnostics(deviceState);
   const shopperId = useMemo(() => {
@@ -1137,6 +1139,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const [learnCartBusy, setLearnCartBusy] = useState(false);
   const [learnCartError, setLearnCartError] = useState("");
   const reviewCoachKeyRef = useRef("");
+  const journeyConfigurationKeyRef = useRef("");
 
   const [selectedMattressHandle, setSelectedMattressHandle] = useState(undefined);
   const [selectedBaseHandle, setSelectedBaseHandle] = useState(undefined);
@@ -1433,6 +1436,40 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     if (!key) return;
     setBuildStepKey(key);
   }, []);
+
+  const onBuildStateChange = useCallback((nextState) => {
+    setBuildSelectionState(nextState);
+    const productHandle = String(nextState?.fixedMattressHandle || "").trim();
+    const size = String(nextState?.size || "").trim();
+    const baseDecision = nextState?.baseType === "none" ? "mattress_only" : "include_base";
+    const baseHandle = String(nextState?.selectedBaseHandle || "").trim() || null;
+    const motionConfiguration = nextState?.baseType === "adjustable"
+      ? String(nextState?.motionType || "standard").trim()
+      : "none";
+    const key = [productHandle, size, baseDecision, baseHandle || "", motionConfiguration].join("::");
+    if (!productHandle || !size) return;
+    if (!journeyConfigurationKeyRef.current) {
+      journeyConfigurationKeyRef.current = key;
+      return;
+    }
+    if (journeyConfigurationKeyRef.current === key) return;
+    journeyConfigurationKeyRef.current = key;
+    void recordJourneyEvent({
+      type: "configuration_changed",
+      payload: {
+        productHandle,
+        size,
+        baseDecision,
+        baseHandle,
+        motionConfiguration,
+        acceptanceStatus: "considering",
+      },
+    }).catch((error) => {
+      console.warn("[journey] Pod configuration will be reconciled on the next surface.", {
+        code: error?.code || "JOURNEY_WRITE_FAILED",
+      });
+    });
+  }, [recordJourneyEvent]);
 
   const podLabel = `SnoozePod ${podNumber}`;
   const title = activePod?.title || podLabel;
@@ -2708,10 +2745,11 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
           assessment={assessment}
           mattressProduct={mattressProduct}
           baseProduct={baseProduct}
+          activeJourneyConfiguration={activeJourney?.activeConfiguration}
           onSelectionHandlesChange={onSelectionHandlesChange}
           onBuildStepChange={onBuildStepChange}
           onPreviewChange={setBuildPreviewData}
-          onStateChange={setBuildSelectionState}
+          onStateChange={onBuildStateChange}
           onCue={(nextText) => {
             if (typeof nextText === "string" && nextText.toLowerCase().includes("added to cart")) {
               showCartFeedback("Added to cart");
@@ -2770,7 +2808,8 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     baseProduct,
     onSelectionHandlesChange,
     onBuildStepChange,
-    setBuildSelectionState,
+    onBuildStateChange,
+    activeJourney?.activeConfiguration,
     navigate,
     showCartFeedback,
     guidedRestTest,

@@ -241,6 +241,7 @@ export async function getResultsRecommendations({
   resolveCanonical,
   generateLocal,
   logger = console,
+  allowLocalFallback = true,
 } = {}) {
   if (typeof generateLocal !== "function") {
     throw new Error("generateLocal is required");
@@ -280,6 +281,7 @@ export async function getResultsRecommendations({
       recommendations: adaptCanonicalRecommendations(canonical),
     };
   } catch (error) {
+    if (!allowLocalFallback) throw error;
     logger?.warn?.(
       "[results] canonical recommendations failed, falling back to local recommendations.",
       error

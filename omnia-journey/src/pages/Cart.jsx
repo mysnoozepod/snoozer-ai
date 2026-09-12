@@ -14,6 +14,7 @@ import { useDeviceMode } from "@/device/useDeviceMode";
 import { useStore } from "@/lib/useStore";
 import { useSnoozer } from "@/Layout";
 import { getShopperId } from "@/state/sessionStore";
+import { useActiveJourney } from "@/journey/ActiveJourneyContext";
 import {
   refreshRewardsState,
   useRewardsState,
@@ -234,6 +235,8 @@ export default function Cart() {
   const [checkoutFailed, setCheckoutFailed] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const checkoutLockRef = useRef(false);
+  const cartJourneyRef = useRef("");
+  const { recordEvent: recordJourneyEvent } = useActiveJourney();
 
   const shopperId = getShopperId() || "guest";
   const checkoutAllowed = canInitiateCheckout(device);
@@ -332,6 +335,15 @@ export default function Cart() {
     if (continuePodId) safeSet("snooze.cartOriginPodId", continuePodId);
   }, [continuePodId]);
 
+  useEffect(() => {
+    const confirmedCartId = String(cartId || "").trim();
+    if (!confirmedCartId || cartJourneyRef.current === confirmedCartId) return;
+    cartJourneyRef.current = confirmedCartId;
+    void recordJourneyEvent({ type: "cart_linked", payload: { cartId: confirmedCartId } }).catch(() => {
+      cartJourneyRef.current = "";
+    });
+  }, [cartId, recordJourneyEvent]);
+
   async function handleCheckout() {
     if (checkoutLockRef.current || checkoutLoading) return;
 
@@ -381,6 +393,11 @@ export default function Cart() {
           context: { lineCount: prepared?.items?.length || cartItems.length },
         })
         .catch(() => {});
+
+      await recordJourneyEvent({
+        type: "checkout_handoff",
+        payload: { cartId: String(prepared?.cartId || cartId || "").trim() },
+      }).catch(() => null);
 
       void Promise.resolve(
         snoozer?.sayHud?.({

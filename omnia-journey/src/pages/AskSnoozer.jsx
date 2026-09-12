@@ -9,6 +9,7 @@ import { makePodRoute } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { getRewardSummary } from "@/lib/api";
 import { sendAskSnoozerMessage, sendAskSnoozerQualityTiming } from "@/lib/snoozer/askSnoozerPage";
+import { setActiveJourney } from "@/state/sessionStore";
 import {
   ASK_SNOOZER_VOICE_TIMING_EVENT,
   buildAskSnoozerDisplayTiming,
@@ -245,6 +246,7 @@ export default function AskSnoozer() {
         deviceContext: { deviceId: device?.deviceId || null, deviceMode: device?.deviceMode || null, podId: device?.podId || null, zoneId: device?.zoneId || null, proximity: zoneExperience.proximityContext },
       });
       markAskSnoozerTiming(turnTiming, "responseReceivedAt");
+      if (response?.activeJourney) setActiveJourney(response.activeJourney);
       const assistantMessage = {
         id: response?.reply?.id || createMessageId("assistant"), role: "assistant", content: extractResponseContent(response), createdAt: response?.reply?.createdAt || nowIso(),
         status: response?.status || "answered", chips: filterResponseChips(response?.chips), actions: filterDeviceActions(device, response?.actions),

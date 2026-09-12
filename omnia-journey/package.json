@@ -17,7 +17,8 @@
     "pod:persistence:test": "node tests/runPersistentPodExperienceTests.mjs && playwright test -c playwright.rest-test.config.cjs -g \"persists across every Pod experience tab\"",
     "test:pod-polish": "node tests/runPodExperiencePolishTests.mjs",
     "test:ask-snoozer-station": "node tests/runAskSnoozerStationTests.mjs",
-    "test:ask-snoozer-audio": "node tests/runAskSnoozerPerformanceTests.mjs && node tests/runVoiceQueueSupersessionTests.mjs"
+    "test:ask-snoozer-audio": "node tests/runAskSnoozerPerformanceTests.mjs && node tests/runVoiceQueueSupersessionTests.mjs",
+    "test:active-journey": "node tests/runActiveJourneyFrontendTests.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

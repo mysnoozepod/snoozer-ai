@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { generateShowroomRecommendations } from "@/lib/utils/recommendations";
+import { useSessionStore } from "@/state/sessionStore";
 import {
   getResultsRecommendations,
   isCanonicalRecommendationsEnabled,
@@ -468,6 +469,7 @@ export default function Results() {
   const storedAssessment = useStore((state) => state.assessment);
   const setRecommendations = useStore((state) => state.setRecommendations);
   const setRecommendedProductHandles = useStore((state) => state.setRecommendedProductHandles);
+  const activeJourney = useSessionStore((state) => state.activeJourney);
 
   const answers = useMemo(() => {
     if (storedAssessment && typeof storedAssessment === "object") return storedAssessment;
@@ -523,6 +525,7 @@ export default function Results() {
           resolveCanonical: (payload) => api.resolveRecommendations(payload),
           generateLocal: generateShowroomRecommendations,
           logger: console,
+          allowLocalFallback: !activeJourney?.canonicalRecommendation,
         });
         const safeGenerated = recommendations || { pods: [] };
 
@@ -549,7 +552,7 @@ export default function Results() {
     return () => {
       alive = false;
     };
-  }, [answers, setRecommendations, setRecommendedProductHandles]);
+  }, [activeJourney?.canonicalRecommendation, answers, setRecommendations, setRecommendedProductHandles]);
 
   useEffect(() => {
     let alive = true;

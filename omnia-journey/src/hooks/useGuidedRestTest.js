@@ -6,6 +6,7 @@ import {
   recordRewardRestTestStage,
   saveRewardRatings,
   startRewardRestTest,
+  recordActiveJourneyEvent,
 } from "@/lib/api";
 import {
   REST_TEST_AMBIENCE,
@@ -433,6 +434,26 @@ export function useGuidedRestTest({
             code: error?.code || "REWARD_RATINGS_SAVE_FAILED",
           });
         });
+    }
+    const productHandle = String(identity?.mattressId || "").trim();
+    if (productHandle) {
+      const observations = [];
+      if (Number(state.ratings?.comfort) >= 4) observations.push("liked_mattress");
+      if (Number(state.ratings?.comfort) > 0 && Number(state.ratings?.comfort) <= 2) observations.push("uncomfortable");
+      if (Number(state.ratings?.pressureRelief) >= 4) observations.push("pressure_relief_positive");
+      if (Number(state.ratings?.support) >= 4) observations.push("support_positive");
+      void recordActiveJourneyEvent({
+        type: "rest_test_feedback",
+        payload: {
+          productHandle,
+          podId,
+          observations,
+          status: "completed",
+          completedAt: state.completedAt || new Date().toISOString(),
+        },
+      }, { surface: "rest_test" }).catch((error) => {
+        console.warn("[journey] Rest Test feedback will be reconciled on the next surface.", { code: error?.code || "JOURNEY_WRITE_FAILED" });
+      });
     }
     void speakPod?.("I saved your ratings and favorite. You can learn more about this mattress or compare another pod.", {
       ...hudPayload("I saved your ratings and favorite. You can learn more about this mattress or compare another pod.", { state: "celebrate", priority: "normal", ttlMs: 5200 }),

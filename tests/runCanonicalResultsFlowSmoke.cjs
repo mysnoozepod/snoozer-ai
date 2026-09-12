@@ -35,11 +35,8 @@ const FLOW_STEPS = [
   /Half Split Motion/i,
   /^No/i,
   /Side/i,
-  /High/i,
   /Hot/i,
   /Soft/i,
-  /^No/i,
-  /Skip/i,
 ];
 
 async function clickButton(page, namePattern, timeout = 15000) {
@@ -65,7 +62,7 @@ async function run() {
 
   try {
     await page.goto(`${BASE_URL}/assessment`, { waitUntil: "networkidle" });
-    await page.getByRole("heading", { name: /Snooze Assessment/i }).waitFor();
+    await page.getByText(/^Snooze Assessment$/i).first().waitFor();
 
     for (const step of FLOW_STEPS) {
       await clickButton(page, step);

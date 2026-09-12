@@ -30,6 +30,7 @@ import {
   getSessionState,
   getShopperId,
   setCanonicalIdentity,
+  setActiveJourney,
   setSessionLinkId,
 } from "@/state/sessionStore";
 import { didCanonicalShopperChange } from "@/state/identitySession.mjs";
@@ -100,6 +101,43 @@ export async function ensureSession({ force = false } = {}) {
   } finally {
     _sessionPromise = null;
   }
+}
+
+function activeJourneyIdentityBody(extra = {}) {
+  const identity = getCanonicalIdentity();
+  return {
+    shopperId: identity.shopperId || undefined,
+    snoozeCode: identity.snoozeCode || undefined,
+    accessCode: identity.accessCode || undefined,
+    profileId: identity.profileId || undefined,
+    sessionId: identity.sessionId || getSessionId() || undefined,
+    ...extra,
+  };
+}
+
+export async function resolveActiveJourney({ surface, forceNew = false } = {}) {
+  const raw = await retryableRequest("/journey/resolve", {
+    method: "POST",
+    body: activeJourneyIdentityBody({ surface, forceNew }),
+  });
+  const data = unwrap(raw) || raw || {};
+  if (data.activeJourney) setActiveJourney(data.activeJourney, data.metrics);
+  return data;
+}
+
+export async function recordActiveJourneyEvent(event, { surface, expectedRevision } = {}) {
+  const current = getSessionState()?.activeJourney;
+  const raw = await retryableRequest("/journey/event", {
+    method: "POST",
+    body: activeJourneyIdentityBody({
+      surface,
+      expectedRevision: expectedRevision ?? current?.revision ?? 0,
+      event: { ...(event || {}), payload: { ...(event?.payload || {}), surface: event?.payload?.surface || surface } },
+    }),
+  });
+  const data = unwrap(raw) || raw || {};
+  if (data.activeJourney) setActiveJourney(data.activeJourney, data.metrics);
+  return data;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1071,6 +1109,7 @@ export async function checkInSnoozeCode({
   const linkKey = `${canonicalCode}:${sessionId}`;
   _rewardIdentityLinkKey = linkKey;
   storeRewardIdentityLink(linkKey);
+  if (data.activeJourney) setActiveJourney(data.activeJourney);
 
   return {
     ...data,
@@ -1553,7 +1592,9 @@ export const saveAssessment = (shopperId, answers, origin) =>
         origin,
       },
     });
-    return unwrap(raw);
+    const data = unwrap(raw);
+    if (data?.activeJourney) setActiveJourney(data.activeJourney);
+    return data;
   })();
 
 export async function getAssessment(shopperId) {
@@ -1618,6 +1659,8 @@ export const api = {
   // session
   ensureSession,
   getSessionId,
+  resolveActiveJourney,
+  recordActiveJourneyEvent,
 
   // products
   getProducts,

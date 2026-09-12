@@ -564,21 +564,31 @@ function resolveMotionSelection(candidate, allowedMotion) {
   return allowed[0] || "standard";
 }
 
-export function buildDefaultSelections({ assessment, pod, supportsSplitMotion, isDualComfort }) {
+export function buildDefaultSelections({ assessment, pod, supportsSplitMotion, isDualComfort, activeJourneyConfiguration }) {
   const context = buildAssessmentPreferenceContext(assessment);
+  const journey = activeJourneyConfiguration && typeof activeJourneyConfiguration === "object"
+    ? activeJourneyConfiguration
+    : {};
+  const sizeFromJourney = normalizeSizeChoice(journey.size);
+  const baseFromJourney =
+    normalizeBaseTypeChoice(String(journey.baseDecision || "").replaceAll("_", " ")) ||
+    (journey.baseHandle ? "adjustable" : "");
+  const motionFromJourney = normalizeMotionTypeChoice(
+    String(journey.motionConfiguration || "").replaceAll("_", " ")
+  );
   const sizeFromAssessment = context.size;
   const baseFromAssessment = context.baseType;
   const motionFromAssessment = context.motionType;
   const firmnessFromAssessment = context.firmness;
   const partnerFirmnessFromAssessment = context.partnerFirmness;
 
-  const size = sizeFromAssessment || normalizeSizeChoice(pod?.displayedIn?.size) || "Queen";
-  const baseType = baseFromAssessment || inferBaseTypeFromPod(pod) || "none";
+  const size = sizeFromJourney || sizeFromAssessment || normalizeSizeChoice(pod?.displayedIn?.size) || "Queen";
+  const baseType = baseFromJourney || baseFromAssessment || inferBaseTypeFromPod(pod) || "none";
   const allowedMotion = allowedMotionTypesForSelection(size, isDualComfort);
   const motionFallback = inferMotionTypeFromPod(pod) || "standard";
   const motionType =
     baseType === "adjustable"
-      ? resolveMotionSelection(motionFromAssessment || motionFallback, allowedMotion)
+      ? resolveMotionSelection(motionFromJourney || motionFromAssessment || motionFallback, allowedMotion)
       : "standard";
 
   return {
@@ -594,9 +604,14 @@ export function buildDefaultSelections({ assessment, pod, supportsSplitMotion, i
       pod?.displayedIn?.dualComfort?.right ||
       "Medium Soft",
     sources: {
-      size: sizeFromAssessment ? "assessment" : "pod",
-      baseType: baseFromAssessment ? "assessment" : "pod",
-      motionType: motionFromAssessment && baseType === "adjustable" ? "assessment" : "pod",
+      size: sizeFromJourney ? "journey" : sizeFromAssessment ? "assessment" : "pod",
+      baseType: baseFromJourney ? "journey" : baseFromAssessment ? "assessment" : "pod",
+      motionType:
+        motionFromJourney && baseType === "adjustable"
+          ? "journey"
+          : motionFromAssessment && baseType === "adjustable"
+            ? "assessment"
+            : "pod",
       comfort:
         isDualComfort && (firmnessFromAssessment || partnerFirmnessFromAssessment)
           ? "assessment"
@@ -607,18 +622,18 @@ export function buildDefaultSelections({ assessment, pod, supportsSplitMotion, i
 
 function sanitizeSelections(savedBuild, defaults, supportsSplitMotion, isDualComfort) {
   const size =
-    defaults.sources?.size === "assessment"
+    ["journey", "assessment"].includes(defaults.sources?.size)
       ? defaults.size
       : normalizeSizeChoice(savedBuild?.size) || defaults.size;
   const baseType =
-    defaults.sources?.baseType === "assessment"
+    ["journey", "assessment"].includes(defaults.sources?.baseType)
       ? defaults.baseType
       : normalizeBaseTypeChoice(savedBuild?.baseType) || defaults.baseType;
   const allowedMotion = allowedMotionTypesForSelection(size, isDualComfort);
   const motionType =
     baseType === "adjustable"
       ? resolveMotionSelection(
-          defaults.sources?.motionType === "assessment"
+          ["journey", "assessment"].includes(defaults.sources?.motionType)
             ? defaults.motionType
             : normalizeMotionTypeChoice(savedBuild?.motionType) || defaults.motionType,
           allowedMotion
@@ -1007,6 +1022,7 @@ export default function PodBuilder({
   assessment,
   mattressProduct,
   baseProduct,
+  activeJourneyConfiguration,
   onCue,
   onSelectionHandlesChange,
   onBuildStepChange,
@@ -1054,8 +1070,8 @@ export default function PodBuilder({
     return savedBuild;
   }, [savedBuild, shopperKey, assessmentSignature]);
   const defaults = useMemo(
-    () => buildDefaultSelections({ assessment, pod, supportsSplitMotion, isDualComfort }),
-    [assessment, pod, supportsSplitMotion, isDualComfort]
+    () => buildDefaultSelections({ assessment, pod, supportsSplitMotion, isDualComfort, activeJourneyConfiguration }),
+    [assessment, pod, supportsSplitMotion, isDualComfort, activeJourneyConfiguration]
   );
   const initialSelections = useMemo(
     () => sanitizeSelections(compatibleSavedBuild, defaults, supportsSplitMotion, isDualComfort),

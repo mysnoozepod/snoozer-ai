@@ -723,6 +723,7 @@ function normalizeSuccessResponse(payload, { conversationId, requestId, message 
 
   return {
     ok: !backendFallbackUsed,
+    activeJourney: root?.activeJourney || top?.activeJourney || null,
     reply: {
       id: firstNonEmptyString([root?.reply?.id, root?.id]) || createId("assistant"),
       role: "assistant",

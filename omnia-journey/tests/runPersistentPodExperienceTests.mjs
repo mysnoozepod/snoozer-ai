@@ -25,7 +25,11 @@ assert.equal(podSource.includes("Back to results"), false, "Pod devices must not
 assert.ok(podSource.includes("<HumanAssistanceControl"), "Pod header must own Human Assistance");
 assert.ok(podSource.includes("<ShowroomCartBadge"), "Pod header must expose the authoritative cart control");
 assert.ok(podSource.includes("count={snoozepodCount}"), "Pod cart control must use the existing cart count");
-assert.ok(layoutSource.includes('!pathname.startsWith("/pod/")'), "the floating assistance bubble must be suppressed on Pod routes");
+assert.ok(
+  layoutSource.includes('pathname.startsWith("/pod/") || pathname.startsWith("/sleep-essentials")') &&
+    layoutSource.includes("!pageUsesDownstreamHeader"),
+  "the floating assistance bubble must be suppressed on Pod routes"
+);
 assert.ok(helpSource.includes("emitDeviceHumanHelp"), "Pod header assistance must reuse the existing help behavior");
 assert.ok(podSource.includes('setOpenStage("rest")'), "completion must return to the Rest Test rating surface");
 assert.ok(podSource.includes("restStatus={restStatus}"), "the Pod hero must receive live Rest Test status");

@@ -38,7 +38,7 @@ const LEGACY_KEYS = {
 const CART_SESSION_KEY = "snooze.cartSession.v1";
 
 const DEFAULT_STATE = Object.freeze({
-  version: 1,
+  version: 2,
   threadId: null,
   sessionId: null,
   shopperId: null,
@@ -50,6 +50,9 @@ const DEFAULT_STATE = Object.freeze({
   lastCartUpdatedAt: null,
   context: null,
   contextPatch: null,
+  activeJourney: null,
+  activeJourneyReadyAt: null,
+  activeJourneyMetrics: null,
 });
 
 const listeners = new Set();
@@ -365,7 +368,7 @@ export function setCanonicalIdentity(identity = {}) {
     threadId: shopperChanged
       ? normalized.threadId || normalized.sessionId
       : normalized.threadId,
-    ...(shopperChanged ? { context: null, contextPatch: null } : {}),
+    ...(shopperChanged ? { context: null, contextPatch: null, activeJourney: null, activeJourneyReadyAt: null, activeJourneyMetrics: null } : {}),
   });
 
   return { ...getCanonicalIdentity(), shopperChanged };
@@ -394,6 +397,12 @@ export function setSessionLinkId(sessionId) {
   const id = sessionId && String(sessionId).trim() ? String(sessionId).trim() : null;
   setSessionState({ sessionId: id });
   return getSessionState();
+}
+
+export function setActiveJourney(activeJourney, metrics = null) {
+  const value = activeJourney && typeof activeJourney === "object" ? activeJourney : null;
+  setSessionState({ activeJourney: value, activeJourneyReadyAt: value ? nowIso() : null, activeJourneyMetrics: metrics && typeof metrics === "object" ? metrics : getSessionState().activeJourneyMetrics });
+  return getSessionState().activeJourney;
 }
 
 /**
@@ -481,6 +490,11 @@ export function applyAssistantResponse(resp) {
   if (threadId && String(threadId).trim()) patch.threadId = String(threadId).trim();
   if (contextPatch) patch.contextPatch = contextPatch;
   if (context) patch.context = context;
+  const activeJourney = r.activeJourney || r.data?.activeJourney || null;
+  if (activeJourney && typeof activeJourney === "object") {
+    patch.activeJourney = activeJourney;
+    patch.activeJourneyReadyAt = nowIso();
+  }
 
   if (cartId !== null) patch.cartId = cartId;
   if (checkoutUrl !== null) patch.checkoutUrl = checkoutUrl;
@@ -592,6 +606,7 @@ export const sessionStore = {
   getAccessCode,
   setAccessCode,
   setSessionLinkId,
+  setActiveJourney,
   setCartIdentity,
   applyAssistantResponse,
   subscribe: subscribeSessionState,
