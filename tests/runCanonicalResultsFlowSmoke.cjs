@@ -29,20 +29,30 @@ const SCREENSHOT_PATH =
   process.env.SHOWROOM_SCREENSHOT_PATH ||
   path.resolve("C:/Users/14342/Desktop/snoozer-ai/_out/results-canonical-flow.png");
 
-const FLOW_STEPS = [
+const REQUIRED_PREFIX_STEPS = [
   /Queen/i,
   /Adjustable Base/i,
   /Half Split Motion/i,
   /^No/i,
   /Side/i,
-  /Hot/i,
-  /Soft/i,
 ];
 
 async function clickButton(page, namePattern, timeout = 15000) {
   const button = page.getByRole("button", { name: namePattern }).first();
   await button.waitFor({ state: "visible", timeout });
   await button.click();
+}
+
+async function clickButtonIfPresent(page, namePattern, timeout = 2500) {
+  const button = page.getByRole("button", { name: namePattern }).first();
+  try {
+    await button.waitFor({ state: "visible", timeout });
+    await button.click();
+    await page.waitForTimeout(350);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function run() {
@@ -64,13 +74,25 @@ async function run() {
     await page.goto(`${BASE_URL}/assessment`, { waitUntil: "networkidle" });
     await page.getByText(/^Snooze Assessment$/i).first().waitFor();
 
-    for (const step of FLOW_STEPS) {
+    for (const step of REQUIRED_PREFIX_STEPS) {
       await clickButton(page, step);
       await page.waitForTimeout(350);
     }
 
+    // Staging serves the full assessment; the supported offline fallback omits
+    // movement sensitivity and the final optional questions.
+    await clickButtonIfPresent(page, /High/i);
+    await clickButton(page, /Hot/i);
+    await page.waitForTimeout(350);
+    await clickButton(page, /Soft/i);
+    await page.waitForTimeout(350);
+    if (!/\/results(?:$|\?)/.test(page.url())) await clickButtonIfPresent(page, /^No/i);
+    if (!/\/results(?:$|\?)/.test(page.url())) await clickButtonIfPresent(page, /Skip/i);
+
     await page.waitForURL(/\/results(?:$|\?)/, { timeout: 45000 });
-    await page.getByText(/Here are your 5 SnoozePods/i).waitFor({ timeout: 20000 });
+    await page.getByText(/Your First Stop/i).waitFor({ timeout: 20000 });
+    const topHeadingLocator = page.getByRole("heading", { name: /SnoozePod/i }).first();
+    await topHeadingLocator.waitFor({ timeout: 20000 });
     await page.screenshot({ path: SCREENSHOT_PATH, fullPage: true });
 
     const result = {
@@ -79,8 +101,7 @@ async function run() {
       finalUrl: page.url(),
       screenshotPath: SCREENSHOT_PATH,
       title: await page.title(),
-      topHeading:
-        (await page.getByText(/Here are your 5 SnoozePods/i).first().textContent()) || "",
+      topHeading: (await topHeadingLocator.textContent()) || "",
     };
 
     console.log(JSON.stringify(result, null, 2));
