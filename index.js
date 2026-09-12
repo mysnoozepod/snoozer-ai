@@ -28,6 +28,7 @@ const path = require("path");
 const hudRoutes = require("./routes/hudRoutes");
 const identityRoutes = require("./routes/identityRoutes");
 const assessmentRoutes = require("./routes/assessmentRoutes");
+const activeJourneyRoutes = require("./routes/activeJourneyRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const recommendationRoutes = require("./routes/recommendationRoutes");
 const askSnoozerRoutes = require("./routes/askSnoozerRoutes");
@@ -168,6 +169,11 @@ const {
 const {
   resolveAskSnoozerVisitLifecycle,
 } = require("./services/askSnoozerVisitLifecycle");
+const {
+  buildAskJourneyPayload,
+  createActiveJourneyService,
+  hydrateAskContextFromActiveJourney,
+} = require("./services/activeJourney");
 const {
   buildAskSnoozerClientTimingEvent,
   emitAskSnoozerQualityTrace,
@@ -4389,6 +4395,54 @@ async function maybeSyncProfileToZohoForInteraction({
   }
 }
 
+async function loadActiveJourneyRecord(recordId) {
+  const item = await getSessionItem(recordId);
+  return item
+    ? { ...item, activeJourney: item?.context?.activeJourney || null }
+    : null;
+}
+
+async function saveActiveJourneyRecord({ recordId, journey, expectedStoredRevision }) {
+  const updatedAt = nowIso();
+  const ttl = ttlEpochSeconds(30);
+  if (expectedStoredRevision === null || expectedStoredRevision === undefined) {
+    await ddbDoc.send(new PutCommand({
+      TableName: SESSIONS_TABLE,
+      Item: {
+        sessionId: recordId,
+        recordType: "active_journey",
+        journeyRevision: Number(journey.revision || 0),
+        context: { activeJourney: journey },
+        createdAt: updatedAt,
+        updatedAt,
+        lastActiveAt: updatedAt,
+        ttl,
+      },
+      ConditionExpression: "attribute_not_exists(sessionId)",
+    }));
+    return;
+  }
+  await ddbDoc.send(new UpdateCommand({
+    TableName: SESSIONS_TABLE,
+    Key: { sessionId: recordId },
+    UpdateExpression: "SET #context.#activeJourney = :journey, journeyRevision = :nextRevision, updatedAt = :updatedAt, lastActiveAt = :updatedAt, #ttl = :ttl",
+    ConditionExpression: "journeyRevision = :expectedRevision",
+    ExpressionAttributeNames: { "#context": "context", "#activeJourney": "activeJourney", "#ttl": "ttl" },
+    ExpressionAttributeValues: {
+      ":journey": journey,
+      ":nextRevision": Number(journey.revision || 0),
+      ":expectedRevision": Number(expectedStoredRevision || 0),
+      ":updatedAt": updatedAt,
+      ":ttl": ttl,
+    },
+  }));
+}
+
+const activeJourneyService = createActiveJourneyService({
+  load: loadActiveJourneyRecord,
+  save: saveActiveJourneyRecord,
+});
+
 async function processAskSnoozerAsyncWrites(event = {}) {
   const records = Array.isArray(event?.Records) ? event.Records : [];
   const batchItemFailures = [];
@@ -6204,6 +6258,9 @@ function getAskSnoozerRouteDeps() {
       return service.loadTrustedAdvisorFactPack(args);
     },
     resolveAskSnoozerVisitLifecycle,
+    activeJourneyService,
+    hydrateAskContextFromActiveJourney,
+    buildAskJourneyPayload,
     buildAskSnoozerClientTimingEvent,
     emitAskSnoozerQualityTrace,
     getAskSnoozerQualityConfig,
@@ -6521,6 +6578,26 @@ async function handle(event = {}) {
     }
   }
 
+  const activeJourneyRouteResponse = await activeJourneyRoutes.handleActiveJourneyRoutes({
+    event,
+    method,
+    routePath,
+    traceId,
+    deps: {
+      response,
+      safeJsonBody,
+      cleanIdentityValue,
+      deriveEffectiveThreadId,
+      safeResolveSnoozeIdentity,
+      safeGetCustomerProfile,
+      resolveCanonicalRecommendationContext,
+      activeJourneyService,
+      loadShowroomManifest,
+      log,
+    },
+  });
+  if (activeJourneyRouteResponse) return activeJourneyRouteResponse;
+
   const assessmentRouteResponse = await assessmentRoutes.handleAssessmentRoutes({
     event,
     method,
@@ -6561,6 +6638,8 @@ async function handle(event = {}) {
       rewardProgramService,
       getAssessmentSnapshot,
       getAssessmentResult,
+      activeJourneyService,
+      loadShowroomManifest,
     },
   });
   if (assessmentRouteResponse) return assessmentRouteResponse;
@@ -6714,6 +6793,7 @@ async function handle(event = {}) {
       maybeSyncIdentityProfileToZoho,
       safeGetCustomerProfile,
       buildCheckInSummary,
+      activeJourneyService,
     },
   });
   if (identityRouteResponse) return identityRouteResponse;

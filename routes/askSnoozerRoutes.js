@@ -51,6 +51,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     composeTrustedAdvisorResponse,
     loadTrustedAdvisorFactPack,
     resolveAskSnoozerVisitLifecycle,
+    activeJourneyService,
+    hydrateAskContextFromActiveJourney,
+    buildAskJourneyPayload,
     buildAskSnoozerClientTimingEvent,
     emitAskSnoozerQualityTrace,
     getAskSnoozerQualityConfig,
@@ -421,6 +424,29 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       previousAskProfile
     );
 
+    let activeJourneyResolution = null;
+    if (activeJourneyService && typeof activeJourneyService.resolve === "function") {
+      try {
+        activeJourneyResolution = await activeJourneyService.resolve({
+          identity: { ...askIdentity, shopperId, sessionId: effectiveSessionId },
+          canonicalRecommendation: context?.canonicalRecommendation || null,
+          surface: "ask_snoozer",
+        });
+        if (typeof hydrateAskContextFromActiveJourney === "function") {
+          context = hydrateAskContextFromActiveJourney(context, activeJourneyResolution.journey);
+        }
+        log("active-journey.ask.hydrated", "ok", {
+          traceId,
+          journeyId: activeJourneyResolution.journey.journeyId,
+          revision: activeJourneyResolution.journey.revision,
+          readMs: activeJourneyResolution.readMs,
+          recentRawHistoryCount: context.recentConversation?.length || 0,
+        });
+      } catch (error) {
+        log("active-journey.ask.error", error.code || error.message, { traceId, phase: "hydrate" });
+      }
+    }
+
     let askSnoozerPlan = null;
     if (typeof applyAskSnoozerWorkingMemory === "function") {
       const preTurnReferenceContext = context;
@@ -754,6 +780,23 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       if (typeof completeAskSnoozerAdvisorTurn === "function") {
         context = completeAskSnoozerAdvisorTurn(context, advisorAnswer);
       }
+      if (activeJourneyResolution && typeof buildAskJourneyPayload === "function") {
+        try {
+          const manifestHandles = new Set((loadShowroomManifest?.()?.products || []).map((product) => String(product?.handle || "").trim().toLowerCase()).filter(Boolean));
+          const syncedJourney = await activeJourneyService.transition({
+            recordId: activeJourneyResolution.recordId,
+            journey: activeJourneyResolution.journey,
+            expectedRevision: activeJourneyResolution.journey.revision,
+            trusted: true,
+            allowedProductHandles: manifestHandles,
+            event: { type: "ask_state_committed", payload: buildAskJourneyPayload(context) },
+          });
+          activeJourneyResolution = { ...activeJourneyResolution, journey: syncedJourney.journey };
+          context.activeJourney = syncedJourney.journey;
+        } catch (error) {
+          log("active-journey.ask.error", error.code || error.message, { traceId, phase: "commit" });
+        }
+      }
       const latencyMs = Date.now() - startedAt;
       const mergedContext = sco && typeof sco === "object" ? deepMerge(sco, context) : context;
       try {
@@ -786,6 +829,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       env.thread_id = effectiveSessionId;
       env.sessionId = effectiveSessionId;
       env.status = advisorAnswer.fallbackUsed ? "completed_with_fallback" : "answered";
+      env.activeJourney = activeJourneyResolution?.journey || null;
       env.chips = advisorAnswer.chips;
       const qualityConfig = typeof getAskSnoozerQualityConfig === "function"
         ? getAskSnoozerQualityConfig()

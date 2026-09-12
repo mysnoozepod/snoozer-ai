@@ -26,6 +26,7 @@ async function handleIdentityRoutes({ event, method, routePath, traceId, deps = 
     maybeSyncIdentityProfileToZoho,
     safeGetCustomerProfile,
     buildCheckInSummary,
+    activeJourneyService,
   } = deps;
 
   if (method === "POST" && routePath === "/identity/snooze-code") {
@@ -321,6 +322,19 @@ async function handleIdentityRoutes({ event, method, routePath, traceId, deps = 
         : { ...canonicalProfile, ...checkInPatch },
       sourceSurface
     );
+    if (activeJourneyService && typeof activeJourneyService.resolve === "function") {
+      try {
+        const journeyResult = await activeJourneyService.resolve({
+          identity: { ...resolvedIdentity, sessionId: identitySessionId },
+          canonicalRecommendation: canonicalProfile?.canonicalRecommendation || null,
+          surface: "welcome",
+        });
+        summary.activeJourney = journeyResult.journey;
+        summary.journeyMetrics = { readMs: journeyResult.readMs, writeMs: journeyResult.writeMs };
+      } catch (error) {
+        log("active-journey.checkin.error", error.code || error.message, { traceId, route: "/identity/check-in" });
+      }
+    }
 
     log("snooze.identity.checkin.ok", "ok", {
       traceId,

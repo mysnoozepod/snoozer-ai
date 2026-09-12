@@ -35,6 +35,8 @@ async function handleAssessmentRoutes({ event, method, routePath, traceId, deps 
     rewardProgramService,
     getAssessmentSnapshot,
     getAssessmentResult,
+    activeJourneyService,
+    loadShowroomManifest,
   } = deps;
 
   if (method === "GET" && (routePath === "/content/assessment" || routePath === "/content/assessment/meta")) {
@@ -367,6 +369,36 @@ async function handleAssessmentRoutes({ event, method, routePath, traceId, deps 
       }
     }
 
+    let activeJourney = null;
+    if (activeJourneyService && typeof activeJourneyService.resolve === "function") {
+      try {
+        const resolvedJourney = await activeJourneyService.resolve({
+          identity: { ...finalAssessmentIdentity, shopperId, sessionId: identitySessionId },
+          canonicalRecommendation: assessmentCanonicalRecommendation,
+          surface: "assessment",
+        });
+        const allowedProductHandles = new Set((loadShowroomManifest?.()?.products || []).map((product) => String(product?.handle || "").trim().toLowerCase()).filter(Boolean));
+        const completedJourney = await activeJourneyService.transition({
+          recordId: resolvedJourney.recordId,
+          journey: resolvedJourney.journey,
+          expectedRevision: resolvedJourney.journey.revision,
+          trusted: true,
+          allowedProductHandles,
+          event: {
+            type: "assessment_completed",
+            payload: {
+              canonicalRecommendation: assessmentCanonicalRecommendation,
+              assessmentContext: answers || {},
+              surface: "assessment",
+            },
+          },
+        });
+        activeJourney = completedJourney.journey;
+      } catch (error) {
+        log("active-journey.assessment.error", error.code || error.message, { traceId, shopperId });
+      }
+    }
+
     return response(event, 200, {
       ok: true,
       shopperId,
@@ -375,6 +407,7 @@ async function handleAssessmentRoutes({ event, method, routePath, traceId, deps 
       profileId: finalAssessmentIdentity?.profileId || null,
       identityType: finalAssessmentIdentity?.identityType || null,
       isNewCode: Boolean(issuedAssessmentIdentity?.isNewCode),
+      activeJourney,
       rewards: confirmedRewards.map((result) => ({
         duplicate: Boolean(result.duplicate),
         milestoneId: result.milestoneId,
