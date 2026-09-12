@@ -23,6 +23,7 @@ const openai = require("../services/openai");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
+const originalComposeTrustedAdvisorResponse = openai.composeTrustedAdvisorResponse;
 
 const sessionStore = new Map();
 const resultsStore = new Map();
@@ -110,11 +111,24 @@ function patchOpenAi() {
       actions: [],
     };
   };
+  openai.composeTrustedAdvisorResponse = async function mockedComposeTrustedAdvisorResponse(input = {}) {
+    return {
+      displayText: input.deterministicDraft.displayText,
+      speechText: input.deterministicDraft.speechText,
+      probe: null,
+      nextActionIntent: null,
+      confidence: 0.99,
+      model: "mock-trusted-advisor-composer",
+      inputChars: JSON.stringify(input.factPack || {}).length + 2000,
+      factPackChars: JSON.stringify(input.factPack || {}).length,
+    };
+  };
 }
 
 function restore() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
   openai.getSnoozerResponse = originalOpenAiGetSnoozerResponse;
+  openai.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
 }
 
 function hasRenderableText(body) {

@@ -11,11 +11,13 @@ const { resolveRecommendation } = require("../services/recommendationResolver");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
+const originalComposeTrustedAdvisorResponse = openai.composeTrustedAdvisorResponse;
 const originalFetchProductsByHandles = shopifySvc.fetchProductsByHandles;
 
 const sessionStore = new Map();
 const resultsStore = new Map();
 const openAiCalls = [];
+const composerCalls = [];
 const COPY_ONLY = process.argv.includes("--copy-only");
 const FORBIDDEN_INTERNAL_PHRASES = Object.freeze([
   "live shopify",
@@ -111,8 +113,8 @@ const PRODUCT_FIXTURES = Object.freeze({
     available: true,
     priceRange: { min: 1299, currencyCode: "USD" },
     variants: [
-      { id: "gid://shopify/ProductVariant/platform-queen", title: "Queen", price: 1299, currencyCode: "USD", available: true, selectedOptions: [{ name: "Size", value: "Queen" }] },
-      { id: "gid://shopify/ProductVariant/platform-king", title: "King", price: 1299, currencyCode: "USD", available: true, selectedOptions: [{ name: "Size", value: "King" }] },
+      { id: "gid://shopify/ProductVariant/platform-queen", title: "Queen (2pc)", price: 1299, currencyCode: "USD", available: true, selectedOptions: [{ name: "Size", value: "Queen (2pc)" }] },
+      { id: "gid://shopify/ProductVariant/platform-king", title: "King (2pc)", price: 1299, currencyCode: "USD", available: true, selectedOptions: [{ name: "Size", value: "King (2pc)" }] },
     ],
   },
   "storage-base": {
@@ -216,10 +218,24 @@ function patchOpenAi() {
       actions: [],
     };
   };
+  openai.composeTrustedAdvisorResponse = async function mockedComposeTrustedAdvisorResponse(input = {}) {
+    composerCalls.push(input);
+    return {
+      displayText: input.deterministicDraft.displayText,
+      speechText: input.deterministicDraft.speechText,
+      probe: null,
+      nextActionIntent: null,
+      confidence: 0.99,
+      model: "golden-trusted-advisor-composer",
+      inputChars: JSON.stringify(input.factPack || {}).length + 2000,
+      factPackChars: JSON.stringify(input.factPack || {}).length,
+    };
+  };
 }
 
 function restoreOpenAi() {
   openai.getSnoozerResponse = originalOpenAiGetSnoozerResponse;
+  openai.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
 }
 
 function patchShopify() {
@@ -241,6 +257,7 @@ function resetStores() {
   sessionStore.clear();
   resultsStore.clear();
   openAiCalls.length = 0;
+  composerCalls.length = 0;
 }
 
 async function invokeAskSnoozer(body) {
@@ -277,6 +294,7 @@ async function runCase(testCase) {
     missingSlots: Array.isArray(qualityGate.missingSlots) ? qualityGate.missingSlots : [],
     model: payload?.metadata?.model || null,
     productsCount: Array.isArray(payload?.products) ? payload.products.length : 0,
+    composerCalls: composerCalls.length,
   };
 
   const checks = [];
@@ -374,6 +392,12 @@ async function runCase(testCase) {
       reason: `expected no OpenAI call, saw ${openAiCalls.length}`,
     });
   }
+  if (typeof testCase.expected.composerCalls === "number") {
+    checks.push({
+      ok: actual.composerCalls === testCase.expected.composerCalls,
+      reason: `expected composerCalls=${testCase.expected.composerCalls}, got ${actual.composerCalls}`,
+    });
+  }
 
   const failedChecks = checks.filter((check) => !check.ok);
   return {
@@ -390,8 +414,11 @@ async function runCase(testCase) {
     actualFallbackUsed: actual.fallbackUsed,
     actualModel: actual.model,
     actualProductsCount: actual.productsCount,
+    fixtureDisposition: testCase.fixtureDisposition || "STILL VALID",
     pass: failedChecks.length === 0,
-    reason: failedChecks.map((check) => check.reason).join(" | "),
+    reason: failedChecks.length
+      ? `${failedChecks.map((check) => check.reason).join(" | ")} | actual reply: ${actual.reply}`
+      : "",
   };
 }
 
@@ -448,38 +475,45 @@ async function main() {
     },
     {
       id: "commerce_queen_14_hybrid_mattress_only",
+      fixtureDisposition: "MIGRATE TO TRUSTED-ADVISOR CONTRACT — exact commerce remains authoritative while the current Ask orchestrator owns presentation.",
       prompt: "How much is the queen 14 hybrid mattress only?",
       body: { message: "How much is the queen 14 hybrid mattress only?", sessionId: "golden-1" },
       expected: {
-        intentGroup: "commerce",
+        intentGroup: "trusted_advisor",
         sourceOfTruth: "shopify",
         shouldUseOpenAI: false,
         factsResolved: true,
-        slots: { scope: "mattress_only", size: "Queen", productHandle: "14-hybrid" },
-        replyIncludes: ["The Queen 14-inch Hybrid mattress is $2,899", "before taxes, delivery, or any active discounts"],
+        model: "trusted_advisor_price_quote",
+        slots: {},
+        replyIncludes: ["Queen 14-inch Hybrid", "$2,899", "before taxes, delivery, or active discounts"],
         replyExcludes: ["Shopify", "I found", "current"],
         enforceForbiddenPhraseList: true,
         noOpenAi: true,
+        composerCalls: 0,
       },
     },
     {
       id: "commerce_queen_14_hybrid_platform_bundle",
+      fixtureDisposition: "MIGRATE TO TRUSTED-ADVISOR CONTRACT — bundle facts use the shared exact resolver and advisor response contract.",
       prompt: "How much is the queen 14 hybrid mattress and platform base?",
       body: { message: "How much is the queen 14 hybrid mattress and platform base?", sessionId: "golden-2" },
       expected: {
-        intentGroup: "commerce",
+        intentGroup: "trusted_advisor",
         sourceOfTruth: "shopify",
         shouldUseOpenAI: false,
         factsResolved: true,
-        slots: { scope: "mattress_plus_base", size: "Queen", productHandle: "14-hybrid", baseHandle: "platform-base" },
-        replyIncludes: ["comes to $4,198", "Mattress: $2,899", "Base: $1,299"],
+        model: "trusted_advisor_bundle_quote",
+        slots: {},
+        replyIncludes: ["complete setup", "$4,198", "14-inch Hybrid: $2,899", "Platform Base: $1,299"],
         replyExcludes: ["Shopify", "I found", "live"],
         enforceForbiddenPhraseList: true,
         noOpenAi: true,
+        composerCalls: 0,
       },
     },
     {
       id: "commerce_pronoun_queen_with_canonical_context",
+      fixtureDisposition: "MIGRATE TO TRUSTED-ADVISOR CONTRACT — the pronoun resolves from protected recommendation context before exact pricing.",
       prompt: "How much is it in queen?",
       body: {
         message: "How much is it in queen?",
@@ -489,17 +523,18 @@ async function main() {
         },
       },
       expected: {
-        intentGroup: "commerce",
+        intentGroup: "trusted_advisor",
         sourceOfTruth: "shopify",
         shouldUseOpenAI: false,
         factsResolved: true,
         fallbackUsed: false,
-        model: "deterministic_commerce",
-        slots: { size: "Queen", productHandle: "12-all-foam-mattress" },
+        model: "trusted_advisor_price_quote",
+        slots: {},
         replyIncludes: ["12-inch All Foam Mattress", "$2,199"],
         replyExcludes: ["Shopify", "I found", "current"],
         enforceForbiddenPhraseList: true,
         noOpenAi: true,
+        composerCalls: 0,
       },
     },
     {
@@ -524,19 +559,22 @@ async function main() {
     },
     {
       id: "commerce_hybris_typo",
+      fixtureDisposition: "MIGRATE TO TRUSTED-ADVISOR CONTRACT — typo normalization resolves the real catalog product before exact pricing.",
       prompt: "i just wanna know how much a 12 inch hybris is in a queen size for the mattress only",
       body: {
         message: "i just wanna know how much a 12 inch hybris is in a queen size for the mattress only",
         sessionId: "golden-4",
       },
       expected: {
-        intentGroup: "commerce",
+        intentGroup: "trusted_advisor",
         sourceOfTruth: "shopify",
-        slots: { scope: "mattress_only", size: "Queen", productHandle: "12-dual-comfort-hybrid" },
-        replyIncludes: ["12-inch Dual Comfort Hybrid mattress", "$3,199"],
+        model: "trusted_advisor_price_quote",
+        slots: {},
+        replyIncludes: ["12-inch Dual Comfort Hybrid", "$3,199"],
         replyExcludes: ["Shopify", "I found", "current"],
         enforceForbiddenPhraseList: true,
         noOpenAi: true,
+        composerCalls: 0,
       },
     },
     {
@@ -751,6 +789,7 @@ async function main() {
         fallbackUsed: row.actualFallbackUsed,
         model: row.actualModel,
         products: row.actualProductsCount,
+        disposition: row.fixtureDisposition,
         result: row.pass ? "PASS" : "FAIL",
         reason: row.reason,
       });

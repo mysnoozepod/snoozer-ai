@@ -42,8 +42,9 @@ async function main() {
     plan,
     composeAdvisorResponse: async ({ deterministicDraft, factPack }) => {
       calls += 1;
-      assert.equal(factPack.permittedJudgment.compareVerifiedProducts, true);
-      assert.equal(factPack.verifiedCommercialFacts.products.length, 2);
+      assert.equal(factPack.conversation.taskType, "product_comparison");
+      assert.equal(factPack.products.length, 2);
+      assert(factPack.budget.totalChars < 10000);
       return {
         displayText: deterministicDraft.displayText.replace("The 12-inch", "Here is the practical difference: the 12-inch"),
         speechText: "The 12-inch All Foam Mattress gives you closer contouring; the 14-inch Hybrid feels more lifted and springy.",
@@ -87,11 +88,12 @@ async function main() {
 
   const factPack = buildRelevantFactPack({ query, context, plan });
   assert(!JSON.stringify(factPack).includes("shopperId"));
-  assert(factPack.verifiedCommercialFacts);
-  assert(factPack.conversationContext);
-  assert(factPack.permittedJudgment);
-  assert(Array.isArray(factPack.missingUnknown));
+  assert(factPack.recommendation);
+  assert(factPack.conversation);
+  assert(factPack.feedback);
+  assert(Array.isArray(factPack.missingInformation));
   assert(Array.isArray(factPack.allowedActions));
+  assert(factPack.budget.totalChars < 10000);
 
   const conflictGate = validateResponseConsistency({
     reply: "The Queen full-split setup is compatible.",
@@ -103,8 +105,30 @@ async function main() {
   assert(conflictGate.violations.includes("compatibility_contradiction"));
   assert(conflictGate.violations.includes("motion_configuration_mismatch"));
 
+  const conciseSpeechGate = validateResponseConsistency({
+    reply: "Your complete King setup is $6,098.",
+    quote: {
+      ok: true,
+      subtotal: 6098,
+      currencyCode: "USD",
+      items: [
+        { handle: "12-dual-comfort-hybrid", price: 3199, currencyCode: "USD" },
+        { handle: "premium-motion-adjustable-base", price: 2899, currencyCode: "USD" },
+      ],
+    },
+    products: [],
+    plan: { taskType: "bundle_quote", technicalLanguageAllowed: false, protectedReferences: [] },
+    factPack: { products: [] },
+    requireCompleteCommerce: false,
+  });
+  assert.equal(conciseSpeechGate.ok, true, `concise verified speech rejected: ${conciseSpeechGate.violations.join(", ")}`);
+
   const parsed = parseTrustedAdvisorComposition('```json\n{"displayText":"Clear answer.","speechText":"Clear answer.","probe":null}\n```');
   assert.equal(parsed.displayText, "Clear answer.");
+  const normalizedProbe = parseTrustedAdvisorComposition('{"displayText":"Clear answer.","spokenSummary":"Clear answer.","probe":"Would you like to compare"}');
+  assert.equal(normalizedProbe.probe, "Would you like to compare?");
+  const redundantProbe = parseTrustedAdvisorComposition('{"displayText":"Would you like to compare?","speechText":"We can compare.","probe":"Would you like to compare?"}');
+  assert.equal(redundantProbe.probe, null);
   assert.throws(
     () => parseTrustedAdvisorComposition('{"displayText":"One? Two?","speechText":"Okay.","probe":null}'),
     /more than one probe/
