@@ -1,7 +1,7 @@
 function isDevelopmentWelcomeCode(sourceSurface = "", value = "") {
   return (
     String(sourceSurface || "").trim().toLowerCase() === "showroom_welcome" &&
-    /^\d{4}$/.test(String(value || "").trim())
+    /^(?:\d{4}|\d{6})$/.test(String(value || "").trim())
   );
 }
 

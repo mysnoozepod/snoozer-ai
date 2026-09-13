@@ -467,9 +467,10 @@ async function testDevelopmentWelcomeAllowanceStaysNarrow() {
       sourceSurface: "showroom_welcome",
     })
   );
-  assert.strictEqual(sixDigit.ok, false, "unknown six-digit production codes should not be auto-created");
+  assert.strictEqual(sixDigit.ok, true, "Welcome development check-in should accept a new six-digit code");
+  assert.strictEqual(sixDigit.shopperId, "654321", "six-digit code should remain the canonical shopper id");
   assert.strictEqual(profileStore.has("shopper#5678"), false, "restricted four-digit miss should not create a profile");
-  assert.strictEqual(profileStore.has("shopper#654321"), false, "six-digit miss should not create a profile");
+  assert.strictEqual(profileStore.has("shopper#654321"), true, "six-digit Welcome check-in should create a development profile");
 }
 
 async function testHudWithSnoozeCodeEnrichesCanonicalProfile() {
