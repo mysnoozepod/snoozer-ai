@@ -232,9 +232,9 @@ async function run() {
     assert.match(populatedCartText, /King/i);
 
     await openAsk(pageA);
-    const original = await ask(pageA, "What was my original recommendation?");
+    const original = await ask(pageA, "What did my assessment originally recommend?");
     assert.match(responseText(original), /All Foam/i);
-    const current = await ask(pageA, "What am I choosing now?");
+    const current = await ask(pageA, "What do you recommend now?");
     assert.match(responseText(current), /Dual Comfort/i);
 
     console.log(JSON.stringify({
