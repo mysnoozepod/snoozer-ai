@@ -26,6 +26,7 @@
     "test:active-journey": "node tests/runActiveJourneyTests.js",
     "test:active-journey-routes": "node tests/runActiveJourneyRouteTests.js",
     "test:active-journey-acceptance": "node tests/runActiveJourneyAcceptanceTests.js",
+    "test:active-journey:live": "node scripts/runActiveJourneyLiveAcceptance.js",
     "test:ask-snoozer-shopper-feedback:live": "node scripts/runAskSnoozerShopperFeedbackLiveAcceptance.js",
     "test:ask-snoozer-adaptive-decision:live": "node scripts/runAskSnoozerPhase2LiveAcceptance.js",
     "test:ask-snoozer-evals": "node tests/runAskSnoozerRealisticEvaluations.js",

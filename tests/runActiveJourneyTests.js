@@ -59,6 +59,23 @@ const identity = { profileId: "profile-phase3", shopperId: "shopper-phase3" };
   assert.equal(askContext.askSnoozerWorkingMemory.activeDeal.activeSize, "King", "15 Ask hydrates authoritative configuration");
   assert.equal(askContext.askSnoozerWorkingMemory.activeDeal.pendingCommitment.type, "compare_products", "16 Ask-only commitment remains conversation-local");
   assert.equal(buildAskJourneyPayload(askContext).pendingCommitment, undefined, "17 conversation commitment is not promoted globally");
+  const mattressOnlyContext = hydrateAskContextFromActiveJourney({}, {
+    ...mergedPreference.journey,
+    activeConfiguration: {
+      productHandle: "12-dual-comfort-hybrid",
+      size: "King",
+      baseDecision: "keep",
+      baseHandle: "premium-motion-adjustable-base",
+      motionConfiguration: "standard",
+    },
+  });
+  mattressOnlyContext.askSnoozerWorkingMemory.activeDeal.baseDecision = "skip";
+  mattressOnlyContext.askSnoozerWorkingMemory.activeDeal.activeBaseHandle = null;
+  mattressOnlyContext.askSnoozerWorkingMemory.activeDeal.activeMotionKey = "none";
+  const mattressOnlyPayload = buildAskJourneyPayload(mattressOnlyContext);
+  assert.equal(mattressOnlyPayload.activeConfiguration.baseDecision, "skip", "18 Ask bridge promotes mattress-only scope");
+  assert.equal(mattressOnlyPayload.activeConfiguration.baseHandle, null, "19 Ask bridge clears the base");
+  assert.equal(mattressOnlyPayload.activeConfiguration.motionConfiguration, "none", "20 Ask bridge clears motion");
 
   const beforeRotation = mergedPreference.journey.journeyId;
   nowMs += (ACTIVE_JOURNEY_TTL_MINUTES + 1) * 60 * 1000;

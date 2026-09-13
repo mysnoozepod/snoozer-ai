@@ -346,6 +346,7 @@ function hydrateAskContextFromActiveJourney(context = {}, journey = {}) {
     comparisonProductHandles: clone(journey.comparisonSet) || [],
     activeProductHandle: journey.activeConfiguration?.productHandle || journey.sessionRecommendation?.productHandle || null,
     activeSize: journey.activeConfiguration?.size || previous.activeSize || null,
+    baseDecision: journey.activeConfiguration?.baseDecision || previous.baseDecision || null,
     activeBaseHandle: journey.activeConfiguration?.baseHandle || previous.activeBaseHandle || null,
     activeMotionKey: journey.activeConfiguration?.motionConfiguration || previous.activeMotionKey || null,
   };
@@ -355,13 +356,24 @@ function hydrateAskContextFromActiveJourney(context = {}, journey = {}) {
 
 function buildAskJourneyPayload(context = {}) {
   const deal = context?.askSnoozerWorkingMemory?.activeDeal || {};
+  const activeConfiguration = {
+    ...(isObject(deal.activeConfiguration) ? deal.activeConfiguration : {}),
+  };
+  if (deal.activeProductHandle) activeConfiguration.productHandle = deal.activeProductHandle;
+  if (deal.activeSize) activeConfiguration.size = deal.activeSize;
+  if (deal.baseDecision) activeConfiguration.baseDecision = deal.baseDecision;
+  if (Object.prototype.hasOwnProperty.call(deal, "activeBaseHandle")) {
+    activeConfiguration.baseHandle = deal.activeBaseHandle;
+  }
+  if (deal.activeMotionKey) activeConfiguration.motionConfiguration = deal.activeMotionKey;
+  delete activeConfiguration.motionKey;
   return {
     sessionRecommendation: deal.sessionRecommendation || null,
     rejectedProducts: deal.rejectedProducts || [],
     productFeedback: deal.productFeedback || {},
     retainedPreferences: deal.retainedPreferences || {},
     desiredDirection: deal.desiredDirection || {},
-    activeConfiguration: deal.activeConfiguration || {},
+    activeConfiguration,
     activeQuote: deal.activeQuote || null,
     comparisonSet: deal.comparisonProductHandles || [],
     currentGoal: deal.goal || null,

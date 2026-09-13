@@ -88,9 +88,15 @@ function patchDependencies() {
       const sessionId = command.input?.Key?.sessionId;
       if (sessionId) {
         const existing = sessionStore.get(sessionId) || { sessionId, context: {} };
+        const journey = command.input?.ExpressionAttributeValues?.[":journey"];
         sessionStore.set(sessionId, {
           ...existing,
-          context: command.input?.ExpressionAttributeValues?.[":c"] || existing.context,
+          context: journey
+            ? { ...(existing.context || {}), activeJourney: journey }
+            : command.input?.ExpressionAttributeValues?.[":c"] || existing.context,
+          ...(journey
+            ? { journeyRevision: command.input?.ExpressionAttributeValues?.[":nextRevision"] }
+            : {}),
         });
       }
       return {};
@@ -158,6 +164,12 @@ function restoreDependencies() {
   shopify.fetchProductsByHandles = originalFetchProducts;
   shopify.getCart = originalGetCart;
   console.log = originalConsoleLog;
+}
+
+function clearActiveJourneyFixtures() {
+  for (const key of sessionStore.keys()) {
+    if (String(key).startsWith("active_journey_")) sessionStore.delete(key);
+  }
 }
 
 function buildEvent(body, requestId) {
@@ -415,7 +427,11 @@ async function runBigPass4CommercialCompletion() {
     testCaseId: "big-pass-4-motion",
   });
   assert.strictEqual(memory(motion)?.activeDeal?.compatibilityStatus, "compatible");
-  assert.strictEqual(memory(motion)?.activeDeal?.activeQuote?.subtotal, 3698);
+  assert.strictEqual(
+    memory(motion)?.activeDeal?.activeQuote?.subtotal,
+    3698,
+    JSON.stringify(memory(motion)?.activeDeal || null)
+  );
   assert((motion.chips || []).length > 0, "completed quote should offer a contextual next action");
   const value = await invoke({
     message: "Do I really need the base?",
@@ -491,9 +507,12 @@ async function main() {
       answers: { ...fixture.shopper.assessment },
     });
     const outputs = await runExactTenTurnFixture();
+    clearActiveJourneyFixtures();
     await runCommercialProgression();
+    clearActiveJourneyFixtures();
     await runBigPass4CommercialCompletion();
     runPlannerAndDepthMatrix();
+    clearActiveJourneyFixtures();
     await runCrossDeviceContinuity();
     console.log = originalConsoleLog;
     console.log(`Ask Snoozer trusted-advisor tests passed (${outputs.length} exact turns, 12 commerce turns, Big Pass 4 completion, 12 planner/depth cases, cross-device continuity).`);
