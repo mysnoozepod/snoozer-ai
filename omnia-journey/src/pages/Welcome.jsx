@@ -19,10 +19,12 @@ import {
   ShowroomTopRail,
 } from "@/components/showroom/ShowroomPrimitives";
 
+const SNOOZE_CODE_LENGTH = 6;
+
 function normalizeAccessCode(raw) {
   return String(raw || "")
     .replace(/\D+/g, "")
-    .slice(0, 4);
+    .slice(0, SNOOZE_CODE_LENGTH);
 }
 
 export default function Welcome() {
@@ -32,8 +34,13 @@ export default function Welcome() {
   const resetShopperScopedState = useStore((state) => state.resetShopperScopedState);
   const [digits, setDigits] = useState(() => {
     const storedCode = String(getAccessCode() || "").trim();
-    const initialCode = /^\d{4}$/.test(storedCode) ? storedCode : "";
-    return Array.from({ length: 4 }, (_, index) => initialCode[index] || "");
+    const initialCode = new RegExp(`^\\d{${SNOOZE_CODE_LENGTH}}$`).test(storedCode)
+      ? storedCode
+      : "";
+    return Array.from(
+      { length: SNOOZE_CODE_LENGTH },
+      (_, index) => initialCode[index] || ""
+    );
   });
   const code = digits.join("");
   const [error, setError] = useState("");
@@ -61,8 +68,8 @@ export default function Welcome() {
     if (loading || hasStartedRef.current) return;
 
     const trimmed = normalizeAccessCode(candidateCode);
-    if (!/^\d{4}$/.test(trimmed)) {
-      setError("Enter all four digits of your Snooze Code.");
+    if (!new RegExp(`^\\d{${SNOOZE_CODE_LENGTH}}$`).test(trimmed)) {
+      setError(`Enter all ${SNOOZE_CODE_LENGTH} digits of your Snooze Code.`);
       return;
     }
 
@@ -140,7 +147,7 @@ export default function Welcome() {
     }
 
     const nextCode = nextDigits.join("");
-    if (nextDigits.every(Boolean) && nextCode.length === 4) {
+    if (nextDigits.every(Boolean) && nextCode.length === SNOOZE_CODE_LENGTH) {
       void handleStart(nextCode);
     }
   };
@@ -165,7 +172,10 @@ export default function Welcome() {
       return;
     }
 
-    if (event.key === "Enter" && /^\d{4}$/.test(code)) {
+    if (
+      event.key === "Enter" &&
+      new RegExp(`^\\d{${SNOOZE_CODE_LENGTH}}$`).test(code)
+    ) {
       void handleStart(code);
     }
   };
@@ -175,18 +185,23 @@ export default function Welcome() {
     if (!pastedDigits) return;
     event.preventDefault();
 
-    const nextDigits = pastedDigits.length === 4 ? ["", "", "", ""] : [...digits];
-    const startIndex = pastedDigits.length === 4 ? 0 : index;
+    const isCompleteCode = pastedDigits.length === SNOOZE_CODE_LENGTH;
+    const nextDigits = isCompleteCode
+      ? Array.from({ length: SNOOZE_CODE_LENGTH }, () => "")
+      : [...digits];
+    const startIndex = isCompleteCode ? 0 : index;
     pastedDigits.split("").forEach((digit, offset) => {
-      if (startIndex + offset < 4) nextDigits[startIndex + offset] = digit;
+      if (startIndex + offset < SNOOZE_CODE_LENGTH) nextDigits[startIndex + offset] = digit;
     });
 
     setDigits(nextDigits);
     if (error) setError("");
-    digitInputRefs.current[Math.min(startIndex + pastedDigits.length, 3)]?.focus();
+    digitInputRefs.current[
+      Math.min(startIndex + pastedDigits.length, SNOOZE_CODE_LENGTH - 1)
+    ]?.focus();
 
     const nextCode = nextDigits.join("");
-    if (nextDigits.every(Boolean) && nextCode.length === 4) {
+    if (nextDigits.every(Boolean) && nextCode.length === SNOOZE_CODE_LENGTH) {
       void handleStart(nextCode);
     }
   };
@@ -241,7 +256,7 @@ export default function Welcome() {
                   <legend className="text-sm font-black text-[#2f57e8] md:text-base">
                     Enter Snooze Code
                   </legend>
-                  <div className="mt-3 grid max-w-[460px] grid-cols-4 gap-3 md:gap-4">
+                  <div className="mt-3 grid max-w-[620px] grid-cols-6 gap-2.5 md:gap-3">
                     {digits.map((digit, index) => (
                       <input
                         key={index}
@@ -276,7 +291,7 @@ export default function Welcome() {
                   >
                     Loading your Snooze Session…
                   </div>
-                ) : error && code.length === 4 ? (
+                ) : error && code.length === SNOOZE_CODE_LENGTH ? (
                   <button
                     type="button"
                     onClick={() => void handleStart(code)}

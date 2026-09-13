@@ -104,6 +104,11 @@ async function testJourneySurfacesConsumeCanonicalIdentity() {
   const cart = source("omnia-journey/src/pages/Cart.jsx");
 
   assert(welcome.includes("checkIn.shopperChanged"), "Welcome must apply confirmed shopper switches");
+  assert(
+    welcome.includes("const SNOOZE_CODE_LENGTH = 6") &&
+      welcome.includes("grid-cols-6"),
+    "Welcome must accept the six-digit Snooze Codes issued by the canonical identity service"
+  );
   assert(api.includes("shopperId: identity.shopperId || shopperId"), "Assessment must use canonical shopperId");
   assert(api.includes("profileId: identity.profileId || undefined"), "Assessment/Ask must carry profileId");
   assert(results.includes("getShopperId() || \"\""), "Results must resolve the canonical shopper");
