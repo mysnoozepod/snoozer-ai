@@ -129,6 +129,17 @@ async function main() {
   assert.equal(normalizedProbe.probe, "Would you like to compare?");
   const redundantProbe = parseTrustedAdvisorComposition('{"displayText":"Would you like to compare?","speechText":"We can compare.","probe":"Would you like to compare?"}');
   assert.equal(redundantProbe.probe, null);
+  const comparisonValueSpeech = parseTrustedAdvisorComposition(
+    '{"displayText":"The 12-inch Dual Comfort Hybrid contours more closely, while the 14-inch Hybrid feels more lifted. The coils also add airflow. For you, that extra cost is worth it only if you prefer the lift.","probe":null}',
+    {
+      taskType: "comparison_value",
+      comparisonTitles: ["12-inch Dual Comfort Hybrid", "14-inch Hybrid"],
+      fallbackSpeechText: "The 12-inch Dual Comfort Hybrid contours more closely, while the 14-inch Hybrid feels more lifted. I would pay more only if that lift is worth it to you.",
+    }
+  );
+  assert.match(comparisonValueSpeech.speechText, /worth/i);
+  assert.match(comparisonValueSpeech.speechText, /Dual Comfort/i);
+  assert.match(comparisonValueSpeech.speechText, /14-inch Hybrid/i);
   assert.throws(
     () => parseTrustedAdvisorComposition('{"displayText":"One? Two?","speechText":"Okay.","probe":null}'),
     /more than one probe/

@@ -125,6 +125,11 @@ async function main() {
   assert(isCompleteShopperResponse(comparison.outcome.reply));
   assert.match(comparison.outcome.reply, /Dual Comfort/i);
   assert.match(comparison.outcome.reply, /14-inch Hybrid/i);
+  assert.equal(comparison.calls.length, 1, "comparison should make one composer call");
+  assert.equal(comparison.calls[0].products.length, 2, "comparison composer should receive only compared products");
+  assert.equal(comparison.calls[0].recommendation.rankedAlternatives, undefined, "ranked alternatives should not duplicate comparison context");
+  assert.equal(comparison.calls[0].prohibited, undefined, "shopper-language rules should not be duplicated in the fact pack");
+  assert(JSON.stringify(comparison.calls[0]).length < 4000, "comparison fact pack should remain compact");
   scenarios.push("product comparison");
 
   const comparisonValue = await run("What's the difference between these and is the Hybrid worth the extra money?");
@@ -160,9 +165,10 @@ async function main() {
   scenarios.push("price atomic");
 
   const priceValue = await run("Why does the Hybrid cost more and is it worth it for me?");
-  assert.equal(priceValue.plan.taskType, "price_value");
+  assert.equal(priceValue.plan.taskType, "comparison_value");
   assert.equal(priceValue.outcome.responsePath, "structured_composer", JSON.stringify({ gate: priceValue.outcome.gate, modelGate: priceValue.outcome.modelGate, reply: priceValue.outcome.reply }));
-  assert.match(priceValue.outcome.reply, /\$1,399/);
+  assert.match(priceValue.outcome.reply, /Dual Comfort/i);
+  assert.match(priceValue.outcome.reply, /14-inch Hybrid/i);
   assert.match(priceValue.outcome.reply, /worth|value/i);
   scenarios.push("price substantive");
 
@@ -210,6 +216,77 @@ async function main() {
   assert(internalGate.violations.some((item) => item.startsWith("internal_language:")));
   for (const phrase of INTERNAL_LANGUAGE) assert(!comparison.outcome.reply.toLowerCase().includes(phrase));
   scenarios.push("internal-language firewall");
+
+  const shopperTitleGate = validateResponseConsistency({
+    reply: "The Dual Comfort contours more closely, but the 14 Hybrid feels more lifted.",
+    plan: {
+      taskType: "product_comparison",
+      technicalLanguageAllowed: false,
+      references: { comparisonProductHandles: ["12-dual-comfort-hybrid", "14-hybrid"] },
+      protectedReferences: [],
+    },
+    factPack: {
+      products: [{ handle: "12-dual-comfort-hybrid" }, { handle: "14-hybrid" }],
+      feedback: { explicitExclusions: [] },
+    },
+  });
+  assert.equal(shopperTitleGate.ok, true, shopperTitleGate.violations.join(", "));
+  scenarios.push("shopper comparison names");
+
+  const naturalContrastGate = validateResponseConsistency({
+    reply: "The 12-inch Dual Comfort Hybrid gives your shoulders deeper pressure relief with a softer side. The 14-inch Hybrid gives you a more lifted, responsive feel with stronger airflow from its coil system.",
+    plan: {
+      taskType: "product_comparison",
+      technicalLanguageAllowed: false,
+      references: { comparisonProductHandles: ["12-dual-comfort-hybrid", "14-hybrid"] },
+      protectedReferences: [],
+    },
+    factPack: {
+      products: [{ handle: "12-dual-comfort-hybrid" }, { handle: "14-hybrid" }],
+      feedback: { explicitExclusions: [] },
+    },
+  });
+  assert.equal(naturalContrastGate.ok, true, naturalContrastGate.violations.join(", "));
+  scenarios.push("natural comparison contrast");
+
+  const historicComparisonGate = validateResponseConsistency({
+    reply: "The 12-inch All Foam Mattress gives a closer contour. I recommend the 12-inch Dual Comfort Hybrid over the 12-inch All Foam Mattress because your current preference is a softer hybrid feel.",
+    plan: {
+      taskType: "canonical_comparison",
+      technicalLanguageAllowed: false,
+      references: {
+        comparisonProductHandles: ["12-all-foam-mattress", "12-dual-comfort-hybrid"],
+        rejectedProductHandles: ["12-all-foam-mattress"],
+      },
+      protectedReferences: [],
+    },
+    factPack: {
+      products: [{ handle: "12-all-foam-mattress" }, { handle: "12-dual-comfort-hybrid" }],
+      recommendation: { current: "12-dual-comfort-hybrid" },
+      feedback: { explicitExclusions: ["12-all-foam-mattress"] },
+    },
+  });
+  assert.equal(historicComparisonGate.ok, true, historicComparisonGate.violations.join(", "));
+
+  const rejectedRecommendationGate = validateResponseConsistency({
+    reply: "I recommend the 12-inch All Foam Mattress over the 12-inch Dual Comfort Hybrid.",
+    plan: {
+      taskType: "canonical_comparison",
+      technicalLanguageAllowed: false,
+      references: {
+        comparisonProductHandles: ["12-all-foam-mattress", "12-dual-comfort-hybrid"],
+        rejectedProductHandles: ["12-all-foam-mattress"],
+      },
+      protectedReferences: [],
+    },
+    factPack: {
+      products: [{ handle: "12-all-foam-mattress" }, { handle: "12-dual-comfort-hybrid" }],
+      recommendation: { current: "12-dual-comfort-hybrid" },
+      feedback: { explicitExclusions: ["12-all-foam-mattress"] },
+    },
+  });
+  assert(rejectedRecommendationGate.violations.includes("rejected_product_recommendation:12-all-foam-mattress"));
+  scenarios.push("historic rejected-product comparison");
 
   const voice = buildSnoozerVoiceReply("foam_vs_hybrid", {
     firstTitle: "12-inch All Foam Mattress",

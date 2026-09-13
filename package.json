@@ -25,6 +25,7 @@
     "test:ask-snoozer-adaptive-decision": "node tests/runAskSnoozerAdaptiveDecisionExecutionTests.js",
     "test:ask-snoozer-unified-pipeline": "node tests/runAskSnoozerUnifiedAdvisorPipelineTests.js",
     "test:ask-snoozer-unified-pipeline:live": "node scripts/runAskSnoozerPhase4LiveAcceptance.js",
+    "test:ask-snoozer-comparison-latency:live": "node scripts/runAskSnoozerComparisonLatencyAcceptance.js",
     "test:active-journey": "node tests/runActiveJourneyTests.js",
     "test:active-journey-routes": "node tests/runActiveJourneyRouteTests.js",
     "test:active-journey-acceptance": "node tests/runActiveJourneyAcceptanceTests.js",

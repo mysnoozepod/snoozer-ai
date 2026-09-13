@@ -457,6 +457,11 @@ function buildAskSnoozerQualityTrace({
   factPackComplete = false,
   factPack = null,
   modelInputChars = 0,
+  modelInputTokens = 0,
+  modelSystemChars = 0,
+  modelPayloadChars = 0,
+  modelFactPackChars = 0,
+  modelTimeoutMs = 0,
   fallbackKind = null,
   quote = null,
   fallbackUsed = false,
@@ -796,6 +801,7 @@ function buildAskSnoozerQualityTrace({
   const mode = ["model_assisted", "model_fallback", "deterministic_recovery"].includes(compositionMode)
     ? compositionMode
     : "deterministic";
+  const compositionBudget = factPack?.composerBudget || factPack?.budget || {};
   const wordCount = responseWordCount(reply);
   const trace = {
     version: QUALITY_TRACE_VERSION,
@@ -817,13 +823,22 @@ function buildAskSnoozerQualityTrace({
       rejected: Boolean(compositionFallbackUsed && modelGate?.ok === false),
       fallbackKind: clean(fallbackKind) || null,
       modelInputChars: Math.max(0, Number(modelInputChars) || 0),
+      modelInputTokens: Math.max(0, Number(modelInputTokens) || 0),
+      modelSystemChars: Math.max(0, Number(modelSystemChars) || 0),
+      modelPayloadChars: Math.max(0, Number(modelPayloadChars) || 0),
+      timeoutMs: Math.max(0, Number(modelTimeoutMs) || 0),
     },
     factPackBudget: {
-      totalChars: Math.max(0, Number(factPack?.budget?.totalChars || 0) || 0),
-      productChars: Math.max(0, Number(factPack?.budget?.productChars || 0) || 0),
-      historyChars: Math.max(0, Number(factPack?.budget?.historyChars || 0) || 0),
-      advisorChars: Math.max(0, Number(factPack?.budget?.advisorChars || 0) || 0),
-      policyChars: Math.max(0, Number(factPack?.budget?.policyChars || 0) || 0),
+      totalChars: Math.max(0, Number(modelFactPackChars || compositionBudget.totalChars || 0) || 0),
+      productChars: Math.max(0, Number(compositionBudget.productChars || 0) || 0),
+      productAChars: Math.max(0, Number(compositionBudget.productAChars || 0) || 0),
+      productBChars: Math.max(0, Number(compositionBudget.productBChars || 0) || 0),
+      shopperJourneyChars: Math.max(0, Number(compositionBudget.shopperJourneyChars || 0) || 0),
+      recommendationChars: Math.max(0, Number(compositionBudget.recommendationChars || 0) || 0),
+      historyChars: Math.max(0, Number(compositionBudget.historyChars || 0) || 0),
+      advisorChars: Math.max(0, Number(compositionBudget.advisorChars || 0) || 0),
+      policyChars: Math.max(0, Number(compositionBudget.policyChars || 0) || 0),
+      actionsUnknownsChars: Math.max(0, Number(compositionBudget.actionsUnknownsChars || 0) || 0),
     },
     latency: {
       totalMs: Math.max(0, Number(totalMs) || 0),

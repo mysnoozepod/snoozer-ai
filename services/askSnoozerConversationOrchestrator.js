@@ -407,6 +407,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     /\bwhy\b.*\b(?:cost|price|expensive)\b.*\b(?:worth|value)\b/.test(text) ||
     /\b(?:cost|price)\b.*\band\b.*\b(?:worth|value)\b/.test(text)
   );
+  const hasComparisonContext = resolveComparisonHandles(query, context).length >= 2;
   const priorActiveHandle = clean(activeMemory(context)?.lastTransition?.stateBefore?.activeProductHandle);
   const hasPriorTurn = Number(activeMemory(context)?.turnIndex || 0) > 1;
   const continuation = Boolean(
@@ -459,6 +460,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   ) taskType = explicitBase.explicitNoBase ? "price_quote" : "bundle_quote";
   else if (/\b(?:how much.*save|save.*how much|savings|difference in price)\b/.test(text)) taskType = "savings_quote";
   else if (valueCue && comparisonCue) taskType = "comparison_value";
+  else if (compoundPriceValueCue && hasComparisonContext) taskType = "comparison_value";
   else if (compoundPriceValueCue) taskType = "price_value";
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && /\b(?:with|plus|and)\b.*\b(?:motion|base)\b/.test(text)) taskType = "bundle_quote";
   else if (/\bwhat about with (?:the )?(?:motion|adjustable) base\b/.test(text) && (deal.activeProductHandle || deal.acceptedRecommendation?.productHandle)) taskType = "bundle_quote";
@@ -861,6 +863,95 @@ function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
     policyChars: 0,
   };
   return factPack;
+}
+
+const COMPARISON_COMPOSER_TASKS = new Set([
+  "product_comparison",
+  "canonical_comparison",
+  "comparison_value",
+  "firmness_choice",
+  "firmness_compare",
+  "advisor_choice",
+  "durability_objection",
+]);
+
+function compactComparisonFactPack(factPack = {}, plan = {}) {
+  if (!COMPARISON_COMPOSER_TASKS.has(clean(plan?.taskType))) return factPack;
+  const compared = new Set(
+    unique(plan?.references?.comparisonProductHandles || [])
+      .map((handle) => clean(handle).toLowerCase())
+      .filter(Boolean)
+  );
+  if (["advisor_choice", "durability_objection"].includes(clean(plan?.taskType)) && compared.size < 2) return factPack;
+  const relevantProducts = (factPack.products || [])
+    .filter((product) => compared.has(clean(product?.handle).toLowerCase()))
+    .map((product) => ({ ...product, title: titleFor(product.handle) }));
+  const relevantFeedback = Object.fromEntries(
+    Object.entries(factPack.feedback?.productFeedback || {})
+      .filter(([handle]) => compared.has(clean(handle).toLowerCase()))
+  );
+  const advisor = factPack.advisorKnowledge || {};
+  const compact = {
+    version: 3,
+    shopper: factPack.shopper,
+    conversation: {
+      taskType: factPack.conversation?.taskType,
+      responseDepth: factPack.conversation?.responseDepth,
+      currentTopic: factPack.conversation?.currentTopic,
+      recentTurns: (factPack.conversation?.recentTurns || []).slice(-2),
+    },
+    state: {
+      size: factPack.state?.size || null,
+      firmness: factPack.state?.firmness || null,
+      activeProductHandle: factPack.state?.activeProductHandle || null,
+      activeConfiguration: factPack.state?.activeConfiguration
+        ? {
+            productHandle: factPack.state.activeConfiguration.productHandle || null,
+            size: factPack.state.activeConfiguration.size || null,
+            baseHandle: factPack.state.activeConfiguration.baseHandle || null,
+            motionConfiguration: factPack.state.activeConfiguration.motionConfiguration || null,
+            scope: factPack.state.activeConfiguration.scope || null,
+          }
+        : null,
+      restTestObservations: (factPack.state?.restTestObservations || []).slice(-2),
+    },
+    recommendation: {
+      original: factPack.recommendation?.original || null,
+      current: factPack.recommendation?.current || null,
+      accepted: factPack.recommendation?.accepted?.productHandle || null,
+      reasons: (factPack.recommendation?.reasons || []).slice(0, 4).map((reason) => ({
+        code: reason?.code || null,
+        detail: reason?.detail || reason?.reason || null,
+      })),
+    },
+    feedback: {
+      rejectedProducts: factPack.feedback?.explicitExclusions || [],
+      productFeedback: relevantFeedback,
+      retainedPreferences: factPack.feedback?.retainedPreferences || {},
+      desiredDirection: factPack.feedback?.desiredDirection || {},
+    },
+    products: relevantProducts,
+    productFacts: (factPack.productFacts || []).filter((item) => compared.has(clean(item?.handle).toLowerCase())),
+    advisorKnowledge: {
+      status: advisor.status || "advisor_interpretation",
+      topicGuidance: advisor.topicGuidance || {},
+    },
+    compatibility: factPack.compatibility,
+    allowedActions: factPack.allowedActions || [],
+    missingInformation: factPack.missingInformation || [],
+  };
+  compact.budget = {
+    totalChars: JSON.stringify(compact).length,
+    shopperJourneyChars: JSON.stringify({ shopper: compact.shopper, conversation: compact.conversation, state: compact.state }).length,
+    productAChars: JSON.stringify(compact.products[0] || {}).length + JSON.stringify(compact.productFacts[0] || {}).length,
+    productBChars: JSON.stringify(compact.products[1] || {}).length + JSON.stringify(compact.productFacts[1] || {}).length,
+    recommendationChars: JSON.stringify(compact.recommendation).length,
+    advisorChars: JSON.stringify(compact.advisorKnowledge).length,
+    policyChars: 0,
+    historyChars: JSON.stringify(compact.conversation.recentTurns).length,
+    actionsUnknownsChars: JSON.stringify({ allowedActions: compact.allowedActions, missingInformation: compact.missingInformation }).length,
+  };
+  return compact;
 }
 
 async function fetchByHandles(fetchProductsByHandles, handles = []) {
@@ -1363,10 +1454,29 @@ function responseFacetViolations({ reply = "", plan = {}, factPack = null } = {}
   const compared = unique(plan?.references?.comparisonProductHandles || []).slice(0, 2);
   const mentionsComparedProducts = compared.length < 2 || compared.every((handle) => {
     const title = titleFor(handle).toLowerCase();
-    return lower.includes(title) || lower.includes(title.replace(/\s+mattress$/i, ""));
+    const titleWithoutMattress = title.replace(/\s+mattress$/i, "");
+    const titleWithoutInch = titleWithoutMattress.replace(/(\d+)-inch\s+/i, "$1 ");
+    if (lower.includes(title) || lower.includes(titleWithoutMattress) || lower.includes(titleWithoutInch)) return true;
+    if (handle === "12-dual-comfort-hybrid" && /\bdual comfort(?: hybrid)?\b/.test(lower)) return true;
+    return handle === "14-hybrid" && (
+      /\b14(?:-inch| inch)? hybrid\b/.test(lower) ||
+      (compared.includes("12-dual-comfort-hybrid") && /\bthe hybrid\b/.test(lower) && /\bdual comfort\b/.test(lower))
+    );
   });
   if (["product_comparison", "canonical_comparison", "comparison_value"].includes(plan.taskType)) {
-    if (!mentionsComparedProducts || !/\b(?:while|whereas|compared|difference|more|less|both|original|current)\b/.test(lower)) {
+    const explicitComparisonCue = /\b(?:while|whereas|compared|difference|versus|vs|but|tradeoff|more|less|both|original|current|extra)\b/.test(lower);
+    const comparisonFacets = [
+      /\b(?:soft|firm|plush|contour|cradle|sink|lifted|responsive|bounce|feel)\b/,
+      /\b(?:support|pressure|shoulder|hip|alignment|stable)\b/,
+      /\b(?:motion|movement|isolation|partner)\b/,
+      /\b(?:cool|cooling|airflow|breathable|temperature)\b/,
+      /\b(?:foam|coil|hybrid|construction|durability|hold up)\b/,
+      /\b(?:price|cost|value|worth|save|spend)\b/,
+    ].filter((pattern) => pattern.test(lower)).length;
+    // Two separately named products with multiple grounded decision facets are a
+    // complete natural-language comparison even without a specific conjunction.
+    const naturalContrast = mentionsComparedProducts && comparisonFacets >= 2;
+    if (!mentionsComparedProducts || (!explicitComparisonCue && !naturalContrast)) {
       violations.push("comparison_incomplete");
     }
   }
@@ -1379,7 +1489,7 @@ function responseFacetViolations({ reply = "", plan = {}, factPack = null } = {}
   }
   if (plan.taskType === "firmness_choice") {
     if (!/\b(?:soft|firm|contour|plush|sink|lifted)\b/.test(lower)) violations.push("compound_feel_unanswered");
-    if (!/\b(?:pick|choose|recommend|favor|favour|would)\b/.test(lower)) violations.push("compound_choice_unanswered");
+    if (!/\b(?:pick|choose|recommend|favor|favour|would|prefer|lean|better fit|start with)\b/.test(lower)) violations.push("compound_choice_unanswered");
   }
   if (
     plan.taskType === "firmness_compare" &&
@@ -1436,11 +1546,25 @@ function validateResponseConsistency({
   for (const handle of rejected) {
     const productTitle = titleFor(handle).toLowerCase();
     const productStem = productTitle.replace(/\s+mattress$/i, "");
-    const positivelyReintroduced = replySentences.some((sentence) =>
-      (sentence.includes(productTitle) || sentence.includes(productStem)) &&
-      recommendationCue.test(sentence) &&
-      !exclusionCue.test(sentence)
-    );
+    const currentTitle = sessionRecommendationHandle ? titleFor(sessionRecommendationHandle).toLowerCase() : "";
+    const currentStem = currentTitle.replace(/\s+mattress$/i, "");
+    const firstAliasIndex = (sentence, aliases = [], fromIndex = 0) => aliases
+      .map((alias) => alias ? sentence.indexOf(alias, fromIndex) : -1)
+      .filter((index) => index >= 0)
+      .reduce((lowest, index) => Math.min(lowest, index), Number.POSITIVE_INFINITY);
+    const positivelyReintroduced = replySentences.some((sentence) => {
+      const rejectedIndex = firstAliasIndex(sentence, [productTitle, productStem]);
+      const cue = recommendationCue.exec(sentence);
+      if (!Number.isFinite(rejectedIndex) || !cue || exclusionCue.test(sentence)) return false;
+      const cueEnd = cue.index + cue[0].length;
+      const rejectedAfterCue = firstAliasIndex(sentence, [productTitle, productStem], cueEnd);
+      const currentAfterCue = firstAliasIndex(sentence, [currentTitle, currentStem], cueEnd);
+      if (Number.isFinite(rejectedAfterCue)) {
+        return !Number.isFinite(currentAfterCue) || rejectedAfterCue < currentAfterCue;
+      }
+      const currentAnywhere = firstAliasIndex(sentence, [currentTitle, currentStem]);
+      return rejectedIndex < cue.index && !Number.isFinite(currentAnywhere);
+    });
     if (positivelyReintroduced) violations.push(`rejected_product_recommendation:${handle}`);
   }
   if (!plan.technicalLanguageAllowed) {
@@ -1673,6 +1797,8 @@ async function resolveAskSnoozerAdvisorTurn({
     ...actions.map((action) => clean(action.type)),
     ...chips.map((chip) => clean(chip.label)),
   ].filter(Boolean);
+  const composerFactPack = compactComparisonFactPack(factPack, resolvedPlan);
+  factPack.composerBudget = composerFactPack?.budget || null;
   const deterministicGate = validateResponseConsistency({
     reply: deterministicReply,
     quote,
@@ -1693,8 +1819,11 @@ async function resolveAskSnoozerAdvisorTurn({
   let nextActionIntent = null;
   let compositionConfidence = null;
   let modelInputChars = 0;
+  let modelInputTokens = 0;
   let modelSystemChars = 0;
+  let modelPayloadChars = 0;
   let modelFactPackChars = 0;
+  let modelTimeoutMs = 0;
   let fallbackKind = null;
   if (deterministicGate.ok && resolvedPlan.needsModel && typeof composeAdvisorResponse === "function") {
     const modelStartedAt = Date.now();
@@ -1704,7 +1833,7 @@ async function resolveAskSnoozerAdvisorTurn({
         requestId,
         userMessage: query,
         strategy: resolvedPlan,
-        factPack,
+        factPack: composerFactPack,
         deterministicDraft: {
           displayText: deterministicReply,
           speechText: buildSpeech(deterministicReply),
@@ -1713,8 +1842,11 @@ async function resolveAskSnoozerAdvisorTurn({
       modelMs = Date.now() - modelStartedAt;
       model = composed?.model || null;
       modelInputChars = Number(composed?.inputChars || 0) || 0;
+      modelInputTokens = Number(composed?.estimatedInputTokens || composed?.tokens?.prompt_tokens || 0) || 0;
       modelSystemChars = Number(composed?.systemChars || 0) || 0;
-      modelFactPackChars = Number(composed?.factPackChars || factPack?.budget?.totalChars || 0) || 0;
+      modelPayloadChars = Number(composed?.payloadChars || 0) || 0;
+      modelFactPackChars = Number(composed?.factPackChars || composerFactPack?.budget?.totalChars || 0) || 0;
+      modelTimeoutMs = Number(composed?.timeoutMs || 0) || 0;
       modelGate = validateResponseConsistency({
         reply: composed?.displayText,
         quote,
@@ -1814,8 +1946,11 @@ async function resolveAskSnoozerAdvisorTurn({
       nextActionIntent,
       compositionConfidence,
       modelInputChars,
+      modelInputTokens,
       modelSystemChars,
+      modelPayloadChars,
       modelFactPackChars,
+      modelTimeoutMs,
       fallbackKind,
       responsePath: "grounded_safe_fallback",
     };
@@ -1854,8 +1989,11 @@ async function resolveAskSnoozerAdvisorTurn({
     nextActionIntent,
     compositionConfidence,
     modelInputChars,
+    modelInputTokens,
     modelSystemChars,
+    modelPayloadChars,
     modelFactPackChars,
+    modelTimeoutMs,
     fallbackKind,
     responsePath,
   };
@@ -1866,6 +2004,7 @@ module.exports = {
   ORCHESTRATOR_VERSION,
   buildQuote,
   buildRelevantFactPack,
+  compactComparisonFactPack,
   planAskSnoozerTurn,
   resolveProtectedReference,
   resolveAskSnoozerAdvisorTurn,

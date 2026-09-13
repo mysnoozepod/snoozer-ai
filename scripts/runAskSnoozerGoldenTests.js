@@ -440,6 +440,7 @@ async function main() {
   const cases = [
     {
       id: "recommendation_starting_pod",
+      fixtureDisposition: "MIGRATED TO UNIFIED ADVISOR PIPELINE — canonical recommendation truth remains protected while the structured composer explains the recommended mattress.",
       prompt: "Which pod should I try first?",
       body: {
         message: "Which pod should I try first?",
@@ -459,18 +460,19 @@ async function main() {
         },
       },
       expected: {
-        intentGroup: "recommendation",
-        sourceOfTruth: "session_prep",
+        intentGroup: "trusted_advisor",
+        sourceOfTruth: "advisor",
         shouldUseOpenAI: false,
         factsResolved: true,
         fallbackUsed: false,
-        model: "deterministic_session_guidance",
+        model: "trusted_advisor_canonical_recommendation",
         slots: {},
-        replyIncludes: ["SnoozePod 3", "14-inch Hybrid", "Platform Base"],
+        replyIncludes: ["SnoozePod 3", "14-inch Hybrid"],
         replyExcludes: ["OpenAI", "timeout", "Shopify"],
-        products: { min: 0, max: 0 },
+        products: { min: 1, max: 1 },
         enforceForbiddenPhraseList: true,
         noOpenAi: true,
+        composerCalls: 1,
       },
     },
     {
