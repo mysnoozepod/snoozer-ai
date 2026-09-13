@@ -6,6 +6,7 @@ const { loadPromptFromS3 } = require("./promptLoader");
 const {
   buildNoGuessReply,
   joinReplyParts,
+  shortenAtSentenceBoundary,
 } = require("./askSnoozerResponsePresenter");
 const {
   classifyAskSnoozerPolicySubtype,
@@ -185,15 +186,11 @@ function previewText(text, maxChars = 160) {
 function clampReply(text, fallback = "") {
   const cleaned = cleanShopperText(text);
   if (!cleaned) return String(fallback || "").trim();
-
-  const sentences = cleaned
-    .split(/(?<=[.!?])\s+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  const picked = sentences.slice(0, 2).join(" ").trim();
-  if (picked && picked.length <= 220) return picked;
-  return cleaned.slice(0, 217).trim().replace(/[,:;]$/, "") + "...";
+  return shortenAtSentenceBoundary(cleaned, {
+    maxChars: 500,
+    maxSentences: 3,
+    fallback,
+  });
 }
 
 function buildGroundedResult(reply, matchedPreview, extra = {}) {

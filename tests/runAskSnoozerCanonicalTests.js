@@ -365,8 +365,9 @@ async function testNoAssessmentFallback() {
     context: {},
   });
 
-  assert.strictEqual(openAiCalls.length, 1, "fallback path should call OpenAI");
-  assert.strictEqual(body.reply, "mocked fallback: Hello there", "fallback reply should come from mocked OpenAI");
+  assert.strictEqual(openAiCalls.length, 0, "normal Ask fallback must not call the legacy generic model path");
+  assert.strictEqual(body.metadata?.answerPath, "grounded_safe_fallback");
+  assert.match(body.reply, /mattress fit|pricing|delivery|returns/i, "fallback should remain useful and shopper-safe");
   assert.strictEqual(
     body.context?.canonicalRecommendation || null,
     null,

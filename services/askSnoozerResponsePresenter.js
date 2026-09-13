@@ -14,6 +14,43 @@ function joinReplyParts(parts = []) {
     .join(" ");
 }
 
+function completeSentences(value = "") {
+  const text = cleanText(value);
+  if (!text) return [];
+  return text.match(/[\s\S]*?[.!?]+(?:["')\]]+)?(?=\s+|$)/g)?.map(cleanText).filter(Boolean) || [];
+}
+
+function isCompleteShopperResponse(value = "") {
+  const text = cleanText(value);
+  if (!text || text.endsWith("...") || /[:;,\-–—]$/.test(text)) return false;
+  if (!/[.!?](?:["')\]]+)?$/.test(text)) return false;
+  if (/\b(?:and|but|or|because|while|although|if|when|with|without|to|for|from|than)\s*[.!?]$/i.test(text)) {
+    return false;
+  }
+  if (/\[[^\]]*$|\([^)]*$/.test(text)) return false;
+  return true;
+}
+
+function shortenAtSentenceBoundary(value = "", {
+  maxChars = 1800,
+  maxSentences = 9,
+  fallback = "",
+} = {}) {
+  const text = cleanText(value) || cleanText(fallback);
+  if (!text) return "";
+  const sentences = completeSentences(text);
+  if (!sentences.length) return isCompleteShopperResponse(text) ? text : cleanText(fallback);
+  const selected = [];
+  for (const sentence of sentences) {
+    if (selected.length >= maxSentences) break;
+    const candidate = cleanText([...selected, sentence].join(" "));
+    if (selected.length && candidate.length > maxChars) break;
+    selected.push(sentence);
+    if (candidate.length >= maxChars) break;
+  }
+  return cleanText(selected.join(" ")) || sentences[0];
+}
+
 function getManifestProductMap() {
   const manifest = loadShowroomManifest();
   const products = Array.isArray(manifest?.products) ? manifest.products : [];
@@ -274,9 +311,12 @@ module.exports = {
   buildNoGuessReply,
   buildPolicyLaneLead,
   cleanText,
+  completeSentences,
   formatChoiceList,
   formatCurrency,
   formatCustomerProductTitle,
   joinReplyParts,
+  isCompleteShopperResponse,
   presentCommerceResponse,
+  shortenAtSentenceBoundary,
 };

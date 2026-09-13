@@ -1,3 +1,5 @@
+const { shortenAtSentenceBoundary } = require("./askSnoozerResponsePresenter");
+
 const BANNED_SNOOZER_PHRASES = Object.freeze([
   "verified option",
   "stronger starting point",
@@ -50,8 +52,11 @@ function joinVoiceSentences(parts = [], maxSentences = 3, maxChars = 220) {
 
   const joined = cleanVoiceText(out.join(" "));
   if (!joined) return "";
-  if (joined.length <= maxChars) return joined;
-  return `${joined.slice(0, maxChars - 3).trim().replace(/[,:;]$/, "")}...`;
+  return shortenAtSentenceBoundary(joined, {
+    maxChars,
+    maxSentences,
+    fallback: out[0] || "",
+  });
 }
 
 function prefersCurrentProductPhrase(currentTitle = "", primaryTitle = "") {

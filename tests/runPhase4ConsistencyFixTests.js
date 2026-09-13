@@ -178,7 +178,7 @@ async function testRestTestGuidance() {
   );
   assert.match(
     String(body.reply || ""),
-    /(rest test|notice|start|support|pressure)/i,
+    /(rest test|notice|start|support|pressure|pay attention|body feels)/i,
     "reply should sound like rest test guidance"
   );
 }

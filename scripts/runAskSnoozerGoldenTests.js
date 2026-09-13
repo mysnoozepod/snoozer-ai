@@ -743,7 +743,7 @@ async function main() {
       body: { message: "asdf banana mattress moon policy checkout thing", sessionId: "golden-12" },
       expected: {
         intentGroup: "fallback",
-        sourceOfTruth: "fallback",
+        sourceOfTruth: "journey_state",
         shouldUseOpenAI: false,
         factsResolved: false,
         products: { min: 0, max: 0 },

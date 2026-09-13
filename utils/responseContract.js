@@ -31,7 +31,13 @@ function safeString(x) {
 function safeText(x, max = 1200) {
   const s = safeString(x).trim();
   if (!s) return "";
-  return s.length > max ? s.slice(0, max) + "..." : s;
+  if (s.length <= max) return s;
+  const bounded = s.slice(0, max + 1);
+  const matches = [...bounded.matchAll(/.+?(?:[.!?](?=\s|$)|$)/gs)]
+    .map((match) => safeString(match[0]).trim())
+    .filter(Boolean);
+  const complete = matches.filter((sentence) => /[.!?]["')\]]?$/.test(sentence));
+  return complete.join(" ") || safeString(matches[0]).trim() || s;
 }
 
 function safeNumber(x, fallback = 0) {
@@ -113,6 +119,24 @@ function normalizeMetrics(rawMeta = {}, startedAtMs) {
     10,
     0
   );
+  const modelInputChars = clampInt(
+    pickFirst(rawMeta?.modelInputChars, rawMeta?.model_input_chars),
+    0,
+    1_000_000,
+    0
+  );
+  const factPackChars = clampInt(
+    pickFirst(rawMeta?.factPackChars, rawMeta?.fact_pack_chars),
+    0,
+    1_000_000,
+    0
+  );
+  const responseValidationMs = clampInt(
+    pickFirst(rawMeta?.responseValidationMs, rawMeta?.response_validation_ms),
+    0,
+    60_000,
+    0
+  );
 
   return {
     retrievalMs,
@@ -120,6 +144,12 @@ function normalizeMetrics(rawMeta = {}, startedAtMs) {
     totalMs,
     fallbackUsed,
     modelCallCount,
+    modelInputChars,
+    factPackChars,
+    fallbackKind: safeString(
+      pickFirst(rawMeta?.fallbackKind, rawMeta?.fallback_kind, "")
+    ),
+    responseValidationMs,
   };
 }
 
@@ -252,6 +282,14 @@ function normalizeSnoozerResponse(raw, opts = {}) {
       ? safe.metadata.qualityGate
       : null;
   const answerMeta = isObj(safe?.meta) ? safe.meta : {};
+  const answerPath = safeString(
+    pickFirst(
+      answerMeta.path,
+      safe?.metadata?.answerPath,
+      safe?.metadata?.path,
+      "legacy_path"
+    )
+  );
 
   const source = (() => {
     const src = isObj(safe?.metadata?.source)
@@ -305,6 +343,7 @@ function normalizeSnoozerResponse(raw, opts = {}) {
       model,
       source,
       metrics,
+      answerPath,
       ...(qualityGate ? { qualityGate } : {}),
       answerStrategy: safeString(answerMeta.answer_strategy),
       answerSourceType: safeString(answerMeta.answer_source_type),

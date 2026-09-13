@@ -563,9 +563,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       const metrics = metadata?.metrics || {};
       const executedModelCall = Boolean(
         Number(metrics?.modelCallCount) > 0 ||
-        Number(metrics?.modelMs) > 0 ||
-        metadata?.path === "model" ||
-        qualityGate?.sourceOfTruth === "openai"
+        Number(metrics?.modelMs) > 0
       );
       const effectiveModelCallCount = Number(metrics?.modelCallCount) > 0
         ? Number(metrics.modelCallCount)
@@ -616,6 +614,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         },
         modelGate: metadata?.composition?.gate || null,
         compositionMode: metadata?.composition?.mode || (executedModelCall ? "model_assisted" : "deterministic"),
+        responsePath: metadata?.answerPath || metadata?.path || "legacy_path",
         compositionFallbackUsed: Boolean(metadata?.composition?.fallbackUsed),
         modelCallCount: effectiveModelCallCount,
         totalMs: metrics?.totalMs || metadata?.latencyMs || (Date.now() - startedAt),
@@ -778,7 +777,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
               details: { hasPodId, hasExplore },
             },
             meta: {
-              path: "deterministic",
+              path: "grounded_safe_fallback",
               latency_ms: latencyMs,
               metrics: {
                 retrievalMs: 0,
@@ -802,7 +801,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           modelMs: 0,
           totalMs: latencyMs,
           fallbackUsed: true,
-          path: "deterministic",
+          path: "grounded_safe_fallback",
         });
 
         if (wantHud) {
@@ -879,6 +878,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       const qualityConfig = typeof getAskSnoozerQualityConfig === "function"
         ? getAskSnoozerQualityConfig()
         : null;
+      const responseValidationStartedAt = Date.now();
       const qualityTrace = typeof emitAskSnoozerQualityTrace === "function"
         ? emitAskSnoozerQualityTrace({
             log,
@@ -897,6 +897,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             gate: advisorAnswer.gate,
             modelGate: advisorAnswer.modelGate,
             compositionMode: advisorAnswer.compositionMode,
+            responsePath: advisorAnswer.responsePath,
             compositionFallbackUsed: advisorAnswer.compositionFallbackUsed,
             modelCallCount: advisorAnswer.modelCallCount,
             totalMs: latencyMs,
@@ -912,6 +913,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             responsePolicyVersion: presentationPolicy.version,
           })
         : null;
+      const responseValidationMs = Date.now() - responseValidationStartedAt;
       qualityTraceEmitted = Boolean(qualityTrace);
       const advisorFactsResolved = Boolean(
         advisorAnswer.gate?.ok !== false &&
@@ -921,7 +923,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         ? `model_fallback_${advisorAnswer.fallbackKind || "composer_error"}`
         : "advisor_turn_resolved";
       env.meta = {
-        path: "trusted_advisor_orchestrator",
+        path: advisorAnswer.responsePath,
         source: advisorAnswer.source,
         answer_strategy: advisorAnswer.plan.taskType,
         answer_grounded: true,
@@ -1002,6 +1004,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           modelInputChars: advisorAnswer.modelInputChars || 0,
           factPackChars: advisorAnswer.factPack?.budget?.totalChars || 0,
           fallbackKind: advisorAnswer.fallbackKind || null,
+          responseValidationMs,
         },
       };
       const normalized = normalizeSnoozerResponse(env, {
@@ -1028,6 +1031,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         modelMs: advisorAnswer.modelMs || 0,
         modelCallCount: advisorAnswer.modelCallCount || 0,
         compositionMode: advisorAnswer.compositionMode,
+        responsePath: advisorAnswer.responsePath,
         compositionFallbackUsed: Boolean(advisorAnswer.compositionFallbackUsed),
         fallbackKind: advisorAnswer.fallbackKind || null,
         modelInputChars: advisorAnswer.modelInputChars || 0,
@@ -1035,6 +1039,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         modelGateViolations: advisorAnswer.modelGate?.violations || [],
         referenceResolution: advisorAnswer.plan.references?.resolution || null,
         factPackComplete: (advisorAnswer.plan.neededFacts || []).length === 0,
+        responseValidationMs,
         fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
         visitReused: Boolean(visitMetadata?.reused),
         visitRotated: Boolean(visitMetadata?.rotated),
@@ -1083,7 +1088,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         fetchProductsByHandles: shopifySvc?.fetchProductsByHandles,
       });
 
-      if (stationAnswer) {
+      const atomicStationIntents = new Set(["find_rewards", "analyze_cart", "browse_products"]);
+      if (stationAnswer && atomicStationIntents.has(stationAnswer.intent)) {
         const latencyMs = Date.now() - startedAt;
         const contextWithStation = deepMerge(context, stationAnswer.contextPatch || {});
         const mergedContext =
@@ -1091,7 +1097,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         const env = buildSuccessResponse({
           requestId: traceId,
           latencyMs,
-          model: `deterministic_station_${stationAnswer.intent}`,
+          model: `atomic_deterministic_${stationAnswer.intent}`,
           text: stationAnswer.reply,
           context: mergedContext,
           products: stationAnswer.products,
@@ -1109,10 +1115,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         env.status = stationAnswer.fallbackUsed ? "completed_with_fallback" : "answered";
         env.chips = stationAnswer.chips;
         env.meta = {
-          path: "deterministic_station",
+          path: "atomic_deterministic",
           intent: stationAnswer.intent,
           source: stationAnswer.source,
-          answer_strategy: `deterministic_station_${stationAnswer.intent}`,
+          answer_strategy: `atomic_deterministic_${stationAnswer.intent}`,
           answer_grounded: Boolean(stationAnswer.grounded),
           answer_source_type: stationAnswer.source,
           answer_source_key: stationAnswer.intent,
@@ -1343,7 +1349,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       env.status = "completed";
       env.sessionId = effectiveSessionId;
       env.meta = {
-        path: "deterministic",
+        path: "legacy_path",
         answer_strategy: canonicalAnswer.answer_strategy || "canonical_recommendation",
         answer_grounded: Boolean(canonicalAnswer.answer_grounded),
         answer_source_type: canonicalAnswer.answer_source_type || "canonical_recommendation",
@@ -2323,7 +2329,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       env.status = "completed";
       env.sessionId = effectiveSessionId;
       env.meta = {
-        path: "deterministic",
+        path: "atomic_deterministic",
         answer_strategy: deterministicFaqAnswer.answer_strategy || "safe_fallback",
         answer_grounded: Boolean(deterministicFaqAnswer.answer_grounded),
         answer_source_type: deterministicFaqAnswer.answer_source_type || "fallback",
@@ -2400,15 +2406,36 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
     }
 
-    if (!askSnoozerDecision.shouldUseOpenAI) {
+    if (
+      !askSnoozerDecision.shouldUseOpenAI ||
+      ["/ask-snoozer", "/ask"].includes(routePath) ||
+      String(mode || "").toLowerCase() === "ask_snoozer_page"
+    ) {
       const latencyMs = Date.now() - startedAt;
       const mergedContext =
         sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-      const reply = buildAskSnoozerFallbackReply();
+      const fallbackDeal = context?.askSnoozerWorkingMemory?.activeDeal || {};
+      const fallbackHandle = String(
+        fallbackDeal?.acceptedRecommendation?.productHandle ||
+        fallbackDeal?.sessionRecommendation?.productHandle ||
+        fallbackDeal?.activeProductHandle ||
+        ""
+      ).trim();
+      let fallbackTitle = "";
+      if (fallbackHandle && typeof loadShowroomManifest === "function") {
+        const fallbackProduct = (loadShowroomManifest()?.products || []).find(
+          (product) => String(product?.handle || "").trim() === fallbackHandle
+        );
+        fallbackTitle = String(fallbackProduct?.title || "").trim();
+      }
+      const fallbackSize = String(fallbackDeal?.activeSize || "").trim();
+      const reply = fallbackTitle
+        ? `I am still with you on the ${fallbackTitle}${fallbackSize ? ` in ${fallbackSize}` : ""}. I did not understand which part you want to change, so tell me whether you want to compare it, price it, or adjust the setup.`
+        : buildAskSnoozerFallbackReply();
       const env = buildSuccessResponse({
         requestId: traceId,
         latencyMs,
-        model: "deterministic_fallback",
+        model: "grounded_safe_fallback",
         text: reply,
         context: mergedContext,
         products: [],
@@ -2417,7 +2444,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           retrievalMs: 0,
           modelMs: 0,
           totalMs: latencyMs,
-          fallbackUsed: false,
+          fallbackUsed: true,
         },
       });
 
@@ -2426,27 +2453,27 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       env.status = "completed";
       env.sessionId = effectiveSessionId;
       env.meta = {
-        path: "deterministic_fallback",
+        path: "grounded_safe_fallback",
         answer_strategy: "safe_fallback",
-        answer_grounded: false,
-        answer_source_type: "fallback",
+        answer_grounded: Boolean(fallbackTitle),
+        answer_source_type: "journey_state",
         answer_source_key: null,
         answer_facts_count: 0,
         matched_preview: "",
         extracted_facts: [],
-        reason: "fallback_guard",
+        reason: "structured_pipeline_no_grounded_route",
         qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
           answerType: "fallback",
-          sourceOfTruth: "fallback",
-          factsResolved: false,
-          fallbackUsed: false,
-          reason: "fallback_guard",
+          sourceOfTruth: "journey_state",
+          factsResolved: Boolean(fallbackTitle),
+          fallbackUsed: true,
+          reason: "structured_pipeline_no_grounded_route",
         }),
         metrics: {
           retrievalMs: 0,
           modelMs: 0,
           totalMs: latencyMs,
-          fallbackUsed: false,
+          fallbackUsed: true,
         },
       };
 
@@ -2470,9 +2497,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         sourceOfTruth: "fallback",
         factsResolved: false,
         missingSlots: askSnoozerDecision.missingSlots,
-        fallbackUsed: false,
-        reason: "fallback_guard",
-        ...outcomeLogFields(env, "fallback_guard"),
+        fallbackUsed: true,
+        reason: "structured_pipeline_no_grounded_route",
+        ...outcomeLogFields(env, "structured_pipeline_no_grounded_route"),
       });
 
       if (wantHud) {
@@ -2573,6 +2600,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       env.status = aiResult?.status || "completed";
       env.meta = {
         ...(aiResult?.meta || {}),
+        path: "legacy_path",
         qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
           answerType: "fallback",
           sourceOfTruth: "openai",
@@ -2703,6 +2731,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           },
           meta: {
             ...(errorBody.meta || {}),
+            path: "grounded_safe_fallback",
             qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
               answerType: "fallback",
               sourceOfTruth: "fallback",
@@ -2735,7 +2764,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         sessionId: effectiveSessionId,
         mode,
         intentGroup: askSnoozerDecision.intentGroup,
-        answerPath: "fallback",
+        answerPath: "grounded_safe_fallback",
         sourceOfTruth: "fallback",
         retrievalMs: 0,
         modelMs: isTimeout ? MODEL_TIMEOUT_MS : 0,
@@ -2743,7 +2772,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         fallbackUsed: true,
         failureReason: isTimeout ? "timeout_fallback" : "ask_snoozer_failed",
         timeoutMs: isTimeout ? MODEL_TIMEOUT_MS : null,
-        path: "fallback",
+        path: "grounded_safe_fallback",
       });
       if (isTimeout) {
         log("ask-snoozer.timeout.fallback", "timeout_fallback", {

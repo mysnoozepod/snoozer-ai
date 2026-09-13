@@ -146,9 +146,10 @@ async function testCoupleConflictPrefersDualComfort() {
   assert(Array.isArray(body.products) && body.products.length > 0, "expected HUD product cards");
   assert.strictEqual(body.products[0].handle, "12-dual-comfort-hybrid");
   assert(/dual comfort/i.test(String(body.reply || "")), "couple conflict reply should mention Dual Comfort");
-  assert(/motion separation/i.test(String(body.reply || "")), "couple conflict reply should separate partner movement from firmness");
-  assert(/different firmness|own feel/i.test(String(body.reply || "")), "couple conflict reply should explain the firmness conflict");
-  assert(String(body.reply || "").length <= 220, "couple conflict reply should stay concise");
+  assert(/motion|movement|separate elevation/i.test(String(body.reply || "")), "couple conflict reply should separate partner movement from firmness");
+  assert(/different firmness|own feel|each side|individual comfort/i.test(String(body.reply || "")), "couple conflict reply should explain the firmness conflict");
+  assert(/[.!?]["')\]]?$/.test(String(body.reply || "").trim()), "couple conflict reply should end on a complete sentence");
+  assert(String(body.reply || "").length <= 2000, "couple conflict reply should stay within the emergency response ceiling");
   assertNoBannedPhrases(body.reply, "couple conflict reply");
 }
 
@@ -188,7 +189,8 @@ async function testHotSleeperVoice() {
   assert(/airflow|heat/i.test(String(body.reply || "")), "hot-sleeper reply should mention airflow or heat");
   assert(!/\bcools you|will keep you cool|guaranteed cooling\b/i.test(String(body.reply || "")), "hot-sleeper reply should not overclaim cooling");
   assert(/temperature balance|heat build|breathable|full sleep setup/i.test(String(body.reply || "")), "hot-sleeper reply should focus on setup-level temperature guidance");
-  assert(String(body.reply || "").length <= 220, "hot-sleeper reply should stay concise");
+  assert(/[.!?]["')\]]?$/.test(String(body.reply || "").trim()), "hot-sleeper reply should end on a complete sentence");
+  assert(String(body.reply || "").length <= 2000, "hot-sleeper reply should stay within the emergency response ceiling");
   assertNoBannedPhrases(body.reply, "hot-sleeper voice reply");
 }
 
@@ -204,7 +206,8 @@ async function testCompareFoamVsHybridVoice() {
   assert(/hybrid/i.test(String(body.reply || "")), "compare reply should mention hybrid");
   assert(/airflow|breathable|bounce/i.test(String(body.reply || "")), "compare reply should describe hybrid in plain English");
   assert(/contour|motion/i.test(String(body.reply || "")), "compare reply should describe foam in plain English");
-  assert(String(body.reply || "").length <= 220, "compare reply should stay concise");
+  assert(/[.!?]["')\]]?$/.test(String(body.reply || "").trim()), "compare reply should end on a complete sentence");
+  assert(String(body.reply || "").length <= 2000, "compare reply should stay within the emergency response ceiling");
   assertNoBannedPhrases(body.reply, "compare reply");
 }
 

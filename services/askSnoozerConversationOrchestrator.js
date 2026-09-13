@@ -12,8 +12,9 @@ const {
   resolveApprovedVariant,
   setupSizeForSelection,
 } = require("./commerceConfigurationResolver");
+const { completeSentences, isCompleteShopperResponse } = require("./askSnoozerResponsePresenter");
 
-const ORCHESTRATOR_VERSION = "2026-09-11.3";
+const ORCHESTRATOR_VERSION = "2026-09-12.4";
 const PRODUCT_VARIANT_GID = /^gid:\/\/shopify\/ProductVariant\/[^\s/?#]+$/;
 const INTERNAL_LANGUAGE = Object.freeze([
   "shopify",
@@ -35,10 +36,28 @@ const INTERNAL_LANGUAGE = Object.freeze([
   "verified adjustable option",
   "exact match",
   "knowledge source",
+  "canonicalrecommendation",
+  "sessionrecommendation",
+  "fact pack",
+  "storefront api",
+  "active_journey",
+  "working memory",
+  "intentgroup",
+  "groundingsufficient",
+  "model composer",
+  "cloudwatch",
+  "lambda",
+  "variant gid",
 ]);
 
 function clean(value) {
   return String(value == null ? "" : value).trim();
+}
+
+function includesProtectedLanguage(text, phrase) {
+  const escaped = clean(phrase).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (!escaped) return false;
+  return new RegExp(`(?:^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`, "i").test(clean(text));
 }
 
 function unique(values = []) {
@@ -255,8 +274,11 @@ function resolveComparisonHandles(query = "", context = {}) {
   const active = resolveActiveHandle(context);
   const canonical = resolveCanonicalHandle(context);
   const rejected = rejectedHandles(context);
-  const resolved = unique(existing.concat(active, explicit, canonical)).filter((handle) => !rejected.has(handle));
-  if (/\b(?:compare|compares|comparison|versus|\bvs\b)\b/.test(normalizeAskSnoozerText(query)) && resolved.length === 1) {
+  const text = normalizeAskSnoozerText(query);
+  const historicalComparison = /\b(?:original recommendation|originally recommend|first recommendation)\b/.test(text);
+  const resolved = unique(existing.concat(active, explicit, historicalComparison ? canonical : null))
+    .filter((handle) => historicalComparison && handle === canonical ? true : !rejected.has(handle));
+  if (/\b(?:compare|compares|comparison|versus|\bvs\b|difference|softer|firmer)\b/.test(text) && resolved.length === 1) {
     const fallback = resolved[0] === "14-hybrid" ? "12-dual-comfort-hybrid" : "14-hybrid";
     if (!rejected.has(fallback)) resolved.push(fallback);
   }
@@ -335,7 +357,7 @@ function isExplicitMedical(text = "") {
 function responseDepth(text = "", taskType = "") {
   if (/\b(?:quick|brief|short answer|one sentence)\b/.test(text)) return "quick";
   if (/\b(?:deep|detail|walk me through|thorough)\b/.test(text)) return "deep";
-  if (taskType === "product_comparison" || /\b(?:compare|versus|\bvs\b)\b/.test(text)) return "compare";
+  if (["product_comparison", "comparison_value", "canonical_comparison"].includes(taskType) || /\b(?:compare|versus|\bvs\b|difference)\b/.test(text)) return "compare";
   if (/\b(?:why would|what does|how does|explain|notice)\b/.test(text)) return "teach";
   if (/\b(?:would you|which one|what should i|for me)\b/.test(text)) return "coach";
   return "standard";
@@ -344,8 +366,8 @@ function responseDepth(text = "", taskType = "") {
 function inferStage(taskType = "", previous = "exploring") {
   if (["cart_add", "cart_review"].includes(taskType)) return "ready";
   if (["price_quote", "bundle_quote", "compatibility"].includes(taskType)) return "configuring";
-  if (["value_judgment", "value_objection", "savings_quote", "advisor_opinion", "compound_product_base", "durability_objection"].includes(taskType)) return "evaluating_value";
-  if (["product_comparison", "firmness_compare", "advisor_choice"].includes(taskType)) return "comparing";
+  if (["value_judgment", "value_objection", "price_value", "comparison_value", "configuration_value", "savings_quote", "advisor_opinion", "compound_product_base", "durability_objection"].includes(taskType)) return "evaluating_value";
+  if (["product_comparison", "canonical_comparison", "firmness_compare", "firmness_choice", "advisor_choice"].includes(taskType)) return "comparing";
   if (["canonical_recommendation", "canonical_recall", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance", "product_experience", "hybrid_exploration", "configuration_update", "confusion_recovery", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "commitment_declined", "commitment_resolution"].includes(taskType)) return "narrowing";
   return clean(previous) || "exploring";
 }
@@ -379,6 +401,12 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       ? clean(deal.activeSize)
       : parsedSize || clean(deal.activeSize);
   const canonicalReference = /\b(?:originally recommend|original recommendation|first recommendation|what did (?:the assessment|you originally) recommend)\b/.test(text);
+  const comparisonCue = /\b(?:compare|compares|compared|comparison|versus|\bvs\b|difference between|different from|which one is (?:softer|firmer|better))\b/.test(text);
+  const valueCue = /\b(?:worth|value|why (?:does|is|did).*(?:cost|price)|cost that much|extra money|more expensive)\b/.test(text);
+  const compoundPriceValueCue = Boolean(
+    /\bwhy\b.*\b(?:cost|price|expensive)\b.*\b(?:worth|value)\b/.test(text) ||
+    /\b(?:cost|price)\b.*\band\b.*\b(?:worth|value)\b/.test(text)
+  );
   const priorActiveHandle = clean(activeMemory(context)?.lastTransition?.stateBefore?.activeProductHandle);
   const hasPriorTurn = Number(activeMemory(context)?.turnIndex || 0) > 1;
   const continuation = Boolean(
@@ -389,7 +417,9 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   let taskType = "legacy";
   let staleRouteOverride = false;
 
-  if (actTypes.has("reconsider_product")) taskType = "reconsider_product";
+  if (/^(?:hi|hello|hey|good (?:morning|afternoon|evening))[!. ]*$/.test(text)) taskType = "greeting";
+  else if (/\b(?:talk|speak|connect) (?:to|with) (?:a )?(?:human|person|associate)|\bhuman (?:help|support|assistance)\b/.test(text)) taskType = "support_handoff";
+  else if (actTypes.has("reconsider_product")) taskType = "reconsider_product";
   else if (actTypes.has("accept_recommendation")) taskType = "recommendation_acceptance";
   else if (actTypes.has("trust_risk")) taskType = "trust_recovery";
   else if (acceptedCommitment?.commitmentType === "find_alternative" || actTypes.has("request_alternative")) taskType = "alternative_resolution";
@@ -400,8 +430,10 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     actTypes.has("product_feedback") ||
     (actTypes.has("retain_preference") && actTypes.has("explicit_exclusion"))
   ) taskType = "shopper_feedback";
-  else if (actTypes.has("confusion") || /\b(?:i am|i'm|im) (?:confused|lost)|\b(?:wait,? )?what am i choosing|\bsimplify (?:this|it)\b/.test(text)) taskType = "confusion_recovery";
-  else if (/\b(?:why that one|why this one|why do you recommend (?:it|that)|why is that your recommendation)\b/.test(text)) taskType = "recommendation_explanation";
+  else if (actTypes.has("confusion") || /\bconfused\b|\b(?:i am|i'm|im) lost\b|\bgetting lost\b|\b(?:wait,? )?what am i choosing|\bsimplify (?:this|it)\b/.test(text)) taskType = "confusion_recovery";
+  else if (/\b(?:you(?:'re| are) not listening|you keep recommending|i already said|stop telling me|this is confusing)\b/.test(text)) taskType = "trust_recovery";
+  else if (/^(?:but )?why[?!. ]*$/.test(text) && (activeHandle || deal.sessionRecommendation?.productHandle)) taskType = "recommendation_explanation";
+  else if (/\b(?:why that one|why this one|why do you recommend (?:it|that)|why is (?:it|that|this|the .*) better for me|why is that your recommendation|why is this pod recommended)\b/.test(text)) taskType = "recommendation_explanation";
   else if (/\b(?:what do you recommend now|what is your current recommendation|what's your current recommendation|which mattress now)\b/.test(text)) taskType = "session_recommendation_recall";
   else if (/\b(?:remind me (?:what|which) (?:you )?|what did you )recommend(?:ed)?(?: for me)?\b/.test(text)) {
     taskType = deal.sessionRecommendation?.productHandle
@@ -415,15 +447,19 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   else if (parsedSize && /\b(?:i need|i want|make it|go with|size)\b/.test(text) && !/\b(?:price|cost|how much|quote)\b/.test(text)) taskType = "configuration_update";
   else if (/^(?:please )?(?:add|put)\b/.test(text) || /\b(?:add|adding|put|putting)\b.*\b(?:to|in) (?:my|the) cart\b/.test(text)) taskType = "cart_add";
   else if (/\b(?:what(?:'s| is) in|show|review|check)\b.*\bcart\b/.test(text)) taskType = "cart_review";
+  else if (canonicalReference && comparisonCue) taskType = "canonical_comparison";
   else if (canonicalReference && /\b(?:cost|price|how much)\b/.test(text)) taskType = "price_quote";
   else if (canonicalReference) taskType = "canonical_recall";
-  else if (/\b(?:based on|from) my (?:sleep )?profile\b|\bwhat (?:mattress|would) .*try first\b/.test(text)) taskType = "canonical_recommendation";
+  else if (/\b(?:based on|from) my (?:sleep )?profile\b|\bwhat (?:mattress|would) .*try first\b|\bwhat mattress do you recommend\b|\bwhich pod should i try first\b|\bwhere should i start\b|\bi do not know what to choose\b/.test(text)) taskType = "canonical_recommendation";
+  else if (/^(?:okay|ok|yes|please)?[ ,]*(?:go with |choose |make it )?mattress[- ]only[.! ]*$/.test(text)) taskType = "configuration_value";
   else if (
     continuingPriceGoal &&
     text.split(/\s+/).filter(Boolean).length <= 4 &&
     (explicitHandle || Object.keys(explicitBase).length)
   ) taskType = explicitBase.explicitNoBase ? "price_quote" : "bundle_quote";
   else if (/\b(?:how much.*save|save.*how much|savings|difference in price)\b/.test(text)) taskType = "savings_quote";
+  else if (valueCue && comparisonCue) taskType = "comparison_value";
+  else if (compoundPriceValueCue) taskType = "price_value";
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && /\b(?:with|plus|and)\b.*\b(?:motion|base)\b/.test(text)) taskType = "bundle_quote";
   else if (/\bwhat about with (?:the )?(?:motion|adjustable) base\b/.test(text) && (deal.activeProductHandle || deal.acceptedRecommendation?.productHandle)) taskType = "bundle_quote";
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && /\b(?:full setup|whole setup|complete setup)\b/.test(text)) taskType = "bundle_quote";
@@ -431,13 +467,18 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text)) taskType = "price_quote";
   else if (/\bwarrant(?:y|ies)\b/.test(text)) taskType = "warranty_explanation";
   else if (/\b(?:make sense together|work together|work with|compatible|compatibility|pair together)\b/.test(text)) taskType = "compatibility";
+  else if (/\b(?:what if i skip|skip|without) (?:the )?(?:(?:motion|adjustable) )?base\b/.test(text)) taskType = "configuration_value";
   else if (/\b(?:need the adjustable|need (?:that|the) base|save the money|didn.t notice.*base|more expensive.*better)\b/.test(text)) taskType = "value_judgment";
-  else if (/\b(?:what does|what is|explain|why would i want|why)\b.*\b(?:standard motion|adjustable base|motion base)\b|\bwhy would i want it\b/.test(text)) taskType = "base_education";
+  else if (/^motion base features?$/.test(text) || /\b(?:what does|what is|explain|why would i want|why)\b.*\b(?:standard motion|adjustable base|motion base)\b|\bwhy would i want it\b/.test(text)) taskType = "base_education";
   else if (/\b(?:liked|prefer|want)\b.*\b(?:elevation|elevated|raised|head up|feet up|medium|soft|firm)\b/.test(text)) taskType = "preference_capture";
   else if (/\b(?:what did i say i liked|what do i prefer|remember what i liked|recall my preference)\b/.test(text)) taskType = "preference_recall";
+  else if (/\b(?:which one is (?:softer|firmer).*(?:which|what).*(?:pick|choose)|(?:softer|firmer).*(?:pick|choose).*(?:for me))\b/.test(text)) taskType = "firmness_choice";
   else if (/\b(?:medium|soft|firm)\b.*\b(?:vs|versus|or|compare)\b/.test(text)) taskType = "firmness_compare";
-  else if (/\b(?:which (?:one|mattress) (?:would you|you would) choose|what would you choose|would you buy|what would you do)\b/.test(text)) taskType = "advisor_choice";
-  else if (/\b(?:compare|compares|compared|comparison|versus|\bvs\b)\b/.test(text)) taskType = "product_comparison";
+  else if (/\bbest value(?: option)?\b/.test(text)) taskType = "value_judgment";
+  else if (/\b(?:which (?:one|mattress) (?:would you|you would) (?:choose|pick)|what would you (?:choose|pick)|would you buy|what would you do|so what would you do)\b/.test(text)) taskType = "advisor_choice";
+  else if (/\b(?:firmer mattress|sleep hot|side sleeper|sleep on my side|wake up tired|partner moves|motion separation|what should i look for|cooler mattress)\b/.test(text)) taskType = "sleep_education";
+  else if (comparisonCue && valueCue) taskType = "comparison_value";
+  else if (comparisonCue) taskType = "product_comparison";
   else if (/\b(?:tell me more|tell me about|actually going to notice|what (?:will i|i will|should i) notice|what does .* feel like|feel when|lie on)\b/.test(text)) taskType = "product_experience";
   else if (isExplicitMedical(text)) taskType = "medical_boundary";
 
@@ -480,10 +521,15 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       "recommendation_acceptance",
       "product_experience",
       "product_comparison",
+      "canonical_comparison",
+      "comparison_value",
+      "firmness_choice",
       "advisor_choice",
       "base_education",
       "value_judgment",
       "value_objection",
+      "price_value",
+      "configuration_value",
       "preference_capture",
       "preference_recall",
       "firmness_compare",
@@ -543,12 +589,14 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       ...comparisonHandles,
       activeHandle === "14-hybrid" ? "12-all-foam-mattress" : "14-hybrid",
     ]).slice(0, 2);
+  } else if (taskType === "canonical_comparison") {
+    comparisonHandles = unique([canonicalHandle, activeSessionRecommendationHandle(context) || activeHandle]).slice(0, 2);
   } else if (["alternative_resolution", "trust_recovery", "shopper_feedback"].includes(taskType)) {
     comparisonHandles = unique(activeDeal(context)?.eligibleAlternativeHandles || []).filter(
       (handle) => !rejectedHandles(context).has(handle)
     ).slice(0, 3);
   }
-  const needsCommerce = ["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(taskType);
+  const needsCommerce = ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(taskType);
   const needsCompatibility = ["bundle_quote", "compatibility", "cart_add"].includes(taskType);
   const ambiguousSetupPrice =
     taskType === "price_quote" &&
@@ -560,8 +608,8 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   const missingCanonical =
     ["canonical_recommendation", "canonical_recall"].includes(taskType) && !canonicalHandle;
   const missingProductReference =
-    ["product_experience", "product_comparison", "advisor_choice", "firmness_compare", "durability_objection", "hybrid_exploration"].includes(taskType) &&
-    ((!activeHandle && !explicitHandle) || unresolvedExplicitProductSubject);
+    ["product_experience", "product_comparison", "canonical_comparison", "comparison_value", "advisor_choice", "firmness_choice", "firmness_compare", "durability_objection", "hybrid_exploration"].includes(taskType) &&
+    (((!activeHandle && !explicitHandle) && comparisonHandles.length < 2) || unresolvedExplicitProductSubject);
   const atomicStandaloneCommerce =
     ["price_quote", "bundle_quote", "savings_quote"].includes(taskType) &&
     Number(activeMemory(context)?.turnIndex || 0) <= 1 &&
@@ -585,10 +633,15 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   const modelEligible = [
     "product_experience",
     "product_comparison",
+    "canonical_comparison",
+    "comparison_value",
     "base_education",
     "value_judgment",
     "value_objection",
+    "price_value",
+    "configuration_value",
     "advisor_choice",
+    "firmness_choice",
     "firmness_compare",
     "compound_product_base",
     "durability_objection",
@@ -607,6 +660,9 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     "session_recommendation_recall",
     "recommendation_explanation",
     "recommendation_acceptance",
+    "sleep_education",
+    "canonical_recommendation",
+    "canonical_recall",
   ].includes(taskType);
 
   return {
@@ -653,7 +709,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     atomicCommerceLookup: atomicStandaloneCommerce,
     needsCommerce,
     needsCompatibility,
-    needsKnowledge: ["product_experience", "product_comparison", "base_education", "advisor_choice", "compound_product_base", "durability_objection", "hybrid_exploration", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance", "value_objection"].includes(taskType),
+    needsKnowledge: ["product_experience", "product_comparison", "canonical_comparison", "comparison_value", "base_education", "advisor_choice", "firmness_choice", "compound_product_base", "durability_objection", "hybrid_exploration", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance", "value_objection", "price_value", "configuration_value", "sleep_education"].includes(taskType),
     needsPolicy: ["medical_boundary", "warranty_explanation"].includes(taskType),
     allowedActions: taskType === "cart_add" ? ["add_to_cart"] : [],
     commercialState: {
@@ -735,6 +791,11 @@ function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
       sleepPosition:
         context?.canonicalRecommendation?.normalizedAssessment?.sleepPosition ||
         context?.assessment?.answers?.sleepPosition ||
+        null,
+      sleepPartner:
+        context?.canonicalRecommendation?.normalizedAssessment?.sleepPartner ||
+        context?.assessment?.answers?.sleepPartner ||
+        context?.assessment?.sleepPartner ||
         null,
       painPoints: plan?.knownFacts?.painPoints || [],
     },
@@ -978,6 +1039,27 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
     : "";
 
   switch (plan.taskType) {
+    case "greeting":
+      return "Hi, I’m Snoozer. I can help you compare mattresses, understand your recommendation, price a setup, or continue the choice you were already making.";
+    case "support_handoff":
+      return "Yes. Use the Human Assistance control to connect with a store associate for personal support.";
+    case "sleep_education":
+      if (/\b(?:sleep hot|cooler mattress)\b/.test(text)) {
+        return `If you sleep hot, compare how quickly heat clears when you change position instead of relying on a cooling label alone. A hybrid such as the ${titleFor(sessionHandle || "14-hybrid")} can feel more breathable because air moves through the coil unit, while foam usually gives closer contouring. I would test temperature together with shoulder and hip comfort so you do not trade pressure relief for airflow.`;
+      }
+      if (/\b(?:side sleeper|sleep on my side)\b/.test(text)) {
+        return "For side sleeping, look for enough pressure relief to let your shoulders and hips settle without letting your waist collapse. Stay on your usual side for several quiet minutes; pressure should ease while your midsection still feels supported. Your own pressure response matters more than the firmness label.";
+      }
+      if (/\bpartner moves|motion separation\b/.test(text)) {
+        return "If your partner moves a lot, prioritize motion isolation and test whether a turn on one side reaches the other. The 12-inch Dual Comfort Hybrid is the most useful comparison when two sleepers also want independent comfort choices; an all-foam construction generally absorbs movement more closely. I would compare both movement and each sleeper’s pressure relief before choosing.";
+      }
+      if (/\bback pain\b/.test(text)) {
+        return "For back discomfort, look for stable support that keeps your midsection from dropping while still allowing the mattress to meet your natural shape. Test your usual sleep position and notice whether pressure builds or your lower back feels unsupported; a firmer label alone is not proof of a better fit. I can help compare comfort and support, but I cannot diagnose the cause of pain or replace a clinician’s guidance.";
+      }
+      if (/\bfirmer mattress\b/.test(text)) {
+        return "Not automatically. A firmer mattress is useful only if your hips sink too far, your midsection feels unsupported, or you struggle to change position; firmness by itself does not guarantee better support. I would choose the feel that keeps you level while still relieving shoulder and hip pressure.";
+      }
+      return "Waking tired can have many causes, so I would not blame the mattress without testing the basics. Notice whether you wake from pressure, heat, partner movement, or an unsupported position, then compare one change at a time during your Rest Test. If the tiredness is persistent or concerning, discuss it with a clinician rather than treating a mattress as a medical fix.";
     case "session_recommendation_recall":
       if (!sessionHandle) {
         return `Your original assessment recommendation is still ${titleFor(canonical)}, but I do not yet have a different current-session choice grounded in what you have told me. Tell me what you want to change, and I will narrow the eligible options.`;
@@ -1044,11 +1126,21 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       return `${recoveryPrefix}On the ${activeTitle}, you should notice a deeper, more even cradle around your shoulders and hips, with less bounce when you change position. The useful test is whether ${pressureLanguage} eases while your waist still feels supported. If you feel stuck or your hips drop too far, it is softer than you need.`;
     case "product_comparison":
       return `The ${firstTitle} gives you a closer, steadier contour with less bounce, while the ${secondTitle} feels more lifted, springy, and breathable. For your current visit, I would start with the ${titleFor(sessionHandle || canonical || first || active)} and use your shoulder and hip pressure—not the original assessment alone—to decide.`;
+    case "canonical_comparison":
+      return `Your original recommendation was the ${firstTitle}, while your current choice is the ${secondTitle}. The original recommendation reflected your assessment; the current choice also reflects what you actually felt and decided during this visit. I would use the ${secondTitle} as the active option and keep the ${firstTitle} only as a comparison point.`;
+    case "comparison_value":
+      return `The ${firstTitle} and ${secondTitle} differ in construction and feel, so the value question is whether the second option improves something you personally care about. I would favor the ${titleFor(sessionHandle || active || second || first)} for you based on your current feedback, but I would not pay more for features you did not notice or value.`;
+    case "price_value": {
+      const priced = quote?.ok ? `The current ${quote.size || savedSize || "selected"} configuration is ${formatMoney(quote.subtotal, quote.currencyCode)} before taxes, delivery, or active discounts. ` : "";
+      return `${priced}It is worth the added cost only when the selected construction or configuration creates a benefit that matters to you. For your priorities, I would pay the difference only if the feel, responsiveness, or elevation is clearly better during your Rest Test; otherwise I would keep the lower-cost mattress-only choice.`;
+    }
     case "advisor_choice":
       if (/\bwould you buy\b/.test(text)) {
         return `For the needs you have described, I would buy the ${titleFor(sessionHandle || canonical || active)} and keep it mattress-only unless elevation clearly improved your comfort during the Rest Test. That is the less expensive setup, and the base is only worth adding if you can name a benefit you actually felt.`;
       }
       return `I would choose the ${titleFor(sessionHandle || canonical || active)} for you based on what you have learned during this visit. Your shoulder and hip pressure during the Rest Test should make the final call, because your live comfort feedback matters more than the assessment starting point.`;
+    case "firmness_choice":
+      return `Of the two, the ${firstTitle} is the closer-contouring choice and the ${secondTitle} is the more lifted, responsive choice. Based on your current feedback, I would pick the ${titleFor(sessionHandle || active || first)} for you, then use shoulder and hip pressure during the Rest Test to confirm it rather than relying on a firmness label alone.`;
     case "durability_objection":
       return `That is a fair concern. The ${activeTitle} uses supportive base foam and CertiPUR-US certified foams, but neither construction nor certification is a promise that normal softening or body impressions can never happen. Use the support specified for the mattress, keep it protected, and rotate it when the care guidance allows; those basics help prevent uneven wear. If you want a more lifted feel and the reassurance of a coil support unit, compare a hybrid, but I would not move you away from the All Foam solely out of fear before you compare the feel and warranty tradeoff.`;
     case "hybrid_exploration":
@@ -1076,6 +1168,11 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
     case "base_education":
       return `Standard Motion raises and lowers the head and foot of the mattress together. It can make reading, relaxing, getting in and out of bed, or sleeping with gentle elevation more comfortable. I would add it only if you notice a real benefit from elevation; it does not make the mattress itself more pressure-relieving.`;
     case "value_judgment":
+      if (/\bbest value(?: option)?\b/.test(text)) {
+        const valueTitle = titleFor(sessionHandle || active || canonical);
+        const valueSubject = valueTitle ? `the ${valueTitle}` : "the mattress that fits you best";
+        return `The best value is ${valueSubject} without paying for features you did not feel. I would get the mattress choice right first and add a motion base only when elevation creates a clear benefit during your Rest Test. A lower total is not a bargain if the mattress misses your comfort needs, and a higher total is not better just because it includes more equipment.`;
+      }
       if (/didn.t notice|did not notice/.test(text)) {
         return `Save the money and skip the adjustable base. If elevation did not create a clear comfort or lifestyle benefit during your test, the mattress is doing the important work and the base is not earning its cost.`;
       }
@@ -1083,6 +1180,10 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
         return `No. More expensive is only better when the added feature solves something you care about. For you, mattress fit comes first; I would keep the cheaper mattress-only setup unless elevation gives you a benefit you can actually feel.`;
       }
       return `Based on what you have told me, I would save the money unless you liked sleeping or relaxing with your head or feet elevated. The adjustable base adds positioning, not a better mattress fit, so it is optional rather than necessary for your shoulder and hip pressure.`;
+    case "configuration_value":
+      return /\b(?:okay|ok|go with|choose|want|make it|mattress[- ]only)\b/.test(text)
+        ? `Mattress-only—got it. You are keeping the ${activeTitle}${savedSize ? ` in ${savedSize}` : ""} and removing the motion base from this configuration. The next price should include only the mattress.`
+        : `Skipping the motion base leaves you with the same mattress comfort and support; you are only giving up head-and-foot elevation. If elevation did not create a clear benefit for you, I would choose mattress-only and save the money. Your mattress, size, and other preferences stay the same.`;
     case "compatibility":
       if (quote?.compatibility?.status === "incompatible") {
         return `${recoveryPrefix}That split-motion setup does not pair with ${activeTitle}. Split motion needs the dual-comfort mattress configuration. Standard Motion is the compatible adjustable option for this mattress.`;
@@ -1099,6 +1200,13 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       }
       return `I do not have a clear saved preference from this conversation yet. Tell me what felt better, and I’ll use that in the next comparison.`;
     case "firmness_compare":
+      if (/^(?:yes|true|1)$/i.test(clean(
+        context?.canonicalRecommendation?.normalizedAssessment?.sleepPartner ||
+        context?.assessment?.answers?.sleepPartner ||
+        context?.assessment?.sleepPartner
+      ))) {
+        return `The ${activeTitle} is the right comparison when you and your partner want different firmness levels, because each side can have its own feel. Keep that comfort choice separate from motion separation: firmness changes how each side feels, while the motion setup changes how independently the sides can move. Start with each person’s preferred feel, then decide whether separate elevation earns its cost.`;
+      }
       return `For the mattress we are discussing, medium will feel steadier and easier to move on, while soft will allow more shoulder and hip sink. Because pressure relief is your priority, start with soft; move to medium only if your hips feel too low or you feel trapped in the surface.`;
     case "medical_boundary":
       return `I can help compare general comfort, support, pressure, and elevation, but I cannot diagnose or treat a medical condition or tell you to stop prescribed therapy. For a medical concern, use your clinician's guidance; for comfort, I can help you test which position and mattress feel best.`;
@@ -1106,7 +1214,7 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       break;
   }
 
-  if (["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType)) {
+  if (["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType)) {
     if (!quote?.ok) {
       if (quote?.compatibility?.status === "incompatible") {
         return `${recoveryPrefix}That configuration is not compatible. Split motion needs the dual-comfort mattress. I can price Standard Motion with ${activeTitle}, or price the split setup with the dual-comfort mattress.`;
@@ -1195,13 +1303,13 @@ function buildContextualChips({ plan = {}, quote = null } = {}) {
   if (plan.taskType === "compatibility") {
     return [{ label: "Price this setup", value: "What would this full setup cost?", type: "prompt" }];
   }
-  if (["product_comparison", "advisor_choice", "product_experience"].includes(plan.taskType)) {
+  if (["product_comparison", "canonical_comparison", "comparison_value", "firmness_choice", "advisor_choice", "product_experience"].includes(plan.taskType)) {
     return [
       { label: "Price my recommendation", value: "What would the King version of your recommendation cost?", type: "prompt" },
       { label: "Help me test it", value: "What should I pay attention to when I try it?", type: "prompt" },
     ];
   }
-  if (["base_education", "value_judgment", "preference_capture"].includes(plan.taskType)) {
+  if (["base_education", "value_judgment", "price_value", "configuration_value", "preference_capture"].includes(plan.taskType)) {
     return [
       { label: "Price with motion", value: "What would it cost with Standard Motion?", type: "prompt" },
       { label: "Mattress only", value: "What would the mattress cost without the base?", type: "prompt" },
@@ -1238,7 +1346,7 @@ function buildContextualChips({ plan = {}, quote = null } = {}) {
 }
 
 function buildSpeech(reply = "") {
-  const sentences = clean(reply).match(/[^.!?]+[.!?]+/g) || [clean(reply)];
+  const sentences = completeSentences(reply);
   return clean(sentences.slice(0, 2).join(" "));
 }
 
@@ -1247,6 +1355,51 @@ function adaptResponseDepth(reply = "", depth = "standard") {
   if (depth !== "quick") return complete;
   const firstSentence = complete.match(/^[\s\S]*?[.!?](?:\s|$)/)?.[0];
   return clean(firstSentence || complete);
+}
+
+function responseFacetViolations({ reply = "", plan = {}, factPack = null } = {}) {
+  const violations = [];
+  const lower = clean(reply).toLowerCase();
+  const compared = unique(plan?.references?.comparisonProductHandles || []).slice(0, 2);
+  const mentionsComparedProducts = compared.length < 2 || compared.every((handle) => {
+    const title = titleFor(handle).toLowerCase();
+    return lower.includes(title) || lower.includes(title.replace(/\s+mattress$/i, ""));
+  });
+  if (["product_comparison", "canonical_comparison", "comparison_value"].includes(plan.taskType)) {
+    if (!mentionsComparedProducts || !/\b(?:while|whereas|compared|difference|more|less|both|original|current)\b/.test(lower)) {
+      violations.push("comparison_incomplete");
+    }
+  }
+  if (plan.taskType === "comparison_value" && !/\b(?:worth|value|pay|spend|save|cost)\b/.test(lower)) {
+    violations.push("compound_value_unanswered");
+  }
+  if (plan.taskType === "price_value") {
+    if (!/\b(?:worth|value|pay|spend|save)\b/.test(lower)) violations.push("compound_value_unanswered");
+    if (!/\$|\b(?:price|cost|costs|priced)\b/.test(lower)) violations.push("compound_price_unanswered");
+  }
+  if (plan.taskType === "firmness_choice") {
+    if (!/\b(?:soft|firm|contour|plush|sink|lifted)\b/.test(lower)) violations.push("compound_feel_unanswered");
+    if (!/\b(?:pick|choose|recommend|favor|favour|would)\b/.test(lower)) violations.push("compound_choice_unanswered");
+  }
+  if (
+    plan.taskType === "firmness_compare" &&
+    /^(?:yes|true|1)$/i.test(clean(factPack?.shopper?.sleepPartner))
+  ) {
+    if (!/\b(?:different firmness|own feel|each side|individual comfort)\b/.test(lower)) {
+      violations.push("couple_firmness_unanswered");
+    }
+    if (!/\b(?:motion|movement|move independently|separate elevation)\b/.test(lower)) {
+      violations.push("couple_motion_tradeoff_unanswered");
+    }
+  }
+  if (plan.taskType === "recommendation_explanation" && !/\b(?:because|since|based on|fits?|matches?)\b/.test(lower)) {
+    violations.push("recommendation_explanation_incomplete");
+  }
+  const requestedScope = clean(factPack?.state?.activeConfiguration?.scope || plan?.commercialState?.requestedScope).toLowerCase();
+  if (requestedScope === "mattress_only" && /\badd (?:the )?(?:full|complete) setup\b/.test(lower)) {
+    violations.push("response_scope_mismatch");
+  }
+  return violations;
 }
 
 function validateResponseConsistency({
@@ -1278,7 +1431,7 @@ function validateResponseConsistency({
     violations.push(`rejected_session_recommendation:${sessionRecommendationHandle}`);
   }
   const recommendationCue = /\b(?:recommend|suggest|choose|go with|start with|best option|good match|great fit|current choice|active choice)\b/;
-  const exclusionCue = /\b(?:ruled out|off (?:the|your) list|do not recommend|don.t recommend|will not recommend|not recommending|instead of|anything but|except|rejected|didn.t like|did not like|too firm|too soft)\b/;
+  const exclusionCue = /\b(?:original recommendation|ruled out|off (?:the|your) list|do not recommend|don.t recommend|will not recommend|not recommending|instead of|anything but|except|rejected|didn.t like|did not like|too firm|too soft)\b/;
   const replySentences = clean(reply).toLowerCase().match(/[^.!?]+[.!?]?/g) || [];
   for (const handle of rejected) {
     const productTitle = titleFor(handle).toLowerCase();
@@ -1292,14 +1445,17 @@ function validateResponseConsistency({
   }
   if (!plan.technicalLanguageAllowed) {
     for (const phrase of INTERNAL_LANGUAGE) {
-      if (lower.includes(phrase)) violations.push(`internal_language:${phrase}`);
+      if (includesProtectedLanguage(lower, phrase)) violations.push(`internal_language:${phrase}`);
     }
   }
-  if (reply && !/[.!?]$/.test(clean(reply))) violations.push("incomplete_ending");
+  if (reply && !isCompleteShopperResponse(reply)) violations.push("incomplete_ending");
   if (clean(reply).endsWith("...")) violations.push("truncated_ending");
+  if (/(?:^|\n)\s*(?:[-*+]\s*)?$/.test(String(reply || "")) || /\[[^\]]*$|\([^)]*$/.test(clean(reply))) {
+    violations.push("broken_render_fragment");
+  }
   if ((clean(reply).match(/\?/g) || []).length > 1) violations.push("too_many_probes");
   if (quote?.ok) {
-    const priceAnswer = requireCompleteCommerce && ["price_quote", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType);
+    const priceAnswer = requireCompleteCommerce && ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType);
     const mentionedPrices = (clean(reply).match(/\$\s?\d[\d,]*(?:\.\d{1,2})?/g) || [])
       .map((amount) => Number(amount.replace(/[$,\s]/g, "")))
       .filter(Number.isFinite);
@@ -1358,6 +1514,33 @@ function validateResponseConsistency({
   if (quote?.motionKey === "standard" && /\b(?:half|full)[ -]split\b/.test(lower)) {
     violations.push("motion_configuration_mismatch");
   }
+  const discussedHandles = new Set(unique([
+    plan?.references?.activeProductHandle,
+    plan?.references?.requestedProductHandle,
+    plan?.references?.sessionRecommendationHandle,
+    plan?.references?.acceptedRecommendationHandle,
+    ...(plan?.references?.comparisonProductHandles || []),
+    ...((quote?.items || []).map((item) => item?.handle)),
+  ]));
+  for (const product of products) {
+    const handle = clean(product?.handle).toLowerCase();
+    if (handle && discussedHandles.size && !discussedHandles.has(handle)) {
+      violations.push(`unrelated_product_card:${handle}`);
+    }
+  }
+  for (const action of actions) {
+    const handle = clean(action?.payload?.handle || action?.handle).toLowerCase();
+    if (handle && discussedHandles.size && !discussedHandles.has(handle)) {
+      violations.push(`wrong_product_action:${handle}`);
+    }
+  }
+  if (clean(factPack?.state?.activeConfiguration?.scope).toLowerCase() === "mattress_only") {
+    for (const action of actions) {
+      const label = normalizeAskSnoozerText(action?.label || action?.type);
+      if (/\b(?:full|complete) setup\b/.test(label)) violations.push("action_scope_mismatch");
+    }
+  }
+  violations.push(...responseFacetViolations({ reply, plan, factPack }));
   return { ok: violations.length === 0, violations };
 }
 
@@ -1376,7 +1559,7 @@ async function resolveAskSnoozerAdvisorTurn({
   const factPack = buildRelevantFactPack({ query, context, plan: resolvedPlan });
   if (resolvedPlan.needsKnowledge || resolvedPlan.needsPolicy) {
     try {
-      const comparisonHandles = ["product_comparison", "firmness_compare", "advisor_choice", "hybrid_exploration"]
+      const comparisonHandles = ["product_comparison", "canonical_comparison", "comparison_value", "firmness_choice", "firmness_compare", "advisor_choice", "durability_objection", "hybrid_exploration"]
         .includes(resolvedPlan.taskType)
         ? (resolvedPlan.references?.comparisonProductHandles || [])
         : [];
@@ -1413,6 +1596,26 @@ async function resolveAskSnoozerAdvisorTurn({
     rawProducts = rejectedHandles(context).has(canonicalHandle)
       ? []
       : await fetchByHandles(fetchProductsByHandles, [canonicalHandle]);
+  } else if ([
+    "product_comparison",
+    "canonical_comparison",
+    "comparison_value",
+    "firmness_choice",
+    "firmness_compare",
+    "advisor_choice",
+  ].includes(resolvedPlan.taskType)) {
+    rawProducts = await fetchByHandles(fetchProductsByHandles, unique([
+      resolvedPlan.references?.requestedProductHandle,
+      resolvedPlan.references?.activeProductHandle,
+      ...(resolvedPlan.references?.comparisonProductHandles || []),
+    ]));
+  } else if (
+    resolvedPlan.taskType === "sleep_education" &&
+    /\b(?:which|what) mattress\b|\bmattress (?:fits?|matches?)\b/.test(normalizeAskSnoozerText(query))
+  ) {
+    rawProducts = await fetchByHandles(fetchProductsByHandles, [
+      resolvedPlan.references?.activeProductHandle || resolveCanonicalHandle(context),
+    ]);
   } else if (["alternative_resolution", "reconsider_product", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance"].includes(resolvedPlan.taskType)) {
     rawProducts = await fetchByHandles(fetchProductsByHandles, [
       clean(activeDeal(context)?.acceptedRecommendation?.productHandle) || activeSessionRecommendationHandle(context) || resolveActiveHandle(context),
@@ -1520,8 +1723,9 @@ async function resolveAskSnoozerAdvisorTurn({
         plan: resolvedPlan,
         factPack,
       });
-      const speechGate = validateResponseConsistency({
-        reply: composed?.speechText,
+      let composedSpeech = clean(composed?.speechText);
+      let speechGate = validateResponseConsistency({
+        reply: composedSpeech,
         quote,
         products,
         actions: [],
@@ -1529,6 +1733,26 @@ async function resolveAskSnoozerAdvisorTurn({
         factPack,
         requireCompleteCommerce: false,
       });
+      // Voice is a concise rendering of the accepted display answer. If the
+      // model's optional spoken summary drops a required facet, derive a
+      // sentence-complete summary from the grounded display answer before
+      // rejecting the entire shopper response.
+      if (modelGate.ok && !speechGate.ok) {
+        const groundedSpeech = buildSpeech(composed?.displayText);
+        const groundedSpeechGate = validateResponseConsistency({
+          reply: groundedSpeech,
+          quote,
+          products,
+          actions: [],
+          plan: resolvedPlan,
+          factPack,
+          requireCompleteCommerce: false,
+        });
+        if (groundedSpeechGate.ok) {
+          composedSpeech = groundedSpeech;
+          speechGate = groundedSpeechGate;
+        }
+      }
       if (!modelGate.ok || !speechGate.ok) {
         modelGate = { ok: false, violations: [...modelGate.violations, ...speechGate.violations.map((item) => `speech:${item}`)] };
         compositionFallbackUsed = true;
@@ -1536,7 +1760,7 @@ async function resolveAskSnoozerAdvisorTurn({
         fallbackKind = "validation";
       } else {
         reply = clean(composed.displayText);
-        speech = clean(composed.speechText);
+        speech = composedSpeech;
         probe = clean(composed.probe) || null;
         compositionConfidence = Number.isFinite(Number(composed.confidence))
           ? Math.max(0, Math.min(1, Number(composed.confidence)))
@@ -1593,8 +1817,14 @@ async function resolveAskSnoozerAdvisorTurn({
       modelSystemChars,
       modelFactPackChars,
       fallbackKind,
+      responsePath: "grounded_safe_fallback",
     };
   }
+  const responsePath = compositionMode === "model_assisted"
+    ? "structured_composer"
+    : compositionMode === "model_fallback"
+      ? "grounded_safe_fallback"
+      : "atomic_deterministic";
   return {
     ok: true,
     reply,
@@ -1627,6 +1857,7 @@ async function resolveAskSnoozerAdvisorTurn({
     modelSystemChars,
     modelFactPackChars,
     fallbackKind,
+    responsePath,
   };
 }
 

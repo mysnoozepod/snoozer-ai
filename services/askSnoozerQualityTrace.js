@@ -1,13 +1,17 @@
 const crypto = require("crypto");
+const { isCompleteShopperResponse } = require("./askSnoozerResponsePresenter");
 
-const QUALITY_TRACE_VERSION = "ask-snoozer-quality-v2";
-const OUTCOME_MODEL_VERSION = "ask-snoozer-outcome-v2";
+const QUALITY_TRACE_VERSION = "ask-snoozer-quality-v3";
+const OUTCOME_MODEL_VERSION = "ask-snoozer-outcome-v3";
 const RECOVERY_MODEL_VERSION = "ask-snoozer-recovery-v1";
 const DEFAULT_RESPONSE_POLICY_VERSION = "baseline-v1";
 const SHOPPER_LANGUAGE_BLOCKLIST = Object.freeze([
   "shopify", "showroom canon", "canonical", "page context", "api", "backend", "s3",
   "retrieval", "resolver", "database", "source of truth", "deterministic", "working memory",
   "active goal", "current verified option", "verified adjustable option",
+  "canonicalrecommendation", "sessionrecommendation", "fact pack", "storefront api",
+  "active_journey", "intentgroup", "groundingsufficient", "model composer", "cloudwatch",
+  "lambda", "variant gid",
 ]);
 
 const SEVERITY_DEFINITIONS = Object.freeze({
@@ -19,6 +23,12 @@ const SEVERITY_DEFINITIONS = Object.freeze({
 
 function clean(value) {
   return String(value == null ? "" : value).trim();
+}
+
+function includesProtectedLanguage(text, phrase) {
+  const escaped = clean(phrase).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (!escaped) return false;
+  return new RegExp(`(?:^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`, "i").test(clean(text));
 }
 
 function isObject(value) {
@@ -94,8 +104,7 @@ function normalizeQuestion(value = "") {
 }
 
 function responseComplete(reply = "") {
-  const text = clean(reply);
-  return Boolean(text && /[.!?]$/.test(text) && !text.endsWith("..."));
+  return isCompleteShopperResponse(reply);
 }
 
 function responseWordCount(reply = "") {
@@ -237,6 +246,14 @@ function classifyOutcome({
   if (commercialSignals.requestedScopePreserved === false) friction.push("requested_scope_not_preserved");
   if (commercialSignals.partialActionSuppressed === false) friction.push("partial_action_not_suppressed");
   if (commercialSignals.shopperLanguageClean === false) friction.push("shopper_language_violation");
+  if (commercialSignals.compoundQuestionFullyAnswered === false) friction.push("compound_question_incomplete");
+  if (commercialSignals.recommendationExplanationComplete === false) friction.push("recommendation_explanation_incomplete");
+  if (commercialSignals.comparisonComplete === false) friction.push("comparison_incomplete");
+  if (commercialSignals.renderedProductsConsistent === false) friction.push("rendered_products_inconsistent");
+  if (commercialSignals.renderedActionsConsistent === false) friction.push("rendered_actions_inconsistent");
+  if (commercialSignals.unnecessaryClarification) friction.push("unnecessary_clarification");
+  if (commercialSignals.legacyProsePathUsed) friction.push("legacy_prose_path_used");
+  if (commercialSignals.genericFallbackUsed) friction.push("generic_fallback_used");
   if (commercialSignals.explicitRejectionHonored === false) friction.push("explicit_rejection_not_honored");
   if (commercialSignals.rejectedProductReintroduced) friction.push("rejected_product_reintroduced");
   if (commercialSignals.subjectiveFeedbackPreserved === false) friction.push("subjective_feedback_not_preserved");
@@ -310,7 +327,7 @@ function classifyFailureSeverity(trace = {}) {
     : [];
   const codes = [];
   const commercialTruthFailure = gateViolations.some((item) =>
-    /price_|subtotal_|canonical_|compatibility_|motion_configuration|unsafe_cart|unverified_(?:price|product)/.test(item)
+    /price_|subtotal_|canonical_|compatibility_|motion_configuration|unsafe_cart|unverified_price/.test(item)
   );
   if (commercialTruthFailure || trace.quoteConsistent === false || trace.savedRecommendationPreserved === false) {
     codes.push("commercial_truth_integrity");
@@ -330,12 +347,12 @@ function classifyFailureSeverity(trace = {}) {
     (trace.pendingCommitmentResolved === false && trace.contradictoryCommitmentBehavior) ||
     trace.commercialOpportunityStranded ||
     trace.multipleProbes ||
-    trace.responseComplete === false ||
     trace.confusionRecovered === false ||
     trace.requestedScopePreserved === false ||
     trace.partialActionSuppressed === false ||
     (trace.referenceResolution?.phrase && !trace.referenceResolution?.resolved && trace.confidentCommercialAnswer) ||
     trace.outcome?.recovery?.success === false
+    || gateViolations.some((item) => /wrong_product_action|action_scope|response_scope|unverified_product/.test(item))
   ) {
     if (trace.rejectedProductReintroduced) codes.push("rejected_product_reintroduced");
     if (trace.explicitRejectionHonored === false) codes.push("explicit_rejection_not_honored");
@@ -350,12 +367,13 @@ function classifyFailureSeverity(trace = {}) {
     if (trace.pendingCommitmentResolved === false && trace.contradictoryCommitmentBehavior) codes.push("contradictory_commitment_behavior");
     if (trace.commercialOpportunityStranded) codes.push("commercial_opportunity_stranded");
     if (trace.multipleProbes) codes.push("multiple_probes");
-    if (trace.responseComplete === false) codes.push("incomplete_response");
     if (trace.confusionRecovered === false) codes.push("confusion_not_recovered");
     if (trace.requestedScopePreserved === false) codes.push("requested_scope_not_preserved");
     if (trace.partialActionSuppressed === false) codes.push("partial_action_not_suppressed");
     if (trace.referenceResolution?.phrase && !trace.referenceResolution?.resolved) codes.push("unresolved_protected_reference");
     if (trace.outcome?.recovery?.success === false) codes.push("failed_recovery");
+    if (gateViolations.some((item) => /wrong_product_action|action_scope|response_scope/.test(item))) codes.push("rendered_action_conflict");
+    if (gateViolations.some((item) => /unverified_product/.test(item))) codes.push("invented_product");
     return { severity: "P1", codes };
   }
   if (
@@ -372,6 +390,16 @@ function classifyFailureSeverity(trace = {}) {
     trace.fallbackUsed ||
     trace.genericResponse ||
     trace.firewallPassed === false
+    || trace.responseComplete === false
+    || trace.sentenceComplete === false
+    || trace.compoundQuestionFullyAnswered === false
+    || trace.recommendationExplanationComplete === false
+    || trace.comparisonComplete === false
+    || trace.renderedProductsConsistent === false
+    || trace.renderedActionsConsistent === false
+    || trace.unnecessaryClarification
+    || trace.legacyProsePathUsed
+    || trace.genericFallbackUsed
   ) {
     if (trace.pendingCommitmentResolved === false) codes.push("pending_commitment_not_resolved");
     if (trace.subjectiveFeedbackPreserved === false) codes.push("subjective_feedback_not_preserved");
@@ -386,6 +414,15 @@ function classifyFailureSeverity(trace = {}) {
     if (trace.fallbackUsed) codes.push("fallback_used");
     if (trace.genericResponse) codes.push("generic_response");
     if (trace.firewallPassed === false) codes.push("language_firewall_violation");
+    if (trace.responseComplete === false || trace.sentenceComplete === false) codes.push("incomplete_response");
+    if (trace.compoundQuestionFullyAnswered === false) codes.push("compound_question_incomplete");
+    if (trace.recommendationExplanationComplete === false) codes.push("recommendation_explanation_incomplete");
+    if (trace.comparisonComplete === false) codes.push("comparison_incomplete");
+    if (trace.renderedProductsConsistent === false) codes.push("rendered_products_inconsistent");
+    if (trace.renderedActionsConsistent === false) codes.push("rendered_actions_inconsistent");
+    if (trace.unnecessaryClarification) codes.push("unnecessary_clarification");
+    if (trace.legacyProsePathUsed) codes.push("legacy_prose_path_used");
+    if (trace.genericFallbackUsed) codes.push("generic_fallback_used");
     return { severity: "P2", codes };
   }
   if (trace.latency?.band === "breach" || trace.depthFit === false) {
@@ -412,6 +449,7 @@ function buildAskSnoozerQualityTrace({
   gate = {},
   modelGate = null,
   compositionMode = "deterministic",
+  responsePath = null,
   compositionFallbackUsed = false,
   modelCallCount = 0,
   totalMs = 0,
@@ -439,6 +477,14 @@ function buildAskSnoozerQualityTrace({
     ...products.flatMap((product) => [product?.title, product?.subtitle]),
   ].map(clean).filter(Boolean).join(" ");
   const finalVisibleText = `${clean(reply)} ${renderedControlText}`.trim();
+  const gateViolations = Array.isArray(gate?.violations) ? gate.violations : [];
+  const finalResponsePath = ["atomic_deterministic", "structured_composer", "grounded_safe_fallback", "legacy_path"].includes(clean(responsePath))
+    ? clean(responsePath)
+    : compositionMode === "model_assisted"
+      ? "structured_composer"
+      : compositionMode === "model_fallback" || fallbackUsed
+        ? "grounded_safe_fallback"
+        : "atomic_deterministic";
   const knownRepeated = knownQuestionRepeated(finalVisibleText, { ...plan, query }, context);
   const commercialState = isObject(plan?.commercialState) ? plan.commercialState : {};
   const goal = isObject(context?.askSnoozerWorkingMemory?.activeGoal)
@@ -564,7 +610,33 @@ function buildAskSnoozerQualityTrace({
   const partialPurchaseVisible = products.some((product) => product?.suppressAddToCart !== true && product?.exactVariantResolved === true) || actions.some((action) => action?.type === "add_to_cart");
   const requestedScopePreserved = !(fullSetupRequested && quote?.ok === false && partialPurchaseVisible);
   const partialActionSuppressed = !fullSetupRequested || quote?.ok === true || !partialPurchaseVisible;
-  const shopperLanguageClean = !SHOPPER_LANGUAGE_BLOCKLIST.some((phrase) => normalizeQuestion(finalVisibleText).includes(normalizeQuestion(phrase)));
+  const shopperLanguageClean = !SHOPPER_LANGUAGE_BLOCKLIST.some((phrase) => includesProtectedLanguage(finalVisibleText, phrase));
+  const substantiveTasks = new Set([
+    "product_experience", "product_comparison", "canonical_comparison", "comparison_value",
+    "recommendation_explanation", "advisor_choice", "firmness_choice", "value_judgment",
+    "value_objection", "price_value", "configuration_value", "durability_objection",
+    "confusion_recovery", "trust_recovery", "compound_product_base", "compatibility",
+    "canonical_recommendation", "canonical_recall", "session_recommendation_recall",
+    "sleep_education", "warranty_explanation",
+  ]);
+  const compoundQuestionFullyAnswered = !gateViolations.some((item) => /^compound_/.test(item));
+  const recommendationExplanationComplete = clean(plan.taskType) !== "recommendation_explanation" ||
+    !gateViolations.includes("recommendation_explanation_incomplete");
+  const comparisonComplete = !["product_comparison", "canonical_comparison", "comparison_value"].includes(clean(plan.taskType)) ||
+    !gateViolations.includes("comparison_incomplete");
+  const renderedProductsConsistent = !gateViolations.some((item) => /(?:product_card|unverified_product|rejected_session_recommendation)/.test(item));
+  const renderedActionsConsistent = !gateViolations.some((item) => /(?:_action|action_scope|unsafe_cart|response_scope)/.test(item));
+  const unnecessaryClarification = Boolean(
+    knownRepeated ||
+    (clean(plan.taskType) === "reference_clarification" && referenceResolution?.resolved)
+  );
+  const legacyProsePathUsed = finalResponsePath === "legacy_path";
+  const genericFallbackUsed = (
+    ["legacy_path", "grounded_safe_fallback"].includes(finalResponsePath) && isGenericResponse(reply)
+  );
+  const advisorResponseAppropriate = !substantiveTasks.has(clean(plan.taskType)) ||
+    ["structured_composer", "grounded_safe_fallback"].includes(finalResponsePath);
+  const nextStepAppropriate = questionCount(reply) <= 1 && renderedActionsConsistent;
   const contextualNextActionAvailable = Boolean(
     commercialState.goalReady ||
       quotePresented ||
@@ -672,6 +744,19 @@ function buildAskSnoozerQualityTrace({
     modelCompositionUsed: compositionMode === "model_assisted" && Number(modelCallCount) > 0,
     responseCompletedNaturally: responseComplete(reply),
     shopperLanguageClean,
+    responseComplete: responseComplete(reply),
+    sentenceComplete: responseComplete(reply),
+    compoundQuestionFullyAnswered,
+    advisorResponseAppropriate,
+    internalLanguageAbsent: shopperLanguageClean,
+    renderedProductsConsistent,
+    renderedActionsConsistent,
+    recommendationExplanationComplete,
+    comparisonComplete,
+    nextStepAppropriate,
+    unnecessaryClarification,
+    legacyProsePathUsed,
+    genericFallbackUsed,
     explicitRejectionHonored,
     rejectedProductReintroduced,
     subjectiveFeedbackPreserved,
@@ -724,6 +809,7 @@ function buildAskSnoozerQualityTrace({
     continuation: Boolean(plan.continuationOf),
     depth: clean(plan.responseDepth) || "standard",
     responseStrategy: clean(plan.answerMode || plan.taskType) || "unknown",
+    responsePath: finalResponsePath,
     responsePolicyVersion: clean(responsePolicyVersion) || config.responsePolicyVersion,
     composition: {
       mode,
@@ -886,7 +972,7 @@ function buildQualityMetricEnvelope(trace = {}, environment = process.env.REWARD
       CloudWatchMetrics: [
         {
           Namespace: "Snoozer/ConversationQuality",
-          Dimensions: [["Environment", "CompositionMode"]],
+          Dimensions: [["Environment", "CompositionMode", "ResponsePath"]],
           Metrics: [
             { Name: "Turns", Unit: "Count" },
             { Name: "Fallbacks", Unit: "Count" },
@@ -904,6 +990,7 @@ function buildQualityMetricEnvelope(trace = {}, environment = process.env.REWARD
     },
     Environment: clean(environment) || "staging",
     CompositionMode: trace?.composition?.mode || "deterministic",
+    ResponsePath: trace?.responsePath || "legacy_path",
     Turns: 1,
     Fallbacks: trace?.fallbackUsed ? 1 : 0,
     RecoveryAttempts: trace?.outcome?.recovery?.attempted ? 1 : 0,
@@ -965,6 +1052,21 @@ function aggregateAskSnoozerQualityTraces(events, reviews = null) {
   const total = traces.length;
   const count = (predicate) => traces.filter(predicate).length;
   const modes = ["deterministic", "model_assisted", "model_fallback", "deterministic_recovery"];
+  const paths = ["atomic_deterministic", "structured_composer", "grounded_safe_fallback", "legacy_path"];
+  const pathDistribution = Object.fromEntries(paths.map((path) => {
+    const selected = traces.filter((event) => event?.responsePath === path);
+    const latencies = selected.map((event) => event?.latency?.totalMs);
+    const factPacks = selected.map((event) => event?.factPackBudget?.totalChars);
+    return [path, {
+      count: selected.length,
+      percent: rate(selected.length, total),
+      averageMs: average(latencies),
+      p95Ms: percentile(latencies),
+      factPackAverageChars: average(factPacks),
+      factPackP95Chars: percentile(factPacks),
+      factPackMaxChars: factPacks.map(Number).filter(Number.isFinite).reduce((max, value) => Math.max(max, value), 0),
+    }];
+  }));
   const latencyByMode = Object.fromEntries(modes.map((mode) => {
     const values = traces.filter((event) => event?.composition?.mode === mode).map((event) => event?.latency?.totalMs);
     return [mode, { count: values.length, averageMs: average(values), p95Ms: percentile(values) }];
@@ -992,6 +1094,7 @@ function aggregateAskSnoozerQualityTraces(events, reviews = null) {
     rateLimitFallbackPercent: rate(count((event) => event?.composition?.fallbackKind === "rate_limit"), total),
     latencyByMode,
     payloadByMode,
+    pathDistribution,
     probeRate: rate(count((event) => event?.probeUsed), total),
     unresolvedReferenceRate: rate(count((event) => event?.referenceResolution?.phrase && !event?.referenceResolution?.resolved), total),
     consistencyGateRejectionRate: rate(count((event) => event?.composition?.rejected), total),

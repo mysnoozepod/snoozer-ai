@@ -35,6 +35,7 @@ const originalConsoleLog = console.log;
 const sessionStore = new Map();
 const resultsStore = new Map();
 const openAiCalls = [];
+const composerCalls = [];
 const shopifyCalls = [];
 const manifest = loadShowroomManifest();
 
@@ -126,6 +127,7 @@ function patchDependencies() {
     };
   };
   openai.composeTrustedAdvisorResponse = async function mockedComposer(input = {}) {
+    composerCalls.push(input);
     return {
       displayText: input.deterministicDraft.displayText,
       speechText: input.deterministicDraft.speechText,
@@ -174,6 +176,7 @@ function resetStores() {
   sessionStore.clear();
   resultsStore.clear();
   openAiCalls.length = 0;
+  composerCalls.length = 0;
   shopifyCalls.length = 0;
 }
 
@@ -288,10 +291,9 @@ async function testSessionSlotPrecedenceAndPainPreservation() {
   assert.strictEqual(memory.slots.size.value, "King");
   assert.strictEqual(memory.slots.size.provenance, "current_conversation");
   assert.strictEqual(memory.slots.firmness.value, "Medium");
-  assert(openAiCalls.length >= 1, "model lane should have been exercised");
-  const modelMemory = openAiCalls[0].options.context.askSnoozerWorkingMemory;
-  assert.strictEqual(modelMemory.slots.size.value, "King");
-  assert.strictEqual(modelMemory.slots.firmness.value, "Medium");
+  assert(composerCalls.length >= 1, "structured composer lane should have been exercised");
+  assert.strictEqual(composerCalls[0].factPack.state.size, "King");
+  assert.strictEqual(composerCalls[0].factPack.state.firmness, "Medium");
   assert.strictEqual(getMemory(sessionId).turnIndex, 3);
 }
 

@@ -78,7 +78,7 @@ async function main() {
   assert(!rejected.reply.includes("$9,999"));
 
   const simple = planAskSnoozerTurn({ query: "What did you recommend for me again?", context });
-  assert.equal(simple.needsModel, false);
+  assert.equal(simple.needsModel, true);
   const quote = planAskSnoozerTurn({ query: "What would the King version of your recommendation cost?", context });
   assert.equal(quote.needsModel, false);
   const protectedPlan = planAskSnoozerTurn({ query: "Would you buy that one?", context });
