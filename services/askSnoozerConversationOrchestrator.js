@@ -575,6 +575,9 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     text,
     modelDecision,
   })) taskType = clean(modelDecision.primaryTask);
+  if (taskType === "legacy" && requestedFacts.includes("recommendation_reasons")) {
+    taskType = "recommendation_explanation";
+  }
   if (requestedFacts.length > 1) taskType = "compound_fact_answer";
   else if (requestedFacts.includes("product_sizes")) taskType = "product_sizes";
 

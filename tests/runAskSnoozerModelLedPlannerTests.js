@@ -226,6 +226,21 @@ async function main() {
   check(input.activeJourney.canonicalRecommendation.podId === "3", "planner receives protected canonical pod identity");
   check(input.catalog.every((item) => item.handle && item.title), "planner receives compact real catalog identities");
 
+  const wrongPodDecision = parseModelPlannerDecision({
+    primaryTask: null,
+    requestedFacts: ["recommendation_reasons"],
+    requestedPodId: "4",
+    requiresComposition: true,
+    confidence: 0.96,
+  }, { query: "Why did you choose Pod 4 for me?" });
+  const wrongPodPlan = planAskSnoozerTurn({
+    query: "Why did you choose Pod 4 for me?",
+    context: baseContext(),
+    modelDecision: wrongPodDecision,
+  });
+  check(wrongPodPlan.taskType === "recommendation_explanation", "recommendation-reason scope cannot fall into the legacy route when the model omits a primary task");
+  check(wrongPodPlan.handled && wrongPodPlan.needsModel, "wrong-pod correction enters the structured advisor composer");
+
   console.log(`Ask Snoozer model-led planner tests passed (${checks} checks).`);
 }
 
