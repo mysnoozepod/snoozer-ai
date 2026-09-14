@@ -103,6 +103,10 @@ const FAST_TIMEOUT_MS = Math.max(
   500,
   Math.min(AXIOS_TIMEOUT_MS, Number(process.env.FAST_PATH_TIMEOUT_MS || AXIOS_TIMEOUT_MS))
 );
+const ADVISOR_COMPOSER_TIMEOUT_MS = Math.max(
+  FAST_TIMEOUT_MS,
+  Math.min(15000, Number(process.env.ADVISOR_COMPOSER_TIMEOUT_MS || 8000))
+);
 const S3_RETRIEVAL_TIMEOUT_MS = Math.max(50, Number(process.env.S3_RETRIEVAL_TIMEOUT_MS || 300));
 
 const BASE_PROMPT_TTL_MS = Number(process.env.BASE_PROMPT_TTL_MS || 300000);
@@ -2264,7 +2268,7 @@ async function deterministicUpdateCartQtyPath(
 // ──────────────────────────────
 // Model path (NO TOOLS, NO COMMERCE) + retrieval enforcement
 // ──────────────────────────────
-async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL, maxTokens = 350 }) {
+async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL, maxTokens = 350, timeoutMs = FAST_TIMEOUT_MS }) {
   const { OPENAI_API_KEY: apiKey } = await getIntegrationCredentials("openai");
   if (!apiKey) {
     const err = new Error("OPENAI_API_KEY missing");
@@ -2288,12 +2292,12 @@ async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL, maxTokens 
       logEvent("openai.start", {
         reqId,
         attempt,
-        timeoutMs: FAST_TIMEOUT_MS,
+        timeoutMs,
         ...summarizePayload(payload.messages),
       });
 
       const resp = await openai.post("/chat/completions", payload, {
-        timeout: FAST_TIMEOUT_MS,
+        timeout: timeoutMs,
         headers: { Authorization: `Bearer ${apiKey}` },
       });
 
@@ -3048,6 +3052,7 @@ async function composeTrustedAdvisorResponse({
   ].filter(Boolean).join(" ");
   const response = await callOpenAIChat({
     reqId: requestId || `advisor_${Date.now().toString(36)}`,
+    timeoutMs: ADVISOR_COMPOSER_TIMEOUT_MS,
     messages: [
       {
         role: "system",
@@ -3072,7 +3077,7 @@ async function composeTrustedAdvisorResponse({
     payloadChars: boundedPayload.length,
     factPackChars: JSON.stringify(factPack || {}).length,
     factPackBudget: factPack?.budget || null,
-    timeoutMs: AXIOS_TIMEOUT_MS,
+    timeoutMs: ADVISOR_COMPOSER_TIMEOUT_MS,
   };
 }
 
