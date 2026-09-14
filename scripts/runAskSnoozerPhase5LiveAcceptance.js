@@ -176,8 +176,8 @@ async function main() {
   assert.match(summaries[0].reply, /SnoozePod 3/i, "wrong-pod correction did not name SnoozePod 3");
   assert.match(summaries[0].reply, /14(?:-inch|\") Hybrid/i, "wrong-pod correction did not name the actual mattress");
   assert(!/chose SnoozePod 4/i.test(summaries[0].reply), "wrong-pod premise was accepted");
-  assert(summaries[1].rejectedProducts.includes("14-hybrid-mattress"), "rejection was not persisted");
-  assert(!summaries[2].renderedProducts.includes("14-hybrid-mattress"), "pending yes resurrected the rejected mattress");
+  assert(summaries[1].rejectedProducts.includes("14-hybrid"), "rejection was not persisted");
+  assert(!summaries[2].renderedProducts.includes("14-hybrid"), "pending yes resurrected the rejected mattress");
   assert.match(summaries[4].reply, /King/i, "exact-product size answer omitted King");
   assert(!/which mattress do you mean/i.test(summaries[4].reply), "exact handle was not resolved");
   assert.match(summaries[5].reply, /warranty/i, "compound answer omitted warranty");
