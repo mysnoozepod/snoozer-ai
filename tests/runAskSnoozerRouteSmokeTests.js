@@ -24,6 +24,7 @@ const openai = require("../services/openai");
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
 const originalComposeTrustedAdvisorResponse = openai.composeTrustedAdvisorResponse;
+const originalPlanTrustedAdvisorTurnWithModel = openai.planTrustedAdvisorTurnWithModel;
 
 const sessionStore = new Map();
 const resultsStore = new Map();
@@ -123,12 +124,21 @@ function patchOpenAi() {
       factPackChars: JSON.stringify(input.factPack || {}).length,
     };
   };
+  openai.planTrustedAdvisorTurnWithModel = async ({ query = "" } = {}) => {
+    if (/what should i notice when i lie/i.test(query)) {
+      const error = new Error("forced planner timeout");
+      error.code = "E_ADVISOR_PLANNER_TIMEOUT";
+      throw error;
+    }
+    return { decision: null, model: "mock-advisor-planner", modelMs: 1 };
+  };
 }
 
 function restore() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
   openai.getSnoozerResponse = originalOpenAiGetSnoozerResponse;
   openai.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
+  openai.planTrustedAdvisorTurnWithModel = originalPlanTrustedAdvisorTurnWithModel;
 }
 
 function hasRenderableText(body) {
@@ -144,7 +154,14 @@ function hasRenderableText(body) {
 
 const ASK_SNOOZER_CASES = [
   { id: "hello", message: "hello" },
-  { id: "firmer-mattress", message: "Do I need a firmer mattress?" },
+  { id: "firmer-mattress", message: "Do I need a firmer mattress?", expectPlanning: true },
+  {
+    id: "planner-fallback",
+    message: "What should I notice when I lie on this mattress?",
+    body: { context: { assessment: buildCanonicalAssessment() } },
+    expectPlanningFallback: true,
+    expectAny: ["shoulder", "hip", "support", "contour"],
+  },
   { id: "compare-top-pods", message: "Compare my top pods" },
   { id: "best-value", message: "What is the best value option?" },
   { id: "wake-up-tired", message: "Why do I wake up tired?" },
@@ -350,6 +367,15 @@ async function invoke(path, testCase) {
   assertNoRuntimeLeak(path, testCase, body);
   assertNoInventedCommerceTruth(path, testCase, body);
   assertAnswerQuality(path, testCase, body);
+  if (testCase.expectPlanning) {
+    assert.strictEqual(body?.metadata?.planning?.mode, "model_planned", `${path} ${testCase.id} should expose model-led planning`);
+    assert.strictEqual(body?.metadata?.planning?.modelCallCount, 1, `${path} ${testCase.id} should account for the planner call`);
+  }
+  if (testCase.expectPlanningFallback) {
+    assert.strictEqual(body?.metadata?.planning?.mode, "model_fallback", `${path} ${testCase.id} should expose safe planner fallback`);
+    assert.strictEqual(body?.metadata?.planning?.modelCallCount, 1, `${path} ${testCase.id} should account for the failed planner call`);
+    assert.strictEqual(body?.metadata?.planning?.fallbackUsed, true, `${path} ${testCase.id} should report planner fallback`);
+  }
   return body;
 }
 

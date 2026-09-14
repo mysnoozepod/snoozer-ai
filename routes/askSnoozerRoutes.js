@@ -46,6 +46,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     completeAskSnoozerAdvisorTurn,
     completeAskSnoozerPriceGoal,
     markAskSnoozerPriceGoalResolving,
+    shouldPlanAskSnoozerWithModel,
+    planTrustedAdvisorTurnWithModel,
     planAskSnoozerTurn,
     resolveAskSnoozerAdvisorTurn,
     composeTrustedAdvisorResponse,
@@ -508,15 +510,72 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     }
 
     let askSnoozerPlan = null;
+    let askSnoozerModelPlanning = {
+      used: false,
+      fallbackUsed: false,
+      modelCallCount: 0,
+      modelMs: 0,
+      model: null,
+      decision: null,
+      errorCode: null,
+    };
+    if (
+      typeof shouldPlanAskSnoozerWithModel === "function" &&
+      shouldPlanAskSnoozerWithModel({ query: msg, context }) &&
+      typeof planTrustedAdvisorTurnWithModel === "function"
+    ) {
+      const plannerStartedAt = Date.now();
+      askSnoozerModelPlanning.used = true;
+      askSnoozerModelPlanning.modelCallCount = 1;
+      try {
+        const planned = await planTrustedAdvisorTurnWithModel({
+          requestId: `${traceId}_planner`,
+          query: msg,
+          context,
+        });
+        askSnoozerModelPlanning = {
+          ...askSnoozerModelPlanning,
+          modelMs: Number(planned?.modelMs || Date.now() - plannerStartedAt),
+          model: planned?.model || null,
+          decision: planned?.decision || null,
+        };
+        log("ask-snoozer.model-planner", "resolved", {
+          traceId,
+          testCaseId,
+          model: askSnoozerModelPlanning.model,
+          modelMs: askSnoozerModelPlanning.modelMs,
+          primaryTask: planned?.decision?.primaryTask || null,
+          requestedFacts: planned?.decision?.requestedFacts || [],
+          productHandles: (planned?.decision?.productReferences || []).map((reference) => reference.handle),
+          interpretedActs: (planned?.decision?.acts || []).map((act) => act.type),
+        });
+      } catch (error) {
+        askSnoozerModelPlanning.fallbackUsed = true;
+        askSnoozerModelPlanning.modelMs = Date.now() - plannerStartedAt;
+        askSnoozerModelPlanning.errorCode = error?.code || "E_ADVISOR_PLANNER";
+        log("ask-snoozer.model-planner", "fallback", {
+          traceId,
+          testCaseId,
+          modelMs: askSnoozerModelPlanning.modelMs,
+          errorCode: askSnoozerModelPlanning.errorCode,
+        });
+      }
+    }
     if (typeof applyAskSnoozerWorkingMemory === "function") {
       const preTurnReferenceContext = context;
-      context = applyAskSnoozerWorkingMemory({ query: msg, context });
+      context = applyAskSnoozerWorkingMemory({
+        query: msg,
+        context,
+        modelDecision: askSnoozerModelPlanning.decision,
+      });
       if (typeof planAskSnoozerTurn === "function") {
         askSnoozerPlan = planAskSnoozerTurn({
           query: msg,
           context,
           referenceContext: preTurnReferenceContext,
+          modelDecision: askSnoozerModelPlanning.decision,
         });
+        askSnoozerPlan.modelPlanning = askSnoozerModelPlanning;
         if (
           askSnoozerPlan?.commercialCompletionAttempted &&
           typeof markAskSnoozerPriceGoalResolving === "function"
@@ -842,6 +901,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       }
       await commitActiveJourneyFromAskContext("advisor_completion");
       const latencyMs = Date.now() - startedAt;
+      const totalModelCallCount = Number(advisorAnswer.modelCallCount || 0) + Number(askSnoozerModelPlanning.modelCallCount || 0);
+      const totalModelMs = Number(advisorAnswer.modelMs || 0) + Number(askSnoozerModelPlanning.modelMs || 0);
       const mergedContext = sco && typeof sco === "object" ? deepMerge(sco, context) : context;
       try {
         await saveSessionContext(effectiveSessionId, mergedContext);
@@ -864,9 +925,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         actions: advisorAnswer.actions,
         metrics: {
           retrievalMs: advisorAnswer.quote ? latencyMs : 0,
-          modelMs: advisorAnswer.modelMs || 0,
+          modelMs: totalModelMs,
           totalMs: latencyMs,
           fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
+          modelCallCount: totalModelCallCount,
         },
       });
       env.reply = advisorAnswer.reply;
@@ -899,9 +961,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             compositionMode: advisorAnswer.compositionMode,
             responsePath: advisorAnswer.responsePath,
             compositionFallbackUsed: advisorAnswer.compositionFallbackUsed,
-            modelCallCount: advisorAnswer.modelCallCount,
+            modelCallCount: totalModelCallCount,
             totalMs: latencyMs,
-            modelMs: advisorAnswer.modelMs,
+            modelMs: totalModelMs,
             factPackComplete: (advisorAnswer.plan.neededFacts || []).length === 0,
             factPack: advisorAnswer.factPack,
             modelInputChars: advisorAnswer.modelInputChars,
@@ -986,6 +1048,20 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           timeoutMs: advisorAnswer.modelTimeoutMs || 0,
           factPackBudget: advisorAnswer.factPack?.composerBudget || advisorAnswer.factPack?.budget || null,
         },
+        planning: {
+          mode: askSnoozerModelPlanning.used
+            ? askSnoozerModelPlanning.fallbackUsed
+              ? "model_fallback"
+              : "model_planned"
+            : "deterministic",
+          modelCallCount: askSnoozerModelPlanning.modelCallCount,
+          modelMs: askSnoozerModelPlanning.modelMs,
+          model: askSnoozerModelPlanning.model,
+          fallbackUsed: askSnoozerModelPlanning.fallbackUsed,
+          errorCode: askSnoozerModelPlanning.errorCode,
+          requestedFacts: advisorAnswer.plan.requestedFacts || [],
+          answerRequirements: advisorAnswer.plan.answerRequirements || [],
+        },
         quality: qualityTrace
           ? {
               traceVersion: qualityTrace.version,
@@ -1005,10 +1081,12 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             },
         metrics: {
           retrievalMs: advisorAnswer.quote ? latencyMs : 0,
-          modelMs: advisorAnswer.modelMs || 0,
+          modelMs: totalModelMs,
           totalMs: latencyMs,
           fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
-          modelCallCount: advisorAnswer.modelCallCount || 0,
+          modelCallCount: totalModelCallCount,
+          plannerModelCallCount: askSnoozerModelPlanning.modelCallCount || 0,
+          plannerModelMs: askSnoozerModelPlanning.modelMs || 0,
           modelInputChars: advisorAnswer.modelInputChars || 0,
           factPackChars: advisorAnswer.modelFactPackChars || advisorAnswer.factPack?.budget?.totalChars || 0,
           fallbackKind: advisorAnswer.fallbackKind || null,
@@ -1036,8 +1114,16 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         shopperId: shopperId || null,
         ...env.meta.semantics,
         totalMs: latencyMs,
-        modelMs: advisorAnswer.modelMs || 0,
-        modelCallCount: advisorAnswer.modelCallCount || 0,
+        modelMs: totalModelMs,
+        modelCallCount: totalModelCallCount,
+        plannerMode: askSnoozerModelPlanning.used
+          ? askSnoozerModelPlanning.fallbackUsed
+            ? "model_fallback"
+            : "model_planned"
+          : "deterministic",
+        plannerModelMs: askSnoozerModelPlanning.modelMs || 0,
+        plannerModelCallCount: askSnoozerModelPlanning.modelCallCount || 0,
+        plannerRequestedFacts: advisorAnswer.plan.requestedFacts || [],
         compositionMode: advisorAnswer.compositionMode,
         responsePath: advisorAnswer.responsePath,
         compositionFallbackUsed: Boolean(advisorAnswer.compositionFallbackUsed),
@@ -1285,7 +1371,12 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       };
     };
 
-    const canonicalAnswer = maybeBuildAskSnoozerCanonicalAnswer(msg, context);
+    const unifiedAskSurface =
+      String(mode || "").toLowerCase() === "ask_snoozer_page" ||
+      ["/ask-snoozer", "/ask"].includes(String(routePath || "").toLowerCase());
+    const canonicalAnswer = unifiedAskSurface
+      ? null
+      : maybeBuildAskSnoozerCanonicalAnswer(msg, context);
     if (canonicalAnswer) {
       let latencyMs = Date.now() - startedAt;
       let canonicalProducts = [];
@@ -2318,13 +2409,16 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           : askSnoozerDecision.intentGroup === "session_guidance"
             ? "session_guidance"
             : "guided_faq");
+      const sessionGuidance = askSnoozerDecision.intentGroup === "session_guidance";
       const faqSourceOfTruth =
-        String(deterministicFaqAnswer.source_of_truth || "").trim() ||
-        askSnoozerDecision.sourceOfTruth;
+        sessionGuidance
+          ? "session_prep"
+          : String(deterministicFaqAnswer.source_of_truth || "").trim() ||
+            askSnoozerDecision.sourceOfTruth;
       const env = buildSuccessResponse({
         requestId: traceId,
         latencyMs,
-        model: "deterministic_faq",
+        model: sessionGuidance ? "deterministic_session_guidance" : "deterministic_faq",
         text: deterministicFaqAnswer.reply || "",
         context: mergedContext,
         products: [],

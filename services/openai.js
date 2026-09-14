@@ -1,5 +1,5 @@
 // services/openai.js
-// Snoozer intelligence: deterministic-first routing + tool enforcement.
+// Snoozer intelligence: model-led conversation planning + deterministic truth/tool enforcement.
 //
 // Key rules:
 // - Deterministic paths handle ALL commerce (price + cart) via tools.
@@ -49,6 +49,10 @@ const {
   resolveExplicitProductHandle,
   resolveRequestedProductHandle,
 } = require("./askSnoozerWorkingMemory");
+const {
+  buildModelPlannerInput,
+  parseModelPlannerDecision,
+} = require("./askSnoozerModelPlanner");
 
 // Shopify service (used deterministically for variant resolution by size)
 let shopifySvc = null;
@@ -2260,7 +2264,7 @@ async function deterministicUpdateCartQtyPath(
 // ──────────────────────────────
 // Model path (NO TOOLS, NO COMMERCE) + retrieval enforcement
 // ──────────────────────────────
-async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL }) {
+async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL, maxTokens = 350 }) {
   const { OPENAI_API_KEY: apiKey } = await getIntegrationCredentials("openai");
   if (!apiKey) {
     const err = new Error("OPENAI_API_KEY missing");
@@ -2277,7 +2281,7 @@ async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL }) {
       const payload = {
         model,
         temperature: 0.2,
-        max_tokens: 350,
+        max_tokens: Math.max(64, Math.min(800, Number(maxTokens) || 350)),
         messages: normalized,
       };
 
@@ -2809,7 +2813,7 @@ function compactAdvisorLines(raw = "", { limit = 10, include = [] } = {}) {
     .slice(0, limit);
 }
 
-async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", query = "" } = {}) {
+async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", query = "", requestedFacts = [] } = {}) {
   let advisorKnowledge = require("../data/ask-snoozer-advisor-knowledge.v1.json");
   try {
     const remote = await getObjectJson(KNOWLEDGE_BUCKET, ADVISOR_KNOWLEDGE_KEY);
@@ -2839,8 +2843,9 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
       // Missing optional product knowledge remains UNKNOWN in the caller's fact pack.
     }
   }
+  const requested = new Set((Array.isArray(requestedFacts) ? requestedFacts : []).map((fact) => String(fact).toLowerCase()));
   const policyFacts = [];
-  if (taskType === "warranty_explanation" || /\bwarrant|coverage|sagging?\b/i.test(query)) {
+  if (requested.has("warranty") || taskType === "warranty_explanation" || /\bwarrant|coverage|sagging?\b/i.test(query)) {
     try {
       const loaded = await getObjectText(KNOWLEDGE_BUCKET, "faq/warranty.md");
       if (loaded.value) {
@@ -2866,6 +2871,56 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
       }
     }
   }
+  const supplementalPolicies = [
+    {
+      topic: "delivery",
+      requested: requested.has("delivery") || /\bdeliver(?:y|ies|ed)\b/i.test(query),
+      keys: ["policies/delivery-policy.md", "faq/delivery.md"],
+      include: ["delivery", "business day", "schedule", "window", "availability", "zip"],
+      packagedKey: "shipping_time",
+    },
+    {
+      topic: "returns",
+      requested: requested.has("returns") || /\breturn|exchange|sleep trial\b/i.test(query),
+      keys: ["policies/returns.md", "faq/returns.md"],
+      include: ["return", "exchange", "sleep trial", "night", "final sale"],
+      packagedKey: "return_policy",
+    },
+    {
+      topic: "financing",
+      requested: requested.has("financing") || /\bfinanc|payment plan\b/i.test(query),
+      keys: ["faq/financing.md"],
+      include: ["financing", "payment", "affirm", "credit"],
+      packagedKey: "payment_options",
+    },
+  ];
+  for (const policy of supplementalPolicies.filter((item) => item.requested)) {
+    let loadedPolicy = false;
+    for (const key of policy.keys) {
+      try {
+        const loaded = await getObjectText(KNOWLEDGE_BUCKET, key);
+        if (!loaded.value) continue;
+        const facts = compactAdvisorLines(loaded.value, { limit: 10, include: policy.include });
+        if (!facts.length) continue;
+        policyFacts.push({ topic: policy.topic, sourceKey: key, status: "verified_fact", facts });
+        loadedPolicy = true;
+        break;
+      } catch {
+        // Try the next approved key, then the packaged rollback fact.
+      }
+    }
+    if (!loadedPolicy) {
+      const packaged = String(require("../faqs.json")?.[policy.packagedKey] || "").trim();
+      if (packaged) {
+        policyFacts.push({
+          topic: policy.topic,
+          sourceKey: `faqs.json#${policy.packagedKey}`,
+          status: "verified_fact",
+          facts: [packaged],
+        });
+      }
+    }
+  }
   return {
     version: advisorKnowledge.version || null,
     sourceKey: ADVISOR_KNOWLEDGE_KEY,
@@ -2886,6 +2941,41 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
     })(),
     productFacts,
     policyFacts,
+  };
+}
+
+async function planTrustedAdvisorTurnWithModel({ requestId, query = "", context = {} } = {}) {
+  const startedAt = Date.now();
+  const plannerInput = buildModelPlannerInput({ query, context });
+  const systemContent = [
+    "You plan the next turn for Snoozer, an expert mattress showroom advisor.",
+    "You decide conversational meaning and answer scope, but you have no authority over facts, prices, availability, variants, compatibility, cart state, policies, or the assessment result.",
+    "Identify every shopper act and every fact the shopper requested. One message may contain multiple acts or questions.",
+    "Resolve product references only to handles in the supplied catalog. Never invent a product or handle.",
+    "The assessment recommendation is historical baseline. Explicit shopper feedback and the current session recommendation control active advice.",
+    "Return JSON only with: primaryTask, shopperGoal, acts, productReferences, comparisonProductHandles, requestedFacts, answerRequirements, requestedPodId, requiresComposition, confidence.",
+    "Valid act types are reject_product, product_feedback, retain_preference, desired_direction, request_alternative, explicit_exclusion, accept_commitment, decline_commitment, trust_risk, confusion, reconsider_product, accept_recommendation, and budget_value. Include productHandle and value or reason when relevant.",
+    "Use compound_fact_answer when the shopper requests more than one protected fact, product_sizes for an exact size question, and recommendation_explanation for why an assessment or pod was chosen.",
+    "Valid requestedFacts include recommendation_reasons, product_sizes, product_features, warranty, delivery, returns, financing, price, availability, compatibility, and cart.",
+    "Use answerRequirements to require all requested facts, named comparisons, recommendation reasons, feedback acknowledgement, state recap, grounded opinion, unknown disclosure, or one useful next step.",
+    "Do not write the shopper-facing answer.",
+  ].join(" ");
+  const payload = JSON.stringify(plannerInput);
+  const response = await callOpenAIChat({
+    reqId: requestId || `advisor_plan_${Date.now().toString(36)}`,
+    model: FAST_MODEL,
+    maxTokens: 500,
+    messages: [
+      { role: "system", content: systemContent },
+      { role: "user", content: payload },
+    ],
+  });
+  return {
+    decision: parseModelPlannerDecision(response.text, { query }),
+    model: response.model,
+    tokens: response.tokens,
+    modelMs: Date.now() - startedAt,
+    inputChars: systemContent.length + payload.length,
   };
 }
 
@@ -2994,6 +3084,7 @@ async function runSnoozer({ message, mode, context, thread_id } = {}) {
 
 module.exports = {
   composeTrustedAdvisorResponse,
+  planTrustedAdvisorTurnWithModel,
   loadTrustedAdvisorFactPack,
   getSnoozerResponse,
   runSnoozer,

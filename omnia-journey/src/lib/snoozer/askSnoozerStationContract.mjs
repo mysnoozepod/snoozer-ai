@@ -186,14 +186,17 @@ export function buildProductAddAction(product = {}) {
 }
 
 export function buildComparePrompt(product, products = []) {
-  const primary = text(product?.handle);
-  if (!primary) return "Compare Products";
+  const primaryHandle = text(product?.handle);
+  const primaryTitle = text(product?.title || product?.label);
+  if (!primaryHandle && !primaryTitle) return "Compare Products";
   const second = (Array.isArray(products) ? products : []).find(
-    (candidate) => text(candidate?.handle) && text(candidate?.handle) !== primary
+    (candidate) => text(candidate?.handle) && text(candidate?.handle) !== primaryHandle
   );
-  return second?.handle
-    ? `Compare ${primary} with ${text(second.handle)}`
-    : `Compare Products with ${primary}`;
+  const shopperPrimary = primaryTitle || "this product";
+  const shopperSecond = text(second?.title || second?.label);
+  return shopperSecond
+    ? `Compare ${shopperPrimary} with ${shopperSecond}`
+    : `Compare ${shopperPrimary} with another option`;
 }
 
 export function formatProductPrice(product = {}) {

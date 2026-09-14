@@ -622,9 +622,11 @@ function buildAskSnoozerQualityTrace({
     "value_objection", "price_value", "configuration_value", "durability_objection",
     "confusion_recovery", "trust_recovery", "compound_product_base", "compatibility",
     "canonical_recommendation", "canonical_recall", "session_recommendation_recall",
-    "sleep_education", "warranty_explanation",
+    "sleep_education", "warranty_explanation", "product_sizes", "compound_fact_answer",
   ]);
-  const compoundQuestionFullyAnswered = !gateViolations.some((item) => /^compound_/.test(item));
+  const requestedFacts = Array.isArray(plan?.requestedFacts) ? plan.requestedFacts : [];
+  const requestedFactsFullyAnswered = !gateViolations.some((item) => item.startsWith("requested_fact_unanswered:"));
+  const compoundQuestionFullyAnswered = !gateViolations.some((item) => /^compound_/.test(item)) && requestedFactsFullyAnswered;
   const recommendationExplanationComplete = clean(plan.taskType) !== "recommendation_explanation" ||
     !gateViolations.includes("recommendation_explanation_incomplete");
   const comparisonComplete = !["product_comparison", "canonical_comparison", "comparison_value"].includes(clean(plan.taskType)) ||
@@ -895,6 +897,12 @@ function buildAskSnoozerQualityTrace({
     knownQuestionRepeated: knownRepeated,
     genericResponse: isGenericResponse(reply),
     interpretedActs: acts.map((act) => clean(act?.type)).filter(Boolean),
+    requestedFacts,
+    requestedFactsFullyAnswered,
+    modelPlanningUsed: clean(plan?.modelPlanning?.used) === "true" || plan?.modelPlanning?.used === true,
+    modelPlanningFallbackUsed: Boolean(plan?.modelPlanning?.fallbackUsed),
+    plannerModelCallCount: Math.max(0, Number(plan?.modelPlanning?.modelCallCount) || 0),
+    plannerModelMs: Math.max(0, Number(plan?.modelPlanning?.modelMs) || 0),
     stateBefore: isObject(transition.stateBefore) ? transition.stateBefore : {},
     stateDelta: isObject(transition.stateDelta) ? transition.stateDelta : {},
     stateAfter: isObject(transition.stateAfter) ? transition.stateAfter : {},

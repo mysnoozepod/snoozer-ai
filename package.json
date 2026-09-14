@@ -24,6 +24,7 @@
     "test:ask-snoozer-shopper-feedback": "node tests/runAskSnoozerShopperFeedbackAuthorityTests.js",
     "test:ask-snoozer-adaptive-decision": "node tests/runAskSnoozerAdaptiveDecisionExecutionTests.js",
     "test:ask-snoozer-unified-pipeline": "node tests/runAskSnoozerUnifiedAdvisorPipelineTests.js",
+    "test:ask-snoozer-model-planner": "node tests/runAskSnoozerModelLedPlannerTests.js",
     "test:ask-snoozer-unified-pipeline:live": "node scripts/runAskSnoozerPhase4LiveAcceptance.js",
     "test:ask-snoozer-comparison-latency:live": "node scripts/runAskSnoozerComparisonLatencyAcceptance.js",
     "test:active-journey": "node tests/runActiveJourneyTests.js",

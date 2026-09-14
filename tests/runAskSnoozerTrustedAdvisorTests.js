@@ -37,6 +37,7 @@ const {
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAi = openai.getSnoozerResponse;
 const originalComposer = openai.composeTrustedAdvisorResponse;
+const originalPlanner = openai.planTrustedAdvisorTurnWithModel;
 const originalFetchProducts = shopify.fetchProductsByHandles;
 const originalGetCart = shopify.getCart;
 const originalConsoleLog = console.log;
@@ -126,6 +127,7 @@ function patchDependencies() {
       model: "trusted-advisor-composer-fixture",
     };
   };
+  openai.planTrustedAdvisorTurnWithModel = async () => ({ decision: null, model: "trusted-advisor-planner-fixture", modelMs: 1 });
 
   shopify.fetchProductsByHandles = async ({ handles = [] } = {}) => {
     const wanted = new Set(handles.map((handle) => String(handle)));
@@ -161,6 +163,7 @@ function restoreDependencies() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
   openai.getSnoozerResponse = originalOpenAi;
   openai.composeTrustedAdvisorResponse = originalComposer;
+  openai.planTrustedAdvisorTurnWithModel = originalPlanner;
   shopify.fetchProductsByHandles = originalFetchProducts;
   shopify.getCart = originalGetCart;
   console.log = originalConsoleLog;

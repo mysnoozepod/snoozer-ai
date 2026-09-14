@@ -307,14 +307,19 @@ async function main() {
   assert(quality.factPackBudget.totalChars > 0);
 
   const fallbackBase = turns[1].context;
-  const fallbackPlan = planAskSnoozerTurn({
+  const fallbackWorkingContext = applyAskSnoozerWorkingMemory({
     query: "Why that one?",
     context: fallbackBase,
+    now: new Date("2026-09-12T00:14:00.000Z"),
+  });
+  const fallbackPlan = planAskSnoozerTurn({
+    query: "Why that one?",
+    context: fallbackWorkingContext,
     referenceContext: fallbackBase,
   });
   const rateLimited = await resolveAskSnoozerAdvisorTurn({
     query: "Why that one?",
-    context: fallbackBase,
+    context: fallbackWorkingContext,
     plan: fallbackPlan,
     fetchProductsByHandles,
     composeAdvisorResponse: async () => {

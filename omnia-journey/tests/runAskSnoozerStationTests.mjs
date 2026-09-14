@@ -64,7 +64,12 @@ check(buildProductAddAction({ ...normalized, available: false }) === null, "unav
 check(normalizeAskStationAction({ type: "add_to_cart", label: "Add", payload: { merchandiseId: "123" } }) === null, "invalid variant ID is rejected");
 check(isValidProductVariantGid(exactId) && !isValidProductVariantGid("gid://shopify/Product/123"), "variant GID validation is exact");
 check(!JSON.stringify(normalized).includes("firstAvailableVariantId"), "first-available identity is not treated as selected configuration");
-check(buildComparePrompt(normalized, [normalized, { handle: "12-all-foam-mattress" }]).includes("12-all-foam-mattress"), "Compare feeds grounded handles back into Ask");
+const comparePrompt = buildComparePrompt(normalized, [
+  normalized,
+  { handle: "12-all-foam-mattress", title: "12-inch All Foam Mattress" },
+]);
+check(comparePrompt === "Compare 14 Hybrid with 12-inch All Foam Mattress", "Compare uses shopper-facing product names");
+check(!comparePrompt.includes("14-hybrid") && !comparePrompt.includes("12-all-foam-mattress"), "Compare does not expose product handles");
 check(cartItemCount([{ quantity: 2 }, { quantity: 1 }]) === 3, "cart count sums authoritative quantities");
 
 console.log(`Ask Snoozer station frontend tests passed (${checks} checks).`);

@@ -167,6 +167,9 @@ const {
   resolveAskSnoozerAdvisorTurn,
 } = require("./services/askSnoozerConversationOrchestrator");
 const {
+  shouldPlanAskSnoozerWithModel,
+} = require("./services/askSnoozerModelPlanner");
+const {
   resolveAskSnoozerVisitLifecycle,
 } = require("./services/askSnoozerVisitLifecycle");
 const {
@@ -6241,6 +6244,16 @@ function getAskSnoozerRouteDeps() {
     completeAskSnoozerAdvisorTurn,
     completeAskSnoozerPriceGoal,
     markAskSnoozerPriceGoalResolving,
+    shouldPlanAskSnoozerWithModel,
+    planTrustedAdvisorTurnWithModel: async (args) => {
+      const service = getOpenAiSvc();
+      if (!service || typeof service.planTrustedAdvisorTurnWithModel !== "function") {
+        const error = new Error("Trusted-advisor planner is unavailable.");
+        error.code = "E_ADVISOR_PLANNER_UNAVAILABLE";
+        throw error;
+      }
+      return service.planTrustedAdvisorTurnWithModel(args);
+    },
     planAskSnoozerTurn,
     resolveAskSnoozerAdvisorTurn,
     composeTrustedAdvisorResponse: async (args) => {

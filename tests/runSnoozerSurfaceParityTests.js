@@ -27,6 +27,7 @@ const manifest = require("../data/showroom-manifest.v1.json");
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAi = openai.getSnoozerResponse;
 const originalComposeTrustedAdvisorResponse = openai.composeTrustedAdvisorResponse;
+const originalPlanTrustedAdvisorTurnWithModel = openai.planTrustedAdvisorTurnWithModel;
 const originalFetchProducts = shopify.fetchProductsByHandles;
 const sessions = new Map();
 
@@ -112,6 +113,7 @@ function patchDependencies() {
     inputChars: JSON.stringify(input?.factPack || {}).length + 2000,
     factPackChars: JSON.stringify(input?.factPack || {}).length,
   });
+  openai.planTrustedAdvisorTurnWithModel = async () => ({ decision: null, model: "parity-planner-stub", modelMs: 1 });
 
   shopify.fetchProductsByHandles = async ({ handles = [] } = {}) => {
     const catalog = Array.isArray(manifest?.products) ? manifest.products : [];
@@ -134,6 +136,7 @@ function restoreDependencies() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
   openai.getSnoozerResponse = originalOpenAi;
   openai.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
+  openai.planTrustedAdvisorTurnWithModel = originalPlanTrustedAdvisorTurnWithModel;
   shopify.fetchProductsByHandles = originalFetchProducts;
 }
 

@@ -220,6 +220,17 @@ function resolveExplicitProductHandle(query = "") {
   const text = normalizeAskSnoozerText(query);
   if (!text) return "";
 
+  const raw = clean(query).toLowerCase();
+  const productMap = getProductMap();
+  if (productMap.has(raw)) return raw;
+  const slugLike = raw.replace(/[\s_]+/g, "-").replace(/-+/g, "-");
+  if (productMap.has(slugLike)) return slugLike;
+  for (const handle of productMap.keys()) {
+    if (new RegExp(`(?:^|[^a-z0-9])${handle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=$|[^a-z0-9])`, "i").test(raw)) {
+      return handle;
+    }
+  }
+
   const patterns = [
     ["12-dual-comfort-hybrid", /\b(?:12\s*(?:inch|in|-inch|["”])?\s*)?dual comfort(?:\s*hybrid)?\b/i],
     ["12-dual-comfort-hybrid", /\b12\s*(?:inch|in|-inch|["”])?\s*hybr(?:id|is)\b/i],
@@ -651,10 +662,34 @@ function invalidateQuoteForRejectedProduct(quote, rejected) {
   };
 }
 
-function reduceShopperFeedbackState({ query = "", previousDeal = {}, baseDeal = {}, turnIndex = 1, now = new Date() } = {}) {
+function reduceShopperFeedbackState({
+  query = "",
+  previousDeal = {},
+  baseDeal = {},
+  turnIndex = 1,
+  now = new Date(),
+  interpretedActs: plannedActs = [],
+} = {}) {
   const updatedAt = nowIso(now);
   const interpretation = interpretShopperActs({ query, previousDeal, turnIndex, now });
-  const acts = interpretation.acts;
+  const acts = [];
+  const seenActs = new Set();
+  for (const act of [...interpretation.acts, ...(Array.isArray(plannedActs) ? plannedActs : [])]) {
+    if (!isObject(act) || !clean(act.type)) continue;
+    const normalizedAct = { ...act, turnId: clean(act.turnId) || `turn-${turnIndex}` };
+    const key = JSON.stringify([
+      normalizedAct.type,
+      normalizeHandle(normalizedAct.handle),
+      clean(normalizedAct.feedback),
+      clean(normalizedAct.reason),
+      clean(normalizedAct.key),
+      clean(normalizedAct.value),
+      clean(normalizedAct.commitmentId),
+    ]);
+    if (seenActs.has(key)) continue;
+    seenActs.add(key);
+    acts.push(normalizedAct);
+  }
   const before = {
     activeProductHandle: normalizeHandle(previousDeal?.activeProductHandle) || null,
     rejectedProductHandles: Array.from(rejectedHandleSet(previousDeal)),
@@ -958,7 +993,7 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
   };
 }
 
-function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date() } = {}) {
+function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date(), modelDecision = null } = {}) {
   const updatedAt = nowIso(now);
   const previous = isObject(context?.askSnoozerWorkingMemory)
     ? context.askSnoozerWorkingMemory
@@ -1055,6 +1090,7 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
     baseDeal,
     turnIndex,
     now,
+    interpretedActs: modelDecision?.acts,
   });
   const rejected = rejectedHandleSet(feedbackTransition.activeDeal);
   const rejectedGoalHandle = normalizeHandle(activeGoal?.productHandle);

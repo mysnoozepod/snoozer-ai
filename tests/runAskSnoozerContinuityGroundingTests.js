@@ -29,6 +29,7 @@ const { loadShowroomManifest } = require("../services/showroomManifest");
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAi = openai.getSnoozerResponse;
 const originalComposer = openai.composeTrustedAdvisorResponse;
+const originalPlanner = openai.planTrustedAdvisorTurnWithModel;
 const originalFetchProducts = shopify.fetchProductsByHandles;
 const originalConsoleLog = console.log;
 
@@ -137,6 +138,7 @@ function patchDependencies() {
       model: "continuity-composer-stub",
     };
   };
+  openai.planTrustedAdvisorTurnWithModel = async () => ({ decision: null, model: "continuity-planner-stub", modelMs: 1 });
 
   shopify.fetchProductsByHandles = async ({ handles = [] } = {}) => {
     shopifyCalls.push(handles.slice());
@@ -168,6 +170,7 @@ function restoreDependencies() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
   openai.getSnoozerResponse = originalOpenAi;
   openai.composeTrustedAdvisorResponse = originalComposer;
+  openai.planTrustedAdvisorTurnWithModel = originalPlanner;
   shopify.fetchProductsByHandles = originalFetchProducts;
   console.log = originalConsoleLog;
 }
@@ -236,8 +239,8 @@ async function testCanonicalPageConflictAndRecall() {
   });
   assert.match(responseText(first), /SnoozePod 4/i);
   assert.match(responseText(first), /All Foam/i);
-  assert.strictEqual(first?.metadata?.qualityGate?.sourceOfTruth, "canonical_profile");
-  assert.strictEqual(first?.metadata?.qualityGate?.shouldUseOpenAI, false);
+  assert.strictEqual(first?.metadata?.qualityGate?.sourceOfTruth, "advisor");
+  assert.strictEqual(first?.metadata?.composition?.mode, "model_assisted");
   assert.strictEqual(openAiCalls.length, 0);
 
   await invoke({

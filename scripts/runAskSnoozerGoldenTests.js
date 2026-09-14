@@ -12,6 +12,7 @@ const { resolveRecommendation } = require("../services/recommendationResolver");
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
 const originalComposeTrustedAdvisorResponse = openai.composeTrustedAdvisorResponse;
+const originalPlanTrustedAdvisorTurnWithModel = openai.planTrustedAdvisorTurnWithModel;
 const originalFetchProductsByHandles = shopifySvc.fetchProductsByHandles;
 
 const sessionStore = new Map();
@@ -207,6 +208,9 @@ function restoreDynamo() {
 }
 
 function patchOpenAi() {
+  openai.planTrustedAdvisorTurnWithModel = async function mockedPlanTrustedAdvisorTurnWithModel() {
+    return { decision: null, model: null, tokens: 0, modelMs: 0, inputChars: 0 };
+  };
   openai.getSnoozerResponse = async function mockedGetSnoozerResponse(message, options = {}) {
     openAiCalls.push({ message, options });
     return {
@@ -236,6 +240,7 @@ function patchOpenAi() {
 function restoreOpenAi() {
   openai.getSnoozerResponse = originalOpenAiGetSnoozerResponse;
   openai.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
+  openai.planTrustedAdvisorTurnWithModel = originalPlanTrustedAdvisorTurnWithModel;
 }
 
 function patchShopify() {
