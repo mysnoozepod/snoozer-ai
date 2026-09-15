@@ -49,7 +49,8 @@ function composeFallbackReply() {
 
 function formatAssistantStatus(status) {
   const value = String(status || "answered").trim();
-  return value ? value.replace(/_/g, " ") : "answered";
+  if (!value || value === "fallback") return "answered";
+  return value.replace(/_/g, " ");
 }
 
 function extractResponseContent(response) {

@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const { resolveAdaptiveSessionRecommendation } = require("./askSnoozerWorkingMemory");
 
-const ACTIVE_JOURNEY_VERSION = "1.0.0";
+const ACTIVE_JOURNEY_VERSION = "1.1.0";
 const ACTIVE_JOURNEY_TTL_MINUTES = 240;
 const VALID_SURFACES = new Set([
   "welcome", "assessment", "results", "pod", "rest_test", "ask_snoozer",
@@ -331,6 +331,9 @@ function applyEvent(current, rawEvent, { expectedRevision, trusted = false, allo
 
 function hydrateAskContextFromActiveJourney(context = {}, journey = {}) {
   const next = { ...context, activeJourney: clone(journey) };
+  if (isObject(journey.canonicalRecommendation)) {
+    next.canonicalRecommendation = clone(journey.canonicalRecommendation);
+  }
   const memory = isObject(next.askSnoozerWorkingMemory) ? { ...next.askSnoozerWorkingMemory } : {};
   const previous = isObject(memory.activeDeal) ? memory.activeDeal : {};
   memory.activeDeal = {

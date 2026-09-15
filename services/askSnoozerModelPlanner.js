@@ -1,7 +1,7 @@
 const { loadShowroomManifest } = require("./showroomManifest");
 const { normalizeAskSnoozerText } = require("./askSnoozerIntents");
 
-const MODEL_PLANNER_VERSION = "2026-09-14.1";
+const MODEL_PLANNER_VERSION = "2026-09-14.2";
 
 const ALLOWED_TASKS = new Set([
   "alternative_resolution",
@@ -146,11 +146,22 @@ function inferRequestedFacts(query = "") {
   ]).filter((fact) => ALLOWED_FACTS.has(fact));
 }
 
-function isSimpleAtomicFactQuery(query = "") {
+function isSimpleAtomicFactQuery(query = "", context = {}) {
   const text = normalizeAskSnoozerText(query);
   const facts = inferRequestedFacts(query);
   if (facts.length !== 1 || text.split(/\s+/).filter(Boolean).length > 12) return false;
-  return ["delivery", "returns", "financing"].includes(facts[0]);
+  if (["delivery", "returns", "financing"].includes(facts[0])) return true;
+  const deal = context?.askSnoozerWorkingMemory?.activeDeal || {};
+  const activeProduct = clean(
+    deal?.activeProductHandle ||
+    deal?.sessionRecommendation?.productHandle ||
+    deal?.acceptedRecommendation?.productHandle
+  );
+  if (facts[0] === "warranty" && activeProduct) return true;
+  if (facts[0] === "price" && deal?.activeQuote?.ok && activeProduct) {
+    return /\b(?:mattress[- ]only|without (?:the )?base|mattress (?:cost|price)|price of (?:the )?mattress)\b/.test(text);
+  }
+  return false;
 }
 
 function shouldPlanAskSnoozerWithModel({ query = "", context = {} } = {}) {
@@ -162,7 +173,7 @@ function shouldPlanAskSnoozerWithModel({ query = "", context = {} } = {}) {
   if (pending?.status === "pending" && /^(?:yes|yeah|yep|sure|please|no|nope|no thanks|not now)[.!]?$/.test(text)) {
     return false;
   }
-  if (isSimpleAtomicFactQuery(query)) return false;
+  if (isSimpleAtomicFactQuery(query, context)) return false;
   if (/^(?:what(?:'s| is) in|show|review|check)\b.*\bcart\b/.test(text)) return false;
   if (/\b(?:reward balance|how many points|points balance)\b/.test(text)) return false;
   return true;

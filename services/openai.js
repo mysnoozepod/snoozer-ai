@@ -2806,15 +2806,13 @@ const TRUSTED_ADVISOR_PRODUCT_KEYS = Object.freeze({
   "14-hybrid": "products/mattress/14-hybrid.md",
 });
 
+const {
+  normalizePolicyDocument,
+  safeKnowledgeLines,
+} = require("./askSnoozerTypedTruth");
+
 function compactAdvisorLines(raw = "", { limit = 10, include = [] } = {}) {
-  const terms = (Array.isArray(include) ? include : []).map((item) => String(item).toLowerCase()).filter(Boolean);
-  return String(raw || "")
-    .split(/\r?\n/)
-    .map((line) => line.replace(/^[\s\\#>*-]+/, "").replace(/[*_`]/g, "").replace(/&nbsp;/gi, " ").trim())
-    .filter((line) => line && line.length >= 12 && line.length <= 260)
-    .filter((line) => !/variant id|product id|\$\d|developer notes|retrieval trigger|source$/i.test(line))
-    .filter((line) => !terms.length || terms.some((term) => line.toLowerCase().includes(term)))
-    .slice(0, limit);
+  return safeKnowledgeLines(raw, { limit, include });
 }
 
 async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", query = "", requestedFacts = [] } = {}) {
@@ -2835,7 +2833,6 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
       if (loaded.value) {
         productFacts.push({
           handle,
-          sourceKey: key,
           status: "verified_fact",
           facts: compactAdvisorLines(loaded.value, {
             limit: 7,
@@ -2853,12 +2850,7 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
     try {
       const loaded = await getObjectText(KNOWLEDGE_BUCKET, "faq/warranty.md");
       if (loaded.value) {
-        policyFacts.push({
-          topic: "warranty",
-          sourceKey: "faq/warranty.md",
-          status: "verified_fact",
-          facts: compactAdvisorLines(loaded.value, { limit: 10, include: ["warranty", "cover", "softening", "sagging", "support", "stain", "original purchaser"] }),
-        });
+        policyFacts.push(normalizePolicyDocument({ topic: "warranty", raw: loaded.value }));
       }
     } catch {
       // An unavailable policy object must not become an invented policy term.
@@ -2866,12 +2858,7 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
     if (!policyFacts.length) {
       const packagedWarranty = String(require("../faqs.json")?.warranty || "").trim();
       if (packagedWarranty) {
-        policyFacts.push({
-          topic: "warranty",
-          sourceKey: "faqs.json#warranty",
-          status: "verified_fact",
-          facts: [packagedWarranty],
-        });
+        policyFacts.push(normalizePolicyDocument({ topic: "warranty", fallback: packagedWarranty }));
       }
     }
   }
@@ -2904,9 +2891,9 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
       try {
         const loaded = await getObjectText(KNOWLEDGE_BUCKET, key);
         if (!loaded.value) continue;
-        const facts = compactAdvisorLines(loaded.value, { limit: 10, include: policy.include });
-        if (!facts.length) continue;
-        policyFacts.push({ topic: policy.topic, sourceKey: key, status: "verified_fact", facts });
+        const typedFact = normalizePolicyDocument({ topic: policy.topic, raw: loaded.value });
+        if (!typedFact.known) continue;
+        policyFacts.push(typedFact);
         loadedPolicy = true;
         break;
       } catch {
@@ -2916,18 +2903,12 @@ async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", 
     if (!loadedPolicy) {
       const packaged = String(require("../faqs.json")?.[policy.packagedKey] || "").trim();
       if (packaged) {
-        policyFacts.push({
-          topic: policy.topic,
-          sourceKey: `faqs.json#${policy.packagedKey}`,
-          status: "verified_fact",
-          facts: [packaged],
-        });
+        policyFacts.push(normalizePolicyDocument({ topic: policy.topic, fallback: packaged }));
       }
     }
   }
   return {
     version: advisorKnowledge.version || null,
-    sourceKey: ADVISOR_KNOWLEDGE_KEY,
     status: "advisor_interpretation",
     principles: (advisorKnowledge.principles || []).slice(0, 4),
     topicGuidance: (() => {
@@ -2960,6 +2941,7 @@ async function planTrustedAdvisorTurnWithModel({ requestId, query = "", context 
     "Return JSON only with: primaryTask, shopperGoal, acts, productReferences, comparisonProductHandles, requestedFacts, answerRequirements, requestedPodId, requiresComposition, confidence.",
     "Valid act types are reject_product, product_feedback, retain_preference, desired_direction, request_alternative, explicit_exclusion, accept_commitment, decline_commitment, trust_risk, confusion, reconsider_product, accept_recommendation, and budget_value. Include productHandle and value or reason when relevant.",
     "Use compound_fact_answer when the shopper requests more than one protected fact, product_sizes for an exact size question, and recommendation_explanation for why an assessment or pod was chosen.",
+    "A substantive question must always have a primaryTask. Resolve relational questions such as current choice versus the rejected, original, previous, or other choice from activeJourney and recent turns; use product_comparison when two products are involved.",
     "Valid requestedFacts include recommendation_reasons, product_sizes, product_features, warranty, delivery, returns, financing, price, availability, compatibility, and cart.",
     "Use answerRequirements to require all requested facts, named comparisons, recommendation reasons, feedback acknowledgement, state recap, grounded opinion, unknown disclosure, or one useful next step.",
     "Do not write the shopper-facing answer.",
@@ -3045,7 +3027,11 @@ async function composeTrustedAdvisorResponse({
     "Use only the verified fact pack and deterministic draft. Never invent or change products, titles, sizes, prices, availability, compatibility, configuration, cart state, rewards, policies, or actions.",
     "Treat the original assessment recommendation as history and the current session recommendation as the active advice when shopper feedback changed it.",
     "Do not expose implementation language. Do not diagnose or promise a medical outcome.",
+    "Never claim that a mattress ensures comfort, treats pain, or guarantees relief. Describe verified construction and likely feel as tradeoffs, not outcomes.",
     "Ask at most one useful forward-moving question. Use null when a probe is not warranted.",
+    ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(String(strategy?.taskType || ""))
+      ? "For a price answer, preserve every exact resolved line price, the exact total when there is more than one line, the size, and the requested scope. Do not omit or alter any number."
+      : "",
     comparisonTask
       ? "Use the supplied response depth and finish the comparison. Use both exact full names in strategy.comparisonTitles and clearly contrast them in the first two sentences so the spoken summary covers both. Use product names instead of the word model. Keep displayText under 1800 characters."
       : "Use the supplied response depth and finish the thought. Keep displayText under 1800 characters. Keep speechText to two short complete sentences.",

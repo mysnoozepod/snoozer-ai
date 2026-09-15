@@ -976,6 +976,11 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
         : explicitBase.explicitNoBase
           ? "skip"
           : clean(previousDeal.baseDecision) || null,
+    latestCommercialDecision: explicitBase.explicitNoBase
+      ? { type: "mattress_only", updatedAt, source: "shopper" }
+      : isObject(previousDeal.latestCommercialDecision)
+        ? previousDeal.latestCommercialDecision
+        : null,
     activeQuote: isObject(previousDeal.activeQuote) ? previousDeal.activeQuote : null,
     compatibilityStatus: clean(previousDeal.compatibilityStatus) || "unknown",
     currentTopic,
@@ -1230,6 +1235,11 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
     motionKey: incompatibilityPresented
       ? null
       : quote?.motionKey || plan?.knownFacts?.motionKey || previousDeal.activeMotionKey || null,
+    scope: quote?.ok && quote?.items?.length === 1
+      ? "mattress_only"
+      : quote?.ok && quote?.items?.length > 1
+        ? "full_setup"
+        : previousDeal.activeConfiguration?.scope || null,
     updatedAt,
   };
   const activeDeal = {
@@ -1250,6 +1260,11 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
     activeMotionKey: quote?.motionKey || plan?.knownFacts?.motionKey || previousDeal.activeMotionKey || null,
     activeQuote: nextActiveQuote,
     activeConfiguration: nextConfiguration,
+    latestCommercialDecision: quote?.ok && quote?.items?.length === 1
+      ? { type: "mattress_only", updatedAt, source: "resolved_quote" }
+      : quote?.ok && quote?.items?.length > 1
+        ? { type: "full_setup", updatedAt, source: "resolved_quote" }
+        : previousDeal.latestCommercialDecision || null,
     configurationInvalidation: incompatibilityPresented
       ? {
           reason: "configuration_incompatible",

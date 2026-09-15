@@ -503,6 +503,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           revision: activeJourneyResolution.journey.revision,
           readMs: activeJourneyResolution.readMs,
           recentRawHistoryCount: context.recentConversation?.length || 0,
+          recommendationSnapshotId: context?.canonicalRecommendation?.snapshotId || null,
+          recommendationSnapshotVersion: context?.canonicalRecommendation?.snapshotVersion || null,
+          recommendationSource: context?.canonicalRecommendation?.source || "legacy_profile",
         });
       } catch (error) {
         log("active-journey.ask.error", error.code || error.message, { traceId, phase: "hydrate" });

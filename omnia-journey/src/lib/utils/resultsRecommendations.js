@@ -235,8 +235,68 @@ export function adaptCanonicalRecommendations(payload) {
   };
 }
 
+async function adaptCanonicalSnapshot(snapshot, loadLocal) {
+  const products = snapshot?.products && !Array.isArray(snapshot.products)
+    ? Object.values(snapshot.products)
+    : ensureArray(snapshot?.products);
+  const canonicalPayload = {
+    manifestVersion: snapshot?.manifestVersion,
+    normalizedAssessment: snapshot?.normalizedAssessment,
+    recommendation: {
+      topPodId: snapshot?.topPodId,
+      topPodIds: snapshot?.topPodIds,
+      primaryMattressHandle: snapshot?.primaryMattressHandle,
+      primaryMattressFamily: snapshot?.primaryMattressFamily,
+      baseHandle: snapshot?.baseHandle,
+      motionKey: snapshot?.motionKey,
+      motionLabel: snapshot?.motionLabel,
+      reasonKeys: snapshot?.reasonKeys,
+      warnings: snapshot?.warnings,
+    },
+    products,
+    pods: ensureArray(snapshot?.pods),
+  };
+  if (canonicalPayload.pods.length) {
+    const adapted = adaptCanonicalRecommendations(canonicalPayload);
+    adapted.meta = {
+      ...adapted.meta,
+      source: "active_journey_snapshot",
+      recommendationSnapshotId: normalizeText(snapshot?.snapshotId),
+      recommendationSnapshotVersion: normalizeText(snapshot?.snapshotVersion),
+    };
+    return adapted;
+  }
+
+  // Older journeys predate the presentation-safe pod summaries. Reuse local
+  // pod presentation data, but let the stored snapshot alone control identity
+  // and order so Results cannot silently choose a different recommendation.
+  const local = await loadLocal();
+  const byId = new Map(ensureArray(local?.pods).map((pod) => [normalizeText(pod?.podId || pod?.id), pod]));
+  const orderedIds = ensureArray(snapshot?.topPodIds).map(normalizeText).filter(Boolean);
+  const orderedPods = orderedIds.map((id, index) => {
+    const pod = byId.get(id);
+    return pod ? { ...pod, rank: index + 1 } : null;
+  }).filter(Boolean);
+  if (!orderedPods.length && snapshot?.topPodId && byId.has(normalizeText(snapshot.topPodId))) {
+    orderedPods.push({ ...byId.get(normalizeText(snapshot.topPodId)), rank: 1 });
+  }
+  return sanitizeRecommendationsPayload({
+    ...local,
+    meta: {
+      ...(local?.meta || {}),
+      source: "active_journey_snapshot_legacy_presentation",
+      primaryMattressHandle: normalizeText(snapshot?.primaryMattressHandle),
+      recommendedBaseHandle: snapshot?.baseHandle ?? null,
+      recommendationSnapshotId: normalizeText(snapshot?.snapshotId),
+      recommendationSnapshotVersion: normalizeText(snapshot?.snapshotVersion),
+    },
+    pods: orderedPods,
+  });
+}
+
 export async function getResultsRecommendations({
   answers,
+  canonicalSnapshot = null,
   useCanonical = false,
   resolveCanonical,
   generateLocal,
@@ -248,6 +308,13 @@ export async function getResultsRecommendations({
   }
 
   const loadLocal = async () => sanitizeRecommendationsPayload(await generateLocal(answers || {}));
+
+  if (canonicalSnapshot && typeof canonicalSnapshot === "object") {
+    return {
+      mode: "canonical_snapshot",
+      recommendations: await adaptCanonicalSnapshot(canonicalSnapshot, loadLocal),
+    };
+  }
 
   if (!useCanonical) {
     return {

@@ -215,6 +215,7 @@ async function handleAssessmentRoutes({ event, method, routePath, traceId, deps 
       assessmentCanonicalRecommendation = await resolveCanonicalRecommendationContext({
         payload: {
           answers: answers || {},
+          assessmentVersion: body?.assessmentVersion || null,
           snoozeCode: finalAssessmentIdentity?.snoozeCode || null,
           accessCode: finalAssessmentIdentity?.accessCode || null,
         },

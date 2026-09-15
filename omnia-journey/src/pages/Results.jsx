@@ -521,6 +521,7 @@ export default function Results() {
       try {
         const { recommendations } = await getResultsRecommendations({
           answers,
+          canonicalSnapshot: activeJourney?.canonicalRecommendation || null,
           useCanonical: USE_CANONICAL_RECOMMENDATIONS,
           resolveCanonical: (payload) => api.resolveRecommendations(payload),
           generateLocal: generateShowroomRecommendations,

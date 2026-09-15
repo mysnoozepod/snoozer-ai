@@ -1,7 +1,8 @@
 const crypto = require("crypto");
 const { isCompleteShopperResponse } = require("./askSnoozerResponsePresenter");
+const { containsRawKnowledgeMetadata } = require("./askSnoozerTypedTruth");
 
-const QUALITY_TRACE_VERSION = "ask-snoozer-quality-v3";
+const QUALITY_TRACE_VERSION = "ask-snoozer-quality-v3.1";
 const OUTCOME_MODEL_VERSION = "ask-snoozer-outcome-v3";
 const RECOVERY_MODEL_VERSION = "ask-snoozer-recovery-v1";
 const DEFAULT_RESPONSE_POLICY_VERSION = "baseline-v1";
@@ -350,6 +351,7 @@ function classifyFailureSeverity(trace = {}) {
     trace.confusionRecovered === false ||
     trace.requestedScopePreserved === false ||
     trace.partialActionSuppressed === false ||
+    trace.rawKnowledgeMetadataVisible ||
     (trace.referenceResolution?.phrase && !trace.referenceResolution?.resolved && trace.confidentCommercialAnswer) ||
     trace.outcome?.recovery?.success === false
     || gateViolations.some((item) => /wrong_product_action|action_scope|response_scope|unverified_product/.test(item))
@@ -370,6 +372,7 @@ function classifyFailureSeverity(trace = {}) {
     if (trace.confusionRecovered === false) codes.push("confusion_not_recovered");
     if (trace.requestedScopePreserved === false) codes.push("requested_scope_not_preserved");
     if (trace.partialActionSuppressed === false) codes.push("partial_action_not_suppressed");
+    if (trace.rawKnowledgeMetadataVisible) codes.push("raw_knowledge_metadata_visible");
     if (trace.referenceResolution?.phrase && !trace.referenceResolution?.resolved) codes.push("unresolved_protected_reference");
     if (trace.outcome?.recovery?.success === false) codes.push("failed_recovery");
     if (gateViolations.some((item) => /wrong_product_action|action_scope|response_scope/.test(item))) codes.push("rendered_action_conflict");
@@ -387,6 +390,7 @@ function classifyFailureSeverity(trace = {}) {
     trace.knownQuestionRepeated ||
     trace.repeatedQuestion ||
     trace.composition?.rejected ||
+    trace.falseCorrectionAcknowledgement ||
     trace.fallbackUsed ||
     trace.genericResponse ||
     trace.firewallPassed === false
@@ -411,6 +415,7 @@ function classifyFailureSeverity(trace = {}) {
     if (trace.knownQuestionRepeated) codes.push("known_question_repeated");
     if (trace.repeatedQuestion) codes.push("repeated_question");
     if (trace.composition?.rejected) codes.push("model_composition_rejected");
+    if (trace.falseCorrectionAcknowledgement) codes.push("false_correction_acknowledgement");
     if (trace.fallbackUsed) codes.push("fallback_used");
     if (trace.genericResponse) codes.push("generic_response");
     if (trace.firewallPassed === false) codes.push("language_firewall_violation");
@@ -615,7 +620,11 @@ function buildAskSnoozerQualityTrace({
   const partialPurchaseVisible = products.some((product) => product?.suppressAddToCart !== true && product?.exactVariantResolved === true) || actions.some((action) => action?.type === "add_to_cart");
   const requestedScopePreserved = !(fullSetupRequested && quote?.ok === false && partialPurchaseVisible);
   const partialActionSuppressed = !fullSetupRequested || quote?.ok === true || !partialPurchaseVisible;
-  const shopperLanguageClean = !SHOPPER_LANGUAGE_BLOCKLIST.some((phrase) => includesProtectedLanguage(finalVisibleText, phrase));
+  const rawKnowledgeMetadataVisible = containsRawKnowledgeMetadata(finalVisibleText);
+  const shopperLanguageClean = !rawKnowledgeMetadataVisible &&
+    !SHOPPER_LANGUAGE_BLOCKLIST.some((phrase) => includesProtectedLanguage(finalVisibleText, phrase));
+  const falseCorrectionAcknowledgement = /\b(?:thanks for correcting me|you corrected me)\b/.test(normalizeQuestion(reply)) &&
+    !plan?.recovery?.acknowledgement;
   const substantiveTasks = new Set([
     "product_experience", "product_comparison", "canonical_comparison", "comparison_value",
     "recommendation_explanation", "advisor_choice", "firmness_choice", "value_judgment",
@@ -632,7 +641,7 @@ function buildAskSnoozerQualityTrace({
   const comparisonComplete = !["product_comparison", "canonical_comparison", "comparison_value"].includes(clean(plan.taskType)) ||
     !gateViolations.includes("comparison_incomplete");
   const renderedProductsConsistent = !gateViolations.some((item) => /(?:product_card|unverified_product|rejected_session_recommendation)/.test(item));
-  const renderedActionsConsistent = !gateViolations.some((item) => /(?:_action|action_scope|unsafe_cart|response_scope)/.test(item));
+  const renderedActionsConsistent = !gateViolations.some((item) => /(?:_action|action_scope|unsafe_cart|response_scope|commercial_action)/.test(item));
   const unnecessaryClarification = Boolean(
     knownRepeated ||
     (clean(plan.taskType) === "reference_clarification" && referenceResolution?.resolved)
@@ -751,6 +760,8 @@ function buildAskSnoozerQualityTrace({
     modelCompositionUsed: compositionMode === "model_assisted" && Number(modelCallCount) > 0,
     responseCompletedNaturally: responseComplete(reply),
     shopperLanguageClean,
+    rawKnowledgeMetadataVisible,
+    falseCorrectionAcknowledgement,
     responseComplete: responseComplete(reply),
     sentenceComplete: responseComplete(reply),
     compoundQuestionFullyAnswered,
@@ -829,6 +840,11 @@ function buildAskSnoozerQualityTrace({
       modelSystemChars: Math.max(0, Number(modelSystemChars) || 0),
       modelPayloadChars: Math.max(0, Number(modelPayloadChars) || 0),
       timeoutMs: Math.max(0, Number(modelTimeoutMs) || 0),
+    },
+    recommendationSnapshot: {
+      id: clean(context?.activeJourney?.canonicalRecommendation?.snapshotId || context?.canonicalRecommendation?.snapshotId) || null,
+      version: clean(context?.activeJourney?.canonicalRecommendation?.snapshotVersion || context?.canonicalRecommendation?.snapshotVersion) || null,
+      source: clean(context?.activeJourney?.canonicalRecommendation?.source || context?.canonicalRecommendation?.source) || null,
     },
     factPackBudget: {
       totalChars: Math.max(0, Number(modelFactPackChars || compositionBudget.totalChars || 0) || 0),

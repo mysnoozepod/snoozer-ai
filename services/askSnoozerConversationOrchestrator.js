@@ -14,8 +14,13 @@ const {
 } = require("./commerceConfigurationResolver");
 const { completeSentences, isCompleteShopperResponse } = require("./askSnoozerResponsePresenter");
 const { inferRequestedFacts } = require("./askSnoozerModelPlanner");
+const {
+  containsRawKnowledgeMetadata,
+  policyFactAnswered,
+  policyFactSentences,
+} = require("./askSnoozerTypedTruth");
 
-const ORCHESTRATOR_VERSION = "2026-09-14.5";
+const ORCHESTRATOR_VERSION = "2026-09-14.6";
 const PRODUCT_VARIANT_GID = /^gid:\/\/shopify\/ProductVariant\/[^\s/?#]+$/;
 const INTERNAL_LANGUAGE = Object.freeze([
   "shopify",
@@ -466,7 +471,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   ).toLowerCase();
   const acceptedCommitment = acts.find((act) => act.type === "accept_commitment") || null;
   const declinedCommitment = acts.find((act) => act.type === "decline_commitment") || null;
-  const correctionCue = /\b(?:no i meant|not that|other one|you misunderstood|that.s not what i meant|actually|changed my mind|instead|switch|make that|remove|without|mattress[- ]only|failed|try again|go back|return to)\b/.test(text);
+  const correctionCue = /\b(?:no i meant|not that|other one|you misunderstood|that.s not what i meant|actually|changed my mind|instead|switch|make that|remove|failed|try again|go back|return to)\b/.test(text);
   const size =
     parsedSize === "Full" && /\b(?:full|complete|whole) setup\b/.test(text)
       ? clean(deal.activeSize)
@@ -597,6 +602,28 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     taskType = "correction_clarification";
   }
 
+  const activeRejected = (Array.isArray(deal.rejectedProducts) ? deal.rejectedProducts : [])
+    .filter((item) => clean(item?.status || "rejected") === "rejected")
+    .map((item) => clean(item?.handle).toLowerCase())
+    .filter(Boolean);
+  const mostRecentRejectedHandle = activeRejected[activeRejected.length - 1] || null;
+  const substantiveQuestion = /\b(?:what|which|why|how|is|are|can|could|would|should|tell|explain|help|better|fit|difference)\b/.test(text);
+  const relationalComparison = /\b(?:better|worse|different|compare|versus|\bvs\b|instead|than)\b/.test(text) &&
+    /\b(?:reject|ruled out|original|first|previous|other|last|before)\b/.test(text);
+  let semanticPlanRepair = null;
+  if (taskType === "legacy" && substantiveQuestion && referenceResolution.resolved) {
+    if (relationalComparison && mostRecentRejectedHandle && mostRecentRejectedHandle !== activeHandle) {
+      taskType = "product_comparison";
+      semanticPlanRepair = "resolved_current_vs_rejected_comparison";
+    } else if (/\b(?:why|better fit|recommended?|choose|chose)\b/.test(text)) {
+      taskType = "recommendation_explanation";
+      semanticPlanRepair = "resolved_reference_explanation";
+    } else {
+      taskType = "product_experience";
+      semanticPlanRepair = "resolved_reference_question";
+    }
+  }
+
   const activeQuoteMatchesGoal = Boolean(
     deal.activeQuote?.cartReady &&
       (!workingGoal?.productHandle || deal.activeQuote.productHandle === workingGoal.productHandle) &&
@@ -702,6 +729,9 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     comparisonHandles = unique(activeDeal(context)?.eligibleAlternativeHandles || []).filter(
       (handle) => !rejectedHandles(context).has(handle)
     ).slice(0, 3);
+  }
+  if (semanticPlanRepair === "resolved_current_vs_rejected_comparison") {
+    comparisonHandles = unique([activeHandle, mostRecentRejectedHandle]).slice(0, 2);
   }
   const needsCommerce = ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(taskType);
   const needsCompatibility = ["bundle_quote", "compatibility", "cart_add"].includes(taskType);
@@ -846,9 +876,18 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       activeGoalStillActionable: Boolean(continuingPriceGoal),
       clearSubjectChange: clearlyChangedSubject,
       requestedScope: clean(workingGoal?.scope) || null,
+      latestDecision: explicitBase.explicitNoBase
+        ? "mattress_only"
+        : clean(deal?.latestCommercialDecision?.type || deal?.activeConfiguration?.scope || deal?.baseDecision) || null,
       quoteInvalidation: clean(deal.activeQuote?.invalidationReason) || null,
     },
     interpretedActs: acts,
+    semanticCompleteness: {
+      substantiveQuestion,
+      taskResolved: taskType !== "legacy",
+      repaired: Boolean(semanticPlanRepair),
+      reason: semanticPlanRepair,
+    },
     pendingCommitment: isObject(deal.pendingCommitment) ? deal.pendingCommitment : null,
     staleRouteOverride,
     commercialCompletionAttempted: Boolean(
@@ -1261,11 +1300,9 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
           : "Thanks for correcting me. "
     : "";
   const policyFacts = (topic) => (factPack?.policyFacts || [])
-    .filter((item) => clean(item?.topic).toLowerCase() === topic)
-    .flatMap((item) => Array.isArray(item?.facts) ? item.facts : [])
-    .map(clean)
-    .filter(Boolean)
-    .slice(0, 3);
+    .filter((item) => clean(item?.type).toLowerCase() === topic)
+    .flatMap((item) => policyFactSentences(item))
+    .slice(0, 4);
 
   switch (plan.taskType) {
     case "greeting":
@@ -1399,8 +1436,12 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       }
       return `Here is the simple version: you are looking at the ${activeTitle} in ${size}. ${baseOpen ? "The only open decision is whether the motion base is worth adding." : "The mattress and size are already decided."} ${baseOpen ? "I can show the mattress-only price first or compare it with Standard Motion." : "I can price that setup next."}`;
     }
-    case "warranty_explanation":
-      return `Yes. The ${activeTitle} includes a 10-year limited mattress warranty covering qualifying defects in materials and workmanship, including excessive sagging or uneven wear not caused by misuse. Normal softening, stains, misuse, improper support, and comfort-preference changes after the trial are not covered. Keep your proof of purchase; the approved guidance says separate registration is not required.`;
+    case "warranty_explanation": {
+      const facts = policyFacts("warranty");
+      return facts.length
+        ? `Yes. For the ${activeTitle}: ${facts.join(" ")}`
+        : `I could not confirm the warranty terms for the ${activeTitle} right now, so I will not guess.`;
+    }
     case "product_sizes": {
       const resolved = (factPack?.resolvedProductFacts || []).find((product) => product.handle === active);
       const sizes = Array.isArray(resolved?.sizes) ? resolved.sizes.filter(Boolean) : [];
@@ -1515,6 +1556,9 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
 }
 
 function buildContextualChips({ plan = {}, quote = null } = {}) {
+  const mattressOnlyDecision = ["mattress_only", "skip", "skip_base", "base_removed"].includes(
+    clean(plan?.commercialState?.latestDecision).toLowerCase()
+  ) || clean(plan?.knownFacts?.baseDecision).toLowerCase() === "mattress_only";
   if (["shopper_feedback", "trust_recovery"].includes(plan.taskType)) {
     return [
       { label: "Find a softer alternative", value: "Yes", type: "prompt" },
@@ -1565,7 +1609,12 @@ function buildContextualChips({ plan = {}, quote = null } = {}) {
           { label: "Save without base", value: "How much would I save if I skip the base?", type: "prompt" },
           { label: "Add full setup", value: "Add this complete setup to my cart.", type: "prompt" },
         ]
-      : [
+      : mattressOnlyDecision
+        ? [
+            { label: "Review mattress", value: "Tell me what I should notice when I test this mattress.", type: "prompt" },
+            { label: "Compare comfort", value: "Compare this mattress with my other eligible option.", type: "prompt" },
+          ]
+        : [
           { label: "Add Standard Motion", value: "What would it cost with Standard Motion?", type: "prompt" },
           { label: "Compare comfort", value: "How does it compare to the 14-inch Hybrid?", type: "prompt" },
         ];
@@ -1705,6 +1754,11 @@ function responseFacetViolations({ reply = "", plan = {}, factPack = null } = {}
   };
   if (plan.taskType !== "reference_clarification") {
     for (const fact of requestedFacts) {
+      const typedPolicy = (factPack?.policyFacts || []).find((item) => clean(item?.type) === fact);
+      if (typedPolicy && !policyFactAnswered(reply, typedPolicy)) {
+        violations.push(`requested_fact_unanswered:${fact}`);
+        continue;
+      }
       const signal = factSignals[fact];
       if (signal && !signal.test(lower)) violations.push(`requested_fact_unanswered:${fact}`);
     }
@@ -1721,6 +1775,7 @@ function validateResponseConsistency({
   quote = null,
   products = [],
   actions = [],
+  chips = [],
   plan = {},
   factPack = null,
   requireCompleteCommerce = true,
@@ -1775,6 +1830,19 @@ function validateResponseConsistency({
     for (const phrase of INTERNAL_LANGUAGE) {
       if (includesProtectedLanguage(lower, phrase)) violations.push(`internal_language:${phrase}`);
     }
+    const visibleContract = [
+      reply,
+      ...products.flatMap((product) => [product?.title, product?.subtitle]),
+      ...actions.flatMap((action) => [action?.label, action?.type]),
+      ...chips.flatMap((chip) => [chip?.label, chip?.value]),
+    ].map(clean).filter(Boolean).join(" ");
+    if (containsRawKnowledgeMetadata(visibleContract)) violations.push("raw_knowledge_metadata");
+  }
+  if (/\b(?:ensure|guarantee)s?\b.*\b(?:comfortable|comfort|pain|relief|heal|cure)\b/.test(lower) || /\b(?:hip|back|shoulder) pain\b.*\b(?:support|fix|relief|ideal)\b/.test(lower)) {
+    violations.push("unsupported_outcome_language");
+  }
+  if (/\b(?:thanks for correcting me|you corrected me)\b/.test(lower) && !plan?.recovery?.acknowledgement) {
+    violations.push("false_correction_language");
   }
   if (reply && !isCompleteShopperResponse(reply)) violations.push("incomplete_ending");
   if (clean(reply).endsWith("...")) violations.push("truncated_ending");
@@ -1866,6 +1934,15 @@ function validateResponseConsistency({
     for (const action of actions) {
       const label = normalizeAskSnoozerText(action?.label || action?.type);
       if (/\b(?:full|complete) setup\b/.test(label)) violations.push("action_scope_mismatch");
+    }
+  }
+  if (["mattress_only", "skip", "skip_base", "base_removed"].includes(clean(plan?.commercialState?.latestDecision).toLowerCase())) {
+    const controlText = [...actions, ...chips]
+      .flatMap((item) => [item?.label, item?.value, item?.type])
+      .map((value) => normalizeAskSnoozerText(value))
+      .join(" ");
+    if (/\b(?:add|price|compare)\b.*\b(?:motion|base|full setup|complete setup)\b/.test(controlText)) {
+      violations.push("commercial_action_contradiction");
     }
   }
   violations.push(...responseFacetViolations({ reply, plan, factPack }));
@@ -2015,6 +2092,7 @@ async function resolveAskSnoozerAdvisorTurn({
     quote,
     products,
     actions,
+    chips,
     plan: resolvedPlan,
     factPack,
   });
@@ -2063,6 +2141,7 @@ async function resolveAskSnoozerAdvisorTurn({
         quote,
         products,
         actions,
+        chips,
         plan: resolvedPlan,
         factPack,
       });

@@ -3971,7 +3971,7 @@ function sanitizeCanonicalProductSummary(product) {
   };
 }
 
-function buildAskSnoozerCanonicalContext(resolved) {
+function buildAskSnoozerCanonicalContext(resolved, { source = "recommendation_resolver", assessmentVersion = null } = {}) {
   if (!isObject(resolved)) return null;
 
   const recommendation = isObject(resolved.recommendation) ? resolved.recommendation : {};
@@ -3995,7 +3995,34 @@ function buildAskSnoozerCanonicalContext(resolved) {
   const baseHandleRaw = recommendation.baseHandle;
   const baseHandle = baseHandleRaw == null ? null : String(baseHandleRaw || "").trim() || null;
 
+  const pods = (Array.isArray(resolved.pods) ? resolved.pods : []).map((pod) => ({
+    podId: String(pod?.podId || "").trim() || null,
+    name: String(pod?.name || "").trim() || "",
+    mattressHandle: String(pod?.mattressHandle || "").trim() || null,
+    baseHandle: pod?.baseHandle == null ? null : String(pod.baseHandle || "").trim() || null,
+    baseTypeKey: String(pod?.baseTypeKey || "").trim() || "",
+    defaultMotionKey: String(pod?.defaultMotionKey || "").trim() || "",
+    defaultSize: String(pod?.defaultSize || pod?.displayedIn?.size || "").trim() || null,
+    displayedIn: isObject(pod?.displayedIn) ? cloneJsonValue(pod.displayedIn) : {},
+    rank: Number.isFinite(Number(pod?.rank)) ? Number(pod.rank) : null,
+    score: Number.isFinite(Number(pod?.score)) ? Number(pod.score) : 0,
+    reasonKeys: uniqueStrings(Array.isArray(pod?.reasonKeys) ? pod.reasonKeys : []),
+  }));
+  const snapshotIdentity = JSON.stringify({
+    manifestVersion: resolved.manifestVersion || null,
+    assessmentVersion: assessmentVersion || null,
+    normalizedAssessment,
+    topPodIds,
+    primaryMattressHandle,
+    baseHandle,
+  });
+
   return {
+    snapshotVersion: "canonical-recommendation-snapshot-v1",
+    snapshotId: `rec_${crypto.createHash("sha256").update(snapshotIdentity).digest("hex").slice(0, 20)}`,
+    source: String(source || "recommendation_resolver").trim(),
+    assessmentVersion: String(assessmentVersion || "").trim() || null,
+    createdAt: new Date().toISOString(),
     manifestVersion: String(resolved.manifestVersion || "").trim() || null,
     normalizedAssessment,
     topPodId: topPodId || null,
@@ -4028,6 +4055,7 @@ function buildAskSnoozerCanonicalContext(resolved) {
         }
       : null,
     products: productIndex,
+    pods,
   };
 }
 
@@ -5007,7 +5035,10 @@ async function resolveCanonicalRecommendationContext({
     includePods: true,
     source,
   });
-  return buildAskSnoozerCanonicalContext(resolved);
+  return buildAskSnoozerCanonicalContext(resolved, {
+    source,
+    assessmentVersion: safePayload.assessmentVersion || assessmentSource?.assessmentVersion || assessmentSource?.version || null,
+  });
 }
 
 function buildAskSnoozerQualityGateObject(decision = null, overrides = {}) {
