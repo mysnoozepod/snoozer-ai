@@ -3,8 +3,9 @@ const {
   normalizeAskSnoozerText,
   parseAskSnoozerSizeLabel,
 } = require("./askSnoozerIntents");
+const { inferUtteranceModality } = require("./askSnoozerModelPlanner");
 
-const WORKING_MEMORY_VERSION = 4;
+const WORKING_MEMORY_VERSION = 5;
 const PRICE_GOAL_INTENT = "price_quote";
 const PENDING_COMMITMENT_TTL_MS = 15 * 60 * 1000;
 const ACTIVE_GOAL_STATUSES = new Set([
@@ -75,7 +76,7 @@ function resolveFeedbackReason(text = "") {
   if (/\buncomfortable\b|\bnot comfortable\b/.test(text)) return "uncomfortable";
   if (/\bdid not like\b|\bdidn.t like\b|\bdon.t like\b|\bdont like\b/.test(text)) return "did_not_like";
   if (/\bnot interested\b|\bdon.t want\b|\bdont want\b/.test(text)) return "not_interested";
-  if (/\banything (?:but|except)\b|\bstop (?:telling|showing|recommending)\b|\bdo not show\b|\bdon.t show\b/.test(text)) {
+  if (/\banything (?:but|except)\b|\b(?:any other|another) mattress (?:but|except)\b|\bstop (?:telling|showing|recommending)\b|\bdo not show\b|\bdon.t show\b/.test(text)) {
     return "explicit_exclusion";
   }
   return "";
@@ -85,6 +86,24 @@ function resolveFeedbackSubject(query = "", previousDeal = {}) {
   const explicit = resolveExplicitProductHandle(query);
   if (explicit) return explicit;
   const text = normalizeAskSnoozerText(query);
+  if (/\b(?:anything but|anything except|stop (?:showing|telling|recommending)|do not (?:show|recommend)|don.t (?:show|recommend))\b/.test(text)) {
+    const candidates = uniqueStrings([
+      previousDeal?.activeProductHandle,
+      previousDeal?.recentProductHandle,
+      previousDeal?.sessionRecommendation?.productHandle,
+      previousDeal?.canonicalRecommendation?.primaryMattressHandle,
+      previousDeal?.canonicalRecommendation?.productHandle,
+      ...(previousDeal?.rejectedProducts || []).map((item) => item?.handle),
+    ]).map(normalizeHandle);
+    const referenced = candidates.find((handle) => {
+      const product = getProductMap().get(handle);
+      const identityTokens = normalizeAskSnoozerText(`${product?.title || ""} ${handle.replace(/[-_]+/g, " ")}`)
+        .split(/\s+/)
+        .filter((token) => token.length >= 3 && !["inch", "mattress", "hybrid"].includes(token));
+      return identityTokens.length > 0 && identityTokens.filter((token) => text.includes(token)).length >= Math.min(2, identityTokens.length);
+    });
+    if (referenced) return referenced;
+  }
   if (/\b(?:original one|original mattress|first mattress|first one)\b/.test(text)) {
     return normalizeHandle(
       previousDeal?.canonicalRecommendation?.primaryMattressHandle ||
@@ -102,11 +121,30 @@ function resolveFeedbackSubject(query = "", previousDeal = {}) {
 
 function interpretShopperActs({ query = "", previousDeal = {}, turnIndex = 1, now = new Date() } = {}) {
   const text = normalizeAskSnoozerText(query);
+  const modality = inferUtteranceModality(query);
   const turnId = `turn-${Math.max(1, Number(turnIndex) || 1)}`;
   const subjectHandle = resolveFeedbackSubject(query, previousDeal);
   const pending = activePendingCommitment(previousDeal?.pendingCommitment, now);
   const acts = [];
-  const add = (type, detail = {}) => acts.push({ type, ...detail });
+  const add = (type, detail = {}) => acts.push({ type, modality, ...detail });
+  const affirmative = /^(?:yes|yeah|yep|sure|please|do that|show me|go ahead|okay do it|ok do it)[.!]?$/.test(text);
+  const negative = /^(?:no|nope|no thanks|not now|don.t do that|dont do that)[.!]?$/.test(text);
+  if (pending?.status === "pending" && affirmative) {
+    add("accept_commitment", { commitmentId: pending.id, commitmentType: pending.type, turnId });
+    return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending, modality };
+  }
+  if (pending?.status === "pending" && negative) {
+    add("decline_commitment", { commitmentId: pending.id, commitmentType: pending.type, turnId });
+    return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending, modality };
+  }
+  if (["hypothetical", "conditional"].includes(modality)) {
+    return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending, modality };
+  }
+  if (modality === "question") {
+    const requestsAlternative = /\b(?:show|find|recommend)\b.*\b(?:something else|another option|another mattress|anything else|any other mattress|alternative|instead)\b|\bwhat (?:else|would you recommend instead)\b|\banything (?:but|except)\b/.test(text);
+    if (requestsAlternative) add("request_alternative", { turnId });
+    return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending, modality };
+  }
   const reconsider = /\b(?:actually|again|reconsider|go back|show me|look at)\b.*\b(?:all foam|original (?:one|mattress)|first mattress|first one)\b|\b(?:reconsider|show me)\b.*\bagain\b/.test(text);
 
   if (reconsider && subjectHandle) {
@@ -158,14 +196,6 @@ function interpretShopperActs({ query = "", previousDeal = {}, turnIndex = 1, no
     add("confusion", { turnId });
   }
 
-  const affirmative = /^(?:yes|yeah|yep|sure|please|do that|show me|go ahead|okay do it|ok do it)[.!]?$/.test(text);
-  const negative = /^(?:no|nope|no thanks|not now|don.t do that|dont do that)[.!]?$/.test(text);
-  if (pending?.status === "pending" && affirmative) {
-    add("accept_commitment", { commitmentId: pending.id, commitmentType: pending.type, turnId });
-  } else if (pending?.status === "pending" && negative) {
-    add("decline_commitment", { commitmentId: pending.id, commitmentType: pending.type, turnId });
-  }
-
   const explicitProduct = resolveExplicitProductHandle(query);
   const acceptanceCue = /\b(?:i like that one|i like this one|that works|this works|that one feels better|this one feels better|i want that mattress|let(?:'s| us) go with|i(?:'ll| will) take|that(?:'s| is) the one|go with that)\b/.test(text);
   const acceptedHandle = explicitProduct || normalizeHandle(
@@ -185,7 +215,7 @@ function interpretShopperActs({ query = "", previousDeal = {}, turnIndex = 1, no
     });
   }
 
-  return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending };
+  return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending, modality };
 }
 
 function nowIso(now = new Date()) {
@@ -669,12 +699,16 @@ function reduceShopperFeedbackState({
   turnIndex = 1,
   now = new Date(),
   interpretedActs: plannedActs = [],
+  semanticAuthority = "deterministic_fallback",
 } = {}) {
   const updatedAt = nowIso(now);
   const interpretation = interpretShopperActs({ query, previousDeal, turnIndex, now });
   const acts = [];
   const seenActs = new Set();
-  for (const act of [...interpretation.acts, ...(Array.isArray(plannedActs) ? plannedActs : [])]) {
+  const authoritativeActs = semanticAuthority === "deterministic_fallback"
+    ? interpretation.acts
+    : (Array.isArray(plannedActs) ? plannedActs : []);
+  for (const act of authoritativeActs) {
     if (!isObject(act) || !clean(act.type)) continue;
     const normalizedAct = { ...act, turnId: clean(act.turnId) || `turn-${turnIndex}` };
     const key = JSON.stringify([
@@ -692,6 +726,7 @@ function reduceShopperFeedbackState({
   }
   const before = {
     activeProductHandle: normalizeHandle(previousDeal?.activeProductHandle) || null,
+    activeSize: clean(previousDeal?.activeSize) || null,
     rejectedProductHandles: Array.from(rejectedHandleSet(previousDeal)),
     sessionRecommendationHandle: normalizeHandle(previousDeal?.sessionRecommendation?.productHandle) || null,
     quoteStatus: clean(previousDeal?.activeQuote?.status) || (previousDeal?.activeQuote?.cartReady ? "ready" : null),
@@ -895,6 +930,7 @@ function reduceShopperFeedbackState({
   };
   const after = {
     activeProductHandle: activeDeal.activeProductHandle || null,
+    activeSize: clean(activeDeal.activeSize) || null,
     rejectedProductHandles: Array.from(rejected),
     sessionRecommendationHandle: normalizeHandle(sessionRecommendation?.productHandle) || null,
     quoteStatus: clean(activeQuote?.status) || (activeQuote?.cartReady ? "ready" : null),
@@ -908,11 +944,19 @@ function reduceShopperFeedbackState({
   return {
     activeDeal,
     interpretedActs: acts,
-    transition: { turnId: `turn-${turnIndex}`, stateBefore: before, stateDelta, stateAfter: after, updatedAt },
+    transition: {
+      turnId: `turn-${turnIndex}`,
+      semanticAuthority,
+      modality: clean(authoritativeActs[0]?.modality || interpretation.modality) || "asserted",
+      stateBefore: before,
+      stateDelta,
+      stateAfter: after,
+      updatedAt,
+    },
   };
 }
 
-function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, updatedAt = "" } = {}) {
+function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, updatedAt = "", modality = "asserted" } = {}) {
   const previousDeal = isObject(previous?.activeDeal) ? previous.activeDeal : {};
   const canonicalRecommendation = normalizeCanonicalRecommendation(context, previousDeal);
   const canonicalHandle = clean(canonicalRecommendation?.primaryMattressHandle).toLowerCase();
@@ -923,7 +967,7 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
   const previousRecent = clean(previousDeal.recentProductHandle).toLowerCase();
   let activeProductHandle = previousActive || canonicalHandle || null;
   let recentProductHandle = previousRecent || null;
-  if (explicitProductHandle && explicitProductHandle !== previousActive) {
+  if (["asserted", "reconsideration"].includes(modality) && explicitProductHandle && explicitProductHandle !== previousActive) {
     recentProductHandle = previousActive || previousRecent || null;
     activeProductHandle = explicitProductHandle;
   } else if (referencesCanonical && canonicalHandle) {
@@ -978,6 +1022,8 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
           : clean(previousDeal.baseDecision) || null,
     latestCommercialDecision: explicitBase.explicitNoBase
       ? { type: "mattress_only", updatedAt, source: "shopper" }
+      : explicitBase.baseHandle
+        ? { type: "full_setup", updatedAt, source: "shopper_request" }
       : isObject(previousDeal.latestCommercialDecision)
         ? previousDeal.latestCommercialDecision
         : null,
@@ -1032,22 +1078,29 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
   const explicitProductHandle = resolveExplicitProductHandle(query);
   const explicitBase = resolveExplicitBaseSelection(query);
   const explicitPainPoints = resolveExplicitPainPoints(query);
+  const modality = clean(modelDecision?.modality) || inferUtteranceModality(query);
+  const directSelectionAllowed =
+    ["asserted", "reconsideration"].includes(modality) ||
+    (modality === "question" && isPriceLikeQuery(query));
 
-  setSlot(slots, "size", explicitSize, "current_message", updatedAt);
-  setSlot(slots, "firmness", explicitFirmness, "current_message", updatedAt);
-  setSlot(slots, "productHandle", explicitProductHandle, "current_message", updatedAt);
-  if (Object.prototype.hasOwnProperty.call(explicitBase, "baseHandle")) {
-    setSlot(slots, "baseHandle", explicitBase.baseHandle, "current_message", updatedAt);
+  if (directSelectionAllowed) {
+    setSlot(slots, "size", explicitSize, "current_message", updatedAt);
+    setSlot(slots, "firmness", explicitFirmness, "current_message", updatedAt);
+    setSlot(slots, "productHandle", explicitProductHandle, "current_message", updatedAt);
+    if (Object.prototype.hasOwnProperty.call(explicitBase, "baseHandle")) {
+      setSlot(slots, "baseHandle", explicitBase.baseHandle, "current_message", updatedAt);
+    }
+    setSlot(slots, "motionKey", explicitBase.motionKey, "current_message", updatedAt);
+    setSlot(slots, "painPoints", explicitPainPoints, "current_message", updatedAt);
   }
-  setSlot(slots, "motionKey", explicitBase.motionKey, "current_message", updatedAt);
   if (
+    directSelectionAllowed &&
     explicitBase.baseHandle === "premium-motion-adjustable-base" &&
     !explicitBase.motionKey &&
     clean(getSlotValue({ slots }, "motionKey")) === "none"
   ) {
     delete slots.motionKey;
   }
-  setSlot(slots, "painPoints", explicitPainPoints, "current_message", updatedAt);
 
   let activeGoal = isObject(previous?.activeGoal) ? { ...previous.activeGoal } : null;
   const continuesPriceGoal = isContinuablePriceGoal(activeGoal);
@@ -1088,7 +1141,8 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
   }
 
   const turnIndex = Math.max(0, Number(previous?.turnIndex || 0)) + 1;
-  const baseDeal = buildActiveDeal({ query, context, previous, slots, updatedAt });
+  const semanticAuthority = clean(modelDecision?.authority) || (modelDecision ? "model_semantics" : "deterministic_fallback");
+  const baseDeal = buildActiveDeal({ query, context, previous, slots, updatedAt, modality });
   const feedbackTransition = reduceShopperFeedbackState({
     query,
     previousDeal: isObject(previous?.activeDeal) ? previous.activeDeal : {},
@@ -1096,6 +1150,7 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
     turnIndex,
     now,
     interpretedActs: modelDecision?.acts,
+    semanticAuthority,
   });
   const rejected = rejectedHandleSet(feedbackTransition.activeDeal);
   const rejectedGoalHandle = normalizeHandle(activeGoal?.productHandle);
@@ -1433,6 +1488,8 @@ function buildWorkingMemoryLogMetadata(context = {}) {
     activeQuoteStatus: clean(deal.activeQuote?.status) || (deal.activeQuote?.cartReady ? "ready" : null),
     compatibilityStatus: clean(deal.compatibilityStatus) || null,
     currentTopic: clean(deal.currentTopic) || null,
+    semanticAuthority: clean(transition.semanticAuthority) || null,
+    modality: clean(transition.modality) || null,
     interpretedActs: Array.isArray(transition.interpretedActs)
       ? transition.interpretedActs.map((act) => clean(act?.type)).filter(Boolean)
       : [],

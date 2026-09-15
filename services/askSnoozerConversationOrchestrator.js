@@ -20,7 +20,7 @@ const {
   policyFactSentences,
 } = require("./askSnoozerTypedTruth");
 
-const ORCHESTRATOR_VERSION = "2026-09-14.6";
+const ORCHESTRATOR_VERSION = "2026-09-15.1";
 const PRODUCT_VARIANT_GID = /^gid:\/\/shopify\/ProductVariant\/[^\s/?#]+$/;
 const INTERNAL_LANGUAGE = Object.freeze([
   "shopify",
@@ -398,7 +398,7 @@ function inferStage(taskType = "", previous = "exploring") {
   return clean(previous) || "exploring";
 }
 
-function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy", requestedFacts = [], actTypes = new Set(), text = "", modelDecision = null } = {}) {
+function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy", requestedFacts = [], actTypes = new Set(), modelDecision = null } = {}) {
   const proposed = clean(proposedTask);
   if (!proposed) return false;
   if (deterministicTask !== "legacy") return proposed === deterministicTask;
@@ -426,7 +426,7 @@ function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy",
     case "product_comparison":
     case "canonical_comparison":
     case "comparison_value":
-      return comparisons.length >= 2 || /\b(?:compare|versus|\bvs\b|difference)\b/.test(text);
+      return comparisons.length >= 2;
     case "alternative_resolution":
       return actTypes.has("request_alternative") || actTypes.has("desired_direction");
     case "shopper_feedback":
@@ -444,7 +444,7 @@ function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy",
     case "commitment_declined":
       return actTypes.has("decline_commitment");
     default:
-      return /\b(?:what|which|why|how|is|are|can|could|would|should|tell|explain|help|want|need|prefer|recommend)\b/.test(text);
+      return true;
   }
 }
 
@@ -581,7 +581,6 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     deterministicTask: taskType,
     requestedFacts,
     actTypes,
-    text,
     modelDecision,
   })) taskType = clean(modelDecision.primaryTask);
   if (taskType === "legacy" && requestedFacts.includes("recommendation_reasons")) {
@@ -625,7 +624,12 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   const relationalComparison = /\b(?:better|worse|different|compare|versus|\bvs\b|instead|than)\b/.test(text) &&
     /\b(?:reject|ruled out|original|first|previous|other|last|before)\b/.test(text);
   let semanticPlanRepair = null;
-  if (["legacy", "recommendation_explanation"].includes(taskType) && substantiveQuestion && (referenceResolution.resolved || currentRelationalHandle)) {
+  if (
+    ["legacy", "recommendation_explanation"].includes(taskType) &&
+    requestedFacts.length === 0 &&
+    substantiveQuestion &&
+    (referenceResolution.resolved || currentRelationalHandle)
+  ) {
     if (relationalComparison && relationalOtherHandle && relationalOtherHandle !== currentRelationalHandle) {
       taskType = "product_comparison";
       semanticPlanRepair = "resolved_relational_comparison";
@@ -924,7 +928,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
               : Object.keys(explicitBase).length
                 ? "configuration_change"
                 : "shopper_correction",
-          acknowledgement: taskType !== "reference_clarification" && taskType !== "correction_clarification",
+          acknowledgement: taskType !== "reference_clarification",
           baseRemoved: Boolean(explicitBase.explicitNoBase),
         }
       : null,
@@ -1139,6 +1143,102 @@ function compactComparisonFactPack(factPack = {}, plan = {}) {
   return compact;
 }
 
+const COMMERCE_COMPOSER_TASKS = new Set([
+  "bundle_quote", "cart_add", "compatibility", "configuration_value", "price_quote",
+  "price_value", "savings_quote", "value_objection",
+]);
+
+function compactComposerFactPack(factPack = {}, plan = {}) {
+  const comparison = compactComparisonFactPack(factPack, plan);
+  if (comparison !== factPack) return comparison;
+  const taskType = clean(plan?.taskType);
+  const requestedFacts = new Set(plan?.requestedFacts || factPack?.conversation?.requestedFacts || []);
+  const needsCommerce = COMMERCE_COMPOSER_TASKS.has(taskType) || [...requestedFacts]
+    .some((fact) => ["availability", "cart", "compatibility", "price", "product_sizes"].includes(fact));
+  const needsPolicy = [...requestedFacts].some((fact) => ["delivery", "financing", "returns", "warranty"].includes(fact));
+  const advisor = factPack.advisorKnowledge || {};
+  const compact = {
+    version: 4,
+    shopper: factPack.shopper,
+    conversation: {
+      stage: factPack.conversation?.stage,
+      taskType,
+      requestedFacts: [...requestedFacts],
+      answerRequirements: factPack.conversation?.answerRequirements || [],
+      currentTopic: factPack.conversation?.currentTopic || null,
+      unresolvedDecision: factPack.conversation?.unresolvedDecision || null,
+      responseDepth: factPack.conversation?.responseDepth,
+      recentTurns: (factPack.conversation?.recentTurns || []).slice(-3),
+    },
+    state: {
+      size: factPack.state?.size || null,
+      firmness: factPack.state?.firmness || null,
+      activeProductHandle: factPack.state?.activeProductHandle || null,
+      baseDecision: factPack.state?.baseDecision || null,
+      activeConfiguration: factPack.state?.activeConfiguration || null,
+      budgetContext: factPack.state?.budgetContext || {},
+      pendingCommitment: factPack.state?.pendingCommitment
+        ? {
+            id: factPack.state.pendingCommitment.id || null,
+            type: factPack.state.pendingCommitment.type || null,
+            status: factPack.state.pendingCommitment.status || null,
+            payload: factPack.state.pendingCommitment.payload || null,
+          }
+        : null,
+      restTestObservations: (factPack.state?.restTestObservations || []).slice(-3),
+    },
+    recommendation: {
+      original: factPack.recommendation?.original || null,
+      originalPodId: factPack.recommendation?.originalPodId || null,
+      requestedPodId: factPack.recommendation?.requestedPodId || null,
+      current: factPack.recommendation?.current || null,
+      accepted: factPack.recommendation?.accepted?.productHandle || null,
+      rankedAlternatives: (factPack.recommendation?.rankedAlternatives || []).slice(0, 3).map((candidate) => ({
+        handle: candidate?.handle || null,
+        score: candidate?.score ?? null,
+        reasons: (candidate?.reasons || []).slice(0, 4),
+      })),
+      reasons: (factPack.recommendation?.reasons || []).slice(0, 5),
+      unknowns: (factPack.recommendation?.unknowns || []).slice(0, 5),
+    },
+    feedback: {
+      rejectedProducts: (factPack.feedback?.rejectedProducts || []).map((item) => ({
+        handle: item?.handle || null,
+        reason: item?.reason || null,
+        status: item?.status || null,
+      })),
+      productFeedback: factPack.feedback?.productFeedback || {},
+      retainedPreferences: factPack.feedback?.retainedPreferences || {},
+      desiredDirection: factPack.feedback?.desiredDirection || {},
+      explicitExclusions: factPack.feedback?.explicitExclusions || [],
+    },
+    products: factPack.products || [],
+    productFacts: factPack.productFacts || [],
+    advisorKnowledge: {
+      status: advisor.status || "advisor_interpretation",
+      principles: (advisor.principles || []).slice(0, 4),
+      topicGuidance: advisor.topicGuidance || {},
+    },
+    compatibility: factPack.compatibility,
+    missingInformation: factPack.missingInformation || [],
+    allowedActions: factPack.allowedActions || [],
+  };
+  if (needsCommerce) {
+    compact.commerce = factPack.commerce || null;
+    compact.resolvedProductFacts = factPack.resolvedProductFacts || [];
+  }
+  if (needsPolicy) compact.policyFacts = factPack.policyFacts || [];
+  compact.budget = {
+    totalChars: JSON.stringify(compact).length,
+    historyChars: JSON.stringify(compact.conversation.recentTurns).length,
+    productChars: JSON.stringify({ products: compact.products, productFacts: compact.productFacts }).length,
+    advisorChars: JSON.stringify(compact.advisorKnowledge).length,
+    policyChars: JSON.stringify(compact.policyFacts || []).length,
+    commerceChars: JSON.stringify(compact.commerce || {}).length,
+  };
+  return compact;
+}
+
 async function fetchByHandles(fetchProductsByHandles, handles = []) {
   if (typeof fetchProductsByHandles !== "function" || !handles.length) return [];
   try {
@@ -1314,8 +1414,15 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
           : "Thanks for correcting me. "
     : "";
   const policyFacts = (topic) => (factPack?.policyFacts || [])
-    .filter((item) => clean(item?.type).toLowerCase() === topic)
-    .flatMap((item) => policyFactSentences(item))
+    .filter((item) => clean(item?.topic || item?.type).toLowerCase() === topic)
+    .flatMap((item) => {
+      const typed = policyFactSentences(item);
+      if (typed.length) return typed;
+      return (Array.isArray(item?.facts) ? item.facts : [])
+        .map((fact) => clean(fact))
+        .filter((fact) => fact && !containsRawKnowledgeMetadata(fact))
+        .map((fact) => /[.!?]$/.test(fact) ? fact : `${fact}.`);
+    })
     .slice(0, 4);
 
   switch (plan.taskType) {
@@ -1643,12 +1750,24 @@ function buildContextualChips({ plan = {}, quote = null } = {}) {
     ];
   }
   if (["base_education", "value_judgment", "price_value", "configuration_value", "preference_capture"].includes(plan.taskType)) {
+    if (mattressOnlyDecision) {
+      return [
+        { label: "Price mattress only", value: "What is the mattress-only price?", type: "prompt" },
+        { label: "Help me test it", value: "What should I notice when I test this mattress?", type: "prompt" },
+      ];
+    }
     return [
       { label: "Price with motion", value: "What would it cost with Standard Motion?", type: "prompt" },
       { label: "Mattress only", value: "What would the mattress cost without the base?", type: "prompt" },
     ];
   }
   if (["compound_product_base", "configuration_update", "confusion_recovery"].includes(plan.taskType)) {
+    if (mattressOnlyDecision) {
+      return [
+        { label: "Price mattress only", value: "Show me the mattress-only price.", type: "prompt" },
+        { label: "Help me test it", value: "What should I notice when I test this mattress?", type: "prompt" },
+      ];
+    }
     return [
       { label: "Price mattress only", value: "Show me the mattress-only price.", type: "prompt" },
       { label: "Compare with motion", value: "Compare mattress-only with Standard Motion.", type: "prompt" },
@@ -1950,7 +2069,10 @@ function validateResponseConsistency({
       if (/\b(?:full|complete) setup\b/.test(label)) violations.push("action_scope_mismatch");
     }
   }
-  if (["mattress_only", "skip", "skip_base", "base_removed"].includes(clean(plan?.commercialState?.latestDecision).toLowerCase())) {
+  if (
+    !["configuration_value", "value_judgment", "value_objection"].includes(clean(plan?.taskType)) &&
+    ["mattress_only", "skip", "skip_base", "base_removed"].includes(clean(plan?.commercialState?.latestDecision).toLowerCase())
+  ) {
     const controlText = [...actions, ...chips]
       .flatMap((item) => [item?.label, item?.value, item?.type])
       .map((value) => normalizeAskSnoozerText(value))
@@ -2099,7 +2221,7 @@ async function resolveAskSnoozerAdvisorTurn({
     ...actions.map((action) => clean(action.type)),
     ...chips.map((chip) => clean(chip.label)),
   ].filter(Boolean);
-  const composerFactPack = compactComparisonFactPack(factPack, resolvedPlan);
+  const composerFactPack = compactComposerFactPack(factPack, resolvedPlan);
   factPack.composerBudget = composerFactPack?.budget || null;
   const deterministicGate = validateResponseConsistency({
     reply: deterministicReply,
@@ -2308,6 +2430,7 @@ module.exports = {
   ORCHESTRATOR_VERSION,
   buildQuote,
   buildRelevantFactPack,
+  compactComposerFactPack,
   compactComparisonFactPack,
   planAskSnoozerTurn,
   resolveProtectedReference,

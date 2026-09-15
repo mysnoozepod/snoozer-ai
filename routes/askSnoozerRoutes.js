@@ -46,6 +46,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     completeAskSnoozerAdvisorTurn,
     completeAskSnoozerPriceGoal,
     markAskSnoozerPriceGoalResolving,
+    resolvePendingCommitmentProtocol,
     shouldPlanAskSnoozerWithModel,
     planTrustedAdvisorTurnWithModel,
     planAskSnoozerTurn,
@@ -520,9 +521,23 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       modelMs: 0,
       model: null,
       decision: null,
+      authority: null,
       errorCode: null,
     };
-    if (
+    const commitmentDecision = typeof resolvePendingCommitmentProtocol === "function"
+      ? resolvePendingCommitmentProtocol({ query: msg, context })
+      : null;
+    if (commitmentDecision) {
+      askSnoozerModelPlanning.decision = commitmentDecision;
+      askSnoozerModelPlanning.authority = commitmentDecision.authority;
+      log("ask-snoozer.semantic-plan", "typed_commitment", {
+        traceId,
+        testCaseId,
+        primaryTask: commitmentDecision.primaryTask,
+        interpretedActs: commitmentDecision.acts.map((act) => act.type),
+        commitmentType: commitmentDecision.acts[0]?.commitmentType || null,
+      });
+    } else if (
       typeof shouldPlanAskSnoozerWithModel === "function" &&
       shouldPlanAskSnoozerWithModel({ query: msg, context }) &&
       typeof planTrustedAdvisorTurnWithModel === "function"
@@ -541,6 +556,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           modelMs: Number(planned?.modelMs || Date.now() - plannerStartedAt),
           model: planned?.model || null,
           decision: planned?.decision || null,
+          authority: planned?.decision?.authority || "model_semantics",
         };
         log("ask-snoozer.model-planner", "resolved", {
           traceId,
@@ -551,11 +567,15 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           requestedFacts: planned?.decision?.requestedFacts || [],
           productHandles: (planned?.decision?.productReferences || []).map((reference) => reference.handle),
           interpretedActs: (planned?.decision?.acts || []).map((act) => act.type),
+          modality: planned?.decision?.modality || null,
+          validation: planned?.decision?.validation || null,
+          inputChars: Number(planned?.inputChars || 0),
         });
       } catch (error) {
         askSnoozerModelPlanning.fallbackUsed = true;
         askSnoozerModelPlanning.modelMs = Date.now() - plannerStartedAt;
         askSnoozerModelPlanning.errorCode = error?.code || "E_ADVISOR_PLANNER";
+        askSnoozerModelPlanning.authority = "deterministic_fallback";
         log("ask-snoozer.model-planner", "fallback", {
           traceId,
           testCaseId,

@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const { isCompleteShopperResponse } = require("./askSnoozerResponsePresenter");
 const { containsRawKnowledgeMetadata } = require("./askSnoozerTypedTruth");
 
-const QUALITY_TRACE_VERSION = "ask-snoozer-quality-v3.1";
+const QUALITY_TRACE_VERSION = "ask-snoozer-quality-v3.2";
 const OUTCOME_MODEL_VERSION = "ask-snoozer-outcome-v3";
 const RECOVERY_MODEL_VERSION = "ask-snoozer-recovery-v1";
 const DEFAULT_RESPONSE_POLICY_VERSION = "baseline-v1";
@@ -34,6 +34,11 @@ function includesProtectedLanguage(text, phrase) {
 
 function isObject(value) {
   return value && typeof value === "object" && !Array.isArray(value);
+}
+
+function signalState(applicable, passed) {
+  if (!applicable) return "not_applicable";
+  return passed ? "passed" : "failed";
 }
 
 function clampNumber(value, min, max, fallback) {
@@ -528,35 +533,36 @@ function buildAskSnoozerQualityTrace({
   const feedbackActs = acts.filter((act) => act.type === "product_feedback");
   const retainedActs = acts.filter((act) => act.type === "retain_preference");
   const commitmentActs = acts.filter((act) => ["accept_commitment", "decline_commitment"].includes(act.type));
-  const explicitRejectionHonored = !rejectionActs.length || (
+  const explicitRejectionHonored = rejectionActs.length ? (
     rejectionActs.every((act) => rejected.has(clean(act.handle).toLowerCase())) &&
     !rejectedProductReintroduced
-  );
-  const subjectiveFeedbackPreserved = !feedbackActs.length || feedbackActs.every((act) =>
+  ) : null;
+  const subjectiveFeedbackPreserved = feedbackActs.length ? feedbackActs.every((act) =>
     Array.isArray(deal?.productFeedback?.[act.handle]?.observations) &&
     deal.productFeedback[act.handle].observations.includes(act.feedback)
-  );
-  const retainedPreferencePreserved = !retainedActs.length || retainedActs.every((act) =>
+  ) : null;
+  const retainedPreferencePreserved = retainedActs.length ? retainedActs.every((act) =>
     clean(deal?.retainedPreferences?.[act.key]?.value) === clean(act.value)
-  );
+  ) : null;
   const transitionCommitmentStatus = clean(transition?.stateAfter?.pendingCommitmentStatus);
-  const pendingCommitmentResolved = !commitmentActs.length || commitmentActs.every((act) => {
+  const pendingCommitmentResolved = commitmentActs.length ? commitmentActs.every((act) => {
     const expected = act.type === "accept_commitment" ? "fulfilled" : "declined";
     return transitionCommitmentStatus === expected || (
       clean(deal?.pendingCommitment?.id) === clean(act.commitmentId) &&
       clean(deal?.pendingCommitment?.status) === expected
     );
-  });
+  }) : null;
   const quoteHandles = [
     clean(deal?.activeQuote?.productHandle).toLowerCase(),
     ...(Array.isArray(deal?.activeQuote?.items)
       ? deal.activeQuote.items.map((item) => clean(item?.handle).toLowerCase())
       : []),
   ].filter(Boolean);
-  const staleQuoteInvalidated = !rejectionActs.some((act) => quoteHandles.includes(clean(act.handle).toLowerCase())) || (
+  const staleQuoteInvalidationApplicable = rejectionActs.some((act) => quoteHandles.includes(clean(act.handle).toLowerCase()));
+  const staleQuoteInvalidated = staleQuoteInvalidationApplicable ? (
     clean(deal?.activeQuote?.status) === "invalidated" &&
     deal?.activeQuote?.cartReady !== true
-  );
+  ) : null;
   const alternativeRequested = actTypes.has("request_alternative") ||
     acts.some((act) => act.type === "accept_commitment" && act.commitmentType === "find_alternative");
   const eligibleAlternatives = Array.isArray(deal?.eligibleAlternativeHandles)
@@ -564,20 +570,20 @@ function buildAskSnoozerQualityTrace({
     : [];
   const honestNoAlternative = !sessionRecommendationHandle && products.length === 0 &&
     /\b(?:do not have another eligible|cannot recommend|will not invent)\b/.test(normalizeQuestion(reply));
-  const alternativeGrounded = !alternativeRequested || Boolean(
+  const alternativeGrounded = alternativeRequested ? Boolean(
     (sessionRecommendationHandle && eligibleAlternatives.includes(sessionRecommendationHandle) && !rejected.has(sessionRecommendationHandle)) ||
     honestNoAlternative
-  );
-  const explicitExclusionHonored = !actTypes.has("explicit_exclusion") || explicitRejectionHonored;
-  const shopperDissatisfactionRecovered = !actTypes.has("trust_risk") || Boolean(
-    clean(plan.taskType) === "trust_recovery" && explicitRejectionHonored && responseComplete(reply)
-  );
-  const sessionRecommendationUpdated = !alternativeRequested || Boolean(sessionRecommendationHandle || honestNoAlternative);
+  ) : null;
+  const explicitExclusionHonored = actTypes.has("explicit_exclusion") ? explicitRejectionHonored === true : null;
+  const shopperDissatisfactionRecovered = actTypes.has("trust_risk") ? Boolean(
+    clean(plan.taskType) === "trust_recovery" && explicitRejectionHonored !== false && responseComplete(reply)
+  ) : null;
+  const sessionRecommendationUpdated = alternativeRequested ? Boolean(sessionRecommendationHandle || honestNoAlternative) : null;
   const rankedAlternatives = Array.isArray(deal?.rankedAlternatives) ? deal.rankedAlternatives : [];
-  const eligibleCandidatesResolved = !alternativeRequested || rankedAlternatives.length > 0 || honestNoAlternative;
-  const sessionRecommendationGrounded = !sessionRecommendationHandle || Boolean(
+  const eligibleCandidatesResolved = alternativeRequested ? rankedAlternatives.length > 0 || honestNoAlternative : null;
+  const sessionRecommendationGrounded = sessionRecommendationHandle ? Boolean(
     eligibleAlternatives.includes(sessionRecommendationHandle) && !rejected.has(sessionRecommendationHandle)
-  );
+  ) : null;
   const originalRecommendationHandle = clean(deal?.canonicalRecommendation?.primaryMattressHandle).toLowerCase();
   const beforeSessionRecommendationHandle = clean(transition?.stateBefore?.sessionRecommendationHandle).toLowerCase();
   const sessionRecommendationChanged = Boolean(
@@ -585,23 +591,40 @@ function buildAskSnoozerQualityTrace({
     sessionRecommendationHandle !== beforeSessionRecommendationHandle &&
     (beforeSessionRecommendationHandle || originalRecommendationHandle)
   );
-  const recommendationChangeExplained = !sessionRecommendationChanged || Boolean(
+  const recommendationChangeExplained = sessionRecommendationChanged ? Boolean(
     /\b(?:because|after|felt|asked for|kept|keeping|moved ahead|ruled out|matches?|fits?|gives?|offers?|softer|firmer|cooler|responsive|pressure relief|motion)\b/.test(normalizeQuestion(reply))
-  );
+  ) : null;
   const acceptanceActs = acts.filter((act) => act.type === "accept_recommendation");
-  const acceptedRecommendationPromoted = !acceptanceActs.length || acceptanceActs.every((act) =>
+  const acceptedRecommendationPromoted = acceptanceActs.length ? acceptanceActs.every((act) =>
     clean(deal?.acceptedRecommendation?.productHandle).toLowerCase() === clean(act.handle).toLowerCase() &&
     clean(deal?.activeConfiguration?.productHandle).toLowerCase() === clean(act.handle).toLowerCase()
-  );
+  ) : null;
   const stateBeforeSize = clean(transition?.stateBefore?.activeSize || plan?.knownFacts?.size);
-  const knownConfigurationPreserved = !acceptanceActs.length || !stateBeforeSize || clean(deal?.activeSize || deal?.activeConfiguration?.size) === stateBeforeSize;
-  const exactQuoteReached = !["price_quote", "bundle_quote", "cart_add"].includes(clean(plan.taskType)) || Boolean(
+  const knownConfigurationPreserved = acceptanceActs.length ? (!stateBeforeSize || clean(deal?.activeSize || deal?.activeConfiguration?.size) === stateBeforeSize) : null;
+  const exactQuoteApplicable = ["price_quote", "bundle_quote", "cart_add"].includes(clean(plan.taskType));
+  const exactQuoteReached = exactQuoteApplicable ? Boolean(
     quote?.ok && quote?.items?.length && quote.items.every((item) => /^gid:\/\/shopify\/ProductVariant\//.test(clean(item?.variantId)))
-  );
+  ) : null;
   const adaptiveRecommendationStranded = Boolean(
     alternativeRequested && eligibleCandidatesResolved && !sessionRecommendationHandle && !honestNoAlternative
   );
   const contradictoryCommitmentBehavior = commitmentActs.length > 0 && rejectedProductReintroduced;
+  const qualitySignalStates = {
+    explicitRejectionHonored: signalState(rejectionActs.length > 0, explicitRejectionHonored),
+    subjectiveFeedbackPreserved: signalState(feedbackActs.length > 0, subjectiveFeedbackPreserved),
+    retainedPreferencePreserved: signalState(retainedActs.length > 0, retainedPreferencePreserved),
+    pendingCommitmentResolved: signalState(commitmentActs.length > 0, pendingCommitmentResolved),
+    staleQuoteInvalidated: signalState(staleQuoteInvalidationApplicable, staleQuoteInvalidated),
+    alternativeGrounded: signalState(alternativeRequested, alternativeGrounded),
+    explicitExclusionHonored: signalState(actTypes.has("explicit_exclusion"), explicitExclusionHonored),
+    shopperDissatisfactionRecovered: signalState(actTypes.has("trust_risk"), shopperDissatisfactionRecovered),
+    sessionRecommendationUpdated: signalState(alternativeRequested, sessionRecommendationUpdated),
+    sessionRecommendationGrounded: signalState(Boolean(sessionRecommendationHandle), sessionRecommendationGrounded),
+    recommendationChangeExplained: signalState(sessionRecommendationChanged, recommendationChangeExplained),
+    acceptedRecommendationPromoted: signalState(acceptanceActs.length > 0, acceptedRecommendationPromoted),
+    knownConfigurationPreserved: signalState(acceptanceActs.length > 0, knownConfigurationPreserved),
+    exactQuoteReached: signalState(exactQuoteApplicable, exactQuoteReached),
+  };
   const quotePresented = Boolean(quote?.ok && responseComplete(reply));
   const compatibilityChecked = ["compatible", "incompatible", "not_applicable"].includes(
     clean(quote?.compatibility?.status)
@@ -790,12 +813,13 @@ function buildAskSnoozerQualityTrace({
     sessionRecommendationGrounded,
     sessionRecommendationChanged,
     recommendationChangeExplained,
-    rejectedCandidateSuppressed: !rejectedProductReintroduced,
+    rejectedCandidateSuppressed: rejected.size ? !rejectedProductReintroduced : null,
     acceptedRecommendationPromoted,
     knownConfigurationPreserved,
     unnecessaryReask: knownRepeated,
     exactQuoteReached,
     adaptiveRecommendationStranded,
+    qualitySignalStates,
   };
   const outcome = classifyOutcome({
     plan: { ...plan, query },
@@ -912,6 +936,8 @@ function buildAskSnoozerQualityTrace({
     repeatedQuestion: repeated,
     knownQuestionRepeated: knownRepeated,
     genericResponse: isGenericResponse(reply),
+    semanticAuthority: clean(transition.semanticAuthority) || clean(plan?.modelPlanning?.authority) || null,
+    modality: clean(transition.modality) || clean(plan?.modelPlanning?.decision?.modality) || null,
     interpretedActs: acts.map((act) => clean(act?.type)).filter(Boolean),
     requestedFacts,
     requestedFactsFullyAnswered,
@@ -919,6 +945,9 @@ function buildAskSnoozerQualityTrace({
     modelPlanningFallbackUsed: Boolean(plan?.modelPlanning?.fallbackUsed),
     plannerModelCallCount: Math.max(0, Number(plan?.modelPlanning?.modelCallCount) || 0),
     plannerModelMs: Math.max(0, Number(plan?.modelPlanning?.modelMs) || 0),
+    plannerValidation: isObject(plan?.modelPlanning?.decision?.validation)
+      ? plan.modelPlanning.decision.validation
+      : null,
     stateBefore: isObject(transition.stateBefore) ? transition.stateBefore : {},
     stateDelta: isObject(transition.stateDelta) ? transition.stateDelta : {},
     stateAfter: isObject(transition.stateAfter) ? transition.stateAfter : {},

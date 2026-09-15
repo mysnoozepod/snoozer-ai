@@ -167,6 +167,7 @@ const {
   resolveAskSnoozerAdvisorTurn,
 } = require("./services/askSnoozerConversationOrchestrator");
 const {
+  resolvePendingCommitmentProtocol,
   shouldPlanAskSnoozerWithModel,
 } = require("./services/askSnoozerModelPlanner");
 const {
@@ -6275,6 +6276,7 @@ function getAskSnoozerRouteDeps() {
     completeAskSnoozerAdvisorTurn,
     completeAskSnoozerPriceGoal,
     markAskSnoozerPriceGoalResolving,
+    resolvePendingCommitmentProtocol,
     shouldPlanAskSnoozerWithModel,
     planTrustedAdvisorTurnWithModel: async (args) => {
       const service = getOpenAiSvc();

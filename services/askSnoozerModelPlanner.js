@@ -1,7 +1,39 @@
 const { loadShowroomManifest } = require("./showroomManifest");
 const { normalizeAskSnoozerText } = require("./askSnoozerIntents");
 
-const MODEL_PLANNER_VERSION = "2026-09-14.2";
+const MODEL_PLANNER_VERSION = "2026-09-15.1";
+
+const ALLOWED_MODALITIES = new Set([
+  "asserted",
+  "hypothetical",
+  "conditional",
+  "question",
+  "reconsideration",
+]);
+
+const STATE_CHANGING_ACTS = new Set([
+  "accept_recommendation",
+  "budget_value",
+  "desired_direction",
+  "explicit_exclusion",
+  "product_feedback",
+  "reconsider_product",
+  "reject_product",
+  "request_alternative",
+  "retain_preference",
+]);
+
+const PROTECTED_FACTS = new Set([
+  "availability",
+  "cart",
+  "compatibility",
+  "delivery",
+  "financing",
+  "price",
+  "product_sizes",
+  "returns",
+  "warranty",
+]);
 
 const ALLOWED_TASKS = new Set([
   "alternative_resolution",
@@ -94,6 +126,16 @@ function unique(values = []) {
   return [...new Set((Array.isArray(values) ? values : []).map(clean).filter(Boolean))];
 }
 
+function inferUtteranceModality(query = "") {
+  const text = normalizeAskSnoozerText(query);
+  if (/\b(?:what if|suppose|hypothetically|imagine)\b/.test(text)) return "hypothetical";
+  if (/\bif\b.*\b(?:would|could|might|may)\b|\b(?:would|could|might|may)\b.*\bif\b/.test(text)) return "conditional";
+  if (/\?$/.test(clean(query)) && !/\b(?:i want|i need|i prefer|i like|i liked|i do not want|i don.t want|felt too|was too)\b/.test(text)) {
+    return "question";
+  }
+  return "asserted";
+}
+
 function catalogProducts() {
   return (loadShowroomManifest()?.products || [])
     .filter((product) => product?.active !== false)
@@ -149,7 +191,7 @@ function inferRequestedFacts(query = "") {
 function isSimpleAtomicFactQuery(query = "", context = {}) {
   const text = normalizeAskSnoozerText(query);
   const facts = inferRequestedFacts(query);
-  if (facts.length !== 1 || text.split(/\s+/).filter(Boolean).length > 12) return false;
+  if (facts.length !== 1 || text.split(/\s+/).filter(Boolean).length > 18) return false;
   if (["delivery", "returns", "financing"].includes(facts[0])) return true;
   const deal = context?.askSnoozerWorkingMemory?.activeDeal || {};
   const activeProduct = clean(
@@ -158,10 +200,48 @@ function isSimpleAtomicFactQuery(query = "", context = {}) {
     deal?.acceptedRecommendation?.productHandle
   );
   if (facts[0] === "warranty" && activeProduct) return true;
-  if (facts[0] === "price" && deal?.activeQuote?.ok && activeProduct) {
-    return /\b(?:mattress[- ]only|without (?:the )?base|mattress (?:cost|price)|price of (?:the )?mattress)\b/.test(text);
+  if (facts[0] === "product_sizes" && (activeProduct || resolveCatalogHandle(query))) return true;
+  if (facts[0] === "price" && activeProduct && !/\b(?:why|worth|value|compare|difference|save)\b/.test(text)) {
+    return Boolean(deal?.activeQuote?.ok || /\b(?:twin|full|queen|king|split|mattress|base|setup)\b/.test(text));
   }
   return false;
+}
+
+function resolvePendingCommitmentProtocol({ query = "", context = {} } = {}) {
+  const pending = context?.askSnoozerWorkingMemory?.activeDeal?.pendingCommitment;
+  if (!pending || clean(pending.status || "pending") !== "pending") return null;
+  const text = normalizeAskSnoozerText(query);
+  const affirmative = /^(?:yes|yeah|yep|sure|please|do it|do that|show me|go ahead|okay do it|ok do it)[.! ]*$/.test(text);
+  const negative = /^(?:no|nope|no thanks|not now|don.t|don.t do that|dont do that)[.! ]*$/.test(text);
+  if (!affirmative && !negative) return null;
+  const accepted = affirmative;
+  return {
+    version: MODEL_PLANNER_VERSION,
+    authority: "typed_commitment",
+    modality: "asserted",
+    primaryTask: accepted
+      ? pending.type === "find_alternative" ? "alternative_resolution" : "commitment_resolution"
+      : "commitment_declined",
+    shopperGoal: accepted ? `accept ${clean(pending.type)}` : `decline ${clean(pending.type)}`,
+    acts: [{
+      type: accepted ? "accept_commitment" : "decline_commitment",
+      commitmentId: clean(pending.id),
+      commitmentType: clean(pending.type),
+      modality: "asserted",
+    }],
+    productReferences: [],
+    comparisonProductHandles: [],
+    requestedFacts: [],
+    answerRequirements: accepted ? ["preserve_active_decision"] : [],
+    requestedPodId: null,
+    requiresComposition: accepted,
+    confidence: 1,
+    validation: {
+      source: "typed_commitment",
+      acceptedActTypes: [accepted ? "accept_commitment" : "decline_commitment"],
+      droppedActs: [],
+    },
+  };
 }
 
 function shouldPlanAskSnoozerWithModel({ query = "", context = {} } = {}) {
@@ -175,6 +255,7 @@ function shouldPlanAskSnoozerWithModel({ query = "", context = {} } = {}) {
   }
   if (isSimpleAtomicFactQuery(query, context)) return false;
   if (/^(?:what(?:'s| is) in|show|review|check)\b.*\bcart\b/.test(text)) return false;
+  if (/^(?:please )?(?:add|put)\b.*\b(?:cart|basket)\b/.test(text) || /\b(?:add|put)\b.*\b(?:to|in) (?:my|the) cart\b/.test(text)) return false;
   if (/\b(?:reward balance|how many points|points balance)\b/.test(text)) return false;
   return true;
 }
@@ -227,14 +308,16 @@ function parseJsonObject(raw) {
   }
 }
 
-function normalizeAct(act = {}) {
+function normalizeAct(act = {}, defaultModality = "asserted") {
   const type = clean(act?.type).toLowerCase();
   if (!ALLOWED_ACTS.has(type)) return null;
   const handle = resolveCatalogHandle(act?.handle);
   if (["reject_product", "product_feedback", "explicit_exclusion", "reconsider_product", "accept_recommendation"].includes(type) && !handle) {
     return null;
   }
-  const normalized = { type };
+  const suppliedModality = clean(act?.modality || defaultModality).toLowerCase();
+  const modality = ALLOWED_MODALITIES.has(suppliedModality) ? suppliedModality : defaultModality;
+  const normalized = { type, modality };
   if (handle) normalized.handle = handle;
   const normalizedToken = (value) => clean(value).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 80);
   if (clean(act?.reason)) normalized.reason = normalizedToken(act.reason);
@@ -248,50 +331,33 @@ function normalizeAct(act = {}) {
   return normalized;
 }
 
-function actSupportedByQuery(act = {}, query = "") {
-  const text = normalizeAskSnoozerText(query);
-  switch (clean(act?.type)) {
-    case "accept_commitment":
-      return /^(?:yes|yeah|yep|sure|please|do it|go ahead)[.! ]*$/.test(text);
-    case "decline_commitment":
-      return /^(?:no|nope|no thanks|not now|don.t)[.! ]*$/.test(text);
-    case "confusion":
-      return /\b(?:confused|confusing|lost|simplify|don.t understand|do not understand)\b/.test(text);
-    case "trust_risk":
-      return /\b(?:not listening|keep recommending|already said|stop telling|confusing to me|isn.t right for me|is not right for me)\b/.test(text);
-    case "explicit_exclusion":
-      return /\b(?:anything but|except|stop (?:showing|telling|recommending)|do not (?:show|recommend)|don.t (?:show|recommend)|not interested in)\b/.test(text);
-    case "reconsider_product":
-      return /\b(?:reconsider|show me .* again|go back to|look at .* again|actually .* (?:first|original|foam|hybrid))\b/.test(text);
-    case "request_alternative":
-      return /\b(?:something else|anything else|what else|other (?:one|mattress|option)|another (?:one|mattress|option)|alternative|different mattress|find me|recommend .* else|want (?:softer|firmer|cooler))\b/.test(text);
-    case "desired_direction":
-      return /\b(?:want|need|prefer|looking for|go)\b.*\b(?:softer|firmer|cooler|warmer|less motion|more responsive|less bounce|more support)\b|^(?:softer|firmer|cooler)[.! ]*$/.test(text);
-    case "reject_product":
-      return /\b(?:too firm|too soft|too hot|uncomfortable|didn.t like|did not like|don.t like|do not like|not for me|rule.*out|take .* off)\b/.test(text);
-    case "product_feedback":
-      return /\b(?:too firm|too soft|too hot|cool|sinking|floating|supportive|not supportive|comfortable|uncomfortable|liked|didn.t like|did not like|felt)\b/.test(text);
-    case "retain_preference":
-      return /\b(?:like|liked|love|prefer|keep|still want)\b/.test(text);
-    case "accept_recommendation":
-      return /\b(?:i.ll take|i will take|go with|choose|accept|that works|sounds good)\b/.test(text);
-    case "budget_value":
-      return /\b(?:too expensive|over (?:my )?budget|more than i want to spend|costs? too much|save money)\b/.test(text);
-    default:
-      return false;
+function validateNormalizedAct(act = {}, { context = {}, protectedFactOnly = false } = {}) {
+  if (!act) return { ok: false, reason: "invalid_or_unknown_act" };
+  if (protectedFactOnly && STATE_CHANGING_ACTS.has(act.type)) {
+    return { ok: false, reason: "protected_fact_scope_conflict" };
   }
+  if (
+    STATE_CHANGING_ACTS.has(act.type) &&
+    !["asserted", "reconsideration"].includes(act.modality) &&
+    !(act.type === "request_alternative" && act.modality === "question")
+  ) {
+    return { ok: false, reason: `non_asserted_${act.modality}` };
+  }
+  const pending = context?.askSnoozerWorkingMemory?.activeDeal?.pendingCommitment;
+  if (["accept_commitment", "decline_commitment"].includes(act.type)) {
+    if (!pending || clean(pending.status || "pending") !== "pending") return { ok: false, reason: "no_pending_commitment" };
+    if (clean(act.commitmentId) !== clean(pending.id)) return { ok: false, reason: "commitment_id_mismatch" };
+  }
+  if (act.type === "reconsider_product") {
+    const rejected = new Set((context?.askSnoozerWorkingMemory?.activeDeal?.rejectedProducts || [])
+      .filter((item) => clean(item?.status || "rejected") === "rejected")
+      .map((item) => clean(item?.handle).toLowerCase()));
+    if (!rejected.has(clean(act.handle).toLowerCase())) return { ok: false, reason: "product_not_rejected" };
+  }
+  return { ok: true, reason: null };
 }
 
-function parsedFactSupportedByQuery(fact = "", query = "") {
-  const text = normalizeAskSnoozerText(query);
-  if (fact === "product_features") {
-    return /\b(?:feature|feel|construction|material|made of|tell me about|what does .* do|what will i notice)\b/.test(text);
-  }
-  if (fact === "cart") return /\bcart\b/.test(text);
-  return false;
-}
-
-function parseModelPlannerDecision(raw, { query = "" } = {}) {
+function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
   const parsed = parseJsonObject(raw);
   if (!parsed) {
     const error = new Error("Advisor planner returned invalid JSON.");
@@ -299,9 +365,14 @@ function parseModelPlannerDecision(raw, { query = "" } = {}) {
     throw error;
   }
   const hintedFacts = inferRequestedFacts(query);
+  const inferredModality = inferUtteranceModality(query);
+  const suppliedModality = clean(parsed.modality || parsed.utteranceMode).toLowerCase();
+  const modality = ["hypothetical", "conditional"].includes(inferredModality)
+    ? inferredModality
+    : ALLOWED_MODALITIES.has(suppliedModality) ? suppliedModality : inferredModality;
   const parsedFacts = unique(parsed.requestedFacts || [])
     .map((fact) => clean(fact).toLowerCase())
-    .filter((fact) => ALLOWED_FACTS.has(fact) && parsedFactSupportedByQuery(fact, query));
+    .filter((fact) => ALLOWED_FACTS.has(fact) && (!PROTECTED_FACTS.has(fact) || hintedFacts.includes(fact)));
   const requestedFacts = unique([...hintedFacts, ...parsedFacts]);
   let primaryTask = clean(parsed.primaryTask).toLowerCase();
   if (requestedFacts.length > 1) primaryTask = "compound_fact_answer";
@@ -316,9 +387,24 @@ function parseModelPlannerDecision(raw, { query = "" } = {}) {
     ...(parsed.comparisonProductHandles || []),
     ...productReferences.filter((reference) => reference.role === "comparison").map((reference) => reference.handle),
   ]).map(resolveCatalogHandle).filter(Boolean).slice(0, 3);
-  const acts = (Array.isArray(parsed.acts) ? parsed.acts : [])
-    .map(normalizeAct)
-    .filter((act) => act && actSupportedByQuery(act, query));
+  const rawActs = Array.isArray(parsed.acts) ? parsed.acts : [];
+  const acts = [];
+  const droppedActs = [];
+  for (const rawAct of rawActs) {
+    const normalized = normalizeAct(rawAct, modality);
+    if (normalized && ["hypothetical", "conditional"].includes(modality)) normalized.modality = modality;
+    const validation = validateNormalizedAct(normalized, {
+      context,
+      protectedFactOnly: hintedFacts.length > 0 && modality === "question",
+    });
+    if (validation.ok) acts.push(normalized);
+    else droppedActs.push({
+      type: clean(rawAct?.type).toLowerCase() || null,
+      handle: clean(rawAct?.handle).toLowerCase() || null,
+      modality: clean(rawAct?.modality || modality).toLowerCase() || modality,
+      reason: validation.reason,
+    });
+  }
   const answerRequirements = unique(parsed.answerRequirements || [])
     .map((requirement) => clean(requirement).toLowerCase())
     .filter((requirement) => ALLOWED_REQUIREMENTS.has(requirement));
@@ -327,6 +413,8 @@ function parseModelPlannerDecision(raw, { query = "" } = {}) {
   }
   return {
     version: MODEL_PLANNER_VERSION,
+    authority: "model_semantics",
+    modality,
     primaryTask: primaryTask || null,
     shopperGoal: clean(parsed.shopperGoal).slice(0, 240) || null,
     acts,
@@ -339,6 +427,17 @@ function parseModelPlannerDecision(raw, { query = "" } = {}) {
     confidence: Number.isFinite(Number(parsed.confidence))
       ? Math.max(0, Math.min(1, Number(parsed.confidence)))
       : null,
+    validation: {
+      source: "model_semantics",
+      rawPrimaryTask: clean(parsed.primaryTask).toLowerCase() || null,
+      rawActTypes: rawActs.map((act) => clean(act?.type).toLowerCase()).filter(Boolean),
+      acceptedActTypes: acts.map((act) => act.type),
+      droppedActs,
+      rawRequestedFacts: unique(parsed.requestedFacts || []).map((fact) => clean(fact).toLowerCase()),
+      acceptedRequestedFacts: requestedFacts,
+      inferredModality,
+      suppliedModality: suppliedModality || null,
+    },
   };
 }
 
@@ -348,7 +447,9 @@ module.exports = {
   ALLOWED_FACTS,
   buildModelPlannerInput,
   inferRequestedFacts,
+  inferUtteranceModality,
   parseModelPlannerDecision,
+  resolvePendingCommitmentProtocol,
   resolveCatalogHandle,
   shouldPlanAskSnoozerWithModel,
 };
