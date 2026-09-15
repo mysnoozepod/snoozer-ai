@@ -359,6 +359,10 @@ function resolveProtectedReference(query = "", context = {}) {
       handle = explicitActive || active || comparison[0] || canonical;
       source = "active_product";
     }
+  } else if (/\b(?:this|that) mattress\b|\bwhy is it\b|\bhow is it\b/.test(text)) {
+    phrase = "current mattress";
+    handle = explicitActive || active || comparison[0] || canonical;
+    source = "active_product";
   }
   return {
     phrase,
@@ -607,14 +611,24 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     .map((item) => clean(item?.handle).toLowerCase())
     .filter(Boolean);
   const mostRecentRejectedHandle = activeRejected[activeRejected.length - 1] || null;
+  const currentRelationalHandle = clean(
+    activeSessionRecommendationHandle(context) || deal.activeProductHandle || activeHandle
+  ).toLowerCase() || null;
+  const relationalOtherHandle = /\b(?:reject|ruled out)\b/.test(text)
+    ? mostRecentRejectedHandle
+    : /\b(?:original|first)\b/.test(text)
+      ? canonicalHandle
+      : /\b(?:previous|last|other)\b/.test(text)
+        ? clean(deal.recentProductHandle || mostRecentRejectedHandle || deal.comparisonProductHandles?.find((handle) => handle !== currentRelationalHandle)).toLowerCase() || null
+        : mostRecentRejectedHandle;
   const substantiveQuestion = /\b(?:what|which|why|how|is|are|can|could|would|should|tell|explain|help|better|fit|difference)\b/.test(text);
   const relationalComparison = /\b(?:better|worse|different|compare|versus|\bvs\b|instead|than)\b/.test(text) &&
     /\b(?:reject|ruled out|original|first|previous|other|last|before)\b/.test(text);
   let semanticPlanRepair = null;
-  if (taskType === "legacy" && substantiveQuestion && referenceResolution.resolved) {
-    if (relationalComparison && mostRecentRejectedHandle && mostRecentRejectedHandle !== activeHandle) {
+  if (["legacy", "recommendation_explanation"].includes(taskType) && substantiveQuestion && (referenceResolution.resolved || currentRelationalHandle)) {
+    if (relationalComparison && relationalOtherHandle && relationalOtherHandle !== currentRelationalHandle) {
       taskType = "product_comparison";
-      semanticPlanRepair = "resolved_current_vs_rejected_comparison";
+      semanticPlanRepair = "resolved_relational_comparison";
     } else if (/\b(?:why|better fit|recommended?|choose|chose)\b/.test(text)) {
       taskType = "recommendation_explanation";
       semanticPlanRepair = "resolved_reference_explanation";
@@ -730,8 +744,8 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       (handle) => !rejectedHandles(context).has(handle)
     ).slice(0, 3);
   }
-  if (semanticPlanRepair === "resolved_current_vs_rejected_comparison") {
-    comparisonHandles = unique([activeHandle, mostRecentRejectedHandle]).slice(0, 2);
+  if (semanticPlanRepair === "resolved_relational_comparison") {
+    comparisonHandles = unique([currentRelationalHandle, relationalOtherHandle]).slice(0, 2);
   }
   const needsCommerce = ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(taskType);
   const needsCompatibility = ["bundle_quote", "compatibility", "cart_add"].includes(taskType);
