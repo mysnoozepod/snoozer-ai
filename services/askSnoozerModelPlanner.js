@@ -334,6 +334,13 @@ function normalizeAct(act = {}, defaultModality = "asserted") {
   if (type === "desired_direction" && !clean(key)) {
     key = ["feel", "temperature", "response", "motion"].find((candidate) => clean(act?.[candidate])) || key;
     if (key) value = act?.[key];
+    if (!key && clean(value)) {
+      const directionToken = normalizedToken(value);
+      if (["softer", "firmer"].includes(directionToken)) key = "feel";
+      else if (["cooler", "warmer"].includes(directionToken)) key = "temperature";
+      else if (["more_responsive", "less_responsive"].includes(directionToken)) key = "response";
+      else if (["more_motion", "less_motion"].includes(directionToken)) key = "motion";
+    }
   }
   if (clean(key)) normalized.key = clean(key).slice(0, 80);
   if (clean(value)) normalized.value = normalizedToken(value).slice(0, 120);
@@ -430,6 +437,24 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
       modality: clean(rawAct?.modality || modality).toLowerCase() || modality,
       reason: validation.reason,
     });
+  }
+  // Close a model-semantic bundle before reducing it into journey state. The
+  // model has already decided both that the product was rejected and the
+  // shopper wants a softer/firmer/cooler direction; this only makes the
+  // consequence explicit when the model omitted the redundant reason field.
+  const desiredDirectionAct = acts.find((act) => act.type === "desired_direction");
+  const impliedRejectionReason = desiredDirectionAct?.key === "feel" && desiredDirectionAct?.value === "softer"
+    ? "too_firm"
+    : desiredDirectionAct?.key === "feel" && desiredDirectionAct?.value === "firmer"
+      ? "too_soft"
+      : desiredDirectionAct?.key === "temperature" && desiredDirectionAct?.value === "cooler"
+        ? "too_hot"
+        : null;
+  if (impliedRejectionReason) {
+    for (const rejection of acts.filter((act) => act.type === "reject_product" && !clean(act.reason))) {
+      rejection.reason = impliedRejectionReason;
+      rejection.derivedFrom = "desired_direction";
+    }
   }
   const feedbackFromRejection = new Map([
     ["too_firm", "too_firm"],

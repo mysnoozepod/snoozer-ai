@@ -250,7 +250,7 @@ async function main() {
       utteranceMode: "asserted",
       primaryTask: "alternative_resolution",
       acts: [
-        { type: "reject_product", productHandle: "14-hybrid", reason: "too_firm" },
+        { type: "reject_product", productHandle: "14-hybrid" },
         { type: "desired_direction", direction: "softer" },
         { type: "request_alternative" },
       ],
@@ -261,7 +261,9 @@ async function main() {
       new Set(["reject_product", "product_feedback", "desired_direction", "request_alternative"])
     );
     assert.equal(aliasedFeedbackDecision.acts.find((act) => act.type === "reject_product").handle, "14-hybrid");
-    checks += 2;
+    assert.equal(aliasedFeedbackDecision.acts.find((act) => act.type === "reject_product").reason, "too_firm");
+    assert.equal(aliasedFeedbackDecision.acts.find((act) => act.type === "product_feedback").feedback, "too_firm");
+    checks += 4;
 
     const initialAlternativeContext = baseContext();
     Object.assign(initialAlternativeContext.askSnoozerWorkingMemory.activeDeal, {
