@@ -317,7 +317,7 @@ function parseJsonObject(raw) {
 function normalizeAct(act = {}, defaultModality = "asserted") {
   const type = clean(act?.type).toLowerCase();
   if (!ALLOWED_ACTS.has(type)) return null;
-  const handle = resolveCatalogHandle(act?.handle);
+  const handle = resolveCatalogHandle(act?.handle || act?.productHandle || act?.product_handle);
   if (["reject_product", "product_feedback", "explicit_exclusion", "reconsider_product", "accept_recommendation"].includes(type) && !handle) {
     return null;
   }
@@ -327,9 +327,16 @@ function normalizeAct(act = {}, defaultModality = "asserted") {
   if (handle) normalized.handle = handle;
   const normalizedToken = (value) => clean(value).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 80);
   if (clean(act?.reason)) normalized.reason = normalizedToken(act.reason);
-  if (clean(act?.feedback)) normalized.feedback = normalizedToken(act.feedback);
-  if (clean(act?.key)) normalized.key = clean(act.key).slice(0, 80);
-  if (clean(act?.value)) normalized.value = normalizedToken(act.value).slice(0, 120);
+  const feedback = act?.feedback || (type === "product_feedback" ? act?.value || act?.reason || act?.feel : null);
+  if (clean(feedback)) normalized.feedback = normalizedToken(feedback);
+  let key = act?.key || act?.dimension || act?.attribute;
+  let value = act?.value || act?.direction || act?.preference;
+  if (type === "desired_direction" && !clean(key)) {
+    key = ["feel", "temperature", "response", "motion"].find((candidate) => clean(act?.[candidate])) || key;
+    if (key) value = act?.[key];
+  }
+  if (clean(key)) normalized.key = clean(key).slice(0, 80);
+  if (clean(value)) normalized.value = normalizedToken(value).slice(0, 120);
   if (clean(act?.concern)) normalized.concern = clean(act.concern).slice(0, 80);
   if (Number.isFinite(Number(act?.maxAmount))) normalized.maxAmount = Number(act.maxAmount);
   if (clean(act?.commitmentId)) normalized.commitmentId = clean(act.commitmentId).slice(0, 120);
@@ -359,6 +366,10 @@ function validateNormalizedAct(act = {}, { context = {}, protectedFactOnly = fal
       .filter((item) => clean(item?.status || "rejected") === "rejected")
       .map((item) => clean(item?.handle).toLowerCase()));
     if (!rejected.has(clean(act.handle).toLowerCase())) return { ok: false, reason: "product_not_rejected" };
+  }
+  if (act.type === "product_feedback" && !clean(act.feedback)) return { ok: false, reason: "feedback_missing" };
+  if (["desired_direction", "retain_preference"].includes(act.type) && (!clean(act.key) || !clean(act.value))) {
+    return { ok: false, reason: "preference_key_or_value_missing" };
   }
   return { ok: true, reason: null };
 }
@@ -418,6 +429,41 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
       handle: clean(rawAct?.handle).toLowerCase() || null,
       modality: clean(rawAct?.modality || modality).toLowerCase() || modality,
       reason: validation.reason,
+    });
+  }
+  const feedbackFromRejection = new Map([
+    ["too_firm", "too_firm"],
+    ["too_soft", "too_soft"],
+    ["too_hot", "too_hot"],
+    ["uncomfortable", "uncomfortable"],
+    ["did_not_like", "did_not_like"],
+  ]);
+  for (const rejection of acts.filter((act) => act.type === "reject_product" && feedbackFromRejection.has(act.reason))) {
+    if (!acts.some((act) => act.type === "product_feedback" && act.handle === rejection.handle)) {
+      acts.push({
+        type: "product_feedback",
+        modality: rejection.modality,
+        handle: rejection.handle,
+        feedback: feedbackFromRejection.get(rejection.reason),
+        derivedFrom: "reject_product",
+      });
+    }
+  }
+  const alternativeRequested = acts.some((act) => act.type === "request_alternative");
+  if (alternativeRequested && !acts.some((act) => act.type === "desired_direction")) {
+    const directionalRejection = acts.find((act) => act.type === "reject_product" && ["too_firm", "too_soft", "too_hot"].includes(act.reason));
+    const direction = directionalRejection?.reason === "too_firm"
+      ? { key: "feel", value: "softer" }
+      : directionalRejection?.reason === "too_soft"
+        ? { key: "feel", value: "firmer" }
+        : directionalRejection?.reason === "too_hot"
+          ? { key: "temperature", value: "cooler" }
+          : null;
+    if (direction) acts.push({
+      type: "desired_direction",
+      modality: directionalRejection.modality,
+      ...direction,
+      derivedFrom: "reject_product",
     });
   }
   const answerRequirements = unique(parsed.answerRequirements || [])

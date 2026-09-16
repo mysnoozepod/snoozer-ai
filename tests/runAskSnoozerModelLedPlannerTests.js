@@ -246,6 +246,23 @@ async function main() {
     });
     check(basePlan.taskType === "compatibility" && basePlan.handled, "model-only semantics route a base question to verified compatibility instead of legacy snoring");
 
+    const aliasedFeedbackDecision = parseModelPlannerDecision({
+      utteranceMode: "asserted",
+      primaryTask: "alternative_resolution",
+      acts: [
+        { type: "reject_product", productHandle: "14-hybrid", reason: "too_firm" },
+        { type: "desired_direction", direction: "softer" },
+        { type: "request_alternative" },
+      ],
+      confidence: 0.97,
+    }, { query: "This mattress feels too firm. What should I try instead?", context: baseContext() });
+    assert.deepEqual(
+      new Set(aliasedFeedbackDecision.acts.map((act) => act.type)),
+      new Set(["reject_product", "product_feedback", "desired_direction", "request_alternative"])
+    );
+    assert.equal(aliasedFeedbackDecision.acts.find((act) => act.type === "reject_product").handle, "14-hybrid");
+    checks += 2;
+
     const initialAlternativeContext = baseContext();
     Object.assign(initialAlternativeContext.askSnoozerWorkingMemory.activeDeal, {
       activeProductHandle: "14-hybrid",
