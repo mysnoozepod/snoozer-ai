@@ -9,6 +9,7 @@ const {
 } = require("../services/askSnoozerModelPlanner");
 const {
   applyAskSnoozerWorkingMemory,
+  completeAskSnoozerAdvisorTurn,
   resolveExplicitProductHandle,
 } = require("../services/askSnoozerWorkingMemory");
 const {
@@ -225,6 +226,96 @@ async function main() {
   const input = buildModelPlannerInput({ query: "Why did you choose pod 4 for me?", context: baseContext() });
   check(input.activeJourney.canonicalRecommendation.podId === "3", "planner receives protected canonical pod identity");
   check(input.catalog.every((item) => item.handle && item.title), "planner receives compact real catalog identities");
+
+  const previousModelOnly = process.env.ASK_SNOOZER_MODEL_ONLY;
+  process.env.ASK_SNOOZER_MODEL_ONLY = "true";
+  try {
+    const baseCompatibility = parseModelPlannerDecision({
+      utteranceMode: "hypothetical",
+      primaryTask: "compatibility",
+      shopperGoal: "understand whether a base can be added",
+      requestedFacts: ["compatibility"],
+      productReferences: [{ handle: "12-dual-comfort-hybrid", role: "subject" }],
+      confidence: 0.96,
+    }, { query: "What if I want to add a base to it?", context: baseContext() });
+    assert.deepEqual(baseCompatibility.requestedFacts, ["compatibility"]);
+    const basePlan = planAskSnoozerTurn({
+      query: "What if I want to add a base to it?",
+      context: baseContext(),
+      modelDecision: baseCompatibility,
+    });
+    check(basePlan.taskType === "compatibility" && basePlan.handled, "model-only semantics route a base question to verified compatibility instead of legacy snoring");
+
+    const initialAlternativeContext = baseContext();
+    Object.assign(initialAlternativeContext.askSnoozerWorkingMemory.activeDeal, {
+      activeProductHandle: "14-hybrid",
+      sessionRecommendation: null,
+      rejectedProducts: [],
+      desiredDirection: {},
+    });
+    const alternativeDecision = parseModelPlannerDecision({
+      utteranceMode: "question",
+      primaryTask: "alternative_resolution",
+      shopperGoal: "replace a mattress that felt too firm",
+      acts: [
+        { type: "reject_product", handle: "14-hybrid", reason: "too_firm", modality: "asserted" },
+        { type: "product_feedback", handle: "14-hybrid", feedback: "too_firm", modality: "asserted" },
+        { type: "desired_direction", key: "feel", value: "softer", modality: "asserted" },
+        { type: "request_alternative", modality: "asserted" },
+      ],
+      productReferences: [{ handle: "14-hybrid", role: "subject" }],
+      confidence: 0.98,
+    }, { query: "This mattress feels too firm. What should I try instead?", context: initialAlternativeContext });
+    assert.equal(alternativeDecision.modality, "asserted");
+    check(alternativeDecision.acts.length === 4, "compound feedback survives model-only validation even when the utterance also asks a question");
+    const alternativeContext = applyAskSnoozerWorkingMemory({
+      query: "This mattress feels too firm. What should I try instead?",
+      context: initialAlternativeContext,
+      modelDecision: alternativeDecision,
+    });
+    const alternativeHandle = alternativeContext.askSnoozerWorkingMemory.activeDeal.sessionRecommendation.productHandle;
+    check(alternativeHandle && alternativeHandle !== "14-hybrid", "model-only alternative state excludes the rejected product");
+    const alternativePlan = planAskSnoozerTurn({
+      query: "This mattress feels too firm. What should I try instead?",
+      context: alternativeContext,
+      referenceContext: initialAlternativeContext,
+      modelDecision: alternativeDecision,
+    });
+    assert.equal(alternativePlan.references.requestedProductHandle, alternativeHandle);
+    const alternativeOutcome = await resolveAskSnoozerAdvisorTurn({
+      query: "This mattress feels too firm. What should I try instead?",
+      context: alternativeContext,
+      plan: alternativePlan,
+      fetchProductsByHandles: async ({ handles = [] }) => ({ items: handles.map(product) }),
+      loadAdvisorKnowledge: async () => ({ productFacts: [], policyFacts: [] }),
+      composeAdvisorResponse: async ({ deterministicDraft }) => ({
+        displayText: deterministicDraft.displayText,
+        speechText: deterministicDraft.speechText,
+        confidence: 0.95,
+      }),
+    });
+    assert.deepEqual(alternativeOutcome.products.map((item) => item.handle), [alternativeHandle]);
+    const completedAlternative = completeAskSnoozerAdvisorTurn(alternativeContext, alternativeOutcome);
+    assert.equal(completedAlternative.askSnoozerWorkingMemory.activeDeal.activeProductHandle, alternativeHandle);
+    const wrongAlternativeCard = validateResponseConsistency({
+      reply: "Try the softer alternative next.",
+      products: [product("14-hybrid")],
+      plan: alternativePlan,
+      factPack: {
+        recommendation: { current: alternativeHandle },
+        feedback: { explicitExclusions: ["14-hybrid"] },
+        products: [{ handle: alternativeHandle }],
+      },
+    });
+    check(
+      wrongAlternativeCard.violations.includes("session_recommendation_product_card_mismatch"),
+      "response validation rejects a card that disagrees with the session recommendation"
+    );
+    checks += 5;
+  } finally {
+    if (previousModelOnly === undefined) delete process.env.ASK_SNOOZER_MODEL_ONLY;
+    else process.env.ASK_SNOOZER_MODEL_ONLY = previousModelOnly;
+  }
 
   const wrongPodDecision = parseModelPlannerDecision({
     primaryTask: null,

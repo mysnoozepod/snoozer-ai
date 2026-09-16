@@ -8,6 +8,12 @@ function buildBoundedConversationHistory(history = []) {
     .filter((entry) => entry.content);
 }
 
+function isAskSnoozerModelOnlyEnabled() {
+  return ["1", "true", "yes", "on"].includes(
+    String(process.env.ASK_SNOOZER_MODEL_ONLY || "").trim().toLowerCase()
+  );
+}
+
 async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps = {} }) {
   const {
     safeJsonBody,
@@ -138,6 +144,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
   if (method === "POST" && (routePath === "/ask-snoozer" || routePath === "/ask")) {
     const startedAt = Date.now();
+    const modelOnlySemanticRouting = isAskSnoozerModelOnlyEnabled();
     const payload = safeJsonBody(event);
     const testCaseId = String(payload?.testCaseId || payload?.test_case_id || "").trim() || null;
 
@@ -632,7 +639,32 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     }
     await commitActiveJourneyFromAskContext("pre_response");
 
-    const askSnoozerClassification = buildAskSnoozerClassification(msg, context);
+    const modelOnlyProtectedFactPassthrough = Boolean(
+      modelOnlySemanticRouting &&
+      !askSnoozerModelPlanning.used &&
+      askSnoozerPlan?.taskType === "legacy" &&
+      Array.isArray(askSnoozerPlan?.requestedFacts) &&
+      askSnoozerPlan.requestedFacts.length > 0 &&
+      askSnoozerPlan.requestedFacts.every((fact) => [
+        "availability",
+        "cart",
+        "compatibility",
+        "delivery",
+        "financing",
+        "price",
+        "product_sizes",
+        "returns",
+        "warranty",
+      ].includes(String(fact || "").trim()))
+    );
+    const askSnoozerClassification = modelOnlySemanticRouting && !modelOnlyProtectedFactPassthrough
+      ? {
+          intent: askSnoozerPlan?.taskType || askSnoozerModelPlanning?.decision?.primaryTask || "model_only_unresolved",
+          intent_group: "model_led",
+          confidence: askSnoozerModelPlanning?.decision?.confidence || null,
+          source_of_truth: "model_semantics",
+        }
+      : buildAskSnoozerClassification(msg, context);
     const presentationPolicy = typeof resolveAskSnoozerPresentationPolicy === "function"
       ? resolveAskSnoozerPresentationPolicy({ correlationId: effectiveSessionId })
       : { version: "baseline-v1", assignment: "control", directives: ["preserve_current_structure"] };
@@ -1305,6 +1337,105 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
         return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
       }
+    }
+
+    if (modelOnlySemanticRouting && !modelOnlyProtectedFactPassthrough) {
+      const fallbackDeal = context?.askSnoozerWorkingMemory?.activeDeal || {};
+      const currentHandle = String(
+        fallbackDeal?.sessionRecommendation?.productHandle ||
+        fallbackDeal?.acceptedRecommendation?.productHandle ||
+        fallbackDeal?.activeProductHandle ||
+        ""
+      ).trim();
+      let currentTitle = "";
+      if (currentHandle && typeof loadShowroomManifest === "function") {
+        currentTitle = String(
+          loadShowroomManifest()?.products?.find((product) => String(product?.handle || "").trim() === currentHandle)?.title || ""
+        ).trim();
+      }
+      const reason = askSnoozerModelPlanning.fallbackUsed
+        ? "planner_error"
+        : askSnoozerModelPlanning.used
+          ? "unresolved_model_task"
+          : "unhandled_model_only_turn";
+      const reply = currentTitle
+        ? `I want to make sure I act on the right request for the ${currentTitle}. Please rephrase what you want to compare, price, or change about the setup.`
+        : "I want to make sure I act on the right request. Please rephrase what you want to compare, price, or change about the setup.";
+      const latencyMs = Date.now() - startedAt;
+      const env = buildSuccessResponse({
+        requestId: traceId,
+        latencyMs,
+        model: "model_only_recovery",
+        text: reply,
+        context,
+        products: [],
+        actions: [],
+        metrics: {
+          retrievalMs: 0,
+          modelMs: Number(askSnoozerModelPlanning.modelMs || 0),
+          totalMs: latencyMs,
+          fallbackUsed: true,
+          modelCallCount: Number(askSnoozerModelPlanning.modelCallCount || 0),
+        },
+      });
+      env.reply = reply;
+      env.thread_id = effectiveSessionId;
+      env.sessionId = effectiveSessionId;
+      env.status = "completed_with_fallback";
+      env.chips = [];
+      env.meta = {
+        path: "model_only_recovery",
+        intent: askSnoozerClassification.intent,
+        source: "model_semantics",
+        reason,
+        modelOnlySemanticRouting: true,
+        qualityGate: {
+          intent: askSnoozerClassification.intent,
+          intentGroup: "model_led",
+          sourceOfTruth: "model_semantics",
+          answerType: "model_only_recovery",
+          protectedTruthRequired: false,
+          factsResolved: false,
+          fallbackUsed: true,
+          missingSlots: [],
+          reason,
+        },
+        metrics: {
+          retrievalMs: 0,
+          modelMs: Number(askSnoozerModelPlanning.modelMs || 0),
+          totalMs: latencyMs,
+          fallbackUsed: true,
+          modelCallCount: Number(askSnoozerModelPlanning.modelCallCount || 0),
+        },
+      };
+      const normalized = normalizeSnoozerResponse(env, {
+        traceId,
+        sessionId: effectiveSessionId,
+        routePath,
+        startedAtMs: startedAt,
+        debug,
+      });
+      log("ask-snoozer.model-only", "legacy_bypassed", {
+        traceId,
+        testCaseId,
+        sessionId: effectiveSessionId,
+        reason,
+        rawPrimaryTask: askSnoozerModelPlanning?.decision?.validation?.rawPrimaryTask || null,
+        acceptedPrimaryTask: askSnoozerModelPlanning?.decision?.primaryTask || null,
+      });
+      logContractResponse(normalized);
+      if (wantHud) {
+        const hud = await buildHudFromAny(normalized, {
+          ok: normalized.ok,
+          mode,
+          context,
+          payload,
+          defaultSpeech: reply,
+          traceId,
+        });
+        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+      }
+      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
     }
 
     const askSnoozerDecision = routeAskSnoozerQuestion({

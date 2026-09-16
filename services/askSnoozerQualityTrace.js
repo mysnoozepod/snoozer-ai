@@ -359,7 +359,7 @@ function classifyFailureSeverity(trace = {}) {
     trace.rawKnowledgeMetadataVisible ||
     (trace.referenceResolution?.phrase && !trace.referenceResolution?.resolved && trace.confidentCommercialAnswer) ||
     trace.outcome?.recovery?.success === false
-    || gateViolations.some((item) => /wrong_product_action|action_scope|response_scope|unverified_product/.test(item))
+    || gateViolations.some((item) => /wrong_product_action|action_scope|response_scope|unverified_product|session_recommendation_product_card_mismatch/.test(item))
   ) {
     if (trace.rejectedProductReintroduced) codes.push("rejected_product_reintroduced");
     if (trace.explicitRejectionHonored === false) codes.push("explicit_rejection_not_honored");
@@ -382,6 +382,7 @@ function classifyFailureSeverity(trace = {}) {
     if (trace.outcome?.recovery?.success === false) codes.push("failed_recovery");
     if (gateViolations.some((item) => /wrong_product_action|action_scope|response_scope/.test(item))) codes.push("rendered_action_conflict");
     if (gateViolations.some((item) => /unverified_product/.test(item))) codes.push("invented_product");
+    if (gateViolations.includes("session_recommendation_product_card_mismatch")) codes.push("session_recommendation_product_mismatch");
     return { severity: "P1", codes };
   }
   if (
@@ -663,7 +664,7 @@ function buildAskSnoozerQualityTrace({
     !gateViolations.includes("recommendation_explanation_incomplete");
   const comparisonComplete = !["product_comparison", "canonical_comparison", "comparison_value"].includes(clean(plan.taskType)) ||
     !gateViolations.includes("comparison_incomplete");
-  const renderedProductsConsistent = !gateViolations.some((item) => /(?:product_card|unverified_product|rejected_session_recommendation)/.test(item));
+  const renderedProductsConsistent = !gateViolations.some((item) => /(?:product_card|unverified_product|rejected_session_recommendation|session_recommendation_product_card_mismatch)/.test(item));
   const renderedActionsConsistent = !gateViolations.some((item) => /(?:_action|action_scope|unsafe_cart|response_scope|commercial_action)/.test(item));
   const unnecessaryClarification = Boolean(
     knownRepeated ||

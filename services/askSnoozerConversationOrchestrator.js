@@ -402,6 +402,9 @@ function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy",
   const proposed = clean(proposedTask);
   if (!proposed) return false;
   if (deterministicTask !== "legacy") return proposed === deterministicTask;
+  if (["1", "true", "yes", "on"].includes(clean(process.env.ASK_SNOOZER_MODEL_ONLY).toLowerCase())) {
+    return true;
+  }
   const facts = new Set(requestedFacts);
   const comparisons = Array.isArray(modelDecision?.comparisonProductHandles)
     ? modelDecision.comparisonProductHandles.filter(Boolean)
@@ -726,6 +729,8 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     ? canonicalHandle
     : unresolvedExplicitProductSubject
       ? null
+      : ["alternative_resolution", "session_recommendation_recall"].includes(taskType)
+        ? activeSessionRecommendationHandle(context) || explicitHandle || referenceResolution.handle || activeHandle || canonicalHandle
       : ["shopper_feedback", "trust_recovery"].includes(taskType)
         ? feedbackHandle || explicitHandle || null
         : referenceResolution.handle || explicitHandle || activeDeal(context)?.acceptedRecommendation?.productHandle || activeSessionRecommendationHandle(context) || activeHandle || workingGoal?.productHandle || canonicalHandle;
@@ -2051,6 +2056,13 @@ function validateResponseConsistency({
     ...(plan?.references?.comparisonProductHandles || []),
     ...((quote?.items || []).map((item) => item?.handle)),
   ]));
+  if (
+    ["alternative_resolution", "session_recommendation_recall"].includes(clean(plan?.taskType)) &&
+    sessionRecommendationHandle &&
+    products.some((product) => clean(product?.handle).toLowerCase() !== sessionRecommendationHandle)
+  ) {
+    violations.push("session_recommendation_product_card_mismatch");
+  }
   for (const product of products) {
     const handle = clean(product?.handle).toLowerCase();
     if (handle && discussedHandles.size && !discussedHandles.has(handle)) {
@@ -2159,8 +2171,11 @@ async function resolveAskSnoozerAdvisorTurn({
       resolvedPlan.references?.activeProductHandle || resolveCanonicalHandle(context),
     ]);
   } else if (["alternative_resolution", "reconsider_product", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance", "product_sizes", "compound_fact_answer"].includes(resolvedPlan.taskType)) {
+    const recommendedHandle = ["alternative_resolution", "session_recommendation_recall"].includes(resolvedPlan.taskType)
+      ? activeSessionRecommendationHandle(context)
+      : null;
     rawProducts = await fetchByHandles(fetchProductsByHandles, [
-      resolvedPlan.references?.requestedProductHandle || clean(activeDeal(context)?.acceptedRecommendation?.productHandle) || activeSessionRecommendationHandle(context) || resolveActiveHandle(context),
+      recommendedHandle || resolvedPlan.references?.requestedProductHandle || clean(activeDeal(context)?.acceptedRecommendation?.productHandle) || activeSessionRecommendationHandle(context) || resolveActiveHandle(context),
     ]);
   }
   const rejected = rejectedHandles(context);

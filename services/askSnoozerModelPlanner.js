@@ -3,6 +3,12 @@ const { normalizeAskSnoozerText } = require("./askSnoozerIntents");
 
 const MODEL_PLANNER_VERSION = "2026-09-15.1";
 
+function isModelOnlySemanticRoutingEnabled() {
+  return ["1", "true", "yes", "on"].includes(
+    clean(process.env.ASK_SNOOZER_MODEL_ONLY || "").toLowerCase()
+  );
+}
+
 const ALLOWED_MODALITIES = new Set([
   "asserted",
   "hypothetical",
@@ -367,12 +373,21 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
   const hintedFacts = inferRequestedFacts(query);
   const inferredModality = inferUtteranceModality(query);
   const suppliedModality = clean(parsed.modality || parsed.utteranceMode).toLowerCase();
+  const explicitShopperAssertion = /\b(?:i want|i need|i prefer|i like|i liked|i do not want|i don.t want|felt too|feels too|was too)\b/.test(
+    normalizeAskSnoozerText(query)
+  );
   const modality = ["hypothetical", "conditional"].includes(inferredModality)
     ? inferredModality
-    : ALLOWED_MODALITIES.has(suppliedModality) ? suppliedModality : inferredModality;
+    : explicitShopperAssertion
+      ? "asserted"
+      : ALLOWED_MODALITIES.has(suppliedModality) ? suppliedModality : inferredModality;
   const parsedFacts = unique(parsed.requestedFacts || [])
     .map((fact) => clean(fact).toLowerCase())
-    .filter((fact) => ALLOWED_FACTS.has(fact) && (!PROTECTED_FACTS.has(fact) || hintedFacts.includes(fact)));
+    .filter((fact) => ALLOWED_FACTS.has(fact) && (
+      !PROTECTED_FACTS.has(fact) ||
+      hintedFacts.includes(fact) ||
+      isModelOnlySemanticRoutingEnabled()
+    ));
   const requestedFacts = unique([...hintedFacts, ...parsedFacts]);
   let primaryTask = clean(parsed.primaryTask).toLowerCase();
   if (requestedFacts.length > 1) primaryTask = "compound_fact_answer";
@@ -448,6 +463,7 @@ module.exports = {
   buildModelPlannerInput,
   inferRequestedFacts,
   inferUtteranceModality,
+  isModelOnlySemanticRoutingEnabled,
   parseModelPlannerDecision,
   resolvePendingCommitmentProtocol,
   resolveCatalogHandle,

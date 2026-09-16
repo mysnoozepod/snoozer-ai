@@ -1260,8 +1260,15 @@ function completeAskSnoozerAdvisorTurn(context = {}, outcome = {}, { now = new D
   const rejected = rejectedHandleSet(previousDeal);
   const requestedHandle = normalizeHandle(plan?.references?.requestedProductHandle);
   const acceptedHandle = normalizeHandle(previousDeal?.acceptedRecommendation?.productHandle);
+  const sessionRecommendationHandle = normalizeHandle(previousDeal?.sessionRecommendation?.productHandle);
+  const promotesSessionRecommendation = [
+    "alternative_resolution",
+    "session_recommendation_recall",
+  ].includes(clean(plan?.taskType));
   const resolvedActiveHandle = acceptedHandle && !rejected.has(acceptedHandle)
     ? acceptedHandle
+    : promotesSessionRecommendation && sessionRecommendationHandle && !rejected.has(sessionRecommendationHandle)
+      ? sessionRecommendationHandle
     : requestedHandle && !rejected.has(requestedHandle)
       ? requestedHandle
       : normalizeHandle(previousDeal.activeProductHandle) || null;
