@@ -1928,6 +1928,54 @@ function responseFacetViolations({ reply = "", plan = {}, factPack = null } = {}
   return violations;
 }
 
+function hardConsistencyViolations(violations = []) {
+  const hard = [];
+  const hardRequestedFacts = new Set([
+    "warranty",
+    "delivery",
+    "returns",
+    "financing",
+    "product_sizes",
+    "price",
+    "availability",
+    "compatibility",
+    "cart",
+  ]);
+  for (const violation of violations.map(clean).filter(Boolean)) {
+    if (violation.startsWith("requested_fact_unanswered:")) {
+      const fact = violation.split(":")[1];
+      if (hardRequestedFacts.has(fact)) hard.push(violation);
+      continue;
+    }
+    if (/^(?:rejected_product_card|rejected_product_action|rejected_product_recommendation|rejected_session_recommendation):/.test(violation)) {
+      hard.push(violation);
+      continue;
+    }
+    if (/^(?:internal_language|unverified_price|unverified_product|price_card_mismatch|price_reply_mismatch|subtotal_reply_mismatch|canonical_reference_lost|session_recommendation_product_card_mismatch|unrelated_product_card|wrong_product_action):/.test(violation)) {
+      hard.push(violation);
+      continue;
+    }
+    if ([
+      "raw_knowledge_metadata",
+      "unsupported_outcome_language",
+      "false_correction_language",
+      "incomplete_ending",
+      "truncated_ending",
+      "broken_render_fragment",
+      "unsafe_cart_action",
+      "size_mismatch",
+      "compatibility_contradiction",
+      "motion_configuration_mismatch",
+      "action_scope_mismatch",
+      "commercial_action_contradiction",
+      "response_scope_mismatch",
+    ].includes(violation)) {
+      hard.push(violation);
+    }
+  }
+  return hard;
+}
+
 function validateResponseConsistency({
   reply = "",
   quote = null,
@@ -2114,7 +2162,14 @@ function validateResponseConsistency({
     }
   }
   violations.push(...responseFacetViolations({ reply, plan, factPack }));
-  return { ok: violations.length === 0, violations };
+  const hardViolations = hardConsistencyViolations(violations);
+  const qualityViolations = violations.filter((violation) => !hardViolations.includes(violation));
+  return {
+    ok: hardViolations.length === 0,
+    violations,
+    hardViolations,
+    qualityViolations,
+  };
 }
 
 function buildConsistencyGateFallback({ plan = {}, gate = null } = {}) {

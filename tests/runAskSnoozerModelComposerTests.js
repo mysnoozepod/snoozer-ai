@@ -104,6 +104,35 @@ async function main() {
   assert(conflictGate.violations.includes("size_mismatch"));
   assert(conflictGate.violations.includes("compatibility_contradiction"));
   assert(conflictGate.violations.includes("motion_configuration_mismatch"));
+  assert(conflictGate.hardViolations.includes("size_mismatch"));
+
+  const policyFactGate = validateResponseConsistency({
+    reply: "The mattress includes a 10-year limited warranty.",
+    plan: {
+      taskType: "compound_fact_answer",
+      requestedFacts: ["warranty", "delivery"],
+      technicalLanguageAllowed: false,
+      protectedReferences: [],
+    },
+    factPack: { products: [{ handle: "12-dual-comfort-hybrid" }], feedback: { explicitExclusions: [] } },
+  });
+  assert.equal(policyFactGate.ok, false);
+  assert(policyFactGate.hardViolations.includes("requested_fact_unanswered:delivery"));
+
+  const advisoryFacetGate = validateResponseConsistency({
+    reply: "For long-term support, I would favor the coil build if you want a more lifted feel, while still checking pressure at your shoulders and hips during the Rest Test.",
+    plan: {
+      taskType: "durability_objection",
+      requestedFacts: ["durability"],
+      technicalLanguageAllowed: false,
+      protectedReferences: [],
+    },
+    factPack: { products: [{ handle: "14-hybrid" }], feedback: { explicitExclusions: [] } },
+  });
+  assert.equal(advisoryFacetGate.ok, true);
+  assert(advisoryFacetGate.violations.includes("requested_fact_unanswered:durability"));
+  assert(advisoryFacetGate.qualityViolations.includes("requested_fact_unanswered:durability"));
+  assert(!advisoryFacetGate.hardViolations.includes("requested_fact_unanswered:durability"));
 
   const conciseSpeechGate = validateResponseConsistency({
     reply: "Your complete King setup is $6,098.",
