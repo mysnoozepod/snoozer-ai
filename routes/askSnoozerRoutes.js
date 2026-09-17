@@ -1790,7 +1790,14 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
     }
 
-    if (askSnoozerDecision.intentGroup === "policy") {
+    const isPolicySupportDecision =
+      askSnoozerDecision.intentGroup === "policy" ||
+      (
+        askSnoozerDecision.intentGroup === "policy_support" &&
+        clean(askSnoozerDecision.policySubtype || askSnoozerDecision.slots?.policySubtype || askSnoozerDecision.slots?.policy_subtype) !== "pricing"
+      );
+
+    if (isPolicySupportDecision) {
       const latencyMs = Date.now() - startedAt;
       log("ask-snoozer.fulfillment.start", "policy", {
         traceId,
@@ -1960,7 +1967,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
     if (
       askSnoozerDecision.shouldAskClarifyingQuestion &&
-      ["commerce", "policy"].includes(askSnoozerDecision.intentGroup)
+      ["commerce", "policy", "policy_support"].includes(askSnoozerDecision.intentGroup)
     ) {
       const latencyMs = Date.now() - startedAt;
       const mergedContext =

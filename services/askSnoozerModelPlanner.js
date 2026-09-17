@@ -1,7 +1,7 @@
 const { loadShowroomManifest } = require("./showroomManifest");
 const { normalizeAskSnoozerText } = require("./askSnoozerIntents");
 
-const MODEL_PLANNER_VERSION = "2026-09-15.1";
+const MODEL_PLANNER_VERSION = "2026-09-16.1";
 
 function isModelOnlySemanticRoutingEnabled() {
   return ["1", "true", "yes", "on"].includes(
@@ -34,10 +34,12 @@ const PROTECTED_FACTS = new Set([
   "cart",
   "compatibility",
   "delivery",
+  "durability",
   "financing",
   "price",
   "product_sizes",
   "returns",
+  "store_value",
   "warranty",
 ]);
 
@@ -76,6 +78,7 @@ const ALLOWED_TASKS = new Set([
   "session_recommendation_recall",
   "shopper_feedback",
   "sleep_education",
+  "store_value",
   "trust_recovery",
   "value_judgment",
   "value_objection",
@@ -87,18 +90,22 @@ const ALLOWED_FACTS = new Set([
   "cart",
   "compatibility",
   "delivery",
+  "durability",
   "financing",
   "price",
   "product_features",
   "product_sizes",
   "recommendation_reasons",
   "returns",
+  "store_value",
   "warranty",
 ]);
 
 const ALLOWED_REQUIREMENTS = new Set([
   "acknowledge_feedback",
   "answer_all_requested_facts",
+  "answer_durability",
+  "answer_store_value",
   "compare_named_products",
   "explain_recommendation_reasons",
   "give_grounded_opinion",
@@ -181,7 +188,8 @@ function inferRequestedFacts(query = "") {
   const asksProductSizes = /\b(?:sizes?|dimensions?) (?:are |do you )?(?:available|come in|offer)|\bwhat sizes?\b/.test(text);
   return unique([
     /\bwarrant(?:y|ies)\b|\bcoverage\b/.test(text) ? "warranty" : "",
-    /\bdeliver(?:y|ies|ed)\b|\bhow long.*(?:arrive|get here)\b/.test(text) ? "delivery" : "",
+    /\bdeliver(?:y|ies|ed)?\b|\bshipping\b|\bship\b|\bhow long.*(?:arrive|get here)\b/.test(text) ? "delivery" : "",
+    /\bhow long\b.*\b(?:last|hold up|hold|durable)\b|\bdurab(?:le|ility)\b|\bwear out\b|\bsag(?:ging)?\b|\bbody impression\b/.test(text) ? "durability" : "",
     /\breturn(?:s|ed|ing)?\b|\bsleep trial\b|\bexchange\b/.test(text) ? "returns" : "",
     /\bfinanc(?:e|ing)\b|\bpayment plan\b/.test(text) ? "financing" : "",
     asksProductSizes ? "product_sizes" : "",
@@ -190,6 +198,9 @@ function inferRequestedFacts(query = "") {
     /\b(?:compatible|compatibility|work together|work with)\b/.test(text) ? "compatibility" : "",
     /\bwhy\b.*\b(?:choose|chose|recommend|recommended|pod)\b|\bwhy (?:that|this) one\b/.test(text)
       ? "recommendation_reasons"
+      : "",
+    /\bwhy\b.*\b(?:buy|purchase|shop|order|get)\b.*\b(?:mysnoozepod|my snooze pod|from you|from your|your store|you)\b|\bwhy should i buy from\b|\bwhy buy from\b/.test(text)
+      ? "store_value"
       : "",
   ]).filter((fact) => ALLOWED_FACTS.has(fact));
 }
@@ -409,6 +420,8 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
   const requestedFacts = unique([...hintedFacts, ...parsedFacts]);
   let primaryTask = clean(parsed.primaryTask).toLowerCase();
   if (requestedFacts.length > 1) primaryTask = "compound_fact_answer";
+  else if (requestedFacts.includes("durability")) primaryTask = "durability_objection";
+  else if (requestedFacts.includes("store_value")) primaryTask = "store_value";
   if (!ALLOWED_TASKS.has(primaryTask)) primaryTask = "";
   const productReferences = (Array.isArray(parsed.productReferences) ? parsed.productReferences : [])
     .map((reference) => ({
@@ -494,8 +507,14 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
   const answerRequirements = unique(parsed.answerRequirements || [])
     .map((requirement) => clean(requirement).toLowerCase())
     .filter((requirement) => ALLOWED_REQUIREMENTS.has(requirement));
-  if (requestedFacts.length > 1 && !answerRequirements.includes("answer_all_requested_facts")) {
+  if (requestedFacts.length > 0 && !answerRequirements.includes("answer_all_requested_facts")) {
     answerRequirements.push("answer_all_requested_facts");
+  }
+  if (requestedFacts.includes("durability") && !answerRequirements.includes("answer_durability")) {
+    answerRequirements.push("answer_durability");
+  }
+  if (requestedFacts.includes("store_value") && !answerRequirements.includes("answer_store_value")) {
+    answerRequirements.push("answer_store_value");
   }
   return {
     version: MODEL_PLANNER_VERSION,

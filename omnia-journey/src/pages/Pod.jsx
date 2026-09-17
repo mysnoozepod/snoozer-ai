@@ -38,7 +38,6 @@ import { PodRouteHeroHeader } from "@/components/pod/PodHeader";
 import { PodHome } from "@/components/pod/PodHome";
 import { PodLearnPanel } from "@/components/pod/PodLearnPanel";
 import { GuidedRestTest } from "@/components/pod/PodRestPanels";
-import SnoozerPanel from "@/components/SnoozerPanel";
 import HumanAssistanceControl from "@/components/HumanAssistanceControl";
 import {
   BASE_OPTIONS_UI,
@@ -1494,49 +1493,27 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   );
   const mattressHeroTitle = mattressProduct?.title || activePod?.subtitle || "Mattress";
 
-  const snoozerPodExploreContext = useMemo(() => {
-    const items = [];
-    const seen = new Set();
-    const addItem = ({ handle, title, variantId }) => {
-      const normalizedHandle = String(handle || "").trim();
-      if (!normalizedHandle || seen.has(normalizedHandle)) return;
-      seen.add(normalizedHandle);
-      items.push({
-        handle: normalizedHandle,
-        title: String(title || normalizedHandle).trim(),
-        firstAvailableVariantId: variantId || null,
-      });
-    };
-
-    addItem({
-      handle: effectiveMattressHandle || activePod?.mattressHandle,
-      title: mattressProduct?.title || activePod?.subtitle || mattressHeroTitle,
-      variantId: mattressVariantId,
+  const goToUnifiedAskSnoozer = useCallback(() => {
+    noteUserInteraction?.();
+    navigate("/ask-snoozer", {
+      state: {
+        sourceSurface: "pod",
+        podId: pid,
+        productHandle: effectiveMattressHandle || activePod?.mattressHandle || null,
+        baseHandle: effectiveBaseHandle || activePod?.baseHandle || null,
+        size: learnSelectedSize || activeJourney?.activeConfiguration?.size || null,
+      },
     });
-    addItem({
-      handle: effectiveBaseHandle || activePod?.baseHandle,
-      title:
-        baseProduct?.title ||
-        activePod?.displayedIn?.baseLabel ||
-        activePod?.baseTitle ||
-        "",
-      variantId: baseVariantId,
-    });
-
-    return items;
   }, [
+    activeJourney?.activeConfiguration?.size,
     activePod?.baseHandle,
-    activePod?.baseTitle,
-    activePod?.displayedIn?.baseLabel,
     activePod?.mattressHandle,
-    activePod?.subtitle,
-    baseProduct?.title,
-    baseVariantId,
     effectiveBaseHandle,
     effectiveMattressHandle,
-    mattressHeroTitle,
-    mattressProduct?.title,
-    mattressVariantId,
+    learnSelectedSize,
+    navigate,
+    noteUserInteraction,
+    pid,
   ]);
 
   const hasAdjustableBase = useMemo(
@@ -2767,26 +2744,26 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     if (openStage === "ask") {
       return (
         <ShowroomPanel className="h-full min-h-0 overflow-auto p-4" tone="frost">
-          <div className="mb-3">
+          <div className="mb-4">
             <h2 className="text-[clamp(1.35rem,2vw,1.8rem)] font-black text-slate-950">
               Ask Snoozer
             </h2>
             <p className="mt-1 text-sm font-semibold text-slate-600">
-              Ask about this mattress, your Rest Test, or the setup you are customizing.
+              Continue with the main Snoozer advisor so your recommendation, pricing, cart, and policy answers all use the same brain.
             </p>
           </div>
-          <SnoozerPanel
-            mode="pod"
-            podId={pid}
-            shopperId={shopperId}
-            assessment={assessment}
-            exploreContext={snoozerPodExploreContext}
-            context={{ podId: pid, sourceSurface: "pod-ask-snoozer" }}
-            showInput
-            showHeader={false}
-            initialCaption="What would you like to know?"
-            inputPlaceholder="Ask Snoozer about this pod"
-          />
+          <div className="rounded-[28px] border border-indigo-100 bg-white/80 p-5 shadow-sm">
+            <p className="text-base font-semibold leading-relaxed text-slate-700">
+              I’ll take this pod context with you and open the unified Ask Snoozer page.
+            </p>
+            <button
+              type="button"
+              onClick={goToUnifiedAskSnoozer}
+              className="mt-4 rounded-full bg-indigo-600 px-6 py-3 text-sm font-black text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700"
+            >
+              Continue in Ask Snoozer
+            </button>
+          </div>
         </ShowroomPanel>
       );
     }
@@ -2827,8 +2804,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     showLabMattressCartBanner,
     goToBuildStage,
     pid,
-    shopperId,
-    snoozerPodExploreContext,
+    goToUnifiedAskSnoozer,
   ]);
 
   const isDefaultPodDashboard = false;
@@ -3000,9 +2976,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
             onGoLearn={goToDetailsStage}
             onGoBuild={() => void goToBuildStage("size")}
             onAskSnoozer={() => {
-              noteUserInteraction?.();
-              setOpenStage("ask");
-              setShowRestChooser(false);
+              goToUnifiedAskSnoozer();
             }}
           />
         </div>

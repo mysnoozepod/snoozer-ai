@@ -3,6 +3,7 @@
 const assert = require("assert");
 const {
   buildModelPlannerInput,
+  inferRequestedFacts,
   parseModelPlannerDecision,
   resolveCatalogHandle,
   shouldPlanAskSnoozerWithModel,
@@ -131,6 +132,10 @@ async function main() {
 
   check(!shouldPlanAskSnoozerWithModel({ query: "What is your return policy?", context: baseContext() }), "simple atomic return lookup stays deterministic");
   check(shouldPlanAskSnoozerWithModel({ query: "What is the warranty and how long does delivery take?", context: baseContext() }), "compound facts use model planning");
+  assert.deepEqual(inferRequestedFacts("Do you deliver?"), ["delivery"]);
+  assert.deepEqual(inferRequestedFacts("How long does it last?"), ["durability"]);
+  assert.deepEqual(inferRequestedFacts("Why should I buy from MySnoozePod?"), ["store_value"]);
+  checks += 3;
   const pendingContext = baseContext();
   pendingContext.askSnoozerWorkingMemory.activeDeal.pendingCommitment = { id: "c1", type: "find_alternative", status: "pending" };
   check(!shouldPlanAskSnoozerWithModel({ query: "Yes", context: pendingContext }), "typed yes continuation stays deterministic");
@@ -207,6 +212,63 @@ async function main() {
     factPack: { products: [{ handle: "12-dual-comfort-hybrid" }], feedback: { explicitExclusions: [] } },
   });
   check(missingDelivery.violations.includes("requested_fact_unanswered:delivery"), "rendered-response validation catches omitted delivery answer");
+
+  const deliveryPlan = planAskSnoozerTurn({
+    query: "Do you deliver?",
+    context: plannedContext,
+    modelDecision: parseModelPlannerDecision({
+      primaryTask: "base_education",
+      requestedFacts: ["delivery"],
+      confidence: 0.97,
+    }, { query: "Do you deliver?", context: plannedContext }),
+  });
+  assert.equal(deliveryPlan.taskType, "compound_fact_answer");
+  assert.deepEqual(deliveryPlan.requestedFacts, ["delivery"]);
+  checks += 2;
+
+  const deliveryOutcome = await resolveAskSnoozerAdvisorTurn({
+    query: "Do you deliver?",
+    context: plannedContext,
+    plan: deliveryPlan,
+    fetchProductsByHandles: async ({ handles = [] }) => ({ items: handles.map(product) }),
+    loadAdvisorKnowledge: async () => ({
+      productFacts: [],
+      policyFacts: [{
+        type: "delivery",
+        topic: "delivery",
+        known: true,
+        typicalWindow: "3-7 business days",
+        conditions: ["Scheduling depends on zip code and item availability."],
+      }],
+    }),
+    composeAdvisorResponse: async ({ deterministicDraft }) => ({
+      displayText: deterministicDraft.displayText,
+      speechText: deterministicDraft.speechText,
+      confidence: 0.95,
+    }),
+  });
+  assert.match(deliveryOutcome.reply, /3-7 business days/);
+  check(deliveryOutcome.gate.ok, `delivery response passes validation: ${deliveryOutcome.gate.violations.join(", ")}`);
+
+  const storeValueDecision = parseModelPlannerDecision({
+    primaryTask: "product_comparison",
+    requestedFacts: ["store_value"],
+    confidence: 0.96,
+  }, { query: "Why should I buy from MySnoozePod?", context: plannedContext });
+  assert.equal(storeValueDecision.primaryTask, "store_value");
+  const storeValuePlan = planAskSnoozerTurn({
+    query: "Why should I buy from MySnoozePod?",
+    context: plannedContext,
+    modelDecision: storeValueDecision,
+  });
+  assert.equal(storeValuePlan.taskType, "store_value");
+  const storeValueGate = validateResponseConsistency({
+    reply: "MySnoozePod gives you a guided showroom path, human help from Brandy, and verified checkout instead of guessed cart totals.",
+    plan: storeValuePlan,
+    factPack: { products: [], feedback: { explicitExclusions: [] } },
+  });
+  check(storeValueGate.ok, `store-value response passes validation: ${storeValueGate.violations.join(", ")}`);
+  checks += 3;
 
   const trace = buildAskSnoozerQualityTrace({
     traceId: "phase5-model-planner",

@@ -411,7 +411,8 @@ async function runBigPass4CommercialCompletion() {
     query: "What's your return policy?",
     context: readyContext,
   });
-  assert.strictEqual(policyPlan.taskType, "legacy");
+  assert.strictEqual(policyPlan.taskType, "compound_fact_answer");
+  assert.deepStrictEqual(policyPlan.requestedFacts, ["returns"]);
   assert.strictEqual(policyPlan.commercialState.clearSubjectChange, true);
   assert.strictEqual(policyPlan.staleRouteOverride, false);
   assert.strictEqual(policyPlan.commercialCompletionAttempted, false);

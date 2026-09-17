@@ -422,6 +422,10 @@ function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy",
       return facts.has("price");
     case "warranty_explanation":
       return facts.has("warranty");
+    case "durability_objection":
+      return facts.has("durability");
+    case "store_value":
+      return facts.has("store_value");
     case "compatibility":
       return facts.has("compatibility");
     case "recommendation_explanation":
@@ -591,6 +595,10 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   }
   if (requestedFacts.length > 1) taskType = "compound_fact_answer";
   else if (requestedFacts.includes("product_sizes")) taskType = "product_sizes";
+  else if (requestedFacts.includes("warranty")) taskType = "warranty_explanation";
+  else if (requestedFacts.includes("delivery") || requestedFacts.includes("returns") || requestedFacts.includes("financing")) taskType = "compound_fact_answer";
+  else if (requestedFacts.includes("durability")) taskType = "durability_objection";
+  else if (requestedFacts.includes("store_value")) taskType = "store_value";
 
   if (referenceResolution.phrase && !referenceResolution.resolved) {
     taskType = "reference_clarification";
@@ -698,6 +706,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       "commitment_resolution",
       "product_sizes",
       "compound_fact_answer",
+      "store_value",
     ].includes(taskType) ||
       /\b(?:return policy|returns?|warranty|delivery|financing|rewards?|snooze sessions?)\b/.test(text)
   );
@@ -819,6 +828,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       "commitment_resolution",
       "product_sizes",
       "compound_fact_answer",
+      "store_value",
     "session_recommendation_recall",
     "recommendation_explanation",
     "recommendation_acceptance",
@@ -887,7 +897,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     atomicCommerceLookup: atomicStandaloneCommerce,
     needsCommerce,
     needsCompatibility,
-    needsKnowledge: ["product_experience", "product_comparison", "canonical_comparison", "comparison_value", "base_education", "advisor_choice", "firmness_choice", "compound_product_base", "durability_objection", "hybrid_exploration", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance", "value_objection", "price_value", "configuration_value", "sleep_education", "product_sizes", "compound_fact_answer"].includes(taskType),
+    needsKnowledge: ["product_experience", "product_comparison", "canonical_comparison", "comparison_value", "base_education", "advisor_choice", "firmness_choice", "compound_product_base", "durability_objection", "hybrid_exploration", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance", "value_objection", "price_value", "configuration_value", "sleep_education", "product_sizes", "compound_fact_answer", "store_value"].includes(taskType),
     needsPolicy: ["medical_boundary", "warranty_explanation", "compound_fact_answer"].includes(taskType) || requestedFacts.some((fact) => ["warranty", "delivery", "returns", "financing"].includes(fact)),
     allowedActions: taskType === "cart_add" ? ["add_to_cart"] : [],
     commercialState: {
@@ -1594,6 +1604,12 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
         const facts = policyFacts("financing");
         parts.push(facts.length ? `Financing: ${facts.join(" ")}` : "I could not confirm the current financing terms right now.");
       }
+      if (requested.has("durability")) {
+        parts.push(`Durability: the ${activeTitle} should be judged by support, pressure relief, and the care guidance together. I will not promise a mattress will never soften or show wear, but I can help you compare materials, warranty coverage, and what to notice during the Rest Test.`);
+      }
+      if (requested.has("store_value")) {
+        parts.push("Why buy from MySnoozePod: you get a guided showroom path, product and setup checks before cart, human help when you want it, and verified checkout pricing instead of a guessed total.");
+      }
       if (requested.has("product_sizes")) {
         const resolved = (factPack?.resolvedProductFacts || []).find((product) => product.handle === active);
         parts.push(resolved?.sizes?.length
@@ -1602,6 +1618,8 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       }
       return parts.join(" ") || `I could not confirm every part of that question for the ${activeTitle} right now, so I will not guess.`;
     }
+    case "store_value":
+      return "MySnoozePod is useful when you want a guided mattress decision instead of just a product grid. I can carry your assessment, Rest Test feedback, size, base choice, and budget through the conversation; prices and cart actions are verified before checkout; and you can hand off to Brandy when you want human help. The honest reason to buy here is not that every add-on is necessary—it is that the showroom helps you choose the right setup and avoids guessing on price, availability, or checkout.";
     case "base_education":
       return `Standard Motion raises and lowers the head and foot of the mattress together. It can make reading, relaxing, getting in and out of bed, or sleeping with gentle elevation more comfortable. I would add it only if you notice a real benefit from elevation; it does not make the mattress itself more pressure-relieving.`;
     case "value_judgment":
@@ -1889,6 +1907,8 @@ function responseFacetViolations({ reply = "", plan = {}, factPack = null } = {}
     price: /(?:\b(?:price|cost|total)\b|\$|\bcould not confirm.*price\b)/,
     availability: /\b(?:available|availability|in stock|could not confirm.*availab)\b/,
     compatibility: /\b(?:compatible|work together|pair|could not confirm.*compatib)\b/,
+    durability: /\b(?:durab|last|hold up|wear|soften|body impression|sag|care guidance|warranty)\b/,
+    store_value: /\b(?:mysnoozepod|guided|showroom|human help|brandy|verified|checkout|cart|buy here|buy from)\b/,
   };
   if (plan.taskType !== "reference_clarification") {
     for (const fact of requestedFacts) {
@@ -2095,6 +2115,37 @@ function validateResponseConsistency({
   }
   violations.push(...responseFacetViolations({ reply, plan, factPack }));
   return { ok: violations.length === 0, violations };
+}
+
+function buildConsistencyGateFallback({ plan = {}, gate = null } = {}) {
+  const requested = new Set(plan?.requestedFacts || []);
+  const violations = Array.isArray(gate?.violations) ? gate.violations : [];
+  const policyFacts = ["delivery", "returns", "financing", "warranty"].filter((fact) => requested.has(fact));
+  const advisoryFacts = ["durability", "store_value", "recommendation_reasons"].filter((fact) => requested.has(fact));
+  if (policyFacts.length) {
+    const label = policyFacts.map((fact) => fact.replace("_", " ")).join(" and ");
+    return {
+      reply: `I could not verify the approved ${label} answer cleanly, so I will not guess. Please try that question again or ask Brandy for the current policy details.`,
+      speech: `I could not verify the approved ${label} answer cleanly, so I will not guess.`,
+    };
+  }
+  if (advisoryFacts.length) {
+    return {
+      reply: "I hit a consistency check while answering that advice question, so I stopped instead of giving you a shaky answer. Please ask it again in one sentence and I will keep the answer grounded.",
+      speech: "I hit a consistency check while answering that advice question, so I stopped instead of guessing.",
+    };
+  }
+  const commercialFacts = ["price", "availability", "compatibility", "cart", "product_sizes"].filter((fact) => requested.has(fact));
+  if (commercialFacts.length || violations.some((item) => /\b(?:price|cart|product|variant|compatib)/i.test(clean(item)))) {
+    return {
+      reply: "I found a conflict in the product details for that answer, so I stopped before showing a price or cart action. Please try that question again.",
+      speech: "I found a conflict in the product details, so I stopped before showing a price.",
+    };
+  }
+  return {
+    reply: "I hit a consistency check on that answer, so I stopped instead of guessing. Please try that question again.",
+    speech: "I hit a consistency check on that answer, so I stopped instead of guessing.",
+  };
 }
 
 async function resolveAskSnoozerAdvisorTurn({
@@ -2364,10 +2415,11 @@ async function resolveAskSnoozerAdvisorTurn({
     ? (compositionMode === "model_assisted" ? modelGate : deterministicGate)
     : deterministicGate;
   if (!gate.ok) {
+    const safeFallback = buildConsistencyGateFallback({ plan: resolvedPlan, gate });
     return {
       ok: false,
-      reply: "I found a conflict in the product details for that answer, so I stopped before showing a price or cart action. Please try that question again.",
-      speech: "I found a conflict in the product details, so I stopped before showing a price.",
+      reply: safeFallback.reply,
+      speech: safeFallback.speech,
       products: [],
       actions: [],
       chips: [],
