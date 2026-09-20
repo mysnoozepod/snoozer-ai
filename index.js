@@ -122,6 +122,18 @@ function getOpenAiSvc() {
   return openaiSvc;
 }
 
+let askSnoozerModelCoreSvc = null;
+function getAskSnoozerModelCoreSvc() {
+  if (askSnoozerModelCoreSvc) return askSnoozerModelCoreSvc;
+  try {
+    askSnoozerModelCoreSvc = require("./services/askSnoozerModelCore");
+  } catch (error) {
+    console.log("Ask Snoozer model core not loaded (ok).", error.message);
+    askSnoozerModelCoreSvc = null;
+  }
+  return askSnoozerModelCoreSvc;
+}
+
 const {
   classifyAskSnoozerIntent,
   hasAskSnoozerBudgetSignal,
@@ -6279,7 +6291,7 @@ function getAskSnoozerRouteDeps() {
     resolvePendingCommitmentProtocol,
     shouldPlanAskSnoozerWithModel,
     planTrustedAdvisorTurnWithModel: async (args) => {
-      const service = getOpenAiSvc();
+      const service = getAskSnoozerModelCoreSvc();
       if (!service || typeof service.planTrustedAdvisorTurnWithModel !== "function") {
         const error = new Error("Trusted-advisor planner is unavailable.");
         error.code = "E_ADVISOR_PLANNER_UNAVAILABLE";
@@ -6290,7 +6302,7 @@ function getAskSnoozerRouteDeps() {
     planAskSnoozerTurn,
     resolveAskSnoozerAdvisorTurn,
     composeTrustedAdvisorResponse: async (args) => {
-      const service = getOpenAiSvc();
+      const service = getAskSnoozerModelCoreSvc();
       if (!service || typeof service.composeTrustedAdvisorResponse !== "function") {
         const error = new Error("Trusted-advisor composer is unavailable.");
         error.code = "E_ADVISOR_COMPOSER_UNAVAILABLE";
@@ -6299,7 +6311,7 @@ function getAskSnoozerRouteDeps() {
       return service.composeTrustedAdvisorResponse(args);
     },
     loadTrustedAdvisorFactPack: async (args) => {
-      const service = getOpenAiSvc();
+      const service = getAskSnoozerModelCoreSvc();
       if (!service || typeof service.loadTrustedAdvisorFactPack !== "function") return null;
       return service.loadTrustedAdvisorFactPack(args);
     },

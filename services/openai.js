@@ -39,21 +39,28 @@
 //   status: "completed"|"error"
 // }
 
-const axios = require("axios");
-const { S3Client, GetObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
-const { getIntegrationCredentials } = require("./integrationSecrets");
-
 const { initializeSession, rememberTurn, getLastTurns } = require("./conversationState.js");
 const { clampAskSnoozerDisplayReply } = require("./askSnoozerAnswerEngine");
 const {
   resolveExplicitProductHandle,
   resolveRequestedProductHandle,
 } = require("./askSnoozerWorkingMemory");
+const advisorModelCore = require("./askSnoozerModelCore");
 const {
-  ALLOWED_TASKS,
-  buildModelPlannerInput,
-  parseModelPlannerDecision,
-} = require("./askSnoozerModelPlanner");
+  FAST_MODEL,
+  FINAL_MODEL,
+  callOpenAIChat,
+} = require("./openaiModelRuntime");
+const {
+  KNOWLEDGE_BUCKET,
+  PROMPT_BUCKET,
+  ROUTING_BUCKET,
+  S3_RETRIEVAL_TIMEOUT_MS,
+  getObjectJson,
+  getObjectText,
+  listMarkdownKeys,
+} = require("./s3TextLoader");
+const { SYSTEM_PROMPT_KEY, getBasePromptOnce } = require("./snoozerBasePrompt");
 
 // Shopify service (used deterministically for variant resolution by size)
 let shopifySvc = null;
@@ -74,46 +81,14 @@ try {
 }
 
 // ──────────────────────────────
-// Clients / Config
+// Config
 // ──────────────────────────────
-const REGION = process.env.AWS_REGION || "us-east-1";
-const s3 = new S3Client({ region: REGION });
-
-const PROMPT_BUCKET = process.env.S3_PROMPT_BUCKET || "snoozer-prompts-prod";
-const KNOWLEDGE_BUCKET = process.env.S3_KNOWLEDGE_BUCKET || "snoozer-knowledge-prod";
-const ROUTING_BUCKET = process.env.S3_ROUTING_BUCKET || KNOWLEDGE_BUCKET;
-const SYSTEM_PROMPT_KEY = process.env.SNOOZER_BASE_PROMPT_KEY || "system/trusted_advisor_v2.md";
-const ADVISOR_KNOWLEDGE_KEY = process.env.SNOOZER_ADVISOR_KNOWLEDGE_KEY || "advisor/mysnoozepod-selling-methodology-v1.json";
-
 // Deterministic retrieval meta files
 const ROUTING_RULES_KEY = process.env.ROUTING_RULES_KEY || "meta/routing_rules.json";
 const CATALOG_KEY = process.env.CATALOG_KEY || "meta/catalog.json";
 const CANON_KEY = process.env.CANON_KEY || "meta/canon.json";
 
-const FAST_MODEL = process.env.OPENAI_FAST_MODEL || "gpt-4o-mini";
-const FINAL_MODEL = process.env.OPENAI_FINAL_MODEL || "gpt-4o";
-
 // Timeouts / TTLs
-const MODEL_TIMEOUT_MS = Math.max(1000, Number(process.env.MODEL_TIMEOUT_MS || 7000));
-const OPENAI_REQUEST_CEILING_MS = Math.max(750, MODEL_TIMEOUT_MS - 1000);
-const AXIOS_TIMEOUT_MS = Math.max(
-  500,
-  Math.min(OPENAI_REQUEST_CEILING_MS, Number(process.env.OPENAI_TIMEOUT_MS || 5500))
-);
-const FAST_TIMEOUT_MS = Math.max(
-  500,
-  Math.min(AXIOS_TIMEOUT_MS, Number(process.env.FAST_PATH_TIMEOUT_MS || AXIOS_TIMEOUT_MS))
-);
-const ADVISOR_COMPOSER_TIMEOUT_MS = Math.max(
-  FAST_TIMEOUT_MS,
-  Math.min(15000, Number(process.env.ADVISOR_COMPOSER_TIMEOUT_MS || 8000))
-);
-const S3_RETRIEVAL_TIMEOUT_MS = Math.max(50, Number(process.env.S3_RETRIEVAL_TIMEOUT_MS || 300));
-
-const BASE_PROMPT_TTL_MS = Number(process.env.BASE_PROMPT_TTL_MS || 300000);
-const FILE_TTL_MS = Number(process.env.CONTEXT_FILE_TTL_MS || 300000);
-const LIST_TTL_MS = Number(process.env.S3_LIST_CACHE_TTL_MS || 300000);
-
 // Deterministic meta TTLs (separate)
 const META_TTL_MS = Number(process.env.S3_META_CACHE_TTL_MS || 300000);
 
@@ -128,19 +103,6 @@ const POD_PRODUCT_DOC_KEY_BY_HANDLE = Object.freeze({
   "14-hybrid": "products/mattress/14-hybrid.md",
   "premium-motion-adjustable-base": "products/bases/premium-motion-adjustable-base.md",
 });
-
-// Hard cap for payload
-const MAX_TOTAL_MESSAGE_CHARS = Number(process.env.MAX_TOTAL_MESSAGE_CHARS || 60000);
-
-// OpenAI retry
-const OPENAI_RUN_MAX_RETRIES = Math.min(
-  1,
-  Math.max(0, Number(process.env.OPENAI_RUN_MAX_RETRIES || 0))
-);
-const OPENAI_RUN_MAX_WAIT_MS = Math.min(
-  500,
-  Math.max(0, Number(process.env.OPENAI_RUN_MAX_WAIT_MS || 0))
-);
 
 // STRICT pod anchoring (fail fast instead of drifting)
 const STRICT_POD_ANCHOR = String(process.env.STRICT_POD_ANCHOR || "1") === "1";
@@ -160,49 +122,17 @@ const CONCISE_GUARDRAILS = [
   "- Return JSON-friendly text (no markdown tables).",
 ].join("\n");
 
-const PREMIUM_ANSWER_GUARDRAILS = [
-  "INSTRUCTIONS:",
-  "- You are Snoozer, a premium in-showroom sleep guide for MySnoozePod.",
-  "- Give direct, useful answers. No generic chatbot filler.",
-  "- Use 2 to 5 concise sentences when useful; do not become verbose.",
-  "- Use shopper/session/canonical context when it is present, but never override canonical pod, mattress, base, or motion decisions.",
-  "- Do NOT guess prices, availability, financing math, checkout details, delivery promises, discounts, warranty terms, variant IDs, or policies.",
-  "- If asked price, cart, or checkout questions, use only supplied current commerce facts and ask for size only when it is actually missing.",
-  "- Do NOT diagnose, treat, cure, or promise medical outcomes. For medical concerns, explain comfort/support testing and suggest a healthcare professional when appropriate.",
-  "- If you do not have relevant showroom knowledge loaded, say you don't have it and offer options instead.",
-  "- Preferred structure: answer first, explain why, name the tradeoff, then give a next step.",
-  "- Avoid phrases like 'as an AI', lazy 'based on your preferences' openers, and vague 'may be a good fit' without a reason.",
-  "- Be calm, confident, specific, and lightly conversational.",
-  "- Return JSON-friendly text (no markdown tables).",
-].join("\n");
-
-const openai = axios.create({
-  baseURL: "https://api.openai.com/v1",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  timeout: AXIOS_TIMEOUT_MS,
-});
-
 // ──────────────────────────────
 // Logging / helpers
 // ──────────────────────────────
 const cache = {
-  basePrompt: { value: null, ts: 0 },
-  fileText: new Map(),
-  listKeys: new Map(),
-
   // deterministic meta caches
   routingRules: { value: null, ts: 0 },
   catalog: { value: null, ts: 0 },
   canon: { value: null, ts: 0 },
-
-  // in-flight dedupe
-  inflight: new Map(),
 };
 
 const isFresh = (ts, ttl) => Boolean(ts) && Date.now() - ts < ttl;
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function logEvent(event, data = {}) {
   try {
@@ -241,12 +171,6 @@ function safeReply(text, fallback = SAFE_FALLBACK) {
   return clampAskSnoozerDisplayReply(fallback);
 }
 
-function normalizeRole(role) {
-  const r = String(role || "").trim();
-  if (r === "system" || r === "user" || r === "assistant" || r === "tool") return r;
-  return "user";
-}
-
 function safeStringContent(v) {
   if (typeof v === "string") return v;
   if (v === null || v === undefined) return "";
@@ -259,29 +183,6 @@ function safeStringContent(v) {
 
 function elapsedMs(startedAt) {
   return Math.max(0, Date.now() - Number(startedAt || Date.now()));
-}
-
-function buildTimeoutError(code, message, timeoutMs, extra = {}) {
-  const err = new Error(message);
-  err.code = code;
-  err.timeoutMs = timeoutMs;
-  Object.assign(err, extra);
-  return err;
-}
-
-function withTimeout(promise, timeoutMs, code, message, extra = {}) {
-  let timer = null;
-
-  return Promise.race([
-    Promise.resolve().then(() => promise),
-    new Promise((_, reject) => {
-      timer = setTimeout(() => {
-        reject(buildTimeoutError(code, message, timeoutMs, extra));
-      }, timeoutMs);
-    }),
-  ]).finally(() => {
-    if (timer) clearTimeout(timer);
-  });
 }
 
 async function measureStep(label, fn) {
@@ -311,11 +212,6 @@ function buildMetrics({
     totalMs: safeNumber(totalMs, 0),
     fallbackUsed: Boolean(fallbackUsed),
   };
-}
-
-function isTimeoutError(err) {
-  const code = String(err?.code || "").toUpperCase();
-  return code.includes("TIMEOUT") || /timeout/i.test(String(err?.message || ""));
 }
 
 function buildDeterministicFallbackContract({
@@ -353,122 +249,6 @@ function buildDeterministicFallbackContract({
     context,
     raw,
   });
-}
-
-// Preserve tool adjacency. Do not trim once tool blocks exist.
-function normalizeMessages(messages = [], reqId, { trim = true } = {}) {
-  const out = [];
-  let totalChars = 0;
-
-  for (const m of Array.isArray(messages) ? messages : []) {
-    if (!m) continue;
-
-    const role = normalizeRole(m.role);
-
-    if (role === "tool") {
-      const tool_call_id =
-        typeof m.tool_call_id === "string" && m.tool_call_id.trim()
-          ? m.tool_call_id.trim()
-          : null;
-
-      const content = safeStringContent(m.content);
-      const cleaned = content.trim();
-      if (!cleaned) continue;
-
-      if (!tool_call_id) {
-        logEvent("openai.tool_message.missing_tool_call_id", {
-          reqId,
-          sample: truncateForLog({ role: "tool", content: cleaned.slice(0, 200) }, 500),
-        });
-        continue;
-      }
-
-      out.push({ role: "tool", tool_call_id, content: cleaned });
-      totalChars += cleaned.length;
-      continue;
-    }
-
-    if (role === "assistant") {
-      const content = safeStringContent(m.content);
-      const cleaned = content.trim();
-
-      const msgOut = { role: "assistant", content: cleaned };
-      if (Array.isArray(m.tool_calls) && m.tool_calls.length) {
-        msgOut.tool_calls = m.tool_calls;
-      }
-
-      if (!cleaned && !msgOut.tool_calls) continue;
-
-      out.push(msgOut);
-      totalChars += cleaned.length;
-      continue;
-    }
-
-    const content = safeStringContent(m.content);
-    const cleaned = content.trim();
-    if (!cleaned) continue;
-
-    out.push({ role, content: cleaned });
-    totalChars += cleaned.length;
-  }
-
-  const hasToolBlocks =
-    out.some((m) => m?.role === "tool") ||
-    out.some((m) => m?.role === "assistant" && Array.isArray(m?.tool_calls) && m.tool_calls.length);
-
-  if (!trim || hasToolBlocks) return out;
-
-  if (totalChars > MAX_TOTAL_MESSAGE_CHARS) {
-    const keep = [];
-    let chars = 0;
-
-    for (const m of out) {
-      if (m.role === "system") {
-        keep.push(m);
-        chars += (m.content || "").length;
-      }
-    }
-
-    const nonSystem = out.filter((m) => m.role !== "system");
-
-    for (let i = nonSystem.length - 1; i >= 0; i--) {
-      const m = nonSystem[i];
-      const len = m?.content?.length || 0;
-      if (chars + len > MAX_TOTAL_MESSAGE_CHARS) break;
-      keep.unshift(m);
-      chars += len;
-    }
-
-    logEvent("openai.messages.trimmed", {
-      reqId,
-      beforeCount: out.length,
-      afterCount: keep.length,
-      beforeChars: totalChars,
-      afterChars: chars,
-      cap: MAX_TOTAL_MESSAGE_CHARS,
-    });
-
-    return keep;
-  }
-
-  return out;
-}
-
-function summarizePayload(messages) {
-  const msgCount = Array.isArray(messages) ? messages.length : 0;
-  const chars = Array.isArray(messages)
-    ? messages.reduce((sum, m) => sum + (m?.content?.length || 0), 0)
-    : 0;
-
-  const roles = Array.isArray(messages)
-    ? messages.reduce((acc, m) => {
-        const r = m?.role || "unknown";
-        acc[r] = (acc[r] || 0) + 1;
-        return acc;
-      }, {})
-    : {};
-
-  return { msgCount, chars, roles };
 }
 
 // ──────────────────────────────
@@ -1000,129 +780,6 @@ function buildCartDisambiguationPrompt(cartSummary) {
 }
 
 // ──────────────────────────────
-// S3 helpers
-// ──────────────────────────────
-async function getObjectText(bucket, key, options = {}) {
-  const { timeoutMs = S3_RETRIEVAL_TIMEOUT_MS, forceFresh = false } = options;
-  const id = `${bucket}/${key}`;
-  const cached = cache.fileText.get(id);
-
-  if (!forceFresh && cached && isFresh(cached.ts, FILE_TTL_MS)) {
-    return { value: cached.value, cacheHit: true };
-  }
-
-  const inflightKey = `text:${id}`;
-  if (cache.inflight.has(inflightKey)) {
-    return cache.inflight.get(inflightKey);
-  }
-
-  const promise = (async () => {
-    try {
-      const data = await withTimeout(
-        s3.send(new GetObjectCommand({ Bucket: bucket, Key: key })),
-        timeoutMs,
-        "S3_GET_TIMEOUT",
-        `S3 GET exceeded ${timeoutMs}ms`,
-        { bucket, key }
-      );
-
-      const chunks = [];
-      for await (const c of data.Body) chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c));
-      const text = Buffer.concat(chunks).toString("utf-8");
-      cache.fileText.set(id, { value: text, ts: Date.now() });
-      return { value: text, cacheHit: false };
-    } catch (e) {
-      logEvent("s3.get.error", {
-        bucket,
-        key,
-        error: e.message,
-        timeoutMs: isTimeoutError(e) ? timeoutMs : null,
-      });
-      return { value: null, cacheHit: false, error: e };
-    } finally {
-      cache.inflight.delete(inflightKey);
-    }
-  })();
-
-  cache.inflight.set(inflightKey, promise);
-  return promise;
-}
-
-async function getObjectJson(bucket, key, options = {}) {
-  const txtResult = await getObjectText(bucket, key, options);
-  if (!txtResult?.value) {
-    return { value: null, cacheHit: Boolean(txtResult?.cacheHit), error: txtResult?.error || null };
-  }
-
-  try {
-    return {
-      value: JSON.parse(txtResult.value),
-      cacheHit: Boolean(txtResult.cacheHit),
-      error: null,
-    };
-  } catch (e) {
-    logEvent("s3.json.parse_error", { bucket, key, error: e.message });
-    return { value: null, cacheHit: Boolean(txtResult.cacheHit), error: e };
-  }
-}
-
-async function listMarkdownKeys(bucket, prefix, options = {}) {
-  const { timeoutMs = S3_RETRIEVAL_TIMEOUT_MS, forceFresh = false } = options;
-  const id = `${bucket}/${prefix}`;
-  const cached = cache.listKeys.get(id);
-
-  if (!forceFresh && cached && isFresh(cached.ts, LIST_TTL_MS)) {
-    return { value: cached.value, cacheHit: true };
-  }
-
-  const inflightKey = `list:${id}`;
-  if (cache.inflight.has(inflightKey)) {
-    return cache.inflight.get(inflightKey);
-  }
-
-  const promise = (async () => {
-    let keys = [];
-    let ContinuationToken;
-
-    try {
-      do {
-        const res = await withTimeout(
-          s3.send(
-            new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix, ContinuationToken })
-          ),
-          timeoutMs,
-          "S3_LIST_TIMEOUT",
-          `S3 LIST exceeded ${timeoutMs}ms`,
-          { bucket, prefix }
-        );
-
-        const batch = (res.Contents || [])
-          .map((o) => o && o.Key)
-          .filter((k) => k && k.endsWith(".md"));
-        keys = keys.concat(batch);
-        ContinuationToken = res.IsTruncated ? res.NextContinuationToken : undefined;
-      } while (ContinuationToken);
-    } catch (e) {
-      logEvent("s3.list.error", {
-        bucket,
-        prefix,
-        error: e.message,
-        timeoutMs: isTimeoutError(e) ? timeoutMs : null,
-      });
-      return { value: [], cacheHit: false, error: e };
-    } finally {
-      cache.inflight.delete(inflightKey);
-    }
-
-    cache.listKeys.set(id, { value: keys, ts: Date.now() });
-    return { value: keys, cacheHit: false, error: null };
-  })();
-
-  cache.inflight.set(inflightKey, promise);
-  return promise;
-}
-
-// ──────────────────────────────
 // Deterministic meta loaders
 // ──────────────────────────────
 async function getRoutingRulesOnce(options = {}) {
@@ -1385,28 +1042,6 @@ async function loadKeysAsSnippets(keys = [], limitBytes = MAX_CTX_BYTES) {
 // ──────────────────────────────
 // Prompt + mode instructions (model path only)
 // ──────────────────────────────
-async function getBasePromptOnce(reqId) {
-  if (isFresh(cache.basePrompt.ts, BASE_PROMPT_TTL_MS)) return cache.basePrompt.value;
-
-  let base = PREMIUM_ANSWER_GUARDRAILS;
-
-  try {
-    const sysResult = await getObjectText(PROMPT_BUCKET, SYSTEM_PROMPT_KEY);
-    const sys = sysResult?.value || null;
-    if (sys) {
-      base = `${sys.trim()}\n\n${PREMIUM_ANSWER_GUARDRAILS}`;
-      logEvent("prompt.base.loaded", { reqId, bucket: PROMPT_BUCKET, key: SYSTEM_PROMPT_KEY });
-    } else {
-      logEvent("prompt.base.missing", { reqId, bucket: PROMPT_BUCKET, key: SYSTEM_PROMPT_KEY });
-    }
-  } catch (e) {
-    logEvent("prompt.base.error", { reqId, error: e.message });
-  }
-
-  cache.basePrompt = { value: base, ts: Date.now() };
-  return base;
-}
-
 function buildModeInstructions(mode) {
   const m = String(mode || "").toLowerCase();
 
@@ -2269,89 +1904,6 @@ async function deterministicUpdateCartQtyPath(
 // ──────────────────────────────
 // Model path (NO TOOLS, NO COMMERCE) + retrieval enforcement
 // ──────────────────────────────
-async function callOpenAIChat({ messages, reqId, model = FINAL_MODEL, maxTokens = 350, timeoutMs = FAST_TIMEOUT_MS }) {
-  const { OPENAI_API_KEY: apiKey } = await getIntegrationCredentials("openai");
-  if (!apiKey) {
-    const err = new Error("OPENAI_API_KEY missing");
-    err.code = "OPENAI_KEY_MISSING";
-    throw err;
-  }
-
-  let attempt = 0;
-
-  for (;;) {
-    try {
-      const normalized = normalizeMessages(messages, reqId, { trim: true });
-
-      const payload = {
-        model,
-        temperature: 0.2,
-        max_tokens: Math.max(64, Math.min(800, Number(maxTokens) || 350)),
-        messages: normalized,
-      };
-
-      logEvent("openai.start", {
-        reqId,
-        attempt,
-        timeoutMs,
-        ...summarizePayload(payload.messages),
-      });
-
-      const resp = await openai.post("/chat/completions", payload, {
-        timeout: timeoutMs,
-        headers: { Authorization: `Bearer ${apiKey}` },
-      });
-
-      const data = resp.data || {};
-      const choice = data.choices?.[0] || {};
-      const msg = choice.message || {};
-      const usage = data.usage || {};
-
-      logEvent("openai.ok", { reqId, usedTools: false });
-
-      return {
-        text: msg.content || "",
-        model: data.model || model,
-        tokens: {
-          prompt: usage.prompt_tokens ?? null,
-          completion: usage.completion_tokens ?? null,
-          total: usage.total_tokens ?? null,
-        },
-        raw: data,
-      };
-    } catch (err) {
-      const status = err?.response?.status;
-      const code = status || err?.code || "ERR";
-      const respData = err?.response?.data;
-
-      logEvent("openai.error.detail", {
-        reqId,
-        attempt,
-        code,
-        message: err?.message,
-        response: truncateForLog(respData),
-      });
-
-      const retriable =
-        attempt < OPENAI_RUN_MAX_RETRIES &&
-        (code === 429 ||
-          (typeof code === "number" && code >= 500) ||
-          ["ECONNRESET"].includes(code));
-
-      logEvent(retriable ? "openai.retry" : "openai.fail", {
-        reqId,
-        attempt,
-        code,
-        msg: err?.message,
-      });
-
-      if (!retriable) throw err;
-      attempt++;
-      await sleep(Math.min(OPENAI_RUN_MAX_WAIT_MS, 500 + attempt * 300));
-    }
-  }
-}
-
 async function modelPath(userMessage, { reqId, thread_id, mode, context, intent, retrievalMeta } = {}) {
   const t0 = Date.now();
   const retrievalMs = safeNumber(retrievalMeta?.ms, 0);
@@ -2719,360 +2271,6 @@ async function getSnoozerResponse(
   });
 }
 
-function parseTrustedAdvisorComposition(value = "", { taskType = null, comparisonTitles = [], fallbackSpeechText = "" } = {}) {
-  const source = String(value || "").trim();
-  const unfenced = source
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
-    .trim();
-  let parsed;
-  try {
-    parsed = JSON.parse(unfenced);
-  } catch {
-    const error = new Error("Trusted-advisor composer returned invalid JSON.");
-    error.code = "E_ADVISOR_COMPOSER_JSON";
-    throw error;
-  }
-  const shopperSafeText = (text) => String(text || "")
-    .replace(/\bmodels\b/gi, "mattresses")
-    .replace(/\bmodel\b/gi, "mattress")
-    .trim();
-  const displayText = shopperSafeText(parsed?.displayText);
-  const sentenceMatches = displayText.match(/[^.!?]+[.!?]+/g) || [];
-  const exactTitles = comparisonTitles.map((title) => String(title || "").trim()).filter(Boolean).slice(0, 2);
-  const titleSentence = (title) => sentenceMatches.find((sentence) => sentence.toLowerCase().includes(title.toLowerCase()));
-  const bothTitlesSentence = exactTitles.length === 2
-    ? sentenceMatches.find((sentence) => exactTitles.every((title) => sentence.toLowerCase().includes(title.toLowerCase())))
-    : null;
-  const speechSentences = bothTitlesSentence
-    ? [bothTitlesSentence]
-    : exactTitles.length === 2
-      ? exactTitles.map(titleSentence).filter(Boolean)
-      : sentenceMatches.slice(0, 2);
-  if (!speechSentences.length) speechSentences.push(...sentenceMatches.slice(0, 2));
-  const comparisonCue = /\b(?:while|whereas|compared|difference|more|less|both|original|current)\b/i;
-  if (exactTitles.length === 2 && !speechSentences.some((sentence) => comparisonCue.test(sentence))) {
-    const comparisonSentence = sentenceMatches.find((sentence) => comparisonCue.test(sentence));
-    if (comparisonSentence) speechSentences.push(comparisonSentence);
-  }
-  const requiredSpeechCue = taskType === "comparison_value"
-    ? /\b(?:worth|value|pay|spend|save|cost)\b/i
-    : taskType === "firmness_choice"
-      ? /\b(?:pick|choose|recommend|favor|favour|would|prefer|lean|better fit|start with)\b/i
-      : null;
-  if (requiredSpeechCue && !speechSentences.some((sentence) => requiredSpeechCue.test(sentence))) {
-    const requiredSentence = sentenceMatches.find((sentence) => requiredSpeechCue.test(sentence));
-    if (requiredSentence) speechSentences.push(requiredSentence);
-  }
-  const speechText = shopperSafeText(
-    parsed?.speechText ||
-    parsed?.spokenSummary ||
-    fallbackSpeechText ||
-    [...new Set(speechSentences)].join(" ") ||
-    displayText
-  );
-  let probe = parsed?.probe == null ? null : String(parsed.probe).trim();
-  const nextActionIntent = parsed?.nextActionIntent == null ? null : String(parsed.nextActionIntent).trim();
-  const confidence = Number(parsed?.confidence);
-  if (!displayText || !speechText || displayText.length > 1800 || speechText.length > 500) {
-    const error = new Error("Trusted-advisor composer violated its response contract.");
-    error.code = "E_ADVISOR_COMPOSER_CONTRACT";
-    throw error;
-  }
-  if (probe && !probe.endsWith("?") && !/[.!]$/.test(probe)) probe = `${probe}?`;
-  if (probe && (displayText.match(/\?/g) || []).length === 1) probe = null;
-  if (probe && ((probe.match(/\?/g) || []).length !== 1 || probe.length > 180)) {
-    const error = new Error("Trusted-advisor composer returned an invalid probe.");
-    error.code = "E_ADVISOR_COMPOSER_PROBE";
-    throw error;
-  }
-  if ((displayText.match(/\?/g) || []).length > 1 || (speechText.match(/\?/g) || []).length > 1) {
-    const error = new Error("Trusted-advisor composer returned more than one probe.");
-    error.code = "E_ADVISOR_COMPOSER_PROBE";
-    throw error;
-  }
-  return {
-    displayText,
-    speechText,
-    probe,
-    nextActionIntent: nextActionIntent || null,
-    confidence: Number.isFinite(confidence) ? Math.max(0, Math.min(1, confidence)) : null,
-  };
-}
-
-const TRUSTED_ADVISOR_PRODUCT_KEYS = Object.freeze({
-  "10-all-foam-mattress": "products/mattress/10-all-foam-mattress.md",
-  "12-all-foam-mattress": "products/mattress/12-all-foam-mattress.md",
-  "12-dual-comfort-hybrid": "products/mattress/12-dual-comfort-hybrid.md",
-  "14-hybrid": "products/mattress/14-hybrid.md",
-});
-
-const {
-  normalizePolicyDocument,
-  safeKnowledgeLines,
-} = require("./askSnoozerTypedTruth");
-
-function compactAdvisorLines(raw = "", { limit = 10, include = [] } = {}) {
-  return safeKnowledgeLines(raw, { limit, include });
-}
-
-async function loadTrustedAdvisorFactPack({ productHandles = [], taskType = "", query = "", requestedFacts = [] } = {}) {
-  let advisorKnowledge = require("../data/ask-snoozer-advisor-knowledge.v1.json");
-  try {
-    const remote = await getObjectJson(KNOWLEDGE_BUCKET, ADVISOR_KNOWLEDGE_KEY);
-    if (remote.value && typeof remote.value === "object") advisorKnowledge = remote.value;
-  } catch {
-    // The packaged copy is the safe rollback when the remote knowledge object is unavailable.
-  }
-  const handles = [...new Set((Array.isArray(productHandles) ? productHandles : []).filter(Boolean))].slice(0, 3);
-  const productFacts = [];
-  for (const handle of handles) {
-    const key = TRUSTED_ADVISOR_PRODUCT_KEYS[handle];
-    if (!key) continue;
-    try {
-      const loaded = await getObjectText(KNOWLEDGE_BUCKET, key);
-      if (loaded.value) {
-        productFacts.push({
-          handle,
-          status: "verified_fact",
-          facts: compactAdvisorLines(loaded.value, {
-            limit: 7,
-            include: ["feel", "pressure", "support", "foam", "coil", "airflow", "motion", "certipur", "care", "ideal", "split comfort"],
-          }),
-        });
-      }
-    } catch {
-      // Missing optional product knowledge remains UNKNOWN in the caller's fact pack.
-    }
-  }
-  const requested = new Set((Array.isArray(requestedFacts) ? requestedFacts : []).map((fact) => String(fact).toLowerCase()));
-  const policyFacts = [];
-  if (requested.has("warranty") || taskType === "warranty_explanation" || /\bwarrant|coverage|sagging?\b/i.test(query)) {
-    try {
-      const loaded = await getObjectText(KNOWLEDGE_BUCKET, "faq/warranty.md");
-      if (loaded.value) {
-        policyFacts.push(normalizePolicyDocument({ topic: "warranty", raw: loaded.value }));
-      }
-    } catch {
-      // An unavailable policy object must not become an invented policy term.
-    }
-    if (!policyFacts.length) {
-      const packagedWarranty = String(require("../faqs.json")?.warranty || "").trim();
-      if (packagedWarranty) {
-        policyFacts.push(normalizePolicyDocument({ topic: "warranty", fallback: packagedWarranty }));
-      }
-    }
-  }
-  const supplementalPolicies = [
-    {
-      topic: "delivery",
-      requested: requested.has("delivery") || /\bdeliver(?:y|ies|ed)\b/i.test(query),
-      keys: ["policies/delivery-policy.md", "faq/delivery.md"],
-      include: ["delivery", "business day", "schedule", "window", "availability", "zip"],
-      packagedKey: "shipping_time",
-    },
-    {
-      topic: "returns",
-      requested: requested.has("returns") || /\breturn|exchange|sleep trial\b/i.test(query),
-      keys: ["policies/returns.md", "faq/returns.md"],
-      include: ["return", "exchange", "sleep trial", "night", "final sale"],
-      packagedKey: "return_policy",
-    },
-    {
-      topic: "financing",
-      requested: requested.has("financing") || /\bfinanc|payment plan\b/i.test(query),
-      keys: ["faq/financing.md"],
-      include: ["financing", "payment", "affirm", "credit"],
-      packagedKey: "payment_options",
-    },
-  ];
-  for (const policy of supplementalPolicies.filter((item) => item.requested)) {
-    let loadedPolicy = false;
-    for (const key of policy.keys) {
-      try {
-        const loaded = await getObjectText(KNOWLEDGE_BUCKET, key);
-        if (!loaded.value) continue;
-        const typedFact = normalizePolicyDocument({ topic: policy.topic, raw: loaded.value });
-        if (!typedFact.known) continue;
-        policyFacts.push(typedFact);
-        loadedPolicy = true;
-        break;
-      } catch {
-        // Try the next approved key, then the packaged rollback fact.
-      }
-    }
-    if (!loadedPolicy) {
-      const packaged = String(require("../faqs.json")?.[policy.packagedKey] || "").trim();
-      if (packaged) {
-        policyFacts.push(normalizePolicyDocument({ topic: policy.topic, fallback: packaged }));
-      }
-    }
-  }
-  return {
-    version: advisorKnowledge.version || null,
-    status: "advisor_interpretation",
-    principles: (advisorKnowledge.principles || []).slice(0, 4),
-    topicGuidance: (() => {
-      const topics = advisorKnowledge.topics || {};
-      const keys = taskType === "durability_objection" || /\bsag|durab|wear\b/i.test(query)
-        ? ["durability"]
-        : taskType === "base_education" || taskType === "value_judgment" || taskType === "value_objection"
-          ? ["adjustable_base_value"]
-          : taskType === "confusion_recovery"
-            ? ["confusion"]
-            : taskType === "compound_product_base" || /\bpartner|split\b/i.test(query)
-              ? ["couples_and_split"]
-              : ["feel"];
-      return Object.fromEntries(keys.filter((key) => topics[key] != null).map((key) => [key, topics[key]]));
-    })(),
-    productFacts,
-    policyFacts,
-  };
-}
-
-async function planTrustedAdvisorTurnWithModel({ requestId, query = "", context = {} } = {}) {
-  const startedAt = Date.now();
-  const plannerInput = buildModelPlannerInput({ query, context });
-  const systemContent = [
-    "You plan the next turn for Snoozer, an expert mattress showroom advisor.",
-    "You decide conversational meaning and answer scope, but you have no authority over facts, prices, availability, variants, compatibility, cart state, policies, or the assessment result.",
-    "Identify every shopper act and every fact the shopper requested. One message may contain multiple acts or questions.",
-    "Classify utteranceMode as asserted, hypothetical, conditional, question, or reconsideration. Add modality to every act.",
-    "Hypothetical, conditional, and question-only concerns must not become reject_product, product_feedback, explicit_exclusion, desired_direction, retain_preference, budget_value, or acceptance state changes. Example: 'What if I do not like it?' is a question, not a rejection.",
-    "Resolve product references only to handles in the supplied catalog. Never invent a product or handle.",
-    "The assessment recommendation is historical baseline. Explicit shopper feedback and the current session recommendation control active advice.",
-    "Return JSON only with: utteranceMode, primaryTask, shopperGoal, acts, productReferences, comparisonProductHandles, requestedFacts, answerRequirements, requestedPodId, requiresComposition, confidence.",
-    `primaryTask must be exactly one of: ${Array.from(ALLOWED_TASKS).join(", ")}. Never invent or paraphrase a task name.`,
-    "Valid act types are reject_product, product_feedback, retain_preference, desired_direction, request_alternative, explicit_exclusion, accept_commitment, decline_commitment, trust_risk, confusion, reconsider_product, accept_recommendation, and budget_value. Include productHandle and value or reason when relevant.",
-    "If a shopper says the current product feels too firm and asks what to try instead, emit reject_product, product_feedback with too_firm, desired_direction with feel=softer, and request_alternative in the same decision.",
-    "For questions about adding a base, use compatibility when asking whether it can be added, bundle_quote only when price is requested, and base_education when asking what the base does.",
-    "Use compound_fact_answer when the shopper requests more than one protected fact or a policy-only fact, product_sizes for an exact size question, durability_objection for lifespan/wear questions, store_value for why-buy-from-us questions, and recommendation_explanation for why an assessment or pod was chosen.",
-    "A substantive question must always have a primaryTask. Resolve relational questions such as current choice versus the rejected, original, previous, or other choice from activeJourney and recent turns; use product_comparison when two products are involved.",
-    "Valid requestedFacts include recommendation_reasons, product_sizes, product_features, warranty, delivery, returns, financing, price, availability, compatibility, cart, durability, and store_value.",
-    "Use answerRequirements to require all requested facts, named comparisons, recommendation reasons, feedback acknowledgement, state recap, grounded opinion, unknown disclosure, or one useful next step.",
-    "Do not write the shopper-facing answer.",
-  ].join(" ");
-  const payload = JSON.stringify(plannerInput);
-  const response = await callOpenAIChat({
-    reqId: requestId || `advisor_plan_${Date.now().toString(36)}`,
-    model: FAST_MODEL,
-    maxTokens: 500,
-    messages: [
-      { role: "system", content: systemContent },
-      { role: "user", content: payload },
-    ],
-  });
-  return {
-    decision: parseModelPlannerDecision(response.text, { query, context }),
-    model: response.model,
-    tokens: response.tokens,
-    modelMs: Date.now() - startedAt,
-    inputChars: systemContent.length + payload.length,
-  };
-}
-
-async function composeTrustedAdvisorResponse({
-  requestId,
-  userMessage,
-  strategy,
-  factPack,
-  deterministicDraft,
-} = {}) {
-  const startedAt = Date.now();
-  const comparisonHandles = strategy?.references?.comparisonProductHandles || [];
-  const comparisonTask = ["product_comparison", "canonical_comparison", "comparison_value", "firmness_choice", "firmness_compare"]
-    .includes(String(strategy?.taskType || "")) || (
-      ["advisor_choice", "durability_objection"].includes(String(strategy?.taskType || "")) &&
-      comparisonHandles.length >= 2
-    );
-  const fullPolicy = await getBasePromptOnce(requestId || `advisor_${Date.now().toString(36)}`);
-  const policySentences = String(fullPolicy || "")
-    .split(/(?<=[.!?])\s+/)
-    .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence.length >= 20 && sentence.length <= 360)
-    .filter((sentence) => /\b(?:advisor|shopper|recommend|price|availability|compatib|cart|medical|truth|invent|pressure|decision)\b/i.test(sentence))
-    .slice(0, comparisonTask ? 6 : 12);
-  const trustedAdvisorPolicy = policySentences.join(" ").slice(0, comparisonTask ? 1400 : 2400);
-  let compactStrategy = {
-    taskType: strategy?.taskType,
-    stage: strategy?.stage,
-    responseDepth: strategy?.responseDepth,
-    references: strategy?.references,
-    knownFacts: strategy?.knownFacts,
-    commercialState: strategy?.commercialState,
-    interpretedActs: strategy?.interpretedActs,
-    allowedActions: strategy?.allowedActions,
-    medicalBoundary: strategy?.medicalBoundary,
-  };
-  if (comparisonTask) {
-    compactStrategy = {
-      taskType: strategy?.taskType,
-      responseDepth: strategy?.responseDepth,
-      comparisonProductHandles: strategy?.references?.comparisonProductHandles || [],
-      comparisonTitles: (factPack?.products || []).slice(0, 2).map((product) => product?.title).filter(Boolean),
-      activeProductHandle: strategy?.references?.activeProductHandle || null,
-      sessionRecommendationHandle: strategy?.references?.sessionRecommendationHandle || null,
-      allowedActions: strategy?.allowedActions || [],
-    };
-  }
-  const boundedPayload = JSON.stringify({
-    shopperQuestion: String(userMessage || "").slice(0, comparisonTask ? 600 : 1000),
-    strategy: compactStrategy,
-    verifiedFactPack: factPack,
-    deterministicDraft: comparisonTask
-      ? { displayText: deterministicDraft?.displayText }
-      : deterministicDraft,
-  });
-  const systemContent = [
-    trustedAdvisorPolicy,
-    "You are the language composer for a mattress showroom advisor.",
-    comparisonTask
-      ? "Return JSON only with displayText, probe (string or null), nextActionIntent (string or null), and confidence (0 to 1). Speech is derived from displayText."
-      : "Return JSON only with displayText, speechText, probe (string or null), nextActionIntent (string or null), and confidence (0 to 1).",
-    "Rewrite the deterministic draft so it is natural, engaged, decisive, and shopper-friendly.",
-    "Use only the verified fact pack and deterministic draft. Never invent or change products, titles, sizes, prices, availability, compatibility, configuration, cart state, rewards, policies, or actions.",
-    "Treat the original assessment recommendation as history and the current session recommendation as the active advice when shopper feedback changed it.",
-    "Do not expose implementation language. Do not diagnose or promise a medical outcome.",
-    "Never claim that a mattress ensures comfort, treats pain, or guarantees relief. Describe verified construction and likely feel as tradeoffs, not outcomes.",
-    "Ask at most one useful forward-moving question. Use null when a probe is not warranted.",
-    ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(String(strategy?.taskType || ""))
-      ? "For a price answer, preserve every exact resolved line price, the exact total when there is more than one line, the size, and the requested scope. Do not omit or alter any number."
-      : "",
-    comparisonTask
-      ? "Use the supplied response depth and finish the comparison. Use both exact full names in strategy.comparisonTitles and clearly contrast them in the first two sentences so the spoken summary covers both. Use product names instead of the word model. Keep displayText under 1800 characters."
-      : "Use the supplied response depth and finish the thought. Keep displayText under 1800 characters. Keep speechText to two short complete sentences.",
-  ].filter(Boolean).join(" ");
-  const response = await callOpenAIChat({
-    reqId: requestId || `advisor_${Date.now().toString(36)}`,
-    timeoutMs: ADVISOR_COMPOSER_TIMEOUT_MS,
-    messages: [
-      {
-        role: "system",
-        content: systemContent,
-      },
-      { role: "user", content: boundedPayload },
-    ],
-  });
-  const parsed = parseTrustedAdvisorComposition(response.text, {
-    taskType: strategy?.taskType,
-    comparisonTitles: (factPack?.products || []).slice(0, 2).map((product) => product?.title).filter(Boolean),
-    fallbackSpeechText: comparisonTask ? deterministicDraft?.speechText : "",
-  });
-  return {
-    ...parsed,
-    model: response.model,
-    tokens: response.tokens,
-    modelMs: Date.now() - startedAt,
-    inputChars: systemContent.length + boundedPayload.length,
-    estimatedInputTokens: Math.ceil((systemContent.length + boundedPayload.length) / 4),
-    systemChars: systemContent.length,
-    payloadChars: boundedPayload.length,
-    factPackChars: JSON.stringify(factPack || {}).length,
-    factPackBudget: factPack?.budget || null,
-    timeoutMs: ADVISOR_COMPOSER_TIMEOUT_MS,
-  };
-}
-
 async function runSnoozer({ message, mode, context, thread_id } = {}) {
   const reqId = `req_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
   const result = await getSnoozerResponse(message, { reqId, mode, context, thread_id });
@@ -3080,9 +2278,6 @@ async function runSnoozer({ message, mode, context, thread_id } = {}) {
 }
 
 module.exports = {
-  composeTrustedAdvisorResponse,
-  planTrustedAdvisorTurnWithModel,
-  loadTrustedAdvisorFactPack,
   getSnoozerResponse,
   runSnoozer,
   getCatalogOnce,
@@ -3091,5 +2286,25 @@ module.exports = {
   catalogHasHandle,
   resolveVariantFromCanon,
   resolveVariantByHandleAndSize,
-  parseTrustedAdvisorComposition,
 };
+
+// Temporary compatibility surface for legacy callers. The active Ask Snoozer
+// route loads askSnoozerModelCore directly; these accessors keep older tests and
+// callers on the single extracted implementations without copying them here.
+for (const exportName of [
+  "composeTrustedAdvisorResponse",
+  "planTrustedAdvisorTurnWithModel",
+  "loadTrustedAdvisorFactPack",
+  "parseTrustedAdvisorComposition",
+]) {
+  Object.defineProperty(module.exports, exportName, {
+    configurable: true,
+    enumerable: true,
+    get() {
+      return advisorModelCore[exportName];
+    },
+    set(value) {
+      advisorModelCore[exportName] = value;
+    },
+  });
+}
