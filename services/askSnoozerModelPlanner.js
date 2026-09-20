@@ -3,6 +3,13 @@ const { normalizeAskSnoozerText } = require("./askSnoozerIntents");
 
 const MODEL_PLANNER_VERSION = "2026-09-16.1";
 
+const SEMANTIC_AUTHORITY = Object.freeze({
+  DETERMINISTIC_ATOMIC: "deterministic_atomic",
+  MODEL_SEMANTICS: "model_semantics",
+  MODEL_FAILED: "model_failed",
+  LEGACY_SHADOW: "legacy_semantics_shadow",
+});
+
 function isModelOnlySemanticRoutingEnabled() {
   return ["1", "true", "yes", "on"].includes(
     clean(process.env.ASK_SNOOZER_MODEL_ONLY || "").toLowerCase()
@@ -214,12 +221,15 @@ function isSimpleAtomicFactQuery(query = "", context = {}) {
   const activeProduct = clean(
     deal?.activeProductHandle ||
     deal?.sessionRecommendation?.productHandle ||
-    deal?.acceptedRecommendation?.productHandle
+    deal?.acceptedRecommendation?.productHandle ||
+    deal?.canonicalRecommendation?.primaryMattressHandle ||
+    context?.canonicalRecommendation?.primaryMattressHandle
   );
   if (facts[0] === "warranty" && activeProduct) return true;
+  if (facts[0] === "availability" && (activeProduct || resolveCatalogHandle(query))) return true;
   if (facts[0] === "product_sizes" && (activeProduct || resolveCatalogHandle(query))) return true;
-  if (facts[0] === "price" && activeProduct && !/\b(?:why|worth|value|compare|difference|save)\b/.test(text)) {
-    return Boolean(deal?.activeQuote?.ok || /\b(?:twin|full|queen|king|split|mattress|base|setup)\b/.test(text));
+  if (facts[0] === "price" && !/\b(?:why|worth|value|compare|difference|save)\b/.test(text)) {
+    return Boolean(activeProduct || deal?.activeQuote?.ok || /\b(?:twin|full|queen|king|split|mattress|base|setup)\b/.test(text));
   }
   return false;
 }
@@ -262,19 +272,37 @@ function resolvePendingCommitmentProtocol({ query = "", context = {} } = {}) {
 }
 
 function shouldPlanAskSnoozerWithModel({ query = "", context = {} } = {}) {
+  return resolveAskSnoozerSemanticAuthority({ query, context }).mode === SEMANTIC_AUTHORITY.MODEL_SEMANTICS;
+}
+
+function resolveAskSnoozerSemanticAuthority({ query = "", context = {} } = {}) {
   const text = normalizeAskSnoozerText(query);
-  if (!text) return false;
-  if (/^(?:hi|hello|hey|good (?:morning|afternoon|evening))[!. ]*$/.test(text)) return false;
-  if (/\b(?:talk|speak|connect) (?:to|with) (?:a )?(?:human|person|associate)|\bhuman (?:help|support|assistance)\b/.test(text)) return false;
+  const atomic = (reason) => ({ mode: SEMANTIC_AUTHORITY.DETERMINISTIC_ATOMIC, reason });
+  if (!text) return atomic("empty_message");
+  if (/^(?:hi|hello|hey|good (?:morning|afternoon|evening))[!. ]*$/.test(text)) return atomic("greeting");
+  if (/\b(?:talk|speak|connect) (?:to|with) (?:a )?(?:human|person|associate)|\bhuman (?:help|support|assistance)\b/.test(text)) {
+    return atomic("support_handoff");
+  }
   const pending = context?.askSnoozerWorkingMemory?.activeDeal?.pendingCommitment;
   if (pending?.status === "pending" && /^(?:yes|yeah|yep|sure|please|no|nope|no thanks|not now)[.!]?$/.test(text)) {
-    return false;
+    return atomic("typed_commitment");
   }
-  if (isSimpleAtomicFactQuery(query, context)) return false;
-  if (/^(?:what(?:'s| is) in|show|review|check)\b.*\bcart\b/.test(text)) return false;
-  if (/^(?:please )?(?:add|put)\b.*\b(?:cart|basket)\b/.test(text) || /\b(?:add|put)\b.*\b(?:to|in) (?:my|the) cart\b/.test(text)) return false;
-  if (/\b(?:reward balance|how many points|points balance)\b/.test(text)) return false;
-  return true;
+  if (isSimpleAtomicFactQuery(query, context)) return atomic("protected_fact");
+  if (/^(?:what(?:'s| is) in|show|review|check|analy[sz]e|inspect)\b.*\bcart\b/.test(text)) return atomic("cart_view");
+  if (/^(?:please )?(?:add|put|remove|delete|update|change)\b.*\b(?:cart|basket)\b/.test(text) || /\b(?:add|put|remove|delete|update|change)\b.*\b(?:to|in|from) (?:my|the) (?:cart|basket)\b/.test(text)) {
+    return atomic("cart_command");
+  }
+  if (/^(?:checkout|check out|go to checkout|start checkout|proceed to checkout)[.! ]*$/.test(text)) return atomic("checkout_command");
+  if (/\b(?:reward balance|how many points|points balance)\b/.test(text) || /^(?:find|show|check) (?:my )?rewards?[.! ]*$/.test(text)) {
+    return atomic("rewards_balance");
+  }
+  if (/^(?:what is|what's) the cheapest (?:twin|full|queen|king|split king)? ?setup[?!. ]*$/.test(text)) return atomic("exact_price_lookup");
+  if (/^what happens if i need help during my session[?!. ]*$/.test(text)) return atomic("session_support");
+  if (/^(?:browse products?|show me (?:products?|mattresses?|bases?)|motion base features?)[.! ]*$/.test(text)) {
+    return atomic("station_starter");
+  }
+  if (/^where should i start[?!. ]*$/.test(text)) return atomic("station_starter");
+  return { mode: SEMANTIC_AUTHORITY.MODEL_SEMANTICS, reason: "arbitrary_conversation" };
 }
 
 function buildModelPlannerInput({ query = "", context = {} } = {}) {
@@ -548,6 +576,7 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
 
 module.exports = {
   MODEL_PLANNER_VERSION,
+  SEMANTIC_AUTHORITY,
   ALLOWED_TASKS,
   ALLOWED_FACTS,
   buildModelPlannerInput,
@@ -556,6 +585,7 @@ module.exports = {
   isModelOnlySemanticRoutingEnabled,
   parseModelPlannerDecision,
   resolvePendingCommitmentProtocol,
+  resolveAskSnoozerSemanticAuthority,
   resolveCatalogHandle,
   shouldPlanAskSnoozerWithModel,
 };

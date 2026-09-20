@@ -179,9 +179,13 @@ const {
   resolveAskSnoozerAdvisorTurn,
 } = require("./services/askSnoozerConversationOrchestrator");
 const {
+  resolveAskSnoozerSemanticAuthority,
   resolvePendingCommitmentProtocol,
   shouldPlanAskSnoozerWithModel,
 } = require("./services/askSnoozerModelPlanner");
+const {
+  evaluateAskSnoozerSemanticShadow,
+} = require("./services/askSnoozerSemanticShadow");
 const {
   resolveAskSnoozerVisitLifecycle,
 } = require("./services/askSnoozerVisitLifecycle");
@@ -6288,8 +6292,10 @@ function getAskSnoozerRouteDeps() {
     completeAskSnoozerAdvisorTurn,
     completeAskSnoozerPriceGoal,
     markAskSnoozerPriceGoalResolving,
+    resolveAskSnoozerSemanticAuthority,
     resolvePendingCommitmentProtocol,
     shouldPlanAskSnoozerWithModel,
+    evaluateAskSnoozerSemanticShadow,
     planTrustedAdvisorTurnWithModel: async (args) => {
       const service = getAskSnoozerModelCoreSvc();
       if (!service || typeof service.planTrustedAdvisorTurnWithModel !== "function") {

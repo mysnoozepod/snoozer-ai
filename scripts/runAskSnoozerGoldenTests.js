@@ -8,6 +8,7 @@ process.env.ASK_SNOOZER_PREFER_LOCAL_KNOWLEDGE = "1";
 const openai = require("../services/openai");
 const shopifySvc = require("../services/shopify");
 const { resolveRecommendation } = require("../services/recommendationResolver");
+const { buildPlannerFixture } = require("../tests/askSnoozerPlannerFixture");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
@@ -208,8 +209,8 @@ function restoreDynamo() {
 }
 
 function patchOpenAi() {
-  openai.planTrustedAdvisorTurnWithModel = async function mockedPlanTrustedAdvisorTurnWithModel() {
-    return { decision: null, model: null, tokens: 0, modelMs: 0, inputChars: 0 };
+  openai.planTrustedAdvisorTurnWithModel = async function mockedPlanTrustedAdvisorTurnWithModel(args) {
+    return buildPlannerFixture(args);
   };
   openai.getSnoozerResponse = async function mockedGetSnoozerResponse(message, options = {}) {
     openAiCalls.push({ message, options });
@@ -646,18 +647,17 @@ async function main() {
       prompt: "What helps with snoring?",
       body: { message: "What helps with snoring?", sessionId: "golden-9" },
       expected: {
-        intentGroup: "product_education",
-        sourceOfTruth: "s3_product",
+        intentGroup: "trusted_advisor",
+        sourceOfTruth: "advisor",
         shouldUseOpenAI: false,
         factsResolved: true,
         fallbackUsed: false,
-        model: "deterministic_product_education",
+        model: "trusted_advisor_sleep_education",
         slots: {},
         replyIncludes: ["adjustable base", "Snooze Session"],
         replyExcludes: ["$", "cure", "treat", "guarantee"],
         products: { min: 0, max: 0 },
         enforceForbiddenPhraseList: true,
-        noOpenAi: true,
       },
     },
     {
@@ -673,15 +673,14 @@ async function main() {
         },
       },
       expected: {
-        intentGroup: "product_education",
-        sourceOfTruth: "s3_product",
+        intentGroup: "trusted_advisor",
+        sourceOfTruth: "advisor",
         shouldUseOpenAI: false,
         factsResolved: true,
-        slots: { productHandle: "14-hybrid" },
-        replyIncludes: ["14-inch Hybrid"],
+        slots: {},
+        replyIncludes: ["shoulders", "hips", "supported"],
         replyExcludes: ["Shopify", "I found", "current"],
         products: { min: 0, max: 0 },
-        noOpenAi: true,
       },
     },
     {
@@ -704,18 +703,17 @@ async function main() {
         },
       },
       expected: {
-        intentGroup: "product_education",
-        sourceOfTruth: "canonical_profile",
+        intentGroup: "trusted_advisor",
+        sourceOfTruth: "shopify",
         shouldUseOpenAI: false,
         factsResolved: true,
         fallbackUsed: false,
-        model: "deterministic_product_education",
-        slots: { productHandle: "14-hybrid" },
-        replyIncludes: ["Platform Base", "14-inch Hybrid", "motion base options"],
+        model: "trusted_advisor_compatibility",
+        slots: {},
+        replyIncludes: ["14-inch Hybrid", "compatible", "motion"],
         replyExcludes: ["Shopify", "$", "add to cart"],
         products: { min: 0, max: 0 },
         enforceForbiddenPhraseList: true,
-        noOpenAi: true,
       },
     },
     {
@@ -749,13 +747,15 @@ async function main() {
       prompt: "asdf banana mattress moon policy checkout thing",
       body: { message: "asdf banana mattress moon policy checkout thing", sessionId: "golden-12" },
       expected: {
-        intentGroup: "fallback",
-        sourceOfTruth: "journey_state",
+        intentGroup: "model_led",
+        sourceOfTruth: "model_semantics",
         shouldUseOpenAI: false,
         factsResolved: false,
+        fallbackUsed: true,
+        model: "model_only_recovery",
         products: { min: 0, max: 0 },
         slots: {},
-        replyIncludes: ["pricing", "returns"],
+        replyIncludes: ["compare", "price", "change"],
         replyExcludes: ["live pricing", "backend", "Shopify", "OpenAI"],
         enforceForbiddenPhraseList: true,
         noOpenAi: true,

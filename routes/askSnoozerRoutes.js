@@ -52,8 +52,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     completeAskSnoozerAdvisorTurn,
     completeAskSnoozerPriceGoal,
     markAskSnoozerPriceGoalResolving,
+    resolveAskSnoozerSemanticAuthority,
     resolvePendingCommitmentProtocol,
     shouldPlanAskSnoozerWithModel,
+    evaluateAskSnoozerSemanticShadow,
     planTrustedAdvisorTurnWithModel,
     planAskSnoozerTurn,
     resolveAskSnoozerAdvisorTurn,
@@ -530,7 +532,19 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       decision: null,
       authority: null,
       errorCode: null,
+      semanticBoundary: null,
+      legacyShadow: null,
     };
+    const semanticBoundary = typeof resolveAskSnoozerSemanticAuthority === "function"
+      ? resolveAskSnoozerSemanticAuthority({ query: msg, context })
+      : {
+          mode: typeof shouldPlanAskSnoozerWithModel === "function" && shouldPlanAskSnoozerWithModel({ query: msg, context })
+            ? "model_semantics"
+            : "deterministic_atomic",
+          reason: "compatibility_boundary",
+        };
+    askSnoozerModelPlanning.semanticBoundary = semanticBoundary;
+    askSnoozerModelPlanning.authority = semanticBoundary.mode;
     const commitmentDecision = typeof resolvePendingCommitmentProtocol === "function"
       ? resolvePendingCommitmentProtocol({ query: msg, context })
       : null;
@@ -545,8 +559,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         commitmentType: commitmentDecision.acts[0]?.commitmentType || null,
       });
     } else if (
-      typeof shouldPlanAskSnoozerWithModel === "function" &&
-      shouldPlanAskSnoozerWithModel({ query: msg, context }) &&
+      semanticBoundary.mode === "model_semantics" &&
       typeof planTrustedAdvisorTurnWithModel === "function"
     ) {
       const plannerStartedAt = Date.now();
@@ -558,6 +571,11 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           query: msg,
           context,
         });
+        if (!planned?.decision?.primaryTask || planned.decision.authority !== "model_semantics") {
+          const invalidDecision = new Error("Advisor planner returned no validated semantic task.");
+          invalidDecision.code = "E_ADVISOR_PLANNER_DECISION";
+          throw invalidDecision;
+        }
         askSnoozerModelPlanning = {
           ...askSnoozerModelPlanning,
           modelMs: Number(planned?.modelMs || Date.now() - plannerStartedAt),
@@ -582,12 +600,87 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         askSnoozerModelPlanning.fallbackUsed = true;
         askSnoozerModelPlanning.modelMs = Date.now() - plannerStartedAt;
         askSnoozerModelPlanning.errorCode = error?.code || "E_ADVISOR_PLANNER";
-        askSnoozerModelPlanning.authority = "deterministic_fallback";
+        askSnoozerModelPlanning.authority = "model_failed";
+        askSnoozerModelPlanning.decision = {
+          authority: "model_failed",
+          primaryTask: null,
+          shopperGoal: null,
+          modality: "asserted",
+          acts: [],
+          productReferences: [],
+          comparisonProductHandles: [],
+          requestedFacts: [],
+          answerRequirements: [],
+          requiresComposition: false,
+          confidence: null,
+          validation: { source: "model_failed", errorCode: askSnoozerModelPlanning.errorCode },
+        };
         log("ask-snoozer.model-planner", "fallback", {
           traceId,
           testCaseId,
           modelMs: askSnoozerModelPlanning.modelMs,
           errorCode: askSnoozerModelPlanning.errorCode,
+        });
+      }
+    } else if (!commitmentDecision) {
+      askSnoozerModelPlanning.decision = {
+        authority: "deterministic_atomic",
+        primaryTask: null,
+        shopperGoal: null,
+        modality: "asserted",
+        acts: [],
+        productReferences: [],
+        comparisonProductHandles: [],
+        requestedFacts: [],
+        answerRequirements: [],
+        requiresComposition: false,
+        confidence: 1,
+        validation: { source: "deterministic_atomic", reason: semanticBoundary.reason },
+      };
+    }
+    if (
+      semanticBoundary.mode === "model_semantics" &&
+      typeof evaluateAskSnoozerSemanticShadow === "function"
+    ) {
+      try {
+        askSnoozerModelPlanning.legacyShadow = evaluateAskSnoozerSemanticShadow({
+          query: msg,
+          context,
+          modelDecision: askSnoozerModelPlanning.decision,
+          applyWorkingMemory: applyAskSnoozerWorkingMemory,
+          planTurn: planAskSnoozerTurn,
+        });
+        const shadow = askSnoozerModelPlanning.legacyShadow || {};
+        log("ask-snoozer.semantic-shadow", "evaluated", {
+          sessionId: effectiveSessionId,
+          traceId,
+          testCaseId,
+          semanticAuthority: askSnoozerModelPlanning.authority,
+          legacyShadowAvailable: Boolean(shadow.evaluated),
+          fallbackUsed: Boolean(askSnoozerModelPlanning.fallbackUsed),
+          modelTask: shadow.modelTask || null,
+          legacyTask: shadow.legacyTask || null,
+          taskAgreement: Boolean(shadow.taskAgreement),
+          modelReferences: shadow.modelReferences || [],
+          legacyReferences: shadow.legacyReferences || [],
+          referenceAgreement: Boolean(shadow.referenceAgreement),
+          modelComparisonHandles: shadow.modelComparisonHandles || [],
+          legacyComparisonHandles: shadow.legacyComparisonHandles || [],
+          comparisonAgreement: Boolean(shadow.comparisonAgreement),
+          modelActs: shadow.modelActs || [],
+          legacyActs: shadow.legacyActs || [],
+          stateChangingActAgreement: Boolean(shadow.stateChangingActAgreement),
+          modelConfidence: shadow.modelConfidence ?? null,
+        });
+      } catch (error) {
+        log("ask-snoozer.semantic-shadow", "error", {
+          sessionId: effectiveSessionId,
+          traceId,
+          testCaseId,
+          semanticAuthority: askSnoozerModelPlanning.authority,
+          legacyShadowAvailable: false,
+          fallbackUsed: Boolean(askSnoozerModelPlanning.fallbackUsed),
+          errorCode: error?.code || "E_SEMANTIC_SHADOW",
         });
       }
     }
@@ -657,12 +750,13 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         "warranty",
       ].includes(String(fact || "").trim()))
     );
-    const askSnoozerClassification = modelOnlySemanticRouting && !modelOnlyProtectedFactPassthrough
+    const modelSemanticTurn = ["model_semantics", "model_failed"].includes(askSnoozerModelPlanning.authority);
+    const askSnoozerClassification = modelSemanticTurn
       ? {
           intent: askSnoozerPlan?.taskType || askSnoozerModelPlanning?.decision?.primaryTask || "model_only_unresolved",
           intent_group: "model_led",
           confidence: askSnoozerModelPlanning?.decision?.confidence || null,
-          source_of_truth: "model_semantics",
+          source_of_truth: askSnoozerModelPlanning.authority,
         }
       : buildAskSnoozerClassification(msg, context);
     const presentationPolicy = typeof resolveAskSnoozerPresentationPolicy === "function"
@@ -1114,6 +1208,16 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           model: askSnoozerModelPlanning.model,
           fallbackUsed: askSnoozerModelPlanning.fallbackUsed,
           errorCode: askSnoozerModelPlanning.errorCode,
+          semanticAuthority: askSnoozerModelPlanning.authority,
+          semanticBoundary: askSnoozerModelPlanning.semanticBoundary,
+          legacyShadow: askSnoozerModelPlanning.legacyShadow
+            ? {
+                evaluated: true,
+                taskAgreement: askSnoozerModelPlanning.legacyShadow.taskAgreement,
+                referenceAgreement: askSnoozerModelPlanning.legacyShadow.referenceAgreement,
+                comparisonAgreement: askSnoozerModelPlanning.legacyShadow.comparisonAgreement,
+              }
+            : { evaluated: false },
           requestedFacts: advisorAnswer.plan.requestedFacts || [],
           answerRequirements: advisorAnswer.plan.answerRequirements || [],
         },
@@ -1339,7 +1443,10 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       }
     }
 
-    if (modelOnlySemanticRouting && !modelOnlyProtectedFactPassthrough) {
+    if (
+      askSnoozerModelPlanning.authority === "model_failed" ||
+      (askSnoozerModelPlanning.authority === "model_semantics" && !modelOnlyProtectedFactPassthrough)
+    ) {
       const fallbackDeal = context?.askSnoozerWorkingMemory?.activeDeal || {};
       const currentHandle = String(
         fallbackDeal?.sessionRecommendation?.productHandle ||
@@ -1386,9 +1493,29 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       env.meta = {
         path: "model_only_recovery",
         intent: askSnoozerClassification.intent,
-        source: "model_semantics",
+        source: askSnoozerModelPlanning.authority,
         reason,
         modelOnlySemanticRouting: true,
+        semanticAuthority: askSnoozerModelPlanning.authority,
+        legacyShadow: askSnoozerModelPlanning.legacyShadow
+          ? {
+              evaluated: true,
+              taskAgreement: askSnoozerModelPlanning.legacyShadow.taskAgreement,
+              referenceAgreement: askSnoozerModelPlanning.legacyShadow.referenceAgreement,
+              comparisonAgreement: askSnoozerModelPlanning.legacyShadow.comparisonAgreement,
+            }
+          : { evaluated: false },
+        planning: {
+          mode: askSnoozerModelPlanning.fallbackUsed ? "model_fallback" : "model_planned",
+          modelCallCount: askSnoozerModelPlanning.modelCallCount,
+          modelMs: askSnoozerModelPlanning.modelMs,
+          model: askSnoozerModelPlanning.model,
+          fallbackUsed: askSnoozerModelPlanning.fallbackUsed,
+          errorCode: askSnoozerModelPlanning.errorCode,
+          semanticAuthority: askSnoozerModelPlanning.authority,
+          requestedFacts: askSnoozerPlan?.requestedFacts || [],
+          answerRequirements: askSnoozerPlan?.answerRequirements || [],
+        },
         qualityGate: {
           intent: askSnoozerClassification.intent,
           intentGroup: "model_led",

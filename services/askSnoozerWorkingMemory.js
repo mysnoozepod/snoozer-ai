@@ -739,7 +739,9 @@ function reduceShopperFeedbackState({
   let budgetContext = isObject(previousDeal?.budgetContext) ? { ...previousDeal.budgetContext } : {};
   let acceptedRecommendation = isObject(previousDeal?.acceptedRecommendation) ? { ...previousDeal.acceptedRecommendation } : null;
   let activeConfiguration = isObject(previousDeal?.activeConfiguration) ? { ...previousDeal.activeConfiguration } : {};
-  let pendingCommitment = interpretation.pendingCommitment || null;
+  let pendingCommitment = semanticAuthority === "deterministic_fallback"
+    ? interpretation.pendingCommitment || null
+    : (isObject(previousDeal?.pendingCommitment) ? { ...previousDeal.pendingCommitment } : null);
   let sessionRecommendation = isObject(previousDeal?.sessionRecommendation)
     ? { ...previousDeal.sessionRecommendation }
     : null;
@@ -889,7 +891,7 @@ function reduceShopperFeedbackState({
 
   const comparisonProductHandles = uniqueStrings(baseDeal?.comparisonProductHandles || [])
     .map(normalizeHandle)
-    .filter((handle) => !rejected.has(handle));
+    .filter((handle) => semanticAuthority === "model_semantics" || !rejected.has(handle));
   const activeQuote = invalidateQuoteForRejectedProduct(baseDeal?.activeQuote, rejected);
   if (activeQuote?.status === "invalidated" && !activeQuote.invalidatedAt) activeQuote.invalidatedAt = updatedAt;
 
@@ -956,11 +958,21 @@ function reduceShopperFeedbackState({
   };
 }
 
-function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, updatedAt = "", modality = "asserted" } = {}) {
+function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, updatedAt = "", modality = "asserted", modelDecision = null, semanticAuthority = "deterministic_fallback" } = {}) {
   const previousDeal = isObject(previous?.activeDeal) ? previous.activeDeal : {};
   const canonicalRecommendation = normalizeCanonicalRecommendation(context, previousDeal);
   const canonicalHandle = clean(canonicalRecommendation?.primaryMattressHandle).toLowerCase();
-  const explicitProductHandle = resolveExplicitProductHandle(query);
+  const authoritativeModel = semanticAuthority === "model_semantics";
+  const modelFailed = semanticAuthority === "model_failed";
+  const plannedSubjectHandle = clean(
+    modelDecision?.productReferences?.find((reference) => reference?.role === "subject")?.handle ||
+      modelDecision?.productReferences?.[0]?.handle
+  ).toLowerCase();
+  const explicitProductHandle = authoritativeModel
+    ? plannedSubjectHandle
+    : modelFailed
+      ? ""
+      : resolveExplicitProductHandle(query);
   const text = normalizeAskSnoozerText(query);
   const referencesCanonical = /\b(?:original recommendation|originally recommend|first recommendation|what did (?:the assessment|you originally|you) recommend)\b/.test(text);
   const previousActive = clean(previousDeal.activeProductHandle).toLowerCase();
@@ -970,13 +982,15 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
   if (["asserted", "reconsideration"].includes(modality) && explicitProductHandle && explicitProductHandle !== previousActive) {
     recentProductHandle = previousActive || previousRecent || null;
     activeProductHandle = explicitProductHandle;
-  } else if (referencesCanonical && canonicalHandle) {
+  } else if (!authoritativeModel && !modelFailed && referencesCanonical && canonicalHandle) {
     if (previousActive && previousActive !== canonicalHandle) recentProductHandle = previousActive;
     activeProductHandle = canonicalHandle;
   }
 
-  let comparisonProductHandles = uniqueStrings(previousDeal.comparisonProductHandles || []);
-  if (/\b(?:compare|versus|\bvs\b|which one)\b/.test(text)) {
+  let comparisonProductHandles = authoritativeModel && Array.isArray(modelDecision?.comparisonProductHandles) && modelDecision.comparisonProductHandles.length
+    ? uniqueStrings(modelDecision.comparisonProductHandles).slice(0, 2)
+    : uniqueStrings(previousDeal.comparisonProductHandles || []);
+  if (!authoritativeModel && !modelFailed && /\b(?:compare|versus|\bvs\b|which one)\b/.test(text)) {
     comparisonProductHandles = uniqueStrings([
       ...comparisonProductHandles,
       previousActive,
@@ -985,8 +999,12 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
     ]).slice(-2);
   }
 
-  const explicitBase = resolveExplicitBaseSelection(query);
-  const currentTopic = inferConversationTopic(query, previousDeal.currentTopic);
+  const explicitBase = modelFailed ? {} : resolveExplicitBaseSelection(query);
+  const currentTopic = authoritativeModel
+    ? clean(modelDecision?.primaryTask) || clean(previousDeal.currentTopic) || null
+    : modelFailed
+      ? clean(previousDeal.currentTopic) || null
+      : inferConversationTopic(query, previousDeal.currentTopic);
   const size = getSlotValue({ slots }, "size") || previousDeal.activeSize || null;
   const baseHandle = Object.prototype.hasOwnProperty.call(explicitBase, "baseHandle")
     ? explicitBase.baseHandle
@@ -996,7 +1014,7 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
       ? previousDeal.activeBaseHandle || previousDeal.recentBaseHandle || null
       : previousDeal.recentBaseHandle || null;
   const motionKey = explicitBase.motionKey || previousDeal.activeMotionKey || null;
-  const stage = inferBuyingStage(query, previousDeal.stage);
+  const stage = authoritativeModel || modelFailed ? clean(previousDeal.stage) || "exploring" : inferBuyingStage(query, previousDeal.stage);
 
   return {
     stage,
@@ -1015,7 +1033,7 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
         ? context.restTest.observations
         : [],
     baseDecision:
-      /\b(?:not sure|uncertain)\b.*\b(?:motion|base)\b/.test(text)
+      !authoritativeModel && !modelFailed && /\b(?:not sure|uncertain)\b.*\b(?:motion|base)\b/.test(text)
         ? "undecided"
         : explicitBase.explicitNoBase
           ? "skip"
@@ -1031,11 +1049,11 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
     compatibilityStatus: clean(previousDeal.compatibilityStatus) || "unknown",
     currentTopic,
     currentSubtopic:
-      currentTopic === "comfort" && resolveExplicitPainPoints(query).length
+      !authoritativeModel && !modelFailed && currentTopic === "comfort" && resolveExplicitPainPoints(query).length
         ? "pressure_points"
         : clean(previousDeal.currentSubtopic) || null,
-    objection: inferObjection(query),
-    decision: inferDecision(query, previousDeal.decision),
+    objection: authoritativeModel || modelFailed ? previousDeal.objection || null : inferObjection(query),
+    decision: authoritativeModel || modelFailed ? previousDeal.decision || null : inferDecision(query, previousDeal.decision),
     missingInformation: [],
     lastAnsweredQuestionType: clean(previousDeal.lastAnsweredQuestionType) || null,
     lastProbe: clean(previousDeal.lastProbe) || null,
@@ -1069,15 +1087,22 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
     setSlot(slots, "productHandle", currentPodProductHandle, "current_page", updatedAt);
   }
 
-  const parsedSize = parseAskSnoozerSizeLabel(query);
+  const semanticAuthority = clean(modelDecision?.authority) || (modelDecision ? "model_semantics" : "deterministic_fallback");
+  const modelFailed = semanticAuthority === "model_failed";
+  const authoritativeModel = semanticAuthority === "model_semantics";
+  const parsedSize = modelFailed ? "" : parseAskSnoozerSizeLabel(query);
   const explicitSize =
     parsedSize === "Full" && /\b(?:full|complete|whole) setup\b/.test(normalizeAskSnoozerText(query))
       ? ""
       : parsedSize;
-  const explicitFirmness = resolveExplicitFirmness(query);
-  const explicitProductHandle = resolveExplicitProductHandle(query);
-  const explicitBase = resolveExplicitBaseSelection(query);
-  const explicitPainPoints = resolveExplicitPainPoints(query);
+  const explicitFirmness = modelFailed ? "" : resolveExplicitFirmness(query);
+  const explicitProductHandle = authoritativeModel
+    ? clean(modelDecision?.productReferences?.find((reference) => reference?.role === "subject")?.handle || modelDecision?.productReferences?.[0]?.handle).toLowerCase()
+    : modelFailed
+      ? ""
+      : resolveExplicitProductHandle(query);
+  const explicitBase = modelFailed ? {} : resolveExplicitBaseSelection(query);
+  const explicitPainPoints = modelFailed ? [] : resolveExplicitPainPoints(query);
   const modality = clean(modelDecision?.modality) || inferUtteranceModality(query);
   const directSelectionAllowed =
     ["asserted", "reconsideration"].includes(modality) ||
@@ -1104,7 +1129,11 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
 
   let activeGoal = isObject(previous?.activeGoal) ? { ...previous.activeGoal } : null;
   const continuesPriceGoal = isContinuablePriceGoal(activeGoal);
-  const startsPriceGoal = isPriceLikeQuery(query);
+  const startsPriceGoal = modelFailed
+    ? false
+    : authoritativeModel
+      ? (modelDecision?.requestedFacts || []).includes("price")
+      : isPriceLikeQuery(query);
   const updatesPriceGoal =
     startsPriceGoal || isContextualPriceFragment(query, { activeGoal });
   if (updatesPriceGoal) {
@@ -1141,8 +1170,7 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
   }
 
   const turnIndex = Math.max(0, Number(previous?.turnIndex || 0)) + 1;
-  const semanticAuthority = clean(modelDecision?.authority) || (modelDecision ? "model_semantics" : "deterministic_fallback");
-  const baseDeal = buildActiveDeal({ query, context, previous, slots, updatedAt, modality });
+  const baseDeal = buildActiveDeal({ query, context, previous, slots, updatedAt, modality, modelDecision, semanticAuthority });
   const feedbackTransition = reduceShopperFeedbackState({
     query,
     previousDeal: isObject(previous?.activeDeal) ? previous.activeDeal : {},
@@ -1177,7 +1205,11 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
     activeGoal,
     activeDeal: feedbackTransition.activeDeal,
     conversationFocus: {
-      topic: inferConversationTopic(query, previous?.conversationFocus?.topic),
+      topic: authoritativeModel
+        ? clean(modelDecision?.primaryTask) || clean(previous?.conversationFocus?.topic) || null
+        : modelFailed
+          ? clean(previous?.conversationFocus?.topic) || null
+          : inferConversationTopic(query, previous?.conversationFocus?.topic),
       relevantTurns: (Array.isArray(context?.recentConversation)
         ? context.recentConversation
         : Array.isArray(previous?.conversationFocus?.relevantTurns)

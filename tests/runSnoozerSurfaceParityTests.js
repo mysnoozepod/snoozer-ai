@@ -23,6 +23,7 @@ const {
 const openai = require("../services/openai");
 const shopify = require("../services/shopify");
 const manifest = require("../data/showroom-manifest.v1.json");
+const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAi = openai.getSnoozerResponse;
@@ -113,7 +114,7 @@ function patchDependencies() {
     inputChars: JSON.stringify(input?.factPack || {}).length + 2000,
     factPackChars: JSON.stringify(input?.factPack || {}).length,
   });
-  openai.planTrustedAdvisorTurnWithModel = async () => ({ decision: null, model: "parity-planner-stub", modelMs: 1 });
+  openai.planTrustedAdvisorTurnWithModel = async (args) => buildPlannerFixture(args);
 
   shopify.fetchProductsByHandles = async ({ handles = [] } = {}) => {
     const catalog = Array.isArray(manifest?.products) ? manifest.products : [];

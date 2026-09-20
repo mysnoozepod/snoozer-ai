@@ -20,6 +20,7 @@ const {
   UpdateCommand,
 } = require("@aws-sdk/lib-dynamodb");
 const openai = require("../services/openai");
+const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
@@ -124,13 +125,14 @@ function patchOpenAi() {
       factPackChars: JSON.stringify(input.factPack || {}).length,
     };
   };
-  openai.planTrustedAdvisorTurnWithModel = async ({ query = "" } = {}) => {
+  openai.planTrustedAdvisorTurnWithModel = async (args = {}) => {
+    const query = args.query || "";
     if (/what should i notice when i lie/i.test(query)) {
       const error = new Error("forced planner timeout");
       error.code = "E_ADVISOR_PLANNER_TIMEOUT";
       throw error;
     }
-    return { decision: null, model: "mock-advisor-planner", modelMs: 1 };
+    return buildPlannerFixture(args);
   };
 }
 
@@ -160,7 +162,7 @@ const ASK_SNOOZER_CASES = [
     message: "What should I notice when I lie on this mattress?",
     body: { context: { assessment: buildCanonicalAssessment() } },
     expectPlanningFallback: true,
-    expectAny: ["shoulder", "hip", "support", "contour"],
+    expectAny: ["rephrase", "compare", "price", "change"],
   },
   { id: "compare-top-pods", message: "Compare my top pods" },
   { id: "best-value", message: "What is the best value option?" },

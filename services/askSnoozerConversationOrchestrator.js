@@ -401,6 +401,7 @@ function inferStage(taskType = "", previous = "exploring") {
 function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy", requestedFacts = [], actTypes = new Set(), modelDecision = null } = {}) {
   const proposed = clean(proposedTask);
   if (!proposed) return false;
+  if (clean(modelDecision?.authority) === "model_semantics") return true;
   if (deterministicTask !== "legacy") return proposed === deterministicTask;
   if (["1", "true", "yes", "on"].includes(clean(process.env.ASK_SNOOZER_MODEL_ONLY).toLowerCase())) {
     return true;
@@ -459,19 +460,34 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   const text = normalizeAskSnoozerText(query);
   const deal = activeDeal(context);
   const canonicalHandle = resolveCanonicalHandle(context);
-  const referenceResolution = resolveProtectedReference(query, referenceContext);
-  const activeHandle = referenceResolution.handle || resolveActiveHandle(context);
+  const modelAuthoritative = clean(modelDecision?.authority) === "model_semantics";
+  const modelFailed = clean(modelDecision?.authority) === "model_failed";
+  const plannedSubjectHandle = clean(
+    modelDecision?.productReferences?.find((reference) => reference?.role === "subject")?.handle ||
+      modelDecision?.productReferences?.[0]?.handle
+  ).toLowerCase();
+  const referenceResolution = modelAuthoritative
+    ? {
+        phrase: null,
+        handle: plannedSubjectHandle || null,
+        source: plannedSubjectHandle ? "model_semantics" : null,
+        resolved: Boolean(plannedSubjectHandle),
+      }
+    : modelFailed
+      ? { phrase: null, handle: null, source: "model_failed", resolved: false }
+      : resolveProtectedReference(query, referenceContext);
+  const activeHandle = plannedSubjectHandle || referenceResolution.handle || resolveActiveHandle(context);
   const workingGoal = activeMemory(context)?.activeGoal;
   const continuingPriceGoal =
     workingGoal?.intent === "price_quote" &&
     ["collecting_slots", "ready", "resolving", "presented", "awaiting_decision", "completed"].includes(
       clean(workingGoal?.status)
     );
-  const plannedSubjectHandle = clean(
-    modelDecision?.productReferences?.find((reference) => reference?.role === "subject")?.handle ||
-      modelDecision?.productReferences?.[0]?.handle
-  ).toLowerCase();
-  const explicitHandle = resolveExplicitProductHandle(query) || plannedSubjectHandle;
+  const explicitHandle = modelAuthoritative
+    ? plannedSubjectHandle
+    : modelFailed
+      ? ""
+      : resolveExplicitProductHandle(query);
   const explicitBase = resolveExplicitBaseSelection(query);
   const parsedSize = parseAskSnoozerSizeLabel(query);
   const acts = interpretedActs(context);
@@ -494,10 +510,11 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     /\bwhy\b.*\b(?:cost|price|expensive)\b.*\b(?:worth|value)\b/.test(text) ||
     /\b(?:cost|price)\b.*\band\b.*\b(?:worth|value)\b/.test(text)
   );
-  const requestedFacts = unique([
-    ...(Array.isArray(modelDecision?.requestedFacts) ? modelDecision.requestedFacts : []),
-    ...inferRequestedFacts(query),
-  ]);
+  const requestedFacts = modelAuthoritative
+    ? unique(modelDecision?.requestedFacts || [])
+    : modelFailed
+      ? []
+      : unique(inferRequestedFacts(query));
   const hasComparisonContext = resolveComparisonHandles(
     query,
     context,
@@ -590,17 +607,37 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     actTypes,
     modelDecision,
   })) taskType = clean(modelDecision.primaryTask);
+  const protectedExactPriceScope = modelAuthoritative &&
+    requestedFacts.length === 1 &&
+    requestedFacts[0] === "price" &&
+    Boolean(explicitHandle) &&
+    Boolean(parsedSize) &&
+    !valueCue &&
+    /\b(?:how much|price|pricing|quote|cost)\b/.test(text);
+  if (protectedExactPriceScope) taskType = "price_quote";
+  const protectedAtomicFactScope = modelAuthoritative &&
+    requestedFacts.length === 1 &&
+    text.split(/\s+/).filter(Boolean).length <= 18;
+  if (protectedAtomicFactScope && ["delivery", "returns", "financing"].includes(requestedFacts[0])) {
+    taskType = "compound_fact_answer";
+  } else if (protectedAtomicFactScope && requestedFacts[0] === "warranty") {
+    taskType = "warranty_explanation";
+  } else if (protectedAtomicFactScope && requestedFacts[0] === "product_sizes") {
+    taskType = "product_sizes";
+  }
   if (taskType === "legacy" && requestedFacts.includes("recommendation_reasons")) {
     taskType = "recommendation_explanation";
   }
-  if (requestedFacts.length > 1) taskType = "compound_fact_answer";
-  else if (requestedFacts.includes("product_sizes")) taskType = "product_sizes";
-  else if (requestedFacts.includes("warranty")) taskType = "warranty_explanation";
-  else if (requestedFacts.includes("delivery") || requestedFacts.includes("returns") || requestedFacts.includes("financing")) taskType = "compound_fact_answer";
-  else if (requestedFacts.includes("durability")) taskType = "durability_objection";
-  else if (requestedFacts.includes("store_value")) taskType = "store_value";
+  if (!modelAuthoritative) {
+    if (requestedFacts.length > 1) taskType = "compound_fact_answer";
+    else if (requestedFacts.includes("product_sizes")) taskType = "product_sizes";
+    else if (requestedFacts.includes("warranty")) taskType = "warranty_explanation";
+    else if (requestedFacts.includes("delivery") || requestedFacts.includes("returns") || requestedFacts.includes("financing")) taskType = "compound_fact_answer";
+    else if (requestedFacts.includes("durability")) taskType = "durability_objection";
+    else if (requestedFacts.includes("store_value")) taskType = "store_value";
+  }
 
-  if (referenceResolution.phrase && !referenceResolution.resolved) {
+  if (!modelAuthoritative && referenceResolution.phrase && !referenceResolution.resolved) {
     taskType = "reference_clarification";
   } else if (taskType === "legacy" && correctionCue && referenceResolution.resolved) {
     taskType = "product_experience";
@@ -636,6 +673,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     /\b(?:reject|ruled out|original|first|previous|other|last|before)\b/.test(text);
   let semanticPlanRepair = null;
   if (
+    !modelAuthoritative &&
     ["legacy", "recommendation_explanation"].includes(taskType) &&
     requestedFacts.length === 0 &&
     substantiveQuestion &&
@@ -651,6 +689,10 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       taskType = "product_experience";
       semanticPlanRepair = "resolved_reference_question";
     }
+  }
+  if (modelFailed) {
+    taskType = "legacy";
+    semanticPlanRepair = null;
   }
 
   const activeQuoteMatchesGoal = Boolean(
@@ -717,7 +759,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     "compatibility",
     "cart_add",
   ].includes(taskType);
-  if (readyCommercialGoal && !clearlyChangedSubject && !alreadyCompletingCommercialGoal) {
+  if (!modelAuthoritative && !modelFailed && readyCommercialGoal && !clearlyChangedSubject && !alreadyCompletingCommercialGoal) {
     const goalIncludesBase = Boolean(
       workingGoal?.baseHandle ||
         ["mattress_plus_base", "full_pod", "base_only"].includes(clean(workingGoal?.scope))
@@ -732,7 +774,13 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     !/\b(?:that|this|the)\s+(?:mattress|one|hybrid|foam|product)\b|\b(?:tell me more|what am i going to notice|what (?:will|should) i notice|notice when i lie|notice on it)\b/i.test(query) &&
     !referenceResolution.handle &&
     !explicitHandle;
-  const quoteReferenceHandle = taskType === "reference_clarification"
+  const quoteReferenceHandle = modelAuthoritative
+    ? ["alternative_resolution", "session_recommendation_recall"].includes(taskType)
+      ? activeSessionRecommendationHandle(context) || plannedSubjectHandle || activeHandle || canonicalHandle
+      : plannedSubjectHandle || (["canonical_recommendation", "canonical_recall", "recommendation_explanation"].includes(taskType)
+        ? canonicalHandle || activeSessionRecommendationHandle(context) || activeHandle
+        : null)
+    : taskType === "reference_clarification"
     ? null
     : canonicalReference
     ? canonicalHandle
@@ -743,26 +791,30 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       : ["shopper_feedback", "trust_recovery"].includes(taskType)
         ? feedbackHandle || explicitHandle || null
         : referenceResolution.handle || explicitHandle || activeDeal(context)?.acceptedRecommendation?.productHandle || activeSessionRecommendationHandle(context) || activeHandle || workingGoal?.productHandle || canonicalHandle;
-  let comparisonHandles = resolveComparisonHandles(
-    query,
-    referenceContext,
-    modelDecision?.comparisonProductHandles
-  );
-  if (taskType === "hybrid_exploration") {
+  let comparisonHandles = modelAuthoritative
+    ? unique(
+        Array.isArray(modelDecision?.comparisonProductHandles) && modelDecision.comparisonProductHandles.length
+          ? modelDecision.comparisonProductHandles
+          : activeDeal(referenceContext)?.comparisonProductHandles || []
+      ).slice(0, 2)
+    : modelFailed
+      ? unique(activeDeal(referenceContext)?.comparisonProductHandles || []).slice(0, 2)
+      : resolveComparisonHandles(query, referenceContext, []);
+  if (!modelAuthoritative && taskType === "hybrid_exploration") {
     comparisonHandles = unique([activeHandle, "12-dual-comfort-hybrid", "14-hybrid"]).slice(0, 3);
-  } else if (taskType === "advisor_choice" && comparisonHandles.length < 2) {
+  } else if (!modelAuthoritative && taskType === "advisor_choice" && comparisonHandles.length < 2) {
     comparisonHandles = unique([
       ...comparisonHandles,
       activeHandle === "14-hybrid" ? "12-all-foam-mattress" : "14-hybrid",
     ]).slice(0, 2);
-  } else if (taskType === "canonical_comparison") {
+  } else if (!modelAuthoritative && taskType === "canonical_comparison") {
     comparisonHandles = unique([canonicalHandle, activeSessionRecommendationHandle(context) || activeHandle]).slice(0, 2);
-  } else if (["alternative_resolution", "trust_recovery", "shopper_feedback"].includes(taskType)) {
+  } else if (!modelAuthoritative && ["alternative_resolution", "trust_recovery", "shopper_feedback"].includes(taskType)) {
     comparisonHandles = unique(activeDeal(context)?.eligibleAlternativeHandles || []).filter(
       (handle) => !rejectedHandles(context).has(handle)
     ).slice(0, 3);
   }
-  if (semanticPlanRepair === "resolved_relational_comparison") {
+  if (!modelAuthoritative && semanticPlanRepair === "resolved_relational_comparison") {
     comparisonHandles = unique([currentRelationalHandle, relationalOtherHandle]).slice(0, 2);
   }
   const needsCommerce = ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(taskType);
@@ -841,6 +893,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
 
   return {
     version: ORCHESTRATOR_VERSION,
+    semanticAuthority: clean(modelDecision?.authority) || "deterministic_atomic",
     taskType,
     continuationOf: continuation ? clean(deal.lastAnsweredQuestionType || deal.currentTopic || "active_conversation") : null,
     references: {
@@ -1446,10 +1499,13 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
     case "support_handoff":
       return "Yes. Use the Human Assistance control to connect with a store associate for personal support.";
     case "sleep_education":
+      if (/\bsnor(?:e|ing)?\b/.test(text)) {
+        return "For snoring, an adjustable base may help some sleepers notice whether gentle head elevation changes comfort or nighttime noise, but a mattress or base is not a diagnosis or guaranteed treatment. Use the Snooze Session to test comfortable elevation and pressure relief, and discuss persistent or concerning snoring with a clinician.";
+      }
       if (/\b(?:sleep hot|cooler mattress)\b/.test(text)) {
         return `If you sleep hot, compare how quickly heat clears when you change position instead of relying on a cooling label alone. A hybrid such as the ${titleFor(sessionHandle || "14-hybrid")} can feel more breathable because air moves through the coil unit, while foam usually gives closer contouring. I would test temperature together with shoulder and hip comfort so you do not trade pressure relief for airflow.`;
       }
-      if (/\b(?:side sleeper|sleep on my side)\b/.test(text)) {
+      if (/\b(?:side sleepers?|sleep (?:mostly )?on my side)\b/.test(text)) {
         return "For side sleeping, look for enough pressure relief to let your shoulders and hips settle without letting your waist collapse. Stay on your usual side for several quiet minutes; pressure should ease while your midsection still feels supported. Your own pressure response matters more than the firmness label.";
       }
       if (/\bpartner moves|motion separation\b/.test(text)) {
@@ -1568,7 +1624,18 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       const baseOpen = clean(plan?.knownFacts?.baseDecision) === "undecided" || clean(activeDeal(context)?.baseDecision) === "undecided";
       if (rejected.size) {
         const ruledOut = Array.from(rejected).map(titleFor).filter(Boolean).join(" and ");
-        return `Here is the simple version: you ruled out the ${ruledOut} because it did not feel right to you. ${retainedMotion ? "You still like the motion features. " : ""}${desired.feel === "softer" ? "We are now looking for a softer-feeling mattress" : "We are now looking for another eligible mattress"}${size ? ` in ${size}` : ""}.`;
+        const current = sessionHandle || active;
+        const currentSummary = current
+          ? `We landed on the ${titleFor(current)} as the current direction`
+          : "We are still narrowing the current recommendation";
+        const preferenceParts = [
+          desired.feel === "softer" ? "a softer but supportive feel" : "",
+          retainedMotion ? "the motion features you liked" : "",
+        ].filter(Boolean);
+        const preferenceSummary = preferenceParts.length
+          ? ` while keeping ${preferenceParts.join(" and ")}`
+          : "";
+        return `Here is the quick recap: you ruled out the ${ruledOut} because it did not feel right to you; ${currentSummary.toLowerCase()}${preferenceSummary}${size ? ` in ${size}` : ""}; next, test that mattress for shoulder and hip pressure, ease of movement, and whether you still feel well supported after several minutes.`;
       }
       return `Here is the simple version: you are looking at the ${activeTitle} in ${size}. ${baseOpen ? "The only open decision is whether the motion base is worth adding." : "The mattress and size are already decided."} ${baseOpen ? "I can show the mattress-only price first or compare it with Standard Motion." : "I can price that setup next."}`;
     }
@@ -2223,9 +2290,12 @@ async function resolveAskSnoozerAdvisorTurn({
         ? (resolvedPlan.references?.comparisonProductHandles || [])
         : [];
       const requestedHandle = resolvedPlan.references?.requestedProductHandle;
+      const knowledgeSubjectHandle = resolvedPlan.semanticAuthority === "model_semantics"
+        ? requestedHandle
+        : requestedHandle || resolvedPlan.references?.activeProductHandle;
       const knowledge = await loadAdvisorKnowledge?.({
         productHandles: unique([
-          requestedHandle || resolvedPlan.references?.activeProductHandle,
+          knowledgeSubjectHandle,
           ...comparisonHandles,
         ]),
         taskType: resolvedPlan.taskType,
