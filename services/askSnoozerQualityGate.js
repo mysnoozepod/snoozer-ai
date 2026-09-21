@@ -20,6 +20,7 @@ const {
   isContextualPriceFragment,
   isContinuablePriceGoal,
 } = require("./askSnoozerWorkingMemory");
+const { buildProductCardTruth } = require("./askSnoozerProductCardTruth");
 
 const RECOMMENDATION_TERMS = Object.freeze([
   "what do you recommend",
@@ -780,99 +781,35 @@ function buildAskSnoozerMissingRecommendationReply() {
   return buildMissingRecommendationReply();
 }
 
-function normalizeSizeKey(value = "") {
-  return normalizeAskSnoozerText(value).replace(/[^a-z0-9]/g, "");
-}
-
-function findVariantForSize(product = null, sizeLabel = "") {
-  const wanted = normalizeSizeKey(sizeLabel);
-  if (!wanted || !Array.isArray(product?.variants)) return null;
-  const accepted = new Set([wanted]);
-  if (wanted === "queen") accepted.add("queen2pc");
-  if (wanted === "king") {
-    accepted.add("king2pc");
-    accepted.add("splitking");
-  }
-  if (wanted === "twinxl") accepted.add("twinextra long");
-
-  return (
-    product.variants.find((variant) => {
-      const selectedOptions = Array.isArray(variant?.selectedOptions) ? variant.selectedOptions : [];
-      return selectedOptions.some((option) => {
-        if (normalizeAskSnoozerText(option?.name || "") !== "size") return false;
-        const optionKey = normalizeSizeKey(option?.value || "");
-        return Array.from(accepted).some(
-          (acceptedKey) =>
-            optionKey === acceptedKey ||
-            optionKey.startsWith(acceptedKey) ||
-            acceptedKey.startsWith(optionKey)
-        );
-      });
-    }) || null
-  );
-}
-
-function inferVariantPrice(variant = null, product = null) {
-  const candidate =
-    variant?.price ??
-    product?.priceRange?.min ??
-    product?.price ??
-    null;
-  const numeric = Number(candidate);
-  return Number.isFinite(numeric) ? numeric : null;
-}
-
-function inferCurrencyCode(variant = null, product = null) {
-  return (
-    String(
-      variant?.currencyCode ||
-        product?.priceRange?.currencyCode ||
-        product?.currencyCode ||
-        "USD"
-    ).trim() || "USD"
-  );
-}
-
 function buildResolvedProducts(products = [], sizeLabel = "") {
   return products
     .filter(Boolean)
     .map((product) => {
-      const availableVariants = Array.isArray(product?.variants)
-        ? product.variants.filter(
-            (item) => item?.available === true || item?.availableForSale === true
-          )
-        : [];
-      const matchedVariant = findVariantForSize(product, sizeLabel);
-      const variant =
-        matchedVariant &&
-        (matchedVariant.available === true || matchedVariant.availableForSale === true)
-          ? matchedVariant
-          : !String(sizeLabel || "").trim() && availableVariants.length === 1
-            ? availableVariants[0]
-            : null;
+      const card = buildProductCardTruth(product, { activeSize: sizeLabel });
+      if (!card) return null;
+      const variant = card.exactVariantResolved
+        ? (card.variants || []).find((item) => item.id === card.variantId) || null
+        : null;
       return {
-        product,
-        handle: String(product?.handle || "").trim(),
-        title: String(product?.title || product?.label || "").trim(),
-        href: `/products/${String(product?.handle || "").trim()}`,
+        product: card,
+        handle: card.handle,
+        title: card.title,
+        href: card.href,
         variant,
-        variantId: String(variant?.id || "").trim(),
+        variantId: card.variantId || "",
         variantTitle: String(variant?.title || "").trim(),
-        selectedOptions: Array.isArray(variant?.selectedOptions) ? variant.selectedOptions : [],
-        exactVariantResolved: Boolean(variant),
-        price: inferVariantPrice(variant, product),
-        currencyCode: inferCurrencyCode(variant, product),
-        available:
-          typeof variant?.available === "boolean"
-            ? variant.available
-            : typeof product?.available === "boolean"
-              ? product.available
-              : typeof product?.availableForSale === "boolean"
-                ? product.availableForSale
-                : null,
+        selectedOptions: card.selectedOptions || [],
+        exactVariantResolved: card.exactVariantResolved,
+        price: card.price,
+        currencyCode: card.currencyCode,
+        available: card.available,
+        activeSize: card.activeSize,
+        pricingMode: card.pricingMode,
+        priceLabel: card.priceLabel,
+        availabilityResolved: card.availabilityResolved,
       };
     })
-    .filter((entry) => entry.handle);
+    .filter((entry) => entry?.handle);
 }
 
 async function resolveAskSnoozerCommerceResponse({

@@ -13,6 +13,7 @@ function firstText(values = []) {
 }
 
 function finiteNumber(value) {
+  if (value == null || text(value) === "") return null;
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
@@ -116,6 +117,13 @@ export function normalizeAskStationProduct(item = {}) {
     variantId: exactVariantResolved ? resolvedId : null,
     merchandiseId: exactVariantResolved ? resolvedId : null,
     exactVariantResolved,
+    pricingMode: ["exact_variant", "starting_at", "unresolved"].includes(text(item.pricingMode))
+      ? text(item.pricingMode)
+      : exactVariantResolved ? "exact_variant" : "unresolved",
+    priceLabel: text(item.priceLabel) || null,
+    activeSize: text(item.activeSize) || null,
+    availabilityResolved: item.availabilityResolved === true,
+    aggregateAvailable: typeof item.aggregateAvailable === "boolean" ? item.aggregateAvailable : null,
     quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
   };
 }
@@ -203,10 +211,12 @@ export function formatProductPrice(product = {}) {
   if (text(product.priceFormatted) && text(product.priceFormatted) !== "-") {
     return text(product.priceFormatted);
   }
+  const exact = finiteNumber(product.price);
   const min = finiteNumber(product?.priceRange?.min ?? product.price);
   const max = finiteNumber(product?.priceRange?.max ?? product.price);
+  if (product?.pricingMode === "unresolved") return "Exact price unavailable";
   if (min === null) return "";
-  const currencyCode = text(product?.priceRange?.currencyCode) || "USD";
+  const currencyCode = text(product.currencyCode || product?.priceRange?.currencyCode) || "USD";
   const format = (amount) => {
     try {
       return new Intl.NumberFormat("en-US", { style: "currency", currency: currencyCode }).format(amount);
@@ -214,6 +224,8 @@ export function formatProductPrice(product = {}) {
       return `$${amount.toFixed(2)}`;
     }
   };
+  if (product?.pricingMode === "exact_variant" && exact !== null) return format(exact);
+  if (product?.pricingMode === "starting_at") return `From ${format(min)}`;
   return max !== null && max !== min ? `${format(min)}–${format(max)}` : format(min);
 }
 

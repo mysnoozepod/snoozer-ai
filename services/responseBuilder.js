@@ -257,7 +257,8 @@ function normalizeProductVariants(shopifyProduct = {}) {
     .map((variant) => {
       const id = String(variant?.id || variant?.variantId || variant?.merchandiseId || "").trim();
       if (!/^gid:\/\/shopify\/ProductVariant\/[^\s/?#]+$/.test(id)) return null;
-      const amount = Number(variant?.price?.amount ?? variant?.price);
+      const rawAmount = variant?.price?.amount ?? variant?.price;
+      const amount = rawAmount == null || String(rawAmount).trim() === "" ? Number.NaN : Number(rawAmount);
       return {
         id,
         title: safeText(variant?.title || "", 160).trim() || null,
@@ -291,7 +292,6 @@ function normalizeProduct(shopifyProduct) {
         null;
 
   const image = pickImage(shopifyProduct);
-  const price = parsePrice(shopifyProduct);
   const variants = pickVariantIds(shopifyProduct);
   const productVariants = normalizeProductVariants(shopifyProduct);
   const rangeMin = Number(shopifyProduct?.priceRange?.min ?? shopifyProduct?.priceRange?.minVariantPrice?.amount);
@@ -301,10 +301,18 @@ function normalizeProduct(shopifyProduct) {
       shopifyProduct?.priceRange?.currencyCode ||
         shopifyProduct?.priceRange?.minVariantPrice?.currencyCode ||
         shopifyProduct?.priceRange?.maxVariantPrice?.currencyCode ||
-        price.currency ||
+        shopifyProduct?.currencyCode ||
         "USD"
     ).trim() || "USD";
   const explicitVariantResolved = shopifyProduct?.exactVariantResolved === true;
+  const pricingMode = ["exact_variant", "starting_at", "unresolved"].includes(String(shopifyProduct?.pricingMode || "").trim())
+    ? String(shopifyProduct.pricingMode).trim()
+    : explicitVariantResolved
+      ? "exact_variant"
+      : Number.isFinite(rangeMin)
+        ? "starting_at"
+        : "unresolved";
+  const price = pricingMode === "exact_variant" ? parsePrice(shopifyProduct) : null;
 
   return {
     id,
@@ -313,8 +321,8 @@ function normalizeProduct(shopifyProduct) {
     subtitle: shopifyProduct.subtitle || shopifyProduct.vendor || null,
     price,
     priceRange: {
-      min: Number.isFinite(rangeMin) ? rangeMin : price.amount,
-      max: Number.isFinite(rangeMax) ? rangeMax : price.amount,
+      min: Number.isFinite(rangeMin) ? rangeMin : price?.amount ?? null,
+      max: Number.isFinite(rangeMax) ? rangeMax : price?.amount ?? null,
       currencyCode: rangeCurrency,
     },
     image,
@@ -338,9 +346,18 @@ function normalizeProduct(shopifyProduct) {
     variants: productVariants,
     selectedOptions: normalizeSelectedOptions(shopifyProduct.selectedOptions),
     exactVariantResolved: explicitVariantResolved,
+    pricingMode,
+    priceLabel: shopifyProduct?.priceLabel || (pricingMode === "starting_at" ? "From" : null),
+    activeSize: shopifyProduct?.activeSize || null,
+    availabilityResolved: shopifyProduct?.availabilityResolved === true,
+    aggregateAvailable:
+      typeof shopifyProduct?.aggregateAvailable === "boolean"
+        ? shopifyProduct.aggregateAvailable
+        : null,
+    pricingReason: shopifyProduct?.pricingReason || null,
     variantId: explicitVariantResolved ? variants.variantId : null,
     merchandiseId: explicitVariantResolved ? variants.merchandiseId : null,
-    firstAvailableVariantId: variants.firstAvailableVariantId,
+    firstAvailableVariantId: explicitVariantResolved ? variants.firstAvailableVariantId : null,
     tags: Array.isArray(shopifyProduct.tags) ? shopifyProduct.tags : [],
     meta: {
       shopifyId: shopifyProductGid || (idRaw ? String(idRaw) : null),
@@ -356,7 +373,7 @@ function normalizeProduct(shopifyProduct) {
       previewUrl: shopifyProduct.previewUrl || shopifyProduct?.meta?.previewUrl || null,
       variantId: explicitVariantResolved ? variants.variantId || null : null,
       merchandiseId: explicitVariantResolved ? variants.merchandiseId || null : null,
-      firstAvailableVariantId: variants.firstAvailableVariantId || null,
+      firstAvailableVariantId: explicitVariantResolved ? variants.firstAvailableVariantId || null : null,
       numericVariantId: variants.numericVariantId || null,
       numericFirstAvailableVariantId: variants.numericFirstAvailableVariantId || null,
     },

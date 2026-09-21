@@ -12,6 +12,11 @@ const {
   classifyAskSnoozerPolicySubtype,
   normalizeAskSnoozerText,
 } = require("./askSnoozerIntents");
+const packagedFaqs = require("../faqs.json");
+const {
+  normalizePolicyDocument,
+  policyFactSentences,
+} = require("./askSnoozerTypedTruth");
 
 const KNOWLEDGE_BUCKET = process.env.S3_KNOWLEDGE_BUCKET || "snoozer-knowledge-prod";
 const KNOWLEDGE_LOCAL_ROOT = path.join(__dirname, "..", "s3 files", "snoozerknowledgeprod");
@@ -26,28 +31,40 @@ const remotePromptMissCache = new Set();
 
 const POLICY_KEY_CANDIDATES = Object.freeze({
   returns: Object.freeze({
-    policy: ["policies/returns.md", "faq/returns.md"],
+    canonical: ["policies/returns.md"],
+    faq: ["faq/returns.md"],
     skill: ["skills/returns.md"],
+    packagedKey: "return_policy",
   }),
   delivery: Object.freeze({
-    policy: ["policies/delivery-policy.md", "faq/delivery.md"],
+    canonical: ["policies/delivery-policy.md"],
+    faq: ["faq/delivery.md"],
     skill: ["skills/delivery.md"],
+    packagedKey: "shipping_time",
   }),
   warranty: Object.freeze({
-    policy: ["policies/warranty.md", "faq/warranty.md"],
+    canonical: ["policies/warranty.md"],
+    faq: ["faq/warranty.md"],
     skill: ["skills/warranty.md"],
+    packagedKey: "warranty",
   }),
   financing: Object.freeze({
-    policy: [],
+    canonical: [],
+    faq: ["faq/financing.md"],
     skill: ["skills/financing.md"],
+    packagedKey: "payment_options",
   }),
   pricing: Object.freeze({
-    policy: [],
+    canonical: [],
+    faq: [],
     skill: ["skills/pricing.md"],
+    packagedKey: null,
   }),
   general_policy: Object.freeze({
-    policy: ["faq/general.md"],
+    canonical: [],
+    faq: ["faq/general.md"],
     skill: [],
+    packagedKey: null,
   }),
 });
 
@@ -1099,6 +1116,156 @@ async function loadAllKnowledgeCandidates(keys = [], options = {}) {
   return out;
 }
 
+const POLICY_FACT_FIELDS = Object.freeze({
+  returns: ["trialWindow", "terms"],
+  delivery: ["typicalWindow", "conditions"],
+  warranty: ["term", "coverage", "exclusions", "conditions"],
+  financing: ["terms"],
+  general_policy: ["terms"],
+});
+
+function hasPolicyFieldValue(value) {
+  return Array.isArray(value) ? value.length > 0 : Boolean(String(value == null ? "" : value).trim());
+}
+
+function comparablePolicyValue(value) {
+  if (Array.isArray(value)) return value.map((item) => String(item || "").toLowerCase().replace(/\s+/g, " ").trim());
+  return String(value == null ? "" : value).toLowerCase().replace(/[–—]/g, "-").replace(/\s+/g, " ").trim();
+}
+
+function policyValuesConflict(left, right) {
+  if (!hasPolicyFieldValue(left) || !hasPolicyFieldValue(right)) return false;
+  if (Array.isArray(left) || Array.isArray(right)) return false;
+  return comparablePolicyValue(left) !== comparablePolicyValue(right);
+}
+
+function sourceFact({ topic, document, sourceKind, sourcePriority }) {
+  if (!document?.raw) return null;
+  const fact = normalizePolicyDocument({
+    topic,
+    raw: document.raw,
+    sourceKind,
+    sourceKey: document.key,
+    sourcePriority,
+    fallbackUsed: sourcePriority >= 3,
+  });
+  return fact.known ? fact : null;
+}
+
+function mergePolicyFacts(topic, orderedFacts = []) {
+  const fields = POLICY_FACT_FIELDS[topic] || ["terms"];
+  const usable = orderedFacts.filter(Boolean);
+  const primary = usable[0] || null;
+  const merged = {
+    type: topic,
+    topic,
+    status: primary ? "verified_fact" : "unknown",
+    known: false,
+    sourceKind: primary?.sourceKind || "unknown",
+    sourceKey: primary?.sourceKey || null,
+    sourcePriority: primary?.sourcePriority || 4,
+    fallbackUsed: Boolean(primary?.fallbackUsed),
+    conflictDetected: false,
+    conflicts: [],
+    fieldSources: {},
+  };
+  for (const fact of usable) {
+    for (const field of fields) {
+      const incoming = fact[field];
+      if (!hasPolicyFieldValue(incoming)) continue;
+      if (!hasPolicyFieldValue(merged[field])) {
+        merged[field] = Array.isArray(incoming) ? [...incoming] : incoming;
+        merged.fieldSources[field] = {
+          sourceKind: fact.sourceKind,
+          sourceKey: fact.sourceKey,
+          sourcePriority: fact.sourcePriority,
+        };
+      } else if (policyValuesConflict(merged[field], incoming)) {
+        merged.conflictDetected = true;
+        merged.conflicts.push({
+          field,
+          authoritativeValue: merged[field],
+          ignoredValue: incoming,
+          authoritativeSourceKey: merged.fieldSources[field]?.sourceKey || merged.sourceKey,
+          ignoredSourceKey: fact.sourceKey,
+        });
+      }
+    }
+  }
+  merged.known = fields.some((field) => hasPolicyFieldValue(merged[field]));
+  return merged;
+}
+
+async function resolveAskSnoozerPolicyTruth({
+  topic = "",
+  query = "",
+  traceId = "",
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+  sourceDocuments = null,
+} = {}) {
+  const policySubtype = String(topic || classifyAskSnoozerPolicySubtype(query) || "general_policy").trim();
+  const config = POLICY_KEY_CANDIDATES[policySubtype] || POLICY_KEY_CANDIDATES.general_policy;
+  const provided = sourceDocuments && typeof sourceDocuments === "object" ? sourceDocuments : null;
+  const canonicalDocs = provided
+    ? (Array.isArray(provided.canonical) ? provided.canonical : [])
+    : await loadAllKnowledgeCandidates(config.canonical, { timeoutMs, traceId });
+  const faqDocs = provided
+    ? (Array.isArray(provided.faq) ? provided.faq : [])
+    : await loadAllKnowledgeCandidates(config.faq, { timeoutMs, traceId });
+  const canonicalFacts = canonicalDocs.map((document) => sourceFact({
+    topic: policySubtype,
+    document,
+    sourceKind: "canonical_policy",
+    sourcePriority: 1,
+  })).filter(Boolean);
+  const faqFacts = faqDocs.map((document) => sourceFact({
+    topic: policySubtype,
+    document,
+    sourceKind: "approved_faq",
+    sourcePriority: 2,
+  })).filter(Boolean);
+  let facts = [...canonicalFacts, ...faqFacts];
+  if (!facts.length) {
+    const packagedRaw = provided
+      ? String(provided.packaged || "").trim()
+      : String(config.packagedKey ? packagedFaqs?.[config.packagedKey] || "" : "").trim();
+    if (packagedRaw) {
+      const packagedFact = sourceFact({
+        topic: policySubtype,
+        document: { raw: packagedRaw, key: `packaged:${config.packagedKey || policySubtype}` },
+        sourceKind: "packaged_fallback",
+        sourcePriority: 3,
+      });
+      if (packagedFact) facts = [packagedFact];
+    }
+  }
+  const fact = mergePolicyFacts(policySubtype, facts);
+  return {
+    ...fact,
+    sourceCount: facts.length,
+    canonicalSourceCount: canonicalFacts.length,
+    faqSourceCount: faqFacts.length,
+  };
+}
+
+function buildPolicyTruthReply(fact = {}, query = "") {
+  if (!fact?.known) return buildFallbackPolicyReply(fact?.topic || fact?.type || "general_policy");
+  const subtype = String(fact.topic || fact.type || "").trim();
+  const normalized = normalizeAskSnoozerText(query);
+  const sentences = policyFactSentences(fact);
+  if (subtype === "returns") {
+    const trial = fact.trialWindow ? `Our return policy includes a ${fact.trialWindow}.` : "";
+    const detail = (fact.terms || []).find((line) =>
+      /\b(?:not happy|not satisfied|return|exchange|trial|delivered)\b/i.test(line)
+    );
+    return joinReplyParts([trial, detail || sentences[0] || ""]);
+  }
+  if (subtype === "warranty" && /\b(?:not covered|exclude|exclusion|doesn.t cover|does not cover)\b/.test(normalized)) {
+    return joinReplyParts([fact.term ? `The mattress has a ${fact.term}.` : "", ...(fact.exclusions || [])]);
+  }
+  return joinReplyParts(sentences);
+}
+
 function buildReplyFromRetrievedContent({ policySubtype, raw, query }) {
   switch (String(policySubtype || "").trim()) {
     case "returns":
@@ -1119,100 +1286,44 @@ function buildReplyFromRetrievedContent({ policySubtype, raw, query }) {
 async function resolveAskSnoozerPolicyAnswer({ query = "", traceId = "", timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
   const policySubtype = classifyAskSnoozerPolicySubtype(query);
   const keys = POLICY_KEY_CANDIDATES[policySubtype] || POLICY_KEY_CANDIDATES.general_policy;
-
-  const policyMatches = await loadAllKnowledgeCandidates(keys.policy, { timeoutMs, traceId });
-  const attempts = [];
-
-  for (const policyMatch of policyMatches) {
-    if (!policyMatch?.raw) continue;
-    const grounded = buildReplyFromRetrievedContent({
-      policySubtype,
-      raw: policyMatch.raw,
-      query,
-    });
-    const attempt = {
-      policySubtype,
-      reply: grounded.reply,
-      chips: [],
-      retrieved: true,
-      source: policyMatch.source,
-      key: policyMatch.key,
-      sourceKind: "policy",
-      matched: Boolean(grounded.matched),
-      answerGrounded: Boolean(grounded.answerGrounded),
-      matchedPreview: grounded.matchedPreview || "",
-      reason: grounded.reason || (grounded.answerGrounded ? "policy_answer_resolved" : ""),
-    };
-    attempts.push(attempt);
-    if (attempt.answerGrounded) return attempt;
-  }
-
   const skillMatch = await loadPromptCandidates(keys.skill, { timeoutMs, traceId });
-  if (skillMatch?.raw) {
-    const grounded = buildReplyFromRetrievedContent({
-      policySubtype,
-      raw: skillMatch.raw,
-      query,
-    });
-    return {
-      policySubtype,
-      reply: grounded.reply,
-      chips: filterPolicyHintsForQuery(extractHints(skillMatch.raw), { policySubtype, query }),
-      retrieved: true,
-      source: skillMatch.source,
-      key: skillMatch.key,
-      sourceKind: "skill",
-      matched: Boolean(grounded.matched),
-      answerGrounded: Boolean(grounded.answerGrounded),
-      matchedPreview: grounded.matchedPreview || "",
-      reason: grounded.reason || (grounded.answerGrounded ? "policy_answer_resolved" : ""),
-    };
-  }
-
-  if (attempts.length) {
-    const firstAttempt = attempts[0];
-    return {
-      ...firstAttempt,
-      answerGrounded: false,
-      reason: firstAttempt.reason || "approved_policy_detail_missing",
-    };
-  }
-
+  const truth = await resolveAskSnoozerPolicyTruth({ topic: policySubtype, query, traceId, timeoutMs });
   return {
     policySubtype,
-    reply: buildFallbackPolicyReply(policySubtype),
-    chips: [],
-    retrieved: false,
-    source: "fallback",
-    key: "",
-    sourceKind: "fallback",
-    matched: false,
-    answerGrounded: false,
-    matchedPreview: "",
-    reason: "policy_source_missing",
+    reply: buildPolicyTruthReply(truth, query),
+    chips: skillMatch?.raw
+      ? filterPolicyHintsForQuery(extractHints(skillMatch.raw), { policySubtype, query })
+      : [],
+    retrieved: Boolean(truth.known),
+    source: truth.sourceKind,
+    key: truth.sourceKey || "",
+    sourceKind: truth.sourceKind,
+    sourcePriority: truth.sourcePriority,
+    fallbackUsed: Boolean(truth.fallbackUsed),
+    conflictDetected: Boolean(truth.conflictDetected),
+    conflicts: truth.conflicts || [],
+    fact: truth,
+    matched: Boolean(truth.known),
+    answerGrounded: Boolean(truth.known),
+    matchedPreview: policyFactSentences(truth)[0] || "",
+    reason: truth.known ? "policy_truth_resolved" : "policy_source_missing",
   };
 }
 
 async function resolveAskSnoozerPolicySources({ query = "", traceId = "", timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
   const policySubtype = classifyAskSnoozerPolicySubtype(query);
   const keys = POLICY_KEY_CANDIDATES[policySubtype] || POLICY_KEY_CANDIDATES.general_policy;
-
-  const sources = [];
-  const policyMatches = await loadAllKnowledgeCandidates(keys.policy, { timeoutMs, traceId });
-  for (const policyMatch of policyMatches) {
-    if (!policyMatch?.raw) continue;
-    sources.push(
-      buildSourceRecord({
-        raw: policyMatch.raw,
-        source: policyMatch.source,
-        key: policyMatch.key,
-        sourceKind: "policy",
-        policySubtype,
-      })
-    );
-  }
-
   const skillMatch = await loadPromptCandidates(keys.skill, { timeoutMs, traceId });
+  const truth = await resolveAskSnoozerPolicyTruth({ topic: policySubtype, query, traceId, timeoutMs });
+  const sources = truth.known
+    ? [buildSourceRecord({
+        raw: policyFactSentences(truth).join("\n"),
+        source: truth.sourceKind,
+        key: truth.sourceKey || "",
+        sourceKind: "policy_truth",
+        policySubtype,
+      })]
+    : [];
   if (skillMatch?.raw) {
     sources.push(
       buildSourceRecord({
@@ -1237,6 +1348,10 @@ async function resolveAskSnoozerPolicySources({ query = "", traceId = "", timeou
     source: primary?.source_type || "fallback",
     key: primary?.source_key || "",
     sourceKind: primary?.source_kind || "fallback",
+    sourcePriority: truth.sourcePriority,
+    fallbackUsed: Boolean(truth.fallbackUsed),
+    conflictDetected: Boolean(truth.conflictDetected),
+    fact: truth,
   };
 }
 
@@ -1368,6 +1483,7 @@ module.exports = {
   normalizeMarkdown,
   resolveAskSnoozerPolicyAnswer,
   resolveAskSnoozerPolicySources,
+  resolveAskSnoozerPolicyTruth,
   resolveAskSnoozerSupplementalSources,
   stripFrontMatter,
 };

@@ -57,10 +57,31 @@ function firstMatch(lines, pattern) {
   return lines.find((line) => pattern.test(line)) || "";
 }
 
-function normalizePolicyDocument({ topic = "", raw = "", fallback = "", status = "verified_fact" } = {}) {
+function normalizePolicyDocument({
+  topic = "",
+  raw = "",
+  fallback = "",
+  status = "verified_fact",
+  sourceKind = "unknown",
+  sourceKey = "",
+  sourcePriority = 4,
+  fallbackUsed = false,
+} = {}) {
   const normalizedTopic = clean(topic).toLowerCase();
   const lines = safeKnowledgeLines(raw || fallback, { limit: 20 });
-  const fact = { type: normalizedTopic, status, known: lines.length > 0 };
+  const fact = {
+    type: normalizedTopic,
+    topic: normalizedTopic,
+    status,
+    known: lines.length > 0,
+    sourceKind: clean(sourceKind) || "unknown",
+    sourceKey: clean(sourceKey) || null,
+    sourcePriority: Number(sourcePriority) || 4,
+    fallbackUsed: Boolean(fallbackUsed),
+    conflictDetected: false,
+    conflicts: [],
+    fieldSources: {},
+  };
   if (!lines.length) return fact;
 
   if (normalizedTopic === "warranty") {
@@ -86,6 +107,99 @@ function normalizePolicyDocument({ topic = "", raw = "", fallback = "", status =
     fact.coverage?.length || fact.exclusions?.length || fact.conditions?.length || fact.terms?.length
   );
   return fact;
+}
+
+function normalizeDurabilityFacts({ productFacts = [], sourceKey = "", status = "verified_fact" } = {}) {
+  const lines = (Array.isArray(productFacts) ? productFacts : [])
+    .map(clean)
+    .filter(Boolean)
+    .filter((line) => !containsRawKnowledgeMetadata(line));
+  const nonWarrantyLines = lines.filter((line) => !/\bwarrant(?:y|ies)\b/i.test(line));
+  const exactLine = nonWarrantyLines.find((line) =>
+    /\b(?:expected lifespan|designed to last|typically lasts?|expected to last)\b[^.]*\b\d+(?:\s*[–-]\s*\d+)?\s+years?\b/i.test(line)
+  );
+  const exactMatch = exactLine?.match(/\b(\d+)(?:\s*[–-]\s*(\d+))?\s+years?\b/i) || null;
+  const saggingLine = nonWarrantyLines.find((line) =>
+    /\b(?:sagging|body impression)\b[^.]*\b(?:after|within|by)\s+\d+(?:\s*[–-]\s*\d+)?\s+years?\b/i.test(line)
+  );
+  const saggingMatch = saggingLine?.match(/\b(\d+)(?:\s*[–-]\s*(\d+))?\s+years?\b/i) || null;
+  const wearGuidance = nonWarrantyLines
+    .filter((line) => /\b(?:care|rotate|support|foundation|protect|wear|soften|body impression|foam|coil|construction)\b/i.test(line))
+    .map(sentenceWithPeriod)
+    .slice(0, 6);
+  return {
+    type: "durability",
+    topic: "durability",
+    status,
+    known: wearGuidance.length > 0 || Boolean(exactMatch) || Boolean(saggingMatch),
+    exactLifespanKnown: Boolean(exactMatch),
+    expectedLifespanYears: exactMatch
+      ? { min: Number(exactMatch[1]), max: Number(exactMatch[2] || exactMatch[1]) }
+      : null,
+    exactSaggingTimelineKnown: Boolean(saggingMatch),
+    saggingTimelineYears: saggingMatch
+      ? { min: Number(saggingMatch[1]), max: Number(saggingMatch[2] || saggingMatch[1]) }
+      : null,
+    wearGuidance,
+    sourceKind: sourceKey ? "approved_product_knowledge" : "unknown",
+    sourceKey: clean(sourceKey) || null,
+    sourcePriority: sourceKey ? 1 : 4,
+    fallbackUsed: false,
+  };
+}
+
+function durabilityFactSentences(fact = {}, { exactQuestion = false } = {}) {
+  const output = [];
+  if (exactQuestion && !fact?.exactSaggingTimelineKnown && !fact?.exactLifespanKnown) {
+    output.push("I cannot verify an exact number of years before this mattress may start sagging.");
+  } else if (!fact?.exactLifespanKnown) {
+    output.push("I cannot verify an exact lifespan in years from the approved product facts.");
+  }
+  if (fact?.exactLifespanKnown && fact.expectedLifespanYears) {
+    const { min, max } = fact.expectedLifespanYears;
+    output.push(`The approved product facts give an expected lifespan of ${min === max ? min : `${min}-${max}`} years.`);
+  }
+  if (fact?.exactSaggingTimelineKnown && fact.saggingTimelineYears) {
+    const { min, max } = fact.saggingTimelineYears;
+    output.push(`The approved product facts give a sagging timeline of ${min === max ? min : `${min}-${max}`} years.`);
+  }
+  output.push(...(fact?.wearGuidance || []));
+  return [...new Set(output.map(sentenceWithPeriod).filter(Boolean))];
+}
+
+function rewardFactSentences(fact = {}, query = "") {
+  if (!fact?.known) {
+    if (fact?.failureReason === "reward_identity_missing") {
+      return ["I need a connected Snooze Code profile before I can verify your reward balance or progress."];
+    }
+    return ["Rewards are temporarily unavailable, so I will not guess your points, offers, or progress."];
+  }
+  const text = clean(query).toLowerCase();
+  const summary = fact.summary || {};
+  const rules = fact.rules || {};
+  const output = [];
+  if (/\b(?:how many points|point balance|reward balance)\b/.test(text)) {
+    output.push(`You have ${Number(summary.availableSleepPoints || 0).toLocaleString("en-US")} available Sleep Points.`);
+  } else if (/\b(?:earned points for|earn points for|what do i earn)\b/.test(text)) {
+    const completedIds = new Set((summary.milestones || []).filter((item) => item?.completed).map((item) => clean(item?.id)));
+    const milestones = (rules.milestones?.length ? rules.milestones : summary.milestones || []).slice(0, 6);
+    output.push(...milestones.map((item) => `${item.label}: ${Number(item.pointAward || 0).toLocaleString("en-US")} points${item.completed || completedIds.has(clean(item.id)) ? " (completed)" : ""}.`));
+  } else if (/\b(?:next badge|working toward|how close)\b/.test(text)) {
+    const progress = summary.badgeProgress || {};
+    output.push(progress.complete
+      ? `You have reached the highest active badge, ${summary.currentBadge?.label || "your current badge"}.`
+      : `You are working toward ${progress.nextBadgeLabel} and need ${Number(progress.pointsRemaining || 0).toLocaleString("en-US")} more points.`);
+  } else if (/\b(?:what reward|unlocked|use my points|available offer)\b/.test(text)) {
+    const unlocked = (fact.offers || []).filter((offer) => offer?.unlocked === true && clean(offer?.status).toLowerCase() === "unlocked");
+    output.push(unlocked.length
+      ? `Your unlocked rewards are: ${unlocked.map((offer) => clean(offer.label)).filter(Boolean).join(", ")}.`
+      : "You do not have an unlocked offer showing right now.");
+  } else {
+    const milestones = (rules.milestones || summary.milestones || []).slice(0, 5);
+    output.push("Sleep Points and badge progress come from completed showroom milestones under the active rewards rules.");
+    output.push(...milestones.map((item) => `${item.label}: ${Number(item.pointAward || 0).toLocaleString("en-US")} points.`));
+  }
+  return [...new Set(output.map(sentenceWithPeriod).filter(Boolean))];
 }
 
 function policyFactSentences(fact = {}) {
@@ -118,8 +232,11 @@ function policyFactAnswered(reply = "", fact = {}) {
 
 module.exports = {
   containsRawKnowledgeMetadata,
+  durabilityFactSentences,
   normalizePolicyDocument,
+  normalizeDurabilityFacts,
   policyFactAnswered,
   policyFactSentences,
+  rewardFactSentences,
   safeKnowledgeLines,
 };

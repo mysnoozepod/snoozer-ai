@@ -48,14 +48,17 @@ check(adapter.includes("normalizeAskStationProduct") && adapter.includes("normal
 const exactId = "gid://shopify/ProductVariant/123";
 const normalized = normalizeAskStationProduct({
   id: "gid://shopify/Product/1", handle: "14-hybrid", title: "14 Hybrid", image: { url: "https://cdn.example/p.jpg" },
-  priceRange: { min: 999, max: 1299, currencyCode: "USD" }, available: true,
+  price: 999, priceRange: { min: 999, max: 1299, currencyCode: "USD" }, available: true,
   variants: [{ id: exactId, title: "Queen", available: true, price: 999, currencyCode: "USD", selectedOptions: [{ name: "Size", value: "Queen" }] }],
   exactVariantResolved: true, merchandiseId: exactId, selectedOptions: [{ name: "Size", value: "Queen" }],
 });
 check(normalized.handle === "14-hybrid" && normalized.imageUrl && normalized.priceRange.max === 1299, "product normalization preserves handle, image, and price range");
 check(normalized.available === true && normalized.variants[0].selectedOptions[0].value === "Queen", "availability, variants, and selected options survive normalization");
 check(normalized.merchandiseId === exactId && normalized.exactVariantResolved, "exact merchandise identity survives only with resolution proof");
-check(formatProductPrice(normalized).includes("$999.00") && formatProductPrice(normalized).includes("$1,299.00"), "verified price range is formatted for display");
+check(formatProductPrice(normalized) === "$999.00", "resolved variant displays its exact verified price rather than the product range");
+check(formatProductPrice({ pricingMode: "starting_at", priceRange: { min: 549, max: 1099, currencyCode: "USD" } }) === "From $549.00", "unknown-size product uses starting-price language");
+check(formatProductPrice({ pricingMode: "unresolved", priceRange: { min: 549, max: 1099, currencyCode: "USD" } }) === "Exact price unavailable", "unresolved exact configuration never displays the product minimum");
+check(formatProductPrice({ pricingMode: "exact_variant", price: 1099, priceRange: { min: 549, max: 1099, currencyCode: "USD" } }) === "$1,099.00", "exact variant card displays the exact active-size price");
 
 const add = buildProductAddAction(normalized);
 check(add?.type === "add_to_cart" && add.payload.merchandiseId === exactId, "exact product creates structured add_to_cart action");

@@ -1041,10 +1041,84 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             fetchProductsByHandles: shopifySvc?.fetchProductsByHandles,
             composeAdvisorResponse: composeTrustedAdvisorResponse,
             loadAdvisorKnowledge: loadTrustedAdvisorFactPack,
+            identity: askIdentity,
+            rewardsService: rewardProgramService,
             requestId: traceId,
           })
         : null;
     if (advisorAnswer) {
+      for (const fact of advisorAnswer.factPack?.policyFacts || []) {
+        log("ask-snoozer.truth-lane", "resolved", {
+          traceId,
+          testCaseId,
+          sessionId: effectiveSessionId,
+          truthLane: "policy",
+          requestedFact: fact.topic || fact.type || null,
+          resolved: Boolean(fact.known),
+          sourceKind: fact.sourceKind || "unknown",
+          sourceKey: fact.sourceKey || null,
+          sourcePriority: fact.sourcePriority ?? 4,
+          conflictDetected: Boolean(fact.conflictDetected),
+          fallbackUsed: Boolean(fact.fallbackUsed),
+        });
+      }
+      if (advisorAnswer.factPack?.rewardFacts) {
+        const fact = advisorAnswer.factPack.rewardFacts;
+        log("ask-snoozer.truth-lane", "resolved", {
+          traceId,
+          testCaseId,
+          sessionId: effectiveSessionId,
+          truthLane: "rewards",
+          requestedFact: "rewards",
+          resolved: Boolean(fact.known),
+          sourceKind: fact.sourceKind || "rewards_repository_and_active_rules",
+          sourceKey: fact.sourceKey || null,
+          sourcePriority: fact.sourcePriority ?? 1,
+          conflictDetected: false,
+          fallbackUsed: Boolean(fact.fallbackUsed),
+          activeRulesVersion: fact.activeRulesVersion || null,
+          summaryResolved: Boolean(fact.summaryResolved),
+          offersResolved: Boolean(fact.offersResolved),
+        });
+      }
+      for (const fact of advisorAnswer.factPack?.durabilityFacts || []) {
+        log("ask-snoozer.truth-lane", "resolved", {
+          traceId,
+          testCaseId,
+          sessionId: effectiveSessionId,
+          truthLane: "durability",
+          requestedFact: "durability",
+          resolved: Boolean(fact.known),
+          sourceKind: fact.sourceKind || "unknown",
+          sourceKey: fact.sourceKey || null,
+          sourcePriority: fact.sourcePriority ?? 4,
+          conflictDetected: false,
+          fallbackUsed: Boolean(fact.fallbackUsed),
+          exactLifespanKnown: Boolean(fact.exactLifespanKnown),
+          exactSaggingTimelineKnown: Boolean(fact.exactSaggingTimelineKnown),
+        });
+      }
+      for (const product of advisorAnswer.products || []) {
+        log("ask-snoozer.truth-lane", "resolved", {
+          traceId,
+          testCaseId,
+          sessionId: effectiveSessionId,
+          truthLane: "product_card_pricing",
+          requestedFact: "price",
+          resolved: product.pricingMode !== "unresolved",
+          sourceKind: "shopify_variant",
+          sourceKey: product.handle || null,
+          sourcePriority: 1,
+          conflictDetected: false,
+          fallbackUsed: false,
+          handle: product.handle || null,
+          activeSize: product.activeSize || null,
+          pricingMode: product.pricingMode || "unresolved",
+          exactVariantResolved: Boolean(product.exactVariantResolved),
+          variantIdPresent: Boolean(product.variantId || product.merchandiseId),
+          availabilityResolved: Boolean(product.availabilityResolved),
+        });
+      }
       if (typeof completeAskSnoozerAdvisorTurn === "function") {
         context = completeAskSnoozerAdvisorTurn(context, advisorAnswer);
       }
@@ -1348,6 +1422,46 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
       const atomicStationIntents = new Set(["find_rewards", "analyze_cart", "browse_products"]);
       if (stationAnswer && atomicStationIntents.has(stationAnswer.intent)) {
+        if (stationAnswer.intent === "find_rewards") {
+          const summary = stationAnswer.contextPatch?.rewards?.summary || null;
+          log("ask-snoozer.truth-lane", "resolved", {
+            traceId,
+            testCaseId,
+            sessionId: effectiveSessionId,
+            truthLane: "rewards",
+            requestedFact: "rewards",
+            resolved: Boolean(summary),
+            sourceKind: "rewards_repository_and_active_rules",
+            sourceKey: summary?.activeRulesVersion || null,
+            sourcePriority: 1,
+            conflictDetected: false,
+            fallbackUsed: Boolean(stationAnswer.fallbackUsed),
+            activeRulesVersion: summary?.activeRulesVersion || null,
+            summaryResolved: Boolean(summary),
+            offersResolved: Array.isArray(stationAnswer.contextPatch?.rewards?.offers),
+          });
+        }
+        for (const product of stationAnswer.products || []) {
+          log("ask-snoozer.truth-lane", "resolved", {
+            traceId,
+            testCaseId,
+            sessionId: effectiveSessionId,
+            truthLane: "product_card_pricing",
+            requestedFact: "price",
+            resolved: product.pricingMode !== "unresolved",
+            sourceKind: "shopify_variant",
+            sourceKey: product.handle || null,
+            sourcePriority: 1,
+            conflictDetected: false,
+            fallbackUsed: false,
+            handle: product.handle || null,
+            activeSize: product.activeSize || null,
+            pricingMode: product.pricingMode || "unresolved",
+            exactVariantResolved: Boolean(product.exactVariantResolved),
+            variantIdPresent: Boolean(product.variantId || product.merchandiseId),
+            availabilityResolved: Boolean(product.availabilityResolved),
+          });
+        }
         const latencyMs = Date.now() - startedAt;
         const contextWithStation = deepMerge(context, stationAnswer.contextPatch || {});
         const mergedContext =
@@ -1945,6 +2059,19 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         traceId,
         timeoutMs: S3_RETRIEVAL_TIMEOUT_MS,
       });
+      log("ask-snoozer.truth-lane", "resolved", {
+        traceId,
+        testCaseId,
+        sessionId: effectiveSessionId,
+        truthLane: "policy",
+        requestedFact: policy?.policySubtype || null,
+        resolved: Boolean(policy?.answerGrounded),
+        sourceKind: policy?.sourceKind || "unknown",
+        sourceKey: policy?.key || null,
+        sourcePriority: policy?.sourcePriority ?? 4,
+        conflictDetected: Boolean(policy?.conflictDetected),
+        fallbackUsed: Boolean(policy?.fallbackUsed || !policy?.answerGrounded),
+      });
       const mergedContext =
         sco && typeof sco === "object" ? deepMerge(sco, context) : context;
       const policyFallbackUsed = !policy?.answerGrounded;
@@ -2245,6 +2372,13 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             merchandiseId: entry?.variantId || undefined,
             selectedOptions: Array.isArray(entry?.selectedOptions) ? entry.selectedOptions : [],
             exactVariantResolved: Boolean(entry?.exactVariantResolved && entry?.variantId),
+            pricingMode:
+              entry?.pricingMode ||
+              entry?.product?.pricingMode ||
+              (entry?.exactVariantResolved && entry?.variantId ? "exact_variant" : "unresolved"),
+            priceLabel: entry?.priceLabel || entry?.product?.priceLabel || null,
+            activeSize: entry?.activeSize || entry?.product?.activeSize || null,
+            availabilityResolved: Boolean(entry?.availabilityResolved || entry?.product?.availabilityResolved),
           }))
         : [];
       const env = buildSuccessResponse({

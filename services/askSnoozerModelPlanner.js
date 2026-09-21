@@ -45,6 +45,7 @@ const PROTECTED_FACTS = new Set([
   "financing",
   "price",
   "product_sizes",
+  "rewards",
   "returns",
   "store_value",
   "warranty",
@@ -82,6 +83,7 @@ const ALLOWED_TASKS = new Set([
   "recommendation_acceptance",
   "recommendation_explanation",
   "reconsider_product",
+  "rewards_explanation",
   "session_recommendation_recall",
   "shopper_feedback",
   "sleep_education",
@@ -103,6 +105,7 @@ const ALLOWED_FACTS = new Set([
   "product_features",
   "product_sizes",
   "recommendation_reasons",
+  "rewards",
   "returns",
   "store_value",
   "warranty",
@@ -112,6 +115,7 @@ const ALLOWED_REQUIREMENTS = new Set([
   "acknowledge_feedback",
   "answer_all_requested_facts",
   "answer_durability",
+  "answer_rewards",
   "answer_store_value",
   "compare_named_products",
   "explain_recommendation_reasons",
@@ -199,6 +203,7 @@ function inferRequestedFacts(query = "") {
     /\bhow long\b.*\b(?:last|hold up|hold|durable)\b|\bdurab(?:le|ility)\b|\bwear out\b|\bsag(?:ging)?\b|\bbody impression\b/.test(text) ? "durability" : "",
     /\breturn(?:s|ed|ing)?\b|\bsleep trial\b|\bexchange\b/.test(text) ? "returns" : "",
     /\bfinanc(?:e|ing)\b|\bpayment plan\b/.test(text) ? "financing" : "",
+    /\brewards?|sleep points?|reward balance|points? balance|how many points|earn(?:ed)? points|badge|milestone|unlocked offer\b/.test(text) ? "rewards" : "",
     asksProductSizes ? "product_sizes" : "",
     /\b(?:how much|what (?:does|would|will|is).*(?:cost|price)|price|pricing|quote)\b/.test(text) ? "price" : "",
     !asksProductSizes && /\b(?:available|in stock|availability)\b/.test(text) ? "availability" : "",
@@ -449,6 +454,7 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
   let primaryTask = clean(parsed.primaryTask).toLowerCase();
   if (requestedFacts.length > 1) primaryTask = "compound_fact_answer";
   else if (requestedFacts.includes("durability")) primaryTask = "durability_objection";
+  else if (requestedFacts.includes("rewards")) primaryTask = "rewards_explanation";
   else if (requestedFacts.includes("store_value")) primaryTask = "store_value";
   if (!ALLOWED_TASKS.has(primaryTask)) primaryTask = "";
   const productReferences = (Array.isArray(parsed.productReferences) ? parsed.productReferences : [])
@@ -540,6 +546,9 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
   }
   if (requestedFacts.includes("durability") && !answerRequirements.includes("answer_durability")) {
     answerRequirements.push("answer_durability");
+  }
+  if (requestedFacts.includes("rewards") && !answerRequirements.includes("answer_rewards")) {
+    answerRequirements.push("answer_rewards");
   }
   if (requestedFacts.includes("store_value") && !answerRequirements.includes("answer_store_value")) {
     answerRequirements.push("answer_store_value");

@@ -59,7 +59,36 @@ async function composeAdvisorResponse(input) {
   };
 }
 
-async function loadAdvisorKnowledge({ productHandles = [], taskType = "" } = {}) {
+async function loadAdvisorKnowledge({ productHandles = [], taskType = "", requestedFacts = [] } = {}) {
+  const policyFacts = [];
+  if (requestedFacts.includes("returns")) {
+    policyFacts.push({
+      type: "returns",
+      topic: "returns",
+      known: true,
+      status: "verified_fact",
+      trialWindow: "100-night sleep trial",
+      terms: ["Returns are available during the verified sleep-trial window."],
+      sourceKind: "canonical_policy",
+      sourceKey: "policies/returns.md",
+      sourcePriority: 1,
+      fallbackUsed: false,
+    });
+  }
+  if (requestedFacts.includes("delivery")) {
+    policyFacts.push({
+      type: "delivery",
+      topic: "delivery",
+      known: true,
+      status: "verified_fact",
+      typicalWindow: "3-7 business days",
+      conditions: [],
+      sourceKind: "canonical_policy",
+      sourceKey: "policies/delivery-policy.md",
+      sourcePriority: 1,
+      fallbackUsed: false,
+    });
+  }
   return {
     version: "test-v1",
     status: "advisor_interpretation",
@@ -68,7 +97,7 @@ async function loadAdvisorKnowledge({ productHandles = [], taskType = "" } = {})
     productFacts: productHandles.map((handle) => ({ handle, status: "verified_fact", facts: ["Approved product fact."] })),
     policyFacts: taskType === "warranty_explanation"
       ? [{ topic: "warranty", status: "verified_fact", facts: ["10-year limited mattress warranty."] }]
-      : [],
+      : policyFacts,
   };
 }
 
@@ -91,8 +120,8 @@ async function main() {
     ["I need a King size.", "configuration_update"],
     ["I'm confused.", "confusion_recovery"],
     ["Is there a warranty with the mattress?", "warranty_explanation"],
-    ["What is your return policy?", "legacy"],
-    ["How long does delivery take?", "legacy"],
+    ["What is your return policy?", "compound_fact_answer"],
+    ["How long does delivery take?", "compound_fact_answer"],
     ["Okay, so I want the Half Split King 12-inch Dual Comfort with the motion base. How much is that?", "bundle_quote"],
   ];
   const outputs = [];
@@ -114,7 +143,7 @@ async function main() {
       loadAdvisorKnowledge,
       requestId: `commercial-continuity-${outputs.length + 1}`,
     });
-    assert(outcome?.ok, `${expectedTask} should resolve`);
+    assert(outcome?.ok, `${expectedTask} should resolve: ${JSON.stringify(outcome)}`);
     assert(/[.!?]$/.test(outcome.reply) && !outcome.reply.endsWith("..."), `${expectedTask} should end naturally`);
     context = completeAskSnoozerAdvisorTurn(context, outcome);
     context.recentConversation = [...context.recentConversation, { role: "user", content: query }, { role: "assistant", content: outcome.reply }].slice(-8);

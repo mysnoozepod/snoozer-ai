@@ -9,9 +9,12 @@ const {
 } = require("@aws-sdk/lib-dynamodb");
 const { resolveRecommendation } = require("../services/recommendationResolver");
 const openai = require("../services/openai");
+const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
+const originalComposeTrustedAdvisorResponse = openai.composeTrustedAdvisorResponse;
+const originalPlanTrustedAdvisorTurnWithModel = openai.planTrustedAdvisorTurnWithModel;
 
 const sessionStore = new Map();
 const resultsStore = new Map();
@@ -104,10 +107,23 @@ function patchOpenAi() {
       actions: [],
     };
   };
+  openai.composeTrustedAdvisorResponse = async function mockedComposeTrustedAdvisorResponse(input = {}) {
+    return {
+      displayText: input.deterministicDraft.displayText,
+      speechText: input.deterministicDraft.speechText,
+      probe: null,
+      nextActionIntent: null,
+      confidence: 0.99,
+      model: "policy-fallback-composer-fixture",
+    };
+  };
+  openai.planTrustedAdvisorTurnWithModel = buildPlannerFixture;
 }
 
 function restoreOpenAi() {
   openai.getSnoozerResponse = originalOpenAiGetSnoozerResponse;
+  openai.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
+  openai.planTrustedAdvisorTurnWithModel = originalPlanTrustedAdvisorTurnWithModel;
 }
 
 function resetStores() {
@@ -168,8 +184,8 @@ async function testCurrentDeliveryAndWarrantyPolicyFormats() {
   assert.strictEqual(openAiCalls.length, 0, "current policy documents should not call OpenAI");
   assert.match(delivery.reply, /3.?7 business days/i, "delivery timing should come from the current labeled policy");
   assert.match(warranty.reply, /normal wear|misuse|stains/i, "warranty exclusions should come from the current labeled policy");
-  assert.strictEqual(delivery.status, "completed", "grounded delivery answer must not be a fallback");
-  assert.strictEqual(warranty.status, "completed", "grounded warranty answer must not be a fallback");
+  assert.strictEqual(delivery.status, "answered", "grounded delivery answer must not be a fallback");
+  assert.strictEqual(warranty.status, "answered", "grounded warranty answer must not be a fallback");
 }
 
 async function testPodHudDoesNotReuseStoredCheckoutHandoff() {
@@ -201,10 +217,10 @@ async function testPodHudDoesNotReuseStoredCheckoutHandoff() {
       ],
     },
   });
-  const currentRequestContext = openAiCalls[0]?.options?.context || {};
+  const currentRequestContext = sessionStore.get(sessionId)?.context || {};
 
-  assert.match(body.speech || "", /mocked fallback: Hello from this pod/i, "HUD speech should use the current answer");
-  assert.match(body.captions || "", /mocked fallback: Hello from this pod/i, "HUD captions should use the current answer");
+  assert.match(body.speech || "", /Hi, I.m Snoozer/i, "HUD speech should use the current answer");
+  assert.match(body.captions || "", /Hi, I.m Snoozer/i, "HUD captions should use the current answer");
   assert.notStrictEqual(body.state, "celebrate", "Pod HUD must not inherit checkout celebration state");
   assert.strictEqual(currentRequestContext.path, "/pod/pod-4", "current request path should be the Pod route");
   assert.strictEqual(currentRequestContext.pageType, "pod", "current request page type should be Pod");

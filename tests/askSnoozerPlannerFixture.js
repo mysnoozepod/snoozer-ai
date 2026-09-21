@@ -5,8 +5,9 @@ const { planAskSnoozerTurn } = require("../services/askSnoozerConversationOrches
 
 function fixtureTask(query = "", legacyTask = "legacy") {
   const text = String(query || "").toLowerCase();
+  if (/^\s*(?:hello|hi|hey)\b/.test(text)) return "greeting";
   if (/\b(?:need help|human|associate|support)\b/.test(text)) return "support_handoff";
-  if (/\b(?:where should i start|which snoozepod|what mattress do you recommend)\b/.test(text)) return "canonical_recommendation";
+  if (/\b(?:where should i start|which snoozepod|what (?:mattress )?do you recommend)\b/.test(text)) return "canonical_recommendation";
   if (/\b(?:compare|versus|\bvs\b|difference|other one)\b/.test(text)) return "product_comparison";
   if (/\b(?:snor\w*|side sleep\w*|sleep hot|pressure relief|firmer mattress|dream\w*)\b/.test(text)) return "sleep_education";
   if (/\b(?:base works|base work|compatible|work with this)\b/.test(text)) return "compatibility";

@@ -16,9 +16,12 @@ const { completeSentences, isCompleteShopperResponse } = require("./askSnoozerRe
 const { inferRequestedFacts } = require("./askSnoozerModelPlanner");
 const {
   containsRawKnowledgeMetadata,
+  durabilityFactSentences,
   policyFactAnswered,
   policyFactSentences,
+  rewardFactSentences,
 } = require("./askSnoozerTypedTruth");
+const { buildProductCardTruth } = require("./askSnoozerProductCardTruth");
 
 const ORCHESTRATOR_VERSION = "2026-09-15.1";
 const PRODUCT_VARIANT_GID = /^gid:\/\/shopify\/ProductVariant\/[^\s/?#]+$/;
@@ -224,6 +227,10 @@ function quoteProductCard(entry = {}, rawProduct = {}, { suppressAddToCart = fal
     merchandiseId: entry.variantId,
     firstAvailableVariantId: entry.variantId,
     exactVariantResolved: true,
+    pricingMode: "exact_variant",
+    priceLabel: null,
+    activeSize: entry.size || null,
+    availabilityResolved: true,
     suppressAddToCart: Boolean(suppressAddToCart),
   };
 }
@@ -425,6 +432,8 @@ function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy",
       return facts.has("warranty");
     case "durability_objection":
       return facts.has("durability");
+    case "rewards_explanation":
+      return facts.has("rewards");
     case "store_value":
       return facts.has("store_value");
     case "compatibility":
@@ -634,6 +643,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     else if (requestedFacts.includes("warranty")) taskType = "warranty_explanation";
     else if (requestedFacts.includes("delivery") || requestedFacts.includes("returns") || requestedFacts.includes("financing")) taskType = "compound_fact_answer";
     else if (requestedFacts.includes("durability")) taskType = "durability_objection";
+    else if (requestedFacts.includes("rewards")) taskType = "rewards_explanation";
     else if (requestedFacts.includes("store_value")) taskType = "store_value";
   }
 
@@ -835,11 +845,11 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     ["price_quote", "bundle_quote", "savings_quote"].includes(taskType) &&
     Number(activeMemory(context)?.turnIndex || 0) <= 1 &&
     !continuation;
-  const atomicStandalonePolicy =
-    taskType === "warranty_explanation" &&
-    !activeHandle &&
-    Number(activeMemory(context)?.turnIndex || 0) <= 1 &&
-    !continuation;
+  const atomicRewardsBalance =
+    !modelAuthoritative &&
+    requestedFacts.length === 1 &&
+    requestedFacts[0] === "rewards" &&
+    /\b(?:reward balance|how many points|points balance)\b/.test(text);
   const missingCommerceProduct = needsCommerce && !quoteReferenceHandle;
   const handled =
     taskType !== "legacy" &&
@@ -847,8 +857,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     !ambiguousSetupPrice &&
     !missingCanonical &&
     !missingProductReference &&
-    !missingCommerceProduct &&
-    !atomicStandalonePolicy;
+    !missingCommerceProduct;
   const stage = inferStage(taskType, deal.stage);
   const depth = responseDepth(text, taskType);
   const modelEligible = [
@@ -866,6 +875,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     "firmness_compare",
     "compound_product_base",
     "durability_objection",
+    "rewards_explanation",
     "hybrid_exploration",
     "configuration_update",
     "confusion_recovery",
@@ -943,14 +953,19 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       needsCommerce || requestedFacts.some((fact) => ["price", "availability", "product_sizes"].includes(fact)) ? "commerce" : "",
       needsCompatibility ? "compatibility" : "",
       requestedFacts.some((fact) => ["warranty", "delivery", "returns", "financing"].includes(fact)) ? "policy" : "",
+      requestedFacts.includes("rewards") ? "rewards" : "",
     ]),
     answerMode: taskType,
     responseDepth: depth,
-    needsModel: handled && (modelEligible || modelDecision?.requiresComposition === true) && !atomicStandaloneCommerce,
+    needsModel:
+      handled &&
+      (modelEligible || modelDecision?.requiresComposition === true) &&
+      !atomicStandaloneCommerce &&
+      !atomicRewardsBalance,
     atomicCommerceLookup: atomicStandaloneCommerce,
     needsCommerce,
     needsCompatibility,
-    needsKnowledge: ["product_experience", "product_comparison", "canonical_comparison", "comparison_value", "base_education", "advisor_choice", "firmness_choice", "compound_product_base", "durability_objection", "hybrid_exploration", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance", "value_objection", "price_value", "configuration_value", "sleep_education", "product_sizes", "compound_fact_answer", "store_value"].includes(taskType),
+    needsKnowledge: ["product_experience", "product_comparison", "canonical_comparison", "comparison_value", "base_education", "advisor_choice", "firmness_choice", "compound_product_base", "durability_objection", "rewards_explanation", "hybrid_exploration", "shopper_feedback", "alternative_resolution", "trust_recovery", "reconsider_product", "session_recommendation_recall", "recommendation_explanation", "recommendation_acceptance", "value_objection", "price_value", "configuration_value", "sleep_education", "product_sizes", "compound_fact_answer", "store_value"].includes(taskType),
     needsPolicy: ["medical_boundary", "warranty_explanation", "compound_fact_answer"].includes(taskType) || requestedFacts.some((fact) => ["warranty", "delivery", "returns", "financing"].includes(fact)),
     allowedActions: taskType === "cart_add" ? ["add_to_cart"] : [],
     commercialState: {
@@ -1100,6 +1115,8 @@ function buildRelevantFactPack({ query = "", context = {}, plan = {} } = {}) {
     commerce: deal?.activeQuote || null,
     compatibility: { status: deal?.compatibilityStatus || "unknown", source: "verified_fact" },
     policyFacts: [],
+    durabilityFacts: [],
+    rewardFacts: null,
     missingInformation: plan.neededFacts || [],
     prohibited: plan.technicalLanguageAllowed ? [] : INTERNAL_LANGUAGE,
     allowedActions: plan.allowedActions || [],
@@ -1224,6 +1241,8 @@ function compactComposerFactPack(factPack = {}, plan = {}) {
   const needsCommerce = COMMERCE_COMPOSER_TASKS.has(taskType) || [...requestedFacts]
     .some((fact) => ["availability", "cart", "compatibility", "price", "product_sizes"].includes(fact));
   const needsPolicy = [...requestedFacts].some((fact) => ["delivery", "financing", "returns", "warranty"].includes(fact));
+  const needsRewards = requestedFacts.has("rewards") || taskType === "rewards_explanation";
+  const needsDurability = requestedFacts.has("durability") || taskType === "durability_objection";
   const advisor = factPack.advisorKnowledge || {};
   const compact = {
     version: 4,
@@ -1296,6 +1315,8 @@ function compactComposerFactPack(factPack = {}, plan = {}) {
     compact.resolvedProductFacts = factPack.resolvedProductFacts || [];
   }
   if (needsPolicy) compact.policyFacts = factPack.policyFacts || [];
+  if (needsRewards) compact.rewardFacts = factPack.rewardFacts || null;
+  if (needsDurability) compact.durabilityFacts = factPack.durabilityFacts || [];
   compact.budget = {
     totalChars: JSON.stringify(compact).length,
     historyChars: JSON.stringify(compact.conversation.recentTurns).length,
@@ -1492,6 +1513,17 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
         .map((fact) => /[.!?]$/.test(fact) ? fact : `${fact}.`);
     })
     .slice(0, 4);
+  const durabilityFact = (factPack?.durabilityFacts || [])[0] || {
+    type: "durability",
+    known: false,
+    exactLifespanKnown: false,
+    exactSaggingTimelineKnown: false,
+    wearGuidance: [],
+  };
+  const durabilitySentences = durabilityFactSentences(durabilityFact, {
+    exactQuestion: /\b(?:exactly|how many years|what year|when).*\b(?:sag|sagging|body impression)\b|\b(?:sag|sagging).*\bhow many years\b/.test(text),
+  });
+  const rewardsSentences = rewardFactSentences(factPack?.rewardFacts || {}, query);
 
   switch (plan.taskType) {
     case "greeting":
@@ -1607,7 +1639,11 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
     case "firmness_choice":
       return `Of the two, the ${firstTitle} is the closer-contouring choice and the ${secondTitle} is the more lifted, responsive choice. Based on your current feedback, I would pick the ${titleFor(sessionHandle || active || first)} for you, then use shoulder and hip pressure during the Rest Test to confirm it rather than relying on a firmness label alone.`;
     case "durability_objection":
-      return `That is a fair concern. The ${activeTitle} uses supportive base foam and CertiPUR-US certified foams, but neither construction nor certification is a promise that normal softening or body impressions can never happen. Use the support specified for the mattress, keep it protected, and rotate it when the care guidance allows; those basics help prevent uneven wear. If you want a more lifted feel and the reassurance of a coil support unit, compare a hybrid, but I would not move you away from the All Foam solely out of fear before you compare the feel and warranty tradeoff.`;
+      return durabilitySentences.length
+        ? durabilitySentences.join(" ")
+        : `I cannot verify an exact lifespan or sagging timeline for the ${activeTitle}, so I will not guess a number.`;
+    case "rewards_explanation":
+      return rewardsSentences.join(" ");
     case "hybrid_exploration":
       return rejected.has("12-all-foam-mattress")
         ? "The two hybrids worth comparing are the 12-inch Dual Comfort Hybrid and the 14-inch Hybrid. Both combine foam comfort with coil support and airflow; the Dual Comfort is the stronger choice for couples who want different comfort choices by side, while the 14-inch Hybrid is the simpler lifted, responsive alternative. Since you already ruled out the previous mattress, compare these two directly for shoulder pressure and ease of movement."
@@ -1665,14 +1701,17 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       }
       if (requested.has("returns")) {
         const facts = policyFacts("returns");
-        parts.push(facts.length ? `Returns: ${facts.join(" ")}` : "I could not confirm the approved return terms right now.");
+        parts.push(facts.length ? `Return policy: ${facts.join(" ")}` : "I could not confirm the approved return terms right now.");
       }
       if (requested.has("financing")) {
         const facts = policyFacts("financing");
         parts.push(facts.length ? `Financing: ${facts.join(" ")}` : "I could not confirm the current financing terms right now.");
       }
       if (requested.has("durability")) {
-        parts.push(`Durability: the ${activeTitle} should be judged by support, pressure relief, and the care guidance together. I will not promise a mattress will never soften or show wear, but I can help you compare materials, warranty coverage, and what to notice during the Rest Test.`);
+        parts.push(`Durability: ${durabilitySentences.join(" ")}`);
+      }
+      if (requested.has("rewards")) {
+        parts.push(`Rewards: ${rewardsSentences.join(" ")}`);
       }
       if (requested.has("store_value")) {
         parts.push("Why buy from MySnoozePod: you get a guided showroom path, product and setup checks before cart, human help when you want it, and verified checkout pricing instead of a guessed total.");
@@ -1975,6 +2014,7 @@ function responseFacetViolations({ reply = "", plan = {}, factPack = null } = {}
     availability: /\b(?:available|availability|in stock|could not confirm.*availab)\b/,
     compatibility: /\b(?:compatible|work together|pair|could not confirm.*compatib)\b/,
     durability: /\b(?:durab|last|hold up|wear|soften|body impression|sag|care guidance|warranty)\b/,
+    rewards: /\b(?:reward|sleep points?|badge|milestone|offer|snooze code)\b/,
     store_value: /\b(?:mysnoozepod|guided|showroom|human help|brandy|verified|checkout|cart|buy here|buy from)\b/,
   };
   if (plan.taskType !== "reference_clarification") {
@@ -1984,8 +2024,41 @@ function responseFacetViolations({ reply = "", plan = {}, factPack = null } = {}
         violations.push(`requested_fact_unanswered:${fact}`);
         continue;
       }
+      if (fact === "rewards") {
+        const rewardFact = factPack?.rewardFacts || {};
+        const expected = rewardFactSentences(rewardFact, plan?.query || "");
+        if (!rewardFact.known) {
+          if (!/\b(?:need|connected|unavailable|cannot|can.t|will not guess)\b/.test(lower)) {
+            violations.push("requested_fact_unanswered:rewards");
+          }
+        } else if (!expected.some((sentence) => lower.includes(clean(sentence).toLowerCase().replace(/[.!?]$/, "")))) {
+          violations.push("requested_fact_unanswered:rewards");
+        }
+        const allowedRewardNumbers = new Set([
+          rewardFact?.summary?.availableSleepPoints,
+          rewardFact?.summary?.lifetimeSleepPoints,
+          rewardFact?.summary?.badgeProgress?.pointsRemaining,
+          rewardFact?.summary?.badgeProgress?.targetPoints,
+          ...(rewardFact?.rules?.milestones || []).map((item) => item.pointAward),
+          ...(rewardFact?.rules?.badges || []).map((item) => item.thresholdPoints),
+          ...(rewardFact?.rules?.offers || []).map((item) => item.requiredPoints),
+        ].map(Number).filter(Number.isFinite));
+        for (const numeric of lower.match(/\b\d[\d,]*\b/g) || []) {
+          const value = Number(numeric.replace(/,/g, ""));
+          if (!allowedRewardNumbers.has(value)) violations.push(`unverified_reward_number:${value}`);
+        }
+        continue;
+      }
       const signal = factSignals[fact];
       if (signal && !signal.test(lower)) violations.push(`requested_fact_unanswered:${fact}`);
+    }
+  }
+  const durabilityFact = (factPack?.durabilityFacts || [])[0] || null;
+  if (requestedFacts.has("durability") && durabilityFact && !durabilityFact.exactLifespanKnown && !durabilityFact.exactSaggingTimelineKnown) {
+    if (/\b\d+(?:\s*[–-]\s*\d+)?\s+years?\b/i.test(reply)) violations.push("unverified_durability_number");
+    if (/\b(?:exactly|how many years|what year|when).*\b(?:sag|sagging|body impression)\b|\b(?:sag|sagging).*\bhow many years\b/.test(normalizeAskSnoozerText(plan?.query || "")) &&
+        !/\b(?:cannot|can.t|unable to|do not have|don.t have).*\b(?:verify|confirm|exact|number)\b/.test(lower)) {
+      violations.push("durability_unknown_not_disclosed");
     }
   }
   const requestedScope = clean(factPack?.state?.activeConfiguration?.scope || plan?.commercialState?.requestedScope).toLowerCase();
@@ -2018,7 +2091,7 @@ function hardConsistencyViolations(violations = []) {
       hard.push(violation);
       continue;
     }
-    if (/^(?:internal_language|unverified_price|unverified_product|price_card_mismatch|price_reply_mismatch|subtotal_reply_mismatch|canonical_reference_lost|session_recommendation_product_card_mismatch|unrelated_product_card|wrong_product_action):/.test(violation)) {
+    if (/^(?:internal_language|unverified_price|unverified_product|unverified_reward_number|price_card_mismatch|price_reply_mismatch|subtotal_reply_mismatch|canonical_reference_lost|session_recommendation_product_card_mismatch|unrelated_product_card|wrong_product_action):/.test(violation)) {
       hard.push(violation);
       continue;
     }
@@ -2036,6 +2109,11 @@ function hardConsistencyViolations(violations = []) {
       "action_scope_mismatch",
       "commercial_action_contradiction",
       "response_scope_mismatch",
+      "unverified_durability_number",
+      "durability_unknown_not_disclosed",
+      "card_exact_price_without_variant",
+      "card_active_size_mismatch",
+      "card_variant_price_mismatch",
     ].includes(violation)) {
       hard.push(violation);
     }
@@ -2063,6 +2141,34 @@ function validateResponseConsistency({
   for (const product of products) {
     const handle = clean(product?.handle).toLowerCase();
     if (handle && rejected.has(handle)) violations.push(`rejected_product_card:${handle}`);
+    const pricingMode = clean(product?.pricingMode).toLowerCase();
+    const exactPrice = product?.price == null ? Number.NaN : Number(product.price);
+    if (Number.isFinite(exactPrice) && pricingMode !== "exact_variant") {
+      violations.push("card_exact_price_without_variant");
+    }
+    if (pricingMode === "exact_variant") {
+      if (product?.exactVariantResolved !== true || !PRODUCT_VARIANT_GID.test(clean(product?.variantId || product?.merchandiseId))) {
+        violations.push("card_exact_price_without_variant");
+      }
+      const resolvedVariant = (product?.variants || []).find((variant) => clean(variant?.id) === clean(product?.variantId || product?.merchandiseId));
+      const resolvedPrice = variantPrice(resolvedVariant || {});
+      if (!Number.isFinite(exactPrice) || !Number.isFinite(resolvedPrice) || Math.abs(exactPrice - resolvedPrice) >= 0.005) {
+        violations.push("card_variant_price_mismatch");
+      }
+      const activeSize = clean(plan?.knownFacts?.size || product?.activeSize);
+      if (activeSize) {
+        const selectedSize = variantOption(resolvedVariant || product, "size") || clean(product?.selectedOptions?.find((item) => normalizeAskSnoozerText(item?.name) === "size")?.value);
+        const selectedKey = normalizeSize(selectedSize);
+        const activeKey = normalizeSize(activeSize);
+        const setupKey = normalizeSize(setupSizeForSelection(activeSize));
+        const matchesSetupConfiguration = Boolean(
+          setupKey && (selectedKey === setupKey || selectedKey.startsWith(setupKey) || setupKey.endsWith(selectedKey))
+        );
+        if (selectedSize && selectedKey !== activeKey && !selectedKey.startsWith(activeKey) && !activeKey.endsWith(selectedKey) && !matchesSetupConfiguration) {
+          violations.push("card_active_size_mismatch");
+        }
+      }
+    }
   }
   for (const action of actions) {
     const handle = clean(action?.payload?.handle || action?.handle).toLowerCase();
@@ -2277,6 +2383,8 @@ async function resolveAskSnoozerAdvisorTurn({
   fetchProductsByHandles,
   composeAdvisorResponse,
   loadAdvisorKnowledge,
+  identity = null,
+  rewardsService = null,
   requestId = null,
 } = {}) {
   const resolvedPlan = plan || planAskSnoozerTurn({ query, context });
@@ -2301,11 +2409,15 @@ async function resolveAskSnoozerAdvisorTurn({
         taskType: resolvedPlan.taskType,
         query,
         requestedFacts: resolvedPlan.requestedFacts || [],
+        identity,
+        rewardsService,
       });
       if (knowledge) {
         factPack.advisorKnowledge = knowledge;
         factPack.productFacts = knowledge.productFacts || [];
         factPack.policyFacts = knowledge.policyFacts || [];
+        factPack.durabilityFacts = knowledge.durabilityFacts || [];
+        factPack.rewardFacts = knowledge.rewardFacts || null;
       }
     } catch {
       factPack.missingInformation = [...new Set([...(factPack.missingInformation || []), "advisorKnowledge"])];
@@ -2362,6 +2474,17 @@ async function resolveAskSnoozerAdvisorTurn({
     ["mattress_plus_base", "full_pod"].includes(clean(resolvedPlan.commercialState?.requestedScope))
   );
   const suppressPartialProducts = Boolean(fullSetupRequested && !quote?.ok);
+  const activeCardSize = clean(
+    resolvedPlan.knownFacts?.size ||
+    activeDeal(context)?.activeSize ||
+    activeDeal(context)?.activeConfiguration?.size
+  );
+  const resolvedCards = rawProducts
+    .map((product) => buildProductCardTruth(product, {
+      activeSize: activeCardSize,
+      motionType: resolvedPlan.knownFacts?.motionKey || "standard",
+    }))
+    .filter(Boolean);
   const products = resolvedPlan.taskType === "value_objection"
     ? []
     : suppressPartialProducts
@@ -2370,7 +2493,7 @@ async function resolveAskSnoozerAdvisorTurn({
       ? quote.items.map((item) => quoteProductCard(item, byHandle.get(item.handle) || {}, {
           suppressAddToCart: fullSetupRequested && resolvedPlan.taskType !== "cart_add",
         }))
-      : rawProducts;
+      : resolvedCards;
   factPack.commerce = quote || factPack.commerce;
   factPack.resolvedProductFacts = rawProducts.map((product) => ({
     handle: clean(product?.handle),
@@ -2592,8 +2715,12 @@ async function resolveAskSnoozerAdvisorTurn({
     fallbackUsed: compositionFallbackUsed,
     source: quote
       ? "shopify"
+      : factPack.rewardFacts
+        ? "rewards"
       : factPack.policyFacts?.length
         ? "s3_policy"
+        : factPack.durabilityFacts?.length
+          ? "approved_product_knowledge"
         : factPack.productFacts?.length
           ? "s3_product"
           : "advisor",

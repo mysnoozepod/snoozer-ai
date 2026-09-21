@@ -1,5 +1,10 @@
 "use strict";
 
+const {
+  buildProductCardTruth,
+  normalizeVariants,
+} = require("./askSnoozerProductCardTruth");
+
 const PRODUCT_VARIANT_GID = /^gid:\/\/shopify\/ProductVariant\/[^\s/?#]+$/;
 const CART_GID = /^gid:\/\/shopify\/Cart\/[^\s/#?]+(?:\?key=[^#\s]+)?$/;
 
@@ -75,28 +80,6 @@ function normalizeSelectedOptions(options = []) {
     .slice(0, 8);
 }
 
-function normalizeVariants(product = {}) {
-  return (Array.isArray(product.variants) ? product.variants : [])
-    .map((variant) => {
-      const id = clean(variant?.id || variant?.variantId || variant?.merchandiseId);
-      if (!PRODUCT_VARIANT_GID.test(id)) return null;
-      const amount = Number(variant?.price?.amount ?? variant?.price);
-      return {
-        id,
-        title: clean(variant?.title) || null,
-        available: variant?.available === true || variant?.availableForSale === true,
-        price: Number.isFinite(amount) ? amount : null,
-        currencyCode:
-          clean(variant?.price?.currencyCode || variant?.currencyCode) ||
-          clean(product?.priceRange?.currencyCode) ||
-          "USD",
-        selectedOptions: normalizeSelectedOptions(variant?.selectedOptions),
-      };
-    })
-    .filter(Boolean)
-    .slice(0, 50);
-}
-
 function requestedSize(query = "") {
   const text = normalizeQuery(query).replace(/\btwin\s+xl\b/g, "twinxl");
   const match = text.match(/\b(twinxl|twin|full|queen|king)\b/);
@@ -104,72 +87,25 @@ function requestedSize(query = "") {
   return match[1] === "twinxl" ? "Twin XL" : `${match[1][0].toUpperCase()}${match[1].slice(1)}`;
 }
 
-function variantMatchesSize(variant, size) {
-  const wanted = normalizeQuery(size).replace(/\s+/g, "");
-  if (!wanted) return false;
-  return normalizeSelectedOptions(variant?.selectedOptions).some((option) => {
-    if (normalizeQuery(option.name) !== "size") return false;
-    const actual = normalizeQuery(option.value).replace(/\s+/g, "");
-    return actual === wanted;
-  });
-}
-
-function resolveExactVariant(product = {}, query = "") {
-  const variants = normalizeVariants(product).filter((variant) => variant.available);
-  const size = requestedSize(query);
-  if (size) {
-    const matches = variants.filter((variant) => variantMatchesSize(variant, size));
-    return matches.length === 1 ? matches[0] : null;
-  }
-  return variants.length === 1 ? variants[0] : null;
-}
-
-function normalizePriceRange(product = {}) {
-  const min = Number(product?.priceRange?.min ?? product?.priceRange?.minVariantPrice?.amount ?? product?.price);
-  const max = Number(product?.priceRange?.max ?? product?.priceRange?.maxVariantPrice?.amount ?? product?.price);
-  const currencyCode =
-    clean(
-      product?.priceRange?.currencyCode ||
-        product?.priceRange?.minVariantPrice?.currencyCode ||
-        product?.priceRange?.maxVariantPrice?.currencyCode
-    ) || "USD";
-  return {
-    min: Number.isFinite(min) ? min : null,
-    max: Number.isFinite(max) ? max : Number.isFinite(min) ? min : null,
-    currencyCode,
-  };
-}
-
-function stationProduct(product = {}, { query = "", descriptor = "" } = {}) {
-  const handle = clean(product.handle);
-  if (!handle) return null;
+function resolveExactVariant(product = {}, size = "") {
   const variants = normalizeVariants(product);
-  const exactVariant = resolveExactVariant({ ...product, variants }, query);
-  const priceRange = normalizePriceRange(product);
-  const description = clean(descriptor || product.subtitle || product.description).slice(0, 220) || null;
-  return {
-    type: clean(product.type || product.catalogType) || "product",
-    id: clean(product.id) || handle,
-    handle,
-    title: clean(product.title || product.name) || handle,
-    subtitle: description,
-    url: `/products/${handle}`,
-    href: `/products/${handle}`,
-    imageUrl: imageUrl(product),
-    image: imageUrl(product) ? { url: imageUrl(product), alt: clean(product.image?.alt) || clean(product.title) } : null,
-    priceRange,
-    price: exactVariant?.price ?? priceRange.min,
-    currencyCode: exactVariant?.currencyCode || priceRange.currencyCode,
-    available:
-      typeof product.available === "boolean"
-        ? product.available
-        : variants.some((variant) => variant.available),
-    variants,
-    selectedOptions: exactVariant?.selectedOptions || [],
-    variantId: exactVariant?.id || null,
-    merchandiseId: exactVariant?.id || null,
-    exactVariantResolved: Boolean(exactVariant),
-  };
+  const requested = clean(size);
+  if (!requested) {
+    const available = variants.filter((variant) => variant.availableForSale);
+    return available.length === 1 ? available[0] : null;
+  }
+  const card = buildProductCardTruth({ ...product, variants }, { activeSize: requested });
+  if (!card?.exactVariantResolved) return null;
+  return variants.find((variant) => variant.id === card.variantId) || null;
+}
+
+function stationProduct(product = {}, { query = "", descriptor = "", activeSize = "", motionType = "standard", category = "" } = {}) {
+  return buildProductCardTruth(product, {
+    activeSize: requestedSize(query) || activeSize,
+    motionType,
+    category,
+    descriptor,
+  });
 }
 
 function productHandlesFromContext(context = {}) {
@@ -180,6 +116,17 @@ function productHandlesFromContext(context = {}) {
     canonical.baseHandle,
     canonical.topProductHandle,
   ]);
+}
+
+function activeCardSize(context = {}) {
+  const deal = context?.askSnoozerWorkingMemory?.activeDeal || {};
+  return clean(
+    deal.activeSize ||
+    deal.activeConfiguration?.size ||
+    deal.acceptedRecommendation?.size ||
+    context?.activeJourney?.activeConfiguration?.size ||
+    context?.assessment?.size
+  );
 }
 
 function manifestProducts(manifest = {}) {
@@ -261,6 +208,10 @@ function cartLineProduct(line = {}) {
     variantId: PRODUCT_VARIANT_GID.test(merchandiseId) ? merchandiseId : null,
     merchandiseId: PRODUCT_VARIANT_GID.test(merchandiseId) ? merchandiseId : null,
     exactVariantResolved: PRODUCT_VARIANT_GID.test(merchandiseId),
+    pricingMode: PRODUCT_VARIANT_GID.test(merchandiseId) ? "exact_variant" : "unresolved",
+    priceLabel: null,
+    activeSize: null,
+    availabilityResolved: PRODUCT_VARIANT_GID.test(merchandiseId),
     quantity: Math.max(1, Number(line.quantity) || 1),
   };
 }
@@ -391,7 +342,7 @@ async function browseResponse({ query, context, manifest, fetchProductsByHandles
   const handles = chooseBrowseHandles(context, manifest, offset);
   try {
     const products = (await fetchProducts(fetchProductsByHandles, handles))
-      .map((product) => stationProduct(product, { query }))
+      .map((product) => stationProduct(product, { query, activeSize: activeCardSize(context) }))
       .filter(Boolean);
     if (!products.length) throw new Error("NO_VERIFIED_PRODUCTS");
     return response(
@@ -413,7 +364,7 @@ async function browseResponse({ query, context, manifest, fetchProductsByHandles
   }
 }
 
-async function motionResponse({ query, manifest, fetchProductsByHandles }) {
+async function motionResponse({ query, context, manifest, fetchProductsByHandles }) {
   const base = manifestProducts(manifest).find(
     (product) => product.catalogType === "base" && product.attributes?.supportsMotion === true
   );
@@ -428,6 +379,8 @@ async function motionResponse({ query, manifest, fetchProductsByHandles }) {
     const fetched = await fetchProducts(fetchProductsByHandles, [base.handle]);
     const product = stationProduct(fetched[0], {
       query,
+      activeSize: activeCardSize(context),
+      category: "adjustable_base",
       descriptor: "Adjustable base with Standard Motion and supported split-motion configurations.",
     });
     if (!product) throw new Error("MOTION_PRODUCT_UNAVAILABLE");
@@ -456,7 +409,7 @@ async function compareResponse({ query, context, manifest, fetchProductsByHandle
     let products = [];
     try {
       products = (await fetchProducts(fetchProductsByHandles, candidates))
-        .map((product) => stationProduct(product, { query }))
+        .map((product) => stationProduct(product, { query, activeSize: activeCardSize(context) }))
         .filter(Boolean);
     } catch {
       products = [];
@@ -469,7 +422,7 @@ async function compareResponse({ query, context, manifest, fetchProductsByHandle
   }
   try {
     const fetched = await fetchProducts(fetchProductsByHandles, handles);
-    const products = fetched.map((product) => stationProduct(product, { query })).filter(Boolean);
+    const products = fetched.map((product) => stationProduct(product, { query, activeSize: activeCardSize(context) })).filter(Boolean);
     if (products.length !== 2) throw new Error("COMPARISON_PRODUCT_UNAVAILABLE");
     const manifestByHandle = new Map(manifestProducts(manifest).map((product) => [product.handle, product]));
     const summaries = products.map((product) => {
@@ -528,7 +481,7 @@ async function resolveAskSnoozerStationResponse({
     return browseResponse({ query, context, manifest, fetchProductsByHandles });
   }
   if (intent === STARTER_INTENTS.motion) {
-    return motionResponse({ query, manifest, fetchProductsByHandles });
+    return motionResponse({ query, context, manifest, fetchProductsByHandles });
   }
   return compareResponse({ query, context, manifest, fetchProductsByHandles });
 }
