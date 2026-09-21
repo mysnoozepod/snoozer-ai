@@ -34,7 +34,9 @@ check(page.includes("ShowroomDownstreamHeader") && page.includes("RewardsPill") 
 check(layout.includes("pageUsesDownstreamHeader || pageUsesAskStation") && layout.includes("!pageOwnsRewardsControl"), "shared floating Rewards control is suppressed when Ask owns the header control");
 check(layout.includes('right: pageUsesAskStation ? 16 : "auto"') && layout.includes("bottom: pageUsesAskStation") && page.includes('className="flex min-h-0 flex-col pb-24"'), "Ask places Brandy at lower right with reserved space below the composer");
 check(page.includes("getRewardSummary()") && page.includes("Number.isFinite(points)"), "reward pill reads actual summary and gates numeric display");
-check(page.includes('onClick={() => sendMessage("Find Rewards")}'), "reward pill initiates the authoritative Ask behavior");
+check(page.includes('sendMessage("Find Rewards", { command: createShowroomCommand("find_rewards") })'), "reward pill sends the typed rewards command");
+check(starterBlock.includes('createShowroomCommand("find_rewards")') && starterBlock.includes('createShowroomCommand("browse_products", { offset: 0 })'), "quick starters carry typed command definitions");
+check(page.includes('createShowroomCommand("compare_products", { productHandles:') && page.includes('createShowroomCommand("product_sizes", { productHandle: item.handle })'), "product cards send exact typed compare and size commands");
 check(page.includes("state.cart || []") && page.includes("cartItemCount(cart)"), "cart pill uses authoritative cart state");
 check(page.includes("canMutateCart(device)") && page.includes("isDeviceActionAllowed(device, action)"), "cart actions preserve device guards");
 check(!page.includes("canInitiateCheckout") && !page.includes("checkoutUrl"), "Ask page has no checkout initiation path");
@@ -42,8 +44,11 @@ check(page.includes("sayHud({") && page.includes(".catch(() => {})"), "voice fai
 check(page.includes("Working on that…") && page.includes("requestAnimationFrame"), "thinking state and first-visible-feedback boundary remain instrumented");
 check(page.includes("sendAskSnoozerQualityTiming") && page.includes("ASK_SNOOZER_VOICE_TIMING_EVENT"), "display and TTS timing events are reported without changing the UI");
 check(page.includes("canRetry: true") && page.includes("composeFallbackReply"), "network failure retains customer-safe retry");
+check(page.includes("retryRequest = { message: content, command }") && page.includes("command: request.command || null"), "retry preserves the original command object");
 check(adapter.includes("storeState?.cart") && !adapter.includes("storeState?.snoozepod) ? storeState.snoozepod"), "Ask context uses authoritative cart lines");
 check(adapter.includes("normalizeAskStationProduct") && adapter.includes("normalizeAskStationAction"), "adapter uses the safe rich response contract");
+check(adapter.includes('type === "command"') && adapter.includes("command: normalizedCommand"), "command chips and requests preserve typed command metadata");
+check(adapter.includes('buildCommandChip("Return policy", "policy_fact"') && adapter.includes('buildCommandChip("Queen pricing", "price_quote"'), "deterministic adaptive chips use typed policy and price commands");
 
 const exactId = "gid://shopify/ProductVariant/123";
 const normalized = normalizeAskStationProduct({

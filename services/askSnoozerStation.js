@@ -15,6 +15,15 @@ const STARTER_INTENTS = Object.freeze({
   motion: "motion_base_features",
   browse: "browse_products",
 });
+const SHOWROOM_COMMAND_VERSION = "showroom-command.v1";
+
+function commandChip(label, type, payload = {}) {
+  return {
+    label,
+    type: "command",
+    command: { version: SHOWROOM_COMMAND_VERSION, type, payload },
+  };
+}
 
 function clean(value) {
   return String(value == null ? "" : value).trim();
@@ -285,7 +294,7 @@ async function cartResponse({ context, shopify }) {
       "Your cart is empty right now. I can browse a few products or help narrow a recommendation next.",
       {
         source: "shopify",
-        chips: [{ label: "Browse Products", value: "Browse Products" }],
+        chips: [commandChip("Browse Products", STARTER_INTENTS.browse, { offset: 0 })],
       }
     );
   }
@@ -296,7 +305,7 @@ async function cartResponse({ context, shopify }) {
       return response(
         STARTER_INTENTS.cart,
         "Your cart is empty right now. I can browse a few products or help narrow a recommendation next.",
-        { source: "shopify", chips: [{ label: "Browse Products", value: "Browse Products" }] }
+        { source: "shopify", chips: [commandChip("Browse Products", STARTER_INTENTS.browse, { offset: 0 })] }
       );
     }
     const products = lines.map(cartLineProduct).filter((product) => product.handle);
@@ -337,8 +346,12 @@ async function cartResponse({ context, shopify }) {
   }
 }
 
-async function browseResponse({ query, context, manifest, fetchProductsByHandles }) {
-  const offset = /^show me more$/i.test(clean(query)) ? 3 : 0;
+async function browseResponse({ query, context, manifest, fetchProductsByHandles, explicitOffset = null }) {
+  const offset = Number.isInteger(explicitOffset)
+    ? explicitOffset
+    : /^show me more$/i.test(clean(query))
+      ? 3
+      : 0;
   const handles = chooseBrowseHandles(context, manifest, offset);
   try {
     const products = (await fetchProducts(fetchProductsByHandles, handles))
@@ -351,7 +364,7 @@ async function browseResponse({ query, context, manifest, fetchProductsByHandles
       {
         products,
         source: "shopify",
-        chips: [{ label: "Show me more", value: "Show me more" }],
+        chips: [commandChip("Show me more", STARTER_INTENTS.browse, { offset: offset + products.length })],
         contextPatch: { lastBrowseHandles: products.map((product) => product.handle) },
       }
     );
@@ -402,8 +415,10 @@ async function motionResponse({ query, context, manifest, fetchProductsByHandles
   }
 }
 
-async function compareResponse({ query, context, manifest, fetchProductsByHandles }) {
-  const handles = extractHandles(query, manifest, context);
+async function compareResponse({ query, context, manifest, fetchProductsByHandles, explicitHandles = null }) {
+  const handles = Array.isArray(explicitHandles)
+    ? explicitHandles.slice(0, 2)
+    : extractHandles(query, manifest, context);
   if (handles.length < 2) {
     const candidates = chooseBrowseHandles(context, manifest, 0).slice(0, 3);
     let products = [];
@@ -455,6 +470,8 @@ async function compareResponse({ query, context, manifest, fetchProductsByHandle
 
 async function resolveAskSnoozerStationResponse({
   query = "",
+  explicitIntent = null,
+  commandPayload = null,
   context = {},
   identity = null,
   rewardsService = null,
@@ -462,7 +479,10 @@ async function resolveAskSnoozerStationResponse({
   manifest = null,
   fetchProductsByHandles = null,
 } = {}) {
-  const intent = detectStationIntent(query);
+  const intent = Object.values(STARTER_INTENTS).includes(explicitIntent)
+    ? explicitIntent
+    : detectStationIntent(query);
+  const executionQuery = explicitIntent ? "" : query;
   if (!intent) return null;
   if (intent === STARTER_INTENTS.rewards) {
     return rewardsResponse({ identity, rewardsService: rewardsService || {} });
@@ -478,12 +498,26 @@ async function resolveAskSnoozerStationResponse({
     });
   }
   if (intent === STARTER_INTENTS.browse) {
-    return browseResponse({ query, context, manifest, fetchProductsByHandles });
+    return browseResponse({
+      query: executionQuery,
+      context,
+      manifest,
+      fetchProductsByHandles,
+      explicitOffset: Number.isInteger(commandPayload?.offset) ? commandPayload.offset : null,
+    });
   }
   if (intent === STARTER_INTENTS.motion) {
-    return motionResponse({ query, context, manifest, fetchProductsByHandles });
+    return motionResponse({ query: executionQuery, context, manifest, fetchProductsByHandles });
   }
-  return compareResponse({ query, context, manifest, fetchProductsByHandles });
+  return compareResponse({
+    query: executionQuery,
+    context,
+    manifest,
+    fetchProductsByHandles,
+    explicitHandles: Array.isArray(commandPayload?.productHandles)
+      ? commandPayload.productHandles
+      : null,
+  });
 }
 
 module.exports = {

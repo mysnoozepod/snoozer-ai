@@ -212,6 +212,10 @@ const { loadShowroomManifest } = require("./services/showroomManifest");
 const {
   resolveAskSnoozerStationResponse,
 } = require("./services/askSnoozerStation");
+const {
+  buildShowroomCommandDecision,
+  validateShowroomCommand,
+} = require("./services/askSnoozerShowroomCommand");
 
 let getHudScriptPayload = null;
 let hudScriptSafeTimeoutMs = Number(
@@ -6340,6 +6344,8 @@ function getAskSnoozerRouteDeps() {
     queryExplicitlyRequestsAskSnoozerCommerce,
     resolveAskSnoozerCommerceResponse,
     resolveAskSnoozerStationResponse,
+    buildShowroomCommandDecision,
+    validateShowroomCommand,
     shopifySvc,
     rewardProgramService,
     loadShowroomManifest,

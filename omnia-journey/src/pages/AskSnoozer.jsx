@@ -8,7 +8,7 @@ import { emitDeviceActiveResponse, emitDeviceHumanHelp } from "@/device/deviceAc
 import { makePodRoute } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
 import { getRewardSummary } from "@/lib/api";
-import { sendAskSnoozerMessage, sendAskSnoozerQualityTiming } from "@/lib/snoozer/askSnoozerPage";
+import { createShowroomCommand, sendAskSnoozerMessage, sendAskSnoozerQualityTiming } from "@/lib/snoozer/askSnoozerPage";
 import { setActiveJourney } from "@/state/sessionStore";
 import {
   ASK_SNOOZER_VOICE_TIMING_EVENT,
@@ -16,18 +16,18 @@ import {
   createAskSnoozerTurnTiming,
   markAskSnoozerTiming,
 } from "@/lib/snoozer/askSnoozerPerformance.mjs";
-import { buildComparePrompt, buildProductAddAction, cartItemCount, formatProductPrice } from "@/lib/snoozer/askSnoozerStationContract.mjs";
+import { buildProductAddAction, cartItemCount, formatProductPrice } from "@/lib/snoozer/askSnoozerStationContract.mjs";
 import { useStore } from "@/lib/useStore";
 import { useSessionStore } from "@/state/sessionStore";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
 import { ShowroomCartBadge, ShowroomDownstreamHeader, ShowroomEyebrow, ShowroomFrame, ShowroomPageShell, ShowroomPanel, ShowroomTopRail } from "@/components/showroom/ShowroomPrimitives";
 
 const QUICK_STARTERS = [
-  { label: "Find Rewards", prompt: "Find Rewards", icon: Gift },
-  { label: "Analyze My Cart", prompt: "Analyze My Cart", icon: ShoppingCart },
-  { label: "Compare Products", prompt: "Compare Products", icon: Scale },
-  { label: "Motion Base Features", prompt: "Motion Base Features", icon: BedDouble },
-  { label: "Browse Products", prompt: "Browse Products", icon: Search },
+  { label: "Find Rewards", command: createShowroomCommand("find_rewards"), icon: Gift },
+  { label: "Analyze My Cart", command: createShowroomCommand("analyze_cart"), icon: ShoppingCart },
+  { label: "Compare Products", command: createShowroomCommand("compare_products", { productHandles: [] }), icon: Scale },
+  { label: "Motion Base Features", command: createShowroomCommand("motion_base_features"), icon: BedDouble },
+  { label: "Browse Products", command: createShowroomCommand("browse_products", { offset: 0 }), icon: Search },
 ];
 
 function createMessageId(prefix) {
@@ -117,7 +117,7 @@ function ProductCard({ item, siblings, imageFailed, mutationPending, canAdd, can
       <div className="mt-3 flex flex-wrap gap-2">
         {addAction ? <button type="button" disabled={mutationPending} onClick={() => onAdd(addAction)} className="rounded-full bg-[#16315F] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#102749] disabled:opacity-50">{mutationPending ? "Adding…" : "Add to Cart"}</button> : canAdd && item.available === true && item.variants?.length > 1 ? <button type="button" onClick={onChoose} className="rounded-full border border-[#c9d7ff] bg-white px-3 py-1.5 text-xs font-bold text-[#16315F] hover:bg-[#f5f8ff]">Choose Size</button> : null}
         {canView && item.url ? <button type="button" onClick={onView} className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">View Details <ExternalLink className="h-3 w-3" /></button> : null}
-        {item.handle ? <button type="button" onClick={() => onCompare(buildComparePrompt(item, siblings))} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">Compare</button> : null}
+        {item.handle ? <button type="button" onClick={() => onCompare(item, siblings)} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">Compare</button> : null}
       </div>
     </div>
   );
@@ -139,7 +139,7 @@ export default function AskSnoozer() {
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
-  const [lastFailedPrompt, setLastFailedPrompt] = useState("");
+  const [lastFailedRequest, setLastFailedRequest] = useState(null);
   const [failedRecommendationImages, setFailedRecommendationImages] = useState({});
   const [rewardState, setRewardState] = useState({ status: "idle", points: null });
 
@@ -228,7 +228,7 @@ export default function AskSnoozer() {
     });
   }
 
-  async function sendMessage(rawMessage, { comparisonProductHandles = [] } = {}) {
+  async function sendMessage(rawMessage, { command = null, comparisonProductHandles = [] } = {}) {
     const content = String(rawMessage || "").trim();
     if (!content || pending) return;
     const turnTiming = createAskSnoozerTurnTiming(createMessageId("ask_timing"));
@@ -239,11 +239,12 @@ export default function AskSnoozer() {
     const userMessage = { id: createMessageId("user"), role: "user", content, createdAt: nowIso() };
     const history = [...messages.map(messageToHistoryEntry), messageToHistoryEntry(userMessage)];
     setMessages((current) => [...current, userMessage]);
-    setPending(true); setLastFailedPrompt(""); setDraft("");
+    const retryRequest = { message: content, command };
+    setPending(true); setLastFailedRequest(null); setDraft("");
     window.requestAnimationFrame(() => markAskSnoozerTiming(turnTiming, "firstFeedbackAt"));
     try {
       const response = await sendAskSnoozerMessage({
-        message: content, history, referrerRoute, comparisonProductHandles,
+        message: content, command, history, referrerRoute, comparisonProductHandles,
         deviceContext: { deviceId: device?.deviceId || null, deviceMode: device?.deviceMode || null, podId: device?.podId || null, zoneId: device?.zoneId || null, proximity: zoneExperience.proximityContext },
       });
       markAskSnoozerTiming(turnTiming, "responseReceivedAt");
@@ -251,14 +252,14 @@ export default function AskSnoozer() {
       const assistantMessage = {
         id: response?.reply?.id || createMessageId("assistant"), role: "assistant", content: extractResponseContent(response), createdAt: response?.reply?.createdAt || nowIso(),
         status: response?.status || "answered", chips: filterResponseChips(response?.chips), actions: filterDeviceActions(device, response?.actions),
-        recommendations: Array.isArray(response?.recommendations) ? response.recommendations : [], canRetry: response?.ok === false, retryPrompt: content,
+        recommendations: Array.isArray(response?.recommendations) ? response.recommendations : [], canRetry: response?.ok === false, retryRequest,
       };
       setMessages((current) => [...current, assistantMessage]);
       window.requestAnimationFrame(() => {
         markAskSnoozerTiming(turnTiming, "displayAt");
         sendAskSnoozerQualityTiming(buildAskSnoozerDisplayTiming(turnTiming, response)).catch(() => {});
       });
-      setLastFailedPrompt(response?.ok === false ? content : "");
+      setLastFailedRequest(response?.ok === false ? retryRequest : null);
       if (response?.voice?.speak && response?.voice?.speech && typeof sayHud === "function") {
         await speechSupersession;
         sayHud({
@@ -280,8 +281,8 @@ export default function AskSnoozer() {
         }).catch(() => {});
       }
     } catch {
-      setMessages((current) => [...current, { id: createMessageId("assistant"), role: "assistant", content: composeFallbackReply(), createdAt: nowIso(), status: "fallback", chips: [], actions: [], recommendations: [], canRetry: true, retryPrompt: content }]);
-      setLastFailedPrompt(content);
+      setMessages((current) => [...current, { id: createMessageId("assistant"), role: "assistant", content: composeFallbackReply(), createdAt: nowIso(), status: "fallback", chips: [], actions: [], recommendations: [], canRetry: true, retryRequest }]);
+      setLastFailedRequest(retryRequest);
     } finally { setPending(false); }
   }
 
@@ -308,6 +309,7 @@ export default function AskSnoozer() {
     noteUserInteraction?.();
     if (chip?.type === "route" && chip?.target) { if (canNavigateTo(device, chip.target)) navigate(chip.target); return; }
     if (chip?.type === "action") { if (isDeviceActionAllowed(device, chip)) handleAction({ type: chip.value === "I need human help" ? "request_human" : "none", label: chip.label, target: chip.target }); return; }
+    if (chip?.type === "command" && chip?.command) { sendMessage(chip.label, { command: chip.command }); return; }
     sendMessage(chip?.value || chip?.label);
   }
 
@@ -327,7 +329,7 @@ export default function AskSnoozer() {
     <ShowroomPageShell className="flex min-h-0 flex-col pb-24">
       <ShowroomTopRail className="items-center pt-2 md:pt-3">
         <ShowroomDownstreamHeader
-          rewards={<RewardsPill status={rewardState.status} points={rewardState.points} onClick={() => sendMessage("Find Rewards")} />}
+          rewards={<RewardsPill status={rewardState.status} points={rewardState.points} onClick={() => sendMessage("Find Rewards", { command: createShowroomCommand("find_rewards") })} />}
           cart={showCommerceAffordances ? <ShowroomCartBadge count={authoritativeCartCount} quiet onClick={() => { noteUserInteraction?.(); if (canNavigateTo(device, "/cart")) navigate("/cart"); }} /> : null}
         />
       </ShowroomTopRail>
@@ -349,7 +351,7 @@ export default function AskSnoozer() {
                 </div>
                 <div>
                   <div className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Quick Starters</div>
-                  <div className="grid gap-2 sm:grid-cols-2">{QUICK_STARTERS.map((item) => <QuickStarter key={item.label} item={item} onClick={() => sendMessage(item.prompt)} />)}</div>
+                  <div className="grid gap-2 sm:grid-cols-2">{QUICK_STARTERS.map((item) => <QuickStarter key={item.label} item={item} onClick={() => sendMessage(item.label, { command: item.command })} />)}</div>
                 </div>
               </div>
             </section>
@@ -369,9 +371,19 @@ export default function AskSnoozer() {
                         {isAssistant && message.recommendations?.length ? <div className="mt-3 grid gap-2 md:grid-cols-2">{message.recommendations.map((item) => {
                           const cardKey = `${message.id}-${item.id}`;
                           const canView = Boolean(item.url?.startsWith("/") && canNavigateTo(device, item.url));
-                          return <ProductCard key={cardKey} item={item} siblings={message.recommendations} imageFailed={Boolean(failedRecommendationImages[cardKey])} mutationPending={cartMutationPending} canAdd={cartMutationAllowed} canView={canView} onImageError={() => setFailedRecommendationImages((current) => ({ ...current, [cardKey]: true }))} onAdd={handleAction} onView={() => { noteUserInteraction?.(); if (canView) navigate(item.url); }} onCompare={(prompt) => sendMessage(prompt, { comparisonProductHandles: [item.handle, ...message.recommendations.map((candidate) => candidate.handle)].filter(Boolean).slice(0, 2) })} onChoose={() => sendMessage(`What sizes are available for ${item.handle}?`)} />;
+                          return <ProductCard key={cardKey} item={item} siblings={message.recommendations} imageFailed={Boolean(failedRecommendationImages[cardKey])} mutationPending={cartMutationPending} canAdd={cartMutationAllowed} canView={canView} onImageError={() => setFailedRecommendationImages((current) => ({ ...current, [cardKey]: true }))} onAdd={handleAction} onView={() => { noteUserInteraction?.(); if (canView) navigate(item.url); }} onCompare={(selected, siblings) => {
+                            const productHandles = [selected?.handle, ...(siblings || []).map((candidate) => candidate?.handle)]
+                              .filter((handle, index, handles) => handle && handles.indexOf(handle) === index)
+                              .slice(0, 2);
+                            sendMessage("Compare Products", {
+                              command: createShowroomCommand("compare_products", { productHandles: productHandles.length === 2 ? productHandles : [] }),
+                            });
+                          }} onChoose={() => sendMessage("Choose Size", { command: createShowroomCommand("product_sizes", { productHandle: item.handle }) })} />;
                         })}</div> : null}
-                        {isAssistant && message.canRetry ? <button type="button" onClick={() => sendMessage(message.retryPrompt || lastFailedPrompt)} className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"><RefreshCcw className="h-3.5 w-3.5" /> Retry</button> : null}
+                        {isAssistant && message.canRetry ? <button type="button" onClick={() => {
+                          const request = message.retryRequest || lastFailedRequest;
+                          if (request?.message) sendMessage(request.message, { command: request.command || null });
+                        }} className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"><RefreshCcw className="h-3.5 w-3.5" /> Retry</button> : null}
                       </div>
                     </article>
                   );

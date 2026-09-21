@@ -113,6 +113,17 @@ async function run() {
   check(browse.products[0].handle === "14-hybrid", "browse prioritizes grounded recommendation context");
   check(browse.products.every((product) => manifest.products.some((item) => item.handle === product.handle)), "browse never escapes catalog boundaries");
   check(browse.products.every((product) => product.exactVariantResolved === false), "multi-variant browse never guesses a configuration");
+  check(browse.chips[0]?.type === "command" && browse.chips[0]?.command?.type === "browse_products", "show-more chip preserves typed browse semantics");
+
+  const explicitBrowse = await resolveAskSnoozerStationResponse({
+    query: "Banana spaceship",
+    explicitIntent: STARTER_INTENTS.browse,
+    commandPayload: { offset: 3 },
+    context: {},
+    manifest,
+    fetchProductsByHandles,
+  });
+  check(explicitBrowse.products[0]?.handle === "premium-motion-adjustable-base", "explicit browse offset is independent of display text");
 
   const queenBrowse = await resolveAskSnoozerStationResponse({ query: "Browse Products Queen", context: {}, manifest, fetchProductsByHandles });
   check(queenBrowse.products.every((product) => product.exactVariantResolved && product.selectedOptions[0].value === "Queen"), "explicit size resolves exact variants");
@@ -135,6 +146,16 @@ async function run() {
   });
   check(compared.products.length === 2 && compared.reply.includes("does not change the mattress saved from your assessment"), "comparison preserves the saved recommendation in shopper language");
   check(compared.reply.includes("starts at") && compared.source === "mixed", "comparison combines canon attributes with Shopify pricing");
+
+  const explicitCompare = await resolveAskSnoozerStationResponse({
+    query: "Banana spaceship",
+    explicitIntent: STARTER_INTENTS.compare,
+    commandPayload: { productHandles: ["14-hybrid", "12-dual-comfort-hybrid"] },
+    context: { comparisonProductHandles: ["12-all-foam-mattress", "premium-motion-adjustable-base"] },
+    manifest,
+    fetchProductsByHandles,
+  });
+  check(explicitCompare.products.map((product) => product.handle).join(",") === "14-hybrid,12-dual-comfort-hybrid", "explicit compare preserves the commanded pair and order");
 
   const extracted = extractHandles("Compare 12-all-foam-mattress with 14-hybrid", manifest, {});
   check(extracted.join(",") === "14-hybrid,12-all-foam-mattress" || extracted.join(",") === "12-all-foam-mattress,14-hybrid", "only manifest handles are extracted");

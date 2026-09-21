@@ -408,7 +408,7 @@ function inferStage(taskType = "", previous = "exploring") {
 function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy", requestedFacts = [], actTypes = new Set(), modelDecision = null } = {}) {
   const proposed = clean(proposedTask);
   if (!proposed) return false;
-  if (clean(modelDecision?.authority) === "model_semantics") return true;
+  if (["model_semantics", "typed_showroom_action"].includes(clean(modelDecision?.authority))) return true;
   if (deterministicTask !== "legacy") return proposed === deterministicTask;
   if (["1", "true", "yes", "on"].includes(clean(process.env.ASK_SNOOZER_MODEL_ONLY).toLowerCase())) {
     return true;
@@ -466,20 +466,22 @@ function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy",
 }
 
 function planAskSnoozerTurn({ query = "", context = {}, referenceContext = context, modelDecision = null } = {}) {
-  const text = normalizeAskSnoozerText(query);
+  const semanticAuthority = clean(modelDecision?.authority);
+  const semanticAuthoritative = ["model_semantics", "typed_showroom_action"].includes(semanticAuthority);
+  const typedShowroomAction = semanticAuthority === "typed_showroom_action";
+  const text = normalizeAskSnoozerText(typedShowroomAction ? "" : query);
   const deal = activeDeal(context);
   const canonicalHandle = resolveCanonicalHandle(context);
-  const modelAuthoritative = clean(modelDecision?.authority) === "model_semantics";
   const modelFailed = clean(modelDecision?.authority) === "model_failed";
   const plannedSubjectHandle = clean(
     modelDecision?.productReferences?.find((reference) => reference?.role === "subject")?.handle ||
       modelDecision?.productReferences?.[0]?.handle
   ).toLowerCase();
-  const referenceResolution = modelAuthoritative
+  const referenceResolution = semanticAuthoritative
     ? {
         phrase: null,
         handle: plannedSubjectHandle || null,
-        source: plannedSubjectHandle ? "model_semantics" : null,
+        source: plannedSubjectHandle ? semanticAuthority : null,
         resolved: Boolean(plannedSubjectHandle),
       }
     : modelFailed
@@ -492,13 +494,15 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     ["collecting_slots", "ready", "resolving", "presented", "awaiting_decision", "completed"].includes(
       clean(workingGoal?.status)
     );
-  const explicitHandle = modelAuthoritative
+  const explicitHandle = semanticAuthoritative
     ? plannedSubjectHandle
     : modelFailed
       ? ""
       : resolveExplicitProductHandle(query);
-  const explicitBase = resolveExplicitBaseSelection(query);
-  const parsedSize = parseAskSnoozerSizeLabel(query);
+  const explicitBase = typedShowroomAction ? {} : resolveExplicitBaseSelection(query);
+  const parsedSize = typedShowroomAction
+    ? clean(modelDecision?.knownFacts?.size)
+    : parseAskSnoozerSizeLabel(query);
   const acts = interpretedActs(context);
   const actTypes = new Set(acts.map((act) => clean(act?.type)));
   const feedbackHandle = clean(
@@ -519,7 +523,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     /\bwhy\b.*\b(?:cost|price|expensive)\b.*\b(?:worth|value)\b/.test(text) ||
     /\b(?:cost|price)\b.*\band\b.*\b(?:worth|value)\b/.test(text)
   );
-  const requestedFacts = modelAuthoritative
+  const requestedFacts = semanticAuthoritative
     ? unique(modelDecision?.requestedFacts || [])
     : modelFailed
       ? []
@@ -616,7 +620,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     actTypes,
     modelDecision,
   })) taskType = clean(modelDecision.primaryTask);
-  const protectedExactPriceScope = modelAuthoritative &&
+  const protectedExactPriceScope = semanticAuthoritative &&
     requestedFacts.length === 1 &&
     requestedFacts[0] === "price" &&
     Boolean(explicitHandle) &&
@@ -624,7 +628,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     !valueCue &&
     /\b(?:how much|price|pricing|quote|cost)\b/.test(text);
   if (protectedExactPriceScope) taskType = "price_quote";
-  const protectedAtomicFactScope = modelAuthoritative &&
+  const protectedAtomicFactScope = semanticAuthoritative &&
     requestedFacts.length === 1 &&
     text.split(/\s+/).filter(Boolean).length <= 18;
   if (protectedAtomicFactScope && ["delivery", "returns", "financing"].includes(requestedFacts[0])) {
@@ -637,7 +641,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   if (taskType === "legacy" && requestedFacts.includes("recommendation_reasons")) {
     taskType = "recommendation_explanation";
   }
-  if (!modelAuthoritative) {
+  if (!semanticAuthoritative) {
     if (requestedFacts.length > 1) taskType = "compound_fact_answer";
     else if (requestedFacts.includes("product_sizes")) taskType = "product_sizes";
     else if (requestedFacts.includes("warranty")) taskType = "warranty_explanation";
@@ -647,7 +651,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     else if (requestedFacts.includes("store_value")) taskType = "store_value";
   }
 
-  if (!modelAuthoritative && referenceResolution.phrase && !referenceResolution.resolved) {
+  if (!semanticAuthoritative && referenceResolution.phrase && !referenceResolution.resolved) {
     taskType = "reference_clarification";
   } else if (taskType === "legacy" && correctionCue && referenceResolution.resolved) {
     taskType = "product_experience";
@@ -683,7 +687,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     /\b(?:reject|ruled out|original|first|previous|other|last|before)\b/.test(text);
   let semanticPlanRepair = null;
   if (
-    !modelAuthoritative &&
+    !semanticAuthoritative &&
     ["legacy", "recommendation_explanation"].includes(taskType) &&
     requestedFacts.length === 0 &&
     substantiveQuestion &&
@@ -769,7 +773,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     "compatibility",
     "cart_add",
   ].includes(taskType);
-  if (!modelAuthoritative && !modelFailed && readyCommercialGoal && !clearlyChangedSubject && !alreadyCompletingCommercialGoal) {
+  if (!semanticAuthoritative && !modelFailed && readyCommercialGoal && !clearlyChangedSubject && !alreadyCompletingCommercialGoal) {
     const goalIncludesBase = Boolean(
       workingGoal?.baseHandle ||
         ["mattress_plus_base", "full_pod", "base_only"].includes(clean(workingGoal?.scope))
@@ -784,7 +788,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     !/\b(?:that|this|the)\s+(?:mattress|one|hybrid|foam|product)\b|\b(?:tell me more|what am i going to notice|what (?:will|should) i notice|notice when i lie|notice on it)\b/i.test(query) &&
     !referenceResolution.handle &&
     !explicitHandle;
-  const quoteReferenceHandle = modelAuthoritative
+  const quoteReferenceHandle = semanticAuthoritative
     ? ["alternative_resolution", "session_recommendation_recall"].includes(taskType)
       ? activeSessionRecommendationHandle(context) || plannedSubjectHandle || activeHandle || canonicalHandle
       : plannedSubjectHandle || (["canonical_recommendation", "canonical_recall", "recommendation_explanation"].includes(taskType)
@@ -801,7 +805,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       : ["shopper_feedback", "trust_recovery"].includes(taskType)
         ? feedbackHandle || explicitHandle || null
         : referenceResolution.handle || explicitHandle || activeDeal(context)?.acceptedRecommendation?.productHandle || activeSessionRecommendationHandle(context) || activeHandle || workingGoal?.productHandle || canonicalHandle;
-  let comparisonHandles = modelAuthoritative
+  let comparisonHandles = semanticAuthoritative
     ? unique(
         Array.isArray(modelDecision?.comparisonProductHandles) && modelDecision.comparisonProductHandles.length
           ? modelDecision.comparisonProductHandles
@@ -810,21 +814,21 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     : modelFailed
       ? unique(activeDeal(referenceContext)?.comparisonProductHandles || []).slice(0, 2)
       : resolveComparisonHandles(query, referenceContext, []);
-  if (!modelAuthoritative && taskType === "hybrid_exploration") {
+  if (!semanticAuthoritative && taskType === "hybrid_exploration") {
     comparisonHandles = unique([activeHandle, "12-dual-comfort-hybrid", "14-hybrid"]).slice(0, 3);
-  } else if (!modelAuthoritative && taskType === "advisor_choice" && comparisonHandles.length < 2) {
+  } else if (!semanticAuthoritative && taskType === "advisor_choice" && comparisonHandles.length < 2) {
     comparisonHandles = unique([
       ...comparisonHandles,
       activeHandle === "14-hybrid" ? "12-all-foam-mattress" : "14-hybrid",
     ]).slice(0, 2);
-  } else if (!modelAuthoritative && taskType === "canonical_comparison") {
+  } else if (!semanticAuthoritative && taskType === "canonical_comparison") {
     comparisonHandles = unique([canonicalHandle, activeSessionRecommendationHandle(context) || activeHandle]).slice(0, 2);
-  } else if (!modelAuthoritative && ["alternative_resolution", "trust_recovery", "shopper_feedback"].includes(taskType)) {
+  } else if (!semanticAuthoritative && ["alternative_resolution", "trust_recovery", "shopper_feedback"].includes(taskType)) {
     comparisonHandles = unique(activeDeal(context)?.eligibleAlternativeHandles || []).filter(
       (handle) => !rejectedHandles(context).has(handle)
     ).slice(0, 3);
   }
-  if (!modelAuthoritative && semanticPlanRepair === "resolved_relational_comparison") {
+  if (!semanticAuthoritative && semanticPlanRepair === "resolved_relational_comparison") {
     comparisonHandles = unique([currentRelationalHandle, relationalOtherHandle]).slice(0, 2);
   }
   const needsCommerce = ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(taskType);
@@ -846,7 +850,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     Number(activeMemory(context)?.turnIndex || 0) <= 1 &&
     !continuation;
   const atomicRewardsBalance =
-    !modelAuthoritative &&
+    !semanticAuthoritative &&
     requestedFacts.length === 1 &&
     requestedFacts[0] === "rewards" &&
     /\b(?:reward balance|how many points|points balance)\b/.test(text);
@@ -857,7 +861,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     !ambiguousSetupPrice &&
     !missingCanonical &&
     !missingProductReference &&
-    !missingCommerceProduct;
+    (!missingCommerceProduct || typedShowroomAction);
   const stage = inferStage(taskType, deal.stage);
   const depth = responseDepth(text, taskType);
   const modelEligible = [
@@ -961,7 +965,8 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       handled &&
       (modelEligible || modelDecision?.requiresComposition === true) &&
       !atomicStandaloneCommerce &&
-      !atomicRewardsBalance,
+      !atomicRewardsBalance &&
+      !typedShowroomAction,
     atomicCommerceLookup: atomicStandaloneCommerce,
     needsCommerce,
     needsCompatibility,

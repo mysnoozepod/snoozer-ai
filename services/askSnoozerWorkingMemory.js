@@ -891,7 +891,7 @@ function reduceShopperFeedbackState({
 
   const comparisonProductHandles = uniqueStrings(baseDeal?.comparisonProductHandles || [])
     .map(normalizeHandle)
-    .filter((handle) => semanticAuthority === "model_semantics" || !rejected.has(handle));
+    .filter((handle) => ["model_semantics", "typed_showroom_action"].includes(semanticAuthority) || !rejected.has(handle));
   const activeQuote = invalidateQuoteForRejectedProduct(baseDeal?.activeQuote, rejected);
   if (activeQuote?.status === "invalidated" && !activeQuote.invalidatedAt) activeQuote.invalidatedAt = updatedAt;
 
@@ -962,13 +962,13 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
   const previousDeal = isObject(previous?.activeDeal) ? previous.activeDeal : {};
   const canonicalRecommendation = normalizeCanonicalRecommendation(context, previousDeal);
   const canonicalHandle = clean(canonicalRecommendation?.primaryMattressHandle).toLowerCase();
-  const authoritativeModel = semanticAuthority === "model_semantics";
+  const authoritativeSemantics = ["model_semantics", "typed_showroom_action"].includes(semanticAuthority);
   const modelFailed = semanticAuthority === "model_failed";
   const plannedSubjectHandle = clean(
     modelDecision?.productReferences?.find((reference) => reference?.role === "subject")?.handle ||
       modelDecision?.productReferences?.[0]?.handle
   ).toLowerCase();
-  const explicitProductHandle = authoritativeModel
+  const explicitProductHandle = authoritativeSemantics
     ? plannedSubjectHandle
     : modelFailed
       ? ""
@@ -982,15 +982,15 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
   if (["asserted", "reconsideration"].includes(modality) && explicitProductHandle && explicitProductHandle !== previousActive) {
     recentProductHandle = previousActive || previousRecent || null;
     activeProductHandle = explicitProductHandle;
-  } else if (!authoritativeModel && !modelFailed && referencesCanonical && canonicalHandle) {
+  } else if (!authoritativeSemantics && !modelFailed && referencesCanonical && canonicalHandle) {
     if (previousActive && previousActive !== canonicalHandle) recentProductHandle = previousActive;
     activeProductHandle = canonicalHandle;
   }
 
-  let comparisonProductHandles = authoritativeModel && Array.isArray(modelDecision?.comparisonProductHandles) && modelDecision.comparisonProductHandles.length
+  let comparisonProductHandles = authoritativeSemantics && Array.isArray(modelDecision?.comparisonProductHandles) && modelDecision.comparisonProductHandles.length
     ? uniqueStrings(modelDecision.comparisonProductHandles).slice(0, 2)
     : uniqueStrings(previousDeal.comparisonProductHandles || []);
-  if (!authoritativeModel && !modelFailed && /\b(?:compare|versus|\bvs\b|which one)\b/.test(text)) {
+  if (!authoritativeSemantics && !modelFailed && /\b(?:compare|versus|\bvs\b|which one)\b/.test(text)) {
     comparisonProductHandles = uniqueStrings([
       ...comparisonProductHandles,
       previousActive,
@@ -999,8 +999,10 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
     ]).slice(-2);
   }
 
-  const explicitBase = modelFailed ? {} : resolveExplicitBaseSelection(query);
-  const currentTopic = authoritativeModel
+  const explicitBase = modelFailed || semanticAuthority === "typed_showroom_action"
+    ? {}
+    : resolveExplicitBaseSelection(query);
+  const currentTopic = authoritativeSemantics
     ? clean(modelDecision?.primaryTask) || clean(previousDeal.currentTopic) || null
     : modelFailed
       ? clean(previousDeal.currentTopic) || null
@@ -1014,7 +1016,7 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
       ? previousDeal.activeBaseHandle || previousDeal.recentBaseHandle || null
       : previousDeal.recentBaseHandle || null;
   const motionKey = explicitBase.motionKey || previousDeal.activeMotionKey || null;
-  const stage = authoritativeModel || modelFailed ? clean(previousDeal.stage) || "exploring" : inferBuyingStage(query, previousDeal.stage);
+  const stage = authoritativeSemantics || modelFailed ? clean(previousDeal.stage) || "exploring" : inferBuyingStage(query, previousDeal.stage);
 
   return {
     stage,
@@ -1033,7 +1035,7 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
         ? context.restTest.observations
         : [],
     baseDecision:
-      !authoritativeModel && !modelFailed && /\b(?:not sure|uncertain)\b.*\b(?:motion|base)\b/.test(text)
+      !authoritativeSemantics && !modelFailed && /\b(?:not sure|uncertain)\b.*\b(?:motion|base)\b/.test(text)
         ? "undecided"
         : explicitBase.explicitNoBase
           ? "skip"
@@ -1049,11 +1051,11 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
     compatibilityStatus: clean(previousDeal.compatibilityStatus) || "unknown",
     currentTopic,
     currentSubtopic:
-      !authoritativeModel && !modelFailed && currentTopic === "comfort" && resolveExplicitPainPoints(query).length
+      !authoritativeSemantics && !modelFailed && currentTopic === "comfort" && resolveExplicitPainPoints(query).length
         ? "pressure_points"
         : clean(previousDeal.currentSubtopic) || null,
-    objection: authoritativeModel || modelFailed ? previousDeal.objection || null : inferObjection(query),
-    decision: authoritativeModel || modelFailed ? previousDeal.decision || null : inferDecision(query, previousDeal.decision),
+    objection: authoritativeSemantics || modelFailed ? previousDeal.objection || null : inferObjection(query),
+    decision: authoritativeSemantics || modelFailed ? previousDeal.decision || null : inferDecision(query, previousDeal.decision),
     missingInformation: [],
     lastAnsweredQuestionType: clean(previousDeal.lastAnsweredQuestionType) || null,
     lastProbe: clean(previousDeal.lastProbe) || null,
@@ -1089,20 +1091,24 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
 
   const semanticAuthority = clean(modelDecision?.authority) || (modelDecision ? "model_semantics" : "deterministic_fallback");
   const modelFailed = semanticAuthority === "model_failed";
-  const authoritativeModel = semanticAuthority === "model_semantics";
-  const parsedSize = modelFailed ? "" : parseAskSnoozerSizeLabel(query);
+  const authoritativeSemantics = ["model_semantics", "typed_showroom_action"].includes(semanticAuthority);
+  const typedShowroomAction = semanticAuthority === "typed_showroom_action";
+  const typedSize = typedShowroomAction
+    ? clean(modelDecision?.knownFacts?.size)
+    : "";
+  const parsedSize = modelFailed ? "" : typedShowroomAction ? typedSize : parseAskSnoozerSizeLabel(query);
   const explicitSize =
     parsedSize === "Full" && /\b(?:full|complete|whole) setup\b/.test(normalizeAskSnoozerText(query))
       ? ""
       : parsedSize;
-  const explicitFirmness = modelFailed ? "" : resolveExplicitFirmness(query);
-  const explicitProductHandle = authoritativeModel
+  const explicitFirmness = modelFailed || typedShowroomAction ? "" : resolveExplicitFirmness(query);
+  const explicitProductHandle = authoritativeSemantics
     ? clean(modelDecision?.productReferences?.find((reference) => reference?.role === "subject")?.handle || modelDecision?.productReferences?.[0]?.handle).toLowerCase()
     : modelFailed
       ? ""
       : resolveExplicitProductHandle(query);
-  const explicitBase = modelFailed ? {} : resolveExplicitBaseSelection(query);
-  const explicitPainPoints = modelFailed ? [] : resolveExplicitPainPoints(query);
+  const explicitBase = modelFailed || typedShowroomAction ? {} : resolveExplicitBaseSelection(query);
+  const explicitPainPoints = modelFailed || typedShowroomAction ? [] : resolveExplicitPainPoints(query);
   const modality = clean(modelDecision?.modality) || inferUtteranceModality(query);
   const directSelectionAllowed =
     ["asserted", "reconsideration"].includes(modality) ||
@@ -1131,13 +1137,13 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
   const continuesPriceGoal = isContinuablePriceGoal(activeGoal);
   const startsPriceGoal = modelFailed
     ? false
-    : authoritativeModel
+    : authoritativeSemantics
       ? (modelDecision?.requestedFacts || []).includes("price")
       : isPriceLikeQuery(query);
   const updatesPriceGoal =
-    startsPriceGoal || isContextualPriceFragment(query, { activeGoal });
+    startsPriceGoal || (!typedShowroomAction && isContextualPriceFragment(query, { activeGoal }));
   if (updatesPriceGoal) {
-    const scope = resolveCommerceScope(query, activeGoal);
+    const scope = resolveCommerceScope(typedShowroomAction ? "" : query, activeGoal);
     activeGoal = {
       ...(continuesPriceGoal ? activeGoal : {}),
       intent: PRICE_GOAL_INTENT,
@@ -1205,7 +1211,7 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
     activeGoal,
     activeDeal: feedbackTransition.activeDeal,
     conversationFocus: {
-      topic: authoritativeModel
+      topic: authoritativeSemantics
         ? clean(modelDecision?.primaryTask) || clean(previous?.conversationFocus?.topic) || null
         : modelFailed
           ? clean(previous?.conversationFocus?.topic) || null

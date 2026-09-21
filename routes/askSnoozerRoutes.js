@@ -80,6 +80,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     queryExplicitlyRequestsAskSnoozerCommerce,
     resolveAskSnoozerCommerceResponse,
     resolveAskSnoozerStationResponse,
+    buildShowroomCommandDecision,
+    validateShowroomCommand,
     shopifySvc,
     rewardProgramService,
     loadShowroomManifest,
@@ -199,7 +201,99 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
     const wantHud = wantsHudResponse(event, mode);
 
-    if (!msg) {
+    const commandSupplied = Object.prototype.hasOwnProperty.call(payload || {}, "command");
+    let showroomCommandValidation = null;
+    let showroomCommand = null;
+    let typedCommandEventLogged = false;
+    const logTypedCommand = ({ valid = true, validationReason = null, fallbackUsed = false, executionPath = null } = {}) => {
+      if (typedCommandEventLogged) return;
+      typedCommandEventLogged = true;
+      log("ask-snoozer.typed-command", valid ? "executed" : "rejected", {
+        traceId,
+        testCaseId,
+        sessionId: effectiveSessionId,
+        commandVersion: showroomCommandValidation?.commandVersion || String(payload?.command?.version || "").trim() || null,
+        commandType: showroomCommandValidation?.commandType || String(payload?.command?.type || "").trim() || null,
+        valid,
+        semanticAuthority: "typed_showroom_action",
+        executionPath: executionPath || showroomCommandValidation?.executionPath || "validation",
+        plannerBypassed: true,
+        fallbackUsed: Boolean(fallbackUsed),
+        productHandleCount: Number(showroomCommandValidation?.productHandleCount || 0),
+        ...(validationReason ? { validationReason } : {}),
+      });
+    };
+    if (commandSupplied) {
+      let commandManifest = null;
+      try {
+        commandManifest = typeof loadShowroomManifest === "function" ? loadShowroomManifest() : null;
+      } catch {
+        commandManifest = null;
+      }
+      showroomCommandValidation = typeof validateShowroomCommand === "function"
+        ? validateShowroomCommand(payload.command, { manifest: commandManifest })
+        : {
+            ok: false,
+            code: "E_INVALID_SHOWROOM_COMMAND",
+            validationReason: "validator_unavailable",
+            commandVersion: String(payload?.command?.version || "").trim() || null,
+            commandType: String(payload?.command?.type || "").trim() || null,
+            productHandleCount: 0,
+          };
+      if (!showroomCommandValidation?.ok) {
+        logTypedCommand({
+          valid: false,
+          validationReason: showroomCommandValidation?.validationReason || "invalid_command",
+          executionPath: "validation",
+        });
+        const errorBody = buildErrorResponse({
+          requestId: traceId,
+          latencyMs: Date.now() - startedAt,
+          context: { shopperId, sessionId: effectiveSessionId },
+          code: "E_INVALID_SHOWROOM_COMMAND",
+          message: "The showroom action could not be validated.",
+        });
+        const normalized = normalizeSnoozerResponse(
+          {
+            ...errorBody,
+            ok: false,
+            status: "error",
+            sessionId: effectiveSessionId,
+            reply: "I could not validate that showroom action, so I stopped instead of guessing.",
+            error: {
+              code: "E_INVALID_SHOWROOM_COMMAND",
+              message: "The showroom action could not be validated.",
+            },
+            meta: {
+              path: "typed_showroom_action_validation",
+              planning: {
+                semanticAuthority: "typed_showroom_action",
+                modelCallCount: 0,
+                plannerModelCallCount: 0,
+                legacyShadow: { evaluated: false },
+              },
+            },
+          },
+          { traceId, sessionId: effectiveSessionId, routePath, startedAtMs: startedAt, debug }
+        );
+        logContractResponse(normalized);
+        if (wantHud) {
+          const hud = await buildHudFromAny(normalized, {
+            ok: false,
+            mode,
+            context: { shopperId, sessionId: effectiveSessionId },
+            payload,
+            defaultSpeech: normalized.reply,
+            traceId,
+          });
+          return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+        }
+        return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
+      }
+      showroomCommand = showroomCommandValidation.command;
+    }
+
+    if (!msg && !showroomCommand) {
       const errorBody = buildErrorResponse({
         requestId: traceId,
         latencyMs: 0,
@@ -535,20 +629,37 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       semanticBoundary: null,
       legacyShadow: null,
     };
-    const semanticBoundary = typeof resolveAskSnoozerSemanticAuthority === "function"
-      ? resolveAskSnoozerSemanticAuthority({ query: msg, context })
-      : {
-          mode: typeof shouldPlanAskSnoozerWithModel === "function" && shouldPlanAskSnoozerWithModel({ query: msg, context })
-            ? "model_semantics"
-            : "deterministic_atomic",
-          reason: "compatibility_boundary",
-        };
+    const semanticBoundary = showroomCommand
+      ? { mode: "typed_showroom_action", reason: "validated_showroom_command" }
+      : typeof resolveAskSnoozerSemanticAuthority === "function"
+        ? resolveAskSnoozerSemanticAuthority({ query: msg, context })
+        : {
+            mode: typeof shouldPlanAskSnoozerWithModel === "function" && shouldPlanAskSnoozerWithModel({ query: msg, context })
+              ? "model_semantics"
+              : "deterministic_atomic",
+            reason: "compatibility_boundary",
+          };
     askSnoozerModelPlanning.semanticBoundary = semanticBoundary;
     askSnoozerModelPlanning.authority = semanticBoundary.mode;
-    const commitmentDecision = typeof resolvePendingCommitmentProtocol === "function"
+    const commitmentDecision = !showroomCommand && typeof resolvePendingCommitmentProtocol === "function"
       ? resolvePendingCommitmentProtocol({ query: msg, context })
       : null;
-    if (commitmentDecision) {
+    if (showroomCommand) {
+      const commandDecision = typeof buildShowroomCommandDecision === "function"
+        ? buildShowroomCommandDecision(showroomCommand)
+        : null;
+      askSnoozerModelPlanning.decision = commandDecision;
+      askSnoozerModelPlanning.authority = "typed_showroom_action";
+      askSnoozerModelPlanning.legacyShadow = { evaluated: false };
+      log("ask-snoozer.semantic-plan", "typed_showroom_action", {
+        traceId,
+        testCaseId,
+        commandType: showroomCommand.type,
+        primaryTask: commandDecision?.primaryTask || null,
+        productHandles: (commandDecision?.productReferences || []).map((reference) => reference.handle),
+        requestedFacts: commandDecision?.requestedFacts || [],
+      });
+    } else if (commitmentDecision) {
       askSnoozerModelPlanning.decision = commitmentDecision;
       askSnoozerModelPlanning.authority = commitmentDecision.authority;
       log("ask-snoozer.semantic-plan", "typed_commitment", {
@@ -751,14 +862,21 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       ].includes(String(fact || "").trim()))
     );
     const modelSemanticTurn = ["model_semantics", "model_failed"].includes(askSnoozerModelPlanning.authority);
-    const askSnoozerClassification = modelSemanticTurn
+    const askSnoozerClassification = showroomCommand
+      ? {
+          intent: showroomCommand.type,
+          intent_group: "typed_showroom_action",
+          confidence: 1,
+          source_of_truth: "typed_showroom_action",
+        }
+      : modelSemanticTurn
       ? {
           intent: askSnoozerPlan?.taskType || askSnoozerModelPlanning?.decision?.primaryTask || "model_only_unresolved",
           intent_group: "model_led",
           confidence: askSnoozerModelPlanning?.decision?.confidence || null,
           source_of_truth: askSnoozerModelPlanning.authority,
         }
-      : buildAskSnoozerClassification(msg, context);
+        : buildAskSnoozerClassification(msg, context);
     const presentationPolicy = typeof resolveAskSnoozerPresentationPolicy === "function"
       ? resolveAskSnoozerPresentationPolicy({ correlationId: effectiveSessionId })
       : { version: "baseline-v1", assignment: "control", directives: ["preserve_current_structure"] };
@@ -1029,13 +1147,20 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       }
     }
 
+    const typedStationCommand = Boolean(
+      showroomCommand &&
+      ["find_rewards", "analyze_cart", "browse_products", "compare_products", "motion_base_features"]
+        .includes(showroomCommand.type)
+    );
+
     // Every turn is planned before routing. Nuanced continued turns use the
     // trusted-advisor composer; only clean station starters fall through.
     const advisorAnswer =
       askSnoozerPlan?.handled &&
+      !typedStationCommand &&
       typeof resolveAskSnoozerAdvisorTurn === "function"
         ? await resolveAskSnoozerAdvisorTurn({
-            query: msg,
+            query: showroomCommand ? "" : msg,
             context,
             plan: askSnoozerPlan,
             fetchProductsByHandles: shopifySvc?.fetchProductsByHandles,
@@ -1284,7 +1409,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           errorCode: askSnoozerModelPlanning.errorCode,
           semanticAuthority: askSnoozerModelPlanning.authority,
           semanticBoundary: askSnoozerModelPlanning.semanticBoundary,
-          legacyShadow: askSnoozerModelPlanning.legacyShadow
+          legacyShadow: askSnoozerModelPlanning.legacyShadow?.evaluated
             ? {
                 evaluated: true,
                 taskAgreement: askSnoozerModelPlanning.legacyShadow.taskAgreement,
@@ -1326,6 +1451,13 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           responseValidationMs,
         },
       };
+      if (showroomCommand) {
+        logTypedCommand({
+          valid: true,
+          fallbackUsed: Boolean(advisorAnswer.fallbackUsed),
+          executionPath: showroomCommandValidation?.executionPath || "advisor_truth_lane",
+        });
+      }
       const normalized = normalizeSnoozerResponse(env, {
         traceId,
         sessionId: effectiveSessionId,
@@ -1397,7 +1529,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     // Dedicated-station starter lanes stay inside the authoritative Ask route.
     // They use verified rewards/Shopify/canon data and return the existing envelope.
     if (
-      String(mode || "").toLowerCase() === "ask_snoozer_page" &&
+      (typedStationCommand || String(mode || "").toLowerCase() === "ask_snoozer_page") &&
       typeof resolveAskSnoozerStationResponse === "function"
     ) {
       let stationManifest = null;
@@ -1412,6 +1544,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
       const stationAnswer = await resolveAskSnoozerStationResponse({
         query: msg,
+        explicitIntent: typedStationCommand ? showroomCommand.type : null,
+        commandPayload: typedStationCommand ? showroomCommand.payload : null,
         context,
         identity: askIdentity,
         rewardsService: rewardProgramService,
@@ -1421,7 +1555,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       });
 
       const atomicStationIntents = new Set(["find_rewards", "analyze_cart", "browse_products"]);
-      if (stationAnswer && atomicStationIntents.has(stationAnswer.intent)) {
+      if (stationAnswer && (typedStationCommand || atomicStationIntents.has(stationAnswer.intent))) {
         if (stationAnswer.intent === "find_rewards") {
           const summary = stationAnswer.contextPatch?.rewards?.summary || null;
           log("ask-snoozer.truth-lane", "resolved", {
@@ -1487,7 +1621,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         env.status = stationAnswer.fallbackUsed ? "completed_with_fallback" : "answered";
         env.chips = stationAnswer.chips;
         env.meta = {
-          path: "atomic_deterministic",
+          path: typedStationCommand ? "typed_showroom_action" : "atomic_deterministic",
           intent: stationAnswer.intent,
           source: stationAnswer.source,
           answer_strategy: `atomic_deterministic_${stationAnswer.intent}`,
@@ -1513,7 +1647,25 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             totalMs: latencyMs,
             fallbackUsed: Boolean(stationAnswer.fallbackUsed),
           },
+          planning: {
+            mode: typedStationCommand ? "typed_showroom_action" : "deterministic",
+            modelCallCount: 0,
+            plannerModelCallCount: 0,
+            modelMs: 0,
+            fallbackUsed: false,
+            semanticAuthority: typedStationCommand ? "typed_showroom_action" : askSnoozerModelPlanning.authority,
+            semanticBoundary: askSnoozerModelPlanning.semanticBoundary,
+            legacyShadow: { evaluated: false },
+          },
         };
+
+        if (typedStationCommand) {
+          logTypedCommand({
+            valid: true,
+            fallbackUsed: Boolean(stationAnswer.fallbackUsed),
+            executionPath: showroomCommandValidation?.executionPath || "station_domain_service",
+          });
+        }
 
         const normalized = normalizeSnoozerResponse(env, {
           traceId,

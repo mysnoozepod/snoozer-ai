@@ -15,6 +15,7 @@ const ASK_SNOOZER_REQUEST_TIMEOUT_MS = Math.max(
 );
 const ASK_SNOOZER_CONVERSATION_KEY = "snooze.askSnoozer.conversationId";
 const ASK_SNOOZER_HISTORY_LIMIT = 10;
+export const SHOWROOM_COMMAND_VERSION = "showroom-command.v1";
 const FALLBACK_MESSAGE =
   "I hit a snag, but I can still help. Try asking that another way, or choose one of these next steps.";
 const RECOMMENDATION_TERMS = [
@@ -250,8 +251,26 @@ function readClientContext() {
 
 function normalizeChipType(value) {
   const type = String(value || "").trim().toLowerCase();
-  if (type === "route" || type === "action") return type;
+  if (type === "route" || type === "action" || type === "command") return type;
   return "prompt";
+}
+
+export function createShowroomCommand(type, payload = {}) {
+  return {
+    version: SHOWROOM_COMMAND_VERSION,
+    type: String(type || "").trim(),
+    payload: payload && typeof payload === "object" && !Array.isArray(payload) ? { ...payload } : {},
+  };
+}
+
+function normalizeCommand(command) {
+  if (!command || typeof command !== "object" || Array.isArray(command)) return null;
+  const version = String(command.version || "").trim();
+  const type = String(command.type || "").trim();
+  if (!version || !type || !command.payload || typeof command.payload !== "object" || Array.isArray(command.payload)) {
+    return null;
+  }
+  return { version, type, payload: { ...command.payload } };
 }
 
 function inferRouteTarget(label, value) {
@@ -266,7 +285,7 @@ function inferRouteTarget(label, value) {
   return null;
 }
 
-function normalizeChips(raw) {
+export function normalizeChips(raw) {
   const list = Array.isArray(raw)
     ? raw
     : Array.isArray(raw?.chips)
@@ -289,15 +308,16 @@ function normalizeChips(raw) {
       if (!chip || typeof chip !== "object") return null;
 
       const label = firstNonEmptyString([chip.label, chip.title, chip.text, chip.value]);
-      const value = firstNonEmptyString([chip.value, chip.prompt, chip.target, chip.url]);
-      if (!label || !value) return null;
-
       const type = normalizeChipType(chip.type);
+      const command = type === "command" ? normalizeCommand(chip.command) : null;
+      const value = firstNonEmptyString([chip.value, chip.prompt, chip.target, chip.url]);
+      if (!label || (type === "command" ? !command : !value)) return null;
       return {
         label,
-        value,
+        value: type === "command" ? label : value,
         type,
         target: type === "route" ? inferRouteTarget(label, chip) : null,
+        command,
       };
     })
     .filter(Boolean)
@@ -565,15 +585,15 @@ function buildAdaptiveChips({ message, qualityGate, recommendations = [] }) {
 
   if (intentGroup === "policy") {
     return [
-      buildChip("Return policy", "What is your return policy?"),
-      buildChip("Delivery timing", "How long does delivery take?"),
-      buildChip("Financing", "Do you offer financing?"),
+      buildCommandChip("Return policy", "policy_fact", { topic: "returns" }),
+      buildCommandChip("Delivery timing", "policy_fact", { topic: "delivery" }),
+      buildCommandChip("Financing", "policy_fact", { topic: "financing" }),
     ];
   }
 
   if (intentGroup === "commerce") {
     return [
-      buildChip("Queen pricing", "What is the Queen price?"),
+      buildCommandChip("Queen pricing", "price_quote", { size: "Queen" }),
       buildChip("Mattress only", "I want a mattress only setup"),
       buildChip("Adjustable base", "How do adjustable bases help?"),
     ];
@@ -768,6 +788,16 @@ function normalizeSuccessResponse(payload, { conversationId, requestId, message 
   };
 }
 
+function buildCommandChip(label, commandType, payload = {}) {
+  return {
+    label,
+    value: label,
+    type: "command",
+    target: null,
+    command: createShowroomCommand(commandType, payload),
+  };
+}
+
 export async function sendAskSnoozerQualityTiming(payload = {}) {
   try {
     const response = await fetch(buildApiUrl("/ask-snoozer/quality-event"), {
@@ -850,13 +880,15 @@ async function postAskSnoozer(payload) {
 
 export async function sendAskSnoozerMessage({
   message,
+  command = null,
   history,
   referrerRoute = null,
   deviceContext = null,
   comparisonProductHandles = [],
 } = {}) {
   const trimmedMessage = String(message || "").trim();
-  if (!trimmedMessage) {
+  const normalizedCommand = normalizeCommand(command);
+  if (!trimmedMessage && !normalizedCommand) {
     return buildFallbackResponse({
       conversationId: ensureConversationId(),
       requestId: createId("request"),
@@ -890,6 +922,7 @@ export async function sendAskSnoozerMessage({
   }
   const requestPayload = {
     message: trimmedMessage,
+    ...(normalizedCommand ? { command: normalizedCommand } : {}),
     conversationId,
     surface: "react_app",
     mode: "ask_snoozer_page",
