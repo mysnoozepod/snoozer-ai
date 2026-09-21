@@ -4,7 +4,6 @@
 const assert = require("assert");
 
 process.env.ASK_SNOOZER_PREFER_LOCAL_KNOWLEDGE = "1";
-process.env.ASK_SNOOZER_MODEL_ONLY = "1";
 for (const key of [
   "ZCRM_CLIENT_ID",
   "ZCRM_CLIENT_SECRET",

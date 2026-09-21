@@ -410,9 +410,6 @@ function modelTaskCanOverride({ proposedTask = "", deterministicTask = "legacy",
   if (!proposed) return false;
   if (["model_semantics", "typed_showroom_action"].includes(clean(modelDecision?.authority))) return true;
   if (deterministicTask !== "legacy") return proposed === deterministicTask;
-  if (["1", "true", "yes", "on"].includes(clean(process.env.ASK_SNOOZER_MODEL_ONLY).toLowerCase())) {
-    return true;
-  }
   const facts = new Set(requestedFacts);
   const comparisons = Array.isArray(modelDecision?.comparisonProductHandles)
     ? modelDecision.comparisonProductHandles.filter(Boolean)

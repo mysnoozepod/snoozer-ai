@@ -14,9 +14,6 @@ const {
   planAskSnoozerTurn,
   resolveAskSnoozerAdvisorTurn,
 } = require("../services/askSnoozerConversationOrchestrator");
-const {
-  evaluateAskSnoozerSemanticShadow,
-} = require("../services/askSnoozerSemanticShadow");
 
 function baseContext() {
   return {
@@ -167,31 +164,22 @@ async function main() {
   check(/ruled out/i.test(recapOutcome.reply) && /10-inch All Foam/i.test(recapOutcome.reply), "E recap names rejected and current recommendations");
   check(/softer but supportive/i.test(recapOutcome.reply) && /Next, test/i.test(recapOutcome.reply), "E recap preserves direction and gives one clear next test");
 
-  const shadowContext = baseContext();
-  const shadowBefore = JSON.stringify(shadowContext);
+  const isolationContext = baseContext();
+  const isolationBefore = JSON.stringify(isolationContext);
   const contradictoryQuery = "I'm confused about the original mattress.";
   const authoritativeDecision = decision({
     primaryTask: "sleep_education",
     productReferences: [{ handle: "10-all-foam-mattress", role: "subject" }],
     comparisonProductHandles: ["10-all-foam-mattress", "14-hybrid"],
     acts: [{ type: "retain_preference", key: "support", value: "supportive", modality: "asserted" }],
-  }, contradictoryQuery, shadowContext);
-  const liveContext = applyAskSnoozerWorkingMemory({ query: contradictoryQuery, context: shadowContext, modelDecision: authoritativeDecision });
-  const livePlanBeforeShadow = planAskSnoozerTurn({ query: contradictoryQuery, context: liveContext, referenceContext: shadowContext, modelDecision: authoritativeDecision });
-  const shadow = evaluateAskSnoozerSemanticShadow({
-    query: contradictoryQuery,
-    context: shadowContext,
-    modelDecision: authoritativeDecision,
-    applyWorkingMemory: applyAskSnoozerWorkingMemory,
-    planTurn: planAskSnoozerTurn,
-  });
-  const livePlanAfterShadow = planAskSnoozerTurn({ query: contradictoryQuery, context: liveContext, referenceContext: shadowContext, modelDecision: authoritativeDecision });
-  check(livePlanAfterShadow.taskType === "sleep_education" && shadow.legacyTask === "confusion_recovery", "1 valid planner task beats contradictory legacy task");
-  check(livePlanAfterShadow.references.requestedProductHandle === "10-all-foam-mattress", "2 valid planner reference beats legacy reference resolution");
-  check(JSON.stringify(livePlanAfterShadow.references.comparisonProductHandles) === JSON.stringify(["10-all-foam-mattress", "14-hybrid"]), "3 valid planner comparison pair beats legacy heuristic pair");
-  check(JSON.stringify(shadowContext.askSnoozerWorkingMemory) === JSON.stringify(JSON.parse(shadowBefore).askSnoozerWorkingMemory) && shadow.liveContextUnchanged, "4 legacy shadow does not mutate Working Memory");
-  check(JSON.stringify(shadowContext.activeJourney) === JSON.stringify(JSON.parse(shadowBefore).activeJourney), "5 legacy shadow does not mutate Active Journey");
-  check(JSON.stringify(livePlanAfterShadow) === JSON.stringify(livePlanBeforeShadow), "6 legacy shadow does not alter the live response plan");
+  }, contradictoryQuery, isolationContext);
+  const liveContext = applyAskSnoozerWorkingMemory({ query: contradictoryQuery, context: isolationContext, modelDecision: authoritativeDecision });
+  const livePlan = planAskSnoozerTurn({ query: contradictoryQuery, context: liveContext, referenceContext: isolationContext, modelDecision: authoritativeDecision });
+  check(livePlan.taskType === "sleep_education", "1 valid planner task is the only live semantic task");
+  check(livePlan.references.requestedProductHandle === "10-all-foam-mattress", "2 valid planner reference is authoritative");
+  check(JSON.stringify(livePlan.references.comparisonProductHandles) === JSON.stringify(["10-all-foam-mattress", "14-hybrid"]), "3 valid planner comparison pair is authoritative");
+  check(JSON.stringify(isolationContext.askSnoozerWorkingMemory) === JSON.stringify(JSON.parse(isolationBefore).askSnoozerWorkingMemory), "4 planning leaves source Working Memory immutable");
+  check(JSON.stringify(isolationContext.activeJourney) === JSON.stringify(JSON.parse(isolationBefore).activeJourney), "5 planning leaves source Active Journey immutable");
 
   const failedDecision = {
     authority: "model_failed",

@@ -1,5 +1,8 @@
 const { loadShowroomManifest } = require("./showroomManifest");
-const { normalizeAskSnoozerText } = require("./askSnoozerIntents");
+const {
+  normalizeAskSnoozerText,
+  parseAskSnoozerSizeLabel,
+} = require("./askSnoozerIntents");
 
 const MODEL_PLANNER_VERSION = "2026-09-16.1";
 
@@ -7,14 +10,7 @@ const SEMANTIC_AUTHORITY = Object.freeze({
   DETERMINISTIC_ATOMIC: "deterministic_atomic",
   MODEL_SEMANTICS: "model_semantics",
   MODEL_FAILED: "model_failed",
-  LEGACY_SHADOW: "legacy_semantics_shadow",
 });
-
-function isModelOnlySemanticRoutingEnabled() {
-  return ["1", "true", "yes", "on"].includes(
-    clean(process.env.ASK_SNOOZER_MODEL_ONLY || "").toLowerCase()
-  );
-}
 
 const ALLOWED_MODALITIES = new Set([
   "asserted",
@@ -306,8 +302,138 @@ function resolveAskSnoozerSemanticAuthority({ query = "", context = {} } = {}) {
   if (/^(?:browse products?|show me (?:products?|mattresses?|bases?)|motion base features?)[.! ]*$/.test(text)) {
     return atomic("station_starter");
   }
-  if (/^where should i start[?!. ]*$/.test(text)) return atomic("station_starter");
+  if (/^where should i start[?!. ]*$/.test(text)) return atomic("session_guidance");
   return { mode: SEMANTIC_AUTHORITY.MODEL_SEMANTICS, reason: "arbitrary_conversation" };
+}
+
+function buildDeterministicAtomicDecision({ reason = "", query = "", context = {} } = {}) {
+  const atomicReason = clean(reason).toLowerCase();
+  const requestedFacts = inferRequestedFacts(query);
+  const deal = context?.askSnoozerWorkingMemory?.activeDeal || {};
+  const explicitHandle = resolveCatalogHandle(query);
+  const pathHandle = clean(context?.currentProductHandle || clean(context?.path).match(/^\/products\/([^/?#]+)/i)?.[1]).toLowerCase();
+  const productHandle = clean(
+    explicitHandle ||
+      pathHandle ||
+      deal?.activeProductHandle ||
+      deal?.sessionRecommendation?.productHandle ||
+      deal?.acceptedRecommendation?.productHandle ||
+      deal?.canonicalRecommendation?.primaryMattressHandle ||
+      context?.canonicalRecommendation?.primaryMattressHandle
+  ).toLowerCase();
+  const size = clean(parseAskSnoozerSizeLabel(query) || deal?.activeSize) || null;
+  const policyTopic = requestedFacts.find((fact) => ["returns", "delivery", "warranty", "financing"].includes(fact)) || null;
+  const primaryTaskByReason = {
+    greeting: "greeting",
+    support_handoff: "support_handoff",
+    session_support: "support_handoff",
+    cart_view: "cart_review",
+    cart_command: "cart_add",
+    checkout_command: "checkout_command",
+    rewards_balance: "rewards_explanation",
+    exact_price_lookup: "price_quote",
+    station_starter: "station_starter",
+    session_guidance: "session_guidance",
+  };
+  let primaryTask = primaryTaskByReason[atomicReason] || null;
+  if (atomicReason === "protected_fact") {
+    if (policyTopic && policyTopic !== "warranty") primaryTask = "compound_fact_answer";
+    else if (policyTopic === "warranty") primaryTask = "warranty_explanation";
+    else if (requestedFacts.includes("product_sizes")) primaryTask = "product_sizes";
+    else if (requestedFacts.includes("price")) primaryTask = "price_quote";
+    else if (requestedFacts.includes("rewards")) primaryTask = "rewards_explanation";
+    else if (requestedFacts.includes("durability")) primaryTask = "durability_objection";
+    else if (requestedFacts.includes("availability")) primaryTask = "availability";
+    else if (requestedFacts.includes("compatibility")) primaryTask = "compatibility";
+  }
+  const commerceReason = [
+    "cart_command",
+    "checkout_command",
+    "exact_price_lookup",
+  ].includes(atomicReason) || requestedFacts.some((fact) => ["availability", "compatibility", "price", "product_sizes"].includes(fact));
+  const routeIntentGroup = policyTopic
+    ? "policy"
+    : commerceReason
+      ? "commerce"
+      : ["support_handoff", "session_support"].includes(atomicReason)
+        ? "support"
+        : atomicReason === "session_guidance"
+          ? "session_guidance"
+        : atomicReason === "station_starter"
+          ? "station"
+          : "fallback";
+  const requiresProduct = atomicReason !== "exact_price_lookup" && requestedFacts.some((fact) => ["availability", "compatibility", "price", "product_sizes"].includes(fact));
+  const scope = atomicReason === "exact_price_lookup" && /\bsetup\b/.test(normalizeAskSnoozerText(query))
+    ? "full_pod"
+    : "unclear";
+  const missingSlots = requiresProduct && !productHandle ? ["productHandle"] : [];
+  const intent = primaryTask || atomicReason || "deterministic_atomic";
+  const classification = {
+    intent,
+    intent_group: routeIntentGroup,
+    primary_intent: intent,
+    confidence: 1,
+    source_of_truth: "deterministic_atomic",
+    policy_subtype: policyTopic || "",
+    size_label: size || "",
+  };
+  return {
+    version: MODEL_PLANNER_VERSION,
+    authority: SEMANTIC_AUTHORITY.DETERMINISTIC_ATOMIC,
+    reason: atomicReason || "deterministic_atomic",
+    modality: inferUtteranceModality(query),
+    primaryTask,
+    shopperGoal: null,
+    acts: [],
+    productReferences: productHandle ? [{ handle: productHandle, role: "subject" }] : [],
+    comparisonProductHandles: [],
+    requestedFacts,
+    answerRequirements: [],
+    requestedPodId: null,
+    requiresComposition: false,
+    confidence: 1,
+    knownFacts: { size },
+    validation: {
+      source: "deterministic_atomic",
+      reason: atomicReason || "deterministic_atomic",
+    },
+    routeDecision: {
+      intentGroup: routeIntentGroup,
+      intent,
+      confidence: 1,
+      slots: {
+        productHandle: productHandle || null,
+        baseHandle: null,
+        size,
+        motionKey: null,
+        scope,
+        policyTopic,
+        sessionTopic: atomicReason === "session_support"
+          ? "session_support"
+          : atomicReason === "session_guidance"
+            ? "where_to_start"
+            : null,
+        currentProductHandle: pathHandle || null,
+        candidateProductHandles: [],
+      },
+      missingSlots,
+      sourceOfTruth: policyTopic
+        ? "s3_policy"
+        : commerceReason
+          ? "shopify"
+          : ["support_handoff", "session_support"].includes(atomicReason)
+            ? "deterministic_support"
+            : atomicReason === "session_guidance"
+              ? "session_prep"
+              : "deterministic_atomic",
+      protectedTruthRequired: Boolean(policyTopic || commerceReason),
+      shouldUseOpenAI: false,
+      shouldAskClarifyingQuestion: missingSlots.length > 0,
+      knowledgeKeys: [],
+      classification,
+      atomicReason: atomicReason || "deterministic_atomic",
+    },
+  };
 }
 
 function buildModelPlannerInput({ query = "", context = {} } = {}) {
@@ -443,15 +569,30 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
     : explicitShopperAssertion
       ? "asserted"
       : ALLOWED_MODALITIES.has(suppliedModality) ? suppliedModality : inferredModality;
+  const rawPrimaryTask = clean(parsed.primaryTask).toLowerCase();
+  const suppliedPrimaryTask = rawPrimaryTask === "request_alternative"
+    ? "alternative_resolution"
+    : rawPrimaryTask;
+  const protectedFactsAllowedByTask = {
+    compatibility: new Set(["compatibility"]),
+    warranty_explanation: new Set(["warranty"]),
+    durability_objection: new Set(["durability"]),
+    price_quote: new Set(["price"]),
+    product_sizes: new Set(["product_sizes"]),
+    rewards_explanation: new Set(["rewards"]),
+  };
+  const taskAllowedFacts = protectedFactsAllowedByTask[suppliedPrimaryTask] || new Set();
   const parsedFacts = unique(parsed.requestedFacts || [])
     .map((fact) => clean(fact).toLowerCase())
-    .filter((fact) => ALLOWED_FACTS.has(fact) && (
-      !PROTECTED_FACTS.has(fact) ||
-      hintedFacts.includes(fact) ||
-      isModelOnlySemanticRoutingEnabled()
-    ));
+    .filter(
+      (fact) =>
+        ALLOWED_FACTS.has(fact) &&
+        (!PROTECTED_FACTS.has(fact) ||
+          hintedFacts.includes(fact) ||
+          taskAllowedFacts.has(fact))
+    );
   const requestedFacts = unique([...hintedFacts, ...parsedFacts]);
-  let primaryTask = clean(parsed.primaryTask).toLowerCase();
+  let primaryTask = suppliedPrimaryTask;
   if (requestedFacts.length > 1) primaryTask = "compound_fact_answer";
   else if (requestedFacts.includes("durability")) primaryTask = "durability_objection";
   else if (requestedFacts.includes("rewards")) primaryTask = "rewards_explanation";
@@ -571,7 +712,7 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
       : null,
     validation: {
       source: "model_semantics",
-      rawPrimaryTask: clean(parsed.primaryTask).toLowerCase() || null,
+      rawPrimaryTask: rawPrimaryTask || null,
       rawActTypes: rawActs.map((act) => clean(act?.type).toLowerCase()).filter(Boolean),
       acceptedActTypes: acts.map((act) => act.type),
       droppedActs,
@@ -588,10 +729,10 @@ module.exports = {
   SEMANTIC_AUTHORITY,
   ALLOWED_TASKS,
   ALLOWED_FACTS,
+  buildDeterministicAtomicDecision,
   buildModelPlannerInput,
   inferRequestedFacts,
   inferUtteranceModality,
-  isModelOnlySemanticRoutingEnabled,
   parseModelPlannerDecision,
   resolvePendingCommitmentProtocol,
   resolveAskSnoozerSemanticAuthority,

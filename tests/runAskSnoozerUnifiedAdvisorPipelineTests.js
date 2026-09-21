@@ -336,8 +336,11 @@ async function main() {
   const routeSource = fs.readFileSync(path.join(__dirname, "..", "routes", "askSnoozerRoutes.js"), "utf8");
   assert(routeSource.includes('new Set(["find_rewards", "analyze_cart", "browse_products"])'));
   assert(routeSource.includes('String(mode || "").toLowerCase() === "ask_snoozer_page"'));
-  assert(routeSource.includes('path: "legacy_path"'));
-  scenarios.push("legacy path detection");
+  assert(!routeSource.includes("routeAskSnoozerQuestion"));
+  assert(!routeSource.includes("getSnoozerResponse"));
+  assert(!routeSource.includes("ask-snoozer.semantic-shadow"));
+  assert(!routeSource.includes('path: "legacy_path"'));
+  scenarios.push("permanent semantic cutover");
 
   assert(new Set(scenarios).size >= 21);
   console.log(JSON.stringify({

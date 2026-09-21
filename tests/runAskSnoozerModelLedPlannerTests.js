@@ -161,6 +161,17 @@ async function main() {
   check(updatedDeal.retainedPreferences.motion.value === "liked", "validated independent preference is retained");
   check(updatedDeal.desiredDirection.feel === "softer", "validated desired direction is retained");
 
+  const alternativeAliasDecision = parseModelPlannerDecision({
+    primaryTask: "request_alternative",
+    acts: [
+      { type: "desired_direction", key: "feel", value: "softer" },
+      { type: "request_alternative" },
+    ],
+    requestedFacts: [],
+  }, { query: "What should I try instead if I want something softer but still supportive?" });
+  check(alternativeAliasDecision.primaryTask === "alternative_resolution", "planner act-name schema slip normalizes to the validated alternative task");
+  check(alternativeAliasDecision.validation.rawPrimaryTask === "request_alternative", "planner validation preserves the raw aliased task for telemetry");
+
   const sizeDecision = parseModelPlannerDecision({
     primaryTask: "product_sizes",
     productReferences: [{ handle: "12-dual-comfort-hybrid", role: "subject" }],
@@ -289,10 +300,7 @@ async function main() {
   check(input.activeJourney.canonicalRecommendation.podId === "3", "planner receives protected canonical pod identity");
   check(input.catalog.every((item) => item.handle && item.title), "planner receives compact real catalog identities");
 
-  const previousModelOnly = process.env.ASK_SNOOZER_MODEL_ONLY;
-  process.env.ASK_SNOOZER_MODEL_ONLY = "true";
-  try {
-    const baseCompatibility = parseModelPlannerDecision({
+  const baseCompatibility = parseModelPlannerDecision({
       utteranceMode: "hypothetical",
       primaryTask: "compatibility",
       shopperGoal: "understand whether a base can be added",
@@ -392,11 +400,7 @@ async function main() {
       wrongAlternativeCard.violations.includes("session_recommendation_product_card_mismatch"),
       "response validation rejects a card that disagrees with the session recommendation"
     );
-    checks += 5;
-  } finally {
-    if (previousModelOnly === undefined) delete process.env.ASK_SNOOZER_MODEL_ONLY;
-    else process.env.ASK_SNOOZER_MODEL_ONLY = previousModelOnly;
-  }
+  checks += 5;
 
   const wrongPodDecision = parseModelPlannerDecision({
     primaryTask: null,

@@ -153,7 +153,6 @@ const {
   isRestTestGuidanceQuery,
   isSnoozeCodeQuery,
   isUnknownProductQuery,
-  routeAskSnoozerQuestion,
   resolveAskSnoozerCommerceResponse,
 } = require("./services/askSnoozerQualityGate");
 const {
@@ -179,13 +178,11 @@ const {
   resolveAskSnoozerAdvisorTurn,
 } = require("./services/askSnoozerConversationOrchestrator");
 const {
+  buildDeterministicAtomicDecision,
   resolveAskSnoozerSemanticAuthority,
   resolvePendingCommitmentProtocol,
   shouldPlanAskSnoozerWithModel,
 } = require("./services/askSnoozerModelPlanner");
-const {
-  evaluateAskSnoozerSemanticShadow,
-} = require("./services/askSnoozerSemanticShadow");
 const {
   resolveAskSnoozerVisitLifecycle,
 } = require("./services/askSnoozerVisitLifecycle");
@@ -5165,36 +5162,6 @@ function buildAskSnoozerPolicyChips(policySubtype = "") {
   ];
 }
 
-function maybeBuildAskSnoozerCanonicalAnswer(query, context) {
-  const canonicalRecommendation = isObject(context?.canonicalRecommendation)
-    ? context.canonicalRecommendation
-    : null;
-  if (
-    !canonicalRecommendation &&
-    !isObject(context?.sessionPrep) &&
-    !cleanIdentityValue(context?.bookingStatus)
-  ) {
-    return null;
-  }
-
-  const answer = buildAskSnoozerAnswer({
-    query,
-    canonicalRecommendation,
-    context,
-  });
-
-  if (
-    !answer?.answer_grounded ||
-    !["canonical_recommendation", "session_prep"].includes(
-      String(answer.answer_strategy || "").trim()
-    )
-  ) {
-    return null;
-  }
-
-  return answer;
-}
-
 function normalizeAskSnoozerContextPath(value = "") {
   return String(value || "").trim() || "/";
 }
@@ -6281,7 +6248,6 @@ function getAskSnoozerRouteDeps() {
     resolveCanonicalRecommendationContext,
     attachCanonicalRecommendationContext,
     pickAskSnoozerAssessmentInput,
-    buildAskSnoozerClassification,
     safeGetCustomerProfile,
     attachStoredProfileContext,
     customerProfileService,
@@ -6297,9 +6263,9 @@ function getAskSnoozerRouteDeps() {
     completeAskSnoozerPriceGoal,
     markAskSnoozerPriceGoalResolving,
     resolveAskSnoozerSemanticAuthority,
+    buildDeterministicAtomicDecision,
     resolvePendingCommitmentProtocol,
     shouldPlanAskSnoozerWithModel,
-    evaluateAskSnoozerSemanticShadow,
     planTrustedAdvisorTurnWithModel: async (args) => {
       const service = getAskSnoozerModelCoreSvc();
       if (!service || typeof service.planTrustedAdvisorTurnWithModel !== "function") {
@@ -6335,8 +6301,6 @@ function getAskSnoozerRouteDeps() {
     resolveAskSnoozerPresentationPolicy,
     safeResponseFingerprint,
     STRICT_POD_ANCHOR,
-    routeAskSnoozerQuestion,
-    maybeBuildAskSnoozerCanonicalAnswer,
     saveSessionContext,
     buildSuccessResponse,
     maybeBuildAskSnoozerDeterministicGuidanceAnswer,
