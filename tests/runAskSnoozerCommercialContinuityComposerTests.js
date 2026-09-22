@@ -10,7 +10,6 @@ const {
   completeAskSnoozerAdvisorTurn,
 } = require("../services/askSnoozerWorkingMemory");
 const {
-  clampAskSnoozerDisplayReply,
   clampAskSnoozerVoiceReply,
 } = require("../services/askSnoozerAnswerEngine");
 const { buildAskSnoozerQualityTrace } = require("../services/askSnoozerQualityTrace");
@@ -217,11 +216,9 @@ async function main() {
   }
 
   const longAnswer = Array.from({ length: 80 }, (_, index) => `Sentence ${index + 1} explains one complete shopper-facing idea.`).join(" ");
-  const boundedDisplay = clampAskSnoozerDisplayReply(longAnswer);
   const boundedVoice = clampAskSnoozerVoiceReply(longAnswer);
-  assert(boundedDisplay.length <= 1800 && /[.!?]$/.test(boundedDisplay));
   assert(boundedVoice.length <= 500 && /[.!?]$/.test(boundedVoice));
-  assert(!boundedDisplay.endsWith("...") && !boundedVoice.endsWith("..."));
+  assert(!boundedVoice.endsWith("..."));
 
   let failedContext = JSON.parse(JSON.stringify(context));
   failedContext.recentConversation = [];

@@ -95,10 +95,9 @@ function main() {
   );
   check(
     JSON.stringify(Object.keys(answerEngine).sort()) === JSON.stringify([
-      "clampAskSnoozerDisplayReply",
       "clampAskSnoozerVoiceReply",
     ]),
-    "Answer Engine exposes presentation clamps only"
+    "Answer Engine exposes only the live voice presentation clamp"
   );
   check(!Object.prototype.hasOwnProperty.call(qualityGate, "classifyAskSnoozerIntent"), "Quality Gate exports no broad classifier");
   check(typeof qualityGate.resolveAskSnoozerCommerceResponse === "function", "Quality Gate retains verified commerce resolution");

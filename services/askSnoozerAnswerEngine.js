@@ -1,7 +1,5 @@
 const { cleanShopperText } = require("./askSnoozerPolicy");
 
-const MAX_DISPLAY_REPLY_CHARS = 1800;
-const MAX_DISPLAY_SENTENCES = 9;
 const MAX_VOICE_REPLY_CHARS = 500;
 const MAX_VOICE_SENTENCES = 2;
 
@@ -40,11 +38,6 @@ function clampAskSnoozerVoiceReply(text, fallback = "") {
   return clampReply(text, fallback, { maxChars: MAX_VOICE_REPLY_CHARS, maxSentences: MAX_VOICE_SENTENCES });
 }
 
-function clampAskSnoozerDisplayReply(text, fallback = "") {
-  return clampReply(text, fallback, { maxChars: MAX_DISPLAY_REPLY_CHARS, maxSentences: MAX_DISPLAY_SENTENCES });
-}
-
 module.exports = {
-  clampAskSnoozerDisplayReply,
   clampAskSnoozerVoiceReply,
 };

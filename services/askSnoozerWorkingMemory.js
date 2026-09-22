@@ -512,10 +512,6 @@ function resolveAdaptiveSessionRecommendation(deal = {}) {
   };
 }
 
-function eligibleAlternativeHandles(deal = {}) {
-  return resolveAdaptiveSessionRecommendation(deal).eligibleCandidateHandles;
-}
-
 function invalidateQuoteForRejectedProduct(quote, rejected) {
   if (!isObject(quote) || !rejected?.size) return quote || null;
   const quoteHandles = uniqueStrings([
@@ -1417,7 +1413,6 @@ module.exports = {
   completeAskSnoozerPriceGoal,
   completeAskSnoozerAdvisorTurn,
   markAskSnoozerPriceGoalResolving,
-  eligibleAlternativeHandles,
   resolveAdaptiveSessionRecommendation,
   resolveExplicitBaseSelection,
   resolveExplicitProductHandle,
