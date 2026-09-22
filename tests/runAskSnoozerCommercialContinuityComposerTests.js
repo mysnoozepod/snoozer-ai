@@ -14,6 +14,45 @@ const {
   clampAskSnoozerVoiceReply,
 } = require("../services/askSnoozerAnswerEngine");
 const { buildAskSnoozerQualityTrace } = require("../services/askSnoozerQualityTrace");
+const { parseAskSnoozerSizeLabel } = require("../services/askSnoozerIntents");
+
+function modelDecision(query, primaryTask) {
+  const text = String(query || "").toLowerCase();
+  const handle = text.includes("dual comfort")
+    ? "12-dual-comfort-hybrid"
+    : text.includes("all foam")
+      ? "12-all-foam-mattress"
+      : text.includes("14-inch") || text.includes("14 hybrid")
+        ? "14-hybrid"
+        : "";
+  const requestedFacts = primaryTask === "warranty_explanation"
+    ? ["warranty"]
+    : primaryTask === "compound_fact_answer"
+      ? [text.includes("delivery") ? "delivery" : "returns"]
+      : primaryTask === "durability_objection"
+        ? ["durability"]
+        : primaryTask === "bundle_quote"
+          ? ["price"]
+          : [];
+  const acts = primaryTask === "confusion_recovery" ? [{ type: "confusion", modality: "asserted" }] : [];
+  return {
+    authority: "model_semantics",
+    primaryTask,
+    modality: "asserted",
+    acts,
+    productReferences: handle ? [{ handle, role: "subject" }] : [],
+    comparisonProductHandles: [],
+    requestedFacts,
+    answerRequirements: [],
+    knownFacts: {
+      size: parseAskSnoozerSizeLabel(query) || null,
+      baseDecision: primaryTask === "compound_product_base" ? "undecided" : null,
+    },
+    requiresComposition: true,
+    confidence: 0.98,
+    validation: { source: "test_model_decision" },
+  };
+}
 
 function product(handle, title, options) {
   return {
@@ -127,8 +166,9 @@ async function main() {
   const outputs = [];
   for (const [query, expectedTask] of transcript) {
     const before = context;
-    context = applyAskSnoozerWorkingMemory({ query, context });
-    const plan = planAskSnoozerTurn({ query, context, referenceContext: before });
+    const decision = modelDecision(query, expectedTask);
+    context = applyAskSnoozerWorkingMemory({ query, context, modelDecision: decision });
+    const plan = planAskSnoozerTurn({ query, context, referenceContext: before, modelDecision: decision });
     assert.equal(plan.taskType, expectedTask, `${query} should classify as ${expectedTask}`);
     if (!plan.handled) {
       outputs.push({ query, plan, outcome: null });
@@ -186,8 +226,9 @@ async function main() {
   let failedContext = JSON.parse(JSON.stringify(context));
   failedContext.recentConversation = [];
   const failedQuery = "I want the Half Split King Dual Comfort with the motion base. How much is that?";
-  failedContext = applyAskSnoozerWorkingMemory({ query: failedQuery, context: failedContext });
-  const failedPlan = planAskSnoozerTurn({ query: failedQuery, context: failedContext });
+  const failedDecision = modelDecision(failedQuery, "bundle_quote");
+  failedContext = applyAskSnoozerWorkingMemory({ query: failedQuery, context: failedContext, modelDecision: failedDecision });
+  const failedPlan = planAskSnoozerTurn({ query: failedQuery, context: failedContext, modelDecision: failedDecision });
   assert(failedPlan.handled, `failed-bundle test plan must be handled: ${JSON.stringify(failedPlan)}`);
   const failedBundle = await resolveAskSnoozerAdvisorTurn({
     query: failedQuery,
@@ -211,8 +252,9 @@ async function main() {
     recentConversation: [],
   };
   const failureQuery = "What does the 12-inch All Foam Mattress feel like?";
-  failureContext = applyAskSnoozerWorkingMemory({ query: failureQuery, context: failureContext });
-  const failurePlan = planAskSnoozerTurn({ query: failureQuery, context: failureContext });
+  const failureDecision = modelDecision(failureQuery, "product_experience");
+  failureContext = applyAskSnoozerWorkingMemory({ query: failureQuery, context: failureContext, modelDecision: failureDecision });
+  const failurePlan = planAskSnoozerTurn({ query: failureQuery, context: failureContext, modelDecision: failureDecision });
   const modelFailure = await resolveAskSnoozerAdvisorTurn({
     query: failureQuery,
     context: failureContext,

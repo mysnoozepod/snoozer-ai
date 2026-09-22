@@ -30,6 +30,7 @@
     "test:ask-snoozer-truth-lanes": "node tests/runAskSnoozerTruthLaneTests.js",
     "test:ask-snoozer-typed-actions": "node tests/runAskSnoozerTypedActionsTests.js",
     "test:ask-snoozer-semantic-cutover": "node tests/runAskSnoozerSemanticCutoverTests.js",
+    "test:ask-snoozer-legacy-excision": "node tests/runAskSnoozerLegacyExcisionTests.js",
     "test:ask-snoozer-unified-pipeline:live": "node scripts/runAskSnoozerPhase4LiveAcceptance.js",
     "test:ask-snoozer-comparison-latency:live": "node scripts/runAskSnoozerComparisonLatencyAcceptance.js",
     "test:active-journey": "node tests/runActiveJourneyTests.js",

@@ -128,7 +128,7 @@ function main() {
 
   const noActContext = context();
   noActContext.askSnoozerWorkingMemory.lastTransition = {
-    semanticAuthority: "deterministic_fallback",
+    semanticAuthority: "model_failed",
     modality: "question",
     interpretedActs: [],
     stateBefore: {},

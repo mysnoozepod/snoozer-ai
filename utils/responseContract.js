@@ -287,7 +287,7 @@ function normalizeSnoozerResponse(raw, opts = {}) {
       answerMeta.path,
       safe?.metadata?.answerPath,
       safe?.metadata?.path,
-      "legacy_path"
+      "grounded_safe_fallback"
     )
   );
 

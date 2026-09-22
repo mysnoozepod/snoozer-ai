@@ -258,7 +258,6 @@ function classifyOutcome({
   if (commercialSignals.renderedProductsConsistent === false) friction.push("rendered_products_inconsistent");
   if (commercialSignals.renderedActionsConsistent === false) friction.push("rendered_actions_inconsistent");
   if (commercialSignals.unnecessaryClarification) friction.push("unnecessary_clarification");
-  if (commercialSignals.legacyProsePathUsed) friction.push("legacy_prose_path_used");
   if (commercialSignals.genericFallbackUsed) friction.push("generic_fallback_used");
   if (commercialSignals.explicitRejectionHonored === false) friction.push("explicit_rejection_not_honored");
   if (commercialSignals.rejectedProductReintroduced) friction.push("rejected_product_reintroduced");
@@ -408,7 +407,6 @@ function classifyFailureSeverity(trace = {}) {
     || trace.renderedProductsConsistent === false
     || trace.renderedActionsConsistent === false
     || trace.unnecessaryClarification
-    || trace.legacyProsePathUsed
     || trace.genericFallbackUsed
   ) {
     if (trace.pendingCommitmentResolved === false) codes.push("pending_commitment_not_resolved");
@@ -432,7 +430,6 @@ function classifyFailureSeverity(trace = {}) {
     if (trace.renderedProductsConsistent === false) codes.push("rendered_products_inconsistent");
     if (trace.renderedActionsConsistent === false) codes.push("rendered_actions_inconsistent");
     if (trace.unnecessaryClarification) codes.push("unnecessary_clarification");
-    if (trace.legacyProsePathUsed) codes.push("legacy_prose_path_used");
     if (trace.genericFallbackUsed) codes.push("generic_fallback_used");
     return { severity: "P2", codes };
   }
@@ -494,7 +491,7 @@ function buildAskSnoozerQualityTrace({
   ].map(clean).filter(Boolean).join(" ");
   const finalVisibleText = `${clean(reply)} ${renderedControlText}`.trim();
   const gateViolations = Array.isArray(gate?.violations) ? gate.violations : [];
-  const finalResponsePath = ["atomic_deterministic", "structured_composer", "grounded_safe_fallback", "legacy_path"].includes(clean(responsePath))
+  const finalResponsePath = ["atomic_deterministic", "structured_composer", "grounded_safe_fallback"].includes(clean(responsePath))
     ? clean(responsePath)
     : compositionMode === "model_assisted"
       ? "structured_composer"
@@ -670,10 +667,7 @@ function buildAskSnoozerQualityTrace({
     knownRepeated ||
     (clean(plan.taskType) === "reference_clarification" && referenceResolution?.resolved)
   );
-  const legacyProsePathUsed = finalResponsePath === "legacy_path";
-  const genericFallbackUsed = (
-    ["legacy_path", "grounded_safe_fallback"].includes(finalResponsePath) && isGenericResponse(reply)
-  );
+  const genericFallbackUsed = finalResponsePath === "grounded_safe_fallback" && isGenericResponse(reply);
   const advisorResponseAppropriate = !substantiveTasks.has(clean(plan.taskType)) ||
     ["structured_composer", "grounded_safe_fallback"].includes(finalResponsePath);
   const nextStepAppropriate = questionCount(reply) <= 1 && renderedActionsConsistent;
@@ -797,7 +791,6 @@ function buildAskSnoozerQualityTrace({
     comparisonComplete,
     nextStepAppropriate,
     unnecessaryClarification,
-    legacyProsePathUsed,
     genericFallbackUsed,
     explicitRejectionHonored,
     rejectedProductReintroduced,
@@ -1059,7 +1052,7 @@ function buildQualityMetricEnvelope(trace = {}, environment = process.env.REWARD
     },
     Environment: clean(environment) || "staging",
     CompositionMode: trace?.composition?.mode || "deterministic",
-    ResponsePath: trace?.responsePath || "legacy_path",
+    ResponsePath: trace?.responsePath || "grounded_safe_fallback",
     Turns: 1,
     Fallbacks: trace?.fallbackUsed ? 1 : 0,
     RecoveryAttempts: trace?.outcome?.recovery?.attempted ? 1 : 0,
@@ -1121,7 +1114,7 @@ function aggregateAskSnoozerQualityTraces(events, reviews = null) {
   const total = traces.length;
   const count = (predicate) => traces.filter(predicate).length;
   const modes = ["deterministic", "model_assisted", "model_fallback", "deterministic_recovery"];
-  const paths = ["atomic_deterministic", "structured_composer", "grounded_safe_fallback", "legacy_path"];
+  const paths = ["atomic_deterministic", "structured_composer", "grounded_safe_fallback"];
   const pathDistribution = Object.fromEntries(paths.map((path) => {
     const selected = traces.filter((event) => event?.responsePath === path);
     const latencies = selected.map((event) => event?.latency?.totalMs);

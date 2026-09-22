@@ -21,7 +21,7 @@ const {
   PutCommand,
   UpdateCommand,
 } = require("@aws-sdk/lib-dynamodb");
-const openai = require("../services/openai");
+const modelCore = require("../services/askSnoozerModelCore");
 const shopify = require("../services/shopify");
 const conversationState = require("../services/conversationState");
 const { loadShowroomManifest } = require("../services/showroomManifest");
@@ -29,9 +29,8 @@ const { applyAskSnoozerWorkingMemory } = require("../services/askSnoozerWorkingM
 const { planAskSnoozerTurn } = require("../services/askSnoozerConversationOrchestrator");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
-const originalOpenAi = openai.getSnoozerResponse;
-const originalComposer = openai.composeTrustedAdvisorResponse;
-const originalPlanner = openai.planTrustedAdvisorTurnWithModel;
+const originalComposer = modelCore.composeTrustedAdvisorResponse;
+const originalPlanner = modelCore.planTrustedAdvisorTurnWithModel;
 const originalFetchProducts = shopify.fetchProductsByHandles;
 const originalConsoleLog = console.log;
 
@@ -118,18 +117,7 @@ function patchDependencies() {
     return {};
   };
 
-  openai.getSnoozerResponse = async function mockedGetSnoozerResponse(message, options = {}) {
-    openAiCalls.push({ message, options });
-    return {
-      reply: "Dreams can reflect normal sleep-stage activity; consistent sleep timing can help overall sleep quality.",
-      text: "Dreams can reflect normal sleep-stage activity; consistent sleep timing can help overall sleep quality.",
-      model: "continuity-model-stub",
-      meta: { path: "mock_openai", retrievalMs: 0, modelMs: 4 },
-      context: options.context || {},
-      actions: [],
-    };
-  };
-  openai.composeTrustedAdvisorResponse = async function mockedComposer(input = {}) {
+  modelCore.composeTrustedAdvisorResponse = async function mockedComposer(input = {}) {
     composerCalls.push(input);
     return {
       displayText: input.deterministicDraft.displayText,
@@ -140,7 +128,7 @@ function patchDependencies() {
       model: "continuity-composer-stub",
     };
   };
-  openai.planTrustedAdvisorTurnWithModel = async ({ query = "", context = {} } = {}) => {
+  modelCore.planTrustedAdvisorTurnWithModel = async ({ query = "", context = {} } = {}) => {
     const shadowContext = applyAskSnoozerWorkingMemory({ query, context, modelDecision: null });
     const shadowPlan = planAskSnoozerTurn({ query, context: shadowContext, referenceContext: context, modelDecision: null });
     const text = String(query || "").toLowerCase();
@@ -209,9 +197,8 @@ function patchDependencies() {
 
 function restoreDependencies() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
-  openai.getSnoozerResponse = originalOpenAi;
-  openai.composeTrustedAdvisorResponse = originalComposer;
-  openai.planTrustedAdvisorTurnWithModel = originalPlanner;
+  modelCore.composeTrustedAdvisorResponse = originalComposer;
+  modelCore.planTrustedAdvisorTurnWithModel = originalPlanner;
   shopify.fetchProductsByHandles = originalFetchProducts;
   console.log = originalConsoleLog;
 }

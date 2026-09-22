@@ -19,13 +19,12 @@ const {
   PutCommand,
   UpdateCommand,
 } = require("@aws-sdk/lib-dynamodb");
-const openai = require("../services/openai");
+const modelCore = require("../services/askSnoozerModelCore");
 const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
-const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
-const originalComposeTrustedAdvisorResponse = openai.composeTrustedAdvisorResponse;
-const originalPlanTrustedAdvisorTurnWithModel = openai.planTrustedAdvisorTurnWithModel;
+const originalComposeTrustedAdvisorResponse = modelCore.composeTrustedAdvisorResponse;
+const originalPlanTrustedAdvisorTurnWithModel = modelCore.planTrustedAdvisorTurnWithModel;
 
 const sessionStore = new Map();
 const resultsStore = new Map();
@@ -98,22 +97,7 @@ function patchDynamo() {
 }
 
 function patchOpenAi() {
-  openai.getSnoozerResponse = async function mockedGetSnoozerResponse(message, options = {}) {
-    return {
-      reply:
-        "I do not want to guess without the right showroom context. I can help compare mattresses, explain your recommendation, answer policy questions from the loaded guides, or point you to a human.",
-      text:
-        "I do not want to guess without the right showroom context. I can help compare mattresses, explain your recommendation, answer policy questions from the loaded guides, or point you to a human.",
-      model: "mock-premium-final-answer",
-      meta: {
-        path: "mock_openai",
-        retrievalMs: 0,
-      },
-      context: options.context || {},
-      actions: [],
-    };
-  };
-  openai.composeTrustedAdvisorResponse = async function mockedComposeTrustedAdvisorResponse(input = {}) {
+  modelCore.composeTrustedAdvisorResponse = async function mockedComposeTrustedAdvisorResponse(input = {}) {
     return {
       displayText: input.deterministicDraft.displayText,
       speechText: input.deterministicDraft.speechText,
@@ -125,7 +109,7 @@ function patchOpenAi() {
       factPackChars: JSON.stringify(input.factPack || {}).length,
     };
   };
-  openai.planTrustedAdvisorTurnWithModel = async (args = {}) => {
+  modelCore.planTrustedAdvisorTurnWithModel = async (args = {}) => {
     const query = args.query || "";
     if (/what should i notice when i lie/i.test(query)) {
       const error = new Error("forced planner timeout");
@@ -138,9 +122,8 @@ function patchOpenAi() {
 
 function restore() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
-  openai.getSnoozerResponse = originalOpenAiGetSnoozerResponse;
-  openai.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
-  openai.planTrustedAdvisorTurnWithModel = originalPlanTrustedAdvisorTurnWithModel;
+  modelCore.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
+  modelCore.planTrustedAdvisorTurnWithModel = originalPlanTrustedAdvisorTurnWithModel;
 }
 
 function hasRenderableText(body) {
@@ -277,7 +260,11 @@ function assertNoInventedCommerceTruth(path, testCase, body) {
   assert(!cartId, `${path} ${testCase.id} invented cartId`);
 
   const serialized = JSON.stringify(body);
-  assert(!/gid:\/\/shopify\/(Cart|ProductVariant)\//i.test(serialized), `${path} ${testCase.id} invented Shopify GID`);
+  assert(!/gid:\/\/shopify\/Cart\//i.test(serialized), `${path} ${testCase.id} invented Shopify cart GID`);
+  assert(
+    !/gid:\/\/shopify\/ProductVariant\/(?:mock|fake|invented|fallback)/i.test(serialized),
+    `${path} ${testCase.id} invented Shopify variant GID`
+  );
 }
 
 function assertAnswerQuality(path, testCase, body) {

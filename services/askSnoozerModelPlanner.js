@@ -308,6 +308,7 @@ function resolveAskSnoozerSemanticAuthority({ query = "", context = {} } = {}) {
 
 function buildDeterministicAtomicDecision({ reason = "", query = "", context = {} } = {}) {
   const atomicReason = clean(reason).toLowerCase();
+  const normalizedQuery = normalizeAskSnoozerText(query);
   const requestedFacts = inferRequestedFacts(query);
   const deal = context?.askSnoozerWorkingMemory?.activeDeal || {};
   const explicitHandle = resolveCatalogHandle(query);
@@ -363,9 +364,14 @@ function buildDeterministicAtomicDecision({ reason = "", query = "", context = {
           ? "station"
           : "fallback";
   const requiresProduct = atomicReason !== "exact_price_lookup" && requestedFacts.some((fact) => ["availability", "compatibility", "price", "product_sizes"].includes(fact));
-  const scope = atomicReason === "exact_price_lookup" && /\bsetup\b/.test(normalizeAskSnoozerText(query))
+  const scope = atomicReason === "exact_price_lookup" && /\bsetup\b/.test(normalizedQuery)
     ? "full_pod"
     : "unclear";
+  const stationIntent = atomicReason === "station_starter"
+    ? normalizedQuery.includes("motion base")
+      ? "motion_base_features"
+      : "browse_products"
+    : null;
   const missingSlots = requiresProduct && !productHandle ? ["productHandle"] : [];
   const intent = primaryTask || atomicReason || "deterministic_atomic";
   const classification = {
@@ -392,7 +398,7 @@ function buildDeterministicAtomicDecision({ reason = "", query = "", context = {
     requestedPodId: null,
     requiresComposition: false,
     confidence: 1,
-    knownFacts: { size },
+    knownFacts: { size, stationIntent },
     validation: {
       source: "deterministic_atomic",
       reason: atomicReason || "deterministic_atomic",
@@ -415,6 +421,7 @@ function buildDeterministicAtomicDecision({ reason = "", query = "", context = {
             : null,
         currentProductHandle: pathHandle || null,
         candidateProductHandles: [],
+        stationIntent,
       },
       missingSlots,
       sourceOfTruth: policyTopic

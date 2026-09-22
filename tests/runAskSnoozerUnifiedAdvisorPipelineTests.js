@@ -324,12 +324,12 @@ async function main() {
     reply: "The first uses foam while...",
     plan: { taskType: "comparison_value", query: "Compare them and tell me which is worth it.", responseDepth: "compare", references: {} },
     gate: { ok: false, violations: ["truncated_ending", "comparison_incomplete", "compound_value_unanswered"] },
-    responsePath: "legacy_path",
+    responsePath: "grounded_safe_fallback",
   });
   assert.equal(badTrace.responseComplete, false);
   assert.equal(badTrace.compoundQuestionFullyAnswered, false);
   assert.equal(badTrace.comparisonComplete, false);
-  assert.equal(badTrace.legacyProsePathUsed, true);
+  assert.equal(Object.prototype.hasOwnProperty.call(badTrace, "legacyProsePathUsed"), false);
   assert.equal(badTrace.outcome.category, "friction");
   assert.equal(badTrace.alert.severity, "P2");
 
@@ -340,6 +340,7 @@ async function main() {
   assert(!routeSource.includes("getSnoozerResponse"));
   assert(!routeSource.includes("ask-snoozer.semantic-shadow"));
   assert(!routeSource.includes('path: "legacy_path"'));
+  assert(!fs.existsSync(path.join(__dirname, "..", "services", "openai.js")));
   scenarios.push("permanent semantic cutover");
 
   assert(new Set(scenarios).size >= 21);

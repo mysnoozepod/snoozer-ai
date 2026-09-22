@@ -12,7 +12,6 @@ const {
 const manifest = require("../data/showroom-manifest.v1.json");
 const shopifySvc = require("../services/shopify");
 const policySvc = require("../services/askSnoozerPolicy");
-const openaiSvc = require("../services/openai");
 
 let customerProfileSvc = null;
 try {
@@ -26,7 +25,6 @@ const originalFetchProductsByHandles = shopifySvc.fetchProductsByHandles;
 const originalResolvePolicySources = policySvc.resolveAskSnoozerPolicySources;
 const originalResolveSupplementalSources = policySvc.resolveAskSnoozerSupplementalSources;
 const originalResolvePolicyAnswer = policySvc.resolveAskSnoozerPolicyAnswer;
-const originalOpenAiGetSnoozerResponse = openaiSvc.getSnoozerResponse;
 const originalCustomerProfileGet = customerProfileSvc?.getCustomerProfile;
 
 const sessionStore = new Map();
@@ -686,48 +684,6 @@ function patchPolicy() {
 function patchOpenAi() {
   const useRealOpenAi = String(process.env.PHASE4_USE_REAL_OPENAI || "").trim() === "1";
 
-  openaiSvc.getSnoozerResponse = async function wrappedGetSnoozerResponse(message, options = {}) {
-    if (!useRealOpenAi) {
-      const stubReply = `[phase4-trace-model-stub] Model path hit for: ${String(message || "").trim()}`;
-      const stubResult = {
-        reply: stubReply,
-        text: stubReply,
-        model: "phase4-trace-stub",
-        meta: {
-          path: "phase4_trace_stub",
-          retrievalMs: 0,
-          fallbackUsed: false,
-        },
-        actions: [],
-        products: [],
-        context: options.context || {},
-        raw: {
-          stubbed: true,
-          message: String(message || ""),
-          mode: options.mode || null,
-        },
-      };
-
-      observer.modelCalls.push({
-        ok: true,
-        mode: options.mode || null,
-        usedStub: true,
-        rawAnswer: stubReply,
-      });
-
-      return stubResult;
-    }
-
-    const result = await originalOpenAiGetSnoozerResponse.call(this, message, options);
-    observer.modelCalls.push({
-      ok: true,
-      mode: options.mode || null,
-      usedStub: false,
-      rawAnswer: String(result?.reply || result?.text || "").trim() || null,
-      model: result?.model || null,
-    });
-    return result;
-  };
 }
 
 function patchCustomerProfile() {
@@ -752,7 +708,6 @@ function restorePatches() {
   policySvc.resolveAskSnoozerPolicySources = originalResolvePolicySources;
   policySvc.resolveAskSnoozerSupplementalSources = originalResolveSupplementalSources;
   policySvc.resolveAskSnoozerPolicyAnswer = originalResolvePolicyAnswer;
-  openaiSvc.getSnoozerResponse = originalOpenAiGetSnoozerResponse;
   if (customerProfileSvc && typeof originalCustomerProfileGet === "function") {
     customerProfileSvc.getCustomerProfile = originalCustomerProfileGet;
   }

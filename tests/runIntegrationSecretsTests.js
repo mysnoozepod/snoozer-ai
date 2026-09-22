@@ -159,10 +159,10 @@ async function testSecretsNeverReachLogsAndLoadingIsLazy() {
   console.log = (...args) => logs.push(args.join(" "));
   console.error = (...args) => logs.push(args.join(" "));
 
-  const { classifyAskSnoozerIntent } = require("../services/askSnoozerIntents");
-  const deterministic = classifyAskSnoozerIntent("Which SnoozePod should I try first?");
-  assert.strictEqual(deterministic.intent_group, "recommendation");
-  assert.strictEqual(client.calls.length, 0, "deterministic classification must not fetch secrets");
+  const { resolveAskSnoozerSemanticAuthority } = require("../services/askSnoozerModelPlanner");
+  const authority = resolveAskSnoozerSemanticAuthority({ query: "Which SnoozePod should I try first?" });
+  assert.strictEqual(authority.mode, "model_semantics");
+  assert.strictEqual(client.calls.length, 0, "semantic authority selection must not fetch secrets");
 
   await loader.getIntegrationCredentials("openai");
   const output = logs.join("\n");
@@ -218,7 +218,7 @@ function testNonSecretConfigAndNoCredentialLiterals() {
 
   const files = [
     "services/integrationSecrets.js",
-    "services/openai.js",
+    "services/openaiModelRuntime.js",
     "services/shopify.js",
     "services/zohoauth.js",
     "tests/runIntegrationSecretsTests.js",

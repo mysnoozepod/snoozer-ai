@@ -20,15 +20,14 @@ const {
   PutCommand,
   UpdateCommand,
 } = require("@aws-sdk/lib-dynamodb");
-const openai = require("../services/openai");
+const modelCore = require("../services/askSnoozerModelCore");
 const shopify = require("../services/shopify");
 const manifest = require("../data/showroom-manifest.v1.json");
 const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
-const originalOpenAi = openai.getSnoozerResponse;
-const originalComposeTrustedAdvisorResponse = openai.composeTrustedAdvisorResponse;
-const originalPlanTrustedAdvisorTurnWithModel = openai.planTrustedAdvisorTurnWithModel;
+const originalComposeTrustedAdvisorResponse = modelCore.composeTrustedAdvisorResponse;
+const originalPlanTrustedAdvisorTurnWithModel = modelCore.planTrustedAdvisorTurnWithModel;
 const originalFetchProducts = shopify.fetchProductsByHandles;
 const sessions = new Map();
 
@@ -97,16 +96,13 @@ function patchDependencies() {
     return {};
   };
 
-  openai.getSnoozerResponse = async (_message, options = {}) => ({
-    reply: "I can help you compare the relevant sleep factors without guessing.",
-    text: "I can help you compare the relevant sleep factors without guessing.",
-    model: "parity-model-stub",
-    context: options.context || {},
-    actions: [],
-  });
-  openai.composeTrustedAdvisorResponse = async (input = {}) => ({
-    displayText: input?.deterministicDraft?.displayText || "I can help you compare the relevant sleep factors without guessing.",
-    speechText: input?.deterministicDraft?.speechText || "I can help you compare the relevant sleep factors without guessing.",
+  modelCore.composeTrustedAdvisorResponse = async (input = {}) => ({
+    displayText:
+      input?.deterministicDraft?.displayText ||
+      "I can help you compare the relevant sleep factors without guessing.",
+    speechText:
+      input?.deterministicDraft?.speechText ||
+      "I can help you compare the relevant sleep factors without guessing.",
     probe: null,
     nextActionIntent: null,
     confidence: 0.99,
@@ -114,7 +110,7 @@ function patchDependencies() {
     inputChars: JSON.stringify(input?.factPack || {}).length + 2000,
     factPackChars: JSON.stringify(input?.factPack || {}).length,
   });
-  openai.planTrustedAdvisorTurnWithModel = async (args) => buildPlannerFixture(args);
+  modelCore.planTrustedAdvisorTurnWithModel = async (args) => buildPlannerFixture(args);
 
   shopify.fetchProductsByHandles = async ({ handles = [] } = {}) => {
     const catalog = Array.isArray(manifest?.products) ? manifest.products : [];
@@ -135,9 +131,8 @@ function patchDependencies() {
 
 function restoreDependencies() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
-  openai.getSnoozerResponse = originalOpenAi;
-  openai.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
-  openai.planTrustedAdvisorTurnWithModel = originalPlanTrustedAdvisorTurnWithModel;
+  modelCore.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
+  modelCore.planTrustedAdvisorTurnWithModel = originalPlanTrustedAdvisorTurnWithModel;
   shopify.fetchProductsByHandles = originalFetchProducts;
 }
 

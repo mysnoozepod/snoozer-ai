@@ -13,12 +13,14 @@ const manifest = require("../data/showroom-manifest.v1.json");
 const customerProfile = require("../services/customerProfile");
 const customerProfileZohoSync = require("../services/customerProfileZohoSync");
 const shopifySvc = require("../services/shopify");
-const openai = require("../services/openai");
+const modelCore = require("../services/askSnoozerModelCore");
+const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 const { resolveRecommendation } = require("../services/recommendationResolver");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalFetchProductsByHandles = shopifySvc.fetchProductsByHandles;
-const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
+const originalPlanner = modelCore.planTrustedAdvisorTurnWithModel;
+const originalComposer = modelCore.composeTrustedAdvisorResponse;
 const originalSyncCustomerProfileToZoho =
   customerProfileZohoSync.syncCustomerProfileToZoho;
 
@@ -56,7 +58,8 @@ function restoreShopify() {
 }
 
 function restoreOpenAi() {
-  openai.getSnoozerResponse = originalOpenAiGetSnoozerResponse;
+  modelCore.planTrustedAdvisorTurnWithModel = originalPlanner;
+  modelCore.composeTrustedAdvisorResponse = originalComposer;
 }
 
 function restoreZohoSync() {
@@ -100,16 +103,13 @@ function patchShopify() {
 }
 
 function patchOpenAi() {
-  openai.getSnoozerResponse = async function mockedGetSnoozerResponse(message) {
-    openAiCalls.push(String(message || ""));
-    return {
-      reply: `mocked fallback: ${message}`,
-      text: `mocked fallback: ${message}`,
-      model: "mock-openai",
-      meta: { path: "mock_openai", retrievalMs: 0 },
-      actions: [],
-    };
-  };
+  modelCore.planTrustedAdvisorTurnWithModel = buildPlannerFixture;
+  modelCore.composeTrustedAdvisorResponse = async ({ deterministicDraft = {} } = {}) => ({
+    displayText: deterministicDraft.displayText,
+    speechText: deterministicDraft.speechText,
+    confidence: 0.99,
+    model: "booking-composer-fixture",
+  });
 }
 
 function patchZohoSync() {

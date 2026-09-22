@@ -5,7 +5,7 @@ const {
   resolveAskSnoozerAdvisorTurn,
   validateResponseConsistency,
 } = require("../services/askSnoozerConversationOrchestrator");
-const { parseTrustedAdvisorComposition } = require("../services/openai");
+const { parseTrustedAdvisorComposition } = require("../services/askSnoozerModelCore");
 
 const context = {
   canonicalRecommendation: {

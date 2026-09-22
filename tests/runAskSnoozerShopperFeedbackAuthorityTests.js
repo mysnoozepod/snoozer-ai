@@ -7,11 +7,12 @@ const {
   validateResponseConsistency,
 } = require("../services/askSnoozerConversationOrchestrator");
 const {
-  PENDING_COMMITMENT_TTL_MS,
   applyAskSnoozerWorkingMemory,
   completeAskSnoozerAdvisorTurn,
 } = require("../services/askSnoozerWorkingMemory");
 const { buildAskSnoozerQualityTrace } = require("../services/askSnoozerQualityTrace");
+
+const PENDING_COMMITMENT_TTL_MS = 15 * 60 * 1000;
 
 function product(handle, title) {
   return {

@@ -591,7 +591,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && /\b(?:with|plus|and)\b.*\b(?:motion|base)\b/.test(text)) taskType = "bundle_quote";
   else if (/\bwhat about with (?:the )?(?:motion|adjustable) base\b/.test(text) && (deal.activeProductHandle || deal.acceptedRecommendation?.productHandle)) taskType = "bundle_quote";
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && /\b(?:full setup|whole setup|complete setup)\b/.test(text)) taskType = "bundle_quote";
-  else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && (deal.activeBaseHandle || deal.activeQuote?.items?.length > 1) && !/\b(?:mattress[- ]only|without (?:the )?base|skip (?:the )?base)\b/.test(text)) taskType = "bundle_quote";
+  else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text) && (explicitBase.baseHandle || deal.activeBaseHandle || deal.activeQuote?.items?.length > 1) && !/\b(?:mattress[- ]only|without (?:the )?base|skip (?:the )?base)\b/.test(text)) taskType = "bundle_quote";
   else if (/\b(?:how much|what would .*cost|price|pricing|quote)\b/.test(text)) taskType = "price_quote";
   else if (/\bwarrant(?:y|ies)\b/.test(text)) taskType = "warranty_explanation";
   else if (/\b(?:make sense together|work together|work with|compatible|compatibility|pair together)\b/.test(text)) taskType = "compatibility";
@@ -622,6 +622,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     requestedFacts[0] === "price" &&
     Boolean(explicitHandle) &&
     Boolean(parsedSize) &&
+    !explicitBase.baseHandle &&
     !valueCue &&
     /\b(?:how much|price|pricing|quote|cost)\b/.test(text);
   if (protectedExactPriceScope) taskType = "price_quote";
@@ -929,7 +930,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
         : deal.activeBaseHandle ?? workingGoal?.baseHandle ?? null,
       motionKey: explicitBase.motionKey || deal.activeMotionKey || workingGoal?.motionKey || null,
       painPoints: activeMemory(context)?.slots?.painPoints?.value || [],
-      baseDecision: clean(deal.baseDecision || deal.decision?.adjustableBase) || null,
+      baseDecision: clean(modelDecision?.knownFacts?.baseDecision || deal.baseDecision || deal.decision?.adjustableBase) || null,
       retainedPreferences: isObject(deal.retainedPreferences) ? deal.retainedPreferences : {},
       desiredDirection: isObject(deal.desiredDirection) ? deal.desiredDirection : {},
       budgetContext: isObject(deal.budgetContext) ? deal.budgetContext : {},
@@ -2278,7 +2279,7 @@ function validateResponseConsistency({
     }
   }
   const verifiedSizes = unique([quote?.size || plan?.knownFacts?.size, quote?.setupSize]).map(normalizeSize);
-  const mentionedSizes = clean(reply).match(/\b(?:half split queen|half split king|split king|cal king|twin xl|twin|queen|king|full\b(?!\s+(?:setup|quote|configuration)))/gi) || [];
+  const mentionedSizes = clean(reply).match(/\b(?:half split queen|half split king|split king|cal king|twin xl|twin|queen|king|full\b(?!\s+(?:setup|quote|configuration|refund)))/gi) || [];
   if (plan?.taskType !== "product_sizes" && verifiedSizes.length && mentionedSizes.some((size) => {
     const mentioned = normalizeSize(size);
     return !verifiedSizes.some((verified) => mentioned === verified || verified.includes(mentioned) || mentioned.includes(verified));

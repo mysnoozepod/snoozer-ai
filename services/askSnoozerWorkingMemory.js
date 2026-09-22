@@ -60,164 +60,6 @@ function rejectedHandleSet(deal = {}) {
   );
 }
 
-function activePendingCommitment(value, now = new Date()) {
-  if (!isObject(value) || clean(value.status || "pending") !== "pending") return null;
-  const expiresAt = Date.parse(clean(value.expiresAt));
-  if (Number.isFinite(expiresAt) && expiresAt <= new Date(now).getTime()) {
-    return { ...value, status: "expired", resolvedAt: nowIso(now) };
-  }
-  return { ...value, status: "pending" };
-}
-
-function resolveFeedbackReason(text = "") {
-  if (/\btoo firm\b|\bfelt (?:far )?too firm\b/.test(text)) return "too_firm";
-  if (/\btoo soft\b|\bfelt (?:far )?too soft\b/.test(text)) return "too_soft";
-  if (/\btoo hot\b|\bslept hot\b|\bmade me hot\b/.test(text)) return "too_hot";
-  if (/\buncomfortable\b|\bnot comfortable\b/.test(text)) return "uncomfortable";
-  if (/\bdid not like\b|\bdidn.t like\b|\bdon.t like\b|\bdont like\b/.test(text)) return "did_not_like";
-  if (/\bnot interested\b|\bdon.t want\b|\bdont want\b/.test(text)) return "not_interested";
-  if (/\banything (?:but|except)\b|\b(?:any other|another) mattress (?:but|except)\b|\bstop (?:telling|showing|recommending)\b|\bdo not show\b|\bdon.t show\b/.test(text)) {
-    return "explicit_exclusion";
-  }
-  return "";
-}
-
-function resolveFeedbackSubject(query = "", previousDeal = {}) {
-  const explicit = resolveExplicitProductHandle(query);
-  if (explicit) return explicit;
-  const text = normalizeAskSnoozerText(query);
-  if (/\b(?:anything but|anything except|stop (?:showing|telling|recommending)|do not (?:show|recommend)|don.t (?:show|recommend))\b/.test(text)) {
-    const candidates = uniqueStrings([
-      previousDeal?.activeProductHandle,
-      previousDeal?.recentProductHandle,
-      previousDeal?.sessionRecommendation?.productHandle,
-      previousDeal?.canonicalRecommendation?.primaryMattressHandle,
-      previousDeal?.canonicalRecommendation?.productHandle,
-      ...(previousDeal?.rejectedProducts || []).map((item) => item?.handle),
-    ]).map(normalizeHandle);
-    const referenced = candidates.find((handle) => {
-      const product = getProductMap().get(handle);
-      const identityTokens = normalizeAskSnoozerText(`${product?.title || ""} ${handle.replace(/[-_]+/g, " ")}`)
-        .split(/\s+/)
-        .filter((token) => token.length >= 3 && !["inch", "mattress", "hybrid"].includes(token));
-      return identityTokens.length > 0 && identityTokens.filter((token) => text.includes(token)).length >= Math.min(2, identityTokens.length);
-    });
-    if (referenced) return referenced;
-  }
-  if (/\b(?:original one|original mattress|first mattress|first one)\b/.test(text)) {
-    return normalizeHandle(
-      previousDeal?.canonicalRecommendation?.primaryMattressHandle ||
-      previousDeal?.canonicalRecommendation?.productHandle
-    );
-  }
-  const shortReference = /\b(?:it|that one|this one|that mattress|this mattress|the first one)\b/.test(text);
-  if (!shortReference && !/\btoo (?:firm|soft|hot)\b|\bdidn.t like\b|\bdid not like\b/.test(text)) return "";
-  return normalizeHandle(
-    previousDeal?.activeProductHandle ||
-      previousDeal?.sessionRecommendation?.productHandle ||
-      previousDeal?.recentProductHandle
-  );
-}
-
-function interpretShopperActs({ query = "", previousDeal = {}, turnIndex = 1, now = new Date() } = {}) {
-  const text = normalizeAskSnoozerText(query);
-  const modality = inferUtteranceModality(query);
-  const turnId = `turn-${Math.max(1, Number(turnIndex) || 1)}`;
-  const subjectHandle = resolveFeedbackSubject(query, previousDeal);
-  const pending = activePendingCommitment(previousDeal?.pendingCommitment, now);
-  const acts = [];
-  const add = (type, detail = {}) => acts.push({ type, modality, ...detail });
-  const affirmative = /^(?:yes|yeah|yep|sure|please|do that|show me|go ahead|okay do it|ok do it)[.!]?$/.test(text);
-  const negative = /^(?:no|nope|no thanks|not now|don.t do that|dont do that)[.!]?$/.test(text);
-  if (pending?.status === "pending" && affirmative) {
-    add("accept_commitment", { commitmentId: pending.id, commitmentType: pending.type, turnId });
-    return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending, modality };
-  }
-  if (pending?.status === "pending" && negative) {
-    add("decline_commitment", { commitmentId: pending.id, commitmentType: pending.type, turnId });
-    return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending, modality };
-  }
-  if (["hypothetical", "conditional"].includes(modality)) {
-    return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending, modality };
-  }
-  if (modality === "question") {
-    const requestsAlternative = /\b(?:show|find|recommend)\b.*\b(?:something else|another option|another mattress|anything else|any other mattress|alternative|instead)\b|\bwhat (?:else|would you recommend instead)\b|\banything (?:but|except)\b/.test(text);
-    if (requestsAlternative) add("request_alternative", { turnId });
-    return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending, modality };
-  }
-  const reconsider = /\b(?:actually|again|reconsider|go back|show me|look at)\b.*\b(?:all foam|original (?:one|mattress)|first mattress|first one)\b|\b(?:reconsider|show me)\b.*\bagain\b/.test(text);
-
-  if (reconsider && subjectHandle) {
-    add("reconsider_product", { handle: subjectHandle, turnId });
-  } else {
-    const reason = resolveFeedbackReason(text);
-    if (reason && subjectHandle) {
-      add("reject_product", { handle: subjectHandle, reason, turnId });
-      if (reason === "explicit_exclusion") add("explicit_exclusion", { handle: subjectHandle, turnId });
-    }
-    if (subjectHandle && ["too_firm", "too_soft", "too_hot", "uncomfortable", "did_not_like"].includes(reason)) {
-      add("product_feedback", {
-        handle: subjectHandle,
-        feedback: reason,
-        turnId,
-      });
-    }
-  }
-
-  if (/\b(?:like|liked|prefer|preferred)\b.*\b(?:motion|elevation|adjustable base|raised|head up|feet up)\b/.test(text)) {
-    add("retain_preference", { key: "motion", value: "liked", turnId });
-    if (subjectHandle) add("product_feedback", { handle: subjectHandle, feedback: "liked_motion", turnId });
-  }
-  if (/\b(?:did not|didn.t|don.t|dont) like\b.*\b(?:motion|elevation|adjustable base)\b/.test(text)) {
-    add("retain_preference", { key: "motion", value: "disliked", turnId });
-    if (subjectHandle) add("product_feedback", { handle: subjectHandle, feedback: "disliked_motion", turnId });
-  }
-
-  const direction = /\b(?:want|need|looking for|show me|find me)\b.*\bsofter\b|^softer[.!]?$/.test(text)
-    ? { key: "feel", value: "softer" }
-    : /\b(?:want|need|looking for|show me|find me)\b.*\bfirmer\b|^firmer[.!]?$/.test(text)
-      ? { key: "feel", value: "firmer" }
-      : /\b(?:want|need|looking for|show me|find me)\b.*\bcooler\b|^cooler[.!]?$/.test(text)
-        ? { key: "temperature", value: "cooler" }
-        : /\b(?:want|need|looking for|show me|find me)\b.*\b(?:more responsive|more bounce|bouncier)\b/.test(text)
-          ? { key: "response", value: "more_responsive" }
-          : /\b(?:want|need|looking for|show me|find me)\b.*\b(?:less motion|less movement)\b/.test(text)
-            ? { key: "motionTransfer", value: "less_motion" }
-            : null;
-  if (direction) add("desired_direction", { ...direction, turnId });
-
-  const requestsAlternative = /\b(?:show|find|recommend)\b.*\b(?:something else|another option|another mattress|anything else|any other mattress|alternative|instead)\b|\bwhat (?:else|would you recommend instead)\b|\banything (?:but|except)\b/.test(text) || Boolean(direction);
-  if (requestsAlternative) add("request_alternative", { turnId });
-
-  if (/\b(?:stop telling me|stop showing me|stop recommending|you are not listening|you.re not listening|you keep recommending|already said|this is confusing|store isn.t right|store is not right)\b/.test(text)) {
-    add("trust_risk", { turnId });
-  }
-  if (/\b(?:i am|i.m|im) confused\b|\bgetting lost\b|\bwhat am i choosing\b|\bsimplify (?:this|it)\b/.test(text)) {
-    add("confusion", { turnId });
-  }
-
-  const explicitProduct = resolveExplicitProductHandle(query);
-  const acceptanceCue = /\b(?:i like that one|i like this one|that works|this works|that one feels better|this one feels better|i want that mattress|let(?:'s| us) go with|i(?:'ll| will) take|that(?:'s| is) the one|go with that)\b/.test(text);
-  const acceptedHandle = explicitProduct || normalizeHandle(
-    previousDeal?.sessionRecommendation?.productHandle || previousDeal?.activeProductHandle
-  );
-  if (acceptanceCue && acceptedHandle && !/\b(?:motion|base|elevation)\b/.test(text)) {
-    add("accept_recommendation", { handle: acceptedHandle, turnId });
-  }
-
-  const valueConcern = /\b(?:too expensive|more than i want to spend|over my budget|save money|lower price|cheaper|costs too much)\b/.test(text);
-  if (valueConcern) {
-    const amount = text.match(/\$\s*([\d,]+(?:\.\d{1,2})?)/)?.[1];
-    add("budget_value", {
-      concern: /\b(?:save money|lower price|cheaper)\b/.test(text) ? "save_money" : "price_resistance",
-      maxAmount: amount ? Number(amount.replace(/,/g, "")) : null,
-      turnId,
-    });
-  }
-
-  return { acts, subjectHandle: subjectHandle || null, pendingCommitment: pending, modality };
-}
-
 function nowIso(now = new Date()) {
   return now instanceof Date ? now.toISOString() : new Date(now).toISOString();
 }
@@ -699,15 +541,12 @@ function reduceShopperFeedbackState({
   turnIndex = 1,
   now = new Date(),
   interpretedActs: plannedActs = [],
-  semanticAuthority = "deterministic_fallback",
+  semanticAuthority = "model_failed",
 } = {}) {
   const updatedAt = nowIso(now);
-  const interpretation = interpretShopperActs({ query, previousDeal, turnIndex, now });
   const acts = [];
   const seenActs = new Set();
-  const authoritativeActs = semanticAuthority === "deterministic_fallback"
-    ? interpretation.acts
-    : (Array.isArray(plannedActs) ? plannedActs : []);
+  const authoritativeActs = Array.isArray(plannedActs) ? plannedActs : [];
   for (const act of authoritativeActs) {
     if (!isObject(act) || !clean(act.type)) continue;
     const normalizedAct = { ...act, turnId: clean(act.turnId) || `turn-${turnIndex}` };
@@ -739,9 +578,9 @@ function reduceShopperFeedbackState({
   let budgetContext = isObject(previousDeal?.budgetContext) ? { ...previousDeal.budgetContext } : {};
   let acceptedRecommendation = isObject(previousDeal?.acceptedRecommendation) ? { ...previousDeal.acceptedRecommendation } : null;
   let activeConfiguration = isObject(previousDeal?.activeConfiguration) ? { ...previousDeal.activeConfiguration } : {};
-  let pendingCommitment = semanticAuthority === "deterministic_fallback"
-    ? interpretation.pendingCommitment || null
-    : (isObject(previousDeal?.pendingCommitment) ? { ...previousDeal.pendingCommitment } : null);
+  let pendingCommitment = isObject(previousDeal?.pendingCommitment)
+    ? { ...previousDeal.pendingCommitment }
+    : null;
   let sessionRecommendation = isObject(previousDeal?.sessionRecommendation)
     ? { ...previousDeal.sessionRecommendation }
     : null;
@@ -949,7 +788,7 @@ function reduceShopperFeedbackState({
     transition: {
       turnId: `turn-${turnIndex}`,
       semanticAuthority,
-      modality: clean(authoritativeActs[0]?.modality || interpretation.modality) || "asserted",
+      modality: clean(authoritativeActs[0]?.modality) || "asserted",
       stateBefore: before,
       stateDelta,
       stateAfter: after,
@@ -958,12 +797,13 @@ function reduceShopperFeedbackState({
   };
 }
 
-function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, updatedAt = "", modality = "asserted", modelDecision = null, semanticAuthority = "deterministic_fallback" } = {}) {
+function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, updatedAt = "", modality = "asserted", modelDecision = null, semanticAuthority = "model_failed" } = {}) {
   const previousDeal = isObject(previous?.activeDeal) ? previous.activeDeal : {};
   const canonicalRecommendation = normalizeCanonicalRecommendation(context, previousDeal);
   const canonicalHandle = clean(canonicalRecommendation?.primaryMattressHandle).toLowerCase();
-  const authoritativeSemantics = ["model_semantics", "typed_showroom_action"].includes(semanticAuthority);
+  const authoritativeSemantics = ["model_semantics", "typed_showroom_action", "typed_commitment"].includes(semanticAuthority);
   const modelFailed = semanticAuthority === "model_failed";
+  const deterministicAtomic = semanticAuthority === "deterministic_atomic";
   const plannedSubjectHandle = clean(
     modelDecision?.productReferences?.find((reference) => reference?.role === "subject")?.handle ||
       modelDecision?.productReferences?.[0]?.handle
@@ -999,9 +839,7 @@ function buildActiveDeal({ query = "", context = {}, previous = {}, slots = {}, 
     ]).slice(-2);
   }
 
-  const explicitBase = modelFailed || semanticAuthority === "typed_showroom_action"
-    ? {}
-    : resolveExplicitBaseSelection(query);
+  const explicitBase = deterministicAtomic ? resolveExplicitBaseSelection(query) : {};
   const currentTopic = authoritativeSemantics
     ? clean(modelDecision?.primaryTask) || clean(previousDeal.currentTopic) || null
     : modelFailed
@@ -1089,26 +927,25 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
     setSlot(slots, "productHandle", currentPodProductHandle, "current_page", updatedAt);
   }
 
-  const semanticAuthority = clean(modelDecision?.authority) || (modelDecision ? "model_semantics" : "deterministic_fallback");
+  const semanticAuthority = clean(modelDecision?.authority) || "model_failed";
   const modelFailed = semanticAuthority === "model_failed";
-  const authoritativeSemantics = ["model_semantics", "typed_showroom_action"].includes(semanticAuthority);
+  const authoritativeSemantics = ["model_semantics", "typed_showroom_action", "typed_commitment"].includes(semanticAuthority);
   const typedShowroomAction = semanticAuthority === "typed_showroom_action";
-  const typedSize = typedShowroomAction
-    ? clean(modelDecision?.knownFacts?.size)
-    : "";
-  const parsedSize = modelFailed ? "" : typedShowroomAction ? typedSize : parseAskSnoozerSizeLabel(query);
+  const deterministicAtomic = semanticAuthority === "deterministic_atomic";
+  const decisionSize = clean(modelDecision?.knownFacts?.size);
+  const parsedSize = modelFailed ? "" : decisionSize || (deterministicAtomic ? parseAskSnoozerSizeLabel(query) : "");
   const explicitSize =
     parsedSize === "Full" && /\b(?:full|complete|whole) setup\b/.test(normalizeAskSnoozerText(query))
       ? ""
       : parsedSize;
-  const explicitFirmness = modelFailed || typedShowroomAction ? "" : resolveExplicitFirmness(query);
+  const explicitFirmness = deterministicAtomic ? resolveExplicitFirmness(query) : "";
   const explicitProductHandle = authoritativeSemantics
     ? clean(modelDecision?.productReferences?.find((reference) => reference?.role === "subject")?.handle || modelDecision?.productReferences?.[0]?.handle).toLowerCase()
-    : modelFailed
-      ? ""
-      : resolveExplicitProductHandle(query);
-  const explicitBase = modelFailed || typedShowroomAction ? {} : resolveExplicitBaseSelection(query);
-  const explicitPainPoints = modelFailed || typedShowroomAction ? [] : resolveExplicitPainPoints(query);
+    : deterministicAtomic
+      ? resolveExplicitProductHandle(query)
+      : "";
+  const explicitBase = deterministicAtomic ? resolveExplicitBaseSelection(query) : {};
+  const explicitPainPoints = deterministicAtomic ? resolveExplicitPainPoints(query) : [];
   const modality = clean(modelDecision?.modality) || inferUtteranceModality(query);
   const directSelectionAllowed =
     ["asserted", "reconsideration"].includes(modality) ||
@@ -1141,7 +978,7 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
       ? (modelDecision?.requestedFacts || []).includes("price")
       : isPriceLikeQuery(query);
   const updatesPriceGoal =
-    startsPriceGoal || (!typedShowroomAction && isContextualPriceFragment(query, { activeGoal }));
+    startsPriceGoal || (deterministicAtomic && isContextualPriceFragment(query, { activeGoal }));
   if (updatesPriceGoal) {
     const scope = resolveCommerceScope(typedShowroomAction ? "" : query, activeGoal);
     activeGoal = {
@@ -1575,28 +1412,14 @@ function safeResponseFingerprint(value = "") {
 }
 
 module.exports = {
-  PRICE_GOAL_INTENT,
-  WORKING_MEMORY_VERSION,
-  PENDING_COMMITMENT_TTL_MS,
   applyAskSnoozerWorkingMemory,
   buildWorkingMemoryLogMetadata,
-  calculatePriceQuoteMissingSlots,
   completeAskSnoozerPriceGoal,
   completeAskSnoozerAdvisorTurn,
   markAskSnoozerPriceGoalResolving,
-  extractCurrentPodProductHandle,
-  extractCurrentProductHandle,
-  getSlotValue,
-  isContextualPriceFragment,
-  isContinuablePriceGoal,
-  isPriceLikeQuery,
-  interpretShopperActs,
   eligibleAlternativeHandles,
   resolveAdaptiveSessionRecommendation,
   resolveExplicitBaseSelection,
-  resolveExplicitFirmness,
-  resolveExplicitPainPoints,
   resolveExplicitProductHandle,
-  resolveRequestedProductHandle,
   safeResponseFingerprint,
 };

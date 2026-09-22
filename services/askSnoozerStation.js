@@ -37,28 +37,6 @@ function unique(values = []) {
   return Array.from(new Set(values.map(clean).filter(Boolean)));
 }
 
-function detectStationIntent(query = "") {
-  const text = normalizeQuery(query);
-  if (!text) return null;
-  if (/\b(find|show|check|explain)\b.*\brewards?\b|^find rewards?$/.test(text)) {
-    return STARTER_INTENTS.rewards;
-  }
-  if (/\b(analy[sz]e|review|inspect|what is in|what s in|show)\b.*\bcart\b|^analy[sz]e my cart$/.test(text)) {
-    return STARTER_INTENTS.cart;
-  }
-  if (/^compare\b/.test(text) || /\bcompare\b.*\b(products?|mattresses?|bases?)\b/.test(text)) {
-    return STARTER_INTENTS.compare;
-  }
-  if (/\b(motion|adjustable)\b.*\b(base|features?)\b|^motion base features?$/.test(text)) {
-    return STARTER_INTENTS.motion;
-  }
-  if (/\b(browse|show me|explore)\b.*\b(products?|mattresses?|bases?)\b|^browse products?$/.test(text)) {
-    return STARTER_INTENTS.browse;
-  }
-  if (/^show me more$/.test(text)) return STARTER_INTENTS.browse;
-  return null;
-}
-
 function money(value, currencyCode = "USD") {
   const amount = Number(value);
   if (!Number.isFinite(amount)) return "";
@@ -479,10 +457,8 @@ async function resolveAskSnoozerStationResponse({
   manifest = null,
   fetchProductsByHandles = null,
 } = {}) {
-  const intent = Object.values(STARTER_INTENTS).includes(explicitIntent)
-    ? explicitIntent
-    : detectStationIntent(query);
-  const executionQuery = explicitIntent ? "" : query;
+  const intent = Object.values(STARTER_INTENTS).includes(explicitIntent) ? explicitIntent : null;
+  const executionQuery = "";
   if (!intent) return null;
   if (intent === STARTER_INTENTS.rewards) {
     return rewardsResponse({ identity, rewardsService: rewardsService || {} });
@@ -521,15 +497,5 @@ async function resolveAskSnoozerStationResponse({
 }
 
 module.exports = {
-  CART_GID,
-  PRODUCT_VARIANT_GID,
-  STARTER_INTENTS,
-  chooseBrowseHandles,
-  detectStationIntent,
-  extractHandles,
-  normalizeVariants,
-  requestedSize,
   resolveAskSnoozerStationResponse,
-  resolveExactVariant,
-  stationProduct,
 };

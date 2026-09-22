@@ -8,13 +8,12 @@ const {
   UpdateCommand,
 } = require("@aws-sdk/lib-dynamodb");
 const { resolveRecommendation } = require("../services/recommendationResolver");
-const openai = require("../services/openai");
+const modelCore = require("../services/askSnoozerModelCore");
 const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
-const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
-const originalComposeTrustedAdvisorResponse = openai.composeTrustedAdvisorResponse;
-const originalPlanTrustedAdvisorTurnWithModel = openai.planTrustedAdvisorTurnWithModel;
+const originalComposeTrustedAdvisorResponse = modelCore.composeTrustedAdvisorResponse;
+const originalPlanTrustedAdvisorTurnWithModel = modelCore.planTrustedAdvisorTurnWithModel;
 
 const sessionStore = new Map();
 const resultsStore = new Map();
@@ -96,18 +95,7 @@ function restoreDynamo() {
 }
 
 function patchOpenAi() {
-  openai.getSnoozerResponse = async function mockedGetSnoozerResponse(message, options = {}) {
-    openAiCalls.push({ message, options });
-    return {
-      reply: `mocked fallback: ${message}`,
-      text: `mocked fallback: ${message}`,
-      model: "mock-openai",
-      meta: { path: "mock_openai", retrievalMs: 0 },
-      context: options.context || {},
-      actions: [],
-    };
-  };
-  openai.composeTrustedAdvisorResponse = async function mockedComposeTrustedAdvisorResponse(input = {}) {
+  modelCore.composeTrustedAdvisorResponse = async function mockedComposeTrustedAdvisorResponse(input = {}) {
     return {
       displayText: input.deterministicDraft.displayText,
       speechText: input.deterministicDraft.speechText,
@@ -117,13 +105,12 @@ function patchOpenAi() {
       model: "policy-fallback-composer-fixture",
     };
   };
-  openai.planTrustedAdvisorTurnWithModel = buildPlannerFixture;
+  modelCore.planTrustedAdvisorTurnWithModel = buildPlannerFixture;
 }
 
 function restoreOpenAi() {
-  openai.getSnoozerResponse = originalOpenAiGetSnoozerResponse;
-  openai.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
-  openai.planTrustedAdvisorTurnWithModel = originalPlanTrustedAdvisorTurnWithModel;
+  modelCore.composeTrustedAdvisorResponse = originalComposeTrustedAdvisorResponse;
+  modelCore.planTrustedAdvisorTurnWithModel = originalPlanTrustedAdvisorTurnWithModel;
 }
 
 function resetStores() {

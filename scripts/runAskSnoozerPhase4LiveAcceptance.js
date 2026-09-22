@@ -160,7 +160,7 @@ function validateShopperResponse(result, label) {
   assert(!renderedHandles(body).some((handle) => rejected.has(handle)), `${label}: rendered a rejected product`);
   assert(!rejected.has(activeHandle(body)), `${label}: rejected product is active`);
   assert(!["P0", "P1", "P2"].includes(clean(body?.metadata?.quality?.alertSeverity)), `${label}: ${body?.metadata?.quality?.alertSeverity} quality defect`);
-  assert(["atomic_deterministic", "structured_composer", "grounded_safe_fallback", "legacy_path"].includes(clean(body?.metadata?.answerPath)), `${label}: invalid response path`);
+  assert(["atomic_deterministic", "structured_composer", "grounded_safe_fallback"].includes(clean(body?.metadata?.answerPath)), `${label}: invalid response path`);
 }
 
 function turnSummary(result, turn, message) {
@@ -249,11 +249,10 @@ async function main() {
   }
 
   const summaries = results.map((result, index) => turnSummary(result, index + 1, acceptanceTurns[index]));
-  const paths = ["atomic_deterministic", "structured_composer", "grounded_safe_fallback", "legacy_path"];
+  const paths = ["atomic_deterministic", "structured_composer", "grounded_safe_fallback"];
   const pathDistribution = Object.fromEntries(paths.map((path) => [path, summarizePath(summaries, path)]));
   const substantiveTurns = summaries.filter((turn) => ![7, 11, 15].includes(turn.turn));
   assert(substantiveTurns.every((turn) => turn.responsePath === "structured_composer"), "a normal substantive turn bypassed the structured composer");
-  assert.equal(pathDistribution.legacy_path.count, 0, "legacy path appeared in normal acceptance");
   assert.equal(pathDistribution.grounded_safe_fallback.count, 0, "safe fallback appeared under healthy acceptance conditions");
   assert.equal(summaries[6].responsePath, "atomic_deterministic", "exact King price was not atomic deterministic");
   assert.equal(summaries[10].responsePath, "atomic_deterministic", "mattress-only price was not atomic deterministic");

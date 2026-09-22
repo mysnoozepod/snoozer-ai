@@ -66,9 +66,6 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     STRICT_POD_ANCHOR,
     saveSessionContext,
     buildSuccessResponse,
-    maybeBuildAskSnoozerDeterministicGuidanceAnswer,
-    maybeBuildAskSnoozerCommerceAnswer,
-    queryExplicitlyRequestsAskSnoozerCommerce,
     resolveAskSnoozerCommerceResponse,
     resolveAskSnoozerStationResponse,
     buildShowroomCommandDecision,
@@ -84,7 +81,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     buildAskSnoozerMissingRecommendationReply,
     buildAskSnoozerFallbackReply,
     buildAskSnoozerQualityGateObject,
-    maybeBuildAskSnoozerDeterministicFaqAnswer,
+    buildAskSnoozerAtomicCompatibilityAnswer,
     S3_RETRIEVAL_TIMEOUT_MS,
     MODEL_TIMEOUT_MS,
     measureStep,
@@ -260,7 +257,6 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
                 semanticAuthority: "typed_showroom_action",
                 modelCallCount: 0,
                 plannerModelCallCount: 0,
-                legacyShadow: { evaluated: false },
               },
             },
           },
@@ -617,7 +613,6 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       authority: null,
       errorCode: null,
       semanticBoundary: null,
-      legacyShadow: { evaluated: false },
     };
     const semanticBoundary = showroomCommand
       ? { mode: "typed_showroom_action", reason: "validated_showroom_command" }
@@ -649,7 +644,6 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         : null;
       askSnoozerModelPlanning.decision = commandDecision;
       askSnoozerModelPlanning.authority = "typed_showroom_action";
-      askSnoozerModelPlanning.legacyShadow = { evaluated: false };
       log("ask-snoozer.semantic-plan", "typed_showroom_action", {
         traceId,
         testCaseId,
@@ -1104,11 +1098,12 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     );
     const atomicStationIntent = !showroomCommand && semanticBoundary.reason === "cart_view"
       ? "analyze_cart"
-      : null;
+      : !showroomCommand && semanticBoundary.reason === "station_starter"
+        ? deterministicAtomicDecision?.knownFacts?.stationIntent || null
+        : null;
     const atomicStationCompatibility = !showroomCommand && semanticBoundary.reason === "station_starter";
     const deterministicCompatibilityReason = !showroomCommand && new Set([
       "cart_view",
-      "cart_command",
       "checkout_command",
       "exact_price_lookup",
       "session_guidance",
@@ -1373,14 +1368,6 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           errorCode: askSnoozerModelPlanning.errorCode,
           semanticAuthority: askSnoozerModelPlanning.authority,
           semanticBoundary: askSnoozerModelPlanning.semanticBoundary,
-          legacyShadow: askSnoozerModelPlanning.legacyShadow?.evaluated
-            ? {
-                evaluated: true,
-                taskAgreement: askSnoozerModelPlanning.legacyShadow.taskAgreement,
-                referenceAgreement: askSnoozerModelPlanning.legacyShadow.referenceAgreement,
-                comparisonAgreement: askSnoozerModelPlanning.legacyShadow.comparisonAgreement,
-              }
-            : { evaluated: false },
           requestedFacts: advisorAnswer.plan.requestedFacts || [],
           answerRequirements: advisorAnswer.plan.answerRequirements || [],
         },
@@ -1632,7 +1619,6 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             fallbackUsed: false,
             semanticAuthority: typedStationCommand ? "typed_showroom_action" : askSnoozerModelPlanning.authority,
             semanticBoundary: askSnoozerModelPlanning.semanticBoundary,
-            legacyShadow: { evaluated: false },
           },
         };
 
@@ -1739,14 +1725,6 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         source: askSnoozerModelPlanning.authority,
         reason,
         semanticAuthority: askSnoozerModelPlanning.authority,
-        legacyShadow: askSnoozerModelPlanning.legacyShadow
-          ? {
-              evaluated: Boolean(askSnoozerModelPlanning.legacyShadow.evaluated),
-              taskAgreement: askSnoozerModelPlanning.legacyShadow.taskAgreement,
-              referenceAgreement: askSnoozerModelPlanning.legacyShadow.referenceAgreement,
-              comparisonAgreement: askSnoozerModelPlanning.legacyShadow.comparisonAgreement,
-            }
-          : { evaluated: false },
         planning: {
           mode: askSnoozerModelPlanning.fallbackUsed ? "model_fallback" : "model_planned",
           modelCallCount: askSnoozerModelPlanning.modelCallCount,
@@ -2482,312 +2460,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
       return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
     }
-
-    const deterministicGuidanceAnswer =
-      askSnoozerDecision.intentGroup === "product_education"
-        ? await maybeBuildAskSnoozerDeterministicGuidanceAnswer({
-            query: msg,
-            context,
-            traceId,
-            decision: askSnoozerDecision,
-            classification: askSnoozerDecision.classification || askSnoozerClassification,
-          })
-        : null;
-    if (deterministicGuidanceAnswer) {
-      const latencyMs = Date.now() - startedAt;
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-      const answerType =
-        String(deterministicGuidanceAnswer?.answer_strategy || "").trim() ===
-        "needs_product_clarification"
-          ? "clarification"
-          : "product_answer";
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model:
-          answerType === "clarification"
-            ? "deterministic_clarification"
-            : "deterministic_product_education",
-        text: deterministicGuidanceAnswer.reply || "",
-        context: mergedContext,
-        products: [],
-        actions: [],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      });
-
-      env.reply = deterministicGuidanceAnswer.reply || env.message?.text || "";
-      env.thread_id = effectiveSessionId;
-      env.status =
-        answerType === "clarification"
-          ? "completed"
-          : deterministicGuidanceAnswer.answer_grounded
-            ? "answered"
-            : "fallback";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path:
-          answerType === "clarification"
-            ? "deterministic_clarification"
-            : "deterministic_product_education",
-        answer_strategy:
-          deterministicGuidanceAnswer.answer_strategy || "source_summary",
-        answer_grounded: Boolean(deterministicGuidanceAnswer.answer_grounded),
-        answer_source_type:
-          deterministicGuidanceAnswer.answer_source_type || "s3_product",
-        answer_source_key: deterministicGuidanceAnswer.answer_source_key || null,
-        resolved_requested_product_handle:
-          deterministicGuidanceAnswer.resolved_requested_product_handle ||
-          askSnoozerDecision.slots?.productHandle ||
-          null,
-        loaded_product_knowledge_handles: Array.isArray(
-          deterministicGuidanceAnswer.loaded_product_knowledge_handles
-        )
-          ? deterministicGuidanceAnswer.loaded_product_knowledge_handles
-          : [],
-        answer_facts_count: Number(deterministicGuidanceAnswer.answer_facts_count || 0),
-        matched_preview: deterministicGuidanceAnswer.matched_preview || "",
-        extracted_facts: Array.isArray(deterministicGuidanceAnswer.extracted_facts)
-          ? deterministicGuidanceAnswer.extracted_facts
-          : [],
-        reason: deterministicGuidanceAnswer.reason || "",
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType,
-          sourceOfTruth:
-            deterministicGuidanceAnswer.answer_source_type === "canonical_profile"
-              ? "canonical_profile"
-              : askSnoozerDecision.sourceOfTruth,
-          factsResolved: Boolean(deterministicGuidanceAnswer.answer_grounded),
-          fallbackUsed: false,
-          reason: deterministicGuidanceAnswer.reason || "",
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-      log("ask-snoozer.product-education", "answered", {
-        traceId,
-        sessionId: effectiveSessionId,
-        shopperId,
-        intent: deterministicGuidanceAnswer.classification?.intent || null,
-        intentGroup: deterministicGuidanceAnswer.classification?.intent_group || null,
-        answerStrategy: env.meta?.answer_strategy || null,
-        answerSourceType: env.meta?.answer_source_type || null,
-        answerSourceKey: env.meta?.answer_source_key || null,
-        totalMs: latencyMs,
-      });
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth:
-          deterministicGuidanceAnswer.answer_source_type === "canonical_profile"
-            ? "canonical_profile"
-            : askSnoozerDecision.sourceOfTruth,
-        factsResolved: Boolean(deterministicGuidanceAnswer.answer_grounded),
-        missingSlots: [],
-        fallbackUsed: false,
-        reason: deterministicGuidanceAnswer.reason || "",
-        ...outcomeLogFields(env, deterministicGuidanceAnswer.reason || ""),
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: env.reply || env.message?.text || "I'm here.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    const deterministicCommerceAnswer =
-      askSnoozerDecision.intentGroup === "product_education" &&
-      queryExplicitlyRequestsAskSnoozerCommerce(msg)
-        ? await maybeBuildAskSnoozerCommerceAnswer({
-            query: msg,
-            context,
-            traceId,
-            classification: askSnoozerDecision.classification || askSnoozerClassification,
-          })
-        : null;
-    if (deterministicCommerceAnswer) {
-      const latencyMs = Date.now() - startedAt;
-      const mergedContext =
-        sco && typeof sco === "object" ? deepMerge(sco, context) : context;
-      const env = buildSuccessResponse({
-        requestId: traceId,
-        latencyMs,
-        model: "deterministic_commerce",
-        text: deterministicCommerceAnswer.replyOverride || "",
-        context: mergedContext,
-        products: Array.isArray(deterministicCommerceAnswer.products)
-          ? deterministicCommerceAnswer.products
-          : [],
-        actions: [],
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      });
-
-      env.reply = deterministicCommerceAnswer.replyOverride || env.message?.text || "";
-      env.thread_id = effectiveSessionId;
-      env.status = "answered";
-      env.sessionId = effectiveSessionId;
-      env.meta = {
-        path: "deterministic_commerce",
-        source: {
-          kind: "shopify",
-          shopifyProducts: Array.isArray(deterministicCommerceAnswer.products)
-            ? deterministicCommerceAnswer.products.length
-            : 0,
-        },
-        source_label: "shopify",
-        intent: deterministicCommerceAnswer.metaIntent || deterministicCommerceAnswer.classification?.intent || null,
-        intent_group: deterministicCommerceAnswer.classification?.intent_group || null,
-        policy_subtype: deterministicCommerceAnswer.classification?.policy_subtype || "",
-        scope: deterministicCommerceAnswer.scope || null,
-        requested_size: deterministicCommerceAnswer.requestedSize || null,
-        resolved_product_handle: deterministicCommerceAnswer.resolvedProductHandle || null,
-        resolved_base_handle: deterministicCommerceAnswer.resolvedBaseHandle || null,
-        shopify_price_found: Boolean(deterministicCommerceAnswer.shopifyPriceFound),
-        retrievalMs: 0,
-        modelMs: 0,
-        totalMs: latencyMs,
-        fallbackUsed: false,
-        ...(isObject(deterministicCommerceAnswer.metaExtra)
-          ? deterministicCommerceAnswer.metaExtra
-          : {}),
-        qualityGate: buildAskSnoozerQualityGateObject(askSnoozerDecision, {
-          answerType:
-            String(
-              deterministicCommerceAnswer?.metaExtra?.answer_strategy ||
-                deterministicCommerceAnswer?.answer_strategy ||
-                ""
-            ).trim() === "needs_product_clarification"
-              ? "clarification"
-              : "product_answer",
-          sourceOfTruth: askSnoozerDecision.sourceOfTruth,
-          factsResolved: Boolean(
-            deterministicCommerceAnswer?.metaExtra?.answer_grounded
-          ),
-          fallbackUsed: false,
-          reason:
-            deterministicCommerceAnswer?.metaExtra?.reason ||
-            deterministicCommerceAnswer?.reason ||
-            "",
-        }),
-        metrics: {
-          retrievalMs: 0,
-          modelMs: 0,
-          totalMs: latencyMs,
-          fallbackUsed: false,
-        },
-      };
-
-      const normalized = normalizeSnoozerResponse(env, {
-        traceId,
-        sessionId: effectiveSessionId,
-        routePath,
-        startedAtMs: startedAt,
-        debug,
-      });
-
-      logContractResponse(normalized);
-      log("ask-snoozer.commerce", "answered", {
-        traceId,
-        sessionId: effectiveSessionId,
-        shopperId,
-        intent: deterministicCommerceAnswer.metaIntent || deterministicCommerceAnswer.classification?.intent || null,
-        intentGroup: deterministicCommerceAnswer.classification?.intent_group || null,
-        scope: deterministicCommerceAnswer.scope || null,
-        requestedSize: deterministicCommerceAnswer.requestedSize || null,
-        answerStrategy: env.meta?.answer_strategy || null,
-        answerSourceType: env.meta?.answer_source_type || null,
-        answerSourceKey: env.meta?.answer_source_key || null,
-        source: "shopify",
-        fallbackUsed: false,
-        handles: Array.isArray(deterministicCommerceAnswer.products)
-          ? deterministicCommerceAnswer.products.map((product) => product.handle).filter(Boolean)
-          : [],
-        totalMs: latencyMs,
-      });
-      log("ask-snoozer.fulfillment.result", "resolved", {
-        traceId,
-        shopperId: shopperId || null,
-        sessionId: effectiveSessionId,
-        intentGroup: askSnoozerDecision.intentGroup,
-        intent: askSnoozerDecision.intent,
-        confidence: askSnoozerDecision.confidence,
-        slots: askSnoozerDecision.slots,
-        sourceOfTruth: askSnoozerDecision.sourceOfTruth,
-        factsResolved: Boolean(
-          deterministicCommerceAnswer?.metaExtra?.answer_grounded
-        ),
-        missingSlots: [],
-        fallbackUsed: false,
-        reason:
-          deterministicCommerceAnswer?.metaExtra?.reason ||
-          deterministicCommerceAnswer?.reason ||
-          "",
-        ...outcomeLogFields(
-          env,
-          deterministicCommerceAnswer?.metaExtra?.reason ||
-            deterministicCommerceAnswer?.reason ||
-            ""
-        ),
-      });
-
-      if (wantHud) {
-        const hud = await buildHudFromAny(normalized, {
-          ok: normalized.ok,
-          mode,
-          context: mergedContext,
-          payload,
-          defaultSpeech: env.reply || env.message?.text || "I'm here.",
-          traceId,
-        });
-        return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
-      }
-
-      return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
-    }
-
-    const deterministicFaqAnswer = await maybeBuildAskSnoozerDeterministicFaqAnswer({
-      query: msg,
+    const deterministicFaqAnswer = await buildAskSnoozerAtomicCompatibilityAnswer({
+      reason: askSnoozerDecision.atomicReason,
       context,
-      traceId,
-      shopperId,
     });
     if (deterministicFaqAnswer) {
       const latencyMs = Date.now() - startedAt;

@@ -21,20 +21,18 @@ const {
   PutCommand,
   UpdateCommand,
 } = require("@aws-sdk/lib-dynamodb");
-const openai = require("../services/openai");
+const modelCore = require("../services/askSnoozerModelCore");
 const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
-const originalPlanner = openai.planTrustedAdvisorTurnWithModel;
-const originalComposer = openai.composeTrustedAdvisorResponse;
-const originalLegacyResponse = openai.getSnoozerResponse;
+const originalPlanner = modelCore.planTrustedAdvisorTurnWithModel;
+const originalComposer = modelCore.composeTrustedAdvisorResponse;
 const originalConsoleLog = console.log;
 const originalModelOnly = process.env.ASK_SNOOZER_MODEL_ONLY;
 
 const sessionStore = new Map();
 const logs = [];
 let plannerCalls = 0;
-let legacyCalls = 0;
 let checks = 0;
 
 function check(condition, message) {
@@ -71,7 +69,7 @@ function patchDependencies() {
     return {};
   };
 
-  openai.planTrustedAdvisorTurnWithModel = async (args = {}) => {
+  modelCore.planTrustedAdvisorTurnWithModel = async (args = {}) => {
     plannerCalls += 1;
     if (/force pass five planner failure/i.test(args.query || "")) {
       const error = new Error("forced Pass 5 planner failure");
@@ -80,7 +78,7 @@ function patchDependencies() {
     }
     return buildPlannerFixture(args);
   };
-  openai.composeTrustedAdvisorResponse = async (input = {}) => ({
+  modelCore.composeTrustedAdvisorResponse = async (input = {}) => ({
     displayText: input.deterministicDraft.displayText,
     speechText: input.deterministicDraft.speechText,
     confidence: 0.99,
@@ -88,10 +86,6 @@ function patchDependencies() {
     inputChars: 0,
     factPackChars: 0,
   });
-  openai.getSnoozerResponse = async () => {
-    legacyCalls += 1;
-    throw new Error("canonical Ask route invoked removed legacy answer path");
-  };
   console.log = (...args) => {
     logs.push(args.map((value) => (typeof value === "string" ? value : JSON.stringify(value))).join(" "));
   };
@@ -99,9 +93,8 @@ function patchDependencies() {
 
 function restore() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
-  openai.planTrustedAdvisorTurnWithModel = originalPlanner;
-  openai.composeTrustedAdvisorResponse = originalComposer;
-  openai.getSnoozerResponse = originalLegacyResponse;
+  modelCore.planTrustedAdvisorTurnWithModel = originalPlanner;
+  modelCore.composeTrustedAdvisorResponse = originalComposer;
   console.log = originalConsoleLog;
   if (originalModelOnly === undefined) delete process.env.ASK_SNOOZER_MODEL_ONLY;
   else process.env.ASK_SNOOZER_MODEL_ONLY = originalModelOnly;
@@ -160,7 +153,10 @@ async function main() {
       else process.env.ASK_SNOOZER_MODEL_ONLY = value;
       const result = await request({ message: freeText, sessionId: `cutover-flag-${label}` });
       check(result.statusCode === 200, `flag ${label} returns HTTP 200`);
-      check(planning(result).semanticAuthority === "model_semantics", `flag ${label} cannot change model semantic authority`);
+      check(
+        planning(result).semanticAuthority === "model_semantics",
+        `flag ${label} cannot change model semantic authority (received ${planning(result).semanticAuthority || "missing"}; response ${JSON.stringify(result.body)})`
+      );
       check(result.plannerCalls === 1 && planning(result).modelCallCount === 1, `flag ${label} performs exactly one planner call`);
     }
 
@@ -200,6 +196,7 @@ async function main() {
     check(!routeSource.includes("routeAskSnoozerQuestion"), "canonical route has no broad legacy semantic router");
     check(!routeSource.includes("getSnoozerResponse"), "canonical route has no legacy OpenAI answer call");
     check(!routeSource.includes('path: "legacy_path"'), "canonical route cannot identify a legacy response path");
+    check(!fs.existsSync(path.join(__dirname, "..", "services", "openai.js")), "legacy OpenAI service is deleted");
     check(!fs.existsSync(path.join(__dirname, "..", "services", "askSnoozerSemanticShadow.js")), "semantic shadow module is deleted");
 
     const parsedLogs = logs.flatMap((line) => {
@@ -208,7 +205,6 @@ async function main() {
     check(parsedLogs.some((entry) => entry.src === "ask-snoozer.semantic-authority" && entry.semanticAuthority === "deterministic_atomic" && entry.atomicReason === "support_handoff"), "support handoff telemetry confirms deterministic atomic authority");
     check(!parsedLogs.some((entry) => entry.src === "ask-snoozer.semantic-shadow"), "runtime emits no semantic-shadow records");
     check(!parsedLogs.some((entry) => entry.responsePath === "legacy_path" || entry.path === "legacy_path"), "canonical runtime emits no legacy_path responses");
-    check(legacyCalls === 0, "canonical Ask matrix makes zero legacy getSnoozerResponse calls");
 
     originalConsoleLog(`Ask Snoozer semantic cutover tests passed (${checks} checks).`);
   } finally {

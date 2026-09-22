@@ -7,10 +7,12 @@ const {
   PutCommand,
   UpdateCommand,
 } = require("@aws-sdk/lib-dynamodb");
-const openai = require("../services/openai");
+const modelCore = require("../services/askSnoozerModelCore");
+const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
-const originalOpenAiGetSnoozerResponse = openai.getSnoozerResponse;
+const originalPlanner = modelCore.planTrustedAdvisorTurnWithModel;
+const originalComposer = modelCore.composeTrustedAdvisorResponse;
 
 const sessionStore = new Map();
 const resultsStore = new Map();
@@ -93,23 +95,18 @@ function restoreDynamo() {
 }
 
 function patchOpenAi() {
-  openai.getSnoozerResponse = async function mockedGetSnoozerResponse(message) {
-    openAiCalls.push(message);
-    return {
-      reply: `mocked fallback: ${message}`,
-      text: `mocked fallback: ${message}`,
-      model: "mock-openai",
-      meta: {
-        path: "mock_openai",
-      },
-      context: {},
-      actions: [],
-    };
-  };
+  modelCore.planTrustedAdvisorTurnWithModel = buildPlannerFixture;
+  modelCore.composeTrustedAdvisorResponse = async ({ deterministicDraft = {} } = {}) => ({
+    displayText: deterministicDraft.displayText,
+    speechText: deterministicDraft.speechText,
+    confidence: 0.99,
+    model: "consistency-composer-fixture",
+  });
 }
 
 function restoreOpenAi() {
-  openai.getSnoozerResponse = originalOpenAiGetSnoozerResponse;
+  modelCore.planTrustedAdvisorTurnWithModel = originalPlanner;
+  modelCore.composeTrustedAdvisorResponse = originalComposer;
 }
 
 function resetStores() {

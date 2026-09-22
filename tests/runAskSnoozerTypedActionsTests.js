@@ -19,7 +19,7 @@ const {
   PutCommand,
   UpdateCommand,
 } = require("@aws-sdk/lib-dynamodb");
-const openai = require("../services/openai");
+const modelCore = require("../services/askSnoozerModelCore");
 const shopify = require("../services/shopify");
 const rewards = require("../services/rewards/service");
 const manifest = require("../data/showroom-manifest.v1.json");
@@ -31,8 +31,8 @@ const {
 const { applyAskSnoozerWorkingMemory } = require("../services/askSnoozerWorkingMemory");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
-const originalPlanner = openai.planTrustedAdvisorTurnWithModel;
-const originalComposer = openai.composeTrustedAdvisorResponse;
+const originalPlanner = modelCore.planTrustedAdvisorTurnWithModel;
+const originalComposer = modelCore.composeTrustedAdvisorResponse;
 const originalFetchProducts = shopify.fetchProductsByHandles;
 const originalGetCart = shopify.getCart;
 const originalGetRewardSummary = rewards.getRewardSummary;
@@ -133,12 +133,12 @@ function patchDependencies() {
   });
   rewards.getRewardOffers = async () => [{ label: "Verified offer", unlocked: true, status: "unlocked" }];
 
-  openai.planTrustedAdvisorTurnWithModel = async (args = {}) => {
+  modelCore.planTrustedAdvisorTurnWithModel = async (args = {}) => {
     plannerCalls += 1;
     freeTextComparisonState = args.context?.askSnoozerWorkingMemory?.activeDeal?.comparisonProductHandles || [];
     return buildPlannerFixture(args);
   };
-  openai.composeTrustedAdvisorResponse = async (input = {}) => {
+  modelCore.composeTrustedAdvisorResponse = async (input = {}) => {
     composerCalls += 1;
     return {
       displayText: input.deterministicDraft.displayText,
@@ -153,8 +153,8 @@ function patchDependencies() {
 
 function restore() {
   DynamoDBDocumentClient.prototype.send = originalDdbSend;
-  openai.planTrustedAdvisorTurnWithModel = originalPlanner;
-  openai.composeTrustedAdvisorResponse = originalComposer;
+  modelCore.planTrustedAdvisorTurnWithModel = originalPlanner;
+  modelCore.composeTrustedAdvisorResponse = originalComposer;
   shopify.fetchProductsByHandles = originalFetchProducts;
   shopify.getCart = originalGetCart;
   rewards.getRewardSummary = originalGetRewardSummary;
@@ -241,7 +241,7 @@ async function run() {
     check(rewardsResult.plannerCalls === 0 && rewardsResult.composerCalls === 0, "typed rewards bypasses both planner and composer");
     check(String(rewardsResult.body.reply).includes("420") && !String(rewardsResult.body.reply).includes("Banana"), "display label cannot alter rewards execution");
     check(rewardsResult.body.metadata?.planning?.semanticAuthority === "typed_showroom_action", "typed rewards reports typed semantic authority");
-    check(rewardsResult.body.metadata?.planning?.legacyShadow?.evaluated === false, "typed rewards bypasses legacy shadow");
+    check(!Object.prototype.hasOwnProperty.call(rewardsResult.body.metadata?.planning || {}, "legacyShadow"), "typed rewards expose no legacy shadow metadata");
 
     const cartResult = await request({
       message: "Do not parse this",
