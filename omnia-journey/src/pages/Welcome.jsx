@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 
+import welcomeBrandMarkSrc from "@/assets/mysnoozepod-logo-welcome.png";
 import { checkInSnoozeCode, getAssessment } from "@/lib/api";
 import { getAccessCode } from "@/state/sessionStore";
 import { useStore } from "@/lib/useStore";
@@ -215,7 +216,7 @@ export default function Welcome() {
       <ShowroomTopRail className="shrink-0 justify-center pt-3 md:pt-4">
         <div data-welcome-logo="true">
           <ShowroomBrandMark
-            imageSrc="/mysnoozepod-logo-welcome.png"
+            imageSrc={welcomeBrandMarkSrc}
             imageClassName="w-[180px] md:w-[208px]"
           />
         </div>

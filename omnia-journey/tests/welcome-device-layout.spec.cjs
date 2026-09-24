@@ -155,8 +155,8 @@ async function expectWelcomeAcceptance(page) {
     complete: true,
     naturalWidth: 2172,
     naturalHeight: 724,
-    source: "/mysnoozepod-logo-welcome.png",
   });
+  expect(result.visual.logo.source).toBe("/assets/mysnoozepod-logo-welcome.png");
   expect(result.visual.headlinePhrase.lines).toBe(1);
   expect(result.visual.feedback.bounds.height).toBeLessThanOrEqual(
     result.visual.feedback.active ? 49 : 33
