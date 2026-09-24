@@ -213,7 +213,12 @@ export default function Welcome() {
       data-welcome-shell="true"
     >
       <ShowroomTopRail className="shrink-0 justify-center pt-3 md:pt-4">
-        <ShowroomBrandMark imageClassName="w-[180px] md:w-[208px]" />
+        <div data-welcome-logo="true">
+          <ShowroomBrandMark
+            imageSrc="/mysnoozepod-logo-welcome.png"
+            imageClassName="w-[180px] md:w-[208px]"
+          />
+        </div>
       </ShowroomTopRail>
 
       <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-3 pt-2 md:px-6 md:pb-4">
@@ -230,7 +235,10 @@ export default function Welcome() {
               className="relative flex min-h-[286px] items-end justify-end overflow-hidden px-5 pb-2 pt-4 shadow-inner md:min-h-[316px] md:px-6"
               data-welcome-host="true"
             >
-              <div className="absolute left-4 top-4 max-w-[232px] rounded-[var(--showroom-radius-panel)] bg-[var(--showroom-color-surface)] px-5 py-4 text-[var(--showroom-color-text-secondary)] shadow-[var(--showroom-shadow-panel)] md:left-5 md:top-5">
+              <div
+                className="absolute left-4 top-4 max-w-[232px] rounded-[var(--showroom-radius-panel)] bg-[var(--showroom-color-surface)] px-5 py-4 text-[var(--showroom-color-text-secondary)] shadow-[var(--showroom-shadow-panel)] md:left-5 md:top-5"
+                data-welcome-greeting="true"
+              >
                 <div className="text-[1.58rem] font-black leading-tight text-[var(--showroom-color-brand-primary)]">Hi there.</div>
                 <p className="mt-2 text-[0.92rem] leading-6">
                   I&apos;m Snoozer. I&apos;ll help you find the mattress that fits how you sleep.
@@ -242,15 +250,19 @@ export default function Welcome() {
               <img
                 src="/snoozer-avatar.png"
                 alt="Snoozer"
-                className="relative z-10 h-auto w-[216px] max-w-full translate-x-2 object-contain drop-shadow-[0_18px_38px_rgba(47,87,232,0.18)] md:w-[242px]"
+                className="relative z-10 h-auto w-[238px] max-w-full translate-x-2 object-contain drop-shadow-[0_18px_38px_rgba(47,87,232,0.18)] md:w-[266px]"
+                data-welcome-snoozer="true"
                 loading="lazy"
                 decoding="async"
               />
             </ShowroomPanel>
 
             <div className="min-w-0">
-              <h1 className="showroom-type-display max-w-[760px]">
-                Let's start your Snooze Session.
+              <h1 className="showroom-type-display max-w-[760px]" data-welcome-headline="true">
+                <span data-welcome-headline-lead="true">Let&apos;s start your</span>{" "}
+                <span className="whitespace-nowrap" data-welcome-headline-phrase="true">
+                  Snooze Session.
+                </span>
               </h1>
 
               <p className="showroom-type-body-large mt-2.5 max-w-xl">
@@ -258,7 +270,7 @@ export default function Welcome() {
               </p>
 
               <div
-                className="mt-3.5 max-w-[660px] rounded-[var(--showroom-radius-panel)] border border-[var(--showroom-color-brand-border)] bg-[var(--showroom-color-surface-elevated)] p-3.5 shadow-[var(--showroom-shadow-card)] md:p-4"
+                className="mt-3.5 max-w-[660px] rounded-[var(--showroom-radius-panel)] border border-[var(--showroom-color-brand-border)] bg-[var(--showroom-color-surface-elevated)] p-3 shadow-[var(--showroom-shadow-card)] md:p-3.5"
                 data-welcome-code-entry="true"
                 aria-busy={loading ? "true" : "false"}
               >
@@ -294,7 +306,11 @@ export default function Welcome() {
                   </div>
                 </fieldset>
 
-                <div id="welcome-code-feedback" className="mt-2.5 min-h-[48px]">
+                <div
+                  id="welcome-code-feedback"
+                  className="mt-2 min-h-8"
+                  data-welcome-code-feedback="true"
+                >
                   {loading ? (
                     <div
                       className="flex min-h-12 w-full items-center justify-center rounded-[var(--showroom-radius-control)] bg-[var(--showroom-color-brand-soft)] px-6 py-3 text-base font-black text-[var(--showroom-color-brand-primary)]"

@@ -138,11 +138,15 @@ export function ShowroomFooterAction({ icon: Icon, label, onClick, className }) 
   );
 }
 
-export function ShowroomBrandMark({ className, imageClassName }) {
+export function ShowroomBrandMark({
+  className,
+  imageClassName,
+  imageSrc = "/mysnoozepod-logo.png",
+}) {
   return (
     <div className={cn("inline-flex items-center", className)}>
       <img
-        src="/mysnoozepod-logo.png"
+        src={imageSrc}
         alt="MySnoozePod"
         className={cn("h-auto w-[138px] md:w-[160px]", imageClassName)}
         loading="lazy"

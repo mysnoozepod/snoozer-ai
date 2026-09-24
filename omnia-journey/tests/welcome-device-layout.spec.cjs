@@ -69,6 +69,9 @@ async function expectWelcomeAcceptance(page) {
       '[data-welcome-personalization="true"]',
       '[data-welcome-human-help="true"]',
     ].map((selector) => ({ selector, bounds: rect(selector) }));
+    const logo = document.querySelector('[data-welcome-logo="true"] img');
+    const headlineLead = document.querySelector('[data-welcome-headline-lead="true"]');
+    const headlinePhrase = document.querySelector('[data-welcome-headline-phrase="true"]');
     const overlaps = [];
     for (let leftIndex = 0; leftIndex < critical.length; leftIndex += 1) {
       for (let rightIndex = leftIndex + 1; rightIndex < critical.length; rightIndex += 1) {
@@ -97,6 +100,34 @@ async function expectWelcomeAcceptance(page) {
       targets,
       critical,
       overlaps,
+      visual: {
+        logo: logo
+          ? {
+              bounds: logo.getBoundingClientRect(),
+              complete: logo.complete,
+              naturalWidth: logo.naturalWidth,
+              naturalHeight: logo.naturalHeight,
+              source: new URL(logo.currentSrc || logo.src).pathname,
+            }
+          : null,
+        host: rect('[data-welcome-host="true"]'),
+        greeting: rect('[data-welcome-greeting="true"]'),
+        snoozer: rect('[data-welcome-snoozer="true"]'),
+        headlineLead: headlineLead
+          ? { bounds: headlineLead.getBoundingClientRect(), lines: headlineLead.getClientRects().length }
+          : null,
+        headlinePhrase: headlinePhrase
+          ? { bounds: headlinePhrase.getBoundingClientRect(), lines: headlinePhrase.getClientRects().length }
+          : null,
+        feedback: {
+          bounds: rect('[data-welcome-code-feedback="true"]'),
+          active: Boolean(
+            document.querySelector(
+              '[data-welcome-code-feedback="true"] [role="status"], [data-welcome-code-feedback="true"] [role="alert"]'
+            )
+          ),
+        },
+      },
     };
   });
 
@@ -120,6 +151,28 @@ async function expectWelcomeAcceptance(page) {
     expect(bounds.top, selector).toBeGreaterThanOrEqual(result.frame.top - 1);
     expect(bounds.bottom, selector).toBeLessThanOrEqual(result.frame.bottom + 1);
   });
+  expect(result.visual.logo, JSON.stringify(result, null, 2)).toMatchObject({
+    complete: true,
+    naturalWidth: 2172,
+    naturalHeight: 724,
+    source: "/mysnoozepod-logo-welcome.png",
+  });
+  expect(result.visual.headlinePhrase.lines).toBe(1);
+  expect(result.visual.feedback.bounds.height).toBeLessThanOrEqual(
+    result.visual.feedback.active ? 49 : 33
+  );
+  for (const key of ["logo", "host", "greeting", "snoozer", "headlineLead", "headlinePhrase"]) {
+    expect(result.visual[key], key).toBeTruthy();
+  }
+  const { host, greeting, snoozer } = result.visual;
+  for (const [label, bounds] of [["greeting", greeting], ["snoozer", snoozer]]) {
+    expect(bounds.left, label).toBeGreaterThanOrEqual(host.left - 1);
+    expect(bounds.right, label).toBeLessThanOrEqual(host.right + 1);
+    expect(bounds.top, label).toBeGreaterThanOrEqual(host.top - 1);
+    expect(bounds.bottom, label).toBeLessThanOrEqual(host.bottom + 1);
+  }
+  expect(snoozer.width).toBeGreaterThanOrEqual(260);
+  return result;
 }
 
 test("Welcome accepts a six-digit kiosk code without duplicate submission", async ({ page }) => {
@@ -167,6 +220,9 @@ test("Welcome accepts a six-digit kiosk code without duplicate submission", asyn
   await page.goto("/welcome", { waitUntil: "domcontentloaded" });
   const digits = page.getByLabel(/^Snooze Code digit/);
   await expect(digits).toHaveCount(6);
+  const idlePanelHeight = await page
+    .locator('[data-welcome-code-entry="true"]')
+    .evaluate((node) => node.getBoundingClientRect().height);
 
   await digits.nth(0).fill("1");
   await expect(digits.nth(1)).toBeFocused();
@@ -188,6 +244,10 @@ test("Welcome accepts a six-digit kiosk code without duplicate submission", asyn
   await expect(digits.nth(5)).toBeFocused();
   await expect(digits.nth(5)).toHaveAttribute("aria-readonly", "true");
   await expect(page.getByRole("status")).toContainText("Loading your Snooze Session");
+  const loadingPanelHeight = await page
+    .locator('[data-welcome-code-entry="true"]')
+    .evaluate((node) => node.getBoundingClientRect().height);
+  expect(loadingPanelHeight - idlePanelHeight).toBeLessThanOrEqual(18);
   await expect.poll(() => checkInRequests).toBe(1);
   await page.waitForTimeout(300);
   expect(checkInRequests).toBe(1);
@@ -203,7 +263,11 @@ for (const viewport of WELCOME_VIEWPORTS) {
     await expect(page.getByLabel(/^Snooze Code digit/)).toHaveCount(6);
     await expect(page.locator('[data-welcome-personalization="true"]')).toBeVisible();
     await expect(page.locator('[data-welcome-human-help="true"]')).toBeVisible();
-    await expectWelcomeAcceptance(page);
+    const result = await expectWelcomeAcceptance(page);
+    if (viewport.name === "primary-1180x820") {
+      expect(result.visual.headlinePhrase.bounds.top - result.visual.headlineLead.bounds.top)
+        .toBeGreaterThan(8);
+    }
   });
 }
 
@@ -245,12 +309,19 @@ test("Welcome keeps invalid-code recovery visible without destabilizing layout",
 
   await page.goto("/welcome", { waitUntil: "domcontentloaded" });
   const digits = page.getByLabel(/^Snooze Code digit/);
+  const idlePanelHeight = await page
+    .locator('[data-welcome-code-entry="true"]')
+    .evaluate((node) => node.getBoundingClientRect().height);
   await digits.nth(0).evaluate((input) => {
     const clipboard = new DataTransfer();
     clipboard.setData("text", "246810");
     input.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, clipboardData: clipboard }));
   });
   await expect(page.getByRole("alert")).toContainText("check your code and try again");
+  const errorPanelHeight = await page
+    .locator('[data-welcome-code-entry="true"]')
+    .evaluate((node) => node.getBoundingClientRect().height);
+  expect(errorPanelHeight - idlePanelHeight).toBeLessThanOrEqual(18);
   const retryButton = page.getByRole("button", { name: "Try Again" });
   await expect(retryButton).toBeVisible();
   await expect(digits.nth(5)).toBeFocused();
