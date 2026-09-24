@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
+  Check,
   ClipboardList,
   LockKeyhole,
 } from "lucide-react";
+import welcomeBrandMarkSrc from "@/assets/mysnoozepod-logo-welcome.png";
 import { getAssessmentQuestions, saveAssessment } from "@/lib/api";
 import { emitDeviceAssessmentSubmission } from "@/device/deviceActivityTracker";
 import { refreshRewardsState } from "@/state/rewardsStore";
@@ -21,8 +23,7 @@ import {
 } from "@/components/showroom/ShowroomPrimitives";
 
 const BRAND = {
-  primary: "#1A66D2",
-  cloudBg: "#DBEAFE",
+  primary: "var(--showroom-color-brand-primary)",
 };
 
 const SIZE_OPTIONS = ["Twin", "Full", "Queen", "King"];
@@ -280,25 +281,15 @@ function QuestionChoice({ label, selected, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={[
-        "rounded-2xl border px-4 py-3.5 text-left transition",
-        selected
-          ? "border-blue-600 bg-blue-50"
-          : "border-gray-200 bg-white hover:bg-gray-50",
-      ].join(" ")}
+      aria-pressed={selected}
+      data-assessment-choice="true"
+      data-selected={selected ? "true" : "false"}
+      className="assessment-choice"
     >
-      <div className="flex items-center justify-between gap-3">
-        <span className="font-semibold text-gray-900">{label}</span>
-        <span
-          className={[
-            "rounded-full px-2 py-1 text-xs font-extrabold",
-            selected ? "text-white" : "bg-gray-100 text-gray-600",
-          ].join(" ")}
-          style={selected ? { background: BRAND.primary } : undefined}
-        >
-          {selected ? "Selected" : "Choose"}
-        </span>
-      </div>
+      <span className="min-w-0 font-bold text-slate-900">{label}</span>
+      <span className="assessment-choice-mark" aria-hidden="true">
+        {selected ? <Check className="h-4 w-4" strokeWidth={3} /> : null}
+      </span>
     </button>
   );
 }
@@ -309,16 +300,12 @@ function MotionOptionCard({ option, selected, disabled, disabledReason, onClick 
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={[
-        "overflow-hidden rounded-3xl border text-left transition",
-        disabled
-          ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-60"
-          : selected
-            ? "border-blue-600 bg-blue-50 shadow-sm"
-            : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/40",
-      ].join(" ")}
+      aria-pressed={selected}
+      data-assessment-motion-choice="true"
+      data-selected={selected ? "true" : "false"}
+      className="assessment-motion-choice"
     >
-      <div className="aspect-[16/7] w-full overflow-hidden bg-gray-50">
+      <div className="aspect-[16/6] w-full overflow-hidden bg-slate-50">
         <img
           src={option.image}
           alt={option.label}
@@ -328,17 +315,11 @@ function MotionOptionCard({ option, selected, disabled, disabledReason, onClick 
         />
       </div>
 
-      <div className="p-3">
+      <div className="p-2.5">
         <div className="mb-1 flex items-center justify-between gap-2">
-          <span className="text-[0.95rem] font-semibold text-gray-900">{option.label}</span>
-          <span
-            className={[
-              "rounded-full px-2 py-1 text-xs font-extrabold",
-              selected ? "text-white" : "bg-gray-100 text-gray-600",
-            ].join(" ")}
-            style={selected ? { background: BRAND.primary } : undefined}
-          >
-            {selected ? "Selected" : "Choose"}
+          <span className="text-[0.92rem] font-bold text-slate-900">{option.label}</span>
+          <span className="assessment-choice-mark" aria-hidden="true">
+            {selected ? <Check className="h-4 w-4" strokeWidth={3} /> : null}
           </span>
         </div>
 
@@ -385,6 +366,7 @@ function questionSectionLabel(question) {
 }
 
 export default function Assessment() {
+  const shouldReduceMotion = useReducedMotion();
   const [title, setTitle] = useState("Snooze Assessment");
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -1045,7 +1027,7 @@ export default function Assessment() {
     return (
       <ShowroomPageShell className="pb-8">
         <ShowroomTopRail>
-          <ShowroomBrandMark />
+          <ShowroomBrandMark imageSrc={welcomeBrandMarkSrc} />
         </ShowroomTopRail>
         <div className="mx-auto max-w-[1380px] px-4 pb-6 pt-3 md:px-6">
           <ShowroomFrame className="p-5 md:p-7">
@@ -1067,7 +1049,7 @@ export default function Assessment() {
     return (
       <ShowroomPageShell className="pb-8">
         <ShowroomTopRail>
-          <ShowroomBrandMark />
+          <ShowroomBrandMark imageSrc={welcomeBrandMarkSrc} />
         </ShowroomTopRail>
         <div className="mx-auto max-w-[1180px] px-4 pb-6 pt-3 md:px-6">
           <ShowroomFrame className="p-6 md:p-8">
@@ -1088,30 +1070,45 @@ export default function Assessment() {
   }
 
   return (
-      <ShowroomPageShell className="h-auto min-h-[100dvh] max-h-none overflow-y-auto pb-4 md:pb-5">
-      <ShowroomTopRail className="justify-center pt-2 md:pt-3">
-        <ShowroomBrandMark />
+    <ShowroomPageShell
+      data-assessment-shell="true"
+      className="assessment-shell h-[100dvh] min-h-0 overflow-hidden pb-2 pt-1 md:pb-3 md:pt-1.5"
+    >
+      <ShowroomTopRail className="assessment-top-rail flex-none justify-center !pt-0">
+        <ShowroomBrandMark
+          imageSrc={welcomeBrandMarkSrc}
+          imageClassName="w-[148px] md:w-[166px]"
+        />
       </ShowroomTopRail>
 
-      <div className="mx-auto max-w-[1340px] px-4 pb-4 pt-1 md:px-6 md:pb-5">
-        <ShowroomFrame className="p-3.5 md:p-4">
-          <div className="grid gap-3 lg:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[264px_minmax(0,1fr)]">
-            <div className="space-y-3">
-              <div className="rounded-[28px] border border-white/80 bg-[radial-gradient(circle_at_40%_0%,rgba(87,121,255,0.18),transparent_45%),linear-gradient(180deg,#f7fbff_0%,#eef4ff_100%)] p-4 shadow-[0_18px_44px_rgba(45,71,136,0.08)] md:p-4">
-                <ShowroomEyebrow>{displayTitle}</ShowroomEyebrow>
-                <h1 className="mt-2 text-[2.35rem] font-black leading-[0.94] tracking-tight text-slate-900 md:text-[2.7rem]">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1340px] flex-1 px-3 pt-1 md:px-5 md:pt-1.5">
+        <ShowroomFrame className="h-full min-h-0 w-full p-3 md:p-3.5">
+          <div
+            data-assessment-layout="true"
+            className="grid h-full min-h-0 gap-3 lg:grid-cols-[276px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]"
+          >
+            <aside
+              data-assessment-coach="true"
+              className="assessment-coach flex min-h-0 flex-col overflow-hidden rounded-[28px] p-5"
+            >
+                <ShowroomEyebrow className="text-[0.72rem]">{displayTitle}</ShowroomEyebrow>
+                <h1 className="mt-2 text-[2.25rem] font-black leading-[0.94] tracking-tight text-slate-900 xl:text-[2.55rem]">
                   One question at a time.
                 </h1>
+                <p className="mt-3 text-[0.98rem] font-semibold leading-6 text-slate-600">
+                  Answer what feels most like you.
+                </p>
 
-                <div className="mt-3 flex justify-center">
-                  <div className="relative">
+                <div className="flex min-h-0 flex-1 items-center justify-center pb-14 pt-3 lg:pb-16">
+                  <div className="relative flex max-h-full items-center justify-center">
                   <div className="absolute inset-0 rounded-full blur-3xl opacity-25" style={{ background: BRAND.primary }} aria-hidden="true" />
                   <motion.img
+                      data-assessment-snoozer="true"
                       src="/snoozer-avatar.png"
                       alt="Snoozer"
-                      className="relative h-28 w-28 rounded-full object-cover shadow-xl md:h-32 md:w-32"
-                      animate={{ y: [0, -4, 0] }}
-                      transition={{ duration: 3, repeat: Infinity }}
+                      className="relative aspect-square w-[clamp(204px,26vh,236px)] rounded-full object-cover shadow-xl"
+                      animate={shouldReduceMotion ? undefined : { y: [0, -4, 0] }}
+                      transition={shouldReduceMotion ? undefined : { duration: 3, repeat: Infinity }}
                       loading="lazy"
                       decoding="async"
                     />
@@ -1123,10 +1120,12 @@ export default function Assessment() {
                     Tap again to enable Snoozer voice.
                   </div>
                 ) : null}
-              </div>
-            </div>
+            </aside>
 
-            <div className="min-w-0 rounded-[28px] border border-white/80 bg-white/96 p-4 shadow-[0_18px_44px_rgba(45,71,136,0.08)] md:p-4">
+            <section
+              data-assessment-question-panel="true"
+              className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[28px] border border-white/80 bg-white/96 p-4 shadow-[0_18px_44px_rgba(45,71,136,0.08)] md:p-4"
+            >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e4ff] bg-[#eef3ff] px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-[#2f57e8]">
@@ -1135,29 +1134,39 @@ export default function Assessment() {
                   </div>
                 </div>
 
-                <div className="rounded-full border border-[#d9e4ff] bg-[#f7faff] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#2f57e8]">
+                <div
+                  data-assessment-question-count="true"
+                  className="rounded-full border border-[#d9e4ff] bg-[#f7faff] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#2f57e8]"
+                >
                   Question {Math.min(step + 1, visibleQuestions.length || 1)} of {visibleQuestions.length || 1}
                 </div>
               </div>
 
               <div className="mt-4 h-2 w-full rounded-full bg-[#dfe8fb]">
                 <div
-                  className="h-2 rounded-full transition-all"
+                  role="progressbar"
+                  aria-label="Assessment progress"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={progress}
+                  className="h-2 rounded-full transition-all motion-reduce:transition-none"
                   style={{ width: `${progress}%`, background: BRAND.primary }}
                 />
               </div>
 
-              <div className="mt-4">
+              <div className="mt-3 min-h-0 flex-1">
                 <AnimatePresence mode="wait">
                   {current ? (
                     <motion.div
                       key={current.id}
-                      initial={{ opacity: 0, y: 10 }}
+                      data-assessment-question-id={current.id}
+                      initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.25 }}
+                      exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -10 }}
+                      transition={{ duration: shouldReduceMotion ? 0 : 0.25 }}
+                      className="flex h-full min-h-0 flex-col"
                     >
-                      <div className="rounded-[26px] border border-[#cfe0ff] bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] p-4 shadow-sm md:p-4">
+                      <div className="assessment-question-card min-h-0 flex-1 overflow-hidden rounded-[26px] p-4 shadow-sm md:p-4">
                         <div className="flex flex-wrap items-center gap-3">
                           <span className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
                             {isRequired(current) ? "Required" : "Optional"}
@@ -1173,13 +1182,13 @@ export default function Assessment() {
                           ) : null}
                         </div>
 
-                        <h2 className="mt-2.5 text-[1.7rem] font-black leading-tight text-slate-900 md:text-[1.85rem]">
+                        <h2 className="mt-2 text-[1.6rem] font-black leading-tight text-slate-900 md:text-[1.78rem]">
                           {current.text}
                         </h2>
 
-                        <div className="mt-4">
+                        <div className="mt-3">
                           {currentIsMotionQuestion ? (
-                            <div className="grid grid-cols-1 gap-2.5 md:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                               {motionCards.map((opt) => {
                                 const selected = answers[current.id] === opt.label;
 
@@ -1199,7 +1208,7 @@ export default function Assessment() {
                               })}
                             </div>
                           ) : Array.isArray(current.options) && current.options.length > 0 ? (
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                               {isMultiQuestion(current)
                                 ? current.options.map((opt) => {
                                     const normalizedOpt = normalizeOptionText(opt);
@@ -1258,7 +1267,7 @@ export default function Assessment() {
                       {isRequired(current) &&
                       !isAnswered(current, answers[current.id]) &&
                       !skipped[current.id] ? (
-                        <p className="mt-3 text-sm font-medium text-slate-500">
+                        <p className="mt-2 text-sm font-medium text-slate-500">
                           Choose an option to continue.
                         </p>
                       ) : null}
@@ -1266,7 +1275,7 @@ export default function Assessment() {
                   ) : (
                     <motion.div
                       key="empty"
-                      initial={{ opacity: 0 }}
+                      initial={shouldReduceMotion ? false : { opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className="rounded-[28px] border border-slate-200 bg-slate-50 p-6 text-gray-600"
                     >
@@ -1276,7 +1285,7 @@ export default function Assessment() {
                 </AnimatePresence>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3.5">
+              <div className="mt-2.5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-2.5">
                 <Button
                   type="button"
                   variant="outline"
@@ -1317,7 +1326,7 @@ export default function Assessment() {
                   <div className="w-[168px]" aria-hidden="true" />
                 )}
               </div>
-            </div>
+            </section>
           </div>
         </ShowroomFrame>
       </div>

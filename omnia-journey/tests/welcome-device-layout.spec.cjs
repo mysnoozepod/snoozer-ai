@@ -7,6 +7,71 @@ const WELCOME_VIEWPORTS = [
   { name: "wide-1366x768", width: 1366, height: 768 },
 ];
 
+const ASSESSMENT_QUESTIONS = [
+  { id: "size", text: "What size are you shopping for?", options: ["Twin", "Full", "Queen", "King"], required: true },
+  { id: "motionMode", text: "Choose your motion style.", options: ["Standard Motion", "Half Split Motion", "Full Split Motion"], required: true },
+  { id: "sleepPartner", text: "Do you regularly share the bed with a partner?", options: ["Yes", "No"], required: true },
+  { id: "sleepPosition", text: "How do you mostly sleep: on your side, back, stomach, or a mix?", options: ["Side", "Back", "Stomach", "Mix / Combination"], required: true },
+  { id: "motionSensitivity", text: "How sensitive are you to movement in the bed?", options: ["Low — movement rarely bothers me", "Medium — I notice it but can deal with it", "High — I wake up easily from movement"] },
+  { id: "temperature", text: "Do you usually sleep hot, cold, or pretty neutral at night?", options: ["Hot", "Cold", "Neutral"], required: true },
+  { id: "firmness", text: "If you had to choose, do you lean soft, medium, or firm for comfort?", options: ["Soft", "Medium", "Firm"], required: true },
+  { id: "snore", text: "Do you personally snore or use a CPAP / sleep apnea device?", options: ["Yes", "No", "Not sure"] },
+  { id: "painPoints", text: "Any back pain, pressure points, or other issues you hope the mattress can help with? (Choose all that apply or skip if none.)", options: ["Lower back", "Upper back", "Hips", "Shoulders", "Neck", "Sciatica", "General pressure relief", "Other / not listed"], multi: true, zohoType: "multiselect" },
+];
+
+async function stubAssessmentBackend(page, submissions = []) {
+  await page.addInitScript(() => {
+    sessionStorage.setItem(
+      "snooze.sessionState.v1",
+      JSON.stringify({ version: 1, shopperId: "987654" })
+    );
+  });
+
+  await page.route("**/*", async (route) => {
+    const request = route.request();
+    const url = request.url();
+    if (/\/assessment-questions(?:\?|$)/i.test(url)) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ title: "Snooze Assessment", questions: ASSESSMENT_QUESTIONS }),
+      });
+      return;
+    }
+    if (request.method() === "POST" && /\/assessment$/i.test(url)) {
+      submissions.push(request.postDataJSON());
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, shopperId: "987654" }),
+      });
+      return;
+    }
+    if (/execute-api\.us-east-1\.amazonaws\.com/i.test(url)) {
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: false, message: "test fallback" }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+}
+
+async function selectAssessmentAnswer(page, label) {
+  const choice = page.getByRole("button", { name: label, exact: true });
+  await expect(choice).toBeVisible();
+  await choice.click({ position: { x: 12, y: 24 } });
+}
+
+async function expectAssessmentQuestion(page, index, count, id) {
+  await expect(page.locator(`[data-assessment-question-id="${id}"]`)).toBeVisible();
+  await expect(page.locator('[data-assessment-question-count="true"]')).toHaveText(
+    `Question ${index} of ${count}`
+  );
+}
+
 async function stubBackendFailures(page, { hudTtlMs = null, requests = [] } = {}) {
   await page.route("**/*", async (route) => {
     const url = route.request().url();
@@ -578,6 +643,165 @@ test("What To Expect triggers HUD/TTS and follows completion for new and existin
     await expect(page).toHaveURL(branch === "existing" ? /\/results$/ : /\/assessment$/);
     await context.close();
   }
+});
+
+test("Assessment keeps Question 1 contained at all required showroom viewports", async ({ browser }) => {
+  for (const viewport of WELCOME_VIEWPORTS) {
+    const context = await browser.newContext({
+      viewport: { width: viewport.width, height: viewport.height },
+    });
+    const page = await context.newPage();
+    await stubAssessmentBackend(page);
+    await page.goto("/assessment", { waitUntil: "domcontentloaded" });
+    await expectAssessmentQuestion(page, 1, 9, "size");
+    await expect(page.getByRole("heading", { name: "One question at a time." })).toBeVisible();
+    await expect(page.getByText("Answer what feels most like you.", { exact: true })).toBeVisible();
+    await expect(page.getByText("Choose", { exact: true })).toHaveCount(0);
+    await expect(page.locator('img[alt="MySnoozePod"]')).toHaveAttribute(
+      "src",
+      /mysnoozepod-logo-welcome\.png$/
+    );
+
+    const layout = await page.evaluate(() => {
+      const rect = (selector) => {
+        const node = document.querySelector(selector);
+        if (!node) return null;
+        const bounds = node.getBoundingClientRect();
+        return {
+          left: bounds.left,
+          right: bounds.right,
+          top: bounds.top,
+          bottom: bounds.bottom,
+          width: bounds.width,
+          height: bounds.height,
+        };
+      };
+      const overlaps = (left, right) =>
+        Boolean(
+          left &&
+            right &&
+            left.left < right.right &&
+            left.right > right.left &&
+            left.top < right.bottom &&
+            left.bottom > right.top
+        );
+      const content = [
+        rect('[data-assessment-snoozer="true"]'),
+        rect('[data-assessment-question-panel="true"]'),
+      ];
+      const human = rect('[data-testid="persistent-human-assistance"]');
+      const rewards = rect('[data-rewards-placement="floating"]');
+      const logo = rect('img[alt="MySnoozePod"]');
+      return {
+        snoozer: content[0],
+        panel: content[1],
+        choiceHeights: Array.from(document.querySelectorAll('[data-assessment-choice="true"]')).map(
+          (node) => node.getBoundingClientRect().height
+        ),
+        humanOverlapsContent: content.some((bounds) => overlaps(human, bounds)),
+        rewardsOverlapsLogo: overlaps(rewards, logo),
+      };
+    });
+
+    expect(layout.snoozer.width, viewport.name).toBeGreaterThanOrEqual(190);
+    expect(layout.panel.bottom, viewport.name).toBeLessThanOrEqual(viewport.height + 1);
+    expect(layout.choiceHeights.length, viewport.name).toBe(4);
+    expect(Math.min(...layout.choiceHeights), viewport.name).toBeGreaterThanOrEqual(48);
+    expect(layout.humanOverlapsContent, viewport.name).toBeFalsy();
+    expect(layout.rewardsOverlapsLogo, viewport.name).toBeFalsy();
+    await expectNoDocumentScroll(page);
+    await context.close();
+  }
+});
+
+test("Assessment preserves auto-advance, Back restoration, progress, long answers, and submission", async ({ page }) => {
+  const submissions = [];
+  await stubAssessmentBackend(page, submissions);
+  await page.goto("/assessment", { waitUntil: "domcontentloaded" });
+  await expectAssessmentQuestion(page, 1, 9, "size");
+
+  const queen = page.getByRole("button", { name: "Queen", exact: true });
+  await queen.focus();
+  await expect(queen).toBeFocused();
+  await queen.press("Enter");
+  await expectAssessmentQuestion(page, 2, 9, "baseType");
+  await expect(page.getByRole("progressbar", { name: "Assessment progress" })).toHaveAttribute(
+    "aria-valuenow",
+    "11"
+  );
+
+  await page.getByRole("button", { name: "Back", exact: true }).click();
+  await expectAssessmentQuestion(page, 1, 9, "size");
+  await expect(queen).toHaveAttribute("aria-pressed", "true");
+  await expect(queen).toHaveCSS("border-color", "rgb(47, 87, 232)");
+
+  await queen.click({ position: { x: 14, y: 24 } });
+  await expectAssessmentQuestion(page, 2, 9, "baseType");
+  await selectAssessmentAnswer(page, "Mattress Only");
+  await expectAssessmentQuestion(page, 3, 9, "sleepPartner");
+  await selectAssessmentAnswer(page, "No");
+  await expectAssessmentQuestion(page, 4, 9, "sleepPosition");
+  await selectAssessmentAnswer(page, "Side");
+  await expectAssessmentQuestion(page, 5, 9, "motionSensitivity");
+  await selectAssessmentAnswer(page, "Medium — I notice it but can deal with it");
+  await expectAssessmentQuestion(page, 6, 9, "temperature");
+  await selectAssessmentAnswer(page, "Neutral");
+
+  await expectAssessmentQuestion(page, 7, 9, "firmness");
+  await expect(page.getByRole("heading", { name: /lean soft, medium, or firm/i })).toBeVisible();
+  await expectNoDocumentScroll(page);
+  await selectAssessmentAnswer(page, "Medium");
+  await expectAssessmentQuestion(page, 8, 9, "snore");
+  await selectAssessmentAnswer(page, "No");
+
+  await expectAssessmentQuestion(page, 9, 9, "painPoints");
+  const longQuestionChoices = page.locator('[data-assessment-question-id="painPoints"] [data-assessment-choice="true"]');
+  await expect(longQuestionChoices).toHaveCount(8);
+  const touchTargets = await longQuestionChoices.evaluateAll((nodes) =>
+    nodes.map((node) => node.getBoundingClientRect().height)
+  );
+  expect(Math.min(...touchTargets)).toBeGreaterThanOrEqual(48);
+  await expectNoDocumentScroll(page);
+
+  await selectAssessmentAnswer(page, "Lower back");
+  await expect(page.getByRole("button", { name: "Lower back", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true"
+  );
+  await page.getByRole("button", { name: "Finish & View Results" }).click();
+  await expect(page).toHaveURL(/\/results$/, { timeout: 8_000 });
+  expect(submissions).toHaveLength(1);
+  expect(submissions[0].answers || submissions[0].assessment || submissions[0]).toMatchObject({
+    size: "Queen",
+    baseType: "Mattress Only",
+    firmness: "Medium",
+    painPoints: ["Lower back"],
+  });
+});
+
+test("Assessment honors touch input and reduced motion", async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 1024, height: 768 },
+    hasTouch: true,
+    reducedMotion: "reduce",
+  });
+  const page = await context.newPage();
+  await stubAssessmentBackend(page);
+  await page.goto("/assessment", { waitUntil: "domcontentloaded" });
+  await expectAssessmentQuestion(page, 1, 9, "size");
+
+  const snoozerTransform = await page
+    .locator('[data-assessment-snoozer="true"]')
+    .evaluate((node) => getComputedStyle(node).transform);
+  expect(snoozerTransform).toBe("none");
+
+  const twin = page.getByRole("button", { name: "Twin", exact: true });
+  const bounds = await twin.boundingBox();
+  expect(bounds).toBeTruthy();
+  await page.touchscreen.tap(bounds.x + 12, bounds.y + bounds.height / 2);
+  await expectAssessmentQuestion(page, 2, 9, "baseType");
+  await expectNoDocumentScroll(page);
+  await context.close();
 });
 
 test("Results keeps the ranked top three in the Welcome kiosk viewport", async ({ page }) => {
