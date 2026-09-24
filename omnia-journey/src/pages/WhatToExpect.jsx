@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   BedDouble,
+  Check,
   ClipboardList,
   Layers3,
   PackageCheck,
 } from "lucide-react";
 
+import welcomeBrandMarkSrc from "@/assets/mysnoozepod-logo-welcome.png";
 import { getAssessment } from "@/lib/api";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import { getWhatToExpectFallback } from "@/lib/snoozer/hud/whatToExpectFallbacks";
@@ -76,52 +78,73 @@ function hasCompletedAssessment(snapshot) {
   return false;
 }
 
-function StepCard({ step, title, body, detail, icon: Icon, active = false }) {
+const STEP_STATE_LABELS = Object.freeze({
+  completed: "Completed",
+  current: "You’re here",
+  upcoming: "Coming up",
+});
+
+function StepCard({ step, title, body, icon: Icon, state = "upcoming", stateLabel }) {
+  const isCurrent = state === "current";
+  const isCompleted = state === "completed";
+  const resolvedStateLabel = stateLabel || STEP_STATE_LABELS[state] || STEP_STATE_LABELS.upcoming;
+
   return (
     <div
       data-testid={`what-step-${step}`}
-      aria-current={active ? "step" : undefined}
+      data-journey-state={state}
+      aria-current={isCurrent ? "step" : undefined}
       className={[
-        "flex h-full min-h-[248px] flex-col rounded-[26px] border px-5 py-5 text-center transition",
-        active
-          ? "border-[#9db6ff] bg-[linear-gradient(180deg,#f5f8ff_0%,#ffffff_100%)] shadow-[0_22px_48px_rgba(47,87,232,0.17)] ring-2 ring-[#dbe5ff]"
-          : "border-white/80 bg-white shadow-[0_18px_40px_rgba(45,71,136,0.09)]",
+        "grid min-h-[176px] grid-cols-[88px_minmax(0,1fr)] items-center gap-4 rounded-[var(--showroom-radius-card)] border p-4 text-left",
+        isCurrent
+          ? "border-[var(--showroom-color-brand-primary)] bg-[linear-gradient(135deg,#eef3ff_0%,#ffffff_72%)] shadow-[var(--showroom-shadow-active)] ring-2 ring-[var(--showroom-color-brand-border)]"
+          : isCompleted
+            ? "border-[var(--showroom-color-brand-border)] bg-[var(--showroom-color-brand-soft)] shadow-[var(--showroom-shadow-subtle)]"
+            : "border-white/80 bg-[var(--showroom-color-surface)] shadow-[var(--showroom-shadow-card)]",
       ].join(" ")}
     >
-      <div className="text-[0.78rem] font-black uppercase tracking-[0.22em] text-[#1A66D2]">
-        Step {step}
+      <div
+        className={[
+          "flex h-[88px] w-[88px] items-center justify-center rounded-[24px]",
+          isCurrent
+            ? "bg-[var(--showroom-color-brand-primary)] text-white shadow-[var(--showroom-shadow-active)]"
+            : "bg-[var(--showroom-color-brand-soft)] text-[var(--showroom-color-brand-primary)] shadow-inner",
+        ].join(" ")}
+        data-journey-icon="true"
+      >
+        <Icon className="h-14 w-14" strokeWidth={1.7} aria-hidden="true" />
       </div>
 
-      <div className="mt-2.5 flex justify-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-[20px] bg-[linear-gradient(180deg,#F4F8FF_0%,#EFF4FF_100%)] text-[#2f57e8] shadow-inner">
-          <Icon className="h-4 w-4" />
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="showroom-type-eyebrow">Step {step}</span>
+          <span
+            className={[
+              "inline-flex min-h-7 items-center gap-1 rounded-[var(--showroom-radius-pill)] px-2.5 text-[0.68rem] font-black uppercase tracking-[0.1em]",
+              isCurrent
+                ? "bg-[var(--showroom-color-brand-primary)] text-white"
+                : isCompleted
+                  ? "bg-[var(--showroom-color-surface)] text-[var(--showroom-color-brand-strong)]"
+                  : "bg-slate-100 text-slate-500",
+            ].join(" ")}
+            data-journey-state-label="true"
+          >
+            {isCompleted ? <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" /> : null}
+            {resolvedStateLabel}
+          </span>
         </div>
-      </div>
-
-      <div className="mt-3 text-[0.95rem] font-black leading-tight text-slate-900 md:text-[1.04rem]">
-        {title}
-      </div>
-
-      <div className="mt-2.5 text-[0.84rem] leading-5 text-slate-600">
-        {body}
-      </div>
-
-      {detail ? (
-        <div
-          className={[
-            "mt-2 text-[0.84rem] leading-5",
-            detail === "You’re here" ? "font-semibold text-[#2f57e8]" : "text-slate-600",
-          ].join(" ")}
-        >
-          {detail}
+        <div className="mt-2 text-[1.08rem] font-black leading-[1.12] text-[var(--showroom-color-text-primary)] md:text-[1.16rem]">
+          {title}
         </div>
-      ) : null}
+        <div className="showroom-type-supporting mt-2 text-[0.86rem]">{body}</div>
+      </div>
     </div>
   );
 }
 
 export default function WhatToExpect() {
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
   const { currentJob, queue, say, voiceState } = useShowroomHud();
 
   const shopperId = getShopperId() || "";
@@ -267,85 +290,123 @@ export default function WhatToExpect() {
     return {
       blocked: isCurrentAttempt ? Boolean(voiceState?.blocked) : false,
       error: isCurrentAttempt ? String(voiceState?.error || "") : "",
-      showCaptions: Boolean(isCurrentAttempt && currentJob),
     };
-  }, [currentJob, voiceScript.speech, voiceState]);
+  }, [voiceScript.speech, voiceState]);
+
+  const journeySteps = useMemo(
+    () => [
+      {
+        step: "1",
+        title: "Build Your Sleep Profile",
+        body: "Tell us how you sleep.",
+        icon: ClipboardList,
+        state: checking ? "upcoming" : assessmentComplete ? "completed" : "current",
+      },
+      {
+        step: "2",
+        title: "Visit Your Recommended Pods",
+        body: "Try your best matches.",
+        icon: BedDouble,
+        state: checking ? "upcoming" : assessmentComplete ? "current" : "upcoming",
+        stateLabel: assessmentComplete ? "Next up" : undefined,
+      },
+      {
+        step: "3",
+        title: "Explore Sleep Essentials",
+        body: "Pillows, bedding & protection.",
+        icon: PackageCheck,
+        state: "upcoming",
+      },
+      {
+        step: "4",
+        title: "Build Your Sleep Setup",
+        body: "Choose what feels right.",
+        icon: Layers3,
+        state: "upcoming",
+      },
+    ],
+    [assessmentComplete, checking]
+  );
+
+  const visibleGuidance = checking
+    ? "I’m getting your showroom path ready."
+    : voiceScript.captions || voiceScript.speech;
 
   return (
-    <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
-      <ShowroomTopRail className="justify-center pt-4 md:pt-5">
-        <ShowroomBrandMark imageClassName="w-[190px] md:w-[220px]" />
+    <ShowroomPageShell
+      className="flex h-[100dvh] min-h-[100dvh] max-h-[100dvh] flex-col overflow-hidden pb-0 pt-0"
+      data-what-to-expect-shell="true"
+    >
+      <ShowroomTopRail className="shrink-0 justify-center pt-3 md:pt-4">
+        <ShowroomBrandMark
+          imageSrc={welcomeBrandMarkSrc}
+          imageClassName="w-[180px] md:w-[208px]"
+        />
       </ShowroomTopRail>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4 pt-2 md:px-6">
-        <ShowroomFrame className="shrink-0 p-3.5 md:p-4">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-3 pt-2 md:px-6 md:pb-4">
+        <ShowroomFrame className="min-h-0 flex-1 p-3.5 md:p-4" data-what-to-expect-frame="true">
           <motion.div
-            className="min-w-0"
-            initial={{ opacity: 0, y: 14 }}
+            className="grid h-full min-h-0 gap-3.5 lg:grid-cols-[minmax(248px,0.72fr)_minmax(0,2fr)] lg:items-center"
+            data-what-to-expect-entry="true"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.3, ease: "easeOut" }}
           >
-            <div className="min-w-0 text-center">
-              <h1 className="text-[2.2rem] font-black tracking-tight text-slate-900 md:text-[2.75rem] xl:text-[3.15rem]">
-                Your guided showroom path.
-              </h1>
-              <p className="mx-auto mt-2 max-w-3xl text-[0.92rem] leading-6 text-slate-700 md:text-[0.96rem]">
-                Four simple steps take you from your sleep profile to the setup that feels right.
-              </p>
-
-              <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-                <StepCard
-                  step="1"
-                  title="Build Your Sleep Profile"
-                  body="Answer a few sleep questions to create your personalized sleep profile."
-                  detail="You’re here"
-                  icon={ClipboardList}
-                  active
-                />
-                <StepCard
-                  step="2"
-                  title="Visit Your Recommended Pods"
-                  body="Walk to your first match, then visit two more recommended pods."
-                  icon={BedDouble}
-                />
-                <StepCard
-                  step="3"
-                  title="Explore Sleep Essentials"
-                  body="Try pillows, bedding, and protectors for your sleep experience."
-                  icon={PackageCheck}
-                />
-                <StepCard
-                  step="4"
-                  title="Build Your Sleep Setup"
-                  body="Choose your mattress, base, and comfort options."
-                  icon={Layers3}
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          {currentPageVoiceState.blocked || currentPageVoiceState.error || currentPageVoiceState.showCaptions ? (
-            <div className="mt-3 border-t border-slate-200 pt-2" aria-live="polite">
-              <div className="flex min-h-[36px] flex-wrap items-center justify-center gap-2 text-center text-sm text-gray-600">
-                {currentPageVoiceState.showCaptions ? (
-                  <span className="line-clamp-2 max-w-4xl text-[0.78rem] font-semibold leading-snug text-slate-600">
-                    {voiceScript.captions || voiceScript.speech}
-                  </span>
-                ) : null}
+            <div
+              className="relative mx-auto flex min-h-[430px] w-full max-w-[320px] flex-col overflow-hidden rounded-[var(--showroom-radius-panel)] border border-[var(--showroom-color-brand-border)] bg-[linear-gradient(180deg,#f6f9ff_0%,#ffffff_100%)] p-4 shadow-[var(--showroom-shadow-panel)]"
+              data-what-to-expect-guide="true"
+              data-guidance-branch={checking ? "checking" : assessmentComplete ? "complete" : "incomplete"}
+            >
+              <div
+                className="relative z-10 rounded-[var(--showroom-radius-card)] bg-[var(--showroom-color-surface)] p-4 shadow-[var(--showroom-shadow-card)]"
+                aria-live="polite"
+                data-what-to-expect-guidance="true"
+              >
+                <div className="showroom-type-eyebrow">Snoozer’s guide</div>
+                <p className="mt-2 text-[0.94rem] font-semibold leading-6 text-[var(--showroom-color-text-secondary)]">
+                  {visibleGuidance}
+                </p>
                 {currentPageVoiceState.blocked ? (
-                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
+                  <span className="mt-3 inline-flex rounded-[var(--showroom-radius-pill)] border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
                     Tap to enable Snoozer voice
                   </span>
                 ) : null}
-
                 {currentPageVoiceState.error ? (
-                  <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+                  <span className="mt-3 inline-flex rounded-[var(--showroom-radius-pill)] border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
                     Snoozer voice unavailable
                   </span>
                 ) : null}
               </div>
+
+              <div className="absolute inset-x-10 bottom-4 h-10 rounded-[var(--showroom-radius-pill)] bg-[var(--showroom-color-brand-border)] opacity-50 blur-2xl" />
+              <img
+                src="/snoozer-avatar.png"
+                alt="Snoozer"
+                className="relative z-10 mx-auto mt-auto h-auto w-[210px] max-w-full object-contain drop-shadow-[0_18px_38px_rgba(47,87,232,0.18)]"
+                data-what-to-expect-snoozer="true"
+                loading="eager"
+                decoding="async"
+              />
             </div>
-          ) : null}
+
+            <div className="min-w-0" data-what-to-expect-map="true">
+              <div className="min-w-0 text-left">
+                <h1 className="showroom-type-display text-[2.35rem] md:text-[2.7rem] xl:text-[3rem]">
+                  Your guided showroom path.
+                </h1>
+                <p className="showroom-type-body-large mt-2 max-w-2xl">
+                  Four simple steps. I’ll guide you along the way.
+                </p>
+
+                <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2" data-what-to-expect-steps="true">
+                  {journeySteps.map((step) => (
+                    <StepCard key={step.step} {...step} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </ShowroomFrame>
       </div>
     </ShowroomPageShell>

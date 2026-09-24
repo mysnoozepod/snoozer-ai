@@ -50,6 +50,141 @@ async function expectNoDocumentScroll(page) {
   expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight + 1);
 }
 
+async function seedWhatToExpectState(page, assessmentComplete) {
+  await page.addInitScript((complete) => {
+    const shopperId = complete ? "246810" : "987654";
+    sessionStorage.setItem(
+      "snooze.sessionState.v1",
+      JSON.stringify({ version: 1, shopperId })
+    );
+    sessionStorage.setItem(
+      "snooze.snapshot",
+      JSON.stringify({
+        shopperId,
+        exists: complete,
+        shopperState: complete ? "ASSESSED" : "NEW",
+        assessment: complete ? { answers: { firmness: "Soft" } } : null,
+      })
+    );
+  }, assessmentComplete);
+}
+
+async function expectWhatToExpectAcceptance(page, expectedStates) {
+  const result = await page.evaluate(() => {
+    const rect = (selector) => {
+      const node = document.querySelector(selector);
+      if (!node) return null;
+      const bounds = node.getBoundingClientRect();
+      return {
+        left: bounds.left,
+        right: bounds.right,
+        top: bounds.top,
+        bottom: bounds.bottom,
+        width: bounds.width,
+        height: bounds.height,
+      };
+    };
+    const overlaps = (left, right) =>
+      Boolean(
+        left &&
+          right &&
+          left.left < right.right &&
+          left.right > right.left &&
+          left.top < right.bottom &&
+          left.bottom > right.top
+      );
+    const logo = document.querySelector('[data-what-to-expect-shell="true"] img[alt="MySnoozePod"]');
+    const guide = rect('[data-what-to-expect-guide="true"]');
+    const map = rect('[data-what-to-expect-map="true"]');
+    const snoozer = rect('[data-what-to-expect-snoozer="true"]');
+    const human = rect('[data-testid="persistent-human-assistance"]');
+    const rewards = rect('[data-rewards-placement="floating"]');
+    const cards = Array.from(document.querySelectorAll('[data-testid^="what-step-"]')).map(
+      (card) => {
+        const bounds = card.getBoundingClientRect();
+        const icon = card.querySelector('[data-journey-icon="true"] svg')?.getBoundingClientRect();
+        return {
+          state: card.getAttribute("data-journey-state"),
+          tagName: card.tagName,
+          bounds: {
+            left: bounds.left,
+            right: bounds.right,
+            top: bounds.top,
+            bottom: bounds.bottom,
+          },
+          icon: icon ? { width: icon.width, height: icon.height } : null,
+        };
+      }
+    );
+    return {
+      viewport: { width: innerWidth, height: innerHeight },
+      document: {
+        clientWidth: document.scrollingElement.clientWidth,
+        scrollWidth: document.scrollingElement.scrollWidth,
+        clientHeight: document.scrollingElement.clientHeight,
+        scrollHeight: document.scrollingElement.scrollHeight,
+      },
+      frame: rect('[data-what-to-expect-frame="true"]'),
+      guide,
+      map,
+      snoozer,
+      human,
+      rewards,
+      cards,
+      guidanceLength:
+        document.querySelector('[data-what-to-expect-guidance="true"] p')?.textContent.trim().length || 0,
+      logo: logo
+        ? {
+            complete: logo.complete,
+            naturalWidth: logo.naturalWidth,
+            naturalHeight: logo.naturalHeight,
+            source: new URL(logo.currentSrc || logo.src).pathname,
+          }
+        : null,
+      overlap: {
+        guideMap: overlaps(guide, map),
+        guideHuman: overlaps(guide, human),
+        mapHuman: overlaps(map, human),
+        mapRewards: overlaps(map, rewards),
+      },
+    };
+  });
+
+  expect(result.document.scrollWidth).toBeLessThanOrEqual(result.document.clientWidth + 1);
+  expect(result.document.scrollHeight).toBeLessThanOrEqual(result.document.clientHeight + 1);
+  expect(result.cards).toHaveLength(4);
+  expect(result.cards.map((card) => card.state)).toEqual(expectedStates);
+  expect(result.cards.every((card) => card.tagName === "DIV")).toBe(true);
+  result.cards.forEach((card) => {
+    expect(card.icon).toBeTruthy();
+    expect(Math.min(card.icon.width, card.icon.height)).toBeGreaterThanOrEqual(55.5);
+    expect(card.bounds.left).toBeGreaterThanOrEqual(result.frame.left - 1);
+    expect(card.bounds.right).toBeLessThanOrEqual(result.frame.right + 1);
+    expect(card.bounds.top).toBeGreaterThanOrEqual(result.frame.top - 1);
+    expect(card.bounds.bottom).toBeLessThanOrEqual(result.frame.bottom + 1);
+  });
+  expect(result.snoozer).toBeTruthy();
+  expect(result.snoozer.left).toBeGreaterThanOrEqual(result.guide.left - 1);
+  expect(result.snoozer.right).toBeLessThanOrEqual(result.guide.right + 1);
+  expect(result.snoozer.top).toBeGreaterThanOrEqual(result.guide.top - 1);
+  expect(result.snoozer.bottom).toBeLessThanOrEqual(result.guide.bottom + 1);
+  expect(result.guidanceLength).toBeGreaterThan(30);
+  expect(result.guidanceLength).toBeLessThan(130);
+  expect(result.logo).toMatchObject({
+    complete: true,
+    naturalWidth: 2172,
+    naturalHeight: 724,
+    source: "/assets/mysnoozepod-logo-welcome.png",
+  });
+  expect(result.overlap).toEqual({
+    guideMap: false,
+    guideHuman: false,
+    mapHuman: false,
+    mapRewards: false,
+  });
+  return result;
+}
+
 async function expectWelcomeAcceptance(page) {
   const result = await page.evaluate(() => {
     const rect = (selector) => document.querySelector(selector)?.getBoundingClientRect() || null;
@@ -353,27 +488,63 @@ test("Welcome skips entrance translation when reduced motion is requested", asyn
   expect(motion.transform).toBe("none");
 });
 
-test("What To Expect centers all four orientation steps without navigation controls", async ({ page }) => {
+for (const viewport of WELCOME_VIEWPORTS) {
+  test(`What To Expect fits ${viewport.name} as a Snoozer-guided journey map`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await seedWhatToExpectState(page, false);
+    await stubBackendFailures(page);
+    await page.goto("/what-to-expect", { waitUntil: "domcontentloaded" });
+    await expect(page.locator('[data-what-to-expect-entry="true"]')).toBeVisible();
+
+    for (const title of [
+      "Build Your Sleep Profile",
+      "Visit Your Recommended Pods",
+      "Explore Sleep Essentials",
+      "Build Your Sleep Setup",
+    ]) {
+      await expect(page.getByText(title, { exact: true })).toBeVisible();
+    }
+
+    await expect(page.getByText("Next Step", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /assessment|recommended pods/i })).toHaveCount(0);
+    await expect(page.getByTestId("persistent-snoozer-hud")).toHaveCount(0);
+    await expect(page.getByTestId("persistent-human-assistance")).toBeVisible();
+    await expect(page.locator('[data-what-to-expect-guide="true"]')).toContainText(
+      "We’ll start with your sleep profile"
+    );
+    await expectWhatToExpectAcceptance(page, ["current", "upcoming", "upcoming", "upcoming"]);
+  });
+}
+
+test("What To Expect presents completed and current states without contradiction", async ({ page }) => {
+  await seedWhatToExpectState(page, true);
   await stubBackendFailures(page);
-  await page.goto("/what-to-expect", { waitUntil: "networkidle" });
+  await page.goto("/what-to-expect", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('[data-what-to-expect-guide="true"]')).toHaveAttribute(
+    "data-guidance-branch",
+    "complete"
+  );
+  await expect(page.locator('[data-what-to-expect-guide="true"]')).toContainText(
+    "You already finished your sleep profile"
+  );
+  await expect(page.getByTestId("what-step-1")).toContainText("Completed");
+  await expect(page.getByTestId("what-step-2")).toContainText("Next up");
+  await expectWhatToExpectAcceptance(page, ["completed", "current", "upcoming", "upcoming"]);
+});
 
-  for (const title of [
-    "Build Your Sleep Profile",
-    "Visit Your Recommended Pods",
-    "Explore Sleep Essentials",
-    "Build Your Sleep Setup",
-  ]) {
-    await expect(page.getByText(title, { exact: true })).toBeVisible();
-  }
-
-  await expect(page.getByText("Next Step", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: /assessment|recommended pods/i })).toHaveCount(0);
-  await expect(page.locator("body")).toContainText("Let’s start with your Snooze Assessment.");
-
-  await expect(page.getByTestId("persistent-snoozer-hud")).toHaveCount(0);
-  await expect(page.getByTestId("persistent-human-assistance")).toBeVisible();
-  await expect(page.locator("[data-testid^='what-step-']")).toHaveCount(4);
-  await expectNoDocumentScroll(page);
+test("What To Expect skips entrance translation when reduced motion is requested", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await seedWhatToExpectState(page, false);
+  await stubBackendFailures(page);
+  await page.goto("/what-to-expect", { waitUntil: "domcontentloaded" });
+  const entry = page.locator('[data-what-to-expect-entry="true"]');
+  await expect(entry).toBeVisible();
+  const motion = await entry.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return { opacity: style.opacity, transform: style.transform };
+  });
+  expect(motion.opacity).toBe("1");
+  expect(motion.transform).toBe("none");
 });
 
 test("What To Expect triggers HUD/TTS and follows completion for new and existing codes", async ({ browser }) => {
