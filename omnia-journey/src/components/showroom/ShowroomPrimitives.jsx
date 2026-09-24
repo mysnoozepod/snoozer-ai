@@ -5,7 +5,7 @@ export function ShowroomPageShell({ className, children, ...props }) {
     <section
       {...props}
       className={cn(
-        "flex min-h-[100dvh] min-w-0 flex-col overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(84,120,255,0.2),_transparent_30%),radial-gradient(circle_at_bottom,_rgba(149,177,255,0.12),_transparent_26%),linear-gradient(180deg,#eef4ff_0%,#f7faff_42%,#f9fbff_100%)] pb-0 pt-2 text-slate-900 md:pt-3",
+        "showroom-page-field flex min-h-[100dvh] min-w-0 flex-col overflow-x-hidden pb-0 pt-2 md:pt-3",
         className
       )}
     >
@@ -14,11 +14,12 @@ export function ShowroomPageShell({ className, children, ...props }) {
   );
 }
 
-export function ShowroomFrame({ className, children }) {
+export function ShowroomFrame({ className, children, ...props }) {
   return (
     <div
+      {...props}
       className={cn(
-        "rounded-[34px] border border-white/80 bg-white/88 shadow-[0_26px_74px_rgba(40,63,126,0.16)] backdrop-blur-sm",
+        "showroom-frame-surface backdrop-blur-sm",
         className
       )}
     >
@@ -30,16 +31,16 @@ export function ShowroomFrame({ className, children }) {
 export function ShowroomPanel({ className, children, tone = "white", ...props }) {
   const toneClass =
     tone === "soft"
-      ? "border-indigo-100/80 bg-[linear-gradient(180deg,rgba(246,249,255,0.98),rgba(255,255,255,0.98))]"
+      ? "showroom-panel-surface--soft"
       : tone === "frost"
-        ? "border-white/75 bg-white/90 backdrop-blur-sm"
-        : "border-white/75 bg-white/96";
+        ? "showroom-panel-surface--frost backdrop-blur-sm"
+        : "";
 
   return (
     <div
       {...props}
       className={cn(
-        "rounded-[28px] border shadow-[0_16px_42px_rgba(45,71,136,0.1)]",
+        "showroom-panel-surface",
         toneClass,
         className
       )}

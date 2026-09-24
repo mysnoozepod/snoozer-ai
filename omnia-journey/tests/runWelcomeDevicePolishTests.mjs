@@ -21,6 +21,8 @@ function assertHudContract(payload, label) {
 }
 
 const welcome = read("omnia-journey/src/pages/Welcome.jsx");
+const showroomStyles = read("omnia-journey/src/styles/index.css");
+assert.match(welcome, /const SNOOZE_CODE_LENGTH = 6/);
 assert.match(welcome, /inputMode="numeric"/);
 assert.match(welcome, /pattern="\[0-9\]\*"/);
 assert.match(welcome, /digits\.map/);
@@ -28,10 +30,12 @@ assert.match(welcome, /maxLength=\{1\}/);
 assert.match(welcome, /handleDigitKeyDown/);
 assert.match(welcome, /event\.key === "Backspace"/);
 assert.match(welcome, /handleCodePaste/);
-assert.match(welcome, /pastedDigits\.length === 4/);
-assert.match(welcome, /nextDigits\.every\(Boolean\).*nextCode\.length === 4/s);
+assert.match(welcome, /pastedDigits\.length === SNOOZE_CODE_LENGTH/);
+assert.match(welcome, /nextDigits\.every\(Boolean\).*nextCode\.length === SNOOZE_CODE_LENGTH/s);
 assert.match(welcome, /handleStart\(nextCode\)/);
 assert.match(welcome, /hasStartedRef\.current/);
+assert.match(welcome, /readOnly=\{loading\}/);
+assert.match(welcome, /aria-describedby="welcome-code-feedback"/);
 assert.match(welcome, /Loading your Snooze Session…/);
 assert.doesNotMatch(welcome, /starts automatically after the fourth digit/i);
 assert.match(welcome, /Personalize Your Experience/);
@@ -40,6 +44,12 @@ assert.match(welcome, /Need Human Help\?/);
 assert.match(welcome, /Talk to Brandy, your dedicated Human Assistant\./);
 assert.equal((welcome.match(/Talk to Brandy/g) || []).length, 1);
 assert.doesNotMatch(welcome, /===\s*["']1234["']/);
+assert.match(welcome, /useReducedMotion/);
+assert.match(welcome, /shouldReduceMotion \? false/);
+assert.match(showroomStyles, /--showroom-color-brand-primary:\s*#2f57e8/);
+assert.match(showroomStyles, /--showroom-radius-input:/);
+assert.match(showroomStyles, /--showroom-shadow-focus:/);
+assert.match(showroomStyles, /--showroom-motion-page-enter:/);
 
 const whatToExpect = read("omnia-journey/src/pages/WhatToExpect.jsx");
 const whatToExpectFallbacks = read(

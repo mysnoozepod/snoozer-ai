@@ -3,7 +3,233 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Pass 1 showroom color tokens */
+    --showroom-color-brand-primary: #2f57e8;
+    --showroom-color-brand-strong: #2749cb;
+    --showroom-color-brand-soft: #eef3ff;
+    --showroom-color-brand-border: #dbe5ff;
+    --showroom-color-page-field:
+      radial-gradient(circle at top, rgba(84, 120, 255, 0.2), transparent 30%),
+      radial-gradient(circle at bottom, rgba(149, 177, 255, 0.12), transparent 26%),
+      linear-gradient(180deg, #eef4ff 0%, #f7faff 42%, #f9fbff 100%);
+    --showroom-color-text-primary: #0f172a;
+    --showroom-color-text-secondary: #334155;
+    --showroom-color-text-muted: #64748b;
+    --showroom-color-surface: #ffffff;
+    --showroom-color-surface-elevated: rgba(255, 255, 255, 0.94);
+    --showroom-color-surface-frame: rgba(255, 255, 255, 0.88);
+    --showroom-color-surface-panel: rgba(255, 255, 255, 0.96);
+    --showroom-color-error: #dc2626;
+    --showroom-color-focus-ring: rgba(47, 87, 232, 0.18);
+
+    /* Pass 1 showroom typography tokens. The active family remains system sans. */
+    --showroom-type-display-size: clamp(2.75rem, 5vw, 4.25rem);
+    --showroom-type-display-weight: 900;
+    --showroom-type-display-leading: 0.92;
+    --showroom-type-display-tracking: -0.025em;
+    --showroom-type-body-large-size: 1.0625rem;
+    --showroom-type-body-large-weight: 600;
+    --showroom-type-body-large-leading: 1.5;
+    --showroom-type-body-size: 1rem;
+    --showroom-type-body-weight: 500;
+    --showroom-type-body-leading: 1.5;
+    --showroom-type-supporting-size: 0.875rem;
+    --showroom-type-supporting-weight: 600;
+    --showroom-type-supporting-leading: 1.45;
+    --showroom-type-label-size: 0.9375rem;
+    --showroom-type-label-weight: 800;
+    --showroom-type-label-leading: 1.2;
+    --showroom-type-eyebrow-size: 0.75rem;
+    --showroom-type-eyebrow-weight: 900;
+    --showroom-type-eyebrow-leading: 1.2;
+    --showroom-type-eyebrow-tracking: 0.18em;
+
+    /* Pass 1 showroom spacing tokens */
+    --showroom-space-1: 0.25rem;
+    --showroom-space-2: 0.5rem;
+    --showroom-space-3: 0.75rem;
+    --showroom-space-4: 1rem;
+    --showroom-space-5: 1.25rem;
+    --showroom-space-6: 1.5rem;
+    --showroom-space-8: 2rem;
+    --showroom-space-10: 2.5rem;
+    --showroom-space-12: 3rem;
+
+    /* Pass 1 showroom radius tokens */
+    --showroom-radius-frame: 2.125rem;
+    --showroom-radius-panel: 1.75rem;
+    --showroom-radius-card: 1.25rem;
+    --showroom-radius-control: 1rem;
+    --showroom-radius-input: 1.125rem;
+    --showroom-radius-pill: 9999px;
+
+    /* Pass 1 showroom elevation tokens */
+    --showroom-shadow-subtle: 0 1px 2px rgba(15, 23, 42, 0.08);
+    --showroom-shadow-card: 0 8px 18px rgba(40, 63, 126, 0.08);
+    --showroom-shadow-panel: 0 16px 42px rgba(45, 71, 136, 0.1);
+    --showroom-shadow-frame: 0 26px 74px rgba(40, 63, 126, 0.16);
+    --showroom-shadow-active: 0 10px 24px rgba(47, 87, 232, 0.14);
+    --showroom-shadow-focus: 0 0 0 4px var(--showroom-color-focus-ring);
+
+    /* Pass 1 showroom motion tokens */
+    --showroom-motion-fast: 160ms;
+    --showroom-motion-standard: 260ms;
+    --showroom-motion-page-enter: 360ms;
+    --showroom-motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
 @layer components {
+  .showroom-page-field {
+    background: var(--showroom-color-page-field);
+    color: var(--showroom-color-text-primary);
+  }
+
+  .showroom-frame-surface {
+    border-radius: var(--showroom-radius-frame);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: var(--showroom-color-surface-frame);
+    box-shadow: var(--showroom-shadow-frame);
+  }
+
+  .showroom-panel-surface {
+    border-radius: var(--showroom-radius-panel);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: var(--showroom-color-surface-panel);
+    box-shadow: var(--showroom-shadow-panel);
+  }
+
+  .showroom-panel-surface--soft {
+    border-color: rgba(219, 229, 255, 0.8);
+    background: linear-gradient(
+      180deg,
+      rgba(246, 249, 255, 0.98),
+      rgba(255, 255, 255, 0.98)
+    );
+  }
+
+  .showroom-panel-surface--frost {
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .showroom-type-display {
+    color: var(--showroom-color-text-primary);
+    font-size: var(--showroom-type-display-size);
+    font-weight: var(--showroom-type-display-weight);
+    letter-spacing: var(--showroom-type-display-tracking);
+    line-height: var(--showroom-type-display-leading);
+  }
+
+  .showroom-type-body-large {
+    color: var(--showroom-color-text-secondary);
+    font-size: var(--showroom-type-body-large-size);
+    font-weight: var(--showroom-type-body-large-weight);
+    line-height: var(--showroom-type-body-large-leading);
+  }
+
+  .showroom-type-body {
+    color: var(--showroom-color-text-secondary);
+    font-size: var(--showroom-type-body-size);
+    font-weight: var(--showroom-type-body-weight);
+    line-height: var(--showroom-type-body-leading);
+  }
+
+  .showroom-type-supporting {
+    color: var(--showroom-color-text-muted);
+    font-size: var(--showroom-type-supporting-size);
+    font-weight: var(--showroom-type-supporting-weight);
+    line-height: var(--showroom-type-supporting-leading);
+  }
+
+  .showroom-type-label {
+    font-size: var(--showroom-type-label-size);
+    font-weight: var(--showroom-type-label-weight);
+    line-height: var(--showroom-type-label-leading);
+  }
+
+  .showroom-type-eyebrow {
+    color: var(--showroom-color-brand-primary);
+    font-size: var(--showroom-type-eyebrow-size);
+    font-weight: var(--showroom-type-eyebrow-weight);
+    letter-spacing: var(--showroom-type-eyebrow-tracking);
+    line-height: var(--showroom-type-eyebrow-leading);
+    text-transform: uppercase;
+  }
+
+  .welcome-code-input {
+    border: 1px solid var(--showroom-color-brand-border);
+    border-radius: var(--showroom-radius-input);
+    background: var(--showroom-color-surface);
+    color: var(--showroom-color-text-primary);
+    box-shadow: var(--showroom-shadow-subtle);
+    transition:
+      border-color var(--showroom-motion-fast) var(--showroom-motion-ease-out),
+      box-shadow var(--showroom-motion-fast) var(--showroom-motion-ease-out),
+      background-color var(--showroom-motion-fast) var(--showroom-motion-ease-out);
+  }
+
+  .welcome-code-input:focus {
+    border-color: var(--showroom-color-brand-primary);
+    box-shadow: var(--showroom-shadow-focus);
+    outline: none;
+  }
+
+  .welcome-code-input[aria-invalid="true"] {
+    border-color: var(--showroom-color-error);
+  }
+
+  .welcome-code-input[aria-readonly="true"] {
+    background: var(--showroom-color-brand-soft);
+    color: var(--showroom-color-text-muted);
+  }
+
+  .welcome-info-card {
+    border: 1px solid var(--showroom-color-brand-border);
+    border-radius: var(--showroom-radius-card);
+    background: var(--showroom-color-brand-soft);
+  }
+
+  .welcome-help-action {
+    border: 1px solid var(--showroom-color-brand-border);
+    border-radius: var(--showroom-radius-card);
+    background: var(--showroom-color-surface);
+    box-shadow: var(--showroom-shadow-card);
+    transition:
+      border-color var(--showroom-motion-fast) var(--showroom-motion-ease-out),
+      box-shadow var(--showroom-motion-fast) var(--showroom-motion-ease-out),
+      transform var(--showroom-motion-fast) var(--showroom-motion-ease-out);
+  }
+
+  .welcome-help-action:hover {
+    border-color: var(--showroom-color-brand-primary);
+    box-shadow: var(--showroom-shadow-active);
+    transform: translateY(-1px);
+  }
+
+  .welcome-help-action:focus-visible {
+    border-color: var(--showroom-color-brand-primary);
+    box-shadow: var(--showroom-shadow-focus);
+    outline: none;
+  }
+
+  .welcome-help-action:active {
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .welcome-code-input,
+    .welcome-help-action {
+      transition-duration: 0.01ms;
+    }
+
+    .welcome-help-action:hover,
+    .welcome-help-action:active {
+      transform: none;
+    }
+  }
+
   /* ---------------------------------------------------------
    * Snoozer HUD motion states (No Rive, no drama)
    * States: idle | thinking | speaking | celebrate | warning

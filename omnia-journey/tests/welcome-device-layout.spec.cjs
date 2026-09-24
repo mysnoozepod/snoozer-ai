@@ -1,5 +1,12 @@
 const { test, expect } = require("@playwright/test");
 
+const WELCOME_CODE = "246810";
+const WELCOME_VIEWPORTS = [
+  { name: "primary-1180x820", width: 1180, height: 820 },
+  { name: "compact-1024x768", width: 1024, height: 768 },
+  { name: "wide-1366x768", width: 1366, height: 768 },
+];
+
 async function stubBackendFailures(page, { hudTtlMs = null, requests = [] } = {}) {
   await page.route("**/*", async (route) => {
     const url = route.request().url();
@@ -34,13 +41,88 @@ async function stubBackendFailures(page, { hudTtlMs = null, requests = [] } = {}
 
 async function expectNoDocumentScroll(page) {
   const metrics = await page.evaluate(() => ({
+    clientWidth: document.scrollingElement.clientWidth,
+    scrollWidth: document.scrollingElement.scrollWidth,
     clientHeight: document.scrollingElement.clientHeight,
     scrollHeight: document.scrollingElement.scrollHeight,
   }));
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1);
   expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight + 1);
 }
 
-test("Welcome accepts a four-digit kiosk code without duplicate submission", async ({ page }) => {
+async function expectWelcomeAcceptance(page) {
+  const result = await page.evaluate(() => {
+    const rect = (selector) => document.querySelector(selector)?.getBoundingClientRect() || null;
+    const entry = document.querySelector('[data-welcome-entry="true"]');
+    const targets = Array.from(
+      document.querySelectorAll('.welcome-code-input, [data-welcome-human-help="true"]')
+    ).map((node) => {
+      const bounds = node.getBoundingClientRect();
+      return {
+        label: node.getAttribute("aria-label") || node.textContent.trim(),
+        width: bounds.width,
+        height: bounds.height,
+      };
+    });
+    const critical = [
+      '[data-welcome-code-entry="true"]',
+      '[data-welcome-personalization="true"]',
+      '[data-welcome-human-help="true"]',
+    ].map((selector) => ({ selector, bounds: rect(selector) }));
+    const overlaps = [];
+    for (let leftIndex = 0; leftIndex < critical.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < critical.length; rightIndex += 1) {
+        const left = critical[leftIndex];
+        const right = critical[rightIndex];
+        if (
+          left.bounds &&
+          right.bounds &&
+          left.bounds.left < right.bounds.right &&
+          left.bounds.right > right.bounds.left &&
+          left.bounds.top < right.bounds.bottom &&
+          left.bounds.bottom > right.bounds.top
+        ) {
+          overlaps.push(`${left.selector}:${right.selector}`);
+        }
+      }
+    }
+    return {
+      viewport: { width: innerWidth, height: innerHeight },
+      documentOverflowX:
+        document.scrollingElement.scrollWidth - document.scrollingElement.clientWidth,
+      documentOverflowY:
+        document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight,
+      frame: rect('[data-welcome-frame="true"]'),
+      entryOverflowY: entry ? entry.scrollHeight - entry.clientHeight : null,
+      targets,
+      critical,
+      overlaps,
+    };
+  });
+
+  expect(result.documentOverflowX, JSON.stringify(result, null, 2)).toBeLessThanOrEqual(1);
+  expect(result.documentOverflowY, JSON.stringify(result, null, 2)).toBeLessThanOrEqual(1);
+  expect(result.frame, JSON.stringify(result, null, 2)).toBeTruthy();
+  expect(result.frame.top).toBeGreaterThanOrEqual(0);
+  expect(result.frame.bottom).toBeLessThanOrEqual(result.viewport.height + 1);
+  expect(result.entryOverflowY, JSON.stringify(result, null, 2)).toBeLessThanOrEqual(1);
+  expect(result.overlaps, JSON.stringify(result, null, 2)).toEqual([]);
+  expect(result.targets).toHaveLength(7);
+  result.targets.forEach((target) => {
+    expect(Math.min(target.width, target.height), target.label).toBeGreaterThanOrEqual(44);
+  });
+  result.critical.forEach(({ selector, bounds }) => {
+    expect(bounds, selector).toBeTruthy();
+    expect(bounds.top, selector).toBeGreaterThanOrEqual(0);
+    expect(bounds.bottom, selector).toBeLessThanOrEqual(result.viewport.height + 1);
+    expect(bounds.left, selector).toBeGreaterThanOrEqual(0);
+    expect(bounds.right, selector).toBeLessThanOrEqual(result.viewport.width + 1);
+    expect(bounds.top, selector).toBeGreaterThanOrEqual(result.frame.top - 1);
+    expect(bounds.bottom, selector).toBeLessThanOrEqual(result.frame.bottom + 1);
+  });
+}
+
+test("Welcome accepts a six-digit kiosk code without duplicate submission", async ({ page }) => {
   let checkInRequests = 0;
 
   await page.route("**/*", async (route) => {
@@ -55,10 +137,11 @@ test("Welcome accepts a four-digit kiosk code without duplicate submission", asy
     }
     if (/\/identity\/check-in$/i.test(url)) {
       checkInRequests += 1;
+      await new Promise((resolve) => setTimeout(resolve, 250));
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ ok: true, snoozeCode: "2468", shopperId: "2468" }),
+        body: JSON.stringify({ ok: true, snoozeCode: WELCOME_CODE, shopperId: WELCOME_CODE }),
       });
       return;
     }
@@ -83,24 +166,120 @@ test("Welcome accepts a four-digit kiosk code without duplicate submission", asy
 
   await page.goto("/welcome", { waitUntil: "domcontentloaded" });
   const digits = page.getByLabel(/^Snooze Code digit/);
-  await expect(digits).toHaveCount(4);
+  await expect(digits).toHaveCount(6);
 
   await digits.nth(0).fill("1");
   await expect(digits.nth(1)).toBeFocused();
+  await expect.poll(() => digits.nth(1).evaluate((node) => getComputedStyle(node).borderColor))
+    .toBe("rgb(47, 87, 232)");
+  expect(await digits.nth(1).evaluate((node) => getComputedStyle(node).boxShadow)).not.toBe("none");
   await digits.nth(1).press("Backspace");
   await expect(digits.nth(0)).toBeFocused();
 
   await digits.nth(0).evaluate((input) => {
     const clipboard = new DataTransfer();
-    clipboard.setData("text", "2468");
+    clipboard.setData("text", "246810");
     input.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, clipboardData: clipboard }));
   });
 
-  await expect(digits.nth(0)).toHaveValue("2");
-  await expect(digits.nth(1)).toHaveValue("4");
-  await expect(digits.nth(2)).toHaveValue("6");
-  await expect(digits.nth(3)).toHaveValue("8");
+  for (const [index, digit] of [...WELCOME_CODE].entries()) {
+    await expect(digits.nth(index)).toHaveValue(digit);
+  }
+  await expect(digits.nth(5)).toBeFocused();
+  await expect(digits.nth(5)).toHaveAttribute("aria-readonly", "true");
+  await expect(page.getByRole("status")).toContainText("Loading your Snooze Session");
   await expect.poll(() => checkInRequests).toBe(1);
+  await page.waitForTimeout(300);
+  expect(checkInRequests).toBe(1);
+  await expect(page).toHaveURL(/\/what-to-expect$/, { timeout: 10_000 });
+});
+
+for (const viewport of WELCOME_VIEWPORTS) {
+  test(`Welcome fits ${viewport.name} with all critical controls visible`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await stubBackendFailures(page);
+    await page.goto("/welcome", { waitUntil: "domcontentloaded" });
+    await page.locator('[data-welcome-entry="true"]').waitFor();
+    await expect(page.getByLabel(/^Snooze Code digit/)).toHaveCount(6);
+    await expect(page.locator('[data-welcome-personalization="true"]')).toBeVisible();
+    await expect(page.locator('[data-welcome-human-help="true"]')).toBeVisible();
+    await expectWelcomeAcceptance(page);
+  });
+}
+
+test("Welcome keeps invalid-code recovery visible without destabilizing layout", async ({ page }) => {
+  let checkInRequests = 0;
+  await page.route("**/*", async (route) => {
+    const url = route.request().url();
+    if (/\/session\/start$/i.test(url)) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, sessionId: "welcome-invalid-code-test" }),
+      });
+      return;
+    }
+    if (/\/identity\/check-in$/i.test(url)) {
+      checkInRequests += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ok: false,
+          code: "SNOOZE_CODE_NOT_FOUND",
+          message: "Snooze Code not found.",
+        }),
+      });
+      return;
+    }
+    if (/execute-api\.us-east-1\.amazonaws\.com/i.test(url)) {
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: false, message: "test fallback" }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+
+  await page.goto("/welcome", { waitUntil: "domcontentloaded" });
+  const digits = page.getByLabel(/^Snooze Code digit/);
+  await digits.nth(0).evaluate((input) => {
+    const clipboard = new DataTransfer();
+    clipboard.setData("text", "246810");
+    input.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, clipboardData: clipboard }));
+  });
+  await expect(page.getByRole("alert")).toContainText("check your code and try again");
+  const retryButton = page.getByRole("button", { name: "Try Again" });
+  await expect(retryButton).toBeVisible();
+  await expect(digits.nth(5)).toBeFocused();
+  expect(checkInRequests).toBe(1);
+  await retryButton.click();
+  await expect.poll(() => checkInRequests).toBe(2);
+  await expect(page.getByRole("alert")).toContainText("check your code and try again");
+  await expectWelcomeAcceptance(page);
+});
+
+test("Welcome Human Help remains actionable and preserves Brandy assistance", async ({ page }) => {
+  await stubBackendFailures(page);
+  await page.goto("/welcome", { waitUntil: "domcontentloaded" });
+  await page.locator('[data-welcome-human-help="true"]').click();
+  await expect(page.getByRole("status").filter({ hasText: "Your Snooze Session will stay right here." })).toBeVisible();
+});
+
+test("Welcome skips entrance translation when reduced motion is requested", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await stubBackendFailures(page);
+  await page.goto("/welcome", { waitUntil: "domcontentloaded" });
+  const entry = page.locator('[data-welcome-entry="true"]');
+  await expect(entry).toBeVisible();
+  const motion = await entry.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return { opacity: style.opacity, transform: style.transform };
+  });
+  expect(motion.opacity).toBe("1");
+  expect(motion.transform).toBe("none");
 });
 
 test("What To Expect centers all four orientation steps without navigation controls", async ({ page }) => {
@@ -118,7 +297,7 @@ test("What To Expect centers all four orientation steps without navigation contr
 
   await expect(page.getByText("Next Step", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /assessment|recommended pods/i })).toHaveCount(0);
-  await expect(page.locator("body")).toContainText("Welcome to your Snooze Session");
+  await expect(page.locator("body")).toContainText("Let’s start with your Snooze Assessment.");
 
   await expect(page.getByTestId("persistent-snoozer-hud")).toHaveCount(0);
   await expect(page.getByTestId("persistent-human-assistance")).toBeVisible();
@@ -135,7 +314,7 @@ test("What To Expect triggers HUD/TTS and follows completion for new and existin
 
     await page.addInitScript((profileBranch) => {
         const existing = profileBranch === "existing";
-        const shopperId = existing ? "2468" : "9876";
+        const shopperId = existing ? "246810" : "987654";
         sessionStorage.setItem(
           "snooze.sessionState.v1",
           JSON.stringify({ version: 1, shopperId })

@@ -2,8 +2,8 @@
 
 **Pass:** 0 — audit and contract definition
 **Scope:** `omnia-journey` customer-facing frontend
-**Status:** Contract proposed for review; no production visual or behavioral changes were made
-**Next pass:** Do not begin Pass 1 until this contract and the stale Welcome test assumptions are approved
+**Status:** Accepted frontend polish design authority
+**Current pass:** Pass 1 may apply this contract to Welcome only; broader migration still requires later approved passes
 
 ## 1. Executive Summary
 
@@ -473,4 +473,4 @@ No Playwright behavior was changed and no production behavior was modified to ma
 
 - Added `FRONTEND_VISUAL_SYSTEM_CONTRACT.md`.
 - No files under `omnia-journey/src`, no tests, no routes, no backend contracts, and no production configuration were changed.
-- No deployment, commit, or push was performed.
+- Pass 0 was committed and pushed to `main` as `c324b737e4c8e061cb18ec37148ee0edfbd3f87c`.

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 
 import { checkInSnoozeCode, getAssessment } from "@/lib/api";
@@ -29,6 +29,7 @@ function normalizeAccessCode(raw) {
 
 export default function Welcome() {
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
   const { currentJob, noteUserInteraction, queue, runHudAction, voiceState } = useShowroomHud();
 
   const resetShopperScopedState = useStore((state) => state.resetShopperScopedState);
@@ -207,56 +208,65 @@ export default function Welcome() {
   };
 
   return (
-    <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
-      <ShowroomTopRail className="justify-center pt-4 md:pt-5">
-        <ShowroomBrandMark imageClassName="w-[190px] md:w-[220px]" />
+    <ShowroomPageShell
+      className="flex h-[100dvh] min-h-[100dvh] max-h-[100dvh] flex-col overflow-hidden pb-0 pt-0"
+      data-welcome-shell="true"
+    >
+      <ShowroomTopRail className="shrink-0 justify-center pt-3 md:pt-4">
+        <ShowroomBrandMark imageClassName="w-[180px] md:w-[208px]" />
       </ShowroomTopRail>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-4 pt-2 md:px-6 md:pb-5">
-        <ShowroomFrame className="shrink-0 p-4 md:p-5">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pb-3 pt-2 md:px-6 md:pb-4">
+        <ShowroomFrame className="min-h-0 flex-1 p-3.5 md:p-4" data-welcome-frame="true">
           <motion.div
-            className="grid gap-4 lg:grid-cols-[minmax(320px,0.8fr)_minmax(0,1.2fr)] lg:items-center"
-            initial={{ opacity: 0, y: 18 }}
+            className="grid h-full min-h-0 gap-3.5 lg:grid-cols-[minmax(300px,0.78fr)_minmax(0,1.22fr)] lg:items-center"
+            data-welcome-entry="true"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.42, ease: "easeOut" }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.36, ease: "easeOut" }}
           >
             <ShowroomPanel
               tone="soft"
-              className="relative flex min-h-[304px] items-end justify-end overflow-hidden px-5 pb-2 pt-4 shadow-inner md:min-h-[332px] md:px-6"
+              className="relative flex min-h-[286px] items-end justify-end overflow-hidden px-5 pb-2 pt-4 shadow-inner md:min-h-[316px] md:px-6"
+              data-welcome-host="true"
             >
-              <div className="absolute left-4 top-4 max-w-[232px] rounded-[28px] bg-white px-5 py-4 text-slate-800 shadow-[0_18px_38px_rgba(61,92,170,0.14)] md:left-6 md:top-6">
-                <div className="text-[1.58rem] font-black leading-tight text-[#2f57e8]">Hi there.</div>
+              <div className="absolute left-4 top-4 max-w-[232px] rounded-[var(--showroom-radius-panel)] bg-[var(--showroom-color-surface)] px-5 py-4 text-[var(--showroom-color-text-secondary)] shadow-[var(--showroom-shadow-panel)] md:left-5 md:top-5">
+                <div className="text-[1.58rem] font-black leading-tight text-[var(--showroom-color-brand-primary)]">Hi there.</div>
                 <p className="mt-2 text-[0.92rem] leading-6">
                   I&apos;m Snoozer. I&apos;ll help you find the mattress that fits how you sleep.
                 </p>
               </div>
 
-              <div className="absolute inset-x-8 bottom-3 top-auto rounded-full bg-[#9eb5ff]/25 blur-3xl" />
+              <div className="absolute inset-x-8 bottom-3 top-auto rounded-[var(--showroom-radius-pill)] bg-[var(--showroom-color-brand-border)] opacity-40 blur-3xl" />
 
               <img
                 src="/snoozer-avatar.png"
                 alt="Snoozer"
-                className="relative z-10 h-auto w-[226px] max-w-full translate-x-2 object-contain drop-shadow-[0_22px_46px_rgba(59,93,176,0.22)] md:w-[254px]"
+                className="relative z-10 h-auto w-[216px] max-w-full translate-x-2 object-contain drop-shadow-[0_18px_38px_rgba(47,87,232,0.18)] md:w-[242px]"
                 loading="lazy"
                 decoding="async"
               />
             </ShowroomPanel>
 
             <div className="min-w-0">
-              <h1 className="max-w-[760px] text-[2.8rem] font-black leading-[0.9] tracking-tight text-slate-900 md:text-[3.75rem] xl:text-[4.45rem]">
+              <h1 className="showroom-type-display max-w-[760px]">
                 Let's start your Snooze Session.
               </h1>
 
-              <p className="mt-3 max-w-xl text-[1rem] leading-6 text-slate-700 md:text-[1.05rem]">
+              <p className="showroom-type-body-large mt-2.5 max-w-xl">
                 Enter your Snooze Code to continue your showroom visit.
               </p>
 
-              <div className="mt-4 max-w-[660px] rounded-[26px] border border-[#d3e0ff] bg-white/92 p-3.5 shadow-[0_22px_52px_rgba(48,86,184,0.08)] md:p-4">
+              <div
+                className="mt-3.5 max-w-[660px] rounded-[var(--showroom-radius-panel)] border border-[var(--showroom-color-brand-border)] bg-[var(--showroom-color-surface-elevated)] p-3.5 shadow-[var(--showroom-shadow-card)] md:p-4"
+                data-welcome-code-entry="true"
+                aria-busy={loading ? "true" : "false"}
+              >
                 <fieldset>
-                  <legend className="text-sm font-black text-[#2f57e8] md:text-base">
+                  <legend className="showroom-type-label text-[var(--showroom-color-brand-primary)]">
                     Enter Snooze Code
                   </legend>
-                  <div className="mt-3 grid max-w-[620px] grid-cols-6 gap-2.5 md:gap-3">
+                  <div className="mt-2.5 grid max-w-[620px] grid-cols-6 gap-2 md:gap-2.5">
                     {digits.map((digit, index) => (
                       <input
                         key={index}
@@ -274,44 +284,54 @@ export default function Welcome() {
                         onKeyDown={(event) => handleDigitKeyDown(index, event)}
                         onPaste={(event) => handleCodePaste(index, event)}
                         onFocus={(event) => event.target.select()}
-                        disabled={loading}
-                        className="h-[72px] min-w-0 rounded-[20px] border border-[#9db6ff] bg-white text-center text-[2rem] font-black text-slate-900 shadow-sm outline-none transition focus:border-[#2f57e8] focus:ring-4 focus:ring-blue-100 disabled:bg-[#f4f7ff] md:h-[82px] md:text-[2.25rem]"
+                        readOnly={loading}
+                        aria-readonly={loading ? "true" : undefined}
+                        aria-invalid={error ? "true" : undefined}
+                        aria-describedby="welcome-code-feedback"
+                        className="welcome-code-input h-[68px] min-w-0 text-center text-[1.85rem] font-black md:h-[76px] md:text-[2.1rem]"
                       />
                     ))}
                   </div>
                 </fieldset>
 
-                {error ? <p className="mt-3 text-sm font-semibold text-red-600">{error}</p> : null}
-
-                {loading ? (
-                  <div
-                    className="mt-3.5 flex w-full items-center justify-center rounded-[18px] bg-[#eef3ff] px-6 py-3.5 text-base font-black text-[#2f57e8] md:text-[1.02rem]"
-                    role="status"
-                    aria-live="polite"
-                  >
-                    Loading your Snooze Session…
-                  </div>
-                ) : error && code.length === SNOOZE_CODE_LENGTH ? (
-                  <button
-                    type="button"
-                    onClick={() => void handleStart(code)}
-                    className="mt-3.5 inline-flex w-full items-center justify-center gap-3 rounded-[18px] bg-[#2f57e8] px-6 py-3.5 text-base font-black text-white shadow-[0_22px_46px_rgba(47,87,232,0.26)] transition hover:bg-[#2749cb] md:text-[1.02rem]"
-                  >
-                    Try Again
-                    <ArrowRight className="h-5 w-5" />
-                  </button>
-                ) : null}
+                <div id="welcome-code-feedback" className="mt-2.5 min-h-[48px]">
+                  {loading ? (
+                    <div
+                      className="flex min-h-12 w-full items-center justify-center rounded-[var(--showroom-radius-control)] bg-[var(--showroom-color-brand-soft)] px-6 py-3 text-base font-black text-[var(--showroom-color-brand-primary)]"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      Loading your Snooze Session…
+                    </div>
+                  ) : error ? (
+                    <div className="flex min-h-12 flex-wrap items-center justify-between gap-2">
+                      <p className="showroom-type-supporting min-w-0 flex-1 text-[var(--showroom-color-error)]" role="alert">
+                        {error}
+                      </p>
+                      {code.length === SNOOZE_CODE_LENGTH ? (
+                        <button
+                          type="button"
+                          onClick={() => void handleStart(code)}
+                          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--showroom-radius-control)] bg-[var(--showroom-color-brand-primary)] px-5 text-base font-black text-white shadow-[var(--showroom-shadow-active)] transition-colors duration-[var(--showroom-motion-fast)] hover:bg-[var(--showroom-color-brand-strong)] focus:outline-none focus-visible:shadow-[var(--showroom-shadow-focus)]"
+                        >
+                          Try Again
+                          <ArrowRight className="h-5 w-5" />
+                        </button>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
               </div>
 
-              <div className="mt-2.5 grid gap-2.5 rounded-[24px] border border-white/70 bg-white/86 p-2.5 shadow-sm lg:grid-cols-[minmax(0,1.06fr)_minmax(224px,0.94fr)]">
-                <div className="rounded-[22px] border border-white/70 bg-white/92 px-4 py-3 shadow-sm">
+              <div className="mt-2.5 grid gap-2.5 lg:grid-cols-[minmax(0,1.06fr)_minmax(224px,0.94fr)]">
+                <div className="welcome-info-card px-4 py-3" data-welcome-personalization="true">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#eef3ff] text-[#2f57e8]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--showroom-radius-pill)] bg-[var(--showroom-color-surface)] text-[var(--showroom-color-brand-primary)]">
                       <ShieldCheck className="h-5 w-5" />
                     </div>
                     <div>
-                      <div className="text-[0.98rem] font-black text-slate-900">Personalize Your Experience</div>
-                      <p className="mt-1 text-[0.84rem] leading-5 text-slate-600">
+                      <div className="showroom-type-label text-[var(--showroom-color-text-primary)]">Personalize Your Experience</div>
+                      <p className="showroom-type-supporting mt-1">
                         Your Snooze Code unlocks rewards, recommendations, and special discounts!
                       </p>
                     </div>
@@ -324,23 +344,25 @@ export default function Welcome() {
                     noteUserInteraction?.();
                     requestHumanAssistance({ sourcePage: "/welcome" });
                   }}
-                  className="flex w-full items-center gap-3 rounded-[22px] border border-white/70 bg-white/92 px-4 py-3 text-left shadow-sm transition hover:border-indigo-100 hover:bg-white focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-100"
+                  className="welcome-help-action flex min-h-[68px] w-full items-center gap-3 px-4 py-2.5 text-left"
+                  data-welcome-human-help="true"
                 >
                   <img
                     src={BRANDY_AVATAR_SRC}
                     alt="Brandy"
-                    className="h-12 w-12 shrink-0 rounded-full border-2 border-[#e9efff] object-cover shadow-sm"
+                    className="h-12 w-12 shrink-0 rounded-[var(--showroom-radius-pill)] border-2 border-[var(--showroom-color-brand-soft)] object-cover shadow-[var(--showroom-shadow-subtle)]"
                     loading="lazy"
                     decoding="async"
                   />
-                  <span className="min-w-0">
-                    <span className="block text-[0.94rem] font-black text-slate-900">
+                  <span className="min-w-0 flex-1">
+                    <span className="showroom-type-label block text-[var(--showroom-color-text-primary)]">
                       Need Human Help?
                     </span>
-                    <span className="mt-0.5 block text-[0.78rem] leading-5 text-slate-600">
+                    <span className="showroom-type-supporting mt-0.5 block text-[0.78rem]">
                       Talk to Brandy, your dedicated Human Assistant.
                     </span>
                   </span>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-[var(--showroom-color-brand-primary)]" aria-hidden="true" />
                 </button>
               </div>
             </div>
