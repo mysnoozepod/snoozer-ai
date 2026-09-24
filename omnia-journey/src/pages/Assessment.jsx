@@ -365,6 +365,49 @@ function questionSectionLabel(question) {
   }
 }
 
+function AssessmentCoachRail({ displayTitle, shouldReduceMotion, voiceBlocked = false }) {
+  return (
+    <aside
+      data-assessment-coach="true"
+      className="assessment-coach flex min-h-0 flex-col overflow-hidden rounded-[28px] p-5"
+    >
+      <ShowroomEyebrow className="text-[0.72rem]">{displayTitle}</ShowroomEyebrow>
+      <h1 className="mt-2 text-[2.25rem] font-black leading-[0.94] tracking-tight text-slate-900 xl:text-[2.55rem]">
+        One question at a time.
+      </h1>
+      <p className="mt-3 text-[0.98rem] font-semibold leading-6 text-slate-600">
+        Answer what feels most like you.
+      </p>
+
+      <div className="flex min-h-0 flex-1 items-center justify-center pb-14 pt-3 lg:pb-16">
+        <div className="relative flex max-h-full items-center justify-center">
+          <div
+            className="absolute inset-0 rounded-full opacity-25 blur-3xl"
+            style={{ background: BRAND.primary }}
+            aria-hidden="true"
+          />
+          <motion.img
+            data-assessment-snoozer="true"
+            src="/snoozer-avatar.png"
+            alt="Snoozer"
+            className="relative aspect-square w-[clamp(204px,26vh,236px)] rounded-full object-cover shadow-xl"
+            animate={shouldReduceMotion ? undefined : { y: [0, -4, 0] }}
+            transition={shouldReduceMotion ? undefined : { duration: 3, repeat: Infinity }}
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+      </div>
+
+      {voiceBlocked ? (
+        <div className="mt-2.5 text-xs font-semibold text-amber-700">
+          Tap again to enable Snoozer voice.
+        </div>
+      ) : null}
+    </aside>
+  );
+}
+
 export default function Assessment() {
   const shouldReduceMotion = useReducedMotion();
   const [title, setTitle] = useState("Snooze Assessment");
@@ -689,39 +732,10 @@ export default function Assessment() {
       } catch (err) {
         console.error("Failed to load assessment questions:", err);
         if (cancelled || !mountedRef.current) return;
-        setTitle("Snooze Assessment");
-        setQuestions(
-          buildQuestionFlow([
-            CANONICAL_SIZE_QUESTION,
-            CANONICAL_BASE_QUESTION,
-            CANONICAL_MOTION_QUESTION,
-            {
-              id: "sleepPartner",
-              text: "Do you share the bed with a partner?",
-              options: ["Yes", "No"],
-              required: true,
-            },
-            {
-              id: "sleepPosition",
-              text: "What position do you sleep in most?",
-              options: ["Side", "Back", "Stomach", "Combination"],
-              required: true,
-            },
-            {
-              id: "temperature",
-              text: "Do you sleep hot, cool, or somewhere in the middle?",
-              options: ["Hot", "Neutral", "Cool"],
-              required: true,
-            },
-            {
-              id: "firmness",
-              text: "What feel sounds best to you?",
-              options: ["Soft", "Medium", "Firm"],
-              required: true,
-            },
-          ])
+        setFetchError(
+          String(err?.message || "The assessment questions could not be loaded. Please try again.")
         );
-        questionsLoadedRef.current = true;
+        questionsLoadedRef.current = false;
       } finally {
         if (!cancelled && mountedRef.current) {
           setLoading(false);
@@ -1025,19 +1039,86 @@ export default function Assessment() {
 
   if (loading) {
     return (
-      <ShowroomPageShell className="pb-8">
-        <ShowroomTopRail>
-          <ShowroomBrandMark imageSrc={welcomeBrandMarkSrc} />
+      <ShowroomPageShell
+        data-assessment-shell="true"
+        data-assessment-loading="true"
+        className="assessment-shell h-[100dvh] min-h-0 overflow-hidden pb-2 pt-1 md:pb-3 md:pt-1.5"
+      >
+        <ShowroomTopRail className="assessment-top-rail flex-none justify-center !pt-0">
+          <ShowroomBrandMark
+            imageSrc={welcomeBrandMarkSrc}
+            imageClassName="w-[148px] md:w-[166px]"
+          />
         </ShowroomTopRail>
-        <div className="mx-auto max-w-[1380px] px-4 pb-6 pt-3 md:px-6">
-          <ShowroomFrame className="p-5 md:p-7">
-            <div className="animate-pulse space-y-5">
-              <div className="h-5 w-40 rounded-full bg-slate-200" />
-              <div className="h-14 w-80 rounded-2xl bg-slate-200" />
-              <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-                <div className="h-[340px] rounded-[30px] bg-slate-100" />
-                <div className="h-[420px] rounded-[30px] bg-slate-100" />
-              </div>
+
+        <div className="mx-auto flex min-h-0 w-full max-w-[1340px] flex-1 px-3 pt-1 md:px-5 md:pt-1.5">
+          <ShowroomFrame className="h-full min-h-0 w-full p-3 md:p-3.5">
+            <div
+              data-assessment-layout="true"
+              className="grid h-full min-h-0 gap-3 lg:grid-cols-[276px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]"
+            >
+              <AssessmentCoachRail
+                displayTitle="Snooze Assessment"
+                shouldReduceMotion={shouldReduceMotion}
+              />
+
+              <section
+                data-assessment-question-panel="true"
+                aria-busy="true"
+                className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[28px] border border-white/80 bg-white/96 p-4 shadow-[0_18px_44px_rgba(45,71,136,0.08)]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e4ff] bg-[#eef3ff] px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-[#2f57e8]">
+                    <ClipboardList className="h-3.5 w-3.5" />
+                    Snooze Assessment
+                  </div>
+                  <div
+                    data-assessment-question-count="true"
+                    className="rounded-full border border-[#d9e4ff] bg-[#f7faff] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#2f57e8]"
+                  >
+                    Preparing
+                  </div>
+                </div>
+
+                <div
+                  role="progressbar"
+                  aria-label="Assessment progress"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={0}
+                  className="mt-4 h-2 w-full rounded-full bg-[#dfe8fb]"
+                >
+                  <div
+                    className="h-2 w-0 rounded-full"
+                    style={{ background: BRAND.primary }}
+                    aria-hidden="true"
+                  />
+                </div>
+
+                <div className="mt-3 min-h-0 flex-1">
+                  <div className="assessment-question-card flex h-full min-h-0 flex-col rounded-[26px] p-4 shadow-sm">
+                    <span className="w-fit rounded-full bg-white px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                      Getting ready
+                    </span>
+                    <div className="flex min-h-0 flex-1 flex-col justify-center">
+                      <div role="status" aria-live="polite">
+                        <h2 className="text-[1.78rem] font-black leading-tight text-slate-900">
+                          Preparing your first question…
+                        </h2>
+                        <p className="mt-3 max-w-xl text-base font-semibold leading-7 text-slate-600">
+                          Snoozer is loading your guided assessment. Your answers will appear here in a moment.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-2.5 flex items-center justify-between border-t border-slate-200 pt-2.5">
+                  <Button type="button" variant="outline" disabled className="rounded-[18px] px-5 py-4 text-base font-extrabold">
+                    Back
+                  </Button>
+                </div>
+              </section>
             </div>
           </ShowroomFrame>
         </div>
@@ -1047,21 +1128,46 @@ export default function Assessment() {
 
   if (fetchError) {
     return (
-      <ShowroomPageShell className="pb-8">
-        <ShowroomTopRail>
-          <ShowroomBrandMark imageSrc={welcomeBrandMarkSrc} />
+      <ShowroomPageShell
+        data-assessment-shell="true"
+        data-assessment-error="true"
+        className="assessment-shell h-[100dvh] min-h-0 overflow-hidden pb-2 pt-1 md:pb-3 md:pt-1.5"
+      >
+        <ShowroomTopRail className="assessment-top-rail flex-none justify-center !pt-0">
+          <ShowroomBrandMark
+            imageSrc={welcomeBrandMarkSrc}
+            imageClassName="w-[148px] md:w-[166px]"
+          />
         </ShowroomTopRail>
-        <div className="mx-auto max-w-[1180px] px-4 pb-6 pt-3 md:px-6">
-          <ShowroomFrame className="p-6 md:p-8">
-            <ShowroomEyebrow>Snooze Assessment</ShowroomEyebrow>
-            <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-900">
-              We couldn’t load the assessment right now.
-            </h1>
-            <div className="mt-5 rounded-[24px] border border-red-200 bg-red-50 p-5 text-red-700">
-              {fetchError}
-            </div>
-            <div className="mt-5">
-              <Button onClick={() => window.location.reload()}>Try Again</Button>
+
+        <div className="mx-auto flex min-h-0 w-full max-w-[1340px] flex-1 px-3 pt-1 md:px-5 md:pt-1.5">
+          <ShowroomFrame className="h-full min-h-0 w-full p-3 md:p-3.5">
+            <div
+              data-assessment-layout="true"
+              className="grid h-full min-h-0 gap-3 lg:grid-cols-[276px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]"
+            >
+              <AssessmentCoachRail
+                displayTitle="Snooze Assessment"
+                shouldReduceMotion={shouldReduceMotion}
+              />
+
+              <section
+                data-assessment-question-panel="true"
+                className="flex h-full min-h-0 min-w-0 flex-col justify-center overflow-hidden rounded-[28px] border border-white/80 bg-white/96 p-6 shadow-[0_18px_44px_rgba(45,71,136,0.08)] md:p-8"
+              >
+                <div role="alert" className="mx-auto w-full max-w-2xl">
+                  <ShowroomEyebrow>Snooze Assessment</ShowroomEyebrow>
+                  <h2 className="mt-3 text-4xl font-black tracking-tight text-slate-900">
+                    We couldn’t load the assessment right now.
+                  </h2>
+                  <div className="mt-5 rounded-[24px] border border-red-200 bg-red-50 p-5 font-semibold text-red-700">
+                    {fetchError}
+                  </div>
+                  <div className="mt-5">
+                    <Button onClick={() => window.location.reload()}>Try Again</Button>
+                  </div>
+                </div>
+              </section>
             </div>
           </ShowroomFrame>
         </div>
@@ -1087,40 +1193,11 @@ export default function Assessment() {
             data-assessment-layout="true"
             className="grid h-full min-h-0 gap-3 lg:grid-cols-[276px_minmax(0,1fr)] xl:grid-cols-[296px_minmax(0,1fr)]"
           >
-            <aside
-              data-assessment-coach="true"
-              className="assessment-coach flex min-h-0 flex-col overflow-hidden rounded-[28px] p-5"
-            >
-                <ShowroomEyebrow className="text-[0.72rem]">{displayTitle}</ShowroomEyebrow>
-                <h1 className="mt-2 text-[2.25rem] font-black leading-[0.94] tracking-tight text-slate-900 xl:text-[2.55rem]">
-                  One question at a time.
-                </h1>
-                <p className="mt-3 text-[0.98rem] font-semibold leading-6 text-slate-600">
-                  Answer what feels most like you.
-                </p>
-
-                <div className="flex min-h-0 flex-1 items-center justify-center pb-14 pt-3 lg:pb-16">
-                  <div className="relative flex max-h-full items-center justify-center">
-                  <div className="absolute inset-0 rounded-full blur-3xl opacity-25" style={{ background: BRAND.primary }} aria-hidden="true" />
-                  <motion.img
-                      data-assessment-snoozer="true"
-                      src="/snoozer-avatar.png"
-                      alt="Snoozer"
-                      className="relative aspect-square w-[clamp(204px,26vh,236px)] rounded-full object-cover shadow-xl"
-                      animate={shouldReduceMotion ? undefined : { y: [0, -4, 0] }}
-                      transition={shouldReduceMotion ? undefined : { duration: 3, repeat: Infinity }}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-                </div>
-
-                {voiceState?.blocked ? (
-                  <div className="mt-2.5 text-xs font-semibold text-amber-700">
-                    Tap again to enable Snoozer voice.
-                  </div>
-                ) : null}
-            </aside>
+            <AssessmentCoachRail
+              displayTitle={displayTitle}
+              shouldReduceMotion={shouldReduceMotion}
+              voiceBlocked={voiceState?.blocked}
+            />
 
             <section
               data-assessment-question-panel="true"
@@ -1142,15 +1219,18 @@ export default function Assessment() {
                 </div>
               </div>
 
-              <div className="mt-4 h-2 w-full rounded-full bg-[#dfe8fb]">
+              <div
+                role="progressbar"
+                aria-label="Assessment progress"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={progress}
+                className="mt-4 h-2 w-full rounded-full bg-[#dfe8fb]"
+              >
                 <div
-                  role="progressbar"
-                  aria-label="Assessment progress"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={progress}
                   className="h-2 rounded-full transition-all motion-reduce:transition-none"
                   style={{ width: `${progress}%`, background: BRAND.primary }}
+                  aria-hidden="true"
                 />
               </div>
 

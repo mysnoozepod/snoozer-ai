@@ -19,7 +19,17 @@ const ASSESSMENT_QUESTIONS = [
   { id: "painPoints", text: "Any back pain, pressure points, or other issues you hope the mattress can help with? (Choose all that apply or skip if none.)", options: ["Lower back", "Upper back", "Hips", "Shoulders", "Neck", "Sciatica", "General pressure relief", "Other / not listed"], multi: true, zohoType: "multiselect" },
 ];
 
-async function stubAssessmentBackend(page, submissions = []) {
+async function stubAssessmentBackend(page, submissionsOrOptions = []) {
+  const options = Array.isArray(submissionsOrOptions)
+    ? { submissions: submissionsOrOptions }
+    : submissionsOrOptions || {};
+  const {
+    submissions = [],
+    questionDelayMs = 0,
+    questionStatus = 200,
+    questionPayload = { title: "Snooze Assessment", questions: ASSESSMENT_QUESTIONS },
+  } = options;
+
   await page.addInitScript(() => {
     sessionStorage.setItem(
       "snooze.sessionState.v1",
@@ -31,10 +41,13 @@ async function stubAssessmentBackend(page, submissions = []) {
     const request = route.request();
     const url = request.url();
     if (/\/assessment-questions(?:\?|$)/i.test(url)) {
+      if (questionDelayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, questionDelayMs));
+      }
       await route.fulfill({
-        status: 200,
+        status: questionStatus,
         contentType: "application/json",
-        body: JSON.stringify({ title: "Snooze Assessment", questions: ASSESSMENT_QUESTIONS }),
+        body: JSON.stringify(questionPayload),
       });
       return;
     }
@@ -643,6 +656,60 @@ test("What To Expect triggers HUD/TTS and follows completion for new and existin
     await expect(page).toHaveURL(branch === "existing" ? /\/results$/ : /\/assessment$/);
     await context.close();
   }
+});
+
+test("Assessment keeps a complete recovery shell visible while realistic questions initialize", async ({ page }) => {
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await stubAssessmentBackend(page, { questionDelayMs: 1_200 });
+  await page.goto("/assessment", { waitUntil: "domcontentloaded" });
+
+  const loadingShell = page.locator('[data-assessment-loading="true"]');
+  await expect(loadingShell).toBeVisible();
+  await expect(loadingShell.locator('[data-assessment-layout="true"]')).toBeVisible();
+  await expect(loadingShell.locator('[data-assessment-coach="true"]')).toBeVisible();
+  await expect(loadingShell.locator('[data-assessment-snoozer="true"]')).toBeVisible();
+  await expect(loadingShell.locator('[data-assessment-question-panel="true"]')).toBeVisible();
+  await expect(loadingShell.locator('[data-assessment-question-count="true"]')).toHaveText(
+    "Preparing"
+  );
+  await expect(page.getByRole("progressbar", { name: "Assessment progress" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Preparing your first question…" })).toBeVisible();
+  await expect(page.getByTestId("persistent-human-assistance")).toBeVisible();
+  await expect(page.locator('[data-rewards-placement="floating"]')).toBeVisible();
+  await expectNoDocumentScroll(page);
+
+  await expectAssessmentQuestion(page, 1, 9, "size");
+  await expect(page.locator('[data-assessment-choice="true"]')).toHaveCount(4);
+  await expect(page.getByRole("heading", { name: "What size are you shopping for?" })).toBeVisible();
+  await expect(loadingShell).toHaveCount(0);
+  expect(pageErrors).toEqual([]);
+});
+
+test("Assessment shows an explicit retry state when the questions request fails", async ({ page }) => {
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await stubAssessmentBackend(page, {
+    questionStatus: 503,
+    questionPayload: { message: "Assessment questions are temporarily unavailable." },
+  });
+  await page.goto("/assessment", { waitUntil: "domcontentloaded" });
+
+  const errorShell = page.locator('[data-assessment-error="true"]');
+  await expect(errorShell).toBeVisible();
+  await expect(errorShell.locator('[data-assessment-layout="true"]')).toBeVisible();
+  await expect(errorShell.locator('[data-assessment-coach="true"]')).toBeVisible();
+  await expect(errorShell.locator('[data-assessment-snoozer="true"]')).toBeVisible();
+  await expect(errorShell.locator('[data-assessment-question-panel="true"]')).toBeVisible();
+  await expect(page.getByRole("alert")).toContainText(
+    "Assessment questions are temporarily unavailable."
+  );
+  await expect(page.getByRole("button", { name: "Try Again" })).toBeVisible();
+  await expect(page.locator('[data-assessment-question-id]')).toHaveCount(0);
+  await expect(page.getByTestId("persistent-human-assistance")).toBeVisible();
+  await expect(page.locator('[data-rewards-placement="floating"]')).toBeVisible();
+  await expectNoDocumentScroll(page);
+  expect(pageErrors).toEqual([]);
 });
 
 test("Assessment keeps Question 1 contained at all required showroom viewports", async ({ browser }) => {
