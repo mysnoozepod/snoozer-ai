@@ -142,6 +142,7 @@ export function ShowroomBrandMark({
   className,
   imageClassName,
   imageSrc = "/mysnoozepod-logo.png",
+  loading = "lazy",
 }) {
   return (
     <div className={cn("inline-flex items-center", className)}>
@@ -149,7 +150,7 @@ export function ShowroomBrandMark({
         src={imageSrc}
         alt="MySnoozePod"
         className={cn("h-auto w-[138px] md:w-[160px]", imageClassName)}
-        loading="lazy"
+        loading={loading}
         decoding="async"
       />
     </div>

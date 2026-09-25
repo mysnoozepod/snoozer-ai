@@ -19,6 +19,188 @@ const ASSESSMENT_QUESTIONS = [
   { id: "painPoints", text: "Any back pain, pressure points, or other issues you hope the mattress can help with? (Choose all that apply or skip if none.)", options: ["Lower back", "Upper back", "Hips", "Shoulders", "Neck", "Sciatica", "General pressure relief", "Other / not listed"], multi: true, zohoType: "multiselect" },
 ];
 
+const RESULTS_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='520' viewBox='0 0 960 520'%3E%3Crect width='960' height='520' rx='40' fill='%23eef3ff'/%3E%3Cpath d='M160 330h640v70H160z' fill='%23ffffff'/%3E%3Cpath d='M205 205h550c34 0 62 28 62 62v70H143v-70c0-34 28-62 62-62z' fill='%23dbe5ff'/%3E%3C/svg%3E";
+
+function buildCanonicalResultsFixture({ profile = "partner", imageMode = "loaded" } = {}) {
+  const isPartnerProfile = profile === "partner";
+  const pods = isPartnerProfile
+    ? [
+        {
+          podId: "4",
+          name: "SnoozePod 4",
+          rank: 1,
+          mattressHandle: "12-dual-comfort-hybrid",
+          baseHandle: "premium-motion-adjustable-base",
+          baseTypeKey: "adjustable",
+          defaultMotionKey: "half_split",
+          displayedIn: { size: "Queen", motionLabel: "Half Split Motion" },
+          reasonKeys: ["partner_friendly"],
+        },
+        {
+          podId: "1",
+          name: "SnoozePod 1",
+          rank: 2,
+          mattressHandle: "14-hybrid",
+          baseHandle: "platform-base",
+          baseTypeKey: "platform",
+          defaultMotionKey: "none",
+          displayedIn: { size: "Queen", motionLabel: "No Motion" },
+          reasonKeys: ["primary_mattress_family"],
+        },
+        {
+          podId: "2",
+          name: "SnoozePod 2",
+          rank: 3,
+          mattressHandle: "12-all-foam-mattress",
+          baseHandle: "platform-base",
+          baseTypeKey: "platform",
+          defaultMotionKey: "none",
+          displayedIn: { size: "Queen", motionLabel: "No Motion" },
+          reasonKeys: ["fixture_size_match"],
+        },
+      ]
+    : [
+        {
+          podId: "2",
+          name: "SnoozePod 2",
+          rank: 1,
+          mattressHandle: "12-all-foam-mattress",
+          baseHandle: "platform-base",
+          baseTypeKey: "platform",
+          defaultMotionKey: "none",
+          displayedIn: { size: "Queen", motionLabel: "No Motion" },
+          reasonKeys: ["side_sleeper_pressure_relief"],
+        },
+        {
+          podId: "3",
+          name: "SnoozePod 3",
+          rank: 2,
+          mattressHandle: "10-all-foam-mattress",
+          baseHandle: "platform-base",
+          baseTypeKey: "platform",
+          defaultMotionKey: "none",
+          displayedIn: { size: "Queen", motionLabel: "No Motion" },
+          reasonKeys: ["primary_mattress_family"],
+        },
+        {
+          podId: "1",
+          name: "SnoozePod 1",
+          rank: 3,
+          mattressHandle: "14-hybrid",
+          baseHandle: "platform-base",
+          baseTypeKey: "platform",
+          defaultMotionKey: "none",
+          displayedIn: { size: "Queen", motionLabel: "No Motion" },
+          reasonKeys: ["simple_non_motion_option"],
+        },
+      ];
+
+  pods.forEach((pod, index) => {
+    const shouldLoadImage =
+      imageMode === "loaded" || (imageMode === "mixed" && index === 2);
+    if (shouldLoadImage) pod.mattressImageUrl = RESULTS_IMAGE;
+  });
+
+  const products = [
+    { handle: "12-dual-comfort-hybrid", title: '12" Dual Comfort Hybrid' },
+    { handle: "14-hybrid", title: '14" Hybrid' },
+    { handle: "12-all-foam-mattress", title: '12" All Foam' },
+    { handle: "10-all-foam-mattress", title: '10" All Foam' },
+  ];
+
+  return {
+    manifestVersion: "results-pass-4-test",
+    normalizedAssessment: {
+      size: "Queen",
+      motionKey: isPartnerProfile ? "half_split" : "none",
+      motionLabel: isPartnerProfile ? "Half Split Motion" : "No Motion",
+      firmness: isPartnerProfile ? "Medium" : "Soft",
+      position: "side",
+      hasPartner: isPartnerProfile,
+      baseType: isPartnerProfile ? "adjustable" : "none",
+    },
+    recommendation: {
+      topPodId: pods[0].podId,
+      topPodIds: pods.map((pod) => pod.podId),
+      primaryMattressHandle: pods[0].mattressHandle,
+      primaryMattressFamily: isPartnerProfile ? "dual-comfort" : "all-foam",
+      baseHandle: isPartnerProfile ? "premium-motion-adjustable-base" : null,
+      motionKey: isPartnerProfile ? "half_split" : "none",
+      motionLabel: isPartnerProfile ? "Half Split Motion" : "No Motion",
+      reasonKeys: pods[0].reasonKeys,
+      warnings: [],
+    },
+    products,
+    pods,
+  };
+}
+
+async function stubResultsBackend(
+  page,
+  { profile = "partner", imageMode = "loaded", recommendationDelayMs = 0, forceFailure = false } = {}
+) {
+  const fixture = buildCanonicalResultsFixture({ profile, imageMode });
+  const assessment = {
+    size: "Queen",
+    motionMode: profile === "partner" ? "Half Split Motion" : "No Motion",
+    firmness: profile === "partner" ? "Medium" : "Soft",
+    sleepPosition: "Side",
+    sleepPartner: profile === "partner" ? "Yes" : "No",
+    baseType: profile === "partner" ? "Adjustable Base" : "No Base",
+  };
+
+  await page.addInitScript(
+    ({ seededAssessment, shouldFail }) => {
+      sessionStorage.setItem("snooze.assessment", JSON.stringify(seededAssessment));
+      sessionStorage.setItem(
+        "snooze.sessionState.v1",
+        JSON.stringify({
+          version: 2,
+          shopperId: "987654",
+          activeJourney: shouldFail
+            ? { canonicalRecommendation: { pods: [{ podId: "broken" }] } }
+            : null,
+        })
+      );
+    },
+    { seededAssessment: assessment, shouldFail: forceFailure }
+  );
+
+  await page.route("**/*", async (route) => {
+    const request = route.request();
+    const url = request.url();
+    if (/\/recommendations\/resolve(?:\?|$)/i.test(url)) {
+      if (recommendationDelayMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, recommendationDelayMs));
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(fixture),
+      });
+      return;
+    }
+    if (/\/shopify\/listProducts(?:\?|$)/i.test(url)) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ items: [] }),
+      });
+      return;
+    }
+    if (/execute-api\.us-east-1\.amazonaws\.com/i.test(url)) {
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: false, message: "test fallback" }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+}
+
 async function stubAssessmentBackend(page, submissionsOrOptions = []) {
   const options = Array.isArray(submissionsOrOptions)
     ? { submissions: submissionsOrOptions }
@@ -871,27 +1053,29 @@ test("Assessment honors touch input and reduced motion", async ({ browser }) => 
   await context.close();
 });
 
-test("Results keeps the ranked top three in the Welcome kiosk viewport", async ({ page }) => {
-  await stubBackendFailures(page);
-  await page.goto("/welcome");
-  await page.evaluate(() => {
-    sessionStorage.setItem(
-      "snooze.assessment",
-      JSON.stringify({
-        size: "Queen",
-        motionMode: "No Motion",
-        firmness: "Soft",
-        sleepPosition: "Side",
-        sleepPartner: "No",
-        baseType: "No Base",
-      })
-    );
-  });
-
-  await page.goto("/results", { waitUntil: "networkidle" });
+test("Results presents deterministic shared-sleep guidance without changing the ranked top three", async ({ page }) => {
+  await stubResultsBackend(page, { profile: "partner" });
+  await page.goto("/results", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('[data-results-state="ready"]')).toBeVisible();
   await expect(page.getByText("Your First Stop", { exact: true })).toBeVisible();
   await expect(page.getByText("Also Recommended", { exact: true })).toBeVisible();
-  await expect(page.getByText("Your strongest match based on your sleep profile.", { exact: true })).toBeVisible();
+  await expect(page.locator('[data-results-lead="true"]')).toContainText("SnoozePod 4");
+  await expect(page.locator('[data-results-lead-reason="true"]')).toHaveText(
+    "Strong shared-sleep option to compare."
+  );
+  await expect(page.locator('[data-results-secondary-rank="2"]')).toContainText("SnoozePod 1");
+  await expect(page.locator('[data-results-secondary-rank="2"] [data-results-secondary-reason="true"]')).toHaveText(
+    "Good feel-family compare."
+  );
+  await expect(page.locator('[data-results-secondary-rank="3"]')).toContainText("SnoozePod 2");
+  await expect(page.locator('[data-results-secondary-rank="3"] [data-results-secondary-reason="true"]')).toHaveText(
+    "Good compare for your selected size."
+  );
+  await expect(page.locator('[data-results-snoozer="true"]')).toBeVisible();
+  await expect(page.locator('img[alt="MySnoozePod"]')).toHaveAttribute(
+    "src",
+    /mysnoozepod-logo-welcome\.png$/
+  );
   await expect(page.getByText("Next To Try", { exact: true })).toHaveCount(0);
   await expect(page.getByText("View pod", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Also available to test", { exact: true })).toHaveCount(0);
@@ -899,6 +1083,121 @@ test("Results keeps the ranked top three in the Welcome kiosk viewport", async (
   await expect(page.getByRole("button", { name: "Talk to Human" })).toHaveCount(0);
 
   const rankedPodLabels = page.locator("section").getByText(/^SnoozePod\s*\d+$/);
-  expect(await rankedPodLabels.count()).toBeGreaterThanOrEqual(3);
+  await expect(rankedPodLabels).toHaveCount(3);
+  await expect(page.locator('[data-testid="persistent-human-assistance"]')).toBeVisible();
+  await expect(page.locator('[data-rewards-placement="floating"]')).toBeVisible();
   await expectNoDocumentScroll(page);
+});
+
+test("Results reason copy changes with deterministic pressure-relief metadata", async ({ page }) => {
+  await stubResultsBackend(page, { profile: "pressure" });
+  await page.goto("/results", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('[data-results-state="ready"]')).toBeVisible();
+  await expect(page.locator('[data-results-lead="true"]')).toContainText("SnoozePod 2");
+  await expect(page.locator('[data-results-lead-reason="true"]')).toHaveText(
+    "Pressure-relief match worth testing first."
+  );
+  await expect(page.locator('[data-results-lead-reason="true"]')).not.toHaveText(
+    "Strong shared-sleep option to compare."
+  );
+  await expect(page.locator('[data-results-secondary-rank="2"]')).toContainText("SnoozePod 3");
+  await expect(page.locator('[data-results-secondary-rank="3"]')).toContainText("SnoozePod 1");
+  await expectNoDocumentScroll(page);
+});
+
+test("Results keeps visible loading and unavailable states instead of a blank shell", async ({ browser }) => {
+  const loadingContext = await browser.newContext({ viewport: { width: 1180, height: 820 } });
+  const loadingPage = await loadingContext.newPage();
+  await stubResultsBackend(loadingPage, { recommendationDelayMs: 1_200 });
+  await loadingPage.goto("/results", { waitUntil: "domcontentloaded" });
+  await expect(loadingPage.locator('[data-results-state="loading"]')).toBeVisible();
+  await expect(loadingPage.locator('[data-results-status="loading"]')).toContainText(
+    "Preparing your pod matches"
+  );
+  await expect(loadingPage.locator('[data-results-snoozer="true"]')).toBeVisible();
+  await expect(loadingPage.locator('img[alt="MySnoozePod"]')).toBeVisible();
+  await expect(loadingPage.locator('[data-testid="persistent-human-assistance"]')).toBeVisible();
+  await expect(loadingPage.locator('[data-rewards-placement="floating"]')).toBeVisible();
+  await expectNoDocumentScroll(loadingPage);
+  await expect(loadingPage.locator('[data-results-state="ready"]')).toBeVisible();
+  await loadingContext.close();
+
+  const errorContext = await browser.newContext({ viewport: { width: 1180, height: 820 } });
+  const errorPage = await errorContext.newPage();
+  const pageErrors = [];
+  errorPage.on("pageerror", (error) => pageErrors.push(error.message));
+  await stubResultsBackend(errorPage, { forceFailure: true });
+  await errorPage.goto("/results", { waitUntil: "domcontentloaded" });
+  await expect(errorPage.locator('[data-results-state="error"]')).toBeVisible();
+  await expect(errorPage.locator('[data-results-status="error"]')).toContainText("Results unavailable");
+  await expect(errorPage.locator('[data-results-snoozer="true"]')).toBeVisible();
+  await expect(errorPage.locator('[data-testid="persistent-human-assistance"]')).toBeVisible();
+  await expect(errorPage.locator('[data-rewards-placement="floating"]')).toBeVisible();
+  await expectNoDocumentScroll(errorPage);
+  expect(pageErrors).toEqual([]);
+  await errorContext.close();
+});
+
+test("Results preserves ranking and reasons when lead and secondary imagery are unavailable", async ({ page }) => {
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await stubResultsBackend(page, { profile: "partner", imageMode: "mixed" });
+  await page.goto("/results", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('[data-results-state="ready"]')).toBeVisible();
+  await expect(page.locator('[data-results-image="lead"]')).toHaveAttribute(
+    "data-results-image-status",
+    "failed"
+  );
+  await expect(page.locator('[data-results-image="secondary-2"]')).toHaveAttribute(
+    "data-results-image-status",
+    "failed"
+  );
+  await expect(page.locator('[data-results-image="secondary-3"]')).toHaveAttribute(
+    "data-results-image-status",
+    "loaded"
+  );
+  await expect(page.getByText("Image unavailable", { exact: true })).toHaveCount(2);
+  await expect(page.locator('[data-results-lead="true"]')).toContainText("SnoozePod 4");
+  await expect(page.locator('[data-results-lead-reason="true"]')).toBeVisible();
+  await expect(page.locator('[data-results-secondary-rank="2"] [data-results-secondary-reason="true"]')).toBeVisible();
+  expect(pageErrors).toEqual([]);
+  await expectNoDocumentScroll(page);
+});
+
+test("Results stays contained across supported kiosk viewports", async ({ browser }) => {
+  for (const viewport of WELCOME_VIEWPORTS) {
+    const context = await browser.newContext({
+      viewport: { width: viewport.width, height: viewport.height },
+      reducedMotion: "reduce",
+    });
+    const page = await context.newPage();
+    await stubResultsBackend(page, { profile: "partner" });
+    await page.goto("/results", { waitUntil: "domcontentloaded" });
+    await expect(page.locator('[data-results-state="ready"]')).toBeVisible();
+    await expect(page.locator('[data-results-lead="true"]')).toBeVisible();
+    await expect(page.locator('[data-results-snoozer-guidance="true"]')).toBeVisible();
+    await expect(page.locator('[data-results-lead-reason="true"]')).toBeVisible();
+    await expect(page.locator('[data-results-secondary-rank="2"]')).toBeVisible();
+    await expect(page.locator('[data-results-secondary-rank="3"]')).toBeVisible();
+    await expect(page.locator('[data-results-image="lead"]')).toBeVisible();
+    const logo = page.locator('img[alt="MySnoozePod"]');
+    await expect(logo).toBeVisible();
+    await expect
+      .poll(() => logo.evaluate((node) => ({ complete: node.complete, width: node.naturalWidth })))
+      .toMatchObject({ complete: true, width: 2172 });
+    await expect(page.locator('[data-testid="persistent-human-assistance"]')).toBeVisible();
+    await expect(page.locator('[data-rewards-placement="floating"]')).toBeVisible();
+    await expect(page.locator('[data-results-content="true"]')).toHaveCSS("transform", "none");
+    const leadHeading = page.locator('[data-results-lead="true"] h1');
+    const leadImage = page.locator('[data-results-image="lead"]');
+    const [headingBox, imageBox] = await Promise.all([
+      leadHeading.boundingBox(),
+      leadImage.boundingBox(),
+    ]);
+    expect(headingBox).toBeTruthy();
+    expect(imageBox).toBeTruthy();
+    expect(headingBox.x + headingBox.width).toBeLessThanOrEqual(imageBox.x + 1);
+    await expectNoDocumentScroll(page);
+    await context.close();
+  }
 });

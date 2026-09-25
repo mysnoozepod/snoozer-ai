@@ -1,6 +1,6 @@
 // src/pages/Results.jsx
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { generateShowroomRecommendations } from "@/lib/utils/recommendations";
 import { useSessionStore } from "@/state/sessionStore";
 import {
@@ -12,6 +12,7 @@ import { useStore } from "@/lib/useStore";
 import { useShowroomHud } from "@/lib/snoozer/hud/useShowroomHud";
 import { getShopperId } from "@/state/sessionStore";
 import { ImageOff } from "lucide-react";
+import welcomeBrandMarkSrc from "@/assets/mysnoozepod-logo-welcome.png";
 import {
   ShowroomBrandMark,
   ShowroomEyebrow,
@@ -20,10 +21,6 @@ import {
   ShowroomPageShell,
   ShowroomTopRail,
 } from "@/components/showroom/ShowroomPrimitives";
-
-const BRAND = {
-  primary: "#1A66D2",
-};
 
 const USE_CANONICAL_RECOMMENDATIONS = isCanonicalRecommendationsEnabled(
   import.meta.env.VITE_USE_CANONICAL_RECOMMENDATIONS,
@@ -465,6 +462,7 @@ function TypingDots() {
 
 export default function Results() {
   const { muted, say } = useShowroomHud();
+  const shouldReduceMotion = useReducedMotion();
   const shopperId = getShopperId() || "";
   const storedAssessment = useStore((state) => state.assessment);
   const setRecommendations = useStore((state) => state.setRecommendations);
@@ -726,45 +724,86 @@ export default function Results() {
 
   const leadImageUrl = leadPod ? resolveImageUrl(leadPod) : "";
   const leadImageStatus = leadPod ? getImageStatus(leadPod) : "idle";
+  const recommendationMeta = recs?.meta || {};
+  const leadReason = leadPod
+    ? buildPodReasonText({
+        pod: leadPod,
+        recommendedRank: 1,
+        recommendationMeta,
+      })
+    : "";
+  const resultsState = loading ? "loading" : rankedPods.length ? "ready" : "error";
 
   return (
-    <ShowroomPageShell className="flex min-h-0 flex-col overflow-hidden pb-0">
+    <ShowroomPageShell
+      data-results-shell="true"
+      data-results-state={resultsState}
+      className="flex min-h-0 flex-col overflow-hidden pb-0"
+    >
       <ShowroomTopRail className="justify-center pt-3 md:pt-4">
-        <ShowroomBrandMark imageClassName="w-[190px] md:w-[220px]" />
+        <ShowroomBrandMark
+          imageSrc={welcomeBrandMarkSrc}
+          imageClassName="w-[190px] md:w-[220px]"
+          loading="eager"
+        />
       </ShowroomTopRail>
 
       <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-y-auto overscroll-contain px-4 pb-3 pt-1 md:px-6 md:pt-2 lg:overflow-hidden">
         <ShowroomFrame className="flex min-h-0 shrink-0 flex-col p-2 md:p-2.5 lg:flex-1">
           {loading ? (
-            <div className="rounded-[28px] border border-white/80 bg-white/92 px-6 py-10 text-center text-slate-600 shadow-sm">
-              Preparing your pod matches
-            </div>
+            <ResultsStatusPanel state="loading" />
           ) : rankedPods.length ? (
             <div className="flex min-h-0 flex-1 flex-col">
               <motion.div
+                data-results-content="true"
                 className="shrink-0"
-                initial={{ opacity: 0, y: 10 }}
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.25, ease: "easeOut" }}
               >
                 <ShowroomPanel className="min-h-0 overflow-hidden p-3.5 md:p-4 lg:h-full" tone="soft">
-                  <section className="grid h-full min-h-0 gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)] lg:items-stretch">
-                    <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(320px,1.18fr)] lg:items-center">
-                      <div className="min-w-0">
+                  <section
+                    data-results-recommendations="true"
+                    className="grid h-full min-h-0 gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)] lg:items-stretch"
+                  >
+                    <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(260px,0.95fr)_minmax(280px,1.05fr)] lg:items-center">
+                      <div data-results-lead="true" className="min-w-0">
                         <ShowroomEyebrow className="text-[0.78rem]">Your First Stop</ShowroomEyebrow>
-                        <h1 className="mt-2 whitespace-nowrap text-[2.35rem] font-black leading-[0.95] tracking-tight text-slate-900 md:text-[3rem]">
+                        <h1 className="mt-2 whitespace-nowrap text-[clamp(2rem,3vw,3rem)] font-black leading-[0.95] tracking-tight text-slate-900">
                           SnoozePod {leadPodId}
                         </h1>
                         <div className="mt-3 text-[1.12rem] font-extrabold leading-tight text-slate-700 md:text-[1.28rem]">
                           {extractDisplayMattress(leadPod)}
                         </div>
-                        <p className="mt-4 max-w-sm text-[0.94rem] font-semibold leading-6 text-slate-600 md:text-base">
-                          Your strongest match based on your sleep profile.
-                        </p>
+                        <div
+                          data-results-snoozer-guidance="true"
+                          className="mt-4 flex max-w-md items-center gap-3 rounded-[20px] border border-[var(--showroom-color-brand-border)] bg-white/90 p-3 shadow-[var(--showroom-shadow-card)]"
+                        >
+                          <div className="flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full bg-[var(--showroom-color-brand-soft)]">
+                            <img
+                              data-results-snoozer="true"
+                              src="/snoozer-avatar.png"
+                              alt="Snoozer"
+                              className="h-[62px] w-[62px] object-contain"
+                              loading="eager"
+                              decoding="async"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="showroom-type-eyebrow text-[0.68rem]">Why This Match</div>
+                            <p
+                              data-results-lead-reason="true"
+                              className="mt-1 text-[0.9rem] font-extrabold leading-[1.35] text-slate-700 md:text-[0.96rem]"
+                            >
+                              {leadReason}
+                            </p>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="rounded-[26px] border border-white/80 bg-white p-3 shadow-sm">
                         <ResultImageCard
+                          role="lead"
                           imageUrl={leadImageUrl}
                           imageStatus={leadImageStatus}
                           displayMattress={extractDisplayMattress(leadPod)}
@@ -785,6 +824,11 @@ export default function Results() {
                               displayMattress={extractDisplayMattress(pod)}
                               imageUrl={resolveImageUrl(pod)}
                               imageStatus={getImageStatus(pod)}
+                              reason={buildPodReasonText({
+                                pod,
+                                recommendedRank: 0,
+                                recommendationMeta,
+                              })}
                             />
                           );
                         })}
@@ -795,9 +839,7 @@ export default function Results() {
               </motion.div>
             </div>
           ) : (
-            <div className="rounded-[28px] border border-red-200 bg-red-50 px-6 py-10 text-center text-red-700 shadow-sm">
-              Results unavailable
-            </div>
+            <ResultsStatusPanel state="error" />
           )}
         </ShowroomFrame>
       </div>
@@ -805,15 +847,61 @@ export default function Results() {
   );
 }
 
-function ResultImageCard({ displayMattress, imageUrl, imageStatus }) {
+function ResultsStatusPanel({ state }) {
+  const isLoading = state === "loading";
+
+  return (
+    <ShowroomPanel
+      data-results-status={state}
+      className="flex min-h-[360px] flex-1 items-center justify-center overflow-hidden p-6"
+      tone="soft"
+    >
+      <div className="flex max-w-xl flex-col items-center text-center">
+        <div className="flex h-32 w-32 items-center justify-center rounded-full bg-[var(--showroom-color-brand-soft)] shadow-[var(--showroom-shadow-card)]">
+          <img
+            data-results-snoozer="true"
+            src="/snoozer-avatar.png"
+            alt="Snoozer"
+            className="h-28 w-28 object-contain"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
+        <div className="showroom-type-eyebrow mt-5">
+          {isLoading ? "Snoozer is matching your profile" : "Snoozer needs a moment"}
+        </div>
+        <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900">
+          {isLoading ? "Preparing your pod matches…" : "Results unavailable"}
+        </h1>
+        <p className="mt-3 max-w-lg text-base font-semibold leading-6 text-slate-600">
+          {isLoading
+            ? "Your first stop and two best comparisons will appear here shortly."
+            : "We couldn’t prepare your pod matches. Your Snooze Session is still saved, so a team member can help you continue."}
+        </p>
+      </div>
+    </ShowroomPanel>
+  );
+}
+
+function ResultImageCard({ displayMattress, imageUrl, imageStatus, role }) {
   const [imgFailed, setImgFailed] = useState(false);
 
   useEffect(() => {
     setImgFailed(false);
   }, [imageUrl]);
 
+  const resolvedStatus = imageUrl && !imgFailed
+    ? "loaded"
+    : imageStatus === "loading"
+      ? "loading"
+      : "failed";
+
   return (
-    <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
+    <div
+      data-results-image={role}
+      data-results-image-status={resolvedStatus}
+      className="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50"
+    >
       <div className="aspect-[16/8.6]">
         {imageUrl && !imgFailed ? (
           <img
@@ -845,24 +933,35 @@ function RecommendedPodTile({
   displayMattress,
   imageUrl,
   imageStatus,
+  reason,
 }) {
   return (
-    <div className="grid min-h-[152px] grid-cols-[112px_minmax(0,1fr)] items-center gap-3 rounded-[22px] border border-slate-200 bg-white p-3 text-left shadow-sm">
+    <div
+      data-results-secondary-rank={index}
+      className="grid min-h-[152px] grid-cols-[112px_minmax(0,1fr)] items-center gap-3 rounded-[22px] border border-slate-200 bg-white p-3 text-left shadow-sm"
+    >
       <div className="min-w-0">
         <ResultImageCard
+          role={`secondary-${index}`}
           displayMattress={displayMattress}
           imageUrl={imageUrl}
           imageStatus={imageStatus}
         />
       </div>
       <div className="min-w-0">
-        <div className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-[#eef3ff] px-2 text-xs font-black text-[#2f57e8]">
+        <div className="inline-flex h-8 min-w-8 items-center justify-center rounded-full bg-[var(--showroom-color-brand-soft)] px-2 text-xs font-black text-[var(--showroom-color-brand-primary)]">
           #{index}
         </div>
         <div className="mt-2 whitespace-nowrap text-[1.12rem] font-black tracking-tight text-slate-900">
           SnoozePod&nbsp;{id}
         </div>
         <div className="mt-1 text-[0.78rem] font-semibold leading-4 text-slate-600">{displayMattress}</div>
+        <p
+          data-results-secondary-reason="true"
+          className="mt-2 text-[0.76rem] font-bold leading-[1.3] text-slate-600"
+        >
+          {reason}
+        </p>
       </div>
     </div>
   );
