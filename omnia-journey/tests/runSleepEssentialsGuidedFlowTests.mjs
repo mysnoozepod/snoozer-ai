@@ -30,31 +30,30 @@ const [
   readSource("../../data/sleep-essentials-catalog.v1.json"),
 ]);
 
-for (const expected of [
+for (const removed of [
   'label: "Pillows"',
   'label: "Sheets"',
   'label: "Mattress Protectors"',
   'data-sleep-essentials-step="combined"',
   'data-sleep-essentials-card-row="three"',
-  'ESSENTIAL_CARD_KEYS = Object.freeze(["pillows", "sheets", "protector"])',
   "recommendedEssentialChoices",
   "selectedEssentials",
   "skippedEssentials",
+  "api.getSleepEssentialsCatalog()",
+  "recordRewardAccessoriesProgress",
+  "completeRewardAccessories",
+  'sourceSurface: "pod_customize"',
 ]) {
-  assert.ok(builderSource.includes(expected), `missing Pod essentials contract: ${expected}`);
+  assert.equal(builderSource.includes(removed), false, `Pod Customize must not own Sleep Essentials: ${removed}`);
 }
 
-assert.ok(builderSource.includes("api.getSleepEssentialsCatalog()"), "Pod must use the approved live catalog endpoint");
 assert.ok(apiSource.includes("getSleepEssentialsCatalog"), "the approved Sleep Essentials API must remain wired");
 assert.ok(builderSource.includes("safeVariantId(variant)"), "only safe available Shopify variants may be selected");
-assert.ok(builderSource.includes("resolveCuratedSheetVariant"), "composite sheet variants must resolve deterministically for the selected mattress size");
 assert.ok(variantSource.includes("requestedOptionForConfiguration"), "setup compatibility must be checked");
 assert.ok(variantSource.includes("resolveApprovedVariant"), "approved variants must be resolved deterministically");
 assert.ok(builderSource.includes("resolveMattressSizeFromCart"), "cart mattress variants must resolve back to exact sizes");
 assert.ok(builderSource.includes("cartMattressSize || initialSelections.size"), "cart size must initialize Customize");
-assert.ok(builderSource.includes("cartVariantIds.has(choice.variantId)"), "Pod selection must read shared cart truth");
-assert.ok(builderSource.includes("quantity: choice.quantity"), "pillow quantity must reach the cart line");
-assert.ok(builderSource.includes('{ key: "_Sleep Essential"'), "optional cart lines must identify their category");
+assert.ok(builderSource.includes("synchronizeCoreCartLines"), "Pod cart synchronization must be explicitly core-only");
 assert.equal(builderSource.includes("Choose your size, motion setup, and sleep essentials"), false);
 
 for (const expected of [
@@ -120,4 +119,4 @@ assert.ok(podSource.includes('params.get("buildStep")'), "Pod return context mus
 assert.ok(podSource.includes("hydratedPodIdRef.current !== pid"), "recommendation hydration must not reset the current Pod session");
 assert.equal(welcomeSource.includes("starts automatically after the fourth digit"), false);
 
-console.log("Sleep Essentials Phase 3 tests passed: curated device, shared cart truth, Pod continuity, rewards idempotency, and clean navigation.");
+console.log("Sleep Essentials Phase 3 tests passed: dedicated curated device ownership, shared cart truth, Pod continuity, rewards idempotency, and clean navigation.");

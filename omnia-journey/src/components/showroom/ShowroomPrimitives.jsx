@@ -176,6 +176,7 @@ export function ShowroomDownstreamHeader({
   notice,
   humanHelp,
   cart,
+  brandImageSrc,
   brandImageClassName = "w-[clamp(170px,18vw,220px)]",
 }) {
   return (
@@ -190,7 +191,11 @@ export function ShowroomDownstreamHeader({
         {rewards}
         {notice}
       </div>
-      <ShowroomBrandMark className="justify-self-center" imageClassName={brandImageClassName} />
+      <ShowroomBrandMark
+        className="justify-self-center"
+        imageSrc={brandImageSrc}
+        imageClassName={brandImageClassName}
+      />
       <div className="flex min-w-0 items-center justify-self-end gap-2" data-showroom-header-region="actions">
         {humanHelp}
         {cart}

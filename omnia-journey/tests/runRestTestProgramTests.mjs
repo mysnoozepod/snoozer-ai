@@ -16,6 +16,7 @@ import {
   restTestReducer,
   restoreRestTestState,
 } from "../src/lib/restTestProgram.mjs";
+import { getRestTestPositioningCopy } from "../src/lib/restTestPresentation.mjs";
 
 const EXPECTED_STAGE_IDS = [
   "back_flat",
@@ -179,6 +180,33 @@ function testFailuresAndSafeRestore() {
   assert.equal(restored.stageRemainingSeconds, 41);
 }
 
+function testPhysicalControlCopyUsesActualCapability() {
+  const stage = REST_TEST_STAGES.find((item) => item.id === "zero_gravity");
+  const automated = getRestTestPositioningCopy({
+    stage,
+    physicalControl: { baseAutomationAvailable: true, status: "applied", fault: null },
+  });
+  assert.equal(automated.mode, "automated");
+  assert.equal(automated.instruction, "I’m moving the base to Zero Gravity.");
+  assert.match(automated.supporting, /controlling the base/);
+
+  const manual = getRestTestPositioningCopy({
+    stage,
+    physicalControl: { baseAutomationAvailable: false, status: "idle", fault: null },
+  });
+  assert.equal(manual.mode, "manual");
+  assert.equal(manual.instruction, stage.manualInstruction);
+  assert.doesNotMatch(manual.supporting, /controlling the base|guiding this change/);
+
+  const failed = getRestTestPositioningCopy({
+    stage,
+    physicalControl: { baseAutomationAvailable: true, status: "failed", fault: "COMMAND_ACK_TIMEOUT" },
+  });
+  assert.equal(failed.mode, "failed");
+  assert.equal(failed.instruction, stage.manualInstruction);
+  assert.match(failed.supporting, /isn’t available/);
+}
+
 async function loadAudioController() {
   const source = await readFile(new URL("../src/iot/ambientAudioController.js", import.meta.url), "utf8");
   return import(`data:text/javascript;base64,${Buffer.from(source).toString("base64")}`);
@@ -240,6 +268,7 @@ testDirectStartAndAutomaticTransitions();
 testPauseResumeRestartAndEarlyExit();
 testInterjectionAndCompletion();
 testFailuresAndSafeRestore();
+testPhysicalControlCopyUsesActualCapability();
 await testPersistentJazzController();
 await testAssetsAndCustomerSurface();
 

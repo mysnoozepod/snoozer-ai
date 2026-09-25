@@ -11,11 +11,13 @@ import {
 } from "lucide-react";
 
 import { ShowroomPanel } from "@/components/showroom/ShowroomPrimitives";
+import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import {
   REST_TEST_DURATIONS,
   REST_TEST_PHASES,
   REST_TEST_STAGES,
 } from "@/lib/restTestProgram.mjs";
+import { getRestTestPositioningCopy } from "@/lib/restTestPresentation.mjs";
 
 export function PodRestStartSection({ podLabel, flowOptions = [], onChooseMode }) {
   const ids = flowOptions.length ? flowOptions.map((flow) => flow.id).slice(0, 2) : ["quick", "deep"];
@@ -30,11 +32,14 @@ export function PodRestStartSection({ podLabel, flowOptions = [], onChooseMode }
 
   return (
     <ShowroomPanel data-pod-text-card="pod-home" className="h-full overflow-hidden p-[12px]" tone="frost">
-      <div>
-        <h2 className="text-[clamp(1.55rem,2.4vw,2rem)] font-black leading-none tracking-tight text-slate-950">Start Your Rest Test</h2>
-        <p className="mt-1 text-[clamp(0.82rem,1.2vw,1rem)] leading-snug text-slate-600">
-          Try {podLabel} your way. Choose 7 or 15 minutes to begin.
-        </p>
+      <div className="flex items-center gap-3">
+        <img src={snoozerRestChoiceImg} alt="Snoozer, your Rest Test guide" className="h-[68px] w-[86px] shrink-0 object-contain" />
+        <div>
+          <h2 className="text-[clamp(1.55rem,2.4vw,2rem)] font-black leading-none tracking-tight text-slate-950">Start Your Rest Test</h2>
+          <p className="mt-1 text-[clamp(0.82rem,1.2vw,1rem)] leading-snug text-slate-600">
+            Try {podLabel} your way. Choose 7 or 15 minutes to begin.
+          </p>
+        </div>
       </div>
       <div className="mt-2 grid gap-3 md:grid-cols-2">
         {cards.map((card) => (
@@ -96,14 +101,20 @@ function RestTestEntry({ controller }) {
       data-rest-test-state="entry"
       className="relative h-full min-h-0 overflow-y-auto p-[12px] lg:overflow-hidden"
     >
-      <div className="flex h-full min-h-0 flex-col justify-center rounded-[16px] border border-white/80 bg-white/78 px-5 py-4">
-        <h2 className="text-[clamp(1.45rem,2.5vw,2.1rem)] font-black leading-[1.02] tracking-tight text-slate-950">
-          Settle in. Snoozer will guide your Rest Test.
-        </h2>
-        <p className="mt-2 text-[clamp(0.92rem,1.4vw,1.08rem)] leading-snug text-slate-600">
-          Choose 7 minutes for a quick feel check or 15 minutes for more time to settle in.
-        </p>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
+      <div className="grid h-full min-h-0 gap-3 rounded-[16px] border border-white/80 bg-white/78 px-5 py-4 md:grid-cols-[minmax(170px,0.42fr)_minmax(0,1.58fr)]">
+        <div className="flex min-h-0 items-center justify-center rounded-[16px] bg-[radial-gradient(circle_at_50%_35%,#ffffff_0%,#eef4ff_72%,#e4ecfb_100%)]">
+          <img
+            src={snoozerRestChoiceImg}
+            alt="Snoozer ready to guide your Rest Test"
+            data-testid="rest-test-entry-snoozer"
+            className="h-full max-h-[250px] w-full object-contain p-2"
+          />
+        </div>
+        <div className="flex min-h-0 flex-col justify-center">
+          <h2 className="text-[clamp(1.45rem,2.5vw,2.1rem)] font-black leading-[1.02] tracking-tight text-slate-950">
+            Settle in. Snoozer will guide your Rest Test.
+          </h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
           {durations.map((duration) => (
             <button
               type="button"
@@ -126,6 +137,7 @@ function RestTestEntry({ controller }) {
               <ArrowRight className={duration.id === "quick" ? "h-6 w-6 shrink-0 text-[#ff8f1f]" : "h-6 w-6 shrink-0 text-[#355ff1]"} />
             </button>
           ))}
+          </div>
         </div>
       </div>
     </ShowroomPanel>
@@ -164,7 +176,7 @@ function RestVisual({ stage, paused }) {
   );
 }
 
-function ActiveRestTest({ controller }) {
+function ActiveRestTest({ controller, physicalControl }) {
   const [confirmAction, setConfirmAction] = useState("");
   const { state, stage, duration } = controller;
   const isPaused = state.phase === REST_TEST_PHASES.PAUSED;
@@ -173,6 +185,7 @@ function ActiveRestTest({ controller }) {
   const stageNumber = state.stageIndex + 1;
   const progress = Math.min(100, Math.max(0, (state.overallActiveElapsedSeconds / duration.totalSeconds) * 100));
   const statusLabel = isPaused ? "Paused" : isPositioning ? "Moving Into Position" : isBaseFailure ? "Position Unavailable" : "Testing Now";
+  const positioningCopy = getRestTestPositioningCopy({ stage, physicalControl });
 
   return (
     <ShowroomPanel
@@ -194,12 +207,12 @@ function ActiveRestTest({ controller }) {
         <div className="flex min-h-0 min-w-0 flex-col rounded-[16px] border border-white/80 bg-white/78 px-3 py-2">
           <div className="flex min-w-0 items-start gap-3">
             <div className="min-w-0">
-              <div className="text-[0.66rem] font-black uppercase tracking-[0.18em] text-[#355ff1]">
-                Stage {stageNumber} of {REST_TEST_STAGES.length} / {statusLabel}
-              </div>
-              <h2 className="mt-1 text-[clamp(1.4rem,2.4vw,2rem)] font-black leading-tight tracking-tight text-slate-950">
+              <h2 className="text-[clamp(1.4rem,2.4vw,2rem)] font-black leading-tight tracking-tight text-slate-950">
                 {stage.name}
               </h2>
+              <div className="mt-1 text-[0.66rem] font-black uppercase tracking-[0.18em] text-[#355ff1]">
+                Stage {stageNumber} of {REST_TEST_STAGES.length} · {statusLabel}
+              </div>
             </div>
           </div>
 
@@ -220,10 +233,10 @@ function ActiveRestTest({ controller }) {
               </>
             ) : isPositioning ? (
               <>
-                <div className="text-lg font-black text-slate-950">{stage.manualInstruction}</div>
+                <div className="text-lg font-black text-slate-950" data-rest-test-control-mode={positioningCopy.mode}>{positioningCopy.instruction}</div>
                 <p className="mt-1 text-base leading-snug text-slate-600">
                   {state.openingSpeechActive
-                    ? "Snoozer is guiding this change. Active testing starts automatically afterward."
+                    ? positioningCopy.supporting
                     : state.transitionRemainingSeconds > 0
                       ? `Active testing starts automatically in ${state.transitionRemainingSeconds} seconds.`
                       : "Active testing is about to begin automatically."}
@@ -404,7 +417,7 @@ function RestTestCompletion({ controller, podLabel, onBackHome, onTryAnotherMatt
   );
 }
 
-export function GuidedRestTest({ controller, podLabel = "this pod", onBackHome, onTryAnotherMattress }) {
+export function GuidedRestTest({ controller, podLabel = "this pod", onBackHome, onTryAnotherMattress, physicalControl }) {
   if (!controller) return null;
   if (controller.state.phase === REST_TEST_PHASES.COMPLETED) {
     return <RestTestCompletion controller={controller} podLabel={podLabel} onBackHome={onBackHome} onTryAnotherMattress={onTryAnotherMattress} />;
@@ -412,7 +425,7 @@ export function GuidedRestTest({ controller, podLabel = "this pod", onBackHome, 
   if (controller.state.phase === REST_TEST_PHASES.READY || controller.state.phase === REST_TEST_PHASES.ENDED_EARLY) {
     return <RestTestEntry controller={controller} />;
   }
-  return <ActiveRestTest controller={controller} />;
+  return <ActiveRestTest controller={controller} physicalControl={physicalControl} />;
 }
 
 export default GuidedRestTest;

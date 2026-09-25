@@ -3,10 +3,10 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 
 const VIEWPORTS = [
-  { name: "1280x585", width: 1280, height: 585 },
-  { name: "1280x560", width: 1280, height: 560 },
-  { name: "staging-1920x899", width: 1920, height: 899 },
-  { name: "staging-compact-1920x860", width: 1920, height: 860 },
+  { name: "1180x820", width: 1180, height: 820 },
+  { name: "1024x768", width: 1024, height: 768 },
+  { name: "1366x768", width: 1366, height: 768 },
+  { name: "compact-1280x585", width: 1280, height: 585 },
 ];
 const STATES = ["entry", "back", "side", "back-recalibration", "zero", "snore", "final", "paused", "completion"];
 const OUTPUT_ROOT = path.resolve(__dirname, "..", "..", "_out", "rest-test-mvp");
@@ -76,6 +76,13 @@ for (const viewport of VIEWPORTS) {
         await expect(image).toBeVisible();
         expect(await image.evaluate((node) => node.naturalWidth)).toBeGreaterThan(0);
       }
+      if (state === "entry") {
+        const host = page.getByTestId("rest-test-entry-snoozer");
+        await expect(host).toBeVisible();
+        expect(await host.evaluate((node) => node.naturalWidth)).toBeGreaterThan(0);
+        await expect(page.getByTestId("rest-duration-quick")).toBeVisible();
+        await expect(page.getByTestId("rest-duration-deep")).toBeVisible();
+      }
 
       const output = path.join(OUTPUT_ROOT, viewport.name);
       await fs.mkdir(output, { recursive: true });
@@ -93,6 +100,8 @@ test("duration selection starts the automatic Rest Test flow", async ({ page }) 
   await expect(page.getByTestId("rest-position-ready")).toHaveCount(0);
   await page.getByTestId("rest-duration-quick").click();
   await expect(page.locator('[data-rest-test-stage="back_flat"]')).toBeVisible();
+  await expect(page.getByTestId("rest-pause-test")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pause Rest Test" })).toHaveCount(0);
   await expect(page.locator('[data-rest-test-state="active"]')).toBeVisible({ timeout: 20_000 });
 });
 
@@ -198,9 +207,10 @@ test("active Rest Test persists across every Pod experience tab", async ({ page 
 
   const evidenceDir = path.join(OUTPUT_ROOT, "persistence");
   await fs.mkdir(evidenceDir, { recursive: true });
-  for (const tab of ["Learn", "Customize", "Ask Snoozer"]) {
+  for (const tab of ["Learn", "Customize"]) {
     await page.getByRole("button", { name: tab, exact: true }).click();
     await expect(status).toBeVisible();
+    await expect(page.getByRole("button", { name: "Pause Rest Test" })).toBeVisible();
     await page.screenshot({
       path: path.join(evidenceDir, `${tab.toLowerCase().replaceAll(" ", "-")}.png`),
       fullPage: false,

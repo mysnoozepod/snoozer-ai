@@ -11,6 +11,8 @@ const coachingSource = read("src/lib/podReviewCoaching.js");
 const coaching = await import(`data:text/javascript;charset=utf-8,${encodeURIComponent(coachingSource)}`);
 const podSource = read("src/pages/Pod.jsx");
 const builderSource = read("src/components/PodBuilder.jsx");
+const builderFlowSource = read("src/lib/podBuilderFlow.mjs");
+const builderFlow = await import(`data:text/javascript;charset=utf-8,${encodeURIComponent(builderFlowSource)}`);
 const learnSource = read("src/components/pod/PodLearnPanel.jsx");
 const routeGuardSource = read("src/hooks/useHudRouteVoiceGuard.js");
 const voiceQueueSource = read("src/lib/snoozer/voice/VoiceQueueContext.jsx");
@@ -34,29 +36,23 @@ assert.match(learnSource, /Mattress in Cart/);
 assert.match(podSource, /result\?\.items[\s\S]*CART_CONFIRMATION_MISSING/);
 assert.match(podSource, /gid:\/\/shopify\/ProductVariant\//);
 
-assert.match(builderSource, /key: "essentials", label: "Essentials"/);
-assert.match(builderSource, /Complete Your Sleep Setup/);
-assert.doesNotMatch(builderSource, /return choices\.slice\(0, 1\)/);
-assert.match(builderSource, /ESSENTIAL_CARD_KEYS = Object\.freeze\(\["pillows", "sheets", "protector"\]\)/);
-assert.match(builderSource, /data-sleep-essentials-card=\{category\}/);
-assert.match(builderSource, /data-sleep-essentials-card-row="three"/);
-assert.doesNotMatch(builderSource, /gap-2 overflow-y-auto lg:grid-cols-3/);
-assert.match(builderSource, /No approved match available/);
-assert.doesNotMatch(builderSource, /View All Sleep Essentials/);
-assert.doesNotMatch(builderSource, /buildSleepEssentialsPath/);
-assert.match(builderSource, /Explore more at the Sleep Essentials station/);
-assert.match(builderSource, /data-sleep-essentials-station-handoff/);
+assert.doesNotMatch(builderSource, /key: "essentials", label: "Essentials"/);
+assert.doesNotMatch(builderSource, /Complete Your Sleep Setup|data-sleep-essentials-card|Continue to Sleep Essentials|Back to essentials/);
+assert.deepEqual(
+  ["essentials", "pillows", "sheets", "protector"].map(builderFlow.normalizeCoreBuildStepCandidate),
+  ["review", "review", "review", "review"]
+);
 assert.match(builderSource, /resolveMattressSizeFromCart/);
 assert.match(builderSource, /cartMattressSize \|\| initialSelections\.size/);
 assert.doesNotMatch(builderSource, /Choose your size, motion setup, and sleep essentials/);
 assert.match(sleepEssentialsSource, /\["essentials", "pillows", "sheets", "protector", "review"\]/);
 assert.match(builderSource, /desiredCartState === "exact"/);
 assert.match(builderSource, /syncCartFromShopify\?\.\(\{ sourcePage: "pod-build-review" \}\)/);
-assert.match(builderSource, /await removeFromCart\?\.\(lineId\)/);
+assert.match(builderSource, /synchronizeCoreCartLines/);
 assert.match(builderSource, /data-mattress-cart-continuity/);
 assert.match(builderSource, /data-pod-builder-review-layout="decision"/);
 assert.match(builderSource, /data-pod-builder-success-layout="balanced"/);
-assert.match(builderSource, /essentialReviewRows\.filter\(\(item\) => item\.value !== "Skipped"\)/);
+assert.doesNotMatch(builderSource, /essentialReviewRows|selectedEssentials|skippedEssentials|essentialsVersion/);
 assert.match(podSource, /primaryCtaLabel="Add Selected Setup to Cart"/);
 
 const facts = coaching.buildBoundedPodReviewContext({
@@ -119,4 +115,4 @@ assert.match(viteSource, /entryFileNames: "assets\/app-\[hash\]\.js"/);
 assert.match(viteSource, /return "assets\/index-\[hash\]\[extname\]"/);
 assert.match(viteSource, /return "assets\/\[name\]\[extname\]"/);
 
-console.log("Pod experience polish tests passed: Learn truth, authoritative cart, combined essentials, review coaching, captions, and route-entry voice.");
+console.log("Pod experience polish tests passed: Learn truth, core-only authoritative cart, review coaching, captions, and route-entry voice.");

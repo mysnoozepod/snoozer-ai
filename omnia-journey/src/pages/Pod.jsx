@@ -74,6 +74,7 @@ import { useActiveJourney } from "@/journey/ActiveJourneyContext";
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import snoozerRestActiveImg from "@/assets/avatars/snoozer-rest-active.png";
 import snoozerRestTransitionImg from "@/assets/avatars/snoozer-rest-transition.png";
+import sharpMySnoozePodLogo from "@/assets/mysnoozepod-logo-welcome.png";
 
 const PUBLIC_ASSETS = {
   snoozerAvatar: "/snoozer-avatar.png",
@@ -2618,7 +2619,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
 
   useEffect(() => {
     if (openStage !== "build" || buildSelectionState?.stepKey !== "review") return;
-    const key = [pid, buildSelectionState.size, buildSelectionState.baseType, buildSelectionState.motionType, ...(buildSelectionState.selectedEssentials || [])].join("::");
+    const key = [pid, buildSelectionState.size, buildSelectionState.baseType, buildSelectionState.motionType].join("::");
     if (!key || reviewCoachKeyRef.current === key) return;
     reviewCoachKeyRef.current = key;
 
@@ -2635,10 +2636,6 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
         size: buildSelectionState.size,
         base: buildSelectionState.selectedBaseLabel,
         motion: buildSelectionState.selectedMotionLabel,
-      },
-      essentials: {
-        selected: buildSelectionState.selectedEssentials,
-        skipped: buildSelectionState.skippedEssentials,
       },
       cart: cartItems,
       progress: "Review Your SnoozePod",
@@ -2772,6 +2769,11 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
       <GuidedRestTest
         podLabel={podLabel}
         controller={guidedRestTest}
+        physicalControl={{
+          baseAutomationAvailable: false,
+          status: physicalControl.status,
+          fault: physicalControl.fault,
+        }}
         onBackHome={() => void goToPodHome()}
         onTryAnotherMattress={() => navigate("/results")}
       />
@@ -2805,6 +2807,8 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     goToBuildStage,
     pid,
     goToUnifiedAskSnoozer,
+    physicalControl.status,
+    physicalControl.fault,
   ]);
 
   const isDefaultPodDashboard = false;
@@ -2833,6 +2837,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
             : guidedRestTest.state.stageRemainingSeconds
         ),
         onReturn: goToRestStage,
+        showToggle: activeNavKey !== "rest",
         onToggle:
           guidedRestTest.state.phase === "paused"
             ? guidedRestTest.resume
@@ -2937,6 +2942,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
       >
         <ShowroomDownstreamHeader
           className="h-full min-h-0"
+          brandImageSrc={sharpMySnoozePodLogo}
           rewards={shopperId !== "guest" ? <RewardsPill shopperId={shopperId} onClick={openRewards} placement="inline" /> : null}
           notice={cartNotice ? (
               <div className="w-fit max-w-full truncate rounded-full border border-indigo-100 bg-[#f2f6ff] px-3 py-2 text-xs font-bold text-indigo-900" role="status" aria-live="polite">

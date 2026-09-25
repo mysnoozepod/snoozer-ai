@@ -10,6 +10,11 @@ import {
   isShopifyCartGid,
   redactShopifyCartGid,
 } from "../src/lib/cart/cartId.mjs";
+import { synchronizeCoreCartLines } from "../src/lib/cart/podCoreCartSync.mjs";
+import {
+  normalizeCoreBuildStepCandidate,
+  resolveCoreBuildStepKeys,
+} from "../src/lib/podBuilderFlow.mjs";
 
 const variant = (id) => `gid://shopify/ProductVariant/${id}`;
 const line = (lineId, variantId, quantity = 1, attributes = []) => ({
@@ -82,6 +87,47 @@ function testShopifyCartCredentialSurvivesNormalization() {
   );
 }
 
+function testCoreBuilderFlowVariantsAndOldSessionMigration() {
+  assert.deepEqual(resolveCoreBuildStepKeys(), ["size", "base", "review", "success"]);
+  assert.deepEqual(resolveCoreBuildStepKeys({ showMotion: true }), ["size", "base", "motion", "review", "success"]);
+  assert.deepEqual(resolveCoreBuildStepKeys({ isDualComfort: true }), ["size", "base", "comfort", "review", "success"]);
+  assert.deepEqual(resolveCoreBuildStepKeys({ showMotion: true, isDualComfort: true }), ["size", "base", "motion", "comfort", "review", "success"]);
+  assert.equal(normalizeCoreBuildStepCandidate("essentials"), "review");
+  assert.equal(normalizeCoreBuildStepCandidate("pillows"), "review");
+}
+
+async function testCoreSyncPreservesDedicatedAccessoryLines() {
+  const attributes = [{ key: "_Setup Size", value: "Queen" }];
+  const cartItems = [
+    line("old-mattress", "501", 1, attributes),
+    line("base", "502", 1, attributes),
+    {
+      ...line("dedicated-pillow", "599", 2, [{ key: "_Sleep Essential", value: "Pillow" }]),
+      handle: "carboncool-pillow",
+    },
+  ];
+  cartItems[0].handle = "core-mattress";
+  cartItems[1].handle = "core-base";
+  const specs = [
+    { handle: "core-mattress", line: { merchandiseId: variant("511"), quantity: 1, attributes } },
+    { handle: "core-base", line: { merchandiseId: variant("502"), quantity: 1, attributes } },
+  ];
+  const removed = [];
+  const added = [];
+
+  await synchronizeCoreCartLines({
+    cartItems,
+    specs,
+    removeLine: async (lineId) => removed.push(lineId),
+    updateLine: async () => {},
+    addLines: async (lines) => added.push(...lines),
+  });
+
+  assert.deepEqual(removed, ["gid://shopify/CartLine/old-mattress"]);
+  assert.equal(removed.includes("gid://shopify/CartLine/dedicated-pillow"), false);
+  assert.deepEqual(added.map((item) => item.merchandiseId), [variant("511")]);
+}
+
 const tests = [
   ["Pod quick-add updates header count from confirmed quantities", testPodQuickAddCountUsesConfirmedQuantity],
   ["three confirmed items rebind stale line and remove to two", testConfirmedLineRebindSupportsRemove],
@@ -89,12 +135,14 @@ const tests = [
   ["quantity change persists in refreshed confirmed state", testQuantityPersistsFromLatestConfirmedCart],
   ["Pod and Cart reads cannot overwrite a concurrent confirmed mutation", testMutationInvalidatesOverlappingPodAndCartReads],
   ["Shopify cart credential survives mutation-path normalization", testShopifyCartCredentialSurvivesNormalization],
+  ["core Pod step variants and old Essentials sessions resolve safely", testCoreBuilderFlowVariantsAndOldSessionMigration],
+  ["core Pod synchronization preserves dedicated Sleep Essentials cart lines", testCoreSyncPreservesDedicatedAccessoryLines],
 ];
 
 let failures = 0;
 for (const [name, test] of tests) {
   try {
-    test();
+    await test();
     console.log(`PASS ${name}`);
   } catch (error) {
     failures += 1;

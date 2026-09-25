@@ -3,7 +3,7 @@ import { access, readFile } from "node:fs/promises";
 
 const readSource = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-const [podSource, headerSource, navSource, builderSource, hookSource, layoutSource, helpSource, restPanelSource] = await Promise.all([
+const [podSource, headerSource, navSource, builderSource, hookSource, layoutSource, helpSource, restPanelSource, flowSource] = await Promise.all([
   readSource("../src/pages/Pod.jsx"),
   readSource("../src/components/pod/PodHeader.jsx"),
   readSource("../src/components/pod/PodFooterNav.jsx"),
@@ -12,14 +12,16 @@ const [podSource, headerSource, navSource, builderSource, hookSource, layoutSour
   readSource("../src/Layout.jsx"),
   readSource("../src/components/HumanAssistanceControl.jsx"),
   readSource("../src/components/pod/PodRestPanels.jsx"),
+  readSource("../src/lib/podBuilderFlow.mjs"),
 ]);
+const flow = await import(`data:text/javascript;charset=utf-8,${encodeURIComponent(flowSource)}`);
 
 assert.equal(
   podSource.includes('guidedRestTest.pause();\n  }, [guidedRestTest.isActive'),
   false,
   "changing Pod tabs must not auto-pause the Rest Test"
 );
-assert.ok(podSource.includes('setOpenStage("ask")'), "Ask Snoozer must remain inside the mounted Pod runtime");
+assert.ok(podSource.includes('navigate("/ask-snoozer"'), "Ask Snoozer must preserve the existing shared station route");
 assert.equal(podSource.includes('setOpenStage("human")'), false, "Human Assistance must not create a duplicate Pod tab");
 assert.equal(podSource.includes("Back to results"), false, "Pod devices must not navigate digitally back to Results");
 assert.ok(podSource.includes("<HumanAssistanceControl"), "Pod header must own Human Assistance");
@@ -48,6 +50,8 @@ assert.equal(navSource.includes('label="Build"'), false, "Build must be customer
 assert.ok(headerSource.includes('data-pod-rest-status="true"'));
 assert.ok(headerSource.includes('aria-label="Return to active Rest Test"'));
 assert.ok(headerSource.includes('"Resume Rest Test" : "Pause Rest Test"'));
+assert.ok(headerSource.includes("restStatus.showToggle !== false"), "the active Rest Test may suppress the duplicate header toggle");
+assert.ok(podSource.includes('showToggle: activeNavKey !== "rest"'), "header Pause/Resume must remain available outside the Rest Test tab");
 assert.equal(restPanelSource.includes("active time"), false, "the active panel must not duplicate the persistent timer");
 
 for (const dimension of ['38" x 75"', '38" x 80"', '54" x 75"', '60" x 80"', '76" x 80"']) {
@@ -57,26 +61,18 @@ for (const asset of ["/standard-motion.png", "/half-split-motion.png", "/full-sp
   assert.ok(builderSource.includes(asset), `${asset} must be reused from the assessment`);
   await access(new URL(`../public${asset}`, import.meta.url));
 }
-for (const step of ['"pillows"', '"sheets"', '"protector"']) {
-  assert.ok(builderSource.includes(step), `${step} must have a guided customization stage`);
+for (const legacyStep of ["essentials", "pillows", "sheets", "protector"]) {
+  assert.equal(flow.normalizeCoreBuildStepCandidate(legacyStep), "review", `${legacyStep} must migrate to Review`);
 }
-assert.equal(builderSource.includes('"Bedding"'), false, "the generic Bedding category must not be in Customize");
-assert.equal(builderSource.includes("Catalog setup pending"), false, "live approved products must replace placeholders");
-assert.ok(
-  builderSource.includes("gid://shopify/ProductVariant/"),
-  "Sleep Essentials must require exact Shopify variant GIDs"
-);
-assert.ok(
-  builderSource.includes("selectedEssentialChoices"),
-  "selected Sleep Essentials must be revalidated against the live catalog"
-);
+for (const removed of ["getSleepEssentialsCatalog", "recordRewardAccessoriesProgress", "completeRewardAccessories", "selectedEssentials", "skippedEssentials", "essentialsVersion", "pod_customize"]) {
+  assert.equal(builderSource.includes(removed), false, `${removed} must be absent from Pod Customize`);
+}
 assert.ok(podSource.includes('primaryCtaLabel="Add Selected Setup to Cart"'), "Customize must expose the requested cart action");
-assert.ok(builderSource.includes("Explore more at the Sleep Essentials station"), "Customize must hand off physically to the Sleep Essentials station");
-assert.equal(builderSource.includes("View All Sleep Essentials"), false, "Customize must not navigate to the full catalog");
+assert.equal(builderSource.includes("Sleep Essentials"), false, "Customize must not embed the accessory journey");
 assert.ok(builderSource.includes('data-pod-builder-success-layout="balanced"'), "completion must use the balanced success layout");
 
 assert.ok(hookSource.includes('priority: "high"'), "Rest Test speech must use the high-priority HUD lane");
 assert.ok(hookSource.includes("audioRef.current?.stop()"), "route unmount must clean up the shared audio runtime");
 assert.equal(hookSource.includes("new Audio"), false, "the Rest hook must use the single ambient controller");
 
-console.log("Persistent Pod experience tests passed: runtime ownership, navigation, status, visuals, and catalog boundaries.");
+console.log("Persistent Pod experience tests passed: runtime ownership, navigation, status, visuals, and core-build boundaries.");

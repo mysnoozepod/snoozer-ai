@@ -32,7 +32,7 @@ export function PodRouteHeroHeader({
     <div
       data-pod-route-header="true"
       data-pod-text-card="product-hero"
-      className="flex h-full min-h-0 items-center gap-4 overflow-visible px-[22px] py-[6px]"
+      className="flex h-full min-h-0 items-center gap-4 overflow-visible px-[20px] py-[5px]"
     >
       <div className="min-w-0 flex-1">
         <div
@@ -41,7 +41,7 @@ export function PodRouteHeroHeader({
           {podTitle}
         </div>
 
-        <h1 className="mt-[1px] whitespace-nowrap text-[clamp(2rem,2.75vw,2.55rem)] font-black leading-none tracking-tight text-slate-900">
+        <h1 className="mt-[1px] whitespace-nowrap text-[clamp(1.8rem,2.45vw,2.3rem)] font-black leading-none tracking-tight text-slate-900">
           {mattressTitle}
         </h1>
 
@@ -100,14 +100,16 @@ export function PodRouteHeroHeader({
               {restStatus.time}
             </span>
           </button>
-          <button
-            type="button"
-            onClick={restStatus.onToggle}
-            className="inline-flex min-h-[44px] min-w-[76px] items-center justify-center rounded-[12px] bg-[#315cf6] px-3 text-[0.76rem] font-black text-white"
-            aria-label={restStatus.paused ? "Resume Rest Test" : "Pause Rest Test"}
-          >
-            {restStatus.paused ? "Resume" : "Pause"}
-          </button>
+          {restStatus.showToggle !== false ? (
+            <button
+              type="button"
+              onClick={restStatus.onToggle}
+              className="inline-flex min-h-[44px] min-w-[76px] items-center justify-center rounded-[12px] bg-[#315cf6] px-3 text-[0.76rem] font-black text-white"
+              aria-label={restStatus.paused ? "Resume Rest Test" : "Pause Rest Test"}
+            >
+              {restStatus.paused ? "Resume" : "Pause"}
+            </button>
+          ) : null}
         </div>
       ) : null}
     </div>
