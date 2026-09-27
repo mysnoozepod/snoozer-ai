@@ -48,3 +48,35 @@ export function buildMattressSupportItems({ mattressTruth = {}, firmness = "" } 
     .filter((item) => item.category && item.statement)
     .slice(0, 4);
 }
+
+const NOTICE_COPY = {
+  Support: "Notice whether the mattress feels steady and supportive beneath you.",
+  "Pressure Relief": "Notice how your shoulders and hips settle into the mattress.",
+  "Temperature Comfort": "Pay attention to whether heat starts building as you settle in.",
+  "Motion Isolation": "Notice how much movement travels across the mattress.",
+};
+
+export function buildMattressNoticeItems(supportItems = []) {
+  const seen = new Set();
+
+  return (Array.isArray(supportItems) ? supportItems : [])
+    .map((item) => {
+      const category = normalize(item?.category);
+      const verifiedFact = sentence(item?.statement);
+      if (!category || !verifiedFact || seen.has(category)) return null;
+
+      let prompt = NOTICE_COPY[category] || "";
+      if (category === "Mattress Feel") {
+        const feel = verifiedFact.match(/^(.+?) comfort balances cushioning with support\.?$/i)?.[1];
+        prompt = feel
+          ? `Notice whether the ${normalize(feel).toLowerCase()} feel gives you the right balance of cushioning and support.`
+          : "Notice whether the feel gives you the right balance of cushioning and support.";
+      }
+      if (!prompt) return null;
+
+      seen.add(category);
+      return { category, prompt: sentence(prompt), verifiedFact };
+    })
+    .filter(Boolean)
+    .slice(0, 4);
+}

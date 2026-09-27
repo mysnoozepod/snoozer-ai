@@ -284,14 +284,16 @@ for (const viewport of VIEWPORTS) {
         await expect(page.locator('[data-pod-route-header="true"] img')).toHaveCount(0);
 
         if (testCase.state === "learn") {
-          await expect(page.getByText("How This Mattress Supports Your Sleep")).toBeVisible();
+          await expect(page.getByRole("heading", { name: "What to Notice While You Test" })).toBeVisible();
           await expect(page.getByText("Choose Size")).toBeVisible();
-          await expect(page.getByText("Snoozer Recommendation")).toBeVisible();
+          await expect(page.getByText("Snoozer's Take")).toBeVisible();
+          await expect(page.locator('[data-pod-text-card="snoozer-recommendation"] img[alt="Snoozer"]')).toBeVisible();
           await expect(page.getByText("Sleep Nutrition")).toHaveCount(0);
           await expect(page.locator('[data-pod-route-header] [data-pod-badge="true"]')).toHaveCount(0);
           await expect(page.getByText(/^Specs$/)).toHaveCount(0);
           await expect(page.getByText("Prices may vary by retailer.")).toHaveCount(0);
-          await expect(page.locator("[data-pod-support-row]").first()).toBeVisible();
+          await expect(page.locator("[data-pod-notice-row]").first()).toBeVisible();
+          expect(await page.locator("[data-pod-notice-row]").count()).toBeLessThanOrEqual(4);
           await expect(page.locator('[data-pod-recommendation-summary="true"]')).toHaveCount(1);
           await expect(page.locator("[data-pod-nutrition-row]")).toHaveCount(0);
         }

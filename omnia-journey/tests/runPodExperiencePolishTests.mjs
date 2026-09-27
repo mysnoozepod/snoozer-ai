@@ -29,12 +29,33 @@ const supportItems = supportModule.buildMattressSupportItems({
 assert.deepEqual(supportItems.map((item) => item.category), [
   "Support", "Pressure Relief", "Temperature Comfort", "Motion Isolation",
 ]);
+const noticeItems = supportModule.buildMattressNoticeItems(supportItems);
+assert.deepEqual(noticeItems.map((item) => item.category), [
+  "Support", "Pressure Relief", "Temperature Comfort", "Motion Isolation",
+]);
+assert.deepEqual(noticeItems.map((item) => item.prompt), [
+  "Notice whether the mattress feels steady and supportive beneath you.",
+  "Notice how your shoulders and hips settle into the mattress.",
+  "Pay attention to whether heat starts building as you settle in.",
+  "Notice how much movement travels across the mattress.",
+]);
+assert.deepEqual(supportModule.buildMattressNoticeItems([]), []);
+assert.equal(supportModule.buildMattressNoticeItems([...supportItems, ...supportItems]).length, 4);
 assert.doesNotMatch(`${supportSource}${learnSource}`, /Protein|Healthy Fats|Electrolytes|Sleep Nutrition/);
-assert.match(learnSource, /How This Mattress Supports Your Sleep/);
+assert.match(learnSource, /What to Notice While You Test/);
+assert.match(learnSource, /Learn by Feel/);
+assert.match(learnSource, /Snoozer's Take/);
+assert.match(learnSource, /src="\/snoozer-avatar\.png"/);
+assert.match(learnSource, /data-pod-notice-fallback="true"/);
 assert.match(learnSource, /Choose Size/);
 assert.match(learnSource, /Mattress in Cart/);
+assert.match(learnSource, /onAddMattress\?\.\(selectedRow\)/);
+assert.match(podSource, /I'll show you what to notice while you test this mattress, and why it made your plan\./);
+assert.match(podSource, /if \(guidedRestTest\.isActive\) \{\s*setOpenStage\("details"\);\s*return;/);
 assert.match(podSource, /result\?\.items[\s\S]*CART_CONFIRMATION_MISSING/);
 assert.match(podSource, /gid:\/\/shopify\/ProductVariant\//);
+assert.match(podSource, /merchandiseId: row\.variantId,[\s\S]*sourcePage: "pod-learn-mattress-only"/);
+assert.match(podSource, /const confirmed = \(result\?\.items \|\| \[\]\)\.some[\s\S]*for \(const item of existingMattressLines\)/);
 
 assert.doesNotMatch(builderSource, /key: "essentials", label: "Essentials"/);
 assert.doesNotMatch(builderSource, /Complete Your Sleep Setup|data-sleep-essentials-card|Continue to Sleep Essentials|Back to essentials/);

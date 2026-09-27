@@ -67,7 +67,7 @@ import { usePhysicalControl } from "@/iot/usePhysicalControl";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
 import { POD_LAYOUT_CONTRACT, normalizePodLabState } from "@/lib/podLayoutContract";
 import { measurePodLayout } from "@/lib/podLayoutMeasurement";
-import { buildMattressSupportItems } from "@/lib/sleepSupport";
+import { buildMattressNoticeItems, buildMattressSupportItems } from "@/lib/sleepSupport";
 import { buildBoundedPodReviewContext, getPodReviewCoaching } from "@/lib/podReviewCoaching";
 import { useActiveJourney } from "@/journey/ActiveJourneyContext";
 
@@ -423,7 +423,7 @@ function buildPodRestVoice({ title, mattressHeroTitle, painSignals }) {
 }
 
 function buildPodDetailsVoice({ title, mattressHeroTitle, benefits, isRecommended, rank }) {
-  return "Let's look at the features and benefits of this mattress so you can understand why it may fit your sleep needs.";
+  return "I'll show you what to notice while you test this mattress, and why it made your plan.";
 }
 
 const DETAILS_ACTIONS = [
@@ -2183,7 +2183,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
       const content =
         detailsContentByAction[nextId] || detailsContentByAction[DEFAULT_DETAILS_ACTION_ID] || null;
       const detailsIntroVoice =
-        "Let's look at the features and benefits of this mattress so you can understand why it may fit your sleep needs.";
+        "I'll show you what to notice while you test this mattress, and why it made your plan.";
 
       noteUserInteraction?.();
       await cancelPodVoice();
@@ -2528,6 +2528,10 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
       firmness: firmnessValue || "Medium",
     });
   }, [recommendationMeta?.firmness, assessment, mattressTruth]);
+  const learnNoticeItems = useMemo(
+    () => buildMattressNoticeItems(learnSupportItems),
+    [learnSupportItems]
+  );
 
   const learnPricingRows = useMemo(() => {
     return SIZE_OPTIONS.map((option) => {
@@ -2699,7 +2703,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     if (openStage === "details") {
       return (
         <PodLearnPanel
-          supportItems={learnSupportItems}
+          noticeItems={learnNoticeItems}
           pricingRows={learnPricingRows}
           recommendation={learnRecommendation}
           selectedSize={learnSelectedSize}
@@ -2794,7 +2798,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
     guidedRestTest,
     goToPodHome,
     buildStepKey,
-    learnSupportItems,
+    learnNoticeItems,
     learnPricingRows,
     learnRecommendation,
     learnSelectedSize,
