@@ -63,6 +63,17 @@ assert.deepEqual(
   ["essentials", "pillows", "sheets", "protector"].map(builderFlow.normalizeCoreBuildStepCandidate),
   ["review", "review", "review", "review"]
 );
+const visibleCoreSteps = (options) => builderFlow.resolveCoreBuildStepKeys(options).filter((key) => key !== "success");
+assert.deepEqual(visibleCoreSteps({ showMotion: false, isDualComfort: false }), ["size", "base", "review"]);
+assert.deepEqual(visibleCoreSteps({ showMotion: true, isDualComfort: false }), ["size", "base", "motion", "review"]);
+assert.deepEqual(visibleCoreSteps({ showMotion: false, isDualComfort: true }), ["size", "base", "comfort", "review"]);
+assert.deepEqual(visibleCoreSteps({ showMotion: true, isDualComfort: true }), ["size", "base", "motion", "comfort", "review"]);
+assert.match(builderSource, /data-pod-build-progress="true"/);
+assert.match(builderSource, /data-pod-build-progress-state=\{state\}/);
+assert.match(builderSource, /aria-pressed=\{active\}/);
+assert.match(builderSource, /data-pod-builder-guidance=\{stepKey\}/);
+assert.match(builderSource, /src="\/snoozer-avatar\.png"/);
+assert.match(builderSource, /bg-\[#2f57e8\][\s\S]*hover:bg-\[#244bd1\]/);
 assert.match(builderSource, /resolveMattressSizeFromCart/);
 assert.match(builderSource, /cartMattressSize \|\| initialSelections\.size/);
 assert.doesNotMatch(builderSource, /Choose your size, motion setup, and sleep essentials/);

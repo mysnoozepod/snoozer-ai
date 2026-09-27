@@ -298,12 +298,21 @@ for (const viewport of VIEWPORTS) {
           await expect(page.locator("[data-pod-nutrition-row]")).toHaveCount(0);
         }
 
-        if (testCase.state.startsWith("build")) {
-          await expect(page.locator("[data-pod-build-progress='true']")).toHaveCount(0);
+        if (testCase.state.startsWith("build") && !["build-review", "build-success"].includes(testCase.state)) {
+          const currentStep = testCase.state.replace("build-", "");
+          await expect(page.locator("[data-pod-build-progress='true']")).toBeVisible();
+          await expect(page.locator("[data-pod-build-progress='true'] button")).toHaveCount(0);
+          await expect(page.locator(`[data-pod-build-progress-step="${currentStep}"]`)).toHaveAttribute("data-pod-build-progress-state", "current");
+          await expect(page.locator(`[data-pod-build-progress-step="${currentStep}"]`)).toHaveAttribute("aria-current", "step");
           await expect(page.getByText(/^Step \d$/i)).toHaveCount(0);
         }
 
+        if (testCase.state === "build-success") {
+          await expect(page.locator("[data-pod-build-progress='true']")).toHaveCount(0);
+        }
+
         if (testCase.state === "build-review") {
+          await expect(page.locator("[data-pod-build-progress='true']")).toHaveCount(0);
           await expect(page.getByRole("heading", { name: "Review Your SnoozePod" })).toBeVisible();
           await expect(page.locator('[data-pod-builder-summary-row="mattress"]')).toHaveCount(1);
           await expect(page.locator('[data-pod-builder-summary-row="base-motion"]')).toHaveCount(1);
@@ -420,8 +429,25 @@ for (const viewport of VIEWPORTS) {
           const queenChoice = page.locator('[data-pod-build-choice="Queen"]').first();
           await expect(queenChoice).toHaveAttribute("data-pod-build-choice-badge", "Most Popular");
           await expect(queenChoice).toHaveAttribute("data-pod-build-choice-active", "false");
+          await expect(queenChoice).toHaveAttribute("aria-pressed", "false");
           await queenChoice.click();
           await expect(page.locator('[data-pod-builder-state="base"]')).toBeVisible();
+        }
+
+        if (["build-base", "build-motion", "build-comfort"].includes(testCase.state)) {
+          await expect(page.locator('[data-pod-build-choice-active="true"]').first()).toHaveAttribute("aria-pressed", "true");
+          await expect(page.locator('[data-pod-layout-primary-action="build-next"]')).toHaveClass(/bg-\[#2f57e8\]/);
+          await expect(page.locator('[data-pod-builder-guidance] img[alt="Snoozer"]')).toBeVisible();
+        }
+
+        if (testCase.state === "build-motion") {
+          const halfSplit = page.locator('[data-pod-build-choice="Half Split"]');
+          if (await halfSplit.isDisabled()) await expect(halfSplit).toContainText(/only|unavailable/i);
+        }
+
+        if (testCase.state === "build-comfort") {
+          await expect(page.locator('[data-pod-comfort-side="left"]')).toBeVisible();
+          await expect(page.locator('[data-pod-comfort-side="right"]')).toBeVisible();
         }
       }
     });
@@ -465,16 +491,34 @@ test("Pod Customize follows the four core-only step variants", async ({ page }) 
     const locator = page.locator(`[data-pod-build-choice="${label}"]`);
     await (position === "last" ? locator.last() : locator.first()).click();
   };
+  const expectProgress = async (labels, currentLabel) => {
+    const progress = page.locator('[data-pod-build-progress="true"]');
+    await expect(progress).toBeVisible();
+    await expect(progress.locator("button")).toHaveCount(0);
+    const rendered = await progress.locator("[data-pod-build-progress-step]").evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute("data-pod-build-progress-step"))
+    );
+    expect(rendered).toEqual(labels.map((label) => label.toLowerCase()));
+    const currentIndex = labels.indexOf(currentLabel);
+    for (let index = 0; index < labels.length; index += 1) {
+      const key = labels[index].toLowerCase();
+      const expectedState = index < currentIndex ? "completed" : index === currentIndex ? "current" : "upcoming";
+      await expect(progress.locator(`[data-pod-build-progress-step="${key}"]`)).toHaveAttribute("data-pod-build-progress-state", expectedState);
+    }
+  };
 
   await openSize("pod-4");
   await choose("Queen");
+  await expectProgress(["Size", "Base", "Review"], "Base");
   await choose("Mattress Only");
   await expect(page.locator('[data-pod-builder-state="review"]')).toBeVisible();
+  await expect(page.locator('[data-pod-build-progress="true"]')).toHaveCount(0);
 
   await openSize("pod-3");
   await choose("King");
   await choose("Adjustable Base");
   await expect(page.locator('[data-pod-builder-state="motion"]')).toBeVisible();
+  await expectProgress(["Size", "Base", "Motion", "Review"], "Motion");
   await choose("Standard Motion");
   await expect(page.locator('[data-pod-builder-state="review"]')).toBeVisible();
 
@@ -482,6 +526,7 @@ test("Pod Customize follows the four core-only step variants", async ({ page }) 
   await choose("King");
   await choose("Mattress Only");
   await expect(page.locator('[data-pod-builder-state="comfort"]')).toBeVisible();
+  await expectProgress(["Size", "Base", "Comfort", "Review"], "Comfort");
   await choose("Medium Firm", "first");
   await choose("Medium Soft", "last");
   await expect(page.locator('[data-pod-builder-state="review"]')).toBeVisible();
@@ -491,6 +536,7 @@ test("Pod Customize follows the four core-only step variants", async ({ page }) 
   await choose("Adjustable Base");
   await choose("Standard Motion");
   await expect(page.locator('[data-pod-builder-state="comfort"]')).toBeVisible();
+  await expectProgress(["Size", "Base", "Motion", "Comfort", "Review"], "Comfort");
   await choose("Medium Firm", "first");
   await choose("Medium Soft", "last");
   await expect(page.locator('[data-pod-builder-state="review"]')).toBeVisible();

@@ -570,16 +570,18 @@ function GuidedChoiceButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
+      aria-pressed={active}
+      aria-busy={confirming || undefined}
       data-pod-build-choice={title}
       data-pod-build-choice-active={active ? "true" : "false"}
       data-pod-build-choice-badge={badge || undefined}
       className={[
-        "group flex min-h-[58px] w-full items-center justify-between gap-3 rounded-[16px] border px-3.5 py-2.5 text-left shadow-sm transition motion-reduce:transition-none",
+        "group flex min-h-[58px] w-full items-center justify-between gap-3 rounded-[16px] border px-3.5 py-2.5 text-left shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-[#2f57e8] focus-visible:ring-offset-2 motion-reduce:transition-none",
         disabled
           ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 opacity-60"
           : "hover:-translate-y-0.5 hover:shadow-md",
         active
-          ? "border-[#315cf6] bg-[#eef3ff] text-slate-950"
+          ? "border-[#2f57e8] bg-[#eef3ff] text-slate-950 shadow-[0_10px_24px_rgba(47,87,232,0.14)] ring-1 ring-[#2f57e8]/20"
           : "border-[#dfe7fb] bg-white/96 text-slate-900",
         confirming ? "scale-[0.985] ring-2 ring-[#315cf6]/25" : "",
       ].join(" ")}
@@ -685,6 +687,13 @@ function disabledReasonForMotion(option, size, isDualComfort) {
   return `Unavailable with ${size || "this size"}.`;
 }
 
+const CUSTOMIZE_GUIDANCE = Object.freeze({
+  size: "Pick the size you want to build.",
+  base: "Now choose how you want the mattress supported.",
+  motion: "Choose how you want the adjustable base to move.",
+  comfort: "Set the feel for each side.",
+});
+
 function BuilderFallbackArt({ icon: Icon = BedDouble }) {
   return (
     <div className="flex h-full w-full items-center justify-center rounded-[18px] bg-[radial-gradient(circle_at_top,_rgba(84,120,255,0.18),_transparent_55%),linear-gradient(180deg,#f6f9ff_0%,#eef3ff_100%)] text-[#2f57e8]">
@@ -714,41 +723,46 @@ function BuilderMediaPreview({
   );
 }
 
-function BuilderStepButton({ step, index, active, unlocked, onClick }) {
-  const Icon = step.icon;
-
+function BuilderProgress({ steps, currentStepIndex }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={!unlocked}
-      className={[
-        "flex w-full items-center gap-2.5 rounded-[18px] border px-3 py-2.5 text-left transition",
-        active
-          ? "border-indigo-200 bg-indigo-50 text-[#1f40c7] shadow-[0_12px_28px_rgba(47,87,232,0.12)]"
-          : unlocked
-            ? "border-slate-200 bg-white text-slate-800 hover:border-indigo-100 hover:bg-slate-50"
-            : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400",
-      ].join(" ")}
-      >
-        <div
-          className={[
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[0.74rem] font-black",
-            active
-              ? "border-indigo-200 bg-white text-[#2f57e8]"
-              : unlocked
-                ? "border-slate-200 bg-slate-50 text-slate-600"
-                : "border-slate-200 bg-white text-slate-400",
-        ].join(" ")}
-      >
-        {index + 1}
-      </div>
-
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        {Icon ? <Icon className="h-3.5 w-3.5 shrink-0" /> : null}
-        <span className="truncate text-[0.82rem] font-extrabold">{step.label}</span>
-      </div>
-    </button>
+    <div
+      role="list"
+      aria-label={`Build progress: step ${Math.min(currentStepIndex + 1, steps.length)} of ${steps.length}`}
+      className="flex w-full items-center gap-1.5"
+      data-pod-build-progress="true"
+    >
+      {steps.map((step, index) => {
+        const state = index < currentStepIndex ? "completed" : index === currentStepIndex ? "current" : "upcoming";
+        return (
+          <div key={step.key} role="listitem" className="flex min-w-0 flex-1 items-center gap-1.5">
+            <div
+              aria-current={state === "current" ? "step" : undefined}
+              data-pod-build-progress-step={step.key}
+              data-pod-build-progress-state={state}
+              className={[
+                "flex min-h-[36px] min-w-0 flex-1 items-center gap-2 rounded-[12px] border px-2 py-1.5",
+                state === "completed" ? "border-[#cbd8ff] bg-[#f2f6ff] text-[#2345c7]" : "",
+                state === "current" ? "border-[#2f57e8] bg-[#2f57e8] text-white shadow-[0_8px_18px_rgba(47,87,232,0.18)]" : "",
+                state === "upcoming" ? "border-slate-200 bg-slate-50 text-slate-500" : "",
+              ].join(" ")}
+            >
+              <span
+                className={[
+                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[0.65rem] font-black",
+                  state === "completed" ? "border-[#9fb4ff] bg-white text-[#2f57e8]" : "",
+                  state === "current" ? "border-white/55 bg-white/15 text-white" : "",
+                  state === "upcoming" ? "border-slate-300 bg-white text-slate-500" : "",
+                ].join(" ")}
+              >
+                {state === "completed" ? <CheckCircle2 className="h-3.5 w-3.5" /> : index + 1}
+              </span>
+              <span className="truncate text-[clamp(0.68rem,0.9vw,0.78rem)] font-black">{step.label}</span>
+            </div>
+            {index < steps.length - 1 ? <span aria-hidden="true" className="h-px w-2 shrink-0 bg-[#cbd5e1]" /> : null}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -927,7 +941,12 @@ export default function PodBuilder({
     const candidate = normalizeCoreBuildStepCandidate(compatibleSavedBuild?.stepKey);
     return steps.some((step) => step.key === candidate) ? candidate : "size";
   });
-  const appliedRequestedStepRef = useRef(requestedNormalizedStepKey || "size");
+  const appliedRequestedStepRef = useRef(
+    steps.some((step) => step.key === requestedNormalizedStepKey) ? requestedNormalizedStepKey : ""
+  );
+  const applyingRequestedStepRef = useRef(
+    Boolean(requestedNormalizedStepKey && requestedNormalizedStepKey !== stepKey)
+  );
   const [confirmedSelections, setConfirmedSelections] = useState(() => {
     const savedConfirmed =
       compatibleSavedBuild?.confirmed && typeof compatibleSavedBuild.confirmed === "object"
@@ -1000,16 +1019,22 @@ export default function PodBuilder({
 
   useEffect(() => {
     if (!requestedNormalizedStepKey) return;
+    if (!steps.some((step) => step.key === requestedNormalizedStepKey)) return;
     if (appliedRequestedStepRef.current === requestedNormalizedStepKey) return;
     appliedRequestedStepRef.current = requestedNormalizedStepKey;
-    if (!steps.some((step) => step.key === requestedNormalizedStepKey)) return;
-    if (requestedNormalizedStepKey === stepKey) return;
+    if (requestedNormalizedStepKey === stepKey) {
+      applyingRequestedStepRef.current = false;
+      return;
+    }
+    applyingRequestedStepRef.current = true;
     setStepKey(requestedNormalizedStepKey);
   }, [requestedNormalizedStepKey, stepKey, steps]);
 
   useEffect(() => {
+    if (applyingRequestedStepRef.current && stepKey !== requestedNormalizedStepKey) return;
+    applyingRequestedStepRef.current = false;
     onBuildStepChange?.(stepKey);
-  }, [stepKey, onBuildStepChange]);
+  }, [requestedNormalizedStepKey, stepKey, onBuildStepChange]);
 
   const selectedBaseHandle = useMemo(
     () => (baseType === "none" ? null : getBaseHandleForType(baseType) || null),
@@ -1663,7 +1688,7 @@ export default function PodBuilder({
   const nextAfterSize = "base";
   const nextAfterBase = showMotion ? "motion" : isDualComfort ? "comfort" : "review";
   const nextAfterMotion = isDualComfort ? "comfort" : "review";
-  const visibleProgressSteps = steps.filter((step) => step.key !== "success" || stepKey === "success");
+  const visibleProgressSteps = steps.filter((step) => step.key !== "success");
   const isStepComplete = useCallback(
     (key) => {
       if (key === "size") return sizeReady;
@@ -1735,7 +1760,7 @@ export default function PodBuilder({
             disabled={primaryDisabled}
             data-pod-layout-build-action={stepKey === "review" ? "true" : undefined}
             data-pod-layout-primary-action={stepKey === "review" ? "build-add" : "build-next"}
-            className="min-h-[48px] min-w-[190px] rounded-[14px] px-5 text-[0.9rem] font-black"
+            className="min-h-[48px] min-w-[190px] rounded-[14px] bg-[#2f57e8] px-5 text-[0.9rem] font-black text-white hover:bg-[#244bd1] focus-visible:ring-[#2f57e8] disabled:bg-slate-200 disabled:text-slate-500 disabled:opacity-100"
           >
             <span>{primaryLabel}</span>
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -1883,8 +1908,9 @@ export default function PodBuilder({
       return (
         <div className="flex h-full min-h-0 flex-col">
           <div className="grid gap-3 lg:grid-cols-2">
-            <div className="rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
-              <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
+            <div data-pod-comfort-side="left" className="rounded-[18px] border border-[#b8caff] bg-[#f7f9ff] p-3 shadow-sm">
+              <div className="flex items-center gap-2 text-[0.7rem] font-black uppercase tracking-[0.16em] text-[#2f57e8]">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#2f57e8] text-[0.68rem] text-white">L</span>
                 Left Side
               </div>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -1913,8 +1939,9 @@ export default function PodBuilder({
                 ))}
               </div>
             </div>
-            <div className="rounded-[18px] border border-[#dfe7fb] bg-white/96 p-3 shadow-sm">
-              <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">
+            <div data-pod-comfort-side="right" className="rounded-[18px] border border-[#dfe7fb] bg-white p-3 shadow-sm">
+              <div className="flex items-center gap-2 text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-600">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 bg-slate-100 text-[0.68rem] text-slate-700">R</span>
                 Right Side
               </div>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -2083,19 +2110,32 @@ export default function PodBuilder({
             Your mattress is already in your cart — let’s finish your setup.
           </div>
         ) : null}
-        <div className="mb-2 flex shrink-0 items-start justify-between gap-4">
-          <div className="min-w-0">
+        <div className="mb-2 shrink-0">
+          <div className="flex items-start justify-between gap-4">
             <h2 className="text-[clamp(1.18rem,1.75vw,1.62rem)] font-black leading-tight tracking-tight text-slate-950">
               {stepKey === "review" ? "Review Your SnoozePod" : "Customize Your SnoozePod"}
             </h2>
-            {stepKey !== "review" && stepKey !== "success" ? (
-              <div className="mt-0.5 text-[0.76rem] font-black text-[#315cf6]">{currentStepMeta.title}</div>
+            {stepKey === "review" ? (
+              <p className="max-w-[34rem] text-right text-[clamp(0.74rem,0.9vw,0.84rem)] font-semibold leading-snug text-slate-600" data-pod-builder-review-description="true">
+                {currentStepMeta.description}
+              </p>
             ) : null}
           </div>
-          {stepKey === "review" ? (
-            <p className="max-w-[34rem] text-right text-[clamp(0.74rem,0.9vw,0.84rem)] font-semibold leading-snug text-slate-600" data-pod-builder-review-description="true">
-              {currentStepMeta.description}
-            </p>
+
+          {stepKey !== "review" && stepKey !== "success" ? (
+            <div className="mt-2">
+              <BuilderProgress steps={visibleProgressSteps} currentStepIndex={currentStepIndex} />
+            </div>
+          ) : null}
+
+          {CUSTOMIZE_GUIDANCE[stepKey] ? (
+            <div data-pod-builder-guidance={stepKey} className="mt-2 flex min-h-[44px] items-center gap-2.5 rounded-[14px] border border-[#dbe5ff] bg-[#f8faff] px-2.5 py-1.5">
+              <img src="/snoozer-avatar.png" alt="Snoozer" className="h-9 w-9 shrink-0 object-contain" />
+              <div className="min-w-0">
+                <h3 className="text-[clamp(0.9rem,1.12vw,1.02rem)] font-black leading-tight text-slate-950">{currentStepMeta.title}</h3>
+                <p className="mt-0.5 text-[clamp(0.72rem,0.9vw,0.82rem)] font-semibold leading-snug text-slate-600">{CUSTOMIZE_GUIDANCE[stepKey]}</p>
+              </div>
+            </div>
           ) : null}
         </div>
         <div className="flex min-h-0 flex-1" data-pod-builder-step-content="true">{renderCurrentStep()}</div>
