@@ -10,7 +10,7 @@ import {
   isShopifyCartGid,
   redactShopifyCartGid,
 } from "../src/lib/cart/cartId.mjs";
-import { synchronizeCoreCartLines } from "../src/lib/cart/podCoreCartSync.mjs";
+import { classifyCoreCartState, synchronizeCoreCartLines } from "../src/lib/cart/podCoreCartSync.mjs";
 import {
   normalizeCoreBuildStepCandidate,
   resolveCoreBuildStepKeys,
@@ -128,6 +128,21 @@ async function testCoreSyncPreservesDedicatedAccessoryLines() {
   assert.deepEqual(added.map((item) => item.merchandiseId), [variant("511")]);
 }
 
+function testCoreCartStateDistinguishesMissingPartialAndExact() {
+  const attributes = [{ key: "_Setup Size", value: "Queen" }];
+  const specs = [
+    { handle: "core-mattress", line: { merchandiseId: variant("601"), quantity: 1, attributes } },
+    { handle: "core-base", line: { merchandiseId: variant("602"), quantity: 1, attributes } },
+  ];
+  const mattress = { ...line("mattress", "601", 1, attributes), handle: "core-mattress" };
+  const base = { ...line("base", "602", 1, attributes), handle: "core-base" };
+  const accessory = { ...line("pillow", "699", 1), handle: "approved-pillow" };
+
+  assert.equal(classifyCoreCartState([], specs), "none");
+  assert.equal(classifyCoreCartState([mattress, accessory], specs), "partial");
+  assert.equal(classifyCoreCartState([mattress, base, accessory], specs), "exact");
+}
+
 const tests = [
   ["Pod quick-add updates header count from confirmed quantities", testPodQuickAddCountUsesConfirmedQuantity],
   ["three confirmed items rebind stale line and remove to two", testConfirmedLineRebindSupportsRemove],
@@ -137,6 +152,7 @@ const tests = [
   ["Shopify cart credential survives mutation-path normalization", testShopifyCartCredentialSurvivesNormalization],
   ["core Pod step variants and old Essentials sessions resolve safely", testCoreBuilderFlowVariantsAndOldSessionMigration],
   ["core Pod synchronization preserves dedicated Sleep Essentials cart lines", testCoreSyncPreservesDedicatedAccessoryLines],
+  ["core cart state distinguishes missing, partial, and exact without counting accessories", testCoreCartStateDistinguishesMissingPartialAndExact],
 ];
 
 let failures = 0;

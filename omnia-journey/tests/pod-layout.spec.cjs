@@ -72,6 +72,37 @@ async function ensureRendered(page) {
   await page.waitForTimeout(300);
 }
 
+async function installProductApiProxy(page, transformProduct) {
+  await page.route("**/shopify/getProduct", async (route) => {
+    if (route.request().method() === "OPTIONS") {
+      await route.fulfill({
+        status: 204,
+        headers: {
+          "access-control-allow-origin": "*",
+          "access-control-allow-methods": "POST, OPTIONS",
+          "access-control-allow-headers": "content-type,x-session-id,x-shopper-id",
+        },
+      });
+      return;
+    }
+
+    const response = await route.fetch();
+    const requestBody = route.request().postDataJSON?.() || {};
+    const payload = await response.json();
+    const transformed = transformProduct
+      ? transformProduct(payload, requestBody.idOrHandle)
+      : payload;
+    await route.fulfill({
+      response,
+      headers: {
+        ...response.headers(),
+        "access-control-allow-origin": "*",
+      },
+      json: transformed,
+    });
+  });
+}
+
 async function writeMeasurementArtifacts(page, viewport, testCase, measurement) {
   const dir = path.join(OUTPUT_ROOT, viewport.name);
   await fs.mkdir(dir, { recursive: true });
@@ -262,6 +293,7 @@ for (const viewport of VIEWPORTS) {
     if (!shouldRunCase(viewport, testCase)) continue;
     test(`${viewport.name} ${testCase.id}`, async ({ page }, testInfo) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      if (testCase.state.startsWith("build")) await installProductApiProxy(page);
       await page.goto(`${testCase.route}?podLayoutState=${testCase.state}`, { waitUntil: "domcontentloaded" });
       await ensureRendered(page);
 
@@ -317,17 +349,21 @@ for (const viewport of VIEWPORTS) {
           await expect(page.locator('[data-pod-builder-summary-row="mattress"]')).toHaveCount(1);
           await expect(page.locator('[data-pod-builder-summary-row="base-motion"]')).toHaveCount(1);
           await expect(page.locator('[data-pod-builder-commerce-summary="true"]')).toBeVisible();
+          await expect(page.locator('[data-pod-layout-primary-action="build-add"], [data-pod-commerce-issue]')).toBeVisible({ timeout: 30_000 });
           const totalLabel = page.getByText("Est. Total");
           const commerceUnavailable = page
             .locator('[data-pod-builder-commerce-summary="true"]')
-            .getByText(/not ready to add yet|unavailable/i);
+            .locator('[data-pod-commerce-issue]');
           if (await totalLabel.count()) {
             await expect(page.getByText("Est. Monthly")).toBeVisible();
             await expect(totalLabel).toBeVisible();
+            await expect(page.locator('[data-pod-layout-primary-action="build-add"]')).toBeVisible();
           } else {
             await expect(commerceUnavailable).toBeVisible();
+            expect(await page.locator('[data-pod-commerce-recovery]').count()).toBeGreaterThan(0);
+            await expect(page.locator('[data-pod-layout-primary-action="build-add"]')).toHaveCount(0);
           }
-          await expect(page.locator('[data-pod-layout-primary-action="build-add"]')).toBeVisible();
+          await expect(page.locator('[data-pod-review-snoozer="true"]')).toBeVisible();
           await expect(page.getByText("Review & add.")).toHaveCount(0);
 
           const reviewContainment = await page.evaluate(() => {
@@ -456,6 +492,16 @@ for (const viewport of VIEWPORTS) {
 
 test("pod-4 queen adjustable standard setup is gated by resolved commerce lines", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
+  await installProductApiProxy(page, (payload, handle) => {
+    if (handle === "12-all-foam-mattress" && payload?.product?.variants) {
+      payload.product.variants = payload.product.variants.map((variant) =>
+        variant.title === "Queen"
+          ? { ...variant, available: false, availableForSale: false }
+          : variant
+      );
+    }
+    return payload;
+  });
   await page.goto("/pod/pod-4?podLayoutState=build-size", { waitUntil: "domcontentloaded" });
   await ensureRendered(page);
 
@@ -466,21 +512,112 @@ test("pod-4 queen adjustable standard setup is gated by resolved commerce lines"
   await expect(page.locator('[data-pod-builder-state="motion"]')).toBeVisible();
 
   await page.locator('[data-pod-build-choice="Standard Motion"]').first().click();
+  await expect(page.locator('[data-pod-builder-state="motion"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-issue="mattress"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-recovery="size"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-recovery="motion"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-recovery="base"]')).toHaveCount(0);
+  await expect(page.locator('[data-pod-builder-state="review"]')).toHaveCount(0);
+
+  await page.locator('[data-pod-commerce-recovery="size"]').click();
+  await expect(page.locator('[data-pod-builder-state="size"]')).toBeVisible();
+  await expect(page.locator('[data-pod-build-choice="Queen"]')).toHaveAttribute("aria-pressed", "true");
+});
+
+test("non-adjustable commerce failure is surfaced on Base before Review", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await installProductApiProxy(page, (payload, handle) => {
+    if (handle === "12-all-foam-mattress" && payload?.product?.variants) {
+      payload.product.variants = payload.product.variants.map((variant) =>
+        variant.title === "Queen"
+          ? { ...variant, available: false, availableForSale: false }
+          : variant
+      );
+    }
+    return payload;
+  });
+
+  await page.goto("/pod/pod-4?podLayoutState=build-size", { waitUntil: "domcontentloaded" });
+  await ensureRendered(page);
+  await page.locator('[data-pod-build-choice="Queen"]').first().click();
+  await expect(page.locator('[data-pod-builder-state="base"]')).toBeVisible();
+  await page.locator('[data-pod-build-choice="Mattress Only"]').click();
+
+  await expect(page.locator('[data-pod-builder-state="base"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-issue="mattress"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-recovery="size"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-recovery="motion"]')).toHaveCount(0);
+  await expect(page.locator('[data-pod-builder-state="review"]')).toHaveCount(0);
+});
+
+test("base resolution failure offers direct recovery without losing valid selections", async ({ page }) => {
+  await page.setViewportSize({ width: 1180, height: 820 });
+  await installProductApiProxy(page, (payload, handle) => {
+    if (handle === "premium-motion-adjustable-base" && payload?.product?.variants) {
+      payload.product.variants = payload.product.variants.map((variant) =>
+        variant.title === "Queen (2pc)"
+          ? { ...variant, available: false, availableForSale: false }
+          : variant
+      );
+    }
+    return payload;
+  });
+
+  await page.goto("/pod/pod-4?podLayoutState=build-size", { waitUntil: "domcontentloaded" });
+  await ensureRendered(page);
+  await page.locator('[data-pod-build-choice="Queen"]').first().click();
+  await expect(page.locator('[data-pod-builder-state="base"]')).toBeVisible();
+  await page.locator('[data-pod-build-choice="Adjustable Base"]').first().click();
+  await expect(page.locator('[data-pod-builder-state="motion"]')).toBeVisible();
+  await page.locator('[data-pod-build-choice="Standard Motion"]').first().click();
+
+  await expect(page.locator('[data-pod-builder-state="motion"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-issue="base"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-recovery="base"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-recovery="size"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-recovery="motion"]')).toBeVisible();
+  await expect(page.locator('[data-pod-layout-primary-action="build-add"]')).toHaveCount(0);
+
+  await page.locator('[data-pod-commerce-recovery="base"]').click();
+  await expect(page.locator('[data-pod-builder-state="base"]')).toBeVisible();
+  await expect(page.locator('[data-pod-build-choice="Adjustable Base"]')).toHaveAttribute("aria-pressed", "true");
+  await page.locator('[data-pod-build-choice="Mattress Only"]').click();
   await expect(page.locator('[data-pod-builder-state="review"]')).toBeVisible();
+  await expect(page.locator('[data-pod-commerce-issue]')).toHaveCount(0);
+  await expect(page.locator('[data-pod-layout-primary-action="build-add"]')).toBeVisible();
+  await expect(page.locator('[data-pod-builder-summary-row="mattress"]')).toContainText("Queen");
+});
 
-  const addButton = page.locator('[data-pod-layout-primary-action="build-add"]').first();
-  await expect(addButton).toBeVisible();
-  const addDisabled = await addButton.isDisabled();
-  const availabilityMessageCount = await page.getByText(/unavailable|not ready to add/i).count();
+test("Review remains a final commerce safety gate with no fake totals or disabled add CTA", async ({ page }) => {
+  await page.setViewportSize({ width: 1180, height: 820 });
+  await installProductApiProxy(page, (payload, handle) => {
+    if (handle === "12-all-foam-mattress" && payload?.product?.variants) {
+      payload.product.variants = payload.product.variants.map((variant) =>
+        variant.title === "Queen"
+          ? { ...variant, available: false, availableForSale: false }
+          : variant
+      );
+    }
+    return payload;
+  });
 
-  expect(
-    addDisabled || availabilityMessageCount > 0,
-    "Pod 4 cannot present Queen + Adjustable Base + Standard Motion as addable without resolved variants"
-  ).toBeTruthy();
+  await page.goto("/pod/pod-4?podLayoutState=build-review", { waitUntil: "domcontentloaded" });
+  await ensureRendered(page);
+  await expect(page.locator('[data-pod-commerce-issue="mattress"]')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('[data-pod-review-snoozer="true"]')).toContainText("One part of this setup isn’t available");
+  await expect(page.getByText("Est. Monthly")).toHaveCount(0);
+  await expect(page.getByText("Est. Total")).toHaveCount(0);
+  await expect(page.locator('[data-pod-layout-primary-action="build-add"]')).toHaveCount(0);
+  await expect(page.locator('[data-pod-builder-commerce-summary="true"]')).not.toContainText("$0");
+
+  await page.locator('[data-pod-commerce-recovery="size"]').click();
+  await expect(page.locator('[data-pod-builder-state="size"]')).toBeVisible();
+  await expect(page.locator('[data-pod-build-choice="Queen"]')).toHaveAttribute("aria-pressed", "true");
 });
 
 test("Pod Customize follows the four core-only step variants", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
+  await installProductApiProxy(page);
 
   const openSize = async (podId) => {
     await page.goto(`/pod/${podId}?podLayoutState=build-size`, { waitUntil: "domcontentloaded" });

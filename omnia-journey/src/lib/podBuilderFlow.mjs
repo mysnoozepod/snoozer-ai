@@ -33,3 +33,38 @@ export function resolveCoreBuildStepKeys({ showMotion = false, isDualComfort = f
     "success",
   ];
 }
+
+function unavailableOptionLabel(resolution, fallback) {
+  return String(resolution?.requestedOption || fallback || "selected").trim();
+}
+
+export function buildPodCommerceIssue({
+  inputsConfirmed = false,
+  mattressResolution,
+  baseResolution,
+  wantsBase = false,
+  showMotion = false,
+  size = "",
+} = {}) {
+  if (!inputsConfirmed) return null;
+
+  if (!mattressResolution?.ok) {
+    const requestedOption = unavailableOptionLabel(mattressResolution, size);
+    return {
+      type: "mattress",
+      message: `The ${requestedOption} mattress option isn't available for this setup. Choose a different size${showMotion ? " or motion style" : ""}.`,
+      recoverySteps: ["size", ...(showMotion ? ["motion"] : [])],
+    };
+  }
+
+  if (wantsBase && !baseResolution?.ok) {
+    const requestedOption = unavailableOptionLabel(baseResolution, size);
+    return {
+      type: "base",
+      message: `The ${requestedOption} base option isn't available for this setup. Choose a different base or size${showMotion ? ", or try another motion style" : ""}.`,
+      recoverySteps: ["base", "size", ...(showMotion ? ["motion"] : [])],
+    };
+  }
+
+  return null;
+}

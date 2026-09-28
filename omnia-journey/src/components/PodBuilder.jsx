@@ -17,6 +17,7 @@ import {
   synchronizeCoreCartLines,
 } from "@/lib/cart/podCoreCartSync.mjs";
 import {
+  buildPodCommerceIssue,
   isLegacyEmbeddedEssentialsStep,
   normalizeCoreBuildStepCandidate,
   resolveCoreBuildStepKeys,
@@ -830,6 +831,43 @@ function BuilderMetricCard({ label, value }) {
   );
 }
 
+const RECOVERY_STEP_LABELS = Object.freeze({
+  size: "Change Size",
+  base: "Change Base",
+  motion: "Change Motion",
+});
+
+function CommerceRecoveryNotice({ issue, onRecover, className = "" }) {
+  if (!issue) return null;
+
+  return (
+    <div
+      role="alert"
+      aria-labelledby={`pod-commerce-issue-${issue.type}`}
+      className={`rounded-[16px] border border-amber-300 bg-amber-50 p-3 text-amber-950 ${className}`}
+      data-pod-commerce-issue={issue.type}
+    >
+      <div id={`pod-commerce-issue-${issue.type}`} className="text-[0.76rem] font-black uppercase tracking-[0.12em]">
+        Setup needs one change
+      </div>
+      <p className="mt-1 text-[0.82rem] font-semibold leading-snug">{issue.message}</p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {issue.recoverySteps.map((step) => (
+          <button
+            key={step}
+            type="button"
+            onClick={() => onRecover(step)}
+            className="inline-flex min-h-[44px] items-center justify-center rounded-[12px] border border-amber-300 bg-white px-3 text-[0.78rem] font-black text-amber-950 shadow-sm"
+            data-pod-commerce-recovery={step}
+          >
+            {RECOVERY_STEP_LABELS[step]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function PodBuilder({
   pod,
   assessment,
@@ -908,6 +946,7 @@ export default function PodBuilder({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [cartError, setCartError] = useState("");
   const [confirmationKey, setConfirmationKey] = useState("");
+  const [pendingCommerceAdvance, setPendingCommerceAdvance] = useState("");
   const autoAdvanceTimerRef = useRef(null);
 
   const showMotion = baseType === "adjustable";
@@ -1112,8 +1151,9 @@ export default function PodBuilder({
   const motionConfirmed = !showMotion || Boolean(confirmedSelections.motion);
   const comfortConfirmed =
     !isDualComfort || Boolean(confirmedSelections.comfortLeft && confirmedSelections.comfortRight);
+  const commerceInputsConfirmed = sizeConfirmed && baseConfirmed && motionConfirmed;
   const requiredSelectionsConfirmed =
-    sizeConfirmed && baseConfirmed && motionConfirmed && comfortConfirmed;
+    commerceInputsConfirmed && comfortConfirmed;
 
   const selectedBaseLabel =
     baseType === "none" ? "Mattress Only" : labelFor(BASE_OPTIONS_UI, baseType, "Mattress Only");
@@ -1132,26 +1172,45 @@ export default function PodBuilder({
   const mattressCommerceReady = Boolean(mattressMerchId);
   const baseCommerceReady = !wantsBase || Boolean(baseMerchId);
   const commerceReady = mattressCommerceReady && baseCommerceReady;
-  const commerceUnavailableMessage = useMemo(() => {
-    if (!requiredSelectionsConfirmed) return "";
-    if (!mattressCommerceReady) {
-      return `The required ${mattressResolution.requestedOption || size} mattress option is unavailable. Your selections are saved so you can choose another size or pod.`;
-    }
-    if (!baseCommerceReady) {
-      return `The required ${baseResolution.requestedOption || size} base option is unavailable. Your selections are saved so you can choose another base or size.`;
-    }
-    return "";
-  }, [
-    baseCommerceReady,
-    baseResolution.requestedOption,
-    mattressCommerceReady,
-    mattressResolution.requestedOption,
-    requiredSelectionsConfirmed,
-    size,
-  ]);
+  const commerceResolutionPending =
+    commerceInputsConfirmed &&
+    (
+      !mattressProduct ||
+      String(mattressProduct?.handle || "").trim() !== String(fixedMattressHandle || "").trim() ||
+      (
+        wantsBase &&
+        (
+          !baseProduct ||
+          String(baseProduct?.handle || "").trim() !== String(selectedBaseHandle || "").trim()
+        )
+      )
+    );
+  const commerceIssue = useMemo(
+    () =>
+      commerceResolutionPending
+        ? null
+        : buildPodCommerceIssue({
+            inputsConfirmed: commerceInputsConfirmed,
+            mattressResolution,
+            baseResolution,
+            wantsBase,
+            showMotion,
+            size,
+          }),
+    [
+      baseResolution,
+      commerceInputsConfirmed,
+      commerceResolutionPending,
+      mattressResolution,
+      showMotion,
+      size,
+      wantsBase,
+    ]
+  );
+  const commerceUnavailableMessage = commerceIssue?.message || "";
 
   useEffect(() => {
-    if (!requiredSelectionsConfirmed) return;
+    if (!commerceInputsConfirmed || commerceResolutionPending) return;
     for (const rejection of [
       !mattressResolution.ok
         ? { handle: fixedMattressHandle, category: "mattress", ...mattressResolution }
@@ -1171,9 +1230,10 @@ export default function PodBuilder({
     }
   }, [
     baseResolution,
+    commerceResolutionPending,
     fixedMattressHandle,
     mattressResolution,
-    requiredSelectionsConfirmed,
+    commerceInputsConfirmed,
     selectedBaseHandle,
     wantsBase,
   ]);
@@ -1256,8 +1316,8 @@ export default function PodBuilder({
     desiredCartState === "exact"
       ? "Continue to Cart"
       : desiredCartState === "partial"
-        ? "Add Missing Items / Update Cart"
-        : primaryCtaLabel;
+        ? "Update Setup in Cart"
+        : "Add Setup to Cart";
   const selectionSummary = useMemo(
     () => [
       `Mattress: ${mattressLabel}`,
@@ -1278,33 +1338,50 @@ export default function PodBuilder({
     ]
   );
   const coreReviewRows = useMemo(
-    () => [
-      {
-        label: "Mattress",
-        value: isDualComfort
-          ? `${mattressLabel} · ${dcLeft || "Left"} / ${dcRight || "Right"}`
-          : mattressLabel,
-        price: mattressPrice,
-      },
-      { label: "Size", value: size || "Not selected", price: null },
-      {
-        label: "Base",
-        value: selectedBaseLabel,
-        price: wantsBase ? basePrice : null,
-      },
-      {
-        label: "Motion",
-        value: showMotion ? selectedMotionLabel : "Not included",
-        price: null,
-      },
-    ],
+    () =>
+      [
+        {
+          key: "mattress",
+          label: "Mattress",
+          value: mattressLabel,
+          detail: size || "Size not selected",
+          price: mattressResolution.ok && mattressPrice > 0 ? money(mattressPrice) : "",
+        },
+        {
+          key: "base",
+          label: "Base",
+          value: selectedBaseLabel,
+          detail: wantsBase ? "Selected foundation" : "Mattress only setup",
+          price: wantsBase && baseResolution.ok && basePrice > 0 ? money(basePrice) : "",
+        },
+        showMotion
+          ? {
+              key: "motion",
+              label: "Motion",
+              value: selectedMotionLabel,
+              detail: "Adjustable base movement",
+              price: "",
+            }
+          : null,
+        isDualComfort
+          ? {
+              key: "comfort",
+              label: "Comfort",
+              value: `${dcLeft || "Left not selected"} / ${dcRight || "Right not selected"}`,
+              detail: "Left side / right side",
+              price: "",
+            }
+          : null,
+      ].filter(Boolean),
     [
       basePrice,
+      baseResolution.ok,
       dcLeft,
       dcRight,
       isDualComfort,
       mattressLabel,
       mattressPrice,
+      mattressResolution.ok,
       selectedBaseLabel,
       selectedMotionLabel,
       showMotion,
@@ -1366,9 +1443,9 @@ export default function PodBuilder({
     }
     return {
       title: "Review Your SnoozePod",
-      description: commerceUnavailableMessage || "Confirm your setup before adding it to the cart.",
+      description: "Confirm your core setup before adding it to the cart.",
     };
-  }, [stepKey, size, availableMotionLabel, commerceUnavailableMessage]);
+  }, [stepKey, size, availableMotionLabel]);
   const canProceed =
     stepKey === "size"
       ? sizeReady
@@ -1542,6 +1619,54 @@ export default function PodBuilder({
     previewTotal,
   ]);
 
+  const resolveCommerceIssueForSelection = useCallback(
+    ({
+      nextSize = size,
+      nextBaseType = baseType,
+      nextMotionType = motionType,
+      inputsConfirmed = true,
+    } = {}) => {
+      const nextShowMotion = nextBaseType === "adjustable";
+      const nextWantsBase = nextBaseType !== "none";
+      const expectedBaseHandle = nextWantsBase ? getBaseHandleForType(nextBaseType) || null : null;
+      const mattressProductReady =
+        Boolean(mattressProduct) &&
+        String(mattressProduct?.handle || "").trim() === String(fixedMattressHandle || "").trim();
+      const baseProductReady =
+        !nextWantsBase ||
+        (
+          Boolean(baseProduct) &&
+          String(baseProduct?.handle || "").trim() === String(expectedBaseHandle || "").trim()
+        );
+      if (!mattressProductReady || !baseProductReady) return undefined;
+      const configuredMotion = nextShowMotion ? nextMotionType : "standard";
+      const nextMattressResolution = resolveApprovedVariant({
+        product: mattressProduct,
+        category: "mattress",
+        setupSize: nextSize,
+        motionType: configuredMotion,
+      });
+      const nextBaseResolution = nextWantsBase
+        ? resolveApprovedVariant({
+            product: baseProduct,
+            category: nextBaseType === "adjustable" ? "adjustable_base" : "base",
+            setupSize: nextSize,
+            motionType: configuredMotion,
+          })
+        : { ok: true, variant: null, variantId: null, actualOption: "" };
+
+      return buildPodCommerceIssue({
+        inputsConfirmed,
+        mattressResolution: nextMattressResolution,
+        baseResolution: nextBaseResolution,
+        wantsBase: nextWantsBase,
+        showMotion: nextShowMotion,
+        size: nextSize,
+      });
+    },
+    [baseProduct, baseType, fixedMattressHandle, mattressProduct, motionType, size]
+  );
+
   const setGuidedStep = useCallback(
     (nextKey, cue) => {
       if (!nextKey) return;
@@ -1551,10 +1676,37 @@ export default function PodBuilder({
     [onCue]
   );
 
+  const stopForCommerceIssue = useCallback(
+    (issue) => {
+      if (!issue) return false;
+      if (autoAdvanceTimerRef.current) window.clearTimeout(autoAdvanceTimerRef.current);
+      setConfirmationKey("");
+      setPendingCommerceAdvance("");
+      setCartError(issue.message);
+      onCue?.(issue.message, "warning");
+      return true;
+    },
+    [onCue]
+  );
+
+  const goToRecoveryStep = useCallback(
+    (nextKey) => {
+      if (!RECOVERY_STEP_LABELS[nextKey]) return;
+      if (autoAdvanceTimerRef.current) window.clearTimeout(autoAdvanceTimerRef.current);
+      setConfirmationKey("");
+      setPendingCommerceAdvance("");
+      setCartError("");
+      setStepKey(nextKey);
+      onCue?.(`${RECOVERY_STEP_LABELS[nextKey]}. Your other selections are still here.`, "tip");
+    },
+    [onCue]
+  );
+
   const queueSelectionAdvance = useCallback(
     (confirmKey, nextKey, cue) => {
       setCartError("");
       setConfirmationKey(confirmKey);
+      setPendingCommerceAdvance("");
       if (autoAdvanceTimerRef.current) window.clearTimeout(autoAdvanceTimerRef.current);
 
       const reduceMotion =
@@ -1569,6 +1721,26 @@ export default function PodBuilder({
     },
     [setGuidedStep]
   );
+
+  useEffect(() => {
+    if (!pendingCommerceAdvance || commerceResolutionPending) return;
+    if (stopForCommerceIssue(commerceIssue)) return;
+
+    const nextKey = pendingCommerceAdvance === "base"
+      ? isDualComfort ? "comfort" : "review"
+      : isDualComfort ? "comfort" : "review";
+    const cue = nextKey === "comfort"
+      ? "Now choose each side's comfort."
+      : "Review your setup next.";
+    queueSelectionAdvance(`${pendingCommerceAdvance}:availability-confirmed`, nextKey, cue);
+  }, [
+    commerceIssue,
+    commerceResolutionPending,
+    isDualComfort,
+    pendingCommerceAdvance,
+    queueSelectionAdvance,
+    stopForCommerceIssue,
+  ]);
 
   const goNext = useCallback(() => {
     if (!canProceed) return;
@@ -1586,6 +1758,7 @@ export default function PodBuilder({
   const goBack = useCallback(() => {
     if (!canGoBack) return;
     setConfirmationKey("");
+    setPendingCommerceAdvance("");
     setStepKey(steps[currentStepIndex - 1].key);
   }, [canGoBack, currentStepIndex, steps]);
 
@@ -1597,6 +1770,7 @@ export default function PodBuilder({
     setDcRight(defaults.dcRight);
     setStepKey("size");
     setConfirmationKey("");
+    setPendingCommerceAdvance("");
     setConfirmedSelections({
       size: false,
       base: false,
@@ -1829,6 +2003,17 @@ export default function PodBuilder({
                       : isDualComfort
                         ? "comfort"
                         : "review";
+                  const issue =
+                    option.value === "adjustable"
+                      ? null
+                      : resolveCommerceIssueForSelection({ nextBaseType: option.value });
+                  if (issue === undefined) {
+                    setCartError("");
+                    setConfirmationKey(`base:${option.value}`);
+                    setPendingCommerceAdvance("base");
+                    return;
+                  }
+                  if (stopForCommerceIssue(issue)) return;
                   queueSelectionAdvance(
                     `base:${option.value}`,
                     nextKey,
@@ -1842,9 +2027,23 @@ export default function PodBuilder({
               />
             ))}
           </div>
+          {pendingCommerceAdvance === "base" ? (
+            <div role="status" data-pod-commerce-checking="base" className="mt-2 rounded-[14px] border border-[#cbd9ff] bg-[#f8faff] px-3 py-2 text-[0.82rem] font-bold text-slate-700">
+              Checking exact mattress and base availability…
+            </div>
+          ) : null}
+          <CommerceRecoveryNotice issue={commerceIssue} onRecover={goToRecoveryStep} className="mt-2" />
           {renderStageControls({
             primaryLabel: `Continue to ${steps.find((step) => step.key === nextAfterBase)?.label || "Review"}`,
-            onPrimary: () => setGuidedStep(nextAfterBase, "Keep building this setup."),
+            onPrimary: () => {
+              const issue = showMotion ? null : resolveCommerceIssueForSelection();
+              if (issue === undefined) {
+                setPendingCommerceAdvance("base");
+                return;
+              }
+              if (stopForCommerceIssue(issue)) return;
+              setGuidedStep(nextAfterBase, "Keep building this setup.");
+            },
             primaryDisabled: !baseReady,
           })}
         </div>
@@ -1883,6 +2082,14 @@ export default function PodBuilder({
                       ...current,
                       motion: true,
                     }));
+                    const issue = resolveCommerceIssueForSelection({ nextMotionType: option.value });
+                    if (issue === undefined) {
+                      setCartError("");
+                      setConfirmationKey(`motion:${option.value}`);
+                      setPendingCommerceAdvance("motion");
+                      return;
+                    }
+                    if (stopForCommerceIssue(issue)) return;
                     queueSelectionAdvance(
                       `motion:${option.value}`,
                       nextAfterMotion,
@@ -1895,9 +2102,22 @@ export default function PodBuilder({
               );
             })}
           </div>
+          {pendingCommerceAdvance === "motion" ? (
+            <div role="status" data-pod-commerce-checking="motion" className="mt-2 rounded-[14px] border border-[#cbd9ff] bg-[#f8faff] px-3 py-2 text-[0.82rem] font-bold text-slate-700">
+              Checking exact mattress and base availability…
+            </div>
+          ) : null}
+          <CommerceRecoveryNotice issue={commerceIssue} onRecover={goToRecoveryStep} className="mt-2" />
           {renderStageControls({
             primaryLabel: `Continue to ${steps.find((step) => step.key === nextAfterMotion)?.label || "Review"}`,
-            onPrimary: () => setGuidedStep(nextAfterMotion, "Keep building this setup."),
+            onPrimary: () => {
+              if (commerceResolutionPending) {
+                setPendingCommerceAdvance("motion");
+                return;
+              }
+              if (stopForCommerceIssue(commerceIssue)) return;
+              setGuidedStep(nextAfterMotion, "Keep building this setup.");
+            },
             primaryDisabled: !motionReady,
           })}
         </div>
@@ -1928,6 +2148,7 @@ export default function PodBuilder({
                         comfortLeft: true,
                       }));
                       if (shouldAdvance) {
+                        if (stopForCommerceIssue(commerceIssue)) return;
                         queueSelectionAdvance(
                           `left:${option}`,
                           "review",
@@ -1959,6 +2180,7 @@ export default function PodBuilder({
                         comfortRight: true,
                       }));
                       if (shouldAdvance) {
+                        if (stopForCommerceIssue(commerceIssue)) return;
                         queueSelectionAdvance(
                           `right:${option}`,
                           "review",
@@ -1971,9 +2193,13 @@ export default function PodBuilder({
               </div>
             </div>
           </div>
+          <CommerceRecoveryNotice issue={commerceIssue} onRecover={goToRecoveryStep} className="mt-2" />
           {renderStageControls({
             primaryLabel: "Continue to Review",
-            onPrimary: () => setGuidedStep("review", "Review your setup next."),
+            onPrimary: () => {
+              if (stopForCommerceIssue(commerceIssue)) return;
+              setGuidedStep("review", "Review your setup next.");
+            },
             primaryDisabled: !comfortReady,
           })}
         </div>
@@ -2049,51 +2275,73 @@ export default function PodBuilder({
     }
 
     return (
-      <div className="grid h-full min-h-0 gap-3 lg:grid-cols-[minmax(0,1.3fr)_minmax(280px,0.7fr)]" data-pod-builder-review-layout="decision">
-        <section className="flex min-h-0 flex-col justify-center rounded-[20px] border border-[#dfe7fb] bg-white p-3 shadow-sm" data-pod-builder-review-summary="true">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="text-[clamp(1.15rem,1.7vw,1.5rem)] font-black tracking-tight text-slate-950">Your SnoozePod</h3>
-            <span className="rounded-full bg-[#edf2ff] px-3 py-1 text-[0.7rem] font-black uppercase tracking-[0.12em] text-[#315cf6]">Ready to review</span>
-          </div>
-
-          <div className="mt-2 grid gap-2 sm:grid-cols-2" data-pod-builder-summary-group="core">
-            <div className="flex min-w-0 items-center gap-3 rounded-[16px] border border-[#e2e8f7] bg-[#f8faff] p-2.5" data-pod-builder-summary-row="mattress">
-              <BuilderMediaPreview src={mattressImage} alt={mattressLabel} icon={BedDouble} className="h-[clamp(52px,8vh,78px)] w-[clamp(72px,9vw,105px)] shrink-0 overflow-hidden rounded-[12px] bg-white" imgClassName="h-full w-full object-contain p-1.5" data-pod-builder-summary-image="core" />
-              <div className="min-w-0 flex-1">
-                <div className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">Mattress</div>
-                <div className="mt-0.5 line-clamp-2 text-[clamp(0.9rem,1.15vw,1.05rem)] font-black leading-tight text-slate-950">{mattressLabel}</div>
-                <div className="mt-1 flex items-center justify-between gap-2 text-[0.84rem] font-bold text-slate-600"><span>{size}</span><span className="font-black text-slate-950">{mattressPrice > 0 ? money(mattressPrice) : "Unavailable"}</span></div>
-              </div>
-            </div>
-
-            <div className="flex min-w-0 items-center gap-3 rounded-[16px] border border-[#e2e8f7] bg-[#f8faff] p-2.5" data-pod-builder-summary-row="base-motion">
-              <BuilderMediaPreview src={selectedBaseImage} alt={selectedBaseLabel} icon={SlidersHorizontal} className="h-[clamp(52px,8vh,78px)] w-[clamp(72px,9vw,105px)] shrink-0 overflow-hidden rounded-[12px] bg-white" imgClassName="h-full w-full object-contain p-1.5" data-pod-builder-summary-image="core" />
-              <div className="min-w-0 flex-1">
-                <div className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">Base / Motion</div>
-                <div className="mt-0.5 line-clamp-2 text-[clamp(0.9rem,1.15vw,1.05rem)] font-black leading-tight text-slate-950">{selectedBaseLabel}</div>
-                <div className="mt-1 flex items-center justify-between gap-2 text-[0.82rem] font-bold text-slate-600"><span>{showMotion ? selectedMotionLabel : "No motion"}</span>{wantsBase && basePrice > 0 ? <span className="font-black text-slate-950">{money(basePrice)}</span> : null}</div>
-              </div>
+      <div className="grid h-full min-h-0 gap-3 lg:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)]" data-pod-builder-review-layout="decision">
+        <section className="flex min-h-0 flex-col rounded-[20px] border border-[#dfe7fb] bg-white p-3 shadow-sm" data-pod-builder-review-summary="true">
+          <div className="flex min-h-[58px] items-center gap-3 rounded-[16px] border border-[#dbe5ff] bg-[#f8faff] px-3 py-2" data-pod-review-snoozer="true">
+            <img src="/snoozer-avatar.png" alt="Snoozer" className="h-11 w-11 shrink-0 object-contain" />
+            <div className="min-w-0">
+              <div className="text-[0.64rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">Snoozer says</div>
+              <p className="mt-0.5 text-[clamp(0.78rem,1vw,0.9rem)] font-bold leading-snug text-slate-800">
+                {commerceResolutionPending
+                  ? "I’m checking the exact mattress and base availability for your setup."
+                  : commerceIssue
+                  ? "One part of this setup isn’t available. I kept your selections so you can change it."
+                  : "Your core setup is ready. Take one last look before you add it to your cart."}
+              </p>
             </div>
           </div>
 
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <h3 className="text-[clamp(1.05rem,1.45vw,1.35rem)] font-black tracking-tight text-slate-950">Your core setup</h3>
+            <span className={`rounded-full px-3 py-1 text-[0.66rem] font-black uppercase tracking-[0.12em] ${commerceIssue ? "bg-amber-100 text-amber-900" : "bg-[#edf2ff] text-[#315cf6]"}`}>
+              {commerceResolutionPending ? "Checking" : commerceIssue ? "Needs a change" : "Ready to add"}
+            </span>
+          </div>
+
+          <div className="mt-2 grid min-h-0 flex-1 content-center gap-2 sm:grid-cols-2" data-pod-builder-summary-group="core">
+            {coreReviewRows.map((row) => (
+              <div
+                key={row.key}
+                className="flex min-h-[68px] min-w-0 items-center gap-3 rounded-[15px] border border-[#e2e8f7] bg-[#f8faff] px-3 py-2.5"
+                data-pod-builder-summary-row={row.key === "base" ? "base-motion" : row.key}
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-white text-[#315cf6] shadow-sm">
+                  {row.key === "mattress" || row.key === "base" ? <BedDouble className="h-5 w-5" /> : row.key === "motion" ? <SlidersHorizontal className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div data-pod-review-row-label="true" className="text-[0.6rem] font-black uppercase tracking-[0.13em] text-slate-500">{row.label}</div>
+                  <div data-pod-review-row-value="true" className="mt-0.5 line-clamp-2 text-[0.86rem] font-black leading-tight text-slate-950">{row.value}</div>
+                  <div data-pod-review-row-detail="true" className="mt-0.5 flex items-center justify-between gap-2 text-[0.7rem] font-semibold text-slate-600">
+                    <span>{row.detail}</span>
+                    {row.price ? <span className="shrink-0 font-black text-slate-950">{row.price}</span> : null}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         <aside className="flex min-h-0 flex-col justify-center rounded-[20px] border border-[#ccd9ff] bg-[linear-gradient(145deg,#f7f9ff,#ffffff)] p-4 shadow-[0_16px_36px_rgba(49,92,246,0.1)]" data-pod-builder-commerce-summary="true">
-          {commerceReady ? (
+          {commerceResolutionPending ? (
+            <div role="status" data-pod-commerce-checking="review" className="rounded-[16px] border border-[#cbd9ff] bg-white p-4 text-slate-800">
+              <div className="text-[0.7rem] font-black uppercase tracking-[0.14em] text-[#315cf6]">Checking availability</div>
+              <p className="mt-2 text-[0.86rem] font-semibold leading-snug">Confirming the exact mattress and base variants for this setup…</p>
+            </div>
+          ) : commerceIssue ? (
+            <CommerceRecoveryNotice issue={commerceIssue} onRecover={goToRecoveryStep} />
+          ) : (
             <>
               <div className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">Est. Monthly</div>
-              <div className="mt-0.5 text-[clamp(1.8rem,3.2vw,2.65rem)] font-black leading-none tracking-tight text-[#315cf6]">{money(monthly)}<span className="text-[0.9rem] text-slate-500">/mo</span></div>
-              <div className="mt-3 border-t border-[#dfe7fb] pt-3 text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">Est. Total</div>
-              <div className="mt-0.5 text-[clamp(1.65rem,2.8vw,2.35rem)] font-black leading-none tracking-tight text-slate-950">{money(previewTotal)}</div>
+              <div data-pod-review-monthly="true" className="mt-0.5 text-[clamp(1.8rem,3.2vw,2.65rem)] font-black leading-none tracking-tight text-[#315cf6]">{money(monthly)}<span className="text-[0.9rem] text-slate-500">/mo</span></div>
+              <div data-pod-review-total-label="true" className="mt-3 border-t border-[#dfe7fb] pt-3 text-[0.7rem] font-black uppercase tracking-[0.16em] text-slate-500">Est. Total</div>
+              <div data-pod-review-total="true" className="mt-0.5 text-[clamp(1.65rem,2.8vw,2.35rem)] font-black leading-none tracking-tight text-slate-950">{money(previewTotal)}</div>
+              {cartError ? <div className="mt-3 rounded-[12px] border border-amber-200 bg-amber-50 px-3 py-2 text-[0.78rem] font-semibold text-amber-900">{cartError}</div> : null}
+              <Button type="button" onClick={addToPlan} disabled={!canAdd || isAddingToCart} data-pod-layout-build-action="true" data-pod-layout-primary-action="build-add" className="mt-4 min-h-[54px] w-full rounded-[15px] bg-[#2f57e8] px-4 text-[0.95rem] font-black hover:bg-[#244bd1]">
+                {isAddingToCart ? "Updating Cart..." : reviewCartCtaLabel}<ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <button type="button" onClick={goBack} data-pod-review-back="true" className="mt-2 min-h-[44px] w-full rounded-[12px] text-[0.82rem] font-black text-slate-600">Back to {steps[currentStepIndex - 1]?.label || "Base"}</button>
             </>
-          ) : (
-            <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-3 py-3 text-[0.86rem] font-semibold leading-snug text-amber-900">{commerceUnavailableMessage || "This setup is not ready to add yet."}</div>
           )}
-          {cartError && cartError !== commerceUnavailableMessage ? <div className="mt-3 rounded-[12px] border border-amber-200 bg-amber-50 px-3 py-2 text-[0.78rem] font-semibold text-amber-900">{cartError}</div> : null}
-          <Button type="button" onClick={addToPlan} disabled={!canAdd || isAddingToCart} data-pod-layout-build-action="true" data-pod-layout-primary-action="build-add" className="mt-4 min-h-[54px] w-full rounded-[15px] px-4 text-[0.95rem] font-black">
-            {isAddingToCart ? "Updating Cart..." : reviewCartCtaLabel}<ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-          <button type="button" onClick={goBack} className="mt-2 min-h-[44px] w-full rounded-[12px] text-[0.82rem] font-black text-slate-600">Back to {steps[currentStepIndex - 1]?.label || "Base"}</button>
         </aside>
       </div>
     );
@@ -2110,7 +2358,7 @@ export default function PodBuilder({
             Your mattress is already in your cart — let’s finish your setup.
           </div>
         ) : null}
-        <div className="mb-2 shrink-0">
+        <div className="mb-2 shrink-0" data-pod-builder-heading="true">
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-[clamp(1.18rem,1.75vw,1.62rem)] font-black leading-tight tracking-tight text-slate-950">
               {stepKey === "review" ? "Review Your SnoozePod" : "Customize Your SnoozePod"}

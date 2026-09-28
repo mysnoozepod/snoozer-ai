@@ -834,6 +834,67 @@
 }
 
 @media (max-height: 600px) and (min-width: 768px) {
+  [data-pod-builder-review-summary="true"],
+  [data-pod-builder-commerce-summary="true"] {
+    padding: 4px;
+  }
+
+  [data-pod-builder-heading="true"] {
+    margin-bottom: 4px;
+  }
+
+  [data-pod-review-snoozer="true"] {
+    min-height: 48px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  [data-pod-review-snoozer="true"] > img {
+    width: 36px;
+    height: 36px;
+  }
+
+  [data-pod-review-total-label="true"] {
+    margin-top: 3px;
+    padding-top: 3px;
+  }
+
+  [data-pod-review-monthly="true"],
+  [data-pod-review-total="true"] {
+    font-size: 1.5rem;
+  }
+
+  [data-pod-layout-primary-action="build-add"] {
+    min-height: 48px !important;
+    margin-top: 5px !important;
+  }
+
+  [data-pod-review-back="true"] {
+    min-height: 44px;
+    margin-top: 0 !important;
+  }
+
+  [data-pod-builder-summary-row] {
+    min-height: 0;
+    padding: 2px;
+  }
+
+  [data-pod-builder-summary-row] > div:first-child {
+    width: 36px;
+    height: 36px;
+  }
+
+  [data-pod-review-row-label="true"],
+  [data-pod-review-row-value="true"],
+  [data-pod-review-row-detail="true"] {
+    line-height: 1;
+  }
+
+  [data-pod-review-row-value="true"],
+  [data-pod-review-row-detail="true"] {
+    margin-top: 1px;
+  }
+
   [data-pod-text-card="mattress-support"] {
     padding: 8px;
   }

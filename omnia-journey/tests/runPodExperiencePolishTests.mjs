@@ -68,6 +68,40 @@ assert.deepEqual(visibleCoreSteps({ showMotion: false, isDualComfort: false }), 
 assert.deepEqual(visibleCoreSteps({ showMotion: true, isDualComfort: false }), ["size", "base", "motion", "review"]);
 assert.deepEqual(visibleCoreSteps({ showMotion: false, isDualComfort: true }), ["size", "base", "comfort", "review"]);
 assert.deepEqual(visibleCoreSteps({ showMotion: true, isDualComfort: true }), ["size", "base", "motion", "comfort", "review"]);
+assert.equal(builderFlow.buildPodCommerceIssue({
+  inputsConfirmed: false,
+  mattressResolution: { ok: false, requestedOption: "Queen" },
+}), null);
+assert.deepEqual(builderFlow.buildPodCommerceIssue({
+  inputsConfirmed: true,
+  mattressResolution: { ok: false, requestedOption: "Queen" },
+  baseResolution: { ok: true },
+  wantsBase: true,
+  showMotion: true,
+  size: "Queen",
+}), {
+  type: "mattress",
+  message: "The Queen mattress option isn't available for this setup. Choose a different size or motion style.",
+  recoverySteps: ["size", "motion"],
+});
+assert.deepEqual(builderFlow.buildPodCommerceIssue({
+  inputsConfirmed: true,
+  mattressResolution: { ok: true },
+  baseResolution: { ok: false, requestedOption: "Split King" },
+  wantsBase: true,
+  showMotion: true,
+  size: "King",
+}), {
+  type: "base",
+  message: "The Split King base option isn't available for this setup. Choose a different base or size, or try another motion style.",
+  recoverySteps: ["base", "size", "motion"],
+});
+assert.equal(builderFlow.buildPodCommerceIssue({
+  inputsConfirmed: true,
+  mattressResolution: { ok: true },
+  baseResolution: { ok: true },
+  wantsBase: true,
+}), null);
 assert.match(builderSource, /data-pod-build-progress="true"/);
 assert.match(builderSource, /data-pod-build-progress-state=\{state\}/);
 assert.match(builderSource, /aria-pressed=\{active\}/);
@@ -81,9 +115,25 @@ assert.match(sleepEssentialsSource, /\["essentials", "pillows", "sheets", "prote
 assert.match(builderSource, /desiredCartState === "exact"/);
 assert.match(builderSource, /syncCartFromShopify\?\.\(\{ sourcePage: "pod-build-review" \}\)/);
 assert.match(builderSource, /synchronizeCoreCartLines/);
+assert.ok(
+  builderSource.indexOf("await synchronizeCoreCartLines") < builderSource.indexOf('setGuidedStep("success")'),
+  "Success must follow authoritative core cart synchronization"
+);
+assert.match(builderSource, /desiredCartState === "exact"[\s\S]*onViewSnoozePod\?\.\(\);[\s\S]*return;/);
+assert.match(builderSource, /We couldn't add that setup\. Your selections are still here so you can try again\./);
+assert.match(builderSource, /if \(!mattressProductReady \|\| !baseProductReady\) return undefined;/);
 assert.match(builderSource, /data-mattress-cart-continuity/);
 assert.match(builderSource, /data-pod-builder-review-layout="decision"/);
 assert.match(builderSource, /data-pod-builder-success-layout="balanced"/);
+assert.match(builderSource, /data-pod-review-snoozer="true"/);
+assert.match(builderSource, /Your core setup is ready\. Take one last look before you add it to your cart\./);
+assert.match(builderSource, /One part of this setup isn’t available\. I kept your selections so you can change it\./);
+assert.match(builderSource, /data-pod-commerce-recovery=\{step\}/);
+assert.match(builderSource, /"Continue to Cart"/);
+assert.match(builderSource, /"Update Setup in Cart"/);
+assert.match(builderSource, /"Add Setup to Cart"/);
+assert.match(builderSource, /"Updating Cart\.\.\."/);
+assert.doesNotMatch(builderSource, /Add Missing Items \/ Update Cart/);
 assert.doesNotMatch(builderSource, /essentialReviewRows|selectedEssentials|skippedEssentials|essentialsVersion/);
 assert.match(podSource, /primaryCtaLabel="Add Selected Setup to Cart"/);
 
