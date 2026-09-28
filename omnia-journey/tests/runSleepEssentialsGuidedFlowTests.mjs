@@ -59,6 +59,14 @@ assert.equal(builderSource.includes("Choose your size, motion setup, and sleep e
 for (const expected of [
   'data-sleep-essentials-device="curated"',
   'role="tablist"',
+  'data-sleep-essentials-category-rail="true"',
+  'data-category-state={state}',
+  'data-sleep-essentials-curator="true"',
+  'src="/snoozer-avatar.png"',
+  'data-sleep-essentials-notice="true"',
+  'data-sleep-essentials-progress="true"',
+  'data-sleep-essentials-footer="true"',
+  'brandImageSrc={sharpMySnoozePodLogo}',
   'data-sleep-essentials-product-grid="true"',
   "products.map((product)",
   '"✓ In Cart"',
@@ -73,9 +81,31 @@ for (const expected of [
   "confirmedCartItemCount(cart)",
   "ShowroomDownstreamHeader",
   'placement="inline"',
+  'getSleepEssentialsVariantLabel(activeCategoryId)',
+  'cartVariant || variants.find',
+  'Image unavailable',
 ]) {
   assert.ok(pageSource.includes(expected), `missing dedicated Sleep Essentials contract: ${expected}`);
 }
+
+for (const expected of [
+  "buildSleepEssentialsGuidance",
+  "buildSleepEssentialsNoticeCues",
+  "getSleepEssentialsVariantLabel",
+  'return "Pillow Size"',
+  'return "Set Size"',
+  'return "Mattress Size"',
+  "Neck & shoulder support",
+  "Weight / drape",
+  "Fit / coverage",
+]) {
+  assert.ok(sleepLibSource.includes(expected), `missing deterministic Sleep Essentials guidance contract: ${expected}`);
+}
+
+assert.equal(pageSource.includes("WHY TRY IT"), false, "product-specific claims must not be invented");
+assert.equal(pageSource.includes("Why Try It"), false, "product-specific claims must not be invented");
+assert.equal(pageSource.includes("mb-2 inline-flex min-h-10"), false, "duplicate top return control must be removed");
+assert.ok(pageSource.includes('bg-[#2f57e8]'), "Sleep Essentials actions must use the canonical blue");
 
 for (const removed of [
   "INITIAL_PRODUCT_LIMIT",
@@ -107,7 +137,6 @@ for (const removed of [
   "categories reviewed",
   "Review all three categories",
   "Complete Sleep Essentials",
-  "Complete your sleep setup.",
 ]) {
   assert.equal(pageSource.includes(removed), false, `removed catalog copy still present: ${removed}`);
 }

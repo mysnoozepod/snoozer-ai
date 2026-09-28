@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, BedSingle, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, BedSingle, Check, Loader2, ShoppingCart } from "lucide-react";
 
 import { useSnoozer } from "@/Layout";
 import HumanAssistanceControl from "@/components/HumanAssistanceControl";
@@ -15,6 +15,9 @@ import {
   getSafeSleepEssentialsReturnPath,
   getSleepEssentialsFinishPath,
   getSleepEssentialsJourneyId,
+  buildSleepEssentialsGuidance,
+  buildSleepEssentialsNoticeCues,
+  getSleepEssentialsVariantLabel,
   normalizeSleepEssentialsCategory,
   SLEEP_ESSENTIAL_CATEGORIES,
 } from "@/lib/sleepEssentials";
@@ -28,6 +31,7 @@ import {
   ShowroomPageShell,
   ShowroomPanel,
 } from "@/components/showroom/ShowroomPrimitives";
+import sharpMySnoozePodLogo from "@/assets/mysnoozepod-logo-welcome.png";
 
 function formatMoney(value, currency = "USD") {
   const amount = Number(value);
@@ -62,32 +66,6 @@ function normalizeReviewedCategories(progress) {
     return new Set(reviewed.map((item) => String(item?.categoryId || item || "").trim()));
   }
   return new Set(Object.keys(reviewed || {}).filter((key) => reviewed[key]));
-}
-
-function readAssessmentValue(assessment, ...keys) {
-  for (const key of keys) {
-    const direct = assessment?.[key];
-    if (direct !== undefined && direct !== null && String(direct).trim()) return String(direct).trim();
-    const nested = assessment?.answers?.[key];
-    if (nested !== undefined && nested !== null && String(nested).trim()) return String(nested).trim();
-  }
-  return "";
-}
-
-function buildCategoryGuidance(assessment, categoryId) {
-  if (categoryId === "pillows") {
-    const position = readAssessmentValue(assessment, "sleepPosition", "position", "primarySleepPosition");
-    return position
-      ? `You told me you sleep mostly ${position.toLowerCase()}. Start with these approved pillow options and compare what feels supportive.`
-      : "Here are the approved showroom pillow options to compare without overcomplicating the choice.";
-  }
-  if (categoryId === "sheets_bedding") {
-    const temperature = readAssessmentValue(assessment, "sleepTemperature", "temperature", "sleepsHot");
-    return temperature
-      ? `You mentioned ${temperature.toLowerCase()} sleep. Compare these approved bedding options with that in mind.`
-      : "These approved bedding options are a quick way to finish the setup you are building.";
-  }
-  return "A protector can be added here to help complete the mattress setup already in your showroom cart.";
 }
 
 function getSavedPodSelections(returnTo) {
@@ -135,6 +113,7 @@ export default function SleepEssentials() {
   const [loading, setLoading] = useState(true);
   const [workingKey, setWorkingKey] = useState("");
   const [error, setError] = useState("");
+  const [failedImages, setFailedImages] = useState(() => new Set());
   const recordedCategoryViewsRef = useRef(new Set());
 
   const cartVariantIds = useMemo(
@@ -187,7 +166,10 @@ export default function SleepEssentials() {
   const products = Array.isArray(activeCategory?.products) ? activeCategory.products : [];
   const reviewedCategories = normalizeReviewedCategories(progress);
   const allReviewed = SLEEP_ESSENTIAL_CATEGORIES.every((category) => reviewedCategories.has(category.id));
-  const guidance = buildCategoryGuidance(assessment, activeCategoryId);
+  const guidance = buildSleepEssentialsGuidance(activeCategoryId, assessment);
+  const noticeCues = buildSleepEssentialsNoticeCues(activeCategoryId, assessment);
+  const variantLabel = getSleepEssentialsVariantLabel(activeCategoryId);
+  const reviewedCount = SLEEP_ESSENTIAL_CATEGORIES.filter((category) => reviewedCategories.has(category.id)).length;
 
   useEffect(() => {
     if (loading || !journeyId || !activeCategoryId) return;
@@ -311,6 +293,7 @@ export default function SleepEssentials() {
     <ShowroomPageShell className="min-h-screen pb-4">
       <div className="mx-auto w-full max-w-[1480px] px-5 py-2.5">
         <ShowroomDownstreamHeader
+          brandImageSrc={sharpMySnoozePodLogo}
           rewards={shopperId ? <RewardsPill shopperId={shopperId} onClick={openRewards} placement="inline" /> : null}
           humanHelp={<HumanAssistanceControl compact showNoticeMessage={false} sourcePage="/sleep-essentials" />}
           cart={<ShowroomCartBadge count={cartCount} quiet onClick={() => navigate("/cart")} />}
@@ -318,25 +301,35 @@ export default function SleepEssentials() {
       </div>
 
       <main className="mx-auto w-full max-w-[1480px] px-5" data-sleep-essentials-device="curated">
-        <ShowroomPanel className="p-4 md:p-5">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <button type="button" onClick={() => navigate(returnTo)} className="mb-2 inline-flex min-h-10 items-center gap-2 rounded-xl pr-3 text-sm font-extrabold text-slate-700 hover:bg-[#eef3ff]">
-                <ArrowLeft className="h-5 w-5" /> {enteredFromPod ? "Return to Pod" : "Back to showroom"}
-              </button>
-              <div className="text-xs font-black uppercase tracking-[0.2em] text-[#2f57e8]">Sleep Essentials</div>
-              <h1 className="mt-1 text-[clamp(1.75rem,3vw,2.6rem)] font-black leading-none tracking-tight text-slate-950">Finish your sleep setup.</h1>
-            </div>
+        <ShowroomPanel className="p-4 md:p-5" data-sleep-essentials-intro="true">
+          <div className="max-w-3xl">
+            <div className="text-xs font-black uppercase tracking-[0.2em] text-[#2f57e8]">Sleep Essentials</div>
+            <h1 className="mt-1 text-[clamp(1.75rem,3vw,2.6rem)] font-black leading-none tracking-tight text-slate-950">Complete your sleep setup.</h1>
+            <p className="mt-2 text-sm font-semibold text-slate-600 md:text-base">Try the finishing pieces that affect how your sleep setup feels.</p>
           </div>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-3" role="tablist" aria-label="Sleep Essential categories">
+          <div className="mt-4 grid gap-2 md:grid-cols-3" role="tablist" aria-label="Sleep Essential categories" data-sleep-essentials-category-rail="true">
             {SLEEP_ESSENTIAL_CATEGORIES.map((category) => {
               const active = category.id === activeCategoryId;
               const selected = categoryHasSelection(category.id);
+              const reviewed = reviewedCategories.has(category.id);
+              const state = active ? "current" : selected ? "in-cart" : reviewed ? "reviewed" : "upcoming";
               return (
-                <button key={category.id} type="button" role="tab" aria-selected={active} onClick={() => selectCategory(category.id)} className={`flex min-h-14 items-center justify-between rounded-2xl border px-4 text-left text-[clamp(0.9rem,1.3vw,1.08rem)] font-black transition ${active ? "border-[#315df3] bg-[#eef2ff] text-[#244ce0] shadow-sm" : "border-slate-200 bg-white text-slate-800 hover:border-[#b8c8ff]"}`}>
-                  <span>{category.label}</span>
-                  {selected ? <CheckCircle2 className="h-5 w-5 text-emerald-600" /> : <ArrowRight className="h-5 w-5" />}
+                <button
+                  key={category.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  aria-label={`${category.label}, ${state === "in-cart" ? "item in cart" : state}`}
+                  data-category-state={state}
+                  onClick={() => selectCategory(category.id)}
+                  className={`group flex min-h-12 items-center gap-3 rounded-2xl border px-3 text-left text-sm font-black transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#9db2ff] ${active ? "border-[#2f57e8] bg-[#2f57e8] text-white shadow-[0_10px_26px_rgba(47,87,232,0.2)]" : reviewed || selected ? "border-[#b9c9ff] bg-[#eef3ff] text-[#2447bd] hover:border-[#7795f6]" : "border-slate-200 bg-white text-slate-700 hover:border-[#b8c8ff]"}`}
+                >
+                  <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs ${active ? "bg-white text-[#2f57e8]" : reviewed || selected ? "bg-[#dce6ff] text-[#2447bd]" : "bg-slate-100 text-slate-500"}`}>
+                    {reviewed || selected ? <Check className="h-4 w-4" aria-hidden="true" /> : SLEEP_ESSENTIAL_CATEGORIES.indexOf(category) + 1}
+                  </span>
+                  <span className="min-w-0 flex-1 leading-tight">{category.label}</span>
+                  {selected ? <ShoppingCart className={`h-4 w-4 shrink-0 ${active ? "text-white" : "text-emerald-600"}`} aria-hidden="true" /> : null}
                 </button>
               );
             })}
@@ -344,20 +337,46 @@ export default function SleepEssentials() {
         </ShowroomPanel>
 
         <section className="mt-3" data-sleep-essentials-category={activeCategoryId}>
-          <div className="mb-2 flex items-center gap-2 rounded-2xl border border-[#dce6ff] bg-[#f4f7ff] px-4 py-2.5 text-sm font-bold leading-snug text-slate-700">
-            <span className="shrink-0 font-black text-[#315cf6]">Snoozer:</span><span>{guidance}</span>
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,0.78fr)_minmax(0,1.22fr)]">
+            <ShowroomPanel className="flex min-h-[150px] items-center gap-4 overflow-hidden p-4" data-sleep-essentials-curator="true">
+              <div className="grid h-24 w-24 shrink-0 place-items-center rounded-[24px] bg-[linear-gradient(145deg,#eef3ff,#ffffff)]">
+                <img src="/snoozer-avatar.png" alt="Snoozer, your Sleep Essentials curator" className="h-[88px] w-[88px] object-contain object-bottom" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">Snoozer's guidance</div>
+                <p className="mt-1 text-[clamp(0.95rem,1.5vw,1.15rem)] font-extrabold leading-snug text-slate-800">{guidance}</p>
+              </div>
+            </ShowroomPanel>
+
+            <ShowroomPanel className="p-4" data-sleep-essentials-notice="true">
+              <div className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#2f57e8]">What to notice</div>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {noticeCues.map((cue) => (
+                  <div key={cue.id} className="rounded-2xl border border-[#dce6ff] bg-[#f7f9ff] px-3 py-2.5">
+                    <div className="text-xs font-black uppercase tracking-[0.08em] text-slate-800">{cue.label}</div>
+                    <p className="mt-1 text-xs font-semibold leading-snug text-slate-600 md:text-sm">{cue.description}</p>
+                  </div>
+                ))}
+              </div>
+            </ShowroomPanel>
           </div>
 
-          {error ? <div className="mb-2 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 font-semibold text-amber-900">{error} <button type="button" onClick={hydrate} className="ml-2 underline">Try again</button></div> : null}
+          {error && catalog ? <div className="mt-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 font-semibold text-amber-900" role="alert">{error}</div> : null}
 
           {loading ? (
-            <ShowroomPanel className="flex min-h-64 items-center justify-center gap-3 text-slate-600"><Loader2 className="h-6 w-6 animate-spin" /> Loading live Sleep Essentials...</ShowroomPanel>
+            <ShowroomPanel className="mt-3 flex min-h-64 items-center justify-center gap-3 text-slate-600" data-sleep-essentials-loading="true"><Loader2 className="h-6 w-6 animate-spin" /> Loading the curated assortment...</ShowroomPanel>
+          ) : error && !catalog ? (
+            <ShowroomPanel className="mt-3 flex min-h-56 flex-col items-center justify-center gap-3 p-6 text-center" data-sleep-essentials-error="catalog">
+              <div className="text-lg font-black text-slate-900">Sleep Essentials are temporarily unavailable.</div>
+              <p className="max-w-xl text-sm font-semibold text-slate-600">Your showroom progress is safe. Try loading the approved assortment again.</p>
+              <button type="button" onClick={hydrate} className="min-h-12 rounded-xl bg-[#2f57e8] px-5 font-black text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#9db2ff]">Try Again</button>
+            </ShowroomPanel>
           ) : products.length ? (
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3" data-sleep-essentials-product-grid="true">
+            <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-3" data-sleep-essentials-product-grid="true">
               {products.map((product) => {
                 const variants = getAvailableVariants(product);
                 const cartVariant = variants.find((variant) => cartVariantIds.has(getVariantId(variant, product)));
-                const selectedVariant = variants.find((variant) => getVariantId(variant, product) === selectedVariants[product.handle]) || cartVariant || variants[0] || null;
+                const selectedVariant = cartVariant || variants.find((variant) => getVariantId(variant, product) === selectedVariants[product.handle]) || variants[0] || null;
                 const selectedVariantId = getVariantId(selectedVariant, product);
                 const image = getProductImage(product);
                 const price = selectedVariant?.price ?? product?.price ?? product?.priceRange?.min;
@@ -365,19 +384,39 @@ export default function SleepEssentials() {
                 const busy = workingKey === `added_to_cart:${product.handle}`;
                 const inCart = Boolean(selectedVariantId && cartVariantIds.has(selectedVariantId));
                 return (
-                  <ShowroomPanel key={product.handle} className="flex min-h-[310px] flex-col overflow-hidden p-0" data-sleep-essentials-product-card={product.handle}>
-                    <div className="flex h-36 items-center justify-center bg-[linear-gradient(145deg,#f7f9ff,#eef3ff)] p-3">
-                      {image ? <img src={image} alt={product.title} className="h-full w-full object-contain" /> : <BedSingle className="h-14 w-14 text-[#8ba6ef]" />}
+                  <ShowroomPanel key={product.handle} className="flex min-h-[390px] flex-col overflow-hidden p-0" data-sleep-essentials-product-card={product.handle}>
+                    <div className="flex h-52 items-center justify-center bg-[linear-gradient(145deg,#f7f9ff,#eef3ff)] p-4" data-sleep-essentials-product-image="true">
+                      {image && !failedImages.has(product.handle) ? (
+                        <img
+                          src={image}
+                          alt={product.title}
+                          className="h-full w-full object-contain"
+                          onError={() => setFailedImages((current) => new Set(current).add(product.handle))}
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 text-[#6f8bdc]" role="img" aria-label={`Image unavailable for ${product.title}`}>
+                          <BedSingle className="h-14 w-14" />
+                          <span className="text-xs font-black uppercase tracking-[0.12em]">Image unavailable</span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-1 flex-col p-4">
                       <h2 className="line-clamp-2 text-[clamp(1rem,1.45vw,1.25rem)] font-black leading-tight text-slate-950">{product.title}</h2>
-                      <div className="mt-1.5 text-xl font-black text-[#2f57e8]">{formatMoney(price, currency)}</div>
                       {variants.length > 1 ? (
-                        <select aria-label={`${product.title} option`} value={selectedVariantId} onChange={(event) => setSelectedVariants((current) => ({ ...current, [product.handle]: event.target.value }))} className="mt-2 min-h-11 rounded-xl border border-slate-300 bg-white px-3 text-base font-bold">
-                          {variants.map((variant) => <option key={getVariantId(variant, product)} value={getVariantId(variant, product)}>{variant.title}</option>)}
-                        </select>
+                        <label className="mt-3 block text-xs font-black uppercase tracking-[0.1em] text-slate-600">
+                          {variantLabel}
+                          <select aria-label={`${product.title} ${variantLabel}`} value={selectedVariantId} onChange={(event) => setSelectedVariants((current) => ({ ...current, [product.handle]: event.target.value }))} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base font-bold normal-case tracking-normal text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#9db2ff]">
+                            {variants.map((variant) => <option key={getVariantId(variant, product)} value={getVariantId(variant, product)}>{variant.title}</option>)}
+                          </select>
+                        </label>
+                      ) : selectedVariant ? (
+                        <div className="mt-3 rounded-xl border border-[#dce6ff] bg-[#f7f9ff] px-3 py-2">
+                          <div className="text-[0.65rem] font-black uppercase tracking-[0.1em] text-slate-500">{variantLabel}</div>
+                          <div className="mt-0.5 font-extrabold text-slate-800">{selectedVariant.title}</div>
+                        </div>
                       ) : null}
-                      <button type="button" disabled={busy || inCart || !journeyId || !selectedVariantId} onClick={() => addProduct(product, selectedVariant)} className={`mt-auto min-h-12 rounded-xl px-4 pt-0.5 text-base font-black transition disabled:cursor-not-allowed ${inCart ? "bg-emerald-100 text-emerald-800" : "bg-[#315df3] text-white disabled:opacity-50"}`}>
+                      <div className="mt-3 text-xl font-black text-[#2f57e8]">{formatMoney(price, currency)}</div>
+                      <button type="button" disabled={busy || inCart || !journeyId || !selectedVariantId} onClick={() => addProduct(product, selectedVariant)} className={`mt-3 min-h-12 rounded-xl px-4 pt-0.5 text-base font-black transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#9db2ff] disabled:cursor-not-allowed ${inCart ? "border border-emerald-300 bg-emerald-100 text-emerald-800" : "bg-[#2f57e8] text-white disabled:opacity-50"}`}>
                         {busy ? "Adding..." : inCart ? "✓ In Cart" : "Add to Cart"}
                       </button>
                     </div>
@@ -386,15 +425,19 @@ export default function SleepEssentials() {
               })}
             </div>
           ) : (
-            <ShowroomPanel className="flex min-h-48 items-center justify-center p-6 text-center text-slate-600">No approved products are available in this category right now.</ShowroomPanel>
+            <ShowroomPanel className="mt-3 flex min-h-48 items-center justify-center p-6 text-center font-semibold text-slate-600">No approved products are available in this category right now.</ShowroomPanel>
           )}
         </section>
 
-        <ShowroomPanel className="sticky bottom-3 z-10 mt-3 flex items-center justify-between gap-3 p-3.5 shadow-[0_18px_44px_rgba(30,55,110,0.18)]">
+        <ShowroomPanel className="sticky bottom-3 z-10 mt-4 flex items-center justify-between gap-3 p-3.5 shadow-[0_18px_44px_rgba(30,55,110,0.18)]" data-sleep-essentials-footer="true">
           <button type="button" onClick={() => navigate(returnTo)} className="inline-flex min-h-12 items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 font-black text-slate-800">
             <ArrowLeft className="h-5 w-5" /> {enteredFromPod ? "Return to Pod" : "Back"}
           </button>
-          <button type="button" onClick={finishExperience} disabled={Boolean(workingKey)} className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#315df3] px-6 font-black text-white disabled:opacity-50">
+          <div className="hidden text-center sm:block" role="status" aria-live="polite" data-sleep-essentials-progress="true">
+            <div className="text-[0.65rem] font-black uppercase tracking-[0.14em] text-[#2f57e8]">Your progress</div>
+            <div className="mt-0.5 text-sm font-extrabold text-slate-700">{reviewedCount} of {SLEEP_ESSENTIAL_CATEGORIES.length} categories explored</div>
+          </div>
+          <button type="button" onClick={finishExperience} disabled={Boolean(workingKey)} className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#2f57e8] px-6 font-black text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#9db2ff] disabled:opacity-50">
             {workingKey === "finish" ? "Finishing..." : "Finish Sleep Essentials"} <ArrowRight className="h-5 w-5" />
           </button>
         </ShowroomPanel>

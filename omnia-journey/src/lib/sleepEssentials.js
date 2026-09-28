@@ -20,6 +20,125 @@ export const SLEEP_ESSENTIAL_CATEGORY_IDS = Object.freeze(
   SLEEP_ESSENTIAL_CATEGORIES.map((category) => category.id)
 );
 
+const SLEEP_ESSENTIAL_NOTICE_CUES = Object.freeze({
+  pillows: Object.freeze([
+    Object.freeze({
+      id: "support",
+      label: "Neck & shoulder support",
+      description: "Notice whether your head and neck feel naturally supported.",
+    }),
+    Object.freeze({
+      id: "loft",
+      label: "Loft / height",
+      description: "Compare whether the pillow feels too high, too low, or balanced.",
+    }),
+    Object.freeze({
+      id: "temperature",
+      label: "Temperature",
+      description: "Notice whether heat starts building while you settle in.",
+    }),
+    Object.freeze({
+      id: "response",
+      label: "Feel",
+      description: "Compare how quickly the pillow responds when you change position.",
+    }),
+  ]),
+  sheets_bedding: Object.freeze([
+    Object.freeze({
+      id: "surface-feel",
+      label: "Surface feel",
+      description: "Compare how the fabric feels directly against your skin.",
+    }),
+    Object.freeze({
+      id: "temperature",
+      label: "Temperature",
+      description: "Notice whether the material feels cool, neutral, or warm.",
+    }),
+    Object.freeze({
+      id: "drape",
+      label: "Weight / drape",
+      description: "Compare whether you prefer a lighter or more substantial feel.",
+    }),
+    Object.freeze({
+      id: "fit",
+      label: "Fit",
+      description: "Make sure the set matches the mattress size you are building.",
+    }),
+  ]),
+  protectors: Object.freeze([
+    Object.freeze({
+      id: "surface-feel",
+      label: "Surface feel",
+      description: "Notice whether the protector changes the feel of the mattress.",
+    }),
+    Object.freeze({
+      id: "sound",
+      label: "Sound",
+      description: "Listen for unwanted noise when you move.",
+    }),
+    Object.freeze({
+      id: "temperature",
+      label: "Temperature",
+      description: "Notice whether the sleep surface still feels breathable.",
+    }),
+    Object.freeze({
+      id: "coverage",
+      label: "Fit / coverage",
+      description: "Confirm the protector fits the mattress size you selected.",
+    }),
+  ]),
+});
+
+function readAssessmentValue(assessment, ...keys) {
+  for (const key of keys) {
+    const direct = assessment?.[key];
+    if (direct !== undefined && direct !== null && String(direct).trim()) return String(direct).trim();
+    const nested = assessment?.answers?.[key];
+    if (nested !== undefined && nested !== null && String(nested).trim()) return String(nested).trim();
+  }
+  return "";
+}
+
+function normalizeSleepPosition(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) return "";
+  if (normalized.includes("side")) return "side";
+  if (normalized.includes("back")) return "back";
+  if (normalized.includes("stomach")) return "stomach";
+  if (normalized.includes("combination") || normalized.includes("multiple")) return "several positions";
+  return normalized;
+}
+
+export function buildSleepEssentialsGuidance(categoryId, assessment) {
+  const safeCategoryId = normalizeSleepEssentialsCategory(categoryId);
+  if (safeCategoryId === "pillows") {
+    const position = normalizeSleepPosition(
+      readAssessmentValue(assessment, "sleepPosition", "position", "primarySleepPosition")
+    );
+    return position
+      ? `You told me you sleep mostly on your ${position}. Compare how each pillow supports the space between your shoulder and neck.`
+      : "Try these pillow options and compare support, height, temperature, and response.";
+  }
+  if (safeCategoryId === "sheets_bedding") {
+    const temperature = readAssessmentValue(assessment, "sleepTemperature", "temperature", "sleepsHot");
+    return temperature
+      ? `Keep your ${temperature.toLowerCase()} temperature preference in mind as you compare feel and breathability.`
+      : "Compare how each fabric feels against your skin and how breathable it feels.";
+  }
+  return "A protector should protect the mattress without distracting from the feel you chose.";
+}
+
+export function buildSleepEssentialsNoticeCues(categoryId) {
+  return SLEEP_ESSENTIAL_NOTICE_CUES[normalizeSleepEssentialsCategory(categoryId)] || [];
+}
+
+export function getSleepEssentialsVariantLabel(categoryId) {
+  const safeCategoryId = normalizeSleepEssentialsCategory(categoryId);
+  if (safeCategoryId === "pillows") return "Pillow Size";
+  if (safeCategoryId === "sheets_bedding") return "Set Size";
+  return "Mattress Size";
+}
+
 export function normalizeSleepEssentialsCategory(value) {
   const normalized = String(value || "").trim().toLowerCase();
   return SLEEP_ESSENTIAL_CATEGORY_IDS.includes(normalized)
