@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "catalogVersion": "sleep-essentials.v1",
+  "catalogVersion": "sleep-essentials.v2",
   "categories": [
     {
       "id": "pillows",
@@ -9,7 +9,41 @@
       "handles": [
         "shoulder-zoned-gel-dough-pillow",
         "carboncool-omniphase-pillow",
-        "zoned-gel-dough-pillow"
+        "zoned-gel-dough-pillow",
+        "carboncool-travel-pillow",
+        "convolution-pillow",
+        "flexfill-pillow",
+        "gel-convolution-pillow",
+        "gel-dough-z-gel-travel-pillow",
+        "gelled-microfiber-pillow",
+        "horseshoe-pregnancy-body-pillow",
+        "l-shape-pillow",
+        "lounge-pillow",
+        "shoulder-carboncool-omniphase-pillow",
+        "shoulder-gel-dough-z-gel-pillow",
+        "shoulder-zoned-activedough-pillow",
+        "shoulder-zoned-dough-bamboo-charcoal-pillow-1",
+        "shoulder-zoned-dough-bamboo-charcoal-pillow",
+        "shoulder-zoned-dough-lavender-pillow",
+        "shoulder-zoned-dough-lavender-pillow-1",
+        "shoulder-zoned-dough-peppermint-pillow",
+        "shoulder-zoned-dough-peppermint-pillow-1",
+        "shredded-gel-dough-pillow",
+        "shredded-gel-dough-travel-pillow",
+        "gel-dough-z-gel-pillow",
+        "triplelayer-down-pillow",
+        "wedge-pillow",
+        "wrap-around-body-pillow",
+        "zoned-activedough-bamboo-charcoal-pillow",
+        "zoned-activedough-gel-pillow",
+        "zoned-activedough-lavender-pillow",
+        "zoned-activedough-peppermint-pillow",
+        "zoned-dough-bamboo-charcoal-pillow",
+        "zoned-dough-lavender-pillow",
+        "zoned-dough-lavender-travel-neck-pillow",
+        "zoned-dough-lavender-travel-pillow",
+        "zoned-dough-peppermint-pillow",
+        "zoned-talalay-latex-pillow"
       ]
     },
     {
@@ -19,7 +53,12 @@
       "handles": [
         "hyper-cotton-sheet-set",
         "dri-tec-sheet-set",
-        "supima-cotton-sheet-set"
+        "supima-cotton-sheet-set",
+        "2-5-gel-memory-foam-mattress-topper",
+        "3-down-alternative-mattress-topper",
+        "botanical-sheet-set",
+        "down-alternative-microfiber-comforter",
+        "italian-cotton-sheet-set"
       ]
     },
     {
@@ -29,7 +68,11 @@
       "handles": [
         "ver-tex-mattress-protector",
         "dri-tec-mattress-protector",
-        "icetech-mattress-protector"
+        "icetech-mattress-protector",
+        "mattress-encasement",
+        "mattress-pad",
+        "smooth-mattress-protector",
+        "terry-mattress-protector"
       ]
     }
   ]

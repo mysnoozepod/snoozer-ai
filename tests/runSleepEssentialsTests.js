@@ -79,20 +79,24 @@ function cart(id = "gid://shopify/Cart/sleep-essentials-test") {
 }
 
 async function run() {
-  await test("catalog manifest contains the three required categories and keeps Shopify authoritative", async () => {
+  await test("complete approved catalog preserves all three categories and keeps Shopify authoritative", async () => {
     const manifest = catalog.validateManifest();
     assert.deepEqual(manifest.categories.map((item) => item.id), [
       "pillows",
       "sheets_bedding",
       "protectors",
     ]);
+    assert.deepEqual(manifest.categories.map((item) => item.handles.length), [37, 8, 7]);
     const handles = manifest.categories.flatMap((item) => item.handles);
     const response = await catalog.getSleepEssentialsCatalog({}, {
       shopify: {
         async fetchProductsByHandles(input) {
           assert.deepEqual(new Set(input.handles), new Set(handles));
           return {
-            items: handles.map((handle) => ({ handle, title: handle, variants: [] })),
+            items: [
+              ...handles.map((handle) => ({ handle, title: handle, variants: [] })),
+              { handle: "unapproved-shopify-product", title: "Unapproved product", variants: [] },
+            ],
             meta: { source: "shopify-test" },
           };
         },
@@ -101,10 +105,10 @@ async function run() {
     assert.equal(response.source, "shopify");
     assert.equal(response.categories.every((item) => item.missingHandles.length === 0), true);
     assert.equal(response.categories.flatMap((item) => item.products).length, handles.length);
-    assert.ok(handles.length <= catalog.SHOWROOM_PRODUCT_LIMIT);
+    assert.equal(response.categories.flatMap((item) => item.products).some((item) => item.handle === "unapproved-shopify-product"), false);
   });
 
-  await test("showroom cap follows existing manifest category and handle order across the full assortment", async () => {
+  await test("approved assortment has no arbitrary global cap and preserves deterministic order", async () => {
     const overLimitManifest = {
       schemaVersion: 1,
       catalogVersion: "sleep-essentials.cap-test",
@@ -114,18 +118,15 @@ async function run() {
         handles: Array.from({ length: 5 }, (_, productIndex) => `${id}-${categoryIndex}-${productIndex}`),
       })),
     };
-    const expected = overLimitManifest.categories
-      .flatMap((category) => category.handles)
-      .slice(0, catalog.SHOWROOM_PRODUCT_LIMIT);
-    const selected = catalog.selectShowroomAssortment(overLimitManifest);
+    const expected = overLimitManifest.categories.flatMap((category) => category.handles);
+    const selected = catalog.selectApprovedAssortment(overLimitManifest);
     assert.deepEqual(selected.flatMap((category) => category.handles), expected);
-    assert.equal(selected.flatMap((category) => category.handles).length, 12);
-    assert.deepEqual(selected.map((category) => category.handles.length), [5, 5, 2]);
+    assert.equal(selected.flatMap((category) => category.handles).length, 15);
+    assert.deepEqual(selected.map((category) => category.handles.length), [5, 5, 5]);
 
-    const available = new Set(expected.slice(1).concat(overLimitManifest.categories.at(-1).handles.at(-1)));
-    const backfilled = catalog.selectShowroomAssortment(overLimitManifest, available);
-    assert.equal(backfilled.flatMap((category) => category.handles).length, 12);
-    assert.equal(backfilled.flatMap((category) => category.handles).at(-1), overLimitManifest.categories.at(-1).handles.at(-1));
+    const available = new Set(expected.filter((_, index) => index % 2 === 0));
+    const availableOnly = catalog.selectApprovedAssortment(overLimitManifest, available);
+    assert.deepEqual(availableOnly.flatMap((category) => category.handles), expected.filter((handle) => available.has(handle)));
   });
 
   await test("category progress is authoritative, strongly consistent, and idempotent", async () => {

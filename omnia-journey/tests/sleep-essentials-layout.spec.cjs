@@ -33,6 +33,9 @@ function createCatalog({ emptyCategory = "" } = {}) {
           ]),
           product("single-pillow", "Single Loft Pillow", [variant("104", "Standard", 69)]),
           product("fallback-pillow", "Pillow with image fallback", [variant("105", "Queen", 59)], "https://invalid.test/missing.png"),
+          product("premium-pillow", "Premium Pillow", [variant("106", "Queen", 199)]),
+          product("value-pillow", "Affordable Pillow", [variant("107", "Queen", 49)]),
+          product("another-pillow", "Balanced Pillow", [variant("108", "Queen", 99)]),
         ],
       },
       {
@@ -41,6 +44,7 @@ function createCatalog({ emptyCategory = "" } = {}) {
         description: "Explore breathable sheet sets for your preferred feel.",
         products: emptyCategory === "sheets_bedding" ? [] : [
           product("showroom-sheets", "Showroom Sheet Set", [variant("201", "Queen", 149), variant("202", "King", 179)]),
+          product("cooling-sheets", "Cooling Sheet Set", [variant("203", "Queen", 129)]),
         ],
       },
       {
@@ -49,6 +53,7 @@ function createCatalog({ emptyCategory = "" } = {}) {
         description: "Protect the sleep surface without losing comfort.",
         products: emptyCategory === "protectors" ? [] : [
           product("showroom-protector", "Showroom Mattress Protector", [variant("301", "Queen", 119), variant("302", "King", 139)]),
+          product("smooth-protector", "Smooth Mattress Protector", [variant("303", "Queen", 99)]),
         ],
       },
     ],
@@ -153,12 +158,18 @@ async function installMocks(page, {
       addRequests.push(body);
       if (cartFailure) return json({ message: "Cart update unavailable" }, 503);
       const added = body.lines?.[0];
+      const addedId = String(added?.merchandiseId || "");
+      const addedProduct = addedId.endsWith("/201")
+        ? { title: "Showroom Sheet Set", handle: "showroom-sheets" }
+        : addedId.endsWith("/301")
+          ? { title: "Showroom Mattress Protector", handle: "showroom-protector" }
+          : { title: "Showroom Support Pillow", handle: "showroom-pillow" };
       cartLines = [...cartLines, cartLine({
         id: `gid://shopify/CartLine/${cartLines.length + 1}`,
         variantId: added.merchandiseId,
         title: "Queen",
-        productTitle: "Showroom Support Pillow",
-        handle: "showroom-pillow",
+        productTitle: addedProduct.title,
+        handle: addedProduct.handle,
       })];
       return json({ cart: {
         id: "gid://shopify/Cart/pass6",
@@ -180,39 +191,66 @@ async function installMocks(page, {
 async function gotoEssentials(page, category = "pillows", returnTo = "/pod/pod-3?stage=build&buildStep=review") {
   const url = `/sleep-essentials?category=${category}&returnTo=${encodeURIComponent(returnTo)}`;
   await page.goto(url, { waitUntil: "domcontentloaded" });
-  await expect(page.locator('[data-sleep-essentials-device="curated"]')).toBeVisible();
+  await expect(page.locator('[data-sleep-essentials-device="storefront"]')).toBeVisible();
 }
 
-test("renders the guided curator journey and category-specific guidance", async ({ page }) => {
+test("renders the full storefront with real counts, compact concierge, and category navigation", async ({ page }) => {
   await page.setViewportSize({ width: 1180, height: 820 });
   await installMocks(page);
   await gotoEssentials(page);
 
   await expect(page.getByRole("heading", { name: "Complete your sleep setup." })).toBeVisible();
   await expect(page.locator('[data-showroom-downstream-header="true"] img[alt="MySnoozePod"]')).toHaveAttribute("src", /mysnoozepod-logo-welcome/);
-  await expect(page.locator('[data-sleep-essentials-curator="true"] img')).toBeVisible();
-  await expect(page.locator('[data-sleep-essentials-curator="true"]')).toContainText("sleep mostly on your side");
-  await expect(page.locator('[data-sleep-essentials-notice="true"] > div > div')).toHaveCount(4);
+  await expect(page.locator('[data-sleep-essentials-concierge="true"] img')).toBeVisible();
+  await expect(page.locator('[data-sleep-essentials-concierge="true"]')).toContainText("Need help choosing?");
+  await expect(page.getByRole("tab", { name: /Pillows, 6 products, current/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Sheets & Bedding, 2 products/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Mattress Protectors, 2 products/ })).toBeVisible();
+  await expect(page.locator('[data-sleep-essentials-toolbar="true"]')).toContainText("6 products");
+  await expect(page.locator('[data-sleep-essentials-product-card]')).toHaveCount(6);
   await expect(page.getByLabel("Showroom Support Pillow Pillow Size")).toBeVisible();
   await expect(page.getByRole("option", { name: "Unavailable" })).toHaveCount(0);
-  await expect(page.getByText(/Why Try It/i)).toHaveCount(0);
   await expect(page.locator('select[aria-label*="Single Loft Pillow"]')).toHaveCount(0);
   await expect(page.getByText("Image unavailable", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Recommended for You|Tested|Showroom Favorite/i)).toHaveCount(0);
+  await expect(page.getByText(/categories explored|Finish Sleep Essentials|What to notice/i)).toHaveCount(0);
 
   await page.getByRole("tab", { name: /Sheets & Bedding/ }).click();
   await expect(page).toHaveURL(/category=sheets_bedding/);
   await expect(page.locator('[data-category-state="current"]')).toContainText("Sheets & Bedding");
-  await expect(page.locator('[data-sleep-essentials-curator="true"]')).toContainText("cool temperature preference");
+  await expect(page.locator('[data-sleep-essentials-product-card]')).toHaveCount(2);
   await expect(page.getByLabel("Showroom Sheet Set Set Size")).toBeVisible();
 
   await page.getByRole("tab", { name: /Mattress Protectors/ }).click();
   await expect(page).toHaveURL(/category=protectors/);
-  await expect(page.locator('[data-sleep-essentials-curator="true"]')).toContainText("without distracting from the feel");
+  await expect(page.locator('[data-sleep-essentials-product-card]')).toHaveCount(2);
   await expect(page.getByLabel("Showroom Mattress Protector Mattress Size")).toBeVisible();
-  await expect(page.locator('[data-sleep-essentials-progress="true"]')).toContainText("3 of 3 categories explored");
 });
 
-test("uses the authoritative cart add path and preserves unrelated lines", async ({ page }) => {
+test("sorts the complete category without hiding merchandise", async ({ page }) => {
+  await page.setViewportSize({ width: 1180, height: 820 });
+  await installMocks(page);
+  await gotoEssentials(page);
+
+  const cards = page.locator('[data-sleep-essentials-product-card]');
+  await expect(cards).toHaveCount(6);
+  const originalHandles = await cards.evaluateAll((items) => items.map((item) => item.getAttribute("data-sleep-essentials-product-card")));
+
+  await page.getByLabel("Sort products").selectOption("price-low");
+  await expect(cards.first()).toHaveAttribute("data-sleep-essentials-product-card", "value-pillow");
+  await expect(cards).toHaveCount(6);
+
+  await page.getByLabel("Sort products").selectOption("price-high");
+  await expect(cards.first()).toHaveAttribute("data-sleep-essentials-product-card", "premium-pillow");
+  await expect(cards).toHaveCount(6);
+
+  await page.getByLabel("Sort products").selectOption("name");
+  await expect(cards.first()).toHaveAttribute("data-sleep-essentials-product-card", "value-pillow");
+  await page.getByLabel("Sort products").selectOption("featured");
+  expect(await cards.evaluateAll((items) => items.map((item) => item.getAttribute("data-sleep-essentials-product-card")))).toEqual(originalHandles);
+});
+
+test("adds multiple authoritative accessories across categories and preserves unrelated lines", async ({ page }) => {
   await page.setViewportSize({ width: 1180, height: 820 });
   const unrelated = cartLine({
     id: "gid://shopify/CartLine/existing",
@@ -227,19 +265,33 @@ test("uses the authoritative cart add path and preserves unrelated lines", async
   await page.getByLabel("Showroom Support Pillow Pillow Size").selectOption("gid://shopify/ProductVariant/102");
   await page.locator('[data-sleep-essentials-product-card="showroom-pillow"]').getByRole("button", { name: "Add to Cart" }).click();
   await expect(page.locator('[data-sleep-essentials-product-card="showroom-pillow"]')).toContainText("In Cart");
-  await expect(page.getByRole("button", { name: /Cart 2 items/ })).toBeVisible();
-  expect(mocks.addRequests).toHaveLength(1);
-  expect(mocks.addRequests[0].lines).toHaveLength(1);
-  expect(mocks.addRequests[0].lines[0].merchandiseId).toBe("gid://shopify/ProductVariant/102");
-  expect(mocks.addRequests[0].lines[0].attributes).toEqual(expect.arrayContaining([
-    { key: "_Source", value: "Sleep Essentials" },
-    { key: "_Sleep Essential", value: "pillows" },
-  ]));
+
+  await page.getByRole("tab", { name: /Sheets & Bedding/ }).click();
+  await page.locator('[data-sleep-essentials-product-card="showroom-sheets"]').getByRole("button", { name: "Add to Cart" }).click();
+  await expect(page.locator('[data-sleep-essentials-product-card="showroom-sheets"]')).toContainText("In Cart");
+
+  await page.getByRole("tab", { name: /Mattress Protectors/ }).click();
+  await page.locator('[data-sleep-essentials-product-card="showroom-protector"]').getByRole("button", { name: "Add to Cart" }).click();
+  await expect(page.locator('[data-sleep-essentials-product-card="showroom-protector"]')).toContainText("In Cart");
+  await expect(page.getByRole("button", { name: /Cart 4 items/ })).toBeVisible();
+
+  expect(mocks.addRequests).toHaveLength(3);
+  expect(mocks.addRequests.map((request) => request.lines[0].merchandiseId)).toEqual([
+    "gid://shopify/ProductVariant/102",
+    "gid://shopify/ProductVariant/201",
+    "gid://shopify/ProductVariant/301",
+  ]);
+  for (const request of mocks.addRequests) {
+    expect(request.lines).toHaveLength(1);
+    expect(request.lines[0].attributes).toEqual(expect.arrayContaining([
+      { key: "_Source", value: "Sleep Essentials" },
+    ]));
+  }
   expect(mocks.getCartLines().some((line) => line.id === unrelated.id)).toBe(true);
-  await expect(page.locator('[data-category-state="in-cart"], [data-category-state="current"]')).toContainText("Pillows");
+  await expect.poll(() => mocks.completionRequests.length).toBe(1);
 });
 
-test("keeps the curated page and selections available after a cart failure", async ({ page }) => {
+test("keeps the storefront and selections available after a cart failure", async ({ page }) => {
   await page.setViewportSize({ width: 1180, height: 820 });
   await installMocks(page, { cartFailure: true });
   await gotoEssentials(page);
@@ -257,13 +309,14 @@ test("keeps the branded shell during loading, catalog failure, and empty categor
   await gotoEssentials(page);
   await expect(page.locator('[data-sleep-essentials-loading="true"]')).toBeVisible();
   await expect(page.locator('[data-sleep-essentials-category-rail="true"]')).toBeVisible();
-  await expect(page.locator('[data-sleep-essentials-curator="true"]')).toBeVisible();
+  await expect(page.locator('[data-sleep-essentials-concierge="true"]')).toBeVisible();
   await expect(page.locator('[data-sleep-essentials-product-grid="true"]')).toBeVisible();
 
   await page.unrouteAll({ behavior: "wait" });
   await installMocks(page, { catalogFailure: true });
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator('[data-sleep-essentials-error="catalog"]')).toBeVisible();
+  await expect(page.getByText("Products are temporarily unavailable.", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Try Again" })).toBeVisible();
   await expect(page.locator('[data-sleep-essentials-category-rail="true"]')).toBeVisible();
 
@@ -299,6 +352,15 @@ for (const viewport of [
     }));
     expect(cardsWithinBounds).toBe(true);
 
+    const controlSizes = await page.evaluate(() => ({
+      selectors: [...document.querySelectorAll('[data-sleep-essentials-product-card] select')].every((control) => control.getBoundingClientRect().height >= 44),
+      actions: [...document.querySelectorAll('[data-sleep-essentials-product-card] button')].every((control) => control.getBoundingClientRect().height >= 48),
+      firstCardTop: document.querySelector('[data-sleep-essentials-product-card]')?.getBoundingClientRect().top || 0,
+    }));
+    expect(controlSizes.selectors).toBe(true);
+    expect(controlSizes.actions).toBe(true);
+    expect(controlSizes.firstCardTop).toBeLessThan(viewport.height);
+
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     const clearance = await page.evaluate(() => {
       const cards = [...document.querySelectorAll('[data-sleep-essentials-product-card]')];
@@ -308,7 +370,7 @@ for (const viewport of [
     });
     expect(clearance.lastBottom).toBeLessThanOrEqual(clearance.footerTop);
     expect(clearance.footerTop).toBeLessThanOrEqual(clearance.viewportHeight);
-    await expect(page.getByRole("button", { name: "Finish Sleep Essentials" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "View Cart" })).toBeVisible();
   });
 }
 
@@ -330,13 +392,14 @@ test("hydrates a legacy Pod accessory selection without writing new Pod state", 
   expect(saved.selectedEssentials.pillows.variantId).toBe("gid://shopify/ProductVariant/102");
 });
 
-test("preserves deterministic return and completion navigation", async ({ page }) => {
+test("records completion in the background and preserves deterministic return navigation", async ({ page }) => {
   await page.setViewportSize({ width: 1180, height: 820 });
   const mocks = await installMocks(page, { initialReviewed: CATEGORY_IDS });
   await gotoEssentials(page);
-  await page.getByRole("button", { name: "Finish Sleep Essentials" }).click();
+  await expect.poll(() => mocks.completionRequests.length).toBe(1);
+  await expect(page.getByText(/categories explored|Finish Sleep Essentials/i)).toHaveCount(0);
+  await page.getByRole("button", { name: "Return to Pod" }).click();
   await expect(page).toHaveURL(/\/pod\/pod-3\?stage=build&buildStep=review/);
-  expect(mocks.completionRequests).toHaveLength(1);
 
   await page.goto("/sleep-essentials?category=pillows", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();

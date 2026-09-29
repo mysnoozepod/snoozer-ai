@@ -57,49 +57,56 @@ assert.ok(builderSource.includes("synchronizeCoreCartLines"), "Pod cart synchron
 assert.equal(builderSource.includes("Choose your size, motion setup, and sleep essentials"), false);
 
 for (const expected of [
-  'data-sleep-essentials-device="curated"',
+  'data-sleep-essentials-device="storefront"',
   'role="tablist"',
   'data-sleep-essentials-category-rail="true"',
-  'data-category-state={state}',
-  'data-sleep-essentials-curator="true"',
+  'data-category-state={active ? "current" : "idle"}',
+  'data-sleep-essentials-concierge="true"',
   'src="/snoozer-avatar.png"',
-  'data-sleep-essentials-notice="true"',
-  'data-sleep-essentials-progress="true"',
+  'data-sleep-essentials-toolbar="true"',
+  'data-sleep-essentials-sort="true"',
+  'data-sleep-essentials-cart-summary="true"',
   'data-sleep-essentials-footer="true"',
   'brandImageSrc={sharpMySnoozePodLogo}',
   'data-sleep-essentials-product-grid="true"',
-  "products.map((product)",
-  '"✓ In Cart"',
+  "sortedProducts.map((product, index)",
+  "In Your Cart",
+  '"In Cart"',
   '"Add to Cart"',
   "syncCartFromShopify",
   "cartVariantIds.has(merchandiseId)",
   'sourcePage: "sleep-essentials"',
   'action: "reviewed_no_selection"',
   "recordedCategoryViewsRef",
-  "Finish Sleep Essentials",
-  "getSleepEssentialsFinishPath",
+  "completionAttemptedRef",
+  "completeRewardAccessories",
   "confirmedCartItemCount(cart)",
   "ShowroomDownstreamHeader",
   'placement="inline"',
   'getSleepEssentialsVariantLabel(activeCategoryId)',
   'cartVariant || variants.find',
   'Image unavailable',
+  'loading={index < 3 ? "eager" : "lazy"}',
+  'decoding="async"',
+  'navigate("/cart")',
+  "View Cart",
 ]) {
   assert.ok(pageSource.includes(expected), `missing dedicated Sleep Essentials contract: ${expected}`);
 }
 
 for (const expected of [
-  "buildSleepEssentialsGuidance",
-  "buildSleepEssentialsNoticeCues",
   "getSleepEssentialsVariantLabel",
+  "SLEEP_ESSENTIAL_SORT_OPTIONS",
+  "sortSleepEssentialProducts",
+  'value: "featured"',
+  'value: "price-low"',
+  'value: "price-high"',
+  'value: "name"',
   'return "Pillow Size"',
   'return "Set Size"',
   'return "Mattress Size"',
-  "Neck & shoulder support",
-  "Weight / drape",
-  "Fit / coverage",
 ]) {
-  assert.ok(sleepLibSource.includes(expected), `missing deterministic Sleep Essentials guidance contract: ${expected}`);
+  assert.ok(sleepLibSource.includes(expected), `missing deterministic Sleep Essentials storefront contract: ${expected}`);
 }
 
 assert.equal(pageSource.includes("WHY TRY IT"), false, "product-specific claims must not be invented");
@@ -119,9 +126,11 @@ for (const removed of [
 
 const catalogManifest = JSON.parse(catalogManifestSource);
 const approvedHandles = catalogManifest.categories.flatMap((category) => category.handles);
-assert.ok(approvedHandles.length <= 12, "current approved showroom assortment must stay within the device cap");
-assert.ok(catalogServiceSource.includes("SHOWROOM_PRODUCT_LIMIT = 12"));
-assert.ok(catalogServiceSource.includes("selectShowroomAssortment(document, new Set(byHandle.keys()))"));
+assert.deepEqual(catalogManifest.categories.map((category) => category.handles.length), [37, 8, 7]);
+assert.equal(approvedHandles.length, 52, "the complete verified accessory manifest must remain present");
+assert.equal(new Set(approvedHandles).size, approvedHandles.length, "approved handles must be unique");
+assert.equal(catalogServiceSource.includes("SHOWROOM_PRODUCT_LIMIT"), false, "the old global cap must be removed");
+assert.ok(catalogServiceSource.includes("selectApprovedAssortment(document, new Set(byHandle.keys()))"));
 assert.ok(catalogServiceSource.includes("document.categories.map"));
 assert.equal(catalogServiceSource.includes("slice(0, 3)"), false, "backend must not impose a category allocation");
 assert.ok(layoutSource.includes("pageUsesDownstreamHeader"));
@@ -135,8 +144,12 @@ for (const removed of [
   "Save choice",
   "Review without a selection",
   "categories reviewed",
+  "categories explored",
   "Review all three categories",
   "Complete Sleep Essentials",
+  "Finish Sleep Essentials",
+  "Snoozer's guidance",
+  "What to notice",
 ]) {
   assert.equal(pageSource.includes(removed), false, `removed catalog copy still present: ${removed}`);
 }
@@ -148,4 +161,4 @@ assert.ok(podSource.includes('params.get("buildStep")'), "Pod return context mus
 assert.ok(podSource.includes("hydratedPodIdRef.current !== pid"), "recommendation hydration must not reset the current Pod session");
 assert.equal(welcomeSource.includes("starts automatically after the fourth digit"), false);
 
-console.log("Sleep Essentials Phase 3 tests passed: dedicated curated device ownership, shared cart truth, Pod continuity, rewards idempotency, and clean navigation.");
+console.log("Sleep Essentials storefront tests passed: full approved catalog, shared cart truth, Pod continuity, background rewards, sorting, and clean navigation.");

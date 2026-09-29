@@ -4,7 +4,6 @@ const manifest = require("../data/sleep-essentials-catalog.v1.json");
 const shopify = require("./shopify");
 
 const CATEGORY_IDS = Object.freeze(["pillows", "sheets_bedding", "protectors"]);
-const SHOWROOM_PRODUCT_LIMIT = 12;
 
 function clean(value) {
   return String(value || "").trim();
@@ -23,13 +22,8 @@ function validateManifest(document = manifest) {
   return document;
 }
 
-function selectShowroomAssortment(
-  document,
-  availableHandles = null,
-  limit = SHOWROOM_PRODUCT_LIMIT
-) {
+function selectApprovedAssortment(document, availableHandles = null) {
   const selectedHandles = new Set();
-  let remaining = Math.max(0, Number(limit) || 0);
 
   return document.categories.map((category) => ({
     ...category,
@@ -38,11 +32,9 @@ function selectShowroomAssortment(
       if (
         !handle ||
         selectedHandles.has(handle) ||
-        (availableHandles && !availableHandles.has(handle)) ||
-        remaining === 0
+        (availableHandles && !availableHandles.has(handle))
       ) return false;
       selectedHandles.add(handle);
-      remaining -= 1;
       return true;
     }),
   }));
@@ -63,10 +55,10 @@ async function getSleepEssentialsCatalog(input = {}, options = {}) {
     lite: false,
   });
   const byHandle = new Map((result.items || []).map((product) => [product.handle, product]));
-  const showroomCategories = selectShowroomAssortment(document, new Set(byHandle.keys()));
+  const approvedCategories = selectApprovedAssortment(document, new Set(byHandle.keys()));
   const categories = requested
-    ? showroomCategories.filter((category) => category.id === requested)
-    : showroomCategories;
+    ? approvedCategories.filter((category) => category.id === requested)
+    : approvedCategories;
   return {
     catalogVersion: document.catalogVersion,
     categories: categories.map((category) => ({
@@ -82,8 +74,7 @@ async function getSleepEssentialsCatalog(input = {}, options = {}) {
 
 module.exports = {
   CATEGORY_IDS,
-  SHOWROOM_PRODUCT_LIMIT,
   getSleepEssentialsCatalog,
-  selectShowroomAssortment,
+  selectApprovedAssortment,
   validateManifest,
 };

@@ -20,6 +20,51 @@ export const SLEEP_ESSENTIAL_CATEGORY_IDS = Object.freeze(
   SLEEP_ESSENTIAL_CATEGORIES.map((category) => category.id)
 );
 
+export const SLEEP_ESSENTIAL_SORT_OPTIONS = Object.freeze([
+  Object.freeze({ value: "featured", label: "Featured" }),
+  Object.freeze({ value: "price-low", label: "Price: Low to High" }),
+  Object.freeze({ value: "price-high", label: "Price: High to Low" }),
+  Object.freeze({ value: "name", label: "Name: A–Z" }),
+]);
+
+function sortPrice(product) {
+  const availableVariants = (Array.isArray(product?.variants) ? product.variants : [])
+    .filter((variant) => variant?.available !== false && variant?.availableForSale !== false);
+  const prices = availableVariants
+    .map((variant) => Number(variant?.price ?? variant?.priceV2?.amount))
+    .filter(Number.isFinite);
+  if (prices.length) return Math.min(...prices);
+  const fallback = Number(product?.price ?? product?.priceRange?.min);
+  return Number.isFinite(fallback) ? fallback : null;
+}
+
+export function sortSleepEssentialProducts(products, sortKey = "featured") {
+  const indexed = (Array.isArray(products) ? products : []).map((product, index) => ({ product, index }));
+  if (sortKey === "featured") return indexed.map(({ product }) => product);
+
+  indexed.sort((left, right) => {
+    if (sortKey === "name") {
+      const byName = String(left.product?.title || "").localeCompare(
+        String(right.product?.title || ""),
+        undefined,
+        { sensitivity: "base" }
+      );
+      return byName || left.index - right.index;
+    }
+
+    const leftPrice = sortPrice(left.product);
+    const rightPrice = sortPrice(right.product);
+    const leftComparable = leftPrice == null ? (sortKey === "price-high" ? -Infinity : Infinity) : leftPrice;
+    const rightComparable = rightPrice == null ? (sortKey === "price-high" ? -Infinity : Infinity) : rightPrice;
+    const byPrice = sortKey === "price-high"
+      ? rightComparable - leftComparable
+      : leftComparable - rightComparable;
+    return byPrice || left.index - right.index;
+  });
+
+  return indexed.map(({ product }) => product);
+}
+
 const SLEEP_ESSENTIAL_NOTICE_CUES = Object.freeze({
   pillows: Object.freeze([
     Object.freeze({
