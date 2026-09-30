@@ -73,11 +73,11 @@ function RewardsPill({ status, points, onClick }) {
 function QuickStarter({ item, onClick }) {
   const Icon = item.icon;
   return (
-    <button type="button" onClick={onClick} className={`${item.wide ? "col-span-2" : ""} group flex min-h-[56px] items-center gap-2.5 rounded-[16px] border border-[#dbe5ff] bg-white/82 px-2.5 py-2 text-left shadow-[0_8px_20px_rgba(47,72,137,0.06)] transition hover:-translate-y-0.5 hover:border-[#bfcfff] hover:bg-white hover:shadow-[0_12px_26px_rgba(47,72,137,0.1)] focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 motion-reduce:transform-none`}>
+    <button data-ask-quick-starter="true" type="button" onClick={onClick} className={`${item.wide ? "col-span-2" : ""} group flex min-h-[56px] items-center gap-2.5 rounded-[16px] border border-[#dbe5ff] bg-white/82 px-2.5 py-2 text-left shadow-[0_8px_20px_rgba(47,72,137,0.06)] transition hover:-translate-y-0.5 hover:border-[#bfcfff] hover:bg-white hover:shadow-[0_12px_26px_rgba(47,72,137,0.1)] focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 motion-reduce:transform-none`}>
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-[#eef3ff] text-[#2f57e8]"><Icon className="h-[18px] w-[18px]" /></span>
       <span className="min-w-0 flex-1">
         <span className="block text-[12px] font-black leading-4 text-slate-900">{item.label}</span>
-        <span className="mt-0.5 hidden text-[10px] leading-3.5 text-slate-500 xl:block">{item.helper}</span>
+        <span data-ask-quick-starter-helper="true" className="mt-0.5 hidden text-[10px] leading-3.5 text-slate-500 xl:block">{item.helper}</span>
       </span>
       <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-[#2f57e8] motion-reduce:transform-none" />
     </button>
@@ -357,18 +357,18 @@ export default function AskSnoozer() {
           <ShowroomPanel className="min-h-0 flex-1 overflow-hidden p-0" tone="soft">
             <div className="grid h-full min-h-0 grid-cols-[minmax(312px,35%)_minmax(0,65%)]">
               <aside data-ask-section="advisor" className="flex min-h-0 flex-col overflow-hidden border-r border-[#dbe5ff] bg-[linear-gradient(160deg,rgba(255,255,255,0.96),rgba(240,245,255,0.9))] p-4 xl:p-5">
-                <div className="shrink-0 text-center">
-                  <div className="mx-auto flex h-[150px] w-[170px] items-center justify-center rounded-[38px] border border-white/90 bg-[radial-gradient(circle_at_50%_34%,rgba(255,255,255,1),rgba(230,238,255,0.9))] shadow-[0_18px_42px_rgba(46,74,138,0.13)] xl:h-[164px] xl:w-[184px]">
+                <div data-ask-advisor-intro="true" className="shrink-0 text-center">
+                  <div data-ask-advisor-avatar="true" className="mx-auto flex h-[150px] w-[170px] items-center justify-center rounded-[38px] border border-white/90 bg-[radial-gradient(circle_at_50%_34%,rgba(255,255,255,1),rgba(230,238,255,0.9))] shadow-[0_18px_42px_rgba(46,74,138,0.13)] xl:h-[164px] xl:w-[184px]">
                     <img src="/snoozer-avatar.png" alt="Snoozer" className="h-[142px] w-[142px] object-contain xl:h-[156px] xl:w-[156px]" />
                   </div>
                   <ShowroomEyebrow className="mt-3 text-[0.7rem] tracking-[0.2em]">Ask Snoozer</ShowroomEyebrow>
-                  <h1 className="mt-1 text-[1.55rem] font-black leading-[1.02] tracking-tight text-slate-950 xl:text-[1.72rem]">What can I help you figure out?</h1>
-                  <p className="mx-auto mt-2 max-w-[360px] text-[0.78rem] leading-5 text-slate-600 xl:text-[0.84rem]">I can help you compare products, understand features, check your cart, find rewards, and more.</p>
+                  <h1 data-ask-advisor-title="true" className="mt-1 text-[1.55rem] font-black leading-[1.02] tracking-tight text-slate-950 xl:text-[1.72rem]">What can I help you figure out?</h1>
+                  <p data-ask-advisor-copy="true" className="mx-auto mt-2 max-w-[360px] text-[0.78rem] leading-5 text-slate-600 xl:text-[0.84rem]">I can help you compare products, understand features, check your cart, find rewards, and more.</p>
                 </div>
 
-                <div className="mt-3 min-h-0 flex-1">
-                  <div className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Useful things to ask</div>
-                  <div role="group" aria-label="Quick Starters" className="grid grid-cols-2 gap-2">
+                <div data-ask-quick-starters="true" className="mt-3 min-h-0 flex-1">
+                  <div data-ask-quick-starters-label="true" className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Useful things to ask</div>
+                  <div data-ask-quick-starters-grid="true" role="group" aria-label="Quick Starters" className="grid grid-cols-2 gap-2">
                     {QUICK_STARTERS.map((item) => <QuickStarter key={item.label} item={item} onClick={() => sendMessage(item.label, { command: item.command })} />)}
                   </div>
                 </div>

@@ -161,6 +161,7 @@ for (const viewport of [
   { width: 1180, height: 820 },
   { width: 1024, height: 768 },
   { width: 1366, height: 768 },
+  { width: 1536, height: 704 },
 ]) {
   test(`guest empty advisor workspace is contained at ${viewport.width}x${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport);
@@ -179,8 +180,12 @@ for (const viewport of [
     expect(metrics.documentVerticalOverflow).toBe(false);
     expect(metrics.documentHorizontalOverflow).toBe(false);
     expect(metrics.textareaCount).toBe(1);
-    expect(metrics.avatarHeight).toBeGreaterThanOrEqual(140);
+    expect(metrics.avatarHeight).toBeGreaterThanOrEqual(viewport.height <= 740 ? 108 : 140);
     expect(metrics.composerBottom).toBeLessThanOrEqual(metrics.humanTop);
+    const starterBounds = await page.locator('[data-ask-quick-starter="true"]').evaluateAll((buttons) => buttons.map((button) => button.getBoundingClientRect().toJSON()));
+    const advisorBottom = await page.locator('[data-ask-section="advisor"]').evaluate((advisor) => advisor.getBoundingClientRect().bottom);
+    expect(starterBounds).toHaveLength(5);
+    expect(Math.max(...starterBounds.map((bounds) => bounds.bottom))).toBeLessThanOrEqual(advisorBottom);
     await capture(page, `pass7-local-empty-${viewport.width}x${viewport.height}.png`);
   });
 }

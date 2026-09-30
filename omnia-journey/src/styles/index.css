@@ -921,6 +921,65 @@
   }
 }
 
+/* Keep the dedicated Ask Snoozer advisor fully usable when 100% browser zoom
+   combines with Windows display scaling to produce a short CSS viewport. */
+@media (max-height: 740px) and (min-width: 900px) {
+  [data-ask-snoozer-workspace="true"] [data-ask-section="advisor"] {
+    padding: 10px 16px;
+  }
+
+  [data-ask-advisor-avatar="true"] {
+    width: 138px !important;
+    height: 116px !important;
+    border-radius: 30px;
+  }
+
+  [data-ask-advisor-avatar="true"] > img {
+    width: 110px !important;
+    height: 110px !important;
+  }
+
+  [data-ask-advisor-avatar="true"] + div {
+    margin-top: 5px;
+    font-size: 0.62rem;
+  }
+
+  [data-ask-advisor-title="true"] {
+    margin-top: 2px;
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  [data-ask-advisor-copy="true"] {
+    margin-top: 5px;
+    max-width: 390px;
+    font-size: 0.72rem;
+    line-height: 1rem;
+  }
+
+  [data-ask-quick-starters="true"] {
+    margin-top: 7px;
+  }
+
+  [data-ask-quick-starters-label="true"] {
+    margin-bottom: 5px;
+  }
+
+  [data-ask-quick-starters-grid="true"] {
+    gap: 6px;
+  }
+
+  [data-ask-quick-starter="true"] {
+    min-height: 48px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  [data-ask-quick-starter-helper="true"] {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rest-test-visual-enter,
   .rest-test-visual-breathe {
