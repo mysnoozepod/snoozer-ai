@@ -21,18 +21,25 @@ const check = (condition, message) => { assert.ok(condition, message); checks +=
 
 const starterBlock = page.match(/const QUICK_STARTERS = \[([\s\S]*?)\n\];/)?.[1] || "";
 const labels = [...starterBlock.matchAll(/label: "([^"]+)"/g)].map((match) => match[1]);
-check(labels.join("|") === "Find Rewards|Analyze My Cart|Compare Products|Motion Base Features|Browse Products", "quick starters have the exact five labels");
+check(labels.join("|") === "Compare Products|What’s in My Cart?|Find a Product|Motion Base Help|Show My Rewards", "quick starters use the exact five human labels");
 check(!starterBlock.includes("Talk to Human") && !starterBlock.includes("Talk to a human"), "Talk to Human is not a default starter");
 
-const heroIndex = page.indexOf('data-ask-section="hero"');
+const advisorIndex = page.indexOf('data-ask-section="advisor"');
+const workspaceIndex = page.indexOf('data-ask-section="answer-workspace"');
 const transcriptIndex = page.indexOf('data-ask-section="transcript"');
 const composerIndex = page.indexOf('data-ask-section="composer"');
-check(heroIndex >= 0 && heroIndex < transcriptIndex && transcriptIndex < composerIndex, "visual order is hero, transcript, composer");
-check((page.match(/src="\/snoozer-avatar\.png"/g) || []).length === 1, "only one Snoozer avatar renders");
+check(advisorIndex >= 0 && advisorIndex < workspaceIndex && workspaceIndex < transcriptIndex && transcriptIndex < composerIndex, "visual order is advisor identity, answer workspace, transcript, composer");
+check(page.includes('data-ask-snoozer-workspace="true"') && page.includes("h-[100dvh]") && page.includes("overflow-hidden"), "Ask owns a fixed showroom viewport shell");
+check(page.includes('className="h-[142px] w-[142px] object-contain xl:h-[156px] xl:w-[156px]"'), "advisor Snoozer has substantial dedicated-page presence");
+check(page.includes("What can I help you figure out?") && !page.includes("Chat with Snoozer"), "advisor invitation replaces generic chat framing");
+check(page.includes('role="region" aria-label="Ask Snoozer answers"') && page.includes("overflow-y-auto overscroll-contain"), "only the answer workspace owns conversation scrolling");
+check((page.match(/<textarea/g) || []).length === 1 && page.includes('aria-label="Ask Snoozer"'), "there is exactly one labeled shopper composer");
+check(page.includes("Ask Snoozer anything about your sleep setup…"), "composer uses the concise advisor prompt without decorative inputs");
+check(page.includes("brandImageSrc={brandLogoSrc}") && page.includes('mysnoozepod-logo-welcome.png'), "Ask explicitly uses the accepted sharp logo asset");
 check(!page.includes("<footer") && !page.includes("View Results</ Beneath"), "Ask page has no footer band");
 check(page.includes("ShowroomDownstreamHeader") && page.includes("RewardsPill") && page.includes("ShowroomCartBadge"), "header has rewards, centered brand primitive, and cart");
 check(layout.includes("pageUsesDownstreamHeader || pageUsesAskStation") && layout.includes("!pageOwnsRewardsControl"), "shared floating Rewards control is suppressed when Ask owns the header control");
-check(layout.includes('right: pageUsesAskStation ? 16 : "auto"') && layout.includes("bottom: pageUsesAskStation") && page.includes('className="flex min-h-0 flex-col pb-24"'), "Ask places Brandy at lower right with reserved space below the composer");
+check(layout.includes('right: pageUsesAskStation ? 16 : "auto"') && layout.includes("bottom: pageUsesAskStation") && page.includes("pb-[82px]"), "Ask places Brandy at lower right with reserved space below the composer");
 check(page.includes("getRewardSummary()") && page.includes("Number.isFinite(points)"), "reward pill reads actual summary and gates numeric display");
 check(page.includes('sendMessage("Find Rewards", { command: createShowroomCommand("find_rewards") })'), "reward pill sends the typed rewards command");
 check(starterBlock.includes('createShowroomCommand("find_rewards")') && starterBlock.includes('createShowroomCommand("browse_products", { offset: 0 })'), "quick starters carry typed command definitions");
@@ -41,7 +48,7 @@ check(page.includes("state.cart || []") && page.includes("cartItemCount(cart)"),
 check(page.includes("canMutateCart(device)") && page.includes("isDeviceActionAllowed(device, action)"), "cart actions preserve device guards");
 check(!page.includes("canInitiateCheckout") && !page.includes("checkoutUrl"), "Ask page has no checkout initiation path");
 check(page.includes("sayHud({") && page.includes(".catch(() => {})"), "voice failure cannot suppress visual output");
-check(page.includes("Working on that…") && page.includes("requestAnimationFrame"), "thinking state and first-visible-feedback boundary remain instrumented");
+check(page.includes("Snoozer is thinking…") && page.includes("requestAnimationFrame") && page.includes("motion-reduce:animate-none"), "thinking state and first-visible-feedback boundary remain instrumented with reduced-motion safety");
 check(page.includes("sendAskSnoozerQualityTiming") && page.includes("ASK_SNOOZER_VOICE_TIMING_EVENT"), "display and TTS timing events are reported without changing the UI");
 check(page.includes("canRetry: true") && page.includes("composeFallbackReply"), "network failure retains customer-safe retry");
 check(page.includes("retryRequest = { message: content, command }") && page.includes("command: request.command || null"), "retry preserves the original command object");
@@ -49,6 +56,10 @@ check(adapter.includes("storeState?.cart") && !adapter.includes("storeState?.sno
 check(adapter.includes("normalizeAskStationProduct") && adapter.includes("normalizeAskStationAction"), "adapter uses the safe rich response contract");
 check(adapter.includes('type === "command"') && adapter.includes("command: normalizedCommand"), "command chips and requests preserve typed command metadata");
 check(adapter.includes('buildCommandChip("Return policy", "policy_fact"') && adapter.includes('buildCommandChip("Queen pricing", "price_quote"'), "deterministic adaptive chips use typed policy and price commands");
+check(page.includes('createShowroomCommand("analyze_cart")') && page.includes('createShowroomCommand("motion_base_features")'), "human starter labels preserve their exact typed backend commands");
+check(page.includes('data-ask-message="latest-answer"') && page.includes('data-ask-history="earlier"'), "latest answer dominates while prior turns remain visible");
+check(page.includes('data-ask-product-card="true"') && page.includes("h-[106px] w-[116px]") && page.includes("min-h-11"), "recommendation cards use showroom-scale imagery and touch targets");
+check(page.includes('bg-[#2f57e8]') && !page.includes('bg-[#16315F] text-white'), "canonical blue owns primary actions instead of legacy Ask navy");
 
 const exactId = "gid://shopify/ProductVariant/123";
 const normalized = normalizeAskStationProduct({

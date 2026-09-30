@@ -21,13 +21,14 @@ import { useStore } from "@/lib/useStore";
 import { useSessionStore } from "@/state/sessionStore";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
 import { ShowroomCartBadge, ShowroomDownstreamHeader, ShowroomEyebrow, ShowroomFrame, ShowroomPageShell, ShowroomPanel, ShowroomTopRail } from "@/components/showroom/ShowroomPrimitives";
+import brandLogoSrc from "@/assets/mysnoozepod-logo-welcome.png";
 
 const QUICK_STARTERS = [
-  { label: "Find Rewards", command: createShowroomCommand("find_rewards"), icon: Gift },
-  { label: "Analyze My Cart", command: createShowroomCommand("analyze_cart"), icon: ShoppingCart },
-  { label: "Compare Products", command: createShowroomCommand("compare_products", { productHandles: [] }), icon: Scale },
-  { label: "Motion Base Features", command: createShowroomCommand("motion_base_features"), icon: BedDouble },
-  { label: "Browse Products", command: createShowroomCommand("browse_products", { offset: 0 }), icon: Search },
+  { label: "Compare Products", helper: "See side-by-side differences.", command: createShowroomCommand("compare_products", { productHandles: [] }), icon: Scale },
+  { label: "What’s in My Cart?", helper: "Review what you’ve added.", command: createShowroomCommand("analyze_cart"), icon: ShoppingCart },
+  { label: "Find a Product", helper: "Search what we carry.", command: createShowroomCommand("browse_products", { offset: 0 }), icon: Search },
+  { label: "Motion Base Help", helper: "Understand features and options.", command: createShowroomCommand("motion_base_features"), icon: BedDouble },
+  { label: "Show My Rewards", helper: "Check points and progress.", command: createShowroomCommand("find_rewards"), icon: Gift, wide: true },
 ];
 
 function createMessageId(prefix) {
@@ -72,22 +73,25 @@ function RewardsPill({ status, points, onClick }) {
 function QuickStarter({ item, onClick }) {
   const Icon = item.icon;
   return (
-    <button type="button" onClick={onClick} className="group flex min-h-[52px] items-center gap-3 rounded-[18px] border border-[#dbe5ff] bg-white/84 px-3 py-2.5 text-left shadow-[0_10px_24px_rgba(47,72,137,0.07)] transition hover:-translate-y-0.5 hover:border-[#bfcfff] hover:bg-white hover:shadow-[0_14px_30px_rgba(47,72,137,0.11)]">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef3ff] text-[#2f57e8]"><Icon className="h-4 w-4" /></span>
-      <span className="min-w-0 flex-1 text-[13px] font-extrabold leading-4 text-[#16315F]">{item.label}</span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-[#2f57e8]" />
+    <button type="button" onClick={onClick} className={`${item.wide ? "col-span-2" : ""} group flex min-h-[56px] items-center gap-2.5 rounded-[16px] border border-[#dbe5ff] bg-white/82 px-2.5 py-2 text-left shadow-[0_8px_20px_rgba(47,72,137,0.06)] transition hover:-translate-y-0.5 hover:border-[#bfcfff] hover:bg-white hover:shadow-[0_12px_26px_rgba(47,72,137,0.1)] focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 motion-reduce:transform-none`}>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[12px] bg-[#eef3ff] text-[#2f57e8]"><Icon className="h-[18px] w-[18px]" /></span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[12px] font-black leading-4 text-slate-900">{item.label}</span>
+        <span className="mt-0.5 hidden text-[10px] leading-3.5 text-slate-500 xl:block">{item.helper}</span>
+      </span>
+      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-[#2f57e8] motion-reduce:transform-none" />
     </button>
   );
 }
 
 function ChatComposer({ draft, pending, canSend, textareaRef, onChange, onKeyDown, onSend, noteUserInteraction }) {
   return (
-    <div className="rounded-[24px] border border-[#dbe5ff] bg-white/96 p-3 shadow-[0_18px_40px_rgba(31,55,117,0.10)] md:p-3.5">
-      <div className="flex items-end gap-3">
-        <div className="min-w-0 flex-1 rounded-[20px] border border-slate-200 bg-slate-50/80 px-3 py-2 shadow-inner">
-          <textarea ref={textareaRef} value={draft} onChange={onChange} onKeyDown={onKeyDown} onFocus={() => noteUserInteraction?.()} rows={2} placeholder="Ask about products, rewards, your cart, sleep tips, or what to try next." className="min-h-[58px] w-full resize-none bg-transparent text-[15px] leading-6 text-slate-800 outline-none placeholder:text-slate-400" />
+    <div data-ask-composer="true" className="rounded-[20px] border border-[#cfdcff] bg-white/96 p-2 shadow-[0_14px_34px_rgba(31,55,117,0.1)]">
+      <div className="flex items-end gap-2.5">
+        <div className="min-w-0 flex-1 rounded-[15px] border border-slate-200 bg-slate-50/80 px-3 py-1.5 shadow-inner focus-within:border-[#9fb4ff] focus-within:ring-4 focus-within:ring-blue-100">
+          <textarea ref={textareaRef} aria-label="Ask Snoozer" value={draft} onChange={onChange} onKeyDown={onKeyDown} onFocus={() => noteUserInteraction?.()} rows={1} placeholder="Ask Snoozer anything about your sleep setup…" className="block min-h-[38px] max-h-[82px] w-full resize-none overflow-y-auto bg-transparent py-2 text-[15px] leading-[22px] text-slate-800 outline-none placeholder:text-slate-400" />
         </div>
-        <button type="button" onClick={() => onSend(draft)} disabled={!canSend} className={`inline-flex h-[54px] w-[108px] shrink-0 items-center justify-center gap-2 rounded-[18px] px-4 text-sm font-semibold transition ${canSend ? "bg-[#16315F] text-white shadow-[0_14px_28px_rgba(22,49,95,0.18)] hover:bg-[#102749]" : "bg-slate-200 text-slate-500"}`}>
+        <button type="button" onClick={() => onSend(draft)} disabled={!canSend} className={`inline-flex h-[52px] min-w-[104px] shrink-0 items-center justify-center gap-2 rounded-[15px] px-4 text-sm font-black transition focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 ${canSend ? "bg-[#2f57e8] text-white shadow-[0_12px_26px_rgba(47,87,232,0.24)] hover:bg-[#274bd0]" : "bg-slate-200 text-slate-500"}`}>
           {pending ? "Sending…" : "Send"}<ArrowUp className="h-4 w-4" />
         </button>
       </div>
@@ -99,25 +103,25 @@ function ProductCard({ item, siblings, imageFailed, mutationPending, canAdd, can
   const price = formatProductPrice(item);
   const addAction = canAdd && item?.suppressAddToCart !== true ? buildProductAddAction(item) : null;
   return (
-    <div className="rounded-[18px] border border-slate-200 bg-slate-50/70 p-3 text-left">
-      <div className="flex items-start gap-3">
-        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-white">
-          {item.imageUrl && !imageFailed ? <img src={item.imageUrl} alt={item.title} onError={onImageError} className="h-full w-full object-contain p-1" /> : <div className="flex h-full w-full items-center justify-center text-[9px] font-bold uppercase tracking-[0.18em] text-slate-400">{item.type}</div>}
+    <div data-ask-product-card="true" className="flex min-h-[252px] flex-col overflow-hidden rounded-[20px] border border-[#d8e2fb] bg-white text-left shadow-[0_10px_28px_rgba(38,62,124,0.08)]">
+      <div className="grid min-h-[112px] grid-cols-[116px_minmax(0,1fr)] gap-3 border-b border-slate-100 bg-[#f5f8ff] p-3">
+        <div className="h-[106px] w-[116px] shrink-0 overflow-hidden rounded-[16px] border border-white bg-white shadow-sm">
+          {item.imageUrl && !imageFailed ? <img src={item.imageUrl} alt={item.title} onError={onImageError} className="h-full w-full object-contain p-2" /> : <div className="flex h-full w-full items-center justify-center px-2 text-center text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400">{item.type || "Image unavailable"}</div>}
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-black text-slate-900">{item.title}</div>
+        <div className="min-w-0 py-1">
+          <div className="text-[15px] font-black leading-5 text-slate-900">{item.title}</div>
           {item.subtitle ? <div className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">{item.subtitle}</div> : null}
           <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-            {price ? <span className="font-extrabold text-[#16315F]">{price}</span> : null}
+            {price ? <span className="text-[15px] font-black text-[#2f57e8]">{price}</span> : null}
             {item.available === true ? <span className="inline-flex items-center gap-1 font-semibold text-emerald-700"><Check className="h-3 w-3" />Available</span> : item.available === false ? <span className="font-semibold text-slate-500">Unavailable</span> : null}
           </div>
           {item.selectedOptions?.length ? <div className="mt-1 text-[11px] text-slate-500">{item.selectedOptions.map((option) => `${option.name}: ${option.value}`).join(" · ")}</div> : null}
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {addAction ? <button type="button" disabled={mutationPending} onClick={() => onAdd(addAction)} className="rounded-full bg-[#16315F] px-3 py-1.5 text-xs font-bold text-white transition hover:bg-[#102749] disabled:opacity-50">{mutationPending ? "Adding…" : "Add to Cart"}</button> : canAdd && item.available === true && item.variants?.length > 1 ? <button type="button" onClick={onChoose} className="rounded-full border border-[#c9d7ff] bg-white px-3 py-1.5 text-xs font-bold text-[#16315F] hover:bg-[#f5f8ff]">Choose Size</button> : null}
-        {canView && item.url ? <button type="button" onClick={onView} className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">View Details <ExternalLink className="h-3 w-3" /></button> : null}
-        {item.handle ? <button type="button" onClick={() => onCompare(item, siblings)} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50">Compare</button> : null}
+      <div className="mt-auto grid grid-cols-2 gap-2 p-3">
+        {addAction ? <button type="button" disabled={mutationPending} onClick={() => onAdd(addAction)} className="col-span-2 min-h-11 rounded-[13px] bg-[#2f57e8] px-3 py-2 text-xs font-black text-white transition hover:bg-[#274bd0] focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 disabled:opacity-50">{mutationPending ? "Adding…" : "Add to Cart"}</button> : canAdd && item.available === true && item.variants?.length > 1 ? <button type="button" onClick={onChoose} className="col-span-2 min-h-11 rounded-[13px] border border-[#b9c9fa] bg-white px-3 py-2 text-xs font-black text-[#2346c6] hover:bg-[#f5f8ff] focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">Choose Size</button> : null}
+        {canView && item.url ? <button type="button" onClick={onView} className="inline-flex min-h-11 items-center justify-center gap-1 rounded-[13px] border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">View Details <ExternalLink className="h-3 w-3" /></button> : null}
+        {item.handle ? <button type="button" onClick={() => onCompare(item, siblings)} className={`${canView && item.url ? "" : "col-span-2"} min-h-11 rounded-[13px] border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200`}>Compare</button> : null}
       </div>
     </div>
   );
@@ -154,6 +158,8 @@ export default function AskSnoozer() {
 
   const canSend = !pending && String(draft || "").trim().length > 0;
   const authoritativeCartCount = useMemo(() => cartItemCount(cart), [cart]);
+  const latestAssistantId = useMemo(() => [...messages].reverse().find((message) => message.role === "assistant")?.id || null, [messages]);
+  const latestUserId = useMemo(() => [...messages].reverse().find((message) => message.role === "user")?.id || null, [messages]);
   const showCommerceAffordances = canViewCart(device);
   const cartMutationAllowed = canMutateCart(device);
   const devicePodRoute = makePodRoute(device?.podId) || "/pod/pod-1";
@@ -190,7 +196,10 @@ export default function AskSnoozer() {
 
   useEffect(() => {
     const node = transcriptRef.current;
-    if (node) node.scrollTo({ top: node.scrollHeight, behavior: messages.length ? "smooth" : "auto" });
+    if (node) {
+      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+      node.scrollTo({ top: node.scrollHeight, behavior: messages.length && !reduceMotion ? "smooth" : "auto" });
+    }
   }, [messages, pending]);
 
   useEffect(() => { emitDeviceActiveResponse(pending, { reason: "activeResponse" }); }, [pending]);
@@ -241,6 +250,7 @@ export default function AskSnoozer() {
     setMessages((current) => [...current, userMessage]);
     const retryRequest = { message: content, command };
     setPending(true); setLastFailedRequest(null); setDraft("");
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
     window.requestAnimationFrame(() => markAskSnoozerTiming(turnTiming, "firstFeedbackAt"));
     try {
       const response = await sendAskSnoozerMessage({
@@ -325,76 +335,127 @@ export default function AskSnoozer() {
     event.preventDefault(); if (!pending) sendMessage(draft);
   }
 
+  function handleDraftChange(event) {
+    setDraft(event.target.value);
+    event.target.style.height = "auto";
+    event.target.style.height = `${Math.min(event.target.scrollHeight, 82)}px`;
+  }
+
   return (
-    <ShowroomPageShell className="flex min-h-0 flex-col pb-24">
-      <ShowroomTopRail className="items-center pt-2 md:pt-3">
+    <ShowroomPageShell data-ask-snoozer-workspace="true" className="h-[100dvh] min-h-0 overflow-hidden pb-[82px] pt-2 md:pt-2">
+      <ShowroomTopRail className="w-full shrink-0 items-center pt-0 md:pt-0">
         <ShowroomDownstreamHeader
+          brandImageSrc={brandLogoSrc}
+          brandImageClassName="w-[clamp(176px,18vw,224px)]"
           rewards={<RewardsPill status={rewardState.status} points={rewardState.points} onClick={() => sendMessage("Find Rewards", { command: createShowroomCommand("find_rewards") })} />}
           cart={showCommerceAffordances ? <ShowroomCartBadge count={authoritativeCartCount} quiet onClick={() => { noteUserInteraction?.(); if (canNavigateTo(device, "/cart")) navigate("/cart"); }} /> : null}
         />
       </ShowroomTopRail>
 
-      <div className="mx-auto flex min-h-0 w-full max-w-[1180px] flex-1 flex-col px-4 pt-2 md:px-6 md:pt-3">
-        <ShowroomFrame className="flex min-h-0 flex-1 flex-col overflow-hidden p-1 md:p-1.5">
-          <ShowroomPanel className="flex min-h-0 flex-1 flex-col overflow-hidden p-0" tone="soft">
-            <section data-ask-section="hero" className="shrink-0 border-b border-[#dbe5ff] px-5 py-4 md:px-6 md:py-5">
-              <div className="grid items-center gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.98),rgba(233,240,255,0.92))] shadow-[0_14px_32px_rgba(46,74,138,0.10)]">
-                    <img src="/snoozer-avatar.png" alt="Snoozer" className="h-12 w-12 object-contain" />
+      <div className="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col px-4 pt-2 md:px-6">
+        <ShowroomFrame className="flex min-h-0 flex-1 overflow-hidden p-1.5">
+          <ShowroomPanel className="min-h-0 flex-1 overflow-hidden p-0" tone="soft">
+            <div className="grid h-full min-h-0 grid-cols-[minmax(312px,35%)_minmax(0,65%)]">
+              <aside data-ask-section="advisor" className="flex min-h-0 flex-col overflow-hidden border-r border-[#dbe5ff] bg-[linear-gradient(160deg,rgba(255,255,255,0.96),rgba(240,245,255,0.9))] p-4 xl:p-5">
+                <div className="shrink-0 text-center">
+                  <div className="mx-auto flex h-[150px] w-[170px] items-center justify-center rounded-[38px] border border-white/90 bg-[radial-gradient(circle_at_50%_34%,rgba(255,255,255,1),rgba(230,238,255,0.9))] shadow-[0_18px_42px_rgba(46,74,138,0.13)] xl:h-[164px] xl:w-[184px]">
+                    <img src="/snoozer-avatar.png" alt="Snoozer" className="h-[142px] w-[142px] object-contain xl:h-[156px] xl:w-[156px]" />
                   </div>
-                  <div className="min-w-0 pt-1">
-                    <ShowroomEyebrow className="text-[0.72rem] tracking-[0.18em]">Ask Snoozer</ShowroomEyebrow>
-                    <h1 className="mt-1 text-[1.7rem] font-black leading-[0.96] tracking-tight text-slate-900 md:text-[2rem]">Chat with Snoozer</h1>
-                    <p className="mt-2 max-w-xl text-[0.92rem] leading-6 text-slate-600">Your showroom advisor for products, rewards, comparisons, and a cart you can trust.</p>
-                  </div>
+                  <ShowroomEyebrow className="mt-3 text-[0.7rem] tracking-[0.2em]">Ask Snoozer</ShowroomEyebrow>
+                  <h1 className="mt-1 text-[1.55rem] font-black leading-[1.02] tracking-tight text-slate-950 xl:text-[1.72rem]">What can I help you figure out?</h1>
+                  <p className="mx-auto mt-2 max-w-[360px] text-[0.78rem] leading-5 text-slate-600 xl:text-[0.84rem]">I can help you compare products, understand features, check your cart, find rewards, and more.</p>
                 </div>
-                <div>
-                  <div className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Quick Starters</div>
-                  <div className="grid gap-2 sm:grid-cols-2">{QUICK_STARTERS.map((item) => <QuickStarter key={item.label} item={item} onClick={() => sendMessage(item.label, { command: item.command })} />)}</div>
-                </div>
-              </div>
-            </section>
 
-            <section ref={transcriptRef} data-ask-section="transcript" className="min-h-0 flex-1 overflow-y-auto bg-white/72 px-4 py-4 md:px-6 md:py-5">
-              {!messages.length && !pending ? <div className="flex min-h-[150px] items-center justify-center px-5 text-center"><p className="max-w-2xl text-[0.96rem] font-semibold leading-7 text-slate-500">{shopperId && shopperId !== "guest" ? "Welcome back. Your session is connected—what would you like to explore?" : "I can help you compare products, understand motion bases, explore sleep tips, or build your cart."}</p></div> : null}
-              <div className="space-y-3">
-                {messages.map((message) => {
-                  const isAssistant = message.role === "assistant";
-                  return (
-                    <article key={message.id} className={`flex ${isAssistant ? "justify-start" : "justify-end"}`}>
-                      <div className={`max-w-[96%] rounded-[22px] px-4 py-3.5 shadow-sm md:max-w-[82%] ${isAssistant ? "border border-slate-200 bg-white text-slate-800" : "bg-[#16315F] text-white"}`}>
-                        {isAssistant ? <div className="mb-2 flex items-center gap-2"><span className="text-sm font-black text-slate-900">Snoozer</span><span className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">{formatAssistantStatus(message.status)}</span></div> : null}
-                        <div className="whitespace-pre-wrap text-sm leading-6 md:text-[15px]">{message.content}</div>
-                        {isAssistant && message.chips?.length ? <div className="mt-3 flex flex-wrap gap-2">{message.chips.map((chip) => <button key={`${message.id}-${chip.label}-${chip.value}`} type="button" onClick={() => handleChip(chip)} className="rounded-full border border-[#16315F]/12 bg-[#16315F]/5 px-3 py-1.5 text-xs font-semibold text-[#16315F] hover:bg-[#16315F]/10">{chip.label}</button>)}</div> : null}
-                        {isAssistant && message.actions?.length ? <div className="mt-3 flex flex-wrap gap-2">{message.actions.map((action) => <button key={`${message.id}-${action.label}`} type="button" disabled={action.type === "add_to_cart" && cartMutationPending} onClick={() => handleAction(action)} className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50">{action.label}</button>)}</div> : null}
-                        {isAssistant && message.recommendations?.length ? <div className="mt-3 grid gap-2 md:grid-cols-2">{message.recommendations.map((item) => {
-                          const cardKey = `${message.id}-${item.id}`;
-                          const canView = Boolean(item.url?.startsWith("/") && canNavigateTo(device, item.url));
-                          return <ProductCard key={cardKey} item={item} siblings={message.recommendations} imageFailed={Boolean(failedRecommendationImages[cardKey])} mutationPending={cartMutationPending} canAdd={cartMutationAllowed} canView={canView} onImageError={() => setFailedRecommendationImages((current) => ({ ...current, [cardKey]: true }))} onAdd={handleAction} onView={() => { noteUserInteraction?.(); if (canView) navigate(item.url); }} onCompare={(selected, siblings) => {
-                            const productHandles = [selected?.handle, ...(siblings || []).map((candidate) => candidate?.handle)]
-                              .filter((handle, index, handles) => handle && handles.indexOf(handle) === index)
-                              .slice(0, 2);
-                            sendMessage("Compare Products", {
-                              command: createShowroomCommand("compare_products", { productHandles: productHandles.length === 2 ? productHandles : [] }),
-                            });
-                          }} onChoose={() => sendMessage("Choose Size", { command: createShowroomCommand("product_sizes", { productHandle: item.handle }) })} />;
-                        })}</div> : null}
-                        {isAssistant && message.canRetry ? <button type="button" onClick={() => {
-                          const request = message.retryRequest || lastFailedRequest;
-                          if (request?.message) sendMessage(request.message, { command: request.command || null });
-                        }} className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"><RefreshCcw className="h-3.5 w-3.5" /> Retry</button> : null}
+                <div className="mt-3 min-h-0 flex-1">
+                  <div className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Useful things to ask</div>
+                  <div role="group" aria-label="Quick Starters" className="grid grid-cols-2 gap-2">
+                    {QUICK_STARTERS.map((item) => <QuickStarter key={item.label} item={item} onClick={() => sendMessage(item.label, { command: item.command })} />)}
+                  </div>
+                </div>
+              </aside>
+
+              <section data-ask-section="answer-workspace" className="flex min-h-0 flex-col bg-white/76">
+                <div className="flex h-12 shrink-0 items-center justify-between border-b border-[#dbe5ff] px-5">
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d79df]">Advisor workspace</div>
+                    <div className="mt-0.5 text-xs font-semibold text-slate-500">Your latest answer stays in focus.</div>
+                  </div>
+                  {shopperId && shopperId !== "guest" ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-700">Session connected</span> : null}
+                </div>
+
+                <div ref={transcriptRef} data-ask-section="transcript" role="region" aria-label="Ask Snoozer answers" tabIndex={0} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-blue-100 md:px-5">
+                  {!messages.length && !pending ? (
+                    <div data-ask-empty-state="true" className="flex h-full min-h-[220px] items-center justify-center px-6 text-center">
+                      <div className="max-w-sm">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-[18px] border border-[#dbe5ff] bg-[#f3f6ff] text-[#2f57e8]"><Search className="h-6 w-6" /></div>
+                        <h2 className="mt-4 text-lg font-black text-slate-900">Ask me anything about your sleep setup.</h2>
+                        <p className="mt-2 text-sm leading-6 text-slate-500">Your answer, helpful next steps, and product options will appear here.</p>
                       </div>
-                    </article>
-                  );
-                })}
-              </div>
-              {pending ? <div className="mt-3 flex justify-start"><div className="rounded-[22px] border border-slate-200 bg-white px-4 py-3.5 shadow-sm"><div className="text-sm font-black text-slate-900">Snoozer <span className="ml-1 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">thinking</span></div><div className="mt-2 inline-flex items-center gap-2 text-sm text-slate-500"><Loader2 className="h-4 w-4 animate-spin" /> Working on that…</div></div></div> : null}
-            </section>
+                    </div>
+                  ) : null}
 
-            <section data-ask-section="composer" className="shrink-0 border-t border-[#dbe5ff] bg-[linear-gradient(180deg,rgba(248,250,255,0.92),rgba(255,255,255,0.98))] px-4 py-3 md:px-6 md:py-4">
-              <ChatComposer draft={draft} pending={pending} canSend={canSend} textareaRef={textareaRef} onChange={(event) => setDraft(event.target.value)} onKeyDown={onComposerKeyDown} onSend={sendMessage} noteUserInteraction={noteUserInteraction} />
-            </section>
+                  <div className="space-y-3">
+                    {messages.length > 2 ? <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Earlier</div> : null}
+                    {messages.map((message) => {
+                      const isAssistant = message.role === "assistant";
+                      const isLatestAssistant = isAssistant && message.id === latestAssistantId;
+                      const isLatestUser = !isAssistant && message.id === latestUserId;
+                      const isCurrent = isLatestAssistant || isLatestUser;
+                      if (!isCurrent) {
+                        return (
+                          <article key={message.id} data-ask-history="earlier" className="rounded-[14px] border border-slate-200/80 bg-slate-50/76 px-3 py-2.5 text-slate-600">
+                            <div className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">{isAssistant ? "Snoozer" : "You asked"}</div>
+                            <div className="mt-1 whitespace-pre-wrap text-xs leading-5">{message.content}</div>
+                          </article>
+                        );
+                      }
+                      if (!isAssistant) {
+                        return (
+                          <article key={message.id} data-ask-message="question" className="rounded-[16px] border-l-4 border-[#9db2fa] bg-[#f5f7fd] px-4 py-3">
+                            <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#5d79df]">You asked</div>
+                            <div className="mt-1 whitespace-pre-wrap text-sm font-semibold leading-6 text-slate-700">{message.content}</div>
+                          </article>
+                        );
+                      }
+                      const warning = message.status === "warning" || message.status === "fallback";
+                      return (
+                        <article key={message.id} data-ask-message="latest-answer" className={`rounded-[22px] border px-4 py-4 shadow-[0_14px_34px_rgba(40,63,126,0.1)] md:px-5 ${warning ? "border-amber-200 bg-amber-50/80" : "border-[#d7e1fb] bg-white"}`}>
+                          <div className="mb-3 flex items-center gap-3">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-[#eef3ff]"><img src="/snoozer-avatar.png" alt="" className="h-10 w-10 object-contain" /></div>
+                            <div><div className="text-sm font-black text-slate-900">Snoozer</div><div className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-400">{formatAssistantStatus(message.status)}</div></div>
+                          </div>
+                          <div className="whitespace-pre-wrap text-[15px] leading-6 text-slate-700">{message.content}</div>
+                          {message.chips?.length ? <div className="mt-4"><div className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Suggested next questions</div><div className="flex flex-wrap gap-2">{message.chips.map((chip) => <button key={`${message.id}-${chip.label}-${chip.value}`} type="button" onClick={() => handleChip(chip)} className="min-h-11 rounded-[13px] border border-[#cbd8ff] bg-[#f5f8ff] px-3 py-2 text-xs font-bold text-[#2346c6] hover:bg-[#eaf0ff] focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">{chip.label}</button>)}</div></div> : null}
+                          {message.actions?.length ? <div className="mt-4"><div className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Suggested actions</div><div className="flex flex-wrap gap-2">{message.actions.map((action) => <button key={`${message.id}-${action.label}`} type="button" disabled={action.type === "add_to_cart" && cartMutationPending} onClick={() => handleAction(action)} className="min-h-11 rounded-[13px] border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 disabled:opacity-50">{action.label}</button>)}</div></div> : null}
+                          {message.recommendations?.length ? <div className="mt-4 grid gap-3 md:grid-cols-2">{message.recommendations.map((item) => {
+                            const cardKey = `${message.id}-${item.id}`;
+                            const canView = Boolean(item.url?.startsWith("/") && canNavigateTo(device, item.url));
+                            return <ProductCard key={cardKey} item={item} siblings={message.recommendations} imageFailed={Boolean(failedRecommendationImages[cardKey])} mutationPending={cartMutationPending} canAdd={cartMutationAllowed} canView={canView} onImageError={() => setFailedRecommendationImages((current) => ({ ...current, [cardKey]: true }))} onAdd={handleAction} onView={() => { noteUserInteraction?.(); if (canView) navigate(item.url); }} onCompare={(selected, siblings) => {
+                              const productHandles = [selected?.handle, ...(siblings || []).map((candidate) => candidate?.handle)]
+                                .filter((handle, index, handles) => handle && handles.indexOf(handle) === index)
+                                .slice(0, 2);
+                              sendMessage("Compare Products", {
+                                command: createShowroomCommand("compare_products", { productHandles: productHandles.length === 2 ? productHandles : [] }),
+                              });
+                            }} onChoose={() => sendMessage("Choose Size", { command: createShowroomCommand("product_sizes", { productHandle: item.handle }) })} />;
+                          })}</div> : null}
+                          {message.canRetry ? <button type="button" onClick={() => {
+                            const request = message.retryRequest || lastFailedRequest;
+                            if (request?.message) sendMessage(request.message, { command: request.command || null });
+                          }} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-[13px] border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-200"><RefreshCcw className="h-3.5 w-3.5" /> Retry</button> : null}
+                        </article>
+                      );
+                    })}
+                  </div>
+
+                  {pending ? <div data-ask-thinking="true" role="status" aria-live="polite" className="mt-3 rounded-[18px] border border-[#d7e1fb] bg-white px-4 py-3.5 shadow-sm"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-[#eef3ff]"><img src="/snoozer-avatar.png" alt="" className="h-9 w-9 object-contain" /></div><div><div className="text-sm font-black text-slate-900">Snoozer is thinking…</div><div className="mt-0.5 inline-flex items-center gap-2 text-xs text-slate-500"><Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" /> Working on that.</div></div></div></div> : null}
+                </div>
+
+                <section data-ask-section="composer" className="shrink-0 border-t border-[#dbe5ff] bg-white/94 px-4 py-3 md:px-5">
+                  <ChatComposer draft={draft} pending={pending} canSend={canSend} textareaRef={textareaRef} onChange={handleDraftChange} onKeyDown={onComposerKeyDown} onSend={sendMessage} noteUserInteraction={noteUserInteraction} />
+                </section>
+              </section>
+            </div>
           </ShowroomPanel>
         </ShowroomFrame>
       </div>
