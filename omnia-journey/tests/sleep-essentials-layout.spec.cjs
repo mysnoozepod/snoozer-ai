@@ -200,7 +200,7 @@ test("renders the full storefront with real counts, compact concierge, and categ
   await gotoEssentials(page);
 
   await expect(page.getByRole("heading", { name: "Complete your sleep setup." })).toBeVisible();
-  await expect(page.locator('[data-showroom-downstream-header="true"] img[alt="MySnoozePod"]')).toHaveAttribute("src", /mysnoozepod-logo-welcome/);
+  await expect(page.locator('[data-commerce-header="true"] img[alt="MySnoozePod"]')).toHaveAttribute("src", /mysnoozepod-logo-welcome/);
   await expect(page.locator('[data-sleep-essentials-concierge="true"] img')).toBeVisible();
   await expect(page.locator('[data-sleep-essentials-concierge="true"]')).toContainText("Need help choosing?");
   await expect(page.getByRole("tab", { name: /Pillows, 6 products, current/ })).toBeVisible();

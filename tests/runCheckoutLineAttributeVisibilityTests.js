@@ -69,10 +69,10 @@ async function main() {
   assert(podBuilder.includes('key: "_Setup Size"'), "Pod Builder must keep private setup-size metadata");
   assert(podBuilder.includes('key: "_Variant Option"'), "Pod Builder must keep private variant metadata");
   assert(podBuilder.includes('key: "_SnoozePod"'), "Pod Builder must keep private SnoozePod metadata");
-  assert(podBuilder.includes('key: "Pillow Size"'), "Pillow size should remain visible to shoppers");
+  assert(!podBuilder.includes('key: "Pillow Size"'), "Pod Builder must not own the separate Sleep Essentials pillow flow");
   assert(sleepEssentials.includes('key: "_Source"'), "Sleep Essentials source must be private metadata");
   assert(sleepEssentials.includes('key: "_Sleep Essential"'), "Sleep Essentials category must be private metadata");
-  assert(cartPage.includes("displayAttributeKey"), "Cart details should display private metadata without underscores");
+  assert(cartPage.includes('!attr.key.startsWith("_")'), "Cart must keep private Shopify metadata out of shopper-facing details");
 
   console.log("Checkout line attribute visibility checks passed.");
 }

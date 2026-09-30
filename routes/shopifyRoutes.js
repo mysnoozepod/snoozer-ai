@@ -10,6 +10,7 @@ const {
   clearCart,
 } = require("../services/shopify");
 const { getSleepEssentialsCatalog } = require("../services/sleepEssentialsCatalog");
+const { getShowroomCommerceCatalog } = require("../services/showroomCommerceCatalog");
 const shopperCart = require("../services/shopperCart");
 
 // ─────────────────────────────────────────────────────────────
@@ -914,6 +915,23 @@ async function handleShopifyRoute({ event, method, routePath }) {
       return json(Number(err?.statusCode) || (isTimeoutError(err) ? 504 : 500), {
         error: err?.code || "SLEEP_ESSENTIALS_CATALOG_FAILED",
         message: err?.message || "Sleep Essentials catalog could not be loaded.",
+        meta: buildMeta(event),
+      });
+    }
+  }
+
+  if (method === "POST" && routePath === "/shopify/showroom/catalog") {
+    try {
+      const catalog = await withTimeout(
+        getShowroomCommerceCatalog(),
+        Math.max(ROUTE_TIMEOUT_MS, 5000),
+        "shopify.showroomCommerceCatalog"
+      );
+      return json(200, { catalog, meta: buildMeta(event) });
+    } catch (err) {
+      return json(Number(err?.statusCode) || (isTimeoutError(err) ? 504 : 500), {
+        error: err?.code || "SHOWROOM_COMMERCE_CATALOG_FAILED",
+        message: err?.message || "The approved showroom catalog could not be loaded.",
         meta: buildMeta(event),
       });
     }

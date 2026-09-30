@@ -24,12 +24,11 @@ import {
   subtitleForSize,
 } from "@/components/PodBuilder";
 import {
-  ShowroomCartBadge,
-  ShowroomDownstreamHeader,
   ShowroomFrame,
   ShowroomPageShell,
   ShowroomPanel,
 } from "@/components/showroom/ShowroomPrimitives";
+import CommerceHeader from "@/components/showroom/CommerceHeader";
 import { useSnoozer } from "@/Layout";
 import RewardsPill from "@/components/RewardsPill";
 import BuildYourPodPanel from "@/components/pod/BuildYourPodPanel";
@@ -74,7 +73,6 @@ import { useActiveJourney } from "@/journey/ActiveJourneyContext";
 import snoozerRestChoiceImg from "@/assets/avatars/snoozer-rest-choice.png";
 import snoozerRestActiveImg from "@/assets/avatars/snoozer-rest-active.png";
 import snoozerRestTransitionImg from "@/assets/avatars/snoozer-rest-transition.png";
-import sharpMySnoozePodLogo from "@/assets/mysnoozepod-logo-welcome.png";
 
 const PUBLIC_ASSETS = {
   snoozerAvatar: "/snoozer-avatar.png",
@@ -1126,7 +1124,7 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
   const currentPodRoute = makePodRoute(pid) || "/pod/pod-1";
   const storagePrefix = useMemo(() => `snooze.pod.${pid}`, [pid]);
 
-  const { snoozepodCount, cartNotice, cartPulse, showCartFeedback } = usePodCart();
+  const { snoozepodCount, cartNotice, showCartFeedback } = usePodCart();
 
   const [loading, setLoading] = useState(true);
   const [recs, setRecs] = useState(null);
@@ -2944,9 +2942,10 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
         data-pod-layout-region="top-header"
         className="mx-auto h-[var(--pod-header-height)] w-full max-w-[1380px] shrink-0 px-[var(--pod-outer-x)] py-[6px]"
       >
-        <ShowroomDownstreamHeader
+        <CommerceHeader
           className="h-full min-h-0"
-          brandImageSrc={sharpMySnoozePodLogo}
+          cartCount={snoozepodCount}
+          onNavigate={() => noteUserInteraction?.()}
           rewards={shopperId !== "guest" ? <RewardsPill shopperId={shopperId} onClick={openRewards} placement="inline" /> : null}
           notice={cartNotice ? (
               <div className="w-fit max-w-full truncate rounded-full border border-indigo-100 bg-[#f2f6ff] px-3 py-2 text-xs font-bold text-indigo-900" role="status" aria-live="polite">
@@ -2959,17 +2958,6 @@ export default function Pod({ labMode = false, labPodId = "", labState = "" }) {
               showNoticeMessage={false}
               sourcePage={`/pod/${pid}`}
             />
-          )}
-          cart={(
-            <ShowroomCartBadge
-                count={snoozepodCount}
-                quiet
-                className={cartPulse ? "scale-[1.01] border-indigo-300 ring-4 ring-indigo-100" : ""}
-                onClick={() => {
-                  noteUserInteraction?.();
-                  navigate("/cart", { state: { originPodId: pid } });
-                }}
-              />
           )}
         />
       </div>

@@ -108,17 +108,23 @@ function LayoutShell() {
     pathname.startsWith("/results") ||
     pathname.startsWith("/pod/") ||
     pathname.startsWith("/sleep-essentials") ||
-    pathname.startsWith("/ask-snoozer");
+    pathname.startsWith("/ask-snoozer") ||
+    pathname.startsWith("/shop") ||
+    pathname.startsWith("/cart");
   const pageUsesPodViewportShell =
     pathname.startsWith("/pod/") || pathname.startsWith("/dev/pod-lab");
   const pageUsesDownstreamHeader =
-    pathname.startsWith("/pod/") || pathname.startsWith("/sleep-essentials");
+    pathname.startsWith("/pod/") ||
+    pathname.startsWith("/sleep-essentials") ||
+    pathname.startsWith("/shop") ||
+    pathname.startsWith("/cart");
   const pageUsesAskStation = pathname.startsWith("/ask-snoozer");
   const pageOwnsRewardsControl =
     pageUsesDownstreamHeader || pageUsesAskStation;
   const showHumanAssistance =
     !pathname.startsWith("/cart") &&
     !pathname.startsWith("/checkout") &&
+    !pathname.startsWith("/shop") &&
     !pathname.startsWith("/dev/") &&
     !pageUsesDownstreamHeader;
   const humanAssistanceNeedsFooterClearance =

@@ -1014,6 +1014,11 @@ export async function getSleepEssentialsCatalog(categoryId = null) {
   return out?.catalog || out || null;
 }
 
+export async function getShowroomCommerceCatalog() {
+  const out = await rpc("showroom/catalog", {});
+  return out?.catalog || out || null;
+}
+
 function getStoredRewardIdentityLink() {
   try {
     return String(sessionStorage.getItem(REWARD_IDENTITY_LINK_KEY) || "").trim();
@@ -1667,6 +1672,7 @@ export const api = {
   getProductsIndexByHandle,
   getProductById,
   getSleepEssentialsCatalog,
+  getShowroomCommerceCatalog,
 
   // cart
   createCart,

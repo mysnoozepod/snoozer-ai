@@ -22,15 +22,13 @@ import {
 } from "@/lib/sleepEssentials";
 import { useStore } from "@/lib/useStore";
 import { confirmedCartItemCount } from "@/lib/cart/cartAuthority.mjs";
+import CommerceHeader from "@/components/showroom/CommerceHeader";
 import { getShopperId } from "@/state/sessionStore";
 import { refreshRewardsState } from "@/state/rewardsStore";
 import {
-  ShowroomCartBadge,
-  ShowroomDownstreamHeader,
   ShowroomPageShell,
   ShowroomPanel,
 } from "@/components/showroom/ShowroomPrimitives";
-import sharpMySnoozePodLogo from "@/assets/mysnoozepod-logo-welcome.png";
 
 function formatMoney(value, currency = "USD") {
   const amount = Number(value);
@@ -303,11 +301,10 @@ export default function SleepEssentials() {
   return (
     <ShowroomPageShell className="min-h-screen pb-0">
       <div className="mx-auto w-full max-w-[1480px] px-5 py-2.5">
-        <ShowroomDownstreamHeader
-          brandImageSrc={sharpMySnoozePodLogo}
+        <CommerceHeader
+          cartCount={cartCount}
           rewards={shopperId ? <RewardsPill shopperId={shopperId} onClick={openRewards} placement="inline" /> : null}
           humanHelp={<HumanAssistanceControl compact showNoticeMessage={false} sourcePage="/sleep-essentials" />}
-          cart={<ShowroomCartBadge count={cartCount} quiet onClick={() => navigate("/cart")} />}
         />
       </div>
 

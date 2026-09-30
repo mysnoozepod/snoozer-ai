@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowUp, BedDouble, Check, ChevronRight, ExternalLink, Gift, Loader2, RefreshCcw, Scale, Search, ShoppingCart } from "lucide-react";
 
 import { useSnoozer } from "@/Layout";
-import { canMutateCart, canNavigateTo, canViewCart, filterDeviceActions, isDeviceActionAllowed } from "@/device/deviceActionGuards";
+import { canMutateCart, canNavigateTo, filterDeviceActions, isDeviceActionAllowed } from "@/device/deviceActionGuards";
 import { emitDeviceActiveResponse, emitDeviceHumanHelp } from "@/device/deviceActivityTracker";
 import { makePodRoute } from "@/device/podRouteUtils";
 import { useDeviceMode } from "@/device/useDeviceMode";
@@ -20,8 +20,8 @@ import { buildProductAddAction, cartItemCount, formatProductPrice } from "@/lib/
 import { useStore } from "@/lib/useStore";
 import { useSessionStore } from "@/state/sessionStore";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
-import { ShowroomCartBadge, ShowroomDownstreamHeader, ShowroomEyebrow, ShowroomFrame, ShowroomPageShell, ShowroomPanel, ShowroomTopRail } from "@/components/showroom/ShowroomPrimitives";
-import brandLogoSrc from "@/assets/mysnoozepod-logo-welcome.png";
+import CommerceHeader from "@/components/showroom/CommerceHeader";
+import { ShowroomEyebrow, ShowroomFrame, ShowroomPageShell, ShowroomPanel, ShowroomTopRail } from "@/components/showroom/ShowroomPrimitives";
 
 const QUICK_STARTERS = [
   { label: "Compare Products", helper: "See side-by-side differences.", command: createShowroomCommand("compare_products", { productHandles: [] }), icon: Scale },
@@ -160,7 +160,6 @@ export default function AskSnoozer() {
   const authoritativeCartCount = useMemo(() => cartItemCount(cart), [cart]);
   const latestAssistantId = useMemo(() => [...messages].reverse().find((message) => message.role === "assistant")?.id || null, [messages]);
   const latestUserId = useMemo(() => [...messages].reverse().find((message) => message.role === "user")?.id || null, [messages]);
-  const showCommerceAffordances = canViewCart(device);
   const cartMutationAllowed = canMutateCart(device);
   const devicePodRoute = makePodRoute(device?.podId) || "/pod/pod-1";
   const referrerRoute = location.state && typeof location.state === "object" ? location.state.from || null : null;
@@ -344,11 +343,10 @@ export default function AskSnoozer() {
   return (
     <ShowroomPageShell data-ask-snoozer-workspace="true" className="h-[100dvh] min-h-0 overflow-hidden pb-[82px] pt-2 md:pt-2">
       <ShowroomTopRail className="w-full shrink-0 items-center pt-0 md:pt-0">
-        <ShowroomDownstreamHeader
-          brandImageSrc={brandLogoSrc}
-          brandImageClassName="w-[clamp(176px,18vw,224px)]"
+        <CommerceHeader
+          active="ask"
+          cartCount={authoritativeCartCount}
           rewards={<RewardsPill status={rewardState.status} points={rewardState.points} onClick={() => sendMessage("Find Rewards", { command: createShowroomCommand("find_rewards") })} />}
-          cart={showCommerceAffordances ? <ShowroomCartBadge count={authoritativeCartCount} quiet onClick={() => { noteUserInteraction?.(); if (canNavigateTo(device, "/cart")) navigate("/cart"); }} /> : null}
         />
       </ShowroomTopRail>
 

@@ -16,6 +16,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const page = fs.readFileSync(path.join(here, "../src/pages/AskSnoozer.jsx"), "utf8");
 const adapter = fs.readFileSync(path.join(here, "../src/lib/snoozer/askSnoozerPage.js"), "utf8");
 const layout = fs.readFileSync(path.join(here, "../src/Layout.jsx"), "utf8");
+const commerceHeader = fs.readFileSync(path.join(here, "../src/components/showroom/CommerceHeader.jsx"), "utf8");
 let checks = 0;
 const check = (condition, message) => { assert.ok(condition, message); checks += 1; };
 
@@ -36,9 +37,9 @@ check(!page.includes("Advisor workspace") && !page.includes("Your latest answer 
 check(page.includes('role="region" aria-label="Ask Snoozer answers"') && page.includes("overflow-y-auto overscroll-contain"), "only the answer workspace owns conversation scrolling");
 check((page.match(/<textarea/g) || []).length === 1 && page.includes('aria-label="Ask Snoozer"'), "there is exactly one labeled shopper composer");
 check(page.includes("Ask Snoozer anything about your sleep setup…"), "composer uses the concise advisor prompt without decorative inputs");
-check(page.includes("brandImageSrc={brandLogoSrc}") && page.includes('mysnoozepod-logo-welcome.png'), "Ask explicitly uses the accepted sharp logo asset");
+check(page.includes("CommerceHeader") && commerceHeader.includes('mysnoozepod-logo-welcome.png'), "Ask uses the shared header with the accepted sharp logo asset");
 check(!page.includes("<footer") && !page.includes("View Results</ Beneath"), "Ask page has no footer band");
-check(page.includes("ShowroomDownstreamHeader") && page.includes("RewardsPill") && page.includes("ShowroomCartBadge"), "header has rewards, centered brand primitive, and cart");
+check(page.includes("CommerceHeader") && page.includes("RewardsPill") && page.includes("cartCount={authoritativeCartCount}"), "header has shared Shop, Ask Snoozer, rewards, and authoritative cart state");
 check(layout.includes("pageUsesDownstreamHeader || pageUsesAskStation") && layout.includes("!pageOwnsRewardsControl"), "shared floating Rewards control is suppressed when Ask owns the header control");
 check(layout.includes('right: pageUsesAskStation ? 16 : "auto"') && layout.includes("bottom: pageUsesAskStation") && page.includes("pb-[82px]"), "Ask places Brandy at lower right with reserved space below the composer");
 check(page.includes("getRewardSummary()") && page.includes("Number.isFinite(points)"), "reward pill reads actual summary and gates numeric display");

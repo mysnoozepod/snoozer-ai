@@ -168,7 +168,7 @@ for (const viewport of [
     await installMocks(page);
     await gotoAsk(page);
 
-    await expect(page.locator('[data-showroom-downstream-header="true"] img[alt="MySnoozePod"]')).toHaveAttribute("src", /mysnoozepod-logo-welcome/);
+    await expect(page.locator('[data-commerce-header="true"] img[alt="MySnoozePod"]')).toHaveAttribute("src", /mysnoozepod-logo-welcome/);
     await expect(page.getByRole("heading", { name: "What can I help you figure out?" })).toBeVisible();
     await expect(page.getByRole("group", { name: "Quick Starters" })).toBeVisible();
     await expect(page.locator('[data-ask-empty-state="true"]')).toBeVisible();

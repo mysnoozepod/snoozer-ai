@@ -16,6 +16,7 @@ import Assessment from "./pages/Assessment.jsx";
 import Results from "./pages/Results.jsx";
 import AskSnoozer from "./pages/AskSnoozer.jsx";
 import SleepEssentials from "./pages/SleepEssentials.jsx";
+import Shop from "./pages/Shop.jsx";
 import PodLayoutLab from "./pages/dev/PodLayoutLab.jsx";
 
 // âœ… Pod experience route
@@ -94,6 +95,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="assessment" element={<Assessment />} />
                 <Route path="results" element={<Results />} />
                 <Route path="sleep-essentials" element={<SleepEssentials />} />
+                <Route path="shop" element={<Shop />} />
 
                 {/* POD EXPERIENCE (canonical showroom mode) */}
                 <Route path="pod/:podId" element={<Pod />} />

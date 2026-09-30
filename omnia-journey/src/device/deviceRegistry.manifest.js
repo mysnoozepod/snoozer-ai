@@ -20,7 +20,7 @@ function makePodDevice(index) {
     zoneId: podId,
     podId,
     defaultRoute: `/pod/${podId}`,
-    allowedRoutePatterns: [`/pod/${podId}`, "/sleep-essentials", "/ask-snoozer", "/cart"],
+    allowedRoutePatterns: [`/pod/${podId}`, "/sleep-essentials", "/ask-snoozer", "/shop", "/cart"],
     blockedRoutePatterns: [
       "/welcome",
       "/what-to-expect",
@@ -57,6 +57,7 @@ export const DEVICE_REGISTRY_MANIFEST = Object.freeze({
     blockedRoutePatterns: [
       "/pod/*",
       "/ask-snoozer",
+      "/shop",
       "/cart",
       "/checkout/*",
       "/snoozepod",
@@ -88,7 +89,7 @@ export const DEVICE_REGISTRY_MANIFEST = Object.freeze({
     zoneId: "ask-snoozer-zone",
     podId: null,
     defaultRoute: "/ask-snoozer",
-    allowedRoutePatterns: ["/ask-snoozer"],
+    allowedRoutePatterns: ["/ask-snoozer", "/shop"],
     blockedRoutePatterns: [
       "/welcome",
       "/what-to-expect",
@@ -121,7 +122,7 @@ export const DEVICE_REGISTRY_MANIFEST = Object.freeze({
     zoneId: "sleep-essentials-zone",
     podId: null,
     defaultRoute: "/sleep-essentials",
-    allowedRoutePatterns: ["/sleep-essentials", "/cart"],
+    allowedRoutePatterns: ["/sleep-essentials", "/ask-snoozer", "/shop", "/cart"],
     blockedRoutePatterns: [
       "/welcome",
       "/what-to-expect",

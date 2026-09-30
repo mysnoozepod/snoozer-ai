@@ -20,7 +20,9 @@
     "test:ask-snoozer-station": "node tests/runAskSnoozerStationTests.mjs",
     "test:ask-snoozer:layout": "playwright test -c playwright.ask-snoozer.config.cjs",
     "test:ask-snoozer-audio": "node tests/runAskSnoozerPerformanceTests.mjs && node tests/runVoiceQueueSupersessionTests.mjs",
-    "test:active-journey": "node tests/runActiveJourneyFrontendTests.mjs"
+    "test:active-journey": "node tests/runActiveJourneyFrontendTests.mjs",
+    "test:commerce": "node tests/runCommerceExperienceTests.mjs && node ../tests/runShowroomCommerceCatalogTests.js",
+    "test:commerce:layout": "npm run build && playwright test -c playwright.commerce.config.cjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

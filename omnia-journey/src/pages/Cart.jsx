@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
 import {
   CHECKOUT_LOUNGE_MESSAGE,
+  canNavigateTo,
   canInitiateCheckout,
   canViewFinancing,
   canViewPodNavigation,
@@ -20,13 +21,13 @@ import {
   useRewardsState,
 } from "@/state/rewardsStore";
 import {
-  ShowroomBrandMark,
   ShowroomEyebrow,
   ShowroomFrame,
   ShowroomPageShell,
   ShowroomPanel,
-  ShowroomTopRail,
 } from "@/components/showroom/ShowroomPrimitives";
+import CommerceHeader from "@/components/showroom/CommerceHeader";
+import { isSafeCommercePath, resolveCommerceOrigin } from "@/lib/commerceNavigation";
 
 function safeGet(key) {
   try {
@@ -209,6 +210,19 @@ function itemKey(item, idx) {
   );
 }
 
+export function classifyCartLine(item) {
+  const attrs = normalizeAttributes(item?.attributes);
+  if (attributeValue(attrs, ["_Sleep Essential", "Sleep Essential"])) return "sleep-essentials";
+  if (attributeValue(attrs, ["_SnoozePod", "SnoozePod", "_Mattress", "_Base"])) return "snoozepod";
+  return "other";
+}
+
+export function groupCartLines(items) {
+  const groups = { snoozepod: [], "sleep-essentials": [], other: [] };
+  for (const item of Array.isArray(items) ? items : []) groups[classifyCartLine(item)].push(item);
+  return groups;
+}
+
 export default function Cart() {
   const location = useLocation();
   const device = useDeviceMode();
@@ -280,6 +294,19 @@ export default function Cart() {
   const podNavigationAllowed = Boolean(
     continuePodRoute && canViewPodNavigation(device, continuePodRoute)
   );
+  const explicitCommerceOrigin = useMemo(() => {
+    if (!location.state?.commerceOrigin) return null;
+    const resolved = resolveCommerceOrigin(location.state, "/shop");
+    const pathname = resolved.path.split(/[?#]/, 1)[0];
+    return isSafeCommercePath(resolved.path) && canNavigateTo(device, pathname) ? resolved : null;
+  }, [device, location.state]);
+  const returnTarget = useMemo(() => {
+    if (explicitCommerceOrigin) return explicitCommerceOrigin;
+    if (podNavigationAllowed) return { path: continuePodRoute, label: "Back to SnoozePod" };
+    if (canNavigateTo(device, "/shop")) return { path: "/shop", label: "Continue Shopping" };
+    return null;
+  }, [continuePodRoute, device, explicitCommerceOrigin, podNavigationAllowed]);
+  const cartGroups = useMemo(() => groupCartLines(cartItems), [cartItems]);
 
   const total = useMemo(() => {
     return (Array.isArray(cartItems) ? cartItems : []).reduce((acc, item) => {
@@ -401,8 +428,8 @@ export default function Cart() {
 
       void Promise.resolve(
         snoozer?.sayHud?.({
-          speech: "Your SnoozePod is ready. Continuing to secure checkout.",
-          captions: "Your SnoozePod is ready. Continuing to secure checkout.",
+          speech: "Your setup is ready. I’m taking you to secure checkout to complete your purchase.",
+          captions: "Your setup is ready. Continuing to secure Shopify checkout.",
           state: "celebrate",
           priority: "high",
           ttlMs: 5000,
@@ -488,27 +515,21 @@ export default function Cart() {
 
   return (
     <ShowroomPageShell className="pb-6">
-      <ShowroomTopRail className="items-center">
-        <ShowroomBrandMark />
-        <div className="flex items-center gap-2">
+      <div className="mx-auto w-full max-w-[1480px] px-4 py-3 md:px-6">
+        <CommerceHeader
+          active="cart"
+          cartCount={totalItems}
+          rewards={(
           <button
             type="button"
             onClick={() => snoozer?.openRewards?.()}
-            className="inline-flex min-h-[44px] items-center rounded-full border border-violet-200 bg-violet-50 px-4 text-sm font-black text-violet-800"
+            className="inline-flex min-h-[48px] items-center rounded-[17px] border border-violet-200 bg-violet-50 px-3 text-sm font-black text-violet-800"
           >
             {rewards.status === "loading" ? "Sleep Points" : `${rewardPoints} Sleep Points`}
           </button>
-          <span
-            className={`hidden min-h-[44px] items-center rounded-full px-4 text-sm font-black sm:inline-flex ${
-              cartItems.length
-                ? "border border-emerald-100 bg-emerald-50 text-emerald-800"
-                : "border border-slate-200 bg-white text-slate-600"
-            }`}
-          >
-            {cartItems.length ? "Ready to review" : "Cart empty"}
-          </span>
-        </div>
-      </ShowroomTopRail>
+          )}
+        />
+      </div>
 
       <div className="mx-auto max-w-[1460px] px-4 pb-4 pt-2 md:px-6">
         <ShowroomFrame className="overflow-visible p-4 md:p-5">
@@ -520,18 +541,19 @@ export default function Cart() {
             <section className="min-w-0">
               <div className="flex flex-wrap items-center justify-between gap-3 px-1">
                 <div>
-                  <ShowroomEyebrow>Checkout</ShowroomEyebrow>
+                  <ShowroomEyebrow>Your Cart</ShowroomEyebrow>
                   <h1 className="mt-1 text-[1.9rem] font-black tracking-tight text-slate-950 md:text-[2.35rem]">
-                    Review Your SnoozePod
+                    Review your sleep setup.
                   </h1>
+                  <p className="mt-1 text-sm font-semibold text-slate-600">Everything you&apos;ve selected, all in one place.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                {podNavigationAllowed ? (
+                {returnTarget ? (
                   <Link
-                    to={continuePodRoute}
-                    className="inline-flex min-h-[44px] items-center justify-center rounded-[14px] border border-blue-100 bg-white px-4 text-sm font-black text-[#1A66D2] transition hover:bg-blue-50"
+                    to={returnTarget.path}
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-[14px] border border-blue-100 bg-white px-4 text-sm font-black text-[#2f57e8] transition hover:bg-blue-50"
                   >
-                    ← Back to SnoozePod
+                    ← {returnTarget.label}
                   </Link>
                 ) : null}
                 {cartItems.length > 0 ? (
@@ -611,117 +633,89 @@ export default function Cart() {
                     <div className="text-[1.6rem] font-black text-slate-950">
                       {cartSyncing ? "Checking your cart..." : "Your cart is empty."}
                     </div>
-                    {podNavigationAllowed ? (
+                    {returnTarget ? (
                       <div className="mt-5 flex flex-wrap gap-3">
                         <Link
-                          to={continuePodRoute}
-                          className="inline-flex min-h-[50px] items-center rounded-[16px] bg-[#1A66D2] px-5 text-sm font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.22)] transition hover:bg-[#1550A0]"
+                          to={returnTarget.path}
+                          className="inline-flex min-h-[50px] items-center rounded-[16px] bg-[#2f57e8] px-5 text-sm font-black text-white shadow-[0_18px_38px_rgba(47,87,232,0.22)] transition hover:bg-[#203fc1]"
                         >
-                          Return to SnoozePod
+                          {returnTarget.label}
                         </Link>
                         <Link
-                          to={`${continuePodRoute}?stage=build&buildStep=essentials`}
-                          className="inline-flex min-h-[50px] items-center rounded-[16px] border border-blue-200 bg-white px-5 text-sm font-black text-[#1A66D2]"
+                          to="/shop"
+                          className="inline-flex min-h-[50px] items-center rounded-[16px] border border-blue-200 bg-white px-5 text-sm font-black text-[#2f57e8]"
                         >
-                          Browse Sleep Essentials
+                          Browse Products
                         </Link>
                       </div>
                     ) : (
                       <button
                         type="button"
                         onClick={handleTalkToHuman}
-                        className="mt-5 inline-flex min-h-[50px] items-center rounded-[16px] bg-[#1A66D2] px-5 text-sm font-black text-white"
+                        className="mt-5 inline-flex min-h-[50px] items-center rounded-[16px] bg-[#2f57e8] px-5 text-sm font-black text-white"
                       >
                         Talk to Human
                       </button>
                     )}
                   </ShowroomPanel>
                 ) : (
-                  cartItems.map((item, idx) => {
-                    const id = itemKey(item, idx);
-                    const title = item.title || "Item";
-                    const image = safeImage(item);
-                    const qty = Number(item.quantity ?? item.qty ?? 1) || 1;
-                    const unit = Number(item.unitPrice ?? item.price ?? 0) || 0;
-                    const shopperAttributes = pickShopperAttributes(item?.attributes);
-
+                  [
+                    { key: "snoozepod", label: "Your SnoozePod", copy: "Your core sleep setup." },
+                    { key: "sleep-essentials", label: "Sleep Essentials", copy: "Pillows, bedding, protectors, and more." },
+                    { key: "other", label: "Other Products", copy: "Additional products selected from Shop." },
+                  ].map((group) => {
+                    const items = cartGroups[group.key];
+                    if (!items.length) return null;
+                    const compact = group.key !== "snoozepod";
                     return (
-                      <ShowroomPanel key={id} className="p-3 md:p-4">
-                        <div className="grid gap-4 md:grid-cols-[112px_minmax(0,1fr)_135px_170px] md:items-center">
-                          <img
-                            src={image}
-                            alt={title}
-                            className="h-[96px] w-[112px] rounded-[18px] border border-slate-200 bg-white object-contain p-1"
-                            onError={(e) => {
-                              e.currentTarget.src = "/no-image.svg";
-                            }}
-                          />
-
-                          <div className="min-w-0">
-                            <h2 className="text-[1.15rem] font-black leading-tight text-slate-950 md:text-[1.25rem]">
-                              {title}
-                            </h2>
-                            <p className="mt-1 text-sm font-semibold leading-5 text-slate-600">
-                              {cartLineConfiguration(item)}
-                            </p>
-                            {shopperAttributes.length ? (
-                              <div className="mt-2 flex flex-wrap gap-1.5">
-                                {shopperAttributes.map((attr) => (
-                                  <span
-                                    key={`${id}-${attr.key}-${attr.value}`}
-                                    className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700"
-                                  >
-                                    {attr.key}: {attr.value}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
-
-                          <div className="text-left md:text-right">
-                            <div className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-slate-400">
-                              Line Price
-                            </div>
-                            <div className="mt-1 text-xl font-black text-slate-950">
-                              {formatMoney(unit * qty)}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-3 md:justify-end">
-                            <div className="inline-flex min-h-[48px] items-center overflow-hidden rounded-[16px] border border-slate-200 bg-white">
-                              <button
-                                type="button"
-                                onClick={() => handleQuantity(id, qty - 1)}
-                                className="min-h-[48px] min-w-[48px] text-xl font-black text-slate-700 disabled:opacity-40"
-                                disabled={busy || qty <= 1}
-                                aria-label={`Decrease ${title} quantity`}
-                              >
-                                −
-                              </button>
-                              <span className="min-w-[42px] text-center text-base font-black text-slate-950">
-                                {qty}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleQuantity(id, qty + 1)}
-                                className="min-h-[48px] min-w-[48px] text-xl font-black text-slate-700 disabled:opacity-40"
-                                disabled={busy}
-                                aria-label={`Increase ${title} quantity`}
-                              >
-                                +
-                              </button>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleRemove(id)}
-                              className="min-h-[44px] rounded-[14px] px-3 text-sm font-black text-red-600 transition hover:bg-red-50 disabled:opacity-50"
-                              disabled={busy}
-                            >
-                              Remove
-                            </button>
-                          </div>
+                      <ShowroomPanel key={group.key} className="overflow-hidden p-0" data-cart-group={group.key}>
+                        <div className="border-b border-[#dce5fb] bg-[linear-gradient(135deg,#ffffff,#f1f5ff)] px-4 py-3">
+                          <h2 className="text-xl font-black text-slate-950">{group.label}</h2>
+                          <p className="mt-0.5 text-xs font-semibold text-slate-600">{group.copy}</p>
                         </div>
-
+                        <div className="divide-y divide-slate-200 px-4">
+                          {items.map((item, idx) => {
+                            const id = itemKey(item, idx);
+                            const title = item.title || "Item";
+                            const image = safeImage(item);
+                            const qty = Number(item.quantity ?? item.qty ?? 1) || 1;
+                            const unit = Number(item.unitPrice ?? item.price ?? 0) || 0;
+                            const shopperAttributes = pickShopperAttributes(item?.attributes);
+                            return (
+                              <div key={id} className={`grid gap-3 py-3 md:items-center ${compact ? "md:grid-cols-[86px_minmax(0,1fr)_120px_168px]" : "md:grid-cols-[112px_minmax(0,1fr)_130px_168px]"}`} data-cart-line={id}>
+                                <img
+                                  src={image}
+                                  alt={title}
+                                  className={`${compact ? "h-[76px] w-[86px]" : "h-[96px] w-[112px]"} rounded-[16px] border border-slate-200 bg-white object-contain p-1`}
+                                  onError={(event) => { event.currentTarget.src = "/no-image.svg"; }}
+                                />
+                                <div className="min-w-0">
+                                  <h3 className={`${compact ? "text-base" : "text-[1.15rem]"} font-black leading-tight text-slate-950`}>{title}</h3>
+                                  <p className="mt-1 text-sm font-semibold leading-5 text-slate-600">{cartLineConfiguration(item)}</p>
+                                  {shopperAttributes.length ? (
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                      {shopperAttributes.map((attr) => (
+                                        <span key={`${id}-${attr.key}-${attr.value}`} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700">{attr.key}: {attr.value}</span>
+                                      ))}
+                                    </div>
+                                  ) : null}
+                                </div>
+                                <div className="text-left md:text-right">
+                                  <div className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-slate-400">Line Price</div>
+                                  <div className="mt-1 text-lg font-black text-slate-950">{formatMoney(unit * qty)}</div>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                                  <div className="inline-flex min-h-[48px] items-center overflow-hidden rounded-[16px] border border-slate-200 bg-white">
+                                    <button type="button" onClick={() => handleQuantity(id, qty - 1)} className="min-h-[48px] min-w-[44px] text-xl font-black text-slate-700 disabled:opacity-40" disabled={busy || qty <= 1} aria-label={`Decrease ${title} quantity`}>−</button>
+                                    <span className="min-w-[36px] text-center text-base font-black text-slate-950">{qty}</span>
+                                    <button type="button" onClick={() => handleQuantity(id, qty + 1)} className="min-h-[48px] min-w-[44px] text-xl font-black text-slate-700 disabled:opacity-40" disabled={busy} aria-label={`Increase ${title} quantity`}>+</button>
+                                  </div>
+                                  <button type="button" onClick={() => handleRemove(id)} className="min-h-[44px] rounded-[14px] px-2 text-sm font-black text-red-600 transition hover:bg-red-50 disabled:opacity-50" disabled={busy}>Remove</button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </ShowroomPanel>
                     );
                   })
@@ -732,7 +726,7 @@ export default function Cart() {
             {cartItems.length ? (
             <aside className="space-y-3 xl:sticky xl:top-4 xl:self-start">
               <ShowroomPanel className="p-5 md:p-6">
-                <ShowroomEyebrow>Your Total</ShowroomEyebrow>
+                <ShowroomEyebrow>Order Summary</ShowroomEyebrow>
                 <div className="mt-2 text-[2.1rem] font-black tracking-tight text-slate-950">
                   {formatMoney(total)}
                 </div>
@@ -747,9 +741,7 @@ export default function Cart() {
                         Rewards
                       </div>
                       <div className="mt-1 text-lg font-black text-violet-800">
-                        {rewards.status === "ready"
-                          ? `${rewardPoints} Sleep Points earned`
-                          : `${rewardPoints} Sleep Points`}
+                        {`${rewardPoints} Sleep Points available`}
                       </div>
                       {rewards.status !== "ready" ? (
                         <p className="mt-1 text-xs font-semibold text-violet-700">{rewardStatus}</p>
@@ -776,7 +768,7 @@ export default function Cart() {
                           View financing options
                       </span>
                     </span>
-                    <span className="text-xl text-[#1A66D2]">›</span>
+                    <span className="text-xl text-[#2f57e8]">›</span>
                   </Link>
                 ) : null}
 
@@ -815,7 +807,7 @@ export default function Cart() {
                   <button
                     onClick={handleCheckout}
                     disabled={busy || !cartItems.length}
-                    className="mt-5 inline-flex min-h-[58px] w-full items-center justify-center rounded-[18px] bg-[#1A66D2] px-6 text-base font-black text-white shadow-[0_18px_38px_rgba(26,102,210,0.22)] transition hover:bg-[#1550A0] disabled:opacity-60"
+                    className="mt-5 inline-flex min-h-[58px] w-full items-center justify-center rounded-[18px] bg-[#2f57e8] px-6 text-base font-black text-white shadow-[0_18px_38px_rgba(47,87,232,0.22)] transition hover:bg-[#203fc1] disabled:opacity-60"
                   >
                     {checkoutLoading ? "Refreshing checkout..." : "Continue to Secure Checkout →"}
                   </button>
@@ -835,7 +827,7 @@ export default function Cart() {
                 <button
                   type="button"
                   onClick={handleTalkToHuman}
-                  className="min-h-[44px] rounded-[14px] border border-blue-200 bg-white px-4 text-sm font-black text-[#1A66D2]"
+                  className="min-h-[44px] rounded-[14px] border border-blue-200 bg-white px-4 text-sm font-black text-[#2f57e8]"
                 >
                   Talk to Human
                 </button>

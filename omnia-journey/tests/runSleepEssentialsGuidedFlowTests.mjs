@@ -67,7 +67,8 @@ for (const expected of [
   'data-sleep-essentials-sort="true"',
   'data-sleep-essentials-cart-summary="true"',
   'data-sleep-essentials-footer="true"',
-  'brandImageSrc={sharpMySnoozePodLogo}',
+  "CommerceHeader",
+  "cartCount={cartCount}",
   'data-sleep-essentials-product-grid="true"',
   "sortedProducts.map((product, index)",
   "In Your Cart",
@@ -81,14 +82,12 @@ for (const expected of [
   "completionAttemptedRef",
   "completeRewardAccessories",
   "confirmedCartItemCount(cart)",
-  "ShowroomDownstreamHeader",
   'placement="inline"',
   'getSleepEssentialsVariantLabel(activeCategoryId)',
   'cartVariant || variants.find',
   'Image unavailable',
   'loading={index < 3 ? "eager" : "lazy"}',
   'decoding="async"',
-  'navigate("/cart")',
   "View Cart",
 ]) {
   assert.ok(pageSource.includes(expected), `missing dedicated Sleep Essentials contract: ${expected}`);
@@ -137,7 +136,7 @@ assert.ok(layoutSource.includes("pageUsesDownstreamHeader"));
 assert.ok(layoutSource.includes("!pageUsesDownstreamHeader"));
 assert.ok(primitivesSource.includes('data-showroom-downstream-header="true"'));
 assert.ok(rewardsPillSource.includes('placement === "inline"'));
-assert.ok(podSource.includes("ShowroomDownstreamHeader"), "Pod must use the shared downstream header");
+assert.ok(podSource.includes("CommerceHeader"), "Pod must use the shared commerce header");
 assert.ok(podSource.includes('placement="inline"'), "Pod rewards must be integrated into its header");
 
 for (const removed of [

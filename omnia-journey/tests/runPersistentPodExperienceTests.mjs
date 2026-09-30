@@ -25,10 +25,11 @@ assert.ok(podSource.includes('navigate("/ask-snoozer"'), "Ask Snoozer must prese
 assert.equal(podSource.includes('setOpenStage("human")'), false, "Human Assistance must not create a duplicate Pod tab");
 assert.equal(podSource.includes("Back to results"), false, "Pod devices must not navigate digitally back to Results");
 assert.ok(podSource.includes("<HumanAssistanceControl"), "Pod header must own Human Assistance");
-assert.ok(podSource.includes("<ShowroomCartBadge"), "Pod header must expose the authoritative cart control");
-assert.ok(podSource.includes("count={snoozepodCount}"), "Pod cart control must use the existing cart count");
+assert.ok(podSource.includes("<CommerceHeader"), "Pod header must expose the shared commerce controls");
+assert.ok(podSource.includes("cartCount={snoozepodCount}"), "Pod cart control must use the existing authoritative cart count");
 assert.ok(
-  layoutSource.includes('pathname.startsWith("/pod/") || pathname.startsWith("/sleep-essentials")') &&
+  layoutSource.includes('pathname.startsWith("/pod/")') &&
+    layoutSource.includes('pathname.startsWith("/sleep-essentials")') &&
     layoutSource.includes("!pageUsesDownstreamHeader"),
   "the floating assistance bubble must be suppressed on Pod routes"
 );
