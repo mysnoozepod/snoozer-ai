@@ -375,13 +375,7 @@ export default function AskSnoozer() {
               </aside>
 
               <section data-ask-section="answer-workspace" className="flex min-h-0 flex-col bg-white/76">
-                <div className="flex h-12 shrink-0 items-center justify-between border-b border-[#dbe5ff] px-5">
-                  <div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[#5d79df]">Advisor workspace</div>
-                    <div className="mt-0.5 text-xs font-semibold text-slate-500">Your latest answer stays in focus.</div>
-                  </div>
-                  {shopperId && shopperId !== "guest" ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-700">Session connected</span> : null}
-                </div>
+                {shopperId && shopperId !== "guest" ? <div className="flex shrink-0 justify-end px-4 pt-3 md:px-5"><span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-700">Session connected</span></div> : null}
 
                 <div ref={transcriptRef} data-ask-section="transcript" role="region" aria-label="Ask Snoozer answers" tabIndex={0} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-blue-100 md:px-5">
                   {!messages.length && !pending ? (

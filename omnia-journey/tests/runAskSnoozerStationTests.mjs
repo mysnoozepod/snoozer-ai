@@ -32,6 +32,7 @@ check(advisorIndex >= 0 && advisorIndex < workspaceIndex && workspaceIndex < tra
 check(page.includes('data-ask-snoozer-workspace="true"') && page.includes("h-[100dvh]") && page.includes("overflow-hidden"), "Ask owns a fixed showroom viewport shell");
 check(page.includes('className="h-[142px] w-[142px] object-contain xl:h-[156px] xl:w-[156px]"'), "advisor Snoozer has substantial dedicated-page presence");
 check(page.includes("What can I help you figure out?") && !page.includes("Chat with Snoozer"), "advisor invitation replaces generic chat framing");
+check(!page.includes("Advisor workspace") && !page.includes("Your latest answer stays in focus."), "internal workspace language is not exposed to shoppers");
 check(page.includes('role="region" aria-label="Ask Snoozer answers"') && page.includes("overflow-y-auto overscroll-contain"), "only the answer workspace owns conversation scrolling");
 check((page.match(/<textarea/g) || []).length === 1 && page.includes('aria-label="Ask Snoozer"'), "there is exactly one labeled shopper composer");
 check(page.includes("Ask Snoozer anything about your sleep setup…"), "composer uses the concise advisor prompt without decorative inputs");

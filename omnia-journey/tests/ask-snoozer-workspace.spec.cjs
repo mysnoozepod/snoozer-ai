@@ -175,6 +175,8 @@ for (const viewport of [
     await expect(page.getByRole("textbox", { name: "Ask Snoozer" })).toBeVisible();
     await expect(page.getByTestId("persistent-human-assistance")).toBeVisible();
     await expect(page.getByText("Chat with Snoozer", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Advisor workspace", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Your latest answer stays in focus.", { exact: true })).toHaveCount(0);
 
     const metrics = await shellMetrics(page);
     expect(metrics.documentVerticalOverflow).toBe(false);
