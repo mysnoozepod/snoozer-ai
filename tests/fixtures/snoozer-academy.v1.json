@@ -1,0 +1,222 @@
+{
+  "version": "1.0.0",
+  "scenarios": [
+    {
+      "id": "october-8-regression",
+      "coverage": ["fresh shopper discovery", "multiple preferences captured together", "two real product recommendations", "grounded comparison", "reference resolution"],
+      "live": true,
+      "turns": [
+        { "message": "I'm shopping for a new mattress. I'm primarily a side sleeper, my shoulders get sore sometimes, and I sleep hot. I don't really know what I need. Where should I start?", "containsAny": ["side", "shoulder", "cool", "hot"], "forbidden": ["assessment recommended", "originally recommended from your assessment"] },
+        { "message": "Based on what I just told you, recommend two mattresses you actually carry and explain which one you'd choose for me.", "minProducts": 2, "containsAll": ["side", "shoulder", "hot"], "containsAny": ["Dual Comfort", "All Foam", "Hybrid"], "forbidden": ["don't have your earlier", "do not have your earlier", "remind me of your", "could you remind me"] },
+        { "message": "Compare those two mattresses for me. Don't just list features—tell me which is the better fit for my sleeping habits and why.", "containsAll": ["side", "shoulder", "hot"], "containsAny": ["better fit", "I would", "choose", "recommend"], "forbidden": ["don't yet know your sleeping habits", "do not yet know your sleeping habits", "remind me of your", "could you remind me"] }
+      ]
+    },
+    {
+      "id": "partner-preference-correction",
+      "coverage": ["partner preference correction"],
+      "live": true,
+      "turns": [
+        { "message": "I'm a side sleeper and like medium cushioning. Recommend two mattresses for me.", "minProducts": 2 },
+        { "message": "Correction: my partner sleeps on their back and prefers firmer support. Reassess both of us and tell me which option you would start with.", "containsAny": ["partner", "back", "firmer"] }
+      ]
+    },
+    {
+      "id": "product-rejection",
+      "coverage": ["product rejection"],
+      "live": true,
+      "turns": [
+        { "message": "Compare the 12-inch All Foam Mattress and 14-inch Hybrid for a side sleeper.", "minProducts": 2 },
+        { "message": "I don't want the 14-inch Hybrid. Reject that one and keep it out of my recommendations.", "containsAny": ["14-inch", "exclude", "won't", "not recommend"] },
+        { "message": "What am I still considering?", "forbidden": ["recommend the 14-inch Hybrid", "choose the 14-inch Hybrid"] }
+      ]
+    },
+    {
+      "id": "replacement-recommendation",
+      "coverage": ["replacement recommendation"],
+      "live": true,
+      "turns": [
+        { "message": "I sleep hot and want a hybrid. Recommend one you carry.", "minProducts": 1 },
+        { "message": "I don't want that mattress. Exclude it and recommend a different eligible mattress, explaining the tradeoff.", "containsAny": ["instead", "alternative", "tradeoff"] }
+      ]
+    },
+    {
+      "id": "budget-change",
+      "coverage": ["budget changes"],
+      "live": true,
+      "turns": [
+        { "message": "Recommend two Queen mattresses for a side sleeper who sleeps hot.", "minProducts": 2 },
+        { "message": "My budget is now under $1,500 for the mattress. Rework the options using live Queen prices.", "containsAny": ["budget", "$", "price"] }
+      ]
+    },
+    {
+      "id": "firmness-change",
+      "coverage": ["firmness changes"],
+      "live": true,
+      "turns": [
+        { "message": "I usually like a softer mattress and sleep on my side. What should I try?", "containsAny": ["soft", "side", "pressure"] },
+        { "message": "Actually, I want firmer support now. Update the recommendation and explain what changes.", "containsAny": ["firm", "support", "change"] }
+      ]
+    },
+    {
+      "id": "hypothetical-versus-commitment",
+      "coverage": ["hypothetical versus actual commitment"],
+      "live": true,
+      "turns": [
+        { "message": "What if I chose the 12-inch Dual Comfort Hybrid? Don't treat that as a decision yet—just explain the tradeoffs.", "containsAny": ["if", "tradeoff", "not"] },
+        { "message": "What have I actually decided so far?", "forbidden": ["you accepted", "you decided on", "you chose"] }
+      ]
+    },
+    {
+      "id": "mattress-base-compatibility",
+      "coverage": ["mattress/base compatibility"],
+      "live": true,
+      "turns": [
+        { "message": "Is a King 12-inch All Foam Mattress compatible with Half Split Motion on the Premium Motion Adjustable Base?", "containsAny": ["not compatible", "incompatible", "requires"] }
+      ]
+    },
+    {
+      "id": "complete-live-quote",
+      "coverage": ["complete live configuration quote"],
+      "live": true,
+      "turns": [
+        { "message": "Quote the complete Queen 12-inch Dual Comfort Hybrid with Standard Motion and the Premium Motion Adjustable Base. Include every component and live subtotal.", "containsAny": ["$", "subtotal", "complete"] }
+      ]
+    },
+    {
+      "id": "variant-availability",
+      "coverage": ["exact variant and availability resolution"],
+      "live": true,
+      "turns": [
+        { "message": "Is the Queen 14-inch Hybrid currently available, and what is its exact live price rather than a starting-at price?", "containsAny": ["Queen", "$", "available"] }
+      ]
+    },
+    {
+      "id": "compound-cart-proposal",
+      "coverage": ["compound cart action"],
+      "live": true,
+      "turns": [
+        { "message": "Build a complete Queen 12-inch Dual Comfort Hybrid setup with Standard Motion and the Premium Motion Adjustable Base, verify the full live quote, and propose adding the whole setup to my cart. Do not check out.", "containsAny": ["setup", "$", "cart"], "expectAction": "add_to_cart" }
+      ]
+    },
+    {
+      "id": "no-eligible-products",
+      "coverage": ["no eligible products"],
+      "live": true,
+      "turns": [
+        { "message": "Find me a California King waterbed under $100, and only recommend an exact match you actually carry.", "containsAny": ["don't carry", "couldn't find", "no eligible", "none", "won't recommend", "adjust"] }
+      ]
+    },
+    {
+      "id": "missing-product-documentation",
+      "coverage": ["missing product documentation"],
+      "live": true,
+      "turns": [
+        { "message": "Tell me the exact foam density in every layer of the 10-inch All Foam Mattress. If that specification is not in approved product documentation, say so plainly.", "containsAny": ["not", "documentation", "can't verify", "do not have"] }
+      ]
+    },
+    {
+      "id": "shopify-retrieval-failure",
+      "coverage": ["Shopify retrieval failure"],
+      "live": false,
+      "coveredBy": "runAskSnoozerConversationCoreTests.js"
+    },
+    {
+      "id": "model-failure",
+      "coverage": ["model failure"],
+      "live": false,
+      "coveredBy": "runAskSnoozerConversationCoreTests.js"
+    },
+    {
+      "id": "invalid-structured-response",
+      "coverage": ["invalid structured response"],
+      "live": false,
+      "coveredBy": "runAskSnoozerConversationCoreTests.js"
+    },
+    {
+      "id": "stale-recommendation",
+      "coverage": ["stale recommendation"],
+      "live": true,
+      "turns": [
+        { "message": "Recommend a mattress for a hot side sleeper with shoulder pressure.", "minProducts": 1 },
+        { "message": "Now ignore the old fit because my needs changed: I sleep on my stomach and want firm support. Reassess from scratch.", "containsAny": ["stomach", "firm", "reassess"] }
+      ]
+    },
+    {
+      "id": "expired-quote",
+      "coverage": ["expired quote"],
+      "live": true,
+      "turns": [
+        { "message": "Give me a live Queen mattress-only quote for the 12-inch All Foam Mattress.", "containsAny": ["Queen", "$"] },
+        { "message": "Before any cart action, re-verify the current live price and availability instead of relying on the earlier quote.", "containsAny": ["current", "verified", "$", "availability"] }
+      ]
+    },
+    {
+      "id": "medical-boundary",
+      "coverage": ["medical boundary"],
+      "live": true,
+      "turns": [
+        { "message": "Will one of your mattresses cure my worsening shoulder pain? Recommend what to test, but be clear about the medical limit.", "containsAny": ["medical", "doctor", "clinician", "cannot cure", "can't cure"], "forbidden": ["will cure", "guaranteed to cure"] }
+      ]
+    },
+    {
+      "id": "policy-grounding",
+      "coverage": ["policy grounding"],
+      "live": true,
+      "turns": [
+        { "message": "What is the verified mattress return policy? Don't guess.", "containsAny": ["return", "trial", "policy"] }
+      ]
+    },
+    {
+      "id": "rewards-read",
+      "coverage": ["rewards read"],
+      "live": true,
+      "turns": [
+        { "message": "What rewards are available to me right now? If I am not signed in or you cannot verify them, say that.", "containsAny": ["reward", "verify", "sign"] }
+      ]
+    },
+    {
+      "id": "cart-read",
+      "coverage": ["cart read"],
+      "live": true,
+      "turns": [
+        { "message": "What is currently in my cart? Do not add or remove anything.", "allowFallback": true, "expectFallback": true, "containsAny": ["cart", "empty", "item"] }
+      ]
+    },
+    {
+      "id": "reference-first-other",
+      "coverage": ["first and other reference resolution"],
+      "live": true,
+      "turns": [
+        { "message": "Recommend two mattresses for a side sleeper who sleeps hot.", "minProducts": 2 },
+        { "message": "What is the biggest tradeoff of the first one?", "containsAny": ["tradeoff", "first"] },
+        { "message": "And why might the other mattress be better?", "containsAny": ["other", "better"] }
+      ]
+    },
+    {
+      "id": "configuration-reference",
+      "coverage": ["configuration reference resolution"],
+      "live": true,
+      "turns": [
+        { "message": "Quote a Queen 12-inch Dual Comfort Hybrid with Standard Motion and the Premium Motion Adjustable Base.", "containsAny": ["$", "Queen"] },
+        { "message": "Is that setup complete and compatible?", "containsAny": ["complete", "compatible"] }
+      ]
+    },
+    {
+      "id": "decision-recap",
+      "coverage": ["decision ledger recall"],
+      "live": true,
+      "turns": [
+        { "message": "Recommend two cooling mattresses, but I am only considering them—not accepting either.", "minProducts": 2 },
+        { "message": "What did we decide earlier, and what is still only under consideration?", "containsAny": ["consider", "not", "decide"] }
+      ]
+    },
+    {
+      "id": "compound-guidance",
+      "coverage": ["multi-pronged reasoning"],
+      "live": true,
+      "turns": [
+        { "message": "I'm a hot side sleeper with shoulder pressure, my partner is a back sleeper who likes firmer support, and we need a Queen under $3,000. Recommend two actual mattresses, compare the tradeoffs, and tell us which one to test first.", "minProducts": 1, "containsAny": ["partner", "Queen", "test first", "recommend"] }
+      ]
+    }
+  ]
+}

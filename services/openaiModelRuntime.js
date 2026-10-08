@@ -195,6 +195,17 @@ function extractResponseText(data = {}) {
     .trim();
 }
 
+function extractFunctionCalls(data = {}) {
+  return (Array.isArray(data?.output) ? data.output : [])
+    .filter((item) => item?.type === "function_call" && item?.name && item?.call_id)
+    .map((item) => ({
+      name: String(item.name),
+      callId: String(item.call_id),
+      arguments: item.arguments,
+      raw: item,
+    }));
+}
+
 function supportsReasoning(model = "") {
   return /^gpt-6(?:\.|-|$)/i.test(String(model || "").trim());
 }
@@ -284,6 +295,122 @@ async function callOpenAIChat({
   }
 }
 
+async function callOpenAIResponses({
+  input,
+  instructions = "",
+  tools = [],
+  text = null,
+  reqId,
+  model = FINAL_MODEL,
+  maxOutputTokens = 2200,
+  timeoutMs = AXIOS_TIMEOUT_MS,
+  reasoningEffort = FINAL_REASONING_EFFORT,
+  parallelToolCalls = true,
+  store = false,
+  deadlineAt = null,
+}) {
+  const { OPENAI_API_KEY: apiKey } = await getIntegrationCredentials("openai");
+  if (!apiKey) {
+    const error = new Error("OPENAI_API_KEY missing");
+    error.code = "OPENAI_KEY_MISSING";
+    throw error;
+  }
+  const payload = {
+    model,
+    input: Array.isArray(input) ? input : safeStringContent(input),
+    instructions: safeStringContent(instructions),
+    max_output_tokens: Math.max(256, Math.min(6000, Number(maxOutputTokens) || 2200)),
+    reasoning: { effort: reasoningEffort },
+    store: Boolean(store),
+    parallel_tool_calls: Boolean(parallelToolCalls),
+  };
+  if (Array.isArray(tools) && tools.length) payload.tools = tools;
+  if (text && typeof text === "object") payload.text = text;
+  if (!store && supportsReasoning(model)) payload.include = ["reasoning.encrypted_content"];
+  logEvent("openai.responses.start", {
+    reqId,
+    model,
+    reasoningEffort,
+    timeoutMs,
+    inputItemCount: Array.isArray(payload.input) ? payload.input.length : 1,
+    toolCount: Array.isArray(payload.tools) ? payload.tools.length : 0,
+    structuredOutput: Boolean(payload.text?.format),
+  });
+  let attempt = 0;
+  for (;;) {
+    try {
+      const remainingMs = Number.isFinite(Number(deadlineAt))
+        ? Number(deadlineAt) - Date.now()
+        : null;
+      if (remainingMs !== null && remainingMs < 750) {
+        const error = new Error("OpenAI Responses request deadline exhausted");
+        error.code = "OPENAI_DEADLINE_EXHAUSTED";
+        throw error;
+      }
+      const response = await openai.post("/responses", payload, {
+        timeout: Math.max(500, Math.min(
+          OPENAI_REQUEST_CEILING_MS,
+          Number(timeoutMs) || AXIOS_TIMEOUT_MS,
+          remainingMs === null ? Number.MAX_SAFE_INTEGER : remainingMs - 500
+        )),
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+      const data = response.data || {};
+      const usage = data.usage || {};
+      const functionCalls = extractFunctionCalls(data);
+      logEvent("openai.responses.ok", {
+        reqId,
+        attempt,
+        model: data.model || model,
+        responseId: data.id || null,
+        toolCallCount: functionCalls.length,
+        inputTokens: usage.input_tokens ?? null,
+        outputTokens: usage.output_tokens ?? null,
+        reasoningTokens: usage.output_tokens_details?.reasoning_tokens ?? null,
+      });
+      return {
+        id: data.id || null,
+        text: extractResponseText(data),
+        functionCalls,
+        output: Array.isArray(data.output) ? data.output : [],
+        model: data.model || model,
+        tokens: {
+          prompt: usage.input_tokens ?? null,
+          cached: usage.input_tokens_details?.cached_tokens ?? null,
+          completion: usage.output_tokens ?? null,
+          total: usage.total_tokens ?? null,
+          reasoning: usage.output_tokens_details?.reasoning_tokens ?? null,
+        },
+        raw: data,
+      };
+    } catch (error) {
+      const status = error?.response?.status;
+      const code = status || error?.code || "ERR";
+      const remainingMs = Number.isFinite(Number(deadlineAt))
+        ? Number(deadlineAt) - Date.now()
+        : null;
+      const retryHasBudget = remainingMs === null || remainingMs >= 2500;
+      const retriable = attempt < OPENAI_RUN_MAX_RETRIES && retryHasBudget && (
+        code === 429 ||
+        (typeof code === "number" && code >= 500) ||
+        ["ECONNRESET", "ETIMEDOUT", "ECONNABORTED"].includes(code)
+      );
+      logEvent(retriable ? "openai.responses.retry" : "openai.responses.fail", {
+        reqId,
+        attempt,
+        code,
+        model,
+        remainingMs,
+        message: truncateForLog(error?.message, 240),
+        response: truncateForLog(error?.response?.data, 800),
+      });
+      if (!retriable) throw error;
+      attempt += 1;
+      await sleep(Math.min(OPENAI_RUN_MAX_WAIT_MS, 250 + attempt * 200));
+    }
+  }
+}
+
 module.exports = {
   ADVISOR_COMPOSER_TIMEOUT_MS,
   FAST_MODEL,
@@ -293,6 +420,8 @@ module.exports = {
   FINAL_REASONING_EFFORT,
   MODEL_TIMEOUT_MS,
   callOpenAIChat,
+  callOpenAIResponses,
+  extractFunctionCalls,
   extractResponseText,
   supportsReasoning,
 };

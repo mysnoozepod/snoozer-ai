@@ -149,6 +149,9 @@ const {
   safeResponseFingerprint,
 } = require("./services/askSnoozerWorkingMemory");
 const {
+  applyConversationState,
+} = require("./services/askSnoozerConversationState");
+const {
   planAskSnoozerTurn,
   resolveAskSnoozerAdvisorTurn,
 } = require("./services/askSnoozerConversationOrchestrator");
@@ -2812,6 +2815,22 @@ function getAskSnoozerRouteDeps() {
     buildDeterministicAtomicDecision,
     resolvePendingCommitmentProtocol,
     shouldPlanAskSnoozerWithModel,
+    getConversationCoreConfig: (env) => {
+      const service = getAskSnoozerModelCoreSvc();
+      return service && typeof service.getConversationCoreConfig === "function"
+        ? service.getConversationCoreConfig(env)
+        : { mode: "legacy" };
+    },
+    runSnoozerConversationCore: async (args) => {
+      const service = getAskSnoozerModelCoreSvc();
+      if (!service || typeof service.runSnoozerConversationCore !== "function") {
+        const error = new Error("Snoozer Conversation Core is unavailable.");
+        error.code = "E_CONVERSATION_CORE_UNAVAILABLE";
+        throw error;
+      }
+      return service.runSnoozerConversationCore(args);
+    },
+    applyConversationState,
     planTrustedAdvisorTurnWithModel: async (args) => {
       const service = getAskSnoozerModelCoreSvc();
       if (!service || typeof service.planTrustedAdvisorTurnWithModel !== "function") {

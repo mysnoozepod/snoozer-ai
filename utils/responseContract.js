@@ -358,6 +358,7 @@ function normalizeSnoozerResponse(raw, opts = {}) {
       ...(isObj(answerMeta.composition) ? { composition: answerMeta.composition } : {}),
       ...(isObj(answerMeta.planning) ? { planning: answerMeta.planning } : {}),
       ...(isObj(answerMeta.quality) ? { quality: answerMeta.quality } : {}),
+      ...(isObj(answerMeta.conversationCore) ? { conversationCore: answerMeta.conversationCore } : {}),
     },
   };
 }

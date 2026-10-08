@@ -49,6 +49,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     buildDeterministicAtomicDecision,
     resolvePendingCommitmentProtocol,
     shouldPlanAskSnoozerWithModel,
+    getConversationCoreConfig,
+    runSnoozerConversationCore,
+    applyConversationState,
     planTrustedAdvisorTurnWithModel,
     planAskSnoozerTurn,
     resolveAskSnoozerAdvisorTurn,
@@ -599,6 +602,211 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         });
       } catch (error) {
         log("active-journey.ask.error", error.code || error.message, { traceId, phase: "hydrate" });
+      }
+    }
+
+    const conversationCoreConfig = typeof getConversationCoreConfig === "function"
+      ? getConversationCoreConfig(process.env)
+      : { mode: "legacy" };
+    const conversationCoreMode = String(conversationCoreConfig?.mode || "legacy").trim().toLowerCase();
+    if (
+      !showroomCommand &&
+      ["active", "shadow"].includes(conversationCoreMode) &&
+      typeof runSnoozerConversationCore === "function"
+    ) {
+      let coreResult;
+      try {
+        coreResult = await runSnoozerConversationCore({
+          requestId: traceId,
+          message: msg,
+          history: payload?.history,
+          context,
+          event,
+          identity: { ...askIdentity, shopperId, sessionId: effectiveSessionId },
+          shopify: shopifySvc,
+          rewardsService: rewardProgramService,
+          log,
+          env: process.env,
+        });
+      } catch (error) {
+        const reason = String(error?.code || error?.message || "conversation_core_failure").slice(0, 160);
+        const reply = "I couldn't complete that answer reliably, so I stopped instead of guessing. Please try again in a moment.";
+        coreResult = {
+          ok: false,
+          status: "fallback",
+          reply,
+          speech: reply,
+          captions: reply,
+          state: "warning",
+          priority: "high",
+          ttlMs: 7000,
+          products: [],
+          actions: [],
+          chips: [],
+          fallback: { used: true, reason },
+          telemetry: {
+            coreVersion: "conversation-core.v1",
+            mode: conversationCoreMode,
+            model: conversationCoreConfig?.model || null,
+            reasoningEffort: conversationCoreConfig?.reasoningEffort || null,
+            modelCallCount: 0,
+            modelMs: 0,
+            retrievalMs: 0,
+            totalMs: Date.now() - startedAt,
+            tools: [],
+            validationErrors: [reason],
+            fallbackReason: reason,
+          },
+        };
+      }
+      const coreTelemetry = coreResult?.telemetry || {};
+      log("ask-snoozer.conversation-core", coreResult?.ok ? "validated" : "fallback", {
+        traceId,
+        testCaseId,
+        sessionId: effectiveSessionId,
+        mode: conversationCoreMode,
+        model: coreTelemetry.model || conversationCoreConfig?.model || null,
+        reasoningEffort: coreTelemetry.reasoningEffort || conversationCoreConfig?.reasoningEffort || null,
+        modelCallCount: Number(coreTelemetry.modelCallCount || 0),
+        modelMs: Number(coreTelemetry.modelMs || 0),
+        toolRounds: Number(coreTelemetry.toolRounds || 0),
+        toolCallCount: Number(coreTelemetry.toolCallCount || 0),
+        tools: Array.isArray(coreTelemetry.tools) ? coreTelemetry.tools : [],
+        retrievalMs: Number(coreTelemetry.retrievalMs || 0),
+        totalMs: Number(coreTelemetry.totalMs || Date.now() - startedAt),
+        usage: coreTelemetry.usage || null,
+        validationErrors: Array.isArray(coreTelemetry.validationErrors) ? coreTelemetry.validationErrors : [],
+        acceptedStateProposals: Number(coreTelemetry.acceptedStateProposals || 0),
+        rejectedStateProposals: Number(coreTelemetry.rejectedStateProposals || 0),
+        fallbackReason: coreTelemetry.fallbackReason || coreResult?.fallback?.reason || null,
+      });
+
+      if (conversationCoreMode === "active") {
+        if (coreResult?.ok && !coreResult?.fallback?.used && typeof applyConversationState === "function") {
+          context = applyConversationState({ context, response: coreResult, quote: coreResult.quote });
+          context.recentConversation = buildBoundedConversationHistory([
+            ...(Array.isArray(context.recentConversation) ? context.recentConversation : []),
+            { role: "user", content: msg },
+            { role: "assistant", content: coreResult.reply },
+          ]);
+          try {
+            await saveSessionContext(effectiveSessionId, context);
+            sco = context;
+            log("ask-snoozer.conversation-state", "persisted", {
+              traceId,
+              testCaseId,
+              sessionId: effectiveSessionId,
+              acceptedStateProposals: Number(coreTelemetry.acceptedStateProposals || 0),
+              rejectedStateProposals: Number(coreTelemetry.rejectedStateProposals || 0),
+            });
+          } catch (error) {
+            log("ask-snoozer.conversation-state.error", error?.code || error?.message || "save_failed", {
+              traceId,
+              testCaseId,
+              sessionId: effectiveSessionId,
+            });
+          }
+          await commitActiveJourneyFromAskContext("conversation_core_validated");
+        }
+
+        const latencyMs = Date.now() - startedAt;
+        const usage = coreTelemetry.usage || {};
+        const env = buildSuccessResponse({
+          requestId: traceId,
+          latencyMs,
+          model: coreTelemetry.model || conversationCoreConfig?.model || "gpt-6.1-sol",
+          text: coreResult?.reply || coreResult?.captions || coreResult?.speech,
+          tokens: {
+            prompt: usage.prompt ?? null,
+            cached: usage.cached ?? null,
+            completion: usage.completion ?? null,
+            reasoning: usage.reasoning ?? null,
+            total: usage.total ?? null,
+          },
+          context,
+          products: Array.isArray(coreResult?.products) ? coreResult.products : [],
+          actions: Array.isArray(coreResult?.actions) ? coreResult.actions : [],
+          metrics: {
+            retrievalMs: Number(coreTelemetry.retrievalMs || 0),
+            modelMs: Number(coreTelemetry.modelMs || 0),
+            totalMs: latencyMs,
+            fallbackUsed: !coreResult?.ok || Boolean(coreResult?.fallback?.used),
+            fallbackKind: coreTelemetry.fallbackReason || coreResult?.fallback?.reason || "",
+            modelCallCount: Number(coreTelemetry.modelCallCount || 0),
+          },
+        });
+        env.status = coreResult?.ok && !coreResult?.fallback?.used ? "answered" : "completed_with_fallback";
+        env.thread_id = effectiveSessionId;
+        env.sessionId = effectiveSessionId;
+        env.chips = Array.isArray(coreResult?.chips) ? coreResult.chips : [];
+        env.meta = {
+          path: "conversation_core",
+          source: "gpt-6.1-sol",
+          reason: coreTelemetry.fallbackReason || coreResult?.fallback?.reason || "",
+          answer_strategy: "sol_conversation_core",
+          answer_source_type: "validated_authoritative_tools",
+          answer_source_key: "conversation-core.v1",
+          answer_grounded: Boolean(coreResult?.ok),
+          answer_facts_count: Array.isArray(coreResult?.claims) ? coreResult.claims.length : 0,
+          qualityGate: {
+            intent: "free_text_conversation",
+            intentGroup: "conversation_core",
+            sourceOfTruth: "validated_authoritative_tools",
+            answerType: coreResult?.responseMode || "safe_fallback",
+            protectedTruthRequired: true,
+            factsResolved: Boolean(coreResult?.ok),
+            fallbackUsed: !coreResult?.ok || Boolean(coreResult?.fallback?.used),
+            missingSlots: [],
+            reason: coreTelemetry.fallbackReason || coreResult?.fallback?.reason || null,
+          },
+          metrics: {
+            retrievalMs: Number(coreTelemetry.retrievalMs || 0),
+            modelMs: Number(coreTelemetry.modelMs || 0),
+            totalMs: latencyMs,
+            fallbackUsed: !coreResult?.ok || Boolean(coreResult?.fallback?.used),
+            fallbackKind: coreTelemetry.fallbackReason || coreResult?.fallback?.reason || "",
+            modelCallCount: Number(coreTelemetry.modelCallCount || 0),
+          },
+          conversationCore: {
+            version: coreTelemetry.coreVersion || "conversation-core.v1",
+            reasoningEffort: coreTelemetry.reasoningEffort || conversationCoreConfig?.reasoningEffort || null,
+            toolRounds: Number(coreTelemetry.toolRounds || 0),
+            toolCallCount: Number(coreTelemetry.toolCallCount || 0),
+            usage,
+            estimatedCostUsd: Number(usage.estimatedCostUsd || 0),
+            acceptedStateProposals: Number(coreTelemetry.acceptedStateProposals || 0),
+            rejectedStateProposals: Number(coreTelemetry.rejectedStateProposals || 0),
+          },
+        };
+        const normalized = normalizeSnoozerResponse(env, {
+          traceId,
+          sessionId: effectiveSessionId,
+          routePath,
+          startedAtMs: startedAt,
+          debug,
+        });
+        logContractResponse(normalized);
+        if (wantHud) {
+          const hud = await buildHudFromAny(normalized, {
+            ok: normalized.ok,
+            mode,
+            context,
+            payload,
+            aiResult: {
+              hud: {
+                speech: coreResult?.speech,
+                captions: coreResult?.captions,
+                state: coreResult?.state,
+                priority: coreResult?.priority,
+                ttlMs: coreResult?.ttlMs,
+              },
+            },
+            defaultSpeech: coreResult?.speech || normalized.reply,
+            traceId,
+          });
+          return flatResponse(event, 200, hud, { "X-Session-Id": effectiveSessionId });
+        }
+        return flatResponse(event, 200, normalized, { "X-Session-Id": effectiveSessionId });
       }
     }
 
