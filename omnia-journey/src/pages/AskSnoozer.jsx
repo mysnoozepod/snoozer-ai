@@ -16,7 +16,7 @@ import {
   createAskSnoozerTurnTiming,
   markAskSnoozerTiming,
 } from "@/lib/snoozer/askSnoozerPerformance.mjs";
-import { buildProductAddAction, cartItemCount, formatProductPrice } from "@/lib/snoozer/askSnoozerStationContract.mjs";
+import { buildComparePrompt, buildProductAddAction, cartItemCount, formatProductPrice } from "@/lib/snoozer/askSnoozerStationContract.mjs";
 import { useStore } from "@/lib/useStore";
 import { useSessionStore } from "@/state/sessionStore";
 import { useShowroomZoneExperience } from "@/iot/useShowroomZoneExperience";
@@ -50,7 +50,8 @@ function composeFallbackReply() {
 
 function formatAssistantStatus(status) {
   const value = String(status || "answered").trim();
-  if (!value || value === "fallback") return "answered";
+  if (value === "fallback") return "temporary issue";
+  if (!value) return "answered";
   return value.replace(/_/g, " ");
 }
 
@@ -138,6 +139,7 @@ export default function AskSnoozer() {
 
   const cart = useStore((state) => state.cart || []);
   const addToCart = useStore((state) => state.addToCart);
+  const addLinesToAuthoritativeCart = useStore((state) => state.addLinesToAuthoritativeCart);
   const cartMutationPending = useStore((state) => state.cartMutationPending);
   const shopperId = useSessionStore((state) => state?.shopperId || "");
   const [messages, setMessages] = useState([]);
@@ -247,7 +249,7 @@ export default function AskSnoozer() {
     const userMessage = { id: createMessageId("user"), role: "user", content, createdAt: nowIso() };
     const history = [...messages.map(messageToHistoryEntry), messageToHistoryEntry(userMessage)];
     setMessages((current) => [...current, userMessage]);
-    const retryRequest = { message: content, command };
+    const retryRequest = { message: content, command, comparisonProductHandles };
     setPending(true); setLastFailedRequest(null); setDraft("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     window.requestAnimationFrame(() => markAskSnoozerTiming(turnTiming, "firstFeedbackAt"));
@@ -300,8 +302,21 @@ export default function AskSnoozer() {
     if (!isDeviceActionAllowed(device, action)) return;
     if (action?.type === "add_to_cart") {
       if (!cartMutationAllowed || cartMutationPending) return;
-      const success = await addToCart(action.payload);
-      setMessages((current) => [...current, { id: createMessageId("assistant"), role: "assistant", content: success ? `${action.payload?.title || "That product"} was added to your cart.` : "I could not confirm that cart addition. Your cart was not changed; please try again.", createdAt: nowIso(), status: success ? "answered" : "warning", chips: [], actions: [], recommendations: [], canRetry: false }]);
+      let success = false;
+      if (Array.isArray(action?.payload?.lines) && action.payload.lines.length) {
+        try {
+          await addLinesToAuthoritativeCart({ lines: action.payload.lines, sourcePage: "ask-snoozer" });
+          success = true;
+        } catch {
+          success = false;
+        }
+      } else {
+        success = await addToCart(action.payload);
+      }
+      const addedLabel = action?.payload?.lines?.length > 1
+        ? "Your complete setup"
+        : action.payload?.title || "That product";
+      setMessages((current) => [...current, { id: createMessageId("assistant"), role: "assistant", content: success ? `${addedLabel} was added to your cart.` : "I could not confirm that cart addition. Your cart was not changed; please try again.", createdAt: nowIso(), status: success ? "answered" : "warning", chips: [], actions: [], recommendations: [], canRetry: false }]);
       return;
     }
     switch (action?.type) {
@@ -426,14 +441,14 @@ export default function AskSnoozer() {
                               const productHandles = [selected?.handle, ...(siblings || []).map((candidate) => candidate?.handle)]
                                 .filter((handle, index, handles) => handle && handles.indexOf(handle) === index)
                                 .slice(0, 2);
-                              sendMessage("Compare Products", {
+                              sendMessage(buildComparePrompt(selected, siblings), {
                                 command: createShowroomCommand("compare_products", { productHandles: productHandles.length === 2 ? productHandles : [] }),
                               });
                             }} onChoose={() => sendMessage("Choose Size", { command: createShowroomCommand("product_sizes", { productHandle: item.handle }) })} />;
                           })}</div> : null}
                           {message.canRetry ? <button type="button" onClick={() => {
                             const request = message.retryRequest || lastFailedRequest;
-                            if (request?.message) sendMessage(request.message, { command: request.command || null });
+                            if (request?.message) sendMessage(request.message, { command: request.command || null, comparisonProductHandles: request.comparisonProductHandles || [] });
                           }} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-[13px] border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-200"><RefreshCcw className="h-3.5 w-3.5" /> Retry</button> : null}
                         </article>
                       );

@@ -1,22 +1,24 @@
 const axios = require("axios");
 const { getIntegrationCredentials } = require("./integrationSecrets");
 
-const FAST_MODEL = process.env.OPENAI_FAST_MODEL || "gpt-4o-mini";
-const FINAL_MODEL = process.env.OPENAI_FINAL_MODEL || "gpt-4o";
+const FAST_MODEL = process.env.OPENAI_FAST_MODEL || "gpt-6-luna";
+const FINAL_MODEL = process.env.OPENAI_FINAL_MODEL || "gpt-6.1-sol";
+const FAST_REASONING_EFFORT = process.env.OPENAI_FAST_REASONING_EFFORT || "low";
+const FINAL_REASONING_EFFORT = process.env.OPENAI_FINAL_REASONING_EFFORT || "low";
 
-const MODEL_TIMEOUT_MS = Math.max(1000, Number(process.env.MODEL_TIMEOUT_MS || 7000));
+const MODEL_TIMEOUT_MS = Math.max(1000, Number(process.env.MODEL_TIMEOUT_MS || 26000));
 const OPENAI_REQUEST_CEILING_MS = Math.max(750, MODEL_TIMEOUT_MS - 1000);
 const AXIOS_TIMEOUT_MS = Math.max(
   500,
-  Math.min(OPENAI_REQUEST_CEILING_MS, Number(process.env.OPENAI_TIMEOUT_MS || 5500))
+  Math.min(OPENAI_REQUEST_CEILING_MS, Number(process.env.OPENAI_TIMEOUT_MS || 16000))
 );
 const FAST_TIMEOUT_MS = Math.max(
   500,
-  Math.min(AXIOS_TIMEOUT_MS, Number(process.env.FAST_PATH_TIMEOUT_MS || AXIOS_TIMEOUT_MS))
+  Math.min(AXIOS_TIMEOUT_MS, Number(process.env.FAST_PATH_TIMEOUT_MS || 11000))
 );
 const ADVISOR_COMPOSER_TIMEOUT_MS = Math.max(
   FAST_TIMEOUT_MS,
-  Math.min(15000, Number(process.env.ADVISOR_COMPOSER_TIMEOUT_MS || 8000))
+  Math.min(20000, Number(process.env.ADVISOR_COMPOSER_TIMEOUT_MS || 14000))
 );
 const MAX_TOTAL_MESSAGE_CHARS = Number(process.env.MAX_TOTAL_MESSAGE_CHARS || 60000);
 const OPENAI_RUN_MAX_RETRIES = Math.min(
@@ -181,12 +183,29 @@ function summarizePayload(messages) {
   return { msgCount, chars, roles };
 }
 
+function extractResponseText(data = {}) {
+  if (typeof data.output_text === "string" && data.output_text.trim()) {
+    return data.output_text.trim();
+  }
+  return (Array.isArray(data.output) ? data.output : [])
+    .flatMap((item) => (Array.isArray(item?.content) ? item.content : []))
+    .map((content) => safeStringContent(content?.text))
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+}
+
+function supportsReasoning(model = "") {
+  return /^gpt-6(?:\.|-|$)/i.test(String(model || "").trim());
+}
+
 async function callOpenAIChat({
   messages,
   reqId,
   model = FINAL_MODEL,
   maxTokens = 350,
   timeoutMs = FAST_TIMEOUT_MS,
+  reasoningEffort = null,
 }) {
   const { OPENAI_API_KEY: apiKey } = await getIntegrationCredentials("openai");
   if (!apiKey) {
@@ -199,33 +218,41 @@ async function callOpenAIChat({
   for (;;) {
     try {
       const normalized = normalizeMessages(messages, reqId, { trim: true });
+      const selectedReasoningEffort = reasoningEffort || (
+        model === FAST_MODEL ? FAST_REASONING_EFFORT : FINAL_REASONING_EFFORT
+      );
       const payload = {
         model,
-        temperature: 0.2,
-        max_tokens: Math.max(64, Math.min(800, Number(maxTokens) || 350)),
-        messages: normalized,
+        input: normalized,
+        max_output_tokens: supportsReasoning(model)
+          ? Math.max(1400, Math.min(2400, Number(maxTokens) || 350))
+          : Math.max(64, Math.min(800, Number(maxTokens) || 350)),
       };
+      if (supportsReasoning(model)) payload.reasoning = { effort: selectedReasoningEffort };
+      else payload.temperature = 0.2;
       logEvent("openai.start", {
         reqId,
         attempt,
         timeoutMs,
-        ...summarizePayload(payload.messages),
+        model,
+        reasoningEffort: payload.reasoning?.effort || null,
+        ...summarizePayload(payload.input),
       });
-      const response = await openai.post("/chat/completions", payload, {
+      const response = await openai.post("/responses", payload, {
         timeout: timeoutMs,
         headers: { Authorization: `Bearer ${apiKey}` },
       });
       const data = response.data || {};
-      const message = data.choices?.[0]?.message || {};
       const usage = data.usage || {};
       logEvent("openai.ok", { reqId, usedTools: false });
       return {
-        text: message.content || "",
+        text: extractResponseText(data),
         model: data.model || model,
         tokens: {
-          prompt: usage.prompt_tokens ?? null,
-          completion: usage.completion_tokens ?? null,
+          prompt: usage.input_tokens ?? null,
+          completion: usage.output_tokens ?? null,
           total: usage.total_tokens ?? null,
+          reasoning: usage.output_tokens_details?.reasoning_tokens ?? null,
         },
         raw: data,
       };
@@ -260,8 +287,12 @@ async function callOpenAIChat({
 module.exports = {
   ADVISOR_COMPOSER_TIMEOUT_MS,
   FAST_MODEL,
+  FAST_REASONING_EFFORT,
   FAST_TIMEOUT_MS,
   FINAL_MODEL,
+  FINAL_REASONING_EFFORT,
   MODEL_TIMEOUT_MS,
   callOpenAIChat,
+  extractResponseText,
+  supportsReasoning,
 };

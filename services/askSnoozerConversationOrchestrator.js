@@ -39,7 +39,8 @@ const INTERNAL_LANGUAGE = Object.freeze([
   "deterministic",
   "intent",
   "route",
-  "fallback",
+  "fallback path",
+  "fallback response",
   "resolver",
   "current verified option",
   "verified adjustable option",
@@ -82,6 +83,22 @@ function titleFor(handle = "", manifest = loadShowroomManifest()) {
   return clean(product?.title || handle)
     .replace(/(\d+)\s*["”]/g, "$1-inch")
     .replace(/\s+mattress$/i, " Mattress");
+}
+
+function productMentionAliases(handle = "") {
+  const title = titleFor(handle).toLowerCase();
+  const quoteTitle = title.replace(/(\d+)-inch/g, '$1"');
+  return unique([
+    title,
+    title.replace(/\s+mattress$/i, ""),
+    quoteTitle,
+    quoteTitle.replace(/\s+mattress$/i, ""),
+  ]);
+}
+
+function mentionsProduct(text = "", handle = "") {
+  const source = clean(text).toLowerCase();
+  return productMentionAliases(handle).some((alias) => source.includes(alias));
 }
 
 function formatMoney(amount, currencyCode = "USD") {
@@ -624,6 +641,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     Boolean(parsedSize) &&
     !explicitBase.baseHandle &&
     !valueCue &&
+    !/\b(?:setup|base|motion)\b/.test(text) &&
     /\b(?:how much|price|pricing|quote|cost)\b/.test(text);
   if (protectedExactPriceScope) taskType = "price_quote";
   const protectedAtomicFactScope = semanticAuthoritative &&
@@ -706,6 +724,17 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     taskType = "legacy";
     semanticPlanRepair = null;
   }
+  const ambiguousModelReference = Boolean(
+    semanticAuthoritative &&
+    /\b(?:that|this) one\b/.test(text) &&
+    !plannedSubjectHandle &&
+    unique(
+      Array.isArray(modelDecision?.comparisonProductHandles) && modelDecision.comparisonProductHandles.length
+        ? modelDecision.comparisonProductHandles
+        : deal.comparisonProductHandles || []
+    ).length > 1
+  );
+  if (ambiguousModelReference) taskType = "reference_clarification";
 
   const activeQuoteMatchesGoal = Boolean(
     deal.activeQuote?.cartReady &&
@@ -771,7 +800,13 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     "compatibility",
     "cart_add",
   ].includes(taskType);
-  if (!semanticAuthoritative && !modelFailed && readyCommercialGoal && !clearlyChangedSubject && !alreadyCompletingCommercialGoal) {
+  const semanticCommerceUpdate = semanticAuthoritative &&
+    readyCommercialGoal &&
+    ["configuration_update", "configuration_value"].includes(taskType);
+  if (
+    semanticCommerceUpdate ||
+    (!semanticAuthoritative && !modelFailed && readyCommercialGoal && !clearlyChangedSubject && !alreadyCompletingCommercialGoal)
+  ) {
     const goalIncludesBase = Boolean(
       workingGoal?.baseHandle ||
         ["mattress_plus_base", "full_pod", "base_only"].includes(clean(workingGoal?.scope))
@@ -786,12 +821,17 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
     !/\b(?:that|this|the)\s+(?:mattress|one|hybrid|foam|product)\b|\b(?:tell me more|what am i going to notice|what (?:will|should) i notice|notice when i lie|notice on it)\b/i.test(query) &&
     !referenceResolution.handle &&
     !explicitHandle;
+  const modelMayUseActiveCommerceSubject =
+    ["price_quote", "price_value", "bundle_quote", "savings_quote", "compatibility", "cart_add"].includes(taskType) ||
+    requestedFacts.some((fact) => ["price", "compatibility", "availability", "cart"].includes(fact));
   const quoteReferenceHandle = semanticAuthoritative
     ? ["alternative_resolution", "session_recommendation_recall"].includes(taskType)
       ? activeSessionRecommendationHandle(context) || plannedSubjectHandle || activeHandle || canonicalHandle
-      : plannedSubjectHandle || (["canonical_recommendation", "canonical_recall", "recommendation_explanation"].includes(taskType)
-        ? canonicalHandle || activeSessionRecommendationHandle(context) || activeHandle
-        : null)
+      : plannedSubjectHandle || (modelMayUseActiveCommerceSubject
+        ? clean(activeDeal(context)?.acceptedRecommendation?.productHandle) || activeSessionRecommendationHandle(context) || activeHandle || canonicalHandle
+        : ["canonical_recommendation", "canonical_recall", "recommendation_explanation"].includes(taskType)
+          ? canonicalHandle || activeSessionRecommendationHandle(context) || activeHandle
+          : null)
     : taskType === "reference_clarification"
     ? null
     : canonicalReference
@@ -829,8 +869,10 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
   if (!semanticAuthoritative && semanticPlanRepair === "resolved_relational_comparison") {
     comparisonHandles = unique([currentRelationalHandle, relationalOtherHandle]).slice(0, 2);
   }
-  const needsCommerce = ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(taskType);
-  const needsCompatibility = ["bundle_quote", "compatibility", "cart_add"].includes(taskType);
+  const commerceFactRequested = taskType !== "reference_clarification" &&
+    requestedFacts.some((fact) => ["price", "availability", "compatibility", "cart"].includes(fact));
+  const needsCommerce = ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(taskType) || commerceFactRequested;
+  const needsCompatibility = ["bundle_quote", "compatibility", "cart_add"].includes(taskType) || requestedFacts.includes("compatibility");
   const ambiguousSetupPrice =
     taskType === "price_quote" &&
     /\bsetup\b/.test(text) &&
@@ -982,7 +1024,7 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       requestedScope: clean(workingGoal?.scope) || null,
       latestDecision: explicitBase.explicitNoBase
         ? "mattress_only"
-        : clean(deal?.latestCommercialDecision?.type || deal?.activeConfiguration?.scope || deal?.baseDecision) || null,
+        : clean(modelDecision?.knownFacts?.baseDecision || deal?.latestCommercialDecision?.type || deal?.activeConfiguration?.scope || deal?.baseDecision) || null,
       quoteInvalidation: clean(deal.activeQuote?.invalidationReason) || null,
     },
     interpretedActs: acts,
@@ -998,10 +1040,12 @@ function planAskSnoozerTurn({ query = "", context = {}, referenceContext = conte
       readyCommercialGoal && ["price_quote", "bundle_quote", "compatibility"].includes(taskType)
     ),
     probe: null,
-    recovery: correctionCue || (referenceResolution.phrase && !referenceResolution.resolved)
+    recovery: correctionCue || ambiguousModelReference || (referenceResolution.phrase && !referenceResolution.resolved)
       ? {
           recognized: taskType !== "legacy",
-          type: referenceResolution.phrase
+          type: ambiguousModelReference
+            ? "ambiguous_reference"
+            : referenceResolution.phrase
             ? referenceResolution.resolved
               ? "reference_correction"
               : "ambiguous_reference"
@@ -1358,22 +1402,43 @@ function buildCompatibility({ mattressHandle = "", motionKey = "", baseHandle = 
 async function buildQuote({ plan = {}, context = {}, fetchProductsByHandles } = {}) {
   const deal = activeDeal(context);
   const goal = activeMemory(context)?.activeGoal || {};
-  const size = clean(plan?.knownFacts?.size || deal.activeSize || goal.size);
+  const activeQuote = deal?.activeQuote;
+  const queryText = normalizeAskSnoozerText(plan.query);
+  const explicitMattressOnly = /\b(?:mattress only|just (?:the )?mattress|only (?:the )?mattress|without (?:the )?(?:motion )?base)\b/.test(queryText);
+  const referencesActiveQuote = plan.taskType === "cart_add" &&
+    /\b(?:add|put)\b.*\b(?:it|that|this|setup|everything)\b/.test(queryText);
+  const size = clean(plan?.knownFacts?.size || deal.activeSize || goal.size || activeQuote?.size);
   const productHandle = clean(
     plan?.references?.requestedProductHandle ||
       deal?.acceptedRecommendation?.productHandle ||
       deal?.sessionRecommendation?.productHandle ||
       goal.productHandle ||
+      activeQuote?.productHandle ||
       resolveCanonicalHandle(context)
   );
+  const requestedFacts = new Set(plan?.requestedFacts || []);
+  const activeQuoteMatchesSelection = Boolean(
+    activeQuote?.ok &&
+    activeQuote?.cartReady &&
+    Array.isArray(activeQuote?.items) &&
+    activeQuote.items.length > 1 &&
+    clean(activeQuote.productHandle).toLowerCase() === productHandle.toLowerCase() &&
+    clean(activeQuote.size).toLowerCase() === size.toLowerCase()
+  );
+  const preserveActiveQuoteScope = Boolean(
+    referencesActiveQuote && activeQuoteMatchesSelection && !explicitMattressOnly
+  );
   const wantsBundle = ["bundle_quote", "compatibility", "savings_quote"].includes(plan.taskType) ||
-    (plan.taskType === "cart_add" && /\b(?:full setup|mattress and base|both)\b/.test(normalizeAskSnoozerText(plan.query)));
+    requestedFacts.has("compatibility") ||
+    (requestedFacts.has("price") && /\b(?:with|plus|add|and)\b.*\b(?:motion|base)\b/.test(normalizeAskSnoozerText(plan.query))) ||
+    (plan.taskType === "cart_add" && /\b(?:full setup|mattress and base|both)\b/.test(queryText)) ||
+    preserveActiveQuoteScope;
   const explicitNoBase = plan?.knownFacts?.baseHandle === null && plan?.knownFacts?.motionKey === "none";
   const baseHandle = wantsBundle && !explicitNoBase
-    ? clean(plan?.knownFacts?.baseHandle || deal.activeBaseHandle || goal.baseHandle || "premium-motion-adjustable-base")
+    ? clean(plan?.knownFacts?.baseHandle || activeQuote?.baseHandle || deal.activeBaseHandle || goal.baseHandle || "premium-motion-adjustable-base")
     : "";
   const motionKey = baseHandle === "premium-motion-adjustable-base"
-    ? clean(plan?.knownFacts?.motionKey || deal.activeMotionKey || goal.motionKey || "standard")
+    ? clean(plan?.knownFacts?.motionKey || activeQuote?.motionKey || deal.activeMotionKey || goal.motionKey || "standard")
     : "none";
   const missing = [];
   if (!productHandle) missing.push("product");
@@ -1452,6 +1517,24 @@ function buildAddAction(item = {}) {
       imageUrl: item.imageUrl,
       unitPrice: item.price,
       selectedOptions: item.selectedOptions,
+    },
+  };
+}
+
+function buildCartAction(quote = {}) {
+  const itemActions = (Array.isArray(quote?.items) ? quote.items : [])
+    .map(buildAddAction)
+    .filter(Boolean);
+  if (!itemActions.length || itemActions.length !== quote.items.length) return null;
+  if (itemActions.length === 1) return itemActions[0];
+  return {
+    type: "add_to_cart",
+    label: "Add complete setup to cart",
+    payload: {
+      scope: "complete_setup",
+      title: "Complete sleep setup",
+      itemCount: itemActions.length,
+      lines: itemActions.map((action) => action.payload),
     },
   };
 }
@@ -1625,9 +1708,9 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       }
       return `${recoveryPrefix}On the ${activeTitle}, you should notice a deeper, more even cradle around your shoulders and hips, with less bounce when you change position. The useful test is whether ${pressureLanguage} eases while your waist still feels supported. If you feel stuck or your hips drop too far, it is softer than you need.`;
     case "product_comparison":
-      return `The ${firstTitle} gives you a closer, steadier contour with less bounce, while the ${secondTitle} feels more lifted, springy, and breathable. For your current visit, I would start with the ${titleFor(sessionHandle || canonical || first || active)} and use your shoulder and hip pressure—not the original assessment alone—to decide.`;
+      return `${recoveryPrefix}The ${firstTitle} gives you a closer, steadier contour with less bounce, while the ${secondTitle} feels more lifted, springy, and breathable. For your current visit, I would start with the ${titleFor(sessionHandle || canonical || first || active)} and use your shoulder and hip pressure—not the original assessment alone—to decide.`;
     case "canonical_comparison":
-      return `Your original recommendation was the ${firstTitle}, while your current choice is the ${secondTitle}. The original recommendation reflected your assessment; the current choice also reflects what you actually felt and decided during this visit. I would use the ${secondTitle} as the active option and keep the ${firstTitle} only as a comparison point.`;
+      return `${recoveryPrefix}Your original recommendation was the ${firstTitle}, while your current choice is the ${secondTitle}. The original recommendation reflected your assessment; the current choice also reflects what you actually felt and decided during this visit. I would use the ${secondTitle} as the active option and keep the ${firstTitle} only as a comparison point.`;
     case "comparison_value":
       return `The ${firstTitle} and ${secondTitle} differ in construction and feel, so the value question is whether the second option improves something you personally care about. I would favor the ${titleFor(sessionHandle || active || second || first)} for you based on your current feedback, but I would not pay more for features you did not notice or value.`;
     case "price_value": {
@@ -1662,7 +1745,7 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       const size = plan?.knownFacts?.size || activeDeal(context)?.activeSize || "your selected size";
       const baseOpen = clean(plan?.knownFacts?.baseDecision) === "undecided" || clean(activeDeal(context)?.baseDecision) === "undecided";
       if (rejected.size) {
-        const ruledOut = Array.from(rejected).map(titleFor).filter(Boolean).join(" and ");
+        const ruledOut = Array.from(rejected).map((handle) => titleFor(handle)).filter(Boolean).join(" and ");
         const current = sessionHandle || active;
         const currentSummary = current
           ? `We landed on the ${titleFor(current)} as the current direction`
@@ -1691,9 +1774,37 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
         ? `The ${resolved?.title || activeTitle} is available in ${sizes.join(", ")}. Availability can change, so I will confirm the exact size again before pricing or adding it to your cart.`
         : `I could not confirm the available sizes for the ${activeTitle} right now, so I will not guess. I can still keep this mattress as the active choice while we verify the exact size.`;
     }
+    case "availability":
+      return quote?.ok && quote.items?.length
+        ? `Yes. The exact ${quote.size || plan?.knownFacts?.size || "selected"} ${activeTitle} configuration is available now. I will verify it again before checkout because availability can change.`
+        : `I could not confirm the exact ${plan?.knownFacts?.size || "selected"} ${activeTitle} configuration right now, so I will not guess.`;
     case "compound_fact_answer": {
       const requested = new Set(plan?.requestedFacts || []);
       const parts = [];
+      if (requested.has("price")) {
+        if (quote?.ok) {
+          const lines = quote.items.map((item) => `${item.title}: ${formatMoney(item.price, item.currencyCode)}`);
+          parts.push(`Price: the complete ${quote.size} setup is ${formatMoney(quote.subtotal, quote.currencyCode)} before taxes, delivery, or active discounts. ${lines.join("; ")}.`);
+        } else {
+          parts.push(`Price: I could not confirm every exact item and variant in the ${activeTitle} setup, so I will not give you a partial or mismatched total.`);
+        }
+      }
+      if (requested.has("compatibility")) {
+        if (quote?.compatibility?.status === "compatible") {
+          parts.push(`Compatibility: the ${activeTitle} and ${titleFor(quote?.baseHandle || "premium-motion-adjustable-base")} work together in ${quote?.size || plan?.knownFacts?.size || "the selected"} size with ${quote?.motionKey === "standard" ? "Standard Motion" : "the selected configuration"}.`);
+        } else if (quote?.compatibility?.status === "incompatible") {
+          parts.push(`Compatibility: that split-motion configuration does not work with the ${activeTitle}; split motion requires the dual-comfort mattress configuration.`);
+        } else {
+          parts.push("Compatibility: I could not confirm the exact mattress-and-base pairing, so I will not guess.");
+        }
+      }
+      if (requested.has("availability")) {
+        if (quote?.ok && quote.items?.length && quote.items.every((item) => item.available !== false && item.availableForSale !== false)) {
+          parts.push(`Availability: the exact ${quote.size || plan?.knownFacts?.size || "selected"} configuration is available now. I will verify it again before checkout because availability can change.`);
+        } else {
+          parts.push(`Availability: I could not confirm every exact item and variant in the ${activeTitle} configuration right now, so I will not guess.`);
+        }
+      }
       if (requested.has("warranty")) {
         const facts = policyFacts("warranty");
         parts.push(facts.length ? `Warranty: ${facts.join(" ")}` : `I could not confirm the approved warranty terms for the ${activeTitle} right now.`);
@@ -1724,6 +1835,9 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
         parts.push(resolved?.sizes?.length
           ? `Sizes: the ${resolved.title || activeTitle} is available in ${resolved.sizes.join(", ")}.`
           : `I could not confirm the available sizes for the ${activeTitle} right now.`);
+      }
+      if (/\b(?:worth|value|save the money)\b/.test(text) && requested.has("compatibility")) {
+        parts.push("Value: I would add the motion base only if elevation gives you a benefit you can clearly feel; otherwise, keep the mattress-only setup and save the money.");
       }
       return parts.join(" ") || `I could not confirm every part of that question for the ${activeTitle} right now, so I will not guess.`;
     }
@@ -1773,7 +1887,7 @@ function shopperFriendlyResponse({ query = "", plan = {}, context = {}, quote = 
       }
       return `For the mattress we are discussing, medium will feel steadier and easier to move on, while soft will allow more shoulder and hip sink. Because pressure relief is your priority, start with soft; move to medium only if your hips feel too low or you feel trapped in the surface.`;
     case "medical_boundary":
-      return `I can help compare general comfort, support, pressure, and elevation, but I cannot diagnose or treat a medical condition or tell you to stop prescribed therapy. For a medical concern, use your clinician's guidance; for comfort, I can help you test which position and mattress feel best.`;
+      return `No mattress here should be presented as a medical treatment for shoulder pain. I can help you compare general comfort, support, pressure, and elevation, but I cannot diagnose a condition or promise a medical outcome. Use your clinician's guidance for the pain itself; in the showroom, I can guide you through a comfort test and help you describe what you feel.`;
     default:
       break;
   }
@@ -1936,9 +2050,31 @@ function buildContextualChips({ plan = {}, quote = null } = {}) {
   return [];
 }
 
-function buildSpeech(reply = "") {
+function buildSpeech(reply = "", plan = {}) {
   const sentences = completeSentences(reply);
-  return clean(sentences.slice(0, 2).join(" "));
+  const requestedFacts = new Set(plan?.requestedFacts || []);
+  const signals = {
+    price: /(?:\b(?:price|cost|total)\b|\$)/i,
+    availability: /\b(?:available|availability|in stock)\b/i,
+    compatibility: /\b(?:compatible|compatibility|work together|pair)\b/i,
+    warranty: /\b(?:warrant|coverage|covered)\b/i,
+    delivery: /\b(?:deliver|business days?|scheduling)\b/i,
+    returns: /\b(?:return|exchange|sleep trial)\b/i,
+    financing: /\b(?:financ|payment plan|affirm)\b/i,
+  };
+  const required = [];
+  for (const fact of requestedFacts) {
+    const signal = signals[fact];
+    const sentence = signal && sentences.find((candidate) => signal.test(candidate));
+    if (sentence && !required.includes(sentence)) required.push(sentence);
+  }
+  if (!required.length) return clean(sentences.slice(0, 2).join(" "));
+  const selected = [...required];
+  for (const sentence of sentences) {
+    if (selected.length >= Math.max(2, required.length) || selected.includes(sentence)) continue;
+    selected.unshift(sentence);
+  }
+  return clean(selected.join(" "));
 }
 
 function adaptResponseDepth(reply = "", depth = "standard") {
@@ -2185,25 +2321,23 @@ function validateResponseConsistency({
   const exclusionCue = /\b(?:original recommendation|ruled out|off (?:the|your) list|do not recommend|don.t recommend|will not recommend|not recommending|instead of|anything but|except|rejected|didn.t like|did not like|too firm|too soft)\b/;
   const replySentences = clean(reply).toLowerCase().match(/[^.!?]+[.!?]?/g) || [];
   for (const handle of rejected) {
-    const productTitle = titleFor(handle).toLowerCase();
-    const productStem = productTitle.replace(/\s+mattress$/i, "");
-    const currentTitle = sessionRecommendationHandle ? titleFor(sessionRecommendationHandle).toLowerCase() : "";
-    const currentStem = currentTitle.replace(/\s+mattress$/i, "");
+    const rejectedAliases = productMentionAliases(handle);
+    const currentAliases = sessionRecommendationHandle ? productMentionAliases(sessionRecommendationHandle) : [];
     const firstAliasIndex = (sentence, aliases = [], fromIndex = 0) => aliases
       .map((alias) => alias ? sentence.indexOf(alias, fromIndex) : -1)
       .filter((index) => index >= 0)
       .reduce((lowest, index) => Math.min(lowest, index), Number.POSITIVE_INFINITY);
     const positivelyReintroduced = replySentences.some((sentence) => {
-      const rejectedIndex = firstAliasIndex(sentence, [productTitle, productStem]);
+      const rejectedIndex = firstAliasIndex(sentence, rejectedAliases);
       const cue = recommendationCue.exec(sentence);
       if (!Number.isFinite(rejectedIndex) || !cue || exclusionCue.test(sentence)) return false;
       const cueEnd = cue.index + cue[0].length;
-      const rejectedAfterCue = firstAliasIndex(sentence, [productTitle, productStem], cueEnd);
-      const currentAfterCue = firstAliasIndex(sentence, [currentTitle, currentStem], cueEnd);
+      const rejectedAfterCue = firstAliasIndex(sentence, rejectedAliases, cueEnd);
+      const currentAfterCue = firstAliasIndex(sentence, currentAliases, cueEnd);
       if (Number.isFinite(rejectedAfterCue)) {
         return !Number.isFinite(currentAfterCue) || rejectedAfterCue < currentAfterCue;
       }
-      const currentAnywhere = firstAliasIndex(sentence, [currentTitle, currentStem]);
+      const currentAnywhere = firstAliasIndex(sentence, currentAliases);
       return rejectedIndex < cue.index && !Number.isFinite(currentAnywhere);
     });
     if (positivelyReintroduced) violations.push(`rejected_product_recommendation:${handle}`);
@@ -2220,7 +2354,14 @@ function validateResponseConsistency({
     ].map(clean).filter(Boolean).join(" ");
     if (containsRawKnowledgeMetadata(visibleContract)) violations.push("raw_knowledge_metadata");
   }
-  if (/\b(?:ensure|guarantee)s?\b.*\b(?:comfortable|comfort|pain|relief|heal|cure)\b/.test(lower) || /\b(?:hip|back|shoulder) pain\b.*\b(?:support|fix|relief|ideal)\b/.test(lower)) {
+  const unsupportedMedicalOutcome = replySentences.some((sentence) => {
+    const denied = /\b(?:cannot|can.t|does not|doesn.t|will not|won.t|should not|not|no mattress)\b[^.!?]{0,100}\b(?:cure|treat|treatment|heal|fix|eliminate|relieve|guarantee|ensure|promise)\b/.test(sentence);
+    if (denied) return false;
+    return /\b(?:ensure|guarantee)s?\b.*\b(?:comfortable|comfort|pain|relief|heal|cure)\b/.test(sentence) ||
+      /\b(?:cure|treat|heal|fix|eliminate|relieve)s?\b[^.!?]{0,80}\b(?:pain|medical condition|sleep apnea|sciatica)\b/.test(sentence) ||
+      /\b(?:pain relief|ideal for (?:hip|back|shoulder) pain|supports? (?:hip|back|shoulder) pain)\b/.test(sentence);
+  });
+  if (unsupportedMedicalOutcome) {
     violations.push("unsupported_outcome_language");
   }
   if (/\b(?:thanks for correcting me|you corrected me)\b/.test(lower) && !plan?.recovery?.acknowledgement) {
@@ -2233,7 +2374,10 @@ function validateResponseConsistency({
   }
   if ((clean(reply).match(/\?/g) || []).length > 1) violations.push("too_many_probes");
   if (quote?.ok) {
-    const priceAnswer = requireCompleteCommerce && ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType);
+    const priceAnswer = requireCompleteCommerce && (
+      ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(plan.taskType) ||
+      (plan?.requestedFacts || []).includes("price")
+    );
     const mentionedPrices = (clean(reply).match(/\$\s?\d[\d,]*(?:\.\d{1,2})?/g) || [])
       .map((amount) => Number(amount.replace(/[$,\s]/g, "")))
       .filter(Number.isFinite);
@@ -2252,9 +2396,25 @@ function validateResponseConsistency({
   if (requireCompleteCommerce && actions.some((action) => action.type === "add_to_cart") && !quote?.cartReady) {
     violations.push("unsafe_cart_action");
   }
+  if (requireCompleteCommerce && plan.taskType === "cart_add" && quote?.cartReady) {
+    const expectedVariantIds = quote.items
+      .map((item) => clean(item?.variantId))
+      .filter(Boolean)
+      .sort();
+    const actualVariantIds = actions
+      .filter((action) => action?.type === "add_to_cart")
+      .flatMap((action) => Array.isArray(action?.payload?.lines)
+        ? action.payload.lines.map((line) => clean(line?.merchandiseId || line?.variantId))
+        : [clean(action?.payload?.merchandiseId || action?.payload?.variantId)])
+      .filter(Boolean)
+      .sort();
+    if (JSON.stringify(actualVariantIds) !== JSON.stringify(expectedVariantIds)) {
+      violations.push("cart_action_scope_mismatch");
+    }
+  }
   if (requireCompleteCommerce && plan?.protectedReferences?.includes("canonicalRecommendation")) {
     const canonical = plan?.references?.canonicalRecommendation;
-    if (canonical && !lower.includes(titleFor(canonical).toLowerCase())) violations.push("canonical_reference_lost");
+    if (canonical && !mentionsProduct(lower, canonical)) violations.push("canonical_reference_lost");
   }
   const allowedPrices = new Set(
     (quote?.ok ? quote.items.concat([{ price: quote.subtotal, currencyCode: quote.currencyCode }]) : [])
@@ -2268,13 +2428,20 @@ function validateResponseConsistency({
     }
   }
   const verifiedProducts = Array.isArray(factPack?.products) ? factPack.products : [];
-  const permittedTitles = new Set(
-    verifiedProducts.map((product) => titleFor(product.handle).toLowerCase()).filter(Boolean)
-  );
+  const permittedHandles = new Set(unique([
+    ...verifiedProducts.map((product) => product?.handle),
+    plan?.references?.canonicalRecommendation,
+    plan?.references?.activeProductHandle,
+    plan?.references?.requestedProductHandle,
+    plan?.references?.sessionRecommendationHandle,
+    plan?.references?.acceptedRecommendationHandle,
+    ...(plan?.references?.comparisonProductHandles || []),
+    ...(plan?.references?.rejectedProductHandles || []),
+  ]).map((handle) => clean(handle).toLowerCase()).filter(Boolean));
   const manifest = loadShowroomManifest();
   for (const product of manifest.products || []) {
-    const title = titleFor(product.handle).toLowerCase();
-    if (title && lower.includes(title) && !permittedTitles.has(title)) {
+    const handle = clean(product?.handle).toLowerCase();
+    if (handle && mentionsProduct(lower, handle) && !permittedHandles.has(handle)) {
       violations.push(`unverified_product:${product.handle}`);
     }
   }
@@ -2531,7 +2698,7 @@ async function resolveAskSnoozerAdvisorTurn({
   );
   const explicitAdd = resolvedPlan.taskType === "cart_add";
   const actions = explicitAdd && quote?.cartReady
-    ? quote.items.map(buildAddAction).filter(Boolean)
+    ? [buildCartAction(quote)].filter(Boolean)
     : [];
   const chips = buildContextualChips({ plan: resolvedPlan, quote });
   factPack.allowedActions = [
@@ -2550,7 +2717,7 @@ async function resolveAskSnoozerAdvisorTurn({
     factPack,
   });
   let reply = deterministicReply;
-  let speech = buildSpeech(deterministicReply);
+  let speech = buildSpeech(deterministicReply, resolvedPlan);
   let compositionMode = "deterministic";
   let modelCallCount = 0;
   let modelMs = 0;
@@ -2578,7 +2745,7 @@ async function resolveAskSnoozerAdvisorTurn({
         factPack: composerFactPack,
         deterministicDraft: {
           displayText: deterministicReply,
-          speechText: buildSpeech(deterministicReply),
+          speechText: buildSpeech(deterministicReply, resolvedPlan),
         },
       });
       modelMs = Date.now() - modelStartedAt;
@@ -2613,7 +2780,7 @@ async function resolveAskSnoozerAdvisorTurn({
       // sentence-complete summary from the grounded display answer before
       // rejecting the entire shopper response.
       if (modelGate.ok && !speechGate.ok) {
-        const groundedSpeech = buildSpeech(composed?.displayText);
+        const groundedSpeech = buildSpeech(composed?.displayText, resolvedPlan);
         const groundedSpeechGate = validateResponseConsistency({
           reply: groundedSpeech,
           quote,

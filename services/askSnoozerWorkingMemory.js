@@ -577,6 +577,14 @@ function reduceShopperFeedbackState({
   let pendingCommitment = isObject(previousDeal?.pendingCommitment)
     ? { ...previousDeal.pendingCommitment }
     : null;
+  const pendingExpiresAt = Date.parse(clean(pendingCommitment?.expiresAt));
+  if (
+    pendingCommitment?.status === "pending" &&
+    Number.isFinite(pendingExpiresAt) &&
+    pendingExpiresAt <= now.getTime()
+  ) {
+    pendingCommitment = { ...pendingCommitment, status: "expired", resolvedAt: updatedAt };
+  }
   let sessionRecommendation = isObject(previousDeal?.sessionRecommendation)
     ? { ...previousDeal.sessionRecommendation }
     : null;
@@ -929,19 +937,36 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
   const typedShowroomAction = semanticAuthority === "typed_showroom_action";
   const deterministicAtomic = semanticAuthority === "deterministic_atomic";
   const decisionSize = clean(modelDecision?.knownFacts?.size);
+  const decisionFirmness = clean(modelDecision?.knownFacts?.firmness);
+  const decisionPainPoints = Array.isArray(modelDecision?.knownFacts?.painPoints)
+    ? uniqueStrings(modelDecision.knownFacts.painPoints)
+    : [];
   const parsedSize = modelFailed ? "" : decisionSize || (deterministicAtomic ? parseAskSnoozerSizeLabel(query) : "");
   const explicitSize =
     parsedSize === "Full" && /\b(?:full|complete|whole) setup\b/.test(normalizeAskSnoozerText(query))
       ? ""
       : parsedSize;
-  const explicitFirmness = deterministicAtomic ? resolveExplicitFirmness(query) : "";
+  const explicitFirmness = authoritativeSemantics
+    ? decisionFirmness
+    : deterministicAtomic ? resolveExplicitFirmness(query) : "";
   const explicitProductHandle = authoritativeSemantics
     ? clean(modelDecision?.productReferences?.find((reference) => reference?.role === "subject")?.handle || modelDecision?.productReferences?.[0]?.handle).toLowerCase()
     : deterministicAtomic
       ? resolveExplicitProductHandle(query)
       : "";
-  const explicitBase = deterministicAtomic ? resolveExplicitBaseSelection(query) : {};
-  const explicitPainPoints = deterministicAtomic ? resolveExplicitPainPoints(query) : [];
+  const explicitBase = authoritativeSemantics
+    ? {
+        ...(Object.prototype.hasOwnProperty.call(modelDecision?.knownFacts || {}, "baseHandle")
+          ? { baseHandle: modelDecision.knownFacts.baseHandle }
+          : {}),
+        ...(clean(modelDecision?.knownFacts?.motionKey)
+          ? { motionKey: clean(modelDecision.knownFacts.motionKey) }
+          : {}),
+      }
+    : deterministicAtomic ? resolveExplicitBaseSelection(query) : {};
+  const explicitPainPoints = authoritativeSemantics
+    ? decisionPainPoints
+    : deterministicAtomic ? resolveExplicitPainPoints(query) : [];
   const modality = clean(modelDecision?.modality) || inferUtteranceModality(query);
   const directSelectionAllowed =
     ["asserted", "reconsideration"].includes(modality) ||
@@ -973,8 +998,21 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
     : authoritativeSemantics
       ? (modelDecision?.requestedFacts || []).includes("price")
       : isPriceLikeQuery(query);
+  const continuesModelCommerceGoal = Boolean(
+    authoritativeSemantics &&
+    continuesPriceGoal &&
+    directSelectionAllowed &&
+    (
+      decisionSize ||
+      explicitProductHandle ||
+      Object.prototype.hasOwnProperty.call(explicitBase, "baseHandle") ||
+      clean(explicitBase.motionKey)
+    )
+  );
   const updatesPriceGoal =
-    startsPriceGoal || (deterministicAtomic && isContextualPriceFragment(query, { activeGoal }));
+    startsPriceGoal ||
+    continuesModelCommerceGoal ||
+    (deterministicAtomic && isContextualPriceFragment(query, { activeGoal }));
   if (updatesPriceGoal) {
     const scope = resolveCommerceScope(typedShowroomAction ? "" : query, activeGoal);
     activeGoal = {
@@ -992,16 +1030,6 @@ function applyAskSnoozerWorkingMemory({ query = "", context = {}, now = new Date
       currentPodId: clean(context?.podId || context?.pod_id) || null,
       updatedAt,
     };
-
-    const product = getProductMap().get(clean(activeGoal.productHandle).toLowerCase());
-    if (
-      ["half_split", "full_split"].includes(clean(activeGoal.motionKey)) &&
-      product &&
-      product?.attributes?.supportsSplitMotion !== true
-    ) {
-      activeGoal.motionKey = null;
-      delete slots.motionKey;
-    }
 
     activeGoal.missingSlots = calculatePriceQuoteMissingSlots(activeGoal);
     activeGoal.status = activeGoal.missingSlots.length ? "collecting_slots" : "ready";

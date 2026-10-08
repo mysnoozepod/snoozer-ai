@@ -11,6 +11,8 @@ const {
   completeAskSnoozerAdvisorTurn,
 } = require("../services/askSnoozerWorkingMemory");
 const { buildAskSnoozerQualityTrace } = require("../services/askSnoozerQualityTrace");
+const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
+const { resolvePendingCommitmentProtocol } = require("../services/askSnoozerModelPlanner");
 
 const PENDING_COMMITMENT_TTL_MS = 15 * 60 * 1000;
 
@@ -114,8 +116,9 @@ function rejectedHandles(context) {
 
 async function runTurn(context, query, now = new Date()) {
   const referenceContext = context;
-  let next = applyAskSnoozerWorkingMemory({ query, context, now });
-  const plan = planAskSnoozerTurn({ query, context: next, referenceContext });
+  const decision = resolvePendingCommitmentProtocol({ query, context, now }) || buildPlannerFixture({ query, context }).decision;
+  let next = applyAskSnoozerWorkingMemory({ query, context, now, modelDecision: decision });
+  const plan = planAskSnoozerTurn({ query, context: next, referenceContext, modelDecision: decision });
   assert(plan.handled, `${query} should be handled by the structured advisor path`);
   const outcome = await resolveAskSnoozerAdvisorTurn({
     query,

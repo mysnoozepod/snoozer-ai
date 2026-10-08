@@ -25,8 +25,7 @@ const modelCore = require("../services/askSnoozerModelCore");
 const shopify = require("../services/shopify");
 const conversationState = require("../services/conversationState");
 const { loadShowroomManifest } = require("../services/showroomManifest");
-const { applyAskSnoozerWorkingMemory } = require("../services/askSnoozerWorkingMemory");
-const { planAskSnoozerTurn } = require("../services/askSnoozerConversationOrchestrator");
+const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 const originalDdbSend = DynamoDBDocumentClient.prototype.send;
 const originalComposer = modelCore.composeTrustedAdvisorResponse;
@@ -129,44 +128,13 @@ function patchDependencies() {
     };
   };
   modelCore.planTrustedAdvisorTurnWithModel = async ({ query = "", context = {} } = {}) => {
-    const shadowContext = applyAskSnoozerWorkingMemory({ query, context, modelDecision: null });
-    const shadowPlan = planAskSnoozerTurn({ query, context: shadowContext, referenceContext: context, modelDecision: null });
     const text = String(query || "").toLowerCase();
-    let primaryTask = shadowPlan.taskType;
-    if (primaryTask === "legacy") {
-      if (/\b(?:dream|pressure relief|sleep hot)\b/.test(text)) primaryTask = "sleep_education";
-      else if (/\b(?:king|medium|not too soft)\b/.test(text)) primaryTask = "preference_capture";
-      else primaryTask = "product_experience";
+    const planned = buildPlannerFixture({ query, context });
+    if (/purple mattress/.test(text)) {
+      planned.decision.primaryTask = "sleep_education";
+      planned.decision.productReferences = [];
     }
-    if (/purple mattress/.test(text)) primaryTask = "sleep_education";
-    const requestedHandle = /purple mattress/.test(text)
-      ? null
-      : /12-inch all foam|12 inch all foam/.test(text)
-      ? "12-all-foam-mattress"
-      : /dual comfort/.test(text)
-        ? "12-dual-comfort-hybrid"
-        : /14-inch hybrid|14 inch hybrid/.test(text)
-          ? "14-hybrid"
-          : shadowPlan.references?.requestedProductHandle || null;
-    return {
-      decision: {
-        authority: "model_semantics",
-        modality: "asserted",
-        primaryTask,
-        shopperGoal: primaryTask,
-        acts: shadowContext.askSnoozerWorkingMemory?.lastTransition?.interpretedActs || [],
-        productReferences: requestedHandle ? [{ handle: requestedHandle, role: "subject" }] : [],
-        comparisonProductHandles: shadowPlan.references?.comparisonProductHandles || [],
-        requestedFacts: shadowPlan.requestedFacts || [],
-        answerRequirements: [],
-        requestedPodId: null,
-        requiresComposition: true,
-        confidence: 0.99,
-        validation: { source: "continuity_test_fixture" },
-      },
-      model: "continuity-planner-stub",
-      modelMs: 1,
-    };
+    return planned;
   };
 
   shopify.fetchProductsByHandles = async ({ handles = [] } = {}) => {

@@ -15,6 +15,7 @@ const {
   resolveAskSnoozerVisitLifecycle,
 } = require("../services/askSnoozerVisitLifecycle");
 const { buildAskSnoozerQualityTrace } = require("../services/askSnoozerQualityTrace");
+const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 function mockedProducts() {
   return Object.entries(fixture.commerceFixture.products).map(([handle, product], productIndex) => ({
@@ -88,8 +89,9 @@ function initialContext(overrides = {}) {
 
 async function turn(context, query, options = {}) {
   const referenceContext = context;
-  let nextContext = applyAskSnoozerWorkingMemory({ query, context });
-  const plan = planAskSnoozerTurn({ query, context: nextContext, referenceContext });
+  const { decision } = buildPlannerFixture({ query, context });
+  let nextContext = applyAskSnoozerWorkingMemory({ query, context, modelDecision: decision });
+  const plan = planAskSnoozerTurn({ query, context: nextContext, referenceContext, modelDecision: decision });
   if (options.recovery) plan.recovery = options.recovery;
   const outcome = await resolveAskSnoozerAdvisorTurn({
     query,

@@ -5,6 +5,7 @@ const fixture = require("./fixtures/ask-snoozer-trusted-advisor-10-turn.v1.json"
 const {
   planAskSnoozerTurn,
   resolveAskSnoozerAdvisorTurn,
+  validateResponseConsistency,
 } = require("../services/askSnoozerConversationOrchestrator");
 const {
   applyAskSnoozerWorkingMemory,
@@ -12,6 +13,7 @@ const {
   resolveAdaptiveSessionRecommendation,
 } = require("../services/askSnoozerWorkingMemory");
 const { buildAskSnoozerQualityTrace } = require("../services/askSnoozerQualityTrace");
+const { buildPlannerFixture } = require("./askSnoozerPlannerFixture");
 
 function mockedProducts() {
   const configured = Object.entries(fixture.commerceFixture.products).map(([handle, product], index) => ({
@@ -57,8 +59,9 @@ async function fetchProductsByHandles({ handles = [] } = {}) {
 async function runTurn(context, query, minute) {
   const referenceContext = context;
   const now = new Date(`2026-09-12T00:${String(minute).padStart(2, "0")}:00.000Z`);
-  let next = applyAskSnoozerWorkingMemory({ query, context, now });
-  const plan = planAskSnoozerTurn({ query, context: next, referenceContext });
+  const { decision } = buildPlannerFixture({ query, context });
+  let next = applyAskSnoozerWorkingMemory({ query, context, now, modelDecision: decision });
+  const plan = planAskSnoozerTurn({ query, context: next, referenceContext, modelDecision: decision });
   assert(plan.handled, `${query}: structured planner should handle the turn`);
   const outcome = await resolveAskSnoozerAdvisorTurn({
     query,
@@ -115,8 +118,9 @@ async function main() {
     "probe-contract regression",
     "throttling distinction",
     "canonical reconsideration",
+    "active bundle quote cart preservation",
   ];
-  assert.equal(targetedScenarios.length, 16);
+  assert.equal(targetedScenarios.length, 17);
   const direct = resolveAdaptiveSessionRecommendation({
     canonicalRecommendation: { primaryMattressHandle: "12-all-foam-mattress" },
     rejectedProducts: [{ handle: "12-all-foam-mattress", status: "rejected" }],
@@ -168,29 +172,33 @@ async function main() {
   assert.equal(noAlternative.eligibleCandidateHandles.length, 0);
   assert(noAlternative.excludedCandidates.every((candidate) => candidate.reason === "shopper_rejected"));
 
+  const noAlternativeBaseContext = {
+    canonicalRecommendation: { primaryMattressHandle: "12-all-foam-mattress" },
+    askSnoozerWorkingMemory: {
+      turnIndex: 4,
+      activeDeal: {
+        activeSize: "King",
+        desiredDirection: { feel: "softer" },
+        rejectedProducts: [
+          "12-all-foam-mattress",
+          "10-all-foam-mattress",
+          "12-dual-comfort-hybrid",
+          "14-hybrid",
+        ].map((handle) => ({ handle, status: "rejected" })),
+      },
+    },
+  };
+  const noAlternativeDecision = buildPlannerFixture({ query: "What else would you recommend?", context: noAlternativeBaseContext }).decision;
   const noAlternativeContext = applyAskSnoozerWorkingMemory({
     query: "What else would you recommend?",
     now: new Date("2026-09-12T00:00:00.000Z"),
-    context: {
-      canonicalRecommendation: { primaryMattressHandle: "12-all-foam-mattress" },
-      askSnoozerWorkingMemory: {
-        turnIndex: 4,
-        activeDeal: {
-          activeSize: "King",
-          desiredDirection: { feel: "softer" },
-          rejectedProducts: [
-            "12-all-foam-mattress",
-            "10-all-foam-mattress",
-            "12-dual-comfort-hybrid",
-            "14-hybrid",
-          ].map((handle) => ({ handle, status: "rejected" })),
-        },
-      },
-    },
+    context: noAlternativeBaseContext,
+    modelDecision: noAlternativeDecision,
   });
   const noAlternativePlan = planAskSnoozerTurn({
     query: "What else would you recommend?",
     context: noAlternativeContext,
+    modelDecision: noAlternativeDecision,
   });
   const noAlternativeOutcome = await resolveAskSnoozerAdvisorTurn({
     query: "What else would you recommend?",
@@ -283,6 +291,38 @@ async function main() {
   assert.equal(turns[12].plan.taskType, "session_recommendation_recall");
   assert(/current recommendation/i.test(turns[12].outcome.reply));
 
+  const bundleCartTurn = await runTurn(
+    turns[7].context,
+    "I like that, can you add it to my cart please?",
+    20
+  );
+  assert.equal(bundleCartTurn.plan.taskType, "cart_add");
+  assert.equal(bundleCartTurn.outcome.quote.items.length, 2, "relational cart command must preserve the active two-item quote");
+  assert.equal(bundleCartTurn.outcome.actions.length, 1, "a complete setup must render one cart action");
+  assert.equal(bundleCartTurn.outcome.actions[0].payload.scope, "complete_setup");
+  assert.deepEqual(
+    bundleCartTurn.outcome.actions[0].payload.lines.map((line) => line.merchandiseId).sort(),
+    bundleCartTurn.outcome.quote.items.map((item) => item.variantId).sort(),
+    "the complete-setup action must include every exact quoted variant"
+  );
+  assert(!bundleCartTurn.outcome.gate.violations.includes("cart_action_scope_mismatch"));
+  const truncatedBundleGate = validateResponseConsistency({
+    reply: bundleCartTurn.outcome.reply,
+    quote: bundleCartTurn.outcome.quote,
+    products: bundleCartTurn.outcome.products,
+    actions: [{
+      ...bundleCartTurn.outcome.actions[0],
+      payload: {
+        ...bundleCartTurn.outcome.actions[0].payload,
+        lines: bundleCartTurn.outcome.actions[0].payload.lines.slice(0, 1),
+      },
+    }],
+    chips: bundleCartTurn.outcome.chips,
+    plan: bundleCartTurn.plan,
+    factPack: bundleCartTurn.outcome.factPack,
+  });
+  assert(truncatedBundleGate.violations.includes("cart_action_scope_mismatch"), "the gate must reject a two-item quote rendered as a one-item cart action");
+
   const quality = buildAskSnoozerQualityTrace({
     traceId: "phase2-acceptance",
     sessionId: "phase2-acceptance",
@@ -307,15 +347,18 @@ async function main() {
   assert(quality.factPackBudget.totalChars > 0);
 
   const fallbackBase = turns[1].context;
+  const fallbackDecision = buildPlannerFixture({ query: "Why that one?", context: fallbackBase }).decision;
   const fallbackWorkingContext = applyAskSnoozerWorkingMemory({
     query: "Why that one?",
     context: fallbackBase,
     now: new Date("2026-09-12T00:14:00.000Z"),
+    modelDecision: fallbackDecision,
   });
   const fallbackPlan = planAskSnoozerTurn({
     query: "Why that one?",
     context: fallbackWorkingContext,
     referenceContext: fallbackBase,
+    modelDecision: fallbackDecision,
   });
   const rateLimited = await resolveAskSnoozerAdvisorTurn({
     query: "Why that one?",
@@ -338,29 +381,32 @@ async function main() {
     `rate-limit fallback should retain the grounded deterministic answer: ${rateLimited.reply}`
   );
 
-  const incompatibleContext = applyAskSnoozerWorkingMemory({
-    query: "Let's go with the 14-inch Hybrid.",
-    now: new Date("2026-09-12T01:00:00.000Z"),
-    context: {
-      canonicalRecommendation: context.canonicalRecommendation,
-      askSnoozerWorkingMemory: {
-        turnIndex: 4,
-        activeDeal: {
-          stage: "configuring",
-          activeProductHandle: "12-dual-comfort-hybrid",
-          activeSize: "King",
-          activeBaseHandle: "premium-motion-adjustable-base",
-          activeMotionKey: "full_split",
-          sessionRecommendation: { productHandle: "14-hybrid" },
-          activeConfiguration: {
-            productHandle: "12-dual-comfort-hybrid",
-            size: "King",
-            baseHandle: "premium-motion-adjustable-base",
-            motionKey: "full_split",
-          },
+  const incompatibleBaseContext = {
+    canonicalRecommendation: context.canonicalRecommendation,
+    askSnoozerWorkingMemory: {
+      turnIndex: 4,
+      activeDeal: {
+        stage: "configuring",
+        activeProductHandle: "12-dual-comfort-hybrid",
+        activeSize: "King",
+        activeBaseHandle: "premium-motion-adjustable-base",
+        activeMotionKey: "full_split",
+        sessionRecommendation: { productHandle: "14-hybrid" },
+        activeConfiguration: {
+          productHandle: "12-dual-comfort-hybrid",
+          size: "King",
+          baseHandle: "premium-motion-adjustable-base",
+          motionKey: "full_split",
         },
       },
     },
+  };
+  const incompatibleDecision = buildPlannerFixture({ query: "Let's go with the 14-inch Hybrid.", context: incompatibleBaseContext }).decision;
+  const incompatibleContext = applyAskSnoozerWorkingMemory({
+    query: "Let's go with the 14-inch Hybrid.",
+    now: new Date("2026-09-12T01:00:00.000Z"),
+    context: incompatibleBaseContext,
+    modelDecision: incompatibleDecision,
   });
   assert.equal(deal(incompatibleContext).acceptedRecommendation.productHandle, "14-hybrid");
   assert.equal(deal(incompatibleContext).activeConfiguration.productHandle, "14-hybrid");
@@ -369,10 +415,12 @@ async function main() {
   assert.equal(deal(incompatibleContext).activeConfiguration.motionKey, null);
   assert.equal(deal(incompatibleContext).configurationInvalidation.reason, "motion_incompatible_with_accepted_product");
 
+  const reconsiderDecision = buildPlannerFixture({ query: "Actually, let me look at the original one again.", context: turns[1].context }).decision;
   const reconsideredContext = applyAskSnoozerWorkingMemory({
     query: "Actually, let me look at the original one again.",
     now: new Date("2026-09-12T01:01:00.000Z"),
     context: turns[1].context,
+    modelDecision: reconsiderDecision,
   });
   assert.equal(deal(reconsideredContext).activeProductHandle, "12-all-foam-mattress");
   assert.equal(

@@ -316,6 +316,34 @@ async function main() {
     });
     check(basePlan.taskType === "compatibility" && basePlan.handled, "model-only semantics route a base question to verified compatibility instead of legacy snoring");
 
+    const hypotheticalReconsider = parseModelPlannerDecision({
+      utteranceMode: "hypothetical",
+      primaryTask: "reconsider_product",
+      shopperGoal: "understand what happens if the current option does not work",
+      acts: [{ type: "reconsider_product", handle: "12-all-foam-mattress" }],
+      comparisonProductHandles: ["12-dual-comfort-hybrid", "12-all-foam-mattress"],
+      confidence: 0.97,
+    }, { query: "What if I do not like the Hybrid—would that mean I should switch back?", context: baseContext() });
+    assert.equal(hypotheticalReconsider.primaryTask, "product_comparison");
+    assert.deepEqual(hypotheticalReconsider.acts, []);
+    const advisoryComparison = parseModelPlannerDecision({
+      utteranceMode: "question",
+      primaryTask: "product_comparison",
+      requestedFacts: ["product_features", "recommendation_reasons"],
+      comparisonProductHandles: ["12-dual-comfort-hybrid", "14-hybrid"],
+      confidence: 0.97,
+    }, { query: "Compare these mattresses and tell me which you would pick for me.", context: baseContext() });
+    assert.equal(advisoryComparison.primaryTask, "product_comparison");
+
+    const medicalBoundary = parseModelPlannerDecision({
+      utteranceMode: "question",
+      primaryTask: "compound_fact_answer",
+      requestedFacts: [],
+      confidence: 0.97,
+    }, { query: "Can this mattress cure my shoulder pain, and what can the showroom help with?", context: baseContext() });
+    assert.equal(medicalBoundary.primaryTask, "medical_boundary");
+    checks += 4;
+
     const aliasedFeedbackDecision = parseModelPlannerDecision({
       utteranceMode: "asserted",
       primaryTask: "alternative_resolution",

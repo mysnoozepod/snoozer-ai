@@ -50,6 +50,7 @@ const PROTECTED_FACTS = new Set([
 const ALLOWED_TASKS = new Set([
   "alternative_resolution",
   "advisor_choice",
+  "availability",
   "base_education",
   "bundle_quote",
   "canonical_comparison",
@@ -171,6 +172,13 @@ function catalogProducts() {
 function resolveCatalogHandle(value = "") {
   const wanted = normalizeAskSnoozerText(clean(value).replace(/[-_]+/g, " "));
   if (!wanted) return "";
+  const showroomAliases = new Map([
+    ["all foam", "12-all-foam-mattress"],
+    ["dual comfort", "12-dual-comfort-hybrid"],
+    ["dual comfort hybrid", "12-dual-comfort-hybrid"],
+    ["14 hybrid", "14-hybrid"],
+  ]);
+  if (showroomAliases.has(wanted)) return showroomAliases.get(wanted);
   const comparable = (text) => normalizeAskSnoozerText(text)
     .replace(/(\d+)\s*(?:inch|inches|in)\b/g, "$1")
     .replace(/\bmattress\b/g, "")
@@ -213,6 +221,60 @@ function inferRequestedFacts(query = "") {
   ]).filter((fact) => ALLOWED_FACTS.has(fact));
 }
 
+function extractVerifiedKnownFacts(query = "") {
+  const text = normalizeAskSnoozerText(query);
+  const size = clean(parseAskSnoozerSizeLabel(query)) || null;
+  let firmness = null;
+  if (/\bnot too soft\b|\bnot soft\b|\bmedium\b/.test(text)) firmness = "Medium";
+  else if (!/\btoo firm\b|\bfirmer\b/.test(text) && /\bfirm\b/.test(text)) firmness = "Firm";
+  else if (!/\btoo soft\b|\bsofter\b/.test(text) && /\bsoft\b/.test(text)) firmness = "Soft";
+
+  const painPoints = [];
+  if (/\bshoulder(?:s)?\b/.test(text)) painPoints.push("shoulders");
+  if (/\bhip(?:s)?\b/.test(text)) painPoints.push("hips");
+  if (/\blower back\b/.test(text)) painPoints.push("lower_back");
+  else if (/\bback pain\b|\bmy back hurts\b|\bback soreness\b/.test(text)) painPoints.push("back");
+  if (/\bneck\b/.test(text)) painPoints.push("neck");
+
+  let baseHandle;
+  let motionKey = null;
+  let baseDecision = null;
+  if (/\b(?:full split motion|full split)\b/.test(text)) {
+    baseHandle = "premium-motion-adjustable-base";
+    motionKey = "full_split";
+    baseDecision = "full_setup";
+  } else if (/\b(?:half split motion|half split)\b/.test(text)) {
+    baseHandle = "premium-motion-adjustable-base";
+    motionKey = "half_split";
+    baseDecision = "full_setup";
+  } else if (/\b(?:standard motion|standard motion base)\b/.test(text)) {
+    baseHandle = "premium-motion-adjustable-base";
+    motionKey = "standard";
+    baseDecision = "full_setup";
+  } else if (/\b(?:platform base|platform)\b/.test(text)) {
+    baseHandle = "platform-base";
+    motionKey = "none";
+    baseDecision = "full_setup";
+  } else if (/\b(?:storage base|storage)\b/.test(text)) {
+    baseHandle = "storage-base";
+    motionKey = "none";
+    baseDecision = "full_setup";
+  } else if (/\b(?:no base|mattress[- ]only|skip the base)\b/.test(text)) {
+    baseHandle = null;
+    motionKey = "none";
+    baseDecision = "mattress_only";
+  } else if (/\b(?:adjustable base|motion base|premium motion)\b/.test(text)) {
+    baseHandle = "premium-motion-adjustable-base";
+    baseDecision = "full_setup";
+  }
+
+  const knownFacts = { size, firmness, painPoints };
+  if (baseHandle !== undefined) knownFacts.baseHandle = baseHandle;
+  if (motionKey) knownFacts.motionKey = motionKey;
+  if (baseDecision) knownFacts.baseDecision = baseDecision;
+  return knownFacts;
+}
+
 function isSimpleAtomicFactQuery(query = "", context = {}) {
   const text = normalizeAskSnoozerText(query);
   const facts = inferRequestedFacts(query);
@@ -235,9 +297,11 @@ function isSimpleAtomicFactQuery(query = "", context = {}) {
   return false;
 }
 
-function resolvePendingCommitmentProtocol({ query = "", context = {} } = {}) {
+function resolvePendingCommitmentProtocol({ query = "", context = {}, now = new Date() } = {}) {
   const pending = context?.askSnoozerWorkingMemory?.activeDeal?.pendingCommitment;
   if (!pending || clean(pending.status || "pending") !== "pending") return null;
+  const expiresAt = Date.parse(clean(pending.expiresAt));
+  if (Number.isFinite(expiresAt) && expiresAt <= new Date(now).getTime()) return null;
   const text = normalizeAskSnoozerText(query);
   const affirmative = /^(?:yes|yeah|yep|sure|please|do it|do that|show me|go ahead|okay do it|ok do it)[.! ]*$/.test(text);
   const negative = /^(?:no|nope|no thanks|not now|don.t|don.t do that|dont do that)[.! ]*$/.test(text);
@@ -288,6 +352,17 @@ function resolveAskSnoozerSemanticAuthority({ query = "", context = {} } = {}) {
   if (pending?.status === "pending" && /^(?:yes|yeah|yep|sure|please|no|nope|no thanks|not now)[.!]?$/.test(text)) {
     return atomic("typed_commitment");
   }
+  const activeGoal = context?.askSnoozerWorkingMemory?.activeGoal;
+  const activePriceFragment =
+    clean(activeGoal?.intent) === "price_quote" &&
+    ["collecting_slots", "ready", "resolving", "presented", "awaiting_decision", "completed"].includes(clean(activeGoal?.status)) &&
+    text.split(/\s+/).filter(Boolean).length <= 7 &&
+    Boolean(
+      parseAskSnoozerSizeLabel(text) ||
+      resolveCatalogHandle(text) ||
+      /\b(?:standard|half split|full split|platform|storage|motion base|adjustable base|no base|mattress[- ]only)\b/.test(text)
+    );
+  if (activePriceFragment) return atomic("price_quote_fragment");
   if (isSimpleAtomicFactQuery(query, context)) return atomic("protected_fact");
   if (/^(?:what(?:'s| is) in|show|review|check|analy[sz]e|inspect)\b.*\bcart\b/.test(text)) return atomic("cart_view");
   if (/^(?:please )?(?:add|put|remove|delete|update|change)\b.*\b(?:cart|basket)\b/.test(text) || /\b(?:add|put|remove|delete|update|change)\b.*\b(?:to|in|from) (?:my|the) (?:cart|basket)\b/.test(text)) {
@@ -309,8 +384,12 @@ function resolveAskSnoozerSemanticAuthority({ query = "", context = {} } = {}) {
 function buildDeterministicAtomicDecision({ reason = "", query = "", context = {} } = {}) {
   const atomicReason = clean(reason).toLowerCase();
   const normalizedQuery = normalizeAskSnoozerText(query);
-  const requestedFacts = inferRequestedFacts(query);
+  const requestedFacts = unique([
+    ...inferRequestedFacts(query),
+    ["exact_price_lookup", "price_quote_fragment"].includes(atomicReason) ? "price" : "",
+  ]);
   const deal = context?.askSnoozerWorkingMemory?.activeDeal || {};
+  const activeGoal = context?.askSnoozerWorkingMemory?.activeGoal || {};
   const explicitHandle = resolveCatalogHandle(query);
   const pathHandle = clean(context?.currentProductHandle || clean(context?.path).match(/^\/products\/([^/?#]+)/i)?.[1]).toLowerCase();
   const productHandle = clean(
@@ -322,7 +401,16 @@ function buildDeterministicAtomicDecision({ reason = "", query = "", context = {
       deal?.canonicalRecommendation?.primaryMattressHandle ||
       context?.canonicalRecommendation?.primaryMattressHandle
   ).toLowerCase();
-  const size = clean(parseAskSnoozerSizeLabel(query) || deal?.activeSize) || null;
+  const size = clean(
+    parseAskSnoozerSizeLabel(query) ||
+    deal?.activeSize ||
+    activeGoal?.size ||
+    context?.assessment?.answers?.size ||
+    context?.assessment?.size ||
+    context?.canonicalRecommendation?.normalizedAssessment?.size
+  ) || null;
+  const baseHandle = clean(deal?.activeBaseHandle || activeGoal?.baseHandle).toLowerCase() || null;
+  const motionKey = clean(deal?.activeMotionKey || activeGoal?.motionKey).toLowerCase() || null;
   const policyTopic = requestedFacts.find((fact) => ["returns", "delivery", "warranty", "financing"].includes(fact)) || null;
   const primaryTaskByReason = {
     greeting: "greeting",
@@ -333,6 +421,7 @@ function buildDeterministicAtomicDecision({ reason = "", query = "", context = {
     checkout_command: "checkout_command",
     rewards_balance: "rewards_explanation",
     exact_price_lookup: "price_quote",
+    price_quote_fragment: "price_quote",
     station_starter: "station_starter",
     session_guidance: "session_guidance",
   };
@@ -364,7 +453,7 @@ function buildDeterministicAtomicDecision({ reason = "", query = "", context = {
           ? "station"
           : "fallback";
   const requiresProduct = atomicReason !== "exact_price_lookup" && requestedFacts.some((fact) => ["availability", "compatibility", "price", "product_sizes"].includes(fact));
-  const scope = atomicReason === "exact_price_lookup" && /\bsetup\b/.test(normalizedQuery)
+  const scope = requestedFacts.includes("price") && /\b(?:setup|full pod|snoozepod)\b/.test(normalizedQuery)
     ? "full_pod"
     : "unclear";
   const stationIntent = atomicReason === "station_starter"
@@ -373,6 +462,10 @@ function buildDeterministicAtomicDecision({ reason = "", query = "", context = {
       : "browse_products"
     : null;
   const missingSlots = requiresProduct && !productHandle ? ["productHandle"] : [];
+  if (commerceReason && !size) missingSlots.push("size");
+  if (scope === "full_pod" && !baseHandle && atomicReason !== "exact_price_lookup") {
+    missingSlots.push("baseHandle");
+  }
   const intent = primaryTask || atomicReason || "deterministic_atomic";
   const classification = {
     intent,
@@ -409,9 +502,9 @@ function buildDeterministicAtomicDecision({ reason = "", query = "", context = {
       confidence: 1,
       slots: {
         productHandle: productHandle || null,
-        baseHandle: null,
+        baseHandle,
         size,
-        motionKey: null,
+        motionKey,
         scope,
         policyTopic,
         sessionTopic: atomicReason === "session_support"
@@ -599,8 +692,12 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
           taskAllowedFacts.has(fact))
     );
   const requestedFacts = unique([...hintedFacts, ...parsedFacts]);
+  const knownFacts = extractVerifiedKnownFacts(query);
   let primaryTask = suppliedPrimaryTask;
-  if (requestedFacts.length > 1) primaryTask = "compound_fact_answer";
+  const protectedFactCount = requestedFacts.filter((fact) => PROTECTED_FACTS.has(fact)).length;
+  if (/\b(?:diagnose|diagnosis|cure|treat|therapy|medical advice|stop .*cpap|replace .*cpap|sleep apnea|sciatica)\b/.test(normalizeAskSnoozerText(query))) {
+    primaryTask = "medical_boundary";
+  } else if (protectedFactCount > 1) primaryTask = "compound_fact_answer";
   else if (requestedFacts.includes("durability")) primaryTask = "durability_objection";
   else if (requestedFacts.includes("rewards")) primaryTask = "rewards_explanation";
   else if (requestedFacts.includes("store_value")) primaryTask = "store_value";
@@ -615,6 +712,9 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
     ...(parsed.comparisonProductHandles || []),
     ...productReferences.filter((reference) => reference.role === "comparison").map((reference) => reference.handle),
   ]).map(resolveCatalogHandle).filter(Boolean).slice(0, 3);
+  if (["hypothetical", "conditional"].includes(modality) && primaryTask === "reconsider_product") {
+    primaryTask = "product_comparison";
+  }
   const rawActs = Array.isArray(parsed.acts) ? parsed.acts : [];
   const acts = [];
   const droppedActs = [];
@@ -633,6 +733,7 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
       reason: validation.reason,
     });
   }
+  if (acts.some((act) => act.type === "reconsider_product")) primaryTask = "reconsider_product";
   // Close a model-semantic bundle before reducing it into journey state. The
   // model has already decided both that the product was rejected and the
   // shopper wants a softer/firmer/cooler direction; this only makes the
@@ -672,18 +773,20 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
   const alternativeRequested = acts.some((act) => act.type === "request_alternative");
   if (alternativeRequested && !acts.some((act) => act.type === "desired_direction")) {
     const directionalRejection = acts.find((act) => act.type === "reject_product" && ["too_firm", "too_soft", "too_hot"].includes(act.reason));
-    const direction = directionalRejection?.reason === "too_firm"
+    const directionalFeedback = acts.find((act) => act.type === "product_feedback" && ["too_firm", "too_soft", "too_hot"].includes(act.feedback));
+    const directionSignal = directionalRejection?.reason || directionalFeedback?.feedback;
+    const direction = directionSignal === "too_firm"
       ? { key: "feel", value: "softer" }
-      : directionalRejection?.reason === "too_soft"
+      : directionSignal === "too_soft"
         ? { key: "feel", value: "firmer" }
-        : directionalRejection?.reason === "too_hot"
+        : directionSignal === "too_hot"
           ? { key: "temperature", value: "cooler" }
           : null;
     if (direction) acts.push({
       type: "desired_direction",
-      modality: directionalRejection.modality,
+      modality: directionalRejection?.modality || directionalFeedback?.modality || modality,
       ...direction,
-      derivedFrom: "reject_product",
+      derivedFrom: directionalRejection ? "reject_product" : "product_feedback",
     });
   }
   const answerRequirements = unique(parsed.answerRequirements || [])
@@ -712,6 +815,7 @@ function parseModelPlannerDecision(raw, { query = "", context = {} } = {}) {
     comparisonProductHandles,
     requestedFacts,
     answerRequirements,
+    knownFacts,
     requestedPodId: clean(parsed.requestedPodId).replace(/^snoozepod\s*/i, "").replace(/^pod[-_\s]*/i, "").slice(0, 20) || null,
     requiresComposition: parsed.requiresComposition !== false,
     confidence: Number.isFinite(Number(parsed.confidence))
@@ -740,6 +844,7 @@ module.exports = {
   buildModelPlannerInput,
   inferRequestedFacts,
   inferUtteranceModality,
+  extractVerifiedKnownFacts,
   parseModelPlannerDecision,
   resolvePendingCommitmentProtocol,
   resolveAskSnoozerSemanticAuthority,

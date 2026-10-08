@@ -11,7 +11,7 @@ import {
 const ASK_SNOOZER_ROUTE = "/ask-snoozer";
 const ASK_SNOOZER_REQUEST_TIMEOUT_MS = Math.max(
   5000,
-  Number(import.meta.env.VITE_ASK_SNOOZER_TIMEOUT_MS || 15000)
+  Number(import.meta.env.VITE_ASK_SNOOZER_TIMEOUT_MS || 30000)
 );
 const ASK_SNOOZER_CONVERSATION_KEY = "snooze.askSnoozer.conversationId";
 const ASK_SNOOZER_HISTORY_LIMIT = 10;

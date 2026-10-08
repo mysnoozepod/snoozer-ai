@@ -144,6 +144,36 @@ export function normalizeAskStationAction(action = {}) {
   if (!label) return null;
   const payload = action.payload && typeof action.payload === "object" ? action.payload : {};
   if (type === "add_to_cart") {
+    const lines = (Array.isArray(payload.lines) ? payload.lines : [])
+      .map((line) => {
+        const merchandiseId = firstText([line?.merchandiseId, line?.variantId]);
+        if (!isValidProductVariantGid(merchandiseId)) return null;
+        return {
+          merchandiseId,
+          variantId: merchandiseId,
+          quantity: Math.max(1, Math.floor(Number(line?.quantity) || 1)),
+          handle: text(line?.handle) || null,
+          title: text(line?.title) || "Product",
+          imageUrl: imageUrl(line?.imageUrl),
+          unitPrice: finiteNumber(line?.unitPrice),
+          selectedOptions: selectedOptions(line?.selectedOptions),
+        };
+      })
+      .filter(Boolean);
+    if (lines.length) {
+      if (lines.length !== payload.lines.length) return null;
+      return {
+        type,
+        label,
+        target: null,
+        payload: {
+          scope: text(payload.scope) || "bundle",
+          title: text(payload.title) || "Complete setup",
+          itemCount: lines.length,
+          lines,
+        },
+      };
+    }
     const merchandiseId = firstText([payload.merchandiseId, payload.variantId]);
     if (!isValidProductVariantGid(merchandiseId)) return null;
     return {

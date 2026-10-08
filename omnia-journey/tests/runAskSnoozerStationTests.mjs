@@ -53,7 +53,9 @@ check(page.includes("sayHud({") && page.includes(".catch(() => {})"), "voice fai
 check(page.includes("Snoozer is thinking…") && page.includes("requestAnimationFrame") && page.includes("motion-reduce:animate-none"), "thinking state and first-visible-feedback boundary remain instrumented with reduced-motion safety");
 check(page.includes("sendAskSnoozerQualityTiming") && page.includes("ASK_SNOOZER_VOICE_TIMING_EVENT"), "display and TTS timing events are reported without changing the UI");
 check(page.includes("canRetry: true") && page.includes("composeFallbackReply"), "network failure retains customer-safe retry");
-check(page.includes("retryRequest = { message: content, command }") && page.includes("command: request.command || null"), "retry preserves the original command object");
+check(page.includes("temporary issue") && !page.includes('value === "fallback") return "answered"'), "fallback responses are labeled as temporary issues");
+check(page.includes("retryRequest = { message: content, command, comparisonProductHandles }") && page.includes("comparisonProductHandles: request.comparisonProductHandles || []"), "retry preserves the original command and comparison scope");
+check(adapter.includes("VITE_ASK_SNOOZER_TIMEOUT_MS || 30000"), "Ask client timeout covers the backend model envelope");
 check(adapter.includes("storeState?.cart") && !adapter.includes("storeState?.snoozepod) ? storeState.snoozepod"), "Ask context uses authoritative cart lines");
 check(adapter.includes("normalizeAskStationProduct") && adapter.includes("normalizeAskStationAction"), "adapter uses the safe rich response contract");
 check(adapter.includes('type === "command"') && adapter.includes("command: normalizedCommand"), "command chips and requests preserve typed command metadata");
@@ -83,6 +85,19 @@ check(add?.type === "add_to_cart" && add.payload.merchandiseId === exactId, "exa
 check(buildProductAddAction({ ...normalized, exactVariantResolved: false }) === null, "unresolved configuration cannot create cart action");
 check(buildProductAddAction({ ...normalized, available: false }) === null, "unavailable product cannot create cart action");
 check(normalizeAskStationAction({ type: "add_to_cart", label: "Add", payload: { merchandiseId: "123" } }) === null, "invalid variant ID is rejected");
+const bundleAction = normalizeAskStationAction({
+  type: "add_to_cart",
+  label: "Add complete setup to cart",
+  payload: {
+    scope: "complete_setup",
+    lines: [
+      { merchandiseId: "gid://shopify/ProductVariant/123", title: "Mattress" },
+      { merchandiseId: "gid://shopify/ProductVariant/456", title: "Motion base" },
+    ],
+  },
+});
+check(bundleAction?.payload?.lines?.length === 2 && bundleAction.payload.scope === "complete_setup", "bundle action preserves every exact Shopify line in one mutation payload");
+check(normalizeAskStationAction({ type: "add_to_cart", label: "Bad bundle", payload: { lines: [{ merchandiseId: exactId }, { merchandiseId: "bad" }] } }) === null, "bundle action is rejected when any line lacks an exact variant GID");
 check(isValidProductVariantGid(exactId) && !isValidProductVariantGid("gid://shopify/Product/123"), "variant GID validation is exact");
 check(!JSON.stringify(normalized).includes("firstAvailableVariantId"), "first-available identity is not treated as selected configuration");
 const comparePrompt = buildComparePrompt(normalized, [
@@ -91,6 +106,8 @@ const comparePrompt = buildComparePrompt(normalized, [
 ]);
 check(comparePrompt === "Compare 14 Hybrid with 12-inch All Foam Mattress", "Compare uses shopper-facing product names");
 check(!comparePrompt.includes("14-hybrid") && !comparePrompt.includes("12-all-foam-mattress"), "Compare does not expose product handles");
+check(page.includes("sendMessage(buildComparePrompt(selected, siblings)"), "product-card comparisons send distinct shopper-facing questions for accurate telemetry");
+check(page.includes('addLinesToAuthoritativeCart({ lines: action.payload.lines, sourcePage: "ask-snoozer" })'), "complete setup actions use one authoritative multi-line cart mutation");
 check(cartItemCount([{ quantity: 2 }, { quantity: 1 }]) === 3, "cart count sums authoritative quantities");
 
 console.log(`Ask Snoozer station frontend tests passed (${checks} checks).`);

@@ -87,7 +87,7 @@ function parseTrustedAdvisorComposition(
     throw error;
   }
   if (probe && !probe.endsWith("?") && !/[.!]$/.test(probe)) probe = `${probe}?`;
-  if (probe && (displayText.match(/\?/g) || []).length === 1) probe = null;
+  if (probe && (displayText.match(/\?/g) || []).length >= 1) probe = null;
   if (probe && ((probe.match(/\?/g) || []).length !== 1 || probe.length > 180)) {
     const error = new Error("Trusted-advisor composer returned an invalid probe.");
     error.code = "E_ADVISOR_COMPOSER_PROBE";
@@ -151,6 +151,8 @@ async function composeTrustedAdvisorResponse({
     responseDepth: strategy?.responseDepth,
     references: strategy?.references,
     knownFacts: strategy?.knownFacts,
+    requestedFacts: strategy?.requestedFacts || [],
+    answerRequirements: strategy?.answerRequirements || [],
     commercialState: strategy?.commercialState,
     interpretedActs: strategy?.interpretedActs,
     allowedActions: strategy?.allowedActions,
@@ -189,14 +191,21 @@ async function composeTrustedAdvisorResponse({
     "Treat the original assessment recommendation as history and the current session recommendation as the active advice when shopper feedback changed it.",
     "Do not expose implementation language. Do not diagnose or promise a medical outcome.",
     "Never claim that a mattress ensures comfort, treats pain, or guarantees relief. Describe verified construction and likely feel as tradeoffs, not outcomes.",
-    "Ask at most one useful forward-moving question. Use null when a probe is not warranted.",
+    "If a forward-moving question is useful, put it only in probe. Keep displayText and speechText declarative, and use null when no probe is warranted.",
+    "End displayText and speechText with complete punctuation; never end on a heading, colon, dash, or unfinished list item.",
     ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(
       String(strategy?.taskType || "")
-    )
+    ) || (strategy?.requestedFacts || []).includes("price")
       ? "For a price answer, preserve every exact resolved line price, the exact total when there is more than one line, the size, and the requested scope. Do not omit or alter any number."
       : "",
+    ["price_quote", "price_value", "bundle_quote", "savings_quote", "cart_add"].includes(
+      String(strategy?.taskType || "")
+    ) || (strategy?.requestedFacts || []).some((fact) => ["price", "compatibility"].includes(fact))
+      ? "Discuss only the size in the verified commerce quote. For a conditional quote, do not claim the shopper's previously saved size changed and do not repeat that prior size."
+      : "",
+    "When you mention a verified product, preserve its exact shopper-facing title from the fact pack.",
     comparisonTask
-      ? "Use the supplied response depth and finish the comparison. Use both exact full names in strategy.comparisonTitles and clearly contrast them in the first two sentences so the spoken summary covers both. Use product names instead of the word model. Keep displayText under 1800 characters."
+      ? "Use the supplied response depth and finish the comparison in 140 words or fewer. Lead with a clear verdict. Use both exact full names in strategy.comparisonTitles and contrast them in the first two sentences. Compare both products on shopper-relevant, verified dimensions such as feel, pressure support, motion, cooling, construction, and value. Tie the recommendation to known shopper preferences or testing feedback when present, and state when the other product is the better choice. Never use generic labels such as verified catalog option. Use product names instead of the word model. Example pattern: Choose Product B if its verified advantage matters most to you; choose Product A if its verified counter-tradeoff matters more."
       : "Use the supplied response depth and finish the thought. Keep displayText under 1800 characters. Keep speechText to two short complete sentences.",
   ]
     .filter(Boolean)

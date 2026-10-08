@@ -1,6 +1,6 @@
 "use strict";
 
-const { parseAskSnoozerSizeLabel } = require("../services/askSnoozerIntents");
+const { extractVerifiedKnownFacts } = require("../services/askSnoozerModelPlanner");
 
 function clean(value) { return String(value || "").trim(); }
 
@@ -25,6 +25,8 @@ function fixtureRequestedFacts(query = "") {
   if (/\bfinanc(?:e|ing)\b/.test(text)) requestedFacts.push("financing");
   if (/\b(?:durability|how many years|starts? sagging|hold up)\b/.test(text)) requestedFacts.push("durability");
   if (/\b(?:how much|price|cost)\b/.test(text)) requestedFacts.push("price");
+  if (/\b(?:available|in stock|availability)\b/.test(text)) requestedFacts.push("availability");
+  if (/\b(?:compatible|compatibility|work together|work with)\b/.test(text)) requestedFacts.push("compatibility");
   return requestedFacts;
 }
 
@@ -36,23 +38,29 @@ function fixtureTask(query = "") {
   if (/\b(?:return policy|sleep trial|delivery|financing)\b/.test(text)) return "compound_fact_answer";
   if (/\b(?:durability|how many years|starts? sagging|hold up)\b/.test(text)) return "durability_objection";
   if (/\badd\b.*\b(?:cart|setup|mattress)\b|^add it/.test(text)) return "cart_add";
-  if (/\b(?:remind me|originally recommend|assessment originally recommend)\b/.test(text)) return "canonical_recall";
+  if (/\b(?:remind me|originally recommend|assessment originally recommend|what did you recommend)\b/.test(text)) return "canonical_recall";
+  if (/\b(?:what do you recommend now|current recommendation|which mattress now)\b/.test(text)) return "session_recommendation_recall";
+  if (/\b(?:why that one|why this one|why do you recommend (?:it|that)|why is (?:it|that|this) (?:better|your recommendation))\b/.test(text)) return "recommendation_explanation";
   if (/\bwhat (?:did i say|do you remember).*\blik/.test(text)) return "preference_recall";
   if (/\bmedium\b.*\b(?:versus|vs|or)\b.*\bsoft\b/.test(text)) return "firmness_compare";
   if (/\bhow much would i save\b|\bsave\b.*\bskip the base\b/.test(text)) return "savings_quote";
   if (/\bmore expensive\b|\bneed the (?:adjustable )?base\b|\bdidn.t notice anything from the base\b/.test(text)) return "value_judgment";
+  if (/\b(?:actually|again|reconsider|show me)\b.*\b(?:all foam|original|first)\b/.test(text)) return "reconsider_product";
+  if (/\b(?:stop telling me|stop showing me|you are not listening)\b/.test(text)) return "trust_recovery";
+  if (/\b(?:too firm|too soft|didn.t like|don.t like|stop telling me|stop showing me)\b/.test(text)) return "shopper_feedback";
   if (/\b(?:liked|like)\b.*\b(?:elevated|motion|base)\b/.test(text)) return "preference_capture";
   if (/\b(?:compatible|make sense together|work with this|base works|base work)\b/.test(text)) return "compatibility";
   if (/\bwith standard motion\b/.test(text) || (/\b(?:with the motion base|mattress and base|full setup)\b/.test(text) && /\b(?:cost|price|how much|what about)\b/.test(text))) return "bundle_quote";
+  if (/\b(?:make that|switch(?: it)? to|change(?: it)? to)\b.*\b(?:twin|full|queen|king|split)\b/.test(text)) return "configuration_update";
+  if (/\b(?:mattress only|skip the base|remove the base)\b/.test(text)) return "configuration_value";
   if (/\b(?:how much|price|cost)\b/.test(text)) return "price_quote";
   if (/\b(?:standard motion|adjustable base|motion base)\b/.test(text)) return "base_education";
   if (/\b(?:would you buy|which one would you choose|which one would you start)\b/.test(text)) return "advisor_choice";
   if (/\b(?:where should i start|which snoozepod|what (?:mattress )?do you recommend|try first|recommendation now)\b/.test(text)) return "canonical_recommendation";
-  if (/\b(?:what would you recommend instead|recommend.*(?:other|instead)|something softer|want softer|^softer\.?$)\b/.test(text)) return "alternative_resolution";
+  if (/^(?:softer|firmer)\.?$/.test(text) || /\b(?:what would you recommend instead|what else would you recommend|recommend.*(?:other|instead)|something softer|want softer)\b/.test(text)) return "alternative_resolution";
   if (/\b(?:too expensive|more than i want to spend|over my budget)\b/.test(text)) return "value_objection";
-  if (/\b(?:i like that one|that works|go with that)\b/.test(text)) return "recommendation_acceptance";
+  if (/\b(?:i like that one|that works|go with that|(?:let.s |i(?: will|'ll)? )?go with (?:the )?.+|choose (?:the )?.+)\b/.test(text)) return "recommendation_acceptance";
   if (/\b(?:compare|versus|\bvs\b|difference|other one)\b/.test(text)) return "product_comparison";
-  if (/\b(?:too firm|too soft|didn.t like|don.t like|stop telling me|stop showing me)\b/.test(text)) return "shopper_feedback";
   if (/\b(?:confused|getting lost|what am i choosing)\b/.test(text)) return "confusion_recovery";
   if (/\b(?:snor\w*|side sleep\w*|sleep hot|pressure relief|firmer mattress|dream\w*|partner moves?)\b/.test(text)) return "sleep_education";
   if (/\b(?:king|queen|full|twin|medium|not too soft)\b/.test(text)) return "preference_capture";
@@ -62,8 +70,10 @@ function fixtureTask(query = "") {
 function fixtureActs(query = "", context = {}) {
   const text = clean(query).toLowerCase();
   const deal = activeDeal(context);
-  const subject = explicitFixtureHandle(query) || deal.activeProductHandle || deal.sessionRecommendation?.productHandle || null;
-  const pending = deal.pendingCommitment?.status === "pending" ? deal.pendingCommitment : null;
+  const canonical = clean(deal.canonicalRecommendation?.primaryMattressHandle || context?.canonicalRecommendation?.primaryMattressHandle).toLowerCase() || null;
+  const reconsideringOriginal = /\b(?:actually|again|reconsider|show me|look at)\b.*\b(?:original|first)\b/.test(text);
+  const subject = explicitFixtureHandle(query) || (reconsideringOriginal ? canonical : null) || deal.activeProductHandle || deal.sessionRecommendation?.productHandle || null;
+  const pending = clean(deal.pendingCommitment?.status || "pending") === "pending" ? deal.pendingCommitment : null;
   const acts = [];
   const add = (type, detail = {}) => acts.push({ type, modality: "asserted", ...detail });
   if (pending && /^(?:yes|yeah|yep|sure|please|okay)\.?$/.test(text)) {
@@ -101,7 +111,7 @@ function fixtureActs(query = "", context = {}) {
   } else if (/\b(?:recommend|show|find)\b.*\b(?:other|instead|another|alternative)\b/.test(text)) {
     add("request_alternative");
   }
-  if (/\b(?:i like that one|that works|go with that)\b/.test(text) && subject) add("accept_recommendation", { handle: subject });
+  if (/\b(?:i like that one|that works|go with that|(?:let.s |i(?: will|'ll)? )?go with (?:the )?.+|choose (?:the )?.+)\b/.test(text) && subject) add("accept_recommendation", { handle: subject });
   if (/\b(?:too expensive|more than i want to spend|over my budget)\b/.test(text)) add("budget_value", { concern: "price_resistance", maxAmount: null });
   if (/\b(?:confused|getting lost|what am i choosing)\b/.test(text)) add("confusion");
   if (/\b(?:stop telling me|stop showing me|you are not listening)\b/.test(text)) add("trust_risk");
@@ -109,26 +119,25 @@ function fixtureActs(query = "", context = {}) {
 }
 
 function buildPlannerFixture({ query = "", context = {} } = {}) {
-  const primaryTask = fixtureTask(query);
+  let primaryTask = fixtureTask(query);
   const requestedFacts = fixtureRequestedFacts(query);
+  if (requestedFacts.length > 1) primaryTask = "compound_fact_answer";
   const deal = activeDeal(context);
+  const text = clean(query).toLowerCase();
   const explicit = explicitFixtureHandle(query);
   const active = clean(deal.activeProductHandle || deal.sessionRecommendation?.productHandle || context?.canonicalRecommendation?.primaryMattressHandle).toLowerCase() || null;
   const canonical = clean(deal.canonicalRecommendation?.primaryMattressHandle || context?.canonicalRecommendation?.primaryMattressHandle).toLowerCase() || null;
-  const requestedHandle = ["canonical_recommendation", "canonical_recall"].includes(primaryTask)
+  const ambiguousRelationalReference = /\b(?:that|this) one\b/.test(text) && !clean(deal.activeProductHandle) && (deal.comparisonProductHandles || []).length > 1;
+  const requestedHandle = ambiguousRelationalReference
+    ? null
+    : ["canonical_recommendation", "canonical_recall", "reconsider_product"].includes(primaryTask)
     ? canonical || explicit || active
     : explicit || active;
   let comparisonProductHandles = [];
   if (primaryTask === "product_comparison") {
     comparisonProductHandles = Array.from(new Set([active, explicit, ...(deal.comparisonProductHandles || [])].filter(Boolean))).slice(0, 2);
   }
-  const size = parseAskSnoozerSizeLabel(query) || null;
-  const text = clean(query).toLowerCase();
-  const explicitNoBase = /\bmattress only|skip the base\b/.test(text);
-  const explicitMotionBase = /\bstandard motion|motion base|adjustable base\b/.test(text);
-  const baseHandle = explicitNoBase ? null : explicitMotionBase ? "premium-motion-adjustable-base" : undefined;
-  const motionKey = explicitNoBase ? "none" : explicitMotionBase && /standard/.test(text) ? "standard" : null;
-  const baseDecision = explicitNoBase ? "mattress_only" : explicitMotionBase ? "full_setup" : null;
+  const knownFacts = extractVerifiedKnownFacts(query);
   return {
     decision: {
       authority: "model_semantics",
@@ -143,7 +152,7 @@ function buildPlannerFixture({ query = "", context = {} } = {}) {
       requestedPodId: null,
       requiresComposition: true,
       confidence: 0.99,
-      knownFacts: { size, baseDecision, baseHandle, motionKey },
+      knownFacts,
       validation: { source: "test_planner_fixture" },
     },
     model: "test-planner-fixture",

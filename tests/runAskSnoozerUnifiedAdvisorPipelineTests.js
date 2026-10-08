@@ -29,6 +29,7 @@ function product(handle) {
     "12-all-foam-mattress": '12" All Foam Mattress',
     "premium-motion-adjustable-base": "Premium Motion Adjustable Base",
   };
+  const option = handle === "premium-motion-adjustable-base" ? "King (2pc)" : "King";
   return {
     id: `gid://shopify/Product/${handle}`,
     handle,
@@ -36,10 +37,10 @@ function product(handle) {
     available: true,
     variants: [{
       id: `gid://shopify/ProductVariant/${handle}-king`,
-      title: "King",
+      title: option,
       available: true,
       price: { amount: String(prices[handle]), currencyCode: "USD" },
-      selectedOptions: [{ name: "Size", value: "King" }],
+      selectedOptions: [{ name: "Size", value: option }],
     }],
   };
 }
@@ -86,8 +87,8 @@ function context(overrides = {}) {
   };
 }
 
-async function run(query, ctx = context(), composer = null) {
-  const plan = planAskSnoozerTurn({ query, context: ctx });
+async function run(query, ctx = context(), composer = null, modelDecision = null) {
+  const plan = planAskSnoozerTurn({ query, context: ctx, modelDecision });
   const calls = [];
   const outcome = await resolveAskSnoozerAdvisorTurn({
     query,
@@ -163,6 +164,36 @@ async function main() {
   assert.equal(atomicPrice.outcome.responsePath, "atomic_deterministic");
   assert.match(atomicPrice.outcome.reply, /\$1,399/);
   scenarios.push("price atomic");
+
+  const compoundCommerce = await run(
+    "If I add Standard Motion, what would the full setup cost, is it compatible, and is the base worth it for me?",
+    context({ baseDecision: "undecided" }),
+    null,
+    {
+      authority: "model_semantics",
+      modality: "conditional",
+      primaryTask: "compound_fact_answer",
+      shopperGoal: "price and evaluate the full setup",
+      acts: [],
+      productReferences: [],
+      comparisonProductHandles: [],
+      requestedFacts: ["price", "compatibility"],
+      answerRequirements: ["answer_all_requested_facts", "grounded_opinion"],
+      requiresComposition: true,
+      confidence: 0.98,
+    }
+  );
+  assert.equal(compoundCommerce.plan.taskType, "compound_fact_answer");
+  assert.equal(compoundCommerce.plan.needsCommerce, true);
+  assert.equal(compoundCommerce.plan.needsCompatibility, true);
+  assert.equal(compoundCommerce.outcome.responsePath, "structured_composer", JSON.stringify({ gate: compoundCommerce.outcome.gate, modelGate: compoundCommerce.outcome.modelGate, reply: compoundCommerce.outcome.reply }));
+  assert.equal(compoundCommerce.outcome.quote.ok, true, JSON.stringify({ plan: compoundCommerce.plan, quote: compoundCommerce.outcome.quote }));
+  assert.match(compoundCommerce.outcome.reply, /\$1,399/);
+  assert.match(compoundCommerce.outcome.reply, /\$2,299/);
+  assert.match(compoundCommerce.outcome.reply, /\$3,698/);
+  assert.match(compoundCommerce.outcome.reply, /compatib|work together/i);
+  assert.match(compoundCommerce.outcome.reply, /worth|value|save the money/i);
+  scenarios.push("compound price + compatibility + value");
 
   const priceValue = await run("Why does the Hybrid cost more and is it worth it for me?");
   assert.equal(priceValue.plan.taskType, "comparison_value");
@@ -286,6 +317,40 @@ async function main() {
     },
   });
   assert(rejectedRecommendationGate.violations.includes("rejected_product_recommendation:12-all-foam-mattress"));
+
+  const rejectedQuoteTitleGate = validateResponseConsistency({
+    reply: 'I recommend the 12" All Foam Mattress over the 12" Dual Comfort Hybrid.',
+    plan: {
+      taskType: "canonical_comparison",
+      technicalLanguageAllowed: false,
+      references: {
+        comparisonProductHandles: ["12-all-foam-mattress", "12-dual-comfort-hybrid"],
+        rejectedProductHandles: ["12-all-foam-mattress"],
+      },
+      protectedReferences: [],
+    },
+    factPack: {
+      products: [{ handle: "12-all-foam-mattress" }, { handle: "12-dual-comfort-hybrid" }],
+      recommendation: { current: "12-dual-comfort-hybrid" },
+      feedback: { explicitExclusions: ["12-all-foam-mattress"] },
+    },
+  });
+  assert(rejectedQuoteTitleGate.violations.includes("rejected_product_recommendation:12-all-foam-mattress"));
+
+  const canonicalQuoteTitleGate = validateResponseConsistency({
+    reply: 'Your original recommendation was the 12" All Foam Mattress.',
+    plan: {
+      taskType: "canonical_recall",
+      technicalLanguageAllowed: false,
+      references: { canonicalRecommendation: "12-all-foam-mattress" },
+      protectedReferences: ["canonicalRecommendation"],
+    },
+    factPack: {
+      products: [{ handle: "12-all-foam-mattress" }],
+      feedback: { explicitExclusions: [] },
+    },
+  });
+  assert.equal(canonicalQuoteTitleGate.ok, true, canonicalQuoteTitleGate.violations.join(", "));
   scenarios.push("historic rejected-product comparison");
 
   const voice = buildSnoozerVoiceReply("foam_vs_hybrid", {
