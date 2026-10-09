@@ -105,6 +105,17 @@ function firstNonEmptyString(values) {
   return "";
 }
 
+export function sanitizeShopperCopy(value) {
+  return String(value == null ? "" : value)
+    .replace(/\[([^\]]+)\]\((?:https?:\/\/|\/)[^)]+\)/g, "$1")
+    .replace(/<[^>]*>/g, "")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/(\*\*|__|`)/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function buildApiUrl(path) {
   return buildSharedApiUrl(path);
 }
@@ -419,7 +430,7 @@ function normalizeRecommendations(root) {
 }
 
 function extractReplyContent(root, top) {
-  return firstNonEmptyString([
+  return sanitizeShopperCopy(firstNonEmptyString([
     root?.reply?.content,
     root?.reply?.text,
     root?.reply,
@@ -432,7 +443,7 @@ function extractReplyContent(root, top) {
     root?.captions,
     root?.speech,
     top?.message,
-  ]);
+  ]));
 }
 
 function normalizeStatus(value, { fallbackUsed = false } = {}) {
@@ -756,7 +767,7 @@ function normalizeSuccessResponse(payload, { conversationId, requestId, message 
     recommendations,
     voice: {
       speak: Boolean(root?.voice?.speak),
-      speech: firstNonEmptyString([root?.voice?.speech]) || null,
+      speech: sanitizeShopperCopy(firstNonEmptyString([root?.voice?.speech])) || null,
       ttsEndpoint:
         firstNonEmptyString([root?.voice?.ttsEndpoint, root?.voice?.tts_endpoint]) ||
         "/hud/tts",

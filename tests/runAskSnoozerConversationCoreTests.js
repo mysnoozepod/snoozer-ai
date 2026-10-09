@@ -34,6 +34,8 @@ function product(handle, title, family, price) {
     handle,
     title,
     family,
+    imageUrl: `https://cdn.example/${handle}.jpg`,
+    priceRange: { min: price, max: price, currencyCode: "USD" },
     available: true,
     availableForSale: true,
     variants: [{
@@ -309,6 +311,43 @@ async function testToolArgumentBoundary() {
   assert.equal(extra.error, "tool_arguments_shape_invalid");
 }
 
+async function testFactsCardHydrationFormattingAndRepeatSuppression() {
+  let call = 0;
+  const runtime = async () => {
+    call += 1;
+    if (call === 1) return {
+      text: "", output: [{ type: "function_call", name: "get_product_facts", call_id: "facts", arguments: JSON.stringify({ productHandles: ["12-all-foam-mattress"], factClasses: ["product_features"] }) }],
+      functionCalls: [{ name: "get_product_facts", callId: "facts", arguments: JSON.stringify({ productHandles: ["12-all-foam-mattress"], factClasses: ["product_features"] }) }], tokens: {},
+    };
+    return { text: finalResponse({
+      reply: "**The 12-inch All Foam is the better pressure-relief option.** <script>bad()</script>",
+      productHandles: ["12-all-foam-mattress"], preferences: [], decisions: [],
+      references: { presentedProductHandles: ["12-all-foam-mattress"], comparisonProductHandles: [], lastDiscussedProductHandle: "12-all-foam-mattress", lastDiscussedBaseHandle: null },
+      claims: [{ kind: "product", value: "Pressure relief", sourceTool: "get_product_facts", sourceKey: "12-all-foam-mattress" }],
+    }), output: [], functionCalls: [], tokens: {} };
+  };
+  const result = await runSnoozerConversationCore({ requestId: "facts-card", message: "Tell me about the all foam mattress.", context: {}, shopify, runtime, env: ENV, toolOverrides });
+  assert.equal(result.ok, true, JSON.stringify(result.telemetry));
+  assert.equal(result.products[0].imageUrl, "https://cdn.example/12-all-foam-mattress.jpg");
+  assert.equal(result.products[0].pricingMode, "starting_at");
+  assert(!result.reply.includes("**") && !result.reply.includes("<script>"));
+
+  const context = applyConversationState({ context: {}, response: result, now: new Date("2026-10-08T12:00:00Z") });
+  const oneCall = await runSnoozerConversationCore({
+    requestId: "known-followup", message: "Why is that better for me?", context, shopify, env: ENV, toolOverrides,
+    runtime: async () => ({ text: finalResponse({
+      reply: "It provides the deeper cushioning you asked about.", productHandles: ["12-all-foam-mattress"], preferences: [], decisions: [],
+      references: { presentedProductHandles: ["12-all-foam-mattress"], comparisonProductHandles: [], lastDiscussedProductHandle: "12-all-foam-mattress", lastDiscussedBaseHandle: null },
+      claims: [{ kind: "product", value: "Deeper cushioning", sourceTool: "get_product_facts", sourceKey: "12-all-foam-mattress" }],
+    }), output: [], functionCalls: [], tokens: {} }),
+  });
+  assert.equal(oneCall.ok, true, JSON.stringify(oneCall.telemetry));
+  assert.equal(oneCall.telemetry.modelCallCount, 1);
+  assert.equal(oneCall.telemetry.preparedContext.enabled, true);
+  assert.equal(oneCall.products.length, 0);
+  assert.equal(oneCall.telemetry.cardPresentation.reason, "unchanged_repeat");
+}
+
 async function main() {
   assert.equal(getConversationCoreConfig({ ASK_SNOOZER_MODEL_ONLY: "cc_shadow", OPENAI_FINAL_MODEL: "gpt-6.1-sol" }).mode, "shadow");
   assert.equal(getConversationCoreConfig({ ASK_SNOOZER_MODEL_ONLY: "cc_active", OPENAI_FINAL_MODEL: "gpt-6.1-sol" }).mode, "active");
@@ -319,6 +358,7 @@ async function main() {
   await testFalseNoProductsFallbackIsCorrected();
   await testModelIdentityGuard();
   await testToolArgumentBoundary();
+  await testFactsCardHydrationFormattingAndRepeatSuppression();
   console.log("Ask Snoozer Conversation Core tests passed (Sol guard, tool correlation, grounding, state validation, history precedence, and safe fallback).");
 }
 

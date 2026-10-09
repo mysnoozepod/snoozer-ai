@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scenarios": [
     {
       "id": "october-8-regression",
@@ -7,7 +7,7 @@
       "live": true,
       "turns": [
         { "message": "I'm shopping for a new mattress. I'm primarily a side sleeper, my shoulders get sore sometimes, and I sleep hot. I don't really know what I need. Where should I start?", "containsAny": ["side", "shoulder", "cool", "hot"], "forbidden": ["assessment recommended", "originally recommended from your assessment"] },
-        { "message": "Based on what I just told you, recommend two mattresses you actually carry and explain which one you'd choose for me.", "minProducts": 2, "containsAll": ["side", "shoulder", "hot"], "containsAny": ["Dual Comfort", "All Foam", "Hybrid"], "forbidden": ["don't have your earlier", "do not have your earlier", "remind me of your", "could you remind me"] },
+        { "message": "Based on what I just told you, recommend two mattresses you actually carry and explain which one you'd choose for me.", "expectNoProducts": true, "maxModelCalls": 1, "containsAll": ["side", "shoulder", "hot"], "containsAny": ["Dual Comfort", "All Foam", "Hybrid"], "forbidden": ["don't have your earlier", "do not have your earlier", "remind me of your", "could you remind me"] },
         { "message": "Compare those two mattresses for me. Don't just list features—tell me which is the better fit for my sleeping habits and why.", "containsAll": ["side", "shoulder", "hot"], "containsAny": ["better fit", "I would", "choose", "recommend"], "forbidden": ["don't yet know your sleeping habits", "do not yet know your sleeping habits", "remind me of your", "could you remind me"] }
       ]
     },
@@ -18,6 +18,22 @@
       "turns": [
         { "message": "I'm a side sleeper and like medium cushioning. Recommend two mattresses for me.", "minProducts": 2 },
         { "message": "Correction: my partner sleeps on their back and prefers firmer support. Reassess both of us and tell me which option you would start with.", "containsAny": ["partner", "back", "firmer"] }
+      ]
+    },
+    {
+      "id": "trust-performance-nine-turn",
+      "coverage": ["trust", "guided shopping", "card consistency", "rejection memory", "commerce truth", "known-product latency"],
+      "live": true,
+      "turns": [
+        { "message": "I'm shopping for a new mattress. I mostly sleep on my side, my shoulders get sore sometimes, and I sleep hot. I don't know much about mattresses. Where should I start?", "containsAll": ["side", "shoulder"], "containsAny": ["hot", "airflow", "cool"] },
+        { "message": "Based on what I just told you, recommend two mattresses you actually carry. Explain why each fits me and which you'd choose.", "containsAny": ["choose", "start", "recommend"] },
+        { "message": "Compare those two mattresses for me. Don't just list features. Tell me which is better for my needs and why.", "expectNoProducts": true, "maxModelCalls": 1, "containsAny": ["choose", "better", "recommend"] },
+        { "message": "I forgot to mention that my partner sleeps on their back and likes a firmer mattress. Does that change your recommendation?", "expectNoProducts": true, "maxModelCalls": 1, "containsAll": ["partner", "firm"], "containsAny": ["back", "Medium Firm", "Firm"] },
+        { "message": "Okay, I'm ruling out the firmer mattress. Don't recommend that one again. What would you suggest instead?", "expectNoProducts": true, "maxModelCalls": 1, "containsAny": ["which", "clarify", "mean", "confirm"] },
+        { "message": "I mean the 12-inch All Foam Mattress. Reject it and keep it out of my recommendations.", "expectNoProducts": true, "maxModelCalls": 1, "forbiddenProductHandles": ["12-all-foam-mattress"], "containsAny": ["reject", "exclude", "keep"] },
+        { "message": "Recommend the best remaining mattress for both of us and pair it with an adjustable base you actually carry. Explain why this setup is the best fit.", "minProducts": 1, "forbiddenProductHandles": ["12-all-foam-mattress"], "containsAny": ["adjustable", "base", "best"] },
+        { "message": "We need a Queen. What are the current price and availability for both pieces?", "minProducts": 2, "requireEnrichedCards": true, "containsAll": ["Queen", "$"], "containsAny": ["available", "availability"] },
+        { "message": "Recap the mattress I rejected, why the remaining setup fits both of us, and what I should do next in the showroom.", "expectNoProducts": true, "maxModelCalls": 1, "forbiddenProductHandles": ["12-all-foam-mattress"], "containsAll": ["All Foam", "partner"], "containsAny": ["try", "test", "next"] }
       ]
     },
     {

@@ -347,6 +347,8 @@ function hydrateAskContextFromActiveJourney(context = {}, journey = {}) {
     activeConfiguration: clone(journey.activeConfiguration) || {},
     activeQuote: clone(journey.activeQuote),
     comparisonProductHandles: clone(journey.comparisonSet) || [],
+    goal: journey.currentGoal || previous.goal || null,
+    stage: journey.journeyStage || previous.stage || "exploring",
     activeProductHandle: journey.activeConfiguration?.productHandle || journey.sessionRecommendation?.productHandle || null,
     activeSize: journey.activeConfiguration?.size || previous.activeSize || null,
     baseDecision: journey.activeConfiguration?.baseDecision || previous.baseDecision || null,
@@ -383,6 +385,29 @@ function buildAskJourneyPayload(context = {}) {
     journeyStage: deal.stage || "exploring",
     surface: "ask_snoozer",
   };
+}
+
+function stableValue(value) {
+  if (Array.isArray(value)) return value.map(stableValue);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.keys(value).sort().map((key) => [key, stableValue(value[key])]));
+}
+
+function isAskJourneyPayloadEquivalent(journey = {}, payload = {}) {
+  const current = {
+    sessionRecommendation: journey.sessionRecommendation || null,
+    rejectedProducts: journey.rejectedProducts || [],
+    productFeedback: journey.productFeedback || {},
+    retainedPreferences: journey.retainedPreferences || {},
+    desiredDirection: journey.desiredDirection || {},
+    activeConfiguration: journey.activeConfiguration || {},
+    activeQuote: journey.activeQuote || null,
+    comparisonSet: journey.comparisonSet || [],
+    currentGoal: journey.currentGoal || null,
+    journeyStage: journey.journeyStage || "exploring",
+    surface: "ask_snoozer",
+  };
+  return JSON.stringify(stableValue(current)) === JSON.stringify(stableValue(payload));
 }
 
 function createActiveJourneyService({ load, save, clock = () => new Date() } = {}) {
@@ -468,6 +493,7 @@ module.exports = {
   deriveActiveJourneyRecordId,
   hasExpired,
   hydrateAskContextFromActiveJourney,
+  isAskJourneyPayloadEquivalent,
   makeActiveJourney,
   normalizeSurface,
 };

@@ -14,6 +14,17 @@ function clean(value) {
   return String(value == null ? "" : value).trim();
 }
 
+function sanitizeShopperText(value) {
+  return clean(value)
+    .replace(/\[([^\]]+)\]\((?:https?:\/\/|\/)[^)]+\)/g, "$1")
+    .replace(/<[^>]*>/g, "")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/(\*\*|__|`)/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function unique(values = []) {
   return [...new Set(values.map((value) => clean(value).toLowerCase()).filter(Boolean))];
 }
@@ -157,12 +168,13 @@ const snoozerConversationModelSchema = {
 
 function withHudDeliveryFields(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return value;
-  const reply = clean(value.reply);
+  const reply = sanitizeShopperText(value.reply);
   const warning = ["safe_fallback", "medical_boundary"].includes(value.responseMode);
   return {
     ...value,
-    speech: clean(value.speech) || reply,
-    captions: clean(value.captions) || reply,
+    reply,
+    speech: sanitizeShopperText(value.speech) || reply,
+    captions: sanitizeShopperText(value.captions) || reply,
     state: HUD_STATES.includes(value.state) ? value.state : warning ? "warning" : "speaking",
     priority: HUD_PRIORITIES.includes(value.priority) ? value.priority : warning ? "high" : "normal",
     ttlMs: Number.isFinite(Number(value.ttlMs)) ? Number(value.ttlMs) : warning ? 7000 : 5000,
@@ -298,6 +310,7 @@ module.exports = {
   HUD_STATES,
   PREFERENCE_KEYS,
   parseStructuredConversationResponse,
+  sanitizeShopperText,
   snoozerConversationModelSchema,
   snoozerConversationResponseSchema,
   validateConversationResponse,

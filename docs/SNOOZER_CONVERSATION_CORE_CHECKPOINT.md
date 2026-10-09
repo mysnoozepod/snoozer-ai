@@ -1,6 +1,14 @@
 # Snoozer Conversation Core implementation checkpoint
 
-Updated: 2026-10-08 (final staging validation)
+Updated: 2026-10-08 (trust and performance implementation complete)
+
+## Trust and performance pass
+
+- Implemented one authoritative card-hydration boundary, deterministic duplicate-card suppression, plain-text shopper copy, prepared grounded facts for known-product follow-ups, and no-op Active Journey commit suppression.
+- Exact nine-turn staging scenario passed 9/9: P50 8,512 ms, P95 15,408 ms; six turns used one model call; verified Queen cards retained images, prices, and availability.
+- Full staging Academy v1.1 passed 24/24 live scenarios and 47/47 turns: P50 8,690 ms, P95 12,518 ms, estimated model cost $0.3088363.
+- Staging Lambda code hash: `SmTFxOv8rx8TdCQt6ZdYtPRt2YuhE/2X3x95G0QWMLk=`. Amplify staging manual deployment job `495` succeeded and returned HTTP 200 with the new shopper-copy bundle.
+- The pre-existing modified `snoozer-backend.zip` remains outside scope and must not be overwritten or staged.
 
 ## Repository state
 
@@ -57,8 +65,7 @@ Updated: 2026-10-08 (final staging validation)
 
 ## Remaining
 
-- Inspect/stage only the scoped files, commit with the authorized message, push `main`, and verify the remote SHA.
-- Treat P95 of roughly 15.3 seconds as a launch-quality latency concern even though requests remained within the request window.
+- Treat aggregate P95 of 12.5 seconds and the three-call new-base recommendation turn as launch-quality latency work even though all requests remained within the request window.
 - Run physical two-pod and human shopper acceptance before production rollout; that evidence is outside this staging software pass.
 
 ## Current blockers
@@ -67,4 +74,4 @@ Updated: 2026-10-08 (final staging validation)
 
 ## Next exact step
 
-Perform the scoped diff/staging audit, commit, push, and record the final commit SHA without touching unrelated workspace state.
+Perform the controlled two-pod shopper acceptance using the staging build; production rollout remains a separate decision.

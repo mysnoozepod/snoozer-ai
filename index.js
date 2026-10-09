@@ -168,6 +168,7 @@ const {
   buildAskJourneyPayload,
   createActiveJourneyService,
   hydrateAskContextFromActiveJourney,
+  isAskJourneyPayloadEquivalent,
 } = require("./services/activeJourney");
 const {
   buildAskSnoozerClientTimingEvent,
@@ -2860,6 +2861,7 @@ function getAskSnoozerRouteDeps() {
     activeJourneyService,
     hydrateAskContextFromActiveJourney,
     buildAskJourneyPayload,
+    isAskJourneyPayloadEquivalent,
     buildAskSnoozerClientTimingEvent,
     emitAskSnoozerQualityTrace,
     getAskSnoozerQualityConfig,

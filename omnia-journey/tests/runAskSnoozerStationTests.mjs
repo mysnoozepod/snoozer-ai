@@ -77,7 +77,8 @@ check(normalized.available === true && normalized.variants[0].selectedOptions[0]
 check(normalized.merchandiseId === exactId && normalized.exactVariantResolved, "exact merchandise identity survives only with resolution proof");
 check(formatProductPrice(normalized) === "$999.00", "resolved variant displays its exact verified price rather than the product range");
 check(formatProductPrice({ pricingMode: "starting_at", priceRange: { min: 549, max: 1099, currencyCode: "USD" } }) === "From $549.00", "unknown-size product uses starting-price language");
-check(formatProductPrice({ pricingMode: "unresolved", priceRange: { min: 549, max: 1099, currencyCode: "USD" } }) === "Exact price unavailable", "unresolved exact configuration never displays the product minimum");
+check(formatProductPrice({ pricingMode: "unresolved", priceRange: { min: 549, max: 1099, currencyCode: "USD" } }) === "Price not currently verified", "unresolved exact configuration never displays the product minimum or implies out-of-stock");
+check(adapter.includes("sanitizeShopperCopy") && adapter.includes("replace(/<[^>]*>/g"), "adapter strips formatting artifacts and unsafe HTML before display or speech");
 check(formatProductPrice({ pricingMode: "exact_variant", price: 1099, priceRange: { min: 549, max: 1099, currencyCode: "USD" } }) === "$1,099.00", "exact variant card displays the exact active-size price");
 
 const add = buildProductAddAction(normalized);

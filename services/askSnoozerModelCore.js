@@ -7,8 +7,9 @@ const { snoozerConversationModelSchema, validateConversationResponse } = require
 const { conversationToolDefinitions, executeConversationTool, groundedHandlesFromToolResult } = require("./askSnoozerConversationTools");
 const { compactConversationState, existingReferenceHandles, normalizedConversationHistory } = require("./askSnoozerConversationState");
 const { buildCartAction } = require("./askSnoozerConfigurationQuote");
+const { buildProductCardTruth } = require("./askSnoozerProductCardTruth");
 
-const CONVERSATION_CORE_VERSION = "conversation-core.v1";
+const CONVERSATION_CORE_VERSION = "conversation-core.v1.1";
 const EXPECTED_MODEL = "gpt-6.1-sol";
 let modelCircuit = { failures: 0, openedAt: 0 };
 
@@ -67,7 +68,7 @@ function noteModelFailure(config) {
   if (modelCircuit.failures >= config.breakerThreshold && !modelCircuit.openedAt) modelCircuit.openedAt = Date.now();
 }
 
-function buildConversationEnvelope({ message = "", context = {}, history = [], manifest = loadShowroomManifest() } = {}) {
+function buildConversationEnvelope({ message = "", context = {}, history = [], manifest = loadShowroomManifest(), preparedEvidence = [] } = {}) {
   const recentTurns = normalizedConversationHistory(history, context?.recentConversation || [], message);
   return {
     version: CONVERSATION_CORE_VERSION,
@@ -84,6 +85,7 @@ function buildConversationEnvelope({ message = "", context = {}, history = [], m
     approvedProducts: (manifest?.products || []).filter((item) => item?.active !== false).map((item) => ({
       handle: item.handle, title: item.title, category: item.catalogType, family: item.family,
     })),
+    preparedEvidence,
   };
 }
 
@@ -98,14 +100,18 @@ function buildCoreInstructions() {
     "If discover_products returns products, do not claim that no eligible or verified products were found. Recommend from the verified fields that are present and clearly leave missing details unknown.",
     "When several independent sources are required, request their tools together in one parallel tool round.",
     "Use tools for every product-specific, price, availability, variant, compatibility, policy, rewards, or cart claim.",
+    "Prepared evidence is already verified for this turn. Cite its tool and do not call get_product_facts again for the same handles unless a required fact is absent.",
     "Never invent a product, handle, fact, price, variant, availability state, policy, assessment, recommendation, quote, or commitment.",
     "Live commerce tool results control price, variants, availability, cart, and checkout. Curated facts control product attributes. Missing facts remain unknown.",
-    "Answer completely and give a clear recommendation when grounded evidence supports one.",
+    "Answer first. For comparisons, lead with the verdict, connect it to the shopper's stated needs, then give only the useful supporting differences and one practical next step.",
+    "Keep shopper and partner preferences separate. Honor exclusions throughout the visit and never re-recommend a rejected product unless the shopper explicitly restores it.",
+    "When a later clarification identifies an ambiguous product reference, do not attach the earlier ambiguous label to that product as fact. Recap only the explicit exclusion and its verified or shopper-stated reason.",
     "Do not claim an assessment or prior recommendation unless it exists in journey or conversation state.",
     "Hypothetical and conditional language is non-mutating. Only propose accepted, rejected, or cart-confirmed decisions when explicitly stated.",
     "For every preference or decision proposal, copy a short exact phrase from the current shopper message into evidence.",
     "A product mentioned as an example is not automatically recommended. A rejected product stays rejected unless explicitly restored.",
-    "Never promise medical outcomes. Give qualified product guidance and recommend medical evaluation for worsening or significant pain.",
+    "Never promise medical outcomes. Give qualified product guidance; mention medical evaluation only when pain is worsening or significant, not as a repeated boilerplate caveat.",
+    "Return plain shopper-facing text only: no Markdown markers, headings, HTML, tables, or raw formatting syntax.",
     "Do not expose internal terms such as model, tool, API, database, Shopify, S3, source of truth, backend, or resolver.",
     "If a source fails, state the exact shopper-facing limitation. Clarify only genuine ambiguity.",
     "Keep the shopper-facing reply concise, normally no more than 120 words, while still answering every part of the request.",
@@ -170,7 +176,30 @@ function toolOutputForModel(result) {
   }).slice(0, 12000);
 }
 
-function responseProducts(response, toolResults, manifest = {}) {
+function cardPresentationPolicy(response, context = {}, toolResults = []) {
+  const wanted = unique(response?.productHandles || []);
+  if (!wanted.length) return { show: false, reason: "no_product_handles", handles: [] };
+  if (response?.responseMode === "clarification") return { show: false, reason: "clarification", handles: wanted };
+  const existing = new Set(unique(compactConversationState(context)?.references?.presentedProductHandles || []));
+  const hasNew = wanted.some((handle) => !existing.has(handle));
+  const commerceNeeded = (response?.claims || []).some((claim) => ["commerce", "compatibility"].includes(claim?.kind)) ||
+    toolResults.some((result) => result?.ok && ["get_live_commerce", "quote_configuration"].includes(result?.name));
+  const actionable = (response?.actionProposals || []).some((action) => action?.type === "add_to_cart");
+  if (hasNew) return { show: true, reason: "new_product", handles: wanted };
+  if (commerceNeeded) return { show: true, reason: "commerce_confirmation", handles: wanted };
+  if (actionable) return { show: true, reason: "actionable_configuration", handles: wanted };
+  return { show: false, reason: "unchanged_repeat", handles: wanted };
+}
+
+function sizeFromContext(context = {}) {
+  const state = compactConversationState(context);
+  const preference = (state.preferences || []).find((item) => item?.subject !== "partner" && item?.key === "size" && item?.status !== "removed");
+  return clean(preference?.value || context?.activeJourney?.activeConfiguration?.size || context?.askSnoozerWorkingMemory?.activeDeal?.activeSize);
+}
+
+async function responseProducts(response, toolResults, manifest = {}, { shopify, context = {} } = {}) {
+  const presentation = cardPresentationPolicy(response, context, toolResults);
+  if (!presentation.show) return { products: [], presentation, enrichment: { status: "suppressed", requested: presentation.handles.length, displayed: 0, latencyMs: 0 } };
   const wanted = new Set(unique(response?.productHandles || []));
   const byHandle = new Map();
   for (const result of toolResults) {
@@ -179,6 +208,21 @@ function responseProducts(response, toolResults, manifest = {}) {
       const product = item?.commerce?.handle ? item.commerce : item;
       const handle = clean(product?.handle).toLowerCase();
       if (handle && wanted.has(handle) && !byHandle.has(handle)) byHandle.set(handle, product);
+    }
+  }
+  const missing = [...wanted].filter((handle) => !byHandle.has(handle));
+  const hydrationStartedAt = Date.now();
+  let hydrationError = null;
+  if (missing.length && typeof shopify?.fetchProductsByHandles === "function") {
+    try {
+      const result = await shopify.fetchProductsByHandles({ handles: missing, lite: false });
+      for (const product of result?.items || []) {
+        const card = buildProductCardTruth(product, { activeSize: sizeFromContext(context) });
+        const handle = clean(card?.handle).toLowerCase();
+        if (handle && wanted.has(handle)) byHandle.set(handle, card);
+      }
+    } catch (error) {
+      hydrationError = clean(error?.code || error?.message || "commerce_hydration_failed");
     }
   }
   for (const definition of manifest?.products || []) {
@@ -200,9 +244,26 @@ function responseProducts(response, toolResults, manifest = {}) {
       exactVariantResolved: false,
       availabilityResolved: false,
       available: null,
+      imageUrl: null,
     });
   }
-  return [...wanted].map((handle) => byHandle.get(handle)).filter(Boolean);
+  const products = [...wanted].map((handle) => byHandle.get(handle)).filter(Boolean);
+  return {
+    products,
+    presentation,
+    enrichment: {
+      status: hydrationError ? "degraded" : products.length === wanted.size ? "complete" : "partial",
+      requested: wanted.size,
+      displayed: products.length,
+      hydratedHandles: missing.filter((handle) => byHandle.get(handle)?.pricingMode !== "unresolved"),
+      unresolvedHandles: [...wanted].filter((handle) => byHandle.get(handle)?.pricingMode === "unresolved"),
+      imageMissingHandles: [...wanted].filter((handle) => !byHandle.get(handle)?.imageUrl),
+      availabilityUnknownHandles: [...wanted].filter((handle) => byHandle.get(handle)?.availabilityResolved !== true && typeof byHandle.get(handle)?.available !== "boolean"),
+      freshnessStatus: hydrationError ? "unverified" : "request_scope_verified",
+      error: hydrationError,
+      latencyMs: Date.now() - hydrationStartedAt,
+    },
+  };
 }
 
 function latestCompleteQuote(toolResults) {
@@ -337,10 +398,24 @@ async function runSnoozerConversationCore({
   if (!circuitAvailable(config)) return fallbackResult("model_circuit_open", [], [], config, startedAt);
 
   const manifest = toolOverrides.manifest || loadShowroomManifest();
-  const envelope = buildConversationEnvelope({ message, context, history, manifest });
+  const toolResults = [];
+  const rejected = new Set(compactConversationState(context).rejectedProductHandles || []);
+  const preparedHandles = existingReferenceHandles(context)
+    .filter((handle) => !rejected.has(handle))
+    .slice(0, 4);
+  let preparedEvidence = [];
+  if (preparedHandles.length) {
+    const prepared = await executeConversationTool("get_product_facts", {
+      productHandles: preparedHandles,
+      factClasses: ["product_features", "comfort", "support", "temperature", "partner_fit"],
+    }, { event, identity, shopify, rewardsService, manifest, ...toolOverrides });
+    prepared.prepared = true;
+    toolResults.push(prepared);
+    if (prepared.ok) preparedEvidence = [JSON.parse(toolOutputForModel(prepared))];
+  }
+  const envelope = buildConversationEnvelope({ message, context, history, manifest, preparedEvidence });
   const input = [{ role: "user", content: JSON.stringify(envelope) }];
   const modelCalls = [];
-  const toolResults = [];
   let toolRounds = 0;
   let totalToolCalls = 0;
   let finalValidation = null;
@@ -433,16 +508,26 @@ async function runSnoozerConversationCore({
         break;
       }
       const validated = finalValidation.value;
+      const productResult = await responseProducts(validated, toolResults, manifest, { shopify, context });
+      const finalTelemetry = telemetry({ config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation });
+      finalTelemetry.cardPresentation = productResult.presentation;
+      finalTelemetry.cardEnrichment = productResult.enrichment;
+      finalTelemetry.preparedContext = {
+        enabled: preparedHandles.length > 0,
+        handles: preparedHandles,
+        ok: toolResults.find((result) => result.prepared)?.ok === true,
+        latencyMs: Number(toolResults.find((result) => result.prepared)?.latencyMs || 0),
+      };
       return {
         ok: true,
         status: validated.fallback.used ? "fallback" : "answered",
         ...validated,
-        products: responseProducts(validated, toolResults, manifest),
+        products: productResult.products,
         actions: validatedActions(validated, toolResults),
         quote: latestCompleteQuote(toolResults),
         toolResults,
         stateValidation: finalValidation.stateValidation,
-        telemetry: telemetry({ config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation }),
+        telemetry: finalTelemetry,
       };
     }
   } catch (error) {
@@ -488,11 +573,13 @@ module.exports = {
   CONVERSATION_CORE_VERSION,
   EXPECTED_MODEL,
   buildConversationEnvelope,
+  cardPresentationPolicy,
   composeTrustedAdvisorResponse,
   getConversationCoreConfig,
   isConversationCoreActive,
   loadTrustedAdvisorFactPack,
   parseTrustedAdvisorComposition,
   planTrustedAdvisorTurnWithModel,
+  responseProducts,
   runSnoozerConversationCore,
 };

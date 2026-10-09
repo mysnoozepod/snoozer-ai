@@ -23,6 +23,7 @@ function selectedScenarios() {
   let scenarios = fixture.scenarios;
   if (selectedId) scenarios = scenarios.filter((item) => item.id === selectedId);
   else if (suite === "october8") scenarios = scenarios.filter((item) => item.id === "october-8-regression");
+  else if (suite === "trust") scenarios = scenarios.filter((item) => item.id === "trust-performance-nine-turn");
   else if (suite === "live") scenarios = scenarios.filter((item) => item.live === true);
   if (!scenarios.length) throw new Error(`No Academy scenarios selected for scenario=${selectedId || "all"}, suite=${suite}.`);
   return scenarios;
@@ -62,6 +63,7 @@ function validateTurn({ scenario, turn, turnIndex, response, body }) {
   assert(/[.!?]["')\]]?$/.test(reply), `${label} reply is incomplete: ${reply}`);
   assert(!/\b(?:shopify|s3|backend|resolver|database|function call|language model)\b/i.test(reply), `${label} leaked internal language: ${reply}`);
   assert(!/\bundefined\b|\bnull\b|ReferenceError/i.test(reply), `${label} leaked runtime data: ${reply}`);
+  assert(!/(\*\*|__|`|<\/?[a-z][^>]*>)/i.test(reply), `${label} leaked formatting syntax: ${reply}`);
   assert.equal(body?.metadata?.answerPath, "conversation_core", `${label} did not use the Conversation Core`);
   assert.equal(body?.metadata?.model, "gpt-6.1-sol", `${label} did not report GPT-6.1 Sol`);
   if (turn.allowFallback !== true) {
@@ -84,6 +86,16 @@ function validateTurn({ scenario, turn, turnIndex, response, body }) {
   }
   if (Number(turn.minProducts) > 0) {
     assert((body.products || []).length >= Number(turn.minProducts), `${label} expected ${turn.minProducts} grounded product cards, got ${(body.products || []).length}`);
+  }
+  if (turn.expectNoProducts === true) assert.equal((body.products || []).length, 0, `${label} repeated or clarification cards should be suppressed`);
+  if (Number(turn.maxModelCalls) > 0) assert(Number(body?.metadata?.metrics?.modelCallCount || 0) <= Number(turn.maxModelCalls), `${label} exceeded model call budget`);
+  for (const handle of turn.forbiddenProductHandles || []) assert(!(body.products || []).some((item) => item?.handle === handle), `${label} displayed rejected product ${handle}`);
+  if (turn.requireEnrichedCards === true) {
+    for (const product of body.products || []) {
+      assert(product.imageUrl, `${label} card ${product.handle} is missing an image`);
+      assert(product.pricingMode !== "unresolved", `${label} card ${product.handle} has unresolved price truth`);
+      assert(typeof product.available === "boolean", `${label} card ${product.handle} has unknown availability`);
+    }
   }
   if (turn.expectAction) {
     assert((body.actions || []).some((action) => action?.type === turn.expectAction), `${label} expected ${turn.expectAction} proposal`);

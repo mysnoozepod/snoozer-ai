@@ -6,6 +6,7 @@ const {
   createActiveJourneyService,
   deriveActiveJourneyRecordId,
   hydrateAskContextFromActiveJourney,
+  isAskJourneyPayloadEquivalent,
   makeActiveJourney,
 } = require("../services/activeJourney");
 
@@ -59,6 +60,9 @@ const identity = { profileId: "profile-phase3", shopperId: "shopper-phase3" };
   assert.equal(askContext.askSnoozerWorkingMemory.activeDeal.activeSize, "King", "15 Ask hydrates authoritative configuration");
   assert.equal(askContext.askSnoozerWorkingMemory.activeDeal.pendingCommitment.type, "compare_products", "16 Ask-only commitment remains conversation-local");
   assert.equal(buildAskJourneyPayload(askContext).pendingCommitment, undefined, "17 conversation commitment is not promoted globally");
+  const firstAskPayload = buildAskJourneyPayload(askContext);
+  const askCommitted = applyEvent(mergedPreference.journey, { type: "ask_state_committed", payload: firstAskPayload }, { expectedRevision: mergedPreference.journey.revision, trusted: true, allowedProductHandles: products }).journey;
+  assert.equal(isAskJourneyPayloadEquivalent(askCommitted, firstAskPayload), true, "18 unchanged Ask projection is a no-op journey write");
   const mattressOnlyContext = hydrateAskContextFromActiveJourney({}, {
     ...mergedPreference.journey,
     activeConfiguration: {

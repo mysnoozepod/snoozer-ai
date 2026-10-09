@@ -61,6 +61,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     activeJourneyService,
     hydrateAskContextFromActiveJourney,
     buildAskJourneyPayload,
+    isAskJourneyPayloadEquivalent,
     buildAskSnoozerClientTimingEvent,
     emitAskSnoozerQualityTrace,
     getAskSnoozerQualityConfig,
@@ -541,6 +542,17 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       const journeyPayload = buildAskJourneyPayload(context);
       const payloadFingerprint = JSON.stringify(journeyPayload);
       if (payloadFingerprint === lastCommittedAskJourneyPayload) return;
+      if (typeof isAskJourneyPayloadEquivalent === "function" && isAskJourneyPayloadEquivalent(activeJourneyResolution.journey, journeyPayload)) {
+        lastCommittedAskJourneyPayload = payloadFingerprint;
+        log("active-journey.ask.noop", "unchanged", {
+          traceId,
+          phase,
+          journeyId: activeJourneyResolution.journey.journeyId,
+          revision: activeJourneyResolution.journey.revision,
+          stateWriteSkipped: true,
+        });
+        return;
+      }
       try {
         const manifestHandles = new Set(
           (loadShowroomManifest?.()?.products || [])
@@ -679,6 +691,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         acceptedStateProposals: Number(coreTelemetry.acceptedStateProposals || 0),
         rejectedStateProposals: Number(coreTelemetry.rejectedStateProposals || 0),
         fallbackReason: coreTelemetry.fallbackReason || coreResult?.fallback?.reason || null,
+        preparedContext: coreTelemetry.preparedContext || null,
+        cardPresentation: coreTelemetry.cardPresentation || null,
+        cardEnrichment: coreTelemetry.cardEnrichment || null,
       });
 
       if (conversationCoreMode === "active") {
@@ -776,6 +791,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             estimatedCostUsd: Number(usage.estimatedCostUsd || 0),
             acceptedStateProposals: Number(coreTelemetry.acceptedStateProposals || 0),
             rejectedStateProposals: Number(coreTelemetry.rejectedStateProposals || 0),
+            preparedContext: coreTelemetry.preparedContext || null,
+            cardPresentation: coreTelemetry.cardPresentation || null,
+            cardEnrichment: coreTelemetry.cardEnrichment || null,
           },
         };
         const normalized = normalizeSnoozerResponse(env, {

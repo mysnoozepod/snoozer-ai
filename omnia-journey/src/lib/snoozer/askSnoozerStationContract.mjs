@@ -244,7 +244,7 @@ export function formatProductPrice(product = {}) {
   const exact = finiteNumber(product.price);
   const min = finiteNumber(product?.priceRange?.min ?? product.price);
   const max = finiteNumber(product?.priceRange?.max ?? product.price);
-  if (product?.pricingMode === "unresolved") return "Exact price unavailable";
+  if (product?.pricingMode === "unresolved") return "Price not currently verified";
   if (min === null) return "";
   const currencyCode = text(product.currencyCode || product?.priceRange?.currencyCode) || "USD";
   const format = (amount) => {
