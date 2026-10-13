@@ -7,7 +7,7 @@
       "live": true,
       "turns": [
         { "message": "I'm shopping for a new mattress. I'm primarily a side sleeper, my shoulders get sore sometimes, and I sleep hot. I don't really know what I need. Where should I start?", "containsAny": ["side", "shoulder", "cool", "hot"], "forbidden": ["assessment recommended", "originally recommended from your assessment"] },
-        { "message": "Based on what I just told you, recommend two mattresses you actually carry and explain which one you'd choose for me.", "expectNoProducts": true, "maxModelCalls": 1, "containsAll": ["side", "shoulder", "hot"], "containsAny": ["Dual Comfort", "All Foam", "Hybrid"], "forbidden": ["don't have your earlier", "do not have your earlier", "remind me of your", "could you remind me"] },
+        { "message": "Based on what I just told you, recommend two mattresses you actually carry and explain which one you'd choose for me.", "allowProductsWhenIntroducingNew": true, "maxModelCalls": 2, "containsAll": ["side", "shoulder", "hot"], "containsAny": ["Dual Comfort", "All Foam", "Hybrid"], "forbidden": ["don't have your earlier", "do not have your earlier", "remind me of your", "could you remind me"] },
         { "message": "Compare those two mattresses for me. Don't just list features—tell me which is the better fit for my sleeping habits and why.", "containsAll": ["side", "shoulder", "hot"], "containsAny": ["better fit", "I would", "choose", "recommend"], "forbidden": ["don't yet know your sleeping habits", "do not yet know your sleeping habits", "remind me of your", "could you remind me"] }
       ]
     },

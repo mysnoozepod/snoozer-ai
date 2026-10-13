@@ -55,7 +55,7 @@ async function ask({ scenarioId, turnIndex, message, sessionId }) {
   return { response, body, elapsedMs: Date.now() - startedAt };
 }
 
-function validateTurn({ scenario, turn, turnIndex, response, body }) {
+function validateTurn({ scenario, turn, turnIndex, response, body, priorProductHandles = [] }) {
   const label = `${scenario.id}/${turnIndex + 1}`;
   assert.equal(response.status, 200, `${label} HTTP ${response.status}`);
   assert(body?.ok !== false, `${label} returned ok=false: ${JSON.stringify(body?.error || body?.reply)}`);
@@ -89,6 +89,10 @@ function validateTurn({ scenario, turn, turnIndex, response, body }) {
     assert((body.products || []).length >= Number(turn.minProducts), `${label} expected ${turn.minProducts} grounded product cards, got ${(body.products || []).length}`);
   }
   if (turn.expectNoProducts === true) assert.equal((body.products || []).length, 0, `${label} repeated or clarification cards should be suppressed`);
+  if (turn.allowProductsWhenIntroducingNew === true && (body.products || []).length) {
+    const prior = new Set(priorProductHandles);
+    assert((body.products || []).some((item) => !prior.has(item?.handle)), `${label} displayed cards without introducing a new product`);
+  }
   if (Number(turn.maxModelCalls) > 0) assert(Number(body?.metadata?.metrics?.modelCallCount || 0) <= Number(turn.maxModelCalls), `${label} exceeded model call budget`);
   for (const handle of turn.forbiddenProductHandles || []) assert(!(body.products || []).some((item) => item?.handle === handle), `${label} displayed rejected product ${handle}`);
   if (turn.requireEnrichedCards === true) {
@@ -114,10 +118,14 @@ async function main() {
     }
     const sessionId = `academy-${scenario.id}-${runId}`.slice(0, 120);
     const turns = [];
+    const presentedProductHandles = new Set();
     for (let index = 0; index < scenario.turns.length; index += 1) {
       const turn = scenario.turns[index];
       const result = await ask({ scenarioId: scenario.id, turnIndex: index + 1, message: turn.message, sessionId });
-      const reply = validateTurn({ scenario, turn, turnIndex: index, ...result });
+      const reply = validateTurn({ scenario, turn, turnIndex: index, priorProductHandles: [...presentedProductHandles], ...result });
+      for (const product of result.body?.products || []) {
+        if (product?.handle) presentedProductHandles.add(product.handle);
+      }
       turns.push({
         turn: index + 1,
         elapsedMs: result.elapsedMs,
