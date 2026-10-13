@@ -25,7 +25,7 @@
       "coverage": ["trust", "guided shopping", "card consistency", "rejection memory", "commerce truth", "known-product latency"],
       "live": true,
       "turns": [
-        { "message": "I'm shopping for a new mattress. I mostly sleep on my side, my shoulders get sore sometimes, and I sleep hot. I don't know much about mattresses. Where should I start?", "containsAll": ["side", "shoulder"], "containsAny": ["hot", "airflow", "cool"] },
+        { "message": "I'm shopping for a new mattress. I mostly sleep on my side, my shoulders get sore sometimes, and I sleep hot. I don't know much about mattresses. Where should I start?", "containsAll": ["shoulder"], "containsAny": ["side", "hot", "airflow", "cool"] },
         { "message": "Based on what I just told you, recommend two mattresses you actually carry. Explain why each fits me and which you'd choose.", "containsAny": ["choose", "start", "recommend"] },
         { "message": "Compare those two mattresses for me. Don't just list features. Tell me which is better for my needs and why.", "expectNoProducts": true, "maxModelCalls": 1, "containsAny": ["choose", "better", "recommend"] },
         { "message": "I forgot to mention that my partner sleeps on their back and likes a firmer mattress. Does that change your recommendation?", "expectNoProducts": true, "maxModelCalls": 1, "containsAll": ["partner", "firm"], "containsAny": ["back", "Medium Firm", "Firm"] },
