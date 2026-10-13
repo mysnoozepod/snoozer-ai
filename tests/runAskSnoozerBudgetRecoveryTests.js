@@ -194,6 +194,32 @@ function testMonetarySemantics() {
   };
   const quote = [{ ok: true, name: "quote_configuration", data: { ok: true, cartReady: true, subtotal: 4398 } }];
   assert(validateReplyMonetaryClaims(badBundle, quote, "Quote the bundle.").includes("price_not_grounded:3999.00"));
+
+  const quotedItem = {
+    reply: "The verified Queen mattress price is $2,499.",
+    responseMode: "answer",
+    monetaryClaims: [monetaryClaim({
+      semantic: "verified_exact_variant_price", amount: 2499,
+      productHandle: "12-dual-comfort-hybrid", sourceTool: "quote_configuration",
+      sourceKey: "12-dual-comfort-hybrid", evidence: "price is $2,499",
+    })],
+  };
+  const completeQuote = [{
+    ok: true,
+    name: "quote_configuration",
+    data: {
+      ok: true,
+      cartReady: true,
+      subtotal: 4398,
+      currencyCode: "USD",
+      items: [{ handle: "12-dual-comfort-hybrid", price: 2499, currencyCode: "USD", variantId: "gid://shopify/ProductVariant/1" }],
+    },
+  }];
+  assert.deepEqual(validateReplyMonetaryClaims(quotedItem, completeQuote, "Quote the Queen setup."), []);
+  quotedItem.monetaryClaims[0].amount = 2399;
+  quotedItem.reply = "The verified Queen mattress price is $2,399.";
+  quotedItem.monetaryClaims[0].evidence = "price is $2,399";
+  assert(validateReplyMonetaryClaims(quotedItem, completeQuote, "Quote the Queen setup.").includes("price_not_grounded:2399.00"));
 }
 
 async function testCorrectionRecovery() {

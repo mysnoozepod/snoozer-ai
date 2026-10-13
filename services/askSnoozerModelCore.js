@@ -379,6 +379,23 @@ function commerceCards(toolResults = [], sourceTool = "") {
   const cards = [];
   for (const result of toolResults) {
     if (!result?.ok || (sourceTool && result.name !== sourceTool)) continue;
+    if (result.name === "quote_configuration") {
+      for (const item of result?.data?.items || []) {
+        cards.push({
+          tool: result.name,
+          card: {
+            ...item,
+            exactVariantResolved: true,
+            priceRange: {
+              min: item?.price,
+              max: item?.price,
+              currencyCode: item?.currencyCode || result?.data?.currencyCode || "USD",
+            },
+          },
+        });
+      }
+      continue;
+    }
     if (!["discover_products", "get_live_commerce"].includes(result.name)) continue;
     for (const item of result?.data?.products || []) {
       cards.push({ tool: result.name, card: item?.commerce?.handle ? item.commerce : item });
