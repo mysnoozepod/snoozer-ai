@@ -8,6 +8,7 @@ const API_BASE = String(
 ).replace(/\/$/, "");
 const selectedId = String(process.env.SNOOZER_ACADEMY_SCENARIO || "").trim();
 const suite = String(process.env.SNOOZER_ACADEMY_SUITE || "live").trim().toLowerCase();
+const turnSettleMs = Math.max(0, Number(process.env.SNOOZER_ACADEMY_TURN_SETTLE_MS || 1000));
 
 function responseText(body) {
   return String(body?.reply || body?.message?.text || body?.speech || body?.captions || "").trim();
@@ -133,6 +134,9 @@ async function main() {
         estimatedCostUsd: result.body?.metadata?.conversationCore?.estimatedCostUsd ?? null,
         reply,
       });
+      if (turnSettleMs > 0 && index < scenario.turns.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, turnSettleMs));
+      }
     }
     results.push({ id: scenario.id, status: "passed", sessionId, turns });
   }
