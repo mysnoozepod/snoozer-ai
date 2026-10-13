@@ -1,6 +1,6 @@
 const { loadShowroomManifest } = require("./showroomManifest");
 
-const CONVERSATION_CONTRACT_VERSION = "conversation-core.v1";
+const CONVERSATION_CONTRACT_VERSION = "conversation-core.v1.1";
 const HUD_STATES = ["idle", "listening", "thinking", "speaking", "celebrate", "warning"];
 const HUD_PRIORITIES = ["low", "normal", "high"];
 const ACTION_TYPES = ["navigate", "start_assessment", "open_builder", "request_human", "view_recommendation", "add_to_cart"];
@@ -9,6 +9,16 @@ const PREFERENCE_KEYS = [
   "partner_firmness", "size", "budget", "product_exclusion",
 ];
 const DECISION_STATUSES = ["candidate", "recommended", "considering", "accepted", "rejected", "quoted", "cart_proposed", "cart_confirmed"];
+const MONETARY_SEMANTICS = [
+  "verified_product_price",
+  "verified_starting_at_price",
+  "verified_exact_variant_price",
+  "verified_bundle_subtotal",
+  "shopper_budget",
+  "hypothetical_spending_example",
+  "suggested_budget_threshold",
+  "unverified_product_price",
+];
 
 function clean(value) {
   return String(value == null ? "" : value).trim();
@@ -136,6 +146,26 @@ const snoozerConversationResponseSchema = {
         required: ["kind", "value", "sourceTool", "sourceKey"],
       },
     },
+    monetaryClaims: {
+      type: "array",
+      maxItems: 16,
+      description: "Provenance for every dollar amount stated in the shopper-facing reply.",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          semantic: { type: "string", enum: MONETARY_SEMANTICS },
+          amount: { type: "number", minimum: 0 },
+          currencyCode: { type: "string" },
+          productHandle: nullableString("Related approved product handle, or null for a budget amount."),
+          sourceTool: nullableString("Authoritative tool for verified commerce, otherwise null."),
+          sourceKey: nullableString("Authoritative source handle or quote identifier, otherwise null."),
+          shopperEvidence: nullableString("Exact current shopper phrase for shopper-provided or hypothetical amounts, otherwise null."),
+          evidence: { type: "string", description: "Short exact reply phrase containing the amount and its meaning." },
+        },
+        required: ["semantic", "amount", "currencyCode", "productHandle", "sourceTool", "sourceKey", "shopperEvidence", "evidence"],
+      },
+    },
     fallback: {
       type: "object",
       additionalProperties: false,
@@ -148,7 +178,7 @@ const snoozerConversationResponseSchema = {
   },
   required: [
     "reply", "speech", "captions", "state", "priority", "ttlMs", "responseMode",
-    "productHandles", "chips", "actionProposals", "preferences", "references", "decisions", "claims", "fallback",
+    "productHandles", "chips", "actionProposals", "preferences", "references", "decisions", "claims", "monetaryClaims", "fallback",
   ],
 };
 
@@ -222,7 +252,7 @@ function validateConversationResponse(raw, {
   if (!HUD_STATES.includes(value.state)) errors.push("hud_state_invalid");
   if (!HUD_PRIORITIES.includes(value.priority)) errors.push("hud_priority_invalid");
   if (!Number.isFinite(Number(value.ttlMs))) errors.push("hud_ttl_invalid");
-  for (const field of ["productHandles", "chips", "actionProposals", "preferences", "decisions", "claims"]) {
+  for (const field of ["productHandles", "chips", "actionProposals", "preferences", "decisions", "claims", "monetaryClaims"]) {
     if (!Array.isArray(value[field])) errors.push(`${field}_must_be_array`);
   }
   if (!value.references || typeof value.references !== "object") errors.push("references_required");
@@ -292,6 +322,7 @@ function validateConversationResponse(raw, {
       productHandles: unique(value.productHandles || []),
       preferences: acceptedPreferences,
       decisions: acceptedDecisions,
+      monetaryClaims: Array.isArray(value.monetaryClaims) ? value.monetaryClaims : [],
     },
     stateValidation: {
       acceptedPreferenceCount: acceptedPreferences.length,
@@ -308,6 +339,7 @@ module.exports = {
   DECISION_STATUSES,
   HUD_PRIORITIES,
   HUD_STATES,
+  MONETARY_SEMANTICS,
   PREFERENCE_KEYS,
   parseStructuredConversationResponse,
   sanitizeShopperText,

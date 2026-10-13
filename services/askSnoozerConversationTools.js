@@ -45,6 +45,7 @@ const conversationToolDefinitions = [
       partnerConsiderations: nullableString("Partner needs or null."),
       size: nullableString("Requested mattress size or null."),
       budgetMax: { type: ["number", "null"], minimum: 0 },
+      pricePreference: { type: "string", enum: ["fit", "lower_cost", "lowest_price"] },
       exclusions: { type: "array", items: { type: "string" }, maxItems: 8 },
       limit: { type: "integer", minimum: 1, maximum: 4 },
     }),
@@ -125,7 +126,7 @@ function normalizeArgs(raw) {
 }
 
 const TOOL_ARGUMENT_KEYS = Object.freeze({
-  discover_products: ["sleepPosition", "temperature", "pressureAreas", "firmness", "partnerConsiderations", "size", "budgetMax", "exclusions", "limit"],
+  discover_products: ["sleepPosition", "temperature", "pressureAreas", "firmness", "partnerConsiderations", "size", "budgetMax", "pricePreference", "exclusions", "limit"],
   get_product_facts: ["productHandles", "factClasses"],
   get_live_commerce: ["productHandles", "size", "motionKey"],
   quote_configuration: ["mattressHandle", "baseHandle", "size", "motionKey"],
@@ -148,6 +149,7 @@ function validateToolArguments(name, args) {
   if (name === "discover_products") {
     if (!Array.isArray(args.pressureAreas) || !Array.isArray(args.exclusions)) return "tool_arguments_type_invalid";
     if (args.budgetMax !== null && (!Number.isFinite(Number(args.budgetMax)) || Number(args.budgetMax) < 0)) return "tool_arguments_type_invalid";
+    if (!["fit", "lower_cost", "lowest_price"].includes(args.pricePreference)) return "tool_arguments_type_invalid";
     if (!Number.isInteger(args.limit) || args.limit < 1 || args.limit > 4) return "tool_arguments_type_invalid";
   }
   if (["get_product_facts", "get_live_commerce"].includes(name) && !Array.isArray(args.productHandles)) return "tool_arguments_type_invalid";
@@ -213,14 +215,30 @@ async function discoverProducts(args, deps) {
       const scored = scoreProduct(definition, args);
       return { product, definition, score: scored.score, reasons: scored.reasons, index };
     })
-    .sort((left, right) => right.score - left.score || left.index - right.index);
+    .map((candidate) => ({
+      ...candidate,
+      commerce: buildProductCardTruth(candidate.product, { activeSize: clean(args.size) }),
+    }));
 
   if (args.budgetMax !== null && args.budgetMax !== undefined && Number.isFinite(Number(args.budgetMax)) && args.size) {
-    ranked = ranked.filter(({ product }) => {
-      const card = buildProductCardTruth(product, { activeSize: args.size });
-      return !Number.isFinite(Number(card?.price)) || Number(card.price) <= Number(args.budgetMax);
-    });
+    ranked = ranked.filter(({ commerce }) => (
+      commerce?.exactVariantResolved === true &&
+      Number.isFinite(Number(commerce?.price)) &&
+      Number(commerce.price) <= Number(args.budgetMax)
+    ));
   }
+  const pricePreference = clean(args.pricePreference || "fit");
+  ranked.sort((left, right) => {
+    if (pricePreference !== "fit") {
+      const leftPrice = Number(left.commerce?.price);
+      const rightPrice = Number(right.commerce?.price);
+      const leftResolved = left.commerce?.exactVariantResolved === true && Number.isFinite(leftPrice);
+      const rightResolved = right.commerce?.exactVariantResolved === true && Number.isFinite(rightPrice);
+      if (leftResolved !== rightResolved) return leftResolved ? -1 : 1;
+      if (leftResolved && rightResolved && leftPrice !== rightPrice) return leftPrice - rightPrice;
+    }
+    return right.score - left.score || left.index - right.index;
+  });
   ranked = ranked.slice(0, limit);
   const handles = ranked.map((item) => clean(item.product.handle).toLowerCase());
   const factPack = await (deps.loadTrustedAdvisorFactPack || loadTrustedAdvisorFactPack)({
@@ -233,15 +251,21 @@ async function discoverProducts(args, deps) {
   return {
     source: "approved_showroom_catalog",
     catalogVersion: catalog.catalogVersion,
+    selection: {
+      pricePreference,
+      budgetMax: args.budgetMax == null ? null : Number(args.budgetMax),
+      size: clean(args.size) || null,
+      eligibleCount: ranked.length,
+    },
     limitations: handles.filter((handle) => !factsByHandle.has(handle)).map((handle) => ({ handle, reason: "curated_product_document_unavailable" })),
-    products: ranked.map(({ product, definition, score, reasons }) => ({
+    products: ranked.map(({ product, definition, score, reasons, commerce }) => ({
       handle: clean(product.handle).toLowerCase(),
       title: clean(product.title || definition.title),
       family: definition.family,
       curatedAttributes: definition.attributes || {},
       matchScore: score,
       matchReasons: reasons,
-      commerce: buildProductCardTruth(product, { activeSize: clean(args.size) }),
+      commerce,
       verifiedFacts: factsByHandle.get(clean(product.handle).toLowerCase())?.facts || [],
     })),
   };

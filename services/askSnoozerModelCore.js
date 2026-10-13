@@ -9,7 +9,7 @@ const { compactConversationState, existingReferenceHandles, normalizedConversati
 const { buildCartAction } = require("./askSnoozerConfigurationQuote");
 const { buildProductCardTruth } = require("./askSnoozerProductCardTruth");
 
-const CONVERSATION_CORE_VERSION = "conversation-core.v1.1";
+const CONVERSATION_CORE_VERSION = "conversation-core.v1.2";
 const EXPECTED_MODEL = "gpt-6.1-sol";
 let modelCircuit = { failures: 0, openedAt: 0 };
 
@@ -100,6 +100,11 @@ function buildCoreInstructions() {
     "If discover_products returns products, do not claim that no eligible or verified products were found. Recommend from the verified fields that are present and clearly leave missing details unknown.",
     "When several independent sources are required, request their tools together in one parallel tool round.",
     "Use tools for every product-specific, price, availability, variant, compatibility, policy, rewards, or cart claim.",
+    "Understand affordability conversationally. A vague concern means price-sensitive with no invented numeric cap; an exact, approximate, under, stretch, reduced, increased, or removed budget must retain that qualifier accurately.",
+    "When affordability changes after a recommendation, preserve comfort, partner, size, rejection, and comparison history; verify the current recommendation's price and use discover_products for eligible alternatives when the shopper asks to spend less or find affordable options.",
+    "For vague affordability use discover_products pricePreference lower_cost with budgetMax null. For the least expensive eligible option use lowest_price. Use a numeric budgetMax only when the shopper actually supplied or explicitly accepted that limit.",
+    "Do not discard an existing recommendation only because price matters. Explain its verified fit and price, compare verified lower-cost tradeoffs, and ask one budget clarification only when it would materially narrow the choice.",
+    "A hypothetical dollar amount is not an approved budget and must not change preference state. Price no longer being an issue removes the active budget preference.",
     "Prepared evidence is already verified for this turn. Cite its tool and do not call get_product_facts again for the same handles unless a required fact is absent.",
     "Never invent a product, handle, fact, price, variant, availability state, policy, assessment, recommendation, quote, or commitment.",
     "Live commerce tool results control price, variants, availability, cart, and checkout. Curated facts control product attributes. Missing facts remain unknown.",
@@ -117,6 +122,9 @@ function buildCoreInstructions() {
     "Keep the shopper-facing reply concise, normally no more than 120 words, while still answering every part of the request.",
     "Return the strict structured response. The server derives speech, captions, and HUD delivery fields. Product handles must come from tool results or the supplied reference ledger.",
     "Every non-general claim must cite the successful source tool and source key.",
+    "For every dollar amount in reply, add a monetaryClaims entry. Classify verified_product_price, verified_starting_at_price, verified_exact_variant_price, verified_bundle_subtotal, shopper_budget, hypothetical_spending_example, suggested_budget_threshold, or unverified_product_price exactly.",
+    "Verified commerce money requires its authoritative tool and source key. Shopper budgets and hypothetical amounts require an exact shopperEvidence phrase from the current message. Suggested budget thresholds require no product handle or source tool and must be phrased explicitly as a budget question or spending threshold, never as a product price.",
+    "Never relabel an unsupported product price as a budget or hypothetical amount. If commerce is unavailable, omit the amount and state that live pricing could not be verified.",
     "Before proposing add_to_cart, call quote_configuration. Only a complete cartReady result can produce a cart proposal; the server builds the cart lines.",
   ].join(" ");
 }
@@ -152,6 +160,7 @@ function toolOutputForModel(result) {
     data = {
       source: data?.source || null,
       limitations: data?.limitations || [],
+      selection: data?.selection || null,
       products: (data?.products || []).map(compactProduct),
     };
   } else if (result?.ok && result?.name === "get_live_commerce") {
@@ -296,6 +305,9 @@ function aggregateUsage(calls = []) {
 }
 
 function safeFallback({ reason, toolResults = [] } = {}) {
+  if (/response_validation:.*(?:price_not_grounded|money_|budget_|hypothetical_|suggested_budget_)/i.test(clean(reason))) {
+    return "I couldn't safely verify every amount in that answer, so I left the uncertain amount out. I haven't changed your recommendation or cart. What maximum mattress budget should I use?";
+  }
   const discovery = toolResults.find((result) => result?.ok && result?.name === "discover_products" && result?.data?.products?.length);
   if (discovery) {
     const names = discovery.data.products.slice(0, 2).map((item) => item.title).filter(Boolean);
@@ -318,34 +330,152 @@ function withToolDeadline(promise, timeoutMs, name) {
   return Promise.race([Promise.resolve(promise), timeout]).finally(() => clearTimeout(timer));
 }
 
-function verifiedPriceAmounts(toolResults = []) {
-  const values = new Set();
-  const visit = (value, key = "") => {
-    if (value == null) return;
-    if (Array.isArray(value)) return value.forEach((item) => visit(item, key));
-    if (typeof value === "object") return Object.entries(value).forEach(([childKey, child]) => visit(child, childKey));
-    if (/price|subtotal|amount|total/i.test(key) && Number.isFinite(Number(value))) {
-      values.add(Number(value).toFixed(2));
-    }
-  };
-  for (const result of toolResults.filter((item) => item?.ok)) visit(result.data);
-  return values;
+function amountKey(value) {
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount >= 0 ? amount.toFixed(2) : null;
 }
 
-function validateReplyPriceClaims(response = {}, toolResults = [], message = "") {
-  const verified = verifiedPriceAmounts(toolResults);
-  const sourceAmounts = [...verified].map(Number).filter(Number.isFinite);
-  for (let left = 0; left < sourceAmounts.length; left += 1) {
-    for (let right = left + 1; right < sourceAmounts.length; right += 1) {
-      verified.add(Math.abs(sourceAmounts[left] - sourceAmounts[right]).toFixed(2));
+function dollarAmounts(value) {
+  return [...clean(value).matchAll(/\$\s*([0-9][0-9,]*(?:\.\d{1,2})?)/g)]
+    .map((match) => amountKey(match[1].replace(/,/g, "")))
+    .filter(Boolean);
+}
+
+function statementAmounts(value) {
+  const text = clean(value).toLowerCase();
+  const amounts = new Set(dollarAmounts(text));
+  for (const match of text.matchAll(/\b([0-9][0-9,]{2,})(?:\.\d{1,2})?\b/g)) {
+    const amount = amountKey(match[1].replace(/,/g, ""));
+    if (amount) amounts.add(amount);
+  }
+  const small = {
+    one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+    eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16,
+    seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20,
+  };
+  for (const match of text.matchAll(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\s+(grand|thousand|hundred)\b/g)) {
+    const multiplier = match[2] === "hundred" ? 100 : 1000;
+    amounts.add(amountKey(small[match[1]] * multiplier));
+  }
+  return amounts;
+}
+
+function replyHasEvidence(reply, evidence) {
+  const haystack = clean(reply).toLowerCase().replace(/\s+/g, " ");
+  const needle = clean(evidence).toLowerCase().replace(/\s+/g, " ");
+  return Boolean(needle && haystack.includes(needle));
+}
+
+function shopperHasEvidence(message, evidence) {
+  const haystack = clean(message).toLowerCase().replace(/\s+/g, " ");
+  const needle = clean(evidence).toLowerCase().replace(/\s+/g, " ");
+  return Boolean(needle && haystack.includes(needle));
+}
+
+function commerceCards(toolResults = [], sourceTool = "") {
+  const cards = [];
+  for (const result of toolResults) {
+    if (!result?.ok || (sourceTool && result.name !== sourceTool)) continue;
+    if (!["discover_products", "get_live_commerce"].includes(result.name)) continue;
+    for (const item of result?.data?.products || []) {
+      cards.push({ tool: result.name, card: item?.commerce?.handle ? item.commerce : item });
     }
   }
-  for (const match of clean(message).matchAll(/\$\s*([0-9][0-9,]*(?:\.\d{1,2})?)/g)) {
-    verified.add(Number(match[1].replace(/,/g, "")).toFixed(2));
+  return cards;
+}
+
+function verifiedMonetaryClaim(claim = {}, toolResults = []) {
+  const semantic = clean(claim.semantic);
+  const expected = amountKey(claim.amount);
+  const sourceTool = clean(claim.sourceTool);
+  const sourceKey = clean(claim.sourceKey).toLowerCase();
+  const currencyCode = clean(claim.currencyCode).toUpperCase();
+  if (!expected || !sourceTool || !sourceKey || !currencyCode) return false;
+  if (semantic === "verified_bundle_subtotal") {
+    return toolResults.some((result) => (
+      result?.ok && result.name === sourceTool && result.name === "quote_configuration" &&
+      result?.data?.ok === true && result?.data?.cartReady === true &&
+      amountKey(result?.data?.subtotal) === expected &&
+      clean(result?.data?.currencyCode || "USD").toUpperCase() === currencyCode
+    ));
   }
-  const prices = [...clean(response?.reply).matchAll(/\$\s*([0-9][0-9,]*(?:\.\d{1,2})?)/g)]
-    .map((match) => Number(match[1].replace(/,/g, "")).toFixed(2));
-  return unique(prices.filter((price) => !verified.has(price))).map((price) => `price_not_grounded:${price}`);
+  return commerceCards(toolResults, sourceTool).some(({ card }) => {
+    const handle = clean(card?.handle).toLowerCase();
+    if (!handle || ![sourceKey, clean(claim.productHandle).toLowerCase()].filter(Boolean).includes(handle)) return false;
+    if (clean(card?.currencyCode || card?.priceRange?.currencyCode || "USD").toUpperCase() !== currencyCode) return false;
+    const exact = card?.exactVariantResolved === true && amountKey(card?.price) === expected;
+    const starting = card?.pricingMode === "starting_at" && amountKey(card?.priceRange?.min) === expected;
+    const product = exact || (
+      amountKey(card?.priceRange?.min) === expected &&
+      amountKey(card?.priceRange?.max) === expected
+    );
+    if (semantic === "verified_exact_variant_price") return exact;
+    if (semantic === "verified_starting_at_price") return starting;
+    return semantic === "verified_product_price" && product;
+  });
+}
+
+function validateReplyMonetaryClaims(response = {}, toolResults = [], message = "") {
+  const errors = [];
+  const reply = clean(response?.reply);
+  const replyAmounts = dollarAmounts(reply);
+  const claims = Array.isArray(response?.monetaryClaims) ? response.monetaryClaims : [];
+  const currentMessageAmounts = statementAmounts(message);
+  const verifiedKinds = new Set([
+    "verified_product_price", "verified_starting_at_price", "verified_exact_variant_price", "verified_bundle_subtotal",
+  ]);
+  for (const amount of replyAmounts) {
+    if (!claims.some((claim) => amountKey(claim?.amount) === amount)) errors.push(`money_provenance_missing:${amount}`);
+  }
+  for (const claim of claims) {
+    const semantic = clean(claim?.semantic);
+    const amount = amountKey(claim?.amount);
+    if (!amount) {
+      errors.push("money_amount_invalid");
+      continue;
+    }
+    if (!replyAmounts.includes(amount) || !replyHasEvidence(reply, claim?.evidence) || !dollarAmounts(claim?.evidence).includes(amount)) {
+      errors.push(`money_reply_evidence_missing:${amount}`);
+      continue;
+    }
+    if (verifiedKinds.has(semantic)) {
+      if (!verifiedMonetaryClaim(claim, toolResults)) errors.push(`price_not_grounded:${amount}`);
+      continue;
+    }
+    if (["shopper_budget", "hypothetical_spending_example"].includes(semantic)) {
+      const shopperEvidence = clean(claim?.shopperEvidence);
+      const replyEvidence = clean(claim?.evidence);
+      if (
+        clean(claim?.productHandle) || clean(claim?.sourceTool) || clean(claim?.sourceKey) ||
+        !shopperHasEvidence(message, shopperEvidence) ||
+        !statementAmounts(shopperEvidence).has(amount) ||
+        !currentMessageAmounts.has(amount) ||
+        !/\b(?:budget|maximum|under|below|up to|spend|range|target|cap|limit|hypothetical)\b/i.test(replyEvidence) ||
+        /\b(?:costs?|priced|price is|sells? for)\b/i.test(replyEvidence)
+      ) {
+        errors.push(`budget_not_grounded:${amount}`);
+      } else if (
+        semantic === "hypothetical_spending_example" &&
+        !/\b(?:what if|would|could|suppose|hypothetical|if i|if we)\b/i.test(message)
+      ) {
+        errors.push(`hypothetical_not_grounded:${amount}`);
+      }
+      continue;
+    }
+    if (semantic === "suggested_budget_threshold") {
+      const evidence = clean(claim?.evidence);
+      if (
+        clean(claim?.productHandle) || clean(claim?.sourceTool) || clean(claim?.sourceKey) || clean(claim?.shopperEvidence) ||
+        !/\b(?:budget|maximum|under|below|up to|spend|range|target|cap)\b/i.test(evidence) ||
+        /\b(?:costs?|priced|price is|sells? for)\b/i.test(evidence)
+      ) {
+        errors.push(`suggested_budget_invalid:${amount}`);
+      }
+      continue;
+    }
+    errors.push(`${semantic === "unverified_product_price" ? "price_not_grounded" : "money_semantic_invalid"}:${amount}`);
+  }
+  return unique(errors);
 }
 
 function toolTelemetrySummary(result = {}) {
@@ -420,6 +550,7 @@ async function runSnoozerConversationCore({
   let totalToolCalls = 0;
   let finalValidation = null;
   let failureReason = null;
+  let recoveryAttempts = 0;
   try {
     while (modelCalls.length < config.maxToolRounds + 2) {
       const remaining = config.totalTimeoutMs - (Date.now() - startedAt);
@@ -482,7 +613,7 @@ async function runSnoozerConversationCore({
       const responseText = clean(response.text);
       if (!context?.assessment && /\b(?:your|the) assessment\b|originally recommended from your assessment/i.test(responseText)) finalValidation.errors.push("fabricated_assessment_history");
       if (/\b(?:will|guaranteed to) cure\b/i.test(responseText)) finalValidation.errors.push("medical_guarantee");
-      finalValidation.errors.push(...validateReplyPriceClaims(finalValidation.value, toolResults, message));
+      finalValidation.errors.push(...validateReplyMonetaryClaims(finalValidation.value, toolResults, message));
       const discoveredProducts = toolResults
         .filter((result) => result?.ok && result?.name === "discover_products")
         .flatMap((result) => result?.data?.products || []);
@@ -491,6 +622,23 @@ async function runSnoozerConversationCore({
       }
       finalValidation.valid = finalValidation.errors.length === 0;
       if (!finalValidation.valid) {
+        const monetaryErrors = unique(finalValidation.errors).filter((error) => (
+          /^(?:price_not_grounded|money_|budget_|hypothetical_|suggested_budget_)/.test(error)
+        ));
+        if (
+          monetaryErrors.length &&
+          recoveryAttempts < 1 &&
+          modelCalls.length < config.maxToolRounds + 1 &&
+          deadlineAt - Date.now() >= 3000
+        ) {
+          recoveryAttempts += 1;
+          input.push(...response.output);
+          input.push({
+            role: "user",
+            content: `Correction required: ${monetaryErrors.join(", ")}. Rebuild the answer using the authoritative commerce evidence already supplied. Every dollar amount needs accurate monetaryClaims provenance. Do not relabel a product price as a budget or hypothetical amount. Omit any unsupported amount, preserve valid guidance and state proposals only if still supported, and return the strict structured response without requesting another tool unless evidence is actually missing.`,
+          });
+          continue;
+        }
         if (
           finalValidation.errors.includes("fallback_contradicts_grounded_products") &&
           modelCalls.length < config.maxToolRounds + 1 &&
@@ -509,7 +657,10 @@ async function runSnoozerConversationCore({
       }
       const validated = finalValidation.value;
       const productResult = await responseProducts(validated, toolResults, manifest, { shopify, context });
-      const finalTelemetry = telemetry({ config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation });
+      const finalTelemetry = telemetry({
+        config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
+        recoveryAttempts, recoverySucceeded: recoveryAttempts > 0,
+      });
       finalTelemetry.cardPresentation = productResult.presentation;
       finalTelemetry.cardEnrichment = productResult.enrichment;
       finalTelemetry.preparedContext = {
@@ -535,10 +686,16 @@ async function runSnoozerConversationCore({
     failureReason = clean(error?.code || error?.message || "model_failure");
     log("ask-snoozer.conversation-core", "model_failure", { requestId, failureReason, model: config.model });
   }
-  return fallbackResult(failureReason || "conversation_core_failure", toolResults, modelCalls, config, startedAt, finalValidation, toolRounds, totalToolCalls);
+  return fallbackResult(
+    failureReason || "conversation_core_failure", toolResults, modelCalls, config, startedAt,
+    finalValidation, toolRounds, totalToolCalls, recoveryAttempts
+  );
 }
 
-function telemetry({ config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation, fallbackReason = null }) {
+function telemetry({
+  config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
+  fallbackReason = null, recoveryAttempts = 0, recoverySucceeded = false,
+}) {
   return {
     coreVersion: CONVERSATION_CORE_VERSION, mode: config.mode, model: config.model, reasoningEffort: config.reasoningEffort,
     modelCallCount: modelCalls.length, modelMs: modelCalls.reduce((sum, call) => sum + call.latencyMs, 0),
@@ -556,16 +713,25 @@ function telemetry({ config, modelCalls, toolResults, toolRounds, totalToolCalls
     acceptedStateProposals: finalValidation ? finalValidation.stateValidation.acceptedPreferenceCount + finalValidation.stateValidation.acceptedDecisionCount : 0,
     rejectedStateProposals: finalValidation ? finalValidation.stateValidation.rejectedPreferences.length + finalValidation.stateValidation.rejectedDecisions.length : 0,
     fallbackReason,
+    recovery: {
+      attempted: recoveryAttempts > 0,
+      attempts: recoveryAttempts,
+      succeeded: recoverySucceeded === true,
+      kind: recoveryAttempts > 0 ? "monetary_claim_correction" : null,
+    },
   };
 }
 
-function fallbackResult(reason, toolResults, modelCalls, config, startedAt, finalValidation = null, toolRounds = 0, totalToolCalls = 0) {
+function fallbackResult(reason, toolResults, modelCalls, config, startedAt, finalValidation = null, toolRounds = 0, totalToolCalls = 0, recoveryAttempts = 0) {
   const reply = safeFallback({ reason, toolResults });
   return {
     ok: false, status: "fallback", reply, speech: reply, captions: reply, state: "warning", priority: "high", ttlMs: 7000,
-    responseMode: "safe_fallback", productHandles: [], products: [], chips: [], actionProposals: [], actions: [], preferences: [], decisions: [], references: {}, claims: [],
+    responseMode: "safe_fallback", productHandles: [], products: [], chips: [], actionProposals: [], actions: [], preferences: [], decisions: [], references: {}, claims: [], monetaryClaims: [],
     fallback: { used: true, reason }, quote: null, toolResults, stateValidation: finalValidation?.stateValidation || null,
-    telemetry: telemetry({ config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation, fallbackReason: reason }),
+    telemetry: telemetry({
+      config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
+      fallbackReason: reason, recoveryAttempts, recoverySucceeded: false,
+    }),
   };
 }
 
@@ -582,4 +748,5 @@ module.exports = {
   planTrustedAdvisorTurnWithModel,
   responseProducts,
   runSnoozerConversationCore,
+  validateReplyMonetaryClaims,
 };

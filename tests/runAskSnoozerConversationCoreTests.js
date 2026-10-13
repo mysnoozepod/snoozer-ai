@@ -109,6 +109,7 @@ function finalResponse(overrides = {}) {
     claims: [
       { kind: "product", value: "The Dual Comfort has verified cooling.", sourceTool: "discover_products", sourceKey: "12-dual-comfort-hybrid" },
     ],
+    monetaryClaims: [],
     fallback: { used: false, reason: null },
   };
   return JSON.stringify({ ...base, ...overrides });
@@ -123,11 +124,11 @@ async function testFreshDiscoveryAndState() {
         text: "",
         output: [{ type: "function_call", name: "discover_products", call_id: "call_discover", arguments: JSON.stringify({
           sleepPosition: "side", temperature: "sleeps_hot", pressureAreas: ["shoulders"], firmness: null,
-          partnerConsiderations: null, size: null, budgetMax: null, exclusions: [], limit: 2,
+          partnerConsiderations: null, size: null, budgetMax: null, pricePreference: "fit", exclusions: [], limit: 2,
         }) }],
         functionCalls: [{ name: "discover_products", callId: "call_discover", arguments: JSON.stringify({
           sleepPosition: "side", temperature: "sleeps_hot", pressureAreas: ["shoulders"], firmness: null,
-          partnerConsiderations: null, size: null, budgetMax: null, exclusions: [], limit: 2,
+          partnerConsiderations: null, size: null, budgetMax: null, pricePreference: "fit", exclusions: [], limit: 2,
         }) }],
         tokens: { prompt: 500, cached: 100, completion: 100, total: 600, reasoning: 20 },
       };
@@ -230,6 +231,11 @@ async function testInventedPriceIsRejected() {
         productHandles: ["12-all-foam-mattress"], preferences: [], decisions: [],
         references: { presentedProductHandles: ["12-all-foam-mattress"], comparisonProductHandles: [], lastDiscussedProductHandle: "12-all-foam-mattress", lastDiscussedBaseHandle: null },
         claims: [{ kind: "commerce", value: "$9,999.00", sourceTool: "get_live_commerce", sourceKey: "12-all-foam-mattress" }],
+        monetaryClaims: [{
+          semantic: "unverified_product_price", amount: 9999, currencyCode: "USD",
+          productHandle: "12-all-foam-mattress", sourceTool: null, sourceKey: null,
+          shopperEvidence: null, evidence: "$9,999.00",
+        }],
       }), output: [], functionCalls: [], tokens: {},
     };
   };
@@ -248,11 +254,11 @@ async function testFalseNoProductsFallbackIsCorrected() {
       text: "",
       output: [{ type: "function_call", name: "discover_products", call_id: "discover_for_repair", arguments: JSON.stringify({
         sleepPosition: "side", temperature: "sleeps_hot", pressureAreas: [], firmness: null,
-        partnerConsiderations: null, size: "Queen", budgetMax: null, exclusions: [], limit: 2,
+        partnerConsiderations: null, size: "Queen", budgetMax: null, pricePreference: "fit", exclusions: [], limit: 2,
       }) }],
       functionCalls: [{ name: "discover_products", callId: "discover_for_repair", arguments: JSON.stringify({
         sleepPosition: "side", temperature: "sleeps_hot", pressureAreas: [], firmness: null,
-        partnerConsiderations: null, size: "Queen", budgetMax: null, exclusions: [], limit: 2,
+        partnerConsiderations: null, size: "Queen", budgetMax: null, pricePreference: "fit", exclusions: [], limit: 2,
       }) }],
       tokens: {},
     };

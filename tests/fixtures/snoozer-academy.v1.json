@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "scenarios": [
     {
       "id": "october-8-regression",
@@ -34,6 +34,45 @@
         { "message": "Recommend the best remaining mattress for both of us and pair it with an adjustable base you actually carry. Explain why this setup is the best fit.", "minProducts": 1, "forbiddenProductHandles": ["12-all-foam-mattress"], "containsAny": ["adjustable", "base", "best"] },
         { "message": "We need a Queen. What are the current price and availability for both pieces?", "minProducts": 2, "requireEnrichedCards": true, "containsAll": ["Queen", "$"], "containsAny": ["available", "availability"] },
         { "message": "Recap the mattress I rejected, why the remaining setup fits both of us, and what I should do next in the showroom.", "expectNoProducts": true, "maxModelCalls": 1, "forbiddenProductHandles": ["12-all-foam-mattress"], "containsAll": ["All Foam", "partner"], "containsAny": ["try", "test", "next"] }
+      ]
+    },
+    {
+      "id": "budget-affordability-eight-turn-regression",
+      "coverage": ["exact October 9 failure", "fresh-session affordability", "Queen size", "partner continuity", "rejection continuity", "verified alternatives", "monetary provenance"],
+      "live": true,
+      "turns": [
+        { "message": "I'm shopping for a mattress. I mostly sleep on my side, my shoulders get sore sometimes, and I sleep hot. Where should I start?", "containsAll": ["side", "shoulder"], "containsAny": ["hot", "cool", "airflow"] },
+        { "message": "Recommend two mattresses you actually carry for those needs, and tell me which one you'd start with.", "minProducts": 2, "containsAny": ["recommend", "start", "choose"] },
+        { "message": "Compare those two for me and explain the meaningful tradeoffs.", "expectNoProducts": true, "containsAny": ["tradeoff", "better", "choose", "difference"] },
+        { "message": "My partner sleeps on their back and prefers a firmer feel. Reassess the two of us.", "expectNoProducts": true, "containsAll": ["partner", "firm"], "containsAny": ["back", "both"] },
+        { "message": "I'm ruling out the firmer mattress. Don't recommend that one again.", "expectNoProducts": true, "containsAny": ["which", "mean", "clarify", "confirm"] },
+        { "message": "I mean the 12-inch All Foam Mattress. Exclude it.", "expectNoProducts": true, "forbiddenProductHandles": ["12-all-foam-mattress"], "containsAny": ["exclude", "reject", "keep"] },
+        { "message": "Before we continue, recap my needs, my partner's needs, the mattress I rejected, and the mattress I'm considering.", "expectNoProducts": true, "maxModelCalls": 1, "forbiddenProductHandles": ["12-all-foam-mattress"], "containsAll": ["partner", "All Foam", "Dual Comfort"], "containsAny": ["side", "shoulder", "hot"] },
+        { "message": "i want a queen size and i dont wanna spend an arm and a leg", "forbiddenProductHandles": ["12-all-foam-mattress"], "containsAll": ["Queen"], "containsAny": ["budget", "affordable", "lower", "price", "spend"], "forbidden": ["I couldn't complete that answer reliably"] }
+      ]
+    },
+    {
+      "id": "budget-language-spectrum",
+      "coverage": ["explicit maximum", "approximate words", "budget increased", "budget reduced", "stretch qualifier", "hypothetical budget", "budget removed", "lowest-priced eligible"],
+      "live": true,
+      "turns": [
+        { "message": "Recommend two Queen mattresses for a side sleeper who sleeps hot.", "minProducts": 2 },
+        { "message": "I'd prefer to stay under $1,500 for the mattress. Rework the options with verified Queen prices.", "containsAny": ["$1,500", "1,500", "budget", "under"] },
+        { "message": "Raise my actual mattress budget to about two grand.", "containsAny": ["$2,000", "2,000", "two grand", "budget"] },
+        { "message": "I can stretch a little if the comfort tradeoff is worth it.", "containsAny": ["stretch", "tradeoff", "worth"] },
+        { "message": "Now reduce the budget again and go cheaper than what we're considering.", "containsAny": ["cheaper", "lower", "budget", "reduce"] },
+        { "message": "Hypothetically, what would change with a $3,000 budget? Do not replace my actual budget.", "containsAny": ["hypothetical", "$3,000", "3,000", "actual budget"] },
+        { "message": "Price isn't an issue anymore. Remove my budget limit but keep my comfort needs.", "containsAny": ["price", "budget", "limit", "comfort"] },
+        { "message": "What is your least expensive good Queen option that still fits my sleep needs?", "minProducts": 1, "containsAny": ["least", "lowest", "affordable", "price", "Queen"] }
+      ]
+    },
+    {
+      "id": "starting-versus-exact-price",
+      "coverage": ["starting-at price", "exact Queen variant price"],
+      "live": true,
+      "turns": [
+        { "message": "What does the 14-inch Hybrid start at before I choose a size? Be precise that it is a starting price.", "containsAll": ["$"], "containsAny": ["start", "from"] },
+        { "message": "Now verify the exact Queen variant price and availability, not the starting price.", "minProducts": 1, "requireEnrichedCards": true, "containsAll": ["Queen", "$"], "containsAny": ["exact", "available", "availability"] }
       ]
     },
     {
@@ -135,6 +174,12 @@
       "coverage": ["Shopify retrieval failure"],
       "live": false,
       "coveredBy": "runAskSnoozerConversationCoreTests.js"
+    },
+    {
+      "id": "monetary-provenance-and-recovery",
+      "coverage": ["unsupported price hallucination", "valid hypothetical dollar amount", "suggested budget threshold", "invalid bundle subtotal", "model-generated correction", "state continuity after recovery"],
+      "live": false,
+      "coveredBy": "runAskSnoozerBudgetRecoveryTests.js"
     },
     {
       "id": "model-failure",

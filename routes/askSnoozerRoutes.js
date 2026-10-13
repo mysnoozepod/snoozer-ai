@@ -691,6 +691,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         acceptedStateProposals: Number(coreTelemetry.acceptedStateProposals || 0),
         rejectedStateProposals: Number(coreTelemetry.rejectedStateProposals || 0),
         fallbackReason: coreTelemetry.fallbackReason || coreResult?.fallback?.reason || null,
+        recovery: coreTelemetry.recovery || null,
         preparedContext: coreTelemetry.preparedContext || null,
         cardPresentation: coreTelemetry.cardPresentation || null,
         cardEnrichment: coreTelemetry.cardEnrichment || null,
@@ -760,7 +761,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           reason: coreTelemetry.fallbackReason || coreResult?.fallback?.reason || "",
           answer_strategy: "sol_conversation_core",
           answer_source_type: "validated_authoritative_tools",
-          answer_source_key: "conversation-core.v1",
+          answer_source_key: "conversation-core.v1.2",
           answer_grounded: Boolean(coreResult?.ok),
           answer_facts_count: Array.isArray(coreResult?.claims) ? coreResult.claims.length : 0,
           qualityGate: {
@@ -783,7 +784,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             modelCallCount: Number(coreTelemetry.modelCallCount || 0),
           },
           conversationCore: {
-            version: coreTelemetry.coreVersion || "conversation-core.v1",
+            version: coreTelemetry.coreVersion || "conversation-core.v1.2",
             reasoningEffort: coreTelemetry.reasoningEffort || conversationCoreConfig?.reasoningEffort || null,
             toolRounds: Number(coreTelemetry.toolRounds || 0),
             toolCallCount: Number(coreTelemetry.toolCallCount || 0),
@@ -791,6 +792,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             estimatedCostUsd: Number(usage.estimatedCostUsd || 0),
             acceptedStateProposals: Number(coreTelemetry.acceptedStateProposals || 0),
             rejectedStateProposals: Number(coreTelemetry.rejectedStateProposals || 0),
+            recovery: coreTelemetry.recovery || null,
             preparedContext: coreTelemetry.preparedContext || null,
             cardPresentation: coreTelemetry.cardPresentation || null,
             cardEnrichment: coreTelemetry.cardEnrichment || null,

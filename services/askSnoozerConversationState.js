@@ -129,10 +129,14 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
   };
   const decisions = [...(state.decisions || [])];
   let rejectedProductHandles = unique(state.rejectedProductHandles || []);
+  const newlyRejectedHandles = new Set();
   for (const decision of response.decisions || []) {
     decisions.push({ ...clone(decision), source: "validated_model_proposal", updatedAt });
     const handle = clean(decision.productHandle).toLowerCase();
-    if (decision.status === "rejected" && handle) rejectedProductHandles = unique([...rejectedProductHandles, handle]);
+    if (decision.status === "rejected" && handle) {
+      rejectedProductHandles = unique([...rejectedProductHandles, handle]);
+      newlyRejectedHandles.add(handle);
+    }
     if (decision.status === "accepted" && handle) rejectedProductHandles = rejectedProductHandles.filter((item) => item !== handle);
   }
   const nextState = {
@@ -149,8 +153,20 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
     : {};
   const priorDeal = priorMemory.activeDeal && typeof priorMemory.activeDeal === "object" ? priorMemory.activeDeal : {};
   const recommended = [...(response.decisions || [])].reverse().find((item) => item.status === "recommended" && item.productHandle);
-  const rejectedProducts = rejectedProductHandles.map((handle) => ({ handle, status: "rejected", reason: "shopper_rejected", rejectedAt: updatedAt }));
+  const priorRejectedByHandle = new Map((priorDeal.rejectedProducts || [])
+    .map((item) => [clean(item?.handle).toLowerCase(), item])
+    .filter(([handle]) => handle));
+  const rejectedProducts = rejectedProductHandles.map((handle) => {
+    const prior = priorRejectedByHandle.get(handle);
+    if (prior && !newlyRejectedHandles.has(handle)) return clone(prior);
+    return { handle, status: "rejected", reason: "shopper_rejected", rejectedAt: updatedAt };
+  });
   const retainedPreferences = { ...(priorDeal.retainedPreferences || {}) };
+  for (const preference of response.preferences || []) {
+    if (preference?.operation === "remove") {
+      delete retainedPreferences[`${clean(preference.subject || "shopper")}:${clean(preference.key)}`];
+    }
+  }
   for (const item of Object.values(preferences)) {
     if (item?.status === "active") retainedPreferences[`${item.subject}:${item.key}`] = { value: item.value, source: item.source, updatedAt: item.updatedAt };
   }
