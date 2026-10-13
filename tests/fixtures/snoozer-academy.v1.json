@@ -42,7 +42,7 @@
       "live": true,
       "turns": [
         { "message": "I'm shopping for a mattress. I mostly sleep on my side, my shoulders get sore sometimes, and I sleep hot. Where should I start?", "minProducts": 2, "containsAll": ["side", "shoulder"], "containsAny": ["hot", "cool", "airflow"] },
-        { "message": "Compare those two for me and explain the meaningful tradeoffs.", "expectNoProducts": true, "containsAny": ["tradeoff", "better", "choose", "difference"] },
+        { "message": "Compare those two for me and explain the meaningful tradeoffs.", "expectNoProducts": true, "containsAll": ["Hybrid", "All Foam"], "containsAny": ["airflow", "cushion", "pressure", "support"] },
         { "message": "My partner sleeps on their back and prefers a firmer feel. Reassess the two of us.", "expectNoProducts": true, "containsAll": ["partner", "firm"], "containsAny": ["back", "both"] },
         { "message": "I'm ruling out the firmer mattress. Don't recommend that one again.", "expectNoProducts": true, "containsAny": ["which", "mean", "clarify", "confirm"] },
         { "message": "I mean the 12-inch All Foam Mattress. Exclude it.", "expectNoProducts": true, "forbiddenProductHandles": ["12-all-foam-mattress"], "containsAny": ["exclude", "reject", "keep"] },
