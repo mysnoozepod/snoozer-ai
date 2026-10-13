@@ -60,7 +60,7 @@ function validateTurn({ scenario, turn, turnIndex, response, body }) {
   assert(body?.ok !== false, `${label} returned ok=false: ${JSON.stringify(body?.error || body?.reply)}`);
   const reply = responseText(body);
   assert(reply.length > 0, `${label} returned no shopper-visible reply`);
-  assert(/[.!?]["')\]]?$/.test(reply), `${label} reply is incomplete: ${reply}`);
+  assert(/[.!?]["'’”')\]]?$/.test(reply), `${label} reply is incomplete: ${reply}`);
   assert(!/\b(?:shopify|s3|backend|resolver|database|function call|language model)\b/i.test(reply), `${label} leaked internal language: ${reply}`);
   assert(!/\bundefined\b|\bnull\b|ReferenceError/i.test(reply), `${label} leaked runtime data: ${reply}`);
   assert(!/(\*\*|__|`|<\/?[a-z][^>]*>)/i.test(reply), `${label} leaked formatting syntax: ${reply}`);
