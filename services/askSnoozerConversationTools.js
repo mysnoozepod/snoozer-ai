@@ -293,12 +293,18 @@ async function executeConversationTool(name, rawArgs, deps = {}) {
       data = await discoverProducts(args, deps);
     } else if (name === "get_product_facts") {
       const handles = assertHandles(args.productHandles);
-      data = await (deps.loadTrustedAdvisorFactPack || loadTrustedAdvisorFactPack)({
+      const factPack = await (deps.loadTrustedAdvisorFactPack || loadTrustedAdvisorFactPack)({
         productHandles: handles,
         query: "product facts",
         requestedFacts: Array.isArray(args.factClasses) ? args.factClasses : [],
         productFactsOverride: deps.productFactsOverride,
       });
+      const returnedHandles = new Set(unique((factPack?.productFacts || []).map((item) => item?.handle)));
+      data = {
+        ...factPack,
+        requestedHandles: handles,
+        missingHandles: handles.filter((handle) => !returnedHandles.has(handle)),
+      };
     } else if (name === "get_live_commerce") {
       const handles = assertHandles(args.productHandles);
       const result = await deps.shopify.fetchProductsByHandles({ handles, lite: false });

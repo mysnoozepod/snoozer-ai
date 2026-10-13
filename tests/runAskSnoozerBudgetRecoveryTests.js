@@ -319,6 +319,21 @@ async function testAffordableDiscoveryAndRejectionGuard() {
   assert.equal(none.data.products.length, 0, "unresolved or over-budget variants must not pass an exact cap");
 }
 
+async function testPreparedFactMissIsExplicit() {
+  const result = await executeConversationTool("get_product_facts", {
+    productHandles: ["12-dual-comfort-hybrid", "premium-motion-adjustable-base"],
+    factClasses: ["product_features"],
+  }, {
+    manifest,
+    loadTrustedAdvisorFactPack: async () => ({
+      productFacts: [{ handle: "12-dual-comfort-hybrid", status: "verified_fact", facts: ["Verified fact."] }],
+    }),
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.data.requestedHandles, ["12-dual-comfort-hybrid", "premium-motion-adjustable-base"]);
+  assert.deepEqual(result.data.missingHandles, ["premium-motion-adjustable-base"]);
+}
+
 function testStateProjectionNoOpAndBudgetRemoval() {
   const rejectedAt = "2026-10-09T03:17:44.023Z";
   const journey = {
@@ -376,6 +391,7 @@ async function main() {
   await testPersistentInvalidPriceUsesFocusedFallback();
   await testCommerceFailureIsExplicitAndSafe();
   await testAffordableDiscoveryAndRejectionGuard();
+  await testPreparedFactMissIsExplicit();
   testStateProjectionNoOpAndBudgetRemoval();
   console.log("Ask Snoozer budget intelligence and monetary recovery tests passed.");
 }

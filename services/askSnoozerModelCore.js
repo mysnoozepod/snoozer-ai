@@ -106,6 +106,7 @@ function buildCoreInstructions() {
     "Do not discard an existing recommendation only because price matters. Explain its verified fit and price, compare verified lower-cost tradeoffs, and ask one budget clarification only when it would materially narrow the choice.",
     "A hypothetical dollar amount is not an approved budget and must not change preference state. Price no longer being an issue removes the active budget preference.",
     "Prepared evidence is already verified for this turn. Cite its tool and do not call get_product_facts again for the same handles unless a required fact is absent.",
+    "If prepared get_product_facts evidence lists a handle in missingHandles, its optional curated product document is unavailable. Do not repeat the same facts call; use other verified evidence and state the limitation when relevant.",
     "Never invent a product, handle, fact, price, variant, availability state, policy, assessment, recommendation, quote, or commitment.",
     "Live commerce tool results control price, variants, availability, cart, and checkout. Curated facts control product attributes. Missing facts remain unknown.",
     "Answer first. For comparisons, lead with the verdict, connect it to the shopper's stated needs, then give only the useful supporting differences and one practical next step.",
@@ -177,6 +178,8 @@ function toolOutputForModel(result) {
         status: item?.status || null,
         facts: Array.isArray(item?.facts) ? item.facts.slice(0, 7) : [],
       })),
+      requestedHandles: data?.requestedHandles || [],
+      missingHandles: data?.missingHandles || [],
     };
   }
   return JSON.stringify({

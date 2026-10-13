@@ -41,8 +41,7 @@
       "coverage": ["exact October 9 failure", "fresh-session affordability", "Queen size", "partner continuity", "rejection continuity", "verified alternatives", "monetary provenance"],
       "live": true,
       "turns": [
-        { "message": "I'm shopping for a mattress. I mostly sleep on my side, my shoulders get sore sometimes, and I sleep hot. Where should I start?", "containsAll": ["side", "shoulder"], "containsAny": ["hot", "cool", "airflow"] },
-        { "message": "Recommend two mattresses you actually carry for those needs, and tell me which one you'd start with.", "minProducts": 2, "containsAny": ["recommend", "start", "choose"] },
+        { "message": "I'm shopping for a mattress. I mostly sleep on my side, my shoulders get sore sometimes, and I sleep hot. Where should I start?", "minProducts": 2, "containsAll": ["side", "shoulder"], "containsAny": ["hot", "cool", "airflow"] },
         { "message": "Compare those two for me and explain the meaningful tradeoffs.", "expectNoProducts": true, "containsAny": ["tradeoff", "better", "choose", "difference"] },
         { "message": "My partner sleeps on their back and prefers a firmer feel. Reassess the two of us.", "expectNoProducts": true, "containsAll": ["partner", "firm"], "containsAny": ["back", "both"] },
         { "message": "I'm ruling out the firmer mattress. Don't recommend that one again.", "expectNoProducts": true, "containsAny": ["which", "mean", "clarify", "confirm"] },
