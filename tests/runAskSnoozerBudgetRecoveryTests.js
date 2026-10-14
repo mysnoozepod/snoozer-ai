@@ -389,7 +389,7 @@ function testStateProjectionNoOpAndBudgetRemoval() {
     context: base,
     response: {
       preferences: [], decisions: [], productHandles: ["12-all-foam-mattress"],
-      references: { presentedProductHandles: ["12-all-foam-mattress"], comparisonProductHandles: ["12-dual-comfort-hybrid", "12-all-foam-mattress"], lastDiscussedProductHandle: "12-dual-comfort-hybrid", lastDiscussedBaseHandle: null },
+      references: { presentedProductHandles: ["12-all-foam-mattress"], comparisonProductHandles: [], lastDiscussedProductHandle: "12-dual-comfort-hybrid", lastDiscussedBaseHandle: null },
     },
     now: new Date("2026-10-09T03:18:09.249Z"),
   });
@@ -400,6 +400,15 @@ function testStateProjectionNoOpAndBudgetRemoval() {
     true,
     `memory recall must not advance Active Journey: ${JSON.stringify(recallPayload)}`
   );
+  const rejectedComparison = applyConversationState({
+    context: base,
+    response: {
+      preferences: [], decisions: [], productHandles: [],
+      references: { presentedProductHandles: [], comparisonProductHandles: ["12-dual-comfort-hybrid", "12-all-foam-mattress"], lastDiscussedProductHandle: "12-dual-comfort-hybrid", lastDiscussedBaseHandle: null },
+    },
+    now: new Date("2026-10-09T03:18:10.000Z"),
+  });
+  assert.deepEqual(rejectedComparison.askSnoozerWorkingMemory.activeDeal.comparisonProductHandles, ["12-dual-comfort-hybrid"]);
 
   const removed = applyConversationState({
     context: base,

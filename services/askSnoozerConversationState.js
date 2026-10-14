@@ -114,6 +114,7 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
       };
     }
   }
+  const proposedComparisonHandles = unique(response.references?.comparisonProductHandles || []);
   const references = {
     ...(state.references || {}),
     presentedProductHandles: unique([
@@ -121,7 +122,11 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
       ...(response.references?.presentedProductHandles || []),
       ...(response.productHandles || []),
     ]).slice(-8),
-    comparisonProductHandles: unique(response.references?.comparisonProductHandles || state.references?.comparisonProductHandles || []).slice(0, 2),
+    comparisonProductHandles: (
+      proposedComparisonHandles.length
+        ? proposedComparisonHandles
+        : unique(state.references?.comparisonProductHandles || [])
+    ).slice(0, 2),
     lastDiscussedProductHandle: clean(response.references?.lastDiscussedProductHandle || state.references?.lastDiscussedProductHandle) || null,
     lastDiscussedBaseHandle: clean(response.references?.lastDiscussedBaseHandle || state.references?.lastDiscussedBaseHandle) || null,
     lastVerifiedConfiguration: quote?.ok && quote?.cartReady ? clone(quote) : state.references?.lastVerifiedConfiguration || null,
