@@ -56,7 +56,7 @@
       "live": true,
       "turns": [
         { "message": "Recommend two Queen mattresses for a side sleeper who sleeps hot.", "minProducts": 2 },
-        { "message": "I'd prefer to stay under $1,500 for the mattress. Rework the options with verified Queen prices.", "containsAny": ["$1,500", "1,500", "budget", "under"] },
+        { "message": "I'd prefer to stay under $1,500 for the mattress. Rework the options with verified Queen prices.", "containsAny": ["$1,500", "1,500", "budget", "under", "limit", "maximum"] },
         { "message": "Raise my actual mattress budget to about two grand.", "containsAny": ["$2,000", "2,000", "two grand", "budget"] },
         { "message": "I can stretch a little if the comfort tradeoff is worth it.", "containsAny": ["stretch", "tradeoff", "worth"] },
         { "message": "Now reduce the budget again and go cheaper than what we're considering.", "containsAny": ["cheaper", "lower", "budget", "reduce"] },
