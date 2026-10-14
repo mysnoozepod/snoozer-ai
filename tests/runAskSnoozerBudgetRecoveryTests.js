@@ -373,13 +373,14 @@ function testStateProjectionNoOpAndBudgetRemoval() {
       "household:budget": { value: "under 1500 USD", source: "shopper_statement", updatedAt: rejectedAt },
     },
     activeConfiguration: { productHandle: "12-dual-comfort-hybrid", baseHandle: null },
+    comparisonSet: ["12-dual-comfort-hybrid"],
   };
   const base = hydrateAskContextFromActiveJourney({
     snoozerConversationState: {
       version: "conversation-state.v1", preferences: {}, decisions: [],
       references: {
         presentedProductHandles: ["12-dual-comfort-hybrid", "12-all-foam-mattress"],
-        comparisonProductHandles: [], lastDiscussedProductHandle: "12-dual-comfort-hybrid", lastDiscussedBaseHandle: null,
+        comparisonProductHandles: ["12-dual-comfort-hybrid"], lastDiscussedProductHandle: "12-dual-comfort-hybrid", lastDiscussedBaseHandle: null,
       },
       rejectedProductHandles: ["12-all-foam-mattress"],
     },
@@ -388,7 +389,7 @@ function testStateProjectionNoOpAndBudgetRemoval() {
     context: base,
     response: {
       preferences: [], decisions: [], productHandles: ["12-all-foam-mattress"],
-      references: { presentedProductHandles: ["12-all-foam-mattress"], comparisonProductHandles: [], lastDiscussedProductHandle: "12-dual-comfort-hybrid", lastDiscussedBaseHandle: null },
+      references: { presentedProductHandles: ["12-all-foam-mattress"], comparisonProductHandles: ["12-dual-comfort-hybrid", "12-all-foam-mattress"], lastDiscussedProductHandle: "12-dual-comfort-hybrid", lastDiscussedBaseHandle: null },
     },
     now: new Date("2026-10-09T03:18:09.249Z"),
   });

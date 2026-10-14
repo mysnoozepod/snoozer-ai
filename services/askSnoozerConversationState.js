@@ -139,6 +139,8 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
     }
     if (decision.status === "accepted" && handle) rejectedProductHandles = rejectedProductHandles.filter((item) => item !== handle);
   }
+  references.comparisonProductHandles = references.comparisonProductHandles
+    .filter((handle) => !rejectedProductHandles.includes(handle));
   const nextState = {
     version: CONVERSATION_STATE_VERSION,
     preferences,
