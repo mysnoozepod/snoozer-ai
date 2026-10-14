@@ -627,6 +627,11 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       typeof runSnoozerConversationCore === "function"
     ) {
       let coreResult;
+      const lifecycleTiming = {
+        requestToCoreMs: Date.now() - startedAt,
+        persistenceMs: 0,
+        responseBuildMs: 0,
+      };
       try {
         coreResult = await runSnoozerConversationCore({
           requestId: traceId,
@@ -639,6 +644,9 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           rewardsService: rewardProgramService,
           log,
           env: process.env,
+          remainingTimeMs: typeof event?._getRemainingTimeInMillis === "function"
+            ? event._getRemainingTimeInMillis()
+            : null,
         });
       } catch (error) {
         const reason = String(error?.code || error?.message || "conversation_core_failure").slice(0, 160);
@@ -695,6 +703,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         preparedContext: coreTelemetry.preparedContext || null,
         cardPresentation: coreTelemetry.cardPresentation || null,
         cardEnrichment: coreTelemetry.cardEnrichment || null,
+        lifecycle: { ...lifecycleTiming, ...(coreTelemetry.lifecycle || {}) },
+        transportFailure: coreTelemetry.transportFailure || null,
       });
 
       if (conversationCoreMode === "active") {
@@ -705,6 +715,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             { role: "user", content: msg },
             { role: "assistant", content: coreResult.reply },
           ]);
+          const persistenceStartedAt = Date.now();
           try {
             await saveSessionContext(effectiveSessionId, context);
             sco = context;
@@ -723,9 +734,11 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             });
           }
           await commitActiveJourneyFromAskContext("conversation_core_validated");
+          lifecycleTiming.persistenceMs = Date.now() - persistenceStartedAt;
         }
 
         const latencyMs = Date.now() - startedAt;
+        const responseBuildStartedAt = Date.now();
         const usage = coreTelemetry.usage || {};
         const env = buildSuccessResponse({
           requestId: traceId,
@@ -796,8 +809,12 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
             preparedContext: coreTelemetry.preparedContext || null,
             cardPresentation: coreTelemetry.cardPresentation || null,
             cardEnrichment: coreTelemetry.cardEnrichment || null,
+            lifecycle: { ...lifecycleTiming, ...(coreTelemetry.lifecycle || {}) },
+            transportFailure: coreTelemetry.transportFailure || null,
           },
         };
+        lifecycleTiming.responseBuildMs = Date.now() - responseBuildStartedAt;
+        env.meta.conversationCore.lifecycle.responseBuildMs = lifecycleTiming.responseBuildMs;
         const normalized = normalizeSnoozerResponse(env, {
           traceId,
           sessionId: effectiveSessionId,

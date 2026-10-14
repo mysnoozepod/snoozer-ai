@@ -834,6 +834,7 @@ async function postAskSnoozer(payload) {
     ASK_SNOOZER_REQUEST_TIMEOUT_MS
   );
   let response;
+  let responseBody;
   try {
     response = await fetch(buildApiUrl("/ask-snoozer"), {
       method: "POST",
@@ -858,23 +859,22 @@ async function postAskSnoozer(payload) {
         sessionId: payload.identity?.sessionId || null,
       }),
     });
+    const contentType = String(response.headers.get("content-type") || "").toLowerCase();
+    responseBody = contentType.includes("application/json")
+      ? await response.json().catch(() => null)
+      : await response.text().then((raw) => {
+          const text = String(raw || "").trim();
+          if (!text) return null;
+          return safeParseJson(text) || {
+            ok: false,
+            status: "error",
+            reply: text,
+            message: { text },
+          };
+        }).catch(() => null);
   } finally {
     window.clearTimeout(timeoutId);
   }
-
-  const contentType = String(response.headers.get("content-type") || "").toLowerCase();
-  const responseBody = contentType.includes("application/json")
-    ? await response.json().catch(() => null)
-    : await response.text().then((raw) => {
-        const text = String(raw || "").trim();
-        if (!text) return null;
-        return safeParseJson(text) || {
-          ok: false,
-          status: "error",
-          reply: text,
-          message: { text },
-        };
-      }).catch(() => null);
   if (!response.ok) {
     throw Object.assign(new Error("Ask Snoozer request failed."), {
       status: response.status,

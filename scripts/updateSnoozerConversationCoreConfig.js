@@ -33,6 +33,8 @@ function main() {
   }
   delete variables.ASK_SNOOZER_CONVERSATION_CORE_MODE;
   variables.ASK_SNOOZER_MODEL_ONLY = mode === "legacy" ? "true" : `cc_${mode}`;
+  variables.MODEL_TIMEOUT_MS = "26000";
+  variables.OPENAI_TIMEOUT_MS = "18000";
   variables.OPENAI_RUN_MAX_RETRIES = "1";
   variables.OPENAI_RUN_MAX_WAIT_MS = "400";
   const envPath = path.join(os.tmpdir(), `snoozer-conversation-core-env-${process.pid}.json`);
@@ -68,8 +70,10 @@ function main() {
       reasoningEffort: env.ASK_SNOOZER_CONVERSATION_CORE_REASONING_EFFORT || env.OPENAI_FINAL_REASONING_EFFORT,
       maxToolRounds: env.ASK_SNOOZER_CONVERSATION_CORE_MAX_TOOL_ROUNDS || "2 (default)",
       maxToolCalls: env.ASK_SNOOZER_CONVERSATION_CORE_MAX_TOOL_CALLS || "6 (default)",
-      totalTimeoutMs: env.ASK_SNOOZER_CONVERSATION_CORE_TOTAL_TIMEOUT_MS || "30000 (default)",
-      modelTimeoutMs: env.ASK_SNOOZER_CONVERSATION_CORE_MODEL_TIMEOUT_MS || "16000 (default)",
+      totalTimeoutMs: env.ASK_SNOOZER_CONVERSATION_CORE_TOTAL_TIMEOUT_MS || env.MODEL_TIMEOUT_MS || "26000 (default)",
+      modelTimeoutMs: env.ASK_SNOOZER_CONVERSATION_CORE_MODEL_TIMEOUT_MS || env.OPENAI_TIMEOUT_MS || "18000 (default)",
+      responseReserveMs: env.OPENAI_RESPONSE_RESERVE_MS || "2500 (code default)",
+      minimumRetryBudgetMs: env.OPENAI_MIN_RETRY_BUDGET_MS || "7000 (code default)",
       retryCount: env.OPENAI_RUN_MAX_RETRIES,
     },
   }, null, 2));

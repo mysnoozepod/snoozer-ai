@@ -9,8 +9,9 @@ const { compactConversationState, existingReferenceHandles, normalizedConversati
 const { buildCartAction } = require("./askSnoozerConfigurationQuote");
 const { buildProductCardTruth } = require("./askSnoozerProductCardTruth");
 
-const CONVERSATION_CORE_VERSION = "conversation-core.v1.2";
+const CONVERSATION_CORE_VERSION = "conversation-core.v1.3";
 const EXPECTED_MODEL = "gpt-6.1-sol";
+const RESPONSE_RESERVE_MS = 2500;
 let modelCircuit = { failures: 0, openedAt: 0 };
 
 function clean(value) { return String(value == null ? "" : value).trim(); }
@@ -40,8 +41,8 @@ function getConversationCoreConfig(env = process.env) {
       45000
     ),
     modelTimeoutMs: boundedInt(
-      env.ASK_SNOOZER_CONVERSATION_CORE_MODEL_TIMEOUT_MS || (Number(env.MODEL_TIMEOUT_MS) - 1000),
-      25000,
+      env.ASK_SNOOZER_CONVERSATION_CORE_MODEL_TIMEOUT_MS || env.OPENAI_TIMEOUT_MS || 18000,
+      18000,
       1000,
       30000
     ),
@@ -82,9 +83,9 @@ function buildConversationEnvelope({ message = "", context = {}, history = [], m
       activeConfiguration: context?.activeJourney?.activeConfiguration || null,
       quoteStatus: context?.activeJourney?.activeQuote?.status || null,
     },
-    approvedProducts: (manifest?.products || []).filter((item) => item?.active !== false).map((item) => ({
-      handle: item.handle, title: item.title, category: item.catalogType, family: item.family,
-    })),
+    approvedProducts: (manifest?.products || [])
+      .filter((item) => item?.active !== false)
+      .map((item) => ({ handle: item.handle, title: item.title, category: item.catalogType })),
     preparedEvidence,
   };
 }
@@ -106,6 +107,7 @@ function buildCoreInstructions() {
     "Do not discard an existing recommendation only because price matters. Explain its verified fit and price, compare verified lower-cost tradeoffs, and ask one budget clarification only when it would materially narrow the choice.",
     "A hypothetical dollar amount is not an approved budget and must not change preference state. Price no longer being an issue removes the active budget preference.",
     "Prepared evidence is already verified for this turn. Cite its tool and do not call get_product_facts again for the same handles unless a required fact is absent.",
+    "A prepared quote_configuration result is authoritative for that exact mattress, base, size, motion, compatibility, line prices, and subtotal; do not request the same quote again. If it is incompatible, explain its verified reason without naming a replacement product unless separate prepared evidence grounds that replacement.",
     "If prepared get_product_facts evidence lists a handle in missingHandles, its optional curated product document is unavailable. Do not repeat the same facts call; use other verified evidence and state the limitation when relevant.",
     "Never invent a product, handle, fact, price, variant, availability state, policy, assessment, recommendation, quote, or commitment.",
     "Live commerce tool results control price, variants, availability, cart, and checkout. Curated facts control product attributes. Missing facts remain unknown.",
@@ -195,7 +197,7 @@ function cardPresentationPolicy(response, context = {}, toolResults = []) {
   const existing = new Set(unique(compactConversationState(context)?.references?.presentedProductHandles || []));
   const hasNew = wanted.some((handle) => !existing.has(handle));
   const commerceNeeded = (response?.claims || []).some((claim) => ["commerce", "compatibility"].includes(claim?.kind)) ||
-    toolResults.some((result) => result?.ok && ["get_live_commerce", "quote_configuration"].includes(result?.name));
+    toolResults.some((result) => result?.ok && result?.prepared !== true && ["get_live_commerce", "quote_configuration"].includes(result?.name));
   const actionable = (response?.actionProposals || []).some((action) => action?.type === "add_to_cart");
   if (hasNew) return { show: true, reason: "new_product", handles: wanted };
   if (commerceNeeded) return { show: true, reason: "commerce_confirmation", handles: wanted };
@@ -331,6 +333,61 @@ function withToolDeadline(promise, timeoutMs, name) {
     timer = setTimeout(() => resolve({ ok: false, name, error: "tool_timeout", latencyMs: timeoutMs }), timeoutMs);
   });
   return Promise.race([Promise.resolve(promise), timeout]).finally(() => clearTimeout(timer));
+}
+
+function normalizedReferenceText(value) {
+  return clean(value).toLowerCase().replace(/["”″']/g, " inch ").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function mentionedApprovedHandles(message = "", manifest = {}) {
+  const normalizedMessage = normalizedReferenceText(message);
+  if (!normalizedMessage) return [];
+  return unique((manifest?.products || [])
+    .filter((item) => item?.active !== false)
+    .filter((item) => {
+      const title = normalizedReferenceText(item?.title);
+      const handle = normalizedReferenceText(item?.handle);
+      return (title && normalizedMessage.includes(title)) || (handle && normalizedMessage.includes(handle));
+    })
+    .map((item) => item.handle));
+}
+
+function preparedSize(message = "", context = {}) {
+  const state = compactConversationState(context);
+  const configured = clean(
+    context?.activeJourney?.activeConfiguration?.size ||
+    context?.askSnoozerWorkingMemory?.activeDeal?.activeConfiguration?.size ||
+    Object.values(state.preferences || {}).find((item) => item?.key === "size" && item?.status !== "removed")?.value
+  );
+  if (configured) return configured;
+  const match = clean(message).match(/\b(twin\s*xl|california\s*king|cal\s*king|split\s*king|twin|full|queen|king)\b/i);
+  return match ? match[1].replace(/\s+/g, " ") : null;
+}
+
+function preparedMotionKey(message = "", context = {}) {
+  const configured = clean(
+    context?.activeJourney?.activeConfiguration?.motionKey ||
+    context?.activeJourney?.activeConfiguration?.motionConfiguration ||
+    context?.askSnoozerWorkingMemory?.activeDeal?.activeConfiguration?.motionKey ||
+    context?.askSnoozerWorkingMemory?.activeDeal?.activeConfiguration?.motionConfiguration
+  ).toLowerCase();
+  if (configured) return configured;
+  const normalized = normalizedReferenceText(message);
+  if (/\bhalf split motion\b/.test(normalized)) return "half_split";
+  if (/\bfull split motion\b/.test(normalized)) return "full_split";
+  if (/\bstandard motion\b/.test(normalized)) return "standard";
+  return null;
+}
+
+function preparedConfiguration(message = "", context = {}, manifest = {}, handles = []) {
+  const definitions = new Map((manifest?.products || []).map((item) => [clean(item?.handle).toLowerCase(), item]));
+  const mattressHandle = handles.find((handle) => definitions.get(handle)?.catalogType === "mattress") || null;
+  const baseHandle = handles.find((handle) => definitions.get(handle)?.catalogType === "base") || null;
+  const size = preparedSize(message, context);
+  const motionKey = preparedMotionKey(message, context);
+  return mattressHandle && baseHandle && size && motionKey
+    ? { mattressHandle, baseHandle, size, motionKey }
+    : null;
 }
 
 function amountKey(value) {
@@ -535,34 +592,62 @@ function hasUsableNonDiscoveryEvidence(result = {}) {
 async function runSnoozerConversationCore({
   requestId, message = "", history = [], context = {}, event = null, identity = null,
   shopify, rewardsService = null, log = () => {}, runtime = callOpenAIResponses,
-  env = process.env, toolOverrides = {},
+  env = process.env, toolOverrides = {}, remainingTimeMs = null,
 } = {}) {
   const startedAt = Date.now();
   const config = getConversationCoreConfig(env);
-  const deadlineAt = startedAt + config.totalTimeoutMs;
+  const lambdaBudgetMs = remainingTimeMs !== null && remainingTimeMs !== undefined && Number.isFinite(Number(remainingTimeMs))
+    ? Math.max(0, Number(remainingTimeMs) - 5000)
+    : Number.MAX_SAFE_INTEGER;
+  const deadlineAt = startedAt + Math.min(config.totalTimeoutMs, lambdaBudgetMs);
   if (config.model !== EXPECTED_MODEL) {
     const error = new Error(`Conversation Core requires ${EXPECTED_MODEL}; configured model is ${config.model || "missing"}.`);
     error.code = "CONVERSATION_CORE_MODEL_MISMATCH";
     throw error;
   }
+  if (lambdaBudgetMs < RESPONSE_RESERVE_MS + 750) {
+    return fallbackResult("lambda_deadline_insufficient", [], [], config, startedAt);
+  }
   if (!circuitAvailable(config)) return fallbackResult("model_circuit_open", [], [], config, startedAt);
 
   const manifest = toolOverrides.manifest || loadShowroomManifest();
   const toolResults = [];
+  let toolExecutionMs = 0;
   const rejected = new Set(compactConversationState(context).rejectedProductHandles || []);
-  const preparedHandles = existingReferenceHandles(context)
+  const preparedHandles = unique([
+    ...existingReferenceHandles(context),
+    ...mentionedApprovedHandles(message, manifest),
+  ])
     .filter((handle) => !rejected.has(handle))
     .slice(0, 4);
+  const activeSize = preparedSize(message, context);
+  const activeConfiguration = preparedConfiguration(message, context, manifest, preparedHandles);
   let preparedEvidence = [];
   if (preparedHandles.length) {
-    const prepared = await executeConversationTool("get_product_facts", {
-      productHandles: preparedHandles,
-      factClasses: ["product_features", "comfort", "support", "temperature", "partner_fit"],
-    }, { event, identity, shopify, rewardsService, manifest, ...toolOverrides });
-    prepared.prepared = true;
-    toolResults.push(prepared);
-    if (prepared.ok) preparedEvidence = [JSON.parse(toolOutputForModel(prepared))];
+    const preparedStartedAt = Date.now();
+    const preparedRequests = [
+      ["get_product_facts", {
+        productHandles: preparedHandles,
+        factClasses: ["product_features", "comfort", "support", "temperature", "partner_fit"],
+      }],
+      ...(activeConfiguration ? [["quote_configuration", activeConfiguration]] : activeSize ? [["get_live_commerce", {
+        productHandles: preparedHandles,
+        size: activeSize,
+        motionKey: null,
+      }]] : []),
+    ];
+    const preparedResults = await Promise.all(preparedRequests.map(async ([name, args]) => {
+      const result = await executeConversationTool(name, args, {
+        event, identity, shopify, rewardsService, manifest, ...toolOverrides,
+      });
+      result.prepared = true;
+      return result;
+    }));
+    toolResults.push(...preparedResults);
+    preparedEvidence = preparedResults.filter((result) => result.ok).map((result) => JSON.parse(toolOutputForModel(result)));
+    toolExecutionMs += Date.now() - preparedStartedAt;
   }
+  const preModelMs = Date.now() - startedAt;
   const envelope = buildConversationEnvelope({ message, context, history, manifest, preparedEvidence });
   const input = [{ role: "user", content: JSON.stringify(envelope) }];
   const modelCalls = [];
@@ -571,10 +656,13 @@ async function runSnoozerConversationCore({
   let finalValidation = null;
   let failureReason = null;
   let recoveryAttempts = 0;
+  let validationMs = 0;
+  let productHydrationMs = 0;
+  let transportFailure = null;
   try {
     while (modelCalls.length < config.maxToolRounds + 2) {
       const remaining = config.totalTimeoutMs - (Date.now() - startedAt);
-      if (remaining < 750) { failureReason = "conversation_core_deadline"; break; }
+      if (remaining < RESPONSE_RESERVE_MS + 500) { failureReason = "conversation_core_deadline"; break; }
       const modelStartedAt = Date.now();
       const response = await runtime({
         reqId: `${requestId || "conversation_core"}_${modelCalls.length + 1}`,
@@ -584,9 +672,15 @@ async function runSnoozerConversationCore({
         input,
         tools: conversationToolDefinitions,
         text: { format: { type: "json_schema", name: "snoozer_conversation_response", strict: true, schema: snoozerConversationModelSchema } },
-        maxOutputTokens: 2600,
-        timeoutMs: Math.min(config.modelTimeoutMs, remaining),
+        maxOutputTokens: 1800,
+        timeoutMs: Math.min(config.modelTimeoutMs, Math.max(500, remaining - RESPONSE_RESERVE_MS)),
         deadlineAt,
+        telemetryContext: {
+          circuitState: modelCircuit.openedAt ? "open" : modelCircuit.failures ? "degraded" : "closed",
+          verifiedRetrievalCompleted: toolResults.some((result) => result?.ok),
+          consequentialActionStarted: false,
+          recoveryResult: recoveryAttempts ? "correction_in_progress" : null,
+        },
         parallelToolCalls: true,
         store: false,
       });
@@ -598,7 +692,8 @@ async function runSnoozerConversationCore({
         toolRounds += 1;
         totalToolCalls += response.functionCalls.length;
         input.push(...response.output);
-        const toolBudgetMs = Math.max(250, Math.min(8000, config.totalTimeoutMs - (Date.now() - startedAt) - 500));
+        const toolBudgetMs = Math.max(250, Math.min(8000, config.totalTimeoutMs - (Date.now() - startedAt) - RESPONSE_RESERVE_MS));
+        const toolRoundStartedAt = Date.now();
         const results = await Promise.all(response.functionCalls.map((call) => withToolDeadline(
           executeConversationTool(call.name, call.arguments, {
             event, identity, shopify, rewardsService, manifest, ...toolOverrides,
@@ -606,12 +701,14 @@ async function runSnoozerConversationCore({
           toolBudgetMs,
           call.name
         )));
+        toolExecutionMs += Date.now() - toolRoundStartedAt;
         toolResults.push(...results);
         response.functionCalls.forEach((call, index) => input.push({
           type: "function_call_output", call_id: call.callId, output: toolOutputForModel(results[index]),
         }));
         continue;
       }
+      const validationStartedAt = Date.now();
       finalValidation = validateConversationResponse(response.text, {
         message,
         groundedProductHandles: unique(toolResults.flatMap(groundedHandlesFromToolResult)),
@@ -634,6 +731,7 @@ async function runSnoozerConversationCore({
       if (!context?.assessment && /\b(?:your|the) assessment\b|originally recommended from your assessment/i.test(responseText)) finalValidation.errors.push("fabricated_assessment_history");
       if (/\b(?:will|guaranteed to) cure\b/i.test(responseText)) finalValidation.errors.push("medical_guarantee");
       finalValidation.errors.push(...validateReplyMonetaryClaims(finalValidation.value, toolResults, message));
+      validationMs += Date.now() - validationStartedAt;
       const discoveredProducts = toolResults
         .filter((result) => result?.ok && result?.name === "discover_products")
         .flatMap((result) => result?.data?.products || []);
@@ -676,18 +774,23 @@ async function runSnoozerConversationCore({
         break;
       }
       const validated = finalValidation.value;
+      const hydrationStartedAt = Date.now();
       const productResult = await responseProducts(validated, toolResults, manifest, { shopify, context });
+      productHydrationMs += Date.now() - hydrationStartedAt;
       const finalTelemetry = telemetry({
         config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
-        recoveryAttempts, recoverySucceeded: recoveryAttempts > 0,
+        recoveryAttempts, recoverySucceeded: recoveryAttempts > 0, preModelMs, validationMs, productHydrationMs, toolExecutionMs,
       });
       finalTelemetry.cardPresentation = productResult.presentation;
       finalTelemetry.cardEnrichment = productResult.enrichment;
       finalTelemetry.preparedContext = {
         enabled: preparedHandles.length > 0,
         handles: preparedHandles,
-        ok: toolResults.find((result) => result.prepared)?.ok === true,
-        latencyMs: Number(toolResults.find((result) => result.prepared)?.latencyMs || 0),
+        size: activeSize,
+        configurationPrepared: Boolean(activeConfiguration),
+        tools: toolResults.filter((result) => result.prepared).map((result) => ({ name: result.name, ok: result.ok, latencyMs: result.latencyMs })),
+        ok: toolResults.filter((result) => result.prepared).every((result) => result.ok),
+        latencyMs: Math.max(0, ...toolResults.filter((result) => result.prepared).map((result) => Number(result.latencyMs || 0))),
       };
       return {
         ok: true,
@@ -704,17 +807,19 @@ async function runSnoozerConversationCore({
   } catch (error) {
     noteModelFailure(config);
     failureReason = clean(error?.code || error?.message || "model_failure");
-    log("ask-snoozer.conversation-core", "model_failure", { requestId, failureReason, model: config.model });
+    transportFailure = error?.openaiFailure || null;
+    log("ask-snoozer.conversation-core", "model_failure", { requestId, failureReason, model: config.model, transportFailure });
   }
   return fallbackResult(
     failureReason || "conversation_core_failure", toolResults, modelCalls, config, startedAt,
-    finalValidation, toolRounds, totalToolCalls, recoveryAttempts
+    finalValidation, toolRounds, totalToolCalls, recoveryAttempts, { preModelMs, validationMs, productHydrationMs, toolExecutionMs, transportFailure }
   );
 }
 
 function telemetry({
   config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
   fallbackReason = null, recoveryAttempts = 0, recoverySucceeded = false,
+  preModelMs = 0, validationMs = 0, productHydrationMs = 0, toolExecutionMs = 0, transportFailure = null,
 }) {
   return {
     coreVersion: CONVERSATION_CORE_VERSION, mode: config.mode, model: config.model, reasoningEffort: config.reasoningEffort,
@@ -729,6 +834,14 @@ function telemetry({
     })),
     retrievalMs: toolResults.reduce((sum, result) => sum + Number(result.latencyMs || 0), 0),
     totalMs: Date.now() - startedAt, usage: aggregateUsage(modelCalls),
+    lifecycle: {
+      preModelMs,
+      toolExecutionMs,
+      validationMs,
+      productHydrationMs,
+      postModelMs: Math.max(0, Date.now() - startedAt - modelCalls.reduce((sum, call) => sum + call.latencyMs, 0)),
+    },
+    transportFailure,
     validationErrors: finalValidation?.errors || [],
     acceptedStateProposals: finalValidation ? finalValidation.stateValidation.acceptedPreferenceCount + finalValidation.stateValidation.acceptedDecisionCount : 0,
     rejectedStateProposals: finalValidation ? finalValidation.stateValidation.rejectedPreferences.length + finalValidation.stateValidation.rejectedDecisions.length : 0,
@@ -742,15 +855,21 @@ function telemetry({
   };
 }
 
-function fallbackResult(reason, toolResults, modelCalls, config, startedAt, finalValidation = null, toolRounds = 0, totalToolCalls = 0, recoveryAttempts = 0) {
+function fallbackResult(reason, toolResults, modelCalls, config, startedAt, finalValidation = null, toolRounds = 0, totalToolCalls = 0, recoveryAttempts = 0, extraTelemetry = {}) {
   const reply = safeFallback({ reason, toolResults });
+  const verifiedProducts = toolResults
+    .filter((result) => result?.ok && ["discover_products", "get_live_commerce"].includes(result.name))
+    .flatMap((result) => result?.data?.products || [])
+    .map((item) => item?.commerce || item)
+    .filter((item) => item?.handle)
+    .slice(0, 2);
   return {
     ok: false, status: "fallback", reply, speech: reply, captions: reply, state: "warning", priority: "high", ttlMs: 7000,
-    responseMode: "safe_fallback", productHandles: [], products: [], chips: [], actionProposals: [], actions: [], preferences: [], decisions: [], references: {}, claims: [], monetaryClaims: [],
+    responseMode: "safe_fallback", productHandles: verifiedProducts.map((item) => item.handle), products: verifiedProducts, chips: [], actionProposals: [], actions: [], preferences: [], decisions: [], references: {}, claims: [], monetaryClaims: [],
     fallback: { used: true, reason }, quote: null, toolResults, stateValidation: finalValidation?.stateValidation || null,
     telemetry: telemetry({
       config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
-      fallbackReason: reason, recoveryAttempts, recoverySucceeded: false,
+      fallbackReason: reason, recoveryAttempts, recoverySucceeded: false, ...extraTelemetry,
     }),
   };
 }

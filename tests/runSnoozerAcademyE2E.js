@@ -2,6 +2,7 @@
 
 const assert = require("assert");
 const fixture = require("./fixtures/snoozer-academy.v1.json");
+const { fetchWithDeadline } = require("../services/boundedHttp");
 
 const API_BASE = String(
   process.env.ASK_SNOOZER_API_BASE || "https://u6zcsiqgj0.execute-api.us-east-1.amazonaws.com/prod"
@@ -33,7 +34,7 @@ function selectedScenarios() {
 
 async function ask({ scenarioId, turnIndex, message, sessionId }) {
   const startedAt = Date.now();
-  const response = await fetch(`${API_BASE}/ask-snoozer`, {
+  const response = await fetchWithDeadline(`${API_BASE}/ask-snoozer`, {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -49,7 +50,9 @@ async function ask({ scenarioId, turnIndex, message, sessionId }) {
       sessionId,
       testCaseId: `academy-${scenarioId}-${turnIndex}`,
     }),
-    signal: AbortSignal.timeout(requestTimeoutMs),
+  }, {
+    timeoutMs: requestTimeoutMs,
+    label: `Academy ${scenarioId} turn ${turnIndex}`,
   });
   const raw = await response.text();
   let body;
@@ -140,7 +143,7 @@ async function main() {
         recovery: result.body?.metadata?.conversationCore?.recovery || null,
         products: (result.body?.products || []).map((item) => item.handle),
         actions: (result.body?.actions || []).map((item) => item.type),
-        tokens: result.body?.metadata?.tokens || null,
+        tokens: result.body?.metadata?.conversationCore?.usage || result.body?.metadata?.tokens || null,
         estimatedCostUsd: result.body?.metadata?.conversationCore?.estimatedCostUsd ?? null,
         reply,
       });

@@ -1,4 +1,5 @@
 const axios = require("axios");
+const https = require("node:https");
 const { getIntegrationCredentials } = require("./integrationSecrets");
 
 const FAST_MODEL = process.env.OPENAI_FAST_MODEL || "gpt-6-luna";
@@ -29,6 +30,22 @@ const OPENAI_RUN_MAX_WAIT_MS = Math.min(
   500,
   Math.max(0, Number(process.env.OPENAI_RUN_MAX_WAIT_MS || 0))
 );
+const OPENAI_RESPONSE_RESERVE_MS = Math.max(
+  1500,
+  Math.min(5000, Number(process.env.OPENAI_RESPONSE_RESERVE_MS || 2500))
+);
+const OPENAI_MIN_RETRY_BUDGET_MS = Math.max(
+  3000,
+  Math.min(10000, Number(process.env.OPENAI_MIN_RETRY_BUDGET_MS || 7000))
+);
+
+const openaiAgent = new https.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 1000,
+  maxSockets: 32,
+  maxFreeSockets: 8,
+  timeout: Math.max(5000, AXIOS_TIMEOUT_MS + 1000),
+});
 
 const openai = axios.create({
   baseURL: "https://api.openai.com/v1",
@@ -36,6 +53,7 @@ const openai = axios.create({
     "Content-Type": "application/json",
   },
   timeout: AXIOS_TIMEOUT_MS,
+  httpsAgent: openaiAgent,
 });
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -64,6 +82,25 @@ function truncateForLog(value, max = 1400) {
   } catch {
     return "[unserializable]";
   }
+}
+
+function classifyOpenAIError(error, { applicationAbort = false } = {}) {
+  const status = Number(error?.response?.status) || null;
+  const code = String(error?.code || "").trim() || null;
+  const name = String(error?.name || "Error").trim() || "Error";
+  if (applicationAbort || code === "OPENAI_DEADLINE_EXHAUSTED" || code === "ERR_CANCELED" || name === "AbortError") {
+    return { kind: "application_deadline", transient: false, abortOrigin: "application_deadline", status, code, name };
+  }
+  if (code === "ECONNABORTED" || code === "ETIMEDOUT") {
+    return { kind: "sdk_timeout", transient: true, abortOrigin: "axios_timeout", status, code, name };
+  }
+  if (["ECONNRESET", "EPIPE", "EAI_AGAIN", "ENETUNREACH", "UND_ERR_CONNECT_TIMEOUT"].includes(code)) {
+    return { kind: "transport_interruption", transient: true, abortOrigin: null, status, code, name };
+  }
+  if (status === 429) return { kind: "upstream_rate_limit", transient: true, abortOrigin: null, status, code, name };
+  if (status >= 500) return { kind: "upstream_server_error", transient: true, abortOrigin: null, status, code, name };
+  if (status >= 400) return { kind: "upstream_request_error", transient: false, abortOrigin: null, status, code, name };
+  return { kind: "unknown", transient: false, abortOrigin: null, status, code, name };
 }
 
 function normalizeRole(role) {
@@ -308,6 +345,10 @@ async function callOpenAIResponses({
   parallelToolCalls = true,
   store = false,
   deadlineAt = null,
+  transport = openai,
+  maxRetries = OPENAI_RUN_MAX_RETRIES,
+  maxRetryWaitMs = OPENAI_RUN_MAX_WAIT_MS,
+  telemetryContext = {},
 }) {
   const { OPENAI_API_KEY: apiKey } = await getIntegrationCredentials("openai");
   if (!apiKey) {
@@ -338,23 +379,46 @@ async function callOpenAIResponses({
   });
   let attempt = 0;
   for (;;) {
+    const attemptStartedAt = Date.now();
+    let applicationAbort = false;
+    let deadlineTimer = null;
     try {
-      const remainingMs = Number.isFinite(Number(deadlineAt))
+      const remainingMs = deadlineAt !== null && deadlineAt !== undefined && Number.isFinite(Number(deadlineAt))
         ? Number(deadlineAt) - Date.now()
         : null;
-      if (remainingMs !== null && remainingMs < 750) {
+      if (remainingMs !== null && remainingMs <= OPENAI_RESPONSE_RESERVE_MS + 500) {
         const error = new Error("OpenAI Responses request deadline exhausted");
         error.code = "OPENAI_DEADLINE_EXHAUSTED";
         throw error;
       }
-      const response = await openai.post("/responses", payload, {
-        timeout: Math.max(500, Math.min(
+      const requestTimeoutMs = Math.max(500, Math.min(
           OPENAI_REQUEST_CEILING_MS,
           Number(timeoutMs) || AXIOS_TIMEOUT_MS,
-          remainingMs === null ? Number.MAX_SAFE_INTEGER : remainingMs - 500
-        )),
+          remainingMs === null ? Number.MAX_SAFE_INTEGER : remainingMs - OPENAI_RESPONSE_RESERVE_MS
+        ));
+      const controller = new AbortController();
+      if (remainingMs !== null) {
+        deadlineTimer = setTimeout(() => {
+          applicationAbort = true;
+          controller.abort(new Error("OpenAI application deadline reached"));
+        }, Math.max(1, remainingMs - OPENAI_RESPONSE_RESERVE_MS));
+        deadlineTimer.unref?.();
+      }
+      logEvent("openai.responses.attempt", {
+        reqId,
+        attempt,
+        requestTimeoutMs,
+        remainingMs,
+        responseReserveMs: OPENAI_RESPONSE_RESERVE_MS,
+        circuitState: telemetryContext.circuitState || null,
+        verifiedRetrievalCompleted: telemetryContext.verifiedRetrievalCompleted === true,
+      });
+      const response = await transport.post("/responses", payload, {
+        timeout: requestTimeoutMs,
+        signal: controller.signal,
         headers: { Authorization: `Bearer ${apiKey}` },
       });
+      if (deadlineTimer) clearTimeout(deadlineTimer);
       const data = response.data || {};
       const usage = data.usage || {};
       const functionCalls = extractFunctionCalls(data);
@@ -363,6 +427,8 @@ async function callOpenAIResponses({
         attempt,
         model: data.model || model,
         responseId: data.id || null,
+        modelRequestId: response.headers?.["x-request-id"] || response.headers?.["openai-request-id"] || null,
+        elapsedMs: Date.now() - attemptStartedAt,
         toolCallCount: functionCalls.length,
         inputTokens: usage.input_tokens ?? null,
         outputTokens: usage.output_tokens ?? null,
@@ -384,29 +450,49 @@ async function callOpenAIResponses({
         raw: data,
       };
     } catch (error) {
-      const status = error?.response?.status;
-      const code = status || error?.code || "ERR";
-      const remainingMs = Number.isFinite(Number(deadlineAt))
+      if (deadlineTimer) clearTimeout(deadlineTimer);
+      const classification = classifyOpenAIError(error, { applicationAbort });
+      const status = classification.status;
+      const code = status || classification.code || "ERR";
+      const remainingMs = deadlineAt !== null && deadlineAt !== undefined && Number.isFinite(Number(deadlineAt))
         ? Number(deadlineAt) - Date.now()
         : null;
-      const retryHasBudget = remainingMs === null || remainingMs >= 2500;
-      const retriable = attempt < OPENAI_RUN_MAX_RETRIES && retryHasBudget && (
-        code === 429 ||
-        (typeof code === "number" && code >= 500) ||
-        ["ECONNRESET", "ETIMEDOUT", "ECONNABORTED"].includes(code)
-      );
+      const retryHasBudget = remainingMs === null || remainingMs >= OPENAI_MIN_RETRY_BUDGET_MS;
+      const safeToRetry = telemetryContext.consequentialActionStarted !== true;
+      const retriable = attempt < Math.max(0, Number(maxRetries) || 0) && retryHasBudget && safeToRetry && classification.transient;
       logEvent(retriable ? "openai.responses.retry" : "openai.responses.fail", {
         reqId,
         attempt,
         code,
+        errorName: classification.name,
+        errorKind: classification.kind,
+        httpStatus: status,
+        abortOrigin: classification.abortOrigin,
         model,
+        elapsedMs: Date.now() - attemptStartedAt,
         remainingMs,
+        configuredTimeoutMs: Number(timeoutMs) || AXIOS_TIMEOUT_MS,
+        responseReserveMs: OPENAI_RESPONSE_RESERVE_MS,
+        retryHasBudget,
+        safeToRetry,
+        retryDecision: retriable ? "retry" : "stop",
+        circuitState: telemetryContext.circuitState || null,
+        verifiedRetrievalCompleted: telemetryContext.verifiedRetrievalCompleted === true,
+        recoveryResult: telemetryContext.recoveryResult || null,
+        modelRequestId: error?.response?.headers?.["x-request-id"] || error?.response?.headers?.["openai-request-id"] || null,
         message: truncateForLog(error?.message, 240),
         response: truncateForLog(error?.response?.data, 800),
       });
+      error.openaiFailure = {
+        ...classification,
+        attempt,
+        elapsedMs: Date.now() - attemptStartedAt,
+        remainingMs,
+        retryDecision: retriable ? "retry" : "stop",
+      };
       if (!retriable) throw error;
       attempt += 1;
-      await sleep(Math.min(OPENAI_RUN_MAX_WAIT_MS, 250 + attempt * 200));
+      await sleep(Math.min(Math.max(0, Number(maxRetryWaitMs) || 0), 250 + attempt * 200));
     }
   }
 }
@@ -419,8 +505,11 @@ module.exports = {
   FINAL_MODEL,
   FINAL_REASONING_EFFORT,
   MODEL_TIMEOUT_MS,
+  OPENAI_MIN_RETRY_BUDGET_MS,
+  OPENAI_RESPONSE_RESERVE_MS,
   callOpenAIChat,
   callOpenAIResponses,
+  classifyOpenAIError,
   extractFunctionCalls,
   extractResponseText,
   supportsReasoning,

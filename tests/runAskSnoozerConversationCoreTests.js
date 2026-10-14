@@ -340,7 +340,7 @@ async function testFactsCardHydrationFormattingAndRepeatSuppression() {
 
   const context = applyConversationState({ context: {}, response: result, now: new Date("2026-10-08T12:00:00Z") });
   const oneCall = await runSnoozerConversationCore({
-    requestId: "known-followup", message: "Why is that better for me?", context, shopify, env: ENV, toolOverrides,
+    requestId: "known-followup", message: "Why is that Queen mattress better for me?", context, shopify, env: ENV, toolOverrides,
     runtime: async () => ({ text: finalResponse({
       reply: "It provides the deeper cushioning you asked about.", productHandles: ["12-all-foam-mattress"], preferences: [], decisions: [],
       references: { presentedProductHandles: ["12-all-foam-mattress"], comparisonProductHandles: [], lastDiscussedProductHandle: "12-all-foam-mattress", lastDiscussedBaseHandle: null },
@@ -350,8 +350,57 @@ async function testFactsCardHydrationFormattingAndRepeatSuppression() {
   assert.equal(oneCall.ok, true, JSON.stringify(oneCall.telemetry));
   assert.equal(oneCall.telemetry.modelCallCount, 1);
   assert.equal(oneCall.telemetry.preparedContext.enabled, true);
+  assert(oneCall.telemetry.preparedContext.tools.some((item) => item.name === "get_live_commerce"));
   assert.equal(oneCall.products.length, 0);
   assert.equal(oneCall.telemetry.cardPresentation.reason, "unchanged_repeat");
+}
+
+async function testPreparedExactConfigurationUsesOneModelCall() {
+  let calls = 0;
+  const runtime = async (request) => {
+    calls += 1;
+    const envelope = JSON.parse(request.input[0].content);
+    assert(envelope.preparedEvidence.some((item) => item.tool === "quote_configuration"));
+    return {
+      text: finalResponse({
+        reply: "That exact King Half Split Motion setup is not compatible, so I would not quote or add it to the cart.",
+        productHandles: ["12-all-foam-mattress", "premium-motion-adjustable-base"],
+        preferences: [],
+        decisions: [],
+        references: {
+          presentedProductHandles: ["12-all-foam-mattress", "premium-motion-adjustable-base"],
+          comparisonProductHandles: [],
+          lastDiscussedProductHandle: "12-all-foam-mattress",
+          lastDiscussedBaseHandle: "premium-motion-adjustable-base",
+        },
+        claims: [{
+          kind: "compatibility",
+          value: "The exact configuration is incompatible.",
+          sourceTool: "quote_configuration",
+          sourceKey: "12-all-foam-mattress:premium-motion-adjustable-base:king:half_split",
+        }],
+      }),
+      output: [],
+      functionCalls: [],
+      tokens: { prompt: 500, cached: 100, completion: 100, total: 600, reasoning: 0 },
+    };
+  };
+  const result = await runSnoozerConversationCore({
+    requestId: "prepared-configuration",
+    message: "Is a King 12-inch All Foam Mattress compatible with Half Split Motion on the Premium Motion Adjustable Base?",
+    context: {},
+    shopify,
+    runtime,
+    env: ENV,
+    toolOverrides,
+  });
+  assert.equal(result.ok, true, JSON.stringify(result.telemetry));
+  assert.equal(calls, 1);
+  assert.equal(result.telemetry.modelCallCount, 1);
+  assert.equal(result.telemetry.toolCallCount, 0);
+  assert.equal(result.telemetry.preparedContext.configurationPrepared, true);
+  assert(result.telemetry.preparedContext.tools.some((item) => item.name === "quote_configuration"));
+  assert.deepEqual(result.actions, []);
 }
 
 async function main() {
@@ -365,6 +414,7 @@ async function main() {
   await testModelIdentityGuard();
   await testToolArgumentBoundary();
   await testFactsCardHydrationFormattingAndRepeatSuppression();
+  await testPreparedExactConfigurationUsesOneModelCall();
   console.log("Ask Snoozer Conversation Core tests passed (Sol guard, tool correlation, grounding, state validation, history precedence, and safe fallback).");
 }
 

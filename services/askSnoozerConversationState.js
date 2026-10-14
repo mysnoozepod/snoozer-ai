@@ -17,14 +17,14 @@ function normalizedConversationHistory(frontendHistory = [], persistedHistory = 
   const out = [];
   for (const entry of Array.isArray(combined) ? combined : []) {
     const role = clean(entry?.role) === "assistant" ? "assistant" : "user";
-    const content = clean(entry?.content).slice(0, 1000);
+    const content = clean(entry?.content).slice(0, 700);
     if (!content) continue;
     const previous = out[out.length - 1];
     if (previous?.role === role && previous?.content === content) continue;
     out.push({ role, content });
   }
   if (out[out.length - 1]?.role === "user" && out[out.length - 1]?.content === clean(currentMessage)) out.pop();
-  return out.slice(-10);
+  return out.slice(-6);
 }
 
 function legacyState(context = {}) {
@@ -84,12 +84,20 @@ function getConversationState(context = {}) {
 
 function compactConversationState(context = {}) {
   const state = getConversationState(context);
+  const references = state.references || {};
   return {
     version: state.version,
-    preferences: Object.values(state.preferences || {}).filter((item) => item?.status !== "removed").slice(-20),
-    references: state.references,
-    decisions: (state.decisions || []).slice(-12),
-    rejectedProductHandles: state.rejectedProductHandles,
+    preferences: Object.values(state.preferences || {}).filter((item) => item?.status !== "removed").slice(-12),
+    references: {
+      presentedProductHandles: unique(references.presentedProductHandles || []).slice(-6),
+      comparisonProductHandles: unique(references.comparisonProductHandles || []).slice(0, 2),
+      lastDiscussedProductHandle: clean(references.lastDiscussedProductHandle) || null,
+      lastDiscussedBaseHandle: clean(references.lastDiscussedBaseHandle) || null,
+      lastVerifiedConfiguration: references.lastVerifiedConfiguration || null,
+      lastQuotedSetup: references.lastQuotedSetup || null,
+    },
+    decisions: (state.decisions || []).slice(-8),
+    rejectedProductHandles: unique(state.rejectedProductHandles || []).slice(-8),
   };
 }
 
