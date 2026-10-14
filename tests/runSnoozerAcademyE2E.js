@@ -9,6 +9,7 @@ const API_BASE = String(
 const selectedId = String(process.env.SNOOZER_ACADEMY_SCENARIO || "").trim();
 const suite = String(process.env.SNOOZER_ACADEMY_SUITE || "live").trim().toLowerCase();
 const turnSettleMs = Math.max(0, Number(process.env.SNOOZER_ACADEMY_TURN_SETTLE_MS || 1000));
+const requestTimeoutMs = Math.max(10000, Number(process.env.SNOOZER_ACADEMY_REQUEST_TIMEOUT_MS || 60000));
 
 function responseText(body) {
   return String(body?.reply || body?.message?.text || body?.speech || body?.captions || "").trim();
@@ -48,6 +49,7 @@ async function ask({ scenarioId, turnIndex, message, sessionId }) {
       sessionId,
       testCaseId: `academy-${scenarioId}-${turnIndex}`,
     }),
+    signal: AbortSignal.timeout(requestTimeoutMs),
   });
   const raw = await response.text();
   let body;
