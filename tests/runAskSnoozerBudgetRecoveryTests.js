@@ -389,7 +389,7 @@ function testStateProjectionNoOpAndBudgetRemoval() {
     context: base,
     response: {
       preferences: [], decisions: [], productHandles: ["12-all-foam-mattress"],
-      references: { presentedProductHandles: ["12-all-foam-mattress"], comparisonProductHandles: [], lastDiscussedProductHandle: "12-dual-comfort-hybrid", lastDiscussedBaseHandle: null },
+      references: { presentedProductHandles: ["12-all-foam-mattress", "14-hybrid"], comparisonProductHandles: ["14-hybrid"], lastDiscussedProductHandle: "14-hybrid", lastDiscussedBaseHandle: null },
     },
     now: new Date("2026-10-09T03:18:09.249Z"),
   });

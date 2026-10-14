@@ -177,16 +177,21 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
   for (const item of Object.values(preferences)) {
     if (item?.status === "active") retainedPreferences[`${item.subject}:${item.key}`] = { value: item.value, source: item.source, updatedAt: item.updatedAt };
   }
-  const nextDeal = {
-    ...priorDeal,
-    comparisonProductHandles: references.comparisonProductHandles,
-    activeProductHandle: references.lastDiscussedProductHandle || priorDeal.activeProductHandle || null,
-    activeBaseHandle: references.lastDiscussedBaseHandle || priorDeal.activeBaseHandle || null,
-    rejectedProducts,
-    retainedPreferences,
-    ...(recommended ? { sessionRecommendation: { productHandle: recommended.productHandle, source: "conversation_core", updatedAt } } : {}),
-    ...(quote?.ok ? { activeQuote: clone(quote), compatibilityStatus: quote.compatibility?.status || "unknown" } : {}),
-  };
+  const hasValidatedProjectionChange = Boolean(
+    (response.preferences || []).length || (response.decisions || []).length || quote?.ok
+  );
+  const nextDeal = hasValidatedProjectionChange
+    ? {
+      ...priorDeal,
+      comparisonProductHandles: references.comparisonProductHandles,
+      activeProductHandle: references.lastDiscussedProductHandle || priorDeal.activeProductHandle || null,
+      activeBaseHandle: references.lastDiscussedBaseHandle || priorDeal.activeBaseHandle || null,
+      rejectedProducts,
+      retainedPreferences,
+      ...(recommended ? { sessionRecommendation: { productHandle: recommended.productHandle, source: "conversation_core", updatedAt } } : {}),
+      ...(quote?.ok ? { activeQuote: clone(quote), compatibilityStatus: quote.compatibility?.status || "unknown" } : {}),
+    }
+    : clone(priorDeal);
   return clone({
     ...context,
     snoozerConversationState: nextState,
