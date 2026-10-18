@@ -17,6 +17,7 @@ async function planTrustedAdvisorTurnWithModel({ requestId, query = "", context 
     "Use reconsider_product only when the shopper explicitly asks to restore a previously rejected product now. For hypothetical or conditional questions about switching back, use product_comparison and keep all acts non-mutating.",
     "Resolve product references only to handles in the supplied catalog. Never invent a product or handle.",
     "The assessment recommendation is historical baseline. Explicit shopper feedback and the current session recommendation control active advice.",
+    "Use showroom presence only when it is supplied and not stale. It can shape the next helpful step, but it is observational context, not authority for commerce, identity, safety, or medical claims.",
     "Return JSON only with: utteranceMode, primaryTask, shopperGoal, acts, productReferences, comparisonProductHandles, requestedFacts, answerRequirements, knownFacts, requestedPodId, requiresComposition, confidence.",
     "In knownFacts, include only facts the shopper explicitly stated in the current message: size, firmness, painPoints, baseHandle, motionKey, and baseDecision. Never infer a preference or configuration from prior turns.",
     `primaryTask must be exactly one of: ${Array.from(ALLOWED_TASKS).join(", ")}. Never invent or paraphrase a task name.`,

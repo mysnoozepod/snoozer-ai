@@ -1,0 +1,20 @@
+*
+
+!index.js
+!package.json
+!package-lock.json
+!faqs.json
+!knowledge_base.json
+
+!data/
+!data/**
+!handlers/
+!handlers/**
+!routes/
+!routes/**
+!services/
+!services/**
+!utils/
+!utils/**
+!s3 files/
+!s3 files/**

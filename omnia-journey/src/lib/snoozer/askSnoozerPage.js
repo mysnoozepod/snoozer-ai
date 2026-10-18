@@ -7,6 +7,7 @@ import {
   normalizeAskStationAction,
   normalizeAskStationProduct,
 } from "./askSnoozerStationContract.mjs";
+import { normalizeAskSnoozerDeviceContext } from "./askSnoozerDeviceContext.mjs";
 
 const ASK_SNOOZER_ROUTE = "/ask-snoozer";
 const ASK_SNOOZER_REQUEST_TIMEOUT_MS = Math.max(
@@ -910,15 +911,7 @@ export async function sendAskSnoozerMessage({
     (await ensureSession().catch(() => null)) || getSessionId() || createId("session");
   const conversationId = ensureConversationId();
   const requestContext = readContext();
-  const operationalDeviceContext =
-    deviceContext && typeof deviceContext === "object"
-      ? {
-          deviceId: firstNonEmptyString([deviceContext.deviceId]) || null,
-          deviceMode: firstNonEmptyString([deviceContext.deviceMode]) || null,
-          podId: firstNonEmptyString([deviceContext.podId]) || null,
-          zoneId: firstNonEmptyString([deviceContext.zoneId]) || null,
-        }
-      : null;
+  const operationalDeviceContext = normalizeAskSnoozerDeviceContext(deviceContext);
   const mergedContext = operationalDeviceContext
     ? {
         ...requestContext,

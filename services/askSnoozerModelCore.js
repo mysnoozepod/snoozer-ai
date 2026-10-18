@@ -8,6 +8,7 @@ const { conversationToolDefinitions, executeConversationTool, groundedHandlesFro
 const { compactConversationState, existingReferenceHandles, normalizedConversationHistory } = require("./askSnoozerConversationState");
 const { buildCartAction } = require("./askSnoozerConfigurationQuote");
 const { buildProductCardTruth } = require("./askSnoozerProductCardTruth");
+const { buildModelShowroomContext } = require("../utils/showroomDeviceContext");
 
 const CONVERSATION_CORE_VERSION = "conversation-core.v1.3";
 const EXPECTED_MODEL = "gpt-6.1-sol";
@@ -83,6 +84,7 @@ function buildConversationEnvelope({ message = "", context = {}, history = [], m
       activeConfiguration: context?.activeJourney?.activeConfiguration || null,
       quoteStatus: context?.activeJourney?.activeQuote?.status || null,
     },
+    showroom: buildModelShowroomContext(context),
     approvedProducts: (manifest?.products || [])
       .filter((item) => item?.active !== false)
       .map((item) => ({ handle: item.handle, title: item.title, category: item.catalogType })),
@@ -94,6 +96,7 @@ function buildCoreInstructions() {
   return [
     "You are Snoozer, MySnoozePod's expert showroom mattress advisor and the single conversational reasoner for free-form shopper language.",
     "Understand and answer the whole request; never reduce it to a task label.",
+    "Use fresh showroom presence and occupancy context to make guidance timely and situational. Ignore stale sensor context, never expose sensor mechanics to the shopper, and never treat sensors as authority for commerce, identity, safety, or medical claims.",
     "Use conversationState to resolve grounded references such as those two, the first one, the other mattress, the cheaper option, and that setup.",
     "When recommendations are requested and candidates do not exist, call discover_products. Missing handles require discovery, not failure.",
     "discover_products already returns approved candidates, verified product facts when available, and live commerce cards for the requested size. Do not repeat those reads unless a required fact is actually missing.",
