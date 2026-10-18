@@ -3,6 +3,7 @@ const {
   normalizeAskSnoozerText,
   parseAskSnoozerSizeLabel,
 } = require("./askSnoozerIntents");
+const { buildModelShowroomContext } = require("../utils/showroomDeviceContext");
 
 const MODEL_PLANNER_VERSION = "2026-09-16.1";
 
@@ -566,6 +567,7 @@ function buildModelPlannerInput({ query = "", context = {} } = {}) {
       pendingCommitment: deal?.pendingCommitment || null,
     },
     recentTurns: recent,
+    showroom: buildModelShowroomContext(context),
     catalog: catalogProducts(),
     deterministicFactHints: inferRequestedFacts(query),
   };

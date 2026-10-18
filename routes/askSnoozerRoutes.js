@@ -1,3 +1,5 @@
+const { normalizeShowroomDeviceContext } = require("../utils/showroomDeviceContext");
+
 function buildBoundedConversationHistory(history = []) {
   return (Array.isArray(history) ? history : [])
     .slice(-8)
@@ -393,10 +395,11 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     context.hudPage = currentHudPage;
     context.hudEvent = currentHudEvent;
     context.hudScriptKey = currentHudScriptKey;
-    context.device =
+    context.device = normalizeShowroomDeviceContext(
       payload?.page?.device && typeof payload.page.device === "object"
         ? payload.page.device
-      : context?.device || null;
+        : context?.device
+    );
 
     const visitResolution = typeof resolveAskSnoozerVisitLifecycle === "function"
       ? resolveAskSnoozerVisitLifecycle({
