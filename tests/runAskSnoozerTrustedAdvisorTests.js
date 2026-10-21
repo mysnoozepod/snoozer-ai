@@ -305,7 +305,15 @@ async function runCommercialProgression() {
     assert.strictEqual(memory(body)?.lastPlan?.taskType, taskType, message);
     if (taskType === "cart_add") {
       assert((body.actions || []).length >= 1, `${message} should offer exact cart action`);
-      assert((body.actions || []).every((action) => /^gid:\/\/shopify\/ProductVariant\//.test(action.payload?.merchandiseId)), `${message} should use exact variants`);
+      const merchandiseIds = (body.actions || []).flatMap((action) =>
+        Array.isArray(action.payload?.lines)
+          ? action.payload.lines.map((line) => line?.merchandiseId)
+          : [action.payload?.merchandiseId]
+      );
+      assert(
+        merchandiseIds.length >= 1 && merchandiseIds.every((id) => /^gid:\/\/shopify\/ProductVariant\//.test(id)),
+        `${message} should use exact variants`
+      );
     }
   }
 }

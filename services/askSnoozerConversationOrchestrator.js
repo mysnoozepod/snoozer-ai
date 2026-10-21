@@ -1404,12 +1404,22 @@ async function buildQuote({ plan = {}, context = {}, fetchProductsByHandles } = 
   const goal = activeMemory(context)?.activeGoal || {};
   const activeQuote = deal?.activeQuote;
   const queryText = normalizeAskSnoozerText(plan.query);
+  const explicitlyNamedProductHandle = clean(resolveExplicitProductHandle(plan.query)).toLowerCase();
   const explicitMattressOnly = /\b(?:mattress only|just (?:the )?mattress|only (?:the )?mattress|without (?:the )?(?:motion )?base)\b/.test(queryText);
   const referencesActiveQuote = plan.taskType === "cart_add" &&
     /\b(?:add|put)\b.*\b(?:it|that|this|setup|everything)\b/.test(queryText);
+  const extendsActiveQuote = Boolean(
+    activeQuote?.ok &&
+    activeQuote?.cartReady &&
+    !explicitlyNamedProductHandle &&
+    ["bundle_quote", "compatibility", "savings_quote", "cart_add"].includes(plan.taskType) &&
+    (plan.continuationOf || /\b(?:and what|with|plus|add|that|this|it|setup)\b/.test(queryText))
+  );
   const size = clean(plan?.knownFacts?.size || deal.activeSize || goal.size || activeQuote?.size);
   const productHandle = clean(
-    plan?.references?.requestedProductHandle ||
+    explicitlyNamedProductHandle ||
+      (extendsActiveQuote ? activeQuote?.productHandle : null) ||
+      plan?.references?.requestedProductHandle ||
       deal?.acceptedRecommendation?.productHandle ||
       deal?.sessionRecommendation?.productHandle ||
       goal.productHandle ||
