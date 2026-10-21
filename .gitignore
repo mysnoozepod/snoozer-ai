@@ -3,6 +3,8 @@ dist/
 build/
 out/
 coverage/
+_out/react-iot-experience-test-modules/
+_out/react-iot-test-modules/
 
 .env
 .env.*
