@@ -78,6 +78,35 @@ function validateBody(body, label) {
   return reply;
 }
 
+function validateTurnExpectations(body, turn, reply) {
+  const expected = turn.expects || {};
+  const lower = reply.toLowerCase();
+  for (const phrase of expected.doesNotContain || []) {
+    assert(!lower.includes(String(phrase).toLowerCase()), `${turn.id} should not include ${phrase}`);
+  }
+
+  const quote = body?.context?.askSnoozerWorkingMemory?.activeDeal?.activeQuote;
+  if (expected.quoteHandles) {
+    const quoteHandles = (quote?.items || []).map((item) => item.handle);
+    const productHandles = (body?.products || []).map((product) => product.handle);
+    if (quoteHandles.length > 0) {
+      assert.deepStrictEqual(quoteHandles, expected.quoteHandles, `${turn.id} returned the wrong quote line items`);
+    } else {
+      assert(
+        expected.quoteHandles.length === 1 && productHandles.includes(expected.quoteHandles[0]),
+        `${turn.id} returned neither the expected structured quote nor its exact product card`
+      );
+    }
+  }
+  const requiresStructuredQuote = Boolean(expected.motionKey || (expected.quoteHandles || []).length > 1);
+  if (requiresStructuredQuote) assert(quote?.ok, `${turn.id} did not create a structured quote`);
+  if (expected.size && quote) assert.strictEqual(quote.size, expected.size, `${turn.id} returned the wrong quote size`);
+  if (expected.motionKey) assert.strictEqual(quote.motionKey, expected.motionKey, `${turn.id} returned the wrong motion option`);
+  if (expected.cartReady !== undefined && quote) {
+    assert.strictEqual(Boolean(quote?.cartReady), expected.cartReady, `${turn.id} returned the wrong cart readiness`);
+  }
+}
+
 async function main() {
   const suffix = Date.now().toString(36);
   const sessionId = `trusted-advisor-live-${suffix}`;
@@ -90,11 +119,9 @@ async function main() {
       testCaseId: `trusted-advisor-live-${turn.id}`,
     });
     const reply = validateBody(body, turn.id);
+    validateTurnExpectations(body, turn, reply);
     latencies.push(elapsedMs);
     taskTypes.push(body?.metadata?.qualityGate?.intent || "unknown");
-    for (const phrase of turn.expects.doesNotContain || []) {
-      assert(!reply.toLowerCase().includes(phrase.toLowerCase()), `${turn.id} should not include ${phrase}`);
-    }
     const canonical = body?.context?.askSnoozerWorkingMemory?.activeDeal?.canonicalRecommendation;
     if (turn.expects.canonicalHandle) {
       assert.strictEqual(canonical?.primaryMattressHandle, turn.expects.canonicalHandle, `${turn.id} changed the recommendation`);
