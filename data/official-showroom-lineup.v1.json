@@ -1,0 +1,178 @@
+{
+  "version": "2026-10-22.1",
+  "status": "candidate_pending_activation",
+  "updatedAt": "2026-10-22T00:00:00.000Z",
+  "sourcePolicy": {
+    "floorAuthority": "IfThen Technologies MIC Business Plan, page 8",
+    "pricingAuthority": "Bedgear Master PL Sept 2026.xlsx",
+    "priceRule": "Use September 2026 go-forward pricing and the higher price where duplicate configurations exist.",
+    "commerceAuthority": "Shopify owns live product, variant, availability, cart, and checkout truth.",
+    "customerNaming": "Customer-facing names are descriptive. Supplier model names and item codes remain internal."
+  },
+  "activationRequirements": [
+    "Confirm the physical display size for every display.",
+    "Confirm the base pairing for every display.",
+    "Create or verify a Shopify product handle and exact variant mapping for every sellable configuration.",
+    "Make Shopify prices match the approved go-forward UPP before enabling cart or checkout.",
+    "Keep M5 Naked unavailable until its supplier availability is confirmed."
+  ],
+  "displays": [
+    {
+      "displayId": "1",
+      "internalModel": "S7",
+      "customerName": "Accessible Performance Mattress",
+      "customerRole": "Accessible performance entry point",
+      "supplier": "BEDGEAR",
+      "availability": { "status": "confirmation_required", "expectedDate": null },
+      "displayConfiguration": { "size": null, "baseHandle": null },
+      "shopify": { "handle": null, "verifiedAt": null, "commerceEnabled": false },
+      "blockers": [
+        "Confirm final display size.",
+        "Confirm floor-sample support.",
+        "Approve the final customer-facing name.",
+        "Create or verify Shopify product and variant identities."
+      ],
+      "priceReference": {
+        "sheet": "MATTRESSES",
+        "range": "A22:H31",
+        "variants": [
+          { "size": "Twin", "vendorItem": "BGA025901", "landed": 560, "dropShip": 570, "upp": 1249.99 },
+          { "size": "Twin XL", "vendorItem": "BGA025902", "landed": 585, "dropShip": 595, "upp": 1299.99 },
+          { "size": "Full", "vendorItem": "BGA025903", "landed": 675, "dropShip": 685, "upp": 1499.99 },
+          { "size": "Queen", "vendorItem": "BGA025905", "landed": 720, "dropShip": 730, "upp": 1599.99 },
+          { "size": "Split Head Queen", "vendorItem": "BGA025955", "landed": 815, "dropShip": 825, "upp": 1799.99 },
+          { "size": "King", "vendorItem": "BGA025906", "landed": 855, "dropShip": 865, "upp": 1899.99 },
+          { "size": "Cal King", "vendorItem": "BGA025907", "landed": 855, "dropShip": 865, "upp": 1899.99 },
+          { "size": "Split Head King", "vendorItem": "BGA025965", "landed": 1040, "dropShip": 1050, "upp": 2299.99 },
+          { "size": "Split Head Cal King", "vendorItem": "BGA025975", "landed": 1040, "dropShip": 1050, "upp": 2299.99 },
+          { "size": "Split King", "vendorItem": "BGA025908", "landed": 1170, "dropShip": 1180, "upp": 2599.98 }
+        ]
+      }
+    },
+    {
+      "displayId": "2",
+      "internalModel": "H6",
+      "customerName": "Plush Pillowtop Hybrid Mattress",
+      "customerRole": "Hybrid reference and broader comfort comparison",
+      "supplier": "BEDGEAR",
+      "availability": { "status": "confirmation_required", "expectedDate": null },
+      "displayConfiguration": { "size": null, "baseHandle": null },
+      "shopify": { "handle": null, "verifiedAt": null, "commerceEnabled": false },
+      "blockers": [
+        "Confirm final display size.",
+        "Confirm base pairing and availability.",
+        "Create or verify Shopify product and variant identities."
+      ],
+      "priceReference": {
+        "sheet": "MATTRESSES",
+        "range": "A58:H67",
+        "variants": [
+          { "size": "Twin", "vendorItem": "BGA121W10", "landed": 810, "dropShip": 820, "upp": 1799 },
+          { "size": "Twin XL", "vendorItem": "BGA121W20", "landed": 830, "dropShip": 840, "upp": 1849 },
+          { "size": "Full", "vendorItem": "BGA121W30", "landed": 855, "dropShip": 865, "upp": 1899 },
+          { "size": "Queen", "vendorItem": "BGA121W50", "landed": 900, "dropShip": 910, "upp": 1999 },
+          { "size": "Split Head Queen", "vendorItem": "BGA121W55", "landed": 1080, "dropShip": 1090, "upp": 2399 },
+          { "size": "King", "vendorItem": "BGA121W60", "landed": 1130, "dropShip": 1140, "upp": 2499 },
+          { "size": "Cal King", "vendorItem": "BGA121W70", "landed": 1130, "dropShip": 1140, "upp": 2499 },
+          { "size": "Split Head King", "vendorItem": "BGA121W65", "landed": 1300, "dropShip": 1310, "upp": 2899 },
+          { "size": "Split Head Cal King", "vendorItem": "BGA121W75", "landed": 1300, "dropShip": 1310, "upp": 2899 },
+          { "size": "Split King", "vendorItem": "BGA121W80", "landed": 1660, "dropShip": 1670, "upp": 3698 }
+        ]
+      }
+    },
+    {
+      "displayId": "3",
+      "internalModel": "M3 Original",
+      "customerName": "Modular Comfort Mattress",
+      "customerRole": "Modular comfort education",
+      "supplier": "BEDGEAR",
+      "availability": { "status": "confirmation_required", "expectedDate": null },
+      "displayConfiguration": { "size": null, "baseHandle": null },
+      "shopify": { "handle": null, "verifiedAt": null, "commerceEnabled": false },
+      "blockers": [
+        "Confirm final display size and comfort configuration.",
+        "Confirm base pairing.",
+        "Create or verify Shopify bundle and component mapping."
+      ],
+      "priceReference": {
+        "sheet": "M3 - ALL",
+        "range": "A5:H92",
+        "pricingSeries": "Original go-forward series",
+        "variants": [
+          { "size": "Twin XL", "vendorItem": "BGM306W21", "landed": 1183, "dropShip": 1203, "upp": 2599.99 },
+          { "size": "Queen", "vendorItem": "BGM306W51", "landed": 1365, "dropShip": 1395, "upp": 2999.99 },
+          { "size": "King", "vendorItem": "BGM306W61", "landed": 1683, "dropShip": 1713, "upp": 3699.99 },
+          { "size": "Cal King", "vendorItem": "BGM306W71", "landed": 1683, "dropShip": 1713, "upp": 3699.99 },
+          { "size": "Split Head Queen", "vendorItem": "BGM306W55", "landed": 1592, "dropShip": 1622, "upp": 3499.99 },
+          { "size": "Split Head King", "vendorItem": "BGM306W65", "landed": 1911, "dropShip": 1941, "upp": 4199.99 },
+          { "size": "Split Head Cal King", "vendorItem": "BGM306W75", "landed": 1911, "dropShip": 1941, "upp": 4199.99 },
+          { "size": "Split King", "vendorItem": "BGM306W81", "landed": 2366, "dropShip": 2396, "upp": 5199.99 },
+          { "size": "Split Cal King", "vendorItem": "BGM306W91", "landed": 2366, "dropShip": 2396, "upp": 5199.99 }
+        ]
+      }
+    },
+    {
+      "displayId": "4",
+      "internalModel": "M5 Original",
+      "customerName": "Premium Modular Comfort Mattress",
+      "customerRole": "Premium modular comfort and couples education",
+      "supplier": "BEDGEAR",
+      "availability": { "status": "confirmation_required", "expectedDate": null },
+      "displayConfiguration": { "size": null, "baseHandle": null },
+      "shopify": { "handle": null, "verifiedAt": null, "commerceEnabled": false },
+      "blockers": [
+        "Confirm final display size and comfort configuration.",
+        "Confirm base pairing.",
+        "Create or verify Shopify bundle and component mapping."
+      ],
+      "priceReference": {
+        "sheet": "M5 - ALL",
+        "range": "A5:H92",
+        "pricingSeries": "Original go-forward series",
+        "variants": [
+          { "size": "Twin XL", "vendorItem": "BGM506W21", "landed": 1592, "dropShip": 1612, "upp": 3499.99 },
+          { "size": "Queen", "vendorItem": "BGM506W51", "landed": 1820, "dropShip": 1850, "upp": 3999.99 },
+          { "size": "King", "vendorItem": "BGM506W61", "landed": 2184, "dropShip": 2214, "upp": 4799.99 },
+          { "size": "Cal King", "vendorItem": "BGM506W71", "landed": 2184, "dropShip": 2214, "upp": 4799.99 },
+          { "size": "Split Head Queen", "vendorItem": "BGM506W55", "landed": 2047, "dropShip": 2077, "upp": 4499.99 },
+          { "size": "Split Head King", "vendorItem": "BGM506W65", "landed": 2411, "dropShip": 2441, "upp": 5299.99 },
+          { "size": "Split Head Cal King", "vendorItem": "BGM506W75", "landed": 2411, "dropShip": 2441, "upp": 5299.99 },
+          { "size": "Split King", "vendorItem": "BGM506W81", "landed": 3185, "dropShip": 3215, "upp": 6999.99 },
+          { "size": "Split Cal King", "vendorItem": "BGM506W91", "landed": 3185, "dropShip": 3215, "upp": 6999.99 }
+        ]
+      }
+    },
+    {
+      "displayId": "5",
+      "internalModel": "M5 Naked",
+      "customerName": "Advanced Premium Modular Mattress",
+      "customerRole": "Advanced premium system",
+      "supplier": "BEDGEAR",
+      "availability": { "status": "planned", "expectedDate": "2027-01" },
+      "displayConfiguration": { "size": null, "baseHandle": null },
+      "shopify": { "handle": null, "verifiedAt": null, "commerceEnabled": false },
+      "blockers": [
+        "Confirm supplier availability before activation.",
+        "Maintain a launch substitution plan if timing changes.",
+        "Confirm final display size, comfort configuration, and base pairing.",
+        "Create or verify Shopify bundle and component mapping."
+      ],
+      "priceReference": {
+        "sheet": "COMING SOON",
+        "range": "A94:H183",
+        "pricingSeries": "Planned launch series",
+        "variants": [
+          { "size": "Twin XL", "vendorItem": "BGM506C21", "landed": 1955, "dropShip": 1975, "upp": 4299.99 },
+          { "size": "Queen", "vendorItem": "BGM506C51", "landed": 2180, "dropShip": 2210, "upp": 4799.99 },
+          { "size": "King", "vendorItem": "BGM506C61", "landed": 2540, "dropShip": 2570, "upp": 5599.99 },
+          { "size": "Cal King", "vendorItem": "BGM506C71", "landed": 2540, "dropShip": 2570, "upp": 5599.99 },
+          { "size": "Split Head Queen", "vendorItem": "BGM506C55", "landed": 2405, "dropShip": 2435, "upp": 5299.99 },
+          { "size": "Split Head King", "vendorItem": "BGM506C65", "landed": 2775, "dropShip": 2805, "upp": 6099.99 },
+          { "size": "Split Head Cal King", "vendorItem": "BGM506C75", "landed": 2775, "dropShip": 2805, "upp": 6099.99 },
+          { "size": "Split King", "vendorItem": "BGM506C80", "landed": 3910, "dropShip": 3940, "upp": 8599.99 },
+          { "size": "Split Cal King", "vendorItem": "BGM506C90", "landed": 3910, "dropShip": 3940, "upp": 8599.99 }
+        ]
+      }
+    }
+  ]
+}

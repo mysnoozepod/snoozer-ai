@@ -1,6 +1,11 @@
 {
-  "version": "2026-06-07.1",
-  "updatedAt": "2026-06-07T00:00:00.000Z",
+  "version": "2026-10-22.1",
+  "updatedAt": "2026-10-22T00:00:00.000Z",
+  "officialLineup": {
+    "manifestPath": "data/official-showroom-lineup.v1.json",
+    "status": "candidate_pending_activation",
+    "activationPolicy": "Fail closed until physical display configuration, supplier availability, Shopify handles, variant identities, and live prices are verified."
+  },
   "assessmentSchema": {
     "sizes": ["Twin", "Twin XL", "Full", "Queen", "King"],
     "positions": ["side", "back", "stomach", "combo"],
