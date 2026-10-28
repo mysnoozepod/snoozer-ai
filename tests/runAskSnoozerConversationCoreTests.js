@@ -3,6 +3,7 @@
 const assert = require("assert");
 const manifest = require("../data/showroom-manifest.v1.json");
 const {
+  cardPresentationPolicy,
   getConversationCoreConfig,
   runSnoozerConversationCore,
   withToolDeadline,
@@ -494,6 +495,22 @@ async function testFactsCardHydrationFormattingAndRepeatSuppression() {
   assert(oneCall.telemetry.preparedContext.tools.some((item) => item.name === "get_live_commerce"));
   assert.equal(oneCall.products.length, 0);
   assert.equal(oneCall.telemetry.cardPresentation.reason, "unchanged_repeat");
+
+  const commerceResponse = {
+    productHandles: ["12-all-foam-mattress"],
+    claims: [{ kind: "commerce", sourceTool: "get_live_commerce", sourceKey: "shopify_storefront" }],
+    actionProposals: [],
+  };
+  const preparedCommerce = [{ ok: true, name: "get_live_commerce", prepared: true }];
+  const recapPresentation = cardPresentationPolicy(
+    commerceResponse, context, preparedCommerce, "Recap why the remaining setup fits and what I should do next."
+  );
+  assert.equal(recapPresentation.show, false, "a recap must not repeat already presented commerce cards");
+  const pricePresentation = cardPresentationPolicy(
+    commerceResponse, context, preparedCommerce, "What are the current price and availability?"
+  );
+  assert.equal(pricePresentation.show, true, "an explicit commerce question should show verified cards");
+  assert.equal(pricePresentation.reason, "commerce_confirmation");
 }
 
 async function testPreparedExactConfigurationUsesOneModelCall() {

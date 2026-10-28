@@ -211,14 +211,18 @@ function toolOutputForModel(result) {
   }).slice(0, 12000);
 }
 
-function cardPresentationPolicy(response, context = {}, toolResults = []) {
+function cardPresentationPolicy(response, context = {}, toolResults = [], message = "") {
   const wanted = unique(response?.productHandles || []);
   if (!wanted.length) return { show: false, reason: "no_product_handles", handles: [] };
   if (response?.responseMode === "clarification") return { show: false, reason: "clarification", handles: wanted };
   const existing = new Set(unique(compactConversationState(context)?.references?.presentedProductHandles || []));
   const hasNew = wanted.some((handle) => !existing.has(handle));
-  const commerceNeeded = (response?.claims || []).some((claim) => ["commerce", "compatibility"].includes(claim?.kind)) ||
-    toolResults.some((result) => result?.ok && result?.prepared !== true && ["get_live_commerce", "quote_configuration"].includes(result?.name));
+  const hasCommerceClaim = (response?.claims || []).some((claim) => ["commerce", "compatibility"].includes(claim?.kind));
+  const commerceRequested = /\b(?:price|cost|availability|available|in stock|stock|compatible|compatibility|configuration|buy|cart|checkout)\b/i.test(clean(message));
+  const hasFreshCommerceEvidence = toolResults.some((result) => (
+    result?.ok && result?.prepared !== true && ["get_live_commerce", "quote_configuration"].includes(result?.name)
+  ));
+  const commerceNeeded = hasFreshCommerceEvidence || (hasCommerceClaim && commerceRequested);
   const actionable = (response?.actionProposals || []).some((action) => action?.type === "add_to_cart");
   if (hasNew) return { show: true, reason: "new_product", handles: wanted };
   if (commerceNeeded) return { show: true, reason: "commerce_confirmation", handles: wanted };
@@ -232,8 +236,8 @@ function sizeFromContext(context = {}) {
   return clean(preference?.value || context?.activeJourney?.activeConfiguration?.size || context?.askSnoozerWorkingMemory?.activeDeal?.activeSize);
 }
 
-async function responseProducts(response, toolResults, manifest = {}, { shopify, context = {} } = {}) {
-  const presentation = cardPresentationPolicy(response, context, toolResults);
+async function responseProducts(response, toolResults, manifest = {}, { shopify, context = {}, message = "" } = {}) {
+  const presentation = cardPresentationPolicy(response, context, toolResults, message);
   if (!presentation.show) return { products: [], presentation, enrichment: { status: "suppressed", requested: presentation.handles.length, displayed: 0, latencyMs: 0 } };
   const wanted = new Set(unique(response?.productHandles || []));
   const byHandle = new Map();
@@ -903,7 +907,7 @@ async function runSnoozerConversationCore({
       }
       const validated = finalValidation.value;
       const hydrationStartedAt = Date.now();
-      const productResult = await responseProducts(validated, toolResults, manifest, { shopify, context });
+      const productResult = await responseProducts(validated, toolResults, manifest, { shopify, context, message });
       productHydrationMs += Date.now() - hydrationStartedAt;
       const finalTelemetry = telemetry({
         config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
