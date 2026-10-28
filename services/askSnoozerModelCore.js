@@ -16,6 +16,9 @@ let modelCircuit = { failures: 0, openedAt: 0 };
 
 function clean(value) { return String(value == null ? "" : value).trim(); }
 function unique(values = []) { return [...new Set(values.map((value) => clean(value).toLowerCase()).filter(Boolean))]; }
+function normalizedProductPhrase(value) {
+  return clean(value).toLowerCase().replace(/\"/g, " inch ").replace(/[^a-z0-9]+/g, " ").trim();
+}
 
 function claimSourceHints(toolResults = []) {
   return toolResults.filter((result) => result?.ok).map((result) => {
@@ -29,7 +32,16 @@ function claimSourceHints(toolResults = []) {
   }).filter(Boolean).join("; ").slice(0, 1200);
 }
 
-function canonicalClaimSourceKey(claim = {}, result = {}) {
+const CLAIM_SOURCE_TOOL_NAMES = Object.freeze({
+  product: ["get_product_facts", "discover_products"],
+  commerce: ["get_live_commerce", "quote_configuration", "discover_products"],
+  compatibility: ["quote_configuration"],
+  policy: ["get_policy"],
+  rewards: ["get_rewards"],
+  cart: ["get_cart"],
+});
+
+function canonicalClaimSourceKey(claim = {}, result = {}, manifest = loadShowroomManifest()) {
   const data = result?.data || {};
   if (result.name === "quote_configuration") {
     return [data.productHandle, data.baseHandle, data.size, data.motionKey]
@@ -40,25 +52,35 @@ function canonicalClaimSourceKey(claim = {}, result = {}) {
   if (clean(claim.kind) === "commerce" && clean(data.source)) return clean(data.source);
   const handles = groundedHandlesFromToolResult(result);
   const claimText = clean(claim.value).toLowerCase();
-  const mentioned = handles.find((handle) => claimText.includes(handle));
+  const normalizedClaimText = normalizedProductPhrase(claim.value);
+  const mentioned = handles.find((handle) => {
+    if (claimText.includes(handle)) return true;
+    const title = clean((manifest?.products || []).find((item) => item?.handle === handle)?.title).toLowerCase();
+    const normalizedTitle = normalizedProductPhrase(title);
+    return Boolean(normalizedTitle && normalizedClaimText.includes(normalizedTitle));
+  });
   if (mentioned) return mentioned;
-  if (handles.length) return handles.join(",");
+  if (handles.length === 1) return handles[0];
   return clean(data.source);
 }
 
-function repairClaimSourceMetadata(response = {}, toolResults = [], errors = []) {
+function repairClaimSourceMetadata(response = {}, toolResults = [], errors = [], manifest = loadShowroomManifest()) {
   const affectedKinds = new Set(errors
     .filter((error) => /^claim_source_(?:missing|invalid):/.test(error))
     .map((error) => error.split(":")[1]));
   let repairCount = 0;
   const claims = (response.claims || []).map((claim) => {
-    if (!affectedKinds.has(clean(claim?.kind)) || !clean(claim?.sourceTool)) return claim;
-    const result = toolResults.find((item) => item?.ok && item.name === clean(claim.sourceTool));
+    const kind = clean(claim?.kind);
+    if (!affectedKinds.has(kind)) return claim;
+    const allowedTools = CLAIM_SOURCE_TOOL_NAMES[kind] || [];
+    const currentSourceTool = clean(claim?.sourceTool);
+    const result = toolResults.find((item) => item?.ok && item.name === currentSourceTool && allowedTools.includes(item.name))
+      || allowedTools.map((name) => toolResults.find((item) => item?.ok && item.name === name)).find(Boolean);
     if (!result) return claim;
-    const sourceKey = canonicalClaimSourceKey(claim, result);
-    if (!sourceKey || sourceKey === clean(claim.sourceKey)) return claim;
+    const sourceKey = canonicalClaimSourceKey(claim, result, manifest);
+    if (!sourceKey || (result.name === currentSourceTool && sourceKey === clean(claim.sourceKey))) return claim;
     repairCount += 1;
-    return { ...claim, sourceKey };
+    return { ...claim, sourceTool: result.name, sourceKey };
   });
   return { value: { ...response, claims }, repairCount };
 }
@@ -783,11 +805,12 @@ async function runSnoozerConversationCore({
     deadlineAt,
   });
   const rejected = new Set(compactConversationState(context).rejectedProductHandles || []);
+  const historicalProductRecall = /\b(?:original|originally|assessment)\b.*\b(?:recommend|recommended|recommendation|suggested)\b|\b(?:recommend|recommended|recommendation|suggested)\b.*\b(?:original|originally|assessment)\b/i.test(message);
   const preparedHandles = unique([
     ...existingReferenceHandles(context),
     ...mentionedApprovedHandles(message, manifest),
   ])
-    .filter((handle) => !rejected.has(handle))
+    .filter((handle) => historicalProductRecall || !rejected.has(handle))
     .slice(0, 4);
   const activeSize = preparedSize(message, context);
   const activeConfiguration = preparedConfiguration(message, context, manifest, preparedHandles);
@@ -885,7 +908,7 @@ async function runSnoozerConversationCore({
       finalValidation = validateConversationResponse(response.text, validationOptions);
       const provenanceErrors = unique(finalValidation.errors).filter((error) => /^claim_source_(?:missing|invalid):/.test(error));
       if (provenanceErrors.length) {
-        const repaired = repairClaimSourceMetadata(finalValidation.value, toolResults, provenanceErrors);
+        const repaired = repairClaimSourceMetadata(finalValidation.value, toolResults, provenanceErrors, manifest);
         if (repaired.repairCount > 0) {
           provenanceMetadataRepairs += repaired.repairCount;
           finalValidation = validateConversationResponse(repaired.value, validationOptions);

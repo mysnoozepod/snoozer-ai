@@ -352,6 +352,60 @@ async function testClaimProvenanceCorrectionUsesExistingEvidence() {
   assert.equal(result.telemetry.toolExecutionCount, 2, "repair must reuse prepared evidence without another tool execution");
 }
 
+async function testRejectedOriginalRecommendationRecallUsesHistoricalFacts() {
+  const originalHandle = "12-all-foam-mattress";
+  const currentHandle = "12-dual-comfort-hybrid";
+  let preparedEvidence = [];
+  const runtime = async (request) => {
+    preparedEvidence = JSON.parse(request.input[0].content).preparedEvidence;
+    return {
+      text: finalResponse({
+        reply: "Your assessment originally recommended the 12-inch All Foam Mattress.",
+        speech: "Your assessment originally recommended the 12-inch All Foam Mattress.",
+        captions: "Your assessment originally recommended the 12-inch All Foam Mattress.",
+        productHandles: [originalHandle], preferences: [], decisions: [],
+        references: {
+          presentedProductHandles: [originalHandle, currentHandle], comparisonProductHandles: [],
+          lastDiscussedProductHandle: originalHandle, lastDiscussedBaseHandle: null,
+        },
+        claims: [{
+          kind: "product",
+          value: "The 12-inch All Foam Mattress was the original recommendation.",
+          sourceTool: "quote_configuration",
+          sourceKey: `${currentHandle}:king:none`,
+        }],
+      }),
+      output: [], functionCalls: [], tokens: {},
+    };
+  };
+  const context = {
+    assessment: { recommendation: "12-inch All Foam Mattress" },
+    snoozerConversationState: {
+      preferences: {},
+      references: {
+        presentedProductHandles: [originalHandle, currentHandle], comparisonProductHandles: [],
+        lastDiscussedProductHandle: currentHandle, lastDiscussedBaseHandle: null,
+      },
+      rejectedProductHandles: [originalHandle],
+    },
+  };
+  const result = await runSnoozerConversationCore({
+    requestId: "historical-recommendation-recall",
+    message: "What did my assessment originally recommend?",
+    context,
+    shopify,
+    runtime,
+    env: ENV,
+    toolOverrides,
+  });
+  assert.equal(result.ok, true, JSON.stringify(result.telemetry));
+  const facts = preparedEvidence.find((item) => item.tool === "get_product_facts")?.data?.productFacts || [];
+  assert(facts.some((item) => item.handle === originalHandle), "historical recall must prepare facts for a rejected original recommendation");
+  assert.equal(result.claims[0].sourceTool, "get_product_facts");
+  assert.equal(result.claims[0].sourceKey, originalHandle);
+  assert.equal(result.telemetry.provenanceMetadataRepairs, 1);
+}
+
 function testClaimSourceAndJourneyProjectionIntegrity() {
   const handle = "12-all-foam-mattress";
   const invalidSource = validateConversationResponse(JSON.parse(finalResponse({
@@ -756,6 +810,7 @@ async function main() {
   await testInventedPriceIsRejected();
   await testFalseNoProductsFallbackIsCorrected();
   await testClaimProvenanceCorrectionUsesExistingEvidence();
+  await testRejectedOriginalRecommendationRecallUsesHistoricalFacts();
   testClaimSourceAndJourneyProjectionIntegrity();
   await testModelIdentityGuard();
   await testToolArgumentBoundary();
