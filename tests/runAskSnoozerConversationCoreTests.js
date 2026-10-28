@@ -383,10 +383,13 @@ async function testRejectedOriginalRecommendationRecallUsesHistoricalFacts() {
     snoozerConversationState: {
       preferences: {},
       references: {
-        presentedProductHandles: [originalHandle, currentHandle], comparisonProductHandles: [],
+        presentedProductHandles: [currentHandle], comparisonProductHandles: [],
         lastDiscussedProductHandle: currentHandle, lastDiscussedBaseHandle: null,
       },
       rejectedProductHandles: [originalHandle],
+    },
+    activeJourney: {
+      canonicalRecommendation: { primaryMattressHandle: originalHandle, source: "assessment_profile" },
     },
   };
   const result = await runSnoozerConversationCore({

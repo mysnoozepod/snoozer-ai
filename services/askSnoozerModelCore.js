@@ -806,8 +806,13 @@ async function runSnoozerConversationCore({
   });
   const rejected = new Set(compactConversationState(context).rejectedProductHandles || []);
   const historicalProductRecall = /\b(?:original|originally|assessment)\b.*\b(?:recommend|recommended|recommendation|suggested)\b|\b(?:recommend|recommended|recommendation|suggested)\b.*\b(?:original|originally|assessment)\b/i.test(message);
+  const canonicalRecommendationHandles = historicalProductRecall ? [
+    context?.activeJourney?.canonicalRecommendation?.primaryMattressHandle,
+    context?.canonicalRecommendation?.primaryMattressHandle,
+  ] : [];
   const preparedHandles = unique([
     ...existingReferenceHandles(context),
+    ...canonicalRecommendationHandles,
     ...mentionedApprovedHandles(message, manifest),
   ])
     .filter((handle) => historicalProductRecall || !rejected.has(handle))
