@@ -94,6 +94,7 @@ Equivalent V2 benchmark, 30 iterations:
 - No acceptance failure remains in the three required live scenarios or the existing Trusted Advisor fixture.
 - The AWS account currently has concurrency 10 and no function-level reserved concurrency. Earlier parallel Welcome hydration produced an API Gateway 503 before Lambda invocation. The acceptance harness now waits for hydration before injecting feedback, but the low account concurrency remains a capacity risk for broader concurrent testing.
 - Live latency remains model-dominated; functional acceptance passed, but the second Trusted Advisor P95 was 14.983 seconds.
+- Development-process note: the earlier broad AWS CLI configuration output incident remains recorded. This recovery used field-scoped queries and did not print secret-bearing environment values; no credential-rotation workstream was opened.
 - Physical device acceptance and production-readiness remain outside this mission.
 
 The corrected backend is ready for controlled MIC Lab testing, subject to the concurrency and latency risks above.
