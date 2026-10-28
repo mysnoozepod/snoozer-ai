@@ -218,12 +218,14 @@ async function run() {
     assert.match(String(refreshed?.activeConfiguration?.baseDecision || ""), /mattress|none|skip/i);
     const quote = await ask(pageA, "How much?");
     assert.equal(quote.activeJourney.activeConfiguration?.size, "King");
+    const quotedAddAction = (quote.actions || []).find((action) => action.type === "add_to_cart");
+    assert.ok(quotedAddAction?.label, "Quote response did not include a labeled add_to_cart action");
 
     await pageB.goto(`${APP_BASE}/cart`, { waitUntil: "networkidle" });
     const emptyCartText = await pageB.locator("body").innerText();
     assert.match(emptyCartText, /empty|no items|start building/i);
 
-    const addButton = pageA.getByRole("button", { name: /Add (?:Mattress|to Cart)/i }).last();
+    const addButton = pageA.getByRole("button", { name: quotedAddAction.label, exact: true }).last();
     await addButton.waitFor({ state: "visible", timeout: 30000 });
     await addButton.click();
     await pause(1800);
