@@ -509,6 +509,8 @@ async function runCrossDeviceContinuity() {
 }
 
 async function main() {
+  assert(!INTERNAL_LANGUAGE.includes("model"), "retail-safe product model language must remain allowed");
+  assert(INTERNAL_LANGUAGE.includes("language model"), "explicit AI implementation language must remain blocked");
   patchDependencies();
   console.log = () => {};
   try {
