@@ -346,9 +346,9 @@ async function testClaimProvenanceCorrectionUsesExistingEvidence() {
     toolOverrides,
   });
   assert.equal(result.ok, true, JSON.stringify(result.telemetry));
-  assert.equal(calls, 2, "provenance repair should use one bounded correction call");
-  assert.equal(result.telemetry.recovery.kind, "claim_provenance_correction");
-  assert.equal(result.telemetry.recovery.succeeded, true);
+  assert.equal(calls, 1, "provenance metadata repair must not add a model call");
+  assert.equal(result.telemetry.recovery.attempted, false);
+  assert.equal(result.telemetry.provenanceMetadataRepairs, 1);
   assert.equal(result.telemetry.toolExecutionCount, 2, "repair must reuse prepared evidence without another tool execution");
 }
 

@@ -28,6 +28,40 @@ function claimSourceHints(toolResults = []) {
     return keys.length ? `${result.name}: ${keys.join(", ")}` : null;
   }).filter(Boolean).join("; ").slice(0, 1200);
 }
+
+function canonicalClaimSourceKey(claim = {}, result = {}) {
+  const data = result?.data || {};
+  if (result.name === "quote_configuration") {
+    return [data.productHandle, data.baseHandle, data.size, data.motionKey]
+      .map((value) => clean(value).toLowerCase().replace(/\s+/g, "_"))
+      .filter(Boolean)
+      .join(":");
+  }
+  if (clean(claim.kind) === "commerce" && clean(data.source)) return clean(data.source);
+  const handles = groundedHandlesFromToolResult(result);
+  const claimText = clean(claim.value).toLowerCase();
+  const mentioned = handles.find((handle) => claimText.includes(handle));
+  if (mentioned) return mentioned;
+  if (handles.length) return handles.join(",");
+  return clean(data.source);
+}
+
+function repairClaimSourceMetadata(response = {}, toolResults = [], errors = []) {
+  const affectedKinds = new Set(errors
+    .filter((error) => /^claim_source_(?:missing|invalid):/.test(error))
+    .map((error) => error.split(":")[1]));
+  let repairCount = 0;
+  const claims = (response.claims || []).map((claim) => {
+    if (!affectedKinds.has(clean(claim?.kind)) || !clean(claim?.sourceTool)) return claim;
+    const result = toolResults.find((item) => item?.ok && item.name === clean(claim.sourceTool));
+    if (!result) return claim;
+    const sourceKey = canonicalClaimSourceKey(claim, result);
+    if (!sourceKey || sourceKey === clean(claim.sourceKey)) return claim;
+    repairCount += 1;
+    return { ...claim, sourceKey };
+  });
+  return { value: { ...response, claims }, repairCount };
+}
 function boundedInt(value, fallback, min, max) {
   const number = Number(value);
   return Number.isFinite(number) ? Math.max(min, Math.min(max, Math.floor(number))) : fallback;
@@ -772,6 +806,7 @@ async function runSnoozerConversationCore({
   let failureReason = null;
   let recoveryAttempts = 0;
   let recoveryKind = null;
+  let provenanceMetadataRepairs = 0;
   let validationMs = 0;
   let productHydrationMs = 0;
   let transportFailure = null;
@@ -821,7 +856,7 @@ async function runSnoozerConversationCore({
         continue;
       }
       const validationStartedAt = Date.now();
-      finalValidation = validateConversationResponse(response.text, {
+      const validationOptions = {
         message,
         groundedProductHandles: unique(toolResults.flatMap(groundedHandlesFromToolResult)),
         existingReferenceHandles: existingReferenceHandles(context),
@@ -829,7 +864,16 @@ async function runSnoozerConversationCore({
         successfulTools: toolResults.filter((result) => result.ok).map((result) => result.name),
         successfulToolResults: toolResults.filter((result) => result.ok),
         manifest,
-      });
+      };
+      finalValidation = validateConversationResponse(response.text, validationOptions);
+      const provenanceErrors = unique(finalValidation.errors).filter((error) => /^claim_source_(?:missing|invalid):/.test(error));
+      if (provenanceErrors.length) {
+        const repaired = repairClaimSourceMetadata(finalValidation.value, toolResults, provenanceErrors);
+        if (repaired.repairCount > 0) {
+          provenanceMetadataRepairs += repaired.repairCount;
+          finalValidation = validateConversationResponse(repaired.value, validationOptions);
+        }
+      }
       if (
         finalValidation.value?.fallback?.used === true &&
         toolResults.some(hasUsableNonDiscoveryEvidence)
@@ -917,6 +961,7 @@ async function runSnoozerConversationCore({
       });
       finalTelemetry.cardPresentation = productResult.presentation;
       finalTelemetry.cardEnrichment = productResult.enrichment;
+      finalTelemetry.provenanceMetadataRepairs = provenanceMetadataRepairs;
       finalTelemetry.preparedContext = {
         enabled: preparedHandles.length > 0,
         handles: preparedHandles,
