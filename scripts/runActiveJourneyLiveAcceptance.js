@@ -178,6 +178,8 @@ async function run() {
   try {
     const checkInA = await checkIn(pageA, identity.resumeCode);
     assert.equal(checkInA.activeJourney.journeyId, identity.activeJourney.journeyId);
+    await pageA.waitForLoadState("networkidle", { timeout: 30000 });
+    await pause(500);
     const restTest = await recordRestTestFeedback(identity.resumeCode);
     assert.equal(restTest.activeJourney.journeyId, identity.activeJourney.journeyId);
     await openAsk(pageA);
