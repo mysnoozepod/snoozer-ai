@@ -343,7 +343,7 @@ function latestCompleteQuote(toolResults) {
   return [...toolResults].reverse().find((result) => result?.ok && result?.name === "quote_configuration" && result?.data?.ok)?.data || null;
 }
 
-function validatedActions(response, toolResults) {
+function validatedActions(response, toolResults, message = "") {
   const actions = [];
   for (const proposal of response?.actionProposals || []) {
     if (proposal.type === "add_to_cart") {
@@ -352,6 +352,12 @@ function validatedActions(response, toolResults) {
     } else {
       actions.push({ type: proposal.type, label: proposal.label, target: proposal.target || null, payload: {} });
     }
+  }
+  const quote = latestCompleteQuote(toolResults);
+  const explicitQuoteRequest = /\b(?:how much|price|pricing|cost|quote)\b/i.test(clean(message));
+  if (explicitQuoteRequest && quote && !actions.some((action) => action.type === "add_to_cart")) {
+    const action = buildCartAction(quote);
+    if (action) actions.push(action);
   }
   return actions;
 }
@@ -533,6 +539,17 @@ function preparedConfiguration(message = "", context = {}, manifest = {}, handle
   const baseHandle = handles.find((handle) => definitions.get(handle)?.catalogType === "base") || null;
   const size = preparedSize(message, context);
   const motionKey = preparedMotionKey(message, context);
+  const deal = context?.askSnoozerWorkingMemory?.activeDeal || {};
+  const baseDecision = clean(
+    context?.activeJourney?.activeConfiguration?.baseDecision ||
+    deal?.activeConfiguration?.baseDecision ||
+    deal?.baseDecision
+  ).toLowerCase();
+  const mattressOnly = baseDecision === "mattress_only" ||
+    /\b(?:mattress[- ]only|just (?:the )?mattress|only (?:the )?mattress|without (?:the )?(?:(?:motion|adjustable) )?base|skip (?:the )?(?:(?:motion|adjustable) )?base)\b/i.test(clean(message));
+  if (mattressHandle && size && mattressOnly) {
+    return { mattressHandle, baseHandle: null, size, motionKey: "none" };
+  }
   return mattressHandle && baseHandle && size && motionKey
     ? { mattressHandle, baseHandle, size, motionKey }
     : null;
@@ -976,7 +993,7 @@ async function runSnoozerConversationCore({
         status: validated.fallback.used ? "fallback" : "answered",
         ...validated,
         products: productResult.products,
-        actions: validatedActions(validated, toolResults),
+        actions: validatedActions(validated, toolResults, message),
         quote: latestCompleteQuote(toolResults),
         toolResults,
         stateValidation: finalValidation.stateValidation,

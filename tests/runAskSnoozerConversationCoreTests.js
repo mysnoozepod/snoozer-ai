@@ -576,6 +576,63 @@ async function testPreparedExactConfigurationUsesOneModelCall() {
   assert.deepEqual(result.actions, []);
 }
 
+async function testPreparedMattressOnlyQuoteOffersVerifiedCartAction() {
+  let calls = 0;
+  const handle = "12-dual-comfort-hybrid";
+  const context = {
+    snoozerConversationState: {
+      references: {
+        presentedProductHandles: [handle], comparisonProductHandles: [],
+        lastDiscussedProductHandle: handle, lastDiscussedBaseHandle: null,
+      },
+      decisions: [], rejectedProductHandles: [], preferences: {},
+    },
+    askSnoozerWorkingMemory: {
+      activeDeal: {
+        activeProductHandle: handle,
+        activeSize: "Queen",
+        baseDecision: "mattress_only",
+        activeBaseHandle: null,
+        activeMotionKey: null,
+        activeConfiguration: { productHandle: handle, size: "Queen", baseDecision: "mattress_only", baseHandle: null },
+      },
+    },
+  };
+  const runtime = async (request) => {
+    calls += 1;
+    const envelope = JSON.parse(request.input[0].content);
+    const quoteEvidence = envelope.preparedEvidence.find((item) => item.tool === "quote_configuration");
+    assert.equal(quoteEvidence?.data?.cartReady, true);
+    assert.equal(quoteEvidence?.data?.baseHandle, null);
+    assert.equal(quoteEvidence?.data?.items?.length, 1);
+    return {
+      text: finalResponse({
+        reply: "Your verified Queen mattress-only quote is ready.",
+        productHandles: [handle], preferences: [], decisions: [], actionProposals: [],
+        references: {
+          presentedProductHandles: [handle], comparisonProductHandles: [],
+          lastDiscussedProductHandle: handle, lastDiscussedBaseHandle: null,
+        },
+        claims: [{
+          kind: "commerce", value: "The Queen mattress-only quote is ready.",
+          sourceTool: "quote_configuration", sourceKey: `${handle}:queen:none`,
+        }],
+      }),
+      output: [], functionCalls: [], tokens: {},
+    };
+  };
+  const result = await runSnoozerConversationCore({
+    requestId: "prepared-mattress-only", message: "How much?", context, shopify, runtime, env: ENV, toolOverrides,
+  });
+  assert.equal(result.ok, true, JSON.stringify(result.telemetry));
+  assert.equal(calls, 1);
+  assert.equal(result.quote?.cartReady, true);
+  assert.equal(result.quote?.items?.length, 1);
+  assert.equal(result.actions?.[0]?.type, "add_to_cart");
+  assert.equal(result.actions?.[0]?.payload?.lines?.length, 1);
+  assert.equal(result.actions?.[0]?.payload?.lines?.[0]?.handle, handle);
+}
+
 async function testRequestScopedEvidenceReuseAndParallelTelemetry() {
   let modelCalls = 0;
   let factExecutions = 0;
@@ -704,6 +761,7 @@ async function main() {
   await testToolArgumentBoundary();
   await testFactsCardHydrationFormattingAndRepeatSuppression();
   await testPreparedExactConfigurationUsesOneModelCall();
+  await testPreparedMattressOnlyQuoteOffersVerifiedCartAction();
   await testRequestScopedEvidenceReuseAndParallelTelemetry();
   await testTypedEvidenceAndAbortAwareDeadline();
   console.log("Ask Snoozer Conversation Core tests passed (Sol guard, tool correlation, request-scoped evidence reuse, typed evidence, parallel telemetry, abort-aware deadlines, grounding, state validation, history precedence, and safe fallback).");
