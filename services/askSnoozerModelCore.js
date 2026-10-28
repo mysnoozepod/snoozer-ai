@@ -755,6 +755,7 @@ async function runSnoozerConversationCore({
   let finalValidation = null;
   let failureReason = null;
   let recoveryAttempts = 0;
+  let recoveryKind = null;
   let validationMs = 0;
   let productHydrationMs = 0;
   let transportFailure = null;
@@ -810,6 +811,7 @@ async function runSnoozerConversationCore({
         existingReferenceHandles: existingReferenceHandles(context),
         rejectedProductHandles: compactConversationState(context).rejectedProductHandles,
         successfulTools: toolResults.filter((result) => result.ok).map((result) => result.name),
+        successfulToolResults: toolResults.filter((result) => result.ok),
         manifest,
       });
       if (
@@ -845,10 +847,28 @@ async function runSnoozerConversationCore({
           deadlineAt - Date.now() >= 3000
         ) {
           recoveryAttempts += 1;
+          recoveryKind = "monetary_claim_correction";
           input.push(...response.output);
           input.push({
             role: "user",
             content: `Correction required: ${monetaryErrors.join(", ")}. Rebuild the answer using the authoritative commerce evidence already supplied. Every dollar amount needs accurate monetaryClaims provenance. Do not relabel a product price as a budget or hypothetical amount. Omit any unsupported amount, preserve valid guidance and state proposals only if still supported, and return the strict structured response without requesting another tool unless evidence is actually missing.`,
+          });
+          continue;
+        }
+        const provenanceErrors = unique(finalValidation.errors).filter((error) => /^claim_source_(?:missing|invalid):/.test(error));
+        if (
+          provenanceErrors.length &&
+          toolResults.some(hasUsableNonDiscoveryEvidence) &&
+          recoveryAttempts < 1 &&
+          modelCalls.length < config.maxToolRounds + 1 &&
+          deadlineAt - Date.now() >= 3000
+        ) {
+          recoveryAttempts += 1;
+          recoveryKind = "claim_provenance_correction";
+          input.push(...response.output);
+          input.push({
+            role: "user",
+            content: `Correction required: ${provenanceErrors.join(", ")}. Rebuild the answer using only the authoritative evidence already supplied. Every non-general claim must use the successful source tool and a real source key from that tool result. Compatibility claims require quote_configuration evidence for the exact mattress, base, size, and motion. Remove or state unknown for any unsupported claim. Do not invent a source key, product fact, compatibility result, price, or availability. Return the strict structured response.`,
           });
           continue;
         }
@@ -875,6 +895,7 @@ async function runSnoozerConversationCore({
       const finalTelemetry = telemetry({
         config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
         recoveryAttempts, recoverySucceeded: recoveryAttempts > 0, preModelMs, validationMs, productHydrationMs, toolExecutionMs,
+        recoveryKind,
         toolExecutionStats: toolExecutor.stats,
       });
       finalTelemetry.cardPresentation = productResult.presentation;
@@ -910,6 +931,7 @@ async function runSnoozerConversationCore({
     failureReason || "conversation_core_failure", toolResults, modelCalls, config, startedAt,
     finalValidation, toolRounds, totalToolCalls, recoveryAttempts, {
       preModelMs, validationMs, productHydrationMs, toolExecutionMs, transportFailure,
+      recoveryKind,
       toolExecutionStats: toolExecutor.stats,
     }
   );
@@ -918,6 +940,7 @@ async function runSnoozerConversationCore({
 function telemetry({
   config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
   fallbackReason = null, recoveryAttempts = 0, recoverySucceeded = false,
+  recoveryKind = null,
   preModelMs = 0, validationMs = 0, productHydrationMs = 0, toolExecutionMs = 0, transportFailure = null,
   toolExecutionStats = {},
 }) {
@@ -967,7 +990,7 @@ function telemetry({
       attempted: recoveryAttempts > 0,
       attempts: recoveryAttempts,
       succeeded: recoverySucceeded === true,
-      kind: recoveryAttempts > 0 ? "monetary_claim_correction" : null,
+      kind: recoveryAttempts > 0 ? recoveryKind || "model_correction" : null,
     },
   };
 }

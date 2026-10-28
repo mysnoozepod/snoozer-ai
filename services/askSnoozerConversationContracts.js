@@ -235,12 +235,51 @@ function evidenceAppears(message, evidence) {
   return Boolean(needle && haystack.includes(needle));
 }
 
+const CLAIM_SOURCE_TOOLS = Object.freeze({
+  product: new Set(["discover_products", "get_product_facts"]),
+  commerce: new Set(["discover_products", "get_live_commerce", "quote_configuration"]),
+  compatibility: new Set(["quote_configuration"]),
+  policy: new Set(["get_policy"]),
+  rewards: new Set(["get_rewards"]),
+  cart: new Set(["get_cart"]),
+});
+
+function claimSourceMatchesResult(claim = {}, result = {}) {
+  const kind = clean(claim.kind);
+  const sourceKey = clean(claim.sourceKey).toLowerCase();
+  const data = result?.data || {};
+  if (!sourceKey || !result?.ok || result.name !== clean(claim.sourceTool)) return false;
+  if (!["product", "commerce", "compatibility"].includes(kind)) return true;
+
+  const handles = unique([
+    ...(data.products || []).map((item) => item?.handle || item?.commerce?.handle),
+    ...(data.productFacts || []).map((item) => item?.handle),
+    ...(data.items || []).map((item) => item?.handle),
+    data.productHandle,
+    data.baseHandle,
+  ]);
+  const documentKeys = (data.productFacts || []).map((item) => clean(item?.sourceKey).toLowerCase()).filter(Boolean);
+  if (kind !== "compatibility") {
+    return [...handles, ...documentKeys].some((key) => sourceKey.includes(key));
+  }
+  if (result.name !== "quote_configuration") return false;
+  const requiredConfigurationKeys = [
+    clean(data.productHandle).toLowerCase(),
+    clean(data.baseHandle).toLowerCase(),
+    clean(data.size).toLowerCase().replace(/\s+/g, "_"),
+    clean(data.motionKey).toLowerCase(),
+  ].filter(Boolean);
+  const normalizedSourceKey = sourceKey.replace(/\s+/g, "_");
+  return requiredConfigurationKeys.length >= 3 && requiredConfigurationKeys.every((key) => normalizedSourceKey.includes(key));
+}
+
 function validateConversationResponse(raw, {
   message = "",
   groundedProductHandles = [],
   existingReferenceHandles = [],
   rejectedProductHandles = [],
   successfulTools = [],
+  successfulToolResults = [],
   manifest = loadShowroomManifest(),
 } = {}) {
   const value = parseStructuredConversationResponse(raw);
@@ -278,8 +317,16 @@ function validateConversationResponse(raw, {
   const toolSet = new Set(successfulTools.map((name) => clean(name)));
   for (const claim of value.claims || []) {
     if (claim?.kind === "general_guidance") continue;
-    if (!clean(claim?.sourceTool) || !toolSet.has(clean(claim.sourceTool)) || !clean(claim?.sourceKey)) {
+    const kind = clean(claim?.kind);
+    const sourceTool = clean(claim?.sourceTool);
+    const allowedTools = CLAIM_SOURCE_TOOLS[kind];
+    const matchingResults = successfulToolResults.filter((result) => result?.ok && result.name === sourceTool);
+    if (!sourceTool || !toolSet.has(sourceTool) || !clean(claim?.sourceKey)) {
       errors.push(`claim_source_missing:${clean(claim?.kind) || "unknown"}`);
+    } else if (!allowedTools?.has(sourceTool)) {
+      errors.push(`claim_source_invalid:${kind || "unknown"}`);
+    } else if (matchingResults.length && !matchingResults.some((result) => claimSourceMatchesResult(claim, result))) {
+      errors.push(`claim_source_invalid:${kind || "unknown"}`);
     }
   }
   const acceptedPreferences = [];

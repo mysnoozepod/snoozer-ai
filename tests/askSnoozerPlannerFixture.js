@@ -1,6 +1,9 @@
 "use strict";
 
-const { extractVerifiedKnownFacts } = require("../services/askSnoozerModelPlanner");
+const {
+  extractVerifiedKnownFacts,
+  inferUtteranceModality,
+} = require("../services/askSnoozerModelPlanner");
 
 function clean(value) { return String(value || "").trim(); }
 
@@ -67,7 +70,7 @@ function fixtureTask(query = "") {
   return "product_experience";
 }
 
-function fixtureActs(query = "", context = {}) {
+function fixtureActs(query = "", context = {}, modality = inferUtteranceModality(query)) {
   const text = clean(query).toLowerCase();
   const deal = activeDeal(context);
   const canonical = clean(deal.canonicalRecommendation?.primaryMattressHandle || context?.canonicalRecommendation?.primaryMattressHandle).toLowerCase() || null;
@@ -75,7 +78,7 @@ function fixtureActs(query = "", context = {}) {
   const subject = explicitFixtureHandle(query) || (reconsideringOriginal ? canonical : null) || deal.activeProductHandle || deal.sessionRecommendation?.productHandle || null;
   const pending = clean(deal.pendingCommitment?.status || "pending") === "pending" ? deal.pendingCommitment : null;
   const acts = [];
-  const add = (type, detail = {}) => acts.push({ type, modality: "asserted", ...detail });
+  const add = (type, detail = {}) => acts.push({ type, modality, ...detail });
   if (pending && /^(?:yes|yeah|yep|sure|please|okay)\.?$/.test(text)) {
     add("accept_commitment", { commitmentId: pending.id, commitmentType: pending.type });
     return acts;
@@ -138,13 +141,17 @@ function buildPlannerFixture({ query = "", context = {} } = {}) {
     comparisonProductHandles = Array.from(new Set([active, explicit, ...(deal.comparisonProductHandles || [])].filter(Boolean))).slice(0, 2);
   }
   const knownFacts = extractVerifiedKnownFacts(query);
+  const modality = inferUtteranceModality(query);
+  const acts = ["asserted", "reconsideration"].includes(modality)
+    ? fixtureActs(query, context, modality)
+    : [];
   return {
     decision: {
       authority: "model_semantics",
-      modality: "asserted",
+      modality,
       primaryTask,
       shopperGoal: primaryTask,
-      acts: fixtureActs(query, context),
+      acts,
       productReferences: requestedHandle ? [{ handle: requestedHandle, role: "subject" }] : [],
       comparisonProductHandles,
       requestedFacts,

@@ -250,7 +250,14 @@ async function runExactTenTurnFixture() {
     for (const phrase of turn.expects.contains || []) {
       const includesPhrase = text.toLowerCase().includes(phrase.toLowerCase());
       const compatibilityEquivalent = phrase.toLowerCase() === "compatible" && /works together/i.test(text);
-      assert(includesPhrase || compatibilityEquivalent, `${turn.id} should include ${phrase}: ${text}`);
+      const deal = memory(body)?.activeDeal || {};
+      const continuity = JSON.stringify({
+        activeProductHandle: deal.activeProductHandle || null,
+        acceptedProductHandle: deal.acceptedRecommendation?.productHandle || null,
+        quoteProductHandle: deal.activeQuote?.productHandle || null,
+        quoteHandles: (deal.activeQuote?.items || []).map((item) => item.handle),
+      });
+      assert(includesPhrase || compatibilityEquivalent, `${turn.id} should include ${phrase}: ${text}; continuity=${continuity}`);
     }
     for (const phrase of turn.expects.doesNotContain || []) {
       assert(!text.toLowerCase().includes(phrase.toLowerCase()), `${turn.id} should not include ${phrase}: ${text}`);
@@ -269,6 +276,11 @@ async function runExactTenTurnFixture() {
     if (turn.expects.compatibilityStatus) assert.strictEqual(deal.compatibilityStatus, turn.expects.compatibilityStatus);
     if (turn.expects.quoteHandles) {
       assert.deepStrictEqual(deal.activeQuote?.items?.map((item) => item.handle), turn.expects.quoteHandles);
+      assert.strictEqual(
+        deal.activeProductHandle,
+        deal.activeQuote?.productHandle,
+        `${turn.id} active product must remain aligned with the verified quote`
+      );
       for (const item of deal.activeQuote.items) {
         const card = (body.products || []).find((product) => product.handle === item.handle);
         assert(card, `${turn.id} should include card for ${item.handle}`);
@@ -305,7 +317,11 @@ async function runCommercialProgression() {
     assert.strictEqual(memory(body)?.lastPlan?.taskType, taskType, message);
     if (taskType === "cart_add") {
       assert((body.actions || []).length >= 1, `${message} should offer exact cart action`);
-      assert((body.actions || []).every((action) => /^gid:\/\/shopify\/ProductVariant\//.test(action.payload?.merchandiseId)), `${message} should use exact variants`);
+      const cartLines = (body.actions || []).flatMap((action) => (
+        Array.isArray(action.payload?.lines) ? action.payload.lines : [action.payload]
+      ));
+      assert(cartLines.length >= 1, `${message} should include at least one cart line`);
+      assert(cartLines.every((line) => /^gid:\/\/shopify\/ProductVariant\//.test(line?.merchandiseId)), `${message} should use exact variants`);
     }
   }
 }

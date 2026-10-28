@@ -18,6 +18,7 @@ const {
 const {
   executeConversationTool,
 } = require("../services/askSnoozerConversationTools");
+const { buildAskJourneyPayload } = require("../services/activeJourney");
 
 const ENV = {
   ASK_SNOOZER_CONVERSATION_CORE_MODE: "active",
@@ -302,6 +303,124 @@ async function testFalseNoProductsFallbackIsCorrected() {
   assert.equal(result.telemetry.tools[0].summary.productCount, 2);
 }
 
+async function testClaimProvenanceCorrectionUsesExistingEvidence() {
+  let calls = 0;
+  const handle = "12-all-foam-mattress";
+  const context = {
+    snoozerConversationState: {
+      preferences: {
+        "shopper:size": { key: "size", subject: "shopper", value: "Queen", status: "active" },
+      },
+      references: {
+        presentedProductHandles: [handle], comparisonProductHandles: [],
+        lastDiscussedProductHandle: handle, lastDiscussedBaseHandle: null,
+      },
+    },
+  };
+  const runtime = async () => {
+    calls += 1;
+    const claim = calls === 1
+      ? { kind: "product", value: "Verified pressure relief.", sourceTool: "get_product_facts", sourceKey: null }
+      : { kind: "product", value: "Verified pressure relief.", sourceTool: "get_product_facts", sourceKey: handle };
+    return {
+      text: finalResponse({
+        reply: "The 12-inch All Foam has verified pressure-relief construction.",
+        productHandles: [handle], preferences: [], decisions: [],
+        references: {
+          presentedProductHandles: [handle], comparisonProductHandles: [],
+          lastDiscussedProductHandle: handle, lastDiscussedBaseHandle: null,
+        },
+        claims: [claim],
+      }),
+      output: [], functionCalls: [], tokens: { prompt: 300, cached: 100, completion: 80, total: 380 },
+    };
+  };
+  const result = await runSnoozerConversationCore({
+    requestId: "claim-provenance-repair",
+    message: "Recap why that Queen mattress fits me.",
+    context,
+    shopify,
+    runtime,
+    env: ENV,
+    toolOverrides,
+  });
+  assert.equal(result.ok, true, JSON.stringify(result.telemetry));
+  assert.equal(calls, 2, "provenance repair should use one bounded correction call");
+  assert.equal(result.telemetry.recovery.kind, "claim_provenance_correction");
+  assert.equal(result.telemetry.recovery.succeeded, true);
+  assert.equal(result.telemetry.toolExecutionCount, 2, "repair must reuse prepared evidence without another tool execution");
+}
+
+function testClaimSourceAndJourneyProjectionIntegrity() {
+  const handle = "12-all-foam-mattress";
+  const invalidSource = validateConversationResponse(JSON.parse(finalResponse({
+    reply: "The mattress has verified pressure relief.",
+    productHandles: [handle], preferences: [], decisions: [],
+    references: {
+      presentedProductHandles: [handle], comparisonProductHandles: [],
+      lastDiscussedProductHandle: handle, lastDiscussedBaseHandle: null,
+    },
+    claims: [{ kind: "product", value: "Verified pressure relief.", sourceTool: "get_product_facts", sourceKey: "invented-document" }],
+  })), {
+    message: "Tell me about that mattress.",
+    groundedProductHandles: [handle],
+    successfulTools: ["get_product_facts"],
+    successfulToolResults: [{ ok: true, name: "get_product_facts", data: { productFacts: [{ handle, sourceKey: `products/${handle}.md` }] } }],
+    manifest,
+  });
+  assert.equal(invalidSource.valid, false);
+  assert(invalidSource.errors.includes("claim_source_invalid:product"));
+
+  const priorContext = {
+    askSnoozerWorkingMemory: {
+      activeDeal: {
+        activeProductHandle: handle,
+        activeSize: "Queen",
+        activeBaseHandle: "premium-motion-adjustable-base",
+        activeMotionKey: "standard",
+        activeConfiguration: {
+          productHandle: handle, size: "Queen",
+          baseHandle: "premium-motion-adjustable-base", motionKey: "standard",
+        },
+        activeQuote: { ok: true, cartReady: true, productHandle: handle, size: "Queen", status: "complete" },
+      },
+    },
+  };
+  const response = JSON.parse(finalResponse({
+    productHandles: [], claims: [], decisions: [],
+    preferences: [{ key: "size", value: "King", subject: "shopper", operation: "set", evidence: "need King" }],
+    references: {
+      presentedProductHandles: [handle], comparisonProductHandles: [],
+      lastDiscussedProductHandle: handle, lastDiscussedBaseHandle: "premium-motion-adjustable-base",
+    },
+  }));
+  const projected = applyConversationState({
+    context: priorContext,
+    response,
+    now: new Date("2026-10-28T16:00:00Z"),
+  });
+  const deal = projected.askSnoozerWorkingMemory.activeDeal;
+  assert.equal(deal.activeSize, "King");
+  assert.equal(deal.activeConfiguration.size, "King");
+  assert.equal(deal.activeQuote.status, "invalidated");
+  assert.equal(deal.activeQuote.invalidationReason, "size_changed");
+  assert.equal(buildAskJourneyPayload(projected).activeConfiguration.size, "King");
+
+  const quote = {
+    ok: true, cartReady: true, status: "complete",
+    productHandle: handle, baseHandle: "premium-motion-adjustable-base",
+    size: "King", motionKey: "standard",
+    compatibility: { status: "compatible" }, items: [],
+  };
+  const quoted = applyConversationState({ context: projected, response: { ...response, preferences: [] }, quote });
+  const quotedDeal = quoted.askSnoozerWorkingMemory.activeDeal;
+  assert.equal(quotedDeal.activeConfiguration.productHandle, handle);
+  assert.equal(quotedDeal.activeConfiguration.size, "King");
+  assert.equal(quotedDeal.activeConfiguration.baseHandle, "premium-motion-adjustable-base");
+  assert.equal(quotedDeal.activeConfiguration.motionKey, "standard");
+  assert.equal(quotedDeal.activeQuote.cartReady, true);
+}
+
 async function testModelIdentityGuard() {
   await assert.rejects(
     () => runSnoozerConversationCore({
@@ -530,6 +649,8 @@ async function main() {
   testValidationAndHistoryDiscipline();
   await testInventedPriceIsRejected();
   await testFalseNoProductsFallbackIsCorrected();
+  await testClaimProvenanceCorrectionUsesExistingEvidence();
+  testClaimSourceAndJourneyProjectionIntegrity();
   await testModelIdentityGuard();
   await testToolArgumentBoundary();
   await testFactsCardHydrationFormattingAndRepeatSuppression();

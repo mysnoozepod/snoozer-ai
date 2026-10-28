@@ -185,6 +185,42 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
   for (const item of Object.values(preferences)) {
     if (item?.status === "active") retainedPreferences[`${item.subject}:${item.key}`] = { value: item.value, source: item.source, updatedAt: item.updatedAt };
   }
+  const shopperSizePreference = preferences["shopper:size"];
+  const sizeWasRemoved = shopperSizePreference?.status === "removed";
+  const preferredSize = shopperSizePreference?.status === "active" ? clean(shopperSizePreference.value) : "";
+  const accepted = [...(response.decisions || [])].reverse().find((item) => item.status === "accepted" && item.productHandle);
+  const quoteChanged = Boolean(quote?.ok && quote?.cartReady);
+  const projectedSize = clean(quote?.size || preferredSize || (sizeWasRemoved ? "" : priorDeal.activeSize));
+  const projectedProductHandle = clean(
+    quote?.productHandle || accepted?.productHandle || priorDeal.activeProductHandle
+  ).toLowerCase() || null;
+  const projectedBaseHandle = quoteChanged
+    ? clean(quote?.baseHandle).toLowerCase() || null
+    : priorDeal.activeBaseHandle ?? null;
+  const projectedMotionKey = quoteChanged
+    ? clean(quote?.motionKey).toLowerCase() || null
+    : priorDeal.activeMotionKey || null;
+  const activeConfiguration = {
+    ...(priorDeal.activeConfiguration || {}),
+    ...(projectedProductHandle ? { productHandle: projectedProductHandle } : {}),
+    ...(projectedSize ? { size: projectedSize } : {}),
+    ...(quoteChanged ? { baseHandle: projectedBaseHandle, motionKey: projectedMotionKey } : {}),
+    updatedAt,
+  };
+  if (sizeWasRemoved && !quoteChanged) delete activeConfiguration.size;
+  const sizeChanged = clean(priorDeal.activeSize).toLowerCase() !== projectedSize.toLowerCase();
+  const nextActiveQuote = quoteChanged
+    ? clone(quote)
+    : sizeChanged && priorDeal.activeQuote?.ok
+      ? {
+          ...clone(priorDeal.activeQuote),
+          ok: false,
+          cartReady: false,
+          status: "invalidated",
+          invalidationReason: "size_changed",
+          invalidatedAt: updatedAt,
+        }
+      : clone(priorDeal.activeQuote) || null;
   const hasValidatedProjectionChange = Boolean(
     (response.preferences || []).length || (response.decisions || []).length || quote?.ok
   );
@@ -192,12 +228,16 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
     ? {
       ...priorDeal,
       comparisonProductHandles: references.comparisonProductHandles,
-      activeProductHandle: references.lastDiscussedProductHandle || priorDeal.activeProductHandle || null,
-      activeBaseHandle: references.lastDiscussedBaseHandle || priorDeal.activeBaseHandle || null,
+      activeProductHandle: projectedProductHandle,
+      activeSize: projectedSize || null,
+      activeBaseHandle: projectedBaseHandle,
+      activeMotionKey: projectedMotionKey,
+      activeConfiguration,
+      activeQuote: nextActiveQuote,
       rejectedProducts,
       retainedPreferences,
       ...(recommended ? { sessionRecommendation: { productHandle: recommended.productHandle, source: "conversation_core", updatedAt } } : {}),
-      ...(quote?.ok ? { activeQuote: clone(quote), compatibilityStatus: quote.compatibility?.status || "unknown" } : {}),
+      ...(quoteChanged ? { compatibilityStatus: quote.compatibility?.status || "unknown" } : {}),
     }
     : clone(priorDeal);
   return clone({
