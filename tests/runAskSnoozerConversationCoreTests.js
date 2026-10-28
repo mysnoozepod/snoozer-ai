@@ -437,6 +437,21 @@ function testClaimSourceAndJourneyProjectionIntegrity() {
   assert.equal(quotedDeal.activeConfiguration.baseHandle, "premium-motion-adjustable-base");
   assert.equal(quotedDeal.activeConfiguration.motionKey, "standard");
   assert.equal(quotedDeal.activeQuote.cartReady, true);
+
+  const mattressOnly = applyConversationState({
+    context: quoted,
+    response: { ...response, preferences: [], decisions: [], claims: [] },
+    message: "Actually price it mattress only.",
+  });
+  const mattressOnlyDeal = mattressOnly.askSnoozerWorkingMemory.activeDeal;
+  assert.equal(mattressOnlyDeal.activeProductHandle, handle);
+  assert.equal(mattressOnlyDeal.activeSize, "King");
+  assert.equal(mattressOnlyDeal.baseDecision, "mattress_only");
+  assert.equal(mattressOnlyDeal.activeConfiguration.baseDecision, "mattress_only");
+  assert.equal(mattressOnlyDeal.activeConfiguration.baseHandle, null);
+  assert.equal(mattressOnlyDeal.activeBaseHandle, null);
+  assert.equal(mattressOnlyDeal.activeQuote.status, "invalidated");
+  assert.equal(mattressOnlyDeal.activeQuote.invalidationReason, "base_removed");
 }
 
 async function testModelIdentityGuard() {

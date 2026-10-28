@@ -715,7 +715,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
       if (conversationCoreMode === "active") {
         if (coreResult?.ok && !coreResult?.fallback?.used && typeof applyConversationState === "function") {
-          context = applyConversationState({ context, response: coreResult, quote: coreResult.quote });
+          context = applyConversationState({ context, response: coreResult, quote: coreResult.quote, message: msg });
           context.recentConversation = buildBoundedConversationHistory([
             ...(Array.isArray(context.recentConversation) ? context.recentConversation : []),
             { role: "user", content: msg },

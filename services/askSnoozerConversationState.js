@@ -101,7 +101,7 @@ function compactConversationState(context = {}) {
   };
 }
 
-function applyConversationState({ context = {}, response = {}, quote = null, now = new Date() } = {}) {
+function applyConversationState({ context = {}, response = {}, quote = null, message = "", now = new Date() } = {}) {
   const updatedAt = (now instanceof Date ? now : new Date(now)).toISOString();
   const state = getConversationState(context);
   const preferences = { ...(state.preferences || {}) };
@@ -189,6 +189,7 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
   const sizeWasRemoved = shopperSizePreference?.status === "removed";
   const preferredSize = shopperSizePreference?.status === "active" ? clean(shopperSizePreference.value) : "";
   const accepted = [...(response.decisions || [])].reverse().find((item) => item.status === "accepted" && item.productHandle);
+  const mattressOnlyRequested = /\b(?:mattress[- ]only|just (?:the )?mattress|only (?:the )?mattress|without (?:the )?(?:(?:motion|adjustable) )?base|skip (?:the )?(?:(?:motion|adjustable) )?base)\b/i.test(clean(message));
   const quoteChanged = Boolean(quote?.ok && quote?.cartReady);
   const projectedSize = clean(quote?.size || preferredSize || (sizeWasRemoved ? "" : priorDeal.activeSize));
   const projectedProductHandle = clean(
@@ -196,33 +197,41 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
   ).toLowerCase() || null;
   const projectedBaseHandle = quoteChanged
     ? clean(quote?.baseHandle).toLowerCase() || null
-    : priorDeal.activeBaseHandle ?? null;
+    : mattressOnlyRequested ? null : priorDeal.activeBaseHandle ?? null;
   const projectedMotionKey = quoteChanged
     ? clean(quote?.motionKey).toLowerCase() || null
-    : priorDeal.activeMotionKey || null;
+    : mattressOnlyRequested ? null : priorDeal.activeMotionKey || null;
+  const projectedBaseDecision = mattressOnlyRequested
+    ? "mattress_only"
+    : clean(priorDeal.baseDecision || priorDeal.activeConfiguration?.baseDecision) || null;
   const activeConfiguration = {
     ...(priorDeal.activeConfiguration || {}),
     ...(projectedProductHandle ? { productHandle: projectedProductHandle } : {}),
     ...(projectedSize ? { size: projectedSize } : {}),
+    ...(projectedBaseDecision ? { baseDecision: projectedBaseDecision } : {}),
     ...(quoteChanged ? { baseHandle: projectedBaseHandle, motionKey: projectedMotionKey } : {}),
     updatedAt,
   };
   if (sizeWasRemoved && !quoteChanged) delete activeConfiguration.size;
+  if (mattressOnlyRequested && !quoteChanged) {
+    activeConfiguration.baseHandle = null;
+    delete activeConfiguration.motionKey;
+  }
   const sizeChanged = clean(priorDeal.activeSize).toLowerCase() !== projectedSize.toLowerCase();
   const nextActiveQuote = quoteChanged
     ? clone(quote)
-    : sizeChanged && priorDeal.activeQuote?.ok
+    : (sizeChanged || mattressOnlyRequested) && priorDeal.activeQuote?.ok
       ? {
           ...clone(priorDeal.activeQuote),
           ok: false,
           cartReady: false,
           status: "invalidated",
-          invalidationReason: "size_changed",
+          invalidationReason: mattressOnlyRequested ? "base_removed" : "size_changed",
           invalidatedAt: updatedAt,
         }
       : clone(priorDeal.activeQuote) || null;
   const hasValidatedProjectionChange = Boolean(
-    (response.preferences || []).length || (response.decisions || []).length || quote?.ok
+    (response.preferences || []).length || (response.decisions || []).length || quote?.ok || mattressOnlyRequested
   );
   const nextDeal = hasValidatedProjectionChange
     ? {
@@ -232,6 +241,7 @@ function applyConversationState({ context = {}, response = {}, quote = null, now
       activeSize: projectedSize || null,
       activeBaseHandle: projectedBaseHandle,
       activeMotionKey: projectedMotionKey,
+      baseDecision: projectedBaseDecision,
       activeConfiguration,
       activeQuote: nextActiveQuote,
       rejectedProducts,
