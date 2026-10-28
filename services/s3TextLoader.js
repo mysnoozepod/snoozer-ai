@@ -36,15 +36,24 @@ function buildTimeoutError(code, message, timeoutMs, extra = {}) {
   return error;
 }
 
-function withTimeout(promise, timeoutMs, code, message, extra = {}) {
+function withTimeout(task, timeoutMs, code, message, extra = {}, externalSignal = null) {
+  const controller = new AbortController();
   let timer = null;
+  const forwardAbort = () => controller.abort(externalSignal?.reason || buildTimeoutError(code, message, timeoutMs, extra));
+  if (externalSignal?.aborted) forwardAbort();
+  else externalSignal?.addEventListener?.("abort", forwardAbort, { once: true });
   return Promise.race([
-    Promise.resolve().then(() => promise),
+    Promise.resolve().then(() => task(controller.signal)),
     new Promise((_, reject) => {
-      timer = setTimeout(() => reject(buildTimeoutError(code, message, timeoutMs, extra)), timeoutMs);
+      timer = setTimeout(() => {
+        const error = buildTimeoutError(code, message, timeoutMs, extra);
+        controller.abort(error);
+        reject(error);
+      }, timeoutMs);
     }),
   ]).finally(() => {
     if (timer) clearTimeout(timer);
+    externalSignal?.removeEventListener?.("abort", forwardAbort);
   });
 }
 
@@ -54,30 +63,38 @@ function isTimeoutError(error) {
 }
 
 async function getObjectText(bucket, key, options = {}) {
-  const { timeoutMs = S3_RETRIEVAL_TIMEOUT_MS, forceFresh = false } = options;
+  const { timeoutMs = S3_RETRIEVAL_TIMEOUT_MS, forceFresh = false, signal = null } = options;
   const id = `${bucket}/${key}`;
   const cached = cache.fileText.get(id);
   if (!forceFresh && cached && isFresh(cached.ts, FILE_TTL_MS)) {
     return { value: cached.value, cacheHit: true };
   }
 
-  const inflightKey = `text:${id}`;
+  // A caller-owned AbortSignal must not be allowed to cancel another request's shared read.
+  // Request-scoped callers deduplicate above this layer, so signal-bound reads use their own key.
+  const inflightKey = signal ? { kind: "text", id, signal } : `text:${id}`;
   if (cache.inflight.has(inflightKey)) return cache.inflight.get(inflightKey);
 
   const promise = (async () => {
     try {
-      const data = await withTimeout(
-        s3.send(new GetObjectCommand({ Bucket: bucket, Key: key })),
+      const text = await withTimeout(
+        async (abortSignal) => {
+          const data = await s3.send(
+            new GetObjectCommand({ Bucket: bucket, Key: key }),
+            { abortSignal }
+          );
+          const chunks = [];
+          for await (const chunk of data.Body) {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+          }
+          return Buffer.concat(chunks).toString("utf-8");
+        },
         timeoutMs,
         "S3_GET_TIMEOUT",
         `S3 GET exceeded ${timeoutMs}ms`,
-        { bucket, key }
+        { bucket, key },
+        signal
       );
-      const chunks = [];
-      for await (const chunk of data.Body) {
-        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-      }
-      const text = Buffer.concat(chunks).toString("utf-8");
       cache.fileText.set(id, { value: text, ts: Date.now() });
       return { value: text, cacheHit: false };
     } catch (error) {
@@ -119,14 +136,14 @@ async function getObjectJson(bucket, key, options = {}) {
 }
 
 async function listMarkdownKeys(bucket, prefix, options = {}) {
-  const { timeoutMs = S3_RETRIEVAL_TIMEOUT_MS, forceFresh = false } = options;
+  const { timeoutMs = S3_RETRIEVAL_TIMEOUT_MS, forceFresh = false, signal = null } = options;
   const id = `${bucket}/${prefix}`;
   const cached = cache.listKeys.get(id);
   if (!forceFresh && cached && isFresh(cached.ts, LIST_TTL_MS)) {
     return { value: cached.value, cacheHit: true };
   }
 
-  const inflightKey = `list:${id}`;
+  const inflightKey = signal ? { kind: "list", id, signal } : `list:${id}`;
   if (cache.inflight.has(inflightKey)) return cache.inflight.get(inflightKey);
 
   const promise = (async () => {
@@ -135,11 +152,15 @@ async function listMarkdownKeys(bucket, prefix, options = {}) {
     try {
       do {
         const response = await withTimeout(
-          s3.send(new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix, ContinuationToken })),
+          (abortSignal) => s3.send(
+            new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix, ContinuationToken }),
+            { abortSignal }
+          ),
           timeoutMs,
           "S3_LIST_TIMEOUT",
           `S3 LIST exceeded ${timeoutMs}ms`,
-          { bucket, prefix }
+          { bucket, prefix },
+          signal
         );
         keys = keys.concat(
           (response.Contents || [])

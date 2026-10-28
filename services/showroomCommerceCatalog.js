@@ -68,6 +68,7 @@ async function getShowroomCommerceCatalog(_input = {}, options = {}) {
   const result = await (options.shopify || shopify).fetchProductsByHandles({
     handles: orderedHandles,
     lite: false,
+    signal: options.signal,
   });
   const byHandle = new Map((result.items || []).map((product) => [clean(product?.handle), product]));
   const products = orderedHandles

@@ -125,6 +125,43 @@ function normalizeArgs(raw) {
   }
 }
 
+function classifyToolError(error) {
+  const code = clean(error?.code || error?.message || error).toUpperCase();
+  if (code.includes("TIMEOUT") || code.includes("ABORT")) return { errorType: "timeout", retryable: true };
+  if (code.includes("NOT_APPROVED") || code.includes("NOT_ALLOWLISTED") || code.includes("ARGUMENT")) {
+    return { errorType: "unsupported", retryable: false };
+  }
+  if (/SHOPIFY|S3|UPSTREAM|ECONN|HTTP|REWARDS/.test(code)) return { errorType: "upstream", retryable: true };
+  return { errorType: "unknown", retryable: false };
+}
+
+function evidenceMetadata(name, data = {}, args = {}) {
+  const products = Array.isArray(data.products) ? data.products : [];
+  const productFacts = Array.isArray(data.productFacts) ? data.productFacts : [];
+  const missingHandles = unique(data.missingHandles || []);
+  let status = data?.stale === true ? "stale" : "verified";
+  if (name === "get_product_facts" && !productFacts.length) status = missingHandles.length ? "missing" : "unknown";
+  if (name === "get_live_commerce" && !products.length) status = missingHandles.length ? "missing" : "unknown";
+  if (name === "discover_products" && !products.length) status = "missing";
+  if (name === "get_policy" && data?.known === false) status = "unknown";
+  return {
+    status,
+    source: clean(data.source || data.sourceKind || (
+      name === "get_live_commerce" ? "shopify_storefront" :
+      name === "get_product_facts" ? "curated_product_knowledge" :
+      name === "quote_configuration" ? "shopify_configuration_quote" : ""
+    )) || null,
+    sourceVersion: clean(data.catalogVersion || data.sourceVersion || data.version || data.shopifyMeta?.apiVersion) || null,
+    configuration: {
+      productHandles: unique(args.productHandles || [args.mattressHandle, args.baseHandle]),
+      size: clean(args.size) || null,
+      motionKey: clean(args.motionKey) || null,
+      currencyCode: clean(data.currencyCode || products[0]?.currencyCode || products[0]?.commerce?.currencyCode) || null,
+    },
+    missingHandles,
+  };
+}
+
 const TOOL_ARGUMENT_KEYS = Object.freeze({
   discover_products: ["sleepPosition", "temperature", "pressureAreas", "firmness", "partnerConsiderations", "size", "budgetMax", "pricePreference", "exclusions", "limit"],
   get_product_facts: ["productHandles", "factClasses"],
@@ -199,9 +236,11 @@ function scoreProduct(definition = {}, input = {}) {
 }
 
 async function discoverProducts(args, deps) {
+  if (deps.signal?.aborted) throw Object.assign(new Error("Tool request aborted."), { code: "TOOL_ABORTED" });
   const catalog = await (deps.getShowroomCommerceCatalog || getShowroomCommerceCatalog)({}, {
     shopify: deps.shopify,
     showroomManifest: deps.manifest,
+    signal: deps.signal,
   });
   const definitions = approvedProductMap(deps.manifest);
   const exclusions = new Set(unique(args.exclusions || []));
@@ -246,6 +285,7 @@ async function discoverProducts(args, deps) {
     query: "product discovery",
     requestedFacts: ["product_features"],
     productFactsOverride: deps.productFactsOverride,
+    signal: deps.signal,
   });
   const factsByHandle = new Map((factPack?.productFacts || []).map((item) => [clean(item.handle).toLowerCase(), item]));
   return {
@@ -275,10 +315,16 @@ async function executeConversationTool(name, rawArgs, deps = {}) {
   const startedAt = Date.now();
   const args = normalizeArgs(rawArgs);
   if (!TOOL_NAMES.includes(name)) {
-    return { ok: false, name, error: "tool_not_allowlisted", latencyMs: Date.now() - startedAt };
+    return {
+      ok: false, name, error: "tool_not_allowlisted", errorType: "unsupported", retryable: false,
+      evidenceStatus: "unsupported", latencyMs: Date.now() - startedAt,
+    };
   }
   const argumentError = validateToolArguments(name, args);
-  if (argumentError) return { ok: false, name, error: argumentError, latencyMs: Date.now() - startedAt };
+  if (argumentError) return {
+    ok: false, name, error: argumentError, errorType: "validation", retryable: false,
+    evidenceStatus: "unsupported", latencyMs: Date.now() - startedAt,
+  };
   const definitions = approvedProductMap(deps.manifest);
   const assertHandles = (handles) => {
     const normalized = unique(handles || []);
@@ -288,6 +334,7 @@ async function executeConversationTool(name, rawArgs, deps = {}) {
     return normalized;
   };
   try {
+    if (deps.signal?.aborted) throw Object.assign(new Error("Tool request aborted."), { code: "TOOL_ABORTED" });
     let data;
     if (name === "discover_products") {
       data = await discoverProducts(args, deps);
@@ -298,6 +345,7 @@ async function executeConversationTool(name, rawArgs, deps = {}) {
         query: "product facts",
         requestedFacts: Array.isArray(args.factClasses) ? args.factClasses : [],
         productFactsOverride: deps.productFactsOverride,
+        signal: deps.signal,
       });
       const returnedHandles = new Set(unique((factPack?.productFacts || []).map((item) => item?.handle)));
       data = {
@@ -307,7 +355,7 @@ async function executeConversationTool(name, rawArgs, deps = {}) {
       };
     } else if (name === "get_live_commerce") {
       const handles = assertHandles(args.productHandles);
-      const result = await deps.shopify.fetchProductsByHandles({ handles, lite: false });
+      const result = await deps.shopify.fetchProductsByHandles({ handles, lite: false, signal: deps.signal });
       data = {
         source: "shopify_storefront",
         products: (result?.items || []).map((product) => buildProductCardTruth(product, {
@@ -323,11 +371,11 @@ async function executeConversationTool(name, rawArgs, deps = {}) {
         baseHandle: args.baseHandle || "",
         size: args.size,
         motionKey: args.motionKey,
-        fetchProductsByHandles: deps.shopify.fetchProductsByHandles,
+        fetchProductsByHandles: (input) => deps.shopify.fetchProductsByHandles({ ...input, signal: deps.signal }),
         manifest: deps.manifest,
       });
     } else if (name === "get_policy") {
-      data = await (deps.resolvePolicyTruth || resolveAskSnoozerPolicyTruth)({ topic: args.topic, query: args.question });
+      data = await (deps.resolvePolicyTruth || resolveAskSnoozerPolicyTruth)({ topic: args.topic, query: args.question, signal: deps.signal });
     } else if (name === "get_rewards") {
       if (!deps.identity?.profileId || !deps.rewardsService) throw Object.assign(new Error("Rewards identity is unavailable."), { code: "REWARDS_IDENTITY_MISSING" });
       const [summary, offers] = await Promise.all([
@@ -338,12 +386,17 @@ async function executeConversationTool(name, rawArgs, deps = {}) {
     } else if (name === "get_cart") {
       data = await (deps.resolveShopperCart || shopperCart.resolveShopperCart)(deps.event, { shopify: deps.shopify });
     }
-    return { ok: true, name, data, latencyMs: Date.now() - startedAt };
+    const evidence = evidenceMetadata(name, data, args);
+    return { ok: true, name, data, evidenceStatus: evidence.status, evidence, latencyMs: Date.now() - startedAt };
   } catch (error) {
+    const classification = classifyToolError(error);
     return {
       ok: false,
       name,
       error: clean(error?.code || error?.message || "tool_failed").slice(0, 160),
+      errorType: classification.errorType,
+      retryable: classification.retryable,
+      evidenceStatus: classification.errorType === "unsupported" ? "unsupported" : "failed",
       latencyMs: Date.now() - startedAt,
     };
   }

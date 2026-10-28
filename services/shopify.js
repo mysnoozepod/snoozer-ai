@@ -543,11 +543,11 @@ function extractShopifyGraphQLError(err) {
   return `${top}${status ? ` (status ${status})` : ""}: ${stringifyBrief(data)}`;
 }
 
-async function sfQuery(query, variables = {}, { label = "storefront.query" } = {}) {
+async function sfQuery(query, variables = {}, { label = "storefront.query", signal = null } = {}) {
   const storefront = await getStorefrontClient();
 
   try {
-    const run = () => storefront.post("", { query, variables });
+    const run = () => storefront.post("", { query, variables }, signal ? { signal } : undefined);
     const res = await withRetry(run, { label });
 
     if (res.data?.errors && Array.isArray(res.data.errors) && res.data.errors.length) {
@@ -772,7 +772,8 @@ async function fetchProducts({
   return result;
 }
 
-async function fetchProduct({ idOrHandle }) {
+async function fetchProduct({ idOrHandle, signal = null }) {
+  if (signal?.aborted) throw Object.assign(new Error("Shopify request aborted."), { code: "SHOPIFY_ABORTED" });
   if (!idOrHandle) throw buildShopifyError("idOrHandle is required", "MISSING_ID_OR_HANDLE");
   await requireShopifyConfig();
 
@@ -805,7 +806,7 @@ async function fetchProduct({ idOrHandle }) {
         }
       }
     `;
-    const d = await sfQuery(QUERY, { id: gid }, { label: "sf.productById" });
+    const d = await sfQuery(QUERY, { id: gid }, { label: "sf.productById", signal });
     node = d?.node || null;
   } else {
     const QUERY = `
@@ -813,7 +814,7 @@ async function fetchProduct({ idOrHandle }) {
         productByHandle(handle:$handle) { ${PRODUCT_FIELDS} }
       }
     `;
-    const d = await sfQuery(QUERY, { handle: idOrHandle }, { label: "sf.productByHandle" });
+    const d = await sfQuery(QUERY, { handle: idOrHandle }, { label: "sf.productByHandle", signal });
     node = d?.productByHandle || null;
   }
 
@@ -841,7 +842,8 @@ async function fetchProduct({ idOrHandle }) {
 }
 
 // New: fetch products by an array of handles (batched via GraphQL aliases)
-async function fetchProductsByHandles({ handles = [], lite = SHOPIFY_LIST_LITE_DEFAULT } = {}) {
+async function fetchProductsByHandles({ handles = [], lite = SHOPIFY_LIST_LITE_DEFAULT, signal = null } = {}) {
+  if (signal?.aborted) throw Object.assign(new Error("Shopify request aborted."), { code: "SHOPIFY_ABORTED" });
   await requireShopifyConfig();
 
   const list = Array.from(
@@ -895,7 +897,7 @@ async function fetchProductsByHandles({ handles = [], lite = SHOPIFY_LIST_LITE_D
     const QUERY = `query { ${parts} }`;
 
     try {
-      const d = await sfQuery(QUERY, {}, { label: "sf.productByHandle.aliasBatch" });
+      const d = await sfQuery(QUERY, {}, { label: "sf.productByHandle.aliasBatch", signal });
 
       for (const handle of batch) {
         const a = safeAlias(handle);
@@ -914,8 +916,9 @@ async function fetchProductsByHandles({ handles = [], lite = SHOPIFY_LIST_LITE_D
       );
 
       for (const handle of batch) {
+        if (signal?.aborted) throw Object.assign(new Error("Shopify request aborted."), { code: "SHOPIFY_ABORTED" });
         try {
-          const single = await fetchProduct({ idOrHandle: handle });
+          const single = await fetchProduct({ idOrHandle: handle, signal });
           if (single?.product) items.push(single.product);
         } catch (err) {
           console.error(

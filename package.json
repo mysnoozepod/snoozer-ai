@@ -26,6 +26,7 @@
     "test:ask-snoozer-unified-pipeline": "node tests/runAskSnoozerUnifiedAdvisorPipelineTests.js",
     "test:ask-snoozer-configuration-quote": "node tests/runAskSnoozerConfigurationQuoteTests.js",
     "test:ask-snoozer-conversation-core": "node tests/runAskSnoozerConversationCoreTests.js",
+    "benchmark:ask-snoozer-performance-truth": "node scripts/runSnoozerPerformanceTruthBenchmark.js",
     "test:ask-snoozer-budget-recovery": "node tests/runAskSnoozerBudgetRecoveryTests.js",
     "test:ask-snoozer-reliability": "node tests/runAskSnoozerReliabilityTests.js",
     "test:ask-snoozer-conversation-core-route": "node tests/runAskSnoozerConversationCoreRouteTests.js",
@@ -73,13 +74,13 @@
     "@aws-sdk/client-iot-data-plane": "^3.1089.0",
     "@aws-sdk/client-s3": "^3.901.0",
     "@aws-sdk/client-secrets-manager": "^3.901.0",
-    "@aws-sdk/client-sqs": "3.901.0",
+    "@aws-sdk/client-sqs": "^3.1158.0",
     "@aws-sdk/lib-dynamodb": "^3.901.0",
     "@aws-sdk/s3-request-presigner": "^3.609.0",
     "@aws-sdk/util-dynamodb": "^3.996.7",
-    "axios": "^1.7.7",
+    "axios": "^1.21.0",
     "dotenv": "^17.2.3",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.3.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

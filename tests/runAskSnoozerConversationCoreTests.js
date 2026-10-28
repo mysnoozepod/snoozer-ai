@@ -5,6 +5,7 @@ const manifest = require("../data/showroom-manifest.v1.json");
 const {
   getConversationCoreConfig,
   runSnoozerConversationCore,
+  withToolDeadline,
 } = require("../services/askSnoozerModelCore");
 const {
   applyConversationState,
@@ -81,6 +82,10 @@ const toolOverrides = {
     })),
   }),
 };
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function finalResponse(overrides = {}) {
   const base = {
@@ -403,6 +408,120 @@ async function testPreparedExactConfigurationUsesOneModelCall() {
   assert.deepEqual(result.actions, []);
 }
 
+async function testRequestScopedEvidenceReuseAndParallelTelemetry() {
+  let modelCalls = 0;
+  let factExecutions = 0;
+  let commerceExecutions = 0;
+  const handle = "12-all-foam-mattress";
+  const duplicateArguments = JSON.stringify({
+    productHandles: [handle],
+    factClasses: ["partner_fit", "temperature", "support", "comfort", "product_features"],
+  });
+  const runtime = async () => {
+    modelCalls += 1;
+    if (modelCalls === 1) return {
+      text: "",
+      output: [{ type: "function_call", name: "get_product_facts", call_id: "duplicate_facts", arguments: duplicateArguments }],
+      functionCalls: [{ name: "get_product_facts", callId: "duplicate_facts", arguments: duplicateArguments }],
+      tokens: {},
+    };
+    return {
+      text: finalResponse({
+        reply: "The 12-inch All Foam remains the grounded pressure-relief option for your Queen setup.",
+        productHandles: [handle],
+        preferences: [],
+        decisions: [],
+        references: {
+          presentedProductHandles: [handle], comparisonProductHandles: [],
+          lastDiscussedProductHandle: handle, lastDiscussedBaseHandle: null,
+        },
+        claims: [{ kind: "product", value: "Pressure relief construction.", sourceTool: "get_product_facts", sourceKey: handle }],
+      }),
+      output: [], functionCalls: [], tokens: {},
+    };
+  };
+  const result = await runSnoozerConversationCore({
+    requestId: "request-scoped-evidence-reuse",
+    message: "Why is that Queen mattress still the better pressure-relief fit?",
+    context: {
+      snoozerConversationState: {
+        preferences: {
+          "shopper:size": { key: "size", subject: "shopper", value: "Queen", status: "active" },
+        },
+        references: {
+          presentedProductHandles: [handle], comparisonProductHandles: [],
+          lastDiscussedProductHandle: handle, lastDiscussedBaseHandle: null,
+        },
+      },
+    },
+    shopify: {
+      fetchProductsByHandles: async ({ handles = [] } = {}) => {
+        commerceExecutions += 1;
+        await wait(70);
+        return { items: catalogProducts.filter((item) => handles.includes(item.handle)) };
+      },
+    },
+    runtime,
+    env: ENV,
+    toolOverrides: {
+      manifest,
+      loadTrustedAdvisorFactPack: async ({ productHandles = [] } = {}) => {
+        factExecutions += 1;
+        await wait(45);
+        return {
+          productFacts: productHandles.map((item) => ({
+            handle: item, status: "verified_fact", facts: ["Pressure relief construction."],
+          })),
+        };
+      },
+    },
+  });
+  assert.equal(result.ok, true, JSON.stringify(result.telemetry));
+  assert.equal(factExecutions, 1, "equivalent prepared facts should execute once");
+  assert.equal(commerceExecutions, 1, "prepared live commerce should execute once");
+  assert.equal(result.telemetry.duplicateCallsAvoided, 1);
+  assert.equal(result.telemetry.preparedEvidenceHits, 1);
+  assert.equal(result.telemetry.toolExecutionCount, 2);
+  assert.equal(result.telemetry.toolProposalCount, 3);
+  assert(result.telemetry.retrievalWorkMs > result.telemetry.retrievalWallMs + 20, JSON.stringify(result.telemetry));
+  assert(result.telemetry.tools.some((item) => item.reused && item.duplicateSuppressed));
+  assert(result.telemetry.tools.every((item) => ["verified", "missing", "failed", "stale", "unknown", "unsupported"].includes(item.evidenceStatus)));
+}
+
+async function testTypedEvidenceAndAbortAwareDeadline() {
+  const missingCommerce = await executeConversationTool("get_live_commerce", {
+    productHandles: ["12-all-foam-mattress"], size: "Queen", motionKey: null,
+  }, {
+    manifest,
+    shopify: { fetchProductsByHandles: async () => ({ items: [] }) },
+  });
+  assert.equal(missingCommerce.ok, true);
+  assert.equal(missingCommerce.evidenceStatus, "missing");
+  assert.deepEqual(missingCommerce.data.missingHandles, ["12-all-foam-mattress"]);
+
+  const failedCommerce = await executeConversationTool("get_live_commerce", {
+    productHandles: ["12-all-foam-mattress"], size: "Queen", motionKey: null,
+  }, {
+    manifest,
+    shopify: { fetchProductsByHandles: async () => { throw Object.assign(new Error("timeout"), { code: "SHOPIFY_TIMEOUT" }); } },
+  });
+  assert.equal(failedCommerce.ok, false);
+  assert.equal(failedCommerce.evidenceStatus, "failed");
+  assert.equal(failedCommerce.errorType, "timeout");
+  assert.equal(failedCommerce.retryable, true);
+
+  let aborted = false;
+  const timedOut = await withToolDeadline((signal) => new Promise((resolve, reject) => {
+    signal.addEventListener("abort", () => {
+      aborted = true;
+      reject(signal.reason);
+    }, { once: true });
+  }), 20, "abort_probe");
+  assert.equal(timedOut.error, "tool_timeout");
+  assert.equal(timedOut.aborted, true);
+  assert.equal(aborted, true, "deadline must abort supported underlying work");
+}
+
 async function main() {
   assert.equal(getConversationCoreConfig({ ASK_SNOOZER_MODEL_ONLY: "cc_shadow", OPENAI_FINAL_MODEL: "gpt-6.1-sol" }).mode, "shadow");
   assert.equal(getConversationCoreConfig({ ASK_SNOOZER_MODEL_ONLY: "cc_active", OPENAI_FINAL_MODEL: "gpt-6.1-sol" }).mode, "active");
@@ -415,7 +534,9 @@ async function main() {
   await testToolArgumentBoundary();
   await testFactsCardHydrationFormattingAndRepeatSuppression();
   await testPreparedExactConfigurationUsesOneModelCall();
-  console.log("Ask Snoozer Conversation Core tests passed (Sol guard, tool correlation, grounding, state validation, history precedence, and safe fallback).");
+  await testRequestScopedEvidenceReuseAndParallelTelemetry();
+  await testTypedEvidenceAndAbortAwareDeadline();
+  console.log("Ask Snoozer Conversation Core tests passed (Sol guard, tool correlation, request-scoped evidence reuse, typed evidence, parallel telemetry, abort-aware deadlines, grounding, state validation, history precedence, and safe fallback).");
 }
 
 main().catch((error) => {

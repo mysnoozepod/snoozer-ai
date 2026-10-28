@@ -193,6 +193,30 @@
       "coveredBy": "runAskSnoozerConversationCoreTests.js"
     },
     {
+      "id": "prepared-evidence-reuse",
+      "coverage": ["prepared evidence reuse", "duplicate tool-call suppression", "follow-up product evidence"],
+      "live": false,
+      "coveredBy": "runAskSnoozerConversationCoreTests.js"
+    },
+    {
+      "id": "parallel-retrieval-telemetry",
+      "coverage": ["parallel tool wall time", "aggregate tool work", "prepared evidence hit telemetry"],
+      "live": false,
+      "coveredBy": "runAskSnoozerConversationCoreTests.js"
+    },
+    {
+      "id": "tool-timeout-cancellation",
+      "coverage": ["tool timeout", "underlying abort signal", "typed retryable failure"],
+      "live": false,
+      "coveredBy": "runAskSnoozerConversationCoreTests.js"
+    },
+    {
+      "id": "commerce-missing-versus-failed",
+      "coverage": ["missing commerce evidence", "Shopify timeout", "unknown availability protection"],
+      "live": false,
+      "coveredBy": "runAskSnoozerConversationCoreTests.js"
+    },
+    {
       "id": "stale-recommendation",
       "coverage": ["stale recommendation"],
       "live": true,

@@ -35,30 +35,32 @@ async function loadTrustedAdvisorFactPack({
   resolvePolicyTruth = resolveAskSnoozerPolicyTruth,
   advisorKnowledgeOverride = null,
   productFactsOverride = null,
+  signal = null,
 } = {}) {
   let advisorKnowledge = advisorKnowledgeOverride || advisorKnowledgeRollback;
-  if (!advisorKnowledgeOverride) {
+  const advisorKnowledgePromise = !advisorKnowledgeOverride ? (async () => {
     try {
-      const remote = await getObjectJson(KNOWLEDGE_BUCKET, ADVISOR_KNOWLEDGE_KEY);
-      if (remote.value && typeof remote.value === "object") advisorKnowledge = remote.value;
+      const remote = await getObjectJson(KNOWLEDGE_BUCKET, ADVISOR_KNOWLEDGE_KEY, { signal });
+      return remote.value && typeof remote.value === "object" ? remote.value : advisorKnowledgeRollback;
     } catch {
-      // The packaged copy is the safe rollback when the remote knowledge object is unavailable.
+      return advisorKnowledgeRollback;
     }
-  }
+  })() : Promise.resolve(advisorKnowledge);
 
   const handles = [
     ...new Set((Array.isArray(productHandles) ? productHandles : []).filter(Boolean)),
   ].slice(0, 3);
-  const productFacts = Array.isArray(productFactsOverride) ? productFactsOverride : [];
-  for (const handle of Array.isArray(productFactsOverride) ? [] : handles) {
+  const productFacts = Array.isArray(productFactsOverride) ? [...productFactsOverride] : [];
+  const loadedProductFacts = await Promise.all((Array.isArray(productFactsOverride) ? [] : handles).map(async (handle) => {
     const key = TRUSTED_ADVISOR_PRODUCT_KEYS[handle];
-    if (!key) continue;
+    if (!key) return null;
     try {
-      const loaded = await getObjectText(KNOWLEDGE_BUCKET, key);
+      const loaded = await getObjectText(KNOWLEDGE_BUCKET, key, { signal });
       if (loaded.value) {
-        productFacts.push({
+        return {
           handle,
           status: "verified_fact",
+          sourceKey: key,
           facts: compactAdvisorLines(loaded.value, {
             limit: 7,
             include: [
@@ -75,19 +77,21 @@ async function loadTrustedAdvisorFactPack({
               "split comfort",
             ],
           }),
-        });
+        };
       }
     } catch {
       // Missing optional product knowledge remains UNKNOWN in the caller's fact pack.
     }
-  }
+    return null;
+  }));
+  productFacts.push(...loadedProductFacts.filter(Boolean));
+  advisorKnowledge = await advisorKnowledgePromise;
 
   const requested = new Set(
     (Array.isArray(requestedFacts) ? requestedFacts : []).map((fact) =>
       String(fact).toLowerCase()
     )
   );
-  const policyFacts = [];
   const policyTopics = ["delivery", "returns", "financing", "warranty"].filter((topic) =>
     requested.has(topic) ||
     (topic === "warranty" && (taskType === "warranty_explanation" || /\bwarrant|coverage\b/i.test(query))) ||
@@ -95,12 +99,11 @@ async function loadTrustedAdvisorFactPack({
     (topic === "returns" && /\breturn|exchange|sleep trial\b/i.test(query)) ||
     (topic === "financing" && /\bfinanc|payment plan\b/i.test(query))
   );
-  for (const topic of policyTopics) {
+  const policyFacts = (await Promise.all(policyTopics.map(async (topic) => {
     try {
-      const fact = await resolvePolicyTruth({ topic, query });
-      if (fact) policyFacts.push(fact);
+      return await resolvePolicyTruth({ topic, query, signal });
     } catch {
-      policyFacts.push({
+      return {
         type: topic,
         topic,
         status: "unknown",
@@ -110,9 +113,9 @@ async function loadTrustedAdvisorFactPack({
         sourcePriority: 4,
         fallbackUsed: false,
         conflictDetected: false,
-      });
+      };
     }
-  }
+  }))).filter(Boolean);
 
   const durabilityRequested = requested.has("durability") || taskType === "durability_objection" || /\bsag|durab|wear|hold up|lifespan\b/i.test(query);
   const durabilityFacts = durabilityRequested

@@ -9,7 +9,7 @@ const { compactConversationState, existingReferenceHandles, normalizedConversati
 const { buildCartAction } = require("./askSnoozerConfigurationQuote");
 const { buildProductCardTruth } = require("./askSnoozerProductCardTruth");
 
-const CONVERSATION_CORE_VERSION = "conversation-core.v1.3";
+const CONVERSATION_CORE_VERSION = "conversation-core.v1.4";
 const EXPECTED_MODEL = "gpt-6.1-sol";
 const RESPONSE_RESERVE_MS = 2500;
 let modelCircuit = { failures: 0, openedAt: 0 };
@@ -185,8 +185,17 @@ function toolOutputForModel(result) {
     };
   }
   return JSON.stringify({
-    ok: Boolean(result?.ok), tool: clean(result?.name),
-    ...(result?.ok ? { data } : { error: clean(result?.error || "tool_failed") }),
+    ok: Boolean(result?.ok),
+    tool: clean(result?.name),
+    evidenceStatus: clean(result?.evidenceStatus || (result?.ok ? "verified" : "failed")),
+    evidence: result?.evidence || null,
+    ...(result?.ok
+      ? { data }
+      : {
+          error: clean(result?.error || "tool_failed"),
+          errorType: clean(result?.errorType || "unknown"),
+          retryable: result?.retryable === true,
+        }),
   }).slice(0, 12000);
 }
 
@@ -327,12 +336,101 @@ function safeFallback({ reason, toolResults = [] } = {}) {
     : "I couldn't complete that answer reliably, so I stopped instead of guessing. Please try again in a moment.";
 }
 
-function withToolDeadline(promise, timeoutMs, name) {
+function withToolDeadline(task, timeoutMs, name) {
+  const boundedTimeoutMs = Math.max(1, Math.floor(Number(timeoutMs) || 1));
+  const controller = new AbortController();
   let timer;
+  let timedOut = false;
   const timeout = new Promise((resolve) => {
-    timer = setTimeout(() => resolve({ ok: false, name, error: "tool_timeout", latencyMs: timeoutMs }), timeoutMs);
+    timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort(Object.assign(new Error(`${name} exceeded ${boundedTimeoutMs}ms`), { code: "TOOL_TIMEOUT" }));
+      resolve({
+        ok: false,
+        name,
+        error: "tool_timeout",
+        errorType: "timeout",
+        retryable: true,
+        evidenceStatus: "failed",
+        latencyMs: boundedTimeoutMs,
+        aborted: true,
+      });
+    }, boundedTimeoutMs);
   });
-  return Promise.race([Promise.resolve(promise), timeout]).finally(() => clearTimeout(timer));
+  return Promise.race([
+    Promise.resolve().then(() => task(controller.signal)),
+    timeout,
+  ]).finally(() => {
+    clearTimeout(timer);
+    if (!timedOut) controller.abort(Object.assign(new Error("tool_complete"), { code: "TOOL_COMPLETE" }));
+  });
+}
+
+function normalizedToolArguments(name, rawArgs) {
+  let value = rawArgs;
+  if (typeof rawArgs === "string") {
+    try { value = JSON.parse(rawArgs); } catch { value = rawArgs; }
+  }
+  const normalize = (input, key = "") => {
+    if (Array.isArray(input)) {
+      const values = input.map((item) => normalize(item));
+      return ["productHandles", "factClasses", "exclusions", "pressureAreas"].includes(key)
+        ? values.sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)))
+        : values;
+    }
+    if (!input || typeof input !== "object") return typeof input === "string" ? clean(input) : input;
+    return Object.keys(input).sort().reduce((out, childKey) => {
+      out[childKey] = normalize(input[childKey], childKey);
+      return out;
+    }, {});
+  };
+  return `${name}:${JSON.stringify(normalize(value))}`;
+}
+
+function createRequestToolExecutor({ deps, deadlineAt }) {
+  const cache = new Map();
+  const stats = {
+    proposalCount: 0,
+    executionCount: 0,
+    duplicateCallsAvoided: 0,
+    evidenceReuseHits: 0,
+  };
+  const execute = async (name, args, { prepared = false, timeoutMs = 8000 } = {}) => {
+    stats.proposalCount += 1;
+    const key = normalizedToolArguments(name, args);
+    const existing = cache.get(key);
+    if (existing) {
+      stats.duplicateCallsAvoided += 1;
+      stats.evidenceReuseHits += 1;
+      const result = await existing;
+      return {
+        ...result,
+        prepared,
+        reused: true,
+        duplicateSuppressed: true,
+        executed: false,
+        originalLatencyMs: Number((result.originalLatencyMs ?? result.latencyMs) || 0),
+        latencyMs: 0,
+      };
+    }
+    stats.executionCount += 1;
+    const remainingMs = Math.max(1, deadlineAt - Date.now());
+    const promise = withToolDeadline(
+      (signal) => executeConversationTool(name, args, { ...deps, signal }),
+      Math.min(timeoutMs, remainingMs),
+      name
+    ).then((result) => ({
+      ...result,
+      prepared,
+      reused: false,
+      duplicateSuppressed: false,
+      executed: true,
+      originalLatencyMs: Number(result?.latencyMs || 0),
+    }));
+    cache.set(key, promise);
+    return promise;
+  };
+  return { execute, stats };
 }
 
 function normalizedReferenceText(value) {
@@ -613,6 +711,10 @@ async function runSnoozerConversationCore({
   const manifest = toolOverrides.manifest || loadShowroomManifest();
   const toolResults = [];
   let toolExecutionMs = 0;
+  const toolExecutor = createRequestToolExecutor({
+    deps: { event, identity, shopify, rewardsService, manifest, ...toolOverrides },
+    deadlineAt,
+  });
   const rejected = new Set(compactConversationState(context).rejectedProductHandles || []);
   const preparedHandles = unique([
     ...existingReferenceHandles(context),
@@ -636,13 +738,10 @@ async function runSnoozerConversationCore({
         motionKey: null,
       }]] : []),
     ];
-    const preparedResults = await Promise.all(preparedRequests.map(async ([name, args]) => {
-      const result = await executeConversationTool(name, args, {
-        event, identity, shopify, rewardsService, manifest, ...toolOverrides,
-      });
-      result.prepared = true;
-      return result;
-    }));
+    const preparedBudgetMs = Math.max(1, Math.min(8000, deadlineAt - Date.now() - RESPONSE_RESERVE_MS));
+    const preparedResults = await Promise.all(preparedRequests.map(([name, args]) => (
+      toolExecutor.execute(name, args, { prepared: true, timeoutMs: preparedBudgetMs })
+    )));
     toolResults.push(...preparedResults);
     preparedEvidence = preparedResults.filter((result) => result.ok).map((result) => JSON.parse(toolOutputForModel(result)));
     toolExecutionMs += Date.now() - preparedStartedAt;
@@ -661,7 +760,7 @@ async function runSnoozerConversationCore({
   let transportFailure = null;
   try {
     while (modelCalls.length < config.maxToolRounds + 2) {
-      const remaining = config.totalTimeoutMs - (Date.now() - startedAt);
+      const remaining = deadlineAt - Date.now();
       if (remaining < RESPONSE_RESERVE_MS + 500) { failureReason = "conversation_core_deadline"; break; }
       const modelStartedAt = Date.now();
       const response = await runtime({
@@ -692,14 +791,10 @@ async function runSnoozerConversationCore({
         toolRounds += 1;
         totalToolCalls += response.functionCalls.length;
         input.push(...response.output);
-        const toolBudgetMs = Math.max(250, Math.min(8000, config.totalTimeoutMs - (Date.now() - startedAt) - RESPONSE_RESERVE_MS));
+        const toolBudgetMs = Math.max(1, Math.min(8000, deadlineAt - Date.now() - RESPONSE_RESERVE_MS));
         const toolRoundStartedAt = Date.now();
-        const results = await Promise.all(response.functionCalls.map((call) => withToolDeadline(
-          executeConversationTool(call.name, call.arguments, {
-            event, identity, shopify, rewardsService, manifest, ...toolOverrides,
-          }),
-          toolBudgetMs,
-          call.name
+        const results = await Promise.all(response.functionCalls.map((call) => (
+          toolExecutor.execute(call.name, call.arguments, { timeoutMs: toolBudgetMs })
         )));
         toolExecutionMs += Date.now() - toolRoundStartedAt;
         toolResults.push(...results);
@@ -780,6 +875,7 @@ async function runSnoozerConversationCore({
       const finalTelemetry = telemetry({
         config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
         recoveryAttempts, recoverySucceeded: recoveryAttempts > 0, preModelMs, validationMs, productHydrationMs, toolExecutionMs,
+        toolExecutionStats: toolExecutor.stats,
       });
       finalTelemetry.cardPresentation = productResult.presentation;
       finalTelemetry.cardEnrichment = productResult.enrichment;
@@ -812,7 +908,10 @@ async function runSnoozerConversationCore({
   }
   return fallbackResult(
     failureReason || "conversation_core_failure", toolResults, modelCalls, config, startedAt,
-    finalValidation, toolRounds, totalToolCalls, recoveryAttempts, { preModelMs, validationMs, productHydrationMs, toolExecutionMs, transportFailure }
+    finalValidation, toolRounds, totalToolCalls, recoveryAttempts, {
+      preModelMs, validationMs, productHydrationMs, toolExecutionMs, transportFailure,
+      toolExecutionStats: toolExecutor.stats,
+    }
   );
 }
 
@@ -820,19 +919,37 @@ function telemetry({
   config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
   fallbackReason = null, recoveryAttempts = 0, recoverySucceeded = false,
   preModelMs = 0, validationMs = 0, productHydrationMs = 0, toolExecutionMs = 0, transportFailure = null,
+  toolExecutionStats = {},
 }) {
+  const retrievalWorkMs = toolResults
+    .filter((result) => result?.executed !== false)
+    .reduce((sum, result) => sum + Number(result.originalLatencyMs ?? result.latencyMs ?? 0), 0);
   return {
     coreVersion: CONVERSATION_CORE_VERSION, mode: config.mode, model: config.model, reasoningEffort: config.reasoningEffort,
     modelCallCount: modelCalls.length, modelMs: modelCalls.reduce((sum, call) => sum + call.latencyMs, 0),
-    toolRounds, toolCallCount: totalToolCalls,
+    toolRounds,
+    toolCallCount: totalToolCalls,
+    toolProposalCount: Number(toolExecutionStats.proposalCount || totalToolCalls),
+    toolExecutionCount: Number(toolExecutionStats.executionCount || 0),
+    duplicateCallsAvoided: Number(toolExecutionStats.duplicateCallsAvoided || 0),
+    preparedEvidenceHits: Number(toolExecutionStats.evidenceReuseHits || 0),
     tools: toolResults.map((result) => ({
       name: result.name,
       ok: result.ok,
       latencyMs: result.latencyMs,
+      originalLatencyMs: result.originalLatencyMs ?? result.latencyMs,
+      evidenceStatus: result.evidenceStatus || (result.ok ? "verified" : "failed"),
+      errorType: result.ok ? null : result.errorType || "unknown",
+      retryable: result.retryable === true,
+      prepared: result.prepared === true,
+      reused: result.reused === true,
+      duplicateSuppressed: result.duplicateSuppressed === true,
       error: result.ok ? null : result.error,
       summary: result.ok ? toolTelemetrySummary(result) : null,
     })),
-    retrievalMs: toolResults.reduce((sum, result) => sum + Number(result.latencyMs || 0), 0),
+    retrievalMs: toolExecutionMs,
+    retrievalWallMs: toolExecutionMs,
+    retrievalWorkMs,
     totalMs: Date.now() - startedAt, usage: aggregateUsage(modelCalls),
     lifecycle: {
       preModelMs,
@@ -888,4 +1005,5 @@ module.exports = {
   responseProducts,
   runSnoozerConversationCore,
   validateReplyMonetaryClaims,
+  withToolDeadline,
 };
