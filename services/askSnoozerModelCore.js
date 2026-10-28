@@ -16,6 +16,18 @@ let modelCircuit = { failures: 0, openedAt: 0 };
 
 function clean(value) { return String(value == null ? "" : value).trim(); }
 function unique(values = []) { return [...new Set(values.map((value) => clean(value).toLowerCase()).filter(Boolean))]; }
+
+function claimSourceHints(toolResults = []) {
+  return toolResults.filter((result) => result?.ok).map((result) => {
+    const data = result.data || {};
+    const keys = unique([
+      data.source,
+      ...groundedHandlesFromToolResult(result),
+      ...(data.productFacts || []).map((item) => item?.sourceKey),
+    ]);
+    return keys.length ? `${result.name}: ${keys.join(", ")}` : null;
+  }).filter(Boolean).join("; ").slice(0, 1200);
+}
 function boundedInt(value, fallback, min, max) {
   const number = Number(value);
   return Number.isFinite(number) ? Math.max(min, Math.min(max, Math.floor(number))) : fallback;
@@ -865,10 +877,11 @@ async function runSnoozerConversationCore({
         ) {
           recoveryAttempts += 1;
           recoveryKind = "claim_provenance_correction";
+          const sourceHints = claimSourceHints(toolResults);
           input.push(...response.output);
           input.push({
             role: "user",
-            content: `Correction required: ${provenanceErrors.join(", ")}. Rebuild the answer using only the authoritative evidence already supplied. Every non-general claim must use the successful source tool and a real source key from that tool result. Compatibility claims require quote_configuration evidence for the exact mattress, base, size, and motion. Remove or state unknown for any unsupported claim. Do not invent a source key, product fact, compatibility result, price, or availability. Return the strict structured response.`,
+            content: `Correction required: ${provenanceErrors.join(", ")}. Rebuild the answer using only the authoritative evidence already supplied. Every non-general claim must use the successful source tool and one of these exact allowed source keys: ${sourceHints || "none"}. For product-specific claims, prefer that product's exact handle. Compatibility claims require quote_configuration evidence for the exact mattress, base, size, and motion. Remove or state unknown for any unsupported claim. Do not invent a source key, product fact, compatibility result, price, or availability. Return the strict structured response.`,
           });
           continue;
         }

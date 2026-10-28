@@ -371,6 +371,23 @@ function testClaimSourceAndJourneyProjectionIntegrity() {
   assert.equal(invalidSource.valid, false);
   assert(invalidSource.errors.includes("claim_source_invalid:product"));
 
+  const commerceSource = validateConversationResponse(JSON.parse(finalResponse({
+    reply: "Current commerce details were verified.",
+    productHandles: [handle], preferences: [], decisions: [],
+    references: {
+      presentedProductHandles: [handle], comparisonProductHandles: [],
+      lastDiscussedProductHandle: handle, lastDiscussedBaseHandle: null,
+    },
+    claims: [{ kind: "commerce", value: "Current commerce details were verified.", sourceTool: "get_live_commerce", sourceKey: "shopify_storefront" }],
+  })), {
+    message: "Is it currently available?",
+    groundedProductHandles: [handle],
+    successfulTools: ["get_live_commerce"],
+    successfulToolResults: [{ ok: true, name: "get_live_commerce", data: { source: "shopify_storefront", products: [{ handle }] } }],
+    manifest,
+  });
+  assert.equal(commerceSource.valid, true, JSON.stringify(commerceSource.errors));
+
   const priorContext = {
     askSnoozerWorkingMemory: {
       activeDeal: {

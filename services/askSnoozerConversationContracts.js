@@ -260,7 +260,8 @@ function claimSourceMatchesResult(claim = {}, result = {}) {
   ]);
   const documentKeys = (data.productFacts || []).map((item) => clean(item?.sourceKey).toLowerCase()).filter(Boolean);
   if (kind !== "compatibility") {
-    return [...handles, ...documentKeys].some((key) => sourceKey.includes(key));
+    const sourceIdentifiers = [clean(data.source).toLowerCase()].filter(Boolean);
+    return sourceIdentifiers.includes(sourceKey) || [...handles, ...documentKeys].some((key) => sourceKey.includes(key));
   }
   if (result.name !== "quote_configuration") return false;
   const requiredConfigurationKeys = [
