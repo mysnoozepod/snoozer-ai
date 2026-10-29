@@ -867,7 +867,10 @@ async function runSnoozerConversationCore({
         instructions: buildCoreInstructions(),
         input,
         tools: conversationToolDefinitions,
-        text: { format: { type: "json_schema", name: "snoozer_conversation_response", strict: true, schema: snoozerConversationModelSchema } },
+        text: {
+          verbosity: "low",
+          format: { type: "json_schema", name: "snoozer_conversation_response", strict: true, schema: snoozerConversationModelSchema },
+        },
         maxOutputTokens: 1800,
         timeoutMs: Math.min(config.modelTimeoutMs, Math.max(500, remaining - RESPONSE_RESERVE_MS)),
         deadlineAt,

@@ -152,6 +152,8 @@ async function testFreshDiscoveryAndState() {
   });
   assert.equal(result.ok, true, JSON.stringify(result.telemetry));
   assert.equal(calls.length, 2);
+  assert.equal(calls[0].text.verbosity, "low");
+  assert.equal(calls[0].text.format.strict, true);
   assert.deepEqual(result.productHandles, ["12-all-foam-mattress", "12-dual-comfort-hybrid"]);
   assert.equal(result.telemetry.modelCallCount, 2);
   assert.equal(result.telemetry.toolCallCount, 1);
