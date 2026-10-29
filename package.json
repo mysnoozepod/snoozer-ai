@@ -27,6 +27,7 @@
     "test:ask-snoozer-configuration-quote": "node tests/runAskSnoozerConfigurationQuoteTests.js",
     "test:ask-snoozer-conversation-core": "node tests/runAskSnoozerConversationCoreTests.js",
     "benchmark:ask-snoozer-performance-truth": "node scripts/runSnoozerPerformanceTruthBenchmark.js",
+    "benchmark:ask-snoozer-latency:live": "node scripts/runSnoozerLatencyCategoryBenchmark.js",
     "test:ask-snoozer-budget-recovery": "node tests/runAskSnoozerBudgetRecoveryTests.js",
     "test:ask-snoozer-reliability": "node tests/runAskSnoozerReliabilityTests.js",
     "test:ask-snoozer-conversation-core-route": "node tests/runAskSnoozerConversationCoreRouteTests.js",
