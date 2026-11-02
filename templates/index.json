@@ -17,7 +17,7 @@
         "primary_cta_label": "Take The Snooze Assessment",
         "primary_cta_link": "shopify://pages/snooze-assessment",
         "secondary_cta_label": "Shop Mattresses",
-        "secondary_cta_link": "shopify://collections/mattresses",
+        "secondary_cta_link": "shopify://collections/legacy-p1006a-mattresses",
         "hero_image": "shopify://shop_images/STMAM455QQAB-MM12QQPO38GH-polariscoolsyncmattressandbase-ENraisedprofileWEB1715614443_original_0c19bfe5-4af4-4552-9889-853e8bd6abda.jpg"
       }
     },
@@ -124,7 +124,7 @@
         "collection_card_Wx9PJa": {
           "type": "collection_card",
           "settings": {
-            "collection": "mattresses",
+            "collection": "legacy-p1006a-mattresses",
             "title_override": "Mattresses",
             "description": "Find your comfort and support starting point.",
             "cta_label": "Explore",
@@ -144,7 +144,7 @@
         "collection_card_WaM9nN": {
           "type": "collection_card",
           "settings": {
-            "collection": "pillows",
+            "collection": "legacy-p1006a-pillows",
             "title_override": "Pillows",
             "description": "Support your neck, shoulders, and sleep position.",
             "cta_label": "Explore",
@@ -154,7 +154,7 @@
         "collection_card_bYkEkh": {
           "type": "collection_card",
           "settings": {
-            "collection": "sheet-sets",
+            "collection": "legacy-p1006a-sheet-sets",
             "title_override": "Sheet Sets",
             "description": "Add breathable layers for nightly comfort.",
             "cta_label": "Explore",
