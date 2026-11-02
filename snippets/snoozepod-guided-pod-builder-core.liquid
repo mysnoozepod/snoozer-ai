@@ -17,21 +17,28 @@
 
   assign base_catalog = ''
   assign base_seen_handles = '|'
-  assign base_collection_handles = 'adjustable-bases,bases' | split: ','
+  assign base_collection_handles = 'adjustable-bases' | split: ','
   for collection_handle in base_collection_handles
     assign source_collection = collections[collection_handle]
     if source_collection != blank
       for source_product in source_collection.products
-        assign product_token = '|' | append: source_product.handle | append: '|'
-        unless base_seen_handles contains product_token
+        assign product_assortment_status = source_product.metafields.custom.assortment_status.value
+        assign product_publication_readiness = source_product.metafields.custom.publication_readiness.value
+        assign product_builder_roles = source_product.metafields.custom.builder_roles.value
+        assign product_builder_eligible = false
+        if product_assortment_status == 'APPROVED' or product_assortment_status == 'SELECTED'
+          if product_publication_readiness == 'READY' and product_builder_roles contains 'base'
+            assign product_builder_eligible = true
+          endif
+        endif
+        if product_builder_eligible
+          assign product_token = '|' | append: source_product.handle | append: '|'
+          unless base_seen_handles contains product_token
           assign base_seen_handles = base_seen_handles | append: source_product.handle | append: '|'
           assign base_type_label = source_product.type
-          assign base_is_adjustable = false
-          if source_product.tags contains 'base:adjustable' or source_product.handle contains 'adjustable'
-            assign base_is_adjustable = true
+          assign base_is_adjustable = true
+          if base_type_label == blank
             assign base_type_label = 'Adjustable base'
-          elsif base_type_label == blank
-            assign base_type_label = 'Base'
           endif
           capture base_catalog
             echo base_catalog
@@ -67,7 +74,8 @@
             echo source_product.variants | json
             echo '},'
           endcapture
-        endunless
+          endunless
+        endif
       endfor
     endif
   endfor
@@ -78,8 +86,18 @@
   assign protection_collection = collections['mattress-protectors']
   if protection_collection != blank
     for source_product in protection_collection.products
-      assign product_token = '|' | append: source_product.handle | append: '|'
-      unless protection_seen_handles contains product_token
+      assign product_assortment_status = source_product.metafields.custom.assortment_status.value
+      assign product_publication_readiness = source_product.metafields.custom.publication_readiness.value
+      assign product_builder_roles = source_product.metafields.custom.builder_roles.value
+      assign product_builder_eligible = false
+      if product_assortment_status == 'APPROVED' or product_assortment_status == 'SELECTED'
+        if product_publication_readiness == 'READY' and product_builder_roles contains 'protection'
+          assign product_builder_eligible = true
+        endif
+      endif
+      if product_builder_eligible
+        assign product_token = '|' | append: source_product.handle | append: '|'
+        unless protection_seen_handles contains product_token
         assign protection_seen_handles = protection_seen_handles | append: source_product.handle | append: '|'
         capture protection_catalog
           echo protection_catalog
@@ -111,44 +129,7 @@
           echo source_product.variants | json
           echo '},'
         endcapture
-      endunless
-    endfor
-  endif
-  if protection_catalog == blank
-    assign protector_handles = 'icetech-mattress-protector,mattress-encasement,mattress-pad,smooth-mattress-protector,terry-mattress-protector,dri-tec-mattress-protector,ver-tex-mattress-protector' | split: ','
-    for protector_handle in protector_handles
-      assign source_product = all_products[protector_handle]
-      if source_product != blank
-        capture protection_catalog
-          echo protection_catalog
-          echo '{"kind":"product","key":'
-          echo source_product.handle | json
-          echo ',"handle":'
-          echo source_product.handle | json
-          echo ',"title":'
-          echo source_product.title | json
-          echo ',"summaryLabel":'
-          echo source_product.title | json
-          echo ',"url":'
-          echo source_product.url | json
-          echo ',"typeLabel":"Mattress Protector","isAdjustable":false,"image":'
-          if source_product.featured_image
-            echo source_product.featured_image | image_url: width: 560 | json
-          else
-            echo 'null'
-          endif
-          echo ',"imageAlt":'
-          if source_product.featured_image and source_product.featured_image.alt != blank
-            echo source_product.featured_image.alt | json
-          else
-            echo source_product.title | json
-          endif
-          echo ',"price":'
-          echo source_product.selected_or_first_available_variant.price | json
-          echo ',"variants":'
-          echo source_product.variants | json
-          echo '},'
-        endcapture
+        endunless
       endif
     endfor
   endif
@@ -156,13 +137,23 @@
 
   assign pillow_catalog = ''
   assign pillow_seen_handles = '|'
-  assign pillow_collection_handles = 'shoulder-pillows,zoned-pillows,gel-dough-pillows,latex-pillows,filled-pillows,pillows' | split: ','
+  assign pillow_collection_handles = 'pillows' | split: ','
   for collection_handle in pillow_collection_handles
     assign source_collection = collections[collection_handle]
     if source_collection != blank
       for source_product in source_collection.products
-        assign product_token = '|' | append: source_product.handle | append: '|'
-        unless pillow_seen_handles contains product_token
+        assign product_assortment_status = source_product.metafields.custom.assortment_status.value
+        assign product_publication_readiness = source_product.metafields.custom.publication_readiness.value
+        assign product_builder_roles = source_product.metafields.custom.builder_roles.value
+        assign product_builder_eligible = false
+        if product_assortment_status == 'APPROVED' or product_assortment_status == 'SELECTED'
+          if product_publication_readiness == 'READY' and product_builder_roles contains 'pillow'
+            assign product_builder_eligible = true
+          endif
+        endif
+        if product_builder_eligible
+          assign product_token = '|' | append: source_product.handle | append: '|'
+          unless pillow_seen_handles contains product_token
           assign pillow_seen_handles = pillow_seen_handles | append: source_product.handle | append: '|'
           assign pillow_type_label = source_product.type
           if source_product.tags contains 'Shoulder Pillow'
@@ -213,7 +204,8 @@
             echo source_product.variants | json
             echo '},'
           endcapture
-        endunless
+          endunless
+        endif
       endfor
     endif
   endfor
@@ -221,13 +213,23 @@
 
   assign bedding_catalog = ''
   assign bedding_seen_handles = '|'
-  assign bedding_collection_handles = 'sheet-sets,bedding' | split: ','
+  assign bedding_collection_handles = 'sheets,bedding' | split: ','
   for collection_handle in bedding_collection_handles
     assign source_collection = collections[collection_handle]
     if source_collection != blank
       for source_product in source_collection.products
-        assign product_token = '|' | append: source_product.handle | append: '|'
-        unless bedding_seen_handles contains product_token
+        assign product_assortment_status = source_product.metafields.custom.assortment_status.value
+        assign product_publication_readiness = source_product.metafields.custom.publication_readiness.value
+        assign product_builder_roles = source_product.metafields.custom.builder_roles.value
+        assign product_builder_eligible = false
+        if product_assortment_status == 'APPROVED' or product_assortment_status == 'SELECTED'
+          if product_publication_readiness == 'READY' and product_builder_roles contains 'bedding'
+            assign product_builder_eligible = true
+          endif
+        endif
+        if product_builder_eligible
+          assign product_token = '|' | append: source_product.handle | append: '|'
+          unless bedding_seen_handles contains product_token
           assign bedding_seen_handles = bedding_seen_handles | append: source_product.handle | append: '|'
           assign bedding_type_label = source_product.type
           if source_product.tags contains 'Sheet Set'
@@ -270,7 +272,8 @@
             echo source_product.variants | json
             echo '},'
           endcapture
-        endunless
+          endunless
+        endif
       endfor
     endif
   endfor
@@ -348,6 +351,16 @@
             {{ builder_primary_label | escape }}
           </button>
         </form>
+
+        <p
+          class="snoozepod-builder__cart-status"
+          data-builder-cart-status
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          tabindex="-1"
+          hidden
+        ></p>
 
         <div class="snoozepod-builder__nav">
           <button type="button" class="button button--secondary snoozepod-builder__back" data-builder-back>

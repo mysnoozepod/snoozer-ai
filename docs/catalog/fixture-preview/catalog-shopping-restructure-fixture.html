@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MySnoozePod Product Page v1 Fixture</title>
+  <link rel="stylesheet" href="../../../assets/component-snoozepod-commerce-v1.css">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#071942;font-family:Arial,sans-serif}header{display:flex;align-items:center;justify-content:space-between;padding:18px 5vw;background:#fff;border-bottom:1px solid #dfe5ef}.brand{font-size:25px;font-weight:800}.nav{display:flex;gap:24px;font-weight:700}.ask{border:1px solid #071942;border-radius:999px;padding:10px 18px;background:#fff;color:#071942}.page{max-width:1220px;margin:28px auto;padding:0 24px}.crumb{margin-bottom:18px;color:#53617d;font-size:13px}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:42px}.media,.info{overflow:hidden;border:1px solid #dfe5ef;border-radius:30px;background:#fff;box-shadow:0 18px 48px rgba(7,25,66,.06)}.media img{display:block;width:100%;aspect-ratio:1.2;object-fit:cover}.thumbs{display:flex;gap:10px;padding:16px}.thumb{width:62px;height:62px;border:2px solid #071942;border-radius:12px;background:#edf2f9}.info{padding:36px}.vendor{font-size:12px;letter-spacing:.13em}.info h1{margin:10px 0;font-size:42px;line-height:1.02}.price{font-size:23px;font-weight:800}.feel{margin:20px 0;padding:12px 16px;border-radius:12px;background:#eef3fa}.sizes{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 20px}.sizes label{padding:10px 16px;border:1px solid #93a0b8;border-radius:999px}.sizes input{position:absolute;opacity:0}.sizes input:checked+label{background:#071942;color:#fff}.cta,.product-form__submit{display:flex;width:100%;min-height:54px;align-items:center;justify-content:center;margin-top:12px;border:1px solid #071942;border-radius:999px;background:#fff;color:#071942;font-size:16px;font-weight:800;text-decoration:none}.cta.primary{background:#071942;color:#fff}.product-form__submit:disabled{border-color:#aeb6c4;background:#e6e9ef;color:#647087}.details{margin-top:22px;padding-top:18px;border-top:1px solid #dfe5ef;line-height:1.5}.cart-result{margin-top:12px;min-height:22px;color:#235c3b;font-weight:700}.fixture-note{margin:24px auto 0;max-width:1220px;padding:14px 24px;color:#53617d;font-size:13px}@media(max-width:760px){header{padding:14px 18px}.nav{display:none}.page{margin:18px auto;padding:0 14px}.grid{grid-template-columns:1fr;gap:18px}.info{padding:22px}.info h1{font-size:32px}.media,.info{border-radius:22px}}
+  </style>
+</head>
+<body>
+  <header><div class="brand">mysnoozepod</div><nav class="nav"><span>Mattresses</span><span>Adjustable Bases</span><span>Sleep Essentials</span></nav><button class="ask">Ask Snoozer</button></header>
+  <p class="fixture-note">Non-production fixture — Draft-product shopping behavior, no live cart request.</p>
+  <main class="page">
+    <div class="crumb">Home / Mattresses / <span data-title></span></div>
+    <product-info>
+      <div class="grid">
+        <section class="media" aria-label="Product gallery"><img data-image alt="BEDGEAR mattress in a bedroom"><div class="thumbs"><div class="thumb"></div><div class="thumb"></div><div class="thumb"></div></div></section>
+        <section class="info">
+          <div class="vendor">BEDGEAR</div><h1 data-title></h1><div class="price" data-price></div>
+          <div class="feel">Product Feel: <strong data-feel></strong></div>
+          <fieldset><legend>Size</legend><div class="sizes"><input checked type="radio" id="size-queen" name="options[Size]" value="Queen"><label for="size-queen">Queen</label><input type="radio" id="size-king" name="options[Size]" value="King"><label for="size-king">King</label></div></fieldset>
+          <a class="cta primary" href="#book">Book a Snooze Session</a>
+          <div data-dual-slot></div>
+          <form id="product-form-fixture"><input type="hidden" name="id" value="7001"><button class="product-form__submit" type="submit" name="add"><span>Add to cart</span></button></form>
+          <button class="cta" type="button">Ask Snoozer About This Product</button>
+          <div class="cart-result" role="status" aria-live="polite"></div>
+          <div class="details"><strong>Product details and specifications</strong><p>Verified size selection, Product Page v1 controls, and standard Shopify form semantics are represented here.</p></div>
+        </section>
+      </div>
+    </product-info>
+  </main>
+  <script>
+    const view=new URLSearchParams(location.search).get('view')||'standard';
+    const dual=view.startsWith('dual'); const mapped=view==='dual-mapped';
+    const data=dual?{title:'M5 — 14" Dual Comfort Mattress',price:'$3,499.99',feel:'Dual Comfort',image:'https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019df90b-24f9-7eee-9202-56c1bdb7510c.jpg?v=1793551312'}:{title:'S7 — 12" Memory Foam Mattress',price:'$2,499.99',feel:'Medium-Firm',image:'https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ffd79485-cc8c-4007-a3c4-710170c1883c.jpg?v=1793551310'};
+    document.querySelectorAll('[data-title]').forEach(el=>el.textContent=data.title);document.querySelector('[data-price]').textContent=data.price;document.querySelector('[data-feel]').textContent=data.feel;document.querySelector('[data-image]').src=data.image;
+    if(dual){document.querySelector('[data-dual-slot]').outerHTML=`<div class="snoozepod-dual-comfort" data-dual-comfort data-product-form="product-form-fixture" data-orderable="false"><div class="snoozepod-dual-comfort__intro"><h2>Dual Comfort</h2><p>Choose each sleeper's preferred comfort. Online ordering stays unavailable until the exact size and left/right configuration is verified.</p></div>${['left','right'].map(side=>`<fieldset class="snoozepod-dual-comfort__group"><legend>${side==='left'?'Left':'Right'} Side Comfort</legend><div class="snoozepod-dual-comfort__choices">${['0.0','1.0','2.0','3.0'].map((v,i)=>`<input type="radio" id="${side}-${i}" name="fixture-${side}" value="${v}"><label for="${side}-${i}">${v}</label>`).join('')}</div></fieldset>`).join('')}<input type="hidden" name="properties[Left Side Comfort]" value="" form="product-form-fixture" data-dual-comfort-property="left"><input type="hidden" name="properties[Right Side Comfort]" value="" form="product-form-fixture" data-dual-comfort-property="right"><p class="snoozepod-dual-comfort__summary" data-dual-comfort-summary>Select a comfort level for each side.</p><p class="visually-hidden" role="status" aria-live="polite" data-dual-comfort-status></p><script type="application/json" data-dual-comfort-mappings>${mapped?'[{"variantId":9001,"size":"Queen","left":"0.0","right":"3.0","available":true}]':'[]'}<\/script></div>`;}
+    document.querySelector('form').addEventListener('submit',event=>{event.preventDefault();const form=new FormData(event.currentTarget);document.querySelector('.cart-result').textContent=`Fixture cart: variant ${form.get('id')}${dual?`, Left ${form.get('properties[Left Side Comfort]')} / Right ${form.get('properties[Right Side Comfort]')}`:''}`;});
+  </script>
+  <script src="../../../assets/snoozepod-dual-comfort.js"></script>
+</body>
+</html>

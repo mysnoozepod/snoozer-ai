@@ -15,6 +15,7 @@
   - section_id: {String} The ID of the section that contains this card.
   - horizontal_class: {Boolean} Add a card--horizontal class if set to true. Default: false (optional)
   - horizontal_quick_add: {Boolean} Changes the quick add button styles when set to true. Default: false (optional)
+  - show_snoozepod_details: {Boolean} Show verified feel, showroom location, and View Details. Default: false.
   - placeholder_image: {String} The placeholder image to use when no product exists. Default: 'product-apparel-2' (optional)
 
   Usage:
@@ -228,6 +229,9 @@
               {%- endif -%}
 
               {% render 'price', product: card_product, price_class: '', show_compare_at_price: true %}
+              {%- if show_snoozepod_details -%}
+                {% render 'snoozepod-card-details', card_product: card_product %}
+              {%- endif -%}
               {%- if card_product.quantity_price_breaks_configured? -%}
                 {% if card_product.variants.size == 1 and quick_add == 'bulk' %}
                   {% liquid

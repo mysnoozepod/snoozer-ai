@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P1-007 product-media fixture preview</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #071942; background: #eef2f8; }
+    * { box-sizing: border-box; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body { margin: 0; }
+    button, a, select { font: inherit; }
+    .review-banner { padding: 10px 18px; background: #f5c84c; color: #071942; font-size: 13px; font-weight: 800; text-align: center; }
+    .preview-nav { position: sticky; top: 0; z-index: 5; display: flex; justify-content: center; gap: 10px; padding: 12px; background: rgba(255,255,255,.96); border-bottom: 1px solid rgba(7,25,66,.12); }
+    .preview-nav button { min-height: 42px; padding: 0 18px; border: 1px solid #071942; border-radius: 999px; background: #fff; color: #071942; font-weight: 800; cursor: pointer; }
+    .preview-nav button[aria-pressed="true"] { background: #071942; color: #fff; }
+    .view { display: none; }
+    .view.is-active { display: block; }
+    .page { width: min(1420px, calc(100% - 32px)); margin: 24px auto 64px; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 58fr) minmax(360px, 42fr); gap: 40px; align-items: start; }
+    .hero-grid > *, .collection-hero > * { min-width: 0; }
+    .card { border: 1px solid rgba(7,25,66,.1); border-radius: 30px; background: #fff; box-shadow: 0 18px 44px rgba(7,25,66,.06); }
+    .media { min-height: 560px; display: grid; place-items: center; background: radial-gradient(circle at 75% 18%, rgba(44,66,120,.12), transparent 35%), linear-gradient(#fff,#f5f7fb); }
+    .product-image { width: 100%; height: 560px; padding: 24px; object-fit: contain; }
+    .missing-media { max-width: 260px; padding: 18px; border: 1px dashed rgba(7,25,66,.25); border-radius: 16px; text-align: center; color: rgba(7,25,66,.68); font-weight: 700; }
+    .thumbs { display: flex; gap: 10px; padding: 14px; }
+    .thumb { width: 74px; height: 60px; overflow: hidden; border: 1px solid rgba(7,25,66,.2); border-radius: 12px; background: #f7f9fc; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .info { padding: 38px; }
+    .vendor { margin: 0 0 10px; color: rgba(7,25,66,.65); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 0; overflow-wrap: anywhere; font-size: clamp(36px, 5vw, 54px); line-height: 1; letter-spacing: -.045em; }
+    .price { margin: 20px 0; font-size: 26px; font-weight: 800; }
+    .label { display: block; margin-bottom: 10px; font-size: 13px; font-weight: 800; }
+    .variants { display: flex; gap: 10px; }
+    .variant { min-width: 92px; min-height: 44px; border: 1px solid #071942; border-radius: 999px; background: #fff; color: #071942; font-weight: 800; cursor: pointer; }
+    .variant[aria-pressed="true"] { background: #071942; color: #fff; }
+    .dev-note { margin-top: 18px; padding: 12px 14px; border: 1px dashed rgba(7,25,66,.25); border-radius: 12px; background: #f5f7fb; color: rgba(7,25,66,.7); font-size: 12px; line-height: 1.45; }
+    .actions { display: grid; gap: 10px; margin-top: 22px; }
+    .action { display: grid; place-items: center; min-height: 52px; padding: 0 18px; border: 1px solid #071942; border-radius: 999px; font-weight: 800; text-decoration: none; }
+    .action.primary { background: #071942; color: #fff; }
+    .action.secondary { background: #fff; color: #071942; }
+    .action[disabled] { opacity: .7; cursor: not-allowed; }
+    .accordions { display: grid; gap: 12px; margin-top: 28px; }
+    details { border: 1px solid rgba(7,25,66,.12); border-radius: 18px; background: #fff; }
+    summary { padding: 18px 22px; font-weight: 800; cursor: pointer; }
+    details p { margin: 0; padding: 0 22px 20px; color: rgba(7,25,66,.72); }
+    .collection-hero { display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: center; padding: 34px; border-radius: 28px; background: #f5f7fb; }
+    .collection-hero h1 { font-size: clamp(38px, 6vw, 58px); }
+    .collection-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .category-title { margin: 32px 0 16px; font-size: 34px; }
+    .categories { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+    .category { min-height: 150px; display: flex; align-items: flex-end; padding: 18px; border-radius: 20px; background: radial-gradient(circle at 80% 15%, rgba(44,66,120,.18), transparent 36%), #071942; color: #fff; font-size: 19px; font-weight: 800; text-decoration: none; }
+    .toolbar { display: flex; justify-content: space-between; gap: 12px; margin: 28px 0 16px; }
+    .toolbar button, .toolbar select { min-height: 44px; padding: 0 16px; border: 1px solid rgba(7,25,66,.22); border-radius: 999px; background: #fff; color: #071942; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 18px; }
+    .product-card { overflow: hidden; border: 1px solid rgba(7,25,66,.1); border-radius: 22px; background: #fff; }
+    .product-card .missing-media { min-height: 230px; max-width: none; display: grid; place-items: center; border: 0; border-radius: 0; background: #f5f7fb; }
+    .product-card-content { padding: 16px; }
+    .product-card h2 { margin: 0 0 8px; font-size: 18px; }
+    .product-card .price { margin: 0; font-size: 16px; }
+    .view-details { display: grid; place-items: center; min-height: 44px; margin-top: 14px; border: 1px solid #071942; border-radius: 999px; color: #071942; font-size: 14px; font-weight: 800; text-decoration: none; }
+    .closing { margin-top: 40px; padding: 34px; border-radius: 28px; background: linear-gradient(135deg,#071942,#2c4278); color: #fff; }
+    .closing h2 { margin: 0 0 18px; font-size: 34px; }
+    .closing .action.secondary { border-color: rgba(255,255,255,.5); background: transparent; color: #fff; }
+    @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; } .media { min-height: 340px; } .product-image { height: 340px; } .info { padding: 26px; } .grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .collection-hero { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) { .page { width: calc(100% - 20px); margin-top: 12px; } .preview-nav { overflow-x: auto; justify-content: flex-start; } .preview-nav button { flex: 0 0 auto; } .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; } .info { padding: 22px 18px; } .media { min-height: 250px; } .product-image { height: 250px; padding: 12px; } .collection-hero { padding: 24px 18px; } .collection-actions { display: grid; grid-template-columns: minmax(0, 1fr); } .categories { gap: 10px; } .category { min-width: 0; min-height: 120px; padding: 14px; font-size: 16px; } .toolbar { align-items: end; } .toolbar label { min-width: 0; } .toolbar select { max-width: 150px; } .grid { gap: 10px; } .product-card .missing-media { min-height: 150px; } .product-card-content { padding: 12px; } .product-card h2 { font-size: 15px; overflow-wrap: anywhere; } }
+  </style>
+</head>
+<body>
+  <div class="review-banner">LOCAL MEDIA FIXTURE — NOT SHOPIFY PRODUCT-ROUTE RENDERING — DRAFT PRODUCT — NO CART OR PUBLISHING ACTIONS</div>
+  <nav class="preview-nav" aria-label="Preview pages">
+    <button type="button" aria-pressed="true" data-view-button="product">Product Page v1</button>
+    <button type="button" aria-pressed="false" data-view-button="collection">Collection Page v1</button>
+  </nav>
+
+  <main>
+    <section class="view is-active" data-view="product">
+      <div class="page">
+        <div class="hero-grid">
+          <div class="card">
+            <div class="media"><img class="product-image" src="https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQ00GM-gelledmicrofiberpillow-EN3qtWEB.jpg?v=1793551143" alt="Gelled Microfiber Pillow product view"></div>
+            <div class="thumbs" aria-label="Product image thumbnails">
+              <span class="thumb"><img src="https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQ00GM-gelledmicrofiberpillow-EN3qtWEB.jpg?v=1793551143" alt="Gelled Microfiber Pillow product view thumbnail"></span>
+              <span class="thumb"><img src="https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQ00GM-gelledmicrofiberpillow-ENcroppedstraightWEB.jpg?v=1793551143" alt="Gelled Microfiber Pillow front view thumbnail"></span>
+              <span class="thumb"><img src="https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQ00GM-gelledmicrofiberpillow-ENprofileWEB.jpg?v=1793551144" alt="Gelled Microfiber Pillow profile thumbnail"></span>
+              <span class="thumb"><img src="https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQ00GM-gelledmicrofiberpillow-ENhandpressdetailWEB.jpg?v=1793551144" alt="Gelled Microfiber Pillow detail thumbnail"></span>
+            </div>
+          </div>
+          <div class="card info">
+            <p class="vendor">Malouf</p>
+            <h1>Gelled Microfiber Pillow</h1>
+            <p class="price" id="preview-price">$59.99</p>
+            <span class="label">Size</span>
+            <div class="variants" aria-label="Size">
+              <button class="variant" type="button" aria-pressed="true" data-price="59.99">Queen</button>
+              <button class="variant" type="button" aria-pressed="false" data-price="69.99">King</button>
+            </div>
+            <div class="dev-note">Review-only note: Product Feel and showroom location are intentionally hidden because verified data has not been supplied.</div>
+            <div class="actions">
+              <a class="action primary" href="#preview-only">Book a Snooze Session</a>
+              <button class="action secondary" type="button" disabled>Add to Cart</button>
+              <button class="action secondary" type="button">Ask Snoozer About This Product</button>
+            </div>
+          </div>
+        </div>
+        <div class="accordions">
+          <details open><summary>Product Details &amp; Specifications</summary><p>Review-only placeholder: Ty-approved product content is still required.</p></details>
+          <details><summary>Warranty</summary><p>Review-only placeholder: verified warranty content is still required.</p></details>
+          <details><summary>Compatibility &amp; Sleep-System Information</summary><p>Review-only placeholder: verified compatibility content is still required.</p></details>
+          <details><summary>Delivery &amp; Returns</summary><p>Review-only placeholder: approved delivery and returns content is still required.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" data-view="collection">
+      <div class="page">
+        <div class="collection-hero">
+          <div><h1>Pillows</h1><div class="dev-note">Ty-approved collection introduction is still required.</div><div class="collection-actions"><a class="action primary" href="#preview-only">Book a Snooze Session</a><button class="action secondary" type="button">Ask Snoozer</button></div></div>
+        </div>
+        <h2 class="category-title">Shop by Category</h2>
+        <div class="categories"><a class="category" href="#preview-only">Pillows</a><a class="category" href="#preview-only">Filled Pillows</a></div>
+        <div class="toolbar"><button type="button">Filters</button><label><span class="label">Sort by</span><select><option>Featured</option><option>Price, low to high</option></select></label></div>
+        <div class="grid">
+          <article class="product-card"><div class="missing-media">No approved image</div><div class="product-card-content"><p class="vendor">Malouf</p><h2>Gelled Microfiber Pillow</h2><p class="price">From $59.99</p><a class="view-details" href="#preview-only">View Details</a></div></article>
+        </div>
+        <div class="closing"><h2>Book a Snooze Session</h2><div class="collection-actions"><a class="action primary" href="#preview-only">Book a Snooze Session</a><button class="action secondary" type="button">Ask Snoozer</button></div></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const setPreviewView = (name) => {
+      const nextName = name === 'collection' ? 'collection' : 'product';
+      document.querySelectorAll('[data-view-button]').forEach((candidate) => candidate.setAttribute('aria-pressed', String(candidate.dataset.viewButton === nextName)));
+      document.querySelectorAll('[data-view]').forEach((view) => view.classList.toggle('is-active', view.dataset.view === nextName));
+    };
+    document.querySelectorAll('[data-view-button]').forEach((button) => button.addEventListener('click', () => {
+      const name = button.dataset.viewButton;
+      setPreviewView(name);
+    }));
+    document.querySelectorAll('.variant').forEach((button) => button.addEventListener('click', () => {
+      document.querySelectorAll('.variant').forEach((candidate) => candidate.setAttribute('aria-pressed', String(candidate === button)));
+      document.getElementById('preview-price').textContent = `$${button.dataset.price}`;
+    }));
+    setPreviewView(new URLSearchParams(window.location.search).get('view'));
+  </script>
+</body>
+</html>

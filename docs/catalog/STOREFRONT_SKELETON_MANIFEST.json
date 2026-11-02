@@ -1,0 +1,451 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-10-31",
+  "shopifyStore": "mysnoozepodtest",
+  "publicationRule": "DRAFT_PRODUCTS_ONLY_NO_THEME_PUBLICATION",
+  "expectedProductCount": 43,
+  "expectedCollectionCount": 18,
+  "productTemplateDefault": "snoozepod-v1",
+  "productOverrides": {
+    "bedgear-s7-12-memory-foam": {
+      "title": "S7 — 12\" Memory Foam Mattress",
+      "templateSuffix": "product-pod-builder"
+    },
+    "bedgear-h6-12-hybrid": {
+      "title": "H6 — 12\" Hybrid Mattress",
+      "templateSuffix": "product-pod-builder"
+    },
+    "bedgear-m3-12-dual-comfort": {
+      "title": "M3 — 12\" Dual Comfort Mattress",
+      "templateSuffix": "product-pod-builder"
+    },
+    "bedgear-m5-14-dual-comfort": {
+      "title": "M5 — 14\" Dual Comfort Mattress",
+      "templateSuffix": "product-pod-builder"
+    }
+  },
+  "collections": [
+    {
+      "title": "Mattresses",
+      "handle": "mattresses",
+      "products": [
+        "bedgear-s7-12-memory-foam",
+        "bedgear-h6-12-hybrid",
+        "bedgear-m3-12-dual-comfort",
+        "bedgear-m5-14-dual-comfort"
+      ]
+    },
+    {
+      "title": "Adjustable Bases",
+      "handle": "adjustable-bases",
+      "products": [
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base",
+        "flex-sh-adjustable-base"
+      ]
+    },
+    {
+      "title": "Pillows",
+      "handle": "pillows",
+      "productsFromSourceCollection": "pillows"
+    },
+    {
+      "title": "Zoned Pillows",
+      "handle": "zoned-pillows",
+      "productsFromSourceCollection": "zoned-pillows"
+    },
+    {
+      "title": "Filled Pillows",
+      "handle": "filled-pillows",
+      "productsFromSourceCollection": "filled-pillows"
+    },
+    {
+      "title": "Foam Pillows",
+      "handle": "foam-pillows",
+      "productsFromSourceCollection": "foam-pillows"
+    },
+    {
+      "title": "Temperature Regulating Pillows",
+      "handle": "temperature-regulating-pillows",
+      "productsFromSourceCollection": "temperature-regulating-pillows"
+    },
+    {
+      "title": "Sheets",
+      "handle": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ]
+    },
+    {
+      "title": "Sheet Sets",
+      "handle": "sheet-sets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "role": "LEGACY_BUILDER_ALIAS"
+    },
+    {
+      "title": "Mattress Protectors",
+      "handle": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "ver-tex-mattress-protector",
+        "stretchwick-mattress-encasement"
+      ]
+    },
+    {
+      "title": "Comforters",
+      "handle": "comforters",
+      "products": [
+        "light-weight-comforter",
+        "medium-weight-comforter",
+        "ultra-weight-comforter"
+      ]
+    },
+    {
+      "title": "Cooling & Bedding",
+      "handle": "cooling-bedding",
+      "products": [
+        "cooling-performance-throw",
+        "solid-white-duvet-sham-set",
+        "light-grey-racetrack-duvet-sham-set"
+      ]
+    },
+    {
+      "title": "Mattress Toppers",
+      "handle": "mattress-toppers",
+      "products": [
+        "react-pro-performance-topper",
+        "malouf-2-5-inch-gel-memory-foam-topper"
+      ]
+    },
+    {
+      "title": "Bedding",
+      "handle": "bedding",
+      "productsFromSourceCollection": "bedding",
+      "role": "BUILDER_AGGREGATE"
+    },
+    {
+      "title": "Bedroom Furniture",
+      "handle": "bedroom-furniture",
+      "products": [
+        "hennessy-upholstered-headboard",
+        "carlisle-upholstered-headboard",
+        "scoresby-designer-headboard",
+        "blackwell-designer-headboard",
+        "eastman-upholstered-platform-base",
+        "watson-upholstered-platform-base"
+      ]
+    },
+    {
+      "title": "Furniture",
+      "handle": "furniture",
+      "productsFromSourceCollection": "furniture",
+      "role": "LEGACY_ROUTE_ALIAS"
+    },
+    {
+      "title": "Headboards",
+      "handle": "headboards",
+      "products": [
+        "hennessy-upholstered-headboard",
+        "carlisle-upholstered-headboard",
+        "scoresby-designer-headboard",
+        "blackwell-designer-headboard"
+      ]
+    },
+    {
+      "title": "Platform Bases",
+      "handle": "platform-bases",
+      "products": [
+        "eastman-upholstered-platform-base",
+        "watson-upholstered-platform-base"
+      ]
+    }
+  ],
+  "categoryNavigation": {
+    "pillows": [
+      "zoned-pillows",
+      "filled-pillows",
+      "foam-pillows",
+      "temperature-regulating-pillows"
+    ],
+    "bedding": [
+      "sheets",
+      "mattress-protectors",
+      "comforters",
+      "cooling-bedding",
+      "mattress-toppers"
+    ],
+    "bedroom-furniture": [
+      "headboards",
+      "platform-bases"
+    ],
+    "furniture": [
+      "headboards",
+      "platform-bases"
+    ]
+  },
+  "menus": {
+    "main-menu": {
+      "title": "Main menu",
+      "items": [
+        {
+          "title": "Home",
+          "type": "FRONTPAGE"
+        },
+        {
+          "title": "Mattresses",
+          "type": "COLLECTION",
+          "collection": "mattresses",
+          "items": [
+            {
+              "title": "Shop All Mattresses",
+              "type": "COLLECTION",
+              "collection": "mattresses"
+            }
+          ]
+        },
+        {
+          "title": "Adjustable Bases",
+          "type": "COLLECTION",
+          "collection": "adjustable-bases",
+          "items": [
+            {
+              "title": "Shop All Adjustable Bases",
+              "type": "COLLECTION",
+              "collection": "adjustable-bases"
+            }
+          ]
+        },
+        {
+          "title": "Sleep Essentials",
+          "type": "COLLECTION",
+          "collection": "bedding",
+          "items": [
+            {
+              "title": "Pillows",
+              "type": "COLLECTION",
+              "collection": "pillows",
+              "items": [
+                {
+                  "title": "Zoned",
+                  "type": "COLLECTION",
+                  "collection": "zoned-pillows"
+                },
+                {
+                  "title": "Filled",
+                  "type": "COLLECTION",
+                  "collection": "filled-pillows"
+                },
+                {
+                  "title": "Foam",
+                  "type": "COLLECTION",
+                  "collection": "foam-pillows"
+                },
+                {
+                  "title": "Temperature Regulating",
+                  "type": "COLLECTION",
+                  "collection": "temperature-regulating-pillows"
+                }
+              ]
+            },
+            {
+              "title": "Sheets",
+              "type": "COLLECTION",
+              "collection": "sheets"
+            },
+            {
+              "title": "Mattress Protection",
+              "type": "COLLECTION",
+              "collection": "mattress-protectors"
+            },
+            {
+              "title": "Comforters",
+              "type": "COLLECTION",
+              "collection": "comforters"
+            },
+            {
+              "title": "Cooling & Bedding",
+              "type": "COLLECTION",
+              "collection": "cooling-bedding"
+            },
+            {
+              "title": "Mattress Toppers",
+              "type": "COLLECTION",
+              "collection": "mattress-toppers"
+            }
+          ]
+        },
+        {
+          "title": "Bedroom Furniture",
+          "type": "COLLECTION",
+          "collection": "bedroom-furniture",
+          "items": [
+            {
+              "title": "Headboards",
+              "type": "COLLECTION",
+              "collection": "headboards"
+            },
+            {
+              "title": "Platform Bases",
+              "type": "COLLECTION",
+              "collection": "platform-bases"
+            }
+          ]
+        },
+        {
+          "title": "Your Showroom Visit",
+          "type": "PAGE",
+          "page": "book-a-snooze-session",
+          "items": [
+            {
+              "title": "Book a Snooze Session",
+              "type": "PAGE",
+              "page": "book-a-snooze-session"
+            },
+            {
+              "title": "Mini Snooze Assessment",
+              "type": "PAGE",
+              "page": "snooze-assessment"
+            },
+            {
+              "title": "Showroom Information",
+              "type": "PAGE",
+              "page": "book-a-snooze-session"
+            }
+          ]
+        },
+        {
+          "title": "Our Story",
+          "type": "PAGE",
+          "page": "about-us"
+        }
+      ]
+    },
+    "footer": {
+      "title": "Footer menu",
+      "items": [
+        {
+          "title": "Our Story",
+          "type": "PAGE",
+          "page": "about-us"
+        },
+        {
+          "title": "Contact",
+          "type": "PAGE",
+          "page": "contact-us"
+        },
+        {
+          "title": "Showroom Visit",
+          "type": "PAGE",
+          "page": "book-a-snooze-session"
+        },
+        {
+          "title": "Delivery Information",
+          "type": "PAGE",
+          "page": "shipping-policy"
+        },
+        {
+          "title": "Returns & 90 Day Sleep Trial",
+          "type": "PAGE",
+          "page": "90-day-sleep-trial"
+        },
+        {
+          "title": "Order Support",
+          "type": "PAGE",
+          "page": "faqs"
+        },
+        {
+          "title": "Privacy Policy",
+          "type": "PAGE",
+          "page": "privacy-policy"
+        },
+        {
+          "title": "Terms of Service",
+          "type": "PAGE",
+          "page": "terms-of-service"
+        }
+      ]
+    }
+  },
+  "knownContentGaps": [
+    "No verified Warranty page exists; do not create a dead or invented footer link.",
+    "No separate Showroom Information page exists; the navigation uses the verified booking page until Ty supplies one.",
+    "Collection introductions and media remain pending Ty approval."
+  ],
+  "verifiedIds": {
+    "products": {
+      "bamboo-charcoal-pillow-cooling-cover": "8100237738045",
+      "bedgear-h6-12-hybrid": "8100282826813",
+      "bedgear-m3-12-dual-comfort": "8100282892349",
+      "bedgear-m5-14-dual-comfort": "8100282925117",
+      "bedgear-s7-12-memory-foam": "8100282794045",
+      "blackwell-designer-headboard": "8100250583101",
+      "carboncool-omniphase-pillow": "8100237901885",
+      "carlisle-upholstered-headboard": "8100250452029",
+      "convolution-pillow": "8100237344829",
+      "cooling-performance-throw": "8100247765053",
+      "cotton-sheet-set": "8100247306301",
+      "dri-tec-mattress-protector": "8100247404605",
+      "dri-tec-sheet-set": "8100247339069",
+      "eastman-upholstered-platform-base": "8100250615869",
+      "flex-l-adjustable-base": "8100247142461",
+      "flex-lsx-adjustable-base": "8100247175229",
+      "flex-sh-adjustable-base": "8100247240765",
+      "gel-convolution-pillow": "8100237377597",
+      "gel-dough-z-gel-pillow": "8100237869117",
+      "gelled-microfiber-pillow": "8099363094589",
+      "hennessy-upholstered-headboard": "8100250353725",
+      "hexcurve-omniphase-pillow": "8100237705277",
+      "ice-cloud-omniphase-pillow": "8100237934653",
+      "light-grey-racetrack-duvet-sham-set": "8100247830589",
+      "light-weight-comforter": "8100247568445",
+      "malouf-2-5-inch-gel-memory-foam-topper": "8100250714173",
+      "medium-weight-comforter": "8100247601213",
+      "quilted-convolution-hyperchill-pillow": "8100237443133",
+      "react-pro-performance-topper": "8100247863357",
+      "scoresby-designer-headboard": "8100250550333",
+      "shoulder-zoned-gel-activedough-pillow": "8100237574205",
+      "solid-white-duvet-sham-set": "8100247797821",
+      "stretchwick-mattress-encasement": "8100247535677",
+      "ultra-weight-comforter": "8100247666749",
+      "ver-tex-mattress-protector": "8100247502909",
+      "ver-tex-sheet-set": "8100247371837",
+      "watson-upholstered-platform-base": "8100250648637",
+      "weekender-gel-memory-foam-pillow": "8100237639741",
+      "zoned-activedough-bamboo-charcoal-pillow": "8100237508669",
+      "zoned-dough-bamboo-charcoal-pillow": "8100237475901",
+      "zoned-gel-activedough-pillow": "8100237770813",
+      "zoned-gel-dough-pillow": "8100237541437",
+      "zoned-talalay-latex-pillow": "8100237672509"
+    },
+    "collections": {
+      "adjustable-bases": "302102741053",
+      "bedding": "302102806589",
+      "bedroom-furniture": "302110998589",
+      "comforters": "302110933053",
+      "cooling-bedding": "302110965821",
+      "filled-pillows": "302090813501",
+      "foam-pillows": "302102642749",
+      "furniture": "302102904893",
+      "headboards": "302102937661",
+      "mattress-protectors": "302102839357",
+      "mattress-toppers": "302102872125",
+      "mattresses": "302103527485",
+      "pillows": "302090780733",
+      "platform-bases": "302102970429",
+      "sheet-sets": "302102773821",
+      "sheets": "302110900285",
+      "temperature-regulating-pillows": "302102675517",
+      "zoned-pillows": "302102609981"
+    },
+    "menus": {
+      "footer": "189880696893",
+      "main-menu": "189880664125"
+    }
+  }
+}

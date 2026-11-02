@@ -116,14 +116,12 @@
     ]
   };
 
-  const ADDON_STEP_LIMITS = {
-    protection: 1,
-    pillow: 1,
-    bedding: 1
-  };
-
   const SHARED_ASSESSMENT_KEY = "snooze.assessment";
   const SHARED_SHOPPER_KEY = "snooze.assessmentShopperId";
+  const BUNDLE_OPERATION_PROPERTY = "_SnoozePod Bundle Operation";
+  const BUNDLE_ROLE_PROPERTY = "_SnoozePod Bundle Role";
+  const BUNDLE_LOCK_KEY = "snooze.podBuilderCartLock.v1";
+  const CART_REQUEST_TIMEOUT_MS = 12000;
 
   function parseJson(text, fallback) {
     try {
@@ -375,39 +373,37 @@
     return score;
   }
 
-  function firstAvailableVariant(variants) {
-    return (
-      variants.find(function (variant) {
-        return variant && variant.available !== false;
-      }) ||
-      variants[0] ||
-      null
-    );
-  }
-
   function resolveAddonVariant(productOption, size) {
     if (!productOption || productOption.kind !== "product") return null;
     const variants = Array.isArray(productOption.variants) ? productOption.variants : [];
     if (!variants.length) return null;
-    if (!size) return firstAvailableVariant(variants);
 
-    let bestVariant = null;
+    if (productOption.exactVariantId) {
+      return variants.find(function (variant) {
+        return variant && String(variant.id) === String(productOption.exactVariantId) && variant.available !== false;
+      }) || null;
+    }
+
+    const availableVariants = variants.filter(function (variant) {
+      return variant && variant.available !== false;
+    });
+    if (!size) return availableVariants.length === 1 ? availableVariants[0] : null;
+
     let bestScore = 0;
+    let bestVariants = [];
 
-    variants.forEach(function (variant) {
+    availableVariants.forEach(function (variant) {
       if (!variant) return;
       const score = variantMatchScore(variant, size);
       if (score > bestScore) {
         bestScore = score;
-        bestVariant = variant;
+        bestVariants = [variant];
+      } else if (score > 0 && score === bestScore) {
+        bestVariants.push(variant);
       }
     });
 
-    if (bestVariant) {
-      return bestVariant;
-    }
-
-    return firstAvailableVariant(variants);
+    return bestScore > 0 && bestVariants.length === 1 ? bestVariants[0] : null;
   }
 
   function findCatalogOptionByKey(stepKey, key, catalogs, sizeOptions) {
@@ -727,22 +723,29 @@
     });
   }
 
-  function limitCatalogStepOptions(stepKey, options, state) {
-    const max = ADDON_STEP_LIMITS[stepKey];
-    if (!max || !Array.isArray(options) || options.length <= max) return options;
+  function exactVariantCatalogOptions(stepKey, options, state) {
+    if (!Array.isArray(options)) return [];
+    if (["protection", "pillow", "bedding"].indexOf(stepKey) === -1) return options;
 
-    const limited = options.slice(0, max);
-    const selectedKey = state && state[stepKey] ? state[stepKey] : "";
-    if (!selectedKey || limited.some(function (option) { return option.key === selectedKey; })) {
-      return limited;
-    }
-
-    const selectedOption = options.find(function (option) {
-      return option.key === selectedKey;
+    return options.flatMap(function (option) {
+      if (!option || option.kind !== "product") return option ? [option] : [];
+      const variants = Array.isArray(option.variants) ? option.variants : [];
+      return variants
+        .filter(function (variant) {
+          if (!variant || variant.available === false) return false;
+          if (stepKey === "pillow") return true;
+          return !state.size || variantMatchScore(variant, state.size) > 0;
+        })
+        .map(function (variant) {
+          const variantLabel = variant.title && variant.title !== "Default Title" ? variant.title : "";
+          return Object.assign({}, option, {
+            key: option.key + "::" + String(variant.id),
+            exactVariantId: variant.id,
+            variants: [variant],
+            summaryLabel: variantLabel ? option.title + " — " + variantLabel : option.title
+          });
+        });
     });
-
-    if (!selectedOption) return limited;
-    return limited.slice(0, Math.max(0, max - 1)).concat(selectedOption);
   }
 
   function getStepOptions(stepKey, state, catalogs, sizeOptions) {
@@ -754,11 +757,11 @@
       case "motion":
         return allowedMotionOptionsForSize(state.size);
       case "protection":
-        return limitCatalogStepOptions("protection", catalogs.protection || [], state).concat(SYSTEM_OPTIONS.protection);
+        return exactVariantCatalogOptions("protection", catalogs.protection || [], state).concat(SYSTEM_OPTIONS.protection);
       case "pillow":
-        return limitCatalogStepOptions("pillow", catalogs.pillow || [], state).concat(SYSTEM_OPTIONS.pillow);
+        return exactVariantCatalogOptions("pillow", catalogs.pillow || [], state).concat(SYSTEM_OPTIONS.pillow);
       case "bedding":
-        return limitCatalogStepOptions("bedding", catalogs.bedding || [], state).concat(SYSTEM_OPTIONS.bedding);
+        return exactVariantCatalogOptions("bedding", catalogs.bedding || [], state).concat(SYSTEM_OPTIONS.bedding);
       default:
         return [];
     }
@@ -882,13 +885,119 @@
     );
   }
 
-  function buildCartItems(mattressVariant, state, catalogs, sizeOptions) {
-    const items = [];
-    if (!mattressVariant || !mattressVariant.id) return items;
+  function createBundleOperationId() {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
+      return window.crypto.randomUUID();
+    }
 
-    items.push({
-      id: Number(mattressVariant.id),
+    return "snoozepod-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12);
+  }
+
+  function normalizeLineProperties(properties) {
+    const normalized = {};
+    Object.keys(properties || {}).sort().forEach(function (key) {
+      const value = properties[key];
+      if (value == null || value === "") return;
+      normalized[String(key)] = String(value);
+    });
+    return normalized;
+  }
+
+  function normalizeSellingPlanId(item) {
+    const allocation = item && item.selling_plan_allocation;
+    const allocationPlan = allocation && allocation.selling_plan;
+    return String(
+      (item && (item.selling_plan || item.sellingPlanId)) ||
+      (allocationPlan && allocationPlan.id) ||
+      ""
+    );
+  }
+
+  function cartLineIdentity(item) {
+    const variantId = String(item && (item.variant_id || item.id) ? (item.variant_id || item.id) : "");
+    const sellingPlanId = normalizeSellingPlanId(item);
+    const properties = normalizeLineProperties(item && item.properties);
+    return variantId + "::" + sellingPlanId + "::" + JSON.stringify(properties);
+  }
+
+  function requestFingerprint(items) {
+    return JSON.stringify((items || []).map(function (item) {
+      const publicProperties = normalizeLineProperties(item.properties);
+      delete publicProperties[BUNDLE_OPERATION_PROPERTY];
+      return {
+        id: String(item.id || ""),
+        quantity: Number(item.quantity || 0),
+        role: String(item.role || ""),
+        sellingPlanId: normalizeSellingPlanId(item),
+        properties: publicProperties
+      };
+    }).sort(function (left, right) {
+      return JSON.stringify(left).localeCompare(JSON.stringify(right));
+    }));
+  }
+
+  function createBundleRequestPlan(rawItems, operationId) {
+    const bundleOperationId = String(operationId || createBundleOperationId());
+    const aggregated = new Map();
+
+    (rawItems || []).forEach(function (rawItem) {
+      const role = String(rawItem && rawItem.role ? rawItem.role : "component");
+      const properties = Object.assign({}, normalizeLineProperties(rawItem && rawItem.properties), {
+        [BUNDLE_OPERATION_PROPERTY]: bundleOperationId,
+        [BUNDLE_ROLE_PROPERTY]: role
+      });
+      const item = {
+        id: String(rawItem && rawItem.id ? rawItem.id : ""),
+        quantity: Number(rawItem && rawItem.quantity ? rawItem.quantity : 0),
+        role: role,
+        productHandle: String(rawItem && rawItem.productHandle ? rawItem.productHandle : ""),
+        available: !(rawItem && rawItem.available === false),
+        compatibilityStatus: String(rawItem && rawItem.compatibilityStatus ? rawItem.compatibilityStatus : ""),
+        publicationReadiness: String(rawItem && rawItem.publicationReadiness ? rawItem.publicationReadiness : ""),
+        properties: properties
+      };
+
+      const sellingPlanId = normalizeSellingPlanId(rawItem);
+      if (sellingPlanId) item.selling_plan = sellingPlanId;
+
+      const identity = cartLineIdentity(item);
+      const existing = aggregated.get(identity);
+      if (existing) {
+        existing.quantity += item.quantity;
+        return;
+      }
+      aggregated.set(identity, item);
+    });
+
+    const items = Array.from(aggregated.values()).map(function (item) {
+      item.properties = Object.freeze(Object.assign({}, item.properties));
+      return Object.freeze(item);
+    });
+    const fingerprint = requestFingerprint(items);
+
+    return Object.freeze({
+      operationId: bundleOperationId,
+      fingerprint: fingerprint,
+      items: Object.freeze(items),
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  function buildBundleRequestPlan(mattressVariant, state, catalogs, sizeOptions, options) {
+    const config = options || {};
+    const rawItems = [];
+    if (!mattressVariant || !mattressVariant.id) {
+      return createBundleRequestPlan(rawItems, config.operationId);
+    }
+
+    rawItems.push({
+      id: mattressVariant.id,
       quantity: 1,
+      role: "mattress",
+      productHandle: config.mattressHandle || "",
+      available: mattressVariant.available !== false,
+      compatibilityStatus: mattressVariant.compatibilityStatus || mattressVariant.compatibility_status || "",
+      publicationReadiness: mattressVariant.publicationReadiness || mattressVariant.publication_readiness || "",
       properties: {
         "SnoozePod Size": state.size || "",
         "SnoozePod Base Direction": (getSelectedOption("base", state, catalogs, sizeOptions) || {}).summaryLabel || "",
@@ -903,13 +1012,367 @@
 
     calculateAddonSelections(state, catalogs, sizeOptions).forEach(function (selection) {
       if (!selection.variant || !selection.variant.id) return;
-      items.push({
-        id: Number(selection.variant.id),
-        quantity: 1
+      rawItems.push({
+        id: selection.variant.id,
+        quantity: 1,
+        role: selection.stepKey,
+        productHandle: selection.option.handle || "",
+        available: selection.variant.available !== false,
+        compatibilityStatus:
+          selection.variant.compatibilityStatus ||
+          selection.variant.compatibility_status ||
+          selection.option.compatibilityStatus ||
+          selection.option.compatibility_status ||
+          "",
+        publicationReadiness:
+          selection.variant.publicationReadiness ||
+          selection.variant.publication_readiness ||
+          selection.option.publicationReadiness ||
+          selection.option.publication_readiness ||
+          ""
       });
     });
 
-    return items;
+    return createBundleRequestPlan(rawItems, config.operationId);
+  }
+
+  function validateBundleRequestPlan(plan) {
+    const errors = [];
+    if (!plan || !plan.operationId || !Array.isArray(plan.items) || !plan.items.length) {
+      return ["The selected build does not contain any valid cart items."];
+    }
+
+    plan.items.forEach(function (item) {
+      const role = item.role || "component";
+      if (!/^\d+$/.test(String(item.id || ""))) {
+        errors.push(role + " is missing a valid Shopify variant ID.");
+      }
+      if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+        errors.push(role + " has an invalid quantity.");
+      }
+      if (item.available === false) {
+        errors.push(role + " is no longer available.");
+      }
+      const compatibilityStatus = normalizeText(item.compatibilityStatus);
+      if (["pending verification", "unsupported", "incompatible", "not verified"].indexOf(compatibilityStatus) > -1) {
+        errors.push(role + " is not confirmed compatible.");
+      }
+      const readiness = normalizeText(item.publicationReadiness);
+      if (readiness && readiness !== "ready" && readiness !== "live verified") {
+        errors.push(role + " is not ready for cart submission.");
+      }
+      if (!item.properties || item.properties[BUNDLE_OPERATION_PROPERTY] !== plan.operationId) {
+        errors.push(role + " is missing its bundle operation identity.");
+      }
+    });
+
+    return errors;
+  }
+
+  function cartQuantityByIdentity(cart) {
+    const quantities = new Map();
+    (cart && Array.isArray(cart.items) ? cart.items : []).forEach(function (line) {
+      const identity = cartLineIdentity(line);
+      const quantity = Number(line && line.quantity ? line.quantity : 0);
+      quantities.set(identity, (quantities.get(identity) || 0) + quantity);
+    });
+    return quantities;
+  }
+
+  function reconcileBundleCart(plan, cart) {
+    const cartQuantities = cartQuantityByIdentity(cart);
+    const items = plan.items.map(function (item) {
+      const identity = cartLineIdentity(item);
+      const confirmedQuantity = cartQuantities.get(identity) || 0;
+      const missingQuantity = Math.max(0, item.quantity - confirmedQuantity);
+      return {
+        identity: identity,
+        id: item.id,
+        role: item.role,
+        requestedQuantity: item.quantity,
+        confirmedQuantity: Math.min(item.quantity, confirmedQuantity),
+        missingQuantity: missingQuantity,
+        complete: missingQuantity === 0
+      };
+    });
+    const confirmedQuantity = items.reduce(function (total, item) {
+      return total + item.confirmedQuantity;
+    }, 0);
+    const requestedQuantity = items.reduce(function (total, item) {
+      return total + item.requestedQuantity;
+    }, 0);
+
+    return {
+      complete: items.length > 0 && items.every(function (item) { return item.complete; }),
+      partial: confirmedQuantity > 0 && confirmedQuantity < requestedQuantity,
+      requestedQuantity: requestedQuantity,
+      confirmedQuantity: confirmedQuantity,
+      items: items
+    };
+  }
+
+  function missingRequestItems(plan, reconciliation) {
+    return reconciliation.items.filter(function (resultItem) {
+      return resultItem.missingQuantity > 0;
+    }).map(function (resultItem) {
+      const plannedItem = plan.items.find(function (item) {
+        return cartLineIdentity(item) === resultItem.identity;
+      });
+      const requestItem = {
+        id: plannedItem.id,
+        quantity: resultItem.missingQuantity,
+        properties: Object.assign({}, plannedItem.properties)
+      };
+      if (plannedItem.selling_plan) requestItem.selling_plan = plannedItem.selling_plan;
+      return requestItem;
+    });
+  }
+
+  function fetchWithTimeout(fetchImpl, url, options, timeoutMs) {
+    const duration = Math.max(1, Number(timeoutMs || CART_REQUEST_TIMEOUT_MS));
+    let timeoutId;
+    const timeout = new Promise(function (_, reject) {
+      timeoutId = setTimeout(function () {
+        reject(new Error("Cart request timed out"));
+      }, duration);
+    });
+
+    return Promise.race([fetchImpl(url, options), timeout]).finally(function () {
+      clearTimeout(timeoutId);
+    });
+  }
+
+  async function readCartState(fetchImpl, cartUrl, timeoutMs) {
+    const response = await fetchWithTimeout(fetchImpl, cartUrl, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+      cache: "no-store"
+    }, timeoutMs);
+    if (!response || !response.ok) throw new Error("Cart read failed");
+    const cart = await response.json();
+    if (!cart || !Array.isArray(cart.items)) throw new Error("Cart response was invalid");
+    return cart;
+  }
+
+  async function verifyBundleVariantReadiness(plan, fetchImpl, rootUrl, timeoutMs) {
+    const errors = [];
+    const productCache = new Map();
+
+    for (const item of plan.items) {
+      if (!item.productHandle) {
+        errors.push(item.role + " is missing its Shopify product handle.");
+        continue;
+      }
+      if (!productCache.has(item.productHandle)) {
+        const url = rootUrl + "products/" + encodeURIComponent(item.productHandle) + ".js";
+        try {
+          const response = await fetchWithTimeout(fetchImpl, url, {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            credentials: "same-origin",
+            cache: "no-store"
+          }, timeoutMs);
+          if (!response || !response.ok) throw new Error("Product read failed");
+          const product = await response.json();
+          if (!product || !Array.isArray(product.variants)) throw new Error("Product response was invalid");
+          productCache.set(item.productHandle, product);
+        } catch (error) {
+          productCache.set(item.productHandle, null);
+        }
+      }
+
+      const product = productCache.get(item.productHandle);
+      if (!product) {
+        errors.push(item.role + " availability could not be verified.");
+        continue;
+      }
+      const liveVariant = product.variants.find(function (variant) {
+        return String(variant && variant.id ? variant.id : "") === String(item.id);
+      });
+      if (!liveVariant) {
+        errors.push(item.role + " is no longer offered by the selected product.");
+      } else if (liveVariant.available === false) {
+        errors.push(item.role + " is no longer available.");
+      }
+    }
+
+    return { ok: errors.length === 0, errors: errors };
+  }
+
+  async function executeBundleCartOperation(plan, fetchImpl, routes, options) {
+    const config = options || {};
+    const validationErrors = validateBundleRequestPlan(plan);
+    if (validationErrors.length) {
+      return { status: "failed", stage: "validation", errors: validationErrors, mutationAttempted: false };
+    }
+
+    let beforeCart;
+    try {
+      beforeCart = await readCartState(fetchImpl, routes.cart, config.timeoutMs);
+    } catch (error) {
+      return {
+        status: "failed",
+        stage: "preflight",
+        errors: ["The cart could not be checked before adding this build."],
+        mutationAttempted: false
+      };
+    }
+
+    const before = reconcileBundleCart(plan, beforeCart);
+    if (before.complete) {
+      return { status: "success", stage: "reconciled", reconciliation: before, mutationAttempted: false };
+    }
+
+    const itemsToAdd = missingRequestItems(plan, before);
+    let addResponseOk = false;
+    let addResponseMalformed = false;
+    let addError = null;
+    try {
+      const response = await fetchWithTimeout(fetchImpl, routes.add, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        credentials: "same-origin",
+        body: JSON.stringify({ items: itemsToAdd })
+      }, config.timeoutMs);
+      addResponseOk = Boolean(response && response.ok);
+      if (response && typeof response.json === "function") {
+        try {
+          await response.json();
+        } catch (error) {
+          addResponseMalformed = true;
+        }
+      }
+    } catch (error) {
+      addError = error;
+    }
+
+    let afterCart;
+    try {
+      afterCart = await readCartState(fetchImpl, routes.cart, config.timeoutMs);
+    } catch (error) {
+      return {
+        status: "uncertain",
+        stage: "reconciliation",
+        addResponseOk: addResponseOk,
+        addResponseMalformed: addResponseMalformed,
+        addError: addError,
+        mutationAttempted: true
+      };
+    }
+
+    const after = reconcileBundleCart(plan, afterCart);
+    if (after.complete) {
+      return {
+        status: "success",
+        stage: "reconciled",
+        reconciliation: after,
+        addResponseOk: addResponseOk,
+        addResponseMalformed: addResponseMalformed,
+        addError: addError,
+        mutationAttempted: true
+      };
+    }
+
+    return {
+      status: after.confirmedQuantity > 0 ? "partial" : "failed",
+      stage: "reconciled",
+      reconciliation: after,
+      addResponseOk: addResponseOk,
+      addResponseMalformed: addResponseMalformed,
+      addError: addError,
+      mutationAttempted: true
+    };
+  }
+
+  function safeLocalStorage() {
+    try {
+      return window.localStorage || null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function claimBundleLock(plan, storage, now) {
+    if (!storage) return true;
+    const currentTime = Number(now || Date.now());
+    try {
+      const current = parseJson(storage.getItem(BUNDLE_LOCK_KEY) || "{}", {});
+      if (
+        current.expiresAt > currentTime &&
+        current.fingerprint === plan.fingerprint &&
+        current.operationId !== plan.operationId
+      ) {
+        return false;
+      }
+      storage.setItem(BUNDLE_LOCK_KEY, JSON.stringify({
+        operationId: plan.operationId,
+        fingerprint: plan.fingerprint,
+        expiresAt: currentTime + 120000
+      }));
+      const claimed = parseJson(storage.getItem(BUNDLE_LOCK_KEY) || "{}", {});
+      return claimed.operationId === plan.operationId;
+    } catch (error) {
+      return true;
+    }
+  }
+
+  function retainBundleLock(plan, storage, durationMs, now) {
+    if (!storage || !plan) return;
+    try {
+      storage.setItem(BUNDLE_LOCK_KEY, JSON.stringify({
+        operationId: plan.operationId,
+        fingerprint: plan.fingerprint,
+        expiresAt: Number(now || Date.now()) + Number(durationMs || 0)
+      }));
+    } catch (error) {
+      // Same-tab submission protection remains active even when storage is unavailable.
+    }
+  }
+
+  function cartResultMessage(result) {
+    if (result && result.status === "success") {
+      return "Your complete SnoozePod was verified in the cart.";
+    }
+    if (result && result.status === "partial") {
+      const missing = (result.reconciliation && result.reconciliation.items || [])
+        .filter(function (item) { return item.missingQuantity > 0; })
+        .map(function (item) { return item.role; });
+      return "Your SnoozePod was not fully added" +
+        (missing.length ? ". Missing: " + missing.join(", ") : "") +
+        ". Your selections are still here. Review your cart before trying again.";
+    }
+    if (result && result.status === "uncertain") {
+      return "We couldn't verify the cart. It may contain part of your selection. Your selections are still here. Check your cart before trying again.";
+    }
+    if (result && result.status === "concurrent") {
+      return "This SnoozePod is already being added in another tab. Wait for that attempt to finish, then check your cart.";
+    }
+    const reason = result && Array.isArray(result.errors) && result.errors[0]
+      ? " " + result.errors[0]
+      : "";
+    return "We couldn't add this SnoozePod. Nothing was confirmed as added." + reason +
+      " Your selections are still here. Review them and try again.";
+  }
+
+  function renderCartStatus(statusElement, result) {
+    if (!statusElement) return;
+    if (!result) {
+      statusElement.hidden = true;
+      statusElement.textContent = "";
+      statusElement.removeAttribute("data-status");
+      return;
+    }
+
+    statusElement.hidden = false;
+    statusElement.setAttribute("data-status", result.status || "failed");
+    statusElement.textContent = cartResultMessage(result);
+    if (result.status !== "success" && typeof statusElement.focus === "function") {
+      statusElement.focus();
+    }
   }
 
   function updateSleepFacts(state, catalogs, sizeOptions) {
@@ -982,6 +1445,7 @@
       price: root.querySelector("[data-builder-price]"),
       form: root.querySelector("[data-builder-form]"),
       submit: root.querySelector("[data-builder-submit]"),
+      cartStatus: root.querySelector("[data-builder-cart-status]"),
       back: root.querySelector("[data-builder-back]"),
       next: root.querySelector("[data-builder-next]"),
       finalActions: root.querySelector("[data-builder-final-actions]"),
@@ -1010,11 +1474,15 @@
       bedding: "",
       hasManualInput: false,
       builderPlan: null,
-      guidance: null
+      guidance: null,
+      cartPlan: null,
+      isSubmitting: false
     };
 
     function setStepValue(stepKey, value) {
       state[stepKey] = value;
+      state.cartPlan = null;
+      renderCartStatus(els.cartStatus, null);
 
       if (stepKey === "base" && !isAdjustableBaseSelection(state, catalogs, sizeOptions)) {
         state.motion = "";
@@ -1030,12 +1498,23 @@
         if (state.motion && allowedMotionValues.indexOf(state.motion) === -1) {
           state.motion = "";
         }
+
+        ["base", "protection", "bedding"].forEach(function (dependentStep) {
+          if (!state[dependentStep]) return;
+          const selected = getSelectedOption(dependentStep, state, catalogs, sizeOptions);
+          if (!selected || (selected.kind === "product" && !resolveAddonVariant(selected, value))) {
+            state[dependentStep] = "";
+          }
+        });
       }
     }
 
     function canProceed(stepKey) {
       if (stepKey === "review") return true;
-      return Boolean(state[stepKey]);
+      if (!state[stepKey]) return false;
+      if (["base", "protection", "pillow", "bedding"].indexOf(stepKey) === -1) return true;
+      const selected = getSelectedOption(stepKey, state, catalogs, sizeOptions);
+      return Boolean(selected && (selected.kind !== "product" || resolveAddonVariant(selected, stepKey === "pillow" ? "" : state.size)));
     }
 
     function buildStepGuidance(stepKey) {
@@ -1211,6 +1690,10 @@
     }
 
     root.addEventListener("click", function (event) {
+      if (state.isSubmitting && event.target.closest("[data-builder-reset], [data-builder-option], [data-builder-back], [data-builder-next]")) {
+        return;
+      }
+
       const optionButton = event.target.closest("[data-builder-option]");
       if (optionButton) {
         state.hasManualInput = true;
@@ -1250,6 +1733,8 @@
         state.pillow = "";
         state.bedding = "";
         state.hasManualInput = false;
+        state.cartPlan = null;
+        renderCartStatus(els.cartStatus, null);
         if (state.builderPlan) {
           applyBuilderPlan(state.builderPlan);
         }
@@ -1259,44 +1744,100 @@
 
     if (els.form) {
       els.form.addEventListener("submit", async function (event) {
-        const mattressVariant = findVariantForSize(variants, state.size, sizeOptionIndex);
-        if (!mattressVariant || !window.fetch) return;
-
         event.preventDefault();
+        if (state.isSubmitting) return;
 
-        const items = buildCartItems(mattressVariant, state, catalogs, sizeOptions);
-        if (!items.length) {
-          HTMLFormElement.prototype.submit.call(els.form);
+        const mattressVariant = findVariantForSize(variants, state.size, sizeOptionIndex);
+        if (!mattressVariant || !window.fetch) {
+          renderCartStatus(els.cartStatus, { status: "failed", stage: "validation" });
           return;
         }
 
+        const freshPlan = buildBundleRequestPlan(mattressVariant, state, catalogs, sizeOptions, {
+          mattressHandle: root.dataset.productHandle || ""
+        });
+        const plan = state.cartPlan && state.cartPlan.fingerprint === freshPlan.fingerprint
+          ? state.cartPlan
+          : freshPlan;
+        state.cartPlan = plan;
+
+        const validationErrors = validateBundleRequestPlan(plan);
+        if (validationErrors.length) {
+          renderCartStatus(els.cartStatus, {
+            status: "failed",
+            stage: "validation",
+            errors: validationErrors
+          });
+          return;
+        }
+
+        const storage = safeLocalStorage();
+        if (!claimBundleLock(plan, storage)) {
+          renderCartStatus(els.cartStatus, { status: "concurrent", stage: "lock" });
+          return;
+        }
+
+        state.isSubmitting = true;
         const originalLabel = els.submit ? els.submit.textContent : "";
         if (els.submit) {
           els.submit.disabled = true;
-          els.submit.textContent = "Adding...";
+          els.submit.textContent = "Adding and verifying...";
+        }
+        if (els.reset) els.reset.disabled = true;
+        if (els.cartStatus) {
+          els.cartStatus.hidden = false;
+          els.cartStatus.setAttribute("data-status", "pending");
+          els.cartStatus.textContent = "Adding and verifying your complete SnoozePod.";
         }
 
         try {
-          const response = await fetch((window.Shopify && Shopify.routes && Shopify.routes.root ? Shopify.routes.root : "/") + "cart/add.js", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json"
-            },
-            body: JSON.stringify({ items: items })
-          });
-
-          if (!response.ok) {
-            throw new Error("Cart add failed");
+          const shopifyRoot = window.Shopify && Shopify.routes && Shopify.routes.root
+            ? Shopify.routes.root
+            : "/";
+          const readiness = await verifyBundleVariantReadiness(
+            plan,
+            window.fetch.bind(window),
+            shopifyRoot,
+            CART_REQUEST_TIMEOUT_MS
+          );
+          let result;
+          if (!readiness.ok) {
+            result = {
+              status: "failed",
+              stage: "availability",
+              errors: readiness.errors,
+              mutationAttempted: false
+            };
+          } else {
+            result = await executeBundleCartOperation(
+              plan,
+              window.fetch.bind(window),
+              {
+                add: shopifyRoot + "cart/add.js",
+                cart: shopifyRoot + "cart.js"
+              },
+              { timeoutMs: CART_REQUEST_TIMEOUT_MS }
+            );
           }
 
-          window.location.href = (window.Shopify && Shopify.routes && Shopify.routes.cart_url) || "/cart";
+          renderCartStatus(els.cartStatus, result);
+          if (result.status === "success") {
+            retainBundleLock(plan, storage, 15000);
+            window.location.href = (window.Shopify && Shopify.routes && Shopify.routes.cart_url) || "/cart";
+            return;
+          }
+
+          retainBundleLock(plan, storage, result.status === "failed" ? 60000 : 120000);
         } catch (error) {
+          renderCartStatus(els.cartStatus, { status: "uncertain", stage: "unexpected" });
+          retainBundleLock(plan, storage, 120000);
+        } finally {
+          state.isSubmitting = false;
           if (els.submit) {
             els.submit.disabled = false;
             els.submit.textContent = originalLabel;
           }
-          HTMLFormElement.prototype.submit.call(els.form);
+          if (els.reset) els.reset.disabled = false;
         }
       });
     }

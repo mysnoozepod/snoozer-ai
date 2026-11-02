@@ -341,6 +341,32 @@
   margin-top: 14px;
 }
 
+.snoozepod-builder__cart-status {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(7, 25, 66, 0.16);
+  border-radius: 12px;
+  background: rgba(7, 25, 66, 0.05);
+  color: #071942;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.snoozepod-builder__cart-status[data-status="failed"],
+.snoozepod-builder__cart-status[data-status="partial"],
+.snoozepod-builder__cart-status[data-status="uncertain"],
+.snoozepod-builder__cart-status[data-status="concurrent"] {
+  border-color: rgba(163, 52, 39, 0.34);
+  background: rgba(163, 52, 39, 0.08);
+  color: #711f17;
+}
+
+.snoozepod-builder__cart-status:focus-visible {
+  outline: 3px solid rgba(7, 25, 66, 0.24);
+  outline-offset: 2px;
+}
+
 .snoozepod-builder__submit,
 .snoozepod-builder__book,
 .snoozepod-builder__back,
@@ -381,6 +407,11 @@
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
+}
+
+.snoozepod-builder__reset:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .snoozepod-builder__summary-price {

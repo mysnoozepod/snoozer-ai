@@ -1,0 +1,2676 @@
+{
+  "schemaVersion": "1.0",
+  "verifiedAt": "2026-11-01T01:32:40.802Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "apiVersion": "2025-10",
+  "publicationGate": "ALL_PRODUCTS_VERIFIED_DRAFT_AND_UNPUBLISHED_BY_THIS_SCRIPT",
+  "collections": [
+    {
+      "title": "Adjustable Bases",
+      "handle": "adjustable-bases",
+      "shopifyCollectionId": "302102741053"
+    },
+    {
+      "title": "Sheet Sets",
+      "handle": "sheet-sets",
+      "shopifyCollectionId": "302102773821"
+    },
+    {
+      "title": "Bedding",
+      "handle": "bedding",
+      "shopifyCollectionId": "302102806589"
+    },
+    {
+      "title": "Mattress Protectors",
+      "handle": "mattress-protectors",
+      "shopifyCollectionId": "302102839357"
+    },
+    {
+      "title": "Mattress Toppers",
+      "handle": "mattress-toppers",
+      "shopifyCollectionId": "302102872125"
+    }
+  ],
+  "products": [
+    {
+      "title": "Flex L Adjustable Base",
+      "handle": "flex-l-adjustable-base",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247142461",
+      "category": null,
+      "collections": [
+        {
+          "handle": "adjustable-bases",
+          "shopifyCollectionId": "302102741053"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGF026802-BLK",
+          "barcode": "810112144284",
+          "price": "699.00",
+          "shopifyVariantId": "44122467139645",
+          "options": {
+            "Size": "Twin XL"
+          },
+          "contract": {
+            "compatibility_key": "flex-l-adjustable-base-twin-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGF026805-BLK",
+          "barcode": "810112144291",
+          "price": "799.00",
+          "shopifyVariantId": "44122467172413",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "flex-l-adjustable-base-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGF026806-BLK",
+          "barcode": "810112144307",
+          "price": "999.00",
+          "shopifyVariantId": "44122467205181",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "flex-l-adjustable-base-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGF026807-BLK",
+          "barcode": "810112144314",
+          "price": "999.00",
+          "shopifyVariantId": "44122467237949",
+          "options": {
+            "Size": "Cal King"
+          },
+          "contract": {
+            "compatibility_key": "flex-l-adjustable-base-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"base\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Flex LSX Adjustable Base",
+      "handle": "flex-lsx-adjustable-base",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247175229",
+      "category": null,
+      "collections": [
+        {
+          "handle": "adjustable-bases",
+          "shopifyCollectionId": "302102741053"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGF032202",
+          "barcode": "810123307388",
+          "price": "1849.00",
+          "shopifyVariantId": "44122467270717",
+          "options": {
+            "Size": "Twin XL"
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "compatibility_key": "flex-lsx-adjustable-base-twin-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        },
+        {
+          "sku": "BGF032205",
+          "barcode": "810123307395",
+          "price": "1999.00",
+          "shopifyVariantId": "44122467303485",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "flex-lsx-adjustable-base-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGF032206",
+          "barcode": "810123307401",
+          "price": "2499.00",
+          "shopifyVariantId": "44122467336253",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "flex-lsx-adjustable-base-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGF032207",
+          "barcode": "810123307418",
+          "price": "2499.00",
+          "shopifyVariantId": "44122467369021",
+          "options": {
+            "Size": "Cal King"
+          },
+          "contract": {
+            "compatibility_key": "flex-lsx-adjustable-base-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGF032209",
+          "barcode": "810145831991",
+          "price": "3599.00",
+          "shopifyVariantId": "44122467401789",
+          "options": {
+            "Size": "Split Cal King"
+          },
+          "contract": {
+            "compatibility_key": "flex-lsx-adjustable-base-split-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"base\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Flex SH Adjustable Base",
+      "handle": "flex-sh-adjustable-base",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247240765",
+      "category": null,
+      "collections": [
+        {
+          "handle": "adjustable-bases",
+          "shopifyCollectionId": "302102741053"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGF032255",
+          "barcode": "810145832752",
+          "price": "2099.00",
+          "shopifyVariantId": "44122467434557",
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "contract": {
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head",
+            "compatibility_key": "flex-sh-adjustable-base-split-head-queen",
+            "fulfillment_readiness": "PENDING"
+          }
+        },
+        {
+          "sku": "BGF032265",
+          "barcode": "810145832769",
+          "price": "2799.00",
+          "shopifyVariantId": "44122467467325",
+          "options": {
+            "Size": "Split Head King"
+          },
+          "contract": {
+            "compatibility_key": "flex-sh-adjustable-base-split-head-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGF032275",
+          "barcode": "810145832776",
+          "price": "2799.00",
+          "shopifyVariantId": "44122467500093",
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "contract": {
+            "compatibility_key": "flex-sh-adjustable-base-split-head-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"base\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Cotton Sheet Set",
+      "handle": "cotton-sheet-set",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247306301",
+      "category": null,
+      "collections": [
+        {
+          "handle": "sheet-sets",
+          "shopifyCollectionId": "302102773821"
+        },
+        {
+          "handle": "bedding",
+          "shopifyCollectionId": "302102806589"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGS122W10",
+          "barcode": "810212902531",
+          "price": "149.99",
+          "shopifyVariantId": "44122475724861",
+          "options": {
+            "Size": "Twin",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-twin-bright-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122W20",
+          "barcode": "810212902548",
+          "price": "159.99",
+          "shopifyVariantId": "44122475757629",
+          "options": {
+            "Size": "Twin XL",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-twin-xl-bright-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122W30",
+          "barcode": "810212902555",
+          "price": "179.99",
+          "shopifyVariantId": "44122475790397",
+          "options": {
+            "Size": "Full",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard",
+            "compatibility_key": "cotton-sheet-set-full-bright-white"
+          }
+        },
+        {
+          "sku": "BGS122W50",
+          "barcode": "810212902562",
+          "price": "199.99",
+          "shopifyVariantId": "44122475823165",
+          "options": {
+            "Size": "Queen",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-queen-bright-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122W55",
+          "barcode": "810212902579",
+          "price": "229.99",
+          "shopifyVariantId": "44122475855933",
+          "options": {
+            "Size": "Split Head Queen",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-head-queen-bright-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS122W60",
+          "barcode": "810212902586",
+          "price": "229.99",
+          "shopifyVariantId": "44122475888701",
+          "options": {
+            "Size": "King",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-king-bright-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122W70",
+          "barcode": "810212902593",
+          "price": "229.99",
+          "shopifyVariantId": "44122475921469",
+          "options": {
+            "Size": "Cal King",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-cal-king-bright-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122W80",
+          "barcode": "810212902609",
+          "price": "249.99",
+          "shopifyVariantId": "44122475954237",
+          "options": {
+            "Size": "Split King",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-king-bright-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS122W90",
+          "barcode": "810212902616",
+          "price": "249.99",
+          "shopifyVariantId": "44122475987005",
+          "options": {
+            "Size": "Split Cal King",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-cal-king-bright-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS122W65",
+          "barcode": "810212902623",
+          "price": "259.99",
+          "shopifyVariantId": "44122476019773",
+          "options": {
+            "Size": "Split Head King",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-head-king-bright-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS122W75",
+          "barcode": "810212902630",
+          "price": "259.99",
+          "shopifyVariantId": "44122476052541",
+          "options": {
+            "Size": "Split Head Cal King",
+            "Color": "Bright White"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-head-cal-king-bright-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS122L10",
+          "barcode": "810212902753",
+          "price": "149.99",
+          "shopifyVariantId": "44122476085309",
+          "options": {
+            "Size": "Twin",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-twin-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122L20",
+          "barcode": "810212902760",
+          "price": "159.99",
+          "shopifyVariantId": "44122476118077",
+          "options": {
+            "Size": "Twin XL",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-twin-xl-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122L30",
+          "barcode": "810212902777",
+          "price": "179.99",
+          "shopifyVariantId": "44122476150845",
+          "options": {
+            "Size": "Full",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-full-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122L50",
+          "barcode": "810212902784",
+          "price": "199.99",
+          "shopifyVariantId": "44122476183613",
+          "options": {
+            "Size": "Queen",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-queen-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122L55",
+          "barcode": "810212902791",
+          "price": "229.99",
+          "shopifyVariantId": "44122476216381",
+          "options": {
+            "Size": "Split Head Queen",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "compatibility_key": "cotton-sheet-set-split-head-queen-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        },
+        {
+          "sku": "BGS122L60",
+          "barcode": "810212902807",
+          "price": "229.99",
+          "shopifyVariantId": "44122476249149",
+          "options": {
+            "Size": "King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122L70",
+          "barcode": "810212902814",
+          "price": "229.99",
+          "shopifyVariantId": "44122476281917",
+          "options": {
+            "Size": "Cal King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-cal-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122L80",
+          "barcode": "810212902821",
+          "price": "249.99",
+          "shopifyVariantId": "44122476314685",
+          "options": {
+            "Size": "Split King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS122L90",
+          "barcode": "810212902838",
+          "price": "249.99",
+          "shopifyVariantId": "44122476347453",
+          "options": {
+            "Size": "Split Cal King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-cal-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS122L65",
+          "barcode": "810212902845",
+          "price": "259.99",
+          "shopifyVariantId": "44122476380221",
+          "options": {
+            "Size": "Split Head King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-head-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS122L75",
+          "barcode": "810212902852",
+          "price": "259.99",
+          "shopifyVariantId": "44122476412989",
+          "options": {
+            "Size": "Split Head Cal King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head",
+            "compatibility_key": "cotton-sheet-set-split-head-cal-king-light-grey",
+            "fulfillment_readiness": "PENDING"
+          }
+        },
+        {
+          "sku": "BGS122G50",
+          "barcode": "810212902876",
+          "price": "199.99",
+          "shopifyVariantId": "44122476445757",
+          "options": {
+            "Size": "Queen",
+            "Color": "Moss"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-queen-moss",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122G60",
+          "barcode": "810212902883",
+          "price": "229.99",
+          "shopifyVariantId": "44122476478525",
+          "options": {
+            "Size": "King",
+            "Color": "Moss"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-king-moss",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122G80",
+          "barcode": "810212902869",
+          "price": "249.99",
+          "shopifyVariantId": "44122476511293",
+          "options": {
+            "Size": "Split King",
+            "Color": "Moss"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-king-moss",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS122T10",
+          "barcode": "810212902647",
+          "price": "149.99",
+          "shopifyVariantId": "44122476544061",
+          "options": {
+            "Size": "Twin",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-twin-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122T20",
+          "barcode": "810212902654",
+          "price": "159.99",
+          "shopifyVariantId": "44122476576829",
+          "options": {
+            "Size": "Twin XL",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-twin-xl-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122T30",
+          "barcode": "810212902661",
+          "price": "179.99",
+          "shopifyVariantId": "44122476609597",
+          "options": {
+            "Size": "Full",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard",
+            "compatibility_key": "cotton-sheet-set-full-taupe"
+          }
+        },
+        {
+          "sku": "BGS122T50",
+          "barcode": "810212902678",
+          "price": "199.99",
+          "shopifyVariantId": "44122476642365",
+          "options": {
+            "Size": "Queen",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-queen-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122T55",
+          "barcode": "810212902685",
+          "price": "229.99",
+          "shopifyVariantId": "44122476675133",
+          "options": {
+            "Size": "Split Head Queen",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-head-queen-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS122T60",
+          "barcode": "810212902692",
+          "price": "229.99",
+          "shopifyVariantId": "44122476707901",
+          "options": {
+            "Size": "King",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-king-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122T70",
+          "barcode": "810212902708",
+          "price": "229.99",
+          "shopifyVariantId": "44122476740669",
+          "options": {
+            "Size": "Cal King",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-cal-king-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS122T80",
+          "barcode": "810212902715",
+          "price": "249.99",
+          "shopifyVariantId": "44122476773437",
+          "options": {
+            "Size": "Split King",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-king-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS122T90",
+          "barcode": "810212902722",
+          "price": "249.99",
+          "shopifyVariantId": "44122476806205",
+          "options": {
+            "Size": "Split Cal King",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-cal-king-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS122T65",
+          "barcode": "810212902739",
+          "price": "259.99",
+          "shopifyVariantId": "44122476838973",
+          "options": {
+            "Size": "Split Head King",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-head-king-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS122T75",
+          "barcode": "810212902746",
+          "price": "259.99",
+          "shopifyVariantId": "44122476871741",
+          "options": {
+            "Size": "Split Head Cal King",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "cotton-sheet-set-split-head-cal-king-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"bedding\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Dri-Tec Sheet Set",
+      "handle": "dri-tec-sheet-set",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247339069",
+      "category": null,
+      "collections": [
+        {
+          "handle": "sheet-sets",
+          "shopifyCollectionId": "302102773821"
+        },
+        {
+          "handle": "bedding",
+          "shopifyCollectionId": "302102806589"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGS194X11",
+          "barcode": "810212903484",
+          "price": "199.99",
+          "shopifyVariantId": "44122476904509",
+          "options": {
+            "Size": "Twin/Twin XL",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-twin-twin-xl-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194X30",
+          "barcode": "810212903491",
+          "price": "229.99",
+          "shopifyVariantId": "44122476937277",
+          "options": {
+            "Size": "Full",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-full-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194X50",
+          "barcode": "810212903507",
+          "price": "249.99",
+          "shopifyVariantId": "44122476970045",
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-queen-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194X55",
+          "barcode": "810212903514",
+          "price": "279.99",
+          "shopifyVariantId": "44122477002813",
+          "options": {
+            "Size": "Split Head Queen",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "compatibility_key": "dri-tec-sheet-set-split-head-queen-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        },
+        {
+          "sku": "BGS194X12",
+          "barcode": "810212903521",
+          "price": "279.99",
+          "shopifyVariantId": "44122477035581",
+          "options": {
+            "Size": "King/Cal King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-king-cal-king-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194X14",
+          "barcode": "810212903538",
+          "price": "299.99",
+          "shopifyVariantId": "44122477068349",
+          "options": {
+            "Size": "Split King/Split Cal King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-king-split-cal-king-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS194X65",
+          "barcode": "810212903545",
+          "price": "309.99",
+          "shopifyVariantId": "44122477101117",
+          "options": {
+            "Size": "Split Head King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-king-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194X75",
+          "barcode": "810212903552",
+          "price": "309.99",
+          "shopifyVariantId": "44122477133885",
+          "options": {
+            "Size": "Split Head Cal King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-cal-king-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194L11",
+          "barcode": "810212903408",
+          "price": "199.99",
+          "shopifyVariantId": "44122477166653",
+          "options": {
+            "Size": "Twin/Twin XL",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-twin-twin-xl-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194L30",
+          "barcode": "810212903415",
+          "price": "229.99",
+          "shopifyVariantId": "44122477199421",
+          "options": {
+            "Size": "Full",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard",
+            "compatibility_key": "dri-tec-sheet-set-full-light-grey",
+            "fulfillment_readiness": "PENDING"
+          }
+        },
+        {
+          "sku": "BGS194L50",
+          "barcode": "810212903422",
+          "price": "249.99",
+          "shopifyVariantId": "44122477232189",
+          "options": {
+            "Size": "Queen",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-queen-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194L55",
+          "barcode": "810212903439",
+          "price": "279.99",
+          "shopifyVariantId": "44122477264957",
+          "options": {
+            "Size": "Split Head Queen",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-queen-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194L12",
+          "barcode": "810212903446",
+          "price": "279.99",
+          "shopifyVariantId": "44122477297725",
+          "options": {
+            "Size": "King/Cal King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-king-cal-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194L14",
+          "barcode": "810212903453",
+          "price": "299.99",
+          "shopifyVariantId": "44122477330493",
+          "options": {
+            "Size": "Split King/Split Cal King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-king-split-cal-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS194L65",
+          "barcode": "810212903460",
+          "price": "309.99",
+          "shopifyVariantId": "44122477363261",
+          "options": {
+            "Size": "Split Head King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194L75",
+          "barcode": "810212903477",
+          "price": "309.99",
+          "shopifyVariantId": "44122477396029",
+          "options": {
+            "Size": "Split Head Cal King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head",
+            "compatibility_key": "dri-tec-sheet-set-split-head-cal-king-light-grey"
+          }
+        },
+        {
+          "sku": "BGS194768",
+          "barcode": "810190699997",
+          "price": "329.99",
+          "shopifyVariantId": "44122477428797",
+          "options": {
+            "Size": "Texas King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-texas-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194N11",
+          "barcode": "810212903569",
+          "price": "199.99",
+          "shopifyVariantId": "44122477461565",
+          "options": {
+            "Size": "Twin/Twin XL",
+            "Color": "Navy"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-twin-twin-xl-navy",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194N30",
+          "barcode": "810212903576",
+          "price": "229.99",
+          "shopifyVariantId": "44122477494333",
+          "options": {
+            "Size": "Full",
+            "Color": "Navy"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-full-navy",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194N50",
+          "barcode": "810212903583",
+          "price": "249.99",
+          "shopifyVariantId": "44122477527101",
+          "options": {
+            "Size": "Queen",
+            "Color": "Navy"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-queen-navy",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194N55",
+          "barcode": "810212903590",
+          "price": "279.99",
+          "shopifyVariantId": "44122477559869",
+          "options": {
+            "Size": "Split Head Queen",
+            "Color": "Navy"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-queen-navy",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194N12",
+          "barcode": "810212903606",
+          "price": "279.99",
+          "shopifyVariantId": "44122477592637",
+          "options": {
+            "Size": "King/Cal King",
+            "Color": "Navy"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-king-cal-king-navy",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194N14",
+          "barcode": "810212903613",
+          "price": "299.99",
+          "shopifyVariantId": "44122477625405",
+          "options": {
+            "Size": "Split King/Split Cal King",
+            "Color": "Navy"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-king-split-cal-king-navy",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS194N65",
+          "barcode": "810212903620",
+          "price": "309.99",
+          "shopifyVariantId": "44122477658173",
+          "options": {
+            "Size": "Split Head King",
+            "Color": "Navy"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-king-navy",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194N75",
+          "barcode": "810212903637",
+          "price": "309.99",
+          "shopifyVariantId": "44122477690941",
+          "options": {
+            "Size": "Split Head Cal King",
+            "Color": "Navy"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-cal-king-navy",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194T11",
+          "barcode": "810212903323",
+          "price": "199.99",
+          "shopifyVariantId": "44122477723709",
+          "options": {
+            "Size": "Twin/Twin XL",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-twin-twin-xl-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194T30",
+          "barcode": "810212903330",
+          "price": "229.99",
+          "shopifyVariantId": "44122477756477",
+          "options": {
+            "Size": "Full",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-full-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194T50",
+          "barcode": "810212903347",
+          "price": "249.99",
+          "shopifyVariantId": "44122477789245",
+          "options": {
+            "Size": "Queen",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-queen-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194T55",
+          "barcode": "810212903354",
+          "price": "279.99",
+          "shopifyVariantId": "44122477822013",
+          "options": {
+            "Size": "Split Head Queen",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "compatibility_key": "dri-tec-sheet-set-split-head-queen-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        },
+        {
+          "sku": "BGS194T12",
+          "barcode": "810212903361",
+          "price": "279.99",
+          "shopifyVariantId": "44122477854781",
+          "options": {
+            "Size": "King/Cal King",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-king-cal-king-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194T14",
+          "barcode": "810212903378",
+          "price": "299.99",
+          "shopifyVariantId": "44122477887549",
+          "options": {
+            "Size": "Split King/Split Cal King",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-king-split-cal-king-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS194T65",
+          "barcode": "810212903385",
+          "price": "309.99",
+          "shopifyVariantId": "44122477920317",
+          "options": {
+            "Size": "Split Head King",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-king-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194T75",
+          "barcode": "810212903392",
+          "price": "309.99",
+          "shopifyVariantId": "44122477953085",
+          "options": {
+            "Size": "Split Head Cal King",
+            "Color": "Taupe"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-cal-king-taupe",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194W11",
+          "barcode": "810212903248",
+          "price": "199.99",
+          "shopifyVariantId": "44122477985853",
+          "options": {
+            "Size": "Twin/Twin XL",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-twin-twin-xl-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194W30",
+          "barcode": "810212903255",
+          "price": "229.99",
+          "shopifyVariantId": "44122478018621",
+          "options": {
+            "Size": "Full",
+            "Color": "White"
+          },
+          "contract": {
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard",
+            "compatibility_key": "dri-tec-sheet-set-full-white",
+            "fulfillment_readiness": "PENDING"
+          }
+        },
+        {
+          "sku": "BGS194W50",
+          "barcode": "810212903262",
+          "price": "249.99",
+          "shopifyVariantId": "44122478051389",
+          "options": {
+            "Size": "Queen",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-queen-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194W55",
+          "barcode": "810212903279",
+          "price": "279.99",
+          "shopifyVariantId": "44122478084157",
+          "options": {
+            "Size": "Split Head Queen",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-queen-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194W12",
+          "barcode": "810212903286",
+          "price": "279.99",
+          "shopifyVariantId": "44122478116925",
+          "options": {
+            "Size": "King/Cal King",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-king-cal-king-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS194W14",
+          "barcode": "810212903293",
+          "price": "299.99",
+          "shopifyVariantId": "44122478149693",
+          "options": {
+            "Size": "Split King/Split Cal King",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-king-split-cal-king-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS194W65",
+          "barcode": "810212903309",
+          "price": "309.99",
+          "shopifyVariantId": "44122478182461",
+          "options": {
+            "Size": "Split Head King",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-sheet-set-split-head-king-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS194W75",
+          "barcode": "810212903316",
+          "price": "309.99",
+          "shopifyVariantId": "44122478215229",
+          "options": {
+            "Size": "Split Head Cal King",
+            "Color": "White"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head",
+            "compatibility_key": "dri-tec-sheet-set-split-head-cal-king-white"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"bedding\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Ver-Tex Sheet Set",
+      "handle": "ver-tex-sheet-set",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247371837",
+      "category": null,
+      "collections": [
+        {
+          "handle": "sheet-sets",
+          "shopifyCollectionId": "302102773821"
+        },
+        {
+          "handle": "bedding",
+          "shopifyCollectionId": "302102806589"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGS197B50",
+          "barcode": "810212903958",
+          "price": "299.99",
+          "shopifyVariantId": "44122478247997",
+          "options": {
+            "Size": "Queen",
+            "Color": "Light Blue"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-queen-light-blue",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS197B12",
+          "barcode": "810212903965",
+          "price": "329.99",
+          "shopifyVariantId": "44122478280765",
+          "options": {
+            "Size": "King/Cal King",
+            "Color": "Light Blue"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-king-cal-king-light-blue",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS197B14",
+          "barcode": "810212903972",
+          "price": "349.99",
+          "shopifyVariantId": "44122478313533",
+          "options": {
+            "Size": "Split King/Split Cal King",
+            "Color": "Light Blue"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-light-blue",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS197L50",
+          "barcode": "810212903866",
+          "price": "299.99",
+          "shopifyVariantId": "44122478346301",
+          "options": {
+            "Size": "Queen",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-queen-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS197L55",
+          "barcode": "810212903873",
+          "price": "329.99",
+          "shopifyVariantId": "44122478379069",
+          "options": {
+            "Size": "Split Head Queen",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-split-head-queen-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS197L12",
+          "barcode": "810212903880",
+          "price": "329.99",
+          "shopifyVariantId": "44122478411837",
+          "options": {
+            "Size": "King/Cal King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-king-cal-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS197L14",
+          "barcode": "810212903897",
+          "price": "349.99",
+          "shopifyVariantId": "44122478444605",
+          "options": {
+            "Size": "Split King/Split Cal King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS197L65",
+          "barcode": "810212903903",
+          "price": "359.99",
+          "shopifyVariantId": "44122478477373",
+          "options": {
+            "Size": "Split Head King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-split-head-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS197L75",
+          "barcode": "810212903910",
+          "price": "359.99",
+          "shopifyVariantId": "44122478510141",
+          "options": {
+            "Size": "Split Head Cal King",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-split-head-cal-king-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS197G50",
+          "barcode": "810212903927",
+          "price": "299.99",
+          "shopifyVariantId": "44122478542909",
+          "options": {
+            "Size": "Queen",
+            "Color": "Moss"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-queen-moss",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS197G12",
+          "barcode": "810212903934",
+          "price": "329.99",
+          "shopifyVariantId": "44122478575677",
+          "options": {
+            "Size": "King/Cal King",
+            "Color": "Moss"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-king-cal-king-moss",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS197G14",
+          "barcode": "810212903941",
+          "price": "349.99",
+          "shopifyVariantId": "44122478608445",
+          "options": {
+            "Size": "Split King/Split Cal King",
+            "Color": "Moss"
+          },
+          "contract": {
+            "sleep_geometry": "full_split",
+            "compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-moss",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        },
+        {
+          "sku": "BGS197W50",
+          "barcode": "810212903804",
+          "price": "299.99",
+          "shopifyVariantId": "44122478641213",
+          "options": {
+            "Size": "Queen",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-queen-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS197W55",
+          "barcode": "810212903811",
+          "price": "329.99",
+          "shopifyVariantId": "44122478673981",
+          "options": {
+            "Size": "Split Head Queen",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-split-head-queen-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS197W12",
+          "barcode": "810212903828",
+          "price": "329.99",
+          "shopifyVariantId": "44122478706749",
+          "options": {
+            "Size": "King/Cal King",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-king-cal-king-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGS197W14",
+          "barcode": "810212903835",
+          "price": "349.99",
+          "shopifyVariantId": "44122478739517",
+          "options": {
+            "Size": "Split King/Split Cal King",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGS197W65",
+          "barcode": "810212903842",
+          "price": "359.99",
+          "shopifyVariantId": "44122478772285",
+          "options": {
+            "Size": "Split Head King",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-sheet-set-split-head-king-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGS197W75",
+          "barcode": "810212903859",
+          "price": "359.99",
+          "shopifyVariantId": "44122478805053",
+          "options": {
+            "Size": "Split Head Cal King",
+            "Color": "White"
+          },
+          "contract": {
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head",
+            "compatibility_key": "ver-tex-sheet-set-split-head-cal-king-white",
+            "fulfillment_readiness": "PENDING"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"bedding\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Dri-Tec Mattress Protector",
+      "handle": "dri-tec-mattress-protector",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247404605",
+      "category": null,
+      "collections": [
+        {
+          "handle": "mattress-protectors",
+          "shopifyCollectionId": "302102839357"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGM03AWFT",
+          "barcode": "812807010690",
+          "price": "109.99",
+          "shopifyVariantId": "44122478837821",
+          "options": {
+            "Size": "Twin"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-twin",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM03AWFX",
+          "barcode": "812807010706",
+          "price": "119.99",
+          "shopifyVariantId": "44122478870589",
+          "options": {
+            "Size": "Twin XL"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-twin-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM03AWFF",
+          "barcode": "812807010713",
+          "price": "119.99",
+          "shopifyVariantId": "44122478903357",
+          "options": {
+            "Size": "Full"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-full",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM03AWFY",
+          "barcode": "812807010720",
+          "price": "149.99",
+          "shopifyVariantId": "44122478936125",
+          "options": {
+            "Size": "Full XL"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-full-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM03AWFQ",
+          "barcode": "812807010737",
+          "price": "159.99",
+          "shopifyVariantId": "44122478968893",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard",
+            "compatibility_key": "dri-tec-mattress-protector-queen"
+          }
+        },
+        {
+          "sku": "BGM014555",
+          "barcode": "810112149166",
+          "price": "179.99",
+          "shopifyVariantId": "44122479001661",
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-split-head-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGM03AWFK",
+          "barcode": "812807010744",
+          "price": "189.99",
+          "shopifyVariantId": "44122479034429",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM03AWFW",
+          "barcode": "812807010751",
+          "price": "189.99",
+          "shopifyVariantId": "44122479067197",
+          "options": {
+            "Size": "Cal King"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM03AWFE",
+          "barcode": "812807018900",
+          "price": "209.99",
+          "shopifyVariantId": "44122479099965",
+          "options": {
+            "Size": "Split King (2pc)"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-split-king-2pc",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGM03AWFD",
+          "barcode": "812807018306",
+          "price": "209.99",
+          "shopifyVariantId": "44122479132733",
+          "options": {
+            "Size": "Split Cal King (2pc)"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-split-cal-king-2pc",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGM014515",
+          "barcode": "810074953726",
+          "price": "209.99",
+          "shopifyVariantId": "44122479165501",
+          "options": {
+            "Size": "Split Head King"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-split-head-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGM014575",
+          "barcode": "810123302376",
+          "price": "209.99",
+          "shopifyVariantId": "44122479198269",
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "contract": {
+            "compatibility_key": "dri-tec-mattress-protector-split-head-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"protection\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Ver-Tex Mattress Protector",
+      "handle": "ver-tex-mattress-protector",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247502909",
+      "category": null,
+      "collections": [
+        {
+          "handle": "mattress-protectors",
+          "shopifyCollectionId": "302102839357"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGM026001",
+          "barcode": "810074959421",
+          "price": "249.99",
+          "shopifyVariantId": "44122479263805",
+          "options": {
+            "Size": "Twin"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-mattress-protector-twin",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM026002",
+          "barcode": "810074959438",
+          "price": "259.99",
+          "shopifyVariantId": "44122479296573",
+          "options": {
+            "Size": "Twin XL"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-mattress-protector-twin-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM026003",
+          "barcode": "810074959445",
+          "price": "259.99",
+          "shopifyVariantId": "44122479329341",
+          "options": {
+            "Size": "Full"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-mattress-protector-full",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM026005",
+          "barcode": "810074959452",
+          "price": "279.99",
+          "shopifyVariantId": "44122479362109",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-mattress-protector-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM026055",
+          "barcode": "810112149173",
+          "price": "299.99",
+          "shopifyVariantId": "44122479394877",
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "compatibility_key": "ver-tex-mattress-protector-split-head-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        },
+        {
+          "sku": "BGM026006",
+          "barcode": "810074959469",
+          "price": "299.99",
+          "shopifyVariantId": "44122479427645",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-mattress-protector-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM026007",
+          "barcode": "810074959476",
+          "price": "299.99",
+          "shopifyVariantId": "44122479460413",
+          "options": {
+            "Size": "Cal King"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-mattress-protector-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM026008",
+          "barcode": "810074959483",
+          "price": "359.99",
+          "shopifyVariantId": "44122479493181",
+          "options": {
+            "Size": "Split King (2pc)"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-mattress-protector-split-king-2pc",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGM026009",
+          "barcode": "810074959490",
+          "price": "359.99",
+          "shopifyVariantId": "44122479525949",
+          "options": {
+            "Size": "Split Cal King (2pc)"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-mattress-protector-split-cal-king-2pc",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGM026065",
+          "barcode": "810123302468",
+          "price": "359.99",
+          "shopifyVariantId": "44122479558717",
+          "options": {
+            "Size": "Split Head King"
+          },
+          "contract": {
+            "compatibility_key": "ver-tex-mattress-protector-split-head-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGM026075",
+          "barcode": "810123302475",
+          "price": "359.99",
+          "shopifyVariantId": "44122479591485",
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "contract": {
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head",
+            "compatibility_key": "ver-tex-mattress-protector-split-head-cal-king",
+            "fulfillment_readiness": "PENDING"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"protection\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Stretchwick Mattress Encasement",
+      "handle": "stretchwick-mattress-encasement",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247535677",
+      "category": null,
+      "collections": [
+        {
+          "handle": "mattress-protectors",
+          "shopifyCollectionId": "302102839357"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGM52AWFT",
+          "barcode": "811552033671",
+          "price": "99.99",
+          "shopifyVariantId": "44122487783485",
+          "options": {
+            "Size": "Twin"
+          },
+          "contract": {
+            "compatibility_key": "stretchwick-mattress-encasement-twin",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM52AWFX",
+          "barcode": "811552033688",
+          "price": "109.99",
+          "shopifyVariantId": "44122487816253",
+          "options": {
+            "Size": "Twin XL"
+          },
+          "contract": {
+            "compatibility_key": "stretchwick-mattress-encasement-twin-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM52AWFF",
+          "barcode": "811552033695",
+          "price": "119.99",
+          "shopifyVariantId": "44122487849021",
+          "options": {
+            "Size": "Full"
+          },
+          "contract": {
+            "compatibility_key": "stretchwick-mattress-encasement-full",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM52AWFQ",
+          "barcode": "811552033718",
+          "price": "129.99",
+          "shopifyVariantId": "44122487881789",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "stretchwick-mattress-encasement-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM52AWFK",
+          "barcode": "811552033725",
+          "price": "149.99",
+          "shopifyVariantId": "44122487914557",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard",
+            "compatibility_key": "stretchwick-mattress-encasement-king"
+          }
+        },
+        {
+          "sku": "BGM52AWFW",
+          "barcode": "811552033732",
+          "price": "149.99",
+          "shopifyVariantId": "44122487947325",
+          "options": {
+            "Size": "Cal King"
+          },
+          "contract": {
+            "compatibility_key": "stretchwick-mattress-encasement-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"protection\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Light Weight Comforter",
+      "handle": "light-weight-comforter",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247568445",
+      "category": null,
+      "collections": [
+        {
+          "handle": "bedding",
+          "shopifyCollectionId": "302102806589"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGB050W50",
+          "barcode": "810145835807",
+          "price": "199.99",
+          "shopifyVariantId": "44122487980093",
+          "options": {
+            "Size": "Full/Queen"
+          },
+          "contract": {
+            "compatibility_key": "light-weight-comforter-full-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGB050W60",
+          "barcode": "810145835814",
+          "price": "229.99",
+          "shopifyVariantId": "44122488012861",
+          "options": {
+            "Size": "King/Cal King"
+          },
+          "contract": {
+            "compatibility_key": "light-weight-comforter-king-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"bedding\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Medium Weight Comforter",
+      "handle": "medium-weight-comforter",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247601213",
+      "category": null,
+      "collections": [
+        {
+          "handle": "bedding",
+          "shopifyCollectionId": "302102806589"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGB051W50",
+          "barcode": "810145835821",
+          "price": "249.99",
+          "shopifyVariantId": "44122488045629",
+          "options": {
+            "Size": "Full/Queen"
+          },
+          "contract": {
+            "compatibility_key": "medium-weight-comforter-full-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGB051W60",
+          "barcode": "810145835838",
+          "price": "279.99",
+          "shopifyVariantId": "44122488078397",
+          "options": {
+            "Size": "King/Cal King"
+          },
+          "contract": {
+            "compatibility_key": "medium-weight-comforter-king-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"bedding\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Ultra Weight Comforter",
+      "handle": "ultra-weight-comforter",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247666749",
+      "category": null,
+      "collections": [
+        {
+          "handle": "bedding",
+          "shopifyCollectionId": "302102806589"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGB052W50",
+          "barcode": "810145835845",
+          "price": "299.99",
+          "shopifyVariantId": "44122488143933",
+          "options": {
+            "Size": "Full/Queen"
+          },
+          "contract": {
+            "compatibility_key": "ultra-weight-comforter-full-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGB052W60",
+          "barcode": "810145835852",
+          "price": "329.99",
+          "shopifyVariantId": "44122488176701",
+          "options": {
+            "Size": "King/Cal King"
+          },
+          "contract": {
+            "compatibility_key": "ultra-weight-comforter-king-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"bedding\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Cooling Performance Throw",
+      "handle": "cooling-performance-throw",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247765053",
+      "category": null,
+      "collections": [
+        {
+          "handle": "bedding",
+          "shopifyCollectionId": "302102806589"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGB043WNS",
+          "barcode": "810145834381",
+          "price": "149.99",
+          "shopifyVariantId": "44122488242237",
+          "options": {
+            "Size": "One Size",
+            "Color": "White/Grey"
+          },
+          "contract": {
+            "compatibility_key": "cooling-performance-throw-one-size-white-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"bedding\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "SELECTED"
+      }
+    },
+    {
+      "title": "Solid White Duvet + Sham Set",
+      "handle": "solid-white-duvet-sham-set",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247797821",
+      "category": null,
+      "collections": [
+        {
+          "handle": "bedding",
+          "shopifyCollectionId": "302102806589"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGB035550",
+          "barcode": "810145833612",
+          "price": "399.99",
+          "shopifyVariantId": "44122496434237",
+          "options": {
+            "Size": "Queen",
+            "Color": "White"
+          },
+          "contract": {
+            "compatibility_key": "solid-white-duvet-sham-set-queen-white",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "assortment_status": "SELECTED",
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"bedding\"]",
+        "publication_readiness": "BLOCKED"
+      }
+    },
+    {
+      "title": "Light Grey Racetrack Duvet + Sham Set",
+      "handle": "light-grey-racetrack-duvet-sham-set",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247830589",
+      "category": null,
+      "collections": [
+        {
+          "handle": "bedding",
+          "shopifyCollectionId": "302102806589"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGB039750",
+          "barcode": "810145833599",
+          "price": "399.99",
+          "shopifyVariantId": "44122496467005",
+          "options": {
+            "Size": "Queen",
+            "Color": "Light Grey"
+          },
+          "contract": {
+            "compatibility_key": "light-grey-racetrack-duvet-sham-set-queen-light-grey",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"bedding\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "SELECTED"
+      }
+    },
+    {
+      "title": "React Pro Performance Topper",
+      "handle": "react-pro-performance-topper",
+      "status": "DRAFT",
+      "shopifyProductId": "8100247863357",
+      "category": null,
+      "collections": [
+        {
+          "handle": "bedding",
+          "shopifyCollectionId": "302102806589"
+        },
+        {
+          "handle": "mattress-toppers",
+          "shopifyCollectionId": "302102872125"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGT088W50",
+          "barcode": "810145839041",
+          "price": "399.99",
+          "shopifyVariantId": "44122496532541",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "react-pro-performance-topper-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "SELECTED"
+      }
+    }
+  ]
+}

@@ -1,8 +1,42 @@
+{{ 'component-snoozepod-commerce-v1.css' | asset_url | stylesheet_tag }}
+
+{%- if product.tags contains 'feature:dual-comfort' -%}
+  <script src="{{ 'snoozepod-dual-comfort.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
+{%- liquid
+  assign parent_collection_handle = ''
+  case product.type
+    when 'Mattress'
+      assign parent_collection_handle = 'mattresses'
+    when 'Adjustable Base'
+      assign parent_collection_handle = 'adjustable-bases'
+    when 'Pillow'
+      assign parent_collection_handle = 'pillows'
+    when 'Sheet Set'
+      assign parent_collection_handle = 'sheets'
+    when 'Mattress Protector'
+      assign parent_collection_handle = 'mattress-protectors'
+    when 'Comforter'
+      assign parent_collection_handle = 'comforters'
+    when 'Duvet Set', 'Throw'
+      assign parent_collection_handle = 'cooling-bedding'
+    when 'Mattress Topper'
+      assign parent_collection_handle = 'mattress-toppers'
+    when 'Headboard', 'Platform Base'
+      assign parent_collection_handle = 'bedroom-furniture'
+  endcase
+  assign parent_collection = collections[parent_collection_handle]
+-%}
+
 <product-info
   id="MainProduct-{{ section.id }}"
   class="snoozepod-product-hero-section color-{{ section.settings.color_scheme }} gradient"
   data-section="{{ section.id }}"
   data-product-id="{{ product.id }}"
+  data-product-handle="{{ product.handle | escape }}"
+  data-product-type="{{ product.type | escape }}"
+  data-product-type-handle="{{ product.type | handleize }}"
   data-update-url="true"
   data-url="{{ product.url }}"
   {% if section.settings.image_zoom == 'hover' %}
@@ -67,6 +101,28 @@
       align-items: start;
     }
 
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-breadcrumbs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      grid-column: 1 / -1;
+      margin: 0;
+      color: rgba(7, 25, 66, 0.66);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-breadcrumbs a {
+      color: inherit;
+      text-underline-offset: 2px;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__grid > *,
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__media-wrapper,
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__info-wrapper {
+      min-width: 0;
+    }
+
     .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__media-card,
     .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__fallback,
     .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__info-card {
@@ -105,6 +161,7 @@
 
     .snoozepod-product-hero-{{ section.id }} .product__title h1 {
       margin: 0;
+      overflow-wrap: anywhere;
       color: #071942;
       font-size: 32px;
       line-height: 1.05;
@@ -146,13 +203,58 @@
     }
 
     .snoozepod-product-hero-{{ section.id }} .product-form__buttons {
-      margin-top: 24px;
+      margin-top: 12px;
     }
 
     .snoozepod-product-hero-{{ section.id }} .product-form__submit,
-    .snoozepod-product-hero-{{ section.id }} .shopify-payment-button__button {
+    .snoozepod-product-hero-{{ section.id }} .shopify-payment-button__button,
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__action {
       min-height: 56px;
       border-radius: 999px;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin-top: 12px;
+      padding: 0 24px;
+      border: 1px solid #071942;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__action--primary {
+      background: #071942;
+      color: #ffffff;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__action--secondary {
+      background: #ffffff;
+      color: #071942;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product-form__submit {
+      border: 1px solid #071942;
+      background: #ffffff;
+      color: #071942;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product-form__submit:after {
+      box-shadow: none;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__action:hover,
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__action:focus-visible,
+    .snoozepod-product-hero-{{ section.id }} .product-form__submit:hover,
+    .snoozepod-product-hero-{{ section.id }} .product-form__submit:focus-visible {
+      background: #2c4278;
+      color: #ffffff;
     }
 
     .snoozepod-product-hero-{{ section.id }} .product__description {
@@ -216,6 +318,15 @@
   <section class="section">
     <div class="snoozepod-product-hero-{{ section.id }}">
       <div class="snoozepod-product-hero__grid">
+        <nav class="snoozepod-breadcrumbs" aria-label="Breadcrumb">
+          <a href="{{ routes.root_url }}">Home</a>
+          {%- if parent_collection != blank -%}
+            <span aria-hidden="true">/</span>
+            <a href="{{ parent_collection.url }}">{{ parent_collection.title | escape }}</a>
+          {%- endif -%}
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{{ product.title | escape }}</span>
+        </nav>
         <div class="snoozepod-product-hero__media-wrapper">
           {%- if product.media.size > 0 -%}
             <div class="snoozepod-product-hero__media-card product__media-wrapper">
@@ -261,7 +372,97 @@
                   </div>
                 {%- when 'variant_picker' -%}
                   {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
+                {%- when 'product_feel' -%}
+                  <div {{ block.shopify_attributes }}>
+                    {% render 'snoozepod-product-feel',
+                      feel_product: product,
+                      show_editor_placeholder: block.settings.show_editor_placeholder
+                    %}
+                  </div>
+                {%- when 'session_cta' -%}
+                  <a
+                    class="snoozepod-product-hero__action snoozepod-product-hero__action--primary"
+                    href="{% if block.settings.link != blank %}{{ block.settings.link }}{% else %}/pages/book-a-snooze-session{% endif %}"
+                    {{ block.shopify_attributes }}
+                  >
+                    {{ block.settings.label | escape }}
+                  </a>
                 {%- when 'buy_buttons' -%}
+                  {%- if product.tags contains 'feature:dual-comfort' -%}
+                    <div
+                      class="snoozepod-dual-comfort"
+                      data-dual-comfort
+                      data-product-form="{{ product_form_id }}"
+                      data-orderable="false"
+                    >
+                      <div class="snoozepod-dual-comfort__intro">
+                        <h2>Dual Comfort</h2>
+                        <p>Choose each sleeper's preferred comfort. Online ordering stays unavailable until the exact size and left/right configuration is verified.</p>
+                      </div>
+                      {%- for side in (1..2) -%}
+                        {%- if side == 1 -%}
+                          {%- assign side_key = 'left' -%}
+                          {%- assign side_label = 'Left Side Comfort' -%}
+                        {%- else -%}
+                          {%- assign side_key = 'right' -%}
+                          {%- assign side_label = 'Right Side Comfort' -%}
+                        {%- endif -%}
+                        <fieldset class="snoozepod-dual-comfort__group">
+                          <legend>{{ side_label }}</legend>
+                          <div class="snoozepod-dual-comfort__choices">
+                            {%- for comfort in (0..3) -%}
+                              {%- assign comfort_value = comfort | append: '.0' -%}
+                              <input
+                                type="radio"
+                                id="DualComfort-{{ section.id }}-{{ side_key }}-{{ comfort }}"
+                                name="dual-comfort-{{ section.id }}-{{ side_key }}"
+                                value="{{ comfort_value }}"
+                              >
+                              <label for="DualComfort-{{ section.id }}-{{ side_key }}-{{ comfort }}">{{ comfort_value }}</label>
+                            {%- endfor -%}
+                          </div>
+                        </fieldset>
+                      {%- endfor -%}
+                      <input
+                        type="hidden"
+                        name="properties[Left Side Comfort]"
+                        value=""
+                        form="{{ product_form_id }}"
+                        data-dual-comfort-property="left"
+                      >
+                      <input
+                        type="hidden"
+                        name="properties[Right Side Comfort]"
+                        value=""
+                        form="{{ product_form_id }}"
+                        data-dual-comfort-property="right"
+                      >
+                      <p class="snoozepod-dual-comfort__summary" data-dual-comfort-summary>
+                        Select a comfort level for each side.
+                      </p>
+                      <p class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-dual-comfort-status></p>
+                      <script type="application/json" data-dual-comfort-mappings>
+                        [
+                          {%- assign mapping_written = false -%}
+                          {%- for variant in product.variants -%}
+                            {%- assign left_comfort = variant.metafields.custom.left_comfort.value | default: variant.metafields.custom.left_comfort -%}
+                            {%- assign right_comfort = variant.metafields.custom.right_comfort.value | default: variant.metafields.custom.right_comfort -%}
+                            {%- if left_comfort != blank and right_comfort != blank -%}
+                              {%- if mapping_written -%},{%- endif -%}
+                              {
+                                "variantId": {{ variant.id | json }},
+                                "size": {{ variant.option1 | json }},
+                                "left": {{ left_comfort | append: '' | json }},
+                                "right": {{ right_comfort | append: '' | json }},
+                                "available": {{ variant.available | json }}
+                              }
+                              {%- assign mapping_written = true -%}
+                            {%- endif -%}
+                          {%- endfor -%}
+                        ]
+                      </script>
+                    </div>
+                  {%- endif -%}
                   {%- render 'buy-buttons',
                     block: block,
                     product: product,
@@ -269,6 +470,27 @@
                     section_id: section.id,
                     show_pickup_availability: false
                   -%}
+                {%- when 'snoozer_cta' -%}
+                  <button
+                    type="button"
+                    class="snoozepod-product-hero__action snoozepod-product-hero__action--secondary"
+                    data-snoozer-trigger
+                    data-snoozer-source="product-v1"
+                    data-snoozer-product-id="{{ product.id }}"
+                    data-snoozer-product-handle="{{ product.handle | escape }}"
+                    data-snoozer-variant-id="{{ product.selected_or_first_available_variant.id }}"
+                    data-snoozer-product-type="{{ product.type | escape }}"
+                    {{ block.shopify_attributes }}
+                  >
+                    {{ block.settings.label | escape }}
+                  </button>
+                {%- when 'showroom_location' -%}
+                  <div {{ block.shopify_attributes }}>
+                    {% render 'snoozepod-showroom-location',
+                      showroom_product: product,
+                      show_editor_placeholder: block.settings.show_editor_placeholder
+                    %}
+                  </div>
                 {%- when 'description' -%}
                   {%- if product.description != blank -%}
                     <div class="product__description rte" {{ block.shopify_attributes }}>
@@ -395,6 +617,35 @@
       ]
     },
     {
+      "type": "product_feel",
+      "name": "Product Feel",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_editor_placeholder",
+          "label": "Show missing-data note in theme editor",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "session_cta",
+      "name": "Snooze Session CTA",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Book a Snooze Session"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    },
+    {
       "type": "buy_buttons",
       "name": "Buy buttons",
       "settings": [
@@ -409,6 +660,30 @@
           "id": "show_gift_card_recipient",
           "label": "Show gift card recipient",
           "default": false
+        }
+      ]
+    },
+    {
+      "type": "snoozer_cta",
+      "name": "Ask Snoozer CTA",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Ask Snoozer About This Product"
+        }
+      ]
+    },
+    {
+      "type": "showroom_location",
+      "name": "Showroom location",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_editor_placeholder",
+          "label": "Show missing-data note in theme editor",
+          "default": true
         }
       ]
     },
@@ -567,7 +842,19 @@
           "type": "variant_picker"
         },
         {
+          "type": "product_feel"
+        },
+        {
+          "type": "session_cta"
+        },
+        {
           "type": "buy_buttons"
+        },
+        {
+          "type": "snoozer_cta"
+        },
+        {
+          "type": "showroom_location"
         },
         {
           "type": "description"

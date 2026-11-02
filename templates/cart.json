@@ -36,9 +36,11 @@
         "card_1_heading": "Not sure this is the right setup?",
         "card_1_text": "Complete your Snooze Assessment and get a more personalized recommendation.",
         "card_1_cta_label": "Start Snooze Assessment",
+      "card_1_cta_link": "/pages/snooze-assessment",
         "card_2_heading": "Want to experience it in person?",
         "card_2_text": "Book a Snooze Session to test your recommended setup before you invest.",
-        "card_2_cta_label": "Book Your Snooze Session"
+      "card_2_cta_label": "Book Your Snooze Session",
+      "card_2_cta_link": "/pages/book-a-snooze-session"
       }
     },
     "snoozer-trust": {

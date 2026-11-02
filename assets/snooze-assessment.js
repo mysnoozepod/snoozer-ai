@@ -1498,16 +1498,19 @@
 
   function buildPrimaryAction(answers, recommendation, products, routes) {
     const baseHandle = resolveBaseHandle(answers, recommendation, routes);
+    const href = (products[0] && products[0].url) || routes.mattresses;
+    if (!href) return null;
+
     if (baseHandle) {
       return {
         label: "Shop Recommended Setup",
-        href: (products[0] && products[0].url) || routes.mattresses,
+        href: href,
       };
     }
 
     return {
       label: "Shop Recommended Mattresses",
-      href: (products[0] && products[0].url) || routes.mattresses,
+      href: href,
     };
   }
 
@@ -1686,11 +1689,11 @@
     const routes = {
       assessment: normalizeText(root.getAttribute("data-assessment-url")) || "/pages/snooze-assessment",
       booking: normalizeText(root.getAttribute("data-booking-url")) || "/pages/book-a-snooze-session",
-      mattresses: normalizeText(root.getAttribute("data-mattresses-url")) || "/collections/mattresses",
-      adjustableBase: normalizeText(root.getAttribute("data-adjustable-base-url")) || "/products/premium-motion-adjustable-base",
-      basesCollection: normalizeText(root.getAttribute("data-bases-collection-url")) || "/collections/bases",
-      pillows: normalizeText(root.getAttribute("data-pillows-url")) || "/collections/pillows",
-      bedding: normalizeText(root.getAttribute("data-bedding-url")) || "/collections/bedding",
+      mattresses: normalizeText(root.getAttribute("data-mattresses-url")),
+      adjustableBase: normalizeText(root.getAttribute("data-adjustable-base-url")),
+      basesCollection: normalizeText(root.getAttribute("data-bases-collection-url")),
+      pillows: normalizeText(root.getAttribute("data-pillows-url")),
+      bedding: normalizeText(root.getAttribute("data-bedding-url")),
     };
 
     const productMapNode = root.querySelector("[data-assessment-product-map]");
@@ -1925,23 +1928,24 @@
       if (!els.resultActions) return;
       els.resultActions.innerHTML = "";
 
-      const primary = result.primaryAction || {
-        label: "Shop Recommended Mattresses",
-        href: routes.mattresses,
-      };
-
-      [
-        {
+      const actions = [];
+      const primary = result.primaryAction;
+      if (primary && primary.href) {
+        actions.push({
           label: primary.label,
           href: primary.href,
           primary: true,
-        },
-        {
+        });
+      }
+      if (routes.booking) {
+        actions.push({
           label: "Book a Snooze Session",
           href: routes.booking,
           primary: false,
-        },
-      ].forEach(function (action) {
+        });
+      }
+
+      actions.forEach(function (action) {
         const link = document.createElement("a");
         link.className = action.primary
           ? "snooze-assessment__button snooze-assessment__button--primary"

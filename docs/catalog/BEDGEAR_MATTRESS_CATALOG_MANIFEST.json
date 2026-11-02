@@ -1,0 +1,1922 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-10-31",
+  "shopifyStore": "mysnoozepodtest",
+  "publicationRule": "DRAFT_ONLY_UNTIL_OWNER_RELEASE_GATE",
+  "readbackFile": "docs/catalog/bedgear-mattress-shopify-readback.json",
+  "expectedProductCount": 4,
+  "expectedVariantCount": 37,
+  "sourcePolicy": "Exact workbook rows only; historical prices are Draft references and not live authorization.",
+  "collections": [
+    {
+      "title": "Mattresses",
+      "handle": "mattresses",
+      "templateSuffix": "snoozepod-v1",
+      "role": "CANONICAL_BUILDER_SOURCE",
+      "requiredForLaunch": true,
+      "shopifyCollectionId": "302103527485"
+    }
+  ],
+  "products": [
+    {
+      "title": "S7 — 12\" Memory Foam Mattress",
+      "handle": "bedgear-s7-12-memory-foam",
+      "manufacturer": "BEDGEAR",
+      "model": "S7",
+      "productType": "Mattress",
+      "templateSuffix": "product-pod-builder",
+      "assortmentStatus": "APPROVED",
+      "shopifyStatus": "DRAFT",
+      "publicationReadiness": "BLOCKED",
+      "collections": [
+        "mattresses"
+      ],
+      "source": {
+        "document": "Bedgear Master PL Sept 2026.xlsx",
+        "sheet": "MATTRESSES",
+        "rows": [
+          22,
+          31
+        ]
+      },
+      "contract": {
+        "assortment_status": "APPROVED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [
+          "mattress"
+        ],
+        "owner_content_status": "PENDING",
+        "model": "S7",
+        "showroom_representation": {
+          "type": "json",
+          "value": {
+            "type": "full_display",
+            "displayCount": 1,
+            "locationStatus": "PENDING_LOCATION",
+            "locations": []
+          }
+        }
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Twin"
+          },
+          "sku": "BGA025901",
+          "upc": "810112141078",
+          "referencePrice": "1249.99",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 22
+          },
+          "verifiedSpecifications": {
+            "size": "Twin",
+            "dimensionsInches": {
+              "length": 75,
+              "width": 39,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-s7-12-memory-foam-twin"
+          },
+          "shopifyVariantId": "44128361873469"
+        },
+        {
+          "options": {
+            "Size": "Twin XL"
+          },
+          "sku": "BGA025902",
+          "upc": "810112141085",
+          "referencePrice": "1299.99",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 23
+          },
+          "verifiedSpecifications": {
+            "size": "Twin XL",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 39,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-s7-12-memory-foam-twin-xl"
+          },
+          "shopifyVariantId": "44128361906237"
+        },
+        {
+          "options": {
+            "Size": "Full"
+          },
+          "sku": "BGA025903",
+          "upc": "810112141092",
+          "referencePrice": "1499.99",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 24
+          },
+          "verifiedSpecifications": {
+            "size": "Full",
+            "dimensionsInches": {
+              "length": 75,
+              "width": 54,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-s7-12-memory-foam-full"
+          },
+          "shopifyVariantId": "44128361939005"
+        },
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "BGA025905",
+          "upc": "810112141108",
+          "referencePrice": "1599.99",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 25
+          },
+          "verifiedSpecifications": {
+            "size": "Queen",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 60,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-s7-12-memory-foam-queen"
+          },
+          "shopifyVariantId": "44128361971773"
+        },
+        {
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "sku": "BGA025955",
+          "upc": "810145832844",
+          "referencePrice": "1799.99",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 26
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head Queen",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 60,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-s7-12-memory-foam-split-head-queen"
+          },
+          "shopifyVariantId": "44128362004541"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "BGA025906",
+          "upc": "810112141115",
+          "referencePrice": "1899.99",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 27
+          },
+          "verifiedSpecifications": {
+            "size": "King",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 76,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-s7-12-memory-foam-king"
+          },
+          "shopifyVariantId": "44128362037309"
+        },
+        {
+          "options": {
+            "Size": "Cal King"
+          },
+          "sku": "BGA025907",
+          "upc": "810112141122",
+          "referencePrice": "1899.99",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 28
+          },
+          "verifiedSpecifications": {
+            "size": "Cal King",
+            "dimensionsInches": {
+              "length": 84,
+              "width": 72,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-s7-12-memory-foam-cal-king"
+          },
+          "shopifyVariantId": "44128362070077"
+        },
+        {
+          "options": {
+            "Size": "Split Head King"
+          },
+          "sku": "BGA025965",
+          "upc": "810145832851",
+          "referencePrice": "2299.99",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 29
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head King",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 76,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-s7-12-memory-foam-split-head-king"
+          },
+          "shopifyVariantId": "44128362102845"
+        },
+        {
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "sku": "BGA025975",
+          "upc": "810145832868",
+          "referencePrice": "2299.99",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 30
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head Cal King",
+            "dimensionsInches": {
+              "length": 84,
+              "width": 72,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-s7-12-memory-foam-split-head-cal-king"
+          },
+          "shopifyVariantId": "44128362135613"
+        },
+        {
+          "options": {
+            "Size": "Split King"
+          },
+          "sku": "BGA025908",
+          "upc": "810112141085",
+          "referencePrice": "2599.98",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 31
+          },
+          "verifiedSpecifications": {
+            "size": "Split King",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 39,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "full_split",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-s7-12-memory-foam-split-king"
+          },
+          "shopifyVariantId": "44128362168381"
+        }
+      ],
+      "shopifyProductId": "8100282794045"
+    },
+    {
+      "title": "H6 — 12\" Hybrid Mattress",
+      "handle": "bedgear-h6-12-hybrid",
+      "manufacturer": "BEDGEAR",
+      "model": "H6",
+      "productType": "Mattress",
+      "templateSuffix": "product-pod-builder",
+      "assortmentStatus": "APPROVED",
+      "shopifyStatus": "DRAFT",
+      "publicationReadiness": "BLOCKED",
+      "collections": [
+        "mattresses"
+      ],
+      "source": {
+        "document": "Bedgear Master PL Sept 2026.xlsx",
+        "sheet": "MATTRESSES",
+        "rows": [
+          58,
+          67
+        ]
+      },
+      "contract": {
+        "assortment_status": "APPROVED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [
+          "mattress"
+        ],
+        "owner_content_status": "PENDING",
+        "model": "H6",
+        "showroom_representation": {
+          "type": "json",
+          "value": {
+            "type": "full_display",
+            "displayCount": 1,
+            "locationStatus": "PENDING_LOCATION",
+            "locations": []
+          }
+        }
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Twin"
+          },
+          "sku": "BGA121W10",
+          "upc": "810212902166",
+          "referencePrice": "1799.00",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 58
+          },
+          "verifiedSpecifications": {
+            "size": "Twin",
+            "dimensionsInches": {
+              "length": 75,
+              "width": 38,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-h6-12-hybrid-twin"
+          },
+          "shopifyVariantId": "44128362201149"
+        },
+        {
+          "options": {
+            "Size": "Twin XL"
+          },
+          "sku": "BGA121W20",
+          "upc": "810212902173",
+          "referencePrice": "1849.00",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 59
+          },
+          "verifiedSpecifications": {
+            "size": "Twin XL",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 38,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-h6-12-hybrid-twin-xl"
+          },
+          "shopifyVariantId": "44128362233917"
+        },
+        {
+          "options": {
+            "Size": "Full"
+          },
+          "sku": "BGA121W30",
+          "upc": "810212902180",
+          "referencePrice": "1899.00",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 60
+          },
+          "verifiedSpecifications": {
+            "size": "Full",
+            "dimensionsInches": {
+              "length": 75,
+              "width": 53,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-h6-12-hybrid-full"
+          },
+          "shopifyVariantId": "44128362266685"
+        },
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "BGA121W50",
+          "upc": "810212902197",
+          "referencePrice": "1999.00",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 61
+          },
+          "verifiedSpecifications": {
+            "size": "Queen",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 60,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-h6-12-hybrid-queen"
+          },
+          "shopifyVariantId": "44128362299453"
+        },
+        {
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "sku": "BGA121W55",
+          "upc": "810212902203",
+          "referencePrice": "2399.00",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 62
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head Queen",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 60,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-h6-12-hybrid-split-head-queen"
+          },
+          "shopifyVariantId": "44128362332221"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "BGA121W60",
+          "upc": "810212902210",
+          "referencePrice": "2499.00",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 63
+          },
+          "verifiedSpecifications": {
+            "size": "King",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 76,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-h6-12-hybrid-king"
+          },
+          "shopifyVariantId": "44128362364989"
+        },
+        {
+          "options": {
+            "Size": "Cal King"
+          },
+          "sku": "BGA121W70",
+          "upc": "810212902227",
+          "referencePrice": "2499.00",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 64
+          },
+          "verifiedSpecifications": {
+            "size": "Cal King",
+            "dimensionsInches": {
+              "length": 84,
+              "width": 72,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-h6-12-hybrid-cal-king"
+          },
+          "shopifyVariantId": "44128362397757"
+        },
+        {
+          "options": {
+            "Size": "Split Head King"
+          },
+          "sku": "BGA121W65",
+          "upc": "810212902234",
+          "referencePrice": "2899.00",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 65
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head King",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 76,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-h6-12-hybrid-split-head-king"
+          },
+          "shopifyVariantId": "44128362430525"
+        },
+        {
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "sku": "BGA121W75",
+          "upc": "810212902241",
+          "referencePrice": "2899.00",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 66
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head Cal King",
+            "dimensionsInches": {
+              "length": 84,
+              "width": 72,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-h6-12-hybrid-split-head-cal-king"
+          },
+          "shopifyVariantId": "44128362463293"
+        },
+        {
+          "options": {
+            "Size": "Split King"
+          },
+          "sku": "BGA121W80",
+          "upc": "810212902258",
+          "referencePrice": "3698.00",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "MATTRESSES",
+            "row": 67
+          },
+          "verifiedSpecifications": {
+            "size": "Split King",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 38,
+              "height": 12
+            }
+          },
+          "contract": {
+            "sleep_geometry": "full_split",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-h6-12-hybrid-split-king"
+          },
+          "shopifyVariantId": "44128362496061"
+        }
+      ],
+      "shopifyProductId": "8100282826813"
+    },
+    {
+      "title": "M3 — 12\" Dual Comfort Mattress",
+      "handle": "bedgear-m3-12-dual-comfort",
+      "manufacturer": "BEDGEAR",
+      "model": "M3",
+      "productType": "Mattress",
+      "templateSuffix": "product-pod-builder",
+      "assortmentStatus": "APPROVED",
+      "shopifyStatus": "DRAFT",
+      "publicationReadiness": "BLOCKED",
+      "collections": [
+        "mattresses"
+      ],
+      "source": {
+        "document": "Bedgear Master PL Sept 2026.xlsx",
+        "sheet": "M3 - CURRENT"
+      },
+      "dualComfort": {
+        "componentFeelLabelsVerified": [
+          "0.0",
+          "1.0",
+          "2.0",
+          "3.0"
+        ],
+        "independentLeftRightSelection": "PENDING_APPROVED_COMPLETE_CONFIGURATION_MAP",
+        "shopifyVariantBoundary": "SIZE_ONLY_DRAFT_STRUCTURE",
+        "missingFields": [
+          "approved complete sell-unit SKU",
+          "allowed left/right combinations",
+          "fulfillment component quantities by configuration"
+        ]
+      },
+      "excludedManufacturerRows": [
+        {
+          "size": "Split King",
+          "rows": [
+            67,
+            72
+          ],
+          "reason": "The current sheet reuses the Twin XL chassis SKU and instructs Order 2; no unique complete sell-unit SKU is provided."
+        }
+      ],
+      "contract": {
+        "assortment_status": "APPROVED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [
+          "mattress"
+        ],
+        "owner_content_status": "PENDING",
+        "model": "M3",
+        "showroom_representation": {
+          "type": "json",
+          "value": {
+            "type": "full_display",
+            "displayCount": 2,
+            "locationStatus": "PENDING_LOCATION",
+            "locations": []
+          }
+        },
+        "comfort_options": {
+          "type": "json",
+          "value": {
+            "verifiedComponentFeelLabels": [
+              "0.0",
+              "1.0",
+              "2.0",
+              "3.0"
+            ],
+            "requestedSelectionMode": "independent_left_right",
+            "verificationStatus": "PENDING_APPROVED_COMPLETE_CONFIGURATION_MAP"
+          }
+        },
+        "configuration_readiness": "PENDING_VENDOR_CONFIGURATION_MAP"
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Twin XL"
+          },
+          "sku": "BGM301W21",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "2099.00",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M3 - CURRENT",
+            "chassisRow": 7,
+            "suspensionRows": [
+              8,
+              11
+            ],
+            "completePriceRow": 12
+          },
+          "verifiedSpecifications": {
+            "size": "Twin XL",
+            "workbookGroupLabel": "M3 MATTRESS TWIN XL",
+            "chassisAndComfortLayerSku": "BGM301W21",
+            "chassisUpc": "810145831311",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 39,
+              "height": 8
+            },
+            "requiredIndependentSuspensionCount": 1,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W21W",
+                "manufacturerComponentUpc": "810074956536",
+                "sourceRow": 8
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W21X",
+                "manufacturerComponentUpc": "810074956581",
+                "sourceRow": 9
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W21Y",
+                "manufacturerComponentUpc": "810074956635",
+                "sourceRow": 10
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W21Z",
+                "manufacturerComponentUpc": "810074956680",
+                "sourceRow": 11
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m3-12-dual-comfort-twin-xl"
+          },
+          "shopifyVariantId": "44128362528829"
+        },
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "BGM301W51",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "2499.00",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M3 - CURRENT",
+            "chassisRow": 17,
+            "suspensionRows": [
+              18,
+              21
+            ],
+            "completePriceRow": 22
+          },
+          "verifiedSpecifications": {
+            "size": "Queen",
+            "workbookGroupLabel": "M3 MATTRESS QUEEN",
+            "chassisAndComfortLayerSku": "BGM301W51",
+            "chassisUpc": "810145831328",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 60,
+              "height": 8
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W51W",
+                "manufacturerComponentUpc": "810074956550",
+                "sourceRow": 18
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W51X",
+                "manufacturerComponentUpc": "810074956604",
+                "sourceRow": 19
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W51Y",
+                "manufacturerComponentUpc": "810074956659",
+                "sourceRow": 20
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W51Z",
+                "manufacturerComponentUpc": "810074956703",
+                "sourceRow": 21
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m3-12-dual-comfort-queen"
+          },
+          "shopifyVariantId": "44128362561597"
+        },
+        {
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "sku": "BGM301W55",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "2999.00",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M3 - CURRENT",
+            "chassisRow": 27,
+            "suspensionRows": [
+              28,
+              31
+            ],
+            "completePriceRow": 32
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head Queen",
+            "workbookGroupLabel": "M3 MATTRESS - Split Head QUEEN",
+            "chassisAndComfortLayerSku": "BGM301W55",
+            "chassisUpc": "810145831335",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 60,
+              "height": 8
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W51W",
+                "manufacturerComponentUpc": "810074956550",
+                "sourceRow": 28
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W51X",
+                "manufacturerComponentUpc": "810074956604",
+                "sourceRow": 29
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W51Y",
+                "manufacturerComponentUpc": "810074956659",
+                "sourceRow": 30
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W51Z",
+                "manufacturerComponentUpc": "810074956703",
+                "sourceRow": 31
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m3-12-dual-comfort-split-head-queen"
+          },
+          "shopifyVariantId": "44128362594365"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "BGM301W61",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "3199.00",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M3 - CURRENT",
+            "chassisRow": 37,
+            "suspensionRows": [
+              38,
+              41
+            ],
+            "completePriceRow": 42
+          },
+          "verifiedSpecifications": {
+            "size": "King",
+            "workbookGroupLabel": "M3 MATTRESS KING",
+            "chassisAndComfortLayerSku": "BGM301W61",
+            "chassisUpc": "810145831342",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 76,
+              "height": 8
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W61W",
+                "manufacturerComponentUpc": "810074956567",
+                "sourceRow": 38
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W61X",
+                "manufacturerComponentUpc": "810074956611",
+                "sourceRow": 39
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W61Y",
+                "manufacturerComponentUpc": "810074956666",
+                "sourceRow": 40
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W61Z",
+                "manufacturerComponentUpc": "810074956710",
+                "sourceRow": 41
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m3-12-dual-comfort-king"
+          },
+          "shopifyVariantId": "44128362627133"
+        },
+        {
+          "options": {
+            "Size": "Cal King"
+          },
+          "sku": "BGM301W71",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "3199.00",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M3 - CURRENT",
+            "chassisRow": 47,
+            "suspensionRows": [
+              48,
+              51
+            ],
+            "completePriceRow": 52
+          },
+          "verifiedSpecifications": {
+            "size": "Cal King",
+            "workbookGroupLabel": "M3 MATTRESS CAL KING",
+            "chassisAndComfortLayerSku": "BGM301W71",
+            "chassisUpc": "810145831359",
+            "dimensionsInches": {
+              "length": 84,
+              "width": 72,
+              "height": 8
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W71W",
+                "manufacturerComponentUpc": "810074956574",
+                "sourceRow": 48
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W71X",
+                "manufacturerComponentUpc": "810074956628",
+                "sourceRow": 49
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W71Y",
+                "manufacturerComponentUpc": "810074956673",
+                "sourceRow": 50
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W71Z",
+                "manufacturerComponentUpc": "810074956727",
+                "sourceRow": 51
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m3-12-dual-comfort-cal-king"
+          },
+          "shopifyVariantId": "44128362659901"
+        },
+        {
+          "options": {
+            "Size": "Split Head King"
+          },
+          "sku": "BGM301W65",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "3799.00",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M3 - CURRENT",
+            "chassisRow": 57,
+            "suspensionRows": [
+              58,
+              61
+            ],
+            "completePriceRow": 62
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head King",
+            "workbookGroupLabel": "M3 MATTRESS - Split Head KING",
+            "chassisAndComfortLayerSku": "BGM301W65",
+            "chassisUpc": "810145831366",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 76,
+              "height": 8
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W61W",
+                "manufacturerComponentUpc": "810074956567",
+                "sourceRow": 58
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W61X",
+                "manufacturerComponentUpc": "810074956611",
+                "sourceRow": 59
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W61Y",
+                "manufacturerComponentUpc": "810074956666",
+                "sourceRow": 60
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W61Z",
+                "manufacturerComponentUpc": "810074956710",
+                "sourceRow": 61
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m3-12-dual-comfort-split-head-king"
+          },
+          "shopifyVariantId": "44128362692669"
+        },
+        {
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "sku": "BGM301W75",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "3799.00",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M3 - CURRENT",
+            "chassisRow": 77,
+            "suspensionRows": [
+              78,
+              81
+            ],
+            "completePriceRow": 82
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head Cal King",
+            "workbookGroupLabel": "M3 MATTRESS - Split Head CAL KING",
+            "chassisAndComfortLayerSku": "BGM301W75",
+            "chassisUpc": "810145831373",
+            "dimensionsInches": {
+              "length": 84,
+              "width": 72,
+              "height": 8
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W71W",
+                "manufacturerComponentUpc": "810074956574",
+                "sourceRow": 78
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W71X",
+                "manufacturerComponentUpc": "810074956628",
+                "sourceRow": 79
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W71Y",
+                "manufacturerComponentUpc": "810074956673",
+                "sourceRow": 80
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W71Z",
+                "manufacturerComponentUpc": "810074956727",
+                "sourceRow": 81
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m3-12-dual-comfort-split-head-cal-king"
+          },
+          "shopifyVariantId": "44128362725437"
+        },
+        {
+          "options": {
+            "Size": "Split Cal King"
+          },
+          "sku": "BGM301W91",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "4198.00",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M3 - CURRENT",
+            "chassisRow": 87,
+            "suspensionRows": [
+              88,
+              91
+            ],
+            "completePriceRow": 92
+          },
+          "verifiedSpecifications": {
+            "size": "Split Cal King",
+            "workbookGroupLabel": "M3 MATTRESS - SPLIT CAL KING (2 Pcs., in 1 Box)",
+            "chassisAndComfortLayerSku": "BGM301W91",
+            "chassisUpc": "810145831380",
+            "dimensionsInches": {
+              "length": 84,
+              "width": 72,
+              "height": 8
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W91W",
+                "manufacturerComponentUpc": "810112147636",
+                "sourceRow": 88
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W91X",
+                "manufacturerComponentUpc": "810112147643",
+                "sourceRow": 89
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W91Y",
+                "manufacturerComponentUpc": "810112147650",
+                "sourceRow": 90
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W91Z",
+                "manufacturerComponentUpc": "810112147667",
+                "sourceRow": 91
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "full_split",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m3-12-dual-comfort-split-cal-king"
+          },
+          "shopifyVariantId": "44128362758205"
+        }
+      ],
+      "shopifyProductId": "8100282892349"
+    },
+    {
+      "title": "M5 — 14\" Dual Comfort Mattress",
+      "handle": "bedgear-m5-14-dual-comfort",
+      "manufacturer": "BEDGEAR",
+      "model": "M5",
+      "productType": "Mattress",
+      "templateSuffix": "product-pod-builder",
+      "assortmentStatus": "APPROVED",
+      "shopifyStatus": "DRAFT",
+      "publicationReadiness": "BLOCKED",
+      "collections": [
+        "mattresses"
+      ],
+      "source": {
+        "document": "Bedgear Master PL Sept 2026.xlsx",
+        "sheet": "M5 - ALL"
+      },
+      "dualComfort": {
+        "componentFeelLabelsVerified": [
+          "0.0",
+          "1.0",
+          "2.0",
+          "3.0"
+        ],
+        "independentLeftRightSelection": "PENDING_APPROVED_COMPLETE_CONFIGURATION_MAP",
+        "shopifyVariantBoundary": "SIZE_ONLY_DRAFT_STRUCTURE",
+        "missingFields": [
+          "approved complete sell-unit SKU",
+          "allowed left/right combinations",
+          "fulfillment component quantities by configuration"
+        ]
+      },
+      "excludedManufacturerRows": [],
+      "contract": {
+        "assortment_status": "APPROVED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [
+          "mattress"
+        ],
+        "owner_content_status": "PENDING",
+        "model": "M5",
+        "showroom_representation": {
+          "type": "json",
+          "value": {
+            "type": "full_display",
+            "displayCount": 2,
+            "locationStatus": "PENDING_LOCATION",
+            "locations": []
+          }
+        },
+        "comfort_options": {
+          "type": "json",
+          "value": {
+            "verifiedComponentFeelLabels": [
+              "0.0",
+              "1.0",
+              "2.0",
+              "3.0"
+            ],
+            "requestedSelectionMode": "independent_left_right",
+            "verificationStatus": "PENDING_APPROVED_COMPLETE_CONFIGURATION_MAP"
+          }
+        },
+        "configuration_readiness": "PENDING_VENDOR_CONFIGURATION_MAP"
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Twin XL"
+          },
+          "sku": "BGM506W21",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "3499.99",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M5 - ALL",
+            "chassisRow": 7,
+            "suspensionRows": [
+              8,
+              11
+            ],
+            "completePriceRow": 12
+          },
+          "verifiedSpecifications": {
+            "size": "Twin XL",
+            "workbookGroupLabel": "M5 MATTRESS TWIN XL",
+            "chassisAndComfortLayerSku": "BGM506W21",
+            "chassisUpc": "810145839966",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 39,
+              "height": 14
+            },
+            "requiredIndependentSuspensionCount": 1,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W21W",
+                "manufacturerComponentUpc": "810074956536",
+                "sourceRow": 8
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W21X",
+                "manufacturerComponentUpc": "810074956581",
+                "sourceRow": 9
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W21Y",
+                "manufacturerComponentUpc": "810074956635",
+                "sourceRow": 10
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W21Z",
+                "manufacturerComponentUpc": "810074956680",
+                "sourceRow": 11
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-twin-xl"
+          },
+          "shopifyVariantId": "44128370950205"
+        },
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "BGM506W51",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "3999.99",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M5 - ALL",
+            "chassisRow": 17,
+            "suspensionRows": [
+              18,
+              21
+            ],
+            "completePriceRow": 22
+          },
+          "verifiedSpecifications": {
+            "size": "Queen",
+            "workbookGroupLabel": "M5 MATTRESS QUEEN",
+            "chassisAndComfortLayerSku": "BGM506W51",
+            "chassisUpc": "810145839973",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 60,
+              "height": 14
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W51W",
+                "manufacturerComponentUpc": "810074956550",
+                "sourceRow": 18
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W51X",
+                "manufacturerComponentUpc": "810074956604",
+                "sourceRow": 19
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W51Y",
+                "manufacturerComponentUpc": "810074956659",
+                "sourceRow": 20
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W51Z",
+                "manufacturerComponentUpc": "810074956703",
+                "sourceRow": 21
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-queen"
+          },
+          "shopifyVariantId": "44128370982973"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "BGM506W61",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "4799.99",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M5 - ALL",
+            "chassisRow": 27,
+            "suspensionRows": [
+              28,
+              31
+            ],
+            "completePriceRow": 32
+          },
+          "verifiedSpecifications": {
+            "size": "King",
+            "workbookGroupLabel": "M5 MATTRESS KING",
+            "chassisAndComfortLayerSku": "BGM506W61",
+            "chassisUpc": "810145839997",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 76,
+              "height": 14
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W61W",
+                "manufacturerComponentUpc": "810074956567",
+                "sourceRow": 28
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W61X",
+                "manufacturerComponentUpc": "810074956611",
+                "sourceRow": 29
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W61Y",
+                "manufacturerComponentUpc": "810074956666",
+                "sourceRow": 30
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W61Z",
+                "manufacturerComponentUpc": "810074956710",
+                "sourceRow": 31
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-king"
+          },
+          "shopifyVariantId": "44128371015741"
+        },
+        {
+          "options": {
+            "Size": "Cal King"
+          },
+          "sku": "BGM506W71",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "4799.99",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M5 - ALL",
+            "chassisRow": 37,
+            "suspensionRows": [
+              38,
+              41
+            ],
+            "completePriceRow": 42
+          },
+          "verifiedSpecifications": {
+            "size": "Cal King",
+            "workbookGroupLabel": "M5 MATTRESS CAL KING",
+            "chassisAndComfortLayerSku": "BGM506W71",
+            "chassisUpc": "810190690000",
+            "dimensionsInches": {
+              "length": 84,
+              "width": 72,
+              "height": 14
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W71W",
+                "manufacturerComponentUpc": "810074956574",
+                "sourceRow": 38
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W71X",
+                "manufacturerComponentUpc": "810074956628",
+                "sourceRow": 39
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W71Y",
+                "manufacturerComponentUpc": "810074956673",
+                "sourceRow": 40
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W71Z",
+                "manufacturerComponentUpc": "810074956727",
+                "sourceRow": 41
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-cal-king"
+          },
+          "shopifyVariantId": "44128371048509"
+        },
+        {
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "sku": "BGM506W55",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "4499.99",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M5 - ALL",
+            "chassisRow": 47,
+            "suspensionRows": [
+              48,
+              51
+            ],
+            "completePriceRow": 52
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head Queen",
+            "workbookGroupLabel": "M5 MATTRESS - Split Head QUEEN",
+            "chassisAndComfortLayerSku": "BGM506W55",
+            "chassisUpc": "810145839980",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 60,
+              "height": 14
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W51W",
+                "manufacturerComponentUpc": "810074956550",
+                "sourceRow": 48
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W51X",
+                "manufacturerComponentUpc": "810074956604",
+                "sourceRow": 49
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W51Y",
+                "manufacturerComponentUpc": "810074956659",
+                "sourceRow": 50
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W51Z",
+                "manufacturerComponentUpc": "810074956703",
+                "sourceRow": 51
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-split-head-queen"
+          },
+          "shopifyVariantId": "44128371081277"
+        },
+        {
+          "options": {
+            "Size": "Split Head King"
+          },
+          "sku": "BGM506W65",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "5299.99",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M5 - ALL",
+            "chassisRow": 57,
+            "suspensionRows": [
+              58,
+              61
+            ],
+            "completePriceRow": 62
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head King",
+            "workbookGroupLabel": "M5 MATTRESS - Split Head KING",
+            "chassisAndComfortLayerSku": "BGM506W65",
+            "chassisUpc": "810190690017",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 76,
+              "height": 14
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W61W",
+                "manufacturerComponentUpc": "810074956567",
+                "sourceRow": 58
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W61X",
+                "manufacturerComponentUpc": "810074956611",
+                "sourceRow": 59
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W61Y",
+                "manufacturerComponentUpc": "810074956666",
+                "sourceRow": 60
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W61Z",
+                "manufacturerComponentUpc": "810074956710",
+                "sourceRow": 61
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-split-head-king"
+          },
+          "shopifyVariantId": "44128371114045"
+        },
+        {
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "sku": "BGM506W75",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "5299.99",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M5 - ALL",
+            "chassisRow": 67,
+            "suspensionRows": [
+              68,
+              71
+            ],
+            "completePriceRow": 72
+          },
+          "verifiedSpecifications": {
+            "size": "Split Head Cal King",
+            "workbookGroupLabel": "M5 MATTRESS - Split Head CAL KING",
+            "chassisAndComfortLayerSku": "BGM506W75",
+            "chassisUpc": "810190690024",
+            "dimensionsInches": {
+              "length": 84,
+              "width": 72,
+              "height": 14
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W71W",
+                "manufacturerComponentUpc": "810074956574",
+                "sourceRow": 68
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W71X",
+                "manufacturerComponentUpc": "810074956628",
+                "sourceRow": 69
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W71Y",
+                "manufacturerComponentUpc": "810074956673",
+                "sourceRow": 70
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W71Z",
+                "manufacturerComponentUpc": "810074956727",
+                "sourceRow": 71
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "split_head",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-split-head-cal-king"
+          },
+          "shopifyVariantId": "44128371146813"
+        },
+        {
+          "options": {
+            "Size": "Twin XL x 2"
+          },
+          "sku": "BGM506W81",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "6999.99",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M5 - ALL",
+            "chassisRow": 77,
+            "suspensionRows": [
+              78,
+              81
+            ],
+            "completePriceRow": 82
+          },
+          "verifiedSpecifications": {
+            "size": "Twin XL x 2",
+            "workbookGroupLabel": "M5 MATTRESS SPLIT KING (*2 TXL Pcs., 2 Boxes)",
+            "chassisAndComfortLayerSku": "BGM506W81",
+            "chassisUpc": "810190696811",
+            "dimensionsInches": {
+              "length": 80,
+              "width": 39,
+              "height": 14
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W21W",
+                "manufacturerComponentUpc": "810074956536",
+                "sourceRow": 78
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W21X",
+                "manufacturerComponentUpc": "810074956581",
+                "sourceRow": 79
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W21Y",
+                "manufacturerComponentUpc": "810074956635",
+                "sourceRow": 80
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W21Z",
+                "manufacturerComponentUpc": "810074956680",
+                "sourceRow": 81
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "full_split",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-twin-xl-x-2"
+          },
+          "shopifyVariantId": "44128371179581"
+        },
+        {
+          "options": {
+            "Size": "Split Cal King"
+          },
+          "sku": "BGM506W91",
+          "skuScope": "CHASSIS_AND_COMFORT_LAYER_COMPONENT_ONLY",
+          "referencePrice": "6999.99",
+          "referencePriceScope": "HISTORICAL_COMPLETE_PRICE_USING_ONE_SUPPORTED_FEEL_PER_REQUIRED_SUSPENSION",
+          "source": {
+            "document": "Bedgear Master PL Sept 2026.xlsx",
+            "sheet": "M5 - ALL",
+            "chassisRow": 87,
+            "suspensionRows": [
+              88,
+              91
+            ],
+            "completePriceRow": 92
+          },
+          "verifiedSpecifications": {
+            "size": "Split Cal King",
+            "workbookGroupLabel": "M5 MATTRESS - SPLIT CAL KING (*2 Pcs., in 1 Box)",
+            "chassisAndComfortLayerSku": "BGM506W91",
+            "chassisUpc": "810190690031",
+            "dimensionsInches": {
+              "length": 84,
+              "width": 72,
+              "height": 14
+            },
+            "requiredIndependentSuspensionCount": 2,
+            "manufacturerComponentFeelOptions": [
+              {
+                "feel": "0.0",
+                "manufacturerComponentSku": "BGM303W91W",
+                "manufacturerComponentUpc": "810112147636",
+                "sourceRow": 88
+              },
+              {
+                "feel": "1.0",
+                "manufacturerComponentSku": "BGM303W91X",
+                "manufacturerComponentUpc": "810112147643",
+                "sourceRow": 89
+              },
+              {
+                "feel": "2.0",
+                "manufacturerComponentSku": "BGM303W91Y",
+                "manufacturerComponentUpc": "810112147650",
+                "sourceRow": 90
+              },
+              {
+                "feel": "3.0",
+                "manufacturerComponentSku": "BGM303W91Z",
+                "manufacturerComponentUpc": "810112147667",
+                "sourceRow": 91
+              }
+            ]
+          },
+          "configurationStatus": "PENDING_APPROVED_COMPLETE_SELL_UNIT_AND_LEFT_RIGHT_COMBINATION_MAP",
+          "contract": {
+            "sleep_geometry": "full_split",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-split-cal-king"
+          },
+          "shopifyVariantId": "44128371212349"
+        }
+      ],
+      "shopifyProductId": "8100282925117"
+    }
+  ],
+  "updatedAt": "2026-11-01",
+  "shopifyReadbackVerifiedAt": "2026-11-01T11:21:35.494Z"
+}

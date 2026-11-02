@@ -1,34 +1,9 @@
 {%- liquid
   assign base_title = 'Explore matching bases'
   assign base_text = 'Start with the base direction that best supports how you want this mattress to feel in the showroom.'
-  assign base_link = '/collections/bases'
+  assign base_link = '/collections/adjustable-bases'
   assign base_link_label = 'View bases'
-  assign protection_link = '/products/dri-tec-mattress-protector'
-
-  case product.handle
-    when '12-dual-comfort-hybrid'
-      assign base_title = 'Premium Motion Adjustable Base'
-      assign base_text = 'This mattress pairs best with adjustable positioning and split-motion testing when shared sleep is part of the story.'
-      assign base_link = '/products/premium-motion-adjustable-base'
-      assign base_link_label = 'View adjustable base'
-      assign protection_link = '/products/ver-tex-mattress-protector'
-    when '14-hybrid'
-      assign base_title = 'Premium Motion Adjustable Base'
-      assign base_text = 'Use adjustable positioning if you want to test lift, alignment, and recovery with the stronger hybrid support direction.'
-      assign base_link = '/products/premium-motion-adjustable-base'
-      assign base_link_label = 'View adjustable base'
-      assign protection_link = '/products/ver-tex-mattress-protector'
-    when '12-all-foam-mattress'
-      assign base_title = 'Storage Base'
-      assign base_text = 'This pod direction lines up cleanly with a storage base when you want pressure relief plus a more grounded foundation.'
-      assign base_link = '/products/storage-base'
-      assign base_link_label = 'View storage base'
-    when '10-all-foam-mattress'
-      assign base_title = 'Platform Base'
-      assign base_text = 'Keep this setup simple with a platform base that supports the lower-profile mattress direction shown in the showroom flow.'
-      assign base_link = '/products/platform-base'
-      assign base_link_label = 'View platform base'
-  endcase
+  assign protection_link = '/collections/mattress-protectors'
 -%}
 
 {%- style -%}

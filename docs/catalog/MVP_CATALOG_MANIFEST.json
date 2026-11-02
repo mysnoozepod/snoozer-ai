@@ -1,0 +1,722 @@
+{
+  "schemaVersion": "1.0",
+  "updatedAt": "2026-11-01",
+  "shopifyStore": "mysnoozepodtest",
+  "publicationRule": "DRAFT_ONLY_UNTIL_OWNER_RELEASE_GATE",
+  "priceRule": "MALOUF_26_3_MAP_IS_HISTORICAL_DRAFT_REFERENCE_NOT_LIVE_AUTHORIZATION",
+  "collections": [
+    {
+      "title": "Pillows",
+      "handle": "pillows",
+      "shopifyCollectionId": "302090780733",
+      "role": "canonical_builder_source"
+    },
+    {
+      "title": "Filled Pillows",
+      "handle": "filled-pillows",
+      "shopifyCollectionId": "302090813501",
+      "role": "merchandising_group"
+    },
+    {
+      "title": "Zoned Pillows",
+      "handle": "zoned-pillows",
+      "shopifyCollectionId": "302102609981",
+      "role": "merchandising_group"
+    },
+    {
+      "title": "Foam Pillows",
+      "handle": "foam-pillows",
+      "shopifyCollectionId": "302102642749",
+      "role": "merchandising_group"
+    },
+    {
+      "title": "Temperature Regulating Pillows",
+      "handle": "temperature-regulating-pillows",
+      "shopifyCollectionId": "302102675517",
+      "role": "merchandising_group"
+    }
+  ],
+  "products": [
+    {
+      "title": "Gelled Microfiber Pillow",
+      "handle": "gelled-microfiber-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8099363094589",
+      "collections": [
+        "pillows",
+        "filled-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 49
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQ00GM",
+          "referencePrice": "59.99",
+          "shopifyVariantId": "44049793777725"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKK00GM",
+          "referencePrice": "69.99",
+          "shopifyVariantId": "44049793810493"
+        }
+      ]
+    },
+    {
+      "title": "Convolution Pillow",
+      "handle": "convolution-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237344829",
+      "collections": [
+        "pillows",
+        "filled-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 50
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQX2CG",
+          "referencePrice": "79.99",
+          "shopifyVariantId": "44121586892861"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKKX2CG",
+          "referencePrice": "89.99",
+          "shopifyVariantId": "44121586925629"
+        }
+      ]
+    },
+    {
+      "title": "Gel Convolution Pillow",
+      "handle": "gel-convolution-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237377597",
+      "collections": [
+        "pillows",
+        "filled-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 50
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQHPCOGF",
+          "referencePrice": "119.99",
+          "shopifyVariantId": "44121586958397"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKKHPCOGF",
+          "referencePrice": "129.99",
+          "shopifyVariantId": "44121586991165"
+        }
+      ]
+    },
+    {
+      "title": "Quilted Convolution + HyperChill Pillow",
+      "handle": "quilted-convolution-hyperchill-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237443133",
+      "collections": [
+        "pillows",
+        "filled-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 51
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQX2QC",
+          "referencePrice": "119.99",
+          "shopifyVariantId": "44121587056701"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKKX2QC",
+          "referencePrice": "129.99",
+          "shopifyVariantId": "44121587089469"
+        }
+      ]
+    },
+    {
+      "title": "Zoned Dough + Bamboo Charcoal Pillow",
+      "handle": "zoned-dough-bamboo-charcoal-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237475901",
+      "collections": [
+        "pillows",
+        "zoned-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 53
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQMPZB",
+          "referencePrice": "109.99",
+          "shopifyVariantId": "44121587122237"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKKMPZB",
+          "referencePrice": "119.99",
+          "shopifyVariantId": "44121587155005"
+        }
+      ]
+    },
+    {
+      "title": "Zoned ActiveDough + Bamboo Charcoal Pillow",
+      "handle": "zoned-activedough-bamboo-charcoal-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237508669",
+      "collections": [
+        "pillows",
+        "zoned-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 54
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQMPADZB",
+          "referencePrice": "109.99",
+          "shopifyVariantId": "44121587187773"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKKMPADZB",
+          "referencePrice": "119.99",
+          "shopifyVariantId": "44121587220541"
+        }
+      ]
+    },
+    {
+      "title": "Zoned Gel Dough Pillow",
+      "handle": "zoned-gel-dough-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237541437",
+      "collections": [
+        "pillows",
+        "zoned-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 60
+      },
+      "variants": [
+        {
+          "options": {
+            "Loft": "High",
+            "Size": "Queen"
+          },
+          "sku": "ZZQQHPZG",
+          "referencePrice": "109.99",
+          "shopifyVariantId": "44121587253309"
+        },
+        {
+          "options": {
+            "Loft": "High",
+            "Size": "King"
+          },
+          "sku": "ZZKKHPZG",
+          "referencePrice": "119.99",
+          "shopifyVariantId": "44121587286077"
+        },
+        {
+          "options": {
+            "Loft": "Mid",
+            "Size": "Queen"
+          },
+          "sku": "ZZQQMPZG",
+          "referencePrice": "109.99",
+          "shopifyVariantId": "44121587318845"
+        },
+        {
+          "options": {
+            "Loft": "Mid",
+            "Size": "King"
+          },
+          "sku": "ZZKKMPZG",
+          "referencePrice": "119.99",
+          "shopifyVariantId": "44121587351613"
+        },
+        {
+          "options": {
+            "Loft": "Low",
+            "Size": "Queen"
+          },
+          "sku": "ZZQQLPZG",
+          "referencePrice": "109.99",
+          "shopifyVariantId": "44121587384381"
+        },
+        {
+          "options": {
+            "Loft": "Low",
+            "Size": "King"
+          },
+          "sku": "ZZKKLPZG",
+          "referencePrice": "119.99",
+          "shopifyVariantId": "44121587417149"
+        }
+      ]
+    },
+    {
+      "title": "Shoulder Zoned Gel ActiveDough Pillow",
+      "handle": "shoulder-zoned-gel-activedough-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237574205",
+      "collections": [
+        "pillows",
+        "zoned-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 61
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQSCMPADZG",
+          "referencePrice": "109.99",
+          "shopifyVariantId": "44121587449917"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKKSCMPADZG",
+          "referencePrice": "119.99",
+          "shopifyVariantId": "44121587482685"
+        }
+      ]
+    },
+    {
+      "title": "Weekender Gel Memory Foam Pillow",
+      "handle": "weekender-gel-memory-foam-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237639741",
+      "collections": [
+        "pillows",
+        "foam-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 89
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Standard"
+          },
+          "sku": "WKSS30GF",
+          "referencePrice": "39.99",
+          "shopifyVariantId": "44121587548221"
+        },
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "WKQQ30GF",
+          "referencePrice": "49.99",
+          "shopifyVariantId": "44121587580989"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "WKKK30GF",
+          "referencePrice": "59.99",
+          "shopifyVariantId": "44121587613757"
+        }
+      ]
+    },
+    {
+      "title": "Zoned Talalay Latex Pillow",
+      "handle": "zoned-talalay-latex-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237672509",
+      "collections": [
+        "pillows",
+        "foam-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 65
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQHPLX",
+          "referencePrice": "149.99",
+          "shopifyVariantId": "44121587646525"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKKHPLX",
+          "referencePrice": "169.99",
+          "shopifyVariantId": "44121587679293"
+        }
+      ]
+    },
+    {
+      "title": "HexCurve + OmniPhase Pillow",
+      "handle": "hexcurve-omniphase-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237705277",
+      "collections": [
+        "pillows",
+        "foam-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 59
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQX1XC",
+          "referencePrice": "139.99",
+          "shopifyVariantId": "44121587712061"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKKX1XC",
+          "referencePrice": "149.99",
+          "shopifyVariantId": "44121587744829"
+        }
+      ]
+    },
+    {
+      "title": "Bamboo Charcoal Pillow + Cooling Cover",
+      "handle": "bamboo-charcoal-pillow-cooling-cover",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237738045",
+      "collections": [
+        "pillows",
+        "foam-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 91
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "WKQQPCM30BF",
+          "referencePrice": "89.99",
+          "shopifyVariantId": "44121587777597"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "WKKKPCM30BF",
+          "referencePrice": "99.99",
+          "shopifyVariantId": "44121587810365"
+        }
+      ]
+    },
+    {
+      "title": "Zoned Gel ActiveDough Pillow",
+      "handle": "zoned-gel-activedough-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237770813",
+      "collections": [
+        "pillows",
+        "temperature-regulating-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 61
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQMPADZG",
+          "referencePrice": "109.99",
+          "shopifyVariantId": "44121587843133"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKKMPADZG",
+          "referencePrice": "119.99",
+          "shopifyVariantId": "44121587875901"
+        }
+      ]
+    },
+    {
+      "title": "Gel Dough + Z Gel Pillow",
+      "handle": "gel-dough-z-gel-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237869117",
+      "collections": [
+        "pillows",
+        "temperature-regulating-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 62
+      },
+      "variants": [
+        {
+          "options": {
+            "Loft": "High",
+            "Size": "Queen"
+          },
+          "sku": "ZZQQHPGL",
+          "referencePrice": "139.99",
+          "shopifyVariantId": "44121587941437"
+        },
+        {
+          "options": {
+            "Loft": "High",
+            "Size": "King"
+          },
+          "sku": "ZZKKHPGL",
+          "referencePrice": "149.99",
+          "shopifyVariantId": "44121587974205"
+        },
+        {
+          "options": {
+            "Loft": "Mid",
+            "Size": "Queen"
+          },
+          "sku": "ZZQQMPGL",
+          "referencePrice": "139.99",
+          "shopifyVariantId": "44121588006973"
+        },
+        {
+          "options": {
+            "Loft": "Mid",
+            "Size": "King"
+          },
+          "sku": "ZZKKMPGL",
+          "referencePrice": "149.99",
+          "shopifyVariantId": "44121588039741"
+        }
+      ]
+    },
+    {
+      "title": "CarbonCool + OmniPhase Pillow",
+      "handle": "carboncool-omniphase-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237901885",
+      "collections": [
+        "pillows",
+        "temperature-regulating-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 63
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "ZZQQMPCCLT",
+          "referencePrice": "149.99",
+          "shopifyVariantId": "44121596231741"
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "ZZKKMPCCLT",
+          "referencePrice": "169.99",
+          "shopifyVariantId": "44121596264509"
+        }
+      ]
+    },
+    {
+      "title": "Ice Cloud + OmniPhase Pillow",
+      "handle": "ice-cloud-omniphase-pillow",
+      "manufacturer": "Malouf",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100237934653",
+      "collections": [
+        "pillows",
+        "temperature-regulating-pillows"
+      ],
+      "source": {
+        "file": "MALOUF-PriceList-26.3-MAP.pdf",
+        "pdfPage": 64
+      },
+      "variants": [
+        {
+          "options": {
+            "Loft": "High",
+            "Size": "Queen"
+          },
+          "sku": "ZZQQHPICGF",
+          "referencePrice": "179.99",
+          "shopifyVariantId": "44121596297277"
+        },
+        {
+          "options": {
+            "Loft": "High",
+            "Size": "King"
+          },
+          "sku": "ZZKKHPICGF",
+          "referencePrice": "199.99",
+          "shopifyVariantId": "44121596330045"
+        },
+        {
+          "options": {
+            "Loft": "Mid",
+            "Size": "Queen"
+          },
+          "sku": "ZZQQMPICGF",
+          "referencePrice": "179.99",
+          "shopifyVariantId": "44121596362813"
+        },
+        {
+          "options": {
+            "Loft": "Mid",
+            "Size": "King"
+          },
+          "sku": "ZZKKMPICGF",
+          "referencePrice": "199.99",
+          "shopifyVariantId": "44121596395581"
+        },
+        {
+          "options": {
+            "Loft": "Low",
+            "Size": "Queen"
+          },
+          "sku": "ZZQQLPICGF",
+          "referencePrice": "179.99",
+          "shopifyVariantId": "44121596428349"
+        },
+        {
+          "options": {
+            "Loft": "Low",
+            "Size": "King"
+          },
+          "sku": "ZZKKLPICGF",
+          "referencePrice": "199.99",
+          "shopifyVariantId": "44121596461117"
+        }
+      ]
+    }
+  ],
+  "shopifyReadbackVerifiedAt": "2026-11-01T01:24:55.447Z"
+}

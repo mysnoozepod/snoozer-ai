@@ -1,0 +1,964 @@
+{
+  "schemaVersion": "1.0",
+  "verifiedAt": "2026-11-01T01:35:20.138Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "apiVersion": "2025-10",
+  "publicationGate": "ALL_PRODUCTS_VERIFIED_DRAFT_AND_UNPUBLISHED_BY_THIS_SCRIPT",
+  "collections": [
+    {
+      "title": "Furniture",
+      "handle": "furniture",
+      "shopifyCollectionId": "302102904893"
+    },
+    {
+      "title": "Headboards",
+      "handle": "headboards",
+      "shopifyCollectionId": "302102937661"
+    },
+    {
+      "title": "Platform Bases",
+      "handle": "platform-bases",
+      "shopifyCollectionId": "302102970429"
+    },
+    {
+      "title": "Mattress Toppers",
+      "handle": "mattress-toppers",
+      "shopifyCollectionId": "302102872125"
+    }
+  ],
+  "products": [
+    {
+      "title": "Hennessy Upholstered Headboard",
+      "handle": "hennessy-upholstered-headboard",
+      "status": "DRAFT",
+      "shopifyProductId": "8100250353725",
+      "category": null,
+      "collections": [
+        {
+          "handle": "furniture",
+          "shopifyCollectionId": "302102904893"
+        },
+        {
+          "handle": "headboards",
+          "shopifyCollectionId": "302102937661"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "OAQQ_HENNHB",
+          "barcode": null,
+          "price": "359.99",
+          "shopifyVariantId": "44122751467581",
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "hennessy-upholstered-headboard-queen-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "CHQQ_HENNHB",
+          "barcode": null,
+          "price": "359.99",
+          "shopifyVariantId": "44122751500349",
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "hennessy-upholstered-headboard-queen-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "STQQ_HENNHB",
+          "barcode": null,
+          "price": "359.99",
+          "shopifyVariantId": "44122751533117",
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "hennessy-upholstered-headboard-queen-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "OAKK_HENNHB",
+          "barcode": null,
+          "price": "449.99",
+          "shopifyVariantId": "44122751565885",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "hennessy-upholstered-headboard-king-california-king-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "CHKK_HENNHB",
+          "barcode": null,
+          "price": "449.99",
+          "shopifyVariantId": "44122751598653",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "hennessy-upholstered-headboard-king-california-king-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "STKK_HENNHB",
+          "barcode": null,
+          "price": "449.99",
+          "shopifyVariantId": "44122751631421",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Stone"
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "compatibility_key": "hennessy-upholstered-headboard-king-california-king-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Carlisle Upholstered Headboard",
+      "handle": "carlisle-upholstered-headboard",
+      "status": "DRAFT",
+      "shopifyProductId": "8100250452029",
+      "category": null,
+      "collections": [
+        {
+          "handle": "furniture",
+          "shopifyCollectionId": "302102904893"
+        },
+        {
+          "handle": "headboards",
+          "shopifyCollectionId": "302102937661"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "OAQQ_CARLHB",
+          "barcode": null,
+          "price": "359.99",
+          "shopifyVariantId": "44122751729725",
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "carlisle-upholstered-headboard-queen-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "CHQQ_CARLHB",
+          "barcode": null,
+          "price": "359.99",
+          "shopifyVariantId": "44122751762493",
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "carlisle-upholstered-headboard-queen-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "STQQ_CARLHB",
+          "barcode": null,
+          "price": "359.99",
+          "shopifyVariantId": "44122751795261",
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "carlisle-upholstered-headboard-queen-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "OAKK_CARLHB",
+          "barcode": null,
+          "price": "449.99",
+          "shopifyVariantId": "44122751828029",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "carlisle-upholstered-headboard-king-california-king-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "CHKK_CARLHB",
+          "barcode": null,
+          "price": "449.99",
+          "shopifyVariantId": "44122751860797",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable",
+            "compatibility_key": "carlisle-upholstered-headboard-king-california-king-charcoal",
+            "fulfillment_readiness": "PENDING"
+          }
+        },
+        {
+          "sku": "STKK_CARLHB",
+          "barcode": null,
+          "price": "449.99",
+          "shopifyVariantId": "44122751893565",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "carlisle-upholstered-headboard-king-california-king-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Scoresby Designer Headboard",
+      "handle": "scoresby-designer-headboard",
+      "status": "DRAFT",
+      "shopifyProductId": "8100250550333",
+      "category": null,
+      "collections": [
+        {
+          "handle": "furniture",
+          "shopifyCollectionId": "302102904893"
+        },
+        {
+          "handle": "headboards",
+          "shopifyCollectionId": "302102937661"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "OAQQ_SCORHB",
+          "barcode": null,
+          "price": "389.99",
+          "shopifyVariantId": "44122751991869",
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "scoresby-designer-headboard-queen-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "CHQQ_SCORHB",
+          "barcode": null,
+          "price": "389.99",
+          "shopifyVariantId": "44122752024637",
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "scoresby-designer-headboard-queen-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "STQQ_SCORHB",
+          "barcode": null,
+          "price": "389.99",
+          "shopifyVariantId": "44122752057405",
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "scoresby-designer-headboard-queen-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "OAKK_SCORHB",
+          "barcode": null,
+          "price": "479.99",
+          "shopifyVariantId": "44122752090173",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Oat"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable",
+            "compatibility_key": "scoresby-designer-headboard-king-california-king-oat"
+          }
+        },
+        {
+          "sku": "CHKK_SCORHB",
+          "barcode": null,
+          "price": "479.99",
+          "shopifyVariantId": "44122752122941",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "scoresby-designer-headboard-king-california-king-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "STKK_SCORHB",
+          "barcode": null,
+          "price": "479.99",
+          "shopifyVariantId": "44122752155709",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "scoresby-designer-headboard-king-california-king-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Blackwell Designer Headboard",
+      "handle": "blackwell-designer-headboard",
+      "status": "DRAFT",
+      "shopifyProductId": "8100250583101",
+      "category": null,
+      "collections": [
+        {
+          "handle": "furniture",
+          "shopifyCollectionId": "302102904893"
+        },
+        {
+          "handle": "headboards",
+          "shopifyCollectionId": "302102937661"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "OAQQ_BLWBHB",
+          "barcode": null,
+          "price": "449.99",
+          "shopifyVariantId": "44122760347709",
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "blackwell-designer-headboard-queen-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "CHQQ_BLWBHB",
+          "barcode": null,
+          "price": "449.99",
+          "shopifyVariantId": "44122760380477",
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "blackwell-designer-headboard-queen-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "STQQ_BLWBHB",
+          "barcode": null,
+          "price": "449.99",
+          "shopifyVariantId": "44122760413245",
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "blackwell-designer-headboard-queen-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "OAKK_BLWBHB",
+          "barcode": null,
+          "price": "529.99",
+          "shopifyVariantId": "44122760446013",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "blackwell-designer-headboard-king-california-king-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "CHKK_BLWBHB",
+          "barcode": null,
+          "price": "529.99",
+          "shopifyVariantId": "44122760478781",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "blackwell-designer-headboard-king-california-king-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "STKK_BLWBHB",
+          "barcode": null,
+          "price": "529.99",
+          "shopifyVariantId": "44122760511549",
+          "options": {
+            "Size": "King/California King",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "blackwell-designer-headboard-king-california-king-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Eastman Upholstered Platform Base",
+      "handle": "eastman-upholstered-platform-base",
+      "status": "DRAFT",
+      "shopifyProductId": "8100250615869",
+      "category": null,
+      "collections": [
+        {
+          "handle": "furniture",
+          "shopifyCollectionId": "302102904893"
+        },
+        {
+          "handle": "platform-bases",
+          "shopifyCollectionId": "302102970429"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "OAQQ_EASTPL",
+          "barcode": null,
+          "price": "529.99",
+          "shopifyVariantId": "44122760675389",
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "eastman-upholstered-platform-base-queen-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "CHQQ_EASTPL",
+          "barcode": null,
+          "price": "529.99",
+          "shopifyVariantId": "44122760708157",
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "eastman-upholstered-platform-base-queen-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "STQQ_EASTPL",
+          "barcode": null,
+          "price": "529.99",
+          "shopifyVariantId": "44122760740925",
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "compatibility_key": "eastman-upholstered-platform-base-queen-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        },
+        {
+          "sku": "OAKK_EASTPL",
+          "barcode": null,
+          "price": "599.99",
+          "shopifyVariantId": "44122760773693",
+          "options": {
+            "Size": "King",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "eastman-upholstered-platform-base-king-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "CHKK_EASTPL",
+          "barcode": null,
+          "price": "599.99",
+          "shopifyVariantId": "44122760806461",
+          "options": {
+            "Size": "King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "eastman-upholstered-platform-base-king-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "STKK_EASTPL",
+          "barcode": null,
+          "price": "599.99",
+          "shopifyVariantId": "44122760839229",
+          "options": {
+            "Size": "King",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "eastman-upholstered-platform-base-king-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "OACK_EASTPL",
+          "barcode": null,
+          "price": "599.99",
+          "shopifyVariantId": "44122760871997",
+          "options": {
+            "Size": "California King",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "eastman-upholstered-platform-base-california-king-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "CHCK_EASTPL",
+          "barcode": null,
+          "price": "599.99",
+          "shopifyVariantId": "44122760904765",
+          "options": {
+            "Size": "California King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "eastman-upholstered-platform-base-california-king-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "STCK_EASTPL",
+          "barcode": null,
+          "price": "599.99",
+          "shopifyVariantId": "44122760937533",
+          "options": {
+            "Size": "California King",
+            "Color": "Stone"
+          },
+          "contract": {
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard",
+            "compatibility_key": "eastman-upholstered-platform-base-california-king-stone",
+            "fulfillment_readiness": "PENDING"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Watson Upholstered Platform Base",
+      "handle": "watson-upholstered-platform-base",
+      "status": "DRAFT",
+      "shopifyProductId": "8100250648637",
+      "category": null,
+      "collections": [
+        {
+          "handle": "furniture",
+          "shopifyCollectionId": "302102904893"
+        },
+        {
+          "handle": "platform-bases",
+          "shopifyCollectionId": "302102970429"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "OAQQ_WATSPL",
+          "barcode": null,
+          "price": "829.99",
+          "shopifyVariantId": "44122760970301",
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "watson-upholstered-platform-base-queen-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "CHQQ_WATSPL",
+          "barcode": null,
+          "price": "829.99",
+          "shopifyVariantId": "44122761003069",
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "watson-upholstered-platform-base-queen-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "STQQ_WATSPL",
+          "barcode": null,
+          "price": "829.99",
+          "shopifyVariantId": "44122761035837",
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "watson-upholstered-platform-base-queen-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "OAKK_WATSPL",
+          "barcode": null,
+          "price": "979.99",
+          "shopifyVariantId": "44122761068605",
+          "options": {
+            "Size": "King",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "watson-upholstered-platform-base-king-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "CHKK_WATSPL",
+          "barcode": null,
+          "price": "979.99",
+          "shopifyVariantId": "44122761101373",
+          "options": {
+            "Size": "King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard",
+            "compatibility_key": "watson-upholstered-platform-base-king-charcoal"
+          }
+        },
+        {
+          "sku": "STKK_WATSPL",
+          "barcode": null,
+          "price": "979.99",
+          "shopifyVariantId": "44122761134141",
+          "options": {
+            "Size": "King",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "watson-upholstered-platform-base-king-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "OACK_WATSPL",
+          "barcode": null,
+          "price": "979.99",
+          "shopifyVariantId": "44122761166909",
+          "options": {
+            "Size": "California King",
+            "Color": "Oat"
+          },
+          "contract": {
+            "compatibility_key": "watson-upholstered-platform-base-california-king-oat",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "CHCK_WATSPL",
+          "barcode": null,
+          "price": "979.99",
+          "shopifyVariantId": "44122761199677",
+          "options": {
+            "Size": "California King",
+            "Color": "Charcoal"
+          },
+          "contract": {
+            "compatibility_key": "watson-upholstered-platform-base-california-king-charcoal",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "STCK_WATSPL",
+          "barcode": null,
+          "price": "979.99",
+          "shopifyVariantId": "44122761232445",
+          "options": {
+            "Size": "California King",
+            "Color": "Stone"
+          },
+          "contract": {
+            "compatibility_key": "watson-upholstered-platform-base-california-king-stone",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "2.5-Inch Gel Memory Foam Topper",
+      "handle": "malouf-2-5-inch-gel-memory-foam-topper",
+      "status": "DRAFT",
+      "shopifyProductId": "8100250714173",
+      "category": null,
+      "collections": [
+        {
+          "handle": "mattress-toppers",
+          "shopifyCollectionId": "302102872125"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "IS25TT45GT",
+          "barcode": null,
+          "price": "124.99",
+          "shopifyVariantId": "44122761265213",
+          "options": {
+            "Size": "Twin"
+          },
+          "contract": {
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-twin",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "IS25TX45GT",
+          "barcode": null,
+          "price": "134.99",
+          "shopifyVariantId": "44122761297981",
+          "options": {
+            "Size": "Twin XL"
+          },
+          "contract": {
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-twin-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "IS25FF45GT",
+          "barcode": null,
+          "price": "159.99",
+          "shopifyVariantId": "44122761330749",
+          "options": {
+            "Size": "Full"
+          },
+          "contract": {
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-full",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "IS25QQ45GT",
+          "barcode": null,
+          "price": "179.99",
+          "shopifyVariantId": "44122761363517",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "IS25KK45GT",
+          "barcode": null,
+          "price": "199.99",
+          "shopifyVariantId": "44122761396285",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "IS25CK45GT",
+          "barcode": null,
+          "price": "214.99",
+          "shopifyVariantId": "44122761429053",
+          "options": {
+            "Size": "California King"
+          },
+          "contract": {
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-california-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "SELECTED"
+      }
+    }
+  ]
+}

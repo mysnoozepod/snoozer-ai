@@ -1,0 +1,1192 @@
+{
+  "schemaVersion": "1.0",
+  "updatedAt": "2026-11-01",
+  "shopifyStore": "mysnoozepodtest",
+  "publicationRule": "DRAFT_ONLY_UNTIL_OWNER_RELEASE_GATE",
+  "priceRule": "MALOUF_26_3_MAP_IS_HISTORICAL_DRAFT_REFERENCE_NOT_LIVE_AUTHORIZATION",
+  "readbackFile": "docs/catalog/malouf-furniture-topper-shopify-readback.json",
+  "expectedProductCount": 7,
+  "expectedVariantCount": 48,
+  "collections": [
+    {
+      "title": "Furniture",
+      "handle": "furniture",
+      "shopifyCollectionId": "302102904893",
+      "role": "customer_facing_category"
+    },
+    {
+      "title": "Headboards",
+      "handle": "headboards",
+      "shopifyCollectionId": "302102937661",
+      "role": "merchandising_group"
+    },
+    {
+      "title": "Platform Bases",
+      "handle": "platform-bases",
+      "shopifyCollectionId": "302102970429",
+      "role": "merchandising_group"
+    },
+    {
+      "title": "Mattress Toppers",
+      "handle": "mattress-toppers",
+      "shopifyCollectionId": "302102872125",
+      "role": "merchandising_group"
+    }
+  ],
+  "products": [
+    {
+      "title": "Hennessy Upholstered Headboard",
+      "handle": "hennessy-upholstered-headboard",
+      "manufacturer": "Malouf",
+      "productType": "Headboard",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100250353725",
+      "collections": [
+        "furniture",
+        "headboards"
+      ],
+      "contract": {
+        "assortment_status": "APPROVED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [],
+        "owner_content_status": "PENDING"
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "sku": "OAQQ_HENNHB",
+          "referencePrice": "359.99",
+          "shopifyVariantId": "44122751467581",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "hennessy-upholstered-headboard-queen-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "sku": "CHQQ_HENNHB",
+          "referencePrice": "359.99",
+          "shopifyVariantId": "44122751500349",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "hennessy-upholstered-headboard-queen-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "sku": "STQQ_HENNHB",
+          "referencePrice": "359.99",
+          "shopifyVariantId": "44122751533117",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "hennessy-upholstered-headboard-queen-stone"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Oat"
+          },
+          "sku": "OAKK_HENNHB",
+          "referencePrice": "449.99",
+          "shopifyVariantId": "44122751565885",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "hennessy-upholstered-headboard-king-california-king-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Charcoal"
+          },
+          "sku": "CHKK_HENNHB",
+          "referencePrice": "449.99",
+          "shopifyVariantId": "44122751598653",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "hennessy-upholstered-headboard-king-california-king-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Stone"
+          },
+          "sku": "STKK_HENNHB",
+          "referencePrice": "449.99",
+          "shopifyVariantId": "44122751631421",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "hennessy-upholstered-headboard-king-california-king-stone"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Carlisle Upholstered Headboard",
+      "handle": "carlisle-upholstered-headboard",
+      "manufacturer": "Malouf",
+      "productType": "Headboard",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100250452029",
+      "collections": [
+        "furniture",
+        "headboards"
+      ],
+      "contract": {
+        "assortment_status": "APPROVED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [],
+        "owner_content_status": "PENDING"
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "sku": "OAQQ_CARLHB",
+          "referencePrice": "359.99",
+          "shopifyVariantId": "44122751729725",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "carlisle-upholstered-headboard-queen-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "sku": "CHQQ_CARLHB",
+          "referencePrice": "359.99",
+          "shopifyVariantId": "44122751762493",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "carlisle-upholstered-headboard-queen-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "sku": "STQQ_CARLHB",
+          "referencePrice": "359.99",
+          "shopifyVariantId": "44122751795261",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "carlisle-upholstered-headboard-queen-stone"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Oat"
+          },
+          "sku": "OAKK_CARLHB",
+          "referencePrice": "449.99",
+          "shopifyVariantId": "44122751828029",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "carlisle-upholstered-headboard-king-california-king-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Charcoal"
+          },
+          "sku": "CHKK_CARLHB",
+          "referencePrice": "449.99",
+          "shopifyVariantId": "44122751860797",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "carlisle-upholstered-headboard-king-california-king-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Stone"
+          },
+          "sku": "STKK_CARLHB",
+          "referencePrice": "449.99",
+          "shopifyVariantId": "44122751893565",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 28,
+            "printedPage": 55,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "carlisle-upholstered-headboard-king-california-king-stone"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Scoresby Designer Headboard",
+      "handle": "scoresby-designer-headboard",
+      "manufacturer": "Malouf",
+      "productType": "Headboard",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100250550333",
+      "collections": [
+        "furniture",
+        "headboards"
+      ],
+      "contract": {
+        "assortment_status": "APPROVED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [],
+        "owner_content_status": "PENDING"
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "sku": "OAQQ_SCORHB",
+          "referencePrice": "389.99",
+          "shopifyVariantId": "44122751991869",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "scoresby-designer-headboard-queen-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "sku": "CHQQ_SCORHB",
+          "referencePrice": "389.99",
+          "shopifyVariantId": "44122752024637",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "scoresby-designer-headboard-queen-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "sku": "STQQ_SCORHB",
+          "referencePrice": "389.99",
+          "shopifyVariantId": "44122752057405",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "scoresby-designer-headboard-queen-stone"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Oat"
+          },
+          "sku": "OAKK_SCORHB",
+          "referencePrice": "479.99",
+          "shopifyVariantId": "44122752090173",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "scoresby-designer-headboard-king-california-king-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Charcoal"
+          },
+          "sku": "CHKK_SCORHB",
+          "referencePrice": "479.99",
+          "shopifyVariantId": "44122752122941",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "scoresby-designer-headboard-king-california-king-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Stone"
+          },
+          "sku": "STKK_SCORHB",
+          "referencePrice": "479.99",
+          "shopifyVariantId": "44122752155709",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "scoresby-designer-headboard-king-california-king-stone"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Blackwell Designer Headboard",
+      "handle": "blackwell-designer-headboard",
+      "manufacturer": "Malouf",
+      "productType": "Headboard",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100250583101",
+      "collections": [
+        "furniture",
+        "headboards"
+      ],
+      "contract": {
+        "assortment_status": "APPROVED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [],
+        "owner_content_status": "PENDING"
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "sku": "OAQQ_BLWBHB",
+          "referencePrice": "449.99",
+          "shopifyVariantId": "44122760347709",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "blackwell-designer-headboard-queen-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "sku": "CHQQ_BLWBHB",
+          "referencePrice": "449.99",
+          "shopifyVariantId": "44122760380477",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "blackwell-designer-headboard-queen-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "sku": "STQQ_BLWBHB",
+          "referencePrice": "449.99",
+          "shopifyVariantId": "44122760413245",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "blackwell-designer-headboard-queen-stone"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Oat"
+          },
+          "sku": "OAKK_BLWBHB",
+          "referencePrice": "529.99",
+          "shopifyVariantId": "44122760446013",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "blackwell-designer-headboard-king-california-king-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Charcoal"
+          },
+          "sku": "CHKK_BLWBHB",
+          "referencePrice": "529.99",
+          "shopifyVariantId": "44122760478781",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "blackwell-designer-headboard-king-california-king-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "King/California King",
+            "Color": "Stone"
+          },
+          "sku": "STKK_BLWBHB",
+          "referencePrice": "529.99",
+          "shopifyVariantId": "44122760511549",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 29,
+            "printedPage": 57,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "blackwell-designer-headboard-king-california-king-stone"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Eastman Upholstered Platform Base",
+      "handle": "eastman-upholstered-platform-base",
+      "manufacturer": "Malouf",
+      "productType": "Platform Base",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100250615869",
+      "collections": [
+        "furniture",
+        "platform-bases"
+      ],
+      "contract": {
+        "assortment_status": "APPROVED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [],
+        "owner_content_status": "PENDING"
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "sku": "OAQQ_EASTPL",
+          "referencePrice": "529.99",
+          "shopifyVariantId": "44122760675389",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 30,
+            "printedPage": 59,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "eastman-upholstered-platform-base-queen-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "sku": "CHQQ_EASTPL",
+          "referencePrice": "529.99",
+          "shopifyVariantId": "44122760708157",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 30,
+            "printedPage": 59,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "eastman-upholstered-platform-base-queen-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "sku": "STQQ_EASTPL",
+          "referencePrice": "529.99",
+          "shopifyVariantId": "44122760740925",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 30,
+            "printedPage": 59,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "eastman-upholstered-platform-base-queen-stone"
+          }
+        },
+        {
+          "options": {
+            "Size": "King",
+            "Color": "Oat"
+          },
+          "sku": "OAKK_EASTPL",
+          "referencePrice": "599.99",
+          "shopifyVariantId": "44122760773693",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 30,
+            "printedPage": 59,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "eastman-upholstered-platform-base-king-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "King",
+            "Color": "Charcoal"
+          },
+          "sku": "CHKK_EASTPL",
+          "referencePrice": "599.99",
+          "shopifyVariantId": "44122760806461",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 30,
+            "printedPage": 59,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "eastman-upholstered-platform-base-king-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "King",
+            "Color": "Stone"
+          },
+          "sku": "STKK_EASTPL",
+          "referencePrice": "599.99",
+          "shopifyVariantId": "44122760839229",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 30,
+            "printedPage": 59,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "eastman-upholstered-platform-base-king-stone"
+          }
+        },
+        {
+          "options": {
+            "Size": "California King",
+            "Color": "Oat"
+          },
+          "sku": "OACK_EASTPL",
+          "referencePrice": "599.99",
+          "shopifyVariantId": "44122760871997",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 30,
+            "printedPage": 59,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "eastman-upholstered-platform-base-california-king-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "California King",
+            "Color": "Charcoal"
+          },
+          "sku": "CHCK_EASTPL",
+          "referencePrice": "599.99",
+          "shopifyVariantId": "44122760904765",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 30,
+            "printedPage": 59,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "eastman-upholstered-platform-base-california-king-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "California King",
+            "Color": "Stone"
+          },
+          "sku": "STCK_EASTPL",
+          "referencePrice": "599.99",
+          "shopifyVariantId": "44122760937533",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 30,
+            "printedPage": 59,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "eastman-upholstered-platform-base-california-king-stone"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Watson Upholstered Platform Base",
+      "handle": "watson-upholstered-platform-base",
+      "manufacturer": "Malouf",
+      "productType": "Platform Base",
+      "assortmentStatus": "APPROVED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100250648637",
+      "collections": [
+        "furniture",
+        "platform-bases"
+      ],
+      "contract": {
+        "assortment_status": "APPROVED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [],
+        "owner_content_status": "PENDING"
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Oat"
+          },
+          "sku": "OAQQ_WATSPL",
+          "referencePrice": "829.99",
+          "shopifyVariantId": "44122760970301",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 31,
+            "printedPage": 61,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "watson-upholstered-platform-base-queen-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Charcoal"
+          },
+          "sku": "CHQQ_WATSPL",
+          "referencePrice": "829.99",
+          "shopifyVariantId": "44122761003069",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 31,
+            "printedPage": 61,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "watson-upholstered-platform-base-queen-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen",
+            "Color": "Stone"
+          },
+          "sku": "STQQ_WATSPL",
+          "referencePrice": "829.99",
+          "shopifyVariantId": "44122761035837",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 31,
+            "printedPage": 61,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "watson-upholstered-platform-base-queen-stone"
+          }
+        },
+        {
+          "options": {
+            "Size": "King",
+            "Color": "Oat"
+          },
+          "sku": "OAKK_WATSPL",
+          "referencePrice": "979.99",
+          "shopifyVariantId": "44122761068605",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 31,
+            "printedPage": 61,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "watson-upholstered-platform-base-king-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "King",
+            "Color": "Charcoal"
+          },
+          "sku": "CHKK_WATSPL",
+          "referencePrice": "979.99",
+          "shopifyVariantId": "44122761101373",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 31,
+            "printedPage": 61,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "watson-upholstered-platform-base-king-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "King",
+            "Color": "Stone"
+          },
+          "sku": "STKK_WATSPL",
+          "referencePrice": "979.99",
+          "shopifyVariantId": "44122761134141",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 31,
+            "printedPage": 61,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "watson-upholstered-platform-base-king-stone"
+          }
+        },
+        {
+          "options": {
+            "Size": "California King",
+            "Color": "Oat"
+          },
+          "sku": "OACK_WATSPL",
+          "referencePrice": "979.99",
+          "shopifyVariantId": "44122761166909",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 31,
+            "printedPage": 61,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "watson-upholstered-platform-base-california-king-oat"
+          }
+        },
+        {
+          "options": {
+            "Size": "California King",
+            "Color": "Charcoal"
+          },
+          "sku": "CHCK_WATSPL",
+          "referencePrice": "979.99",
+          "shopifyVariantId": "44122761199677",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 31,
+            "printedPage": 61,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "watson-upholstered-platform-base-california-king-charcoal"
+          }
+        },
+        {
+          "options": {
+            "Size": "California King",
+            "Color": "Stone"
+          },
+          "sku": "STCK_WATSPL",
+          "referencePrice": "979.99",
+          "shopifyVariantId": "44122761232445",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 31,
+            "printedPage": 61,
+            "evidence": "The page defines OA/Oat, CH/Charcoal, and ST/Stone color SKU prefixes and prints the ST size SKU examples."
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "watson-upholstered-platform-base-california-king-stone"
+          }
+        }
+      ]
+    },
+    {
+      "title": "2.5-Inch Gel Memory Foam Topper",
+      "handle": "malouf-2-5-inch-gel-memory-foam-topper",
+      "manufacturer": "Malouf",
+      "productType": "Mattress Topper",
+      "assortmentStatus": "SELECTED",
+      "publicationReadiness": "BLOCKED",
+      "shopifyStatus": "DRAFT",
+      "shopifyProductId": "8100250714173",
+      "collections": [
+        "mattress-toppers"
+      ],
+      "contract": {
+        "assortment_status": "SELECTED",
+        "publication_readiness": "BLOCKED",
+        "builder_roles": [],
+        "owner_content_status": "PENDING"
+      },
+      "variants": [
+        {
+          "options": {
+            "Size": "Twin"
+          },
+          "sku": "IS25TT45GT",
+          "referencePrice": "124.99",
+          "shopifyVariantId": "44122761265213",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 74,
+            "printedPage": 147
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-twin"
+          }
+        },
+        {
+          "options": {
+            "Size": "Twin XL"
+          },
+          "sku": "IS25TX45GT",
+          "referencePrice": "134.99",
+          "shopifyVariantId": "44122761297981",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 74,
+            "printedPage": 147
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-twin-xl"
+          }
+        },
+        {
+          "options": {
+            "Size": "Full"
+          },
+          "sku": "IS25FF45GT",
+          "referencePrice": "159.99",
+          "shopifyVariantId": "44122761330749",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 74,
+            "printedPage": 147
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-full"
+          }
+        },
+        {
+          "options": {
+            "Size": "Queen"
+          },
+          "sku": "IS25QQ45GT",
+          "referencePrice": "179.99",
+          "shopifyVariantId": "44122761363517",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 74,
+            "printedPage": 147
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-queen"
+          }
+        },
+        {
+          "options": {
+            "Size": "King"
+          },
+          "sku": "IS25KK45GT",
+          "referencePrice": "199.99",
+          "shopifyVariantId": "44122761396285",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 74,
+            "printedPage": 147
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-king"
+          }
+        },
+        {
+          "options": {
+            "Size": "California King"
+          },
+          "sku": "IS25CK45GT",
+          "referencePrice": "214.99",
+          "shopifyVariantId": "44122761429053",
+          "source": {
+            "document": "MALOUF-PriceList-26.3-MAP.pdf",
+            "pdfPage": 74,
+            "printedPage": 147
+          },
+          "contract": {
+            "sleep_geometry": "standard",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "fulfillment_readiness": "PENDING",
+            "compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-california-king"
+          }
+        }
+      ]
+    }
+  ],
+  "unresolvedCompatibility": [
+    "The source verifies Malouf base compatibility claims only; compatibility with the approved BEDGEAR adjustable-base families remains pending manufacturer or owner verification.",
+    "Furniture clearance, freight, fulfillment, returns, live pricing, showroom samples, and customer-facing content remain pending."
+  ],
+  "shopifyReadbackVerifiedAt": "2026-11-01T01:35:20.138Z"
+}

@@ -1,0 +1,1118 @@
+{
+  "schemaVersion": "1.0",
+  "verifiedAt": "2026-11-01T01:24:55.447Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "apiVersion": "2025-10",
+  "publicationGate": "ALL_PRODUCTS_VERIFIED_DRAFT_AND_UNPUBLISHED_BY_THIS_SCRIPT",
+  "collections": [
+    {
+      "title": "Pillows",
+      "handle": "pillows",
+      "shopifyCollectionId": "302090780733"
+    },
+    {
+      "title": "Filled Pillows",
+      "handle": "filled-pillows",
+      "shopifyCollectionId": "302090813501"
+    },
+    {
+      "title": "Zoned Pillows",
+      "handle": "zoned-pillows",
+      "shopifyCollectionId": "302102609981"
+    },
+    {
+      "title": "Foam Pillows",
+      "handle": "foam-pillows",
+      "shopifyCollectionId": "302102642749"
+    },
+    {
+      "title": "Temperature Regulating Pillows",
+      "handle": "temperature-regulating-pillows",
+      "shopifyCollectionId": "302102675517"
+    }
+  ],
+  "products": [
+    {
+      "title": "Gelled Microfiber Pillow",
+      "handle": "gelled-microfiber-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8099363094589",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "filled-pillows",
+          "shopifyCollectionId": "302090813501"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQ00GM",
+          "price": "59.99",
+          "shopifyVariantId": "44049793777725",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "gelled-microfiber-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKK00GM",
+          "price": "69.99",
+          "shopifyVariantId": "44049793810493",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "gelled-microfiber-pillow-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Convolution Pillow",
+      "handle": "convolution-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237344829",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "filled-pillows",
+          "shopifyCollectionId": "302090813501"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQX2CG",
+          "price": "79.99",
+          "shopifyVariantId": "44121586892861",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "convolution-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKX2CG",
+          "price": "89.99",
+          "shopifyVariantId": "44121586925629",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "convolution-pillow-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Gel Convolution Pillow",
+      "handle": "gel-convolution-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237377597",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "filled-pillows",
+          "shopifyCollectionId": "302090813501"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQHPCOGF",
+          "price": "119.99",
+          "shopifyVariantId": "44121586958397",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "gel-convolution-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKHPCOGF",
+          "price": "129.99",
+          "shopifyVariantId": "44121586991165",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "gel-convolution-pillow-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "assortment_status": "APPROVED",
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED"
+      }
+    },
+    {
+      "title": "Quilted Convolution + HyperChill Pillow",
+      "handle": "quilted-convolution-hyperchill-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237443133",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "filled-pillows",
+          "shopifyCollectionId": "302090813501"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQX2QC",
+          "price": "119.99",
+          "shopifyVariantId": "44121587056701",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "quilted-convolution-hyperchill-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKX2QC",
+          "price": "129.99",
+          "shopifyVariantId": "44121587089469",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "quilted-convolution-hyperchill-pillow-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Zoned Dough + Bamboo Charcoal Pillow",
+      "handle": "zoned-dough-bamboo-charcoal-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237475901",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "zoned-pillows",
+          "shopifyCollectionId": "302102609981"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQMPZB",
+          "price": "109.99",
+          "shopifyVariantId": "44121587122237",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "zoned-dough-bamboo-charcoal-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKMPZB",
+          "price": "119.99",
+          "shopifyVariantId": "44121587155005",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "zoned-dough-bamboo-charcoal-pillow-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED",
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]"
+      }
+    },
+    {
+      "title": "Zoned ActiveDough + Bamboo Charcoal Pillow",
+      "handle": "zoned-activedough-bamboo-charcoal-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237508669",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "zoned-pillows",
+          "shopifyCollectionId": "302102609981"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQMPADZB",
+          "price": "109.99",
+          "shopifyVariantId": "44121587187773",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "zoned-activedough-bamboo-charcoal-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKMPADZB",
+          "price": "119.99",
+          "shopifyVariantId": "44121587220541",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "zoned-activedough-bamboo-charcoal-pillow-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Zoned Gel Dough Pillow",
+      "handle": "zoned-gel-dough-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237541437",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "zoned-pillows",
+          "shopifyCollectionId": "302102609981"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQHPZG",
+          "price": "109.99",
+          "shopifyVariantId": "44121587253309",
+          "options": {
+            "Loft": "High",
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "zoned-gel-dough-pillow-high-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKHPZG",
+          "price": "119.99",
+          "shopifyVariantId": "44121587286077",
+          "options": {
+            "Loft": "High",
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "zoned-gel-dough-pillow-high-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZQQMPZG",
+          "price": "109.99",
+          "shopifyVariantId": "44121587318845",
+          "options": {
+            "Loft": "Mid",
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "zoned-gel-dough-pillow-mid-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKMPZG",
+          "price": "119.99",
+          "shopifyVariantId": "44121587351613",
+          "options": {
+            "Loft": "Mid",
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "zoned-gel-dough-pillow-mid-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZQQLPZG",
+          "price": "109.99",
+          "shopifyVariantId": "44121587384381",
+          "options": {
+            "Loft": "Low",
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "zoned-gel-dough-pillow-low-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKLPZG",
+          "price": "119.99",
+          "shopifyVariantId": "44121587417149",
+          "options": {
+            "Loft": "Low",
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "zoned-gel-dough-pillow-low-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED",
+        "owner_content_status": "PENDING"
+      }
+    },
+    {
+      "title": "Shoulder Zoned Gel ActiveDough Pillow",
+      "handle": "shoulder-zoned-gel-activedough-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237574205",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "zoned-pillows",
+          "shopifyCollectionId": "302102609981"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQSCMPADZG",
+          "price": "109.99",
+          "shopifyVariantId": "44121587449917",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "shoulder-zoned-gel-activedough-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKSCMPADZG",
+          "price": "119.99",
+          "shopifyVariantId": "44121587482685",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "shoulder-zoned-gel-activedough-pillow-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Weekender Gel Memory Foam Pillow",
+      "handle": "weekender-gel-memory-foam-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237639741",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "foam-pillows",
+          "shopifyCollectionId": "302102642749"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "WKSS30GF",
+          "price": "39.99",
+          "shopifyVariantId": "44121587548221",
+          "options": {
+            "Size": "Standard"
+          },
+          "contract": {
+            "compatibility_key": "weekender-gel-memory-foam-pillow-standard",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "WKQQ30GF",
+          "price": "49.99",
+          "shopifyVariantId": "44121587580989",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "weekender-gel-memory-foam-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "WKKK30GF",
+          "price": "59.99",
+          "shopifyVariantId": "44121587613757",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "compatibility_key": "weekender-gel-memory-foam-pillow-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Zoned Talalay Latex Pillow",
+      "handle": "zoned-talalay-latex-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237672509",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "foam-pillows",
+          "shopifyCollectionId": "302102642749"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQHPLX",
+          "price": "149.99",
+          "shopifyVariantId": "44121587646525",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "zoned-talalay-latex-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKHPLX",
+          "price": "169.99",
+          "shopifyVariantId": "44121587679293",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "zoned-talalay-latex-pillow-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "HexCurve + OmniPhase Pillow",
+      "handle": "hexcurve-omniphase-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237705277",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "foam-pillows",
+          "shopifyCollectionId": "302102642749"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQX1XC",
+          "price": "139.99",
+          "shopifyVariantId": "44121587712061",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "hexcurve-omniphase-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKX1XC",
+          "price": "149.99",
+          "shopifyVariantId": "44121587744829",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable",
+            "compatibility_key": "hexcurve-omniphase-pillow-king",
+            "fulfillment_readiness": "PENDING"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Bamboo Charcoal Pillow + Cooling Cover",
+      "handle": "bamboo-charcoal-pillow-cooling-cover",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237738045",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "foam-pillows",
+          "shopifyCollectionId": "302102642749"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "WKQQPCM30BF",
+          "price": "89.99",
+          "shopifyVariantId": "44121587777597",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "bamboo-charcoal-pillow-cooling-cover-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "WKKKPCM30BF",
+          "price": "99.99",
+          "shopifyVariantId": "44121587810365",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "bamboo-charcoal-pillow-cooling-cover-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Zoned Gel ActiveDough Pillow",
+      "handle": "zoned-gel-activedough-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237770813",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "temperature-regulating-pillows",
+          "shopifyCollectionId": "302102675517"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQMPADZG",
+          "price": "109.99",
+          "shopifyVariantId": "44121587843133",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "zoned-gel-activedough-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKMPADZG",
+          "price": "119.99",
+          "shopifyVariantId": "44121587875901",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable",
+            "compatibility_key": "zoned-gel-activedough-pillow-king"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Gel Dough + Z Gel Pillow",
+      "handle": "gel-dough-z-gel-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237869117",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "temperature-regulating-pillows",
+          "shopifyCollectionId": "302102675517"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQHPGL",
+          "price": "139.99",
+          "shopifyVariantId": "44121587941437",
+          "options": {
+            "Loft": "High",
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "gel-dough-z-gel-pillow-high-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKHPGL",
+          "price": "149.99",
+          "shopifyVariantId": "44121587974205",
+          "options": {
+            "Loft": "High",
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "gel-dough-z-gel-pillow-high-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZQQMPGL",
+          "price": "139.99",
+          "shopifyVariantId": "44121588006973",
+          "options": {
+            "Loft": "Mid",
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "gel-dough-z-gel-pillow-mid-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKMPGL",
+          "price": "149.99",
+          "shopifyVariantId": "44121588039741",
+          "options": {
+            "Loft": "Mid",
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "gel-dough-z-gel-pillow-mid-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "CarbonCool + OmniPhase Pillow",
+      "handle": "carboncool-omniphase-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237901885",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "temperature-regulating-pillows",
+          "shopifyCollectionId": "302102675517"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQMPCCLT",
+          "price": "149.99",
+          "shopifyVariantId": "44121596231741",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "carboncool-omniphase-pillow-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKMPCCLT",
+          "price": "169.99",
+          "shopifyVariantId": "44121596264509",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "carboncool-omniphase-pillow-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "Ice Cloud + OmniPhase Pillow",
+      "handle": "ice-cloud-omniphase-pillow",
+      "status": "DRAFT",
+      "shopifyProductId": "8100237934653",
+      "category": {
+        "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
+        "name": "Pillows",
+        "fullName": "Home & Garden > Linens & Bedding > Bedding > Pillows"
+      },
+      "collections": [
+        {
+          "handle": "pillows",
+          "shopifyCollectionId": "302090780733"
+        },
+        {
+          "handle": "temperature-regulating-pillows",
+          "shopifyCollectionId": "302102675517"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "ZZQQHPICGF",
+          "price": "179.99",
+          "shopifyVariantId": "44121596297277",
+          "options": {
+            "Loft": "High",
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "ice-cloud-omniphase-pillow-high-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKHPICGF",
+          "price": "199.99",
+          "shopifyVariantId": "44121596330045",
+          "options": {
+            "Loft": "High",
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "ice-cloud-omniphase-pillow-high-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZQQMPICGF",
+          "price": "179.99",
+          "shopifyVariantId": "44121596362813",
+          "options": {
+            "Loft": "Mid",
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "ice-cloud-omniphase-pillow-mid-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKMPICGF",
+          "price": "199.99",
+          "shopifyVariantId": "44121596395581",
+          "options": {
+            "Loft": "Mid",
+            "Size": "King"
+          },
+          "contract": {
+            "sleep_geometry": "not_applicable",
+            "compatibility_key": "ice-cloud-omniphase-pillow-mid-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        },
+        {
+          "sku": "ZZQQLPICGF",
+          "price": "179.99",
+          "shopifyVariantId": "44121596428349",
+          "options": {
+            "Loft": "Low",
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "ice-cloud-omniphase-pillow-low-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        },
+        {
+          "sku": "ZZKKLPICGF",
+          "price": "199.99",
+          "shopifyVariantId": "44121596461117",
+          "options": {
+            "Loft": "Low",
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "ice-cloud-omniphase-pillow-low-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "not_applicable"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"pillow\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    }
+  ]
+}

@@ -1,6 +1,19 @@
 {{ 'snoozepod-pod-builder.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'snoozepod-pod-builder.js' | asset_url }}" defer></script>
 
+{%- render 'snoozepod-guided-pod-builder-core',
+  builder_id: section.id,
+  builder_anchor_id: 'pod-builder-' | append: section.id,
+  builder_heading: section.settings.heading,
+  builder_primary_label: section.settings.primary_label,
+  builder_context: 'standalone'
+-%}
+
+{% comment %}
+  Historical standalone implementation retained temporarily for theme-diff traceability.
+  The shared core above is authoritative and prevents the standalone section from drifting.
+{% endcomment %}
+{% comment %}
 {%- liquid
   assign size_option_index = 1
   for option in product.options_with_values
@@ -348,6 +361,16 @@
             </button>
           </form>
 
+          <p
+            class="snoozepod-builder__cart-status"
+            data-builder-cart-status
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            tabindex="-1"
+            hidden
+          ></p>
+
           <div class="snoozepod-builder__nav">
             <button type="button" class="button button--secondary snoozepod-builder__back" data-builder-back>
               Back
@@ -383,6 +406,7 @@
     </div>
   </div>
 </section>
+{% endcomment %}
 
 {% schema %}
 {

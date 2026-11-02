@@ -1,0 +1,42 @@
+Handle,Title,Body (HTML),Vendor,Product Category,Type,Tags,Published,Option1 Name,Option1 Value,Option2 Name,Option2 Value,Option3 Name,Option3 Value,Variant SKU,Variant Grams,Variant Inventory Tracker,Variant Inventory Qty,Variant Inventory Policy,Variant Fulfillment Service,Variant Price,Variant Compare At Price,Variant Requires Shipping,Variant Taxable,Variant Barcode,Image Src,Image Position,Image Alt Text,Gift Card,SEO Title,SEO Description,Google Shopping / Google Product Category,Google Shopping / Gender,Google Shopping / Age Group,Google Shopping / MPN,Google Shopping / AdWords Grouping,Google Shopping / AdWords Labels,Google Shopping / Condition,Google Shopping / Custom Product,Google Shopping / Custom Label 0,Google Shopping / Custom Label 1,Google Shopping / Custom Label 2,Google Shopping / Custom Label 3,Google Shopping / Custom Label 4,Variant Image,Variant Weight Unit,Variant Tax Code,Cost per item,Price / International,Compare At Price / International,Status
+convolution-pillow,Convolution Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,ZZQQX2CG,0,,0,deny,manual,79.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+convolution-pillow,,,,,,,FALSE,Size,King,,,,,ZZKKX2CG,0,,0,deny,manual,89.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+gel-convolution-pillow,Gel Convolution Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,ZZQQHPCOGF,0,,0,deny,manual,119.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+gel-convolution-pillow,,,,,,,FALSE,Size,King,,,,,ZZKKHPCOGF,0,,0,deny,manual,129.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+quilted-convolution-hyperchill-pillow,Quilted Convolution + HyperChill Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,ZZQQX2QC,0,,0,deny,manual,119.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+quilted-convolution-hyperchill-pillow,,,,,,,FALSE,Size,King,,,,,ZZKKX2QC,0,,0,deny,manual,129.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-dough-bamboo-charcoal-pillow,Zoned Dough + Bamboo Charcoal Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,ZZQQMPZB,0,,0,deny,manual,109.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-dough-bamboo-charcoal-pillow,,,,,,,FALSE,Size,King,,,,,ZZKKMPZB,0,,0,deny,manual,119.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-activedough-bamboo-charcoal-pillow,Zoned ActiveDough + Bamboo Charcoal Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,ZZQQMPADZB,0,,0,deny,manual,109.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-activedough-bamboo-charcoal-pillow,,,,,,,FALSE,Size,King,,,,,ZZKKMPADZB,0,,0,deny,manual,119.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-gel-dough-pillow,Zoned Gel Dough Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Loft,High,Size,Queen,,,ZZQQHPZG,0,,0,deny,manual,109.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-gel-dough-pillow,,,,,,,FALSE,Loft,High,Size,King,,,ZZKKHPZG,0,,0,deny,manual,119.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-gel-dough-pillow,,,,,,,FALSE,Loft,Mid,Size,Queen,,,ZZQQMPZG,0,,0,deny,manual,109.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-gel-dough-pillow,,,,,,,FALSE,Loft,Mid,Size,King,,,ZZKKMPZG,0,,0,deny,manual,119.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-gel-dough-pillow,,,,,,,FALSE,Loft,Low,Size,Queen,,,ZZQQLPZG,0,,0,deny,manual,109.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-gel-dough-pillow,,,,,,,FALSE,Loft,Low,Size,King,,,ZZKKLPZG,0,,0,deny,manual,119.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+shoulder-zoned-gel-activedough-pillow,Shoulder Zoned Gel ActiveDough Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,ZZQQSCMPADZG,0,,0,deny,manual,109.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+shoulder-zoned-gel-activedough-pillow,,,,,,,FALSE,Size,King,,,,,ZZKKSCMPADZG,0,,0,deny,manual,119.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+weekender-gel-memory-foam-pillow,Weekender Gel Memory Foam Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Standard,,,,,WKSS30GF,0,,0,deny,manual,39.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+weekender-gel-memory-foam-pillow,,,,,,,FALSE,Size,Queen,,,,,WKQQ30GF,0,,0,deny,manual,49.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+weekender-gel-memory-foam-pillow,,,,,,,FALSE,Size,King,,,,,WKKK30GF,0,,0,deny,manual,59.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-talalay-latex-pillow,Zoned Talalay Latex Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,ZZQQHPLX,0,,0,deny,manual,149.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-talalay-latex-pillow,,,,,,,FALSE,Size,King,,,,,ZZKKHPLX,0,,0,deny,manual,169.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+hexcurve-omniphase-pillow,HexCurve + OmniPhase Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,ZZQQX1XC,0,,0,deny,manual,139.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+hexcurve-omniphase-pillow,,,,,,,FALSE,Size,King,,,,,ZZKKX1XC,0,,0,deny,manual,149.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+bamboo-charcoal-pillow-cooling-cover,Bamboo Charcoal Pillow + Cooling Cover,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,WKQQPCM30BF,0,,0,deny,manual,89.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+bamboo-charcoal-pillow-cooling-cover,,,,,,,FALSE,Size,King,,,,,WKKKPCM30BF,0,,0,deny,manual,99.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-gel-activedough-pillow,Zoned Gel ActiveDough Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,ZZQQMPADZG,0,,0,deny,manual,109.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+zoned-gel-activedough-pillow,,,,,,,FALSE,Size,King,,,,,ZZKKMPADZG,0,,0,deny,manual,119.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+gel-dough-z-gel-pillow,Gel Dough + Z Gel Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Loft,High,Size,Queen,,,ZZQQHPGL,0,,0,deny,manual,139.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+gel-dough-z-gel-pillow,,,,,,,FALSE,Loft,High,Size,King,,,ZZKKHPGL,0,,0,deny,manual,149.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+gel-dough-z-gel-pillow,,,,,,,FALSE,Loft,Mid,Size,Queen,,,ZZQQMPGL,0,,0,deny,manual,139.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+gel-dough-z-gel-pillow,,,,,,,FALSE,Loft,Mid,Size,King,,,ZZKKMPGL,0,,0,deny,manual,149.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+carboncool-omniphase-pillow,CarbonCool + OmniPhase Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Size,Queen,,,,,ZZQQMPCCLT,0,,0,deny,manual,149.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+carboncool-omniphase-pillow,,,,,,,FALSE,Size,King,,,,,ZZKKMPCCLT,0,,0,deny,manual,169.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+ice-cloud-omniphase-pillow,Ice Cloud + OmniPhase Pillow,,Malouf,Home & Garden > Linens & Bedding > Bedding > Pillows,Pillow,,FALSE,Loft,High,Size,Queen,,,ZZQQHPICGF,0,,0,deny,manual,179.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+ice-cloud-omniphase-pillow,,,,,,,FALSE,Loft,High,Size,King,,,ZZKKHPICGF,0,,0,deny,manual,199.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+ice-cloud-omniphase-pillow,,,,,,,FALSE,Loft,Mid,Size,Queen,,,ZZQQMPICGF,0,,0,deny,manual,179.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+ice-cloud-omniphase-pillow,,,,,,,FALSE,Loft,Mid,Size,King,,,ZZKKMPICGF,0,,0,deny,manual,199.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+ice-cloud-omniphase-pillow,,,,,,,FALSE,Loft,Low,Size,Queen,,,ZZQQLPICGF,0,,0,deny,manual,179.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft
+ice-cloud-omniphase-pillow,,,,,,,FALSE,Loft,Low,Size,King,,,ZZKKLPICGF,0,,0,deny,manual,199.99,,TRUE,TRUE,,,,,FALSE,,,,,,,,,,,,,,,,,lb,,,,,draft

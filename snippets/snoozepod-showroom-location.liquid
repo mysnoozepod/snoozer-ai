@@ -1,0 +1,33 @@
+{% comment %}
+  Verified showroom representation.
+
+  Reads custom.showroom_representation JSON from the P1-002 contract. Expected
+  customer-safe keys are readiness/status plus label, station_label,
+  display_label, or station_id. Nothing renders unless readiness is READY.
+
+  Accepts:
+  - showroom_product: Product object
+  - compact: Boolean
+  - show_editor_placeholder: Boolean
+{% endcomment %}
+
+{%- liquid
+  assign showroom_data = showroom_product.metafields.custom.showroom_representation.value
+  assign showroom_state = showroom_data.readiness | default: showroom_data.status | upcase
+  assign showroom_label = showroom_data.label | default: showroom_data.station_label | default: showroom_data.display_label | default: showroom_data.station_id | strip
+  assign showroom_is_verified = false
+  if showroom_state == 'READY' and showroom_label != blank
+    assign showroom_is_verified = true
+  endif
+-%}
+
+{%- if showroom_is_verified -%}
+  <div class="snoozepod-showroom{% if compact %} snoozepod-showroom--compact{% endif %}">
+    <span class="snoozepod-showroom__label">Showroom location</span>
+    <span class="snoozepod-showroom__value">{{ showroom_label | escape }}</span>
+  </div>
+{%- elsif request.design_mode and show_editor_placeholder -%}
+  <div class="snoozepod-data-placeholder" role="note">
+    Theme editor preview only: Showroom location is hidden until verified location data is ready.
+  </div>
+{%- endif -%}

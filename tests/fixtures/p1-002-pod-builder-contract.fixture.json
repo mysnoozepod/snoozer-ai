@@ -1,0 +1,378 @@
+{
+  "schemaVersion": "p1-002.fixture.v1",
+  "fixtureOnly": true,
+  "notice": "Synthetic non-production data. Identifiers, SKUs, prices, and compatibility outcomes are not manufacturer or Shopify records.",
+  "allowedAssortmentStatuses": [
+    "APPROVED",
+    "SELECTED",
+    "PROVISIONAL",
+    "DEFERRED"
+  ],
+  "allowedCompatibilityStatuses": [
+    "MANUFACTURER_VERIFIED",
+    "OWNER_APPROVED",
+    "PENDING_VERIFICATION",
+    "UNSUPPORTED"
+  ],
+  "builder": {
+    "steps": [
+      "mattress",
+      "base",
+      "protection",
+      "pillow",
+      "bedding",
+      "review"
+    ],
+    "optionalSelections": {
+      "base": "fixture-skip-base",
+      "protection": "fixture-skip-protection",
+      "pillow": "fixture-skip-pillow",
+      "bedding": "fixture-skip-bedding"
+    },
+    "collectionSources": {
+      "base": ["adjustable-bases"],
+      "protection": ["mattress-protectors"],
+      "pillow": ["pillows"],
+      "bedding": ["sheet-sets", "bedding"]
+    }
+  },
+  "products": [
+    {
+      "id": "fixture-product-mattress-standard",
+      "manufacturer": "Fixture Manufacturer",
+      "family": "Fixture Standard Mattress",
+      "model": "STD-1",
+      "productType": "Mattress",
+      "assortmentStatus": "PROVISIONAL",
+      "builderRoles": ["mattress"],
+      "collectionHandles": ["mattresses"],
+      "publicationReadiness": "BLOCKED",
+      "showroomRepresentation": {"type": "full_display", "positions": ["fixture-pod-01"]},
+      "variants": [
+        {
+          "id": "fixture-variant-mattress-standard-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-STD-Q",
+          "size": "Queen",
+          "geometry": "standard",
+          "comfortConfiguration": null,
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        }
+      ]
+    },
+    {
+      "id": "fixture-product-mattress-modular",
+      "manufacturer": "Fixture Manufacturer",
+      "family": "Fixture Modular Mattress",
+      "model": "MOD-1",
+      "productType": "Mattress",
+      "assortmentStatus": "PROVISIONAL",
+      "builderRoles": ["mattress"],
+      "collectionHandles": ["mattresses"],
+      "publicationReadiness": "BLOCKED",
+      "showroomRepresentation": {"type": "full_display", "positions": ["fixture-pod-02", "fixture-pod-03"]},
+      "variants": [
+        {
+          "id": "fixture-variant-mattress-modular-queen-a",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-MOD-Q-A",
+          "size": "Queen",
+          "geometry": "standard",
+          "comfortConfiguration": {"left": "fixture-comfort-a", "right": "fixture-comfort-b"},
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        },
+        {
+          "id": "fixture-variant-mattress-modular-queen-b",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-MOD-Q-B",
+          "size": "Queen",
+          "geometry": "standard",
+          "comfortConfiguration": {"left": "fixture-comfort-c", "right": "fixture-comfort-d"},
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        },
+        {
+          "id": "fixture-variant-mattress-modular-split-head-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-MOD-SHQ",
+          "size": "Split Head Queen",
+          "geometry": "split_head",
+          "comfortConfiguration": {"left": "fixture-comfort-a", "right": "fixture-comfort-b"},
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        }
+      ]
+    },
+    {
+      "id": "fixture-product-base-standard",
+      "manufacturer": "Fixture Manufacturer",
+      "family": "Fixture Standard Adjustable Base",
+      "model": "BASE-L",
+      "productType": "Adjustable Base",
+      "assortmentStatus": "APPROVED",
+      "builderRoles": ["base"],
+      "collectionHandles": ["adjustable-bases"],
+      "publicationReadiness": "BLOCKED",
+      "showroomRepresentation": {"type": "full_display", "positions": ["fixture-pod-01"]},
+      "variants": [
+        {
+          "id": "fixture-variant-base-standard-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-BASE-Q",
+          "size": "Queen",
+          "geometry": "standard",
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        }
+      ]
+    },
+    {
+      "id": "fixture-product-base-split-head",
+      "manufacturer": "Fixture Manufacturer",
+      "family": "Fixture Split-Head Adjustable Base",
+      "model": "BASE-SH",
+      "productType": "Adjustable Base",
+      "assortmentStatus": "APPROVED",
+      "builderRoles": ["base"],
+      "collectionHandles": ["adjustable-bases"],
+      "publicationReadiness": "BLOCKED",
+      "showroomRepresentation": {"type": "full_display", "positions": ["fixture-pod-03"]},
+      "variants": [
+        {
+          "id": "fixture-variant-base-split-head-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-BASE-SHQ",
+          "size": "Split Head Queen",
+          "geometry": "split_head",
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        }
+      ]
+    },
+    {
+      "id": "fixture-product-protector",
+      "manufacturer": "Fixture Manufacturer",
+      "family": "Fixture Protector",
+      "model": "PROTECT-1",
+      "productType": "Mattress Protector",
+      "assortmentStatus": "APPROVED",
+      "builderRoles": ["protection"],
+      "collectionHandles": ["mattress-protectors"],
+      "publicationReadiness": "BLOCKED",
+      "showroomRepresentation": {"type": "sample", "positions": ["fixture-accessory-wall"]},
+      "variants": [
+        {
+          "id": "fixture-variant-protector-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-PROTECT-Q",
+          "size": "Queen",
+          "geometry": "standard",
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        },
+        {
+          "id": "fixture-variant-protector-split-head-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-PROTECT-SHQ",
+          "size": "Split Head Queen",
+          "geometry": "split_head",
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        }
+      ]
+    },
+    {
+      "id": "fixture-product-encasement",
+      "manufacturer": "Fixture Manufacturer",
+      "family": "Fixture Six-Sided Encasement",
+      "model": "ENCASE-1",
+      "productType": "Mattress Protector",
+      "assortmentStatus": "APPROVED",
+      "builderRoles": ["protection"],
+      "collectionHandles": ["mattress-protectors"],
+      "publicationReadiness": "BLOCKED",
+      "showroomRepresentation": {"type": "sample", "positions": ["fixture-accessory-wall"]},
+      "variants": [
+        {
+          "id": "fixture-variant-encasement-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-ENCASE-Q",
+          "size": "Queen",
+          "geometry": "standard",
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        }
+      ]
+    },
+    {
+      "id": "fixture-product-pillow-a",
+      "manufacturer": "Fixture Manufacturer",
+      "family": "Fixture Pillow Collection",
+      "model": "PILLOW-A",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "builderRoles": ["pillow"],
+      "collectionHandles": ["pillows"],
+      "publicationReadiness": "BLOCKED",
+      "showroomRepresentation": {"type": "sample", "positions": ["fixture-pillow-wall"]},
+      "variants": [
+        {
+          "id": "fixture-variant-pillow-a-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-PILLOW-A-Q",
+          "size": "Queen",
+          "geometry": "not_applicable",
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        }
+      ]
+    },
+    {
+      "id": "fixture-product-pillow-b",
+      "manufacturer": "Fixture Manufacturer",
+      "family": "Fixture Pillow Collection",
+      "model": "PILLOW-B",
+      "productType": "Pillow",
+      "assortmentStatus": "APPROVED",
+      "builderRoles": ["pillow"],
+      "collectionHandles": ["pillows"],
+      "publicationReadiness": "BLOCKED",
+      "showroomRepresentation": {"type": "sample", "positions": ["fixture-pillow-wall"]},
+      "variants": [
+        {
+          "id": "fixture-variant-pillow-b-king",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-PILLOW-B-K",
+          "size": "King",
+          "geometry": "not_applicable",
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        }
+      ]
+    },
+    {
+      "id": "fixture-product-sheets",
+      "manufacturer": "Fixture Manufacturer",
+      "family": "Fixture Sheet Set",
+      "model": "SHEETS-1",
+      "productType": "Sheet Set",
+      "assortmentStatus": "APPROVED",
+      "builderRoles": ["bedding"],
+      "collectionHandles": ["sheet-sets", "bedding"],
+      "publicationReadiness": "BLOCKED",
+      "showroomRepresentation": {"type": "swatch", "positions": ["fixture-bedding-wall"]},
+      "variants": [
+        {
+          "id": "fixture-variant-sheets-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-SHEETS-Q",
+          "size": "Queen",
+          "color": "Fixture White",
+          "geometry": "standard",
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        },
+        {
+          "id": "fixture-variant-sheets-split-head-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-SHEETS-SHQ",
+          "size": "Split Head Queen",
+          "color": "Fixture White",
+          "geometry": "split_head",
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        }
+      ]
+    },
+    {
+      "id": "fixture-product-platform-storage",
+      "manufacturer": "Fixture Manufacturer",
+      "family": "Fixture Storage Platform",
+      "model": "PLATFORM-1",
+      "productType": "Furniture",
+      "assortmentStatus": "APPROVED",
+      "builderRoles": [],
+      "collectionHandles": ["furniture"],
+      "publicationReadiness": "BLOCKED",
+      "showroomRepresentation": {"type": "full_display", "positions": ["fixture-pod-04"]},
+      "variants": [
+        {
+          "id": "fixture-variant-platform-storage-queen",
+          "manufacturerSku": "FIXTURE-NOT-A-REAL-SKU-PLATFORM-Q",
+          "size": "Queen",
+          "geometry": "standard",
+          "price": null,
+          "priceVerificationStatus": "FIXTURE_NOT_AUTHORIZED",
+          "fulfillmentReadiness": "FIXTURE_READY"
+        }
+      ]
+    }
+  ],
+  "compatibilityRules": [
+    {
+      "id": "fixture-rule-standard-mattress-standard-base",
+      "subjectVariantId": "fixture-variant-mattress-standard-queen",
+      "targetVariantId": "fixture-variant-base-standard-queen",
+      "status": "MANUFACTURER_VERIFIED",
+      "evidence": "Synthetic positive fixture case"
+    },
+    {
+      "id": "fixture-rule-standard-mattress-split-head-base",
+      "subjectVariantId": "fixture-variant-mattress-standard-queen",
+      "targetVariantId": "fixture-variant-base-split-head-queen",
+      "status": "UNSUPPORTED",
+      "evidence": "Synthetic incompatible geometry case"
+    },
+    {
+      "id": "fixture-rule-split-head-mattress-split-head-base",
+      "subjectVariantId": "fixture-variant-mattress-modular-split-head-queen",
+      "targetVariantId": "fixture-variant-base-split-head-queen",
+      "status": "MANUFACTURER_VERIFIED",
+      "evidence": "Synthetic positive split-head fixture case"
+    },
+    {
+      "id": "fixture-rule-standard-mattress-protector",
+      "subjectVariantId": "fixture-variant-mattress-standard-queen",
+      "targetVariantId": "fixture-variant-protector-queen",
+      "status": "OWNER_APPROVED",
+      "evidence": "Synthetic owner-approved accessory case"
+    },
+    {
+      "id": "fixture-rule-split-head-mattress-protector",
+      "subjectVariantId": "fixture-variant-mattress-modular-split-head-queen",
+      "targetVariantId": "fixture-variant-protector-split-head-queen",
+      "status": "MANUFACTURER_VERIFIED",
+      "evidence": "Synthetic positive split-head accessory case"
+    },
+    {
+      "id": "fixture-rule-standard-mattress-sheets",
+      "subjectVariantId": "fixture-variant-mattress-standard-queen",
+      "targetVariantId": "fixture-variant-sheets-queen",
+      "status": "OWNER_APPROVED",
+      "evidence": "Synthetic owner-approved bedding case"
+    },
+    {
+      "id": "fixture-rule-split-head-mattress-sheets",
+      "subjectVariantId": "fixture-variant-mattress-modular-split-head-queen",
+      "targetVariantId": "fixture-variant-sheets-split-head-queen",
+      "status": "MANUFACTURER_VERIFIED",
+      "evidence": "Synthetic positive split-head bedding case"
+    },
+    {
+      "id": "fixture-rule-split-head-mattress-encasement",
+      "subjectVariantId": "fixture-variant-mattress-modular-split-head-queen",
+      "targetVariantId": "fixture-variant-encasement-queen",
+      "status": "PENDING_VERIFICATION",
+      "evidence": "Synthetic unknown compatibility case"
+    },
+    {
+      "id": "fixture-rule-split-head-base-storage-platform",
+      "subjectVariantId": "fixture-variant-base-split-head-queen",
+      "targetVariantId": "fixture-variant-platform-storage-queen",
+      "status": "PENDING_VERIFICATION",
+      "evidence": "Synthetic clearance-verification case"
+    }
+  ]
+}

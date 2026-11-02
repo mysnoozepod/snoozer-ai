@@ -1,0 +1,232 @@
+.snoozepod-feel {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 2rem;
+}
+
+.snoozepod-feel__heading,
+.snoozepod-feel__scale {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.snoozepod-feel__title,
+.snoozepod-showroom__label {
+  color: rgba(7, 25, 66, 0.64);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.snoozepod-feel__label,
+.snoozepod-showroom__value {
+  color: #071942;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.snoozepod-feel__track {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 0.8rem;
+  border-radius: 999px;
+  background: rgba(7, 25, 66, 0.12);
+}
+
+.snoozepod-feel__fill {
+  display: block;
+  width: var(--snoozepod-feel-position, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #95a8cc 0%, #2c4278 62%, #071942 100%);
+}
+
+.snoozepod-feel__scale {
+  color: rgba(7, 25, 66, 0.65);
+  font-size: 1.2rem;
+}
+
+.snoozepod-feel--compact {
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+
+.snoozepod-feel--compact .snoozepod-feel__title,
+.snoozepod-feel--compact .snoozepod-feel__label {
+  font-size: 1.1rem;
+}
+
+.snoozepod-feel--compact .snoozepod-feel__track {
+  height: 0.6rem;
+}
+
+.snoozepod-feel--compact .snoozepod-feel__scale {
+  font-size: 1rem;
+}
+
+.snoozepod-showroom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem 1.2rem;
+  margin-top: 1.6rem;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid rgba(7, 25, 66, 0.1);
+  border-radius: 1.4rem;
+  background: #f5f7fb;
+}
+
+.snoozepod-showroom--compact {
+  display: grid;
+  justify-content: stretch;
+  gap: 0.3rem;
+  margin-top: 1rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.snoozepod-showroom--compact .snoozepod-showroom__label,
+.snoozepod-showroom--compact .snoozepod-showroom__value {
+  font-size: 1.1rem;
+}
+
+.snoozepod-data-placeholder {
+  margin-top: 1.6rem;
+  padding: 1.2rem 1.4rem;
+  border: 1px dashed rgba(7, 25, 66, 0.28);
+  border-radius: 1.2rem;
+  background: #f5f7fb;
+  color: rgba(7, 25, 66, 0.72);
+  font-size: 1.2rem;
+  line-height: 1.45;
+}
+
+.snoozepod-card-details {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+}
+
+.snoozepod-card-details__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.2rem;
+  margin-top: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  border: 1px solid rgba(7, 25, 66, 0.18);
+  border-radius: 999px;
+  color: #071942;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.snoozepod-card-details__link:hover,
+.snoozepod-card-details__link:focus-visible {
+  border-color: #071942;
+  background: #071942;
+  color: #ffffff;
+}
+
+@media screen and (max-width: 749px) {
+  .snoozepod-card-details__link {
+    min-height: 4.4rem;
+  }
+}
+.snoozepod-dual-comfort {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid rgba(7, 25, 66, 0.14);
+  border-radius: 20px;
+  background: #f7f9fc;
+}
+
+.snoozepod-dual-comfort__intro h2 {
+  margin: 0;
+  color: #071942;
+  font-size: 20px;
+}
+
+.snoozepod-dual-comfort__intro p,
+.snoozepod-dual-comfort__summary {
+  margin: 8px 0 0;
+  color: rgba(7, 25, 66, 0.74);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.snoozepod-dual-comfort__group {
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.snoozepod-dual-comfort__group legend {
+  margin-bottom: 9px;
+  color: #071942;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.snoozepod-dual-comfort__choices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.snoozepod-dual-comfort__choices input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.snoozepod-dual-comfort__choices label {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(7, 25, 66, 0.26);
+  border-radius: 999px;
+  background: #fff;
+  color: #071942;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.snoozepod-dual-comfort__choices input:checked + label {
+  border-color: #071942;
+  background: #071942;
+  color: #fff;
+}
+
+.snoozepod-dual-comfort__choices input:focus-visible + label {
+  outline: 3px solid rgba(44, 66, 120, 0.34);
+  outline-offset: 2px;
+}
+
+.snoozepod-dual-comfort__summary {
+  min-height: 21px;
+  font-weight: 700;
+}
+
+@media screen and (max-width: 420px) {
+  .snoozepod-dual-comfort {
+    padding: 16px;
+  }
+
+  .snoozepod-dual-comfort__choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

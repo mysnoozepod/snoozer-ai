@@ -17,6 +17,17 @@
       "type": "snoozepod-sleep-facts",
       "settings": {}
     },
+    "information": {
+      "type": "snoozepod-product-information-v1",
+      "blocks": {
+        "details": { "type": "details", "settings": { "heading": "Product Details & Specifications", "content": "", "applies_to": "mattress" } },
+        "warranty": { "type": "warranty", "settings": { "heading": "Warranty", "content": "", "applies_to": "mattress" } },
+        "compatibility": { "type": "compatibility", "settings": { "heading": "Compatibility & Sleep-System Information", "content": "", "applies_to": "mattress" } },
+        "delivery": { "type": "delivery_returns", "settings": { "heading": "Delivery & Returns", "content": "", "applies_to": "mattress" } }
+      },
+      "block_order": ["details", "warranty", "compatibility", "delivery"],
+      "settings": { "heading": "", "show_editor_placeholders": true }
+    },
     "booking": {
       "type": "snoozepod-booking-cta",
       "settings": {
@@ -30,6 +41,7 @@
   "order": [
     "hero",
     "facts",
+    "information",
     "booking"
   ]
 }

@@ -1,0 +1,1897 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-11-02T02:31:10.035Z",
+  "shop": "mysnoozepodtest.myshopify.com",
+  "catalogBaseline": {
+    "products": 43,
+    "variants": 274,
+    "draftProducts": 43,
+    "manualCollections": 18
+  },
+  "taxonomy": {
+    "namespaces": {
+      "category": "Top-level merchandising department.",
+      "subcategory": "Customer-facing subcategory or named product family.",
+      "type": "Normalized Shopify product type.",
+      "collection": "Exact automated-collection membership driver.",
+      "comfort": "Verified comfort characteristic.",
+      "material": "Verified named material or construction material.",
+      "feature": "Verified functional or construction feature."
+    },
+    "matchingRule": "Every automated collection uses one exact TAG EQUALS collection:<handle> rule."
+  },
+  "products": [
+    {
+      "id": "gid://shopify/Product/8099363094589",
+      "legacyResourceId": "8099363094589",
+      "handle": "gelled-microfiber-pillow",
+      "title": "Gelled Microfiber Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "filled-pillows",
+        "pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:filled-pillows",
+        "collection:pillows",
+        "feature:filled",
+        "material:gel",
+        "material:microfiber",
+        "subcategory:filled",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237344829",
+      "legacyResourceId": "8100237344829",
+      "handle": "convolution-pillow",
+      "title": "Convolution Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "filled-pillows",
+        "pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:filled-pillows",
+        "collection:pillows",
+        "feature:convolution",
+        "feature:filled",
+        "subcategory:filled",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237377597",
+      "legacyResourceId": "8100237377597",
+      "handle": "gel-convolution-pillow",
+      "title": "Gel Convolution Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "filled-pillows",
+        "pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:filled-pillows",
+        "collection:pillows",
+        "feature:convolution",
+        "feature:filled",
+        "material:gel",
+        "subcategory:filled",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237443133",
+      "legacyResourceId": "8100237443133",
+      "handle": "quilted-convolution-hyperchill-pillow",
+      "title": "Quilted Convolution + HyperChill Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "filled-pillows",
+        "pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:filled-pillows",
+        "collection:pillows",
+        "comfort:cooling",
+        "feature:convolution",
+        "feature:filled",
+        "feature:hyperchill",
+        "feature:quilted",
+        "subcategory:filled",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237475901",
+      "legacyResourceId": "8100237475901",
+      "handle": "zoned-dough-bamboo-charcoal-pillow",
+      "title": "Zoned Dough + Bamboo Charcoal Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "pillows",
+        "zoned-pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:pillows",
+        "collection:zoned-pillows",
+        "feature:zoned",
+        "material:bamboo-charcoal",
+        "material:dough-foam",
+        "subcategory:zoned",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237508669",
+      "legacyResourceId": "8100237508669",
+      "handle": "zoned-activedough-bamboo-charcoal-pillow",
+      "title": "Zoned ActiveDough + Bamboo Charcoal Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "pillows",
+        "zoned-pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:pillows",
+        "collection:zoned-pillows",
+        "feature:zoned",
+        "material:activedough",
+        "material:bamboo-charcoal",
+        "subcategory:zoned",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237541437",
+      "legacyResourceId": "8100237541437",
+      "handle": "zoned-gel-dough-pillow",
+      "title": "Zoned Gel Dough Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "pillows",
+        "zoned-pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:pillows",
+        "collection:zoned-pillows",
+        "feature:zoned",
+        "material:dough-foam",
+        "material:gel",
+        "subcategory:zoned",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237574205",
+      "legacyResourceId": "8100237574205",
+      "handle": "shoulder-zoned-gel-activedough-pillow",
+      "title": "Shoulder Zoned Gel ActiveDough Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "pillows",
+        "zoned-pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:pillows",
+        "collection:zoned-pillows",
+        "feature:shoulder-cutout",
+        "feature:zoned",
+        "material:activedough",
+        "material:gel",
+        "subcategory:zoned",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237639741",
+      "legacyResourceId": "8100237639741",
+      "handle": "weekender-gel-memory-foam-pillow",
+      "title": "Weekender Gel Memory Foam Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "foam-pillows",
+        "pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:foam-pillows",
+        "collection:pillows",
+        "material:gel-memory-foam",
+        "material:memory-foam",
+        "subcategory:foam",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237672509",
+      "legacyResourceId": "8100237672509",
+      "handle": "zoned-talalay-latex-pillow",
+      "title": "Zoned Talalay Latex Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "foam-pillows",
+        "pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:foam-pillows",
+        "collection:pillows",
+        "feature:zoned",
+        "material:talalay-latex",
+        "subcategory:foam",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237705277",
+      "legacyResourceId": "8100237705277",
+      "handle": "hexcurve-omniphase-pillow",
+      "title": "HexCurve + OmniPhase Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "foam-pillows",
+        "pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:foam-pillows",
+        "collection:pillows",
+        "comfort:temperature-regulating",
+        "feature:hexcurve",
+        "feature:omniphase",
+        "material:foam",
+        "subcategory:foam",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237738045",
+      "legacyResourceId": "8100237738045",
+      "handle": "bamboo-charcoal-pillow-cooling-cover",
+      "title": "Bamboo Charcoal Pillow + Cooling Cover",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "foam-pillows",
+        "pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:foam-pillows",
+        "collection:pillows",
+        "comfort:cooling",
+        "feature:cooling-cover",
+        "material:bamboo-charcoal",
+        "material:foam",
+        "subcategory:foam",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237770813",
+      "legacyResourceId": "8100237770813",
+      "handle": "zoned-gel-activedough-pillow",
+      "title": "Zoned Gel ActiveDough Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "pillows",
+        "temperature-regulating-pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:pillows",
+        "collection:temperature-regulating-pillows",
+        "comfort:cooling",
+        "feature:zoned",
+        "material:activedough",
+        "material:gel",
+        "subcategory:temperature-regulating",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237869117",
+      "legacyResourceId": "8100237869117",
+      "handle": "gel-dough-z-gel-pillow",
+      "title": "Gel Dough + Z Gel Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "pillows",
+        "temperature-regulating-pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:pillows",
+        "collection:temperature-regulating-pillows",
+        "comfort:cooling",
+        "material:dough-foam",
+        "material:gel",
+        "subcategory:temperature-regulating",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237901885",
+      "legacyResourceId": "8100237901885",
+      "handle": "carboncool-omniphase-pillow",
+      "title": "CarbonCool + OmniPhase Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "pillows",
+        "temperature-regulating-pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:pillows",
+        "collection:temperature-regulating-pillows",
+        "comfort:cooling",
+        "comfort:temperature-regulating",
+        "feature:carboncool",
+        "feature:omniphase",
+        "subcategory:temperature-regulating",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100237934653",
+      "legacyResourceId": "8100237934653",
+      "handle": "ice-cloud-omniphase-pillow",
+      "title": "Ice Cloud + OmniPhase Pillow",
+      "status": "DRAFT",
+      "productType": "Pillow",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "pillows",
+        "temperature-regulating-pillows"
+      ],
+      "tags": [
+        "category:pillows",
+        "collection:pillows",
+        "collection:temperature-regulating-pillows",
+        "comfort:cooling",
+        "comfort:temperature-regulating",
+        "feature:omniphase",
+        "subcategory:temperature-regulating",
+        "type:pillow"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247142461",
+      "legacyResourceId": "8100247142461",
+      "handle": "flex-l-adjustable-base",
+      "title": "Flex L Adjustable Base",
+      "status": "DRAFT",
+      "productType": "Adjustable Base",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "adjustable-bases",
+        "flex-l"
+      ],
+      "tags": [
+        "category:adjustable-bases",
+        "collection:adjustable-bases",
+        "collection:flex-l",
+        "feature:adjustable",
+        "subcategory:flex-l",
+        "type:adjustable-base"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247175229",
+      "legacyResourceId": "8100247175229",
+      "handle": "flex-lsx-adjustable-base",
+      "title": "Flex LSX Adjustable Base",
+      "status": "DRAFT",
+      "productType": "Adjustable Base",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "adjustable-bases",
+        "flex-lsx"
+      ],
+      "tags": [
+        "category:adjustable-bases",
+        "collection:adjustable-bases",
+        "collection:flex-lsx",
+        "feature:adjustable",
+        "subcategory:flex-lsx",
+        "type:adjustable-base"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247240765",
+      "legacyResourceId": "8100247240765",
+      "handle": "flex-sh-adjustable-base",
+      "title": "Flex SH Adjustable Base",
+      "status": "DRAFT",
+      "productType": "Adjustable Base",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "adjustable-bases",
+        "flex-sh"
+      ],
+      "tags": [
+        "category:adjustable-bases",
+        "collection:adjustable-bases",
+        "collection:flex-sh",
+        "feature:adjustable",
+        "feature:split-head",
+        "subcategory:flex-sh",
+        "type:adjustable-base"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247306301",
+      "legacyResourceId": "8100247306301",
+      "handle": "cotton-sheet-set",
+      "title": "Cotton Sheet Set",
+      "status": "DRAFT",
+      "productType": "Sheet Set",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "sheet-sets",
+        "sheets"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:sheet-sets",
+        "collection:sheets",
+        "material:cotton",
+        "subcategory:sheets",
+        "type:sheet-set"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247339069",
+      "legacyResourceId": "8100247339069",
+      "handle": "dri-tec-sheet-set",
+      "title": "Dri-Tec Sheet Set",
+      "status": "DRAFT",
+      "productType": "Sheet Set",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "sheet-sets",
+        "sheets"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:sheet-sets",
+        "collection:sheets",
+        "feature:dri-tec",
+        "subcategory:sheets",
+        "type:sheet-set"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247371837",
+      "legacyResourceId": "8100247371837",
+      "handle": "ver-tex-sheet-set",
+      "title": "Ver-Tex Sheet Set",
+      "status": "DRAFT",
+      "productType": "Sheet Set",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "sheet-sets",
+        "sheets"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:sheet-sets",
+        "collection:sheets",
+        "feature:ver-tex",
+        "subcategory:sheets",
+        "type:sheet-set"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247404605",
+      "legacyResourceId": "8100247404605",
+      "handle": "dri-tec-mattress-protector",
+      "title": "Dri-Tec Mattress Protector",
+      "status": "DRAFT",
+      "productType": "Mattress Protector",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "mattress-protectors"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:mattress-protectors",
+        "feature:dri-tec",
+        "feature:mattress-protection",
+        "subcategory:mattress-protectors",
+        "type:mattress-protector"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247502909",
+      "legacyResourceId": "8100247502909",
+      "handle": "ver-tex-mattress-protector",
+      "title": "Ver-Tex Mattress Protector",
+      "status": "DRAFT",
+      "productType": "Mattress Protector",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "mattress-protectors"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:mattress-protectors",
+        "feature:mattress-protection",
+        "feature:ver-tex",
+        "subcategory:mattress-protectors",
+        "type:mattress-protector"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247535677",
+      "legacyResourceId": "8100247535677",
+      "handle": "stretchwick-mattress-encasement",
+      "title": "Stretchwick Mattress Encasement",
+      "status": "DRAFT",
+      "productType": "Mattress Protector",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "mattress-protectors"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:mattress-protectors",
+        "feature:mattress-protection",
+        "feature:six-sided-encasement",
+        "subcategory:mattress-protectors",
+        "type:mattress-protector"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247568445",
+      "legacyResourceId": "8100247568445",
+      "handle": "light-weight-comforter",
+      "title": "Light Weight Comforter",
+      "status": "DRAFT",
+      "productType": "Comforter",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "comforters"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:comforters",
+        "comfort:light-weight",
+        "subcategory:comforters",
+        "type:comforter"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247601213",
+      "legacyResourceId": "8100247601213",
+      "handle": "medium-weight-comforter",
+      "title": "Medium Weight Comforter",
+      "status": "DRAFT",
+      "productType": "Comforter",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "comforters"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:comforters",
+        "comfort:medium-weight",
+        "subcategory:comforters",
+        "type:comforter"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247666749",
+      "legacyResourceId": "8100247666749",
+      "handle": "ultra-weight-comforter",
+      "title": "Ultra Weight Comforter",
+      "status": "DRAFT",
+      "productType": "Comforter",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "comforters"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:comforters",
+        "comfort:ultra-weight",
+        "subcategory:comforters",
+        "type:comforter"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247765053",
+      "legacyResourceId": "8100247765053",
+      "handle": "cooling-performance-throw",
+      "title": "Cooling Performance Throw",
+      "status": "DRAFT",
+      "productType": "Throw",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "cooling-bedding"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:cooling-bedding",
+        "comfort:cooling",
+        "feature:performance-throw",
+        "subcategory:cooling-bedding",
+        "type:throw"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247797821",
+      "legacyResourceId": "8100247797821",
+      "handle": "solid-white-duvet-sham-set",
+      "title": "Solid White Duvet + Sham Set",
+      "status": "DRAFT",
+      "productType": "Duvet Set",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "cooling-bedding"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:cooling-bedding",
+        "feature:duvet-sham-set",
+        "subcategory:cooling-bedding",
+        "type:duvet-set"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247830589",
+      "legacyResourceId": "8100247830589",
+      "handle": "light-grey-racetrack-duvet-sham-set",
+      "title": "Light Grey Racetrack Duvet + Sham Set",
+      "status": "DRAFT",
+      "productType": "Duvet Set",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "cooling-bedding"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:cooling-bedding",
+        "feature:duvet-sham-set",
+        "feature:racetrack",
+        "subcategory:cooling-bedding",
+        "type:duvet-set"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100247863357",
+      "legacyResourceId": "8100247863357",
+      "handle": "react-pro-performance-topper",
+      "title": "React Pro Performance Topper",
+      "status": "DRAFT",
+      "productType": "Mattress Topper",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "mattress-toppers"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:mattress-toppers",
+        "feature:performance-topper",
+        "subcategory:mattress-toppers",
+        "type:mattress-topper"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100250353725",
+      "legacyResourceId": "8100250353725",
+      "handle": "hennessy-upholstered-headboard",
+      "title": "Hennessy Upholstered Headboard",
+      "status": "DRAFT",
+      "productType": "Headboard",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedroom-furniture",
+        "furniture",
+        "headboards"
+      ],
+      "tags": [
+        "category:bedroom-furniture",
+        "collection:bedroom-furniture",
+        "collection:furniture",
+        "collection:headboards",
+        "feature:upholstered",
+        "subcategory:headboards",
+        "type:headboard"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100250452029",
+      "legacyResourceId": "8100250452029",
+      "handle": "carlisle-upholstered-headboard",
+      "title": "Carlisle Upholstered Headboard",
+      "status": "DRAFT",
+      "productType": "Headboard",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedroom-furniture",
+        "furniture",
+        "headboards"
+      ],
+      "tags": [
+        "category:bedroom-furniture",
+        "collection:bedroom-furniture",
+        "collection:furniture",
+        "collection:headboards",
+        "feature:upholstered",
+        "subcategory:headboards",
+        "type:headboard"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100250550333",
+      "legacyResourceId": "8100250550333",
+      "handle": "scoresby-designer-headboard",
+      "title": "Scoresby Designer Headboard",
+      "status": "DRAFT",
+      "productType": "Headboard",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedroom-furniture",
+        "furniture",
+        "headboards"
+      ],
+      "tags": [
+        "category:bedroom-furniture",
+        "collection:bedroom-furniture",
+        "collection:furniture",
+        "collection:headboards",
+        "feature:upholstered",
+        "subcategory:headboards",
+        "type:headboard"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100250583101",
+      "legacyResourceId": "8100250583101",
+      "handle": "blackwell-designer-headboard",
+      "title": "Blackwell Designer Headboard",
+      "status": "DRAFT",
+      "productType": "Headboard",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedroom-furniture",
+        "furniture",
+        "headboards"
+      ],
+      "tags": [
+        "category:bedroom-furniture",
+        "collection:bedroom-furniture",
+        "collection:furniture",
+        "collection:headboards",
+        "feature:upholstered",
+        "subcategory:headboards",
+        "type:headboard"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100250615869",
+      "legacyResourceId": "8100250615869",
+      "handle": "eastman-upholstered-platform-base",
+      "title": "Eastman Upholstered Platform Base",
+      "status": "DRAFT",
+      "productType": "Platform Base",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedroom-furniture",
+        "furniture",
+        "platform-bases"
+      ],
+      "tags": [
+        "category:bedroom-furniture",
+        "collection:bedroom-furniture",
+        "collection:furniture",
+        "collection:platform-bases",
+        "feature:upholstered",
+        "subcategory:platform-bases",
+        "type:platform-base"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100250648637",
+      "legacyResourceId": "8100250648637",
+      "handle": "watson-upholstered-platform-base",
+      "title": "Watson Upholstered Platform Base",
+      "status": "DRAFT",
+      "productType": "Platform Base",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedroom-furniture",
+        "furniture",
+        "platform-bases"
+      ],
+      "tags": [
+        "category:bedroom-furniture",
+        "collection:bedroom-furniture",
+        "collection:furniture",
+        "collection:platform-bases",
+        "feature:upholstered",
+        "subcategory:platform-bases",
+        "type:platform-base"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100250714173",
+      "legacyResourceId": "8100250714173",
+      "handle": "malouf-2-5-inch-gel-memory-foam-topper",
+      "title": "2.5-Inch Gel Memory Foam Topper",
+      "status": "DRAFT",
+      "productType": "Mattress Topper",
+      "currentTemplateSuffix": "snoozepod-v1",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "bedding",
+        "mattress-toppers"
+      ],
+      "tags": [
+        "category:bedding",
+        "collection:bedding",
+        "collection:mattress-toppers",
+        "material:gel-memory-foam",
+        "material:memory-foam",
+        "subcategory:mattress-toppers",
+        "type:mattress-topper"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100282794045",
+      "legacyResourceId": "8100282794045",
+      "handle": "bedgear-s7-12-memory-foam",
+      "title": "S7 — 12\" Memory Foam Mattress",
+      "status": "DRAFT",
+      "productType": "Mattress",
+      "currentTemplateSuffix": "product-pod-builder",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "mattresses",
+        "s7"
+      ],
+      "tags": [
+        "category:mattresses",
+        "collection:mattresses",
+        "collection:s7",
+        "comfort:memory-foam",
+        "feature:foam-construction",
+        "material:memory-foam",
+        "subcategory:s7",
+        "type:mattress"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100282826813",
+      "legacyResourceId": "8100282826813",
+      "handle": "bedgear-h6-12-hybrid",
+      "title": "H6 — 12\" Hybrid Mattress",
+      "status": "DRAFT",
+      "productType": "Mattress",
+      "currentTemplateSuffix": "product-pod-builder",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "h6",
+        "mattresses"
+      ],
+      "tags": [
+        "category:mattresses",
+        "collection:h6",
+        "collection:mattresses",
+        "comfort:hybrid",
+        "feature:hybrid-construction",
+        "subcategory:h6",
+        "type:mattress"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100282892349",
+      "legacyResourceId": "8100282892349",
+      "handle": "bedgear-m3-12-dual-comfort",
+      "title": "M3 — 12\" Dual Comfort Mattress",
+      "status": "DRAFT",
+      "productType": "Mattress",
+      "currentTemplateSuffix": "product-pod-builder",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "m3",
+        "mattresses"
+      ],
+      "tags": [
+        "category:mattresses",
+        "collection:m3",
+        "collection:mattresses",
+        "comfort:dual-comfort",
+        "feature:dual-comfort",
+        "feature:independent-side-comfort",
+        "feature:modular-comfort",
+        "subcategory:m3",
+        "type:mattress"
+      ]
+    },
+    {
+      "id": "gid://shopify/Product/8100282925117",
+      "legacyResourceId": "8100282925117",
+      "handle": "bedgear-m5-14-dual-comfort",
+      "title": "M5 — 14\" Dual Comfort Mattress",
+      "status": "DRAFT",
+      "productType": "Mattress",
+      "currentTemplateSuffix": "product-pod-builder",
+      "desiredTemplateSuffix": "snoozepod-v1",
+      "memberships": [
+        "m5",
+        "mattresses"
+      ],
+      "tags": [
+        "category:mattresses",
+        "collection:m5",
+        "collection:mattresses",
+        "comfort:dual-comfort",
+        "feature:dual-comfort",
+        "feature:independent-side-comfort",
+        "feature:modular-comfort",
+        "subcategory:m5",
+        "type:mattress"
+      ]
+    }
+  ],
+  "collections": [
+    {
+      "handle": "mattresses",
+      "title": "Mattresses",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/ffd79485-cc8c-4007-a3c4-710170c1883c.jpg?v=1793551331",
+        "altText": "Mattresses collection",
+        "width": 3000,
+        "height": 3000
+      },
+      "ruleTag": "collection:mattresses",
+      "expectedProducts": [
+        "bedgear-h6-12-hybrid",
+        "bedgear-m3-12-dual-comfort",
+        "bedgear-m5-14-dual-comfort",
+        "bedgear-s7-12-memory-foam"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302103527485"
+    },
+    {
+      "handle": "s7",
+      "title": "S7 Mattresses",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ffd79485-cc8c-4007-a3c4-710170c1883c.jpg?v=1793551148",
+        "altText": "BEDGEAR S7 mattress in a bedroom setting",
+        "width": 3000,
+        "height": 3000
+      },
+      "ruleTag": "collection:s7",
+      "expectedProducts": [
+        "bedgear-s7-12-memory-foam"
+      ],
+      "replacesManualCollectionId": null
+    },
+    {
+      "handle": "h6",
+      "title": "H6 Mattresses",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/dfc9910f-93a8-4126-ba73-dd2981243b93.jpg?v=1793551144",
+        "altText": "BEDGEAR H6 hybrid mattress product view",
+        "width": 1400,
+        "height": 1000
+      },
+      "ruleTag": "collection:h6",
+      "expectedProducts": [
+        "bedgear-h6-12-hybrid"
+      ],
+      "replacesManualCollectionId": null
+    },
+    {
+      "handle": "m3",
+      "title": "M3 Dual Comfort Mattresses",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019d1b36-2013-7089-9ef2-764c398e9cdf.jpg?v=1793551148",
+        "altText": "BEDGEAR M3 dual comfort mattress angle view",
+        "width": 5000,
+        "height": 5000
+      },
+      "ruleTag": "collection:m3",
+      "expectedProducts": [
+        "bedgear-m3-12-dual-comfort"
+      ],
+      "replacesManualCollectionId": null
+    },
+    {
+      "handle": "m5",
+      "title": "M5 Dual Comfort Mattresses",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019df90b-24f9-7eee-9202-56c1bdb7510c.jpg?v=1793551147",
+        "altText": "BEDGEAR M5 dual comfort mattress product view",
+        "width": 2288,
+        "height": 2288
+      },
+      "ruleTag": "collection:m5",
+      "expectedProducts": [
+        "bedgear-m5-14-dual-comfort"
+      ],
+      "replacesManualCollectionId": null
+    },
+    {
+      "handle": "adjustable-bases",
+      "title": "Adjustable Bases",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/0af53a18-5eff-4179-8a17-660d69c63294.jpg?v=1793551333",
+        "altText": "Adjustable Bases collection",
+        "width": 3000,
+        "height": 3000
+      },
+      "ruleTag": "collection:adjustable-bases",
+      "expectedProducts": [
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base",
+        "flex-sh-adjustable-base"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102741053"
+    },
+    {
+      "handle": "flex-l",
+      "title": "Flex L Adjustable Bases",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/0af53a18-5eff-4179-8a17-660d69c63294.jpg?v=1793551142",
+        "altText": "BEDGEAR Flex L adjustable base in a bedroom",
+        "width": 3000,
+        "height": 3000
+      },
+      "ruleTag": "collection:flex-l",
+      "expectedProducts": [
+        "flex-l-adjustable-base"
+      ],
+      "replacesManualCollectionId": null
+    },
+    {
+      "handle": "flex-lsx",
+      "title": "Flex LSX Adjustable Bases",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/eba03ba8-76de-4a19-9410-d087f66c6c35.jpg?v=1793551142",
+        "altText": "BEDGEAR Flex LSX adjustable base in a bedroom",
+        "width": 3000,
+        "height": 3000
+      },
+      "ruleTag": "collection:flex-lsx",
+      "expectedProducts": [
+        "flex-lsx-adjustable-base"
+      ],
+      "replacesManualCollectionId": null
+    },
+    {
+      "handle": "flex-sh",
+      "title": "Flex SH Adjustable Bases",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/0af53a18-5eff-4179-8a17-660d69c63294.jpg?v=1793551333",
+        "altText": "Adjustable Bases collection",
+        "width": 3000,
+        "height": 3000
+      },
+      "ruleTag": "collection:flex-sh",
+      "expectedProducts": [
+        "flex-sh-adjustable-base"
+      ],
+      "replacesManualCollectionId": null
+    },
+    {
+      "handle": "pillows",
+      "title": "Pillows",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/ZZQQPICGF-icecloudpillow-EN3qtWEB.jpg?v=1793551360",
+        "altText": "Pillows collection",
+        "width": 2000,
+        "height": 2000
+      },
+      "ruleTag": "collection:pillows",
+      "expectedProducts": [
+        "bamboo-charcoal-pillow-cooling-cover",
+        "carboncool-omniphase-pillow",
+        "convolution-pillow",
+        "gel-convolution-pillow",
+        "gel-dough-z-gel-pillow",
+        "gelled-microfiber-pillow",
+        "hexcurve-omniphase-pillow",
+        "ice-cloud-omniphase-pillow",
+        "quilted-convolution-hyperchill-pillow",
+        "shoulder-zoned-gel-activedough-pillow",
+        "weekender-gel-memory-foam-pillow",
+        "zoned-activedough-bamboo-charcoal-pillow",
+        "zoned-dough-bamboo-charcoal-pillow",
+        "zoned-gel-activedough-pillow",
+        "zoned-gel-dough-pillow",
+        "zoned-talalay-latex-pillow"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302090780733"
+    },
+    {
+      "handle": "zoned-pillows",
+      "title": "Zoned Pillows",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/ZZQQMPADZG-ZndActDghGel-ENstraitCROP.jpg?v=1793551397",
+        "altText": "Zoned Pillows collection",
+        "width": 1623,
+        "height": 1623
+      },
+      "ruleTag": "collection:zoned-pillows",
+      "expectedProducts": [
+        "shoulder-zoned-gel-activedough-pillow",
+        "zoned-activedough-bamboo-charcoal-pillow",
+        "zoned-dough-bamboo-charcoal-pillow",
+        "zoned-gel-dough-pillow"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102609981"
+    },
+    {
+      "handle": "filled-pillows",
+      "title": "Filled Pillows",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/ZZQQ00GM-gelledmicrofiberpillow-EN3qtWEB.jpg?v=1793551349",
+        "altText": "Filled Pillows collection",
+        "width": 3000,
+        "height": 3000
+      },
+      "ruleTag": "collection:filled-pillows",
+      "expectedProducts": [
+        "convolution-pillow",
+        "gel-convolution-pillow",
+        "gelled-microfiber-pillow",
+        "quilted-convolution-hyperchill-pillow"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302090813501"
+    },
+    {
+      "handle": "foam-pillows",
+      "title": "Foam Pillows",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/ZZQQMPADZB-ZndActDghBambooCharcoal-EN3qtgroupWEB_bfa9d568-bd67-45b9-ac3f-54327387ea06.jpg?v=1793551350",
+        "altText": "Foam Pillows collection",
+        "width": 2000,
+        "height": 2000
+      },
+      "ruleTag": "collection:foam-pillows",
+      "expectedProducts": [
+        "bamboo-charcoal-pillow-cooling-cover",
+        "hexcurve-omniphase-pillow",
+        "weekender-gel-memory-foam-pillow",
+        "zoned-talalay-latex-pillow"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102642749"
+    },
+    {
+      "handle": "temperature-regulating-pillows",
+      "title": "Temperature Regulating Pillows",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/IceCloudImageStack-1.jpg?v=1793551395",
+        "altText": "Temperature Regulating Pillows collection",
+        "width": 2000,
+        "height": 2000
+      },
+      "ruleTag": "collection:temperature-regulating-pillows",
+      "expectedProducts": [
+        "carboncool-omniphase-pillow",
+        "gel-dough-z-gel-pillow",
+        "ice-cloud-omniphase-pillow",
+        "zoned-gel-activedough-pillow"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102675517"
+    },
+    {
+      "handle": "sheets",
+      "title": "Sheets",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/Dri-Tec_Sheets_Light_Grey_Lifestyle_4004-shopify_3c73039b-b05e-4dcc-9430-3f999f41e254.jpg?v=1793551394",
+        "altText": "Sheets collection",
+        "width": 2668,
+        "height": 4000
+      },
+      "ruleTag": "collection:sheets",
+      "expectedProducts": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302110900285"
+    },
+    {
+      "handle": "sheet-sets",
+      "title": "Sheet Sets",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/01a0b4b8-d5ae-7dd8-a5e5-ef6c1a446c16.jpg?v=1793551392",
+        "altText": "Sheet Sets collection",
+        "width": 1200,
+        "height": 4390
+      },
+      "ruleTag": "collection:sheet-sets",
+      "expectedProducts": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102773821"
+    },
+    {
+      "handle": "mattress-protectors",
+      "title": "Mattress Protectors",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/Ver-Tex_Mattress_Protector_2022_lifestyle1-shopify.jpg?v=1793551356",
+        "altText": "Mattress Protectors collection",
+        "width": 4000,
+        "height": 2668
+      },
+      "ruleTag": "collection:mattress-protectors",
+      "expectedProducts": [
+        "dri-tec-mattress-protector",
+        "stretchwick-mattress-encasement",
+        "ver-tex-mattress-protector"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102839357"
+    },
+    {
+      "handle": "comforters",
+      "title": "Comforters",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/cad2c08b-cbd3-4bb8-b726-5fae988d2a5d.png?v=1793551345",
+        "altText": "Comforters collection",
+        "width": 3000,
+        "height": 3000
+      },
+      "ruleTag": "collection:comforters",
+      "expectedProducts": [
+        "light-weight-comforter",
+        "medium-weight-comforter",
+        "ultra-weight-comforter"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302110933053"
+    },
+    {
+      "handle": "cooling-bedding",
+      "title": "Cooling & Bedding",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/Ver-Tex_Sheets_White_Lifestyle_Model_5159-shopify.jpg?v=1793551347",
+        "altText": "Cooling & Bedding collection",
+        "width": 4000,
+        "height": 2668
+      },
+      "ruleTag": "collection:cooling-bedding",
+      "expectedProducts": [
+        "cooling-performance-throw",
+        "light-grey-racetrack-duvet-sham-set",
+        "solid-white-duvet-sham-set"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302110965821"
+    },
+    {
+      "handle": "mattress-toppers",
+      "title": "Mattress Toppers",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/IS25QQ45GT-GelMemFoam-EN3qtWEB-3608.jpg?v=1793551358",
+        "altText": "Mattress Toppers collection",
+        "width": 2000,
+        "height": 2000
+      },
+      "ruleTag": "collection:mattress-toppers",
+      "expectedProducts": [
+        "malouf-2-5-inch-gel-memory-foam-topper",
+        "react-pro-performance-topper"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102872125"
+    },
+    {
+      "handle": "bedroom-furniture",
+      "title": "Bedroom Furniture",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/STQQOAHENNHB-Hennessy-EN3qtWEB.jpg?v=1793551337",
+        "altText": "Bedroom Furniture collection",
+        "width": 4321,
+        "height": 4321
+      },
+      "ruleTag": "collection:bedroom-furniture",
+      "expectedProducts": [
+        "blackwell-designer-headboard",
+        "carlisle-upholstered-headboard",
+        "eastman-upholstered-platform-base",
+        "hennessy-upholstered-headboard",
+        "scoresby-designer-headboard",
+        "watson-upholstered-platform-base"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302110998589"
+    },
+    {
+      "handle": "furniture",
+      "title": "Furniture",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/STQQCHEASTPL-Eastman-EN3qtpanelWEB.jpg?v=1793551352",
+        "altText": "Furniture collection",
+        "width": 4066,
+        "height": 4066
+      },
+      "ruleTag": "collection:furniture",
+      "expectedProducts": [
+        "blackwell-designer-headboard",
+        "carlisle-upholstered-headboard",
+        "eastman-upholstered-platform-base",
+        "hennessy-upholstered-headboard",
+        "scoresby-designer-headboard",
+        "watson-upholstered-platform-base"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102904893"
+    },
+    {
+      "handle": "headboards",
+      "title": "Headboards",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/STQQOAHENNHB-Hennessy-EN3qtWEB_13eb04f6-9997-426a-8734-27a30b17e8cb.jpg?v=1793551354",
+        "altText": "Headboards collection",
+        "width": 4321,
+        "height": 4321
+      },
+      "ruleTag": "collection:headboards",
+      "expectedProducts": [
+        "blackwell-designer-headboard",
+        "carlisle-upholstered-headboard",
+        "hennessy-upholstered-headboard",
+        "scoresby-designer-headboard"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102937661"
+    },
+    {
+      "handle": "platform-bases",
+      "title": "Platform Bases",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/STQQSTWATSPL-Watson-EN3qtWEBdrawer-3189.jpg?v=1793551390",
+        "altText": "Platform Bases collection",
+        "width": 2000,
+        "height": 2000
+      },
+      "ruleTag": "collection:platform-bases",
+      "expectedProducts": [
+        "eastman-upholstered-platform-base",
+        "watson-upholstered-platform-base"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102970429"
+    },
+    {
+      "handle": "bedding",
+      "title": "Bedding",
+      "descriptionHtml": "",
+      "templateSuffix": "snoozepod-v1",
+      "sortOrder": "BEST_SELLING",
+      "image": {
+        "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/collections/Dri-Tec_Sheets_Light_Grey_Lifestyle_4004-shopify.jpg?v=1793551335",
+        "altText": "Bedding collection",
+        "width": 2668,
+        "height": 4000
+      },
+      "ruleTag": "collection:bedding",
+      "expectedProducts": [
+        "cooling-performance-throw",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "light-grey-racetrack-duvet-sham-set",
+        "light-weight-comforter",
+        "malouf-2-5-inch-gel-memory-foam-topper",
+        "medium-weight-comforter",
+        "react-pro-performance-topper",
+        "solid-white-duvet-sham-set",
+        "stretchwick-mattress-encasement",
+        "ultra-weight-comforter",
+        "ver-tex-mattress-protector",
+        "ver-tex-sheet-set"
+      ],
+      "replacesManualCollectionId": "gid://shopify/Collection/302102806589"
+    }
+  ],
+  "categoryNavigation": {
+    "mattresses": [
+      "s7",
+      "h6",
+      "m3",
+      "m5"
+    ],
+    "s7": [
+      "s7",
+      "h6",
+      "m3",
+      "m5"
+    ],
+    "h6": [
+      "s7",
+      "h6",
+      "m3",
+      "m5"
+    ],
+    "m3": [
+      "s7",
+      "h6",
+      "m3",
+      "m5"
+    ],
+    "m5": [
+      "s7",
+      "h6",
+      "m3",
+      "m5"
+    ],
+    "adjustable-bases": [
+      "flex-l",
+      "flex-lsx",
+      "flex-sh"
+    ],
+    "flex-l": [
+      "flex-l",
+      "flex-lsx",
+      "flex-sh"
+    ],
+    "flex-lsx": [
+      "flex-l",
+      "flex-lsx",
+      "flex-sh"
+    ],
+    "flex-sh": [
+      "flex-l",
+      "flex-lsx",
+      "flex-sh"
+    ],
+    "pillows": [
+      "zoned-pillows",
+      "filled-pillows",
+      "foam-pillows",
+      "temperature-regulating-pillows"
+    ],
+    "zoned-pillows": [
+      "zoned-pillows",
+      "filled-pillows",
+      "foam-pillows",
+      "temperature-regulating-pillows"
+    ],
+    "filled-pillows": [
+      "zoned-pillows",
+      "filled-pillows",
+      "foam-pillows",
+      "temperature-regulating-pillows"
+    ],
+    "foam-pillows": [
+      "zoned-pillows",
+      "filled-pillows",
+      "foam-pillows",
+      "temperature-regulating-pillows"
+    ],
+    "temperature-regulating-pillows": [
+      "zoned-pillows",
+      "filled-pillows",
+      "foam-pillows",
+      "temperature-regulating-pillows"
+    ],
+    "bedding": [
+      "sheets",
+      "mattress-protectors",
+      "comforters",
+      "cooling-bedding",
+      "mattress-toppers"
+    ],
+    "sheets": [
+      "sheets",
+      "mattress-protectors",
+      "comforters",
+      "cooling-bedding",
+      "mattress-toppers"
+    ],
+    "sheet-sets": [
+      "sheets",
+      "mattress-protectors",
+      "comforters",
+      "cooling-bedding",
+      "mattress-toppers"
+    ],
+    "mattress-protectors": [
+      "sheets",
+      "mattress-protectors",
+      "comforters",
+      "cooling-bedding",
+      "mattress-toppers"
+    ],
+    "comforters": [
+      "sheets",
+      "mattress-protectors",
+      "comforters",
+      "cooling-bedding",
+      "mattress-toppers"
+    ],
+    "cooling-bedding": [
+      "sheets",
+      "mattress-protectors",
+      "comforters",
+      "cooling-bedding",
+      "mattress-toppers"
+    ],
+    "mattress-toppers": [
+      "sheets",
+      "mattress-protectors",
+      "comforters",
+      "cooling-bedding",
+      "mattress-toppers"
+    ],
+    "bedroom-furniture": [
+      "headboards",
+      "platform-bases"
+    ],
+    "furniture": [
+      "headboards",
+      "platform-bases"
+    ],
+    "headboards": [
+      "headboards",
+      "platform-bases"
+    ],
+    "platform-bases": [
+      "headboards",
+      "platform-bases"
+    ]
+  },
+  "menu": {
+    "handle": "main-menu",
+    "title": "Main menu",
+    "items": [
+      {
+        "title": "Home",
+        "type": "FRONTPAGE"
+      },
+      {
+        "title": "Mattresses",
+        "type": "COLLECTION",
+        "collection": "mattresses",
+        "items": [
+          {
+            "title": "Shop All Mattresses",
+            "type": "COLLECTION",
+            "collection": "mattresses"
+          },
+          {
+            "title": "S7",
+            "type": "COLLECTION",
+            "collection": "s7"
+          },
+          {
+            "title": "H6",
+            "type": "COLLECTION",
+            "collection": "h6"
+          },
+          {
+            "title": "M3",
+            "type": "COLLECTION",
+            "collection": "m3"
+          },
+          {
+            "title": "M5",
+            "type": "COLLECTION",
+            "collection": "m5"
+          }
+        ]
+      },
+      {
+        "title": "Adjustable Bases",
+        "type": "COLLECTION",
+        "collection": "adjustable-bases",
+        "items": [
+          {
+            "title": "Shop All Adjustable Bases",
+            "type": "COLLECTION",
+            "collection": "adjustable-bases"
+          },
+          {
+            "title": "Flex L",
+            "type": "COLLECTION",
+            "collection": "flex-l"
+          },
+          {
+            "title": "Flex LSX",
+            "type": "COLLECTION",
+            "collection": "flex-lsx"
+          },
+          {
+            "title": "Flex SH",
+            "type": "COLLECTION",
+            "collection": "flex-sh"
+          }
+        ]
+      },
+      {
+        "title": "Sleep Essentials",
+        "type": "COLLECTION",
+        "collection": "bedding",
+        "items": [
+          {
+            "title": "Pillows",
+            "type": "COLLECTION",
+            "collection": "pillows",
+            "items": [
+              {
+                "title": "Zoned",
+                "type": "COLLECTION",
+                "collection": "zoned-pillows"
+              },
+              {
+                "title": "Filled",
+                "type": "COLLECTION",
+                "collection": "filled-pillows"
+              },
+              {
+                "title": "Foam",
+                "type": "COLLECTION",
+                "collection": "foam-pillows"
+              },
+              {
+                "title": "Temperature Regulating",
+                "type": "COLLECTION",
+                "collection": "temperature-regulating-pillows"
+              }
+            ]
+          },
+          {
+            "title": "Sheets",
+            "type": "COLLECTION",
+            "collection": "sheets"
+          },
+          {
+            "title": "Mattress Protection",
+            "type": "COLLECTION",
+            "collection": "mattress-protectors"
+          },
+          {
+            "title": "Comforters",
+            "type": "COLLECTION",
+            "collection": "comforters"
+          },
+          {
+            "title": "Cooling & Bedding",
+            "type": "COLLECTION",
+            "collection": "cooling-bedding"
+          },
+          {
+            "title": "Mattress Toppers",
+            "type": "COLLECTION",
+            "collection": "mattress-toppers"
+          }
+        ]
+      },
+      {
+        "title": "Bedroom Furniture",
+        "type": "COLLECTION",
+        "collection": "bedroom-furniture",
+        "items": [
+          {
+            "title": "Headboards",
+            "type": "COLLECTION",
+            "collection": "headboards"
+          },
+          {
+            "title": "Platform Bases",
+            "type": "COLLECTION",
+            "collection": "platform-bases"
+          }
+        ]
+      },
+      {
+        "title": "Your Showroom Visit",
+        "type": "PAGE",
+        "resourceId": "gid://shopify/Page/91074658365",
+        "items": [
+          {
+            "title": "Book a Snooze Session",
+            "type": "PAGE",
+            "resourceId": "gid://shopify/Page/91074658365"
+          },
+          {
+            "title": "Mini Snooze Assessment",
+            "type": "PAGE",
+            "resourceId": "gid://shopify/Page/92321087549"
+          },
+          {
+            "title": "Showroom Information",
+            "type": "PAGE",
+            "resourceId": "gid://shopify/Page/91074658365"
+          }
+        ]
+      },
+      {
+        "title": "Our Story",
+        "type": "PAGE",
+        "resourceId": "gid://shopify/Page/91048247357"
+      }
+    ]
+  },
+  "dualComfort": {
+    "productHandles": [
+      "bedgear-m3-12-dual-comfort",
+      "bedgear-m5-14-dual-comfort"
+    ],
+    "values": [
+      "0.0",
+      "1.0",
+      "2.0",
+      "3.0"
+    ],
+    "mappingSource": "Variant metafields custom.left_comfort and custom.right_comfort when both are verified and attached to an orderable variant.",
+    "currentOrderableMappings": 0,
+    "failClosed": true
+  }
+}

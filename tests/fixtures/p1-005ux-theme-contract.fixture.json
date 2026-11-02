@@ -1,0 +1,52 @@
+{
+  "label": "P1-005UX non-production structural fixture",
+  "renderingStatus": "SIMULATED_NOT_SHOPIFY_RENDERING",
+  "product": {
+    "id": "8099363094589",
+    "handle": "gelled-microfiber-pillow",
+    "title": "Gelled Microfiber Pillow",
+    "vendor": "Malouf",
+    "productType": "Pillow",
+    "status": "DRAFT",
+    "template": "Default product",
+    "media": [],
+    "description": "",
+    "feelLabel": null,
+    "feelPosition": null,
+    "showroomRepresentation": null,
+    "variants": [
+      {
+        "id": "44049793777725",
+        "title": "Queen",
+        "sku": "ZZQQ00GM",
+        "price": "59.99"
+      },
+      {
+        "id": "44049793810493",
+        "title": "King",
+        "sku": "ZZKK00GM",
+        "price": "69.99"
+      }
+    ]
+  },
+  "collections": [
+    {
+      "id": "302090780733",
+      "handle": "pillows",
+      "title": "Pillows",
+      "productHandles": ["gelled-microfiber-pillow"]
+    },
+    {
+      "id": "302090813501",
+      "handle": "filled-pillows",
+      "title": "Filled Pillows",
+      "productHandles": ["gelled-microfiber-pillow"]
+    }
+  ],
+  "approvedRoutes": {
+    "booking": "/pages/book-a-snooze-session",
+    "product": "/products/gelled-microfiber-pillow",
+    "pillows": "/collections/pillows",
+    "filledPillows": "/collections/filled-pillows"
+  }
+}

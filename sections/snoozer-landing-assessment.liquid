@@ -6,12 +6,12 @@
   endif
   assign assessment_page_url = '/pages/snooze-assessment'
   assign booking_page_url = '/pages/book-a-snooze-session'
-  assign mattresses_collection_url = '/collections/mattresses'
-  assign adjustable_base_url = '/products/premium-motion-adjustable-base'
-  assign bases_collection_url = '/collections/bases'
-  assign pillows_collection_url = '/collections/pillows'
-  assign bedding_collection_url = '/collections/bedding'
-  assign assessment_product_handles = '14-hybrid|12-dual-comfort-hybrid|12-all-foam-mattress|10-all-foam-mattress|premium-motion-adjustable-base|platform-base|storage-base' | split: '|'
+  assign mattresses_collection_url = collections['mattresses'].url
+  assign adjustable_base_url = ''
+  assign bases_collection_url = collections['adjustable-bases'].url
+  assign pillows_collection_url = collections['pillows'].url
+  assign bedding_collection_url = collections['bedding'].url
+  assign assessment_product_handles = '' | split: '|'
   assign hide_footer_newsletter = false
   if request.page_type == 'page' and page.handle == 'snooze-assessment'
     assign hide_footer_newsletter = true

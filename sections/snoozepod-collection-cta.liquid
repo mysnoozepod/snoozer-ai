@@ -125,9 +125,11 @@
     <div class="snoozepod-collection-cta__card">
       <div class="snoozepod-collection-cta__copy">
         <h2 class="snoozepod-collection-cta__heading">{{ section.settings.heading | escape }}</h2>
-        <div class="snoozepod-collection-cta__body rte">
-          <p>{{ section.settings.body | escape }}</p>
-        </div>
+        {%- if section.settings.body != blank -%}
+          <div class="snoozepod-collection-cta__body rte">
+            <p>{{ section.settings.body | escape }}</p>
+          </div>
+        {%- endif -%}
       </div>
 
       <div class="snoozepod-collection-cta__actions">
@@ -152,6 +154,7 @@
               class="snoozepod-collection-cta__button snoozepod-collection-cta__button--secondary"
               data-snoozer-trigger
               data-snoozer-source="collection-final-cta"
+              data-snoozer-collection-handle="{{ collection.handle | escape }}"
             >
               {{ section.settings.secondary_label | escape }}
             </button>

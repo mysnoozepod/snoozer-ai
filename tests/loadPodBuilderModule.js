@@ -18,10 +18,25 @@ module.exports = {
   buildApiUrl,
   buildBuilderGuidanceText,
   buildBuilderPlanFromAssessment,
+  buildBundleRequestPlan,
+  cartLineIdentity,
+  cartResultMessage,
+  claimBundleLock,
+  createBundleRequestPlan,
+  executeBundleCartOperation,
+  exactVariantCatalogOptions,
+  getStepOptions,
   getApiBase,
   normalizeMotionSelectionForSize,
   normalizeMotionSelectionKey,
+  reconcileBundleCart,
+  renderCartStatus,
+  requestFingerprint,
   resolveBuilderPlan,
+  resolveAddonVariant,
+  retainBundleLock,
+  validateBundleRequestPlan,
+  verifyBundleVariantReadiness,
 };
 `;
 }
@@ -48,6 +63,13 @@ function loadPodBuilderModule(overrides = {}) {
       sessionStorage: {
         getItem() { return ""; },
         setItem() {},
+      },
+      localStorage: {
+        getItem() { return ""; },
+        setItem() {},
+      },
+      crypto: {
+        randomUUID() { return "fixture-operation-id"; },
       },
       MySnoozePod: {},
     },

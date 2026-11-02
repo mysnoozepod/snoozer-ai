@@ -1,0 +1,25 @@
+{% comment %}
+  Renders a real Shopify collection in Shop by Category.
+  Accepts navigation_collection: Collection object.
+{% endcomment %}
+
+{%- if navigation_collection != blank -%}
+  <article class="snoozepod-collection-navigation__card" {{ navigation_attributes }}>
+    {%- if navigation_collection.image != blank -%}
+      {{
+        navigation_collection.image
+        | image_url: width: 720
+        | image_tag:
+          loading: 'lazy',
+          widths: '240, 360, 540, 720',
+          sizes: '(min-width: 750px) 25vw, 50vw',
+          alt: navigation_collection.image.alt | default: navigation_collection.title | escape
+      }}
+    {%- else -%}
+      <div class="snoozepod-collection-navigation__fallback" aria-hidden="true"></div>
+    {%- endif -%}
+    <a class="snoozepod-collection-navigation__link" href="{{ navigation_collection.url }}">
+      {{ navigation_collection.title | escape }}
+    </a>
+  </article>
+{%- endif -%}

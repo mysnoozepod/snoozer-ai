@@ -1,0 +1,462 @@
+{
+  "generatedAt": "2026-11-02T21:26:38.363Z",
+  "shop": "mysnoozepodtest.myshopify.com",
+  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\content-pages\\2026-11-02T21-26-28-679Z",
+  "summary": {
+    "expected": 50,
+    "verified": 50,
+    "published": 50
+  },
+  "pages": [
+    {
+      "id": "gid://shopify/Page/108933054525",
+      "title": "Building Your SnoozePod",
+      "handle": "building-your-snoozepod",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "2e723601e751d1e545dc8a115ca92f95de1c71c3ccf0865383ec7805542fbd95",
+      "url": "https://mysnoozepod.com/pages/building-your-snoozepod"
+    },
+    {
+      "id": "gid://shopify/Page/108933087293",
+      "title": "What Is a SnoozePod?",
+      "handle": "what-is-a-snoozepod",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "81c33cc07b6d2c162e9745edf7bef2f42ab0d8366d714746b7490bfc69ceab1c",
+      "url": "https://mysnoozepod.com/pages/what-is-a-snoozepod"
+    },
+    {
+      "id": "gid://shopify/Page/108933120061",
+      "title": "How the MySnoozePod Showroom Works",
+      "handle": "how-the-mysnoozepod-showroom-works",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "89a1685bbd230445016768b2874fb2e4c4c2a385473950fe3364fd14cf1646cc",
+      "url": "https://mysnoozepod.com/pages/how-the-mysnoozepod-showroom-works"
+    },
+    {
+      "id": "gid://shopify/Page/108933152829",
+      "title": "What Is a Snooze Session?",
+      "handle": "what-is-a-snooze-session",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "06b327ac2a67dabb0c244e9812b38c23b20bf6d276a9cee58416da90cc0f93d6",
+      "url": "https://mysnoozepod.com/pages/what-is-a-snooze-session"
+    },
+    {
+      "id": "gid://shopify/Page/108933185597",
+      "title": "What to Expect During Your Snooze Session",
+      "handle": "what-to-expect-during-your-snooze-session",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "02351c3e25ac0f1ee545e80f9b19786ead7aa061554755b3c06c734b7039e411",
+      "url": "https://mysnoozepod.com/pages/what-to-expect-during-your-snooze-session"
+    },
+    {
+      "id": "gid://shopify/Page/108933218365",
+      "title": "How to Prepare for Your Showroom Visit",
+      "handle": "how-to-prepare-for-your-showroom-visit",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "e0da8c4f1650cd4dc47c1fa3fa12d0980f5feb777cff497fb2e97a88fa9dd7a3",
+      "url": "https://mysnoozepod.com/pages/how-to-prepare-for-your-showroom-visit"
+    },
+    {
+      "id": "gid://shopify/Page/108933251133",
+      "title": "How a Virtual Snooze Session Works",
+      "handle": "how-a-virtual-snooze-session-works",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "b482b0b60e189118d9d41250d342cd06d396c61b22931f2e6fe79017de7faee4",
+      "url": "https://mysnoozepod.com/pages/how-a-virtual-snooze-session-works"
+    },
+    {
+      "id": "gid://shopify/Page/108933283901",
+      "title": "What Happens After Your Snooze Session?",
+      "handle": "what-happens-after-your-snooze-session",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "07dc8b7f0329f2d1e52142b8c0fefe275da589b3840632ba16c6ee4537b9d75b",
+      "url": "https://mysnoozepod.com/pages/what-happens-after-your-snooze-session"
+    },
+    {
+      "id": "gid://shopify/Page/108933316669",
+      "title": "Comparing Sleep Systems Without Sales Pressure",
+      "handle": "comparing-sleep-systems-without-sales-pressure",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "c60cf6ec3aad6f2214f3d138eb9f3fd11a41f3cb8275f4cc9b47b67c04c2c0dd",
+      "url": "https://mysnoozepod.com/pages/comparing-sleep-systems-without-sales-pressure"
+    },
+    {
+      "id": "gid://shopify/Page/108933349437",
+      "title": "From Showroom Recommendation to Home Delivery",
+      "handle": "from-showroom-recommendation-to-home-delivery",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "39b4281ff7d9f96e5c50d1c12bda01188cbfb0a3f99e52cb81c9dfb3ca3a8cc9",
+      "url": "https://mysnoozepod.com/pages/from-showroom-recommendation-to-home-delivery"
+    },
+    {
+      "id": "gid://shopify/Page/108933382205",
+      "title": "What Makes a Complete Sleep System?",
+      "handle": "what-makes-a-complete-sleep-system",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "1bdc24fae593e16f7535e370338007d3790dfa45c3d805156328b5bc2544bb79",
+      "url": "https://mysnoozepod.com/pages/what-makes-a-complete-sleep-system"
+    },
+    {
+      "id": "gid://shopify/Page/108933414973",
+      "title": "How Your Sleep System Components Work Together",
+      "handle": "how-your-sleep-system-components-work-together",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "c0f295ef4545c5c9623c62c38853dc7b2f8110951d9b92a4b5b984cc2536e2bb",
+      "url": "https://mysnoozepod.com/pages/how-your-sleep-system-components-work-together"
+    },
+    {
+      "id": "gid://shopify/Page/108933447741",
+      "title": "How to Choose the Right Mattress",
+      "handle": "how-to-choose-the-right-mattress",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "e949ed9c4d0162a58bef5649d23cd25d310922945e2ff0e62cd2ab153819179c",
+      "url": "https://mysnoozepod.com/pages/how-to-choose-the-right-mattress"
+    },
+    {
+      "id": "gid://shopify/Page/108933480509",
+      "title": "How to Choose the Right Mattress Size",
+      "handle": "how-to-choose-the-right-mattress-size",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "a78b4ae6b20c060a8612d3817d8f2906dde76ae65d3bdbcfd311fdbe522a3f2f",
+      "url": "https://mysnoozepod.com/pages/how-to-choose-the-right-mattress-size"
+    },
+    {
+      "id": "gid://shopify/Page/108933513277",
+      "title": "Understanding Mattress Comfort: Soft to Firm",
+      "handle": "understanding-mattress-comfort-soft-to-firm",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "f41b4a182a73db7dbe52e4336f89ba733566426597e4b239923b552e23408d15",
+      "url": "https://mysnoozepod.com/pages/understanding-mattress-comfort-soft-to-firm"
+    },
+    {
+      "id": "gid://shopify/Page/108933546045",
+      "title": "Mattress Support vs. Mattress Firmness",
+      "handle": "mattress-support-vs-mattress-firmness",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "27c0d75894892834eabe19c1634da59aabad434ee6fcf7cc38bb960b68f3353e",
+      "url": "https://mysnoozepod.com/pages/mattress-support-vs-mattress-firmness"
+    },
+    {
+      "id": "gid://shopify/Page/108933578813",
+      "title": "Memory Foam vs. Hybrid Mattresses",
+      "handle": "memory-foam-vs-hybrid-mattresses",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "9a48394a7f0cb8d5952121359a1edb707e9ded16506d3a6497db135587c15759",
+      "url": "https://mysnoozepod.com/pages/memory-foam-vs-hybrid-mattresses"
+    },
+    {
+      "id": "gid://shopify/Page/108933611581",
+      "title": "Understanding Modular Mattresses",
+      "handle": "understanding-modular-mattresses",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "72da0b756e4463ecd00771fcddd8c353cf6c3b087334f9ad0dc6cbe19b1f7f3c",
+      "url": "https://mysnoozepod.com/pages/understanding-modular-mattresses"
+    },
+    {
+      "id": "gid://shopify/Page/108933644349",
+      "title": "Showroom Comfort vs. Your Ordered Configuration",
+      "handle": "showroom-comfort-vs-ordered-configuration",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "febdbde74681cc937e5f109e1f1c8224fbbe2a5e83af8bf8593b147d664b6c9a",
+      "url": "https://mysnoozepod.com/pages/showroom-comfort-vs-ordered-configuration"
+    },
+    {
+      "id": "gid://shopify/Page/108933677117",
+      "title": "Questions to Ask Before Buying a Mattress",
+      "handle": "questions-to-ask-before-buying-a-mattress",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "816ca3e25116c6f1fecc28c85d6e43aa631bb38e52cb21488113ea1fc7bf46aa",
+      "url": "https://mysnoozepod.com/pages/questions-to-ask-before-buying-a-mattress"
+    },
+    {
+      "id": "gid://shopify/Page/108933709885",
+      "title": "The Benefits of Dual Comfort Mattresses",
+      "handle": "benefits-of-dual-comfort-mattresses",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "37a129e41a94a296fbad22e3b3bb6bc75d0c4f82377d72eb41f781680e9d2213",
+      "url": "https://mysnoozepod.com/pages/benefits-of-dual-comfort-mattresses"
+    },
+    {
+      "id": "gid://shopify/Page/108933742653",
+      "title": "How Independent Left and Right Comfort Works",
+      "handle": "how-independent-left-and-right-comfort-works",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "9ca7d1f61624f63dfb7b03642b23dd985d714fd9c1690208caa5d92caf169ce4",
+      "url": "https://mysnoozepod.com/pages/how-independent-left-and-right-comfort-works"
+    },
+    {
+      "id": "gid://shopify/Page/108933775421",
+      "title": "Choosing Between Soft, Medium Soft, Medium Firm, and Firm",
+      "handle": "choosing-between-soft-medium-soft-medium-firm-and-firm",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "74b3f80b93d5d9e93038a2bf3d5347ef08f855710a2a877805d9a865191fd1aa",
+      "url": "https://mysnoozepod.com/pages/choosing-between-soft-medium-soft-medium-firm-and-firm"
+    },
+    {
+      "id": "gid://shopify/Page/108933808189",
+      "title": "Choosing Different Comfort Levels as a Couple",
+      "handle": "choosing-different-comfort-levels-as-a-couple",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "11d126f3d680446fc38f63bf31daff3e8467a7651b3ce137c130a90ee9f81909",
+      "url": "https://mysnoozepod.com/pages/choosing-different-comfort-levels-as-a-couple"
+    },
+    {
+      "id": "gid://shopify/Page/108933840957",
+      "title": "What Happens When Partners Have Different Sleep Preferences?",
+      "handle": "what-happens-when-partners-have-different-sleep-preferences",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "624a2320495abb25f11fa7c3a997243593e3f20f6ef5a211b9462f25d1c6474e",
+      "url": "https://mysnoozepod.com/pages/what-happens-when-partners-have-different-sleep-preferences"
+    },
+    {
+      "id": "gid://shopify/Page/108933873725",
+      "title": "Choosing Comfort for Each Side of the Bed",
+      "handle": "choosing-comfort-for-each-side-of-the-bed",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "b461c09c9aa0e4641044131874dd44a2869ec00c5f47eacbe5899cae86270b58",
+      "url": "https://mysnoozepod.com/pages/choosing-comfort-for-each-side-of-the-bed"
+    },
+    {
+      "id": "gid://shopify/Page/108933906493",
+      "title": "Who Is a Dual Comfort Mattress For?",
+      "handle": "who-is-a-dual-comfort-mattress-for",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "162fd3c10d733f9592eaff94d2f97b75248dea6731dff2395b4660cfa9102436",
+      "url": "https://mysnoozepod.com/pages/who-is-a-dual-comfort-mattress-for"
+    },
+    {
+      "id": "gid://shopify/Page/108933939261",
+      "title": "Standard, Split-Head, Half-Split, and Full-Split Explained",
+      "handle": "standard-split-head-half-split-and-full-split-explained",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "0394f20fb8a611c101a133ed5b1b1ba34f17a227b4eaf9f8148702a65b7a13c9",
+      "url": "https://mysnoozepod.com/pages/standard-split-head-half-split-and-full-split-explained"
+    },
+    {
+      "id": "gid://shopify/Page/108933972029",
+      "title": "Is a Split-Head Mattress Right for You?",
+      "handle": "is-a-split-head-mattress-right-for-you",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "2b0f0213f2d6aecda8b40f23118676ab13a673089c4e00e1909dd7defc2c5b83",
+      "url": "https://mysnoozepod.com/pages/is-a-split-head-mattress-right-for-you"
+    },
+    {
+      "id": "gid://shopify/Page/108934004797",
+      "title": "Choosing a Mattress for Couples With Different Sleep Styles",
+      "handle": "choosing-a-mattress-for-couples-with-different-sleep-styles",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "28bc998b25785f360448de0210f2673ad75f41beb930bfc36c1b1c056786b1ba",
+      "url": "https://mysnoozepod.com/pages/choosing-a-mattress-for-couples-with-different-sleep-styles"
+    },
+    {
+      "id": "gid://shopify/Page/108934037565",
+      "title": "Choosing a Foam Mattress",
+      "handle": "choosing-a-foam-mattress",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "949c3b5e60fc12498f6a01bf1fdb39c6d4957dc858440a36d9f127a306d91140",
+      "url": "https://mysnoozepod.com/pages/choosing-a-foam-mattress"
+    },
+    {
+      "id": "gid://shopify/Page/108934070333",
+      "title": "Choosing a Hybrid Mattress",
+      "handle": "choosing-a-hybrid-mattress",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "94e2bd52bf5bca9289bf9176aba3575ed98e5528604ea3af15bcffc8b646a9de",
+      "url": "https://mysnoozepod.com/pages/choosing-a-hybrid-mattress"
+    },
+    {
+      "id": "gid://shopify/Page/108934103101",
+      "title": "Comparing Mattress Types",
+      "handle": "comparing-mattress-types",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "719121be863351a05d6e25f7baf01a554ee51305f9c3981eb9182ccda8896adf",
+      "url": "https://mysnoozepod.com/pages/comparing-mattress-types"
+    },
+    {
+      "id": "gid://shopify/Page/108934135869",
+      "title": "How Mattress Materials Affect Comfort",
+      "handle": "how-mattress-materials-affect-comfort",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "e85943e04092e93604cf491a4e46b982d53da42042e3a53509a65d47a6b79540",
+      "url": "https://mysnoozepod.com/pages/how-mattress-materials-affect-comfort"
+    },
+    {
+      "id": "gid://shopify/Page/108934168637",
+      "title": "Cooling Mattresses: What Actually Matters?",
+      "handle": "cooling-mattresses-what-actually-matters",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "7700252de654b892743c095670ca55b563a4663e3d74fa1fe8f2c24557373299",
+      "url": "https://mysnoozepod.com/pages/cooling-mattresses-what-actually-matters"
+    },
+    {
+      "id": "gid://shopify/Page/108934201405",
+      "title": "Understanding Pressure Relief and Body Alignment",
+      "handle": "understanding-pressure-relief-and-body-alignment",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "9c5de759071ceadddb80ce3b1de638e9d35438463bbc2e0411e719f835723223",
+      "url": "https://mysnoozepod.com/pages/understanding-pressure-relief-and-body-alignment"
+    },
+    {
+      "id": "gid://shopify/Page/108934234173",
+      "title": "Choosing a Mattress for Side, Back, or Combination Sleep",
+      "handle": "choosing-a-mattress-for-side-back-or-combination-sleep",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "b984434c7a32f90adaf77879530774b977113e33a9830d914133c673fb2b14f9",
+      "url": "https://mysnoozepod.com/pages/choosing-a-mattress-for-side-back-or-combination-sleep"
+    },
+    {
+      "id": "gid://shopify/Page/108934266941",
+      "title": "When Is It Time to Replace Your Mattress?",
+      "handle": "when-is-it-time-to-replace-your-mattress",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "346b502e395afe05fc1e61591791ff0350d5c8bff57c432726f9d96e4d196a12",
+      "url": "https://mysnoozepod.com/pages/when-is-it-time-to-replace-your-mattress"
+    },
+    {
+      "id": "gid://shopify/Page/108934299709",
+      "title": "The Benefits of an Adjustable Base",
+      "handle": "benefits-of-an-adjustable-base",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "e76b9beeb61435dd3f0b3e4f84ca9fb832447b8ce6934190ed132b28803dc6ca",
+      "url": "https://mysnoozepod.com/pages/benefits-of-an-adjustable-base"
+    },
+    {
+      "id": "gid://shopify/Page/108934332477",
+      "title": "Adjustable Base Features Explained",
+      "handle": "adjustable-base-features-explained",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "3edef771e45c10d2b2048f34d117223b2ea520158a9000624b7318204c04b258",
+      "url": "https://mysnoozepod.com/pages/adjustable-base-features-explained"
+    },
+    {
+      "id": "gid://shopify/Page/108934365245",
+      "title": "How to Choose an Adjustable Base",
+      "handle": "how-to-choose-an-adjustable-base",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "219962dd6bc500151973f4e8c6b6f26bb89257ab3a98e9766ba2f0296d016d33",
+      "url": "https://mysnoozepod.com/pages/how-to-choose-an-adjustable-base"
+    },
+    {
+      "id": "gid://shopify/Page/108934398013",
+      "title": "Understanding Zero-Gravity and Preset Positions",
+      "handle": "understanding-zero-gravity-and-preset-positions",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "609f736a0a2a6b09f7bc015c7ccde4cd4887c5cb767369cd860943538708a719",
+      "url": "https://mysnoozepod.com/pages/understanding-zero-gravity-and-preset-positions"
+    },
+    {
+      "id": "gid://shopify/Page/108934430781",
+      "title": "How to Match a Mattress With an Adjustable Base",
+      "handle": "how-to-match-a-mattress-with-an-adjustable-base",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "4365456dacb64da46050df6ab4e94c94668350a6dc01e799b73a55db04c40bf2",
+      "url": "https://mysnoozepod.com/pages/how-to-match-a-mattress-with-an-adjustable-base"
+    },
+    {
+      "id": "gid://shopify/Page/108934463549",
+      "title": "Understanding Split-Head Adjustable Sleep Systems",
+      "handle": "understanding-split-head-adjustable-sleep-systems",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "0e656633c72442ec7426aae52eda34a368f04f3bd7d3134ff298380137aca6e5",
+      "url": "https://mysnoozepod.com/pages/understanding-split-head-adjustable-sleep-systems"
+    },
+    {
+      "id": "gid://shopify/Page/108934496317",
+      "title": "Adjustable Bases vs. Platform Bases",
+      "handle": "adjustable-bases-vs-platform-bases",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "2636cfc5e99c4fc97ca2561583c22a3aa1e2fd92b8d9e1196b40508d6ca84192",
+      "url": "https://mysnoozepod.com/pages/adjustable-bases-vs-platform-bases"
+    },
+    {
+      "id": "gid://shopify/Page/108934529085",
+      "title": "How to Find the Right Pillow",
+      "handle": "how-to-find-the-right-pillow",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "e6866c37d0408d87e61db8737ad59c8dc9a17b4d6b64bb0ee76f9f989b3e2464",
+      "url": "https://mysnoozepod.com/pages/how-to-find-the-right-pillow"
+    },
+    {
+      "id": "gid://shopify/Page/108934561853",
+      "title": "How Mattress Protectors Help Protect Your Bed",
+      "handle": "how-mattress-protectors-help-protect-your-bed",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "f01caa4a46f5a4f772754bb9d2824826ec19c57ad8dc722cc78518c0595bf57a",
+      "url": "https://mysnoozepod.com/pages/how-mattress-protectors-help-protect-your-bed"
+    },
+    {
+      "id": "gid://shopify/Page/108934594621",
+      "title": "Choosing Sheets for Standard and Split-Head Mattresses",
+      "handle": "choosing-sheets-for-standard-and-split-head-mattresses",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "78770d8fca27c110f5d1f73d25e46be74cc75fe5daf4aa06cc28f8a07cb5a7f2",
+      "url": "https://mysnoozepod.com/pages/choosing-sheets-for-standard-and-split-head-mattresses"
+    },
+    {
+      "id": "gid://shopify/Page/108934627389",
+      "title": "Choosing the Right Comforter Weight",
+      "handle": "choosing-the-right-comforter-weight",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "a8dee76cb0bd7087bba00f50c7b10f3572be425a812a972b9732d4f24dc5e8f7",
+      "url": "https://mysnoozepod.com/pages/choosing-the-right-comforter-weight"
+    },
+    {
+      "id": "gid://shopify/Page/108934660157",
+      "title": "Creating a Cooler, More Comfortable Sleep Environment",
+      "handle": "creating-a-cooler-more-comfortable-sleep-environment",
+      "isPublished": true,
+      "templateSuffix": null,
+      "bodySha256": "eb8273412392b58c63a631e33323c202859c0f961ba874186fdf2b4bda644329",
+      "url": "https://mysnoozepod.com/pages/creating-a-cooler-more-comfortable-sleep-environment"
+    }
+  ]
+}

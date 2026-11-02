@@ -1,4 +1,5 @@
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'component-snoozepod-commerce-v1.css' | asset_url | stylesheet_tag }}
 {{ 'snoozepod-pod-builder.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'snoozepod-pod-builder.js' | asset_url }}" defer></script>
 
@@ -210,6 +211,18 @@
     justify-content: center;
   }
 
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__actions .button--secondary {
+    border: 1px solid #071942;
+    background: #ffffff;
+    color: #071942;
+  }
+
+  .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__inline-builder .snoozepod-builder__submit {
+    border: 1px solid #071942;
+    background: #ffffff;
+    color: #071942;
+  }
+
   .snoozepod-pod-builder-hero-{{ section.id }} .snoozepod-pod-builder-hero__reassurance {
     margin: 14px 0 0;
     color: rgba(7, 25, 66, 0.64);
@@ -398,6 +411,34 @@
               price_class: 'price--large'
             -%}
           </div>
+
+          {% render 'snoozepod-product-feel',
+            feel_product: product,
+            show_editor_placeholder: true
+          %}
+
+          <div class="snoozepod-pod-builder-hero__actions">
+            <a class="button button--primary" href="/pages/book-a-snooze-session">
+              Book a Snooze Session
+            </a>
+            <button
+              type="button"
+              class="button button--secondary"
+              data-snoozer-trigger
+              data-snoozer-source="pod-builder-product-v1"
+              data-snoozer-product-id="{{ product.id }}"
+              data-snoozer-product-handle="{{ product.handle | escape }}"
+              data-snoozer-variant-id="{{ product.selected_or_first_available_variant.id }}"
+              data-snoozer-product-type="{{ product.type | escape }}"
+            >
+              Ask Snoozer About This Product
+            </button>
+          </div>
+
+          {% render 'snoozepod-showroom-location',
+            showroom_product: product,
+            show_editor_placeholder: true
+          %}
 
           <div class="snoozepod-pod-builder-hero__inline-builder">
             {%- render 'snoozepod-guided-pod-builder-core',

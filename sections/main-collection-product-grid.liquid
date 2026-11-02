@@ -1,6 +1,9 @@
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.show_snoozepod_card_details -%}
+  {{ 'component-snoozepod-commerce-v1.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
 
 {% if section.settings.image_shape == 'blob' %}
   {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
@@ -175,7 +178,7 @@
   {%- endstyle -%}
 {%- endif -%}
 
-<div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if template.suffix == 'snoozepod' or template.suffix == 'main' %} snoozepod-collection-grid{% endif %}">
+<div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if template.suffix == 'snoozepod' or template.suffix == 'main' or template.suffix == 'snoozepod-v1' %} snoozepod-collection-grid{% endif %}">
   {%- paginate collection.products by section.settings.products_per_page -%}
     {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
     {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}
@@ -314,6 +317,7 @@
                     lazy_load: lazy_load,
                     skip_styles: skip_card_product_styles,
                     quick_add: section.settings.quick_add,
+                    show_snoozepod_details: section.settings.show_snoozepod_card_details,
                     section_id: section.id
                   %}
                 </li>
@@ -447,6 +451,12 @@
       "default": false,
       "label": "t:sections.main-collection-product-grid.settings.show_rating.label",
       "info": "t:sections.main-collection-product-grid.settings.show_rating.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_snoozepod_card_details",
+      "default": false,
+      "label": "Show Product Card v1 details"
     },
     {
       "type": "select",

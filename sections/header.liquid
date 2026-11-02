@@ -1113,7 +1113,11 @@
 -%}
 
 {%- assign snoozer_assessment_url = '/pages/snooze-assessment' -%}
-{%- assign snoozer_mattresses_url = '/collections/mattresses' -%}
+{%- assign snoozer_mattresses_url = blank -%}
+{%- assign snoozer_mattresses_collection = collections['mattresses'] -%}
+{%- if snoozer_mattresses_collection != blank and snoozer_mattresses_collection.products_count > 0 -%}
+  {%- assign snoozer_mattresses_url = snoozer_mattresses_collection.url -%}
+{%- endif -%}
 {%- assign snoozer_booking_url = '/pages/book-a-snooze-session' -%}
 {%- assign snoozer_expectations_url = '/pages/book-a-snooze-session' -%}
 
@@ -1141,28 +1145,17 @@
       <h1 class="header__heading">
     {%- endif -%}
       <a href="{{ routes.root_url }}" class="header__heading-link link link--text focus-inset">
-        {%- if settings.logo != blank -%}
-          <div class="header__heading-logo-wrapper">
-            {%- assign logo_alt = settings.logo.alt | default: shop.name | escape -%}
-            {%- assign logo_height = settings.logo_width | divided_by: settings.logo.aspect_ratio -%}
-            {% capture sizes %}(min-width: 990px) {{ settings.logo_width }}px, 140px{% endcapture %}
-            {% capture widths %}{{ settings.logo_width }}, {{ settings.logo_width | times: 1.5 | round }}, {{ settings.logo_width | times: 2 }}{% endcapture %}
-            {{
-              settings.logo
-              | image_url: width: 600
-              | image_tag:
-                class: 'header__heading-logo motion-reduce',
-                widths: widths,
-                height: logo_height,
-                width: settings.logo_width,
-                alt: logo_alt,
-                sizes: sizes,
-                preload: true
-            }}
-          </div>
-        {%- else -%}
-          <span class="h2">{{ shop.name }}</span>
-        {%- endif -%}
+        <div class="header__heading-logo-wrapper">
+          <img
+            src="{{ 'mysnoozepod-logo-sharp.png' | asset_url }}"
+            class="header__heading-logo motion-reduce"
+            width="2172"
+            height="724"
+            alt="MySnoozePod.com"
+            loading="eager"
+            fetchpriority="high"
+          >
+        </div>
       </a>
     {%- if request.page_type == 'index' -%}
       </h1>
@@ -1211,10 +1204,12 @@
           <span class="header__snoozer-action-label">Take Snooze Assessment</span>
           <span class="header__snoozer-action-copy">Start with your sleep profile.</span>
         </a>
-        <a href="{{ snoozer_mattresses_url }}" class="header__snoozer-action">
-          <span class="header__snoozer-action-label">View Mattresses</span>
-          <span class="header__snoozer-action-copy">Compare feel, support, and cooling.</span>
-        </a>
+        {%- if snoozer_mattresses_url != blank -%}
+          <a href="{{ snoozer_mattresses_url }}" class="header__snoozer-action">
+            <span class="header__snoozer-action-label">View Mattresses</span>
+            <span class="header__snoozer-action-copy">Compare feel, support, and cooling.</span>
+          </a>
+        {%- endif -%}
         <a href="{{ snoozer_booking_url }}" class="header__snoozer-action">
           <span class="header__snoozer-action-label">Book a Snooze Session</span>
           <span class="header__snoozer-action-copy">Visit with a clearer starting point.</span>
@@ -1450,9 +1445,7 @@
     "@context": "http://schema.org",
     "@type": "Organization",
     "name": {{ shop.name | json }},
-    {% if settings.logo %}
-      "logo": {{ settings.logo | image_url: width: 500 | prepend: "https:" | json }},
-    {% endif %}
+    "logo": {{ 'mysnoozepod-logo-sharp.png' | asset_url | prepend: "https:" | json }},
     "sameAs": [
       {{ settings.social_twitter_link | json }},
       {{ settings.social_facebook_link | json }},
@@ -1501,6 +1494,7 @@
     const ASK_SNOOZER_TIMEOUT_MS = 15000;
     const SNOOZER_SESSION_STORAGE_KEY = 'mysnoozepod_snoozer_session_id';
     let lastPointerOpen = 0;
+    let activeSnoozerContext = {};
     const routes = {
       assessment: {{ snoozer_assessment_url | json }},
       mattresses: {{ snoozer_mattresses_url | json }},
@@ -1515,7 +1509,6 @@
     const knownDeadHrefs = ['#'];
     const knownStaticHrefs = [
       routes.assessment,
-      routes.mattresses,
       routes.booking,
       routes.expectations
     ].filter(Boolean);
@@ -1628,6 +1621,26 @@
       if (pathStartsWithSegment(pathname, '/search')) return 'search';
 
       return 'unknown';
+    }
+
+    function getSnoozerPageContext(trigger) {
+      const pathname = getCurrentPathname();
+      const productRoot = document.querySelector('[data-product-id][data-product-handle]');
+      const selectedVariantInput = productRoot && productRoot.querySelector('input[name="id"]');
+      const productPathParts = pathname.split('/').filter(Boolean);
+      const collectionFromPath = productPathParts[0] === 'collections' ? productPathParts[1] || '' : '';
+      const productFromPath = productPathParts[0] === 'products'
+        ? productPathParts[1] || ''
+        : (productPathParts[0] === 'collections' && productPathParts[2] === 'products' ? productPathParts[3] || '' : '');
+
+      return {
+        source: normalizeText(trigger && trigger.getAttribute('data-snoozer-source')),
+        shopifyProductId: normalizeText(trigger && trigger.getAttribute('data-snoozer-product-id')) || normalizeText(productRoot && productRoot.getAttribute('data-product-id')),
+        productHandle: normalizeText(trigger && trigger.getAttribute('data-snoozer-product-handle')) || normalizeText(productRoot && productRoot.getAttribute('data-product-handle')) || productFromPath,
+        selectedVariantId: normalizeText(selectedVariantInput && selectedVariantInput.value) || normalizeText(trigger && trigger.getAttribute('data-snoozer-variant-id')),
+        productType: normalizeText(trigger && trigger.getAttribute('data-snoozer-product-type')) || normalizeText(productRoot && productRoot.getAttribute('data-product-type')),
+        collectionHandle: normalizeText(trigger && trigger.getAttribute('data-snoozer-collection-handle')) || collectionFromPath
+      };
     }
 
     function createSnoozerSessionId() {
@@ -1908,13 +1921,7 @@
           }
         ],
         products: [],
-        collections: [
-          {
-            label: 'Shop Mattresses',
-            handle: 'mattresses',
-            href: routes.mattresses
-          }
-        ],
+        collections: [],
         pages: [
           {
             label: 'Book a Snooze Session',
@@ -2221,9 +2228,8 @@
       try {
         const storedIdentity = getStoredSnoozeIdentity();
         const pagePath = window.location && window.location.pathname ? window.location.pathname : '/';
-        const currentProductHandle = pagePath.startsWith('/products/')
-          ? pagePath.split('/').filter(Boolean)[1] || ''
-          : '';
+        const pageContext = Object.assign({}, getSnoozerPageContext(null), activeSnoozerContext);
+        const currentProductHandle = pageContext.productHandle || '';
         const sessionId = getSessionId();
         const response = await fetch(buildApiUrl('/ask-snoozer'), {
           method: 'POST',
@@ -2245,7 +2251,13 @@
               page_type: getPageType(),
               pageType: getPageType(),
               surface: 'shopify_header',
+              source: pageContext.source || 'shopify_header',
+              shopifyProductId: pageContext.shopifyProductId || undefined,
               currentProductHandle: currentProductHandle || undefined,
+              productHandle: currentProductHandle || undefined,
+              selectedVariantId: pageContext.selectedVariantId || undefined,
+              productType: pageContext.productType || undefined,
+              collectionHandle: pageContext.collectionHandle || undefined,
               shopperId: storedIdentity.shopperId || undefined,
               snoozeCode: storedIdentity.snoozeCode || undefined,
               accessCode: storedIdentity.accessCode || undefined,
@@ -2328,10 +2340,11 @@
       return shells.find((shell) => shell.offsetParent !== null) || shells[0] || null;
     }
 
-    function openVisibleShell(source) {
+    function openVisibleShell(source, context) {
       const visibleShell = getVisibleShell();
       if (!visibleShell) return;
 
+      activeSnoozerContext = Object.assign({}, context || {}, { source: normalizeText(source) || normalizeText(context && context.source) });
       openShell(visibleShell);
     }
 
@@ -2446,14 +2459,16 @@
 
       if (trigger) {
         const triggerShell = trigger.closest('[data-snoozer-shell]');
+        const triggerContext = getSnoozerPageContext(trigger);
         event.preventDefault();
 
         if (trigger.hasAttribute('data-snoozer-anchor-trigger') && triggerShell) {
+          activeSnoozerContext = triggerContext;
           toggleShell(triggerShell);
           return;
         }
 
-        openVisibleShell(trigger.getAttribute('data-snoozer-source'));
+        openVisibleShell(trigger.getAttribute('data-snoozer-source'), triggerContext);
         return;
       }
 

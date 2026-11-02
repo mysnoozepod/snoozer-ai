@@ -75,6 +75,13 @@
   .snoozepod-environment-{{ section.id }} .snoozepod-environment__media svg {
     width: 100%;
     height: 100%;
+  }
+
+  .snoozepod-environment-{{ section.id }} .snoozepod-environment__media img {
+    object-fit: cover;
+  }
+
+  .snoozepod-environment-{{ section.id }} .snoozepod-environment__media svg {
     object-fit: contain;
   }
 
@@ -260,6 +267,11 @@
             if linked_collection != blank
               if card_url == blank
                 assign card_url = linked_collection.url
+                if card_url == blank and linked_collection.handle != blank
+                  capture card_url
+                    echo routes.collections_url | append: '/' | append: linked_collection.handle
+                  endcapture
+                endif
               endif
               if card_image == blank and linked_collection.featured_image != blank
                 assign card_image = linked_collection.featured_image
@@ -283,9 +295,9 @@
                   {%- if card_image != blank -%}
                     {{
                       card_image
-                      | image_url: width: 320
+                      | image_url: width: 900
                       | image_tag:
-                        widths: '144, 200, 240, 320, 400',
+                        widths: '200, 320, 480, 640, 800, 900',
                         sizes: '(min-width: 750px) calc((100vw - 128px) / 3), calc((100vw - 52px) / 2)',
                         loading: 'lazy',
                         alt: card_title | escape

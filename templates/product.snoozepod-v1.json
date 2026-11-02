@@ -1,0 +1,137 @@
+{
+  "sections": {
+    "hero": {
+      "type": "snoozepod-product-hero",
+      "blocks": {
+        "vendor": {
+          "type": "text",
+          "settings": {
+            "text": "{{ product.vendor }}",
+            "text_style": "uppercase"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {}
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "variant_picker": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button",
+            "swatch_shape": "circle"
+          }
+        },
+        "feel": {
+          "type": "product_feel",
+          "settings": {
+            "show_editor_placeholder": true
+          }
+        },
+        "booking": {
+          "type": "session_cta",
+          "settings": {
+            "label": "Book a Snooze Session",
+            "link": "/pages/book-a-snooze-session"
+          }
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "snoozer": {
+          "type": "snoozer_cta",
+          "settings": {
+            "label": "Ask Snoozer About This Product"
+          }
+        },
+        "showroom": {
+          "type": "showroom_location",
+          "settings": {
+            "show_editor_placeholder": true
+          }
+        }
+      },
+      "block_order": [
+        "vendor",
+        "title",
+        "price",
+        "variant_picker",
+        "feel",
+        "booking",
+        "buy_buttons",
+        "snoozer",
+        "showroom"
+      ],
+      "settings": {
+        "enable_sticky_info": true,
+        "color_scheme": "scheme-1",
+        "media_size": "medium",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "gallery_layout": "thumbnail_slider",
+        "image_zoom": "lightbox",
+        "mobile_thumbnails": "show",
+        "hide_variants": true,
+        "enable_video_looping": false
+      }
+    },
+    "information": {
+      "type": "snoozepod-product-information-v1",
+      "blocks": {
+        "details": {
+          "type": "details",
+          "settings": {
+            "heading": "Product Details & Specifications",
+            "content": "",
+            "applies_to": "all"
+          }
+        },
+        "warranty": {
+          "type": "warranty",
+          "settings": {
+            "heading": "Warranty",
+            "content": "",
+            "applies_to": "all"
+          }
+        },
+        "compatibility": {
+          "type": "compatibility",
+          "settings": {
+            "heading": "Compatibility & Sleep-System Information",
+            "content": "",
+            "applies_to": "all"
+          }
+        },
+        "delivery": {
+          "type": "delivery_returns",
+          "settings": {
+            "heading": "Delivery & Returns",
+            "content": "",
+            "applies_to": "all"
+          }
+        }
+      },
+      "block_order": [
+        "details",
+        "warranty",
+        "compatibility",
+        "delivery"
+      ],
+      "settings": {
+        "heading": "",
+        "show_editor_placeholders": true
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "information"
+  ]
+}

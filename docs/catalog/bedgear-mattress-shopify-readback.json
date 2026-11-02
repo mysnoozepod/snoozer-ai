@@ -1,0 +1,672 @@
+{
+  "schemaVersion": "1.0",
+  "verifiedAt": "2026-11-01T11:21:35.494Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "apiVersion": "2025-10",
+  "publicationGate": "ALL_PRODUCTS_VERIFIED_DRAFT_AND_UNPUBLISHED_BY_THIS_SCRIPT",
+  "collections": [
+    {
+      "title": "Mattresses",
+      "handle": "mattresses",
+      "templateSuffix": "snoozepod-v1",
+      "shopifyCollectionId": "302103527485"
+    }
+  ],
+  "products": [
+    {
+      "title": "S7 — 12\" Memory Foam Mattress",
+      "handle": "bedgear-s7-12-memory-foam",
+      "status": "DRAFT",
+      "templateSuffix": "product-pod-builder",
+      "shopifyProductId": "8100282794045",
+      "category": null,
+      "collections": [
+        {
+          "handle": "mattresses",
+          "shopifyCollectionId": "302103527485"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGA025901",
+          "barcode": "810112141078",
+          "price": "1249.99",
+          "shopifyVariantId": "44128361873469",
+          "options": {
+            "Size": "Twin"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-s7-12-memory-foam-twin",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA025902",
+          "barcode": "810112141085",
+          "price": "1299.99",
+          "shopifyVariantId": "44128361906237",
+          "options": {
+            "Size": "Twin XL"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-s7-12-memory-foam-twin-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA025903",
+          "barcode": "810112141092",
+          "price": "1499.99",
+          "shopifyVariantId": "44128361939005",
+          "options": {
+            "Size": "Full"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-s7-12-memory-foam-full",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA025905",
+          "barcode": "810112141108",
+          "price": "1599.99",
+          "shopifyVariantId": "44128361971773",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-s7-12-memory-foam-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA025955",
+          "barcode": "810145832844",
+          "price": "1799.99",
+          "shopifyVariantId": "44128362004541",
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head",
+            "compatibility_key": "bedgear-s7-12-memory-foam-split-head-queen"
+          }
+        },
+        {
+          "sku": "BGA025906",
+          "barcode": "810112141115",
+          "price": "1899.99",
+          "shopifyVariantId": "44128362037309",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-s7-12-memory-foam-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA025907",
+          "barcode": "810112141122",
+          "price": "1899.99",
+          "shopifyVariantId": "44128362070077",
+          "options": {
+            "Size": "Cal King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-s7-12-memory-foam-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA025965",
+          "barcode": "810145832851",
+          "price": "2299.99",
+          "shopifyVariantId": "44128362102845",
+          "options": {
+            "Size": "Split Head King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-s7-12-memory-foam-split-head-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGA025975",
+          "barcode": "810145832868",
+          "price": "2299.99",
+          "shopifyVariantId": "44128362135613",
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-s7-12-memory-foam-split-head-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGA025908",
+          "barcode": "810112141085",
+          "price": "2599.98",
+          "shopifyVariantId": "44128362168381",
+          "options": {
+            "Size": "Split King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-s7-12-memory-foam-split-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        }
+      ],
+      "contract": {
+        "showroom_representation": "{\"type\":\"full_display\",\"displayCount\":1,\"locationStatus\":\"PENDING_LOCATION\",\"locations\":[]}",
+        "model": "S7",
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"mattress\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "H6 — 12\" Hybrid Mattress",
+      "handle": "bedgear-h6-12-hybrid",
+      "status": "DRAFT",
+      "templateSuffix": "product-pod-builder",
+      "shopifyProductId": "8100282826813",
+      "category": null,
+      "collections": [
+        {
+          "handle": "mattresses",
+          "shopifyCollectionId": "302103527485"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGA121W10",
+          "barcode": "810212902166",
+          "price": "1799.00",
+          "shopifyVariantId": "44128362201149",
+          "options": {
+            "Size": "Twin"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-h6-12-hybrid-twin",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA121W20",
+          "barcode": "810212902173",
+          "price": "1849.00",
+          "shopifyVariantId": "44128362233917",
+          "options": {
+            "Size": "Twin XL"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-h6-12-hybrid-twin-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA121W30",
+          "barcode": "810212902180",
+          "price": "1899.00",
+          "shopifyVariantId": "44128362266685",
+          "options": {
+            "Size": "Full"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-h6-12-hybrid-full",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA121W50",
+          "barcode": "810212902197",
+          "price": "1999.00",
+          "shopifyVariantId": "44128362299453",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-h6-12-hybrid-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA121W55",
+          "barcode": "810212902203",
+          "price": "2399.00",
+          "shopifyVariantId": "44128362332221",
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-h6-12-hybrid-split-head-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGA121W60",
+          "barcode": "810212902210",
+          "price": "2499.00",
+          "shopifyVariantId": "44128362364989",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard",
+            "compatibility_key": "bedgear-h6-12-hybrid-king"
+          }
+        },
+        {
+          "sku": "BGA121W70",
+          "barcode": "810212902227",
+          "price": "2499.00",
+          "shopifyVariantId": "44128362397757",
+          "options": {
+            "Size": "Cal King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-h6-12-hybrid-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGA121W65",
+          "barcode": "810212902234",
+          "price": "2899.00",
+          "shopifyVariantId": "44128362430525",
+          "options": {
+            "Size": "Split Head King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-h6-12-hybrid-split-head-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGA121W75",
+          "barcode": "810212902241",
+          "price": "2899.00",
+          "shopifyVariantId": "44128362463293",
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-h6-12-hybrid-split-head-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGA121W80",
+          "barcode": "810212902258",
+          "price": "3698.00",
+          "shopifyVariantId": "44128362496061",
+          "options": {
+            "Size": "Split King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-h6-12-hybrid-split-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        }
+      ],
+      "contract": {
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"mattress\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED",
+        "showroom_representation": "{\"type\":\"full_display\",\"displayCount\":1,\"locationStatus\":\"PENDING_LOCATION\",\"locations\":[]}",
+        "model": "H6"
+      }
+    },
+    {
+      "title": "M3 — 12\" Dual Comfort Mattress",
+      "handle": "bedgear-m3-12-dual-comfort",
+      "status": "DRAFT",
+      "templateSuffix": "product-pod-builder",
+      "shopifyProductId": "8100282892349",
+      "category": null,
+      "collections": [
+        {
+          "handle": "mattresses",
+          "shopifyCollectionId": "302103527485"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGM301W21",
+          "barcode": null,
+          "price": "2099.00",
+          "shopifyVariantId": "44128362528829",
+          "options": {
+            "Size": "Twin XL"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m3-12-dual-comfort-twin-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM301W51",
+          "barcode": null,
+          "price": "2499.00",
+          "shopifyVariantId": "44128362561597",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m3-12-dual-comfort-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM301W55",
+          "barcode": null,
+          "price": "2999.00",
+          "shopifyVariantId": "44128362594365",
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m3-12-dual-comfort-split-head-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGM301W61",
+          "barcode": null,
+          "price": "3199.00",
+          "shopifyVariantId": "44128362627133",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m3-12-dual-comfort-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM301W71",
+          "barcode": null,
+          "price": "3199.00",
+          "shopifyVariantId": "44128362659901",
+          "options": {
+            "Size": "Cal King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m3-12-dual-comfort-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM301W65",
+          "barcode": null,
+          "price": "3799.00",
+          "shopifyVariantId": "44128362692669",
+          "options": {
+            "Size": "Split Head King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m3-12-dual-comfort-split-head-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGM301W75",
+          "barcode": null,
+          "price": "3799.00",
+          "shopifyVariantId": "44128362725437",
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "contract": {
+            "sleep_geometry": "split_head",
+            "compatibility_key": "bedgear-m3-12-dual-comfort-split-head-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE"
+          }
+        },
+        {
+          "sku": "BGM301W91",
+          "barcode": null,
+          "price": "4198.00",
+          "shopifyVariantId": "44128362758205",
+          "options": {
+            "Size": "Split Cal King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m3-12-dual-comfort-split-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        }
+      ],
+      "contract": {
+        "configuration_readiness": "PENDING_VENDOR_CONFIGURATION_MAP",
+        "comfort_options": "{\"verifiedComponentFeelLabels\":[\"0.0\",\"1.0\",\"2.0\",\"3.0\"],\"requestedSelectionMode\":\"independent_left_right\",\"verificationStatus\":\"PENDING_APPROVED_COMPLETE_CONFIGURATION_MAP\"}",
+        "showroom_representation": "{\"type\":\"full_display\",\"displayCount\":2,\"locationStatus\":\"PENDING_LOCATION\",\"locations\":[]}",
+        "model": "M3",
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"mattress\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    },
+    {
+      "title": "M5 — 14\" Dual Comfort Mattress",
+      "handle": "bedgear-m5-14-dual-comfort",
+      "status": "DRAFT",
+      "templateSuffix": "product-pod-builder",
+      "shopifyProductId": "8100282925117",
+      "category": null,
+      "collections": [
+        {
+          "handle": "mattresses",
+          "shopifyCollectionId": "302103527485"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "BGM506W21",
+          "barcode": null,
+          "price": "3499.99",
+          "shopifyVariantId": "44128370950205",
+          "options": {
+            "Size": "Twin XL"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m5-14-dual-comfort-twin-xl",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM506W51",
+          "barcode": null,
+          "price": "3999.99",
+          "shopifyVariantId": "44128370982973",
+          "options": {
+            "Size": "Queen"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m5-14-dual-comfort-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM506W61",
+          "barcode": null,
+          "price": "4799.99",
+          "shopifyVariantId": "44128371015741",
+          "options": {
+            "Size": "King"
+          },
+          "contract": {
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-king",
+            "fulfillment_readiness": "PENDING"
+          }
+        },
+        {
+          "sku": "BGM506W71",
+          "barcode": null,
+          "price": "4799.99",
+          "shopifyVariantId": "44128371048509",
+          "options": {
+            "Size": "Cal King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m5-14-dual-comfort-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "standard"
+          }
+        },
+        {
+          "sku": "BGM506W55",
+          "barcode": null,
+          "price": "4499.99",
+          "shopifyVariantId": "44128371081277",
+          "options": {
+            "Size": "Split Head Queen"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m5-14-dual-comfort-split-head-queen",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGM506W65",
+          "barcode": null,
+          "price": "5299.99",
+          "shopifyVariantId": "44128371114045",
+          "options": {
+            "Size": "Split Head King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m5-14-dual-comfort-split-head-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGM506W75",
+          "barcode": null,
+          "price": "5299.99",
+          "shopifyVariantId": "44128371146813",
+          "options": {
+            "Size": "Split Head Cal King"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m5-14-dual-comfort-split-head-cal-king",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "split_head"
+          }
+        },
+        {
+          "sku": "BGM506W81",
+          "barcode": null,
+          "price": "6999.99",
+          "shopifyVariantId": "44128371179581",
+          "options": {
+            "Size": "Twin XL x 2"
+          },
+          "contract": {
+            "compatibility_key": "bedgear-m5-14-dual-comfort-twin-xl-x-2",
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split"
+          }
+        },
+        {
+          "sku": "BGM506W91",
+          "barcode": null,
+          "price": "6999.99",
+          "shopifyVariantId": "44128371212349",
+          "options": {
+            "Size": "Split Cal King"
+          },
+          "contract": {
+            "fulfillment_readiness": "PENDING",
+            "price_verification_status": "HISTORICAL_REFERENCE",
+            "sleep_geometry": "full_split",
+            "compatibility_key": "bedgear-m5-14-dual-comfort-split-cal-king"
+          }
+        }
+      ],
+      "contract": {
+        "configuration_readiness": "PENDING_VENDOR_CONFIGURATION_MAP",
+        "comfort_options": "{\"verifiedComponentFeelLabels\":[\"0.0\",\"1.0\",\"2.0\",\"3.0\"],\"requestedSelectionMode\":\"independent_left_right\",\"verificationStatus\":\"PENDING_APPROVED_COMPLETE_CONFIGURATION_MAP\"}",
+        "showroom_representation": "{\"type\":\"full_display\",\"displayCount\":2,\"locationStatus\":\"PENDING_LOCATION\",\"locations\":[]}",
+        "model": "M5",
+        "owner_content_status": "PENDING",
+        "builder_roles": "[\"mattress\"]",
+        "publication_readiness": "BLOCKED",
+        "assortment_status": "APPROVED"
+      }
+    }
+  ]
+}

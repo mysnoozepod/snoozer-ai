@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MySnoozePod storefront skeleton preview</title>
+  <style>
+    *{box-sizing:border-box} body{margin:0;background:#fff;color:#071942;font-family:Arial,sans-serif} a{color:inherit;text-decoration:none}
+    .proof{padding:8px 20px;background:#dce9ff;color:#173a70;font-size:11px;font-weight:700;letter-spacing:.1em;text-align:center}
+    .header{height:76px;padding:0 42px;display:flex;align-items:center;gap:38px;border-bottom:1px solid #dfe5ef;background:#fff}.logo{font-size:22px;font-weight:800;white-space:nowrap}.logo span{color:#3975c6}.nav{display:flex;align-items:stretch;gap:24px;height:100%;font-size:14px}.nav>a,.nav-item{display:flex;align-items:center;white-space:nowrap}.nav-item{position:relative}.nav-item>a:after{content:'⌄';margin-left:6px}.actions{margin-left:auto;display:flex;gap:10px}.button{display:inline-flex;padding:12px 17px;border-radius:999px;background:#071942;color:white;font-weight:700;font-size:13px}.button.secondary{background:#e8f0fc;color:#071942}
+    .mega{display:none;position:absolute;z-index:5;top:66px;left:-220px;width:760px;padding:24px;border:1px solid #d9e0eb;border-radius:18px;background:white;box-shadow:0 18px 60px rgba(7,25,66,.16);grid-template-columns:repeat(3,1fr);gap:14px}.view-nav .sleep .mega{display:grid}.mega h3{margin:0 0 10px;font-size:13px}.mega a{display:block;padding:8px 0;color:#475772;font-size:13px}.mega-card{padding:16px;border-radius:14px;background:#f2f6fc}
+    .hero{margin:22px auto 14px;max-width:1360px;padding:46px;border-radius:28px;background:linear-gradient(120deg,#eef5ff,#f8fafc)}.crumbs{font-size:12px;color:#64748b}.hero h1{margin:16px 0 10px;font-size:44px;letter-spacing:-.04em}.hero p{max-width:660px;margin:0;color:#52627d;line-height:1.55}.category-row{max-width:1360px;margin:0 auto;padding:12px 0 20px;display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.category{padding:17px;border:1px solid #dce3ee;border-radius:15px;font-size:13px;font-weight:700}.grid-head{max-width:1360px;margin:0 auto;padding:18px 0;display:flex;justify-content:space-between;border-top:1px solid #e3e8f0}.products{max-width:1360px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding-bottom:50px}.product{border:1px solid #dfe5ee;border-radius:20px;overflow:hidden}.product-image{height:220px;background:linear-gradient(135deg,#e2eaf7,#f7f9fc);display:grid;place-items:center;color:#6b7b93;font-weight:800}.product-copy{padding:18px}.product-copy h2{margin:0 0 8px;font-size:17px}.product-copy p{margin:0 0 12px;color:#65748d;font-size:13px}.tag{display:inline-block;padding:6px 9px;border-radius:999px;background:#e9f1fd;font-size:11px;font-weight:700}
+    .hamburger,.drawer{display:none}
+    @media(max-width:700px){.proof{font-size:9px}.header{height:64px;padding:0 16px}.logo{font-size:18px}.nav,.actions{display:none}.hamburger{display:block;margin-left:auto;border:0;background:transparent;font-size:25px}.drawer{position:fixed;z-index:10;inset:0 0 0 42px;padding:24px;background:#fff;box-shadow:-20px 0 50px rgba(7,25,66,.2);overflow:auto}.view-mobile .drawer{display:block}.drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.drawer h2{font-size:15px;margin:22px 0 8px}.drawer a{display:block;padding:10px 0;border-bottom:1px solid #edf0f5;font-size:14px}.drawer .sub{padding-left:14px;color:#52627d}.hero{margin:14px 12px;padding:24px 20px;border-radius:20px}.hero h1{font-size:32px}.category-row{padding:8px 12px 18px;display:flex;overflow:hidden}.category{min-width:146px}.grid-head{margin:0 12px}.products{grid-template-columns:repeat(2,1fr);gap:10px;padding:0 12px}.product-image{height:135px}.product-copy{padding:12px}.product-copy h2{font-size:14px}}
+  </style>
+</head>
+<body>
+  <div class="proof">LOCAL STRUCTURE PREVIEW · DRAFT CATALOG · NOT PUBLISHED</div>
+  <header class="header">
+    <div class="logo">My<span>SnoozePod</span></div>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#">Home</a><a href="#">Mattresses</a><a href="#">Adjustable Bases</a>
+      <div class="nav-item sleep"><a href="#">Sleep Essentials</a><div class="mega">
+        <div class="mega-card"><h3>Pillows</h3><a href="#">Shop All Pillows</a><a href="#">Zoned</a><a href="#">Filled</a><a href="#">Foam</a><a href="#">Temperature Regulating</a></div>
+        <div class="mega-card"><h3>Bedding</h3><a href="#">Sheets</a><a href="#">Mattress Protection</a><a href="#">Comforters</a><a href="#">Cooling &amp; Bedding</a></div>
+        <div class="mega-card"><h3>Complete the system</h3><a href="#">Mattress Toppers</a><a href="#">Bedroom Furniture</a><a href="#">Book a Snooze Session</a></div>
+      </div></div>
+      <div class="nav-item"><a href="#">Bedroom Furniture</a></div><div class="nav-item"><a href="#">Your Showroom Visit</a></div><a href="#">Our Story</a>
+    </nav>
+    <div class="actions"><a class="button secondary" href="#">Ask Snoozer</a><a class="button" href="#">Book a Snooze Session</a></div>
+    <button class="hamburger" aria-label="Open menu">☰</button>
+  </header>
+  <aside class="drawer" aria-label="Mobile menu"><div class="drawer-head"><div class="logo">My<span>SnoozePod</span></div><strong>×</strong></div><a href="#">Home</a><a href="#">Mattresses</a><a href="#">Adjustable Bases</a><h2>Sleep Essentials</h2><a class="sub" href="#">Pillows</a><a class="sub" href="#">Zoned · Filled · Foam · Temperature Regulating</a><a class="sub" href="#">Sheets</a><a class="sub" href="#">Mattress Protection</a><a class="sub" href="#">Comforters</a><a class="sub" href="#">Cooling &amp; Bedding</a><a class="sub" href="#">Mattress Toppers</a><h2>Bedroom Furniture</h2><a class="sub" href="#">Headboards</a><a class="sub" href="#">Platform Bases</a><h2>Your Showroom Visit</h2><a class="sub" href="#">Book a Snooze Session</a><a class="sub" href="#">Mini Snooze Assessment</a><a class="sub" href="#">Showroom Information</a><a href="#">Our Story</a></aside>
+  <main>
+    <section class="hero"><div class="crumbs">Home / Mattresses</div><h1>Mattresses</h1><p>Explore the four approved mattress families. Products remain Draft while configuration, content, and publication gates are completed.</p></section>
+    <section class="category-row"><div class="category">Mattresses</div><div class="category">Adjustable Bases</div><div class="category">Pillows</div><div class="category">Sheets</div><div class="category">Mattress Protection</div></section>
+    <div class="grid-head"><strong>4 products</strong><span>Filter &amp; sort</span></div>
+    <section class="products"><article class="product"><div class="product-image">S7</div><div class="product-copy"><h2>S7 — 12&quot; Memory Foam Mattress</h2><p>Memory foam · showroom display</p><span class="tag">View details</span></div></article><article class="product"><div class="product-image">H6</div><div class="product-copy"><h2>H6 — 12&quot; Hybrid Mattress</h2><p>Hybrid · showroom display</p><span class="tag">View details</span></div></article><article class="product"><div class="product-image">M3</div><div class="product-copy"><h2>M3 — 12&quot; Dual Comfort Mattress</h2><p>Modular comfort · 2 displays</p><span class="tag">View details</span></div></article><article class="product"><div class="product-image">M5</div><div class="product-copy"><h2>M5 — 14&quot; Dual Comfort Mattress</h2><p>Modular comfort · 2 displays</p><span class="tag">View details</span></div></article></section>
+  </main>
+  <script>document.body.classList.add('view-' + (new URLSearchParams(location.search).get('view') || 'collection'));</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{% comment %}
+  Optional Product Card v1 details. Uses only Shopify product data and verified
+  metafields; missing optional data stays hidden.
+
+  Accepts:
+  - card_product: Product object
+{% endcomment %}
+
+<div class="snoozepod-card-details">
+  {% render 'snoozepod-product-feel', feel_product: card_product, compact: true %}
+  {% render 'snoozepod-showroom-location', showroom_product: card_product, compact: true %}
+  <a class="snoozepod-card-details__link" href="{{ card_product.url }}">
+    View Details
+    <span class="visually-hidden">: {{ card_product.title | escape }}</span>
+  </a>
+</div>
