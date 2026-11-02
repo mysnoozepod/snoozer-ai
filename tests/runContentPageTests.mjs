@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { contentPages } from '../content/shopify-content-pages.mjs';
 import { contentPageImageGroups, contentPageImages } from '../content/content-page-images.mjs';
+import { guideHub } from '../content/content-navigation.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const READBACK = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs', 'content-pages', 'CONTENT_PAGES_SHOPIFY_READBACK.json'), 'utf8'));
@@ -10,9 +11,10 @@ const MAIN_PAGE = fs.readFileSync(path.join(ROOT, 'sections', 'main-page.liquid'
 
 assert.equal(contentPages.length, 50, 'exactly 50 content pages are defined');
 assert.equal(new Set(contentPages.map((item) => item.handle)).size, 50, 'all handles are unique');
-assert.deepEqual(READBACK.summary, { expected: 50, verified: 50, published: 50 }, 'Shopify readback verifies all 50 published pages');
+assert.deepEqual(READBACK.summary, { expected: 51, verified: 51, published: 51 }, 'Shopify readback verifies 50 guides and the published hub page');
 assert.equal(contentPageImageGroups.length, 10, 'the editorial image library has ten topic-specific image groups');
-assert.equal(contentPageImages.size, 50, 'all 50 content pages have an editorial image assignment');
+assert.equal(contentPageImages.size, 51, 'all 50 guides and the hub page have an editorial image assignment');
+assert.equal(contentPageImages.get(guideHub.handle)?.asset, 'content-guide-sleep-system.png', 'the Sleep Guides hub uses the complete-system editorial image');
 
 const handles = new Set(contentPages.map((item) => item.handle));
 const readbackByHandle = new Map(READBACK.pages.map((item) => [item.handle, item]));
@@ -69,5 +71,6 @@ async function verifyLivePage(item) {
 }
 
 for (const item of contentPages) await verifyLivePage(item);
+await verifyLivePage(guideHub);
 
-console.log('Content pages: PASS (50 published Shopify pages, 50 image mappings, 10 editorial assets, protected storefront routes, internal links, neutral comfort language, and sharp-logo contract).');
+console.log('Content pages: PASS (50 published guides, one hub page, 51 image mappings, 10 editorial assets, protected storefront routes, internal links, neutral comfort language, and sharp-logo contract).');

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-11-02T02:31:10.035Z",
+  "generatedAt": "2026-11-02T23:03:49.259Z",
   "shop": "mysnoozepodtest.myshopify.com",
   "catalogBaseline": {
     "products": 43,
@@ -1712,10 +1712,6 @@
     "title": "Main menu",
     "items": [
       {
-        "title": "Home",
-        "type": "FRONTPAGE"
-      },
-      {
         "title": "Mattresses",
         "type": "COLLECTION",
         "collection": "mattresses",
@@ -1744,6 +1740,33 @@
             "title": "M5",
             "type": "COLLECTION",
             "collection": "m5"
+          },
+          {
+            "title": "Mattress Buying Guides",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/how-to-choose-the-right-mattress",
+            "items": [
+              {
+                "title": "How to Choose the Right Mattress",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/how-to-choose-the-right-mattress"
+              },
+              {
+                "title": "Understanding Mattress Comfort",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/understanding-mattress-comfort-soft-to-firm"
+              },
+              {
+                "title": "Memory Foam vs. Hybrid",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/memory-foam-vs-hybrid-mattresses"
+              },
+              {
+                "title": "Benefits of Dual Comfort",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/benefits-of-dual-comfort-mattresses"
+              }
+            ]
           }
         ]
       },
@@ -1771,6 +1794,33 @@
             "title": "Flex SH",
             "type": "COLLECTION",
             "collection": "flex-sh"
+          },
+          {
+            "title": "Adjustable Base Guides",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/how-to-choose-an-adjustable-base",
+            "items": [
+              {
+                "title": "Benefits of an Adjustable Base",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/benefits-of-an-adjustable-base"
+              },
+              {
+                "title": "How to Choose an Adjustable Base",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/how-to-choose-an-adjustable-base"
+              },
+              {
+                "title": "Matching a Mattress and Base",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/how-to-match-a-mattress-with-an-adjustable-base"
+              },
+              {
+                "title": "Split-Head Adjustable Systems",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/understanding-split-head-adjustable-sleep-systems"
+              }
+            ]
           }
         ]
       },
@@ -1830,6 +1880,33 @@
             "title": "Mattress Toppers",
             "type": "COLLECTION",
             "collection": "mattress-toppers"
+          },
+          {
+            "title": "Bedding Guides",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/how-to-find-the-right-pillow",
+            "items": [
+              {
+                "title": "How to Find the Right Pillow",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/how-to-find-the-right-pillow"
+              },
+              {
+                "title": "How Mattress Protectors Help",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/how-mattress-protectors-help-protect-your-bed"
+              },
+              {
+                "title": "Choosing Sheets",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/choosing-sheets-for-standard-and-split-head-mattresses"
+              },
+              {
+                "title": "Choosing a Comforter Weight",
+                "type": "HTTP",
+                "url": "https://mysnoozepod.com/pages/choosing-the-right-comforter-weight"
+              }
+            ]
           }
         ]
       },
@@ -1851,31 +1928,93 @@
         ]
       },
       {
+        "title": "Sleep Guides",
+        "type": "HTTP",
+        "url": "https://mysnoozepod.com/pages/sleep-guides",
+        "items": [
+          {
+            "title": "Explore All Sleep Guides",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/sleep-guides"
+          },
+          {
+            "title": "The SnoozePod Experience",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/sleep-guides#snoozepod-experience"
+          },
+          {
+            "title": "Building a Sleep System",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/sleep-guides#building-a-sleep-system"
+          },
+          {
+            "title": "Dual Comfort and Couples",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/sleep-guides#dual-comfort-and-couples"
+          },
+          {
+            "title": "Mattress Education",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/sleep-guides#mattress-education"
+          },
+          {
+            "title": "Adjustable Bases and Compatibility",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/sleep-guides#adjustable-bases-and-compatibility"
+          },
+          {
+            "title": "Pillows, Protection, and Bedding",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/sleep-guides#pillows-protection-and-bedding"
+          }
+        ]
+      },
+      {
         "title": "Your Showroom Visit",
-        "type": "PAGE",
-        "resourceId": "gid://shopify/Page/91074658365",
+        "type": "HTTP",
+        "url": "https://mysnoozepod.com/pages/how-the-mysnoozepod-showroom-works",
         "items": [
           {
             "title": "Book a Snooze Session",
-            "type": "PAGE",
-            "resourceId": "gid://shopify/Page/91074658365"
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/book-a-snooze-session"
           },
           {
             "title": "Mini Snooze Assessment",
-            "type": "PAGE",
-            "resourceId": "gid://shopify/Page/92321087549"
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/snooze-assessment"
           },
           {
-            "title": "Showroom Information",
-            "type": "PAGE",
-            "resourceId": "gid://shopify/Page/91074658365"
+            "title": "How the Showroom Works",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/how-the-mysnoozepod-showroom-works"
+          },
+          {
+            "title": "What Is a Snooze Session?",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/what-is-a-snooze-session"
+          },
+          {
+            "title": "Prepare for Your Visit",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/how-to-prepare-for-your-showroom-visit"
+          },
+          {
+            "title": "Virtual Snooze Sessions",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/how-a-virtual-snooze-session-works"
+          },
+          {
+            "title": "What Happens After",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/what-happens-after-your-snooze-session"
           }
         ]
       },
       {
         "title": "Our Story",
-        "type": "PAGE",
-        "resourceId": "gid://shopify/Page/91048247357"
+        "type": "HTTP",
+        "url": "https://mysnoozepod.com/pages/about-us"
       }
     ]
   },

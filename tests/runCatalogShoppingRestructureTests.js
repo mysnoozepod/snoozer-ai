@@ -11,6 +11,8 @@ const test = (name, fn) => tests.push({ name, fn });
 
 const manifest = readJson('docs/catalog/CATALOG_SHOPPING_RESTRUCTURE_MANIFEST.json');
 const readback = readJson('docs/catalog/catalog-shopping-restructure-shopify-readback.json');
+const navigationReadbackPath = path.join(ROOT, 'docs/content-pages/CONTENT_NAVIGATION_SHOPIFY_READBACK.json');
+const navigationReadback = fs.existsSync(navigationReadbackPath) ? JSON.parse(fs.readFileSync(navigationReadbackPath, 'utf8')) : null;
 const baseline = readJson('docs/catalog/catalog-shopping-restructure-before.json');
 const hero = read('sections/snoozepod-product-hero.liquid');
 const homepage = read('templates/index.json');
@@ -70,11 +72,16 @@ test('all 25 required collections are automated by one exact collection tag', ()
 });
 
 test('main navigation preserves existing destinations and adds mattress/base family destinations', () => {
-  const menu = readback.mainMenu;
+  const menu = navigationReadback?.menus.find((item) => item.handle === 'main-menu') || readback.mainMenu;
   const mattresses = menu.items.find((item) => item.title === 'Mattresses');
   const bases = menu.items.find((item) => item.title === 'Adjustable Bases');
-  assert.deepEqual(mattresses.items.map((item) => item.title), ['Shop All Mattresses', 'S7', 'H6', 'M3', 'M5']);
-  assert.deepEqual(bases.items.map((item) => item.title), ['Shop All Adjustable Bases', 'Flex L', 'Flex LSX', 'Flex SH']);
+  assert.deepEqual(mattresses.items.slice(0, 5).map((item) => item.title), ['Shop All Mattresses', 'S7', 'H6', 'M3', 'M5']);
+  assert.deepEqual(bases.items.slice(0, 4).map((item) => item.title), ['Shop All Adjustable Bases', 'Flex L', 'Flex LSX', 'Flex SH']);
+  if (navigationReadback) {
+    assert(mattresses.items.find((item) => item.title === 'Mattress Buying Guides'));
+    assert(bases.items.find((item) => item.title === 'Adjustable Base Guides'));
+    assert(menu.items.find((item) => item.title === 'Sleep Guides'));
+  }
   assert(menu.items.find((item) => item.title === 'Your Showroom Visit'));
   assert(menu.items.find((item) => item.title === 'Our Story'));
 });

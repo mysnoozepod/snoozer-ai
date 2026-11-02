@@ -29,6 +29,122 @@
     aspect-ratio: 1672 / 941;
     object-fit: cover;
   }
+
+  .support-page__card {
+    position: relative;
+  }
+
+  .content-guide-directory {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.6rem;
+    margin-top: 2.4rem;
+  }
+
+  .content-guide-directory__group {
+    scroll-margin-top: 14rem;
+    padding: clamp(1.8rem, 3vw, 2.8rem);
+    border: 0.1rem solid rgba(var(--color-foreground), 0.1);
+    border-radius: 1.4rem;
+    background: rgba(var(--color-background), 0.72);
+  }
+
+  .content-guide-directory__group h2 {
+    margin-top: 0;
+  }
+
+  .content-guide-directory__group ul {
+    display: grid;
+    gap: 0.8rem;
+    margin-bottom: 0;
+    padding-left: 1.8rem;
+  }
+
+  .content-guide-directory__group a,
+  .content-guide-discovery__links a {
+    text-underline-offset: 0.3rem;
+  }
+
+  .content-guide-after {
+    display: grid;
+    gap: 1.6rem;
+    margin-top: clamp(2.4rem, 5vw, 4.8rem);
+  }
+
+  .content-guide-discovery,
+  .content-guide-conversion {
+    border-radius: 1.6rem;
+  }
+
+  .content-guide-discovery {
+    padding: clamp(2rem, 4vw, 3.2rem);
+    border: 0.1rem solid rgba(var(--color-foreground), 0.1);
+    background: rgba(var(--color-foreground), 0.035);
+  }
+
+  .content-guide-discovery h2,
+  .content-guide-conversion h2 {
+    margin: 0 0 0.8rem;
+  }
+
+  .content-guide-discovery p,
+  .content-guide-conversion p {
+    margin: 0;
+  }
+
+  .content-guide-discovery__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1.6rem;
+  }
+
+  .content-guide-discovery__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 4rem;
+    padding: 0.8rem 1.4rem;
+    border: 0.1rem solid rgba(var(--color-foreground), 0.14);
+    border-radius: 999px;
+    color: rgb(var(--color-foreground));
+    text-decoration: none;
+    background: rgb(var(--color-background));
+  }
+
+  .content-guide-discovery__links a:hover {
+    border-color: rgba(var(--color-foreground), 0.35);
+    transform: translateY(-0.1rem);
+  }
+
+  .content-guide-conversion {
+    padding: clamp(2.4rem, 5vw, 4rem);
+    color: #fff;
+    background: linear-gradient(135deg, #071d49 0%, #12386f 72%, #185a87 100%);
+    box-shadow: 0 1.6rem 4rem rgba(7, 29, 73, 0.18);
+  }
+
+  .content-guide-conversion__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .content-guide-conversion .button--secondary {
+    --color-button: 255, 255, 255;
+    --color-button-text: 7, 29, 73;
+  }
+
+  @media screen and (max-width: 749px) {
+    .content-guide-directory {
+      grid-template-columns: 1fr;
+    }
+
+    .content-guide-conversion__actions,
+    .content-guide-conversion__actions .button {
+      width: 100%;
+    }
+  }
 {%- endstyle -%}
 
 {%- liquid
@@ -54,7 +170,7 @@
     when 'how-a-virtual-snooze-session-works'
       assign content_image_asset = 'content-guide-virtual-session.png'
       assign content_image_alt = 'A virtual sleep consultation taking place in a comfortable bedroom'
-    when 'what-makes-a-complete-sleep-system', 'how-your-sleep-system-components-work-together', 'how-to-choose-the-right-mattress', 'how-to-choose-the-right-mattress-size', 'showroom-comfort-vs-ordered-configuration', 'questions-to-ask-before-buying-a-mattress', 'when-is-it-time-to-replace-your-mattress'
+    when 'sleep-guides', 'what-makes-a-complete-sleep-system', 'how-your-sleep-system-components-work-together', 'how-to-choose-the-right-mattress', 'how-to-choose-the-right-mattress-size', 'showroom-comfort-vs-ordered-configuration', 'questions-to-ask-before-buying-a-mattress', 'when-is-it-time-to-replace-your-mattress'
       assign content_image_asset = 'content-guide-sleep-system.png'
       assign content_image_alt = 'A coordinated mattress, pillows, sheets, comforter, and bedroom foundation'
     when 'understanding-mattress-comfort-soft-to-firm', 'mattress-support-vs-mattress-firmness', 'understanding-pressure-relief-and-body-alignment', 'choosing-a-mattress-for-side-back-or-combination-sleep'
@@ -242,6 +358,39 @@
               </div>
             {%- endif -%}
         {%- endcase -%}
+      </div>
+    {%- endif -%}
+
+    {%- if content_image_asset != blank -%}
+      <div class="content-guide-after{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        {%- unless page_key == 'sleep-guides' -%}
+          <nav class="content-guide-discovery" aria-label="Explore more sleep guides">
+            <h2>Explore more sleep guides</h2>
+            <p>Continue with the topic closest to your next sleep-system decision.</p>
+            <div class="content-guide-discovery__links">
+              <a href="/pages/sleep-guides#snoozepod-experience">Showroom &amp; Snooze Sessions</a>
+              <a href="/pages/sleep-guides#building-a-sleep-system">Building a Sleep System</a>
+              <a href="/pages/sleep-guides#dual-comfort-and-couples">Dual Comfort &amp; Couples</a>
+              <a href="/pages/sleep-guides#mattress-education">Mattress Education</a>
+              <a href="/pages/sleep-guides#adjustable-bases-and-compatibility">Adjustable Bases</a>
+              <a href="/pages/sleep-guides#pillows-protection-and-bedding">Pillows &amp; Bedding</a>
+            </div>
+          </nav>
+        {%- endunless -%}
+
+        <aside class="content-guide-conversion" aria-labelledby="ContentGuideConversion-{{ section.id }}">
+          <h2 id="ContentGuideConversion-{{ section.id }}">Ready to compare your options?</h2>
+          <p>Turn what you learned into a focused, pressure-free Snooze Session in the showroom or virtually.</p>
+          <div class="content-guide-conversion__actions">
+            <a class="button button--primary" href="/pages/book-a-snooze-session">Book a Snooze Session</a>
+            <a
+              class="button button--secondary"
+              href="#"
+              data-snoozer-trigger
+              data-snoozer-context="{{ page.title | escape }}"
+            >Ask Snoozer</a>
+          </div>
+        </aside>
       </div>
     {%- endif -%}
   </div>

@@ -1,24 +1,24 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-01 — catalog and shopping experience restructure complete  
+Last updated: 2026-11-02 — content navigation, guide hub, and conversion placement complete
 Owner: Ty  
 Implementer: Codi  
-Current phase: Tagged Draft catalog, automated collections, traditional shopping flow, and fail-closed Dual Comfort implemented; sell-unit mapping, content, and release gates remain
+Current phase: Tagged Draft catalog and traditional shopping flow retained; educational library, guide hub, strategic navigation, imagery, sharp logo, and conversion placement live behind the existing storefront password
 
 ## Current task and authority
 
-The Catalog & Shopping Experience Restructure directive authorized continuing in the existing `main` working tree and `mysnoozepodtest` development store. All 43 products are tagged and remain Draft; all 25 required collections are automated; established collection URLs are preserved; family navigation is live in preview; and all products, including S7/H6/M3/M5, use Product Page v1 with standard Shopify forms. The Pod Builder is absent from active customer surfaces.
+The latest owner directive authorized strategic placement of the 50-page educational library, bounded published-theme aesthetic improvements, live Shopify navigation updates, documentation, commit, and push. All 43 products remain tagged and Draft; all 25 required collections remain automated; established collection URLs are preserved; and all products, including S7/H6/M3/M5, continue to use Product Page v1 with standard Shopify forms. The Pod Builder remains absent from active customer surfaces.
 
-M3/M5 independent Left/Right 0.0–3.0 selection is implemented and fail closed. No exact sell-unit mapping is currently verified, so Add to Cart remains disabled for those products. All 43 products remain Draft. No product or theme was published; no order, deployment, Git commit, Git push, Calendly change, or AWS mutation occurred.
+M3/M5 independent Left/Right 0.0–3.0 selection remains fail closed. No exact sell-unit mapping is currently verified, so Add to Cart remains disabled for those products. The published theme received only the authorized content-page renderer, imagery/logo, and navigation presentation changes; no product was activated and the development theme remains unpublished. No order, backend deployment, Calendly change, or AWS mutation occurred.
 
 ## Canonical baseline
 
 - Repository: `https://github.com/mysnoozepod/snoozer-ai.git`
 - Branch: `main`
-- Approved starting commit/current HEAD: `f5056cf9b3ee3392f0da01064f7171ea7c1ff01b`
+- Approved historical starting commit: `f5056cf9b3ee3392f0da01064f7171ea7c1ff01b`; start-of-navigation-task HEAD: `30cf6f93f52da9baf6d713dbf90ed037730ac5ce`.
 - Owner decision: GitHub `main` is the canonical development baseline; do not reset it to the historical builder commit.
 - Published Shopify theme: ID `139460542525`, name `snoozer-ai/main`, role `main`.
-- Shopify catalog at this checkpoint: 43 Draft products, 274 variants, and 18 manual collections; durable IDs are recorded in the catalog manifests/readbacks.
+- Shopify catalog at this checkpoint: 43 Draft products, 274 variants, and 25 automated collections; durable IDs are recorded in the catalog manifests/readbacks.
 - Historical dirty clone at `C:\Users\14342\Desktop\snoozer-ai` remains untouched.
 
 ## P1-002 deliverables
@@ -407,6 +407,23 @@ An initial read-only AWS CLI configuration inspection returned unrelated environ
 - Validation passed: `node tests/runContentPageTests.mjs`, `node tests/runP1_005UXThemeContractTests.js`, `node tests/runStorefrontRouteContractTests.js`, staging-script syntax, Shopify theme readback, and live visual inspection.
 - Storefront password protection remains enabled. No product, variant, collection, price, order, navigation, AWS, Calendly, or password-setting mutation occurred.
 
+## Content navigation and conversion-placement checkpoint — 2026-11-02
+
+- A new published guide directory is live at `https://mysnoozepod.com/pages/sleep-guides`. It lists all 50 educational guides exactly once in six groups and uses the existing complete-sleep-system editorial image.
+- `content/content-navigation.mjs` is the durable page-group and menu contract. `scripts/stage-content-navigation.mjs` performs bounded plan/apply/readback against only Shopify's `main-menu` and `footer` menus.
+- The primary menu now has seven focused top-level destinations: Mattresses, Adjustable Bases, Sleep Essentials, Bedroom Furniture, Sleep Guides, Your Showroom Visit, and Our Story. The home logo remains the Home route. Strategic guide links sit beneath relevant commerce and showroom branches instead of creating a flat 50-link navigation.
+- The footer now exposes Sleep Guides, booking, assessment, story, contact, delivery, trial, support, privacy, and terms. Exact readback is `docs/content-pages/CONTENT_NAVIGATION_SHOPIFY_READBACK.json`.
+- `sections/main-page.liquid` adds a responsive guide directory, contextual guide-discovery pills, and a blue Book a Snooze Session / Ask Snoozer conversion band. The conversion band and supporting article assets render before the global “Stay In The Loop” newsletter. The duplicate inline CTA was removed from all managed page bodies.
+- Live published-theme checks passed for the homepage navigation, expanded Sleep Guides dropdown, the hub, a representative article, the CTA/newsletter order, and the footer. At 390×844 the mobile navigation exposed all seven destinations, no horizontal overflow was present, and the CTA buttons expanded to the available width.
+- Shopify readback: 51/51 managed pages published, 51/51 image mappings, 50 guide pages on the hub, one hub page, two verified menus, 57 nested primary-menu items, and ten footer items.
+- Final regression results: content pages PASS; content navigation PASS; catalog restructure 10/10 PASS; Product Page v1 contract 61 assertions PASS; storefront route contract PASS; storefront skeleton PASS; JavaScript syntax PASS; content, image, and navigation plan-only runs all report zero changes.
+- Private recoverable backups: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-pages\2026-11-02T23-05-11-071Z`, `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-page-images\2026-11-02T23-06-34-425Z`, and `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-navigation\2026-11-02T23-07-00-347Z`.
+- Product, variant, collection, price, inventory, order, AWS, Calendly, and storefront-password state were not changed. Published theme changes were bounded to the authorized content-page renderer/assets; development theme `139216420925` remains unpublished.
+
+### Snoozer product-information rule
+
+Snoozer must retrieve product information through the Shopify-authoritative commerce boundary using native product/variant fields, exact namespaced tags, collection membership, and verified metafields/metadata. Editorial page prose can support education but cannot establish product, price, availability, variant, compatibility, or fulfillment truth. Missing or conflicting values must remain unknown. This rule is documented for future development; no Snoozer backend or AWS change was made in this checkpoint.
+
 ## Exact next action
 
 **M3/M5-SELLABLE-MAPPING — verify and stage the authoritative Dual Comfort sell-unit map.**
@@ -415,4 +432,4 @@ Obtain BEDGEAR/Ty approval for every supported size + Left Comfort + Right Comfo
 
 ## Resume rule
 
-On resume, first recheck Git status/HEAD, `docs/catalog/catalog-shopping-restructure-shopify-readback.json`, and a plan-only run of both staging scripts. Preserve unpublished theme `139216420925`, published theme `139460542525`, the 43 tagged Draft products, 274 variants, 25 automated collections/handles/rules, 147 READY product media records, 48 variant images, collection images, private backups, verified menus/metafields, and all working-tree changes. Do not recreate manual collections, reactivate the Pod Builder, duplicate products/variants, enable an unverified Dual Comfort combination, activate Draft merchandise, publish/synchronize a theme, change global page-template assignments, deploy, commit, or push without explicit authority. The five exact-media gaps remain separate unresolved dependencies.
+On resume, first recheck Git status/HEAD, `docs/catalog/catalog-shopping-restructure-shopify-readback.json`, `docs/content-pages/CONTENT_NAVIGATION_SHOPIFY_READBACK.json`, and plan-only runs of the content-page, page-image, and content-navigation staging scripts. Preserve unpublished theme `139216420925`, published theme `139460542525`, the 43 tagged Draft products, 274 variants, 25 automated collections/handles/rules, 147 READY product media records, 48 variant images, collection images, 51 published managed pages, the seven-destination primary menu, the ten-link footer, private backups, verified menus/metafields, and all working-tree changes. Do not recreate manual collections, reactivate the Pod Builder, duplicate products/variants, enable an unverified Dual Comfort combination, activate Draft merchandise, remove the content hub, let editorial prose override Shopify commerce truth, publish/synchronize a theme wholesale, change global page-template assignments, or deploy without explicit authority. The five exact-media gaps remain separate unresolved dependencies.

@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { contentPages } from '../content/shopify-content-pages.mjs';
+import { guideGroups, guideHub } from '../content/content-navigation.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const EXPECTED_STORE = 'mysnoozepodtest.myshopify.com';
@@ -125,7 +126,6 @@ ${sections}
 <p>${escapeHtml(decisionCopy(item))}</p>
 <h2>How MySnoozePod helps</h2>
 <p>${escapeHtml(helpCopy(item.category))}</p>
-<p><a href="/pages/book-a-snooze-session"><strong>Book a Snooze Session</strong></a> &nbsp; | &nbsp; <a href="#" data-snoozer-trigger data-snoozer-context="${escapeHtml(item.title)}">Ask Snoozer</a></p>
 <h2>Frequently asked questions</h2>
 ${faqs}
 <h2>Related guides</h2>
@@ -133,12 +133,31 @@ ${faqs}
   return `${SIGNATURE_PREFIX} sha256=${sha256(content)} -->\n${content}`;
 }
 
-const desired = contentPages.map((item) => ({ ...item, body: renderBody(item) }));
+function renderHubBody() {
+  const groups = guideGroups.map((group) => {
+    const links = group.pages.map((page) => `<li><a href="/pages/${escapeHtml(page.handle)}">${escapeHtml(page.title)}</a></li>`).join('');
+    return `<section class="content-guide-directory__group" id="${escapeHtml(group.id)}">
+<h2>${escapeHtml(group.title)}</h2>
+<p>${escapeHtml(group.description)}</p>
+<ul>${links}</ul>
+</section>`;
+  }).join('\n');
+  const content = `<p class="lead">${escapeHtml(guideHub.description)}</p>
+<p>Start with the topic closest to the decision in front of you. Each guide is designed to help you compare choices, prepare for a Snooze Session, and separate personal preference from product details that still require verification.</p>
+<div class="content-guide-directory">${groups}</div>`;
+  return `${SIGNATURE_PREFIX} hub=true sha256=${sha256(content)} -->\n${content}`;
+}
+
+const desired = [
+  { ...guideHub, kind: 'hub', body: renderHubBody() },
+  ...contentPages.map((item) => ({ ...item, kind: 'guide', body: renderBody(item) })),
+];
 const handles = desired.map((item) => item.handle);
 if (new Set(handles).size !== handles.length) fail('Content page handles must be unique.');
 for (const item of desired) {
   const textWords = item.body.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
-  if (textWords < 350) fail(`${item.handle} is too short at ${textWords} words.`);
+  if (item.kind === 'guide' && textWords < 350) fail(`${item.handle} is too short at ${textWords} words.`);
+  if (item.kind === 'hub' && textWords < 250) fail(`${item.handle} is too short at ${textWords} words.`);
   if (/BEDGEAR|0\.0|1\.0|2\.0|3\.0/i.test(item.body)) fail(`${item.handle} contains prohibited manufacturer or numeric comfort language.`);
 }
 

@@ -23,6 +23,7 @@ export const contentPageImageGroups = [
     asset: 'content-guide-sleep-system.png',
     alt: 'A coordinated mattress, pillows, sheets, comforter, and bedroom foundation',
     handles: [
+      'sleep-guides',
       'what-makes-a-complete-sleep-system',
       'how-your-sleep-system-components-work-together',
       'how-to-choose-the-right-mattress',

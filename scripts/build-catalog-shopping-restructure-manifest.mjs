@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { mainMenuContract } from '../content/content-navigation.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const INPUT = path.join(ROOT, 'docs', 'catalog', 'catalog-shopping-restructure-before.json');
@@ -287,61 +288,7 @@ const collections = Object.entries(groups).map(([handle, expectedProducts]) => {
   };
 });
 
-const menu = {
-  handle: 'main-menu',
-  title: 'Main menu',
-  items: [
-    { title: 'Home', type: 'FRONTPAGE' },
-    {
-      title: 'Mattresses', type: 'COLLECTION', collection: 'mattresses', items: [
-        { title: 'Shop All Mattresses', type: 'COLLECTION', collection: 'mattresses' },
-        { title: 'S7', type: 'COLLECTION', collection: 's7' },
-        { title: 'H6', type: 'COLLECTION', collection: 'h6' },
-        { title: 'M3', type: 'COLLECTION', collection: 'm3' },
-        { title: 'M5', type: 'COLLECTION', collection: 'm5' },
-      ],
-    },
-    {
-      title: 'Adjustable Bases', type: 'COLLECTION', collection: 'adjustable-bases', items: [
-        { title: 'Shop All Adjustable Bases', type: 'COLLECTION', collection: 'adjustable-bases' },
-        { title: 'Flex L', type: 'COLLECTION', collection: 'flex-l' },
-        { title: 'Flex LSX', type: 'COLLECTION', collection: 'flex-lsx' },
-        { title: 'Flex SH', type: 'COLLECTION', collection: 'flex-sh' },
-      ],
-    },
-    {
-      title: 'Sleep Essentials', type: 'COLLECTION', collection: 'bedding', items: [
-        {
-          title: 'Pillows', type: 'COLLECTION', collection: 'pillows', items: [
-            { title: 'Zoned', type: 'COLLECTION', collection: 'zoned-pillows' },
-            { title: 'Filled', type: 'COLLECTION', collection: 'filled-pillows' },
-            { title: 'Foam', type: 'COLLECTION', collection: 'foam-pillows' },
-            { title: 'Temperature Regulating', type: 'COLLECTION', collection: 'temperature-regulating-pillows' },
-          ],
-        },
-        { title: 'Sheets', type: 'COLLECTION', collection: 'sheets' },
-        { title: 'Mattress Protection', type: 'COLLECTION', collection: 'mattress-protectors' },
-        { title: 'Comforters', type: 'COLLECTION', collection: 'comforters' },
-        { title: 'Cooling & Bedding', type: 'COLLECTION', collection: 'cooling-bedding' },
-        { title: 'Mattress Toppers', type: 'COLLECTION', collection: 'mattress-toppers' },
-      ],
-    },
-    {
-      title: 'Bedroom Furniture', type: 'COLLECTION', collection: 'bedroom-furniture', items: [
-        { title: 'Headboards', type: 'COLLECTION', collection: 'headboards' },
-        { title: 'Platform Bases', type: 'COLLECTION', collection: 'platform-bases' },
-      ],
-    },
-    {
-      title: 'Your Showroom Visit', type: 'PAGE', resourceId: 'gid://shopify/Page/91074658365', items: [
-        { title: 'Book a Snooze Session', type: 'PAGE', resourceId: 'gid://shopify/Page/91074658365' },
-        { title: 'Mini Snooze Assessment', type: 'PAGE', resourceId: 'gid://shopify/Page/92321087549' },
-        { title: 'Showroom Information', type: 'PAGE', resourceId: 'gid://shopify/Page/91074658365' },
-      ],
-    },
-    { title: 'Our Story', type: 'PAGE', resourceId: 'gid://shopify/Page/91048247357' },
-  ],
-};
+const menu = mainMenuContract;
 
 const manifest = {
   schemaVersion: '1.0',

@@ -1,7 +1,7 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-01 — catalog and shopping experience restructure complete  
-Queue state: All 43 products are tagged and remain Draft; 25 exact-tag automated collections, preserved routes, nested navigation, Product Page v1, standard Shopify forms, and fail-closed M3/M5 Dual Comfort selection are implemented in the development store and unpublished theme. No product or theme was published. M3/M5 sell-unit mappings, live commercial authority, owner content, and release acceptance remain gated.
+Last updated: 2026-11-02 — content navigation and conversion path live
+Queue state: The 43-product catalog remains Draft and fail closed where commercial authority is incomplete. Fifty educational pages plus the Sleep Guides hub are published behind the existing storefront password, with strategic desktop/mobile navigation and conversion actions above the newsletter. M3/M5 sell-unit mappings, Snoozer's Shopify-authoritative retrieval implementation, live commercial authority, and final release acceptance remain gated.
 
 ## Readiness classification
 
@@ -192,10 +192,12 @@ Queue state: All 43 products are tagged and remain Draft; 25 exact-tag automated
 
 ### Content Education Library & Sharp Logo Release
 
-- **Objective:** Publish 50 manufacturer-neutral educational pages using the approved page format, add appropriate editorial imagery, and replace active storefront logo rendering with the sharper approved MySnoozePod asset.
-- **Status:** COMPLETE AND LIVE IN SHOPIFY — 50/50 pages are published, body-hash/readback verified, internally linked, and rendered by the live default page template. Every page has a deterministic topic-appropriate image assignment from a ten-image original, unbranded editorial library. Published and development themes both use the ten image assets and `assets/mysnoozepod-logo-sharp.png`. The store-level password remains enabled.
+- **Objective:** Publish 50 manufacturer-neutral educational pages using the approved page format, add appropriate editorial imagery, replace active storefront logo rendering with the sharper approved MySnoozePod asset, and place the library strategically in navigation.
+- **Status:** COMPLETE AND LIVE IN SHOPIFY — 50/50 guides plus the `/pages/sleep-guides` hub are published, body-hash/readback verified, internally linked, and rendered by the live default page template. The primary menu exposes seven focused destinations with strategic guide links; the footer exposes the hub and core service/policy routes. Every guide has a deterministic topic-appropriate image assignment from a ten-image original, unbranded editorial library. Published and development themes both use the image assets and `assets/mysnoozepod-logo-sharp.png`. The store-level password remains enabled.
 - **Language contract:** Customer comfort language is Soft, Medium Soft, Medium Firm, and Firm. The page library contains no BEDGEAR references and no numeric comfort scale.
-- **Validation:** 50 published page readbacks; 50/50 image mappings; 10/10 image assets SHA-256-verified on both themes; actual published-theme rendering for all ten visual groups; 50 protected storefront routes; related-guide navigation; idempotent page plan (50 unchanged); idempotent logo plan (six unchanged assets); focused content-page and storefront regression passes.
+- **Navigation and conversion contract:** The hub lists every guide exactly once in six groups. Product and showroom menu branches expose relevant guides contextually. The responsive booking/Ask Snoozer conversion band and guide-discovery links render inside the main page content before the global “Stay In The Loop” newsletter; managed page bodies no longer carry a duplicate inline CTA.
+- **Snoozer follow-up:** Implement product retrieval through Shopify's native product/variant fields, exact namespaced tags, collections, and verified metafields. Missing or conflicting commerce data must remain unknown; editorial content is not product authority.
+- **Validation:** 51 published page readbacks; 51/51 image mappings; 10/10 image assets SHA-256-verified on both themes; actual published-theme rendering for all ten visual groups; 51 protected storefront routes; 50 guides exactly once on the hub; 57 nested primary-menu items; ten footer items; desktop and 390px mobile visual checks; related-guide navigation; idempotent page/image/navigation plans; focused content-page, navigation, catalog, Product Page v1, and storefront-route regressions.
 - **Safety:** Existing nine pages were preserved. Content and theme backups were created before mutations. No product status, price, variant, collection, order, AWS configuration, Calendly configuration, or storefront-password setting changed.
 - **Report:** `docs/content-pages/CONTENT_PAGES_RELEASE.md`.
 

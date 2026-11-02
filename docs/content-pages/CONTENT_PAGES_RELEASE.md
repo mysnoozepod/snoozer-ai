@@ -3,11 +3,11 @@
 Release date: 2026-11-02  
 Store: `mysnoozepodtest.myshopify.com`  
 Published domain: `https://mysnoozepod.com`  
-Status: 50 Shopify pages published with relevant editorial imagery; storefront remains protected by its pre-existing store password
+Status: 50 educational pages plus one guide hub published with strategic navigation and relevant editorial imagery; storefront remains protected by its pre-existing store password
 
 ## Result
 
-Fifty manufacturer-neutral educational pages are live in Shopify. Every page uses the default live page template, contains a concise opening answer, educational sections, a practical comparison method, a consideration checklist, MySnoozePod guidance, Book a Snooze Session and Ask Snoozer actions, FAQs, and three internal related-guide links.
+Fifty manufacturer-neutral educational pages and the `/pages/sleep-guides` directory are live in Shopify. Every guide uses the default live page template and contains a concise opening answer, educational sections, a practical comparison method, a consideration checklist, MySnoozePod guidance, FAQs, and three internal related-guide links. The template adds contextual guide discovery plus Book a Snooze Session and Ask Snoozer actions immediately before the global “Stay In The Loop” newsletter.
 
 Customer-facing comfort language is limited to **Soft**, **Medium Soft**, **Medium Firm**, and **Firm**. The content contains no BEDGEAR references and no numeric comfort scale. Product prices, warranties, fulfillment claims, and unsupported compatibility conclusions were not invented.
 
@@ -21,6 +21,14 @@ The handle-to-image contract is stored in `content/content-page-images.mjs`. Eve
 - Development theme `139216420925` (`unpublished`)
 
 Shopify readback details, hashes, sizes, public CDN URLs, and theme roles are recorded in `CONTENT_PAGE_IMAGES_SHOPIFY_READBACK.json`.
+
+## Navigation and conversion placement
+
+The primary menu now uses seven focused destinations: Mattresses, Adjustable Bases, Sleep Essentials, Bedroom Furniture, Sleep Guides, Your Showroom Visit, and Our Story. Relevant educational links appear contextually under the product and visit branches, while Sleep Guides links to the full directory and its six page-group anchors. The logo remains the direct Home route, avoiding a redundant top-level Home item.
+
+The footer now exposes Sleep Guides, booking, assessment, story, contact, delivery, trial, support, privacy, and terms. The hub lists all 50 guides exactly once across the six groups below. On guide pages, the template adds a compact related-topic discovery row and a responsive blue conversion band. Both the conversion band and any supporting page assets render inside the main page section before “Stay In The Loop.”
+
+The durable menu/page-group contract is `content/content-navigation.mjs`; the bounded Admin API staging/readback workflow is `scripts/stage-content-navigation.mjs`; and the verified result is recorded in `CONTENT_NAVIGATION_SHOPIFY_READBACK.json`.
 
 ## Published page groups
 
@@ -108,19 +116,29 @@ The surrounding header layout, menus, Ask Snoozer entry point, Snooze Code contr
 - Content page backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-pages\2026-11-02T21-26-28-679Z`
 - Logo/theme backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\sharp-logo\2026-11-02T21-24-53-134Z`
 - Content-image/theme backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-page-images\2026-11-02T22-25-48-361Z`
+- Final content/hub backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-pages\2026-11-02T23-05-11-071Z`
+- Final page-template/image backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-page-images\2026-11-02T23-06-34-425Z`
+- Navigation backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-navigation\2026-11-02T23-07-00-347Z`
 
 No credentials or customer information are stored in project documentation.
 
 ## Validation
 
-- Shopify readback: 50 expected, 50 verified, 50 published.
-- Idempotent content plan: zero creates, zero updates, 50 unchanged.
+- Shopify readback: 51 expected, 51 verified, 51 published (50 guides plus one hub).
+- Navigation readback: 50 guide pages, one hub, two verified menus, 57 nested primary-menu items, and ten footer items.
+- Idempotent content plan: zero creates, zero updates, 51 unchanged.
+- Idempotent navigation plan: both managed menus unchanged after apply.
 - Idempotent logo plan: zero creates, zero updates, six unchanged assets.
-- Route contract: all 50 canonical URLs resolve through the existing protected storefront.
-- Actual browser rendering: published-theme header/logo, page title, body sections, booking CTA, Ask Snoozer action, FAQs, footer, and related-guide navigation verified.
-- Editorial image contract: 50/50 page handles mapped to 10/10 local PNG assets with descriptive alt text.
+- Route contract: all 51 canonical URLs resolve through the existing protected storefront.
+- Actual browser rendering: published-theme header/logo, seven-destination navigation, page title, hub directory, body sections, booking CTA, Ask Snoozer action, FAQs, footer, and related-guide navigation verified.
+- Editorial image contract: 51/51 page handles mapped to 10/10 local PNG assets with descriptive alt text.
 - Shopify theme readback: 10/10 images and the page-section mapping hash-verified on both target themes.
 - Live browser validation: all ten visual groups loaded their expected 1672×941 CDN asset on representative published-theme pages.
-- `tests/runContentPageTests.mjs`: pass.
+- Desktop and 390px mobile checks found no horizontal overflow; mobile conversion buttons expand to the available width.
+- `tests/runContentPageTests.mjs` and `tests/runContentNavigationTests.mjs`: pass.
+
+## Snoozer product-information boundary
+
+The guide library is educational content, not commerce authority. A future Snoozer retrieval task should hydrate product answers from Shopify-native product and variant fields, exact namespaced tags, collection membership, and verified metafields/metadata through the established commerce boundary. Missing or conflicting values must remain unknown; page prose or model inference must not establish price, availability, variant, compatibility, or fulfillment facts.
 
 The Online Store password remains enabled. Pages are published and render on the live theme for authenticated preview, but public visitors continue to see Shopify's existing password page until the owner deliberately opens the storefront.

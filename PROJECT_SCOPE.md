@@ -1,6 +1,6 @@
 # MySnoozePod.com Website Completion Scope
 
-Last updated: 2026-10-31 — storefront MVP implementation checkpoint  
+Last updated: 2026-11-02 — content navigation and Shopify-authority checkpoint
 Owner: Ty  
 Current phase: Phase 1 storefront implementation complete to current owner/manufacturer decision limits
 
@@ -20,13 +20,13 @@ Complete the existing MySnoozePod.com business asset so its primary conversion p
 |---|---|---|
 | Public website | Customized Shopify Liquid theme based on Dawn conventions (`layout`, `templates`, `sections`, `snippets`, `assets`, `config`, `locales`). Shopify renders the public pages, product forms, cart, account, and checkout handoff. | **VERIFIED** in repository and live preview. |
 | Website theme source | Repository `mysnoozepod/snoozer-ai`, branch `main`, approved baseline `f5056cf9b3ee3392f0da01064f7171ea7c1ff01b`. | **OWNER APPROVED** in P1-002; **VERIFIED** by Git. |
-| Shopify theme state | Published theme ID `139460542525`, name `snoozer-ai/main`, role `main`, on store `mysnoozepodtest`. A recoverable October 30 export is privately stored and checksum verified. Exact Shopify-file equality with the current dirty working tree is not claimed. | **VERIFIED SNAPSHOT**; current local changes are **NOT DEPLOYED**. |
+| Shopify theme state | Published theme ID `139460542525`, name `snoozer-ai/main`, role `main`, on store `mysnoozepodtest`. A recoverable October 30 export is privately stored and checksum verified. The bounded content-page, imagery, navigation, and sharp-logo changes were deployed to the published theme under later owner authorization; broader repository-to-theme equality is not claimed. | **VERIFIED BOUNDED DEPLOYMENT**; store password protection remains enabled. |
 | Snoozer backend | Node.js 20 Lambda-style application with API Gateway routing in `index.js`; public website base URL is configured in `layout/theme.liquid:461`. Relevant routes include assessment, identity, booking webhook, Ask Snoozer, Shopify product/cart operations, recommendations, and rewards. | **VERIFIED** in code. `/health` and `/assessment-questions` returned HTTP 200 on 2026-10-30. |
 | Snooze Control | Separate React 18/Vite application under `omnia-journey/`, with showroom routes in `omnia-journey/src/main.jsx` and an Amplify build manifest in `omnia-journey/amplify.yml`. It is not the public Shopify theme. | **VERIFIED** in code and build. |
 | Shopify commerce service | Storefront API is the required product/cart authority; Admin API is optional and separately credentialed. API versions are centralized in `services/shopifyApiConfig.js`; secrets are resolved through environment/Secrets Manager boundaries in `services/integrationSecrets.js`. | **VERIFIED** in code; no secrets inspected or recorded. |
 | Booking | `sections/snoozer-landing-booking.liquid` embeds a Calendly routing form followed by a Calendly event. Snooze Code values can be propagated through query parameters and browser storage. Backend webhook processing is in `routes/bookingRoutes.js` and `services/bookingSession.js`. | **VERIFIED** in code and live mobile inspection; live webhook subscription state is **UNVERIFIED**. |
 | Assessment and identity | The standalone assessment posts to `/assessment`; the backend issues/resolves a six-digit Snooze Code and associates assessment/profile state. The theme persists identity in session/local storage. | **VERIFIED** in code. No production assessment was submitted. |
-| Ask Snoozer | Header interface posts to `/ask-snoozer`, carrying available identity context. Backend response composition and Shopify hydration remain behind the API boundary. | **VERIFIED** in code and presentation; production conversational behavior was not exercised. |
+| Ask Snoozer | Header interface posts to `/ask-snoozer`, carrying available identity context. Backend response composition and Shopify hydration remain behind the API boundary. Product answers must be hydrated from Shopify-authoritative native fields, variants, tags, collections, and verified metafields; missing commerce facts fail closed. | **VERIFIED** in code and presentation; the expanded retrieval contract is an owner-approved rule, not a completed backend implementation. |
 | Customer chat | Two Zoho SalesIQ widget scripts with different widget identifiers are included at `layout/theme.liquid:540-543`. | **VERIFIED** in code; intended widget/account is **UNVERIFIED**. |
 | Analytics | No explicit Google Analytics or Meta Pixel implementation was found in the targeted repository search. Shopify-admin pixels/custom events were not verified. | **VERIFIED** repository finding; **UNVERIFIED** admin configuration. |
 | Deployment | `omnia-journey/amplify.yml` builds the React app. The only GitHub workflow found refreshes living documentation and is not a theme deployment workflow. Theme publication mechanism and backend deployment pipeline were not proven from available evidence. | **VERIFIED** manifests; deployment relationships **UNVERIFIED**. |
@@ -37,6 +37,7 @@ Complete the existing MySnoozePod.com business asset so its primary conversion p
 - **Snoozer** — backend intelligence, API, identity, recommendation, booking-session preparation, and related AWS services.
 - **Snooze Control** — customer-facing React showroom experience under `omnia-journey/`.
 - **Shopify** — canonical approved products, variants, prices, availability, cart, and checkout.
+- **Snoozer product retrieval** — consumes Shopify-authoritative product/variant fields, exact namespaced tags, collection membership, and verified metafields through the commerce service. Editorial content can explain concepts but cannot establish product, price, availability, compatibility, or fulfillment truth.
 - **Calendly** — retained scheduling system; no replacement platform is in scope.
 - **Ty** — authority for all customer-facing language and final merchandising approval.
 

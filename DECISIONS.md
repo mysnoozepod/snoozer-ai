@@ -1,6 +1,6 @@
 # MySnoozePod.com Decision Register
 
-Last updated: 2026-11-01 — catalog and shopping experience restructure checkpoint
+Last updated: 2026-11-02 — content navigation and conversion-path checkpoint
 
 ## Confirmed owner decisions and constraints
 
@@ -51,6 +51,7 @@ Last updated: 2026-11-01 — catalog and shopping experience restructure checkpo
 | D-043 | Historical Pod Builder source and tests remain unassigned for audit and rollback continuity; no active homepage section or assigned product template references the builder. Retaining dormant source does not authorize its reactivation. | **IMPLEMENTATION BOUNDARY** — active-template/readback contract. |
 | D-044 | Customer-facing educational content uses the comfort descriptions Soft, Medium Soft, Medium Firm, and Firm. It does not expose manufacturer codes or a numeric comfort scale. | **OWNER CONFIRMED / IMPLEMENTED** — 50-page content library. |
 | D-045 | The sharper approved MySnoozePod logo source is `omnia-journey/src/assets/mysnoozepod-logo-welcome.png`; storefront theme asset `assets/mysnoozepod-logo-sharp.png` is the active visible and structured-data logo on published and development themes. | **OWNER AUTHORIZED / IMPLEMENTED** — hash and browser verified. |
+| D-046 | Snoozer must retrieve product truth through the Shopify-authoritative commerce boundary: native product and variant fields, exact namespaced tags, collection membership, and verified metafields/metadata. Missing or conflicting values remain unknown; editorial page copy and model inference cannot override Shopify price, availability, variant, compatibility, or fulfillment data. | **OWNER DIRECTION / DURABLE ARCHITECTURE RULE** — retrieval implementation remains a separately scoped backend task. |
 
 ## Verified architectural and operational facts
 
@@ -132,6 +133,8 @@ Last updated: 2026-11-01 — catalog and shopping experience restructure checkpo
 | F-074 | Shopify contains 50 new managed content pages, all published with the default page template, canonical handles, internal related-guide links, booking and Ask Snoozer actions, FAQs, and manufacturer-neutral comfort language. | **VERIFIED ADMIN API READBACK + ACTUAL PUBLISHED-THEME BROWSER RENDERING** — 2026-11-02. |
 | F-075 | Published theme `139460542525` and development theme `139216420925` contain the same SHA-256-verified sharp logo asset and active header/password-header references. | **VERIFIED THEME API READBACK + VISUAL STOREFRONT CHECK** — 2026-11-02. |
 | F-076 | All 50 educational page handles map deterministically to one of ten original, unbranded editorial image groups. Both target themes contain the same verified assets and page-section mapping; representative live checks confirmed every group loaded at 1672×941 with descriptive alt text. | **VERIFIED LOCAL CONTRACT + THEME API READBACK + ACTUAL PUBLISHED-THEME BROWSER RENDERING** — 2026-11-02. |
+| F-077 | Shopify now has a published `/pages/sleep-guides` directory containing every educational page exactly once in six groups. The seven-destination primary menu and ten-link footer expose the hub and strategic contextual guide links; live desktop and 390px mobile checks found no horizontal overflow. | **VERIFIED ADMIN API READBACK + ACTUAL PUBLISHED-THEME BROWSER RENDERING** — 2026-11-02. |
+| F-078 | The live default page template renders contextual guide discovery plus a responsive Book a Snooze Session / Ask Snoozer conversion band before the global “Stay In The Loop” newsletter. The prior duplicate inline CTA was removed from all managed page bodies. | **VERIFIED THEME API READBACK + LIVE HUB/ARTICLE BROWSER CHECKS** — 2026-11-02. |
 
 ## Codi recommendations — not owner decisions
 
