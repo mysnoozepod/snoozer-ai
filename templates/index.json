@@ -164,7 +164,7 @@
         "collection_card_dFBGFW": {
           "type": "collection_card",
           "settings": {
-            "collection": "mattress-toppers",
+            "collection": "legacy-p1006a-mattress-toppers",
             "title_override": "Mattress Toppers",
             "description": "Add comfort, pressure relief, and a refreshed feel.",
             "cta_label": "Explore",
@@ -174,7 +174,7 @@
         "collection_card_gK9axe": {
           "type": "collection_card",
           "settings": {
-            "collection": "furniture",
+            "collection": "legacy-p1006a-furniture",
             "title_override": "Furniture",
             "description": "Finish the room around your sleep environment.",
             "cta_label": "Explore",
