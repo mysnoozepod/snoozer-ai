@@ -1,0 +1,146 @@
+{
+  "generatedAt": "2026-11-02T22:26:29.408Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "summary": {
+    "themes": 2,
+    "imagesPerTheme": 10,
+    "mappedPages": 50
+  },
+  "themes": [
+    {
+      "id": "139460542525",
+      "name": "snoozer-ai/main",
+      "role": "main",
+      "images": [
+        {
+          "key": "assets/content-guide-showroom.png",
+          "bytes": 2446513,
+          "sha256": "0ee1187aaa2b2a9c4e016a9a5d6c991fbd4e0c6e881fc5c573110c293511af5d",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/16/assets/content-guide-showroom.png?v=1793658349"
+        },
+        {
+          "key": "assets/content-guide-virtual-session.png",
+          "bytes": 2857449,
+          "sha256": "cc30a4018bf8bec0a79ee6c7d286b3b39388d6a46b0c19c4cc50fdd9148313fb",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/16/assets/content-guide-virtual-session.png?v=1793658350"
+        },
+        {
+          "key": "assets/content-guide-sleep-system.png",
+          "bytes": 2867324,
+          "sha256": "95a46127834e0f92357f16fed2c4ae4ca33ef5fdcda67c48bb8acd5ea112b0d0",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/16/assets/content-guide-sleep-system.png?v=1793658351"
+        },
+        {
+          "key": "assets/content-guide-comfort-comparison.png",
+          "bytes": 2694367,
+          "sha256": "bae62ea7748aa732d22c05857537fe55f88455452fd7d12622f880a406f713a3",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/16/assets/content-guide-comfort-comparison.png?v=1793658352"
+        },
+        {
+          "key": "assets/content-guide-dual-comfort.png",
+          "bytes": 2538308,
+          "sha256": "9e3f078dc8d2dba7b59e953c90f3d208746852e09e5d193b19d161e339034797",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/16/assets/content-guide-dual-comfort.png?v=1793658353"
+        },
+        {
+          "key": "assets/content-guide-split-system.png",
+          "bytes": 2696622,
+          "sha256": "cf95259143e8c96a996acd7a54b185352c614acab8a5d3ec7c3b1983d144b61c",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/16/assets/content-guide-split-system.png?v=1793658354"
+        },
+        {
+          "key": "assets/content-guide-mattress-materials.png",
+          "bytes": 2749251,
+          "sha256": "ebd45286aeb13f0eb0ba0c80a565966a8f85341a3eba072ff6c19af8de28b255",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/16/assets/content-guide-mattress-materials.png?v=1793658355"
+        },
+        {
+          "key": "assets/content-guide-cooling.png",
+          "bytes": 2269121,
+          "sha256": "3327ccc0742ea008a526f0f7f37882afb5e60708a86f48c4290af2f791bdd082",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/16/assets/content-guide-cooling.png?v=1793658356"
+        },
+        {
+          "key": "assets/content-guide-adjustable-base.png",
+          "bytes": 2734824,
+          "sha256": "bb2758f62f892a188b2d07e949110fead0c1df6af4bd7faa9c9258e614454f13",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/16/assets/content-guide-adjustable-base.png?v=1793658357"
+        },
+        {
+          "key": "assets/content-guide-bedding-essentials.png",
+          "bytes": 2624443,
+          "sha256": "75935ab78f17d400adf25bc9113324ca329f77ef188721fa9df9828ef25cba2f",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/16/assets/content-guide-bedding-essentials.png?v=1793658358"
+        }
+      ]
+    },
+    {
+      "id": "139216420925",
+      "name": "snoozer-ai/main",
+      "role": "unpublished",
+      "images": [
+        {
+          "key": "assets/content-guide-showroom.png",
+          "bytes": 2446513,
+          "sha256": "0ee1187aaa2b2a9c4e016a9a5d6c991fbd4e0c6e881fc5c573110c293511af5d",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/15/assets/content-guide-showroom.png?v=1793658360"
+        },
+        {
+          "key": "assets/content-guide-virtual-session.png",
+          "bytes": 2857449,
+          "sha256": "cc30a4018bf8bec0a79ee6c7d286b3b39388d6a46b0c19c4cc50fdd9148313fb",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/15/assets/content-guide-virtual-session.png?v=1793658361"
+        },
+        {
+          "key": "assets/content-guide-sleep-system.png",
+          "bytes": 2867324,
+          "sha256": "95a46127834e0f92357f16fed2c4ae4ca33ef5fdcda67c48bb8acd5ea112b0d0",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/15/assets/content-guide-sleep-system.png?v=1793658362"
+        },
+        {
+          "key": "assets/content-guide-comfort-comparison.png",
+          "bytes": 2694367,
+          "sha256": "bae62ea7748aa732d22c05857537fe55f88455452fd7d12622f880a406f713a3",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/15/assets/content-guide-comfort-comparison.png?v=1793658362"
+        },
+        {
+          "key": "assets/content-guide-dual-comfort.png",
+          "bytes": 2538308,
+          "sha256": "9e3f078dc8d2dba7b59e953c90f3d208746852e09e5d193b19d161e339034797",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/15/assets/content-guide-dual-comfort.png?v=1793658363"
+        },
+        {
+          "key": "assets/content-guide-split-system.png",
+          "bytes": 2696622,
+          "sha256": "cf95259143e8c96a996acd7a54b185352c614acab8a5d3ec7c3b1983d144b61c",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/15/assets/content-guide-split-system.png?v=1793658364"
+        },
+        {
+          "key": "assets/content-guide-mattress-materials.png",
+          "bytes": 2749251,
+          "sha256": "ebd45286aeb13f0eb0ba0c80a565966a8f85341a3eba072ff6c19af8de28b255",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/15/assets/content-guide-mattress-materials.png?v=1793658365"
+        },
+        {
+          "key": "assets/content-guide-cooling.png",
+          "bytes": 2269121,
+          "sha256": "3327ccc0742ea008a526f0f7f37882afb5e60708a86f48c4290af2f791bdd082",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/15/assets/content-guide-cooling.png?v=1793658366"
+        },
+        {
+          "key": "assets/content-guide-adjustable-base.png",
+          "bytes": 2734824,
+          "sha256": "bb2758f62f892a188b2d07e949110fead0c1df6af4bd7faa9c9258e614454f13",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/15/assets/content-guide-adjustable-base.png?v=1793658367"
+        },
+        {
+          "key": "assets/content-guide-bedding-essentials.png",
+          "bytes": 2624443,
+          "sha256": "75935ab78f17d400adf25bc9113324ca329f77ef188721fa9df9828ef25cba2f",
+          "publicUrl": "https://cdn.shopify.com/s/files/1/0590/9807/1101/t/15/assets/content-guide-bedding-essentials.png?v=1793658368"
+        }
+      ]
+    }
+  ],
+  "backup": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\content-page-images\\2026-11-02T22-25-48-361Z"
+}

@@ -192,10 +192,10 @@ Queue state: All 43 products are tagged and remain Draft; 25 exact-tag automated
 
 ### Content Education Library & Sharp Logo Release
 
-- **Objective:** Publish 50 manufacturer-neutral educational pages using the approved page format and replace active storefront logo rendering with the sharper approved MySnoozePod asset.
-- **Status:** COMPLETE AND LIVE IN SHOPIFY — 50/50 pages are published, body-hash/readback verified, internally linked, and rendered by the live default page template. Published and development themes both use `assets/mysnoozepod-logo-sharp.png` in the active header/password header. The store-level password remains enabled.
+- **Objective:** Publish 50 manufacturer-neutral educational pages using the approved page format, add appropriate editorial imagery, and replace active storefront logo rendering with the sharper approved MySnoozePod asset.
+- **Status:** COMPLETE AND LIVE IN SHOPIFY — 50/50 pages are published, body-hash/readback verified, internally linked, and rendered by the live default page template. Every page has a deterministic topic-appropriate image assignment from a ten-image original, unbranded editorial library. Published and development themes both use the ten image assets and `assets/mysnoozepod-logo-sharp.png`. The store-level password remains enabled.
 - **Language contract:** Customer comfort language is Soft, Medium Soft, Medium Firm, and Firm. The page library contains no BEDGEAR references and no numeric comfort scale.
-- **Validation:** 50 published page readbacks; 50 protected storefront routes; actual published-theme browser rendering and related-guide navigation; idempotent page plan (50 unchanged); idempotent logo plan (six unchanged assets); focused content-page test pass.
+- **Validation:** 50 published page readbacks; 50/50 image mappings; 10/10 image assets SHA-256-verified on both themes; actual published-theme rendering for all ten visual groups; 50 protected storefront routes; related-guide navigation; idempotent page plan (50 unchanged); idempotent logo plan (six unchanged assets); focused content-page and storefront regression passes.
 - **Safety:** Existing nine pages were preserved. Content and theme backups were created before mutations. No product status, price, variant, collection, order, AWS configuration, Calendly configuration, or storefront-password setting changed.
 - **Report:** `docs/content-pages/CONTENT_PAGES_RELEASE.md`.
 

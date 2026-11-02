@@ -13,6 +13,22 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  .support-page__editorial-media {
+    margin: 2.4rem 0 0;
+    overflow: hidden;
+    border-radius: 1.6rem;
+    background: rgba(var(--color-foreground), 0.04);
+    box-shadow: 0 1.6rem 4rem rgba(15, 31, 52, 0.12);
+  }
+
+  .support-page__editorial-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1672 / 941;
+    object-fit: cover;
+  }
 {%- endstyle -%}
 
 {%- liquid
@@ -28,6 +44,41 @@
   if support_handles contains page_key
     assign is_support_page = true
   endif
+
+  assign content_image_asset = blank
+  assign content_image_alt = blank
+  case page_key
+    when 'building-your-snoozepod', 'what-is-a-snoozepod', 'how-the-mysnoozepod-showroom-works', 'what-is-a-snooze-session', 'what-to-expect-during-your-snooze-session', 'how-to-prepare-for-your-showroom-visit', 'what-happens-after-your-snooze-session', 'comparing-sleep-systems-without-sales-pressure', 'from-showroom-recommendation-to-home-delivery'
+      assign content_image_asset = 'content-guide-showroom.png'
+      assign content_image_alt = 'Guests comparing mattresses during a calm guided showroom visit'
+    when 'how-a-virtual-snooze-session-works'
+      assign content_image_asset = 'content-guide-virtual-session.png'
+      assign content_image_alt = 'A virtual sleep consultation taking place in a comfortable bedroom'
+    when 'what-makes-a-complete-sleep-system', 'how-your-sleep-system-components-work-together', 'how-to-choose-the-right-mattress', 'how-to-choose-the-right-mattress-size', 'showroom-comfort-vs-ordered-configuration', 'questions-to-ask-before-buying-a-mattress', 'when-is-it-time-to-replace-your-mattress'
+      assign content_image_asset = 'content-guide-sleep-system.png'
+      assign content_image_alt = 'A coordinated mattress, pillows, sheets, comforter, and bedroom foundation'
+    when 'understanding-mattress-comfort-soft-to-firm', 'mattress-support-vs-mattress-firmness', 'understanding-pressure-relief-and-body-alignment', 'choosing-a-mattress-for-side-back-or-combination-sleep'
+      assign content_image_asset = 'content-guide-comfort-comparison.png'
+      assign content_image_alt = 'Shoppers comparing different mattress comfort choices in a relaxed showroom'
+    when 'benefits-of-dual-comfort-mattresses', 'how-independent-left-and-right-comfort-works', 'choosing-between-soft-medium-soft-medium-firm-and-firm', 'choosing-different-comfort-levels-as-a-couple', 'what-happens-when-partners-have-different-sleep-preferences', 'choosing-comfort-for-each-side-of-the-bed', 'who-is-a-dual-comfort-mattress-for', 'choosing-a-mattress-for-couples-with-different-sleep-styles'
+      assign content_image_asset = 'content-guide-dual-comfort.png'
+      assign content_image_alt = 'A couple independently testing comfort on each side of one mattress'
+    when 'standard-split-head-half-split-and-full-split-explained', 'is-a-split-head-mattress-right-for-you', 'understanding-split-head-adjustable-sleep-systems'
+      assign content_image_asset = 'content-guide-split-system.png'
+      assign content_image_alt = 'A split-head sleep system demonstrating independent upper-body positioning'
+    when 'memory-foam-vs-hybrid-mattresses', 'understanding-modular-mattresses', 'choosing-a-foam-mattress', 'choosing-a-hybrid-mattress', 'comparing-mattress-types', 'how-mattress-materials-affect-comfort'
+      assign content_image_asset = 'content-guide-mattress-materials.png'
+      assign content_image_alt = 'Unbranded foam, pocketed coil, textile, and fiber mattress material samples'
+    when 'cooling-mattresses-what-actually-matters', 'creating-a-cooler-more-comfortable-sleep-environment', 'choosing-the-right-comforter-weight'
+      assign content_image_asset = 'content-guide-cooling.png'
+      assign content_image_alt = 'An airy bedroom arranged with lightweight bedding for a cooler sleep environment'
+    when 'benefits-of-an-adjustable-base', 'adjustable-base-features-explained', 'how-to-choose-an-adjustable-base', 'understanding-zero-gravity-and-preset-positions', 'how-to-match-a-mattress-with-an-adjustable-base', 'adjustable-bases-vs-platform-bases'
+      assign content_image_asset = 'content-guide-adjustable-base.png'
+      assign content_image_alt = 'An adjustable bed positioned with the head and knees comfortably elevated'
+    when 'how-to-find-the-right-pillow', 'how-mattress-protectors-help-protect-your-bed', 'choosing-sheets-for-standard-and-split-head-mattresses'
+      assign content_image_asset = 'content-guide-bedding-essentials.png'
+      assign content_image_alt = 'Coordinated pillows, sheets, mattress protection, and comforter layers'
+  endcase
 
   assign page_eyebrow = blank
   assign support_intro = blank
@@ -81,6 +132,19 @@
         <div class="support-page__intro rte">
           <p>{{ support_intro | strip }}</p>
         </div>
+      {%- endif -%}
+      {%- if content_image_asset != blank -%}
+        <figure class="support-page__editorial-media">
+          <img
+            class="support-page__editorial-image"
+            src="{{ content_image_asset | asset_url }}"
+            alt="{{ content_image_alt | escape }}"
+            width="1672"
+            height="941"
+            loading="eager"
+            fetchpriority="high"
+          >
+        </figure>
       {%- endif -%}
     </div>
 

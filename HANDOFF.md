@@ -396,6 +396,17 @@ An initial read-only AWS CLI configuration inspection returned unrelated environ
 - Validation: `node tests/runContentPageTests.mjs`; content plan 50 unchanged; logo plan six unchanged.
 - Full report: `docs/content-pages/CONTENT_PAGES_RELEASE.md`.
 
+## Content-page editorial imagery checkpoint — 2026-11-02
+
+- All 50 educational page handles map to one of ten original, manufacturer-neutral editorial images: showroom, virtual session, complete sleep system, comfort comparison, dual comfort, split system, mattress materials, cooling, adjustable base, or bedding essentials.
+- The durable mapping is `content/content-page-images.mjs`; the live renderer is `sections/main-page.liquid`; the bounded staging tool is `scripts/stage-content-page-images.mjs`.
+- Published theme `139460542525` and development theme `139216420925` each contain all ten SHA-256-verified PNG assets plus the exact page-section mapping. The development theme remains unpublished.
+- Shopify readback: `docs/content-pages/CONTENT_PAGE_IMAGES_SHOPIFY_READBACK.json`.
+- Private pre-change theme backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-page-images\2026-11-02T22-25-48-361Z`.
+- Live browser checks covered one representative page from every visual group; every image completed at 1672×941, used the expected CDN filename, and exposed meaningful alt text. The sharp logo, navigation, article body, booking/Ask Snoozer actions, and footer remained intact.
+- Validation passed: `node tests/runContentPageTests.mjs`, `node tests/runP1_005UXThemeContractTests.js`, `node tests/runStorefrontRouteContractTests.js`, staging-script syntax, Shopify theme readback, and live visual inspection.
+- Storefront password protection remains enabled. No product, variant, collection, price, order, navigation, AWS, Calendly, or password-setting mutation occurred.
+
 ## Exact next action
 
 **M3/M5-SELLABLE-MAPPING — verify and stage the authoritative Dual Comfort sell-unit map.**

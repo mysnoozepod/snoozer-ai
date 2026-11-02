@@ -131,6 +131,7 @@ Last updated: 2026-11-01 — catalog and shopping experience restructure checkpo
 | F-073 | Shopify returns a temporary `onlineStorePreviewUrl` for each of the 43 Draft products while `onlineStoreUrl` remains null. The preview key combined with unpublished theme `139216420925` renders the real assigned Product Page v1; direct inspection verified S7, H6, M3, and M5. | **VERIFIED ADMIN API + AUTHENTICATED STOREFRONT PREVIEW** — 2026-11-02. |
 | F-074 | Shopify contains 50 new managed content pages, all published with the default page template, canonical handles, internal related-guide links, booking and Ask Snoozer actions, FAQs, and manufacturer-neutral comfort language. | **VERIFIED ADMIN API READBACK + ACTUAL PUBLISHED-THEME BROWSER RENDERING** — 2026-11-02. |
 | F-075 | Published theme `139460542525` and development theme `139216420925` contain the same SHA-256-verified sharp logo asset and active header/password-header references. | **VERIFIED THEME API READBACK + VISUAL STOREFRONT CHECK** — 2026-11-02. |
+| F-076 | All 50 educational page handles map deterministically to one of ten original, unbranded editorial image groups. Both target themes contain the same verified assets and page-section mapping; representative live checks confirmed every group loaded at 1672×941 with descriptive alt text. | **VERIFIED LOCAL CONTRACT + THEME API READBACK + ACTUAL PUBLISHED-THEME BROWSER RENDERING** — 2026-11-02. |
 
 ## Codi recommendations — not owner decisions
 

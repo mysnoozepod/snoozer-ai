@@ -3,13 +3,24 @@
 Release date: 2026-11-02  
 Store: `mysnoozepodtest.myshopify.com`  
 Published domain: `https://mysnoozepod.com`  
-Status: 50 Shopify pages published; storefront remains protected by its pre-existing store password
+Status: 50 Shopify pages published with relevant editorial imagery; storefront remains protected by its pre-existing store password
 
 ## Result
 
 Fifty manufacturer-neutral educational pages are live in Shopify. Every page uses the default live page template, contains a concise opening answer, educational sections, a practical comparison method, a consideration checklist, MySnoozePod guidance, Book a Snooze Session and Ask Snoozer actions, FAQs, and three internal related-guide links.
 
 Customer-facing comfort language is limited to **Soft**, **Medium Soft**, **Medium Firm**, and **Firm**. The content contains no BEDGEAR references and no numeric comfort scale. Product prices, warranties, fulfillment claims, and unsupported compatibility conclusions were not invented.
+
+## Editorial image library
+
+Every one of the 50 pages now renders a related, original editorial image above the article body. Ten manufacturer-neutral image groups cover showroom guidance, virtual Snooze Sessions, complete sleep systems, comfort comparison, dual comfort, split systems, mattress materials, cooling, adjustable bases, and bedding essentials. The assets contain no product logos, model claims, prices, or embedded text.
+
+The handle-to-image contract is stored in `content/content-page-images.mjs`. Every image includes descriptive alternative text, explicit dimensions, responsive cropping, and a stable Shopify theme-asset reference. The same ten SHA-256-verified assets and `sections/main-page.liquid` mapping are deployed to:
+
+- Published theme `139460542525` (`main`)
+- Development theme `139216420925` (`unpublished`)
+
+Shopify readback details, hashes, sizes, public CDN URLs, and theme roles are recorded in `CONTENT_PAGE_IMAGES_SHOPIFY_READBACK.json`.
 
 ## Published page groups
 
@@ -96,6 +107,7 @@ The surrounding header layout, menus, Ask Snoozer entry point, Snooze Code contr
 
 - Content page backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-pages\2026-11-02T21-26-28-679Z`
 - Logo/theme backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\sharp-logo\2026-11-02T21-24-53-134Z`
+- Content-image/theme backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-page-images\2026-11-02T22-25-48-361Z`
 
 No credentials or customer information are stored in project documentation.
 
@@ -106,6 +118,9 @@ No credentials or customer information are stored in project documentation.
 - Idempotent logo plan: zero creates, zero updates, six unchanged assets.
 - Route contract: all 50 canonical URLs resolve through the existing protected storefront.
 - Actual browser rendering: published-theme header/logo, page title, body sections, booking CTA, Ask Snoozer action, FAQs, footer, and related-guide navigation verified.
+- Editorial image contract: 50/50 page handles mapped to 10/10 local PNG assets with descriptive alt text.
+- Shopify theme readback: 10/10 images and the page-section mapping hash-verified on both target themes.
+- Live browser validation: all ten visual groups loaded their expected 1672×941 CDN asset on representative published-theme pages.
 - `tests/runContentPageTests.mjs`: pass.
 
 The Online Store password remains enabled. Pages are published and render on the live theme for authenticated preview, but public visitors continue to see Shopify's existing password page until the owner deliberately opens the storefront.
