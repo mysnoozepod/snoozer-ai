@@ -1,0 +1,118 @@
+{%- liquid
+  assign is_collection = false
+  if collection != blank
+    assign is_collection = true
+  endif
+  assign heading = section.settings.heading
+  assign intro = section.settings.intro
+  if is_collection and heading == blank
+    assign heading = 'Need help narrowing ' | append: collection.title | append: '?'
+  endif
+-%}
+
+{%- style -%}
+  .guided-links-{{ section.id }} {
+    padding: clamp(3.2rem, 6vw, 6rem) 2rem;
+    color: #071d49;
+    background: linear-gradient(180deg, rgba(234, 243, 251, 0.62), rgba(255, 255, 255, 0));
+  }
+  .guided-links-{{ section.id }} .guided-links__inner { max-width: 132rem; margin: 0 auto; }
+  .guided-links-{{ section.id }} .guided-links__head { display: flex; gap: 2rem; align-items: end; justify-content: space-between; margin-bottom: 2.2rem; }
+  .guided-links-{{ section.id }} h2 { max-width: 72rem; margin: 0; font-size: clamp(2.8rem, 5vw, 4.8rem); line-height: 1.02; letter-spacing: -0.04em; }
+  .guided-links-{{ section.id }} .guided-links__intro { max-width: 54rem; margin: 1rem 0 0; color: rgba(7, 29, 73, 0.7); }
+  .guided-links-{{ section.id }} .guided-links__all { color: #12386f; font-weight: 750; white-space: nowrap; text-underline-offset: 0.3rem; }
+  .guided-links-{{ section.id }} .guided-links__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.4rem; }
+  .guided-links-{{ section.id }} .guided-links__card { display: flex; min-height: 17rem; flex-direction: column; padding: 2.4rem; border: 0.1rem solid rgba(7, 29, 73, 0.12); border-radius: 1.8rem; color: #071d49; text-decoration: none; background: #fff; box-shadow: 0 1.2rem 3.2rem rgba(7, 29, 73, 0.06); transition: transform 180ms ease, box-shadow 180ms ease; }
+  .guided-links-{{ section.id }} .guided-links__card:hover,
+  .guided-links-{{ section.id }} .guided-links__card:focus-visible { transform: translateY(-0.3rem); box-shadow: 0 1.8rem 4rem rgba(7, 29, 73, 0.11); outline: none; }
+  .guided-links-{{ section.id }} .guided-links__kicker { margin: 0 0 0.8rem; color: #2b5f91; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; }
+  .guided-links-{{ section.id }} .guided-links__card h3 { margin: 0; font-size: 2.2rem; }
+  .guided-links-{{ section.id }} .guided-links__card p { margin: 1rem 0 1.8rem; color: rgba(7, 29, 73, 0.68); line-height: 1.5; }
+  .guided-links-{{ section.id }} .guided-links__link { margin-top: auto; color: #12386f; font-weight: 750; }
+  .guided-links-{{ section.id }} .guided-links__filters { display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 0 0 2.4rem; }
+  .guided-links-{{ section.id }} .guided-links__filter { display: inline-flex; min-height: 4rem; align-items: center; padding: 0.8rem 1.4rem; border: 0.1rem solid rgba(7, 29, 73, 0.14); border-radius: 999px; color: #071d49; text-decoration: none; background: #fff; }
+  .guided-links-{{ section.id }} .guided-links__filter:hover,
+  .guided-links-{{ section.id }} .guided-links__filter:focus-visible { border-color: #12386f; outline: none; }
+  @media screen and (max-width: 749px) {
+    .guided-links-{{ section.id }} { padding-inline: 1.6rem; }
+    .guided-links-{{ section.id }} .guided-links__head { display: block; }
+    .guided-links-{{ section.id }} .guided-links__all { display: inline-block; margin-top: 1.4rem; }
+    .guided-links-{{ section.id }} .guided-links__grid { grid-template-columns: 1fr; }
+    .guided-links-{{ section.id }} .guided-links__card { min-height: 0; }
+  }
+{%- endstyle -%}
+
+<section class="guided-links-{{ section.id }}">
+  <div class="guided-links__inner">
+    <div class="guided-links__head">
+      <div>
+        <h2>{{ heading | escape }}</h2>
+        {%- if intro != blank -%}<p class="guided-links__intro">{{ intro | escape }}</p>{%- endif -%}
+      </div>
+      <a class="guided-links__all" href="/pages/sleep-tools">Explore all sleep tools →</a>
+    </div>
+
+    {%- if is_collection -%}
+      <nav class="guided-links__filters" aria-label="Popular {{ collection.title | escape }} filters">
+        {%- case collection.handle -%}
+          {%- when 'mattresses' -%}
+            <a class="guided-links__filter" href="{{ collection.url }}/comfort-memory-foam">Memory Foam</a>
+            <a class="guided-links__filter" href="{{ collection.url }}/comfort-hybrid">Hybrid</a>
+            <a class="guided-links__filter" href="{{ collection.url }}/comfort-dual-comfort">Dual Comfort</a>
+          {%- when 'pillows' -%}
+            <a class="guided-links__filter" href="/collections/zoned-pillows">Zoned</a>
+            <a class="guided-links__filter" href="/collections/filled-pillows">Filled</a>
+            <a class="guided-links__filter" href="/collections/foam-pillows">Foam</a>
+            <a class="guided-links__filter" href="/collections/temperature-regulating-pillows">Temperature Regulating</a>
+          {%- when 'adjustable-bases' -%}
+            <a class="guided-links__filter" href="/collections/flex-l">Flex L</a>
+            <a class="guided-links__filter" href="/collections/flex-lsx">Flex LSX</a>
+            <a class="guided-links__filter" href="/collections/flex-sh">Flex SH</a>
+          {%- when 'bedding', 'sheets', 'mattress-protectors', 'comforters', 'cooling-bedding' -%}
+            <a class="guided-links__filter" href="/collections/sheets">Sheets</a>
+            <a class="guided-links__filter" href="/collections/mattress-protectors">Protection</a>
+            <a class="guided-links__filter" href="/collections/comforters">Comforters</a>
+            <a class="guided-links__filter" href="/collections/cooling-bedding">Cooling</a>
+        {%- endcase -%}
+      </nav>
+    {%- endif -%}
+
+    <div class="guided-links__grid">
+      {%- if is_collection and collection.handle == 'pillows' -%}
+        <a class="guided-links__card" href="/pages/pillow-finder"><p class="guided-links__kicker">Find your direction</p><h3>Pillow Finder</h3><p>Narrow choices by sleep position, feel, material, and cooling.</p><span class="guided-links__link">Start →</span></a>
+        <a class="guided-links__card" href="/pages/compare-sleep-systems"><p class="guided-links__kicker">Compare clearly</p><h3>Compare Pillows</h3><p>Review available options using consistent Shopify product information.</p><span class="guided-links__link">Compare →</span></a>
+        <a class="guided-links__card" href="/pages/snooze-session-planner"><p class="guided-links__kicker">Try in person</p><h3>Plan Your Session</h3><p>Save what you want to test during a private showroom visit.</p><span class="guided-links__link">Plan →</span></a>
+      {%- elsif is_collection and collection.handle == 'mattresses' -%}
+        <a class="guided-links__card" href="/pages/mattress-finder"><p class="guided-links__kicker">Find your direction</p><h3>Mattress Finder</h3><p>Narrow the collection by comfort, construction, and how you sleep.</p><span class="guided-links__link">Start →</span></a>
+        <a class="guided-links__card" href="/pages/dual-comfort-planner"><p class="guided-links__kicker">Plan each side</p><h3>Dual Comfort Planner</h3><p>Save independent left and right comfort preferences safely.</p><span class="guided-links__link">Plan →</span></a>
+        <a class="guided-links__card" href="/pages/build-your-snoozepod"><p class="guided-links__kicker">Complete the system</p><h3>Build Your SnoozePod</h3><p>Plan the mattress, base, protection, pillows, and bedding together.</p><span class="guided-links__link">Build →</span></a>
+      {%- elsif is_collection and collection.handle == 'adjustable-bases' -%}
+        <a class="guided-links__card" href="/pages/compatibility-checker"><p class="guided-links__kicker">Verify the pairing</p><h3>Compatibility Checker</h3><p>Check size and geometry while preserving product-level unknowns.</p><span class="guided-links__link">Check →</span></a>
+        <a class="guided-links__card" href="/pages/room-delivery-planner"><p class="guided-links__kicker">Plan the space</p><h3>Room & Delivery Planner</h3><p>Record room and doorway measurements before ordering.</p><span class="guided-links__link">Plan →</span></a>
+        <a class="guided-links__card" href="/pages/build-your-snoozepod"><p class="guided-links__kicker">Complete the system</p><h3>Build Your SnoozePod</h3><p>Pair the base with a mattress and optional sleep essentials.</p><span class="guided-links__link">Build →</span></a>
+      {%- elsif is_collection -%}
+        <a class="guided-links__card" href="/pages/cooling-bedding-finder"><p class="guided-links__kicker">Narrow the layers</p><h3>Cooling & Bedding Finder</h3><p>Choose a starting direction for sheets, protection, comforters, and cooling.</p><span class="guided-links__link">Start →</span></a>
+        <a class="guided-links__card" href="/pages/compatibility-checker"><p class="guided-links__kicker">Verify fit</p><h3>Compatibility Checker</h3><p>Check size and geometry before treating a product as compatible.</p><span class="guided-links__link">Check →</span></a>
+        <a class="guided-links__card" href="/pages/snooze-session-planner"><p class="guided-links__kicker">Prepare your visit</p><h3>Snooze Session Planner</h3><p>Save products and questions for a private showroom visit.</p><span class="guided-links__link">Plan →</span></a>
+      {%- else -%}
+        <a class="guided-links__card" href="/pages/build-your-snoozepod"><p class="guided-links__kicker">Complete sleep system</p><h3>Build Your SnoozePod</h3><p>Plan the mattress, base, protection, pillows, and bedding together.</p><span class="guided-links__link">Start building →</span></a>
+        <a class="guided-links__card" href="/pages/mattress-finder"><p class="guided-links__kicker">Find a starting point</p><h3>Mattress Finder</h3><p>Narrow choices by comfort direction, construction, and how you sleep.</p><span class="guided-links__link">Find a mattress →</span></a>
+        <a class="guided-links__card" href="/pages/snooze-session-planner"><p class="guided-links__kicker">Prepare your visit</p><h3>Snooze Session Planner</h3><p>Save what you want to test and the questions you want answered.</p><span class="guided-links__link">Plan my session →</span></a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Guided shopping links",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Start With A Guided Tool" },
+    { "type": "textarea", "id": "intro", "label": "Introduction", "default": "Use a practical tool to narrow your next step, then continue online or bring the plan into a private Snooze Session." }
+  ],
+  "presets": [{ "name": "Guided shopping links" }]
+}
+{% endschema %}
+

@@ -68,6 +68,8 @@ export const mainMenuContract = {
         { title: 'H6', type: 'COLLECTION', collection: 'h6' },
         { title: 'M3', type: 'COLLECTION', collection: 'm3' },
         { title: 'M5', type: 'COLLECTION', collection: 'm5' },
+        pageLink('Mattress Finder', 'mattress-finder'),
+        pageLink('Dual Comfort Planner', 'dual-comfort-planner'),
         pageLink('Mattress Buying Guides', 'how-to-choose-the-right-mattress', [
           pageLink('How to Choose the Right Mattress', 'how-to-choose-the-right-mattress'),
           pageLink('Understanding Mattress Comfort', 'understanding-mattress-comfort-soft-to-firm'),
@@ -82,6 +84,7 @@ export const mainMenuContract = {
         { title: 'Flex L', type: 'COLLECTION', collection: 'flex-l' },
         { title: 'Flex LSX', type: 'COLLECTION', collection: 'flex-lsx' },
         { title: 'Flex SH', type: 'COLLECTION', collection: 'flex-sh' },
+        pageLink('Compatibility Checker', 'compatibility-checker'),
         pageLink('Adjustable Base Guides', 'how-to-choose-an-adjustable-base', [
           pageLink('Benefits of an Adjustable Base', 'benefits-of-an-adjustable-base'),
           pageLink('How to Choose an Adjustable Base', 'how-to-choose-an-adjustable-base'),
@@ -105,6 +108,8 @@ export const mainMenuContract = {
         { title: 'Comforters', type: 'COLLECTION', collection: 'comforters' },
         { title: 'Cooling & Bedding', type: 'COLLECTION', collection: 'cooling-bedding' },
         { title: 'Mattress Toppers', type: 'COLLECTION', collection: 'mattress-toppers' },
+        pageLink('Pillow Finder', 'pillow-finder'),
+        pageLink('Cooling & Bedding Finder', 'cooling-bedding-finder'),
         pageLink('Bedding Guides', 'how-to-find-the-right-pillow', [
           pageLink('How to Find the Right Pillow', 'how-to-find-the-right-pillow'),
           pageLink('How Mattress Protectors Help', 'how-mattress-protectors-help-protect-your-bed'),
@@ -119,7 +124,17 @@ export const mainMenuContract = {
         { title: 'Platform Bases', type: 'COLLECTION', collection: 'platform-bases' },
       ],
     },
-    pageLink('Sleep Guides', 'sleep-guides', [
+    pageLink('Guides & Tools', 'sleep-tools', [
+      pageLink('Explore All Sleep Tools', 'sleep-tools'),
+      pageLink('Build Your SnoozePod', 'build-your-snoozepod'),
+      pageLink('Mattress Finder', 'mattress-finder'),
+      pageLink('Compatibility Checker', 'compatibility-checker'),
+      pageLink('Compare Sleep Systems', 'compare-sleep-systems'),
+      pageLink('Snooze Session Planner', 'snooze-session-planner'),
+      pageLink('Dual Comfort Planner', 'dual-comfort-planner'),
+      pageLink('Pillow Finder', 'pillow-finder'),
+      pageLink('Cooling & Bedding Finder', 'cooling-bedding-finder'),
+      pageLink('Room & Delivery Planner', 'room-delivery-planner'),
       pageLink('Explore All Sleep Guides', 'sleep-guides'),
       ...guideGroups.map((group) => hubAnchor(group.title, group.id)),
     ]),
@@ -140,6 +155,8 @@ export const footerMenuContract = {
   handle: 'footer',
   title: 'Footer',
   items: [
+    pageLink('Sleep Tools', 'sleep-tools'),
+    pageLink('Build Your SnoozePod', 'build-your-snoozepod'),
     pageLink('Sleep Guides', 'sleep-guides'),
     pageLink('Book a Snooze Session', 'book-a-snooze-session'),
     pageLink('Snooze Assessment', 'snooze-assessment'),

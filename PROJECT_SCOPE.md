@@ -1,6 +1,6 @@
 # MySnoozePod.com Website Completion Scope
 
-Last updated: 2026-11-02 — content navigation and Shopify-authority checkpoint
+Last updated: 2026-11-02 — guided shopping experience live and validated
 Owner: Ty  
 Current phase: Phase 1 storefront implementation complete to current owner/manufacturer decision limits
 
@@ -27,6 +27,7 @@ Complete the existing MySnoozePod.com business asset so its primary conversion p
 | Booking | `sections/snoozer-landing-booking.liquid` embeds a Calendly routing form followed by a Calendly event. Snooze Code values can be propagated through query parameters and browser storage. Backend webhook processing is in `routes/bookingRoutes.js` and `services/bookingSession.js`. | **VERIFIED** in code and live mobile inspection; live webhook subscription state is **UNVERIFIED**. |
 | Assessment and identity | The standalone assessment posts to `/assessment`; the backend issues/resolves a six-digit Snooze Code and associates assessment/profile state. The theme persists identity in session/local storage. | **VERIFIED** in code. No production assessment was submitted. |
 | Ask Snoozer | Header interface posts to `/ask-snoozer`, carrying available identity context. Backend response composition and Shopify hydration remain behind the API boundary. Product answers must be hydrated from Shopify-authoritative native fields, variants, tags, collections, and verified metafields; missing commerce facts fail closed. | **VERIFIED** in code and presentation; the expanded retrieval contract is an owner-approved rule, not a completed backend implementation. |
+| Guided shopping | The homepage, collection template, and ten published planning pages provide a connected route from education to product discovery and Snooze Session preparation. Tools read Shopify-rendered product/variant/collection data, preserve unknown compatibility, save customer planning choices locally, and do not mutate the cart. | **VERIFIED** by theme/API readback, focused tests, and live desktop/mobile browser checks. |
 | Customer chat | Two Zoho SalesIQ widget scripts with different widget identifiers are included at `layout/theme.liquid:540-543`. | **VERIFIED** in code; intended widget/account is **UNVERIFIED**. |
 | Analytics | No explicit Google Analytics or Meta Pixel implementation was found in the targeted repository search. Shopify-admin pixels/custom events were not verified. | **VERIFIED** repository finding; **UNVERIFIED** admin configuration. |
 | Deployment | `omnia-journey/amplify.yml` builds the React app. The only GitHub workflow found refreshes living documentation and is not a theme deployment workflow. Theme publication mechanism and backend deployment pipeline were not proven from available evidence. | **VERIFIED** manifests; deployment relationships **UNVERIFIED**. |

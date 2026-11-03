@@ -1,0 +1,318 @@
+{
+  "generatedAt": "2026-11-03T00:07:45.588Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\guided-shopping\\2026-11-03T00-07-14-924Z",
+  "summary": {
+    "publishedToolPages": 10,
+    "verifiedThemes": 2,
+    "assetsPerTheme": 25
+  },
+  "pages": [
+    {
+      "id": "gid://shopify/Page/108937773117",
+      "title": "Sleep Tools",
+      "handle": "sleep-tools",
+      "isPublished": true,
+      "templateSuffix": "sleep-tools",
+      "bodySha256": "43754d4d5dae4a054b4df1ef8882e2a70704f6745b6364940898fd837da0a8d7",
+      "url": "https://mysnoozepod.com/pages/sleep-tools"
+    },
+    {
+      "id": "gid://shopify/Page/108937805885",
+      "title": "Build Your SnoozePod",
+      "handle": "build-your-snoozepod",
+      "isPublished": true,
+      "templateSuffix": "build-your-snoozepod",
+      "bodySha256": "f9392c8e06dd37c231bcd4297fa66f04d4a67a857dd3507e0d41a22b3f0aa67e",
+      "url": "https://mysnoozepod.com/pages/build-your-snoozepod"
+    },
+    {
+      "id": "gid://shopify/Page/108937838653",
+      "title": "Mattress Finder",
+      "handle": "mattress-finder",
+      "isPublished": true,
+      "templateSuffix": "mattress-finder",
+      "bodySha256": "7c237e6551b3291c7e9301993a40141bd7bc3de142307f4159f3d3d1b22b93d0",
+      "url": "https://mysnoozepod.com/pages/mattress-finder"
+    },
+    {
+      "id": "gid://shopify/Page/108937871421",
+      "title": "Sleep System Compatibility Checker",
+      "handle": "compatibility-checker",
+      "isPublished": true,
+      "templateSuffix": "compatibility-checker",
+      "bodySha256": "83e86d5f7ff4d8fd5a921a1e3cbb0527da3e4301f8ecf1ffc8b564c10d9b3411",
+      "url": "https://mysnoozepod.com/pages/compatibility-checker"
+    },
+    {
+      "id": "gid://shopify/Page/108937904189",
+      "title": "Compare Sleep Systems",
+      "handle": "compare-sleep-systems",
+      "isPublished": true,
+      "templateSuffix": "compare-sleep-systems",
+      "bodySha256": "67fa496cf1c285f4690ff579aa2250ac9710ddbac5c047f13fec5787ba26e3bf",
+      "url": "https://mysnoozepod.com/pages/compare-sleep-systems"
+    },
+    {
+      "id": "gid://shopify/Page/108937936957",
+      "title": "Snooze Session Planner",
+      "handle": "snooze-session-planner",
+      "isPublished": true,
+      "templateSuffix": "snooze-session-planner",
+      "bodySha256": "6f55af185e49de3a1d3032458ad00ad1ff82c97ed8a0f8aa10896c748dc014d9",
+      "url": "https://mysnoozepod.com/pages/snooze-session-planner"
+    },
+    {
+      "id": "gid://shopify/Page/108937969725",
+      "title": "Dual Comfort Planner",
+      "handle": "dual-comfort-planner",
+      "isPublished": true,
+      "templateSuffix": "dual-comfort-planner",
+      "bodySha256": "b1e8561d664062b8bc6ea1a59ce488f21860ff710458237ef1c46d6a709ac40f",
+      "url": "https://mysnoozepod.com/pages/dual-comfort-planner"
+    },
+    {
+      "id": "gid://shopify/Page/108938002493",
+      "title": "Pillow Finder",
+      "handle": "pillow-finder",
+      "isPublished": true,
+      "templateSuffix": "pillow-finder",
+      "bodySha256": "d726fd19a1f6568f0313b893eb0065e8c506a58f1d20d27a2852ead9021c7be9",
+      "url": "https://mysnoozepod.com/pages/pillow-finder"
+    },
+    {
+      "id": "gid://shopify/Page/108938035261",
+      "title": "Cooling & Bedding Finder",
+      "handle": "cooling-bedding-finder",
+      "isPublished": true,
+      "templateSuffix": "cooling-bedding-finder",
+      "bodySha256": "cafcf05d9255ce0b5289947166af05f4f099a9b8691396d7841f3749465118e8",
+      "url": "https://mysnoozepod.com/pages/cooling-bedding-finder"
+    },
+    {
+      "id": "gid://shopify/Page/108938068029",
+      "title": "Room & Delivery Planner",
+      "handle": "room-delivery-planner",
+      "isPublished": true,
+      "templateSuffix": "room-delivery-planner",
+      "bodySha256": "9ccf2c8d6b70e4daeb056a9c7693b346c52b1fb15dc2a1dd946654276477a49d",
+      "url": "https://mysnoozepod.com/pages/room-delivery-planner"
+    }
+  ],
+  "themes": [
+    {
+      "id": "139460542525",
+      "name": "snoozer-ai/main",
+      "role": "main",
+      "assets": [
+        {
+          "key": "assets/snoozepod-guided-tools.css",
+          "sha256": "655cb918a39f130eaa199d17104b27b814013da1dfa8b92e02d113e2a0ca5d0c"
+        },
+        {
+          "key": "assets/snoozepod-guided-tools.js",
+          "sha256": "ec340591486ad7f19362dfa2c3f7487993e4046474899051f2326bc5da0cf2dc"
+        },
+        {
+          "key": "sections/snoozepod-guided-tools.liquid",
+          "sha256": "24f88542fe58c82929d7968ab76c08fcea8afb844409b98a0b47883d24a838ed"
+        },
+        {
+          "key": "sections/snoozepod-guided-shopping-links.liquid",
+          "sha256": "9f04965f9847d88704504053131aeb5b01542818cbb0928edd6703f600cd73a1"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-builder.liquid",
+          "sha256": "c0ad623451c4686e6d360068ca0003ac87d6fc2f4e0a31d6dcad4a5abc603bae"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-mattress.liquid",
+          "sha256": "1e83a97d998d155d47b3a8c362dac2cb98eccbddd45f6f630c26dee37bfc2842"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-compatibility.liquid",
+          "sha256": "0caae7dc32e89f54c8fedcb93029366e79d145f25cae1b40df8e9a1f23a7d02e"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-compare.liquid",
+          "sha256": "14a307189b3a6466813b88ea22aae9fea459cac30fc1f833440007342573e9fa"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-session.liquid",
+          "sha256": "7f11442d794a6df3c6f99719e4c9959e76c8f2f3c10e2c2dd4bed8ce97972ace"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-dual-comfort.liquid",
+          "sha256": "ca2ebb92593f124cd045d7b9219e9ffd4a4390e8f5d6b665d4ff5dc694a12d19"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-pillow.liquid",
+          "sha256": "6e029372393270f0728698bb7841e68356bd64215669264879c01a3a3647e906"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-bedding.liquid",
+          "sha256": "56eb2284df166074c402a184cace6f51fd9c922d12ba2672383fea814243bb36"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-room.liquid",
+          "sha256": "2da8606266a487140957c8697f29bde1e9f99bb2a96712613da6cdaf64763928"
+        },
+        {
+          "key": "templates/page.sleep-tools.json",
+          "sha256": "68157b7e73093373ae1d5807f2ba29261af47051efa80897898a978dd003fb71"
+        },
+        {
+          "key": "templates/page.build-your-snoozepod.json",
+          "sha256": "a8adea5892668dca65963f7dbdcb31c46d65d29da097d2df8dda56704c05ff60"
+        },
+        {
+          "key": "templates/page.mattress-finder.json",
+          "sha256": "af9dcf39fad1d2d50b7f640bd77e7e264f6c843619f723fc90513014adf21079"
+        },
+        {
+          "key": "templates/page.compatibility-checker.json",
+          "sha256": "30493acf107f3073f653a418dd9e20113dc005ca067da1dfba534d37f22b1d2c"
+        },
+        {
+          "key": "templates/page.compare-sleep-systems.json",
+          "sha256": "4e56b547f3ab4a18421ec990d1c7e964b068976c0b50f89017aa17c8c653fe6d"
+        },
+        {
+          "key": "templates/page.snooze-session-planner.json",
+          "sha256": "bd012cdd7a9ad4668552dda1406858d3adbb8c9095510b0bae8001d4f78aa54c"
+        },
+        {
+          "key": "templates/page.dual-comfort-planner.json",
+          "sha256": "c13446638ff36c81416619d72fbb5c54cfa789171057e35133d0ffe684d5da9a"
+        },
+        {
+          "key": "templates/page.pillow-finder.json",
+          "sha256": "102a6c0b651b86ccba2edf57a53199b1af37b8dae65dccfcb5c6e0493791731a"
+        },
+        {
+          "key": "templates/page.cooling-bedding-finder.json",
+          "sha256": "bc30b24faea4a2238725acce1bba3a4843b2325e43dad1aceb976eefe5d5ef89"
+        },
+        {
+          "key": "templates/page.room-delivery-planner.json",
+          "sha256": "d608b4b47b125162450fadccc7c383213201b1d3c6c84d3165edb9f3a639284e"
+        },
+        {
+          "key": "templates/index.json",
+          "sha256": "c35add83babb97e1131439bd182cc77624974cd6affb389947d4f2c9da1c5451"
+        },
+        {
+          "key": "templates/collection.snoozepod-v1.json",
+          "sha256": "3889e46e1e3028eb0ddc942bed25538ac220759465eca6e977df887e0f8f642a"
+        }
+      ]
+    },
+    {
+      "id": "139216420925",
+      "name": "snoozer-ai/main",
+      "role": "unpublished",
+      "assets": [
+        {
+          "key": "assets/snoozepod-guided-tools.css",
+          "sha256": "655cb918a39f130eaa199d17104b27b814013da1dfa8b92e02d113e2a0ca5d0c"
+        },
+        {
+          "key": "assets/snoozepod-guided-tools.js",
+          "sha256": "ec340591486ad7f19362dfa2c3f7487993e4046474899051f2326bc5da0cf2dc"
+        },
+        {
+          "key": "sections/snoozepod-guided-tools.liquid",
+          "sha256": "24f88542fe58c82929d7968ab76c08fcea8afb844409b98a0b47883d24a838ed"
+        },
+        {
+          "key": "sections/snoozepod-guided-shopping-links.liquid",
+          "sha256": "9f04965f9847d88704504053131aeb5b01542818cbb0928edd6703f600cd73a1"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-builder.liquid",
+          "sha256": "c0ad623451c4686e6d360068ca0003ac87d6fc2f4e0a31d6dcad4a5abc603bae"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-mattress.liquid",
+          "sha256": "1e83a97d998d155d47b3a8c362dac2cb98eccbddd45f6f630c26dee37bfc2842"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-compatibility.liquid",
+          "sha256": "0caae7dc32e89f54c8fedcb93029366e79d145f25cae1b40df8e9a1f23a7d02e"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-compare.liquid",
+          "sha256": "14a307189b3a6466813b88ea22aae9fea459cac30fc1f833440007342573e9fa"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-session.liquid",
+          "sha256": "7f11442d794a6df3c6f99719e4c9959e76c8f2f3c10e2c2dd4bed8ce97972ace"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-dual-comfort.liquid",
+          "sha256": "ca2ebb92593f124cd045d7b9219e9ffd4a4390e8f5d6b665d4ff5dc694a12d19"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-pillow.liquid",
+          "sha256": "6e029372393270f0728698bb7841e68356bd64215669264879c01a3a3647e906"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-bedding.liquid",
+          "sha256": "56eb2284df166074c402a184cace6f51fd9c922d12ba2672383fea814243bb36"
+        },
+        {
+          "key": "snippets/snoozepod-tool-fields-room.liquid",
+          "sha256": "2da8606266a487140957c8697f29bde1e9f99bb2a96712613da6cdaf64763928"
+        },
+        {
+          "key": "templates/page.sleep-tools.json",
+          "sha256": "68157b7e73093373ae1d5807f2ba29261af47051efa80897898a978dd003fb71"
+        },
+        {
+          "key": "templates/page.build-your-snoozepod.json",
+          "sha256": "a8adea5892668dca65963f7dbdcb31c46d65d29da097d2df8dda56704c05ff60"
+        },
+        {
+          "key": "templates/page.mattress-finder.json",
+          "sha256": "af9dcf39fad1d2d50b7f640bd77e7e264f6c843619f723fc90513014adf21079"
+        },
+        {
+          "key": "templates/page.compatibility-checker.json",
+          "sha256": "30493acf107f3073f653a418dd9e20113dc005ca067da1dfba534d37f22b1d2c"
+        },
+        {
+          "key": "templates/page.compare-sleep-systems.json",
+          "sha256": "4e56b547f3ab4a18421ec990d1c7e964b068976c0b50f89017aa17c8c653fe6d"
+        },
+        {
+          "key": "templates/page.snooze-session-planner.json",
+          "sha256": "bd012cdd7a9ad4668552dda1406858d3adbb8c9095510b0bae8001d4f78aa54c"
+        },
+        {
+          "key": "templates/page.dual-comfort-planner.json",
+          "sha256": "c13446638ff36c81416619d72fbb5c54cfa789171057e35133d0ffe684d5da9a"
+        },
+        {
+          "key": "templates/page.pillow-finder.json",
+          "sha256": "102a6c0b651b86ccba2edf57a53199b1af37b8dae65dccfcb5c6e0493791731a"
+        },
+        {
+          "key": "templates/page.cooling-bedding-finder.json",
+          "sha256": "bc30b24faea4a2238725acce1bba3a4843b2325e43dad1aceb976eefe5d5ef89"
+        },
+        {
+          "key": "templates/page.room-delivery-planner.json",
+          "sha256": "d608b4b47b125162450fadccc7c383213201b1d3c6c84d3165edb9f3a639284e"
+        },
+        {
+          "key": "templates/index.json",
+          "sha256": "c35add83babb97e1131439bd182cc77624974cd6affb389947d4f2c9da1c5451"
+        },
+        {
+          "key": "templates/collection.snoozepod-v1.json",
+          "sha256": "3889e46e1e3028eb0ddc942bed25538ac220759465eca6e977df887e0f8f642a"
+        }
+      ]
+    }
+  ]
+}

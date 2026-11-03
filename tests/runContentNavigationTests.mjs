@@ -15,7 +15,7 @@ assert.equal(new Set(guideGroups.flatMap((group) => group.pages.map((page) => pa
 
 assert.equal(mainMenuContract.items.length, 7, 'desktop navigation keeps seven top-level destinations');
 assert(!mainMenuContract.items.some((item) => item.title === 'Home'), 'the redundant Home item is removed because the logo retains the home route');
-assert(mainMenuContract.items.some((item) => item.title === 'Sleep Guides' && item.url.endsWith('/pages/sleep-guides')), 'Sleep Guides is a primary navigation destination');
+assert(mainMenuContract.items.some((item) => item.title === 'Guides & Tools' && item.url.endsWith('/pages/sleep-tools')), 'Guides & Tools is a primary navigation destination');
 assert(mainMenuContract.items.find((item) => item.title === 'Mattresses').items.some((item) => item.title === 'Mattress Buying Guides'), 'mattress guides appear beside mattress shopping');
 assert(mainMenuContract.items.find((item) => item.title === 'Adjustable Bases').items.some((item) => item.title === 'Adjustable Base Guides'), 'base guides appear beside adjustable-base shopping');
 assert(mainMenuContract.items.find((item) => item.title === 'Sleep Essentials').items.some((item) => item.title === 'Bedding Guides'), 'bedding guides appear beside sleep essentials');
@@ -37,8 +37,8 @@ if (fs.existsSync(readbackPath)) {
     publishedGuidePages: 50,
     publishedHubPages: 1,
     verifiedMenus: 2,
-    mainMenuItems: 57,
-    footerMenuItems: 10,
+    mainMenuItems: 72,
+    footerMenuItems: 12,
   }, 'Shopify readback verifies both strategic navigation menus');
 }
 

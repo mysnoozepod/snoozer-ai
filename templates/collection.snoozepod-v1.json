@@ -95,6 +95,13 @@
         "heading": "Shop by Category"
       }
     },
+    "guided-shopping": {
+      "type": "snoozepod-guided-shopping-links",
+      "settings": {
+        "heading": "Need Help Narrowing Your Choices?",
+        "intro": "Use the filters and guided tools together. Shopify product data remains authoritative, and unknown compatibility stays unresolved."
+      }
+    },
     "product-grid": {
       "type": "main-collection-product-grid",
       "settings": {
@@ -131,6 +138,7 @@
   "order": [
     "hero",
     "category-navigation",
+    "guided-shopping",
     "product-grid",
     "closing"
   ]

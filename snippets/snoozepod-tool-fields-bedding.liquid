@@ -1,0 +1,13 @@
+<fieldset class="snoozepod-tools__fieldset">
+  <legend class="snoozepod-tools__legend">What are you trying to improve?</legend>
+  <div class="snoozepod-tools__choices">
+    {%- assign bedding_goals = 'cooling|Cooler Sleep,protection|Mattress Protection,sheets|Sheet Feel,comforter|Comforter Weight' | split: ',' -%}
+    {%- for value in bedding_goals -%}
+      {%- assign option = value | split: '|' -%}
+      <div class="snoozepod-tools__choice"><input type="radio" id="bedding-goal-{{ option[0] }}" name="bedding_goal" value="{{ option[0] }}"{% if forloop.first %} checked{% endif %}><label for="bedding-goal-{{ option[0] }}">{{ option[1] }}</label></div>
+    {%- endfor -%}
+  </div>
+</fieldset>
+<div class="snoozepod-tools__field"><label for="bedding-size">Bed size</label><select id="bedding-size" name="size"><option value="">Not sure yet</option><option>Twin XL</option><option>Full</option><option>Queen</option><option>King</option><option>California King</option><option>Split King</option></select></div>
+<div class="snoozepod-tools__field"><label for="bedding-geometry">Geometry</label><select id="bedding-geometry" name="geometry"><option value="standard">Standard</option><option value="split-head">Split Head</option><option value="full-split">Full Split</option><option value="unknown">Not sure</option></select></div>
+

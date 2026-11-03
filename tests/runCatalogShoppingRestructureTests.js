@@ -80,7 +80,10 @@ test('main navigation preserves existing destinations and adds mattress/base fam
   if (navigationReadback) {
     assert(mattresses.items.find((item) => item.title === 'Mattress Buying Guides'));
     assert(bases.items.find((item) => item.title === 'Adjustable Base Guides'));
-    assert(menu.items.find((item) => item.title === 'Sleep Guides'));
+    const guidesAndTools = menu.items.find((item) => item.title === 'Guides & Tools');
+    assert(guidesAndTools);
+    assert(guidesAndTools.items.find((item) => item.title === 'Explore All Sleep Guides'));
+    assert(guidesAndTools.items.find((item) => item.title === 'Build Your SnoozePod'));
   }
   assert(menu.items.find((item) => item.title === 'Your Showroom Visit'));
   assert(menu.items.find((item) => item.title === 'Our Story'));

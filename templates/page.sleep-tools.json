@@ -1,0 +1,22 @@
+{
+  "sections": {
+    "main": {
+      "type": "snoozepod-guided-tools",
+      "blocks": {
+        "builder": { "type": "tool", "settings": { "kicker": "Complete system", "title": "Build Your SnoozePod", "description": "Plan a mattress, base, protection, pillows, and bedding without forcing unverified additions.", "link": "/pages/build-your-snoozepod", "link_label": "Start building" } },
+        "mattress": { "type": "tool", "settings": { "kicker": "Find a starting point", "title": "Mattress Finder", "description": "Narrow the mattress collection by comfort direction, construction, and how you sleep.", "link": "/pages/mattress-finder", "link_label": "Find a mattress" } },
+        "compatibility": { "type": "tool", "settings": { "kicker": "Verify before buying", "title": "Compatibility Checker", "description": "Check size and geometry alignment while preserving product-level unknowns.", "link": "/pages/compatibility-checker", "link_label": "Check compatibility" } },
+        "compare": { "type": "tool", "settings": { "kicker": "Compare clearly", "title": "Compare Sleep Systems", "description": "Compare available products using consistent, Shopify-authoritative information.", "link": "/pages/compare-sleep-systems", "link_label": "Start comparing" } },
+        "session": { "type": "tool", "settings": { "kicker": "Prepare your visit", "title": "Snooze Session Planner", "description": "Save what you want to test and the questions you want answered.", "link": "/pages/snooze-session-planner", "link_label": "Plan my session" } },
+        "dual": { "type": "tool", "settings": { "kicker": "Plan each side", "title": "Dual Comfort Planner", "description": "Record independent left and right comfort preferences safely.", "link": "/pages/dual-comfort-planner", "link_label": "Plan both sides" } },
+        "pillow": { "type": "tool", "settings": { "kicker": "Support from the top down", "title": "Pillow Finder", "description": "Narrow pillows by sleep position, material direction, and cooling preference.", "link": "/pages/pillow-finder", "link_label": "Find a pillow" } },
+        "bedding": { "type": "tool", "settings": { "kicker": "Complete the environment", "title": "Cooling & Bedding Finder", "description": "Choose a starting direction for sheets, protection, comforters, and cooling layers.", "link": "/pages/cooling-bedding-finder", "link_label": "Explore bedding" } },
+        "room": { "type": "tool", "settings": { "kicker": "Plan the space", "title": "Room & Delivery Planner", "description": "Estimate room fit and record measurements before confirming exact dimensions.", "link": "/pages/room-delivery-planner", "link_label": "Plan my room" } }
+      },
+      "block_order": ["builder", "mattress", "compatibility", "compare", "session", "dual", "pillow", "bedding", "room"],
+      "settings": { "tool_type": "hub", "heading": "Sleep Tools", "eyebrow": "Guides & Tools", "summary": "Start wherever you are: find a mattress direction, build a complete system, check fit, or prepare for a private Snooze Session.", "action_label": "Show My Starting Point" }
+    }
+  },
+  "order": ["main"]
+}
+

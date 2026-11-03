@@ -1,0 +1,21 @@
+<fieldset class="snoozepod-tools__fieldset">
+  <legend class="snoozepod-tools__legend">Choose a category to compare</legend>
+  <div class="snoozepod-tools__choices">
+    {%- assign compare_categories = 'mattresses|Mattresses,bases|Adjustable Bases,pillows|Pillows,bedding|Bedding' | split: ',' -%}
+    {%- for value in compare_categories -%}
+      {%- assign option = value | split: '|' -%}
+      <div class="snoozepod-tools__choice"><input type="radio" id="compare-{{ option[0] }}" name="compare_category" value="{{ option[0] }}"{% if forloop.first %} checked{% endif %}><label for="compare-{{ option[0] }}">{{ option[1] }}</label></div>
+    {%- endfor -%}
+  </div>
+</fieldset>
+<fieldset class="snoozepod-tools__fieldset">
+  <legend class="snoozepod-tools__legend">What matters most?</legend>
+  <div class="snoozepod-tools__choices">
+    {%- assign comparison_priorities = 'comfort|Comfort,compatibility|Compatibility,cooling|Cooling,price|Price' | split: ',' -%}
+    {%- for value in comparison_priorities -%}
+      {%- assign option = value | split: '|' -%}
+      <div class="snoozepod-tools__choice"><input type="checkbox" id="compare-priority-{{ option[0] }}" name="priorities" value="{{ option[0] }}"><label for="compare-priority-{{ option[0] }}">{{ option[1] }}</label></div>
+    {%- endfor -%}
+  </div>
+</fieldset>
+

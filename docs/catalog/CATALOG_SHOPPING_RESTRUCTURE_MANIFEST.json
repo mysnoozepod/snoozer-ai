@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-11-02T23:03:49.259Z",
+  "generatedAt": "2026-11-03T00:11:27.176Z",
   "shop": "mysnoozepodtest.myshopify.com",
   "catalogBaseline": {
     "products": 43,
@@ -1742,6 +1742,16 @@
             "collection": "m5"
           },
           {
+            "title": "Mattress Finder",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/mattress-finder"
+          },
+          {
+            "title": "Dual Comfort Planner",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/dual-comfort-planner"
+          },
+          {
             "title": "Mattress Buying Guides",
             "type": "HTTP",
             "url": "https://mysnoozepod.com/pages/how-to-choose-the-right-mattress",
@@ -1794,6 +1804,11 @@
             "title": "Flex SH",
             "type": "COLLECTION",
             "collection": "flex-sh"
+          },
+          {
+            "title": "Compatibility Checker",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/compatibility-checker"
           },
           {
             "title": "Adjustable Base Guides",
@@ -1882,6 +1897,16 @@
             "collection": "mattress-toppers"
           },
           {
+            "title": "Pillow Finder",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/pillow-finder"
+          },
+          {
+            "title": "Cooling & Bedding Finder",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/cooling-bedding-finder"
+          },
+          {
             "title": "Bedding Guides",
             "type": "HTTP",
             "url": "https://mysnoozepod.com/pages/how-to-find-the-right-pillow",
@@ -1928,10 +1953,60 @@
         ]
       },
       {
-        "title": "Sleep Guides",
+        "title": "Guides & Tools",
         "type": "HTTP",
-        "url": "https://mysnoozepod.com/pages/sleep-guides",
+        "url": "https://mysnoozepod.com/pages/sleep-tools",
         "items": [
+          {
+            "title": "Explore All Sleep Tools",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/sleep-tools"
+          },
+          {
+            "title": "Build Your SnoozePod",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/build-your-snoozepod"
+          },
+          {
+            "title": "Mattress Finder",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/mattress-finder"
+          },
+          {
+            "title": "Compatibility Checker",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/compatibility-checker"
+          },
+          {
+            "title": "Compare Sleep Systems",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/compare-sleep-systems"
+          },
+          {
+            "title": "Snooze Session Planner",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/snooze-session-planner"
+          },
+          {
+            "title": "Dual Comfort Planner",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/dual-comfort-planner"
+          },
+          {
+            "title": "Pillow Finder",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/pillow-finder"
+          },
+          {
+            "title": "Cooling & Bedding Finder",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/cooling-bedding-finder"
+          },
+          {
+            "title": "Room & Delivery Planner",
+            "type": "HTTP",
+            "url": "https://mysnoozepod.com/pages/room-delivery-planner"
+          },
           {
             "title": "Explore All Sleep Guides",
             "type": "HTTP",

@@ -24,9 +24,9 @@ Shopify readback details, hashes, sizes, public CDN URLs, and theme roles are re
 
 ## Navigation and conversion placement
 
-The primary menu now uses seven focused destinations: Mattresses, Adjustable Bases, Sleep Essentials, Bedroom Furniture, Sleep Guides, Your Showroom Visit, and Our Story. Relevant educational links appear contextually under the product and visit branches, while Sleep Guides links to the full directory and its six page-group anchors. The logo remains the direct Home route, avoiding a redundant top-level Home item.
+The primary menu now uses seven focused destinations: Mattresses, Adjustable Bases, Sleep Essentials, Bedroom Furniture, Guides & Tools, Your Showroom Visit, and Our Story. Relevant educational links appear contextually under the product and visit branches, while Guides & Tools links to the Sleep Tools hub and preserves the complete Sleep Guides directory. The logo remains the direct Home route, avoiding a redundant top-level Home item.
 
-The footer now exposes Sleep Guides, booking, assessment, story, contact, delivery, trial, support, privacy, and terms. The hub lists all 50 guides exactly once across the six groups below. On guide pages, the template adds a compact related-topic discovery row and a responsive blue conversion band. Both the conversion band and any supporting page assets render inside the main page section before “Stay In The Loop.”
+The footer now exposes Sleep Tools, Build Your SnoozePod, Sleep Guides, booking, assessment, story, contact, delivery, trial, support, privacy, and terms. The hub lists all 50 guides exactly once across the six groups below. On guide pages, the template adds a compact related-topic discovery row and a responsive blue conversion band. Both the conversion band and any supporting page assets render inside the main page section before “Stay In The Loop.”
 
 The durable menu/page-group contract is `content/content-navigation.mjs`; the bounded Admin API staging/readback workflow is `scripts/stage-content-navigation.mjs`; and the verified result is recorded in `CONTENT_NAVIGATION_SHOPIFY_READBACK.json`.
 
@@ -125,7 +125,7 @@ No credentials or customer information are stored in project documentation.
 ## Validation
 
 - Shopify readback: 51 expected, 51 verified, 51 published (50 guides plus one hub).
-- Navigation readback: 50 guide pages, one hub, two verified menus, 57 nested primary-menu items, and ten footer items.
+- Navigation readback: 50 guide pages, one guide hub, ten guided-shopping pages, two verified menus, 72 nested primary-menu items, and 12 footer items.
 - Idempotent content plan: zero creates, zero updates, 51 unchanged.
 - Idempotent navigation plan: both managed menus unchanged after apply.
 - Idempotent logo plan: zero creates, zero updates, six unchanged assets.
@@ -141,4 +141,4 @@ No credentials or customer information are stored in project documentation.
 
 The guide library is educational content, not commerce authority. A future Snoozer retrieval task should hydrate product answers from Shopify-native product and variant fields, exact namespaced tags, collection membership, and verified metafields/metadata through the established commerce boundary. Missing or conflicting values must remain unknown; page prose or model inference must not establish price, availability, variant, compatibility, or fulfillment facts.
 
-The Online Store password remains enabled. Pages are published and render on the live theme for authenticated preview, but public visitors continue to see Shopify's existing password page until the owner deliberately opens the storefront.
+The Online Store password remains enabled. Pages are published and render on the live theme for authenticated preview, but public visitors continue to see Shopify's existing password page until the owner deliberately opens the storefront. The expanded tools release is documented separately in `../guided-shopping/GUIDED_SHOPPING_RELEASE.md`.
