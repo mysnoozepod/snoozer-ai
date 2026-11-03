@@ -1,7 +1,8 @@
 <fieldset class="snoozepod-tools__fieldset">
   <legend class="snoozepod-tools__legend">Primary sleep position</legend>
   <div class="snoozepod-tools__choices">
-    {%- for value in 'side|Side,back|Back,stomach|Stomach,combination|Combination' | split: ',' -%}
+    {%- assign pillow_positions = 'side|Side,back|Back,stomach|Stomach,combination|Combination' | split: ',' -%}
+    {%- for value in pillow_positions -%}
       {%- assign option = value | split: '|' -%}
       <div class="snoozepod-tools__choice"><input type="radio" id="pillow-position-{{ option[0] }}" name="sleep_position" value="{{ option[0] }}"{% if forloop.first %} checked{% endif %}><label for="pillow-position-{{ option[0] }}">{{ option[1] }}</label></div>
     {%- endfor -%}
@@ -10,7 +11,8 @@
 <fieldset class="snoozepod-tools__fieldset">
   <legend class="snoozepod-tools__legend">Preferred pillow direction</legend>
   <div class="snoozepod-tools__choices">
-    {%- for value in 'zoned|Zoned Support,filled|Filled & Adaptable,foam|Foam,temperature-regulating|Temperature Regulating' | split: ',' -%}
+    {%- assign pillow_directions = 'zoned|Zoned Support,filled|Filled & Adaptable,foam|Foam,temperature-regulating|Temperature Regulating' | split: ',' -%}
+    {%- for value in pillow_directions -%}
       {%- assign option = value | split: '|' -%}
       <div class="snoozepod-tools__choice"><input type="radio" id="pillow-type-{{ option[0] }}" name="pillow_type" value="{{ option[0] }}"{% if forloop.last %} checked{% endif %}><label for="pillow-type-{{ option[0] }}">{{ option[1] }}</label></div>
     {%- endfor -%}

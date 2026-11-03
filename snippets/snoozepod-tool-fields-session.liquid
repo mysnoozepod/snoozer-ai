@@ -1,7 +1,8 @@
 <fieldset class="snoozepod-tools__fieldset">
   <legend class="snoozepod-tools__legend">What do you want to test?</legend>
   <div class="snoozepod-tools__choices">
-    {%- for value in 'mattresses|Mattresses,bases|Adjustable Bases,dual-comfort|Dual Comfort,pillows|Pillows,bedding|Bedding,room|Room Setup' | split: ',' -%}
+    {%- assign session_items = 'mattresses|Mattresses,bases|Adjustable Bases,dual-comfort|Dual Comfort,pillows|Pillows,bedding|Bedding,room|Room Setup' | split: ',' -%}
+    {%- for value in session_items -%}
       {%- assign option = value | split: '|' -%}
       <div class="snoozepod-tools__choice"><input type="checkbox" id="session-{{ option[0] }}" name="test_items" value="{{ option[0] }}"><label for="session-{{ option[0] }}">{{ option[1] }}</label></div>
     {%- endfor -%}

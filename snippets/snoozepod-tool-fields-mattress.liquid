@@ -1,7 +1,8 @@
 <fieldset class="snoozepod-tools__fieldset">
   <legend class="snoozepod-tools__legend">Which comfort direction sounds closest?</legend>
   <div class="snoozepod-tools__choices">
-    {%- for value in 'Soft,Medium Soft,Medium Firm,Firm' | split: ',' -%}
+    {%- assign comfort_choices = 'Soft,Medium Soft,Medium Firm,Firm' | split: ',' -%}
+    {%- for value in comfort_choices -%}
       {%- assign key = value | handleize -%}
       <div class="snoozepod-tools__choice"><input type="radio" id="finder-comfort-{{ key }}" name="comfort" value="{{ value }}"{% if forloop.index == 3 %} checked{% endif %}><label for="finder-comfort-{{ key }}">{{ value }}</label></div>
     {%- endfor -%}
@@ -10,7 +11,8 @@
 <fieldset class="snoozepod-tools__fieldset">
   <legend class="snoozepod-tools__legend">Choose a construction direction</legend>
   <div class="snoozepod-tools__choices">
-    {%- for value in 'memory-foam|Memory Foam,hybrid|Hybrid,dual-comfort|Dual Comfort,not-sure|Not Sure' | split: ',' -%}
+    {%- assign construction_choices = 'memory-foam|Memory Foam,hybrid|Hybrid,dual-comfort|Dual Comfort,not-sure|Not Sure' | split: ',' -%}
+    {%- for value in construction_choices -%}
       {%- assign option = value | split: '|' -%}
       <div class="snoozepod-tools__choice"><input type="radio" id="finder-type-{{ option[0] }}" name="construction" value="{{ option[0] }}"{% if forloop.last %} checked{% endif %}><label for="finder-type-{{ option[0] }}">{{ option[1] }}</label></div>
     {%- endfor -%}
@@ -19,7 +21,8 @@
 <fieldset class="snoozepod-tools__fieldset">
   <legend class="snoozepod-tools__legend">How do you usually sleep?</legend>
   <div class="snoozepod-tools__choices">
-    {%- for value in 'side|Side,back|Back,combination|Combination,partners|Different Partner Needs' | split: ',' -%}
+    {%- assign position_choices = 'side|Side,back|Back,combination|Combination,partners|Different Partner Needs' | split: ',' -%}
+    {%- for value in position_choices -%}
       {%- assign option = value | split: '|' -%}
       <div class="snoozepod-tools__choice"><input type="radio" id="finder-position-{{ option[0] }}" name="sleep_position" value="{{ option[0] }}"{% if forloop.index == 3 %} checked{% endif %}><label for="finder-position-{{ option[0] }}">{{ option[1] }}</label></div>
     {%- endfor -%}

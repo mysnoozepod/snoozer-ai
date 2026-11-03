@@ -1,7 +1,8 @@
 <fieldset class="snoozepod-tools__fieldset">
   <legend class="snoozepod-tools__legend">What are you trying to improve?</legend>
   <div class="snoozepod-tools__choices">
-    {%- for value in 'cooling|Cooler Sleep,protection|Mattress Protection,sheets|Sheet Feel,comforter|Comforter Weight' | split: ',' -%}
+    {%- assign bedding_goals = 'cooling|Cooler Sleep,protection|Mattress Protection,sheets|Sheet Feel,comforter|Comforter Weight' | split: ',' -%}
+    {%- for value in bedding_goals -%}
       {%- assign option = value | split: '|' -%}
       <div class="snoozepod-tools__choice"><input type="radio" id="bedding-goal-{{ option[0] }}" name="bedding_goal" value="{{ option[0] }}"{% if forloop.first %} checked{% endif %}><label for="bedding-goal-{{ option[0] }}">{{ option[1] }}</label></div>
     {%- endfor -%}

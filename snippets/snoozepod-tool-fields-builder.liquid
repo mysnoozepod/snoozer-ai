@@ -1,7 +1,8 @@
 <fieldset class="snoozepod-tools__fieldset">
   <legend class="snoozepod-tools__legend">1. What mattress direction should anchor the system?</legend>
   <div class="snoozepod-tools__choices">
-    {%- for value in 'memory-foam|Memory Foam,hybrid|Hybrid,dual-comfort|Dual Comfort,not-sure|Not Sure Yet' | split: ',' -%}
+    {%- assign mattress_directions = 'memory-foam|Memory Foam,hybrid|Hybrid,dual-comfort|Dual Comfort,not-sure|Not Sure Yet' | split: ',' -%}
+    {%- for value in mattress_directions -%}
       {%- assign option = value | split: '|' -%}
       <div class="snoozepod-tools__choice"><input type="radio" id="builder-mattress-{{ option[0] }}" name="mattress_direction" value="{{ option[0] }}"{% if forloop.last %} checked{% endif %}><label for="builder-mattress-{{ option[0] }}">{{ option[1] }}</label></div>
     {%- endfor -%}
@@ -16,7 +17,8 @@
   <legend class="snoozepod-tools__legend">3. What should the complete system include?</legend>
   <p class="snoozepod-tools__help">Everything is optional. Selecting an item creates a planning request, not a compatibility claim.</p>
   <div class="snoozepod-tools__choices">
-    {%- for value in 'base|Adjustable Base,protection|Mattress Protection,pillows|Pillows,bedding|Sheets & Bedding' | split: ',' -%}
+    {%- assign system_components = 'base|Adjustable Base,protection|Mattress Protection,pillows|Pillows,bedding|Sheets & Bedding' | split: ',' -%}
+    {%- for value in system_components -%}
       {%- assign option = value | split: '|' -%}
       <div class="snoozepod-tools__choice"><input type="checkbox" id="builder-{{ option[0] }}" name="components" value="{{ option[0] }}"><label for="builder-{{ option[0] }}">{{ option[1] }}</label></div>
     {%- endfor -%}
