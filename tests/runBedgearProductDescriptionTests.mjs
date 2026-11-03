@@ -5,6 +5,8 @@ import {
   bedgearBrandDescriptionHtml,
   bedgearBrandParagraphs,
   bedgearDescriptionSource,
+  bedgearOfficialProductCopy,
+  bedgearOfficialProductDescriptionHtml,
   bedgearProductHandles,
 } from '../content/bedgear-brand-description.mjs';
 
@@ -19,6 +21,13 @@ assert.match(bedgearBrandDescriptionHtml, /data-mysnoozepod-bedgear-boilerplate=
 assert.match(bedgearBrandDescriptionHtml, /One Size Does Not Fit All®/, 'registered brand language is preserved');
 assert.match(bedgearBrandDescriptionHtml, /Wake Ready®/, 'official brand language is preserved');
 assert.equal(bedgearDescriptionSource.sharedUrl, 'https://bedgear.pxm.pattern.com/share/RWlH0Qhcsk');
+assert.equal(Object.keys(bedgearOfficialProductCopy).length, 18, '18 exact current BEDGEAR product pages have model-level source matches');
+assert.equal(new Set(Object.values(bedgearOfficialProductCopy).map((copy) => copy.sourceUrl)).size, 16, 'official source URLs are retained for auditability');
+for (const [handle, copy] of Object.entries(bedgearOfficialProductCopy)) {
+  assert(bedgearProductHandles.includes(handle), `${handle} must be an approved BEDGEAR product`);
+  assert.match(copy.sourceUrl, /^https:\/\/bedgear\.com\/products\//, `${handle} must use an official BEDGEAR product source`);
+  assert.match(bedgearOfficialProductDescriptionHtml(handle), /Product Overview/, `${handle} must render product-level copy`);
+}
 
 if (fs.existsSync(readbackPath)) {
   const readback = JSON.parse(fs.readFileSync(readbackPath, 'utf8'));
@@ -30,7 +39,8 @@ if (fs.existsSync(readbackPath)) {
   assert(readback.products.every((product) => product.vendor === 'BEDGEAR'));
   assert(readback.products.every((product) => ['DRAFT', 'ACTIVE'].includes(product.status)));
   assert(readback.products.every((product) => product.containsOfficialBedgearBoilerplate));
+  assert.equal(readback.products.filter((product) => product.containsOfficialProductCopy).length, 18, 'all exact official matches have product-specific copy');
 }
 
-console.log('BEDGEAR product descriptions: PASS (20 exact product targets and official January 2026 brand boilerplate).');
+console.log('BEDGEAR product descriptions: PASS (20 exact targets, 18 official product-page matches, and brand boilerplate).');
 

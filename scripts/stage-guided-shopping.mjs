@@ -23,6 +23,8 @@ const themeAssetPaths = [
   'assets/snoozepod-guided-tools.js',
   'sections/snoozepod-guided-tools.liquid',
   'sections/snoozepod-guided-shopping-links.liquid',
+  'sections/snoozepod-collection-navigation-v1.liquid',
+  'snippets/snoozepod-product-navigation-card.liquid',
   'snippets/snoozepod-tool-fields-builder.liquid',
   'snippets/snoozepod-tool-fields-mattress.liquid',
   'snippets/snoozepod-tool-fields-compatibility.liquid',
@@ -118,7 +120,7 @@ async function shopify(pathname, options = {}) {
       continue;
     }
     const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload) fail(`Shopify request failed for ${pathname}: HTTP ${response.status}.`);
+    if (!response.ok || !payload) fail(`Shopify request failed for ${pathname}: HTTP ${response.status}. ${payload ? JSON.stringify(payload) : 'No JSON response.'}`);
     return payload;
   }
   fail(`Shopify request remained throttled for ${pathname}.`);

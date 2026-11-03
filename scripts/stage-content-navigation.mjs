@@ -59,6 +59,7 @@ async function graphql(query, variables = {}) {
 
 const INSPECT = `query ContentNavigationInspection {
   pages(first: 250) { nodes { id title handle isPublished } }
+  products(first: 250) { nodes { id title handle status } }
   collections(first: 250) { nodes { id title handle } }
   menus(first: 50) {
     nodes {
@@ -75,19 +76,24 @@ const MENU_UPDATE = `mutation UpdateContentNavigation($id: ID!, $title: String!,
   }
 }`;
 
-function resolveItems(items, collections) {
+function resolveItems(items, collections, products) {
   return items.map((item) => {
     const resolved = { title: item.title, type: item.type };
     if (item.collection) {
       const collection = collections.get(item.collection);
       if (!collection) fail(`Navigation item ${item.title} references missing collection ${item.collection}.`);
       resolved.resourceId = collection.id;
+    } else if (item.product) {
+      const product = products.get(item.product);
+      if (!product) fail(`Navigation item ${item.title} references missing product ${item.product}.`);
+      if (product.status !== 'ACTIVE') fail(`Navigation item ${item.title} references non-active product ${item.product}.`);
+      resolved.resourceId = product.id;
     } else if (item.url) {
       resolved.url = item.url;
     } else {
       fail(`Navigation item ${item.title} has no destination.`);
     }
-    if (item.items?.length) resolved.items = resolveItems(item.items, collections);
+    if (item.items?.length) resolved.items = resolveItems(item.items, collections, products);
     return resolved;
   });
 }
@@ -96,7 +102,7 @@ function normalizedItem(item) {
   return {
     title: item.title,
     type: item.type,
-    destination: item.type === 'COLLECTION' ? item.resourceId : item.url,
+    destination: ['COLLECTION', 'PRODUCT'].includes(item.type) ? item.resourceId : item.url,
     items: (item.items || []).map(normalizedItem),
   };
 }
@@ -133,6 +139,7 @@ function expectedPageHandles() {
 
 const before = await graphql(INSPECT);
 const pages = new Map(before.pages.nodes.map((page) => [page.handle, page]));
+const products = new Map(before.products.nodes.map((product) => [product.handle, product]));
 const collections = new Map(before.collections.nodes.map((collection) => [collection.handle, collection]));
 const menus = new Map(before.menus.nodes.map((menu) => [menu.handle, menu]));
 
@@ -145,7 +152,7 @@ const contracts = [mainMenuContract, footerMenuContract];
 const plan = contracts.map((contract) => {
   const current = menus.get(contract.handle);
   if (!current) fail(`Required Shopify menu ${contract.handle} was not found.`);
-  const resolvedItems = resolveItems(contract.items, collections);
+  const resolvedItems = resolveItems(contract.items, collections, products);
   const desiredShape = desiredMenuShape(contract, resolvedItems);
   const currentShape = normalizedMenu(current);
   return {

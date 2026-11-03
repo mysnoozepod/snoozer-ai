@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-11-03T03:12:12.252Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\single-product-collection-cleanup\\2026-11-03T03-12-10-669Z",
+  "outcome": "Seven single-product collections retained in Admin but unpublished from Online Store.",
+  "collections": [
+    {
+      "id": "gid://shopify/Collection/302125547581",
+      "handle": "s7",
+      "productHandle": "bedgear-s7-12-memory-foam",
+      "onlineStorePublished": false
+    },
+    {
+      "id": "gid://shopify/Collection/302125580349",
+      "handle": "h6",
+      "productHandle": "bedgear-h6-12-hybrid",
+      "onlineStorePublished": false
+    },
+    {
+      "id": "gid://shopify/Collection/302125613117",
+      "handle": "m3",
+      "productHandle": "bedgear-m3-12-dual-comfort",
+      "onlineStorePublished": false
+    },
+    {
+      "id": "gid://shopify/Collection/302125645885",
+      "handle": "m5",
+      "productHandle": "bedgear-m5-14-dual-comfort",
+      "onlineStorePublished": false
+    },
+    {
+      "id": "gid://shopify/Collection/302125711421",
+      "handle": "flex-l",
+      "productHandle": "flex-l-adjustable-base",
+      "onlineStorePublished": false
+    },
+    {
+      "id": "gid://shopify/Collection/302125744189",
+      "handle": "flex-lsx",
+      "productHandle": "flex-lsx-adjustable-base",
+      "onlineStorePublished": false
+    },
+    {
+      "id": "gid://shopify/Collection/302125776957",
+      "handle": "flex-sh",
+      "productHandle": "flex-sh-adjustable-base",
+      "onlineStorePublished": false
+    }
+  ]
+}

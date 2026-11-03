@@ -1,13 +1,15 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-02 — official BEDGEAR brand descriptions live
+Last updated: 2026-11-02 — direct product navigation and official BEDGEAR product copy live
 Owner: Ty  
 Implementer: Codi  
-Current phase: Active tagged catalog with official BEDGEAR brand copy; educational library, guided tools, connected homepage/collections, strategic navigation, imagery, sharp logo, and conversion placement live behind the existing storefront password
+Current phase: Active tagged catalog with direct model-to-product navigation and official BEDGEAR product copy; educational library, guided tools, connected homepage/collections, imagery, sharp logo, and conversion placement live behind the existing storefront password
 
 ## Current task and authority
 
-The latest owner request supplied BEDGEAR's PXM description share and authorized adding the copy to the appropriate products. The share contains one January 2026 company-boilerplate DOCX, not product-model specifications. All 20 exact BEDGEAR products now carry that copy as a labeled `About BEDGEAR` block in the native Shopify product description. Current Shopify readback reports all 43 products Active; the description task preserved that pre-existing status and every identity, tag, template, variant, SKU, price, and option field.
+The latest owner request rejected the model-level collection detours and directed use of BEDGEAR.com for actual manufacturer information. S7, H6, M3, M5, Flex L, Flex LSX, and Flex SH now resolve directly to canonical Shopify products from the main menu, parent collection cards, and adjustable-base quick links. The seven obsolete one-product collections were not deleted; they were unpublished from Online Store after exact membership and replacement routes were verified.
+
+Official BEDGEAR product pages were matched by exact identity to 18 of the 20 BEDGEAR products. Those 18 now carry concise source-bound `Product Overview` and `Key Features` blocks before the existing `About BEDGEAR` block. No exact current BEDGEAR.com product page was verified for the Solid White or Light Grey Racetrack duvet/sham sets, so those two retain only the company boilerplate. Current Shopify readback still reports all 43 products Active; product identity, status, tags, template, variant, SKU, price, option, media, inventory, and collection membership were preserved.
 
 M3/M5 product-page independent Left/Right 0.0–3.0 selection remains fail closed. The new customer-facing Dual Comfort Planner uses the approved Soft, Medium Soft, Medium Firm, and Firm language and records preference only. No exact sell-unit mapping is currently verified, so Add to Cart remains disabled for unresolved M3/M5 combinations. No product was activated, the development theme remains unpublished, and no cart, order, backend deployment, Calendly change, or AWS mutation occurred.
 
@@ -15,7 +17,7 @@ M3/M5 product-page independent Left/Right 0.0–3.0 selection remains fail close
 
 - Repository: `https://github.com/mysnoozepod/snoozer-ai.git`
 - Branch: `main`
-- Approved historical starting commit: `f5056cf9b3ee3392f0da01064f7171ea7c1ff01b`; start-of-navigation-task HEAD: `30cf6f93f52da9baf6d713dbf90ed037730ac5ce`.
+- Approved historical starting commit: `f5056cf9b3ee3392f0da01064f7171ea7c1ff01b`; start-of-this-correction HEAD: `e0bad6b75b2214760a6eee05efa3d084ede46e3e`.
 - Owner decision: GitHub `main` is the canonical development baseline; do not reset it to the historical builder commit.
 - Published Shopify theme: ID `139460542525`, name `snoozer-ai/main`, role `main`.
 - Shopify catalog at this checkpoint: 43 Active products, 274 variants, and 25 automated collections; durable IDs are recorded in the catalog manifests/readbacks. The status change from the earlier Draft checkpoint occurred outside the BEDGEAR description task.
@@ -431,24 +433,25 @@ Snoozer must retrieve product information through the Shopify-authoritative comm
 - The homepage routes customers into Build Your SnoozePod, Mattress Finder, and Snooze Session Planner before collection exploration. The collection template adds contextual tools and curated exact-tag links before the native Shopify grid/filter area.
 - The dedicated Build Your SnoozePod page plans mattress direction, size, geometry, base, protection, pillows, and bedding. Every accessory is optional. Submission stores a recoverable local plan and performs no cart request.
 - Live published-theme validation verified: M3/M5 suggestions for a Dual Comfort / King / Split Head plan; explicit pending compatibility; Queen Standard versus King Split Head mismatch rejection; independent Soft-left/Firm-right preference storage; homepage placement; `/collections/mattresses` guidance, quick links, and four product cards; 390×844 mobile rendering; and zero browser console warnings/errors.
-- Shopify readback confirms 10/10 published pages and 25/25 assets on each of themes `139460542525` and `139216420925`. The bounded staging plan is idempotent with 10 pages and 50 cross-theme assets unchanged.
+- Shopify readback confirms 10/10 published pages and 27/27 assets on each of themes `139460542525` and `139216420925`. The added bounded assets provide direct product cards for the mattress and adjustable-base parent collections.
 - Shopify menu readback confirms 72 nested primary-menu items and 12 footer items. `Guides & Tools` now routes through the Sleep Tools hub while strategic tools also appear beneath relevant commerce branches.
 - Private backups: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\guided-shopping\2026-11-03T00-07-14-924Z` and `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\content-navigation\2026-11-03T00-06-04-708Z`.
 - Durable readbacks: `docs/guided-shopping/GUIDED_SHOPPING_SHOPIFY_READBACK.json` and `docs/content-pages/CONTENT_NAVIGATION_SHOPIFY_READBACK.json`.
 - No cart, order, product, variant, price, inventory, status, collection rule, AWS, Calendly, password, deployment, or theme-role mutation occurred. The store remains password protected and the development theme remains unpublished.
 
-## BEDGEAR product-description checkpoint — 2026-11-02
+## Direct product navigation and BEDGEAR product-copy checkpoint — 2026-11-02
 
 - Owner source: `https://bedgear.pxm.pattern.com/share/RWlH0Qhcsk`.
-- The share contains `BEDGEAR Boilerplate - Updated January 2026-.docx`, uploaded January 22, 2026. It contains an `About BEDGEAR` heading and five company-level paragraphs; it does not contain model-specific product descriptions or specifications.
-- `content/bedgear-brand-description.mjs` preserves the source copy, the exact 20-product BEDGEAR handle mapping, source URL/date, and idempotent version marker.
+- The PXM share contains `BEDGEAR Boilerplate - Updated January 2026-.docx`, uploaded January 22, 2026. It remains the source for the separate `About BEDGEAR` block.
+- `content/bedgear-brand-description.mjs` now also maps 18 exact Shopify handles to current official BEDGEAR.com product pages, a concise overview, and verified key features. Each mapping retains its manufacturer source URL and an idempotent product-copy marker.
 - `scripts/stage-bedgear-product-descriptions.mjs` performs bounded plan/apply/readback, requires the exact 43-product catalog and exact 20-product vendor set, backs up current descriptions, and fingerprints every non-description product/variant field before and after mutation.
-- All 20 BEDGEAR descriptions are live and verified. The final idempotent plan reports zero creates, zero refreshes, and 20 unchanged products.
-- Actual S7 storefront rendering verifies the Product Details accordion, `About BEDGEAR` heading, all five paragraphs, trademark symbols, price, size selector, booking, Add to Cart, Ask Snoozer, media, and footer.
+- All 20 BEDGEAR descriptions are live and verified. Eighteen include exact product-level copy; the two unmatched duvet/sham products retain only the brand block. The final idempotent plan reports zero creates, zero refreshes, and 20 unchanged products.
+- Actual Flex L storefront rendering verifies direct menu navigation, the Product Details accordion, Product Overview, four Key Features, the About BEDGEAR block, price, size selector, booking, Add to Cart, Ask Snoozer, media, and footer.
 - Shopify currently reports all 43 products as Active. That state existed before the description write and was preserved exactly; this task did not activate or deactivate merchandise.
 - Readback: `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS_SHOPIFY_READBACK.json`.
-- Recovery backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\bedgear-product-descriptions\2026-11-03T02-57-52-817Z`.
-- Remaining content dependency: exact manufacturer copy/specifications for each individual BEDGEAR model. Do not derive model claims from the company boilerplate.
+- Recovery backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\bedgear-product-descriptions\2026-11-03T03-14-37-785Z`.
+- Navigation recovery/readback: `docs/content-pages/CONTENT_NAVIGATION_SHOPIFY_READBACK.json`, `docs/guided-shopping/GUIDED_SHOPPING_SHOPIFY_READBACK.json`, and `docs/catalog/SINGLE_PRODUCT_COLLECTION_CLEANUP_READBACK.json`. The seven old collections were unpublished, not deleted.
+- Remaining content dependency: exact current manufacturer product pages for `solid-white-duvet-sham-set` and `light-grey-racetrack-duvet-sham-set`. Do not infer product claims from similarly named bedding.
 
 ## Exact next action
 
@@ -458,4 +461,4 @@ For all 43 current products, map only manufacturer-verified values into the ten 
 
 ## Resume rule
 
-On resume, first recheck Git status/HEAD, `docs/catalog/catalog-shopping-restructure-shopify-readback.json`, `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS_SHOPIFY_READBACK.json`, `docs/content-pages/CONTENT_NAVIGATION_SHOPIFY_READBACK.json`, `docs/guided-shopping/GUIDED_SHOPPING_SHOPIFY_READBACK.json`, and plan-only runs of the BEDGEAR-description, content-page, page-image, content-navigation, and guided-shopping staging scripts. Preserve unpublished theme `139216420925`, published theme `139460542525`, the 43 tagged Active products, 274 variants, 25 automated collections/handles/rules, 20 official BEDGEAR brand descriptions, 147 READY product media records, 48 variant images, collection images, 61 published managed pages, the seven-destination primary menu with 72 nested items, the 12-link footer, ten guided-shopping pages, private backups, verified menus/metafields, and all working-tree changes. Do not recreate manual collections, reactivate the historical bundle-cart Pod Builder, duplicate products/variants, enable an unverified Dual Comfort combination, change product status without a dedicated owner directive, remove the content or tools hubs, expose raw internal tags as customer filter labels, treat brand boilerplate as model-specific evidence, let editorial prose override Shopify commerce truth, publish/synchronize a theme wholesale, change global product-template assignments, or deploy without explicit authority. The five exact-media gaps remain separate unresolved dependencies.
+On resume, first recheck Git status/HEAD, `docs/catalog/catalog-shopping-restructure-shopify-readback.json`, `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS_SHOPIFY_READBACK.json`, `docs/catalog/SINGLE_PRODUCT_COLLECTION_CLEANUP_READBACK.json`, `docs/content-pages/CONTENT_NAVIGATION_SHOPIFY_READBACK.json`, `docs/guided-shopping/GUIDED_SHOPPING_SHOPIFY_READBACK.json`, and plan-only runs of the BEDGEAR-description, content-navigation, guided-shopping, and single-product-collection cleanup scripts. Preserve unpublished theme `139216420925`, published theme `139460542525`, the 43 tagged Active products, 274 variants, 25 automated collection definitions, seven unpublished obsolete single-product routes, 18 source-matched BEDGEAR product descriptions plus two brand-only descriptions, 147 READY product media records, 48 variant images, collection images, 61 published managed pages, the seven-destination primary menu with 72 nested items, the 12-link footer, ten guided-shopping pages, private backups, verified menus/metafields, and all working-tree changes. Do not recreate one-product menu destinations, republish the seven obsolete single-product collections, reactivate the historical bundle-cart Pod Builder, duplicate products/variants, enable an unverified Dual Comfort combination, change product status without a dedicated owner directive, expose raw internal tags as customer filter labels, infer duvet claims from similarly named bedding, let editorial prose override Shopify commerce truth, publish/synchronize a theme wholesale, change global product-template assignments, or deploy without explicit authority. The five exact-media gaps remain separate unresolved dependencies.

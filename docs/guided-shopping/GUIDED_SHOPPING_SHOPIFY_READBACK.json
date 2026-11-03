@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-11-03T00:07:45.588Z",
+  "generatedAt": "2026-11-03T03:11:09.179Z",
   "store": "mysnoozepodtest.myshopify.com",
-  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\guided-shopping\\2026-11-03T00-07-14-924Z",
+  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\guided-shopping\\2026-11-03T03-10-38-578Z",
   "summary": {
     "publishedToolPages": 10,
     "verifiedThemes": 2,
-    "assetsPerTheme": 25
+    "assetsPerTheme": 27
   },
   "pages": [
     {
@@ -111,7 +111,7 @@
         },
         {
           "key": "assets/snoozepod-guided-tools.js",
-          "sha256": "ec340591486ad7f19362dfa2c3f7487993e4046474899051f2326bc5da0cf2dc"
+          "sha256": "6509bf702eb66d77ddf46ac9fcadfa0be5845d7eacf58e6d207c03ea5c9e37e1"
         },
         {
           "key": "sections/snoozepod-guided-tools.liquid",
@@ -119,7 +119,15 @@
         },
         {
           "key": "sections/snoozepod-guided-shopping-links.liquid",
-          "sha256": "9f04965f9847d88704504053131aeb5b01542818cbb0928edd6703f600cd73a1"
+          "sha256": "210b295642542ab996d69f585861da67c634eb392f251ee1681cde3706504abb"
+        },
+        {
+          "key": "sections/snoozepod-collection-navigation-v1.liquid",
+          "sha256": "5d50b2e1fc792ae559bfd5988154f31dd65d3a6e8e0464b7829e3efbb706ceae"
+        },
+        {
+          "key": "snippets/snoozepod-product-navigation-card.liquid",
+          "sha256": "a7749db751ef2ef5a669f075e7de406367aeb1047751acd6e01f4cae4f52f1db"
         },
         {
           "key": "snippets/snoozepod-tool-fields-builder.liquid",
@@ -218,7 +226,7 @@
         },
         {
           "key": "assets/snoozepod-guided-tools.js",
-          "sha256": "ec340591486ad7f19362dfa2c3f7487993e4046474899051f2326bc5da0cf2dc"
+          "sha256": "6509bf702eb66d77ddf46ac9fcadfa0be5845d7eacf58e6d207c03ea5c9e37e1"
         },
         {
           "key": "sections/snoozepod-guided-tools.liquid",
@@ -226,7 +234,15 @@
         },
         {
           "key": "sections/snoozepod-guided-shopping-links.liquid",
-          "sha256": "9f04965f9847d88704504053131aeb5b01542818cbb0928edd6703f600cd73a1"
+          "sha256": "210b295642542ab996d69f585861da67c634eb392f251ee1681cde3706504abb"
+        },
+        {
+          "key": "sections/snoozepod-collection-navigation-v1.liquid",
+          "sha256": "5d50b2e1fc792ae559bfd5988154f31dd65d3a6e8e0464b7829e3efbb706ceae"
+        },
+        {
+          "key": "snippets/snoozepod-product-navigation-card.liquid",
+          "sha256": "a7749db751ef2ef5a669f075e7de406367aeb1047751acd6e01f4cae4f52f1db"
         },
         {
           "key": "snippets/snoozepod-tool-fields-builder.liquid",

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-03T00:06:06.508Z",
+  "generatedAt": "2026-11-03T03:09:02.174Z",
   "store": "mysnoozepodtest.myshopify.com",
-  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\content-navigation\\2026-11-03T00-06-04-708Z",
+  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\content-navigation\\2026-11-03T03-09-00-500Z",
   "summary": {
     "publishedGuidePages": 50,
     "publishedHubPages": 1,
@@ -16,14 +16,14 @@
       "handle": "main-menu",
       "items": [
         {
-          "id": "gid://shopify/MenuItem/527759769661",
+          "id": "gid://shopify/MenuItem/527780085821",
           "title": "Mattresses",
           "type": "COLLECTION",
           "url": "/collections/mattresses",
           "resourceId": "gid://shopify/Collection/302125514813",
           "items": [
             {
-              "id": "gid://shopify/MenuItem/527759802429",
+              "id": "gid://shopify/MenuItem/527780118589",
               "title": "Shop All Mattresses",
               "type": "COLLECTION",
               "url": "/collections/mattresses",
@@ -31,39 +31,39 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527759835197",
+              "id": "gid://shopify/MenuItem/527780151357",
               "title": "S7",
-              "type": "COLLECTION",
-              "url": "/collections/s7",
-              "resourceId": "gid://shopify/Collection/302125547581",
+              "type": "PRODUCT",
+              "url": "/products/bedgear-s7-12-memory-foam",
+              "resourceId": "gid://shopify/Product/8100282794045",
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527759867965",
+              "id": "gid://shopify/MenuItem/527780184125",
               "title": "H6",
-              "type": "COLLECTION",
-              "url": "/collections/h6",
-              "resourceId": "gid://shopify/Collection/302125580349",
+              "type": "PRODUCT",
+              "url": "/products/bedgear-h6-12-hybrid",
+              "resourceId": "gid://shopify/Product/8100282826813",
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527759900733",
+              "id": "gid://shopify/MenuItem/527780216893",
               "title": "M3",
-              "type": "COLLECTION",
-              "url": "/collections/m3",
-              "resourceId": "gid://shopify/Collection/302125613117",
+              "type": "PRODUCT",
+              "url": "/products/bedgear-m3-12-dual-comfort",
+              "resourceId": "gid://shopify/Product/8100282892349",
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527759933501",
+              "id": "gid://shopify/MenuItem/527780249661",
               "title": "M5",
-              "type": "COLLECTION",
-              "url": "/collections/m5",
-              "resourceId": "gid://shopify/Collection/302125645885",
+              "type": "PRODUCT",
+              "url": "/products/bedgear-m5-14-dual-comfort",
+              "resourceId": "gid://shopify/Product/8100282925117",
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527759966269",
+              "id": "gid://shopify/MenuItem/527780282429",
               "title": "Mattress Finder",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/mattress-finder",
@@ -71,7 +71,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527759999037",
+              "id": "gid://shopify/MenuItem/527780315197",
               "title": "Dual Comfort Planner",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/dual-comfort-planner",
@@ -79,35 +79,35 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760031805",
+              "id": "gid://shopify/MenuItem/527780347965",
               "title": "Mattress Buying Guides",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/how-to-choose-the-right-mattress",
               "resourceId": null,
               "items": [
                 {
-                  "id": "gid://shopify/MenuItem/527760064573",
+                  "id": "gid://shopify/MenuItem/527780380733",
                   "title": "How to Choose the Right Mattress",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/how-to-choose-the-right-mattress",
                   "resourceId": null
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527760097341",
+                  "id": "gid://shopify/MenuItem/527780413501",
                   "title": "Understanding Mattress Comfort",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/understanding-mattress-comfort-soft-to-firm",
                   "resourceId": null
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527760130109",
+                  "id": "gid://shopify/MenuItem/527780446269",
                   "title": "Memory Foam vs. Hybrid",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/memory-foam-vs-hybrid-mattresses",
                   "resourceId": null
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527760162877",
+                  "id": "gid://shopify/MenuItem/527780479037",
                   "title": "Benefits of Dual Comfort",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/benefits-of-dual-comfort-mattresses",
@@ -118,14 +118,14 @@
           ]
         },
         {
-          "id": "gid://shopify/MenuItem/527760195645",
+          "id": "gid://shopify/MenuItem/527780511805",
           "title": "Adjustable Bases",
           "type": "COLLECTION",
           "url": "/collections/adjustable-bases",
           "resourceId": "gid://shopify/Collection/302125678653",
           "items": [
             {
-              "id": "gid://shopify/MenuItem/527760228413",
+              "id": "gid://shopify/MenuItem/527780544573",
               "title": "Shop All Adjustable Bases",
               "type": "COLLECTION",
               "url": "/collections/adjustable-bases",
@@ -133,31 +133,31 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760261181",
+              "id": "gid://shopify/MenuItem/527780577341",
               "title": "Flex L",
-              "type": "COLLECTION",
-              "url": "/collections/flex-l",
-              "resourceId": "gid://shopify/Collection/302125711421",
+              "type": "PRODUCT",
+              "url": "/products/flex-l-adjustable-base",
+              "resourceId": "gid://shopify/Product/8100247142461",
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760293949",
+              "id": "gid://shopify/MenuItem/527780610109",
               "title": "Flex LSX",
-              "type": "COLLECTION",
-              "url": "/collections/flex-lsx",
-              "resourceId": "gid://shopify/Collection/302125744189",
+              "type": "PRODUCT",
+              "url": "/products/flex-lsx-adjustable-base",
+              "resourceId": "gid://shopify/Product/8100247175229",
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760326717",
+              "id": "gid://shopify/MenuItem/527780642877",
               "title": "Flex SH",
-              "type": "COLLECTION",
-              "url": "/collections/flex-sh",
-              "resourceId": "gid://shopify/Collection/302125776957",
+              "type": "PRODUCT",
+              "url": "/products/flex-sh-adjustable-base",
+              "resourceId": "gid://shopify/Product/8100247240765",
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760359485",
+              "id": "gid://shopify/MenuItem/527780675645",
               "title": "Compatibility Checker",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/compatibility-checker",
@@ -165,35 +165,35 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760392253",
+              "id": "gid://shopify/MenuItem/527780708413",
               "title": "Adjustable Base Guides",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/how-to-choose-an-adjustable-base",
               "resourceId": null,
               "items": [
                 {
-                  "id": "gid://shopify/MenuItem/527760425021",
+                  "id": "gid://shopify/MenuItem/527780741181",
                   "title": "Benefits of an Adjustable Base",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/benefits-of-an-adjustable-base",
                   "resourceId": null
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527760457789",
+                  "id": "gid://shopify/MenuItem/527780773949",
                   "title": "How to Choose an Adjustable Base",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/how-to-choose-an-adjustable-base",
                   "resourceId": null
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527760490557",
+                  "id": "gid://shopify/MenuItem/527780806717",
                   "title": "Matching a Mattress and Base",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/how-to-match-a-mattress-with-an-adjustable-base",
                   "resourceId": null
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527760523325",
+                  "id": "gid://shopify/MenuItem/527780839485",
                   "title": "Split-Head Adjustable Systems",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/understanding-split-head-adjustable-sleep-systems",
@@ -204,42 +204,42 @@
           ]
         },
         {
-          "id": "gid://shopify/MenuItem/527760556093",
+          "id": "gid://shopify/MenuItem/527780872253",
           "title": "Sleep Essentials",
           "type": "COLLECTION",
           "url": "/collections/bedding",
           "resourceId": "gid://shopify/Collection/302126301245",
           "items": [
             {
-              "id": "gid://shopify/MenuItem/527760588861",
+              "id": "gid://shopify/MenuItem/527780905021",
               "title": "Pillows",
               "type": "COLLECTION",
               "url": "/collections/pillows",
               "resourceId": "gid://shopify/Collection/302125809725",
               "items": [
                 {
-                  "id": "gid://shopify/MenuItem/527760621629",
+                  "id": "gid://shopify/MenuItem/527780937789",
                   "title": "Zoned",
                   "type": "COLLECTION",
                   "url": "/collections/zoned-pillows",
                   "resourceId": "gid://shopify/Collection/302125842493"
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527760654397",
+                  "id": "gid://shopify/MenuItem/527780970557",
                   "title": "Filled",
                   "type": "COLLECTION",
                   "url": "/collections/filled-pillows",
                   "resourceId": "gid://shopify/Collection/302125875261"
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527760687165",
+                  "id": "gid://shopify/MenuItem/527781003325",
                   "title": "Foam",
                   "type": "COLLECTION",
                   "url": "/collections/foam-pillows",
                   "resourceId": "gid://shopify/Collection/302125908029"
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527760719933",
+                  "id": "gid://shopify/MenuItem/527781036093",
                   "title": "Temperature Regulating",
                   "type": "COLLECTION",
                   "url": "/collections/temperature-regulating-pillows",
@@ -248,7 +248,7 @@
               ]
             },
             {
-              "id": "gid://shopify/MenuItem/527760752701",
+              "id": "gid://shopify/MenuItem/527781068861",
               "title": "Sheets",
               "type": "COLLECTION",
               "url": "/collections/sheets",
@@ -256,7 +256,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760785469",
+              "id": "gid://shopify/MenuItem/527781101629",
               "title": "Mattress Protection",
               "type": "COLLECTION",
               "url": "/collections/mattress-protectors",
@@ -264,7 +264,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760818237",
+              "id": "gid://shopify/MenuItem/527781134397",
               "title": "Comforters",
               "type": "COLLECTION",
               "url": "/collections/comforters",
@@ -272,7 +272,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760851005",
+              "id": "gid://shopify/MenuItem/527781167165",
               "title": "Cooling & Bedding",
               "type": "COLLECTION",
               "url": "/collections/cooling-bedding",
@@ -280,7 +280,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760883773",
+              "id": "gid://shopify/MenuItem/527781199933",
               "title": "Mattress Toppers",
               "type": "COLLECTION",
               "url": "/collections/mattress-toppers",
@@ -288,7 +288,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760916541",
+              "id": "gid://shopify/MenuItem/527781232701",
               "title": "Pillow Finder",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/pillow-finder",
@@ -296,7 +296,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760949309",
+              "id": "gid://shopify/MenuItem/527781265469",
               "title": "Cooling & Bedding Finder",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/cooling-bedding-finder",
@@ -304,35 +304,35 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527760982077",
+              "id": "gid://shopify/MenuItem/527781298237",
               "title": "Bedding Guides",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/how-to-find-the-right-pillow",
               "resourceId": null,
               "items": [
                 {
-                  "id": "gid://shopify/MenuItem/527761014845",
+                  "id": "gid://shopify/MenuItem/527781331005",
                   "title": "How to Find the Right Pillow",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/how-to-find-the-right-pillow",
                   "resourceId": null
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527761047613",
+                  "id": "gid://shopify/MenuItem/527781363773",
                   "title": "How Mattress Protectors Help",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/how-mattress-protectors-help-protect-your-bed",
                   "resourceId": null
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527761080381",
+                  "id": "gid://shopify/MenuItem/527781396541",
                   "title": "Choosing Sheets",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/choosing-sheets-for-standard-and-split-head-mattresses",
                   "resourceId": null
                 },
                 {
-                  "id": "gid://shopify/MenuItem/527761113149",
+                  "id": "gid://shopify/MenuItem/527781429309",
                   "title": "Choosing a Comforter Weight",
                   "type": "HTTP",
                   "url": "https://mysnoozepod.com/pages/choosing-the-right-comforter-weight",
@@ -343,14 +343,14 @@
           ]
         },
         {
-          "id": "gid://shopify/MenuItem/527761145917",
+          "id": "gid://shopify/MenuItem/527781462077",
           "title": "Bedroom Furniture",
           "type": "COLLECTION",
           "url": "/collections/bedroom-furniture",
           "resourceId": "gid://shopify/Collection/302126170173",
           "items": [
             {
-              "id": "gid://shopify/MenuItem/527761178685",
+              "id": "gid://shopify/MenuItem/527781494845",
               "title": "Headboards",
               "type": "COLLECTION",
               "url": "/collections/headboards",
@@ -358,7 +358,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761211453",
+              "id": "gid://shopify/MenuItem/527781527613",
               "title": "Platform Bases",
               "type": "COLLECTION",
               "url": "/collections/platform-bases",
@@ -368,14 +368,14 @@
           ]
         },
         {
-          "id": "gid://shopify/MenuItem/527761244221",
+          "id": "gid://shopify/MenuItem/527781560381",
           "title": "Guides & Tools",
           "type": "HTTP",
           "url": "https://mysnoozepod.com/pages/sleep-tools",
           "resourceId": null,
           "items": [
             {
-              "id": "gid://shopify/MenuItem/527761276989",
+              "id": "gid://shopify/MenuItem/527781593149",
               "title": "Explore All Sleep Tools",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/sleep-tools",
@@ -383,7 +383,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761309757",
+              "id": "gid://shopify/MenuItem/527781625917",
               "title": "Build Your SnoozePod",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/build-your-snoozepod",
@@ -391,7 +391,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761342525",
+              "id": "gid://shopify/MenuItem/527781658685",
               "title": "Mattress Finder",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/mattress-finder",
@@ -399,7 +399,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761375293",
+              "id": "gid://shopify/MenuItem/527781691453",
               "title": "Compatibility Checker",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/compatibility-checker",
@@ -407,7 +407,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761408061",
+              "id": "gid://shopify/MenuItem/527781724221",
               "title": "Compare Sleep Systems",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/compare-sleep-systems",
@@ -415,7 +415,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761440829",
+              "id": "gid://shopify/MenuItem/527781756989",
               "title": "Snooze Session Planner",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/snooze-session-planner",
@@ -423,7 +423,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761473597",
+              "id": "gid://shopify/MenuItem/527781789757",
               "title": "Dual Comfort Planner",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/dual-comfort-planner",
@@ -431,7 +431,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761506365",
+              "id": "gid://shopify/MenuItem/527781822525",
               "title": "Pillow Finder",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/pillow-finder",
@@ -439,7 +439,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761539133",
+              "id": "gid://shopify/MenuItem/527781855293",
               "title": "Cooling & Bedding Finder",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/cooling-bedding-finder",
@@ -447,7 +447,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761571901",
+              "id": "gid://shopify/MenuItem/527781888061",
               "title": "Room & Delivery Planner",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/room-delivery-planner",
@@ -455,7 +455,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761604669",
+              "id": "gid://shopify/MenuItem/527781920829",
               "title": "Explore All Sleep Guides",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/sleep-guides",
@@ -463,7 +463,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761637437",
+              "id": "gid://shopify/MenuItem/527781953597",
               "title": "The SnoozePod Experience",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/sleep-guides#snoozepod-experience",
@@ -471,7 +471,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761670205",
+              "id": "gid://shopify/MenuItem/527781986365",
               "title": "Building a Sleep System",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/sleep-guides#building-a-sleep-system",
@@ -479,7 +479,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761702973",
+              "id": "gid://shopify/MenuItem/527782019133",
               "title": "Dual Comfort and Couples",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/sleep-guides#dual-comfort-and-couples",
@@ -487,7 +487,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761735741",
+              "id": "gid://shopify/MenuItem/527782051901",
               "title": "Mattress Education",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/sleep-guides#mattress-education",
@@ -495,7 +495,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761768509",
+              "id": "gid://shopify/MenuItem/527782084669",
               "title": "Adjustable Bases and Compatibility",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/sleep-guides#adjustable-bases-and-compatibility",
@@ -503,7 +503,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761801277",
+              "id": "gid://shopify/MenuItem/527782117437",
               "title": "Pillows, Protection, and Bedding",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/sleep-guides#pillows-protection-and-bedding",
@@ -513,14 +513,14 @@
           ]
         },
         {
-          "id": "gid://shopify/MenuItem/527761834045",
+          "id": "gid://shopify/MenuItem/527782150205",
           "title": "Your Showroom Visit",
           "type": "HTTP",
           "url": "https://mysnoozepod.com/pages/how-the-mysnoozepod-showroom-works",
           "resourceId": null,
           "items": [
             {
-              "id": "gid://shopify/MenuItem/527761866813",
+              "id": "gid://shopify/MenuItem/527782182973",
               "title": "Book a Snooze Session",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/book-a-snooze-session",
@@ -528,7 +528,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761899581",
+              "id": "gid://shopify/MenuItem/527782215741",
               "title": "Mini Snooze Assessment",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/snooze-assessment",
@@ -536,7 +536,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761932349",
+              "id": "gid://shopify/MenuItem/527782248509",
               "title": "How the Showroom Works",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/how-the-mysnoozepod-showroom-works",
@@ -544,7 +544,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761965117",
+              "id": "gid://shopify/MenuItem/527782281277",
               "title": "What Is a Snooze Session?",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/what-is-a-snooze-session",
@@ -552,7 +552,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527761997885",
+              "id": "gid://shopify/MenuItem/527782314045",
               "title": "Prepare for Your Visit",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/how-to-prepare-for-your-showroom-visit",
@@ -560,7 +560,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527762030653",
+              "id": "gid://shopify/MenuItem/527782346813",
               "title": "Virtual Snooze Sessions",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/how-a-virtual-snooze-session-works",
@@ -568,7 +568,7 @@
               "items": []
             },
             {
-              "id": "gid://shopify/MenuItem/527762063421",
+              "id": "gid://shopify/MenuItem/527782379581",
               "title": "What Happens After",
               "type": "HTTP",
               "url": "https://mysnoozepod.com/pages/what-happens-after-your-snooze-session",
@@ -578,7 +578,7 @@
           ]
         },
         {
-          "id": "gid://shopify/MenuItem/527762096189",
+          "id": "gid://shopify/MenuItem/527782412349",
           "title": "Our Story",
           "type": "HTTP",
           "url": "https://mysnoozepod.com/pages/about-us",

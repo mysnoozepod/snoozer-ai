@@ -6,6 +6,8 @@ import process from 'node:process';
 import {
   bedgearBrandDescriptionHtml,
   bedgearDescriptionSource,
+  bedgearOfficialProductCopy,
+  bedgearOfficialProductDescriptionHtml,
   bedgearProductHandles,
 } from '../content/bedgear-brand-description.mjs';
 
@@ -18,6 +20,7 @@ const LAMBDA_FUNCTION = 'snoozer-backend';
 const AWS_REGION = 'us-east-1';
 const APPLY = process.argv.includes('--apply');
 const MARKER_PATTERN = /<div[^>]*data-mysnoozepod-bedgear-boilerplate=["'][^"']+["'][^>]*>[\s\S]*?<\/div>/i;
+const PRODUCT_COPY_PATTERN = /<div[^>]*data-mysnoozepod-bedgear-product-copy=["'][^"']+["'][^>]*>[\s\S]*?<\/div>/i;
 
 function fail(message) { throw new Error(message); }
 function sha256(value) { return crypto.createHash('sha256').update(value).digest('hex'); }
@@ -106,15 +109,27 @@ function normalizeHtml(value) {
   return String(value || '').trim().replace(/>\s+</g, '><');
 }
 
-function expectedDescription(currentHtml) {
+function expectedDescription(currentHtml, handle) {
   const current = String(currentHtml || '').trim();
-  if (!current) return bedgearBrandDescriptionHtml;
-  if (MARKER_PATTERN.test(current)) {
-    const existingBlock = current.match(MARKER_PATTERN)?.[0] || '';
-    if (normalizeHtml(existingBlock) === normalizeHtml(bedgearBrandDescriptionHtml)) return current;
-    return current.replace(MARKER_PATTERN, bedgearBrandDescriptionHtml);
+  const officialHtml = bedgearOfficialProductDescriptionHtml(handle);
+  let expected = current;
+  if (officialHtml) {
+    if (PRODUCT_COPY_PATTERN.test(expected)) {
+      const existingOfficialBlock = expected.match(PRODUCT_COPY_PATTERN)?.[0] || '';
+      if (normalizeHtml(existingOfficialBlock) !== normalizeHtml(officialHtml)) {
+        expected = expected.replace(PRODUCT_COPY_PATTERN, officialHtml);
+      }
+    } else {
+      expected = `${officialHtml}${expected}`;
+    }
   }
-  return `${current}${bedgearBrandDescriptionHtml}`;
+  if (!expected) return bedgearBrandDescriptionHtml;
+  if (MARKER_PATTERN.test(expected)) {
+    const existingBlock = expected.match(MARKER_PATTERN)?.[0] || '';
+    if (normalizeHtml(existingBlock) === normalizeHtml(bedgearBrandDescriptionHtml)) return expected;
+    return expected.replace(MARKER_PATTERN, bedgearBrandDescriptionHtml);
+  }
+  return `${expected}${bedgearBrandDescriptionHtml}`;
 }
 
 function buildPlan(products) {
@@ -136,7 +151,7 @@ function buildPlan(products) {
     const product = byHandle.get(handle);
     if (!product) fail(`Missing expected BEDGEAR product ${handle}.`);
     if (!['DRAFT', 'ACTIVE'].includes(product.status)) fail(`Refusing unexpected ${product.status} status for BEDGEAR product ${handle}.`);
-    const descriptionHtml = expectedDescription(product.descriptionHtml);
+    const descriptionHtml = expectedDescription(product.descriptionHtml, handle);
     const record = {
       id: product.id,
       handle,
@@ -158,6 +173,7 @@ function summary(plan) {
     store: connection.shop,
     source: bedgearDescriptionSource,
     matchedProducts: bedgearProductHandles.length,
+    officialProductMatches: Object.keys(bedgearOfficialProductCopy).length,
     create: plan.changes.filter((item) => item.action === 'create').length,
     appendOrRefresh: plan.changes.filter((item) => item.action === 'append-or-refresh').length,
     unchanged: plan.unchanged.length,
@@ -234,6 +250,8 @@ const readback = {
       descriptionLength: product.descriptionHtml.length,
       descriptionSha256: sha256(product.descriptionHtml),
       containsOfficialBedgearBoilerplate: /data-mysnoozepod-bedgear-boilerplate/i.test(product.descriptionHtml),
+      containsOfficialProductCopy: /data-mysnoozepod-bedgear-product-copy/i.test(product.descriptionHtml),
+      officialSourceUrl: bedgearOfficialProductCopy[product.handle]?.sourceUrl || null,
     }))
     .sort((a, b) => a.handle.localeCompare(b.handle)),
 };

@@ -43,3 +43,111 @@ export const bedgearBrandDescriptionHtml = [
   '</div>',
 ].join('');
 
+const officialCopy = (sourceUrl, summary, features) => Object.freeze({ sourceUrl, summary, features: Object.freeze(features) });
+
+export const bedgearOfficialProductCopy = Object.freeze({
+  'bedgear-s7-12-memory-foam': officialCopy(
+    'https://bedgear.com/products/s-performance-mattresses',
+    'The S7 is the plush model in BEDGEAR\'s S Performance mattress family. Its all-foam construction pairs conforming pressure relief with cooling and airflow technologies designed to limit heat buildup.',
+    ['Plush comfort direction', 'Ver-Tex cooling cover', 'Ventilated React foam and airflow transition layer', 'Air-X breathable side panels'],
+  ),
+  'bedgear-h6-12-hybrid': officialCopy(
+    'https://bedgear.com/products/h-hybrid-performance-pillowtop-mattress',
+    'The H6 is the plush H Performance pillowtop option, combining a conforming React Blend pillowtop with responsive hybrid support and cooling, breathable materials.',
+    ['Plush comfort direction', 'Integrated React Blend pillowtop', 'Hybrid suspension support', 'Ver-Tex cover and Air-X airflow features'],
+  ),
+  'bedgear-m3-12-dual-comfort': officialCopy(
+    'https://bedgear.com/products/m3-performance-mattress',
+    'The M3 uses a modular design with interchangeable support units so each sleeper can choose an independent comfort direction. Its removable cooling cover and airflow-focused chassis are designed for easier care and breathable comfort.',
+    ['Independent left and right comfort', 'Interchangeable suspension units', 'Removable, washable Ver-Tex cover', 'Air-X chassis and air vents'],
+  ),
+  'bedgear-m5-14-dual-comfort': officialCopy(
+    'https://bedgear.com/products/m5-performance-mattress',
+    'The M5 builds on BEDGEAR\'s modular dual-comfort design with a taller profile and an enhanced React comfort layer for deeper conforming pressure relief. Each side can be configured independently.',
+    ['Independent left and right comfort', 'Enhanced React comfort layer', 'Interchangeable suspension units', 'Removable Ver-Tex cooling cover and Air-X airflow'],
+  ),
+  'flex-l-adjustable-base': officialCopy(
+    'https://bedgear.com/products/flex-l-adjustable-base',
+    'The Flex L provides independent head and foot adjustment in a foldable, quick-assembly frame. Preset positions, a wireless remote, child lock, and emergency lowering cover the core adjustable-base functions.',
+    ['Independent head and foot adjustment', 'Anti-Snore and Zero Gravity presets', 'Programmable wireless remote', 'Child lock and emergency lowering'],
+  ),
+  'flex-lsx-adjustable-base': officialCopy(
+    'https://bedgear.com/products/flex-lsx-adjustable-base',
+    'The Flex LSX is BEDGEAR\'s feature-rich adjustable base, with independent head, neck, lumbar, and foot adjustment plus dual massage, lighting, charging, and Bluetooth audio.',
+    ['Four-zone powered adjustment', 'Dual-sided massage', 'Motion-activated underbed lighting', 'USB charging and Bluetooth audio'],
+  ),
+  'flex-sh-adjustable-base': officialCopy(
+    'https://bedgear.com/products/flex-sh-split-head-adjustable-base',
+    'The Flex SH is built for split-head sleep systems, giving each sleeper independent head and lumbar control while keeping the lower mattress surface shared.',
+    ['Independent split-head adjustment', 'Two remotes with preset and programmable positions', 'Hidden retainer system for a split-head mattress', 'Underbed lighting, USB charging, and Bluetooth audio'],
+  ),
+  'cotton-sheet-set': officialCopy(
+    'https://bedgear.com/products/cotton-sheet-set',
+    'BEDGEAR\'s cotton performance sheets pair familiar softness with stretch and breathability for a modern take on classic cotton bedding.',
+    ['Soft cotton-blend feel', 'All-way stretch', 'Breathable construction', 'Secure fitted-sheet grip'],
+  ),
+  'dri-tec-sheet-set': officialCopy(
+    'https://bedgear.com/products/dri-tec-sheet-set',
+    'Dri-Tec Performance sheets use a smooth, flexible knit engineered to move heat and moisture away from the sleeper while maintaining airflow.',
+    ['Moisture-wicking Dri-Tec fabric', 'Smooth activewear-inspired feel', 'Breathable knit', 'Powerband secure fit'],
+  ),
+  'ver-tex-sheet-set': officialCopy(
+    'https://bedgear.com/products/ver-tex-sheet-set-classic-colors',
+    'Ver-Tex Performance sheets are designed for hot sleepers with a smooth, cool-to-the-touch surface and a secure fitted-sheet design.',
+    ['Instant-cooling Ver-Tex fabric', 'Smooth feel', 'Powerband secure fit', 'Machine washable'],
+  ),
+  'dri-tec-mattress-protector': officialCopy(
+    'https://bedgear.com/products/dri-tec-mattress-protector',
+    'The Dri-Tec mattress protector combines a waterproof barrier with a moisture-wicking top surface and deep-pocket sidewalls that help it remain secure.',
+    ['Waterproof protection', 'Moisture-wicking top layer', 'Breathable construction', 'Deep-pocket secure fit'],
+  ),
+  'ver-tex-mattress-protector': officialCopy(
+    'https://bedgear.com/products/ver-tex-mattress-protector',
+    'The Ver-Tex mattress protector pairs waterproof protection with a cool-to-the-touch surface. Its Powerband helps keep it smooth and secure, including on an adjustable base.',
+    ['Waterproof protection', 'Instant-cooling Ver-Tex surface', 'Powerband secure fit', 'Machine washable'],
+  ),
+  'stretchwick-mattress-encasement': officialCopy(
+    'https://bedgear.com/products/stretchwick-mattress-encasement-1',
+    'The Stretchwick encasement surrounds the mattress on all six sides with a waterproof, stretchable layer designed to help guard against spills, allergens, dust mites, and bed bugs.',
+    ['Six-sided coverage', 'Waterproof barrier', 'Stretch fit with zippered access', 'Machine washable'],
+  ),
+  'light-weight-comforter': officialCopy(
+    'https://bedgear.com/products/performance-comforter',
+    'The light-weight Performance comforter is the least insulated of BEDGEAR\'s three all-season comforter weights, using breathable channels and Climacore insulation to manage warmth without unnecessary bulk.',
+    ['Lightest of three weight options', 'Climacore intelligent insulation', 'Airflow-focused channel construction', 'Machine washable'],
+  ),
+  'medium-weight-comforter': officialCopy(
+    'https://bedgear.com/products/performance-comforter',
+    'The medium-weight Performance comforter balances warmth and breathability with airflow channels and Climacore insulation designed to reduce overheating.',
+    ['Middle of three weight options', 'Climacore intelligent insulation', 'Airflow-focused channel construction', 'Machine washable'],
+  ),
+  'ultra-weight-comforter': officialCopy(
+    'https://bedgear.com/products/performance-comforter',
+    'The ultra-weight Performance comforter is the warmest of BEDGEAR\'s three weight choices while retaining the line\'s breathable channels and Climacore insulation.',
+    ['Warmest of three weight options', 'Climacore intelligent insulation', 'Airflow-focused channel construction', 'Machine washable'],
+  ),
+  'cooling-performance-throw': officialCopy(
+    'https://bedgear.com/products/cooling-performance-throw',
+    'The Cooling Performance throw uses smooth cooling fibers and breathable quilting to dissipate heat and provide lightweight, all-season comfort.',
+    ['Cool-to-the-touch fibers', 'Breathable quilted construction', 'Lightweight all-season design', 'Machine washable'],
+  ),
+  'react-pro-performance-topper': officialCopy(
+    'https://bedgear.com/products/react-pro-performance-mattress-topper',
+    'The React Pro topper adds a plush, pressure-relieving comfort layer with cooling fabric, airflow features, and a Powerband that helps prevent shifting or bunching.',
+    ['Ver-Tex instant-cooling fabric', 'Adaptive React Blend fill', 'Airflow-focused construction', 'Powerband secure fit'],
+  ),
+});
+
+export function bedgearOfficialProductDescriptionHtml(handle) {
+  const copy = bedgearOfficialProductCopy[handle];
+  if (!copy) return '';
+  return [
+    '<div data-mysnoozepod-bedgear-product-copy="2026-11-02">',
+    '<h3>Product Overview</h3>',
+    `<p>${copy.summary}</p>`,
+    '<h4>Key Features</h4>',
+    `<ul>${copy.features.map((feature) => `<li>${feature}</li>`).join('')}</ul>`,
+    '</div>',
+  ].join('');
+}
+

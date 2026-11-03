@@ -51,6 +51,12 @@ const pageLink = (title, handle, items) => ({
   ...(items?.length ? { items } : {}),
 });
 
+const productLink = (title, handle) => ({
+  title,
+  type: 'PRODUCT',
+  product: handle,
+});
+
 const hubAnchor = (title, id) => ({
   title,
   type: 'HTTP',
@@ -64,10 +70,10 @@ export const mainMenuContract = {
     {
       title: 'Mattresses', type: 'COLLECTION', collection: 'mattresses', items: [
         { title: 'Shop All Mattresses', type: 'COLLECTION', collection: 'mattresses' },
-        { title: 'S7', type: 'COLLECTION', collection: 's7' },
-        { title: 'H6', type: 'COLLECTION', collection: 'h6' },
-        { title: 'M3', type: 'COLLECTION', collection: 'm3' },
-        { title: 'M5', type: 'COLLECTION', collection: 'm5' },
+        productLink('S7', 'bedgear-s7-12-memory-foam'),
+        productLink('H6', 'bedgear-h6-12-hybrid'),
+        productLink('M3', 'bedgear-m3-12-dual-comfort'),
+        productLink('M5', 'bedgear-m5-14-dual-comfort'),
         pageLink('Mattress Finder', 'mattress-finder'),
         pageLink('Dual Comfort Planner', 'dual-comfort-planner'),
         pageLink('Mattress Buying Guides', 'how-to-choose-the-right-mattress', [
@@ -81,9 +87,9 @@ export const mainMenuContract = {
     {
       title: 'Adjustable Bases', type: 'COLLECTION', collection: 'adjustable-bases', items: [
         { title: 'Shop All Adjustable Bases', type: 'COLLECTION', collection: 'adjustable-bases' },
-        { title: 'Flex L', type: 'COLLECTION', collection: 'flex-l' },
-        { title: 'Flex LSX', type: 'COLLECTION', collection: 'flex-lsx' },
-        { title: 'Flex SH', type: 'COLLECTION', collection: 'flex-sh' },
+        productLink('Flex L', 'flex-l-adjustable-base'),
+        productLink('Flex LSX', 'flex-lsx-adjustable-base'),
+        productLink('Flex SH', 'flex-sh-adjustable-base'),
         pageLink('Compatibility Checker', 'compatibility-checker'),
         pageLink('Adjustable Base Guides', 'how-to-choose-an-adjustable-base', [
           pageLink('Benefits of an Adjustable Base', 'benefits-of-an-adjustable-base'),

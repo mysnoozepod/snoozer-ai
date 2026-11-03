@@ -1,7 +1,7 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-02 — official BEDGEAR brand descriptions live
-Queue state: Shopify currently reports all 43 catalog products as Active; this state pre-existed and was preserved by the BEDGEAR description task. Fifty educational guides, the guide hub, the Sleep Tools hub, and nine guided planning tools are published behind the existing storefront password. Homepage, collection, desktop/mobile navigation, booking, and Ask Snoozer routes form one guided discovery path. M3/M5 sell-unit mappings, model-specific BEDGEAR copy, Snoozer's Shopify-authoritative retrieval implementation, and final release acceptance remain gated.
+Last updated: 2026-11-02 — direct product navigation and official BEDGEAR product copy live
+Queue state: Shopify currently reports all 43 catalog products as Active; this state pre-existed and was preserved. The seven model-level mattress/base links now resolve directly to product pages, and their obsolete single-product collections are unpublished from Online Store. Official BEDGEAR.com product-page evidence now supports model-specific copy on 18 exact BEDGEAR products. M3/M5 sell-unit mappings, the two unmatched duvet/sham descriptions, Snoozer's Shopify-authoritative retrieval implementation, and final release acceptance remain gated.
 
 ## Readiness classification
 
@@ -211,13 +211,13 @@ Queue state: Shopify currently reports all 43 catalog products as Active; this s
 - **Safety:** No cart, order, product, variant, price, inventory, product-status, collection-rule, AWS, Calendly, or storefront-password mutation occurred. The development theme remains unpublished.
 - **Report:** `docs/guided-shopping/GUIDED_SHOPPING_RELEASE.md`.
 
-### BEDGEAR Brand Description Release
+### Direct Product Navigation and BEDGEAR Product-Copy Correction
 
-- **Objective:** Use the owner-provided BEDGEAR PXM share to add verified manufacturer copy to the appropriate Shopify products without inventing model specifications.
-- **Status:** COMPLETE AND LIVE — all 20 exact BEDGEAR products now contain the January 2026 source copy under a clearly labeled `About BEDGEAR` heading in Shopify's native product description.
-- **Source boundary:** The supplied DOCX contains five paragraphs of company boilerplate, not model-specific S7, H6, M3, M5, adjustable-base, sheet, protection, comforter, duvet, throw, or topper specifications. No model claim was inferred from the brand copy.
-- **Validation:** Shopify Admin readback verifies 20/20 descriptions and all 43 product statuses as Active; immutable identity, tags, templates, variants, SKUs, prices, and options were fingerprinted before and after. Live S7 rendering verifies the accordion heading, five paragraphs, registered brand language, and existing product-form presentation.
-- **Recovery:** Private pre-change snapshot recorded in `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS_SHOPIFY_READBACK.json`.
+- **Objective:** Replace one-product collection detours with direct product routes and add exact, current manufacturer product information from BEDGEAR.com.
+- **Status:** COMPLETE AND LIVE BEHIND THE EXISTING STOREFRONT PASSWORD — S7, H6, M3, M5, Flex L, Flex LSX, and Flex SH now link directly to their product pages from both the main menu and parent collection navigation. Their seven single-product collections remain recoverable in Admin but are unpublished from Online Store.
+- **Product-copy result:** 18 of 20 BEDGEAR products have an exact official BEDGEAR product-page match and now show a concise `Product Overview` and `Key Features` block ahead of the existing `About BEDGEAR` block. The Solid White and Light Grey Racetrack duvet/sham products remain brand-copy-only because no exact current product page was verified.
+- **Validation:** Shopify readback verifies seven PRODUCT menu destinations, seven unpublished obsolete collection routes, 18 exact manufacturer-source mappings, 20/20 BEDGEAR descriptions, 27/27 bounded assets on both themes, and unchanged product identity/status/tags/templates/variants/SKUs/prices/options. Live browser checks verified all parent-page cards and Flex quick links use `/products/...`, and a menu click opened the Flex L product page with its official overview.
+- **Recovery:** Private pre-change snapshots are referenced by `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS_SHOPIFY_READBACK.json`, `docs/catalog/SINGLE_PRODUCT_COLLECTION_CLEANUP_READBACK.json`, `docs/content-pages/CONTENT_NAVIGATION_SHOPIFY_READBACK.json`, and `docs/guided-shopping/GUIDED_SHOPPING_SHOPIFY_READBACK.json`.
 - **Report:** `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS.md`.
 
 ### P1-008 — Resolve customer-chat and analytics ownership

@@ -2,13 +2,13 @@
 
 Date: 2026-11-02  
 Store: `mysnoozepodtest.myshopify.com`  
-Source: [BEDGEAR PXM share](https://bedgear.pxm.pattern.com/share/RWlH0Qhcsk)
+Sources: [BEDGEAR PXM share](https://bedgear.pxm.pattern.com/share/RWlH0Qhcsk) and exact official product pages on [BEDGEAR.com](https://bedgear.com)
 
 ## Outcome
 
-The official January 2026 BEDGEAR company boilerplate is live on all 20 exact BEDGEAR products. It appears inside the existing Product Page v1 Product Details accordion under the heading `About BEDGEAR`.
+The official January 2026 BEDGEAR company boilerplate is live on all 20 exact BEDGEAR products under `About BEDGEAR`. Eighteen products also have a concise, paraphrased `Product Overview` and `Key Features` block sourced from an exact current BEDGEAR.com product page.
 
-The supplied source is company-level brand copy. It is not evidence for model-specific construction, feature, warranty, compatibility, or performance claims. No model-specific claim was invented or inferred.
+The Solid White and Light Grey Racetrack duvet/sham products have no verified exact current product-page match and remain brand-copy-only. No claim was inferred from a similar product.
 
 ## Products updated
 
@@ -48,11 +48,11 @@ The supplied source is company-level brand copy. It is not evidence for model-sp
 
 - Exact catalog gate: 43 products.
 - Exact BEDGEAR vendor gate: 20 products.
-- Descriptions verified: 20 of 20.
+- Descriptions verified: 20 of 20; exact official product-page matches: 18 of 20.
 - Current Shopify statuses: 43 Active products; status was not changed by this task.
 - Source paragraphs preserved: five.
 - Existing identity, vendor, product type, tags, template assignment, variants, SKUs, prices, and options preserved through immutable before/after fingerprints.
-- Live S7 rendering verified the accordion, company heading, complete copy, typography, product gallery, size selector, price, booking, Add to Cart, Ask Snoozer, and footer.
+- Live Flex L rendering verified direct menu navigation, the accordion, Product Overview, four Key Features, the company block, product gallery, size selector, price, booking, Add to Cart, Ask Snoozer, and footer.
 - Final plan is idempotent: zero creates, zero refreshes, 20 unchanged.
 
 ## Durable files
@@ -66,10 +66,10 @@ The supplied source is company-level brand copy. It is not evidence for model-sp
 
 Pre-change descriptions are stored privately at:
 
-`C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\bedgear-product-descriptions\2026-11-03T02-57-52-817Z`
+`C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\bedgear-product-descriptions\2026-11-03T03-11-32-719Z`
 
 No credentials or customer information are stored in the project documentation or backup.
 
 ## Remaining source requirement
 
-To replace company boilerplate with richer individual product descriptions, obtain exact BEDGEAR source copy matched to each model or SKU family. Until then, the storefront should keep model-specific facts limited to verified Shopify fields, variant data, tags, approved metafields, and manufacturer documents that identify the exact product.
+Obtain exact current manufacturer product pages or owner-approved copy for the Solid White Duvet + Sham Set and Light Grey Racetrack Duvet + Sham Set. Until then, those two remain brand-copy-only.

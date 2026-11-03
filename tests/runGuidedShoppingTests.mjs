@@ -57,6 +57,9 @@ const linksSection = read('sections/snoozepod-guided-shopping-links.liquid');
 assert.match(linksSection, /comfort-memory-foam/, 'mattress quick filters should use exact namespaced tag handles');
 assert.match(linksSection, /Pillow Finder/, 'collection guidance should expose the pillow finder');
 assert.match(linksSection, /Compatibility Checker/, 'collection guidance should expose compatibility checking');
+assert.match(linksSection, /products\/flex-l-adjustable-base/, 'Flex L quick navigation should link directly to its product');
+assert.match(linksSection, /products\/flex-lsx-adjustable-base/, 'Flex LSX quick navigation should link directly to its product');
+assert.match(linksSection, /products\/flex-sh-adjustable-base/, 'Flex SH quick navigation should link directly to its product');
 
 const flatten = (items) => items.flatMap((item) => [item, ...flatten(item.items || [])]);
 const mainItems = flatten(mainMenuContract.items);
@@ -72,7 +75,7 @@ if (fs.existsSync(readbackPath)) {
   const readback = JSON.parse(fs.readFileSync(readbackPath, 'utf8'));
   assert.equal(readback.summary.publishedToolPages, 10);
   assert.equal(readback.summary.verifiedThemes, 2);
-  assert.equal(readback.summary.assetsPerTheme, 25);
+  assert.equal(readback.summary.assetsPerTheme, 27);
 }
 
 console.log('Guided shopping: PASS (10 tool pages, shared Shopify data contract, homepage/collection routing, fail-closed compatibility, and accessible saved plans).');

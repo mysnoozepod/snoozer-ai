@@ -18,6 +18,21 @@ assert(!mainMenuContract.items.some((item) => item.title === 'Home'), 'the redun
 assert(mainMenuContract.items.some((item) => item.title === 'Guides & Tools' && item.url.endsWith('/pages/sleep-tools')), 'Guides & Tools is a primary navigation destination');
 assert(mainMenuContract.items.find((item) => item.title === 'Mattresses').items.some((item) => item.title === 'Mattress Buying Guides'), 'mattress guides appear beside mattress shopping');
 assert(mainMenuContract.items.find((item) => item.title === 'Adjustable Bases').items.some((item) => item.title === 'Adjustable Base Guides'), 'base guides appear beside adjustable-base shopping');
+const productDestinations = new Map(
+  ['Mattresses', 'Adjustable Bases']
+    .flatMap((title) => mainMenuContract.items.find((item) => item.title === title).items)
+    .filter((item) => item.type === 'PRODUCT')
+    .map((item) => [item.title, item.product]),
+);
+assert.deepEqual(Object.fromEntries(productDestinations), {
+  S7: 'bedgear-s7-12-memory-foam',
+  H6: 'bedgear-h6-12-hybrid',
+  M3: 'bedgear-m3-12-dual-comfort',
+  M5: 'bedgear-m5-14-dual-comfort',
+  'Flex L': 'flex-l-adjustable-base',
+  'Flex LSX': 'flex-lsx-adjustable-base',
+  'Flex SH': 'flex-sh-adjustable-base',
+}, 'all model-level menu items route directly to products');
 assert(mainMenuContract.items.find((item) => item.title === 'Sleep Essentials').items.some((item) => item.title === 'Bedding Guides'), 'bedding guides appear beside sleep essentials');
 assert(mainMenuContract.items.find((item) => item.title === 'Your Showroom Visit').items.some((item) => item.title === 'How the Showroom Works'), 'showroom education appears in the visit menu');
 assert(footerMenuContract.items.some((item) => item.url.endsWith('/pages/sleep-guides')), 'the guide hub is present in the footer navigation');
@@ -40,6 +55,24 @@ if (fs.existsSync(readbackPath)) {
     mainMenuItems: 72,
     footerMenuItems: 12,
   }, 'Shopify readback verifies both strategic navigation menus');
+  const actualMainItems = readback.menus.find((menu) => menu.handle === 'main-menu').items.flatMap((item) => [item, ...(item.items || [])]);
+  const actualModelLinks = Object.fromEntries(actualMainItems.filter((item) => ['S7', 'H6', 'M3', 'M5', 'Flex L', 'Flex LSX', 'Flex SH'].includes(item.title)).map((item) => [item.title, { type: item.type, url: item.url }]));
+  assert.deepEqual(actualModelLinks, {
+    S7: { type: 'PRODUCT', url: '/products/bedgear-s7-12-memory-foam' },
+    H6: { type: 'PRODUCT', url: '/products/bedgear-h6-12-hybrid' },
+    M3: { type: 'PRODUCT', url: '/products/bedgear-m3-12-dual-comfort' },
+    M5: { type: 'PRODUCT', url: '/products/bedgear-m5-14-dual-comfort' },
+    'Flex L': { type: 'PRODUCT', url: '/products/flex-l-adjustable-base' },
+    'Flex LSX': { type: 'PRODUCT', url: '/products/flex-lsx-adjustable-base' },
+    'Flex SH': { type: 'PRODUCT', url: '/products/flex-sh-adjustable-base' },
+  }, 'Shopify readback verifies direct product routes for all seven model links');
+}
+
+const cleanupReadbackPath = path.join(ROOT, 'docs', 'catalog', 'SINGLE_PRODUCT_COLLECTION_CLEANUP_READBACK.json');
+if (fs.existsSync(cleanupReadbackPath)) {
+  const cleanup = JSON.parse(fs.readFileSync(cleanupReadbackPath, 'utf8'));
+  assert.equal(cleanup.collections.length, 7, 'seven obsolete single-product storefront collections are tracked');
+  assert(cleanup.collections.every((collection) => collection.onlineStorePublished === false), 'obsolete single-product collections are unpublished from Online Store');
 }
 
 console.log('Content navigation: PASS (50 guides, six hub groups, seven primary destinations, contextual guide links, footer discovery, and pre-newsletter conversion placement).');

@@ -1,6 +1,6 @@
 # MySnoozePod.com Decision Register
 
-Last updated: 2026-11-02 — content navigation and conversion-path checkpoint
+Last updated: 2026-11-02 — direct product navigation and official BEDGEAR product-copy checkpoint
 
 ## Confirmed owner decisions and constraints
 
@@ -56,6 +56,8 @@ Last updated: 2026-11-02 — content navigation and conversion-path checkpoint
 | D-048 | Guided-shopping tools use the existing storefront design and read Shopify-rendered catalog data. Unknown compatibility remains pending, optional products remain optional, and tool submission stores a recoverable plan locally without a cart mutation. | **IMPLEMENTED** — shared section/JavaScript contract and live validation. |
 | D-049 | Raw namespaced catalog tags are an organization layer, not a customer-facing filter vocabulary. Customer discovery uses curated collection/tag links now and should use verified Search & Discovery/metafield filter definitions later; internal values must not be exposed indiscriminately. | **IMPLEMENTED BOUNDARY / FOLLOW-UP DATA TASK** — collection guidance and filter contract. |
 | D-050 | The January 2026 BEDGEAR PXM document is authoritative company boilerplate, not product-model specification evidence. It is added to the 20 exact BEDGEAR products as a labeled `About BEDGEAR` block in the native Shopify description; model-specific claims remain absent until a matching source is provided. | **IMPLEMENTED / SOURCE-BOUNDED** — document extraction, Admin API mapping, and live storefront verification. |
+| D-051 | Model-level navigation is product navigation, not category navigation. S7, H6, M3, M5, Flex L, Flex LSX, and Flex SH must resolve directly to canonical Shopify product resources. The former seven one-product collections are retained for recovery but unpublished from Online Store. | **IMPLEMENTED / VERIFIED LIVE** — Shopify menu readback, theme readback, collection-publication readback, and storefront browser validation. |
+| D-052 | Exact BEDGEAR.com product pages are approved manufacturer evidence for concise product overviews and feature lists. Copy is mapped by exact Shopify handle and source URL; products without an exact current match retain only the separately sourced company boilerplate. | **IMPLEMENTED / SOURCE-BOUNDED** — 18 exact matches; two duvet/sham products remain unmatched. |
 
 ## Verified architectural and operational facts
 
@@ -144,6 +146,10 @@ Last updated: 2026-11-02 — content navigation and conversion-path checkpoint
 | F-081 | The primary menu now contains 72 nested items and the footer 12 items. “Guides & Tools” leads to the Sleep Tools hub; commerce branches expose contextual tools; all 50 educational guides remain reachable through the hub and strategic menu links. | **VERIFIED SHOPIFY MENU READBACK + LIVE DESKTOP/MOBILE RENDERING**. |
 | F-082 | Current Shopify readback reports 43 Active products, including exactly 20 with vendor `BEDGEAR`. All 20 previously had empty descriptions and now contain the same official five-paragraph January 2026 boilerplate under `About BEDGEAR`. | **VERIFIED ADMIN API READBACK** — 2026-11-02. Product status was not changed by this task. |
 | F-083 | Product identity, status, vendor, type, tags, template, variant IDs, SKUs, prices, and options were unchanged across the description mutation. Live S7 rendering shows the official copy inside Product Page v1's existing Product Details accordion. | **VERIFIED IMMUTABLE FINGERPRINT + LIVE STOREFRONT CHECK**. |
+| F-084 | The live primary menu now exposes seven Shopify `PRODUCT` items: S7, H6, M3, M5, Flex L, Flex LSX, and Flex SH. Each URL and resource ID matches the canonical product. | **VERIFIED SHOPIFY MENU READBACK + LIVE FLEX L CLICK** — 2026-11-02. |
+| F-085 | `/collections/mattresses` renders four direct product cards and `/collections/adjustable-bases` renders three direct product cards; adjustable-base quick links also resolve directly to products. | **VERIFIED PUBLISHED-THEME RENDERING** — desktop browser inspection. |
+| F-086 | The seven automated single-product family collections still exist in Shopify Admin for recovery but are no longer published to Online Store. No collection was deleted and no collection rule or product membership changed. | **VERIFIED ADMIN API READBACK** — `SINGLE_PRODUCT_COLLECTION_CLEANUP_READBACK.json`. |
+| F-087 | Exact current BEDGEAR.com product pages were matched to 18 Shopify products. Live Flex L rendering shows the source-bound Product Overview and four Key Features before the existing About BEDGEAR block. Solid White and Light Grey Racetrack duvet/sham sets have no verified exact current match and were not given invented product claims. | **VERIFIED SOURCE MAP + ADMIN READBACK + LIVE PRODUCT PAGE**. |
 
 ## Codi recommendations — not owner decisions
 
