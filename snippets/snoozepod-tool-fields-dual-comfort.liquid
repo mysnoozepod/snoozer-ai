@@ -1,0 +1,20 @@
+<fieldset class="snoozepod-tools__fieldset">
+  <legend class="snoozepod-tools__legend">Left Side Comfort</legend>
+  <div class="snoozepod-tools__choices">
+    {%- for value in 'Soft,Medium Soft,Medium Firm,Firm' | split: ',' -%}
+      {%- assign key = value | handleize -%}
+      <div class="snoozepod-tools__choice"><input type="radio" id="dual-left-{{ key }}" name="left_comfort" value="{{ value }}"{% if forloop.index == 3 %} checked{% endif %}><label for="dual-left-{{ key }}">{{ value }}</label></div>
+    {%- endfor -%}
+  </div>
+</fieldset>
+<fieldset class="snoozepod-tools__fieldset">
+  <legend class="snoozepod-tools__legend">Right Side Comfort</legend>
+  <div class="snoozepod-tools__choices">
+    {%- for value in 'Soft,Medium Soft,Medium Firm,Firm' | split: ',' -%}
+      {%- assign key = value | handleize -%}
+      <div class="snoozepod-tools__choice"><input type="radio" id="dual-right-{{ key }}" name="right_comfort" value="{{ value }}"{% if forloop.index == 3 %} checked{% endif %}><label for="dual-right-{{ key }}">{{ value }}</label></div>
+    {%- endfor -%}
+  </div>
+</fieldset>
+<div class="snoozepod-tools__field"><label for="dual-size">Planning size</label><select id="dual-size" name="size"><option>Queen</option><option>King</option><option>California King</option><option>Split King</option></select></div>
+

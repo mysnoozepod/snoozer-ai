@@ -1,0 +1,26 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "snoozepod-guided-tools",
+      "settings": {
+        "tool_type": "compatibility",
+        "heading": "Sleep System Compatibility Checker",
+        "eyebrow": "Verify Before You Buy",
+        "summary": "Check size and geometry alignment while keeping product-level compatibility pending until verified evidence exists.",
+        "action_label": "Check This Pairing"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

@@ -1,0 +1,25 @@
+<fieldset class="snoozepod-tools__fieldset">
+  <legend class="snoozepod-tools__legend">1. What mattress direction should anchor the system?</legend>
+  <div class="snoozepod-tools__choices">
+    {%- for value in 'memory-foam|Memory Foam,hybrid|Hybrid,dual-comfort|Dual Comfort,not-sure|Not Sure Yet' | split: ',' -%}
+      {%- assign option = value | split: '|' -%}
+      <div class="snoozepod-tools__choice"><input type="radio" id="builder-mattress-{{ option[0] }}" name="mattress_direction" value="{{ option[0] }}"{% if forloop.last %} checked{% endif %}><label for="builder-mattress-{{ option[0] }}">{{ option[1] }}</label></div>
+    {%- endfor -%}
+  </div>
+</fieldset>
+<fieldset class="snoozepod-tools__fieldset">
+  <legend class="snoozepod-tools__legend">2. Choose the planning size</legend>
+  <div class="snoozepod-tools__field"><label for="builder-size">Size</label><select id="builder-size" name="size"><option value="">Not sure yet</option><option>Twin XL</option><option>Full</option><option>Queen</option><option>King</option><option>California King</option><option>Split King</option></select></div>
+  <div class="snoozepod-tools__field"><label for="builder-geometry">Geometry</label><select id="builder-geometry" name="geometry"><option value="standard">Standard</option><option value="split-head">Split Head</option><option value="full-split">Full Split</option><option value="unknown">Not sure</option></select></div>
+</fieldset>
+<fieldset class="snoozepod-tools__fieldset">
+  <legend class="snoozepod-tools__legend">3. What should the complete system include?</legend>
+  <p class="snoozepod-tools__help">Everything is optional. Selecting an item creates a planning request, not a compatibility claim.</p>
+  <div class="snoozepod-tools__choices">
+    {%- for value in 'base|Adjustable Base,protection|Mattress Protection,pillows|Pillows,bedding|Sheets & Bedding' | split: ',' -%}
+      {%- assign option = value | split: '|' -%}
+      <div class="snoozepod-tools__choice"><input type="checkbox" id="builder-{{ option[0] }}" name="components" value="{{ option[0] }}"><label for="builder-{{ option[0] }}">{{ option[1] }}</label></div>
+    {%- endfor -%}
+  </div>
+</fieldset>
+

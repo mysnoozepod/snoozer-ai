@@ -1,0 +1,12 @@
+<fieldset class="snoozepod-tools__fieldset">
+  <legend class="snoozepod-tools__legend">What do you want to test?</legend>
+  <div class="snoozepod-tools__choices">
+    {%- for value in 'mattresses|Mattresses,bases|Adjustable Bases,dual-comfort|Dual Comfort,pillows|Pillows,bedding|Bedding,room|Room Setup' | split: ',' -%}
+      {%- assign option = value | split: '|' -%}
+      <div class="snoozepod-tools__choice"><input type="checkbox" id="session-{{ option[0] }}" name="test_items" value="{{ option[0] }}"><label for="session-{{ option[0] }}">{{ option[1] }}</label></div>
+    {%- endfor -%}
+  </div>
+</fieldset>
+<div class="snoozepod-tools__field"><label for="session-comfort">Current comfort direction</label><select id="session-comfort" name="comfort"><option>Not sure yet</option><option>Soft</option><option>Medium Soft</option><option>Medium Firm</option><option>Firm</option></select></div>
+<div class="snoozepod-tools__field"><label for="session-notes">Questions or concerns to remember</label><textarea id="session-notes" name="notes" placeholder="Pressure relief, partner preferences, cooling, mobility, room fit..."></textarea></div>
+

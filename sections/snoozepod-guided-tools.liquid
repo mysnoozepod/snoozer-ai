@@ -1,0 +1,142 @@
+{{ 'snoozepod-guided-tools.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'snoozepod-guided-tools.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign tool_type = section.settings.tool_type | default: 'hub'
+  assign page_summary = section.settings.summary
+  assign page_eyebrow = section.settings.eyebrow
+-%}
+
+<section class="snoozepod-tools" data-guided-tool="{{ tool_type | escape }}">
+  <div class="snoozepod-tools__shell">
+    <header class="snoozepod-tools__hero">
+      <div>
+        {%- if page_eyebrow != blank -%}<p class="snoozepod-tools__eyebrow">{{ page_eyebrow | escape }}</p>{%- endif -%}
+        <h1 class="snoozepod-tools__title">{{ page.title | default: section.settings.heading | escape }}</h1>
+        {%- if page_summary != blank -%}<p class="snoozepod-tools__summary">{{ page_summary | escape }}</p>{%- endif -%}
+      </div>
+      <aside class="snoozepod-tools__hero-aside">
+        <p><strong>Shopify stays authoritative.</strong> These tools organize verified product information and preserve unknowns. They do not invent compatibility, availability, pricing, or orderable configurations.</p>
+      </aside>
+    </header>
+
+    <script type="application/json" data-guided-catalog>
+      {
+        "mattresses": [
+          {%- for item in collections['mattresses'].products limit: 50 -%}
+            {"handle":{{ item.handle | json }},"title":{{ item.title | json }},"url":{{ item.url | json }},"type":{{ item.type | json }},"tags":{{ item.tags | json }},"price":{{ item.price | json }},"priceText":{{ item.price | money | json }},"available":{{ item.available | json }},"image":{% if item.featured_image %}{{ item.featured_image | image_url: width: 720 | json }}{% else %}null{% endif %},"comfortFeel":{{ item.metafields.custom.comfort_feel.value | json }},"geometry":{{ item.metafields.custom.geometry.value | json }},"compatibilityStatus":{{ item.metafields.custom.compatibility_status.value | json }},"variants":{{ item.variants | json }}}{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        ],
+        "bases": [
+          {%- for item in collections['adjustable-bases'].products limit: 50 -%}
+            {"handle":{{ item.handle | json }},"title":{{ item.title | json }},"url":{{ item.url | json }},"type":{{ item.type | json }},"tags":{{ item.tags | json }},"price":{{ item.price | json }},"priceText":{{ item.price | money | json }},"available":{{ item.available | json }},"geometry":{{ item.metafields.custom.geometry.value | json }},"compatibilityStatus":{{ item.metafields.custom.compatibility_status.value | json }},"variants":{{ item.variants | json }}}{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        ],
+        "pillows": [
+          {%- for item in collections['pillows'].products limit: 50 -%}
+            {"handle":{{ item.handle | json }},"title":{{ item.title | json }},"url":{{ item.url | json }},"type":{{ item.type | json }},"tags":{{ item.tags | json }},"price":{{ item.price | json }},"priceText":{{ item.price | money | json }},"available":{{ item.available | json }}}{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        ],
+        "bedding": [
+          {%- assign bedding_items = collections['bedding'].products -%}
+          {%- for item in bedding_items limit: 50 -%}
+            {"handle":{{ item.handle | json }},"title":{{ item.title | json }},"url":{{ item.url | json }},"type":{{ item.type | json }},"tags":{{ item.tags | json }},"price":{{ item.price | json }},"priceText":{{ item.price | money | json }},"available":{{ item.available | json }}}{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        ]
+      }
+    </script>
+
+    {%- if tool_type == 'hub' -%}
+      <div class="snoozepod-tools__grid">
+        {%- for block in section.blocks -%}
+          <a class="snoozepod-tools__card" href="{{ block.settings.link }}" {{ block.shopify_attributes }}>
+            <p class="snoozepod-tools__card-kicker">{{ block.settings.kicker | escape }}</p>
+            <h2>{{ block.settings.title | escape }}</h2>
+            <p>{{ block.settings.description | escape }}</p>
+            <span class="snoozepod-tools__card-link">{{ block.settings.link_label | escape }} →</span>
+          </a>
+        {%- endfor -%}
+      </div>
+    {%- else -%}
+      <div class="snoozepod-tools__workspace">
+        <form class="snoozepod-tools__panel" data-guided-form>
+          {%- case tool_type -%}
+            {%- when 'builder' -%}
+              {% render 'snoozepod-tool-fields-builder' %}
+            {%- when 'mattress-finder' -%}
+              {% render 'snoozepod-tool-fields-mattress' %}
+            {%- when 'compatibility' -%}
+              {% render 'snoozepod-tool-fields-compatibility' %}
+            {%- when 'compare' -%}
+              {% render 'snoozepod-tool-fields-compare' %}
+            {%- when 'session-planner' -%}
+              {% render 'snoozepod-tool-fields-session' %}
+            {%- when 'dual-comfort' -%}
+              {% render 'snoozepod-tool-fields-dual-comfort' %}
+            {%- when 'pillow-finder' -%}
+              {% render 'snoozepod-tool-fields-pillow' %}
+            {%- when 'bedding-finder' -%}
+              {% render 'snoozepod-tool-fields-bedding' %}
+            {%- when 'room-planner' -%}
+              {% render 'snoozepod-tool-fields-room' %}
+          {%- endcase -%}
+
+          <div class="snoozepod-tools__actions">
+            <button class="button button--primary" type="submit">{{ section.settings.action_label | default: 'Show My Starting Point' | escape }}</button>
+            <button class="button button--secondary" type="reset">Reset</button>
+          </div>
+        </form>
+
+        <aside class="snoozepod-tools__result" data-guided-result aria-live="polite" aria-atomic="true">
+          <p class="snoozepod-tools__result-label">Your plan</p>
+          <h2 data-guided-result-title>Start with what you know</h2>
+          <p data-guided-result-copy>Choose the options that fit you. We will preserve unknowns and point you toward a safe next step.</p>
+          <ul class="snoozepod-tools__result-list" data-guided-result-list></ul>
+          <div class="snoozepod-tools__product-grid" data-guided-products hidden></div>
+          <p class="snoozepod-tools__status" data-guided-status hidden></p>
+          <div class="snoozepod-tools__actions">
+            <a class="button button--secondary" data-guided-primary-link href="/pages/book-a-snooze-session">Book a Snooze Session</a>
+            <button class="button button--secondary" type="button" data-snoozer-trigger data-guided-snoozer>Ask Snoozer</button>
+          </div>
+        </aside>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Guided shopping tool",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    { "type": "select", "id": "tool_type", "label": "Tool", "default": "hub", "options": [
+      { "value": "hub", "label": "Tools hub" },
+      { "value": "builder", "label": "SnoozePod builder" },
+      { "value": "mattress-finder", "label": "Mattress finder" },
+      { "value": "compatibility", "label": "Compatibility checker" },
+      { "value": "compare", "label": "Comparison" },
+      { "value": "session-planner", "label": "Session planner" },
+      { "value": "dual-comfort", "label": "Dual comfort planner" },
+      { "value": "pillow-finder", "label": "Pillow finder" },
+      { "value": "bedding-finder", "label": "Bedding finder" },
+      { "value": "room-planner", "label": "Room planner" }
+    ] },
+    { "type": "text", "id": "heading", "label": "Fallback heading", "default": "Sleep Tools" },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Guides & Tools" },
+    { "type": "textarea", "id": "summary", "label": "Summary", "default": "Use guided questions to create a clearer starting point." },
+    { "type": "text", "id": "action_label", "label": "Action label", "default": "Show My Starting Point" }
+  ],
+  "blocks": [
+    { "type": "tool", "name": "Tool card", "settings": [
+      { "type": "text", "id": "kicker", "label": "Kicker", "default": "Guided tool" },
+      { "type": "text", "id": "title", "label": "Title", "default": "Tool title" },
+      { "type": "textarea", "id": "description", "label": "Description", "default": "A practical way to narrow your next step." },
+      { "type": "url", "id": "link", "label": "Link" },
+      { "type": "text", "id": "link_label", "label": "Link label", "default": "Start" }
+    ] }
+  ],
+  "presets": [{ "name": "Guided shopping tool" }]
+}
+{% endschema %}
+
