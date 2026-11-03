@@ -1,0 +1,221 @@
+{
+  "generatedAt": "2026-11-03T02:57:53.017Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\bedgear-product-descriptions\\2026-11-03T02-57-52-817Z",
+  "source": {
+    "label": "BEDGEAR Boilerplate - Updated January 2026",
+    "sharedUrl": "https://bedgear.pxm.pattern.com/share/RWlH0Qhcsk",
+    "sourceDate": "2026-01-22",
+    "version": "2026-01"
+  },
+  "summary": {
+    "catalogProducts": 43,
+    "bedgearProducts": 20,
+    "descriptionsVerified": 20,
+    "productStatusCounts": {
+      "ACTIVE": 43
+    }
+  },
+  "products": [
+    {
+      "id": "gid://shopify/Product/8100282826813",
+      "handle": "bedgear-h6-12-hybrid",
+      "title": "12\" Hybrid Mattress",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100282892349",
+      "handle": "bedgear-m3-12-dual-comfort",
+      "title": "12\" Dual Comfort Mattress",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100282925117",
+      "handle": "bedgear-m5-14-dual-comfort",
+      "title": "14\" Dual Comfort Mattress",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100282794045",
+      "handle": "bedgear-s7-12-memory-foam",
+      "title": "12\" Memory Foam Mattress",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247765053",
+      "handle": "cooling-performance-throw",
+      "title": "Cooling Performance Throw",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247306301",
+      "handle": "cotton-sheet-set",
+      "title": "Cotton Sheet Set",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247404605",
+      "handle": "dri-tec-mattress-protector",
+      "title": "Dri-Tec Mattress Protector",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247339069",
+      "handle": "dri-tec-sheet-set",
+      "title": "Dri-Tec Sheet Set",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247142461",
+      "handle": "flex-l-adjustable-base",
+      "title": "Flex L Adjustable Base",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247175229",
+      "handle": "flex-lsx-adjustable-base",
+      "title": "Flex LSX Adjustable Base",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247240765",
+      "handle": "flex-sh-adjustable-base",
+      "title": "Flex SH Adjustable Base",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247830589",
+      "handle": "light-grey-racetrack-duvet-sham-set",
+      "title": "Light Grey Racetrack Duvet + Sham Set",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247568445",
+      "handle": "light-weight-comforter",
+      "title": "Light Weight Comforter",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247601213",
+      "handle": "medium-weight-comforter",
+      "title": "Medium Weight Comforter",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247863357",
+      "handle": "react-pro-performance-topper",
+      "title": "React Pro Performance Topper",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247797821",
+      "handle": "solid-white-duvet-sham-set",
+      "title": "Solid White Duvet + Sham Set",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247535677",
+      "handle": "stretchwick-mattress-encasement",
+      "title": "Stretchwick Mattress Encasement",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247666749",
+      "handle": "ultra-weight-comforter",
+      "title": "Ultra Weight Comforter",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247502909",
+      "handle": "ver-tex-mattress-protector",
+      "title": "Ver-Tex Mattress Protector",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    },
+    {
+      "id": "gid://shopify/Product/8100247371837",
+      "handle": "ver-tex-sheet-set",
+      "title": "Ver-Tex Sheet Set",
+      "status": "ACTIVE",
+      "vendor": "BEDGEAR",
+      "descriptionLength": 1759,
+      "descriptionSha256": "240a09f128579135f83f160465472f4670664a2f32ef90de14a13c3c60927435",
+      "containsOfficialBedgearBoilerplate": true
+    }
+  ]
+}

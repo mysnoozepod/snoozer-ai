@@ -1,7 +1,7 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-02 — guided shopping experience live and validated
-Queue state: The 43-product catalog remains Draft and fail closed where commercial authority is incomplete. Fifty educational guides, the guide hub, the Sleep Tools hub, and nine guided planning tools are published behind the existing storefront password. Homepage, collection, desktop/mobile navigation, booking, and Ask Snoozer routes now form one guided discovery path. M3/M5 sell-unit mappings, Snoozer's Shopify-authoritative retrieval implementation, live commercial authority, and final release acceptance remain gated.
+Last updated: 2026-11-02 — official BEDGEAR brand descriptions live
+Queue state: Shopify currently reports all 43 catalog products as Active; this state pre-existed and was preserved by the BEDGEAR description task. Fifty educational guides, the guide hub, the Sleep Tools hub, and nine guided planning tools are published behind the existing storefront password. Homepage, collection, desktop/mobile navigation, booking, and Ask Snoozer routes form one guided discovery path. M3/M5 sell-unit mappings, model-specific BEDGEAR copy, Snoozer's Shopify-authoritative retrieval implementation, and final release acceptance remain gated.
 
 ## Readiness classification
 
@@ -210,6 +210,15 @@ Queue state: The 43-product catalog remains Draft and fail closed where commerci
 - **Validation:** Focused guided-shopping and navigation tests, live builder saved-plan flow, explicit incompatibility flow, independent Soft/Firm Dual Comfort flow, homepage/collection placement, 390px mobile rendering, clean browser console, and idempotent Shopify page/theme/menu plans.
 - **Safety:** No cart, order, product, variant, price, inventory, product-status, collection-rule, AWS, Calendly, or storefront-password mutation occurred. The development theme remains unpublished.
 - **Report:** `docs/guided-shopping/GUIDED_SHOPPING_RELEASE.md`.
+
+### BEDGEAR Brand Description Release
+
+- **Objective:** Use the owner-provided BEDGEAR PXM share to add verified manufacturer copy to the appropriate Shopify products without inventing model specifications.
+- **Status:** COMPLETE AND LIVE — all 20 exact BEDGEAR products now contain the January 2026 source copy under a clearly labeled `About BEDGEAR` heading in Shopify's native product description.
+- **Source boundary:** The supplied DOCX contains five paragraphs of company boilerplate, not model-specific S7, H6, M3, M5, adjustable-base, sheet, protection, comforter, duvet, throw, or topper specifications. No model claim was inferred from the brand copy.
+- **Validation:** Shopify Admin readback verifies 20/20 descriptions and all 43 product statuses as Active; immutable identity, tags, templates, variants, SKUs, prices, and options were fingerprinted before and after. Live S7 rendering verifies the accordion heading, five paragraphs, registered brand language, and existing product-form presentation.
+- **Recovery:** Private pre-change snapshot recorded in `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS_SHOPIFY_READBACK.json`.
+- **Report:** `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS.md`.
 
 ### P1-008 — Resolve customer-chat and analytics ownership
 
