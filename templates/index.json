@@ -61,6 +61,13 @@
         "padding_bottom": 0
       }
     },
+    "guided-shopping": {
+      "type": "snoozepod-guided-shopping-links",
+      "settings": {
+        "heading": "Start With A Guided Tool",
+        "intro": "Build a complete sleep system, narrow your mattress direction, or prepare what you want to test during a private Snooze Session."
+      }
+    },
     "featured_collection_666q7i": {
       "type": "custom-liquid",
       "disabled": true,
@@ -298,6 +305,7 @@
   "order": [
     "image_with_text_hVQzdT",
     "value-strip",
+    "guided-shopping",
     "featured_collection_666q7i",
     "image_with_text_wUxjfL",
     "snoozepod_environment_GYx7gN",
