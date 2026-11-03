@@ -1,0 +1,25 @@
+{% comment %}
+  Renders a direct product destination in the collection navigation grid.
+  Accepts navigation_product: Product object.
+{% endcomment %}
+
+{%- if navigation_product != blank -%}
+  <article class="snoozepod-collection-navigation__card">
+    {%- if navigation_product.featured_image != blank -%}
+      {{
+        navigation_product.featured_image
+        | image_url: width: 720
+        | image_tag:
+          loading: 'lazy',
+          widths: '240, 360, 540, 720',
+          sizes: '(min-width: 750px) 25vw, 50vw',
+          alt: navigation_product.featured_image.alt | default: navigation_product.title | escape
+      }}
+    {%- else -%}
+      <div class="snoozepod-collection-navigation__fallback" aria-hidden="true"></div>
+    {%- endif -%}
+    <a class="snoozepod-collection-navigation__link" href="{{ navigation_product.url }}">
+      {{ navigation_product.title | escape }}
+    </a>
+  </article>
+{%- endif -%}
