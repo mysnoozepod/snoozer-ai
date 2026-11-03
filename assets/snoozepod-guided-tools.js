@@ -253,7 +253,7 @@
       title: left === right ? "One shared comfort direction" : "Independent comfort directions saved",
       copy: "This records preference only. Add to Cart remains unavailable until the exact size and left/right combination maps to an approved Shopify sellable configuration.",
       items: ["Size: " + size, "Left side: " + left, "Right side: " + right, "Orderable mapping: Not yet verified"],
-      href: "/collections/m3",
+      href: "/collections/mattresses/comfort-dual-comfort",
       linkLabel: "Explore Dual Comfort",
       status: "Preference saved without creating an unsupported order configuration.",
     };
