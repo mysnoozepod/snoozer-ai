@@ -1,13 +1,7 @@
 {{ 'snoozepod-pod-builder.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'snoozepod-pod-builder.js' | asset_url }}" defer></script>
 
-{%- render 'snoozepod-guided-pod-builder-core',
-  builder_id: section.id,
-  builder_anchor_id: 'pod-builder-' | append: section.id,
-  builder_heading: section.settings.heading,
-  builder_primary_label: section.settings.primary_label,
-  builder_context: 'standalone'
--%}
+{%- render 'snoozepod-guided-pod-builder-core', builder_id: section.id, builder_anchor_id: 'pod-builder-', append: section.id, builder_heading: section.settings.heading, builder_primary_label: section.settings.primary_label, builder_context: 'standalone' -%}
 
 {% comment %}
   Historical standalone implementation retained temporarily for theme-diff traceability.
@@ -434,3 +428,23 @@
   ]
 }
 {% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: |-
+    {%- render 'snoozepod-guided-pod-builder-core',
+      builder_id: section.id,
+      builder_anchor_id: 'pod-builder-' | append: section.id,
+      builder_heading: section.settings.heading,
+      builder_primary_label: section.settings.primary_label,
+      builder_context: 'standalone'
+    -%}
+  to: "{%- render 'snoozepod-guided-pod-builder-core', builder_id: section.id, builder_anchor_id:
+    'pod-builder-', append: section.id, builder_heading: section.settings.heading,
+    builder_primary_label: section.settings.primary_label, builder_context: 'standalone'
+    -%}"
+  position: 139..397
+{% endcomment %}
