@@ -25,40 +25,40 @@ const bgAsset = (id, fileName, role, alt) => ({
 });
 
 const bedgear = {
-  "bedgear-s7-12-memory-foam": {
-    search: "S7 Mattress",
+  "12-inch-memory-foam-mattress": {
+    search: "12 inch memory foam mattress",
     availableAssetCount: 20,
     selected: [
-      bgAsset("8ed40231-f6ba-43b5-aa2b-758b80dcd454", "S7_Mattress_Angle_BEDGEAR.jpg", "primary", "BEDGEAR S7 mattress shown at an angle"),
-      bgAsset("79bf83a1-cba5-4c8e-b3a6-b526d29506ff", "S7_Mattress_Corner_BEDGEAR.jpg", "detail", "BEDGEAR S7 mattress corner and cover detail"),
-      bgAsset("ffd79485-cc8c-4007-a3c4-710170c1883c", "S7_Mattress_Lifestyle_1_BEDGEAR.jpg", "lifestyle", "BEDGEAR S7 mattress in a bedroom setting"),
+      bgAsset("8ed40231-f6ba-43b5-aa2b-758b80dcd454", "S7_Mattress_Angle_BEDGEAR.jpg", "primary", "12-inch memory foam mattress shown at an angle"),
+      bgAsset("79bf83a1-cba5-4c8e-b3a6-b526d29506ff", "S7_Mattress_Corner_BEDGEAR.jpg", "detail", "12-inch memory foam mattress corner and cover detail"),
+      bgAsset("ffd79485-cc8c-4007-a3c4-710170c1883c", "S7_Mattress_Lifestyle_1_BEDGEAR.jpg", "lifestyle", "12-inch memory foam mattress in a bedroom setting"),
     ],
   },
-  "bedgear-h6-12-hybrid": {
-    search: "H6 Mattress",
+  "12-inch-hybrid-mattress": {
+    search: "12 inch hybrid mattress",
     availableAssetCount: 34,
     selected: [
-      bgAsset("dfc9910f-93a8-4126-ba73-dd2981243b93", "H6_Mattress_Main_1_BEDGEAR.jpg", "primary", "BEDGEAR H6 hybrid mattress product view"),
-      bgAsset("47aef7db-d327-4295-9b5f-408a97e0359e", "H6_Mattress_angle.jpg", "detail", "BEDGEAR H6 hybrid mattress angle view"),
-      bgAsset("fd405ccc-1f3c-4c62-9b90-92101f2e96c4", "H6_Mattress_Lifestyle_1_BEDGEAR.jpg", "lifestyle", "BEDGEAR H6 hybrid mattress in a bedroom setting"),
+      bgAsset("dfc9910f-93a8-4126-ba73-dd2981243b93", "H6_Mattress_Main_1_BEDGEAR.jpg", "primary", "12-inch hybrid mattress product view"),
+      bgAsset("47aef7db-d327-4295-9b5f-408a97e0359e", "H6_Mattress_angle.jpg", "detail", "12-inch hybrid mattress angle view"),
+      bgAsset("fd405ccc-1f3c-4c62-9b90-92101f2e96c4", "H6_Mattress_Lifestyle_1_BEDGEAR.jpg", "lifestyle", "12-inch hybrid mattress in a bedroom setting"),
     ],
   },
-  "bedgear-m3-12-dual-comfort": {
-    search: "M3 Mattress",
+  "12-inch-dual-comfort-mattress": {
+    search: "12 inch dual comfort mattress",
     availableAssetCount: 65,
     selected: [
-      bgAsset("08124560-3df0-4bae-8786-6fa8b8d8827a", "M3_Mattress_Angle-Style-01.jpg", "primary", "BEDGEAR M3 dual comfort mattress angle view"),
-      bgAsset("fe9856f2-7093-4dd3-be7e-cea8f3b90bf5", "M3_Mattress_Front-Style_02.jpg", "detail", "BEDGEAR M3 dual comfort mattress front view"),
-      bgAsset("38a08257-75bc-45e1-b530-a54af2b6f181", "M3_Mattress_Lifestyle_01.jpg", "lifestyle", "BEDGEAR M3 dual comfort mattress in a bedroom setting"),
+      bgAsset("08124560-3df0-4bae-8786-6fa8b8d8827a", "M3_Mattress_Angle-Style-01.jpg", "primary", "12-inch dual comfort mattress angle view"),
+      bgAsset("fe9856f2-7093-4dd3-be7e-cea8f3b90bf5", "M3_Mattress_Front-Style_02.jpg", "detail", "12-inch dual comfort mattress front view"),
+      bgAsset("38a08257-75bc-45e1-b530-a54af2b6f181", "M3_Mattress_Lifestyle_01.jpg", "lifestyle", "12-inch dual comfort mattress in a bedroom setting"),
     ],
   },
-  "bedgear-m5-14-dual-comfort": {
-    search: "M5 Mattress",
+  "14-inch-dual-comfort-mattress": {
+    search: "14 inch dual comfort mattress",
     availableAssetCount: 88,
     selected: [
-      bgAsset("3c6a4b56-07b6-4590-bd4a-9d75ff146920", "BG-WEB-PDP-GALLERY-M5-MATTRESS-MAIN.jpg", "primary", "BEDGEAR M5 dual comfort mattress product view"),
-      bgAsset("261baed7-f370-41a4-b2de-fbeb6c39bdb7", "M5_Mattress_Angle_Shot_4889.jpg", "detail", "BEDGEAR M5 dual comfort mattress angle view"),
-      bgAsset("99a13eb4-7840-4999-8f7a-5b7696d5643f", "M5_Mattress_Models_Lifestyle_4937_copy_2.jpg", "lifestyle", "BEDGEAR M5 dual comfort mattress in a bedroom setting"),
+      bgAsset("3c6a4b56-07b6-4590-bd4a-9d75ff146920", "BG-WEB-PDP-GALLERY-M5-MATTRESS-MAIN.jpg", "primary", "14-inch dual comfort mattress product view"),
+      bgAsset("261baed7-f370-41a4-b2de-fbeb6c39bdb7", "M5_Mattress_Angle_Shot_4889.jpg", "detail", "14-inch dual comfort mattress angle view"),
+      bgAsset("99a13eb4-7840-4999-8f7a-5b7696d5643f", "M5_Mattress_Models_Lifestyle_4937_copy_2.jpg", "lifestyle", "14-inch dual comfort mattress in a bedroom setting"),
     ],
   },
   "flex-l-adjustable-base": {

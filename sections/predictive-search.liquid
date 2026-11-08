@@ -151,7 +151,7 @@
                       >
                     {%- endif -%}
                     <div class="predictive-search__item-content{% unless settings.predictive_search_show_vendor or settings.predictive_search_show_price %} predictive-search__item-content--centered{% endunless %}">
-                      {%- if settings.predictive_search_show_vendor -%}
+                      {%- if settings.predictive_search_show_vendor and product.metafields.custom.product_contract.value != 'mattress' and product.type != 'Mattress' -%}
                         <span class="visually-hidden">{{ 'accessibility.vendor' | t }}</span>
                         <div class="predictive-search__item-vendor caption-with-letter-spacing">
                           {{ product.vendor }}

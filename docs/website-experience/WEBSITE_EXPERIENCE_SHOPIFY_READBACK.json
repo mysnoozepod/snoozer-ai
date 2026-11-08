@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-11-06T13:15:51.312Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\website-experience-completion\\2026-11-06T13-15-47-646Z",
+  "previewUrl": "https://mysnoozepodtest.myshopify.com/?preview_theme_id=139216420925",
+  "publishedTheme": {
+    "id": "139460542525",
+    "name": "snoozer-ai/main",
+    "role": "main",
+    "unchangedAssetsVerified": 10
+  },
+  "unpublishedTheme": {
+    "id": "139216420925",
+    "name": "snoozer-ai/main",
+    "role": "unpublished",
+    "verifiedAssets": [
+      {
+        "key": "sections/snoozepod-footer-navigation.liquid",
+        "sha256": "5e815312d76f4235a87ee701fb5f78c955153e30f655a6d927ef521945948560"
+      },
+      {
+        "key": "sections/snoozepod-mattress-showcase.liquid",
+        "sha256": "b69c23743050b364707b734a23240dc9cf27d791523fea1a2b98047176870de2"
+      },
+      {
+        "key": "sections/snoozepod-meet-snoozer.liquid",
+        "sha256": "b9676e5e191f53c8f9337ab827f6d8fdf1abde93aa70995e88bbc0637c506846"
+      },
+      {
+        "key": "sections/snoozer-landing-booking.liquid",
+        "sha256": "dbcd7b7d253b056f148c815b3717c07a68b1ddecbec2d279214dd33b360f8e77"
+      },
+      {
+        "key": "sections/header.liquid",
+        "sha256": "7006460f1154bd3a2d8bcebca67118b9d9e2873d95e9fd8cdc6a6f7597db41a0"
+      },
+      {
+        "key": "sections/footer-group.json",
+        "sha256": "21d38bd05a7b2152a0af9a8bb4bc9919e0feec2fb14e90ce5c7931aed6bff709"
+      },
+      {
+        "key": "templates/index.json",
+        "sha256": "e5a009ebce6ad7928c887f513a7a2a4256dec315ae1ae93d248b08fa124e377e"
+      },
+      {
+        "key": "templates/collection.snoozepod-v1.json",
+        "sha256": "e3f12f33ddefea9173d09551fc00a8829b649e1cef187d5e18119551095dd3ee"
+      },
+      {
+        "key": "templates/product.snoozepod-v1.json",
+        "sha256": "efdd1f416490ca59d300af62dda6996fb0d676d3e00fcb23867d1d1dc82b3773"
+      },
+      {
+        "key": "templates/page.landing-booking.json",
+        "sha256": "3700bf479620ce3f64d7bb9ca9337ba4e9fc811af5d7d4382bb36eeb6dc3ee9e"
+      }
+    ]
+  },
+  "pages": {
+    "templateAssignments": [
+      {
+        "id": "gid://shopify/Page/91074658365",
+        "handle": "book-a-snooze-session",
+        "isPublished": true,
+        "templateSuffix": "landing-booking",
+        "url": "https://mysnoozepod.com/pages/book-a-snooze-session"
+      },
+      {
+        "id": "gid://shopify/Page/92321087549",
+        "handle": "snooze-assessment",
+        "isPublished": true,
+        "templateSuffix": "landing-assessment",
+        "url": "https://mysnoozepod.com/pages/snooze-assessment"
+      }
+    ],
+    "warrantySupport": {
+      "id": "gid://shopify/Page/109055148093",
+      "handle": "warranty-support",
+      "isPublished": true,
+      "managed": true,
+      "url": "https://mysnoozepod.com/pages/warranty-support"
+    }
+  },
+  "checkoutReview": {
+    "shop": {
+      "id": 59098071101,
+      "name": "mysnoozepod",
+      "domain": "mysnoozepod.com",
+      "currency": "USD",
+      "weight_unit": "lb",
+      "taxes_included": false,
+      "myshopify_domain": "mysnoozepodtest.myshopify.com",
+      "checkout_api_supported": false,
+      "enabled_presentment_currencies": [
+        "USD"
+      ]
+    },
+    "note": "Read-only native checkout settings snapshot. Payment, tax, shipping, and fulfillment settings were not changed."
+  }
+}

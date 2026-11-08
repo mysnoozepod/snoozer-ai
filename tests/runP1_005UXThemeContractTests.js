@@ -90,8 +90,8 @@ assert(productInformation.includes('<details'), 'product information uses keyboa
 assert(productInformation.includes('shop.shipping_policy.url'), 'delivery section can reuse the authoritative Shopify shipping policy');
 assert(productInformation.includes('shop.refund_policy.url'), 'returns section can reuse the authoritative Shopify return policy');
 
-assert(collectionTemplate.order.join('|') === 'hero|category-navigation|guided-shopping|product-grid|closing', 'Collection Page v1 follows the approved guided section sequence');
-assert(collectionTemplate.sections['guided-shopping'].type === 'snoozepod-guided-shopping-links', 'Collection Page v1 connects contextual tools before the product grid');
+assert(collectionTemplate.order.join('|') === 'hero|category-navigation|product-grid|guided-shopping|closing', 'Collection Page v1 follows the merchandise-first section sequence');
+assert(collectionTemplate.sections['guided-shopping'].type === 'snoozepod-guided-shopping-links', 'Collection Page v1 keeps contextual tools after the product grid');
 assert(collectionTemplate.sections['category-navigation'].blocks.pillows.settings.collection === 'pillows', 'collection preview uses the real Pillows collection');
 assert(collectionTemplate.sections['category-navigation'].blocks.sheets.settings.collection === 'sheets', 'collection preview uses the canonical Sheets collection');
 assert(collectionTemplate.sections['category-navigation'].blocks['bedroom-furniture'].settings.collection === 'bedroom-furniture', 'collection preview uses the canonical Bedroom Furniture collection');

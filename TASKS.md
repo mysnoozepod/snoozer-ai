@@ -1,7 +1,7 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-02 — direct product navigation and official BEDGEAR product copy live
-Queue state: Shopify currently reports all 43 catalog products as Active; this state pre-existed and was preserved. The seven model-level mattress/base links now resolve directly to product pages, and their obsolete single-product collections are unpublished from Online Store. Official BEDGEAR.com product-page evidence now supports model-specific copy on 18 exact BEDGEAR products. M3/M5 sell-unit mappings, the two unmatched duvet/sham descriptions, Snoozer's Shopify-authoritative retrieval implementation, and final release acceptance remain gated.
+Last updated: 2026-11-08 — customer-facing mattress names and comfort vocabulary corrected
+Queue state: The four mattress products now use product-led customer names, generic handles, manufacturer-neutral descriptions/media text, and plain-language Dual Comfort choices. Historical manufacturer/model identity remains internal for operations and provenance. Exact Dual Comfort sell-unit mappings, owner content authoring, technical completion, future Snoozer retrieval implementation, and final release acceptance remain gated.
 
 ## Readiness classification
 
@@ -11,6 +11,15 @@ Queue state: Shopify currently reports all 43 catalog products as Active; this s
 | **FIX** | M3/M5 complete sell-unit/configuration and assessment mapping; missing repository-level Calendly webhook authentication; failing HUD session-prep route assertion; duplicate Zoho SalesIQ scripts. |
 | **IMPROVE** | Authenticated unpublished-theme navigation/catalog acceptance; mobile booking length and iframe ergonomics; remaining hardcoded product benefit text; booking image/alt text after owner approval; accessibility and route verification; deployment documentation. |
 | **BUILD** | Approved physical-display-to-online-product/sample mapping; owner-approved content/media; live pricing/fulfillment authority; non-production booking contract acceptance suite; final release smoke checks. |
+
+### Customer-facing mattress naming and comfort language
+
+- **Objective:** Remove BEDGEAR and S7/H6/M3/M5 from customer-facing mattress identity and replace numeric Dual Comfort choices with Soft, Medium Soft, Medium Firm, and Firm.
+- **Status:** COMPLETE IN SHOPIFY AND EXISTING UNPUBLISHED THEME — all four mattress titles, handles, descriptions, navigation labels, homepage cards, media alt text, and Product Page v1 surfaces now use generic product-led identities. Old product URLs redirect to their new canonical handles.
+- **Commerce safety:** Manufacturer, model, SKU, and provenance remain available in internal Shopify data. Product/variant IDs, prices, status, inventory, collections, and sellability were preserved. Dual Comfort ordering still fails closed until an exact size + left + right sell-unit mapping exists.
+- **Validation:** 18 focused naming assertions; 40 product-knowledge assertions; catalog, navigation, website-experience, guided-shopping, Product Page v1, cart, builder-contract, media, route, and storefront-skeleton suites; JavaScript syntax; authenticated unpublished-theme checks of the homepage, product page, comfort controls, media text, and legacy-handle redirect.
+- **Safety:** Published theme `139460542525` was not modified. No order, deployment, commit, or push occurred.
+- **Evidence:** `docs/catalog/MATTRESS_CUSTOMER_NAMING_SHOPIFY_READBACK.json`; latest recovery snapshot `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\mattress-customer-naming\2026-11-08T20-44-50-716Z`.
 
 ## Phase 0 — completed discovery and control
 
@@ -204,7 +213,7 @@ Queue state: Shopify currently reports all 43 catalog products as Active; this s
 ### Guided Shopping Experience
 
 - **Objective:** Connect the homepage and collection pages to a dedicated Sleep Tools hub, a planning-first Build Your SnoozePod page, and focused tools for mattress discovery, compatibility, comparison, Snooze Session preparation, Dual Comfort, pillows, cooling/bedding, and room/delivery planning.
-- **Status:** COMPLETE AND LIVE BEHIND THE EXISTING STOREFRONT PASSWORD — ten published pages, 25 verified theme assets per target theme, 72 nested primary-menu items, and 12 footer items. Homepage guidance appears before collection exploration; collection guidance and curated quick filters appear before the native product grid.
+- **Status:** COMPLETE AND LIVE BEHIND THE EXISTING STOREFRONT PASSWORD — ten published pages remain available. The 2026-11-06 booking-first refinement deliberately moved homepage tools below mattress/category discovery and collection guidance below the native product grid; this supersedes the earlier tools-first placement without changing the tool inventory or commerce boundary.
 - **Commerce boundary:** The tools consume Shopify-rendered product, variant, collection, tag, and verified metafield data. They save planning choices locally, make no Ajax cart mutation, do not claim unknown compatibility, and route unresolved decisions to the product page, Ask Snoozer, or a Snooze Session.
 - **Filter contract:** Customer-facing dimensions are Size, Comfort, Construction, Sleep Position, Cooling, Geometry, Material, Pillow Loft, Color, and Availability. Existing exact namespaced tags power curated collection links without exposing internal taxonomy values as a raw storefront filter. Verified metafield-backed filters remain a later data task.
 - **Validation:** Focused guided-shopping and navigation tests, live builder saved-plan flow, explicit incompatibility flow, independent Soft/Firm Dual Comfort flow, homepage/collection placement, 390px mobile rendering, clean browser console, and idempotent Shopify page/theme/menu plans.
@@ -219,6 +228,29 @@ Queue state: Shopify currently reports all 43 catalog products as Active; this s
 - **Validation:** Shopify readback verifies seven PRODUCT menu destinations, seven unpublished obsolete collection routes, 18 exact manufacturer-source mappings, 20/20 BEDGEAR descriptions, 27/27 bounded assets on both themes, and unchanged product identity/status/tags/templates/variants/SKUs/prices/options. Live browser checks verified all parent-page cards and Flex quick links use `/products/...`, and a menu click opened the Flex L product page with its official overview.
 - **Recovery:** Private pre-change snapshots are referenced by `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS_SHOPIFY_READBACK.json`, `docs/catalog/SINGLE_PRODUCT_COLLECTION_CLEANUP_READBACK.json`, `docs/content-pages/CONTENT_NAVIGATION_SHOPIFY_READBACK.json`, and `docs/guided-shopping/GUIDED_SHOPPING_SHOPIFY_READBACK.json`.
 - **Report:** `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS.md`.
+
+### Website Experience Completion — booking-first refinement
+
+- **Objective:** Unite the existing homepage, navigation, collections, products, booking, tools, cart, checkout, policies/footer, and responsive layouts around Book a Snooze Session as the primary conversion.
+- **Status:** IMPLEMENTED ON EXISTING UNPUBLISHED THEME — READY FOR TY REVIEW. Theme `139216420925` contains the bounded 10-asset refinement; the same 10 corresponding assets on published theme `139460542525` were hash-verified unchanged. Booking and assessment suffixes were already correctly assigned and were read back unchanged. A conservative Warranty Support page structure is published.
+- **Material result:** Booking now leads the homepage/header/footer; the real S7/H6/M3/M5 products have an editor-managed homepage showcase; merchandise precedes optional tools on collections; product recommendations were restored; direct Calendly booking precedes the optional mini assessment; the mobile header is compact without the redundant horizontal category strip; standard Shopify cart/checkout behavior remains authoritative.
+- **Actual validation:** Authenticated desktop/mobile preview; direct booking and both Calendly embeds; four-product mattress collection; S7 variant Add to Cart; cart variant/quantity/price/total; native checkout order summary and branding; M3 independent left/right selection with unsupported combination disabled; Ask Snoozer panel; guest Check In access; Sleep Tools; warranty route; no horizontal overflow at the 390px acceptance viewport.
+- **Automated validation:** 35 website-experience assertions; 10/10 catalog restructure groups; guided-shopping regression; 62 Product Page v1 assertions; cart-integrity regression; 34 P1-002 contract groups; 19 media groups; storefront route and skeleton suites; JavaScript syntax; clean diff; idempotent Shopify plan.
+- **Safety:** Existing product status, prices, SKUs, variants, imagery, menus, collection rules, Calendly configuration, AWS, payments, tax, shipping, fulfillment, password protection, theme roles, and published-theme assets were not changed. One S7 Twin was added to the isolated preview browser cart for validation; no order was submitted.
+- **Evidence:** `docs/website-experience/WEBSITE_EXPERIENCE_COMPLETION.md`, `docs/website-experience/WEBSITE_EXPERIENCE_SHOPIFY_READBACK.json`, and `docs/website-experience/screenshots/`.
+- **Next gate:** Ty reviews copy and visuals in the actual preview, then authorizes a separately scoped launch-configuration/test-order task. Do not publish the theme or change commercial settings automatically.
+
+### Product Knowledge & Content Architecture
+
+- **Objective:** Make Shopify the authoritative, structured source for owner-authored product content, verified technical facts, category-specific presentation, and a future Snoozer knowledge feed.
+- **Status:** COMPLETE ON EXISTING DEVELOPMENT STORE AND UNPUBLISHED THEME — all 43 products map to one of eight contracts; 79 product and four variant definitions were created; the seven Ty-authored fields plus workflow/authority fields are pinned; 324 bounded metafield writes initialized schema/provenance and migrated the legacy workflow; no conflicting merchant value was overwritten.
+- **Editing result:** Ty can open any product, select View all under Product metafields, write in the pinned `Content |` fields, and move `01 Content workflow` through `NOT_STARTED`, `DRAFT`, `READY_FOR_REVIEW`, and `APPROVED`. Shopify cannot conditionally hide unrelated definitions by product type, so category fields use clear prefixes and `custom.product_contract` selects the relevant fields for Liquid/API consumers.
+- **Rendering result:** Product Page v1 now renders approved owner content, populated universal technical facts, and the correct category section while suppressing empty/unapproved fields. Existing gallery, variants, price, booking, Add to Cart, Ask Snoozer, description, policies, recommendations, and Dual Comfort controls remain intact.
+- **Data result:** `schemas/product-knowledge.v1.schema.json`, a 43-product normalized feed, eight-category fixture, exporter, and validator separate approved owner copy, technical facts/provenance, dynamic Shopify commerce, and compatibility. No AWS/Snoozer backend was changed.
+- **Actual validation:** Native Shopify editor showed the pinned workflow and Ty writing fields. Actual unpublished-theme product pages for all eight contracts exposed the expected category heading, standard Add to Cart where applicable, and no desktop overflow. Published-theme hashes were unchanged.
+- **Automated validation:** Product knowledge contract 40 assertions; idempotent Shopify plan with zero pending mutations; catalog, Product Page v1, cart, media, guided-shopping, route, storefront-skeleton, and website-experience regression suites all passed.
+- **Evidence:** `docs/product-knowledge/PRODUCT_KNOWLEDGE_ARCHITECTURE.md`, `OWNER_CONTENT_CHECKLIST.md`, inventory/readback/feed JSON, representative fixture, and screenshots.
+- **Next gate:** Ty authors and approves product copy. Begin with the four mattresses and three adjustable bases, then complete the remaining categories without changing technical verification or commerce state.
 
 ### P1-008 — Resolve customer-chat and analytics ownership
 
@@ -238,7 +270,7 @@ Queue state: Shopify currently reports all 43 catalog products as Active; this s
 - **Allowed work area:** Minimal approved presentation/accessibility changes in the canonical unpublished theme.
 - **Acceptance criteria:** Keyboard navigation, focus, labels, headings, contrast, image alternatives, iframe behavior, responsive layout, and reduced-motion behavior meet the approved acceptance checklist; no content is rewritten without Ty.
 - **Verification requirements:** Automated accessibility scan plus manual keyboard and viewport checks; screenshots of approved unpublished theme.
-- **Status:** BLOCKED — preceding fixes/content decisions.
+- **Status:** SUBSTANTIALLY COMPLETE FOR THE WEBSITE-EXPERIENCE PASS — authenticated 390px checks cover homepage, header/menu access, booking/Calendly, collections, products, M3 controls, cart, checkout, tools, and footer with no horizontal page overflow. Semantic controls/live regions were manually verified and focused regressions pass. A dedicated automated accessibility scan and owner/device acceptance remain a release task.
 
 ### P1-010 — Commerce and booking release gate
 
@@ -248,7 +280,7 @@ Queue state: Shopify currently reports all 43 catalog products as Active; this s
 - **Allowed work area:** Approved non-production or controlled test environment; no uncontrolled production transactions.
 - **Acceptance criteria:** Visitor-to-booking, booking cancellation/reschedule, assessment-to-code-to-booking, product discovery-to-variant-to-cart-to-checkout, account/check-in handoff, and failure recovery meet documented criteria; customer data cleanup and rollback are complete.
 - **Verification requirements:** Evidence log with environment, timestamps, inputs, outputs, cleanup, and owner/operations acceptance.
-- **Status:** BLOCKED — implementation and test authorization required.
+- **Status:** PARTIALLY VALIDATED — actual preview proves homepage-to-booking/Calendly, collection-to-S7-variant-to-cart-to-native-checkout, M3 fail-closed handling, Ask Snoozer access, and Check In access. No booking was submitted, no test order was completed, and payment/tax/shipping/fulfillment configuration remains owner-controlled. Full release acceptance is still pending.
 
 ## Phase 2 — post-MVP hardening, not scoped for execution
 

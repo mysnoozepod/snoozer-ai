@@ -75,7 +75,7 @@ test('main navigation preserves existing destinations and adds mattress/base fam
   const menu = navigationReadback?.menus.find((item) => item.handle === 'main-menu') || readback.mainMenu;
   const mattresses = menu.items.find((item) => item.title === 'Mattresses');
   const bases = menu.items.find((item) => item.title === 'Adjustable Bases');
-  assert.deepEqual(mattresses.items.slice(0, 5).map((item) => item.title), ['Shop All Mattresses', 'S7', 'H6', 'M3', 'M5']);
+  assert.deepEqual(mattresses.items.slice(0, 5).map((item) => item.title), ['Shop All Mattresses', '12-inch Memory Foam', '12-inch Hybrid', '12-inch Dual Comfort', '14-inch Dual Comfort']);
   assert.deepEqual(bases.items.slice(0, 4).map((item) => item.title), ['Shop All Adjustable Bases', 'Flex L', 'Flex LSX', 'Flex SH']);
   if (navigationReadback) {
     assert(mattresses.items.find((item) => item.title === 'Mattress Buying Guides'));
@@ -109,8 +109,8 @@ test('Product Page v1 retains standard Shopify form, booking, Ask Snoozer, galle
   ]) assert(hero.includes(marker), marker);
 });
 
-test('M3/M5 Dual Comfort controls expose independent verified values and cart properties', () => {
-  assert.deepEqual([...dual.VALUES], ['0.0', '1.0', '2.0', '3.0']);
+test('Dual Comfort controls expose independent customer-facing values and cart properties', () => {
+  assert.deepEqual([...dual.VALUES], ['Soft', 'Medium Soft', 'Medium Firm', 'Firm']);
   assert(hero.includes('Left Side Comfort'));
   assert(hero.includes('Right Side Comfort'));
   assert(hero.includes('properties[Left Side Comfort]'));
@@ -122,15 +122,15 @@ test('M3/M5 Dual Comfort controls expose independent verified values and cart pr
 
 test('Dual Comfort mapping is exact by size and both sides and rejects unsupported combinations', () => {
   const mappings = [
-    { variantId: 101, size: 'Queen', left: '0.0', right: '3.0', available: true },
-    { variantId: 102, size: 'Queen', left: '3.0', right: '0.0', available: true },
-    { variantId: 103, size: 'King', left: '0.0', right: '3.0', available: false },
+    { variantId: 101, size: 'Queen', left: 'Soft', right: 'Firm', available: true },
+    { variantId: 102, size: 'Queen', left: 'Firm', right: 'Soft', available: true },
+    { variantId: 103, size: 'King', left: 'Soft', right: 'Firm', available: false },
   ];
-  assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left: '0.0', right: '3.0' }).variantId, 101);
-  assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left: '3.0', right: '0.0' }).variantId, 102);
-  assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left: '1.0', right: '1.0' }), null);
-  assert.equal(dual.resolveMapping(mappings, { size: 'King', left: '0.0', right: '3.0' }), null);
-  assert.equal(dual.resolveMapping(mappings, { size: '', left: '0.0', right: '3.0' }), null);
+  assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left: 'Soft', right: 'Firm' }).variantId, 101);
+  assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left: 'Firm', right: 'Soft' }).variantId, 102);
+  assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left: 'Medium Soft', right: 'Medium Soft' }), null);
+  assert.equal(dual.resolveMapping(mappings, { size: 'King', left: 'Soft', right: 'Firm' }), null);
+  assert.equal(dual.resolveMapping(mappings, { size: '', left: 'Soft', right: 'Firm' }), null);
 });
 
 test('Dual Comfort fails closed and blocks form submission without an exact orderable mapping', () => {

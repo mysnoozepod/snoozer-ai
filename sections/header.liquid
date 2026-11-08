@@ -126,6 +126,65 @@
     gap: 0.4rem;
   }
 
+  .header__book-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 4.2rem;
+    padding: 0 1.4rem;
+    border-radius: 999px;
+    background: #071a44;
+    color: #ffffff;
+    font-family: Inter, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .header__book-label--desktop { display: none; }
+
+  .header__guest-row {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.2rem 0 0.4rem;
+  }
+
+  .header__guest-checkin { position: relative; }
+
+  .header__guest-checkin summary {
+    min-height: 4.2rem;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.8rem;
+    color: rgba(7, 26, 68, 0.72);
+    font-size: 1.25rem;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .header__guest-checkin summary::-webkit-details-marker { display: none; }
+
+  .header__guest-checkin-panel {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    right: 0;
+    z-index: 150;
+    width: min(34rem, calc(100vw - 3.2rem));
+    padding: 1.4rem;
+    border: 0.1rem solid rgba(7, 26, 68, 0.12);
+    border-radius: 1.6rem;
+    background: #ffffff;
+    box-shadow: 0 1.6rem 4rem rgba(7, 26, 68, 0.16);
+  }
+
+  .header__guest-checkin-panel .header__snooze-code-form { display: flex; gap: 0.6rem; }
+  .header__guest-checkin-panel .header__snooze-code-controls { gap: 0.6rem; }
+  .header__guest-checkin-panel .header__snooze-code-input { width: 100%; min-width: 0; }
+  .header__guest-checkin-panel .header__snooze-code-button { min-width: 9rem; }
+
   .header__store-meta {
     display: none;
   }
@@ -852,17 +911,17 @@
 
     .header__snoozer-entry {
       display: flex;
-      grid-column: 1 / -1;
-      grid-row: 2;
+      grid-column: 2;
+      grid-row: 1;
       align-items: center;
       align-self: center;
       justify-content: center;
       justify-self: center;
       position: relative;
       overflow: visible;
-      width: min(100%, 58rem);
+      width: min(100%, 48rem);
       min-width: 0;
-      max-width: 58rem;
+      max-width: 48rem;
       margin-top: 0;
       margin-bottom: 0;
       transform: none;
@@ -871,10 +930,10 @@
 
     .header__snoozer-entry .header__snoozer-pill {
       width: 100%;
-      max-width: 58rem;
-      height: 5.8rem;
-      min-height: 5.8rem;
-      padding: 0 2rem;
+      max-width: 48rem;
+      height: 4.8rem;
+      min-height: 4.8rem;
+      padding: 0 1.6rem;
       box-shadow: none;
     }
 
@@ -921,7 +980,7 @@
     .header__snooze-code-entry {
       display: flex;
       align-items: center;
-      margin-right: 1rem;
+      margin-right: 0.2rem;
     }
 
     .header__snooze-code-form {
@@ -1059,6 +1118,11 @@
       margin-top: 0.2rem;
     }
 
+    .header__book-link {
+      min-height: 4.4rem;
+      padding: 0 1.2rem;
+    }
+
     .header__snooze-code-form {
       width: auto;
     }
@@ -1089,6 +1153,21 @@
     .header__snoozer-action {
       padding: 1.15rem 1.3rem;
     }
+  }
+
+  @media screen and (max-width: 749px) {
+    .header__heading-logo-wrapper,
+    .header__heading-logo { max-width: 12.5rem; }
+    .header__book-link { min-height: 4rem; padding: 0 1rem; }
+    .header__action-group { gap: 0.15rem; }
+    .header__icon--account { width: 4rem; min-width: 4rem; height: 4rem; padding: 0.7rem; }
+    .header__icon--cart { width: 4.2rem; height: 4.2rem; }
+    .header__mobile-nav { display: none; }
+  }
+
+  @media screen and (min-width: 750px) {
+    .header__book-label--mobile { display: none; }
+    .header__book-label--desktop { display: inline; }
   }
 </style>
 
@@ -1342,6 +1421,10 @@
         </div>
 
         <div class="header__action-group">
+          <a class="header__book-link" href="{{ snoozer_booking_url }}">
+            <span class="header__book-label--mobile">Book</span>
+            <span class="header__book-label--desktop">Book a Snooze Session</span>
+          </a>
           <div class="header__snooze-code-entry small-hide medium-hide">
             <form class="header__snooze-code-form" data-snooze-checkin-form>
               <label class="visually-hidden" for="HeaderSnoozeCode-{{ section.id }}">Snooze Code</label>
@@ -1407,6 +1490,30 @@
     </div>
     <div class="header__snoozer-row large-up-hide">
       {{ ask_snoozer_mobile }}
+    </div>
+    <div class="header__guest-row large-up-hide">
+      <details class="header__guest-checkin">
+        <summary>Guest Check In</summary>
+        <div class="header__guest-checkin-panel">
+          <form class="header__snooze-code-form" data-snooze-checkin-form>
+            <label class="visually-hidden" for="HeaderSnoozeCodeMobile-{{ section.id }}">Snooze Code</label>
+            <div class="header__snooze-code-controls">
+              <input
+                id="HeaderSnoozeCodeMobile-{{ section.id }}"
+                class="header__snooze-code-input"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="Snooze Code"
+                aria-label="Snooze Code"
+                data-snooze-checkin-input
+              >
+              <button type="submit" class="header__snooze-code-button" data-snooze-checkin-submit>Check In</button>
+            </div>
+            <p class="header__snooze-code-status" data-snooze-checkin-status aria-live="polite"></p>
+          </form>
+        </div>
+      </details>
     </div>
     {%- if section.settings.menu != blank -%}
       <nav class="header__mobile-nav large-up-hide" aria-label="Category navigation">

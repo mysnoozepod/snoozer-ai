@@ -1,5 +1,5 @@
 (() => {
-  const VALUES = ['0.0', '1.0', '2.0', '3.0'];
+  const VALUES = ['Soft', 'Medium Soft', 'Medium Firm', 'Firm'];
 
   function selectedSize(root) {
     const productInfo = root.closest('product-info');

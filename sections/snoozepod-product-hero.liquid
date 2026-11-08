@@ -349,7 +349,13 @@
                 {%- when '@app' -%}
                   {% render block %}
                 {%- when 'text' -%}
-                  {%- if block.settings.text != blank -%}
+                  {%- liquid
+                    assign hide_mattress_vendor = false
+                    if product.tags contains 'type:mattress'
+                      assign hide_mattress_vendor = true
+                    endif
+                  -%}
+                  {%- if block.settings.text != blank and hide_mattress_vendor == false -%}
                     <p
                       class="product__text inline-richtext{% if block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if block.settings.text_style == 'body' %} text-body{% endif %}"
                       {{ block.shopify_attributes }}
@@ -410,15 +416,15 @@
                         <fieldset class="snoozepod-dual-comfort__group">
                           <legend>{{ side_label }}</legend>
                           <div class="snoozepod-dual-comfort__choices">
-                            {%- for comfort in (0..3) -%}
-                              {%- assign comfort_value = comfort | append: '.0' -%}
+                            {%- assign comfort_options = 'Soft|Medium Soft|Medium Firm|Firm' | split: '|' -%}
+                            {%- for comfort_value in comfort_options -%}
                               <input
                                 type="radio"
-                                id="DualComfort-{{ section.id }}-{{ side_key }}-{{ comfort }}"
+                                id="DualComfort-{{ section.id }}-{{ side_key }}-{{ forloop.index0 }}"
                                 name="dual-comfort-{{ section.id }}-{{ side_key }}"
                                 value="{{ comfort_value }}"
                               >
-                              <label for="DualComfort-{{ section.id }}-{{ side_key }}-{{ comfort }}">{{ comfort_value }}</label>
+                              <label for="DualComfort-{{ section.id }}-{{ side_key }}-{{ forloop.index0 }}">{{ comfort_value }}</label>
                             {%- endfor -%}
                           </div>
                         </fieldset>
@@ -448,6 +454,20 @@
                             {%- assign left_comfort = variant.metafields.custom.left_comfort.value | default: variant.metafields.custom.left_comfort -%}
                             {%- assign right_comfort = variant.metafields.custom.right_comfort.value | default: variant.metafields.custom.right_comfort -%}
                             {%- if left_comfort != blank and right_comfort != blank -%}
+                              {%- assign left_comfort_key = left_comfort | append: '' -%}
+                              {%- assign right_comfort_key = right_comfort | append: '' -%}
+                              {%- case left_comfort_key -%}
+                                {%- when '0.0' -%}{%- assign left_comfort = 'Soft' -%}
+                                {%- when '1.0' -%}{%- assign left_comfort = 'Medium Soft' -%}
+                                {%- when '2.0' -%}{%- assign left_comfort = 'Medium Firm' -%}
+                                {%- when '3.0' -%}{%- assign left_comfort = 'Firm' -%}
+                              {%- endcase -%}
+                              {%- case right_comfort_key -%}
+                                {%- when '0.0' -%}{%- assign right_comfort = 'Soft' -%}
+                                {%- when '1.0' -%}{%- assign right_comfort = 'Medium Soft' -%}
+                                {%- when '2.0' -%}{%- assign right_comfort = 'Medium Firm' -%}
+                                {%- when '3.0' -%}{%- assign right_comfort = 'Firm' -%}
+                              {%- endcase -%}
                               {%- if mapping_written -%},{%- endif -%}
                               {
                                 "variantId": {{ variant.id | json }},

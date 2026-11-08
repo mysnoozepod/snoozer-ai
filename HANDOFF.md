@@ -1,9 +1,62 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-02 — direct product navigation and official BEDGEAR product copy live
+Last updated: 2026-11-08 — customer-facing mattress names and comfort vocabulary corrected
 Owner: Ty  
 Implementer: Codi  
-Current phase: Active tagged catalog with direct model-to-product navigation and official BEDGEAR product copy; educational library, guided tools, connected homepage/collections, imagery, sharp logo, and conversion placement live behind the existing storefront password
+Current phase: Mattress naming correction completed; exact Dual Comfort sell-unit mapping and owner content authoring remain next
+
+## Customer-facing mattress naming checkpoint — 2026-11-08
+
+- Continued on existing `main`; preserved the existing dirty working tree. No reset, branch switch, commit, push, deployment, or theme publication occurred.
+- Four Shopify mattress identities are now customer-facing and product-led: `12\" Memory Foam Mattress`, `12\" Hybrid Mattress`, `12\" Dual Comfort Mattress`, and `14\" Dual Comfort Mattress`.
+- Canonical handles are `12-inch-memory-foam-mattress`, `12-inch-hybrid-mattress`, `12-inch-dual-comfort-mattress`, and `14-inch-dual-comfort-mattress`. Shopify redirects from the four former model-based handles were created and verified in the storefront.
+- Customer-visible titles, descriptions, navigation, homepage cards, collection/product vendor treatment, media alt text, and related-product surfaces no longer use BEDGEAR or S7/H6/M3/M5 for these mattresses. Internal manufacturer/model, SKU, source provenance, and operational mappings were preserved.
+- Dual Comfort now exposes independent left/right choices of Soft, Medium Soft, Medium Firm, and Firm. Legacy 0.0–3.0 evidence is mapped internally and is not rendered or sent as customer-facing comfort values.
+- Add to Cart remains fail closed for unresolved left/right combinations. This task did not invent sell-unit mappings or change product IDs, variant IDs, SKU, price, inventory, collection membership, or product status.
+- Existing unpublished theme `139216420925` reconciles eleven bounded customer-facing assets. This includes mattress vendor suppression on product cards, cart/drawer, add-to-cart notification, and predictive search. Published theme `139460542525` was hash-verified unchanged.
+- Authenticated storefront preview verified the homepage, the `12\" Dual Comfort Mattress` product page, all eight independent comfort controls, generic media alt text, and redirect from the former M3 product URL.
+- Regression results: focused naming 18; product knowledge 40; website experience 35; Product Page v1 62; catalog/shopping 10/10; P1-002 contract 34 groups; media 19 groups; content navigation, BEDGEAR description safety, guided shopping, cart integrity, storefront route, storefront skeleton, and JavaScript syntax all passed.
+- Shopify readback: `docs/catalog/MATTRESS_CUSTOMER_NAMING_SHOPIFY_READBACK.json`.
+- Latest recovery snapshot: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\mattress-customer-naming\2026-11-08T20-44-50-716Z`.
+- Product-knowledge readback/feed was refreshed without additional Shopify writes. Latest supporting snapshot: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\product-knowledge-architecture\2026-11-08T20-39-24-009Z`.
+- Exact next action: obtain and validate the manufacturer/owner-approved size + left comfort + right comfort sell-unit and fulfillment mapping for the two Dual Comfort products; keep unsupported combinations unpurchasable.
+
+## Product knowledge architecture checkpoint — 2026-11-07
+
+- Continued on existing `main` and preserved all prior website-experience working-tree changes.
+- Live inventory before implementation: 43 Active products, 274 variants, 1,280 existing `custom` metafield values, two Shopify product definitions, zero custom variant definitions, and three Shopify-provided metaobject definitions.
+- Created 79 product and four variant definitions. Fourteen workflow/content fields are pinned in Shopify. No new custom metaobjects were needed; existing Shopify taxonomy metaobjects were preserved.
+- Applied 324 bounded metafield writes: 43 exact `PENDING` to `NOT_STARTED` workflow migrations and 281 category/schema/provenance initializations. No existing merchant value conflicted or was overwritten.
+- Category mapping is exact: four mattresses, three adjustable bases, 16 pillows, three sheet products, three protectors, six comforter/duvet/accessories, two toppers, and six furniture products.
+- Product Page v1 now calls `snippets/snoozepod-product-knowledge.liquid`. Approved owner content and populated category fields render without filler; unapproved/empty fields stay hidden.
+- Actual Shopify admin showed Ty's seven `Content |` fields at the top of the product metafield editor, followed by workflow and authority fields.
+- Actual unpublished-theme checks covered one product from every category contract and confirmed the correct category heading, standard purchase action where applicable, preserved booking/Ask Snoozer, and no desktop overflow.
+- Final validation passed: 40 product-knowledge assertions, an idempotent live Shopify plan with zero pending mutations, website-experience (35), catalog/shopping (10/10), guided-shopping, Product Page v1 (62), cart integrity, builder contract (34), media (19), route, and storefront-skeleton regressions.
+- Native commerce fingerprint across product/variant identity, status, descriptions, tags, collections, templates, prices, inventory, and media was unchanged. All 43 products remain in their pre-existing Active state.
+- Published theme `139460542525` was not modified; both affected published assets were hash-verified unchanged. Unpublished theme `139216420925` contains the renderer.
+- Versioned integration artifacts: `schemas/product-knowledge.v1.schema.json`, `docs/product-knowledge/PRODUCT_KNOWLEDGE_FEED.v1.json`, `tests/fixtures/product-knowledge-categories.v1.json`, and `scripts/export-product-knowledge.mjs`.
+- Documentation: `docs/product-knowledge/PRODUCT_KNOWLEDGE_ARCHITECTURE.md` and `docs/product-knowledge/OWNER_CONTENT_CHECKLIST.md`.
+- Shopify readback: `docs/product-knowledge/PRODUCT_KNOWLEDGE_SHOPIFY_READBACK.json`; audit: `PRODUCT_KNOWLEDGE_INVENTORY.json`; screenshots: `docs/product-knowledge/screenshots/`.
+- Latest recovery snapshot: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\product-knowledge-architecture\2026-11-08T04-58-16-640Z` (UTC timestamp; work date 2026-11-07 America/New_York).
+- No Snoozer/AWS backend, product/variant identity, price, inventory, media, collection, navigation, Calendly, theme role, published theme, cart, checkout, order, deployment, commit, or push change occurred.
+
+## Website experience completion checkpoint — 2026-11-06
+
+- Continued on existing branch `main` from starting HEAD `aba289e76b6aca8635869131d4b00c704623a5df`; no reset, branch switch, commit, push, or deployment occurred during this checkpoint.
+- Existing unpublished review theme `139216420925` received ten bounded theme-asset updates. Published theme `139460542525` was not targeted, and its corresponding asset hashes were verified unchanged.
+- Preview: `https://mysnoozepodtest.myshopify.com/?preview_theme_id=139216420925`.
+- Homepage hierarchy is now booking first: Book a Snooze Session, private-session explanation, direct S7/H6/M3/M5 product showcase, complete-system categories, Meet Snoozer, optional tools, and closing booking action.
+- Header/navigation now preserve direct shopping, Ask Snoozer, Snooze Code, account/cart, and check-in while making booking prominent. Mobile exposes Guest Check In through a compact disclosure and removes the redundant horizontal category strip at phone widths.
+- Collection Page v1 now places the native product grid and filters before optional guided tools. Product Page v1 preserves native Shopify variant/cart behavior and adds related products. The retired bundle-cart Pod Builder remains absent from active customer templates.
+- Direct booking is first on `/pages/book-a-snooze-session`; the mini assessment is explicitly optional and second. Shopify readback confirms the booking and assessment template suffixes. Both existing Calendly widgets loaded in the authenticated preview.
+- Footer navigation now groups Shop, Visit & Guidance, and Customer Support above the existing newsletter. A conservative `/pages/warranty-support` page was created without inventing coverage promises.
+- Actual preview validation covered desktop and mobile homepage, booking, mattresses collection, S7 product, M3 Dual Comfort, cart, checkout, Sleep Tools, Ask Snoozer, Guest Check In, and warranty support. One S7 Twin was added to the isolated preview-browser cart; no customer information was entered and no order was placed.
+- M3/M5 independent left/right controls still fail closed because exact sell-unit configuration mappings are unverified. Actual Left `0.0` / Right `3.0` selection updated the summary while Add to Cart remained unavailable.
+- Existing catalog state was preserved: 43 products remain in their pre-existing Active state; products, variants, SKUs, prices, media, tags, collections, navigation resources, and inventory were not changed.
+- Automated validation passed: website-experience contract (35 assertions), catalog/shopping restructure (10/10), guided shopping, Product Page v1/collection contract (62 assertions), cart integrity, P1-002 contract (34 groups), P1-007 media (19 groups), storefront routes, storefront skeleton, JavaScript syntax, and idempotent Shopify staging plan.
+- Actual screenshots are in `docs/website-experience/screenshots/`; the complete report is `docs/website-experience/WEBSITE_EXPERIENCE_COMPLETION.md`; bounded Shopify readback is `docs/website-experience/WEBSITE_EXPERIENCE_SHOPIFY_READBACK.json`.
+- Latest recoverable private theme backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\website-experience-completion\2026-11-06T13-15-47-646Z`.
+- Launch dependencies remain: Ty approval of final copy/imagery, exact M3/M5 sell-unit mappings, verified payment/tax/shipping/fulfillment and policy configuration, a controlled test order, accessibility/analytics review, and explicit publication authorization.
 
 ## Current task and authority
 
@@ -455,10 +508,10 @@ Snoozer must retrieve product information through the Shopify-authoritative comm
 
 ## Exact next action
 
-**GUIDED-FILTER-DATA — populate and validate the customer-facing Shopify filter fields.**
+**OWNER-CONTENT-ROUND-1 — Ty authors and approves the four mattresses and three adjustable bases using the Shopify workflow.**
 
-For all 43 current products, map only manufacturer-verified values into the ten approved filter dimensions: Size, Comfort, Construction, Sleep Position, Cooling, Geometry, Material, Pillow Loft, Color, and Availability. Create or reuse minimal product/variant metafield definitions, configure Shopify Search & Discovery filters without exposing raw namespaced organization tags, verify collection membership/filter counts on desktop and mobile, and leave missing values blank. Preserve each product's current status, prices, SKUs, media, collection rules, and the fail-closed M3/M5 commerce gate.
+For S7, H6, M3, M5, Flex L, Flex LSX, and Flex SH, Ty fills the seven pinned `Content |` fields, uses `DRAFT` and `READY_FOR_REVIEW`, approves the exact copy, and sets `01 Content workflow` to `APPROVED`. Then re-export the feed and verify approved copy renders in the correct Product Page v1 sections. Do not use content approval to authorize M3/M5 sell units, compatibility, price, fulfillment, inventory, or publication.
 
 ## Resume rule
 
-On resume, first recheck Git status/HEAD, `docs/catalog/catalog-shopping-restructure-shopify-readback.json`, `docs/catalog/BEDGEAR_PRODUCT_DESCRIPTIONS_SHOPIFY_READBACK.json`, `docs/catalog/SINGLE_PRODUCT_COLLECTION_CLEANUP_READBACK.json`, `docs/content-pages/CONTENT_NAVIGATION_SHOPIFY_READBACK.json`, `docs/guided-shopping/GUIDED_SHOPPING_SHOPIFY_READBACK.json`, and plan-only runs of the BEDGEAR-description, content-navigation, guided-shopping, and single-product-collection cleanup scripts. Preserve unpublished theme `139216420925`, published theme `139460542525`, the 43 tagged Active products, 274 variants, 25 automated collection definitions, seven unpublished obsolete single-product routes, 18 source-matched BEDGEAR product descriptions plus two brand-only descriptions, 147 READY product media records, 48 variant images, collection images, 61 published managed pages, the seven-destination primary menu with 72 nested items, the 12-link footer, ten guided-shopping pages, private backups, verified menus/metafields, and all working-tree changes. Do not recreate one-product menu destinations, republish the seven obsolete single-product collections, reactivate the historical bundle-cart Pod Builder, duplicate products/variants, enable an unverified Dual Comfort combination, change product status without a dedicated owner directive, expose raw internal tags as customer filter labels, infer duvet claims from similarly named bedding, let editorial prose override Shopify commerce truth, publish/synchronize a theme wholesale, change global product-template assignments, or deploy without explicit authority. The five exact-media gaps remain separate unresolved dependencies.
+On resume, first recheck Git status/HEAD; read this checkpoint, `docs/product-knowledge/PRODUCT_KNOWLEDGE_ARCHITECTURE.md`, `OWNER_CONTENT_CHECKLIST.md`, and the Shopify readback; then run `node scripts/stage-product-knowledge-architecture.mjs` and `node tests/runProductKnowledgeContractTests.mjs`. Preserve all current working-tree changes, 1,280 legacy values, 83 new definitions, category assignments, workflow values, unpublished theme `139216420925`, and published theme `139460542525`. Never classify manufacturer prose as owner approved, expose non-approved content to Snoozer, infer missing compatibility, enable unresolved M3/M5 combinations, or let a cached feed override live Shopify commerce. Do not publish, deploy, commit, push, or modify AWS without explicit authority.

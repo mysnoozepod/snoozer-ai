@@ -258,25 +258,9 @@
       </div>
 
       <div class="booking-grid">
-        <div class="panel">
-          <div class="section-pad">
-            <p class="section-label">Step 1</p>
-            <h2 class="heading">{{ section.settings.mini_heading | escape }}</h2>
-            <p class="subtext section-copy">{{ section.settings.mini_text | escape }}</p>
-            <div class="calendly-shell">
-              <div
-                id="CalendlyInlineWidgetMini-{{ section.id }}"
-                class="calendly-inline-widget"
-                data-url="{{ mini_calendly_url | escape }}"
-                style="min-width:320px;height:620px;"
-              ></div>
-            </div>
-          </div>
-        </div>
-
         <div class="panel" id="snooze-session-booking-{{ section.id }}">
           <div class="section-pad">
-            <p class="section-label">Step 2</p>
+            <p class="section-label">Book directly</p>
             <h2 class="heading">{{ section.settings.booking_heading | escape }}</h2>
             <p class="subtext section-copy">{{ section.settings.booking_text | escape }}</p>
             <div class="calendly-shell">
@@ -284,6 +268,22 @@
                 id="CalendlyInlineWidgetBooking-{{ section.id }}"
                 class="calendly-inline-widget"
                 data-url="{{ booking_calendly_url | escape }}"
+                style="min-width:320px;height:620px;"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="section-pad">
+            <p class="section-label">Optional</p>
+            <h2 class="heading">{{ section.settings.mini_heading | escape }}</h2>
+            <p class="subtext section-copy">{{ section.settings.mini_text | escape }}</p>
+            <div class="calendly-shell">
+              <div
+                id="CalendlyInlineWidgetMini-{{ section.id }}"
+                class="calendly-inline-widget"
+                data-url="{{ mini_calendly_url | escape }}"
                 style="min-width:320px;height:620px;"
               ></div>
             </div>
@@ -506,14 +506,14 @@
     { "type": "text", "id": "hero_eyebrow", "label": "Hero eyebrow", "default": "PRIVATE SNOOZE SESSION" },
     { "type": "text", "id": "hero_headline", "label": "Hero headline", "default": "Plan Your Private Snooze Session" },
     { "type": "textarea", "id": "hero_text", "label": "Hero text", "default": "Start with a brief guided sleep check-in, then choose a time to visit with clearer direction on what to test." },
-    { "type": "textarea", "id": "hero_helper_text", "label": "Hero helper text", "default": "Complete the mini assessment first, save your Snooze Code, then choose your showroom visit time." },
+    { "type": "textarea", "id": "hero_helper_text", "label": "Hero helper text", "default": "Book directly below. The mini assessment is optional and never required to schedule your visit." },
     { "type": "image_picker", "id": "hero_image", "label": "Hero image" },
     { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
     { "type": "text", "id": "mini_heading", "label": "Mini assessment heading", "default": "Complete Your Mini Snooze Assessment" },
-    { "type": "textarea", "id": "mini_text", "label": "Mini assessment text", "default": "Answer a few guided questions so your visit starts with context, not guesswork." },
+    { "type": "textarea", "id": "mini_text", "label": "Mini assessment text", "default": "If you want, answer a few guided questions so your visit starts with additional context." },
     { "type": "text", "id": "mini_calendly_url", "label": "Mini assessment Calendly URL", "default": "https://calendly.com/d/cypf-52b-v4v" },
     { "type": "text", "id": "booking_heading", "label": "Booking heading", "default": "Choose Your Visit Time" },
-    { "type": "textarea", "id": "booking_text", "label": "Booking text", "default": "Once your Snooze Code is saved, pick the private session time that fits your schedule." },
+    { "type": "textarea", "id": "booking_text", "label": "Booking text", "default": "Choose the private session time that fits your schedule. No assessment or account is required." },
     { "type": "text", "id": "calendly_url", "label": "Booking Calendly URL", "default": "https://calendly.com/zohotyree/30min" }
   ],
   "presets": [

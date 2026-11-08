@@ -20,6 +20,15 @@
         "padding_bottom": 0
       }
     },
+    "experience-navigation": {
+      "type": "snoozepod-footer-navigation",
+      "settings": {
+        "heading": "Ready to experience the difference?",
+        "text": "Schedule a private Snooze Session and compare the options that matter to you.",
+        "booking_label": "Book a Snooze Session",
+        "booking_link": "shopify://pages/book-a-snooze-session"
+      }
+    },
     "newsletter": {
       "type": "newsletter",
       "blocks": {
@@ -55,18 +64,6 @@
     },
     "footer": {
       "type": "footer",
-      "blocks": {
-        "storefront_links": {
-          "type": "link_list",
-          "settings": {
-            "heading": "Explore MySnoozePod",
-            "menu": "footer"
-          }
-        }
-      },
-      "block_order": [
-        "storefront_links"
-      ],
       "settings": {
         "color_scheme": "scheme-3",
         "newsletter_enable": false,
@@ -85,6 +82,7 @@
   },
   "order": [
     "custom_liquid_x6Je4R",
+    "experience-navigation",
     "newsletter",
     "footer"
   ]

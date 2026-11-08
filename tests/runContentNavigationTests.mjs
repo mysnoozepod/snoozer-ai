@@ -25,10 +25,10 @@ const productDestinations = new Map(
     .map((item) => [item.title, item.product]),
 );
 assert.deepEqual(Object.fromEntries(productDestinations), {
-  S7: 'bedgear-s7-12-memory-foam',
-  H6: 'bedgear-h6-12-hybrid',
-  M3: 'bedgear-m3-12-dual-comfort',
-  M5: 'bedgear-m5-14-dual-comfort',
+  '12-inch Memory Foam': '12-inch-memory-foam-mattress',
+  '12-inch Hybrid': '12-inch-hybrid-mattress',
+  '12-inch Dual Comfort': '12-inch-dual-comfort-mattress',
+  '14-inch Dual Comfort': '14-inch-dual-comfort-mattress',
   'Flex L': 'flex-l-adjustable-base',
   'Flex LSX': 'flex-lsx-adjustable-base',
   'Flex SH': 'flex-sh-adjustable-base',
@@ -56,12 +56,12 @@ if (fs.existsSync(readbackPath)) {
     footerMenuItems: 12,
   }, 'Shopify readback verifies both strategic navigation menus');
   const actualMainItems = readback.menus.find((menu) => menu.handle === 'main-menu').items.flatMap((item) => [item, ...(item.items || [])]);
-  const actualModelLinks = Object.fromEntries(actualMainItems.filter((item) => ['S7', 'H6', 'M3', 'M5', 'Flex L', 'Flex LSX', 'Flex SH'].includes(item.title)).map((item) => [item.title, { type: item.type, url: item.url }]));
+  const actualModelLinks = Object.fromEntries(actualMainItems.filter((item) => ['12-inch Memory Foam', '12-inch Hybrid', '12-inch Dual Comfort', '14-inch Dual Comfort', 'Flex L', 'Flex LSX', 'Flex SH'].includes(item.title)).map((item) => [item.title, { type: item.type, url: item.url }]));
   assert.deepEqual(actualModelLinks, {
-    S7: { type: 'PRODUCT', url: '/products/bedgear-s7-12-memory-foam' },
-    H6: { type: 'PRODUCT', url: '/products/bedgear-h6-12-hybrid' },
-    M3: { type: 'PRODUCT', url: '/products/bedgear-m3-12-dual-comfort' },
-    M5: { type: 'PRODUCT', url: '/products/bedgear-m5-14-dual-comfort' },
+    '12-inch Memory Foam': { type: 'PRODUCT', url: '/products/12-inch-memory-foam-mattress' },
+    '12-inch Hybrid': { type: 'PRODUCT', url: '/products/12-inch-hybrid-mattress' },
+    '12-inch Dual Comfort': { type: 'PRODUCT', url: '/products/12-inch-dual-comfort-mattress' },
+    '14-inch Dual Comfort': { type: 'PRODUCT', url: '/products/14-inch-dual-comfort-mattress' },
     'Flex L': { type: 'PRODUCT', url: '/products/flex-l-adjustable-base' },
     'Flex LSX': { type: 'PRODUCT', url: '/products/flex-lsx-adjustable-base' },
     'Flex SH': { type: 'PRODUCT', url: '/products/flex-sh-adjustable-base' },

@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mysnoozepod.com/schemas/product-knowledge.v1.schema.json",
+  "title": "MySnoozePod Product Knowledge Feed",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "source", "products"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "source": {
+      "type": "object",
+      "required": ["system", "store", "rule"],
+      "properties": {
+        "system": { "const": "Shopify" },
+        "store": { "const": "mysnoozepodtest.myshopify.com" },
+        "rule": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "products": {
+      "type": "array",
+      "minItems": 43,
+      "items": { "$ref": "#/$defs/product" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "product": {
+      "type": "object",
+      "required": ["shopifyProductId", "handle", "title", "categoryContract", "productType", "content", "technical", "commerce", "compatibility", "schemaVersion", "lastUpdated"],
+      "properties": {
+        "shopifyProductId": { "type": "string", "pattern": "^gid://shopify/Product/[0-9]+$" },
+        "handle": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "model": { "type": ["string", "null"] },
+        "categoryContract": { "enum": ["mattress", "adjustable_base", "pillow", "sheets_bedding", "mattress_protection", "comforter_duvet_accessory", "mattress_topper", "bedroom_furniture"] },
+        "productType": { "type": "string" },
+        "vendor": { "type": "string" },
+        "content": {
+          "type": "object",
+          "required": ["status", "approved", "fields"],
+          "properties": {
+            "status": { "enum": ["NOT_STARTED", "DRAFT", "READY_FOR_REVIEW", "APPROVED"] },
+            "approved": { "type": "boolean" },
+            "fields": { "type": "object" }
+          },
+          "additionalProperties": false
+        },
+        "technical": {
+          "type": "object",
+          "required": ["status", "provenance", "fields"],
+          "properties": {
+            "status": { "enum": ["PENDING", "PARTIAL", "VERIFIED"] },
+            "provenance": { "type": ["object", "null"] },
+            "fields": { "type": "object" }
+          },
+          "additionalProperties": false
+        },
+        "commerce": {
+          "type": "object",
+          "required": ["authority", "status", "variants"],
+          "properties": {
+            "authority": { "const": "Shopify live query required" },
+            "status": { "enum": ["ACTIVE", "DRAFT", "ARCHIVED"] },
+            "variants": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["shopifyVariantId", "sku", "price", "options", "contract"],
+                "properties": {
+                  "shopifyVariantId": { "type": "string", "pattern": "^gid://shopify/ProductVariant/[0-9]+$" },
+                  "sku": { "type": "string" },
+                  "price": { "type": "string" },
+                  "options": { "type": "object" },
+                  "contract": { "type": "object" }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "compatibility": {
+          "type": "object",
+          "required": ["source", "rule"],
+          "properties": {
+            "source": { "type": "string" },
+            "rule": { "const": "Unknown or missing relationships remain unverified and must not be represented as compatible." }
+          },
+          "additionalProperties": false
+        },
+        "schemaVersion": { "const": "1.0.0" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

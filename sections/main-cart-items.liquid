@@ -104,7 +104,7 @@
                       </td>
 
                       <td class="cart-item__details">
-                        {%- if settings.show_vendor -%}
+                        {%- if settings.show_vendor and item.product.metafields.custom.product_contract.value != 'mattress' and item.product.type != 'Mattress' -%}
                           <p class="caption-with-letter-spacing">{{ item.product.vendor }}</p>
                         {%- endif -%}
 

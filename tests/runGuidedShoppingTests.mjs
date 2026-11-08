@@ -46,11 +46,12 @@ assert.ok(customerFilterContract.every((filter) => filter.authority), 'every cus
 const homepage = loadJson('templates/index.json');
 assert.equal(homepage.sections['guided-shopping'].type, 'snoozepod-guided-shopping-links');
 assert.ok(homepage.order.indexOf('guided-shopping') > homepage.order.indexOf('value-strip'), 'homepage tools should follow the trust strip');
-assert.ok(homepage.order.indexOf('guided-shopping') < homepage.order.indexOf('snoozepod_environment_GYx7gN'), 'homepage tools should lead into category shopping');
+assert.ok(homepage.order.indexOf('guided-shopping') > homepage.order.indexOf('snoozepod_environment_GYx7gN'), 'homepage tools should remain secondary to category shopping');
+assert.ok(homepage.order.indexOf('guided-shopping') > homepage.order.indexOf('mattress-showcase'), 'homepage tools should remain secondary to mattress discovery');
 
 const collection = loadJson('templates/collection.snoozepod-v1.json');
 assert.equal(collection.sections['guided-shopping'].type, 'snoozepod-guided-shopping-links');
-assert.ok(collection.order.indexOf('guided-shopping') < collection.order.indexOf('product-grid'), 'collection guidance should precede the product grid');
+assert.ok(collection.order.indexOf('guided-shopping') > collection.order.indexOf('product-grid'), 'collection guidance should follow the product grid');
 assert.equal(collection.sections['product-grid'].settings.enable_filtering, true, 'native Shopify filters should remain enabled');
 
 const linksSection = read('sections/snoozepod-guided-shopping-links.liquid');

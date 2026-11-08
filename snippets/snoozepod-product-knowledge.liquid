@@ -1,0 +1,220 @@
+{%- comment -%}
+  Shopify-authoritative product knowledge renderer.
+  Owner-authored fields render only when custom.owner_content_status is APPROVED.
+  Structured technical facts render only when populated; empty fields create no heading.
+{%- endcomment -%}
+
+{%- liquid
+  assign content_status = product.metafields.custom.owner_content_status.value | default: product.metafields.custom.owner_content_status
+  assign product_contract = product.metafields.custom.product_contract.value | default: product.metafields.custom.product_contract
+  assign content_approved = false
+  if content_status == 'APPROVED'
+    assign content_approved = true
+  endif
+
+  assign has_owner_content = false
+  if content_approved
+    if product.metafields.snoozepod_content.product_introduction != blank or product.metafields.snoozepod_content.product_summary != blank or product.metafields.snoozepod_content.key_benefits != blank or product.metafields.snoozepod_content.what_makes_different != blank or product.metafields.snoozepod_content.why_selected != blank or product.metafields.snoozepod_content.customer_considerations != blank
+      assign has_owner_content = true
+    endif
+  endif
+
+  assign has_common_technical = false
+  if product.metafields.snoozepod_technical.materials != blank or product.metafields.snoozepod_technical.verified_features != blank or product.metafields.snoozepod_technical.supported_configurations != blank
+    assign has_common_technical = true
+  endif
+
+  assign has_category_content = false
+  case product_contract
+    when 'mattress'
+      if product.metafields.snoozepod_mattress.construction != blank or product.metafields.snoozepod_mattress.overall_height_inches != blank or product.metafields.snoozepod_mattress.comfort_and_support != blank or product.metafields.snoozepod_mattress.cooling_features != blank or product.metafields.snoozepod_mattress.supported_geometries != blank or product.metafields.snoozepod_mattress.adjustable_base_compatible != blank or product.metafields.snoozepod_mattress.dual_comfort_capable != blank or product.metafields.snoozepod_mattress.comfort_combinations != blank or product.metafields.snoozepod_mattress.purchasable_configurations != blank
+        assign has_category_content = true
+      endif
+    when 'adjustable_base'
+      if product.metafields.snoozepod_base.motion_and_features != blank or product.metafields.snoozepod_base.control_methods != blank or product.metafields.snoozepod_base.physical_specifications != blank or product.metafields.snoozepod_base.split_geometries != blank or product.metafields.snoozepod_base.assembly_requirements != blank or product.metafields.snoozepod_base.compatible_mattress_types != blank or product.metafields.snoozepod_base.furniture_compatibility != blank or product.metafields.snoozepod_base.showroom_experience != blank
+        assign has_category_content = true
+      endif
+    when 'pillow'
+      if product.metafields.snoozepod_pillow.comfort_profile != blank or product.metafields.snoozepod_pillow.loft_options != blank or product.metafields.snoozepod_pillow.sleep_positions != blank or product.metafields.snoozepod_pillow.fill_material != blank or product.metafields.snoozepod_pillow.cover_material != blank or product.metafields.snoozepod_pillow.cooling_and_temperature != blank or product.metafields.snoozepod_pillow.dimensions != blank or product.metafields.snoozepod_pillow.who_may_prefer != blank
+        assign has_category_content = true
+      endif
+    when 'sheets_bedding'
+      if product.metafields.snoozepod_bedding.fabric_and_construction != blank or product.metafields.snoozepod_bedding.feel_and_breathability != blank or product.metafields.snoozepod_bedding.fit_information != blank or product.metafields.snoozepod_bedding.color_options != blank or product.metafields.snoozepod_bedding.included_components != blank or product.metafields.snoozepod_bedding.material_experience != blank
+        assign has_category_content = true
+      endif
+    when 'mattress_protection'
+      if product.metafields.snoozepod_protection.protection_and_coverage != blank or product.metafields.snoozepod_protection.breathability_and_cooling != blank or product.metafields.snoozepod_protection.mattress_fit != blank or product.metafields.snoozepod_protection.split_geometry != blank
+        assign has_category_content = true
+      endif
+    when 'comforter_duvet_accessory'
+      if product.metafields.snoozepod_accessory.product_subtype != blank or product.metafields.snoozepod_accessory.materials_and_fill != blank or product.metafields.snoozepod_accessory.warmth_category != blank or product.metafields.snoozepod_accessory.cooling_and_breathability != blank or product.metafields.snoozepod_accessory.dimensions_and_contents != blank
+        assign has_category_content = true
+      endif
+    when 'mattress_topper'
+      if product.metafields.snoozepod_topper.thickness_inches != blank or product.metafields.snoozepod_topper.material_and_feel != blank or product.metafields.snoozepod_topper.support_and_pressure_relief != blank or product.metafields.snoozepod_topper.cooling != blank or product.metafields.snoozepod_topper.compatible_configurations != blank or product.metafields.snoozepod_topper.comfort_experience != blank
+        assign has_category_content = true
+      endif
+    when 'bedroom_furniture'
+      if product.metafields.snoozepod_furniture.furniture_type != blank or product.metafields.snoozepod_furniture.materials != blank or product.metafields.snoozepod_furniture.colors_and_finishes != blank or product.metafields.snoozepod_furniture.dimensions_and_sizes != blank or product.metafields.snoozepod_furniture.assembly_and_installation != blank or product.metafields.snoozepod_furniture.adjustable_base_compatibility != blank or product.metafields.snoozepod_furniture.appearance_and_function != blank or product.metafields.snoozepod_furniture.room_considerations != blank
+        assign has_category_content = true
+      endif
+  endcase
+-%}
+
+{%- if has_owner_content -%}
+  <details class="snoozepod-product-information__item" open>
+    <summary class="snoozepod-product-information__summary"><span>Product Overview</span></summary>
+    <div class="snoozepod-product-information__content rte">
+      {%- if product.metafields.snoozepod_content.product_introduction != blank -%}
+        {{ product.metafields.snoozepod_content.product_introduction | metafield_tag }}
+      {%- endif -%}
+      {%- if product.metafields.snoozepod_content.product_summary != blank -%}
+        <p>{{ product.metafields.snoozepod_content.product_summary.value | newline_to_br }}</p>
+      {%- endif -%}
+      {%- if product.metafields.snoozepod_content.key_benefits.value.size > 0 -%}
+        <h3>Key benefits</h3>
+        <ul>{%- for benefit in product.metafields.snoozepod_content.key_benefits.value -%}<li>{{ benefit | escape }}</li>{%- endfor -%}</ul>
+      {%- endif -%}
+      {%- if product.metafields.snoozepod_content.what_makes_different != blank -%}
+        <h3>What makes this product different</h3>
+        {{ product.metafields.snoozepod_content.what_makes_different | metafield_tag }}
+      {%- endif -%}
+      {%- if product.metafields.snoozepod_content.why_selected != blank -%}
+        <h3>Why MySnoozePod selected it</h3>
+        {{ product.metafields.snoozepod_content.why_selected | metafield_tag }}
+      {%- endif -%}
+      {%- if product.metafields.snoozepod_content.customer_considerations != blank -%}
+        <h3>Important considerations</h3>
+        {{ product.metafields.snoozepod_content.customer_considerations | metafield_tag }}
+      {%- endif -%}
+    </div>
+  </details>
+{%- endif -%}
+
+{%- if has_common_technical -%}
+  <details class="snoozepod-product-information__item">
+    <summary class="snoozepod-product-information__summary"><span>Technical Specifications</span></summary>
+    <div class="snoozepod-product-information__content rte">
+      <dl class="snoozepod-product-information__specs">
+        {%- if product.metafields.snoozepod_technical.materials.value.size > 0 -%}<div><dt>Materials</dt><dd>{{ product.metafields.snoozepod_technical.materials.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+        {%- if product.metafields.snoozepod_technical.verified_features.value.size > 0 -%}<div><dt>Verified features</dt><dd>{{ product.metafields.snoozepod_technical.verified_features.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+        {%- if product.metafields.snoozepod_technical.supported_configurations.value.size > 0 -%}<div><dt>Supported configurations</dt><dd>{{ product.metafields.snoozepod_technical.supported_configurations.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+      </dl>
+    </div>
+  </details>
+{%- endif -%}
+
+{%- if has_category_content -%}
+  <details class="snoozepod-product-information__item">
+    <summary class="snoozepod-product-information__summary"><span>
+      {%- case product_contract -%}
+        {%- when 'mattress' -%}Comfort, Construction & Configuration
+        {%- when 'adjustable_base' -%}Motion, Features & Compatibility
+        {%- when 'pillow' -%}Comfort, Fill & Cooling
+        {%- when 'sheets_bedding' -%}Fabric, Feel & Fit
+        {%- when 'mattress_protection' -%}Protection, Fit & Care
+        {%- when 'comforter_duvet_accessory' -%}Materials, Warmth & Contents
+        {%- when 'mattress_topper' -%}Comfort, Support & Fit
+        {%- when 'bedroom_furniture' -%}Materials, Dimensions & Installation
+        {%- else -%}Product Information
+      {%- endcase -%}
+    </span></summary>
+    <div class="snoozepod-product-information__content rte">
+      <dl class="snoozepod-product-information__specs">
+        {%- case product_contract -%}
+          {%- when 'mattress' -%}
+            {%- if product.metafields.snoozepod_mattress.construction != blank -%}<div><dt>Construction</dt><dd>{{ product.metafields.snoozepod_mattress.construction.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_mattress.overall_height_inches != blank -%}<div><dt>Overall height</dt><dd>{{ product.metafields.snoozepod_mattress.overall_height_inches.value }} in</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_mattress.comfort_and_support != blank -%}<div><dt>Comfort and support</dt><dd>{{ product.metafields.snoozepod_mattress.comfort_and_support.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_mattress.cooling_features.value.size > 0 -%}<div><dt>Cooling</dt><dd>{{ product.metafields.snoozepod_mattress.cooling_features.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_mattress.supported_geometries.value.size > 0 -%}<div><dt>Supported geometries</dt><dd>{{ product.metafields.snoozepod_mattress.supported_geometries.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_mattress.adjustable_base_compatible != blank -%}<div><dt>Adjustable-base compatible</dt><dd>{% if product.metafields.snoozepod_mattress.adjustable_base_compatible.value %}Yes{% else %}No{% endif %}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_mattress.dual_comfort_capable != blank -%}<div><dt>Dual Comfort capable</dt><dd>{% if product.metafields.snoozepod_mattress.dual_comfort_capable.value %}Yes{% else %}No{% endif %}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_mattress.comfort_combinations.value.size > 0 -%}<div><dt>Verified comfort combinations</dt><dd>{{ product.metafields.snoozepod_mattress.comfort_combinations.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_mattress.purchasable_configurations.value.size > 0 -%}<div><dt>Purchasable configurations</dt><dd>{{ product.metafields.snoozepod_mattress.purchasable_configurations.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+          {%- when 'adjustable_base' -%}
+            {%- if product.metafields.snoozepod_base.motion_and_features != blank -%}<div><dt>Motion and features</dt><dd>{{ product.metafields.snoozepod_base.motion_and_features.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_base.control_methods.value.size > 0 -%}<div><dt>Controls</dt><dd>{{ product.metafields.snoozepod_base.control_methods.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_base.physical_specifications != blank -%}<div><dt>Physical specifications</dt><dd>{{ product.metafields.snoozepod_base.physical_specifications.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_base.split_geometries.value.size > 0 -%}<div><dt>Geometry</dt><dd>{{ product.metafields.snoozepod_base.split_geometries.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_base.compatible_mattress_types.value.size > 0 -%}<div><dt>Mattress compatibility</dt><dd>{{ product.metafields.snoozepod_base.compatible_mattress_types.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+          {%- when 'pillow' -%}
+            {%- if product.metafields.snoozepod_pillow.comfort_profile != blank -%}<div><dt>Comfort profile</dt><dd>{{ product.metafields.snoozepod_pillow.comfort_profile.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_pillow.loft_options.value.size > 0 -%}<div><dt>Loft</dt><dd>{{ product.metafields.snoozepod_pillow.loft_options.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_pillow.sleep_positions.value.size > 0 -%}<div><dt>Sleep positions</dt><dd>{{ product.metafields.snoozepod_pillow.sleep_positions.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_pillow.fill_material.value.size > 0 -%}<div><dt>Fill material</dt><dd>{{ product.metafields.snoozepod_pillow.fill_material.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_pillow.cover_material.value.size > 0 -%}<div><dt>Cover material</dt><dd>{{ product.metafields.snoozepod_pillow.cover_material.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_pillow.cooling_and_temperature != blank -%}<div><dt>Cooling and temperature</dt><dd>{{ product.metafields.snoozepod_pillow.cooling_and_temperature.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_pillow.dimensions != blank -%}<div><dt>Dimensions</dt><dd>{{ product.metafields.snoozepod_pillow.dimensions.value | newline_to_br }}</dd></div>{%- endif -%}
+          {%- when 'sheets_bedding' -%}
+            {%- if product.metafields.snoozepod_bedding.fabric_and_construction != blank -%}<div><dt>Fabric and construction</dt><dd>{{ product.metafields.snoozepod_bedding.fabric_and_construction.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_bedding.feel_and_breathability != blank -%}<div><dt>Feel and breathability</dt><dd>{{ product.metafields.snoozepod_bedding.feel_and_breathability.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_bedding.fit_information != blank -%}<div><dt>Fit</dt><dd>{{ product.metafields.snoozepod_bedding.fit_information.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_bedding.color_options.value.size > 0 -%}<div><dt>Colors</dt><dd>{{ product.metafields.snoozepod_bedding.color_options.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_bedding.included_components.value.size > 0 -%}<div><dt>Included</dt><dd>{{ product.metafields.snoozepod_bedding.included_components.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+          {%- when 'mattress_protection' -%}
+            {%- if product.metafields.snoozepod_protection.protection_and_coverage != blank -%}<div><dt>Protection and coverage</dt><dd>{{ product.metafields.snoozepod_protection.protection_and_coverage.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_protection.breathability_and_cooling != blank -%}<div><dt>Breathability and cooling</dt><dd>{{ product.metafields.snoozepod_protection.breathability_and_cooling.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_protection.mattress_fit != blank -%}<div><dt>Mattress fit</dt><dd>{{ product.metafields.snoozepod_protection.mattress_fit.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_protection.split_geometry.value.size > 0 -%}<div><dt>Geometry</dt><dd>{{ product.metafields.snoozepod_protection.split_geometry.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+          {%- when 'comforter_duvet_accessory' -%}
+            {%- if product.metafields.snoozepod_accessory.product_subtype != blank -%}<div><dt>Product type</dt><dd>{{ product.metafields.snoozepod_accessory.product_subtype.value | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_accessory.materials_and_fill != blank -%}<div><dt>Materials and fill</dt><dd>{{ product.metafields.snoozepod_accessory.materials_and_fill.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_accessory.warmth_category != blank -%}<div><dt>Warmth</dt><dd>{{ product.metafields.snoozepod_accessory.warmth_category.value | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_accessory.cooling_and_breathability != blank -%}<div><dt>Cooling and breathability</dt><dd>{{ product.metafields.snoozepod_accessory.cooling_and_breathability.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_accessory.dimensions_and_contents != blank -%}<div><dt>Dimensions and contents</dt><dd>{{ product.metafields.snoozepod_accessory.dimensions_and_contents.value | newline_to_br }}</dd></div>{%- endif -%}
+          {%- when 'mattress_topper' -%}
+            {%- if product.metafields.snoozepod_topper.thickness_inches != blank -%}<div><dt>Thickness</dt><dd>{{ product.metafields.snoozepod_topper.thickness_inches.value }} in</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_topper.material_and_feel != blank -%}<div><dt>Material and feel</dt><dd>{{ product.metafields.snoozepod_topper.material_and_feel.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_topper.support_and_pressure_relief != blank -%}<div><dt>Support and pressure relief</dt><dd>{{ product.metafields.snoozepod_topper.support_and_pressure_relief.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_topper.cooling != blank -%}<div><dt>Cooling</dt><dd>{{ product.metafields.snoozepod_topper.cooling.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_topper.compatible_configurations.value.size > 0 -%}<div><dt>Compatibility</dt><dd>{{ product.metafields.snoozepod_topper.compatible_configurations.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+          {%- when 'bedroom_furniture' -%}
+            {%- if product.metafields.snoozepod_furniture.furniture_type != blank -%}<div><dt>Furniture type</dt><dd>{{ product.metafields.snoozepod_furniture.furniture_type.value | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_furniture.materials.value.size > 0 -%}<div><dt>Materials</dt><dd>{{ product.metafields.snoozepod_furniture.materials.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_furniture.colors_and_finishes.value.size > 0 -%}<div><dt>Colors and finishes</dt><dd>{{ product.metafields.snoozepod_furniture.colors_and_finishes.value | join: ', ' | escape }}</dd></div>{%- endif -%}
+            {%- if product.metafields.snoozepod_furniture.dimensions_and_sizes != blank -%}<div><dt>Dimensions and sizes</dt><dd>{{ product.metafields.snoozepod_furniture.dimensions_and_sizes.value | newline_to_br }}</dd></div>{%- endif -%}
+        {%- endcase -%}
+      </dl>
+
+      {%- if product_contract == 'adjustable_base' and product.metafields.snoozepod_base.assembly_requirements != blank -%}{{ product.metafields.snoozepod_base.assembly_requirements | metafield_tag }}{%- endif -%}
+      {%- if product_contract == 'adjustable_base' and product.metafields.snoozepod_base.furniture_compatibility != blank -%}{{ product.metafields.snoozepod_base.furniture_compatibility | metafield_tag }}{%- endif -%}
+      {%- if product_contract == 'adjustable_base' and product.metafields.snoozepod_base.showroom_experience != blank -%}{{ product.metafields.snoozepod_base.showroom_experience | metafield_tag }}{%- endif -%}
+      {%- if product_contract == 'pillow' and content_approved and product.metafields.snoozepod_pillow.who_may_prefer != blank -%}{{ product.metafields.snoozepod_pillow.who_may_prefer | metafield_tag }}{%- endif -%}
+      {%- if product_contract == 'sheets_bedding' and content_approved and product.metafields.snoozepod_bedding.material_experience != blank -%}{{ product.metafields.snoozepod_bedding.material_experience | metafield_tag }}{%- endif -%}
+      {%- if product_contract == 'mattress_topper' and content_approved and product.metafields.snoozepod_topper.comfort_experience != blank -%}{{ product.metafields.snoozepod_topper.comfort_experience | metafield_tag }}{%- endif -%}
+      {%- if product_contract == 'bedroom_furniture' and product.metafields.snoozepod_furniture.assembly_and_installation != blank -%}{{ product.metafields.snoozepod_furniture.assembly_and_installation | metafield_tag }}{%- endif -%}
+      {%- if product_contract == 'bedroom_furniture' and product.metafields.snoozepod_furniture.adjustable_base_compatibility != blank -%}{{ product.metafields.snoozepod_furniture.adjustable_base_compatibility | metafield_tag }}{%- endif -%}
+      {%- if product_contract == 'bedroom_furniture' and content_approved and product.metafields.snoozepod_furniture.appearance_and_function != blank -%}{{ product.metafields.snoozepod_furniture.appearance_and_function | metafield_tag }}{%- endif -%}
+      {%- if product_contract == 'bedroom_furniture' and content_approved and product.metafields.snoozepod_furniture.room_considerations != blank -%}{{ product.metafields.snoozepod_furniture.room_considerations | metafield_tag }}{%- endif -%}
+    </div>
+  </details>
+{%- endif -%}
+
+{%- if product.metafields.snoozepod_technical.compatibility_information != blank -%}
+  <details class="snoozepod-product-information__item">
+    <summary class="snoozepod-product-information__summary"><span>Compatibility</span></summary>
+    <div class="snoozepod-product-information__content rte">{{ product.metafields.snoozepod_technical.compatibility_information | metafield_tag }}</div>
+  </details>
+{%- endif -%}
+
+{%- if product.metafields.snoozepod_technical.care_instructions != blank -%}
+  <details class="snoozepod-product-information__item">
+    <summary class="snoozepod-product-information__summary"><span>Care Instructions</span></summary>
+    <div class="snoozepod-product-information__content rte">{{ product.metafields.snoozepod_technical.care_instructions | metafield_tag }}</div>
+  </details>
+{%- endif -%}
+
+{%- if product.metafields.snoozepod_technical.warranty_information != blank -%}
+  <details class="snoozepod-product-information__item">
+    <summary class="snoozepod-product-information__summary"><span>Warranty</span></summary>
+    <div class="snoozepod-product-information__content rte">{{ product.metafields.snoozepod_technical.warranty_information | metafield_tag }}</div>
+  </details>
+{%- endif -%}
+
+{%- if content_approved and product.metafields.snoozepod_content.snooze_session_focus != blank -%}
+  <details class="snoozepod-product-information__item">
+    <summary class="snoozepod-product-information__summary"><span>What to Experience During Your Snooze Session</span></summary>
+    <div class="snoozepod-product-information__content rte">{{ product.metafields.snoozepod_content.snooze_session_focus | metafield_tag }}</div>
+  </details>
+{%- endif -%}

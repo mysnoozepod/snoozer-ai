@@ -1,0 +1,1203 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-11-08T20:39:29.558Z",
+  "fixtureType": "representative-category-contracts",
+  "products": [
+    {
+      "shopifyProductId": "gid://shopify/Product/8100282925117",
+      "handle": "14-inch-dual-comfort-mattress",
+      "title": "14\" Dual Comfort Mattress",
+      "model": "M5",
+      "categoryContract": "mattress",
+      "productType": "Mattress",
+      "vendor": "BEDGEAR",
+      "content": {
+        "status": "NOT_STARTED",
+        "approved": false,
+        "fields": {}
+      },
+      "technical": {
+        "status": "PARTIAL",
+        "provenance": {
+          "status": "PARTIAL",
+          "sources": [
+            "Shopify native product, variant, tag, and collection data",
+            "Bedgear Master PL Sept 2026.xlsx",
+            "MySnoozePod_Product_Lineup_Decisions_October_2026.pdf"
+          ],
+          "rule": "Only mapped native commerce data, exact catalog records, and explicit tags are initialized. Empty fields remain unverified."
+        },
+        "fields": {
+          "snoozepod_mattress.dual_comfort_capable": {
+            "type": "boolean",
+            "value": "true",
+            "updatedAt": "2026-11-08T04:47:52Z"
+          },
+          "snoozepod_mattress.construction": {
+            "type": "multi_line_text_field",
+            "value": "Dual Comfort modular mattress",
+            "updatedAt": "2026-11-08T04:47:52Z"
+          },
+          "snoozepod_mattress.overall_height_inches": {
+            "type": "number_decimal",
+            "value": "14.0",
+            "updatedAt": "2026-11-08T04:47:52Z"
+          },
+          "snoozepod_technical.verified_features": {
+            "type": "list.single_line_text_field",
+            "value": "[\"dual comfort\",\"independent side comfort\",\"modular comfort\"]",
+            "updatedAt": "2026-11-08T04:47:52Z"
+          }
+        }
+      },
+      "commerce": {
+        "status": "ACTIVE",
+        "variants": [
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44128370950205",
+            "sku": "BGM506W21",
+            "price": "3499.99",
+            "options": {
+              "Size": "Twin XL"
+            },
+            "contract": {
+              "custom.compatibility_key": "bedgear-m5-14-dual-comfort-twin-xl",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44128370982973",
+            "sku": "BGM506W51",
+            "price": "3999.99",
+            "options": {
+              "Size": "Queen"
+            },
+            "contract": {
+              "custom.compatibility_key": "bedgear-m5-14-dual-comfort-queen",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44128371015741",
+            "sku": "BGM506W61",
+            "price": "4799.99",
+            "options": {
+              "Size": "King"
+            },
+            "contract": {
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard",
+              "custom.compatibility_key": "bedgear-m5-14-dual-comfort-king",
+              "custom.fulfillment_readiness": "PENDING"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44128371048509",
+            "sku": "BGM506W71",
+            "price": "4799.99",
+            "options": {
+              "Size": "Cal King"
+            },
+            "contract": {
+              "custom.compatibility_key": "bedgear-m5-14-dual-comfort-cal-king",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44128371081277",
+            "sku": "BGM506W55",
+            "price": "4499.99",
+            "options": {
+              "Size": "Split Head Queen"
+            },
+            "contract": {
+              "custom.compatibility_key": "bedgear-m5-14-dual-comfort-split-head-queen",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44128371114045",
+            "sku": "BGM506W65",
+            "price": "5299.99",
+            "options": {
+              "Size": "Split Head King"
+            },
+            "contract": {
+              "custom.compatibility_key": "bedgear-m5-14-dual-comfort-split-head-king",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44128371146813",
+            "sku": "BGM506W75",
+            "price": "5299.99",
+            "options": {
+              "Size": "Split Head Cal King"
+            },
+            "contract": {
+              "custom.compatibility_key": "bedgear-m5-14-dual-comfort-split-head-cal-king",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44128371179581",
+            "sku": "BGM506W81",
+            "price": "6999.99",
+            "options": {
+              "Size": "Twin XL x 2"
+            },
+            "contract": {
+              "custom.compatibility_key": "bedgear-m5-14-dual-comfort-twin-xl-x-2",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "full_split"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44128371212349",
+            "sku": "BGM506W91",
+            "price": "6999.99",
+            "options": {
+              "Size": "Split Cal King"
+            },
+            "contract": {
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "full_split",
+              "custom.compatibility_key": "bedgear-m5-14-dual-comfort-split-cal-king"
+            }
+          }
+        ]
+      },
+      "compatibility": {
+        "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
+      },
+      "schemaVersion": "1.0.0",
+      "shopifyUpdatedAt": "2026-11-08T20:37:37Z"
+    },
+    {
+      "shopifyProductId": "gid://shopify/Product/8100247863357",
+      "handle": "react-pro-performance-topper",
+      "title": "React Pro Performance Topper",
+      "model": null,
+      "categoryContract": "mattress_topper",
+      "productType": "Mattress Topper",
+      "vendor": "BEDGEAR",
+      "content": {
+        "status": "NOT_STARTED",
+        "approved": false,
+        "fields": {}
+      },
+      "technical": {
+        "status": "PARTIAL",
+        "provenance": {
+          "status": "PARTIAL",
+          "sources": [
+            "Shopify native product, variant, tag, and collection data",
+            "Bedgear Master PL Sept 2026.xlsx",
+            "MySnoozePod_Product_Lineup_Decisions_October_2026.pdf"
+          ],
+          "rule": "Only mapped native commerce data, exact catalog records, and explicit tags are initialized. Empty fields remain unverified."
+        },
+        "fields": {
+          "snoozepod_technical.verified_features": {
+            "type": "list.single_line_text_field",
+            "value": "[\"performance topper\"]",
+            "updatedAt": "2026-11-08T04:47:54Z"
+          }
+        }
+      },
+      "commerce": {
+        "status": "ACTIVE",
+        "variants": [
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122496532541",
+            "sku": "BGT088W50",
+            "price": "399.99",
+            "options": {
+              "Size": "Queen"
+            },
+            "contract": {
+              "custom.compatibility_key": "react-pro-performance-topper-queen",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          }
+        ]
+      },
+      "compatibility": {
+        "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
+      },
+      "schemaVersion": "1.0.0",
+      "shopifyUpdatedAt": "2026-11-08T04:47:55Z"
+    },
+    {
+      "shopifyProductId": "gid://shopify/Product/8100237672509",
+      "handle": "zoned-talalay-latex-pillow",
+      "title": "Zoned Talalay Latex Pillow",
+      "model": null,
+      "categoryContract": "pillow",
+      "productType": "Pillow",
+      "vendor": "Malouf",
+      "content": {
+        "status": "NOT_STARTED",
+        "approved": false,
+        "fields": {}
+      },
+      "technical": {
+        "status": "PARTIAL",
+        "provenance": {
+          "status": "PARTIAL",
+          "sources": [
+            "Shopify native product, variant, tag, and collection data",
+            "MALOUF-PriceList-26.3-MAP.pdf",
+            "MySnoozePod_Product_Lineup_Decisions_October_2026.pdf"
+          ],
+          "rule": "Only mapped native commerce data, exact catalog records, and explicit tags are initialized. Empty fields remain unverified."
+        },
+        "fields": {
+          "snoozepod_pillow.fill_material": {
+            "type": "list.single_line_text_field",
+            "value": "[\"talalay latex\"]",
+            "updatedAt": "2026-11-08T04:47:55Z"
+          },
+          "snoozepod_technical.verified_features": {
+            "type": "list.single_line_text_field",
+            "value": "[\"zoned\"]",
+            "updatedAt": "2026-11-08T04:47:55Z"
+          },
+          "snoozepod_technical.materials": {
+            "type": "list.single_line_text_field",
+            "value": "[\"talalay latex\"]",
+            "updatedAt": "2026-11-08T04:47:55Z"
+          }
+        }
+      },
+      "commerce": {
+        "status": "ACTIVE",
+        "variants": [
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44121587646525",
+            "sku": "ZZQQHPLX",
+            "price": "149.99",
+            "options": {
+              "Size": "Queen"
+            },
+            "contract": {
+              "custom.compatibility_key": "zoned-talalay-latex-pillow-queen",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "not_applicable"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44121587679293",
+            "sku": "ZZKKHPLX",
+            "price": "169.99",
+            "options": {
+              "Size": "King"
+            },
+            "contract": {
+              "custom.compatibility_key": "zoned-talalay-latex-pillow-king",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "not_applicable"
+            }
+          }
+        ]
+      },
+      "compatibility": {
+        "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
+      },
+      "schemaVersion": "1.0.0",
+      "shopifyUpdatedAt": "2026-11-08T04:47:55Z"
+    },
+    {
+      "shopifyProductId": "gid://shopify/Product/8100250648637",
+      "handle": "watson-upholstered-platform-base",
+      "title": "Watson Upholstered Platform Base",
+      "model": null,
+      "categoryContract": "bedroom_furniture",
+      "productType": "Platform Base",
+      "vendor": "Malouf",
+      "content": {
+        "status": "NOT_STARTED",
+        "approved": false,
+        "fields": {}
+      },
+      "technical": {
+        "status": "PARTIAL",
+        "provenance": {
+          "status": "PARTIAL",
+          "sources": [
+            "Shopify native product, variant, tag, and collection data",
+            "MALOUF-PriceList-26.3-MAP.pdf",
+            "MySnoozePod_Product_Lineup_Decisions_October_2026.pdf"
+          ],
+          "rule": "Only mapped native commerce data, exact catalog records, and explicit tags are initialized. Empty fields remain unverified."
+        },
+        "fields": {
+          "snoozepod_furniture.colors_and_finishes": {
+            "type": "list.single_line_text_field",
+            "value": "[\"Oat\",\"Charcoal\",\"Stone\"]",
+            "updatedAt": "2026-11-08T04:47:55Z"
+          },
+          "snoozepod_furniture.furniture_type": {
+            "type": "single_line_text_field",
+            "value": "Platform base",
+            "updatedAt": "2026-11-08T04:47:55Z"
+          },
+          "snoozepod_technical.verified_features": {
+            "type": "list.single_line_text_field",
+            "value": "[\"upholstered\"]",
+            "updatedAt": "2026-11-08T04:47:55Z"
+          }
+        }
+      },
+      "commerce": {
+        "status": "ACTIVE",
+        "variants": [
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122760970301",
+            "sku": "OAQQ_WATSPL",
+            "price": "829.99",
+            "options": {
+              "Size": "Queen",
+              "Color": "Oat"
+            },
+            "contract": {
+              "custom.compatibility_key": "watson-upholstered-platform-base-queen-oat",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122761003069",
+            "sku": "CHQQ_WATSPL",
+            "price": "829.99",
+            "options": {
+              "Size": "Queen",
+              "Color": "Charcoal"
+            },
+            "contract": {
+              "custom.compatibility_key": "watson-upholstered-platform-base-queen-charcoal",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122761035837",
+            "sku": "STQQ_WATSPL",
+            "price": "829.99",
+            "options": {
+              "Size": "Queen",
+              "Color": "Stone"
+            },
+            "contract": {
+              "custom.compatibility_key": "watson-upholstered-platform-base-queen-stone",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122761068605",
+            "sku": "OAKK_WATSPL",
+            "price": "979.99",
+            "options": {
+              "Size": "King",
+              "Color": "Oat"
+            },
+            "contract": {
+              "custom.compatibility_key": "watson-upholstered-platform-base-king-oat",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122761101373",
+            "sku": "CHKK_WATSPL",
+            "price": "979.99",
+            "options": {
+              "Size": "King",
+              "Color": "Charcoal"
+            },
+            "contract": {
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard",
+              "custom.compatibility_key": "watson-upholstered-platform-base-king-charcoal"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122761134141",
+            "sku": "STKK_WATSPL",
+            "price": "979.99",
+            "options": {
+              "Size": "King",
+              "Color": "Stone"
+            },
+            "contract": {
+              "custom.compatibility_key": "watson-upholstered-platform-base-king-stone",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122761166909",
+            "sku": "OACK_WATSPL",
+            "price": "979.99",
+            "options": {
+              "Size": "California King",
+              "Color": "Oat"
+            },
+            "contract": {
+              "custom.compatibility_key": "watson-upholstered-platform-base-california-king-oat",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122761199677",
+            "sku": "CHCK_WATSPL",
+            "price": "979.99",
+            "options": {
+              "Size": "California King",
+              "Color": "Charcoal"
+            },
+            "contract": {
+              "custom.compatibility_key": "watson-upholstered-platform-base-california-king-charcoal",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122761232445",
+            "sku": "STCK_WATSPL",
+            "price": "979.99",
+            "options": {
+              "Size": "California King",
+              "Color": "Stone"
+            },
+            "contract": {
+              "custom.compatibility_key": "watson-upholstered-platform-base-california-king-stone",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          }
+        ]
+      },
+      "compatibility": {
+        "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
+      },
+      "schemaVersion": "1.0.0",
+      "shopifyUpdatedAt": "2026-11-08T04:47:56Z"
+    },
+    {
+      "shopifyProductId": "gid://shopify/Product/8100247666749",
+      "handle": "ultra-weight-comforter",
+      "title": "Ultra Weight Comforter",
+      "model": null,
+      "categoryContract": "comforter_duvet_accessory",
+      "productType": "Comforter",
+      "vendor": "BEDGEAR",
+      "content": {
+        "status": "NOT_STARTED",
+        "approved": false,
+        "fields": {}
+      },
+      "technical": {
+        "status": "PARTIAL",
+        "provenance": {
+          "status": "PARTIAL",
+          "sources": [
+            "Shopify native product, variant, tag, and collection data",
+            "Bedgear Master PL Sept 2026.xlsx",
+            "MySnoozePod_Product_Lineup_Decisions_October_2026.pdf"
+          ],
+          "rule": "Only mapped native commerce data, exact catalog records, and explicit tags are initialized. Empty fields remain unverified."
+        },
+        "fields": {
+          "snoozepod_accessory.warmth_category": {
+            "type": "single_line_text_field",
+            "value": "ultra weight",
+            "updatedAt": "2026-11-08T04:47:54Z"
+          },
+          "snoozepod_accessory.product_subtype": {
+            "type": "single_line_text_field",
+            "value": "Comforter",
+            "updatedAt": "2026-11-08T04:47:54Z"
+          }
+        }
+      },
+      "commerce": {
+        "status": "ACTIVE",
+        "variants": [
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122488143933",
+            "sku": "BGB052W50",
+            "price": "299.99",
+            "options": {
+              "Size": "Full/Queen"
+            },
+            "contract": {
+              "custom.compatibility_key": "ultra-weight-comforter-full-queen",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122488176701",
+            "sku": "BGB052W60",
+            "price": "329.99",
+            "options": {
+              "Size": "King/Cal King"
+            },
+            "contract": {
+              "custom.compatibility_key": "ultra-weight-comforter-king-cal-king",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          }
+        ]
+      },
+      "compatibility": {
+        "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
+      },
+      "schemaVersion": "1.0.0",
+      "shopifyUpdatedAt": "2026-11-08T04:47:55Z"
+    },
+    {
+      "shopifyProductId": "gid://shopify/Product/8100247371837",
+      "handle": "ver-tex-sheet-set",
+      "title": "Ver-Tex Sheet Set",
+      "model": null,
+      "categoryContract": "sheets_bedding",
+      "productType": "Sheet Set",
+      "vendor": "BEDGEAR",
+      "content": {
+        "status": "NOT_STARTED",
+        "approved": false,
+        "fields": {}
+      },
+      "technical": {
+        "status": "PARTIAL",
+        "provenance": {
+          "status": "PARTIAL",
+          "sources": [
+            "Shopify native product, variant, tag, and collection data",
+            "Bedgear Master PL Sept 2026.xlsx",
+            "MySnoozePod_Product_Lineup_Decisions_October_2026.pdf"
+          ],
+          "rule": "Only mapped native commerce data, exact catalog records, and explicit tags are initialized. Empty fields remain unverified."
+        },
+        "fields": {
+          "snoozepod_bedding.color_options": {
+            "type": "list.single_line_text_field",
+            "value": "[\"Light Blue\",\"Light Grey\",\"Moss\",\"White\"]",
+            "updatedAt": "2026-11-08T04:47:55Z"
+          },
+          "snoozepod_technical.verified_features": {
+            "type": "list.single_line_text_field",
+            "value": "[\"ver tex\"]",
+            "updatedAt": "2026-11-08T04:47:55Z"
+          }
+        }
+      },
+      "commerce": {
+        "status": "ACTIVE",
+        "variants": [
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478247997",
+            "sku": "BGS197B50",
+            "price": "299.99",
+            "options": {
+              "Size": "Queen",
+              "Color": "Light Blue"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-queen-light-blue",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478280765",
+            "sku": "BGS197B12",
+            "price": "329.99",
+            "options": {
+              "Size": "King/Cal King",
+              "Color": "Light Blue"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-king-cal-king-light-blue",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478313533",
+            "sku": "BGS197B14",
+            "price": "349.99",
+            "options": {
+              "Size": "Split King/Split Cal King",
+              "Color": "Light Blue"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-light-blue",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "full_split"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478346301",
+            "sku": "BGS197L50",
+            "price": "299.99",
+            "options": {
+              "Size": "Queen",
+              "Color": "Light Grey"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-queen-light-grey",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478379069",
+            "sku": "BGS197L55",
+            "price": "329.99",
+            "options": {
+              "Size": "Split Head Queen",
+              "Color": "Light Grey"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-split-head-queen-light-grey",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478411837",
+            "sku": "BGS197L12",
+            "price": "329.99",
+            "options": {
+              "Size": "King/Cal King",
+              "Color": "Light Grey"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-king-cal-king-light-grey",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478444605",
+            "sku": "BGS197L14",
+            "price": "349.99",
+            "options": {
+              "Size": "Split King/Split Cal King",
+              "Color": "Light Grey"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-light-grey",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "full_split"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478477373",
+            "sku": "BGS197L65",
+            "price": "359.99",
+            "options": {
+              "Size": "Split Head King",
+              "Color": "Light Grey"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-split-head-king-light-grey",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478510141",
+            "sku": "BGS197L75",
+            "price": "359.99",
+            "options": {
+              "Size": "Split Head Cal King",
+              "Color": "Light Grey"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-split-head-cal-king-light-grey",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478542909",
+            "sku": "BGS197G50",
+            "price": "299.99",
+            "options": {
+              "Size": "Queen",
+              "Color": "Moss"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-queen-moss",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478575677",
+            "sku": "BGS197G12",
+            "price": "329.99",
+            "options": {
+              "Size": "King/Cal King",
+              "Color": "Moss"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-king-cal-king-moss",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478608445",
+            "sku": "BGS197G14",
+            "price": "349.99",
+            "options": {
+              "Size": "Split King/Split Cal King",
+              "Color": "Moss"
+            },
+            "contract": {
+              "custom.sleep_geometry": "full_split",
+              "custom.compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-moss",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478641213",
+            "sku": "BGS197W50",
+            "price": "299.99",
+            "options": {
+              "Size": "Queen",
+              "Color": "White"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-queen-white",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478673981",
+            "sku": "BGS197W55",
+            "price": "329.99",
+            "options": {
+              "Size": "Split Head Queen",
+              "Color": "White"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-split-head-queen-white",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478706749",
+            "sku": "BGS197W12",
+            "price": "329.99",
+            "options": {
+              "Size": "King/Cal King",
+              "Color": "White"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-king-cal-king-white",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478739517",
+            "sku": "BGS197W14",
+            "price": "349.99",
+            "options": {
+              "Size": "Split King/Split Cal King",
+              "Color": "White"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-white",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "full_split"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478772285",
+            "sku": "BGS197W65",
+            "price": "359.99",
+            "options": {
+              "Size": "Split Head King",
+              "Color": "White"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-sheet-set-split-head-king-white",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122478805053",
+            "sku": "BGS197W75",
+            "price": "359.99",
+            "options": {
+              "Size": "Split Head Cal King",
+              "Color": "White"
+            },
+            "contract": {
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head",
+              "custom.compatibility_key": "ver-tex-sheet-set-split-head-cal-king-white",
+              "custom.fulfillment_readiness": "PENDING"
+            }
+          }
+        ]
+      },
+      "compatibility": {
+        "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
+      },
+      "schemaVersion": "1.0.0",
+      "shopifyUpdatedAt": "2026-11-08T04:47:55Z"
+    },
+    {
+      "shopifyProductId": "gid://shopify/Product/8100247502909",
+      "handle": "ver-tex-mattress-protector",
+      "title": "Ver-Tex Mattress Protector",
+      "model": null,
+      "categoryContract": "mattress_protection",
+      "productType": "Mattress Protector",
+      "vendor": "BEDGEAR",
+      "content": {
+        "status": "NOT_STARTED",
+        "approved": false,
+        "fields": {}
+      },
+      "technical": {
+        "status": "PARTIAL",
+        "provenance": {
+          "status": "PARTIAL",
+          "sources": [
+            "Shopify native product, variant, tag, and collection data",
+            "Bedgear Master PL Sept 2026.xlsx",
+            "MySnoozePod_Product_Lineup_Decisions_October_2026.pdf"
+          ],
+          "rule": "Only mapped native commerce data, exact catalog records, and explicit tags are initialized. Empty fields remain unverified."
+        },
+        "fields": {
+          "snoozepod_technical.verified_features": {
+            "type": "list.single_line_text_field",
+            "value": "[\"mattress protection\",\"ver tex\"]",
+            "updatedAt": "2026-11-08T04:47:54Z"
+          },
+          "snoozepod_protection.split_geometry": {
+            "type": "list.single_line_text_field",
+            "value": "[\"standard\",\"split_head\",\"full_split\"]",
+            "updatedAt": "2026-11-08T04:47:55Z"
+          }
+        }
+      },
+      "commerce": {
+        "status": "ACTIVE",
+        "variants": [
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479263805",
+            "sku": "BGM026001",
+            "price": "249.99",
+            "options": {
+              "Size": "Twin"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-mattress-protector-twin",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479296573",
+            "sku": "BGM026002",
+            "price": "259.99",
+            "options": {
+              "Size": "Twin XL"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-mattress-protector-twin-xl",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479329341",
+            "sku": "BGM026003",
+            "price": "259.99",
+            "options": {
+              "Size": "Full"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-mattress-protector-full",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479362109",
+            "sku": "BGM026005",
+            "price": "279.99",
+            "options": {
+              "Size": "Queen"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-mattress-protector-queen",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479394877",
+            "sku": "BGM026055",
+            "price": "299.99",
+            "options": {
+              "Size": "Split Head Queen"
+            },
+            "contract": {
+              "custom.sleep_geometry": "split_head",
+              "custom.compatibility_key": "ver-tex-mattress-protector-split-head-queen",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479427645",
+            "sku": "BGM026006",
+            "price": "299.99",
+            "options": {
+              "Size": "King"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-mattress-protector-king",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479460413",
+            "sku": "BGM026007",
+            "price": "299.99",
+            "options": {
+              "Size": "Cal King"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-mattress-protector-cal-king",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "standard"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479493181",
+            "sku": "BGM026008",
+            "price": "359.99",
+            "options": {
+              "Size": "Split King (2pc)"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-mattress-protector-split-king-2pc",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "full_split"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479525949",
+            "sku": "BGM026009",
+            "price": "359.99",
+            "options": {
+              "Size": "Split Cal King (2pc)"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-mattress-protector-split-cal-king-2pc",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "full_split"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479558717",
+            "sku": "BGM026065",
+            "price": "359.99",
+            "options": {
+              "Size": "Split Head King"
+            },
+            "contract": {
+              "custom.compatibility_key": "ver-tex-mattress-protector-split-head-king",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122479591485",
+            "sku": "BGM026075",
+            "price": "359.99",
+            "options": {
+              "Size": "Split Head Cal King"
+            },
+            "contract": {
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head",
+              "custom.compatibility_key": "ver-tex-mattress-protector-split-head-cal-king",
+              "custom.fulfillment_readiness": "PENDING"
+            }
+          }
+        ]
+      },
+      "compatibility": {
+        "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
+      },
+      "schemaVersion": "1.0.0",
+      "shopifyUpdatedAt": "2026-11-08T04:47:56Z"
+    },
+    {
+      "shopifyProductId": "gid://shopify/Product/8100247240765",
+      "handle": "flex-sh-adjustable-base",
+      "title": "Flex SH Adjustable Base",
+      "model": null,
+      "categoryContract": "adjustable_base",
+      "productType": "Adjustable Base",
+      "vendor": "BEDGEAR",
+      "content": {
+        "status": "NOT_STARTED",
+        "approved": false,
+        "fields": {}
+      },
+      "technical": {
+        "status": "PARTIAL",
+        "provenance": {
+          "status": "PARTIAL",
+          "sources": [
+            "Shopify native product, variant, tag, and collection data",
+            "Bedgear Master PL Sept 2026.xlsx",
+            "MySnoozePod_Product_Lineup_Decisions_October_2026.pdf"
+          ],
+          "rule": "Only mapped native commerce data, exact catalog records, and explicit tags are initialized. Empty fields remain unverified."
+        },
+        "fields": {
+          "snoozepod_base.split_geometries": {
+            "type": "list.single_line_text_field",
+            "value": "[\"split_head\"]",
+            "updatedAt": "2026-11-08T04:47:53Z"
+          },
+          "snoozepod_technical.verified_features": {
+            "type": "list.single_line_text_field",
+            "value": "[\"adjustable\",\"split head\"]",
+            "updatedAt": "2026-11-08T04:47:53Z"
+          }
+        }
+      },
+      "commerce": {
+        "status": "ACTIVE",
+        "variants": [
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122467434557",
+            "sku": "BGF032255",
+            "price": "2099.00",
+            "options": {
+              "Size": "Split Head Queen"
+            },
+            "contract": {
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head",
+              "custom.compatibility_key": "flex-sh-adjustable-base-split-head-queen",
+              "custom.fulfillment_readiness": "PENDING"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122467467325",
+            "sku": "BGF032265",
+            "price": "2799.00",
+            "options": {
+              "Size": "Split Head King"
+            },
+            "contract": {
+              "custom.compatibility_key": "flex-sh-adjustable-base-split-head-king",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          },
+          {
+            "shopifyVariantId": "gid://shopify/ProductVariant/44122467500093",
+            "sku": "BGF032275",
+            "price": "2799.00",
+            "options": {
+              "Size": "Split Head Cal King"
+            },
+            "contract": {
+              "custom.compatibility_key": "flex-sh-adjustable-base-split-head-cal-king",
+              "custom.fulfillment_readiness": "PENDING",
+              "custom.price_verification_status": "HISTORICAL_REFERENCE",
+              "custom.sleep_geometry": "split_head"
+            }
+          }
+        ]
+      },
+      "compatibility": {
+        "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
+      },
+      "schemaVersion": "1.0.0",
+      "shopifyUpdatedAt": "2026-11-08T04:47:55Z"
+    }
+  ]
+}

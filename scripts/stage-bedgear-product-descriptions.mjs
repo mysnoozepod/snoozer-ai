@@ -9,6 +9,7 @@ import {
   bedgearOfficialProductCopy,
   bedgearOfficialProductDescriptionHtml,
   bedgearProductHandles,
+  mattressCustomerFacingHandles,
 } from '../content/bedgear-brand-description.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -20,7 +21,7 @@ const LAMBDA_FUNCTION = 'snoozer-backend';
 const AWS_REGION = 'us-east-1';
 const APPLY = process.argv.includes('--apply');
 const MARKER_PATTERN = /<div[^>]*data-mysnoozepod-bedgear-boilerplate=["'][^"']+["'][^>]*>[\s\S]*?<\/div>/i;
-const PRODUCT_COPY_PATTERN = /<div[^>]*data-mysnoozepod-bedgear-product-copy=["'][^"']+["'][^>]*>[\s\S]*?<\/div>/i;
+const PRODUCT_COPY_PATTERN = /<div[^>]*data-mysnoozepod-(?:bedgear|mattress)-product-copy=["'][^"']+["'][^>]*>[\s\S]*?<\/div>/i;
 
 function fail(message) { throw new Error(message); }
 function sha256(value) { return crypto.createHash('sha256').update(value).digest('hex'); }
@@ -122,6 +123,9 @@ function expectedDescription(currentHtml, handle) {
     } else {
       expected = `${officialHtml}${expected}`;
     }
+  }
+  if (mattressCustomerFacingHandles.includes(handle)) {
+    return expected.replace(MARKER_PATTERN, '');
   }
   if (!expected) return bedgearBrandDescriptionHtml;
   if (MARKER_PATTERN.test(expected)) {

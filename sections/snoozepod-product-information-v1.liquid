@@ -91,6 +91,33 @@
     margin-bottom: 0;
   }
 
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__specs {
+    display: grid;
+    gap: 0;
+    margin: 0;
+  }
+
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__specs > div {
+    display: grid;
+    grid-template-columns: minmax(128px, 0.34fr) minmax(0, 1fr);
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(7, 25, 66, 0.09);
+  }
+
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__specs > div:last-child {
+    border-bottom: 0;
+  }
+
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__specs dt {
+    color: #071942;
+    font-weight: 700;
+  }
+
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__specs dd {
+    margin: 0;
+  }
+
   .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__policy-links {
     display: flex;
     flex-wrap: wrap;
@@ -129,6 +156,8 @@
     {%- endif -%}
 
     <div class="snoozepod-product-information__items">
+      {%- render 'snoozepod-product-knowledge', product: product -%}
+
       {%- for block in section.blocks -%}
         {%- liquid
           assign show_block = false

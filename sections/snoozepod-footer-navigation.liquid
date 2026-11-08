@@ -1,0 +1,74 @@
+{%- style -%}
+  .footer-navigation-{{ section.id }} { padding: 3.2rem 0; background: #f4f7fb; color: #071a44; }
+  .footer-navigation-{{ section.id }} .footer-navigation__booking { display: grid; gap: 1.4rem; align-items: center; margin-bottom: 2.8rem; padding: 2.2rem; border-radius: 2rem; background: #071a44; color: #fff; }
+  .footer-navigation-{{ section.id }} .footer-navigation__booking h2, .footer-navigation-{{ section.id }} .footer-navigation__booking p { margin: 0; color: inherit; }
+  .footer-navigation-{{ section.id }} .footer-navigation__booking h2 { font-size: clamp(2.6rem, 4vw, 4rem); line-height: 1.05; }
+  .footer-navigation-{{ section.id }} .footer-navigation__booking p { color: rgba(255,255,255,.78); font-size: 1.5rem; line-height: 1.5; }
+  .footer-navigation-{{ section.id }} .footer-navigation__booking .button { justify-self: start; border-color: #fff; background: #fff; color: #071a44; }
+  .footer-navigation-{{ section.id }} .footer-navigation__groups { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 2.4rem 1.6rem; }
+  .footer-navigation-{{ section.id }} h3 { margin: 0 0 1rem; font-size: 1.5rem; letter-spacing: .08em; text-transform: uppercase; }
+  .footer-navigation-{{ section.id }} ul { display: grid; gap: .7rem; margin: 0; padding: 0; list-style: none; }
+  .footer-navigation-{{ section.id }} a:not(.button) { color: rgba(7,26,68,.76); font-size: 1.45rem; line-height: 1.4; text-decoration: none; }
+  .footer-navigation-{{ section.id }} a:not(.button):hover { color: #071a44; text-decoration: underline; text-underline-offset: .3rem; }
+  @media screen and (min-width: 750px) { .footer-navigation-{{ section.id }} { padding: 4rem 0; } .footer-navigation-{{ section.id }} .footer-navigation__booking { grid-template-columns: minmax(0,1fr) auto; padding: 2.8rem 3.2rem; } .footer-navigation-{{ section.id }} .footer-navigation__booking-copy { max-width: 70rem; } .footer-navigation-{{ section.id }} .footer-navigation__groups { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 3rem; } }
+{%- endstyle -%}
+
+<section class="footer-navigation footer-navigation-{{ section.id }}">
+  <div class="page-width">
+    <div class="footer-navigation__booking">
+      <div class="footer-navigation__booking-copy">
+        <h2>{{ section.settings.heading | escape }}</h2>
+        <p>{{ section.settings.text | escape }}</p>
+      </div>
+      <a class="button" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}">{{ section.settings.booking_label | escape }}</a>
+    </div>
+
+    <nav class="footer-navigation__groups" aria-label="Footer navigation">
+      <div>
+        <h3>Shop</h3>
+        <ul>
+          <li><a href="/collections/mattresses">Mattresses</a></li>
+          <li><a href="/collections/adjustable-bases">Adjustable Bases</a></li>
+          <li><a href="/collections/pillows">Pillows</a></li>
+          <li><a href="/collections/bedding">Bedding</a></li>
+          <li><a href="/collections/bedroom-furniture">Bedroom Furniture</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Visit &amp; Guidance</h3>
+        <ul>
+          <li><a href="/pages/book-a-snooze-session">Book a Snooze Session</a></li>
+          <li><a href="/pages/how-the-mysnoozepod-showroom-works">Your Showroom Visit</a></li>
+          <li><a href="/pages/snooze-assessment">Snooze Assessment</a></li>
+          <li><a href="/pages/sleep-tools">Sleep Tools</a></li>
+          <li><a href="/pages/sleep-guides">Sleep Guides</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Customer Support</h3>
+        <ul>
+          <li><a href="/pages/contact-us">Contact &amp; Order Support</a></li>
+          <li><a href="/pages/shipping-policy">Shipping &amp; Delivery</a></li>
+          <li><a href="/pages/90-day-sleep-trial">Returns</a></li>
+          <li><a href="/pages/warranty-support">Warranty Support</a></li>
+          <li><a href="/pages/faqs">Frequently Asked Questions</a></li>
+          {%- if shop.privacy_policy.url != blank -%}<li><a href="{{ shop.privacy_policy.url }}">Privacy</a></li>{%- endif -%}
+          {%- if shop.terms_of_service.url != blank -%}<li><a href="{{ shop.terms_of_service.url }}">Terms</a></li>{%- endif -%}
+        </ul>
+      </div>
+    </nav>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Footer navigation",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Booking heading", "default": "Ready to experience the difference?" },
+    { "type": "textarea", "id": "text", "label": "Booking text", "default": "Schedule a private Snooze Session and compare the options that matter to you." },
+    { "type": "text", "id": "booking_label", "label": "Booking button label", "default": "Book a Snooze Session" },
+    { "type": "url", "id": "booking_link", "label": "Booking link" }
+  ],
+  "presets": [{ "name": "Footer navigation" }]
+}
+{% endschema %}

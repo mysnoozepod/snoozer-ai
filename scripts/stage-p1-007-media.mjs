@@ -240,7 +240,7 @@ async function stageLocalRendition(rendition) {
 
 function collectionPlan(manifest) {
   return {
-    mattresses: sourceAsset(manifest, "bedgear-s7-12-memory-foam", 2),
+    mattresses: sourceAsset(manifest, "12-inch-memory-foam-mattress", 2),
     "adjustable-bases": sourceAsset(manifest, "flex-l-adjustable-base", 0),
     bedding: sourceAsset(manifest, "dri-tec-sheet-set", 1),
     "bedroom-furniture": sourceAsset(manifest, "hennessy-upholstered-headboard", 0),

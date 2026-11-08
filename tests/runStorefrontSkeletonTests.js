@@ -16,6 +16,7 @@ const builderCore = read('snippets/snoozepod-guided-pod-builder-core.liquid');
 const collectionNavigation = read('sections/snoozepod-collection-navigation-v1.liquid');
 const productHero = read('sections/snoozepod-product-hero.liquid');
 const collectionHero = read('sections/snoozepod-collection-hero.liquid');
+const footerNavigation = read('sections/snoozepod-footer-navigation.liquid');
 
 assert.equal(readback.store, 'mysnoozepodtest.myshopify.com');
 assert.equal(readback.products.length, manifest.expectedProductCount);
@@ -97,7 +98,11 @@ for (const [handle, menuContract] of Object.entries(manifest.menus)) {
 
 assert.equal(headerGroup.sections.header.settings.menu, 'main-menu');
 assert.equal(headerGroup.sections.header.settings.menu_type_desktop, 'dropdown');
-assert.ok(Object.values(footerGroup.sections.footer.blocks).some((block) => block.type === 'link_list' && block.settings.menu === 'footer'));
+assert.equal(footerGroup.sections['experience-navigation'].type, 'snoozepod-footer-navigation');
+assert.ok(footerGroup.order.indexOf('experience-navigation') < footerGroup.order.indexOf('newsletter'));
+assert.match(footerNavigation, /Shop/);
+assert.match(footerNavigation, /Visit &amp; Guidance/);
+assert.match(footerNavigation, /Customer Support/);
 
 const expectedTopLevelCollections = [
   'mattresses',

@@ -21,8 +21,10 @@ const pairing = read('sections/snoozepod-pod-pairing.liquid');
 
 const homepageHero = Object.values(index.sections).find((section) => section.type === 'snooze-hero');
 assert.ok(homepageHero, 'Homepage booking hero must remain present.');
-assert.equal(homepageHero.settings.secondary_cta_label, '');
-assert.equal(homepageHero.settings.secondary_cta_link, '');
+assert.equal(homepageHero.settings.primary_cta_label, 'Book a Snooze Session');
+assert.equal(homepageHero.settings.primary_cta_link, 'shopify://pages/book-a-snooze-session');
+assert.equal(homepageHero.settings.secondary_cta_label, 'Explore Mattresses');
+assert.equal(homepageHero.settings.secondary_cta_link, 'shopify://collections/mattresses');
 const legacyShelf = Object.entries(index.sections).find(([, section]) => JSON.stringify(section).includes('10-all-foam-mattress'));
 assert.ok(legacyShelf, 'The inactive historical shelf remains traceable until Shopify-managed template reconciliation.');
 assert.equal(legacyShelf[1].disabled, true, 'The legacy hardcoded mattress shelf must remain explicitly disabled.');
@@ -59,4 +61,4 @@ assert.match(pairing, /\/collections\/adjustable-bases/);
 assert.match(pairing, /\/collections\/mattress-protectors/);
 assert.doesNotMatch(pairing, /\/products\/(premium-motion-adjustable-base|storage-base|platform-base|dri-tec-mattress-protector|ver-tex-mattress-protector)/);
 
-console.log('Storefront route contract: PASS (booking/cart routes valid; collection shells remain browsable; unpublished mattress and legacy product links fail closed).');
+console.log('Storefront route contract: PASS (booking-first homepage, cart routes, collection shells, and fail-closed legacy links).');

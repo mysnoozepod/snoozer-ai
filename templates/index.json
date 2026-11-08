@@ -12,12 +12,12 @@
     "image_with_text_hVQzdT": {
       "type": "snooze-hero",
       "settings": {
-        "heading": "Find The Right Mattress Without The Guesswork",
-        "subtext": "Shop online or visit by appointment for a calmer way to choose your sleep environment.",
-        "primary_cta_label": "Take The Snooze Assessment",
-        "primary_cta_link": "shopify://pages/snooze-assessment",
-        "secondary_cta_label": "",
-        "secondary_cta_link": "",
+        "heading": "A Private Way To Find Better Sleep",
+        "subtext": "Book a private Snooze Session to compare mattresses and complete sleep systems with clear, personal guidance.",
+        "primary_cta_label": "Book a Snooze Session",
+        "primary_cta_link": "shopify://pages/book-a-snooze-session",
+        "secondary_cta_label": "Explore Mattresses",
+        "secondary_cta_link": "shopify://collections/mattresses",
         "hero_image": "shopify://shop_images/STMAM455QQAB-MM12QQPO38GH-polariscoolsyncmattressandbase-ENraisedprofileWEB1715614443_original_0c19bfe5-4af4-4552-9889-853e8bd6abda.jpg"
       }
     },
@@ -37,7 +37,7 @@
           "settings": {
             "icon": "question_mark",
             "title": "Get Clear Guidance",
-            "short_text": "Use the header HUD to narrow comfort, support, cooling, and fit."
+            "short_text": "Compare comfort, support, cooling, and fit with help when you want it."
           }
         },
         "value-3": {
@@ -64,8 +64,8 @@
     "guided-shopping": {
       "type": "snoozepod-guided-shopping-links",
       "settings": {
-        "heading": "Start With A Guided Tool",
-        "intro": "Build a complete sleep system, narrow your mattress direction, or prepare what you want to test during a private Snooze Session."
+        "heading": "Optional Sleep Tools",
+        "intro": "Use a guided tool when it helps you prepare, compare, or organize questions before a private Snooze Session."
       }
     },
     "featured_collection_666q7i": {
@@ -78,13 +78,49 @@
         "padding_bottom": 36
       }
     },
+    "mattress-showcase": {
+      "type": "snoozepod-mattress-showcase",
+      "blocks": {
+        "s7": { "type": "mattress", "settings": { "product": "12-inch-memory-foam-mattress", "model": "", "copy": "A responsive memory-foam starting point with cooling and pressure-relieving materials." } },
+        "h6": { "type": "mattress", "settings": { "product": "12-inch-hybrid-mattress", "model": "", "copy": "A plush pillowtop hybrid that combines conforming comfort with responsive support." } },
+        "m3": { "type": "mattress", "settings": { "product": "12-inch-dual-comfort-mattress", "model": "", "copy": "A modular mattress designed to support an independent comfort direction for each sleeper." } },
+        "m5": { "type": "mattress", "settings": { "product": "14-inch-dual-comfort-mattress", "model": "", "copy": "A taller modular design for couples comparing independent comfort and support preferences." } }
+      },
+      "block_order": ["s7", "h6", "m3", "m5"],
+      "settings": {
+        "eyebrow": "Explore our mattresses",
+        "heading": "Compare the mattress lineup",
+        "intro": "Start online by comparing memory foam, hybrid, and two Dual Comfort profiles, then experience the meaningful differences during a private visit.",
+        "shop_label": "Shop all mattresses",
+        "shop_link": "shopify://collections/mattresses",
+        "booking_label": "Book a Snooze Session",
+        "booking_link": "shopify://pages/book-a-snooze-session",
+        "color_scheme": "scheme-1",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    },
+    "meet-snoozer": {
+      "type": "snoozepod-meet-snoozer",
+      "settings": {
+        "eyebrow": "Meet Snoozer",
+        "heading": "Guidance when you want it",
+        "copy": "Ask about comfort, cooling, support, products, or how to prepare for your private showroom visit.",
+        "button_label": "Ask Snoozer",
+        "booking_label": "Book a Snooze Session",
+        "booking_link": "shopify://pages/book-a-snooze-session",
+        "image_alt": "Snoozer shopping assistant",
+        "padding_top": 32,
+        "padding_bottom": 32
+      }
+    },
     "image_with_text_wUxjfL": {
       "type": "image-with-text",
       "blocks": {
         "heading_PLPUkK": {
           "type": "heading",
           "settings": {
-            "heading": "Try It In A Private Showroom Visit",
+            "heading": "Your Private Snooze Session",
             "heading_size": "h1"
           }
         },
@@ -98,7 +134,7 @@
         "button_H8Rdhw": {
           "type": "button",
           "settings": {
-            "button_label": "Plan Your Snooze Session",
+            "button_label": "Book a Snooze Session",
             "button_link": "shopify://pages/book-a-snooze-session",
             "button_style_secondary": false
           }
@@ -305,10 +341,12 @@
   "order": [
     "image_with_text_hVQzdT",
     "value-strip",
+    "image_with_text_wUxjfL",
+    "mattress-showcase",
+    "snoozepod_environment_GYx7gN",
+    "meet-snoozer",
     "guided-shopping",
     "featured_collection_666q7i",
-    "image_with_text_wUxjfL",
-    "snoozepod_environment_GYx7gN",
     "snoozepod_final_build_cta_K8nqLs",
     "snoozepod_trust_strip_F6kqDr"
   ]

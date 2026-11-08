@@ -1,0 +1,49 @@
+{%- style -%}
+  .meet-snoozer-{{ section.id }} { padding: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px 0 {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px; }
+  .meet-snoozer-{{ section.id }} .meet-snoozer__panel { display: grid; gap: 2rem; align-items: center; padding: 2.4rem; border-radius: 2.4rem; background: #071a44; color: #fff; overflow: hidden; }
+  .meet-snoozer-{{ section.id }} .meet-snoozer__content { display: grid; gap: 1rem; max-width: 70rem; }
+  .meet-snoozer-{{ section.id }} .meet-snoozer__eyebrow, .meet-snoozer-{{ section.id }} .meet-snoozer__heading, .meet-snoozer-{{ section.id }} .meet-snoozer__copy { margin: 0; }
+  .meet-snoozer-{{ section.id }} .meet-snoozer__eyebrow { color: rgba(255,255,255,.7); font-size: 1.2rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  .meet-snoozer-{{ section.id }} .meet-snoozer__heading { color: #fff; font-size: clamp(3rem, 5vw, 5rem); line-height: 1.04; letter-spacing: -.035em; }
+  .meet-snoozer-{{ section.id }} .meet-snoozer__copy { color: rgba(255,255,255,.82); font-size: 1.65rem; line-height: 1.55; }
+  .meet-snoozer-{{ section.id }} .meet-snoozer__actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: .6rem; }
+  .meet-snoozer-{{ section.id }} .meet-snoozer__button { min-height: 4.8rem; border-color: #fff; background: #fff; color: #071a44; }
+  .meet-snoozer-{{ section.id }} .meet-snoozer__link { display: inline-flex; align-items: center; min-height: 4.8rem; padding: 0 1.6rem; color: #fff; font-weight: 700; }
+  .meet-snoozer-{{ section.id }} .meet-snoozer__avatar { width: min(18rem, 48vw); height: auto; justify-self: center; filter: drop-shadow(0 1.2rem 2.6rem rgba(0,0,0,.2)); }
+  @media screen and (min-width: 750px) { .meet-snoozer-{{ section.id }} { padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px; } .meet-snoozer-{{ section.id }} .meet-snoozer__panel { grid-template-columns: minmax(0, 1fr) auto; padding: 3.6rem 4.2rem; } }
+{%- endstyle -%}
+
+<section class="meet-snoozer meet-snoozer-{{ section.id }}">
+  <div class="page-width">
+    <div class="meet-snoozer__panel">
+      <div class="meet-snoozer__content">
+        {%- if section.settings.eyebrow != blank -%}<p class="meet-snoozer__eyebrow">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
+        {%- if section.settings.heading != blank -%}<h2 class="meet-snoozer__heading">{{ section.settings.heading | escape }}</h2>{%- endif -%}
+        {%- if section.settings.copy != blank -%}<p class="meet-snoozer__copy">{{ section.settings.copy | escape }}</p>{%- endif -%}
+        <div class="meet-snoozer__actions">
+          <button type="button" class="button meet-snoozer__button" data-snoozer-trigger data-snoozer-source="homepage-meet-snoozer">{{ section.settings.button_label | escape }}</button>
+          <a class="meet-snoozer__link" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}">{{ section.settings.booking_label | escape }} <span aria-hidden="true">&nbsp;&rarr;</span></a>
+        </div>
+      </div>
+      <img class="meet-snoozer__avatar" src="{{ 'snoozer-avatar.png' | asset_url }}" width="220" height="220" loading="lazy" alt="{{ section.settings.image_alt | escape }}">
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Meet Snoozer",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Meet Snoozer" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Guidance when you want it" },
+    { "type": "textarea", "id": "copy", "label": "Text", "default": "Ask about comfort, cooling, support, products, or how to prepare for your private showroom visit." },
+    { "type": "text", "id": "button_label", "label": "Snoozer button label", "default": "Ask Snoozer" },
+    { "type": "text", "id": "booking_label", "label": "Booking link label", "default": "Book a Snooze Session" },
+    { "type": "url", "id": "booking_link", "label": "Booking link" },
+    { "type": "text", "id": "image_alt", "label": "Image alt text", "default": "Snoozer shopping assistant" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Top padding", "default": 32 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Bottom padding", "default": 32 }
+  ],
+  "presets": [{ "name": "Meet Snoozer" }]
+}
+{% endschema %}

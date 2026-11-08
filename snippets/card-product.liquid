@@ -187,7 +187,7 @@
                 <span class="card-benefit">{{ benefit_3 }}</span>
               </div>
             {%- else -%}
-              {%- if show_vendor -%}
+              {%- if show_vendor and card_product.metafields.custom.product_contract.value != 'mattress' and card_product.type != 'Mattress' -%}
                 <span class="visually-hidden">{{ 'accessibility.vendor' | t }}</span>
                 <div class="caption-with-letter-spacing light">{{ card_product.vendor }}</div>
               {%- endif -%}

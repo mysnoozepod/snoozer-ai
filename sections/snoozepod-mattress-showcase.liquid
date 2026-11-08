@@ -1,0 +1,221 @@
+{%- style -%}
+  .mattress-showcase-{{ section.id }} {
+    padding: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px 0 {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    background: rgb(var(--color-background));
+    color: rgb(var(--color-foreground));
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase__header {
+    display: grid;
+    gap: 1rem;
+    max-width: 72rem;
+    margin-bottom: 2.4rem;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase__eyebrow,
+  .mattress-showcase-{{ section.id }} .mattress-showcase__heading,
+  .mattress-showcase-{{ section.id }} .mattress-showcase__intro,
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__title,
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__copy {
+    margin: 0;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase__eyebrow {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(var(--color-foreground), 0.68);
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase__heading {
+    font-size: clamp(3rem, 5vw, 5.2rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase__intro {
+    max-width: 64rem;
+    color: rgba(var(--color-foreground), 0.74);
+    font-size: 1.7rem;
+    line-height: 1.55;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card {
+    height: 100%;
+    overflow: hidden;
+    border: 0.1rem solid rgba(var(--color-foreground), 0.1);
+    border-radius: 2rem;
+    background: #fff;
+    box-shadow: 0 1.2rem 3rem rgba(7, 26, 68, 0.06);
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__link {
+    display: grid;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__media {
+    position: relative;
+    min-height: 18rem;
+    overflow: hidden;
+    background: #f4f6fa;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__image {
+    width: 100%;
+    height: 100%;
+    min-height: 18rem;
+    object-fit: cover;
+    transition: transform 220ms ease;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__link:hover .mattress-showcase-card__image {
+    transform: scale(1.025);
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__body {
+    display: grid;
+    gap: 0.7rem;
+    align-content: start;
+    padding: 1.6rem;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__model {
+    color: rgba(var(--color-foreground), 0.62);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__title {
+    font-size: 2.2rem;
+    line-height: 1.15;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__copy {
+    color: rgba(var(--color-foreground), 0.72);
+    font-size: 1.45rem;
+    line-height: 1.5;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase-card__cta {
+    margin-top: 0.5rem;
+    color: rgb(var(--color-button));
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  .mattress-showcase-{{ section.id }} .mattress-showcase__footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2.4rem;
+  }
+
+  @media screen and (min-width: 750px) {
+    .mattress-showcase-{{ section.id }} {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+
+    .mattress-showcase-{{ section.id }} .mattress-showcase__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1.8rem;
+    }
+
+    .mattress-showcase-{{ section.id }} .mattress-showcase-card__media,
+    .mattress-showcase-{{ section.id }} .mattress-showcase-card__image {
+      min-height: 24rem;
+    }
+  }
+
+  @media screen and (max-width: 420px) {
+    .mattress-showcase-{{ section.id }} .mattress-showcase__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+{%- endstyle -%}
+
+<section class="mattress-showcase mattress-showcase-{{ section.id }} color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width">
+    <div class="mattress-showcase__header">
+      {%- if section.settings.eyebrow != blank -%}<p class="mattress-showcase__eyebrow">{{ section.settings.eyebrow | escape }}</p>{%- endif -%}
+      {%- if section.settings.heading != blank -%}<h2 class="mattress-showcase__heading">{{ section.settings.heading | escape }}</h2>{%- endif -%}
+      {%- if section.settings.intro != blank -%}<p class="mattress-showcase__intro">{{ section.settings.intro | escape }}</p>{%- endif -%}
+    </div>
+
+    <ul class="mattress-showcase__grid" role="list">
+      {%- for block in section.blocks -%}
+        {%- assign showcase_product = block.settings.product -%}
+        {%- if showcase_product != blank -%}
+          <li {{ block.shopify_attributes }}>
+            <article class="mattress-showcase-card">
+              <a class="mattress-showcase-card__link" href="{{ showcase_product.url }}">
+                <div class="mattress-showcase-card__media">
+                  {%- if showcase_product.featured_media != blank -%}
+                    {{ showcase_product.featured_media | image_url: width: 900 | image_tag: class: 'mattress-showcase-card__image', widths: '320, 480, 640, 900', sizes: '(min-width: 750px) 25vw, 50vw', loading: 'lazy', alt: showcase_product.featured_media.alt | default: showcase_product.title }}
+                  {%- endif -%}
+                </div>
+                <div class="mattress-showcase-card__body">
+                  {%- if block.settings.model != blank -%}<span class="mattress-showcase-card__model">{{ block.settings.model | escape }}</span>{%- endif -%}
+                  <h3 class="mattress-showcase-card__title">{{ showcase_product.title | escape }}</h3>
+                  {%- if block.settings.copy != blank -%}<p class="mattress-showcase-card__copy">{{ block.settings.copy | escape }}</p>{%- endif -%}
+                  <span class="mattress-showcase-card__cta">View mattress <span aria-hidden="true">&rarr;</span></span>
+                </div>
+              </a>
+            </article>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+
+    <div class="mattress-showcase__footer">
+      <a class="button button--secondary" href="{{ section.settings.shop_link | default: '/collections/mattresses' }}">{{ section.settings.shop_label | escape }}</a>
+      <a class="button" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}">{{ section.settings.booking_label | escape }}</a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Mattress showcase",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Explore our mattresses" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Four ways to start your comfort search" },
+    { "type": "textarea", "id": "intro", "label": "Introduction", "default": "Compare the current mattress lineup online, then book a private session to experience the differences in person." },
+    { "type": "text", "id": "shop_label", "label": "Shop button label", "default": "Shop all mattresses" },
+    { "type": "url", "id": "shop_link", "label": "Shop button link" },
+    { "type": "text", "id": "booking_label", "label": "Booking button label", "default": "Book a Snooze Session" },
+    { "type": "url", "id": "booking_link", "label": "Booking button link" },
+    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Top padding", "default": 48 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 4, "unit": "px", "label": "Bottom padding", "default": 48 }
+  ],
+  "blocks": [
+    {
+      "type": "mattress",
+      "name": "Mattress",
+      "settings": [
+        { "type": "product", "id": "product", "label": "Product" },
+        { "type": "text", "id": "model", "label": "Model label" },
+        { "type": "textarea", "id": "copy", "label": "Short description" }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Mattress showcase" }]
+}
+{% endschema %}

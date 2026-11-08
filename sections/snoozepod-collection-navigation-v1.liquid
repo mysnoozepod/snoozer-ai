@@ -123,10 +123,10 @@
       {%- if visible_collection_count > 0 -%}
         <div class="snoozepod-collection-navigation__grid">
           {%- if direct_product_navigation and collection.handle == 'mattresses' -%}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['bedgear-s7-12-memory-foam'] %}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['bedgear-h6-12-hybrid'] %}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['bedgear-m3-12-dual-comfort'] %}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['bedgear-m5-14-dual-comfort'] %}
+            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['12-inch-memory-foam-mattress'] %}
+            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['12-inch-hybrid-mattress'] %}
+            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['12-inch-dual-comfort-mattress'] %}
+            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['14-inch-dual-comfort-mattress'] %}
           {%- elsif direct_product_navigation and collection.handle == 'adjustable-bases' -%}
             {% render 'snoozepod-product-navigation-card', navigation_product: all_products['flex-l-adjustable-base'] %}
             {% render 'snoozepod-product-navigation-card', navigation_product: all_products['flex-lsx-adjustable-base'] %}

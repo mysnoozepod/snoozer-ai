@@ -26,17 +26,34 @@ if (before.summary.taggedProducts !== 0 || before.summary.automatedCollections !
   fail('The before snapshot does not match the expected untagged 18-manual-collection baseline.');
 }
 
+const customerHandleMigrations = {
+  'bedgear-s7-12-memory-foam': '12-inch-memory-foam-mattress',
+  'bedgear-h6-12-hybrid': '12-inch-hybrid-mattress',
+  'bedgear-m3-12-dual-comfort': '12-inch-dual-comfort-mattress',
+  'bedgear-m5-14-dual-comfort': '14-inch-dual-comfort-mattress',
+};
+const customerTitles = {
+  '12-inch-memory-foam-mattress': '12" Memory Foam Mattress',
+  '12-inch-hybrid-mattress': '12" Hybrid Mattress',
+  '12-inch-dual-comfort-mattress': '12" Dual Comfort Mattress',
+  '14-inch-dual-comfort-mattress': '14" Dual Comfort Mattress',
+};
+const baselineProducts = before.products.nodes.map((product) => {
+  const handle = customerHandleMigrations[product.handle] || product.handle;
+  return { ...product, handle, title: customerTitles[handle] || product.title };
+});
+
 const groups = {
   mattresses: [
-    'bedgear-s7-12-memory-foam',
-    'bedgear-h6-12-hybrid',
-    'bedgear-m3-12-dual-comfort',
-    'bedgear-m5-14-dual-comfort',
+    '12-inch-memory-foam-mattress',
+    '12-inch-hybrid-mattress',
+    '12-inch-dual-comfort-mattress',
+    '14-inch-dual-comfort-mattress',
   ],
-  s7: ['bedgear-s7-12-memory-foam'],
-  h6: ['bedgear-h6-12-hybrid'],
-  m3: ['bedgear-m3-12-dual-comfort'],
-  m5: ['bedgear-m5-14-dual-comfort'],
+  s7: ['12-inch-memory-foam-mattress'],
+  h6: ['12-inch-hybrid-mattress'],
+  m3: ['12-inch-dual-comfort-mattress'],
+  m5: ['14-inch-dual-comfort-mattress'],
   'adjustable-bases': ['flex-l-adjustable-base', 'flex-lsx-adjustable-base', 'flex-sh-adjustable-base'],
   'flex-l': ['flex-l-adjustable-base'],
   'flex-lsx': ['flex-lsx-adjustable-base'],
@@ -122,7 +139,7 @@ groups.bedding = uniqueSorted([
   ...groups['mattress-toppers'],
 ]);
 
-const expectedHandles = new Set(before.products.nodes.map((product) => product.handle));
+const expectedHandles = new Set(baselineProducts.map((product) => product.handle));
 for (const [group, handles] of Object.entries(groups)) {
   for (const handle of handles) if (!expectedHandles.has(handle)) fail(`Unknown product ${handle} in ${group}.`);
 }
@@ -177,10 +194,10 @@ const subcategoryTags = {
 };
 
 const verifiedAttributeTags = {
-  'bedgear-s7-12-memory-foam': ['comfort:memory-foam', 'material:memory-foam', 'feature:foam-construction'],
-  'bedgear-h6-12-hybrid': ['comfort:hybrid', 'feature:hybrid-construction'],
-  'bedgear-m3-12-dual-comfort': ['comfort:dual-comfort', 'feature:dual-comfort', 'feature:independent-side-comfort', 'feature:modular-comfort'],
-  'bedgear-m5-14-dual-comfort': ['comfort:dual-comfort', 'feature:dual-comfort', 'feature:independent-side-comfort', 'feature:modular-comfort'],
+  '12-inch-memory-foam-mattress': ['comfort:memory-foam', 'material:memory-foam', 'feature:foam-construction'],
+  '12-inch-hybrid-mattress': ['comfort:hybrid', 'feature:hybrid-construction'],
+  '12-inch-dual-comfort-mattress': ['comfort:dual-comfort', 'feature:dual-comfort', 'feature:independent-side-comfort', 'feature:modular-comfort'],
+  '14-inch-dual-comfort-mattress': ['comfort:dual-comfort', 'feature:dual-comfort', 'feature:independent-side-comfort', 'feature:modular-comfort'],
   'flex-l-adjustable-base': ['feature:adjustable'],
   'flex-lsx-adjustable-base': ['feature:adjustable'],
   'flex-sh-adjustable-base': ['feature:adjustable', 'feature:split-head'],
@@ -222,12 +239,12 @@ const verifiedAttributeTags = {
   'watson-upholstered-platform-base': ['feature:upholstered'],
 };
 
-const membershipsByProduct = new Map(before.products.nodes.map((product) => [product.handle, []]));
+const membershipsByProduct = new Map(baselineProducts.map((product) => [product.handle, []]));
 for (const [collectionHandle, handles] of Object.entries(groups)) {
   for (const handle of handles) membershipsByProduct.get(handle).push(collectionHandle);
 }
 
-const products = before.products.nodes.map((product) => {
+const products = baselineProducts.map((product) => {
   const memberships = uniqueSorted(membershipsByProduct.get(product.handle));
   const categories = uniqueSorted(memberships.map((handle) => categoryByCollection[handle]));
   if (categories.length !== 1) fail(`${product.handle} resolves to ${categories.length} categories.`);
@@ -273,7 +290,7 @@ const imageFallbackCollections = {
 };
 const collections = Object.entries(groups).map(([handle, expectedProducts]) => {
   const current = currentCollections.get(handle);
-  const sourceProduct = before.products.nodes.find((product) => expectedProducts.includes(product.handle) && product.media.nodes.length);
+  const sourceProduct = baselineProducts.find((product) => expectedProducts.includes(product.handle) && product.media.nodes.length);
   const fallbackCollection = currentCollections.get(imageFallbackCollections[handle]);
   return {
     handle,
@@ -321,8 +338,8 @@ const manifest = {
   ]),
   menu,
   dualComfort: {
-    productHandles: ['bedgear-m3-12-dual-comfort', 'bedgear-m5-14-dual-comfort'],
-    values: ['0.0', '1.0', '2.0', '3.0'],
+    productHandles: ['12-inch-dual-comfort-mattress', '14-inch-dual-comfort-mattress'],
+    values: ['Soft', 'Medium Soft', 'Medium Firm', 'Firm'],
     mappingSource: 'Variant metafields custom.left_comfort and custom.right_comfort when both are verified and attached to an orderable variant.',
     currentOrderableMappings: 0,
     failClosed: true,

@@ -70,10 +70,10 @@ export const mainMenuContract = {
     {
       title: 'Mattresses', type: 'COLLECTION', collection: 'mattresses', items: [
         { title: 'Shop All Mattresses', type: 'COLLECTION', collection: 'mattresses' },
-        productLink('S7', 'bedgear-s7-12-memory-foam'),
-        productLink('H6', 'bedgear-h6-12-hybrid'),
-        productLink('M3', 'bedgear-m3-12-dual-comfort'),
-        productLink('M5', 'bedgear-m5-14-dual-comfort'),
+        productLink('12-inch Memory Foam', '12-inch-memory-foam-mattress'),
+        productLink('12-inch Hybrid', '12-inch-hybrid-mattress'),
+        productLink('12-inch Dual Comfort', '12-inch-dual-comfort-mattress'),
+        productLink('14-inch Dual Comfort', '14-inch-dual-comfort-mattress'),
         pageLink('Mattress Finder', 'mattress-finder'),
         pageLink('Dual Comfort Planner', 'dual-comfort-planner'),
         pageLink('Mattress Buying Guides', 'how-to-choose-the-right-mattress', [

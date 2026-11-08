@@ -22,10 +22,17 @@ export const bedgearProductHandles = Object.freeze([
   'solid-white-duvet-sham-set',
   'light-grey-racetrack-duvet-sham-set',
   'react-pro-performance-topper',
-  'bedgear-s7-12-memory-foam',
-  'bedgear-h6-12-hybrid',
-  'bedgear-m3-12-dual-comfort',
-  'bedgear-m5-14-dual-comfort',
+  '12-inch-memory-foam-mattress',
+  '12-inch-hybrid-mattress',
+  '12-inch-dual-comfort-mattress',
+  '14-inch-dual-comfort-mattress',
+]);
+
+export const mattressCustomerFacingHandles = Object.freeze([
+  '12-inch-memory-foam-mattress',
+  '12-inch-hybrid-mattress',
+  '12-inch-dual-comfort-mattress',
+  '14-inch-dual-comfort-mattress',
 ]);
 
 export const bedgearBrandParagraphs = Object.freeze([
@@ -46,25 +53,25 @@ export const bedgearBrandDescriptionHtml = [
 const officialCopy = (sourceUrl, summary, features) => Object.freeze({ sourceUrl, summary, features: Object.freeze(features) });
 
 export const bedgearOfficialProductCopy = Object.freeze({
-  'bedgear-s7-12-memory-foam': officialCopy(
+  '12-inch-memory-foam-mattress': officialCopy(
     'https://bedgear.com/products/s-performance-mattresses',
-    'The S7 is the plush model in BEDGEAR\'s S Performance mattress family. Its all-foam construction pairs conforming pressure relief with cooling and airflow technologies designed to limit heat buildup.',
-    ['Plush comfort direction', 'Ver-Tex cooling cover', 'Ventilated React foam and airflow transition layer', 'Air-X breathable side panels'],
+    'This 12-inch all-foam mattress pairs conforming pressure relief with cooling and airflow-focused materials designed to limit heat buildup.',
+    ['Plush comfort direction', 'Cooling cover', 'Ventilated comfort foam', 'Breathable side panels'],
   ),
-  'bedgear-h6-12-hybrid': officialCopy(
+  '12-inch-hybrid-mattress': officialCopy(
     'https://bedgear.com/products/h-hybrid-performance-pillowtop-mattress',
-    'The H6 is the plush H Performance pillowtop option, combining a conforming React Blend pillowtop with responsive hybrid support and cooling, breathable materials.',
-    ['Plush comfort direction', 'Integrated React Blend pillowtop', 'Hybrid suspension support', 'Ver-Tex cover and Air-X airflow features'],
+    'This 12-inch pillowtop mattress combines conforming comfort with responsive hybrid support and cooling, breathable materials.',
+    ['Plush comfort direction', 'Integrated pillowtop', 'Hybrid suspension support', 'Cooling, breathable construction'],
   ),
-  'bedgear-m3-12-dual-comfort': officialCopy(
+  '12-inch-dual-comfort-mattress': officialCopy(
     'https://bedgear.com/products/m3-performance-mattress',
-    'The M3 uses a modular design with interchangeable support units so each sleeper can choose an independent comfort direction. Its removable cooling cover and airflow-focused chassis are designed for easier care and breathable comfort.',
-    ['Independent left and right comfort', 'Interchangeable suspension units', 'Removable, washable Ver-Tex cover', 'Air-X chassis and air vents'],
+    'This 12-inch modular mattress uses interchangeable support components so each sleeper can choose an independent comfort direction. Its removable cooling cover and airflow-focused construction support easier care and breathable comfort.',
+    ['Independent left and right comfort', 'Interchangeable support components', 'Removable, washable cooling cover', 'Airflow-focused chassis and vents'],
   ),
-  'bedgear-m5-14-dual-comfort': officialCopy(
+  '14-inch-dual-comfort-mattress': officialCopy(
     'https://bedgear.com/products/m5-performance-mattress',
-    'The M5 builds on BEDGEAR\'s modular dual-comfort design with a taller profile and an enhanced React comfort layer for deeper conforming pressure relief. Each side can be configured independently.',
-    ['Independent left and right comfort', 'Enhanced React comfort layer', 'Interchangeable suspension units', 'Removable Ver-Tex cooling cover and Air-X airflow'],
+    'This 14-inch modular mattress adds a taller comfort profile for deeper conforming pressure relief while allowing each side to be configured independently.',
+    ['Independent left and right comfort', 'Enhanced comfort layer', 'Interchangeable support components', 'Removable cooling cover and airflow features'],
   ),
   'flex-l-adjustable-base': officialCopy(
     'https://bedgear.com/products/flex-l-adjustable-base',
@@ -141,8 +148,11 @@ export const bedgearOfficialProductCopy = Object.freeze({
 export function bedgearOfficialProductDescriptionHtml(handle) {
   const copy = bedgearOfficialProductCopy[handle];
   if (!copy) return '';
+  const marker = mattressCustomerFacingHandles.includes(handle)
+    ? 'data-mysnoozepod-mattress-product-copy="2026-11-08"'
+    : 'data-mysnoozepod-bedgear-product-copy="2026-11-02"';
   return [
-    '<div data-mysnoozepod-bedgear-product-copy="2026-11-02">',
+    `<div ${marker}>`,
     '<h3>Product Overview</h3>',
     `<p>${copy.summary}</p>`,
     '<h4>Key Features</h4>',
