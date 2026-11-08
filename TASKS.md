@@ -18,7 +18,7 @@ Queue state: The four mattress products now use product-led customer names, gene
 - **Status:** COMPLETE IN SHOPIFY AND EXISTING UNPUBLISHED THEME — all four mattress titles, handles, descriptions, navigation labels, homepage cards, media alt text, and Product Page v1 surfaces now use generic product-led identities. Old product URLs redirect to their new canonical handles.
 - **Commerce safety:** Manufacturer, model, SKU, and provenance remain available in internal Shopify data. Product/variant IDs, prices, status, inventory, collections, and sellability were preserved. Dual Comfort ordering still fails closed until an exact size + left + right sell-unit mapping exists.
 - **Validation:** 18 focused naming assertions; 40 product-knowledge assertions; catalog, navigation, website-experience, guided-shopping, Product Page v1, cart, builder-contract, media, route, and storefront-skeleton suites; JavaScript syntax; authenticated unpublished-theme checks of the homepage, product page, comfort controls, media text, and legacy-handle redirect.
-- **Safety:** Published theme `139460542525` was not modified. No order, deployment, commit, or push occurred.
+- **Safety:** Published theme `139460542525` was not modified. No order, deployment, or theme publication occurred. The completed repository changes were committed and pushed to `origin/main` as directed.
 - **Evidence:** `docs/catalog/MATTRESS_CUSTOMER_NAMING_SHOPIFY_READBACK.json`; latest recovery snapshot `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\mattress-customer-naming\2026-11-08T20-44-50-716Z`.
 
 ## Phase 0 — completed discovery and control

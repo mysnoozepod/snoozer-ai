@@ -7,7 +7,7 @@ Current phase: Mattress naming correction completed; exact Dual Comfort sell-uni
 
 ## Customer-facing mattress naming checkpoint — 2026-11-08
 
-- Continued on existing `main`; preserved the existing dirty working tree. No reset, branch switch, commit, push, deployment, or theme publication occurred.
+- Continued on existing `main`; preserved and completed the existing working-tree changes. No reset, branch switch, deployment, or theme publication occurred. The completed repository changes were committed and pushed to `origin/main` as directed.
 - Four Shopify mattress identities are now customer-facing and product-led: `12\" Memory Foam Mattress`, `12\" Hybrid Mattress`, `12\" Dual Comfort Mattress`, and `14\" Dual Comfort Mattress`.
 - Canonical handles are `12-inch-memory-foam-mattress`, `12-inch-hybrid-mattress`, `12-inch-dual-comfort-mattress`, and `14-inch-dual-comfort-mattress`. Shopify redirects from the four former model-based handles were created and verified in the storefront.
 - Customer-visible titles, descriptions, navigation, homepage cards, collection/product vendor treatment, media alt text, and related-product surfaces no longer use BEDGEAR or S7/H6/M3/M5 for these mattresses. Internal manufacturer/model, SKU, source provenance, and operational mappings were preserved.
