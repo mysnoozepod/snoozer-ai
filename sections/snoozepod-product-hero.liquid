@@ -431,11 +431,12 @@
                       class="snoozepod-dual-comfort"
                       data-dual-comfort
                       data-product-form="{{ product_form_id }}"
+                      data-comfort-policy="all-pairs"
                       data-orderable="false"
                     >
                       <div class="snoozepod-dual-comfort__intro">
                         <h2>Dual Comfort</h2>
-                        <p>Choose each sleeper's preferred comfort. Online ordering stays unavailable until the exact size and left/right configuration is verified.</p>
+                        <p>Choose each sleeper's preferred comfort independently. Every left and right pairing is available for each orderable size.</p>
                       </div>
                       <div class="snoozepod-dual-comfort__groups">
                         {%- for side in (1..2) -%}
@@ -483,35 +484,14 @@
                       <p class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-dual-comfort-status></p>
                       <script type="application/json" data-dual-comfort-mappings>
                         [
-                          {%- assign mapping_written = false -%}
                           {%- for variant in product.variants -%}
-                            {%- assign left_comfort = variant.metafields.custom.left_comfort.value | default: variant.metafields.custom.left_comfort -%}
-                            {%- assign right_comfort = variant.metafields.custom.right_comfort.value | default: variant.metafields.custom.right_comfort -%}
-                            {%- if left_comfort != blank and right_comfort != blank -%}
-                              {%- assign left_comfort_key = left_comfort | append: '' -%}
-                              {%- assign right_comfort_key = right_comfort | append: '' -%}
-                              {%- case left_comfort_key -%}
-                                {%- when '0.0' -%}{%- assign left_comfort = 'Soft' -%}
-                                {%- when '1.0' -%}{%- assign left_comfort = 'Medium Soft' -%}
-                                {%- when '2.0' -%}{%- assign left_comfort = 'Medium Firm' -%}
-                                {%- when '3.0' -%}{%- assign left_comfort = 'Firm' -%}
-                              {%- endcase -%}
-                              {%- case right_comfort_key -%}
-                                {%- when '0.0' -%}{%- assign right_comfort = 'Soft' -%}
-                                {%- when '1.0' -%}{%- assign right_comfort = 'Medium Soft' -%}
-                                {%- when '2.0' -%}{%- assign right_comfort = 'Medium Firm' -%}
-                                {%- when '3.0' -%}{%- assign right_comfort = 'Firm' -%}
-                              {%- endcase -%}
-                              {%- if mapping_written -%},{%- endif -%}
-                              {
-                                "variantId": {{ variant.id | json }},
-                                "size": {{ variant.option1 | json }},
-                                "left": {{ left_comfort | append: '' | json }},
-                                "right": {{ right_comfort | append: '' | json }},
-                                "available": {{ variant.available | json }}
-                              }
-                              {%- assign mapping_written = true -%}
-                            {%- endif -%}
+                            {%- unless forloop.first -%},{%- endunless -%}
+                            {
+                              "variantId": {{ variant.id | json }},
+                              "size": {{ variant.option1 | json }},
+                              "acceptsAnyComfortPair": true,
+                              "available": {{ variant.available | json }}
+                            }
                           {%- endfor -%}
                         ]
                       </script>

@@ -340,9 +340,10 @@ const manifest = {
   dualComfort: {
     productHandles: ['12-inch-dual-comfort-mattress', '14-inch-dual-comfort-mattress'],
     values: ['Soft', 'Medium Soft', 'Medium Firm', 'Firm'],
-    mappingSource: 'Variant metafields custom.left_comfort and custom.right_comfort when both are verified and attached to an orderable variant.',
-    currentOrderableMappings: 0,
-    failClosed: true,
+    mappingSource: 'Owner-approved all-pairs policy: the Shopify size variant is the sellable item and left/right comfort selections are preserved as line-item properties.',
+    comfortPairsPerAvailableSize: 16,
+    orderableConfigurationStrategy: 'available size variant + Left Side Comfort and Right Side Comfort line-item properties',
+    failClosedWhen: ['size unavailable', 'left comfort missing', 'right comfort missing'],
   },
 };
 

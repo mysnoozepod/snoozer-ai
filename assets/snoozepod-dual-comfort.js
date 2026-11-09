@@ -18,9 +18,10 @@
   }
 
   function resolveMapping(mappings, { size, left, right }) {
-    if (!size || !left || !right) return null;
-    return mappings.find((entry) => entry.available !== false && normalize(entry.size) === normalize(size)
-      && entry.left === left && entry.right === right) || null;
+    if (!size || !VALUES.includes(left) || !VALUES.includes(right)) return null;
+    return mappings.find((entry) => entry.available !== false
+      && normalize(entry.size) === normalize(size)
+      && (entry.acceptsAnyComfortPair === true || (entry.left === left && entry.right === right))) || null;
   }
 
   globalThis.SnoozePodDualComfortContract = { VALUES: [...VALUES], resolveMapping };
@@ -82,7 +83,7 @@
       if (announceChange) {
         if (!left || !right) announce('Select a comfort level for both sides.');
         else if (!size) announce('Select a mattress size.');
-        else announce(`Left ${left} and right ${right} comfort for ${size} is not yet verified for online ordering. Book a Snooze Session for help.`);
+        else announce(`${size} is currently unavailable for online ordering.`);
       }
     };
 

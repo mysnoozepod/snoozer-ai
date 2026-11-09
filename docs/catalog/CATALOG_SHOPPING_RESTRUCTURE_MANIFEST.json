@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-11-03T00:11:27.176Z",
+  "generatedAt": "2026-11-09T03:34:18.162Z",
   "shop": "mysnoozepodtest.myshopify.com",
   "catalogBaseline": {
     "products": 43,
@@ -943,8 +943,8 @@
     {
       "id": "gid://shopify/Product/8100282794045",
       "legacyResourceId": "8100282794045",
-      "handle": "bedgear-s7-12-memory-foam",
-      "title": "S7 — 12\" Memory Foam Mattress",
+      "handle": "12-inch-memory-foam-mattress",
+      "title": "12\" Memory Foam Mattress",
       "status": "DRAFT",
       "productType": "Mattress",
       "currentTemplateSuffix": "product-pod-builder",
@@ -967,8 +967,8 @@
     {
       "id": "gid://shopify/Product/8100282826813",
       "legacyResourceId": "8100282826813",
-      "handle": "bedgear-h6-12-hybrid",
-      "title": "H6 — 12\" Hybrid Mattress",
+      "handle": "12-inch-hybrid-mattress",
+      "title": "12\" Hybrid Mattress",
       "status": "DRAFT",
       "productType": "Mattress",
       "currentTemplateSuffix": "product-pod-builder",
@@ -990,8 +990,8 @@
     {
       "id": "gid://shopify/Product/8100282892349",
       "legacyResourceId": "8100282892349",
-      "handle": "bedgear-m3-12-dual-comfort",
-      "title": "M3 — 12\" Dual Comfort Mattress",
+      "handle": "12-inch-dual-comfort-mattress",
+      "title": "12\" Dual Comfort Mattress",
       "status": "DRAFT",
       "productType": "Mattress",
       "currentTemplateSuffix": "product-pod-builder",
@@ -1015,8 +1015,8 @@
     {
       "id": "gid://shopify/Product/8100282925117",
       "legacyResourceId": "8100282925117",
-      "handle": "bedgear-m5-14-dual-comfort",
-      "title": "M5 — 14\" Dual Comfort Mattress",
+      "handle": "14-inch-dual-comfort-mattress",
+      "title": "14\" Dual Comfort Mattress",
       "status": "DRAFT",
       "productType": "Mattress",
       "currentTemplateSuffix": "product-pod-builder",
@@ -1053,10 +1053,10 @@
       },
       "ruleTag": "collection:mattresses",
       "expectedProducts": [
-        "bedgear-h6-12-hybrid",
-        "bedgear-m3-12-dual-comfort",
-        "bedgear-m5-14-dual-comfort",
-        "bedgear-s7-12-memory-foam"
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress"
       ],
       "replacesManualCollectionId": "gid://shopify/Collection/302103527485"
     },
@@ -1074,7 +1074,7 @@
       },
       "ruleTag": "collection:s7",
       "expectedProducts": [
-        "bedgear-s7-12-memory-foam"
+        "12-inch-memory-foam-mattress"
       ],
       "replacesManualCollectionId": null
     },
@@ -1092,7 +1092,7 @@
       },
       "ruleTag": "collection:h6",
       "expectedProducts": [
-        "bedgear-h6-12-hybrid"
+        "12-inch-hybrid-mattress"
       ],
       "replacesManualCollectionId": null
     },
@@ -1110,7 +1110,7 @@
       },
       "ruleTag": "collection:m3",
       "expectedProducts": [
-        "bedgear-m3-12-dual-comfort"
+        "12-inch-dual-comfort-mattress"
       ],
       "replacesManualCollectionId": null
     },
@@ -1128,7 +1128,7 @@
       },
       "ruleTag": "collection:m5",
       "expectedProducts": [
-        "bedgear-m5-14-dual-comfort"
+        "14-inch-dual-comfort-mattress"
       ],
       "replacesManualCollectionId": null
     },
@@ -1722,24 +1722,24 @@
             "collection": "mattresses"
           },
           {
-            "title": "S7",
-            "type": "COLLECTION",
-            "collection": "s7"
+            "title": "12-inch Memory Foam",
+            "type": "PRODUCT",
+            "product": "12-inch-memory-foam-mattress"
           },
           {
-            "title": "H6",
-            "type": "COLLECTION",
-            "collection": "h6"
+            "title": "12-inch Hybrid",
+            "type": "PRODUCT",
+            "product": "12-inch-hybrid-mattress"
           },
           {
-            "title": "M3",
-            "type": "COLLECTION",
-            "collection": "m3"
+            "title": "12-inch Dual Comfort",
+            "type": "PRODUCT",
+            "product": "12-inch-dual-comfort-mattress"
           },
           {
-            "title": "M5",
-            "type": "COLLECTION",
-            "collection": "m5"
+            "title": "14-inch Dual Comfort",
+            "type": "PRODUCT",
+            "product": "14-inch-dual-comfort-mattress"
           },
           {
             "title": "Mattress Finder",
@@ -1792,18 +1792,18 @@
           },
           {
             "title": "Flex L",
-            "type": "COLLECTION",
-            "collection": "flex-l"
+            "type": "PRODUCT",
+            "product": "flex-l-adjustable-base"
           },
           {
             "title": "Flex LSX",
-            "type": "COLLECTION",
-            "collection": "flex-lsx"
+            "type": "PRODUCT",
+            "product": "flex-lsx-adjustable-base"
           },
           {
             "title": "Flex SH",
-            "type": "COLLECTION",
-            "collection": "flex-sh"
+            "type": "PRODUCT",
+            "product": "flex-sh-adjustable-base"
           },
           {
             "title": "Compatibility Checker",
@@ -2095,17 +2095,22 @@
   },
   "dualComfort": {
     "productHandles": [
-      "bedgear-m3-12-dual-comfort",
-      "bedgear-m5-14-dual-comfort"
+      "12-inch-dual-comfort-mattress",
+      "14-inch-dual-comfort-mattress"
     ],
     "values": [
-      "0.0",
-      "1.0",
-      "2.0",
-      "3.0"
+      "Soft",
+      "Medium Soft",
+      "Medium Firm",
+      "Firm"
     ],
-    "mappingSource": "Variant metafields custom.left_comfort and custom.right_comfort when both are verified and attached to an orderable variant.",
-    "currentOrderableMappings": 0,
-    "failClosed": true
+    "mappingSource": "Owner-approved all-pairs policy: the Shopify size variant is the sellable item and left/right comfort selections are preserved as line-item properties.",
+    "comfortPairsPerAvailableSize": 16,
+    "orderableConfigurationStrategy": "available size variant + Left Side Comfort and Right Side Comfort line-item properties",
+    "failClosedWhen": [
+      "size unavailable",
+      "left comfort missing",
+      "right comfort missing"
+    ]
   }
 }

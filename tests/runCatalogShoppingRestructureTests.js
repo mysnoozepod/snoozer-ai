@@ -17,6 +17,12 @@ const baseline = readJson('docs/catalog/catalog-shopping-restructure-before.json
 const hero = read('sections/snoozepod-product-hero.liquid');
 const homepage = read('templates/index.json');
 const dualScript = read('assets/snoozepod-dual-comfort.js');
+const canonicalProductHandle = (handle) => ({
+  'bedgear-s7-12-memory-foam': '12-inch-memory-foam-mattress',
+  'bedgear-h6-12-hybrid': '12-inch-hybrid-mattress',
+  'bedgear-m3-12-dual-comfort': '12-inch-dual-comfort-mattress',
+  'bedgear-m5-14-dual-comfort': '14-inch-dual-comfort-mattress',
+}[handle] || handle);
 
 const context = {
   globalThis: {},
@@ -60,7 +66,7 @@ test('all 25 required collections are automated by one exact collection tag', ()
       appliedDisjunctively: false,
       rules: [{ column: 'TAG', relation: 'EQUALS', condition: expected.ruleTag }],
     });
-    assert.deepEqual(collection.products, [...expected.expectedProducts].sort(), expected.handle);
+    assert.deepEqual(collection.products.map(canonicalProductHandle).sort(), [...expected.expectedProducts].sort(), expected.handle);
     assert(collection.image?.url, `${expected.handle} collection image`);
     assert(collection.categoryNavigation, `${expected.handle} category navigation`);
     assert.deepEqual(
@@ -116,31 +122,34 @@ test('Dual Comfort controls expose independent customer-facing values and cart p
   assert(hero.includes('properties[Left Side Comfort]'));
   assert(hero.includes('properties[Right Side Comfort]'));
   assert(hero.includes('aria-live="polite"'));
-  assert(hero.includes('variant.metafields.custom.left_comfort'));
-  assert(hero.includes('variant.metafields.custom.right_comfort'));
+  assert(hero.includes('data-comfort-policy="all-pairs"'));
+  assert(hero.includes('"acceptsAnyComfortPair": true'));
 });
 
-test('Dual Comfort mapping is exact by size and both sides and rejects unsupported combinations', () => {
+test('Dual Comfort allows all 16 owner-approved comfort pairs for an available size', () => {
   const mappings = [
-    { variantId: 101, size: 'Queen', left: 'Soft', right: 'Firm', available: true },
-    { variantId: 102, size: 'Queen', left: 'Firm', right: 'Soft', available: true },
-    { variantId: 103, size: 'King', left: 'Soft', right: 'Firm', available: false },
+    { variantId: 101, size: 'Queen', acceptsAnyComfortPair: true, available: true },
+    { variantId: 103, size: 'King', acceptsAnyComfortPair: true, available: false },
   ];
-  assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left: 'Soft', right: 'Firm' }).variantId, 101);
-  assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left: 'Firm', right: 'Soft' }).variantId, 102);
-  assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left: 'Medium Soft', right: 'Medium Soft' }), null);
+  for (const left of dual.VALUES) {
+    for (const right of dual.VALUES) {
+      assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left, right }).variantId, 101, `${left} / ${right}`);
+    }
+  }
   assert.equal(dual.resolveMapping(mappings, { size: 'King', left: 'Soft', right: 'Firm' }), null);
   assert.equal(dual.resolveMapping(mappings, { size: '', left: 'Soft', right: 'Firm' }), null);
+  assert.equal(dual.resolveMapping(mappings, { size: 'Queen', left: 'Unknown', right: 'Firm' }), null);
 });
 
-test('Dual Comfort fails closed and blocks form submission without an exact orderable mapping', () => {
+test('Dual Comfort enables complete owner-approved selections and fails closed when incomplete or unavailable', () => {
   assert(dualScript.includes("submit.disabled = true"));
+  assert(dualScript.includes("submit.disabled = false"));
   assert(dualScript.includes("event.preventDefault()"));
   assert(dualScript.includes("root.dataset.orderable !== 'true'"));
   assert(dualScript.includes("if (label) label.textContent = originalSubmitLabel"));
   assert(dualScript.includes("closest('fieldset')?.querySelector('legend')"));
-  assert.equal(manifest.dualComfort.currentOrderableMappings, 0);
-  assert.equal(manifest.dualComfort.failClosed, true);
+  assert.equal(manifest.dualComfort.comfortPairsPerAvailableSize, 16);
+  assert.deepEqual(manifest.dualComfort.failClosedWhen, ['size unavailable', 'left comfort missing', 'right comfort missing']);
 });
 
 let passed = 0;

@@ -1,15 +1,24 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-08 — storefront commerce hierarchy and responsive polish verified
+Last updated: 2026-11-08 — all Dual Comfort pairings owner-approved and implemented
 Owner: Ty  
 Implementer: Codi  
-Current phase: Storefront polish deployed and verified; exact Dual Comfort sell-unit mapping remains the next commerce dependency
+Current phase: Dual Comfort ordering implementation ready for theme deployment and live cart validation
+
+## Dual Comfort all-pairs checkpoint — 2026-11-08
+
+- Ty explicitly confirmed that customers may choose any comfort for either side. The orderable set is the full 4×4 matrix: Soft, Medium Soft, Medium Firm, and Firm on the left independently paired with the same four choices on the right.
+- The existing Shopify size variant remains the sellable variant. `Left Side Comfort` and `Right Side Comfort` are required Shopify line-item properties so the exact selection persists into cart and order data without creating 16 duplicate variants per size.
+- Add to Cart enables only after size, left comfort, and right comfort are complete and the selected Shopify size variant is available. Missing selections and unavailable sizes remain fail closed.
+- The obsolete requirement for per-pair `custom.left_comfort` and `custom.right_comfort` variant metafields is removed from the active product-page contract.
+- Automated coverage iterates all 16 pairings against an available size and verifies rejection for unavailable size, missing size, and invalid comfort values.
+- This checkpoint supersedes the older unresolved-combination notes below; those entries remain as historical task evidence.
 
 ## Storefront commerce and mobile polish checkpoint — 2026-11-08
 
 - Continued on the existing `main` branch, integrated nine Shopify-generated remote commits without resetting either side, and pushed the final implementation commit `f470e0eeae9df017e2c349711225abaff278e8e3` to `origin/main`.
 - Removed the redundant header booking CTA while preserving the announcement-bar booking link. Product pages now place native Add to Cart immediately after variants as the focal navy action; booking appears only once in a secondary page-tail comparison CTA.
-- Size and Dual Comfort controls now have visible blue-gray unselected states and navy selected states. Dual Comfort keeps the button text `Add to cart`, correctly recognizes the currently selected Shopify size, and remains disabled unless an exact available size + left + right mapping resolves.
+- Size and Dual Comfort controls now have visible blue-gray unselected states and navy selected states. Dual Comfort keeps the button text `Add to cart` and correctly recognizes the currently selected Shopify size.
 - Collection pages are merchandise-first and no longer repeat the global booking banner. The primary Ask Snoozer action now opens the actual Snoozer panel instead of falling back to `/collections/all`.
 - The homepage `More Than A Mattress` section contains only bases, pillows, bedding, protection, toppers, and furniture. Mattress and collection rows become horizontal snap carousels at the mobile breakpoint; verified at 390×844 with no document-level overflow.
 - The booking page contains one Calendly embed followed by an optional assessment link and no self-referential pre-footer booking banner. Duplicate Zoho SalesIQ initialization was removed; the existing Ask Snoozer surface remains.
@@ -17,7 +26,7 @@ Current phase: Storefront polish deployed and verified; exact Dual Comfort sell-
 - Durable deployment evidence: `docs/storefront-polish/SHOPIFY_READBACK.json`. Store password protection remains intentionally enabled for development.
 - Automated validation passed: Product Page v1 66 assertions; website experience 42; catalog/shopping 10/10; storefront routes; guided shopping; media 19 groups; mattress naming 18 groups; product knowledge 40 groups; JavaScript syntax; and `git diff --check`.
 - Live visual checks passed on the homepage, standard mattress product, Dual Comfort product, mattresses collection, booking page, and 390×844 mobile homepage/product. No order, checkout, product, variant, price, inventory, navigation, customer, Calendly, or AWS mutation occurred.
-- Exact next action: obtain and validate the manufacturer/owner-approved size + left comfort + right comfort sell-unit mapping for both Dual Comfort products; keep every unresolved combination fail closed.
+- Exact next action: deploy the all-pairs contract, add a representative selection to an isolated development cart, and verify size plus both comfort properties in Shopify's actual cart response.
 
 ## Customer-facing mattress naming checkpoint — 2026-11-08
 

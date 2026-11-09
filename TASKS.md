@@ -1,32 +1,32 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-08 — storefront commerce hierarchy and responsive polish verified
-Queue state: The product/collection purchase hierarchy, mobile browsing, booking placement, and single Snoozer surface are now deployed and verified. Exact Dual Comfort sell-unit mappings, owner content authoring, technical completion, future Snoozer retrieval implementation, and final release acceptance remain gated.
+Last updated: 2026-11-08 — all Dual Comfort pairings owner-approved and implemented
+Queue state: The product/collection purchase hierarchy, mobile browsing, booking placement, single Snoozer surface, and all-pairs Dual Comfort ordering contract are implemented. Owner content authoring, technical completion, future Snoozer retrieval implementation, and final release acceptance remain gated.
 
 ## Readiness classification
 
 | Classification | Current surfaces |
 |---|---|
 | **KEEP** | Shopify/Dawn page architecture; responsive homepage foundation; standard product variant/form, account, cart, and checkout structures; exact-tag automated collections; one direct Calendly booking embed plus optional standalone assessment; Snooze Code persistence; Ask Snoozer header shell; backend booking idempotency/session preparation; separate Snooze Control app. |
-| **FIX** | Dual Comfort complete sell-unit/configuration and assessment mapping; missing repository-level Calendly webhook authentication; failing HUD session-prep route assertion. |
+| **FIX** | Missing repository-level Calendly webhook authentication; failing HUD session-prep route assertion. |
 | **IMPROVE** | Authenticated unpublished-theme navigation/catalog acceptance; mobile booking length and iframe ergonomics; remaining hardcoded product benefit text; booking image/alt text after owner approval; accessibility and route verification; deployment documentation. |
 | **BUILD** | Approved physical-display-to-online-product/sample mapping; owner-approved content/media; live pricing/fulfillment authority; non-production booking contract acceptance suite; final release smoke checks. |
 
 ### Storefront commerce hierarchy and responsive polish
 
 - **Status:** COMPLETE AND VERIFIED ON BOTH EXISTING THEMES — published `139460542525` and unpublished `139216420925`.
-- **Commerce hierarchy:** Add to Cart is the focal product action above secondary Ask Snoozer/booking guidance. Variant pills have distinct unselected and selected states. Dual Comfort retains a visible disabled Add to Cart control until an exact orderable mapping exists.
+- **Commerce hierarchy:** Add to Cart is the focal product action above secondary Ask Snoozer/booking guidance. Variant pills have distinct unselected and selected states. Dual Comfort enables Add to Cart when an available size and both comfort sides are selected.
 - **Booking hierarchy:** No dedicated booking CTA remains in the header; the announcement bar remains authoritative. Product and collection pages contain one secondary booking action at page tail, with no repeated global booking banner. The booking page has one Calendly embed and optional assessment link.
 - **Homepage/mobile:** `More Than A Mattress` excludes mattresses. Mattress and supporting-collection rows use touch-friendly horizontal snap carousels at 390px with no document overflow.
 - **Snoozer:** Duplicate SalesIQ initialization is removed. Collection Ask Snoozer actions open the established Snoozer panel. Shopify fields, tags, collections, and approved metafields remain the intended retrieval authority; no backend retrieval change was made here.
 - **Evidence:** `docs/storefront-polish/SHOPIFY_READBACK.json`; 54/54 bounded theme-asset readbacks; live desktop/mobile checks; private backup `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\storefront-polish\2026-11-09T01-55-12-954Z`.
-- **Next task:** secure exact manufacturer/owner-approved Dual Comfort size + left + right sell-unit/fulfillment mappings and implement them through the existing fail-closed variant mapping contract.
+- **Next task:** complete an isolated development-cart acceptance check showing the chosen size plus both comfort line properties, then preserve that readback as release evidence.
 
 ### Customer-facing mattress naming and comfort language
 
 - **Objective:** Remove BEDGEAR and S7/H6/M3/M5 from customer-facing mattress identity and replace numeric Dual Comfort choices with Soft, Medium Soft, Medium Firm, and Firm.
 - **Status:** COMPLETE IN SHOPIFY AND EXISTING UNPUBLISHED THEME — all four mattress titles, handles, descriptions, navigation labels, homepage cards, media alt text, and Product Page v1 surfaces now use generic product-led identities. Old product URLs redirect to their new canonical handles.
-- **Commerce safety:** Manufacturer, model, SKU, and provenance remain available in internal Shopify data. Product/variant IDs, prices, status, inventory, collections, and sellability were preserved. Dual Comfort ordering still fails closed until an exact size + left + right sell-unit mapping exists.
+- **Commerce safety:** Manufacturer, model, SKU, and provenance remain available in internal Shopify data. Product/variant IDs, prices, status, inventory, collections, and sellability are preserved. The size variant is authoritative for commerce; both owner-approved comfort selections are required line-item properties.
 - **Validation:** 18 focused naming assertions; 40 product-knowledge assertions; catalog, navigation, website-experience, guided-shopping, Product Page v1, cart, builder-contract, media, route, and storefront-skeleton suites; JavaScript syntax; authenticated unpublished-theme checks of the homepage, product page, comfort controls, media text, and legacy-handle redirect.
 - **Safety:** Published theme `139460542525` was not modified. No order, deployment, or theme publication occurred. The completed repository changes were committed and pushed to `origin/main` as directed.
 - **Evidence:** `docs/catalog/MATTRESS_CUSTOMER_NAMING_SHOPIFY_READBACK.json`; latest recovery snapshot `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\mattress-customer-naming\2026-11-08T20-44-50-716Z`.
@@ -148,7 +148,7 @@ Queue state: The product/collection purchase hierarchy, mobile browsing, booking
 #### P1-005E — Approved BEDGEAR mattress catalog
 
 - **Status:** COMPLETE IN DRAFT TO VERIFIED SOURCE LIMIT — S7 `12" Memory Foam` (10 variants), H6 `12" Hybrid` (10), M3 `12" Dual Comfort` (8), and M5 `14" Dual Comfort` (9) are verified in Shopify under automated mattress/family collections. All now use Product Page v1 (`snoozepod-v1`), remain Draft/publication-blocked, and preserve the approved one/one/two/two showroom display counts with locations unassigned.
-- **Dual Comfort gate:** M3/M5 expose independent 0.0, 1.0, 2.0, and 3.0 selectors, persist both values as line properties, and fail closed because no verified sell-unit mapping exists. Add to Cart becomes available only for an exact size + left + right mapping backed by actual Shopify variant metafields. M3 Split King remains excluded because the current sheet only reuses the Twin XL chassis SKU with an `Order 2` instruction.
+- **Dual Comfort gate:** RESOLVED BY OWNER DECISION — both products expose Soft, Medium Soft, Medium Firm, and Firm independently for each side. All 16 pairs are orderable for every available Shopify size variant and persist as `Left Side Comfort` and `Right Side Comfort` line properties. Missing selections and unavailable sizes remain fail closed.
 - **Verification:** Mattress manifest/readback validator passes; final plan-only Admin API preflight reports zero missing products, collections, variants, or contract fields.
 
 #### P1-005UX — Product and collection experience v1
@@ -207,7 +207,7 @@ Queue state: The product/collection purchase hierarchy, mobile browsing, booking
 - **Validation:** 10/10 restructure assertions; standard/unsupported/mapped fixture shopping flows; 61 Product Page v1 assertions; 19 media assertion groups; storefront route/skeleton and Ask Snoozer regressions; 34 builder-contract groups, 21 cart-integrity scenarios, and canonical dormant-code regressions. Authenticated preview verified homepage, expanded family menu, `/collections/mattresses`, `/collections/m3`, and the actual S7/H6/M3/M5 Draft-product routes. S7/H6 show native size/Add to Cart behavior; M3/M5 show the live independent controls and fail-closed unavailable state.
 - **Safety:** Products remain Draft; unpublished theme `139216420925` remains unpublished; published theme `139460542525` remains `main`; no order, deployment, commit, or push occurred.
 - **Report:** `docs/catalog/CATALOG_SHOPPING_RESTRUCTURE.md`.
-- **Next gate:** Verify and stage the authoritative M3/M5 size + left + right sell-unit/fulfillment mapping; do not publish until it passes exact-mapping and cart-property acceptance.
+- **Next gate:** Verify one representative all-pairs selection through the actual development Shopify Ajax Cart and confirm size plus both line properties; no customer order is required.
 
 ### Content Education Library & Sharp Logo Release
 
