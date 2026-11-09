@@ -2,6 +2,24 @@
 {{ 'component-slider.css' | asset_url | stylesheet_tag }}
 
 <style>
+  @media screen and (max-width: 749px) {
+    .utility-bar,
+    .utility-bar .page-width,
+    .announcement-bar__link,
+    .announcement-bar__announcement,
+    .announcement-bar__message {
+      min-height: auto;
+    }
+
+    .announcement-bar__message {
+      margin: 0;
+      padding: 0.65rem 1rem;
+      font-size: 1.2rem;
+      line-height: 1.25;
+      white-space: normal;
+    }
+  }
+
   @media screen and (min-width: 990px) {
     .utility-bar,
     .utility-bar .page-width {

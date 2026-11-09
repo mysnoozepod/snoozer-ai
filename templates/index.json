@@ -93,7 +93,7 @@
         "intro": "Start online by comparing memory foam, hybrid, and two Dual Comfort profiles, then experience the meaningful differences during a private visit.",
         "shop_label": "Shop all mattresses",
         "shop_link": "shopify://collections/mattresses",
-        "booking_label": "Book a Snooze Session",
+        "booking_label": "",
         "booking_link": "shopify://pages/book-a-snooze-session",
         "color_scheme": "scheme-1",
         "padding_top": 48,
@@ -107,7 +107,7 @@
         "heading": "Guidance when you want it",
         "copy": "Ask about comfort, cooling, support, products, or how to prepare for your private showroom visit.",
         "button_label": "Ask Snoozer",
-        "booking_label": "Book a Snooze Session",
+        "booking_label": "",
         "booking_link": "shopify://pages/book-a-snooze-session",
         "image_alt": "Snoozer shopping assistant",
         "padding_top": 32,
@@ -165,16 +165,6 @@
     "snoozepod_environment_GYx7gN": {
       "type": "snoozepod-environment",
       "blocks": {
-        "collection_card_Wx9PJa": {
-          "type": "collection_card",
-          "settings": {
-            "collection": "mattresses",
-            "title_override": "Mattresses",
-            "description": "Find your comfort and support starting point.",
-            "cta_label": "Explore",
-            "link": ""
-          }
-        },
         "collection_card_zWHTDn": {
           "type": "collection_card",
           "settings": {
@@ -257,7 +247,6 @@
         }
       },
       "block_order": [
-        "collection_card_Wx9PJa",
         "collection_card_zWHTDn",
         "collection_card_WaM9nN",
         "collection_card_bYkEkh",
@@ -269,7 +258,7 @@
       ],
       "settings": {
         "heading": "More Than A Mattress",
-        "subheading": "Your SnoozePod brings your full sleep environment together: mattress, base, pillows, sheets, protection, and the pieces that complete your room.",
+        "subheading": "Complete your sleep environment with adjustable bases, pillows, sheets, protection, comfort layers, and furniture.",
         "cta_label": "Explore Our Collections",
         "cta_link": "/collections",
         "color_scheme": "scheme-1",
@@ -341,7 +330,6 @@
   "order": [
     "image_with_text_hVQzdT",
     "value-strip",
-    "image_with_text_wUxjfL",
     "mattress-showcase",
     "snoozepod_environment_GYx7gN",
     "meet-snoozer",

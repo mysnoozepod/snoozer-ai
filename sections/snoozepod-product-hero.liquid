@@ -5,6 +5,10 @@
 {%- endif -%}
 
 {%- liquid
+  assign is_dual_comfort = false
+  if product.tags contains 'feature:dual-comfort'
+    assign is_dual_comfort = true
+  endif
   assign parent_collection_handle = ''
   case product.type
     when 'Mattress'
@@ -37,6 +41,7 @@
   data-product-handle="{{ product.handle | escape }}"
   data-product-type="{{ product.type | escape }}"
   data-product-type-handle="{{ product.type | handleize }}"
+  class="{% if is_dual_comfort %}snoozepod-product--dual-comfort{% endif %}"
   data-update-url="true"
   data-url="{{ product.url }}"
   {% if section.settings.image_zoom == 'hover' %}
@@ -199,7 +204,18 @@
 
     .snoozepod-product-hero-{{ section.id }} .product-form__input--pill input[type='radio'] + label,
     .snoozepod-product-hero-{{ section.id }} .product-form__input--swatch input[type='radio'] + label {
+      border-color: rgba(7, 25, 66, 0.24);
       border-radius: 999px;
+      background: #e9eff8;
+      color: #071942;
+      font-weight: 700;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product-form__input--pill input[type='radio']:checked + label {
+      border-color: #071942;
+      background: #071942;
+      color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(44, 66, 120, 0.14);
     }
 
     .snoozepod-product-hero-{{ section.id }} .product-form__buttons {
@@ -241,8 +257,10 @@
 
     .snoozepod-product-hero-{{ section.id }} .product-form__submit {
       border: 1px solid #071942;
-      background: #ffffff;
-      color: #071942;
+      background: #071942;
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: 800;
     }
 
     .snoozepod-product-hero-{{ section.id }} .product-form__submit:after {
@@ -255,6 +273,15 @@
     .snoozepod-product-hero-{{ section.id }} .product-form__submit:focus-visible {
       background: #2c4278;
       color: #ffffff;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .product-form__submit[disabled],
+    .snoozepod-product-hero-{{ section.id }} .product-form__submit[aria-disabled='true'] {
+      border-color: rgba(7, 25, 66, 0.14);
+      background: #dce3ed;
+      color: rgba(7, 25, 66, 0.66);
+      opacity: 1;
+      cursor: not-allowed;
     }
 
     .snoozepod-product-hero-{{ section.id }} .product__description {
@@ -294,6 +321,11 @@
         gap: 48px;
       }
 
+      .snoozepod-product--dual-comfort .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__grid {
+        grid-template-columns: minmax(0, 52fr) minmax(0, 48fr);
+        gap: 36px;
+      }
+
       .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__media-card,
       .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__info-card {
         border-radius: 32px;
@@ -329,7 +361,7 @@
         </nav>
         <div class="snoozepod-product-hero__media-wrapper">
           {%- if product.media.size > 0 -%}
-            <div class="snoozepod-product-hero__media-card product__media-wrapper">
+            <div class="snoozepod-product-hero__media-card product product--{{ section.settings.media_size }} product--{{ section.settings.gallery_layout }} product__media-wrapper">
               {% render 'product-media-gallery', variant_images: variant_images %}
             </div>
           {%- else -%}
@@ -342,7 +374,7 @@
         <div class="snoozepod-product-hero__info-wrapper">
           <section
             id="ProductInfo-{{ section.id }}"
-            class="snoozepod-product-hero__info-card{% if section.settings.enable_sticky_info %} product__column-sticky{% endif %}"
+            class="snoozepod-product-hero__info-card{% if section.settings.enable_sticky_info and is_dual_comfort == false %} product__column-sticky{% endif %}"
           >
             {%- for block in section.blocks -%}
               {%- case block.type -%}
@@ -387,7 +419,7 @@
                   </div>
                 {%- when 'session_cta' -%}
                   <a
-                    class="snoozepod-product-hero__action snoozepod-product-hero__action--primary"
+                    class="snoozepod-product-hero__action snoozepod-product-hero__action--secondary"
                     href="{% if block.settings.link != blank %}{{ block.settings.link }}{% else %}/pages/book-a-snooze-session{% endif %}"
                     {{ block.shopify_attributes }}
                   >
@@ -405,30 +437,32 @@
                         <h2>Dual Comfort</h2>
                         <p>Choose each sleeper's preferred comfort. Online ordering stays unavailable until the exact size and left/right configuration is verified.</p>
                       </div>
-                      {%- for side in (1..2) -%}
-                        {%- if side == 1 -%}
-                          {%- assign side_key = 'left' -%}
-                          {%- assign side_label = 'Left Side Comfort' -%}
-                        {%- else -%}
-                          {%- assign side_key = 'right' -%}
-                          {%- assign side_label = 'Right Side Comfort' -%}
-                        {%- endif -%}
-                        <fieldset class="snoozepod-dual-comfort__group">
-                          <legend>{{ side_label }}</legend>
-                          <div class="snoozepod-dual-comfort__choices">
-                            {%- assign comfort_options = 'Soft|Medium Soft|Medium Firm|Firm' | split: '|' -%}
-                            {%- for comfort_value in comfort_options -%}
-                              <input
-                                type="radio"
-                                id="DualComfort-{{ section.id }}-{{ side_key }}-{{ forloop.index0 }}"
-                                name="dual-comfort-{{ section.id }}-{{ side_key }}"
-                                value="{{ comfort_value }}"
-                              >
-                              <label for="DualComfort-{{ section.id }}-{{ side_key }}-{{ forloop.index0 }}">{{ comfort_value }}</label>
-                            {%- endfor -%}
-                          </div>
-                        </fieldset>
-                      {%- endfor -%}
+                      <div class="snoozepod-dual-comfort__groups">
+                        {%- for side in (1..2) -%}
+                          {%- if side == 1 -%}
+                            {%- assign side_key = 'left' -%}
+                            {%- assign side_label = 'Left Side Comfort' -%}
+                          {%- else -%}
+                            {%- assign side_key = 'right' -%}
+                            {%- assign side_label = 'Right Side Comfort' -%}
+                          {%- endif -%}
+                          <fieldset class="snoozepod-dual-comfort__group">
+                            <legend>{{ side_label }}</legend>
+                            <div class="snoozepod-dual-comfort__choices">
+                              {%- assign comfort_options = 'Soft|Medium Soft|Medium Firm|Firm' | split: '|' -%}
+                              {%- for comfort_value in comfort_options -%}
+                                <input
+                                  type="radio"
+                                  id="DualComfort-{{ section.id }}-{{ side_key }}-{{ forloop.index0 }}"
+                                  name="dual-comfort-{{ section.id }}-{{ side_key }}"
+                                  value="{{ comfort_value }}"
+                                >
+                                <label for="DualComfort-{{ section.id }}-{{ side_key }}-{{ forloop.index0 }}">{{ comfort_value }}</label>
+                              {%- endfor -%}
+                            </div>
+                          </fieldset>
+                        {%- endfor -%}
+                      </div>
                       <input
                         type="hidden"
                         name="properties[Left Side Comfort]"

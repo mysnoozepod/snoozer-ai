@@ -5,11 +5,6 @@
     assign hero_alt = section.settings.hero_headline
   endif
 
-  assign mini_calendly_url = section.settings.mini_calendly_url | strip
-  if mini_calendly_url == blank
-    assign mini_calendly_url = 'https://calendly.com/d/cypf-52b-v4v'
-  endif
-
   assign booking_calendly_url = section.settings.calendly_url | strip
   if booking_calendly_url == blank
     assign booking_calendly_url = 'https://calendly.com/zohotyree/30min'
@@ -37,6 +32,8 @@
   .snoozer-landing-booking-{{ section.id }} .booking-grid {
     display: grid;
     gap: 12px;
+    max-width: 920px;
+    margin: 0 auto;
   }
 
   .snoozer-landing-booking-{{ section.id }} .panel {
@@ -167,6 +164,36 @@
     border: 0;
   }
 
+  .snoozer-landing-booking-{{ section.id }} .assessment-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    align-items: center;
+    padding: 24px;
+    border: 1px solid rgba(7, 25, 66, 0.1);
+    border-radius: 24px;
+    background: #f5f7fb;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .assessment-card .heading,
+  .snoozer-landing-booking-{{ section.id }} .assessment-card .subtext {
+    margin-top: 0;
+  }
+
+  .snoozer-landing-booking-{{ section.id }} .assessment-card__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    padding: 0 24px;
+    border: 1px solid #071942;
+    border-radius: 999px;
+    color: #071942;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
   {%- if hide_footer_newsletter -%}
     body.template-page #shopify-section-newsletter {
       display: none !important;
@@ -206,8 +233,9 @@
       padding: 28px 30px;
     }
 
-    .snoozer-landing-booking-{{ section.id }} .booking-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .snoozer-landing-booking-{{ section.id }} .assessment-card {
+      grid-template-columns: minmax(0, 1fr) auto;
+      padding: 28px 30px;
     }
   }
 
@@ -274,20 +302,15 @@
           </div>
         </div>
 
-        <div class="panel">
-          <div class="section-pad">
+        <div class="assessment-card">
+          <div>
             <p class="section-label">Optional</p>
             <h2 class="heading">{{ section.settings.mini_heading | escape }}</h2>
             <p class="subtext section-copy">{{ section.settings.mini_text | escape }}</p>
-            <div class="calendly-shell">
-              <div
-                id="CalendlyInlineWidgetMini-{{ section.id }}"
-                class="calendly-inline-widget"
-                data-url="{{ mini_calendly_url | escape }}"
-                style="min-width:320px;height:620px;"
-              ></div>
-            </div>
           </div>
+          <a class="assessment-card__action" href="/pages/snooze-assessment">
+            Take the assessment
+          </a>
         </div>
       </div>
     </div>
@@ -296,10 +319,7 @@
 
 <script>
   (function () {
-    var widgetIds = [
-      'CalendlyInlineWidgetMini-{{ section.id }}',
-      'CalendlyInlineWidgetBooking-{{ section.id }}'
-    ];
+    var widgetIds = ['CalendlyInlineWidgetBooking-{{ section.id }}'];
     var snoozeCodeKeys = [
       'snoozeCode',
       'snoozer_snooze_code',
@@ -511,7 +531,6 @@
     { "type": "text", "id": "hero_image_alt", "label": "Hero image alt text" },
     { "type": "text", "id": "mini_heading", "label": "Mini assessment heading", "default": "Complete Your Mini Snooze Assessment" },
     { "type": "textarea", "id": "mini_text", "label": "Mini assessment text", "default": "If you want, answer a few guided questions so your visit starts with additional context." },
-    { "type": "text", "id": "mini_calendly_url", "label": "Mini assessment Calendly URL", "default": "https://calendly.com/d/cypf-52b-v4v" },
     { "type": "text", "id": "booking_heading", "label": "Booking heading", "default": "Choose Your Visit Time" },
     { "type": "textarea", "id": "booking_text", "label": "Booking text", "default": "Choose the private session time that fits your schedule. No assessment or account is required." },
     { "type": "text", "id": "calendly_url", "label": "Booking Calendly URL", "default": "https://calendly.com/zohotyree/30min" }

@@ -70,11 +70,13 @@ assert(feelVisible('Medium', 101) === false, 'out-of-range feel data fails close
 for (const template of [productTemplate, productV1Template]) {
   const hero = template.sections.hero;
   assert(hero.type === 'snoozepod-product-hero', 'Product Page v1 uses the reusable product hero');
-  assert(hero.block_order.indexOf('booking') < hero.block_order.indexOf('buy_buttons'), 'booking remains primary before Add to Cart');
+  assert(!hero.block_order.includes('booking'), 'Product Page v1 keeps booking out of the primary purchase controls');
+  assert(hero.block_order.indexOf('buy_buttons') < hero.block_order.indexOf('feel'), 'Add to Cart is the focal action immediately after variant selection');
   assert(hero.block_order.includes('feel'), 'Product Page v1 includes the verified Product Feel block');
   assert(hero.block_order.includes('snoozer'), 'Product Page v1 includes Ask Snoozer');
   assert(hero.block_order.includes('showroom'), 'Product Page v1 supports structured showroom location');
   assert(template.sections.information.type === 'snoozepod-product-information-v1', 'Product Page v1 uses reusable information accordions');
+  assert(template.sections['final-cta'].settings.secondary_label === 'Book a Snooze Session', 'booking remains available as a secondary page-tail action');
 }
 
 assert(productHero.includes("render 'product-media-gallery'"), 'product hero preserves native gallery and thumbnails');
@@ -82,7 +84,7 @@ assert(productHero.includes("render 'product-variant-picker'"), 'product hero pr
 assert(productHero.includes("render 'buy-buttons'"), 'product hero preserves native Shopify cart form');
 assert(productHero.includes('use_variant: true'), 'product price is variant-aware');
 assert(productHero.includes('data-snoozer-product-handle'), 'product Snoozer trigger carries current product identity');
-assert(productHero.includes('/pages/book-a-snooze-session'), 'product booking action uses the approved route');
+assert(productV1Template.sections['final-cta'].settings.secondary_link === '/pages/book-a-snooze-session', 'product booking action uses the approved route at the page tail');
 assert(feelSnippet.includes('role="progressbar"'), 'Product Feel exposes an accessible progressbar');
 assert(feelSnippet.includes('feel_position >= 0 and feel_position <= 100'), 'Product Feel validates its numeric range');
 assert(showroomSnippet.includes("showroom_state == 'READY'"), 'showroom location renders only when structured data is READY');

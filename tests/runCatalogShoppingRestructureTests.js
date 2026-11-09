@@ -102,10 +102,10 @@ test('the active homepage contains no Pod Builder section or customer-facing bui
   assert(homepage.includes('"type": "snoozepod-collection-cta"'));
 });
 
-test('Product Page v1 retains standard Shopify form, booking, Ask Snoozer, gallery, feel, and description blocks', () => {
+test('Product Page v1 retains the standard Shopify form, Ask Snoozer, gallery, feel, and description blocks', () => {
   for (const marker of [
     "render 'product-media-gallery'", "render 'product-variant-picker'", "render 'buy-buttons'",
-    "render 'snoozepod-product-feel'", 'Book a Snooze Session', 'data-snoozer-trigger', 'product__description',
+    "render 'snoozepod-product-feel'", 'data-snoozer-trigger', 'product__description',
   ]) assert(hero.includes(marker), marker);
 });
 
@@ -137,7 +137,7 @@ test('Dual Comfort fails closed and blocks form submission without an exact orde
   assert(dualScript.includes("submit.disabled = true"));
   assert(dualScript.includes("event.preventDefault()"));
   assert(dualScript.includes("root.dataset.orderable !== 'true'"));
-  assert(dualScript.includes('Configuration unavailable'));
+  assert(dualScript.includes('Configuration not available online'));
   assert.equal(manifest.dualComfort.currentOrderableMappings, 0);
   assert.equal(manifest.dualComfort.failClosed, true);
 });

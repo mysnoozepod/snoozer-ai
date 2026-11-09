@@ -169,6 +169,11 @@
   border: 0;
 }
 
+.snoozepod-dual-comfort__groups {
+  display: grid;
+  gap: 0 16px;
+}
+
 .snoozepod-dual-comfort__group legend {
   margin-bottom: 9px;
   color: #071942;
@@ -199,10 +204,21 @@
   justify-content: center;
   border: 1px solid rgba(7, 25, 66, 0.26);
   border-radius: 999px;
-  background: #fff;
+  padding: 8px 10px;
+  background: #e9eff8;
   color: #071942;
   cursor: pointer;
   font-weight: 700;
+}
+
+@media screen and (min-width: 1200px) {
+  .snoozepod-dual-comfort__groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .snoozepod-dual-comfort__choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .snoozepod-dual-comfort__choices input:checked + label {

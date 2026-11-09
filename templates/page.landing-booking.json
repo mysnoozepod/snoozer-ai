@@ -14,13 +14,12 @@
       "settings": {
         "hero_eyebrow": "PRIVATE SNOOZE SESSION",
         "hero_headline": "Plan Your Private Snooze Session",
-        "hero_text": "Start with a brief guided sleep check-in, then choose a time to visit with clearer direction on what to test.",
-        "hero_helper_text": "Book directly below. The mini assessment is optional and never required to schedule your visit.",
+        "hero_text": "Choose a time for a private showroom visit and compare products at your own pace.",
+        "hero_helper_text": "Book directly below. The Snooze Assessment is optional and never required to schedule your visit.",
         "hero_image": "shopify://shop_images/ChatGPT_Image_Apr_28_2026_03_23_05_AM.png",
         "hero_image_alt": "",
         "mini_heading": "Complete Your Mini Snooze Assessment",
         "mini_text": "If you want, answer a few guided questions so your visit starts with additional context.",
-        "mini_calendly_url": "https://calendly.com/d/cypf-52b-v4v",
         "booking_heading": "Choose Your Visit Time",
         "booking_text": "Choose the private session time that fits your schedule. No assessment or account is required.",
         "calendly_url": "https://calendly.com/zohotyree/30min"

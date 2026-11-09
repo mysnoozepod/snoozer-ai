@@ -281,12 +281,6 @@
           </div>
         {%- endif -%}
         <div class="snoozepod-collection-hero__actions">
-          <a
-            class="snoozepod-collection-hero__action snoozepod-collection-hero__action--primary"
-            href="{% if section.settings.booking_link != blank %}{{ section.settings.booking_link }}{% else %}/pages/book-a-snooze-session{% endif %}"
-          >
-            {{ section.settings.booking_label | escape }}
-          </a>
           <button
             type="button"
             class="snoozepod-collection-hero__action snoozepod-collection-hero__action--secondary"
@@ -332,17 +326,6 @@
       "type": "textarea",
       "id": "body",
       "label": "Ty-approved introduction override"
-    },
-    {
-      "type": "text",
-      "id": "booking_label",
-      "label": "Booking CTA label",
-      "default": "Book a Snooze Session"
-    },
-    {
-      "type": "url",
-      "id": "booking_link",
-      "label": "Booking CTA link"
     },
     {
       "type": "text",

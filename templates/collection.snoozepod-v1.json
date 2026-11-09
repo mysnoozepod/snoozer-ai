@@ -16,8 +16,6 @@
         "eyebrow": "",
         "heading_override": "",
         "body": "",
-        "booking_label": "Book a Snooze Session",
-        "booking_link": "/pages/book-a-snooze-session",
         "snoozer_label": "Ask Snoozer",
         "image_alt": ""
       }
@@ -99,7 +97,7 @@
       "type": "snoozepod-guided-shopping-links",
       "settings": {
         "heading": "Need Help Narrowing Your Choices?",
-        "intro": "Use the filters and guided tools together. Shopify product data remains authoritative, and unknown compatibility stays unresolved."
+        "intro": "Use filters to narrow the collection, or ask Snoozer to compare the details that matter to you."
       }
     },
     "product-grid": {
@@ -126,11 +124,12 @@
     "closing": {
       "type": "snoozepod-collection-cta",
       "settings": {
-        "heading": "Book a Snooze Session",
-        "body": "",
-        "primary_label": "Book a Snooze Session",
-        "primary_link": "/pages/book-a-snooze-session",
-        "secondary_label": "Ask Snoozer",
+        "heading": "Want a second opinion?",
+        "body": "Ask Snoozer for help comparing products, or schedule a private visit when you are ready to try them in person.",
+        "primary_label": "Ask Snoozer",
+        "primary_link": "",
+        "secondary_label": "Book a Snooze Session",
+        "secondary_link": "/pages/book-a-snooze-session",
         "show_secondary": true
       }
     }

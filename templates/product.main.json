@@ -183,10 +183,11 @@
     "final-cta": {
       "type": "snoozepod-product-cta",
       "settings": {
-        "heading": "Ready To Build Your Sleep Environment?",
-        "body": "Use Snoozer to connect this product to the rest of your sleep needs.",
+        "heading": "Want to compare it in person?",
+        "body": "Ask Snoozer for product guidance now, or schedule a private visit when you are ready to compare the feel in the showroom.",
         "primary_label": "Ask Snoozer",
         "secondary_label": "Book a Snooze Session",
+        "secondary_link": "/pages/book-a-snooze-session",
         "show_secondary": true
       }
     }

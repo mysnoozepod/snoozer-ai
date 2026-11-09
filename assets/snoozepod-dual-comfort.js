@@ -71,7 +71,11 @@
         submit.disabled = true;
         submit.setAttribute('aria-disabled', 'true');
         const label = submit.querySelector('span');
-        if (label) label.textContent = 'Configuration unavailable';
+        if (label) {
+          if (!size) label.textContent = 'Select a size';
+          else if (!left || !right) label.textContent = 'Select both comfort levels';
+          else label.textContent = 'Configuration not available online';
+        }
       }
       root.dataset.orderable = 'false';
 

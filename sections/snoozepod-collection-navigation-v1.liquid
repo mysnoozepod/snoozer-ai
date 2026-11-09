@@ -1,18 +1,13 @@
 {%- liquid
-  assign direct_product_navigation = false
+  assign suppress_category_navigation = false
   assign navigation_heading = section.settings.heading
-  if collection.handle == 'mattresses'
-    assign direct_product_navigation = true
-    assign visible_collection_count = 4
-    assign navigation_heading = 'Shop Mattresses'
-  elsif collection.handle == 'adjustable-bases'
-    assign direct_product_navigation = true
-    assign visible_collection_count = 3
-    assign navigation_heading = 'Shop Adjustable Bases'
+  if collection.handle == 'mattresses' or collection.handle == 'adjustable-bases'
+    assign suppress_category_navigation = true
+    assign visible_collection_count = 0
   endif
 
   assign mapped_collections = collection.metafields.custom.category_navigation.value
-  unless direct_product_navigation
+  unless suppress_category_navigation
     assign visible_collection_count = 0
     if mapped_collections != blank
       assign visible_collection_count = mapped_collections.size
@@ -122,16 +117,7 @@
 
       {%- if visible_collection_count > 0 -%}
         <div class="snoozepod-collection-navigation__grid">
-          {%- if direct_product_navigation and collection.handle == 'mattresses' -%}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['12-inch-memory-foam-mattress'] %}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['12-inch-hybrid-mattress'] %}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['12-inch-dual-comfort-mattress'] %}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['14-inch-dual-comfort-mattress'] %}
-          {%- elsif direct_product_navigation and collection.handle == 'adjustable-bases' -%}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['flex-l-adjustable-base'] %}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['flex-lsx-adjustable-base'] %}
-            {% render 'snoozepod-product-navigation-card', navigation_product: all_products['flex-sh-adjustable-base'] %}
-          {%- elsif mapped_collections != blank -%}
+          {%- if mapped_collections != blank -%}
             {%- for navigation_collection in mapped_collections -%}
               {% render 'snoozepod-collection-navigation-card', navigation_collection: navigation_collection %}
             {%- endfor -%}

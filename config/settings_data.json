@@ -12,6 +12,64 @@
     "logo": "shopify://shop_images/mysnoozepod-logo.png",
     "logo_width": 300,
     "cart_type": "notification",
+    "animations_reveal_on_scroll": false,
+    "color_schemes": {
+      "scheme-1": {
+        "settings": {
+          "background": "#FFFFFF",
+          "background_gradient": "",
+          "text": "#071942",
+          "button": "#071942",
+          "button_label": "#FFFFFF",
+          "secondary_button_label": "#071942",
+          "shadow": "#071942"
+        }
+      },
+      "scheme-2": {
+        "settings": {
+          "background": "#F5F7FB",
+          "background_gradient": "",
+          "text": "#071942",
+          "button": "#071942",
+          "button_label": "#FFFFFF",
+          "secondary_button_label": "#071942",
+          "shadow": "#071942"
+        }
+      },
+      "scheme-3": {
+        "settings": {
+          "background": "#071942",
+          "background_gradient": "",
+          "text": "#FFFFFF",
+          "button": "#FFFFFF",
+          "button_label": "#071942",
+          "secondary_button_label": "#FFFFFF",
+          "shadow": "#000000"
+        }
+      },
+      "scheme-4": {
+        "settings": {
+          "background": "#2C4278",
+          "background_gradient": "",
+          "text": "#FFFFFF",
+          "button": "#FFFFFF",
+          "button_label": "#071942",
+          "secondary_button_label": "#FFFFFF",
+          "shadow": "#071942"
+        }
+      },
+      "scheme-5": {
+        "settings": {
+          "background": "#E9EFF8",
+          "background_gradient": "",
+          "text": "#071942",
+          "button": "#2C4278",
+          "button_label": "#FFFFFF",
+          "secondary_button_label": "#071942",
+          "shadow": "#071942"
+        }
+      }
+    },
     "content_for_index": []
   }
 }

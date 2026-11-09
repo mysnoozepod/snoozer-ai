@@ -77,7 +77,9 @@
     width: 100%;
     height: 100%;
     min-height: 18rem;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 1.2rem;
+    background: #f4f6fa;
     transition: transform 220ms ease;
   }
 
@@ -142,9 +144,24 @@
     }
   }
 
-  @media screen and (max-width: 420px) {
+  @media screen and (max-width: 749px) {
     .mattress-showcase-{{ section.id }} .mattress-showcase__grid {
-      grid-template-columns: 1fr;
+      display: flex;
+      gap: 1.2rem;
+      margin-right: calc(var(--page-padding-mobile) * -1);
+      padding: 0 var(--page-padding-mobile) 1.2rem 0;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+
+    .mattress-showcase-{{ section.id }} .mattress-showcase__grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .mattress-showcase-{{ section.id }} .mattress-showcase__grid > li {
+      flex: 0 0 82%;
+      scroll-snap-align: start;
     }
   }
 {%- endstyle -%}
@@ -184,7 +201,9 @@
 
     <div class="mattress-showcase__footer">
       <a class="button button--secondary" href="{{ section.settings.shop_link | default: '/collections/mattresses' }}">{{ section.settings.shop_label | escape }}</a>
-      <a class="button" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}">{{ section.settings.booking_label | escape }}</a>
+      {%- if section.settings.booking_label != blank -%}
+        <a class="button" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}">{{ section.settings.booking_label | escape }}</a>
+      {%- endif -%}
     </div>
   </div>
 </section>

@@ -17,12 +17,11 @@
         "price": { "type": "price", "settings": {} },
         "variant_picker": { "type": "variant_picker", "settings": { "picker_type": "button", "swatch_shape": "circle" } },
         "feel": { "type": "product_feel", "settings": { "show_editor_placeholder": true } },
-        "booking": { "type": "session_cta", "settings": { "label": "Book a Snooze Session", "link": "/pages/book-a-snooze-session" } },
         "buy_buttons": { "type": "buy_buttons", "settings": { "show_dynamic_checkout": false, "show_gift_card_recipient": false } },
         "snoozer": { "type": "snoozer_cta", "settings": { "label": "Ask Snoozer About This Product" } },
         "showroom": { "type": "showroom_location", "settings": { "show_editor_placeholder": true } }
       },
-      "block_order": ["vendor", "title", "price", "variant_picker", "feel", "booking", "buy_buttons", "snoozer", "showroom"],
+      "block_order": ["vendor", "title", "price", "variant_picker", "buy_buttons", "feel", "snoozer", "showroom"],
       "settings": {
         "enable_sticky_info": true,
         "color_scheme": "scheme-1",
@@ -46,7 +45,18 @@
       },
       "block_order": ["details", "warranty", "compatibility", "delivery"],
       "settings": { "heading": "", "show_editor_placeholders": true }
+    },
+    "final-cta": {
+      "type": "snoozepod-product-cta",
+      "settings": {
+        "heading": "Want to compare it in person?",
+        "body": "Ask Snoozer for product guidance now, or schedule a private visit when you are ready to compare the feel in the showroom.",
+        "primary_label": "Ask Snoozer",
+        "secondary_label": "Book a Snooze Session",
+        "secondary_link": "/pages/book-a-snooze-session",
+        "show_secondary": true
+      }
     }
   },
-  "order": ["hero", "information"]
+  "order": ["hero", "information", "final-cta"]
 }

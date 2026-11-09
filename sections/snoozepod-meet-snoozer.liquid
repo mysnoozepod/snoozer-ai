@@ -22,7 +22,9 @@
         {%- if section.settings.copy != blank -%}<p class="meet-snoozer__copy">{{ section.settings.copy | escape }}</p>{%- endif -%}
         <div class="meet-snoozer__actions">
           <button type="button" class="button meet-snoozer__button" data-snoozer-trigger data-snoozer-source="homepage-meet-snoozer">{{ section.settings.button_label | escape }}</button>
-          <a class="meet-snoozer__link" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}">{{ section.settings.booking_label | escape }} <span aria-hidden="true">&nbsp;&rarr;</span></a>
+          {%- if section.settings.booking_label != blank -%}
+            <a class="meet-snoozer__link" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}">{{ section.settings.booking_label | escape }} <span aria-hidden="true">&nbsp;&rarr;</span></a>
+          {%- endif -%}
         </div>
       </div>
       <img class="meet-snoozer__avatar" src="{{ 'snoozer-avatar.png' | asset_url }}" width="220" height="220" loading="lazy" alt="{{ section.settings.image_alt | escape }}">

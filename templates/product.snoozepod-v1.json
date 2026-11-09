@@ -40,13 +40,6 @@
             "show_editor_placeholder": true
           }
         },
-        "booking": {
-          "type": "session_cta",
-          "settings": {
-            "label": "Book a Snooze Session",
-            "link": "/pages/book-a-snooze-session"
-          }
-        },
         "buy_buttons": {
           "type": "buy_buttons",
           "settings": {
@@ -72,9 +65,8 @@
         "title",
         "price",
         "variant_picker",
-        "feel",
-        "booking",
         "buy_buttons",
+        "feel",
         "snoozer",
         "showroom"
       ],
@@ -155,11 +147,23 @@
         "padding_top": 32,
         "padding_bottom": 48
       }
+    },
+    "final-cta": {
+      "type": "snoozepod-product-cta",
+      "settings": {
+        "heading": "Want to compare it in person?",
+        "body": "Ask Snoozer for product guidance now, or schedule a private visit when you are ready to compare the feel in the showroom.",
+        "primary_label": "Ask Snoozer",
+        "secondary_label": "Book a Snooze Session",
+        "secondary_link": "/pages/book-a-snooze-session",
+        "show_secondary": true
+      }
     }
   },
   "order": [
     "hero",
     "information",
-    "related"
+    "related",
+    "final-cta"
   ]
 }
