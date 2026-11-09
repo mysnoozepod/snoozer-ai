@@ -137,7 +137,8 @@ test('Dual Comfort fails closed and blocks form submission without an exact orde
   assert(dualScript.includes("submit.disabled = true"));
   assert(dualScript.includes("event.preventDefault()"));
   assert(dualScript.includes("root.dataset.orderable !== 'true'"));
-  assert(dualScript.includes('Configuration not available online'));
+  assert(dualScript.includes("if (label) label.textContent = originalSubmitLabel"));
+  assert(dualScript.includes("closest('fieldset')?.querySelector('legend')"));
   assert.equal(manifest.dualComfort.currentOrderableMappings, 0);
   assert.equal(manifest.dualComfort.failClosed, true);
 });

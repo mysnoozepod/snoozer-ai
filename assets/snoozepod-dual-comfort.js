@@ -5,7 +5,11 @@
     const productInfo = root.closest('product-info');
     if (!productInfo) return '';
     const sizeControl = [...productInfo.querySelectorAll('select, input[type="radio"]')]
-      .find((control) => /(^|\[)size(\]|$)/i.test(control.name || '') && (control.tagName === 'SELECT' || control.checked));
+      .find((control) => {
+        const fieldsetLabel = control.closest('fieldset')?.querySelector('legend')?.textContent?.trim() || '';
+        const isSize = /(^|[\[\-_])size([\]\-_]|$)/i.test(control.name || '') || /^size$/i.test(fieldsetLabel);
+        return isSize && (control.tagName === 'SELECT' || control.checked);
+      });
     return sizeControl?.value || '';
   }
 
@@ -71,11 +75,7 @@
         submit.disabled = true;
         submit.setAttribute('aria-disabled', 'true');
         const label = submit.querySelector('span');
-        if (label) {
-          if (!size) label.textContent = 'Select a size';
-          else if (!left || !right) label.textContent = 'Select both comfort levels';
-          else label.textContent = 'Configuration not available online';
-        }
+        if (label) label.textContent = originalSubmitLabel;
       }
       root.dataset.orderable = 'false';
 

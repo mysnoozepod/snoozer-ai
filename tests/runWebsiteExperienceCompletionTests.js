@@ -78,6 +78,11 @@ check(footer.order.indexOf('experience-navigation') < footer.order.indexOf('news
 const footerNavigation = read('sections/snoozepod-footer-navigation.liquid');
 check(footerNavigation.includes('Shop') && footerNavigation.includes('Visit &amp; Guidance') && footerNavigation.includes('Customer Support'), 'Footer must be grouped by shopping, visit, and support.');
 check(footerNavigation.includes('/pages/warranty-support'), 'Footer must expose warranty support.');
+check(footerNavigation.includes("request.page_type == 'product'") && footerNavigation.includes("request.page_type == 'collection'"), 'Product and collection pages must not repeat the global booking banner below their page-tail CTA.');
+check(footerNavigation.includes("page.handle == 'book-a-snooze-session'"), 'The booking page must not repeat a self-referential booking banner.');
+
+const collectionCta = read('sections/snoozepod-collection-cta.liquid');
+check(collectionCta.includes('primary_is_snoozer') && collectionCta.includes('data-snoozer-trigger'), 'A primary Ask Snoozer collection action must open Snoozer rather than fall back to the all-products collection.');
 
 checkSchema('sections/snoozepod-mattress-showcase.liquid');
 checkSchema('sections/snoozepod-meet-snoozer.liquid');

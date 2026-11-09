@@ -133,12 +133,28 @@
       </div>
 
       <div class="snoozepod-collection-cta__actions">
-        <a
-          class="snoozepod-collection-cta__button snoozepod-collection-cta__button--primary"
-          href="{% if section.settings.primary_link != blank %}{{ section.settings.primary_link }}{% else %}{{ routes.all_products_collection_url }}{% endif %}"
-        >
-          {{ section.settings.primary_label | escape }}
-        </a>
+        {%- assign primary_is_snoozer = false -%}
+        {%- if section.settings.primary_link == blank and section.settings.primary_label contains 'Snoozer' -%}
+          {%- assign primary_is_snoozer = true -%}
+        {%- endif -%}
+        {%- if primary_is_snoozer -%}
+          <button
+            type="button"
+            class="snoozepod-collection-cta__button snoozepod-collection-cta__button--primary"
+            data-snoozer-trigger
+            data-snoozer-source="collection-final-cta"
+            data-snoozer-collection-handle="{{ collection.handle | escape }}"
+          >
+            {{ section.settings.primary_label | escape }}
+          </button>
+        {%- else -%}
+          <a
+            class="snoozepod-collection-cta__button snoozepod-collection-cta__button--primary"
+            href="{% if section.settings.primary_link != blank %}{{ section.settings.primary_link }}{% else %}{{ routes.all_products_collection_url }}{% endif %}"
+          >
+            {{ section.settings.primary_label | escape }}
+          </a>
+        {%- endif -%}
 
         {%- if section.settings.show_secondary and section.settings.secondary_label != blank -%}
           {%- if section.settings.secondary_link != blank and section.settings.secondary_link != '#ask-snoozer' -%}

@@ -24,12 +24,18 @@ const themeAssets = [
   'layout/theme.liquid',
   'sections/announcement-bar.liquid',
   'sections/header.liquid',
+  'sections/snoozepod-collection-cta.liquid',
   'sections/snoozepod-collection-hero.liquid',
   'sections/snoozepod-collection-navigation-v1.liquid',
   'sections/snoozepod-environment.liquid',
+  'sections/snoozepod-footer-navigation.liquid',
   'sections/snoozepod-mattress-showcase.liquid',
   'sections/snoozepod-meet-snoozer.liquid',
+  'sections/snoozepod-product-cta.liquid',
+  'sections/snoozepod-product-details.liquid',
   'sections/snoozepod-product-hero.liquid',
+  'sections/snoozepod-sleep-pairing.liquid',
+  'sections/snoozer-product-guide.liquid',
   'sections/snoozer-landing-booking.liquid',
   'templates/collection.snoozepod-v1.json',
   'templates/index.json',
@@ -80,7 +86,10 @@ async function shopify(pathname, options = {}) {
       continue;
     }
     const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload) fail(`Shopify request failed for ${pathname}: HTTP ${response.status}.`);
+    if (!response.ok || !payload) {
+      const detail = payload ? ` ${JSON.stringify(payload)}` : '';
+      fail(`Shopify request failed for ${pathname}: HTTP ${response.status}.${detail}`);
+    }
     return payload;
   }
   fail(`Shopify request remained throttled for ${pathname}.`);
@@ -88,20 +97,32 @@ async function shopify(pathname, options = {}) {
 
 async function readAsset(themeId, key) {
   const params = new URLSearchParams({ 'asset[key]': key });
-  const response = await fetch(`${endpoint}/themes/${themeId}/assets.json?${params}`, {
-    headers: { 'X-Shopify-Access-Token': connection.token },
-  });
-  if (response.status === 404) return null;
-  const payload = await response.json().catch(() => null);
-  if (!response.ok || !payload?.asset) fail(`Could not read ${key} from theme ${themeId}: HTTP ${response.status}.`);
-  return payload.asset;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const response = await fetch(`${endpoint}/themes/${themeId}/assets.json?${params}`, {
+      headers: { 'X-Shopify-Access-Token': connection.token },
+    });
+    if (response.status === 429 && attempt < 5) {
+      const retryAfter = Number(response.headers.get('retry-after')) || (attempt + 1);
+      await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
+      continue;
+    }
+    if (response.status === 404) return null;
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.asset) fail(`Could not read ${key} from theme ${themeId}: HTTP ${response.status}.`);
+    return payload.asset;
+  }
+  fail(`Could not read ${key} from theme ${themeId}: repeated HTTP 429 responses.`);
 }
 
 async function writeAsset(themeId, key, value) {
-  await shopify(`/themes/${themeId}/assets.json`, {
-    method: 'PUT',
-    body: JSON.stringify({ asset: { key, value } }),
-  });
+  try {
+    await shopify(`/themes/${themeId}/assets.json`, {
+      method: 'PUT',
+      body: JSON.stringify({ asset: { key, value } }),
+    });
+  } catch (error) {
+    fail(`Could not write ${key} to theme ${themeId}. ${error.message}`);
+  }
 }
 
 async function deleteAsset(themeId, key) {

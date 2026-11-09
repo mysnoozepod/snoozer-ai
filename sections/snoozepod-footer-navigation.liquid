@@ -15,13 +15,15 @@
 
 <section class="footer-navigation footer-navigation-{{ section.id }}">
   <div class="page-width">
-    <div class="footer-navigation__booking">
-      <div class="footer-navigation__booking-copy">
-        <h2>{{ section.settings.heading | escape }}</h2>
-        <p>{{ section.settings.text | escape }}</p>
+    {%- unless request.page_type == 'product' or request.page_type == 'collection' or page.handle == 'book-a-snooze-session' -%}
+      <div class="footer-navigation__booking">
+        <div class="footer-navigation__booking-copy">
+          <h2>{{ section.settings.heading | escape }}</h2>
+          <p>{{ section.settings.text | escape }}</p>
+        </div>
+        <a class="button" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}">{{ section.settings.booking_label | escape }}</a>
       </div>
-      <a class="button" href="{{ section.settings.booking_link | default: '/pages/book-a-snooze-session' }}">{{ section.settings.booking_label | escape }}</a>
-    </div>
+    {%- endunless -%}
 
     <nav class="footer-navigation__groups" aria-label="Footer navigation">
       <div>
