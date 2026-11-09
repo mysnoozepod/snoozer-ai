@@ -1,9 +1,23 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-08 — customer-facing mattress names and comfort vocabulary corrected
+Last updated: 2026-11-08 — storefront commerce hierarchy and responsive polish verified
 Owner: Ty  
 Implementer: Codi  
-Current phase: Mattress naming correction completed; exact Dual Comfort sell-unit mapping and owner content authoring remain next
+Current phase: Storefront polish deployed and verified; exact Dual Comfort sell-unit mapping remains the next commerce dependency
+
+## Storefront commerce and mobile polish checkpoint — 2026-11-08
+
+- Continued on the existing `main` branch, integrated nine Shopify-generated remote commits without resetting either side, and pushed the final implementation commit `f470e0eeae9df017e2c349711225abaff278e8e3` to `origin/main`.
+- Removed the redundant header booking CTA while preserving the announcement-bar booking link. Product pages now place native Add to Cart immediately after variants as the focal navy action; booking appears only once in a secondary page-tail comparison CTA.
+- Size and Dual Comfort controls now have visible blue-gray unselected states and navy selected states. Dual Comfort keeps the button text `Add to cart`, correctly recognizes the currently selected Shopify size, and remains disabled unless an exact available size + left + right mapping resolves.
+- Collection pages are merchandise-first and no longer repeat the global booking banner. The primary Ask Snoozer action now opens the actual Snoozer panel instead of falling back to `/collections/all`.
+- The homepage `More Than A Mattress` section contains only bases, pillows, bedding, protection, toppers, and furniture. Mattress and collection rows become horizontal snap carousels at the mobile breakpoint; verified at 390×844 with no document-level overflow.
+- The booking page contains one Calendly embed followed by an optional assessment link and no self-referential pre-footer booking banner. Duplicate Zoho SalesIQ initialization was removed; the existing Ask Snoozer surface remains.
+- Published theme `139460542525` and unpublished theme `139216420925` were updated through the exact bounded allowlist. Final readback verified 54/54 assets. Latest private recovery backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\storefront-polish\2026-11-09T01-55-12-954Z`.
+- Durable deployment evidence: `docs/storefront-polish/SHOPIFY_READBACK.json`. Store password protection remains intentionally enabled for development.
+- Automated validation passed: Product Page v1 66 assertions; website experience 42; catalog/shopping 10/10; storefront routes; guided shopping; media 19 groups; mattress naming 18 groups; product knowledge 40 groups; JavaScript syntax; and `git diff --check`.
+- Live visual checks passed on the homepage, standard mattress product, Dual Comfort product, mattresses collection, booking page, and 390×844 mobile homepage/product. No order, checkout, product, variant, price, inventory, navigation, customer, Calendly, or AWS mutation occurred.
+- Exact next action: obtain and validate the manufacturer/owner-approved size + left comfort + right comfort sell-unit mapping for both Dual Comfort products; keep every unresolved combination fail closed.
 
 ## Customer-facing mattress naming checkpoint — 2026-11-08
 

@@ -1,6 +1,6 @@
 # MySnoozePod.com Decision Register
 
-Last updated: 2026-11-08 — customer-facing mattress naming and comfort vocabulary checkpoint
+Last updated: 2026-11-08 — storefront commerce hierarchy and responsive polish checkpoint
 
 ## Confirmed owner decisions and constraints
 
@@ -71,6 +71,8 @@ Last updated: 2026-11-08 — customer-facing mattress naming and comfort vocabul
 | D-063 | Dynamic price, variant, inventory, availability, cart, and checkout data require live Shopify authority. Cached knowledge may contain approved descriptions and verified technical facts, but missing or conflicting compatibility remains unknown. | **INTEGRATION CONTRACT / BACKEND IMPLEMENTATION DEFERRED**. |
 | D-064 | Customer-facing mattress identity is product-led and manufacturer-neutral: `12\" Memory Foam Mattress`, `12\" Hybrid Mattress`, `12\" Dual Comfort Mattress`, and `14\" Dual Comfort Mattress`. BEDGEAR and S7/H6/M3/M5 remain internal manufacturer/model/provenance data and must not render as customer names, descriptions, navigation labels, URLs, or media alt text. | **OWNER DIRECTIVE / IMPLEMENTED** — 2026-11-08. |
 | D-065 | Dual Comfort customer controls use exactly Soft, Medium Soft, Medium Firm, and Firm. Historical 0.0–3.0 component codes may remain internal for source reconciliation but must not render as customer choices or cart-facing values. | **OWNER DIRECTIVE / IMPLEMENTED** — 2026-11-08. |
+| D-066 | The announcement bar is the persistent booking prompt; the header must not duplicate it. On product pages, native Add to Cart is the focal action above secondary Ask Snoozer and booking guidance. Product and collection booking prompts belong once at page tail, not repeatedly through the shopping flow. | **OWNER DIRECTIVE / IMPLEMENTED AND LIVE-VERIFIED** — 2026-11-08. |
+| D-067 | Mobile homepage product discovery uses horizontal snap carousels for the mattress lineup and non-mattress collection cards. `More Than A Mattress` must not contain mattresses. | **OWNER DIRECTIVE / IMPLEMENTED AND 390PX VERIFIED** — 2026-11-08. |
 
 ## Verified architectural and operational facts
 
@@ -177,6 +179,9 @@ Last updated: 2026-11-08 — customer-facing mattress naming and comfort vocabul
 | F-099 | Shopify now resolves the four mattresses at `/products/12-inch-memory-foam-mattress`, `/products/12-inch-hybrid-mattress`, `/products/12-inch-dual-comfort-mattress`, and `/products/14-inch-dual-comfort-mattress`; Shopify-created redirects preserve the former product URLs. | **VERIFIED ADMIN API READBACK + ACTUAL LEGACY-URL REDIRECT** — 2026-11-08. |
 | F-100 | The existing unpublished theme renders no S7/H6/M3/M5 labels in the homepage mattress showcase or Dual Comfort product page. The independent left/right controls expose Soft, Medium Soft, Medium Firm, and Firm, and remain disabled for purchase without an exact orderable mapping. | **VERIFIED AUTHENTICATED STOREFRONT PREVIEW + FOCUSED TESTS** — 2026-11-08. |
 | F-101 | Published theme `139460542525` was hash-verified unchanged. Four product resources, their media alt text, and the Shopify menu were updated globally; eleven bounded customer-facing assets were reconciled only on unpublished theme `139216420925`, including product, card, cart, notification, and predictive-search vendor suppression for mattresses. Product and variant commerce fingerprints were preserved. | **VERIFIED STAGER READBACK / PRIVATE BACKUP** — 2026-11-08. |
+| F-102 | Published theme `139460542525` and unpublished theme `139216420925` contain the bounded storefront-polish implementation. Final deployment readback matched 54/54 allowlisted assets and recorded a private recovery backup. | **VERIFIED THEME API READBACK** — `docs/storefront-polish/SHOPIFY_READBACK.json`, 2026-11-08. |
+| F-103 | Live Product Page v1 renders the selected size in navy, unselected variants in blue-gray, and a 56px navy Add to Cart action. Dual Comfort recognizes the selected Shopify size, retains the Add to Cart label, and stays disabled with zero verified sell-unit mappings. | **VERIFIED PUBLISHED-THEME DESKTOP/MOBILE RENDERING + CONTRACT TESTS**. |
+| F-104 | Live 390×844 QA found no document-level horizontal overflow; the mattress and supporting-collection tracks use mandatory horizontal snap. Product, collection, and booking pages suppress the repeated global booking banner, and collection Ask Snoozer opens the actual header panel. | **VERIFIED PUBLISHED-THEME RESPONSIVE BROWSER QA**. |
 
 ## Codi recommendations — not owner decisions
 

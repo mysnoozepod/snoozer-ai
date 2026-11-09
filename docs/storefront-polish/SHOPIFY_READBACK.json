@@ -1,0 +1,382 @@
+{
+  "completedAt": "2026-11-09T01:55:43.819Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\storefront-polish\\2026-11-09T01-55-12-954Z",
+  "commit": "f470e0eeae9df017e2c349711225abaff278e8e3",
+  "themes": [
+    {
+      "id": "139460542525",
+      "name": "snoozer-ai/main",
+      "role": "main"
+    },
+    {
+      "id": "139216420925",
+      "name": "snoozer-ai/main",
+      "role": "unpublished"
+    }
+  ],
+  "changedAssets": [
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "assets/snoozepod-dual-comfort.js",
+      "action": "update"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-collection-cta.liquid",
+      "action": "update"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-footer-navigation.liquid",
+      "action": "update"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "assets/snoozepod-dual-comfort.js",
+      "action": "update"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-collection-cta.liquid",
+      "action": "update"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-footer-navigation.liquid",
+      "action": "update"
+    }
+  ],
+  "verified": [
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "assets/component-product-variant-picker.css",
+      "sha256": "e3d0abe7e6d44f8fdc4d43c7f9e4796f77baaa259db5898cd20b74fada3e8016"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "assets/component-snoozepod-commerce-v1.css",
+      "sha256": "b6a93a78de90329ac268dcbf17a13b07eccc7b8a599539022a0a85481d72a0a5"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "assets/snoozepod-dual-comfort.js",
+      "sha256": "e454cf7b48f888d8c317755bddb8b92435fb65c05f3759e089ebac7b57621046"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "config/settings_data.json",
+      "sha256": "18151457e4a1955f1583098b478a3cd4822e60a2b32719e4438e3aee154950f9"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "layout/theme.liquid",
+      "sha256": "905881722c76c4810a42c58d611b580f4c279d84ad62a0fccef3b80d3509e171"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/announcement-bar.liquid",
+      "sha256": "cd5aa909f2e145604f70f164598baff669f2aeda46f0813ed60199b21f6248bd"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/header.liquid",
+      "sha256": "9d8dadcf613a9198fc0cd490c2f8e5bc7f6d8fb77bce8f56d787f0d989c058b0"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-collection-cta.liquid",
+      "sha256": "0cd9008da6bcee3a9b0968f153d622641becd8427e6e183baadf077f87488d4b"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-collection-hero.liquid",
+      "sha256": "9eac168eded66470dfbf68e06a3cc953aef0d0cfaa89cf6f78d4131b9d571cb2"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-collection-navigation-v1.liquid",
+      "sha256": "d3749ce262f1644d62fbe447f782235a30e4ea098bc3aa55bf8d32e998e44468"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-environment.liquid",
+      "sha256": "71767e836621fe3218a3db87957c65aa1bab3370c7faa584a9b3117c9c5bc143"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-footer-navigation.liquid",
+      "sha256": "674a368e46162f63d9905cdce4d0dd8a49d899a312c2763e847ce33f359a1431"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-mattress-showcase.liquid",
+      "sha256": "14513577b5791851ad8b1b562094337144915b5288d768f2261cf520b112f97d"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-meet-snoozer.liquid",
+      "sha256": "485e54bd105378ec63ee5cf28cc586193a1d296347a54b65f1faa0e382f70f50"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-product-cta.liquid",
+      "sha256": "749425cb3542e506fdd1ae59b080c80e5e78f94f942a3a33d30719d02b04e7d6"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-product-details.liquid",
+      "sha256": "c542b3e67d88218ca1fcf6c6bf01b271d9ac2fa4265de5b1c793f32fecc5e906"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-product-hero.liquid",
+      "sha256": "cd34d07b819b5d224041699f0f7e5fde58fa3ed18621fe02c1b10861b87038ac"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozepod-sleep-pairing.liquid",
+      "sha256": "b3302c16524b89bbed3bf8ce5752e59792ca0c4e1c1917c48e7033de2ca8d1bb"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozer-product-guide.liquid",
+      "sha256": "c54e33b952d3ee45309b20167db9dd237225029892e4897f5e2200c2aca31f1d"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "sections/snoozer-landing-booking.liquid",
+      "sha256": "bfd959cecd6dcbd21620c087ef80f4cb4c063ee644a2eab8caebda8466d9240b"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "templates/collection.snoozepod-v1.json",
+      "sha256": "bcdada9898e7103a8e7201918b699dc11b324336832ad875e8df91b8f470a986"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "templates/index.json",
+      "sha256": "4a74aa1714d6e7abe272fa6590e24508dcf6dbc19e3c84a4cd62b4a953fdc303"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "templates/page.landing-booking.json",
+      "sha256": "345fda96a9d08b104e1f97c68ca0ae15113bee25b2fd7ab3d8b02e6ab025630b"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "templates/product.json",
+      "sha256": "cde85808bdf7a2ad5d7721acd8330e182b2c594868296caa2705a6f8f45d9794"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "templates/product.main.json",
+      "sha256": "ddaa0778919f78d4cefd0367bf2f606875c710ea12e67ac9e1e2b34391e83d94"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "templates/product.product-support-item.json",
+      "sha256": "fe3438d445e72bd2c592c6bd38ea9ec8e85f19f1aeeeeb06aa831b3e30c47d24"
+    },
+    {
+      "themeId": "139460542525",
+      "role": "main",
+      "key": "templates/product.snoozepod-v1.json",
+      "sha256": "5679d4d27856d98c1126f9ae92432b7168f93ba17ee93e7ca1576ffbf41211a3"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "assets/component-product-variant-picker.css",
+      "sha256": "e3d0abe7e6d44f8fdc4d43c7f9e4796f77baaa259db5898cd20b74fada3e8016"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "assets/component-snoozepod-commerce-v1.css",
+      "sha256": "b6a93a78de90329ac268dcbf17a13b07eccc7b8a599539022a0a85481d72a0a5"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "assets/snoozepod-dual-comfort.js",
+      "sha256": "e454cf7b48f888d8c317755bddb8b92435fb65c05f3759e089ebac7b57621046"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "config/settings_data.json",
+      "sha256": "18151457e4a1955f1583098b478a3cd4822e60a2b32719e4438e3aee154950f9"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "layout/theme.liquid",
+      "sha256": "905881722c76c4810a42c58d611b580f4c279d84ad62a0fccef3b80d3509e171"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/announcement-bar.liquid",
+      "sha256": "cd5aa909f2e145604f70f164598baff669f2aeda46f0813ed60199b21f6248bd"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/header.liquid",
+      "sha256": "9d8dadcf613a9198fc0cd490c2f8e5bc7f6d8fb77bce8f56d787f0d989c058b0"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-collection-cta.liquid",
+      "sha256": "0cd9008da6bcee3a9b0968f153d622641becd8427e6e183baadf077f87488d4b"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-collection-hero.liquid",
+      "sha256": "9eac168eded66470dfbf68e06a3cc953aef0d0cfaa89cf6f78d4131b9d571cb2"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-collection-navigation-v1.liquid",
+      "sha256": "d3749ce262f1644d62fbe447f782235a30e4ea098bc3aa55bf8d32e998e44468"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-environment.liquid",
+      "sha256": "71767e836621fe3218a3db87957c65aa1bab3370c7faa584a9b3117c9c5bc143"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-footer-navigation.liquid",
+      "sha256": "674a368e46162f63d9905cdce4d0dd8a49d899a312c2763e847ce33f359a1431"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-mattress-showcase.liquid",
+      "sha256": "14513577b5791851ad8b1b562094337144915b5288d768f2261cf520b112f97d"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-meet-snoozer.liquid",
+      "sha256": "485e54bd105378ec63ee5cf28cc586193a1d296347a54b65f1faa0e382f70f50"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-product-cta.liquid",
+      "sha256": "749425cb3542e506fdd1ae59b080c80e5e78f94f942a3a33d30719d02b04e7d6"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-product-details.liquid",
+      "sha256": "c542b3e67d88218ca1fcf6c6bf01b271d9ac2fa4265de5b1c793f32fecc5e906"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-product-hero.liquid",
+      "sha256": "cd34d07b819b5d224041699f0f7e5fde58fa3ed18621fe02c1b10861b87038ac"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozepod-sleep-pairing.liquid",
+      "sha256": "b3302c16524b89bbed3bf8ce5752e59792ca0c4e1c1917c48e7033de2ca8d1bb"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozer-product-guide.liquid",
+      "sha256": "c54e33b952d3ee45309b20167db9dd237225029892e4897f5e2200c2aca31f1d"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "sections/snoozer-landing-booking.liquid",
+      "sha256": "bfd959cecd6dcbd21620c087ef80f4cb4c063ee644a2eab8caebda8466d9240b"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "templates/collection.snoozepod-v1.json",
+      "sha256": "bcdada9898e7103a8e7201918b699dc11b324336832ad875e8df91b8f470a986"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "templates/index.json",
+      "sha256": "4a74aa1714d6e7abe272fa6590e24508dcf6dbc19e3c84a4cd62b4a953fdc303"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "templates/page.landing-booking.json",
+      "sha256": "345fda96a9d08b104e1f97c68ca0ae15113bee25b2fd7ab3d8b02e6ab025630b"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "templates/product.json",
+      "sha256": "cde85808bdf7a2ad5d7721acd8330e182b2c594868296caa2705a6f8f45d9794"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "templates/product.main.json",
+      "sha256": "ddaa0778919f78d4cefd0367bf2f606875c710ea12e67ac9e1e2b34391e83d94"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "templates/product.product-support-item.json",
+      "sha256": "fe3438d445e72bd2c592c6bd38ea9ec8e85f19f1aeeeeb06aa831b3e30c47d24"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "unpublished",
+      "key": "templates/product.snoozepod-v1.json",
+      "sha256": "5679d4d27856d98c1126f9ae92432b7168f93ba17ee93e7ca1576ffbf41211a3"
+    }
+  ]
+}
