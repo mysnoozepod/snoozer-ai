@@ -30,7 +30,7 @@ const home = json('templates/index.json');
 const homeOrder = home.order;
 check(home.sections.image_with_text_hVQzdT.settings.primary_cta_link === 'shopify://pages/book-a-snooze-session', 'Homepage hero must lead to booking.');
 check(home.sections.image_with_text_hVQzdT.settings.secondary_cta_link === 'shopify://collections/mattresses', 'Homepage secondary CTA must lead to mattresses.');
-check(!homeOrder.includes('image_with_text_wUxjfL'), 'The redundant homepage booking explainer must stay out of the active section order.');
+check(home.sections.image_with_text_wUxjfL.disabled === true, 'The redundant homepage booking explainer must stay disabled while its editor-managed section remains recoverable.');
 check(homeOrder.indexOf('mattress-showcase') < homeOrder.indexOf('guided-shopping'), 'Mattress browsing must precede optional tools.');
 check(homeOrder.indexOf('meet-snoozer') < homeOrder.indexOf('guided-shopping'), 'Meet Snoozer must precede optional tools.');
 check(home.sections['mattress-showcase'].block_order.length === 4, 'Homepage must expose the four mattress models.');

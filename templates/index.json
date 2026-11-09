@@ -116,6 +116,7 @@
     },
     "image_with_text_wUxjfL": {
       "type": "image-with-text",
+      "disabled": true,
       "blocks": {
         "heading_PLPUkK": {
           "type": "heading",
@@ -330,6 +331,7 @@
   "order": [
     "image_with_text_hVQzdT",
     "value-strip",
+    "image_with_text_wUxjfL",
     "mattress-showcase",
     "snoozepod_environment_GYx7gN",
     "meet-snoozer",
