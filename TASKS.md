@@ -1,7 +1,7 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-08 — all Dual Comfort pairings owner-approved and implemented
-Queue state: The product/collection purchase hierarchy, mobile browsing, booking placement, single Snoozer surface, and all-pairs Dual Comfort ordering are deployed and live-cart verified. Owner content authoring, technical completion, future Snoozer retrieval implementation, and final release acceptance remain gated.
+Last updated: 2026-11-09 — header Check In removed and mobile logo enlarged
+Queue state: Header simplification is implemented and validated locally; bounded theme deployment and responsive verification remain. Owner content authoring, technical completion, future Snoozer retrieval implementation, and final release acceptance remain gated.
 
 ## Readiness classification
 
@@ -11,6 +11,14 @@ Queue state: The product/collection purchase hierarchy, mobile browsing, booking
 | **FIX** | Missing repository-level Calendly webhook authentication; failing HUD session-prep route assertion. |
 | **IMPROVE** | Authenticated unpublished-theme navigation/catalog acceptance; mobile booking length and iframe ergonomics; remaining hardcoded product benefit text; booking image/alt text after owner approval; accessibility and route verification; deployment documentation. |
 | **BUILD** | Approved physical-display-to-online-product/sample mapping; owner-approved content/media; live pricing/fulfillment authority; non-production booking contract acceptance suite; final release smoke checks. |
+
+### Header Check In removal and mobile logo sizing
+
+- **Status:** IMPLEMENTED / DEPLOYMENT PENDING — desktop and mobile Check In UI, styles, and request handler are removed from `sections/header.liquid`.
+- **Preserved:** Ask Snoozer, account, cart, navigation, announcement bar, and assessment-issued Snooze Code continuity.
+- **Mobile:** Logo maximum width is `18rem`; the mobile Snoozer row now uses the available full width.
+- **Validation:** Website experience 42 assertions, Snooze Code theme UI, Product Page v1 66 assertions, storefront routes, and whitespace checks pass.
+- **Next task:** bounded two-theme deployment followed by desktop and 390×844 visual verification.
 
 ### Storefront commerce hierarchy and responsive polish
 

@@ -135,31 +135,17 @@ function testSnoozeCodeCardDataSkipsEmptyCodes() {
   assert.strictEqual(cardData, null, "temporary shopper ids should not render an empty Snooze Code card");
 }
 
-function testThemeTemplatesContainSnoozeCodeHooks() {
+function testThemeTemplatesKeepAssessmentContinuityWithoutHeaderCheckIn() {
   const headerTemplate = fs.readFileSync(HEADER_TEMPLATE_PATH, "utf8");
   const assessmentTemplate = fs.readFileSync(ASSESSMENT_TEMPLATE_PATH, "utf8");
 
-  assert(
-    headerTemplate.includes("data-snooze-checkin-form"),
-    "header should expose a Snooze Code check-in form hook"
-  );
-  assert(
-    headerTemplate.includes("/identity/check-in"),
-    "header check-in form should call the identity check-in endpoint"
-  );
-  assert(
-    headerTemplate.includes("Snooze Profile unlocked"),
-    "header should show a success state after a valid check-in"
-  );
-  assert(
-    headerTemplate.includes("Code not found"),
-    "header should show a safe failure state for unknown codes"
-  );
+  assert(!headerTemplate.includes("data-snooze-checkin-form"), "header check-in UI should be removed");
+  assert(!headerTemplate.includes("/identity/check-in"), "header should not submit Snooze Codes");
   assert(
     headerTemplate.includes("snoozer_snooze_code") &&
       headerTemplate.includes("snoozer_access_code") &&
       headerTemplate.includes("snoozer_shopper_id"),
-    "header should persist the canonical Snooze Code identity keys"
+    "Ask Snoozer should retain the canonical identity keys for existing continuity"
   );
   assert(
     assessmentTemplate.includes("data-assessment-snooze-card"),
@@ -171,7 +157,7 @@ function main() {
   testAssessmentIdentityPersistsStableKeys();
   testSnoozeCodeCardDataBuildsWhenCodeExists();
   testSnoozeCodeCardDataSkipsEmptyCodes();
-  testThemeTemplatesContainSnoozeCodeHooks();
+  testThemeTemplatesKeepAssessmentContinuityWithoutHeaderCheckIn();
   console.log("All Snooze Code theme UI tests passed.");
 }
 

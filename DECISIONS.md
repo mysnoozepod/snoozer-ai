@@ -1,6 +1,6 @@
 # MySnoozePod.com Decision Register
 
-Last updated: 2026-11-08 — all Dual Comfort pairings owner-approved
+Last updated: 2026-11-09 — header Check In removal and mobile logo decision
 
 ## Confirmed owner decisions and constraints
 
@@ -74,6 +74,7 @@ Last updated: 2026-11-08 — all Dual Comfort pairings owner-approved
 | D-066 | The announcement bar is the persistent booking prompt; the header must not duplicate it. On product pages, native Add to Cart is the focal action above secondary Ask Snoozer and booking guidance. Product and collection booking prompts belong once at page tail, not repeatedly through the shopping flow. | **OWNER DIRECTIVE / IMPLEMENTED AND LIVE-VERIFIED** — 2026-11-08. |
 | D-067 | Mobile homepage product discovery uses horizontal snap carousels for the mattress lineup and non-mattress collection cards. `More Than A Mattress` must not contain mattresses. | **OWNER DIRECTIVE / IMPLEMENTED AND 390PX VERIFIED** — 2026-11-08. |
 | D-068 | Every pairing of Soft, Medium Soft, Medium Firm, and Firm is customer-orderable for the left and right sides of both Dual Comfort mattresses. The existing available Shopify size variant carries commerce identity; the two comfort selections are required line-item properties and do not require 16 duplicate variants per size. | **OWNER DIRECTIVE / IMPLEMENTED AND LIVE-CART VERIFIED** — 2026-11-08. |
+| D-069 | Remove the customer-facing Check In/Snooze Code feature from both desktop and mobile headers. Preserve identity continuity elsewhere, and enlarge the mobile logo from 14rem to 18rem without disrupting menu, account, cart, or Ask Snoozer. | **OWNER DIRECTIVE / IMPLEMENTED LOCALLY** — 2026-11-09. |
 
 ## Verified architectural and operational facts
 

@@ -1,9 +1,17 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-08 — all Dual Comfort pairings owner-approved and implemented
+Last updated: 2026-11-09 — header Check In removed and mobile logo enlarged
 Owner: Ty  
 Implementer: Codi  
-Current phase: Dual Comfort all-pairs ordering deployed and live-cart verified; final release acceptance remains next
+Current phase: Header simplification implemented; theme deployment and responsive verification are next
+
+## Header simplification checkpoint — 2026-11-09
+
+- Removed the customer-facing Check In/Snooze Code controls from both desktop and mobile headers, including their styles and unused `/identity/check-in` submission code.
+- Preserved Ask Snoozer on desktop/mobile, account, cart, navigation, and the separate assessment-issued Snooze Code continuity data used by Snoozer.
+- Increased the mobile logo maximum width from `14rem` to `18rem` and changed the mobile tools row to a single full-width Snoozer column.
+- Focused validation passed: website experience 42 assertions, Snooze Code theme UI, Product Page v1 66 assertions, storefront route contract, and whitespace checks.
+- Exact next action: deploy `sections/header.liquid` to both existing themes, confirm desktop/mobile rendering, then record the bounded readback.
 
 ## Dual Comfort all-pairs checkpoint — 2026-11-08
 

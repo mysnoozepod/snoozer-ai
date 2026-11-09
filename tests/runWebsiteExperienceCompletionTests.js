@@ -38,8 +38,8 @@ check(new Set(Object.values(home.sections['mattress-showcase'].blocks).map((bloc
 
 const header = read('sections/header.liquid');
 check(!header.includes('class="header__book-link"'), 'Header must not duplicate the booking action already present in the announcement bar.');
-check(header.includes('header__guest-checkin'), 'Header must preserve mobile guest check-in access.');
-check(header.includes('data-snooze-checkin-form'), 'Snooze Code check-in behavior must remain connected.');
+check(!header.includes('header__guest-checkin') && !header.includes('data-snooze-checkin-form'), 'Header must not expose Check In on desktop or mobile.');
+check(header.includes('.header__heading-logo { max-width: 18rem; }'), 'Mobile logo must use the enlarged 18rem presentation.');
 check(header.includes('data-snoozer-source="header-desktop"') && header.includes('data-snoozer-source="header-mobile"'), 'Ask Snoozer must remain available on desktop and mobile.');
 
 const collection = json('templates/collection.snoozepod-v1.json');
