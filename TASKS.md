@@ -1,7 +1,7 @@
 # MySnoozePod.com Execution Queue
 
 Last updated: 2026-11-08 — all Dual Comfort pairings owner-approved and implemented
-Queue state: The product/collection purchase hierarchy, mobile browsing, booking placement, single Snoozer surface, and all-pairs Dual Comfort ordering contract are implemented. Owner content authoring, technical completion, future Snoozer retrieval implementation, and final release acceptance remain gated.
+Queue state: The product/collection purchase hierarchy, mobile browsing, booking placement, single Snoozer surface, and all-pairs Dual Comfort ordering are deployed and live-cart verified. Owner content authoring, technical completion, future Snoozer retrieval implementation, and final release acceptance remain gated.
 
 ## Readiness classification
 
@@ -14,13 +14,14 @@ Queue state: The product/collection purchase hierarchy, mobile browsing, booking
 
 ### Storefront commerce hierarchy and responsive polish
 
-- **Status:** COMPLETE AND VERIFIED ON BOTH EXISTING THEMES — published `139460542525` and unpublished `139216420925`.
+- **Status:** COMPLETE AND VERIFIED ON BOTH EXISTING THEMES — published `139460542525` and unpublished `139216420925`; all-pairs Dual Comfort cart acceptance also passed.
 - **Commerce hierarchy:** Add to Cart is the focal product action above secondary Ask Snoozer/booking guidance. Variant pills have distinct unselected and selected states. Dual Comfort enables Add to Cart when an available size and both comfort sides are selected.
 - **Booking hierarchy:** No dedicated booking CTA remains in the header; the announcement bar remains authoritative. Product and collection pages contain one secondary booking action at page tail, with no repeated global booking banner. The booking page has one Calendly embed and optional assessment link.
 - **Homepage/mobile:** `More Than A Mattress` excludes mattresses. Mattress and supporting-collection rows use touch-friendly horizontal snap carousels at 390px with no document overflow.
 - **Snoozer:** Duplicate SalesIQ initialization is removed. Collection Ask Snoozer actions open the established Snoozer panel. Shopify fields, tags, collections, and approved metafields remain the intended retrieval authority; no backend retrieval change was made here.
 - **Evidence:** `docs/storefront-polish/SHOPIFY_READBACK.json`; 54/54 bounded theme-asset readbacks; live desktop/mobile checks; private backup `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\storefront-polish\2026-11-09T01-55-12-954Z`.
-- **Next task:** complete an isolated development-cart acceptance check showing the chosen size plus both comfort line properties, then preserve that readback as release evidence.
+- **Dual Comfort acceptance:** Queen + Left Medium Soft + Right Firm enabled Add to Cart and appeared in the Shopify cart with the exact size and both required line properties. No order was placed.
+- **Next task:** perform the remaining bounded release-readiness checks for payment, tax, shipping, fulfillment, policies, accessibility, and analytics before any public-launch decision.
 
 ### Customer-facing mattress naming and comfort language
 

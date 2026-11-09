@@ -3,7 +3,7 @@
 Last updated: 2026-11-08 — all Dual Comfort pairings owner-approved and implemented
 Owner: Ty  
 Implementer: Codi  
-Current phase: Dual Comfort ordering implementation ready for theme deployment and live cart validation
+Current phase: Dual Comfort all-pairs ordering deployed and live-cart verified; final release acceptance remains next
 
 ## Dual Comfort all-pairs checkpoint — 2026-11-08
 
@@ -12,6 +12,8 @@ Current phase: Dual Comfort ordering implementation ready for theme deployment a
 - Add to Cart enables only after size, left comfort, and right comfort are complete and the selected Shopify size variant is available. Missing selections and unavailable sizes remain fail closed.
 - The obsolete requirement for per-pair `custom.left_comfort` and `custom.right_comfort` variant metafields is removed from the active product-page contract.
 - Automated coverage iterates all 16 pairings against an available size and verifies rejection for unavailable size, missing size, and invalid comfort values.
+- Published theme `139460542525` and unpublished theme `139216420925` both received the exact two-asset implementation. Final deployment readback verified 54/54 allowlisted assets; latest private backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\storefront-polish\2026-11-09T03-37-07-485Z`.
+- Actual Shopify cart acceptance passed on the development storefront: Queen + Left Medium Soft + Right Firm enabled Add to Cart, added variant `44128362561597`, and rendered `Size: Queen`, `Left Side Comfort: Medium Soft`, and `Right Side Comfort: Firm` in both the add confirmation and cart page. No checkout or order was submitted.
 - This checkpoint supersedes the older unresolved-combination notes below; those entries remain as historical task evidence.
 
 ## Storefront commerce and mobile polish checkpoint — 2026-11-08
