@@ -1,7 +1,7 @@
 # MySnoozePod.com Execution Queue
 
 Last updated: 2026-11-09 — header Check In removed and mobile logo enlarged
-Queue state: Header simplification is implemented and validated locally; bounded theme deployment and responsive verification remain. Owner content authoring, technical completion, future Snoozer retrieval implementation, and final release acceptance remain gated.
+Queue state: Header simplification is deployed and responsive-verified. Owner content authoring, technical completion, future Snoozer retrieval implementation, and final release acceptance remain gated.
 
 ## Readiness classification
 
@@ -14,11 +14,11 @@ Queue state: Header simplification is implemented and validated locally; bounded
 
 ### Header Check In removal and mobile logo sizing
 
-- **Status:** IMPLEMENTED / DEPLOYMENT PENDING — desktop and mobile Check In UI, styles, and request handler are removed from `sections/header.liquid`.
+- **Status:** COMPLETE ON BOTH EXISTING THEMES — desktop and mobile Check In UI, styles, and request handler are removed from `sections/header.liquid`.
 - **Preserved:** Ask Snoozer, account, cart, navigation, announcement bar, and assessment-issued Snooze Code continuity.
 - **Mobile:** Logo maximum width is `18rem`; the mobile Snoozer row now uses the available full width.
-- **Validation:** Website experience 42 assertions, Snooze Code theme UI, Product Page v1 66 assertions, storefront routes, and whitespace checks pass.
-- **Next task:** bounded two-theme deployment followed by desktop and 390×844 visual verification.
+- **Validation:** Website experience 42 assertions, Snooze Code theme UI, Product Page v1 66 assertions, storefront routes, catalog/shopping 10/10, 54/54 theme readbacks, and actual desktop/390×844 rendering pass.
+- **Next task:** continue the remaining bounded release-readiness checks; no further header work is required.
 
 ### Storefront commerce hierarchy and responsive polish
 

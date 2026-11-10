@@ -3,7 +3,7 @@
 Last updated: 2026-11-09 — header Check In removed and mobile logo enlarged
 Owner: Ty  
 Implementer: Codi  
-Current phase: Header simplification implemented; theme deployment and responsive verification are next
+Current phase: Header simplification deployed and responsive-verified; final release acceptance remains next
 
 ## Header simplification checkpoint — 2026-11-09
 
@@ -11,7 +11,9 @@ Current phase: Header simplification implemented; theme deployment and responsiv
 - Preserved Ask Snoozer on desktop/mobile, account, cart, navigation, and the separate assessment-issued Snooze Code continuity data used by Snoozer.
 - Increased the mobile logo maximum width from `14rem` to `18rem` and changed the mobile tools row to a single full-width Snoozer column.
 - Focused validation passed: website experience 42 assertions, Snooze Code theme UI, Product Page v1 66 assertions, storefront route contract, and whitespace checks.
-- Exact next action: deploy `sections/header.liquid` to both existing themes, confirm desktop/mobile rendering, then record the bounded readback.
+- Published theme `139460542525` and unpublished theme `139216420925` both received the bounded header update. Final deployment readback verified 54/54 allowlisted assets; latest private backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\storefront-polish\2026-11-09T23-58-40-392Z`.
+- Actual desktop and 390×844 rendering confirmed no Check In text/form; the mobile logo renders at 180×60px, Menu/account/cart/Ask Snoozer remain available, and document width stays within the viewport.
+- Exact next action: continue the remaining bounded release-readiness checks; no additional header work is required.
 
 ## Dual Comfort all-pairs checkpoint — 2026-11-08
 
