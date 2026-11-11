@@ -229,6 +229,12 @@
               {%- endif -%}
 
               {% render 'price', product: card_product, price_class: '', show_compare_at_price: true %}
+              {%- if shop_by_size -%}
+                <div class="snoozepod-size-card-price" data-shop-by-size-price hidden>
+                  <span class="snoozepod-size-card-price__label" data-shop-by-size-price-label></span>
+                  <span class="snoozepod-size-card-price__amount" data-shop-by-size-price-amount></span>
+                </div>
+              {%- endif -%}
               {%- if show_snoozepod_details -%}
                 {% render 'snoozepod-card-details', card_product: card_product %}
               {%- endif -%}

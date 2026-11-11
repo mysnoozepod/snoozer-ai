@@ -147,6 +147,8 @@ The schema separates:
 3. `commerce` — Shopify product/variant identity, with a mandatory live-authority rule.
 4. `compatibility` — verified relationships with a fail-closed unknown rule.
 
+The variant export also includes `standardizedSize`. It is derived deterministically from the native Shopify Size option, with `Cal King` normalized to `California King` and equivalent split labels expanded. The native value remains in `options.Size`; Shopify variant identity, live availability, and live price remain authoritative. This avoids a duplicate metafield while giving future Snoozer retrieval a stable size term.
+
 ## Future API mapping and synchronization
 
 Initial synchronization should use Shopify Admin GraphQL or a Bulk Operation to query products, variants, collections, relevant metafields, IDs, and `updatedAt`. The integration should map namespace/key pairs through schema version `1.0.0`, not scrape rendered product descriptions.

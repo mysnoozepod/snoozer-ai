@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-11-11T15:44:43.564Z",
+  "generatedAt": "2026-11-11T19:16:23.063Z",
   "source": {
     "system": "Shopify",
     "store": "mysnoozepodtest.myshopify.com",
@@ -66,6 +66,7 @@
             "options": {
               "Size": "Twin XL"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "bedgear-m3-12-dual-comfort-twin-xl",
               "custom.fulfillment_readiness": "PENDING",
@@ -80,6 +81,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "bedgear-m3-12-dual-comfort-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -94,6 +96,7 @@
             "options": {
               "Size": "Split Head Queen"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "bedgear-m3-12-dual-comfort-split-head-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -108,6 +111,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "bedgear-m3-12-dual-comfort-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -122,6 +126,7 @@
             "options": {
               "Size": "Cal King"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "bedgear-m3-12-dual-comfort-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -136,6 +141,7 @@
             "options": {
               "Size": "Split Head King"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "bedgear-m3-12-dual-comfort-split-head-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -150,6 +156,7 @@
             "options": {
               "Size": "Split Head Cal King"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.sleep_geometry": "split_head",
               "custom.compatibility_key": "bedgear-m3-12-dual-comfort-split-head-cal-king",
@@ -164,6 +171,7 @@
             "options": {
               "Size": "Split Cal King"
             },
+            "standardizedSize": "Split California King",
             "contract": {
               "custom.compatibility_key": "bedgear-m3-12-dual-comfort-split-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -239,6 +247,7 @@
             "options": {
               "Size": "Twin"
             },
+            "standardizedSize": "Twin",
             "contract": {
               "custom.compatibility_key": "bedgear-h6-12-hybrid-twin",
               "custom.fulfillment_readiness": "PENDING",
@@ -253,6 +262,7 @@
             "options": {
               "Size": "Twin XL"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "bedgear-h6-12-hybrid-twin-xl",
               "custom.fulfillment_readiness": "PENDING",
@@ -267,6 +277,7 @@
             "options": {
               "Size": "Full"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.compatibility_key": "bedgear-h6-12-hybrid-full",
               "custom.fulfillment_readiness": "PENDING",
@@ -281,6 +292,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "bedgear-h6-12-hybrid-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -295,6 +307,7 @@
             "options": {
               "Size": "Split Head Queen"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "bedgear-h6-12-hybrid-split-head-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -309,6 +322,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -323,6 +337,7 @@
             "options": {
               "Size": "Cal King"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "bedgear-h6-12-hybrid-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -337,6 +352,7 @@
             "options": {
               "Size": "Split Head King"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "bedgear-h6-12-hybrid-split-head-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -351,6 +367,7 @@
             "options": {
               "Size": "Split Head Cal King"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "bedgear-h6-12-hybrid-split-head-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -365,6 +382,7 @@
             "options": {
               "Size": "Split King"
             },
+            "standardizedSize": "Split King",
             "contract": {
               "custom.compatibility_key": "bedgear-h6-12-hybrid-split-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -445,6 +463,7 @@
             "options": {
               "Size": "Twin"
             },
+            "standardizedSize": "Twin",
             "contract": {
               "custom.compatibility_key": "bedgear-s7-12-memory-foam-twin",
               "custom.fulfillment_readiness": "PENDING",
@@ -459,6 +478,7 @@
             "options": {
               "Size": "Twin XL"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "bedgear-s7-12-memory-foam-twin-xl",
               "custom.fulfillment_readiness": "PENDING",
@@ -473,6 +493,7 @@
             "options": {
               "Size": "Full"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.compatibility_key": "bedgear-s7-12-memory-foam-full",
               "custom.fulfillment_readiness": "PENDING",
@@ -487,6 +508,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "bedgear-s7-12-memory-foam-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -501,6 +523,7 @@
             "options": {
               "Size": "Split Head Queen"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -515,6 +538,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "bedgear-s7-12-memory-foam-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -529,6 +553,7 @@
             "options": {
               "Size": "Cal King"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "bedgear-s7-12-memory-foam-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -543,6 +568,7 @@
             "options": {
               "Size": "Split Head King"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "bedgear-s7-12-memory-foam-split-head-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -557,6 +583,7 @@
             "options": {
               "Size": "Split Head Cal King"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "bedgear-s7-12-memory-foam-split-head-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -571,6 +598,7 @@
             "options": {
               "Size": "Split King"
             },
+            "standardizedSize": "Split King",
             "contract": {
               "custom.compatibility_key": "bedgear-s7-12-memory-foam-split-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -646,6 +674,7 @@
             "options": {
               "Size": "Twin XL"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "bedgear-m5-14-dual-comfort-twin-xl",
               "custom.fulfillment_readiness": "PENDING",
@@ -660,6 +689,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "bedgear-m5-14-dual-comfort-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -674,6 +704,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
               "custom.sleep_geometry": "standard",
@@ -688,6 +719,7 @@
             "options": {
               "Size": "Cal King"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "bedgear-m5-14-dual-comfort-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -702,6 +734,7 @@
             "options": {
               "Size": "Split Head Queen"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "bedgear-m5-14-dual-comfort-split-head-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -716,6 +749,7 @@
             "options": {
               "Size": "Split Head King"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "bedgear-m5-14-dual-comfort-split-head-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -730,6 +764,7 @@
             "options": {
               "Size": "Split Head Cal King"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "bedgear-m5-14-dual-comfort-split-head-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -744,6 +779,7 @@
             "options": {
               "Size": "Twin XL x 2"
             },
+            "standardizedSize": "Twin XL x 2",
             "contract": {
               "custom.compatibility_key": "bedgear-m5-14-dual-comfort-twin-xl-x-2",
               "custom.fulfillment_readiness": "PENDING",
@@ -758,6 +794,7 @@
             "options": {
               "Size": "Split Cal King"
             },
+            "standardizedSize": "Split California King",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -823,6 +860,7 @@
             "options": {
               "Size": "Twin"
             },
+            "standardizedSize": "Twin",
             "contract": {
               "custom.compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-twin",
               "custom.fulfillment_readiness": "PENDING",
@@ -837,6 +875,7 @@
             "options": {
               "Size": "Twin XL"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-twin-xl",
               "custom.fulfillment_readiness": "PENDING",
@@ -851,6 +890,7 @@
             "options": {
               "Size": "Full"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-full",
               "custom.fulfillment_readiness": "PENDING",
@@ -865,6 +905,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -879,6 +920,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -893,6 +935,7 @@
             "options": {
               "Size": "California King"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "malouf-2-5-inch-gel-memory-foam-topper-california-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -963,6 +1006,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "bamboo-charcoal-pillow-cooling-cover-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -977,6 +1021,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "bamboo-charcoal-pillow-cooling-cover-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -1048,6 +1093,7 @@
               "Size": "Queen",
               "Color": "Oat"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "blackwell-designer-headboard-queen-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -1063,6 +1109,7 @@
               "Size": "Queen",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "blackwell-designer-headboard-queen-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -1078,6 +1125,7 @@
               "Size": "Queen",
               "Color": "Stone"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "blackwell-designer-headboard-queen-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -1093,6 +1141,7 @@
               "Size": "King/California King",
               "Color": "Oat"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.compatibility_key": "blackwell-designer-headboard-king-california-king-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -1108,6 +1157,7 @@
               "Size": "King/California King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.compatibility_key": "blackwell-designer-headboard-king-california-king-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -1123,6 +1173,7 @@
               "Size": "King/California King",
               "Color": "Stone"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.compatibility_key": "blackwell-designer-headboard-king-california-king-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -1183,6 +1234,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "carboncool-omniphase-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -1197,6 +1249,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "carboncool-omniphase-pillow-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -1268,6 +1321,7 @@
               "Size": "Queen",
               "Color": "Oat"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "carlisle-upholstered-headboard-queen-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -1283,6 +1337,7 @@
               "Size": "Queen",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "carlisle-upholstered-headboard-queen-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -1298,6 +1353,7 @@
               "Size": "Queen",
               "Color": "Stone"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "carlisle-upholstered-headboard-queen-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -1313,6 +1369,7 @@
               "Size": "King/California King",
               "Color": "Oat"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.compatibility_key": "carlisle-upholstered-headboard-king-california-king-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -1328,6 +1385,7 @@
               "Size": "King/California King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
               "custom.sleep_geometry": "not_applicable",
@@ -1343,6 +1401,7 @@
               "Size": "King/California King",
               "Color": "Stone"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.compatibility_key": "carlisle-upholstered-headboard-king-california-king-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -1403,6 +1462,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "convolution-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -1417,6 +1477,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "convolution-pillow-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -1483,6 +1544,7 @@
               "Size": "One Size",
               "Color": "White/Grey"
             },
+            "standardizedSize": "One Size",
             "contract": {
               "custom.compatibility_key": "cooling-performance-throw-one-size-white-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -1549,6 +1611,7 @@
               "Size": "Twin",
               "Color": "Bright White"
             },
+            "standardizedSize": "Twin",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-twin-bright-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -1564,6 +1627,7 @@
               "Size": "Twin XL",
               "Color": "Bright White"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-twin-xl-bright-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -1579,6 +1643,7 @@
               "Size": "Full",
               "Color": "Bright White"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -1594,6 +1659,7 @@
               "Size": "Queen",
               "Color": "Bright White"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-queen-bright-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -1609,6 +1675,7 @@
               "Size": "Split Head Queen",
               "Color": "Bright White"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-head-queen-bright-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -1624,6 +1691,7 @@
               "Size": "King",
               "Color": "Bright White"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-king-bright-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -1639,6 +1707,7 @@
               "Size": "Cal King",
               "Color": "Bright White"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-cal-king-bright-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -1654,6 +1723,7 @@
               "Size": "Split King",
               "Color": "Bright White"
             },
+            "standardizedSize": "Split King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-king-bright-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -1669,6 +1739,7 @@
               "Size": "Split Cal King",
               "Color": "Bright White"
             },
+            "standardizedSize": "Split California King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-cal-king-bright-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -1684,6 +1755,7 @@
               "Size": "Split Head King",
               "Color": "Bright White"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-head-king-bright-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -1699,6 +1771,7 @@
               "Size": "Split Head Cal King",
               "Color": "Bright White"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-head-cal-king-bright-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -1714,6 +1787,7 @@
               "Size": "Twin",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Twin",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-twin-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -1729,6 +1803,7 @@
               "Size": "Twin XL",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-twin-xl-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -1744,6 +1819,7 @@
               "Size": "Full",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-full-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -1759,6 +1835,7 @@
               "Size": "Queen",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-queen-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -1774,6 +1851,7 @@
               "Size": "Split Head Queen",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.sleep_geometry": "split_head",
               "custom.compatibility_key": "cotton-sheet-set-split-head-queen-light-grey",
@@ -1789,6 +1867,7 @@
               "Size": "King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -1804,6 +1883,7 @@
               "Size": "Cal King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-cal-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -1819,6 +1899,7 @@
               "Size": "Split King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -1834,6 +1915,7 @@
               "Size": "Split Cal King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split California King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-cal-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -1849,6 +1931,7 @@
               "Size": "Split Head King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-head-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -1864,6 +1947,7 @@
               "Size": "Split Head Cal King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
               "custom.sleep_geometry": "split_head",
@@ -1879,6 +1963,7 @@
               "Size": "Queen",
               "Color": "Moss"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-queen-moss",
               "custom.fulfillment_readiness": "PENDING",
@@ -1894,6 +1979,7 @@
               "Size": "King",
               "Color": "Moss"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-king-moss",
               "custom.fulfillment_readiness": "PENDING",
@@ -1909,6 +1995,7 @@
               "Size": "Split King",
               "Color": "Moss"
             },
+            "standardizedSize": "Split King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-king-moss",
               "custom.fulfillment_readiness": "PENDING",
@@ -1924,6 +2011,7 @@
               "Size": "Twin",
               "Color": "Taupe"
             },
+            "standardizedSize": "Twin",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-twin-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -1939,6 +2027,7 @@
               "Size": "Twin XL",
               "Color": "Taupe"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-twin-xl-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -1954,6 +2043,7 @@
               "Size": "Full",
               "Color": "Taupe"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -1969,6 +2059,7 @@
               "Size": "Queen",
               "Color": "Taupe"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-queen-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -1984,6 +2075,7 @@
               "Size": "Split Head Queen",
               "Color": "Taupe"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-head-queen-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -1999,6 +2091,7 @@
               "Size": "King",
               "Color": "Taupe"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-king-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2014,6 +2107,7 @@
               "Size": "Cal King",
               "Color": "Taupe"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-cal-king-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2029,6 +2123,7 @@
               "Size": "Split King",
               "Color": "Taupe"
             },
+            "standardizedSize": "Split King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-king-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2044,6 +2139,7 @@
               "Size": "Split Cal King",
               "Color": "Taupe"
             },
+            "standardizedSize": "Split California King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-cal-king-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2059,6 +2155,7 @@
               "Size": "Split Head King",
               "Color": "Taupe"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-head-king-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2074,6 +2171,7 @@
               "Size": "Split Head Cal King",
               "Color": "Taupe"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "cotton-sheet-set-split-head-cal-king-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2139,6 +2237,7 @@
             "options": {
               "Size": "Twin"
             },
+            "standardizedSize": "Twin",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-twin",
               "custom.fulfillment_readiness": "PENDING",
@@ -2153,6 +2252,7 @@
             "options": {
               "Size": "Twin XL"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-twin-xl",
               "custom.fulfillment_readiness": "PENDING",
@@ -2167,6 +2267,7 @@
             "options": {
               "Size": "Full"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-full",
               "custom.fulfillment_readiness": "PENDING",
@@ -2181,6 +2282,7 @@
             "options": {
               "Size": "Full XL"
             },
+            "standardizedSize": "Full XL",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-full-xl",
               "custom.fulfillment_readiness": "PENDING",
@@ -2195,6 +2297,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -2209,6 +2312,7 @@
             "options": {
               "Size": "Split Head Queen"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-split-head-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -2223,6 +2327,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -2237,6 +2342,7 @@
             "options": {
               "Size": "Cal King"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -2251,6 +2357,7 @@
             "options": {
               "Size": "Split King (2pc)"
             },
+            "standardizedSize": "Split King (2pc)",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-split-king-2pc",
               "custom.fulfillment_readiness": "PENDING",
@@ -2265,6 +2372,7 @@
             "options": {
               "Size": "Split Cal King (2pc)"
             },
+            "standardizedSize": "Split Cal King (2pc)",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-split-cal-king-2pc",
               "custom.fulfillment_readiness": "PENDING",
@@ -2279,6 +2387,7 @@
             "options": {
               "Size": "Split Head King"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-split-head-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -2293,6 +2402,7 @@
             "options": {
               "Size": "Split Head Cal King"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "dri-tec-mattress-protector-split-head-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -2359,6 +2469,7 @@
               "Size": "Twin/Twin XL",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Twin/Twin XL",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-twin-twin-xl-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -2374,6 +2485,7 @@
               "Size": "Full",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-full-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -2389,6 +2501,7 @@
               "Size": "Queen",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-queen-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -2404,6 +2517,7 @@
               "Size": "Split Head Queen",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.sleep_geometry": "split_head",
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-queen-charcoal",
@@ -2419,6 +2533,7 @@
               "Size": "King/Cal King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-king-cal-king-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -2434,6 +2549,7 @@
               "Size": "Split King/Split Cal King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Split King/Split Cal King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-king-split-cal-king-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -2449,6 +2565,7 @@
               "Size": "Split Head King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-king-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -2464,6 +2581,7 @@
               "Size": "Split Head Cal King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-cal-king-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -2479,6 +2597,7 @@
               "Size": "Twin/Twin XL",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Twin/Twin XL",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-twin-twin-xl-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -2494,6 +2613,7 @@
               "Size": "Full",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
               "custom.sleep_geometry": "standard",
@@ -2509,6 +2629,7 @@
               "Size": "Queen",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-queen-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -2524,6 +2645,7 @@
               "Size": "Split Head Queen",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-queen-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -2539,6 +2661,7 @@
               "Size": "King/Cal King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-king-cal-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -2554,6 +2677,7 @@
               "Size": "Split King/Split Cal King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split King/Split Cal King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-king-split-cal-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -2569,6 +2693,7 @@
               "Size": "Split Head King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -2584,6 +2709,7 @@
               "Size": "Split Head Cal King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -2599,6 +2725,7 @@
               "Size": "Texas King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Texas King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-texas-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -2614,6 +2741,7 @@
               "Size": "Twin/Twin XL",
               "Color": "Navy"
             },
+            "standardizedSize": "Twin/Twin XL",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-twin-twin-xl-navy",
               "custom.fulfillment_readiness": "PENDING",
@@ -2629,6 +2757,7 @@
               "Size": "Full",
               "Color": "Navy"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-full-navy",
               "custom.fulfillment_readiness": "PENDING",
@@ -2644,6 +2773,7 @@
               "Size": "Queen",
               "Color": "Navy"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-queen-navy",
               "custom.fulfillment_readiness": "PENDING",
@@ -2659,6 +2789,7 @@
               "Size": "Split Head Queen",
               "Color": "Navy"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-queen-navy",
               "custom.fulfillment_readiness": "PENDING",
@@ -2674,6 +2805,7 @@
               "Size": "King/Cal King",
               "Color": "Navy"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-king-cal-king-navy",
               "custom.fulfillment_readiness": "PENDING",
@@ -2689,6 +2821,7 @@
               "Size": "Split King/Split Cal King",
               "Color": "Navy"
             },
+            "standardizedSize": "Split King/Split Cal King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-king-split-cal-king-navy",
               "custom.fulfillment_readiness": "PENDING",
@@ -2704,6 +2837,7 @@
               "Size": "Split Head King",
               "Color": "Navy"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-king-navy",
               "custom.fulfillment_readiness": "PENDING",
@@ -2719,6 +2853,7 @@
               "Size": "Split Head Cal King",
               "Color": "Navy"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-cal-king-navy",
               "custom.fulfillment_readiness": "PENDING",
@@ -2734,6 +2869,7 @@
               "Size": "Twin/Twin XL",
               "Color": "Taupe"
             },
+            "standardizedSize": "Twin/Twin XL",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-twin-twin-xl-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2749,6 +2885,7 @@
               "Size": "Full",
               "Color": "Taupe"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-full-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2764,6 +2901,7 @@
               "Size": "Queen",
               "Color": "Taupe"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-queen-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2779,6 +2917,7 @@
               "Size": "Split Head Queen",
               "Color": "Taupe"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.sleep_geometry": "split_head",
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-queen-taupe",
@@ -2794,6 +2933,7 @@
               "Size": "King/Cal King",
               "Color": "Taupe"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-king-cal-king-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2809,6 +2949,7 @@
               "Size": "Split King/Split Cal King",
               "Color": "Taupe"
             },
+            "standardizedSize": "Split King/Split Cal King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-king-split-cal-king-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2824,6 +2965,7 @@
               "Size": "Split Head King",
               "Color": "Taupe"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-king-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2839,6 +2981,7 @@
               "Size": "Split Head Cal King",
               "Color": "Taupe"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-cal-king-taupe",
               "custom.fulfillment_readiness": "PENDING",
@@ -2854,6 +2997,7 @@
               "Size": "Twin/Twin XL",
               "Color": "White"
             },
+            "standardizedSize": "Twin/Twin XL",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-twin-twin-xl-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -2869,6 +3013,7 @@
               "Size": "Full",
               "Color": "White"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
               "custom.sleep_geometry": "standard",
@@ -2884,6 +3029,7 @@
               "Size": "Queen",
               "Color": "White"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-queen-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -2899,6 +3045,7 @@
               "Size": "Split Head Queen",
               "Color": "White"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-queen-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -2914,6 +3061,7 @@
               "Size": "King/Cal King",
               "Color": "White"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-king-cal-king-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -2929,6 +3077,7 @@
               "Size": "Split King/Split Cal King",
               "Color": "White"
             },
+            "standardizedSize": "Split King/Split Cal King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-king-split-cal-king-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -2944,6 +3093,7 @@
               "Size": "Split Head King",
               "Color": "White"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "dri-tec-sheet-set-split-head-king-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -2959,6 +3109,7 @@
               "Size": "Split Head Cal King",
               "Color": "White"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -3030,6 +3181,7 @@
               "Size": "Queen",
               "Color": "Oat"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "eastman-upholstered-platform-base-queen-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -3045,6 +3197,7 @@
               "Size": "Queen",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "eastman-upholstered-platform-base-queen-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -3060,6 +3213,7 @@
               "Size": "Queen",
               "Color": "Stone"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.sleep_geometry": "standard",
               "custom.compatibility_key": "eastman-upholstered-platform-base-queen-stone",
@@ -3075,6 +3229,7 @@
               "Size": "King",
               "Color": "Oat"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "eastman-upholstered-platform-base-king-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -3090,6 +3245,7 @@
               "Size": "King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "eastman-upholstered-platform-base-king-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -3105,6 +3261,7 @@
               "Size": "King",
               "Color": "Stone"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "eastman-upholstered-platform-base-king-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -3120,6 +3277,7 @@
               "Size": "California King",
               "Color": "Oat"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "eastman-upholstered-platform-base-california-king-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -3135,6 +3293,7 @@
               "Size": "California King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "eastman-upholstered-platform-base-california-king-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -3150,6 +3309,7 @@
               "Size": "California King",
               "Color": "Stone"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
               "custom.sleep_geometry": "standard",
@@ -3215,6 +3375,7 @@
             "options": {
               "Size": "Twin XL"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "flex-l-adjustable-base-twin-xl",
               "custom.fulfillment_readiness": "PENDING",
@@ -3229,6 +3390,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "flex-l-adjustable-base-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -3243,6 +3405,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "flex-l-adjustable-base-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3257,6 +3420,7 @@
             "options": {
               "Size": "Cal King"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "flex-l-adjustable-base-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3322,6 +3486,7 @@
             "options": {
               "Size": "Twin XL"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.sleep_geometry": "standard",
               "custom.compatibility_key": "flex-lsx-adjustable-base-twin-xl",
@@ -3336,6 +3501,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "flex-lsx-adjustable-base-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -3350,6 +3516,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "flex-lsx-adjustable-base-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3364,6 +3531,7 @@
             "options": {
               "Size": "Cal King"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "flex-lsx-adjustable-base-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3378,6 +3546,7 @@
             "options": {
               "Size": "Split Cal King"
             },
+            "standardizedSize": "Split California King",
             "contract": {
               "custom.compatibility_key": "flex-lsx-adjustable-base-split-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3443,6 +3612,7 @@
             "options": {
               "Size": "Split Head Queen"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
               "custom.sleep_geometry": "split_head",
@@ -3457,6 +3627,7 @@
             "options": {
               "Size": "Split Head King"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "flex-sh-adjustable-base-split-head-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3471,6 +3642,7 @@
             "options": {
               "Size": "Split Head Cal King"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "flex-sh-adjustable-base-split-head-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3541,6 +3713,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "gel-convolution-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -3555,6 +3728,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "gel-convolution-pillow-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3626,6 +3800,7 @@
               "Loft": "High",
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "gel-dough-z-gel-pillow-high-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -3641,6 +3816,7 @@
               "Loft": "High",
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "gel-dough-z-gel-pillow-high-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3656,6 +3832,7 @@
               "Loft": "Mid",
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "gel-dough-z-gel-pillow-mid-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -3671,6 +3848,7 @@
               "Loft": "Mid",
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "gel-dough-z-gel-pillow-mid-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3741,6 +3919,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "gelled-microfiber-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -3755,6 +3934,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "gelled-microfiber-pillow-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -3826,6 +4006,7 @@
               "Size": "Queen",
               "Color": "Oat"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "hennessy-upholstered-headboard-queen-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -3841,6 +4022,7 @@
               "Size": "Queen",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "hennessy-upholstered-headboard-queen-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -3856,6 +4038,7 @@
               "Size": "Queen",
               "Color": "Stone"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "hennessy-upholstered-headboard-queen-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -3871,6 +4054,7 @@
               "Size": "King/California King",
               "Color": "Oat"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.compatibility_key": "hennessy-upholstered-headboard-king-california-king-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -3886,6 +4070,7 @@
               "Size": "King/California King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.compatibility_key": "hennessy-upholstered-headboard-king-california-king-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -3901,6 +4086,7 @@
               "Size": "King/California King",
               "Color": "Stone"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.sleep_geometry": "not_applicable",
               "custom.compatibility_key": "hennessy-upholstered-headboard-king-california-king-stone",
@@ -3971,6 +4157,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "hexcurve-omniphase-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -3985,6 +4172,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
               "custom.sleep_geometry": "not_applicable",
@@ -4051,6 +4239,7 @@
               "Loft": "High",
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "ice-cloud-omniphase-pillow-high-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -4066,6 +4255,7 @@
               "Loft": "High",
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "ice-cloud-omniphase-pillow-high-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -4081,6 +4271,7 @@
               "Loft": "Mid",
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "ice-cloud-omniphase-pillow-mid-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -4096,6 +4287,7 @@
               "Loft": "Mid",
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.sleep_geometry": "not_applicable",
               "custom.compatibility_key": "ice-cloud-omniphase-pillow-mid-king",
@@ -4111,6 +4303,7 @@
               "Loft": "Low",
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "ice-cloud-omniphase-pillow-low-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -4126,6 +4319,7 @@
               "Loft": "Low",
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "ice-cloud-omniphase-pillow-low-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -4192,6 +4386,7 @@
               "Size": "Queen",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "light-grey-racetrack-duvet-sham-set-queen-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -4257,6 +4452,7 @@
             "options": {
               "Size": "Full/Queen"
             },
+            "standardizedSize": "Full/Queen",
             "contract": {
               "custom.compatibility_key": "light-weight-comforter-full-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -4271,6 +4467,7 @@
             "options": {
               "Size": "King/Cal King"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "light-weight-comforter-king-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -4336,6 +4533,7 @@
             "options": {
               "Size": "Full/Queen"
             },
+            "standardizedSize": "Full/Queen",
             "contract": {
               "custom.compatibility_key": "medium-weight-comforter-full-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -4350,6 +4548,7 @@
             "options": {
               "Size": "King/Cal King"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "medium-weight-comforter-king-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -4410,6 +4609,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "quilted-convolution-hyperchill-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -4424,6 +4624,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "quilted-convolution-hyperchill-pillow-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -4484,6 +4685,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "react-pro-performance-topper-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -4555,6 +4757,7 @@
               "Size": "Queen",
               "Color": "Oat"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "scoresby-designer-headboard-queen-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -4570,6 +4773,7 @@
               "Size": "Queen",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "scoresby-designer-headboard-queen-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -4585,6 +4789,7 @@
               "Size": "Queen",
               "Color": "Stone"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "scoresby-designer-headboard-queen-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -4600,6 +4805,7 @@
               "Size": "King/California King",
               "Color": "Oat"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -4615,6 +4821,7 @@
               "Size": "King/California King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.compatibility_key": "scoresby-designer-headboard-king-california-king-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -4630,6 +4837,7 @@
               "Size": "King/California King",
               "Color": "Stone"
             },
+            "standardizedSize": "King/California King",
             "contract": {
               "custom.compatibility_key": "scoresby-designer-headboard-king-california-king-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -4700,6 +4908,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "shoulder-zoned-gel-activedough-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -4714,6 +4923,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "shoulder-zoned-gel-activedough-pillow-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -4780,6 +4990,7 @@
               "Size": "Queen",
               "Color": "White"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "solid-white-duvet-sham-set-queen-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -4845,6 +5056,7 @@
             "options": {
               "Size": "Twin"
             },
+            "standardizedSize": "Twin",
             "contract": {
               "custom.compatibility_key": "stretchwick-mattress-encasement-twin",
               "custom.fulfillment_readiness": "PENDING",
@@ -4859,6 +5071,7 @@
             "options": {
               "Size": "Twin XL"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "stretchwick-mattress-encasement-twin-xl",
               "custom.fulfillment_readiness": "PENDING",
@@ -4873,6 +5086,7 @@
             "options": {
               "Size": "Full"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.compatibility_key": "stretchwick-mattress-encasement-full",
               "custom.fulfillment_readiness": "PENDING",
@@ -4887,6 +5101,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "stretchwick-mattress-encasement-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -4901,6 +5116,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -4915,6 +5131,7 @@
             "options": {
               "Size": "Cal King"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "stretchwick-mattress-encasement-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -4980,6 +5197,7 @@
             "options": {
               "Size": "Full/Queen"
             },
+            "standardizedSize": "Full/Queen",
             "contract": {
               "custom.compatibility_key": "ultra-weight-comforter-full-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -4994,6 +5212,7 @@
             "options": {
               "Size": "King/Cal King"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "ultra-weight-comforter-king-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -5059,6 +5278,7 @@
             "options": {
               "Size": "Twin"
             },
+            "standardizedSize": "Twin",
             "contract": {
               "custom.compatibility_key": "ver-tex-mattress-protector-twin",
               "custom.fulfillment_readiness": "PENDING",
@@ -5073,6 +5293,7 @@
             "options": {
               "Size": "Twin XL"
             },
+            "standardizedSize": "Twin XL",
             "contract": {
               "custom.compatibility_key": "ver-tex-mattress-protector-twin-xl",
               "custom.fulfillment_readiness": "PENDING",
@@ -5087,6 +5308,7 @@
             "options": {
               "Size": "Full"
             },
+            "standardizedSize": "Full",
             "contract": {
               "custom.compatibility_key": "ver-tex-mattress-protector-full",
               "custom.fulfillment_readiness": "PENDING",
@@ -5101,6 +5323,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "ver-tex-mattress-protector-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -5115,6 +5338,7 @@
             "options": {
               "Size": "Split Head Queen"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.sleep_geometry": "split_head",
               "custom.compatibility_key": "ver-tex-mattress-protector-split-head-queen",
@@ -5129,6 +5353,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "ver-tex-mattress-protector-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -5143,6 +5368,7 @@
             "options": {
               "Size": "Cal King"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "ver-tex-mattress-protector-cal-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -5157,6 +5383,7 @@
             "options": {
               "Size": "Split King (2pc)"
             },
+            "standardizedSize": "Split King (2pc)",
             "contract": {
               "custom.compatibility_key": "ver-tex-mattress-protector-split-king-2pc",
               "custom.fulfillment_readiness": "PENDING",
@@ -5171,6 +5398,7 @@
             "options": {
               "Size": "Split Cal King (2pc)"
             },
+            "standardizedSize": "Split Cal King (2pc)",
             "contract": {
               "custom.compatibility_key": "ver-tex-mattress-protector-split-cal-king-2pc",
               "custom.fulfillment_readiness": "PENDING",
@@ -5185,6 +5413,7 @@
             "options": {
               "Size": "Split Head King"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "ver-tex-mattress-protector-split-head-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -5199,6 +5428,7 @@
             "options": {
               "Size": "Split Head Cal King"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
               "custom.sleep_geometry": "split_head",
@@ -5265,6 +5495,7 @@
               "Size": "Queen",
               "Color": "Light Blue"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-queen-light-blue",
               "custom.fulfillment_readiness": "PENDING",
@@ -5280,6 +5511,7 @@
               "Size": "King/Cal King",
               "Color": "Light Blue"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-king-cal-king-light-blue",
               "custom.fulfillment_readiness": "PENDING",
@@ -5295,6 +5527,7 @@
               "Size": "Split King/Split Cal King",
               "Color": "Light Blue"
             },
+            "standardizedSize": "Split King/Split Cal King",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-light-blue",
               "custom.fulfillment_readiness": "PENDING",
@@ -5310,6 +5543,7 @@
               "Size": "Queen",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-queen-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -5325,6 +5559,7 @@
               "Size": "Split Head Queen",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-split-head-queen-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -5340,6 +5575,7 @@
               "Size": "King/Cal King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-king-cal-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -5355,6 +5591,7 @@
               "Size": "Split King/Split Cal King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split King/Split Cal King",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -5370,6 +5607,7 @@
               "Size": "Split Head King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-split-head-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -5385,6 +5623,7 @@
               "Size": "Split Head Cal King",
               "Color": "Light Grey"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-split-head-cal-king-light-grey",
               "custom.fulfillment_readiness": "PENDING",
@@ -5400,6 +5639,7 @@
               "Size": "Queen",
               "Color": "Moss"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-queen-moss",
               "custom.fulfillment_readiness": "PENDING",
@@ -5415,6 +5655,7 @@
               "Size": "King/Cal King",
               "Color": "Moss"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-king-cal-king-moss",
               "custom.fulfillment_readiness": "PENDING",
@@ -5430,6 +5671,7 @@
               "Size": "Split King/Split Cal King",
               "Color": "Moss"
             },
+            "standardizedSize": "Split King/Split Cal King",
             "contract": {
               "custom.sleep_geometry": "full_split",
               "custom.compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-moss",
@@ -5445,6 +5687,7 @@
               "Size": "Queen",
               "Color": "White"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-queen-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -5460,6 +5703,7 @@
               "Size": "Split Head Queen",
               "Color": "White"
             },
+            "standardizedSize": "Split Head Queen",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-split-head-queen-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -5475,6 +5719,7 @@
               "Size": "King/Cal King",
               "Color": "White"
             },
+            "standardizedSize": "King/Cal King",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-king-cal-king-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -5490,6 +5735,7 @@
               "Size": "Split King/Split Cal King",
               "Color": "White"
             },
+            "standardizedSize": "Split King/Split Cal King",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-split-king-split-cal-king-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -5505,6 +5751,7 @@
               "Size": "Split Head King",
               "Color": "White"
             },
+            "standardizedSize": "Split Head King",
             "contract": {
               "custom.compatibility_key": "ver-tex-sheet-set-split-head-king-white",
               "custom.fulfillment_readiness": "PENDING",
@@ -5520,6 +5767,7 @@
               "Size": "Split Head Cal King",
               "Color": "White"
             },
+            "standardizedSize": "Split Head California King",
             "contract": {
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
               "custom.sleep_geometry": "split_head",
@@ -5591,6 +5839,7 @@
               "Size": "Queen",
               "Color": "Oat"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "watson-upholstered-platform-base-queen-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -5606,6 +5855,7 @@
               "Size": "Queen",
               "Color": "Charcoal"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "watson-upholstered-platform-base-queen-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -5621,6 +5871,7 @@
               "Size": "Queen",
               "Color": "Stone"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "watson-upholstered-platform-base-queen-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -5636,6 +5887,7 @@
               "Size": "King",
               "Color": "Oat"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "watson-upholstered-platform-base-king-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -5651,6 +5903,7 @@
               "Size": "King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -5666,6 +5919,7 @@
               "Size": "King",
               "Color": "Stone"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "watson-upholstered-platform-base-king-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -5681,6 +5935,7 @@
               "Size": "California King",
               "Color": "Oat"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "watson-upholstered-platform-base-california-king-oat",
               "custom.fulfillment_readiness": "PENDING",
@@ -5696,6 +5951,7 @@
               "Size": "California King",
               "Color": "Charcoal"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "watson-upholstered-platform-base-california-king-charcoal",
               "custom.fulfillment_readiness": "PENDING",
@@ -5711,6 +5967,7 @@
               "Size": "California King",
               "Color": "Stone"
             },
+            "standardizedSize": "California King",
             "contract": {
               "custom.compatibility_key": "watson-upholstered-platform-base-california-king-stone",
               "custom.fulfillment_readiness": "PENDING",
@@ -5776,6 +6033,7 @@
             "options": {
               "Size": "Standard"
             },
+            "standardizedSize": "Standard",
             "contract": {
               "custom.compatibility_key": "weekender-gel-memory-foam-pillow-standard",
               "custom.fulfillment_readiness": "PENDING",
@@ -5790,6 +6048,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "weekender-gel-memory-foam-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -5804,6 +6063,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.sleep_geometry": "not_applicable",
               "custom.compatibility_key": "weekender-gel-memory-foam-pillow-king",
@@ -5874,6 +6134,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "zoned-activedough-bamboo-charcoal-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -5888,6 +6149,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "zoned-activedough-bamboo-charcoal-pillow-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -5958,6 +6220,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "zoned-dough-bamboo-charcoal-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -5972,6 +6235,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "zoned-dough-bamboo-charcoal-pillow-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -6042,6 +6306,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "zoned-gel-activedough-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -6056,6 +6321,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.fulfillment_readiness": "PENDING",
               "custom.price_verification_status": "HISTORICAL_REFERENCE",
@@ -6132,6 +6398,7 @@
               "Loft": "High",
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "zoned-gel-dough-pillow-high-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -6147,6 +6414,7 @@
               "Loft": "High",
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "zoned-gel-dough-pillow-high-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -6162,6 +6430,7 @@
               "Loft": "Mid",
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "zoned-gel-dough-pillow-mid-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -6177,6 +6446,7 @@
               "Loft": "Mid",
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "zoned-gel-dough-pillow-mid-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -6192,6 +6462,7 @@
               "Loft": "Low",
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "zoned-gel-dough-pillow-low-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -6207,6 +6478,7 @@
               "Loft": "Low",
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "zoned-gel-dough-pillow-low-king",
               "custom.fulfillment_readiness": "PENDING",
@@ -6277,6 +6549,7 @@
             "options": {
               "Size": "Queen"
             },
+            "standardizedSize": "Queen",
             "contract": {
               "custom.compatibility_key": "zoned-talalay-latex-pillow-queen",
               "custom.fulfillment_readiness": "PENDING",
@@ -6291,6 +6564,7 @@
             "options": {
               "Size": "King"
             },
+            "standardizedSize": "King",
             "contract": {
               "custom.compatibility_key": "zoned-talalay-latex-pillow-king",
               "custom.fulfillment_readiness": "PENDING",

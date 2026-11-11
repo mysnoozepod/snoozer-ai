@@ -1,6 +1,9 @@
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
+{%- if collection.handle == 'mattresses' -%}
+  {{ 'snoozepod-shop-by-size.js' | asset_url | script_tag }}
+{%- endif -%}
 {%- if section.settings.show_snoozepod_card_details -%}
   {{ 'component-snoozepod-commerce-v1.css' | asset_url | stylesheet_tag }}
 {%- endif -%}
@@ -39,11 +42,133 @@
   }
 {%- endstyle -%}
 
-{%- if template.suffix == 'snoozepod' or template.suffix == 'main' -%}
+{%- if collection.handle == 'mattresses' -%}
   {%- style -%}
-    .snoozepod-collection-grid.section-{{ section.id }}-padding {
-      padding-top: 4px;
-      padding-bottom: 24px;
+    .snoozepod-shop-by-size {
+      max-width: min(100%, var(--wide-content-max));
+      margin: 0 auto 28px;
+      padding: 0 22px;
+    }
+
+    .snoozepod-shop-by-size__panel {
+      padding: 22px;
+      border: 1px solid rgba(10, 25, 55, 0.11);
+      border-radius: 22px;
+      background: linear-gradient(135deg, #f3f6fb 0%, #faf8f3 100%);
+      box-shadow: 0 12px 28px rgba(7, 25, 66, 0.06);
+    }
+
+    .snoozepod-shop-by-size__eyebrow {
+      margin: 0 0 6px;
+      color: #48607f;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .snoozepod-shop-by-size__heading {
+      margin: 0;
+      color: #081a3b;
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+    }
+
+    .snoozepod-shop-by-size__intro,
+    .snoozepod-shop-by-size__status {
+      color: #40516c;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .snoozepod-shop-by-size__intro { margin: 8px 0 18px; }
+    .snoozepod-shop-by-size__status { margin: 14px 0 0; }
+
+    .snoozepod-shop-by-size__options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .snoozepod-shop-by-size__option,
+    .snoozepod-shop-by-size__clear {
+      min-height: 46px;
+      border-radius: 999px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .snoozepod-shop-by-size__option {
+      padding: 10px 14px;
+      border: 1px solid #b7c4d7;
+      color: #12294d;
+      background: #e4eaf2;
+    }
+
+    .snoozepod-shop-by-size__option:hover:not(:disabled),
+    .snoozepod-shop-by-size__option:focus-visible {
+      border-color: #173d73;
+      background: #d7e1ee;
+    }
+
+    .snoozepod-shop-by-size__option.is-active,
+    .snoozepod-shop-by-size__option[aria-pressed='true'] {
+      border-color: #0b2c5a;
+      color: #ffffff;
+      background: #0b2c5a;
+      box-shadow: 0 6px 16px rgba(11, 44, 90, 0.2);
+    }
+
+    .snoozepod-shop-by-size__option:disabled {
+      color: #7e8999;
+      background: #edf0f4;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .snoozepod-shop-by-size__clear {
+      margin-top: 14px;
+      padding: 8px 16px;
+      border: 1px solid #b7c4d7;
+      color: #173d73;
+      background: #ffffff;
+    }
+
+    .snoozepod-size-card-price {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 8px;
+      color: rgb(var(--color-foreground));
+    }
+
+    .snoozepod-size-card-price__label {
+      width: 100%;
+      color: rgba(var(--color-foreground), 0.67);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .snoozepod-size-card-price__amount {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    @media screen and (min-width: 750px) {
+      .snoozepod-shop-by-size { padding: 0 64px; }
+      .snoozepod-shop-by-size__panel { padding: 28px 30px; }
+      .snoozepod-shop-by-size__options { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    }
+  {%- endstyle -%}
+{%- endif -%}
+
+{%- if template.suffix == 'snoozepod' or template.suffix == 'main' or template.suffix == 'snoozepod-v1' -%}
+  {%- style -%}
+    #shopify-section-{{ section.id }} .snoozepod-collection-grid.section-{{ section.id }}-padding {
+      padding-top: 4px !important;
+      padding-bottom: 24px !important;
     }
 
     .snoozepod-collection-grid .page-width,
@@ -179,6 +304,25 @@
 {%- endif -%}
 
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if template.suffix == 'snoozepod' or template.suffix == 'main' or template.suffix == 'snoozepod-v1' %} snoozepod-collection-grid{% endif %}">
+  {%- if collection.handle == 'mattresses' -%}
+    <section class="snoozepod-shop-by-size" data-shop-by-size aria-labelledby="ShopBySizeHeading-{{ section.id }}">
+      <div class="snoozepod-shop-by-size__panel">
+        <p class="snoozepod-shop-by-size__eyebrow">Find your fit</p>
+        <h2 class="snoozepod-shop-by-size__heading" id="ShopBySizeHeading-{{ section.id }}">Shop Mattresses by Size</h2>
+        <p class="snoozepod-shop-by-size__intro">Choose a size to see mattresses that are currently available, with the exact price for that size.</p>
+        <div class="snoozepod-shop-by-size__options" aria-label="Mattress size">
+          {%- assign snoozepod_sizes = 'Twin|Twin XL|Full|Queen|King|California King' | split: '|' -%}
+          {%- for snoozepod_size in snoozepod_sizes -%}
+            <button class="snoozepod-shop-by-size__option" type="button" data-shop-by-size-option="{{ snoozepod_size }}" aria-pressed="false">
+              {{ snoozepod_size }}
+            </button>
+          {%- endfor -%}
+        </div>
+        <button class="snoozepod-shop-by-size__clear" type="button" data-shop-by-size-clear hidden>Show all mattress sizes</button>
+        <p class="snoozepod-shop-by-size__status" data-shop-by-size-status aria-live="polite">Choose a size to see exact availability and pricing.</p>
+      </div>
+    </section>
+  {%- endif -%}
   {%- paginate collection.products by section.settings.products_per_page -%}
     {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
     {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}
@@ -295,6 +439,10 @@
               "
             >
               {% assign skip_card_product_styles = false %}
+              {% assign shop_by_size_enabled = false %}
+              {% if collection.handle == 'mattresses' %}
+                {% assign shop_by_size_enabled = true %}
+              {% endif %}
               {%- for product in collection.products -%}
                 {% assign lazy_load = false %}
                 {%- if forloop.index > 2 -%}
@@ -302,6 +450,7 @@
                 {%- endif -%}
                 <li
                   class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+                  {% if collection.handle == 'mattresses' %}data-shop-by-size-product{% endif %}
                   {% if settings.animations_reveal_on_scroll %}
                     data-cascade
                     style="--animation-order: {{ forloop.index }};"
@@ -318,8 +467,40 @@
                     skip_styles: skip_card_product_styles,
                     quick_add: section.settings.quick_add,
                     show_snoozepod_details: section.settings.show_snoozepod_card_details,
+                    shop_by_size: shop_by_size_enabled,
                     section_id: section.id
                   %}
+                  {%- if collection.handle == 'mattresses' -%}
+                    {%- liquid
+                      assign snoozepod_size_option_index = 1
+                      for product_option_name in product.options
+                        assign product_option_name_normalized = product_option_name | downcase
+                        if product_option_name_normalized == 'size'
+                          assign snoozepod_size_option_index = forloop.index
+                        endif
+                      endfor
+                    -%}
+                    <script type="application/json" data-shop-by-size-variants>
+                      [
+                        {%- for variant in product.variants -%}
+                          {%- liquid
+                            assign snoozepod_variant_size = variant.option1
+                            if snoozepod_size_option_index == 2
+                              assign snoozepod_variant_size = variant.option2
+                            elsif snoozepod_size_option_index == 3
+                              assign snoozepod_variant_size = variant.option3
+                            endif
+                          -%}
+                          {
+                            "variantId": {{ variant.id | json }},
+                            "nativeSize": {{ snoozepod_variant_size | json }},
+                            "available": {{ variant.available | json }},
+                            "price": {{ variant.price | money | json }}
+                          }{% unless forloop.last %},{% endunless %}
+                        {%- endfor -%}
+                      ]
+                    </script>
+                  {%- endif -%}
                 </li>
                 {%- assign skip_card_product_styles = true -%}
               {%- endfor -%}

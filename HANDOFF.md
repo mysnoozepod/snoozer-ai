@@ -1,9 +1,21 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-11 — Product Page Refinement v2 implemented and staged
+Last updated: 2026-11-11 — Shop by Size implemented, staged, and render-verified
 Owner: Ty  
 Implementer: Codi  
-Current phase: Product Page Refinement v2 staged on the existing unpublished theme; authenticated visual acceptance and missing content remain next
+Current phase: Shop by Size and Product Page v2 are validated on the existing unpublished theme; missing showroom/compatibility content and release acceptance remain next
+
+## Shop by Size checkpoint — 2026-11-11
+
+- Continued on existing branch `main` from starting commit `7516049218fc7bb64e5175fef1892f020e476cf2`; no reset, branch switch, new store, or new theme occurred.
+- Added a mattress-only Shop Mattresses by Size panel for Twin, Twin XL, Full, Queen, King, and California King. It uses actual Liquid `variant.available`, exact Shopify variant IDs/prices, a clear action, accessible pressed/status states, and preserves compatible sort/filter parameters.
+- Product-card links now carry the matching native `?variant=` ID. Actual Product Page v2 acceptance preselected Twin and `$1,799.00`; native Add to Cart added variant `44128362201149`, and the cart confirmed `Size: Twin`, quantity one, and `$1,799.00`. No checkout or order was submitted.
+- Actual collection acceptance: Queen returned four products with exact prices; Twin returned only Hybrid and Memory Foam. Both Dual Comfort mattresses were correctly absent for Twin. Desktop and 390×844 mobile displayed all six controls with no horizontal overflow.
+- Reused native variant Size, ID, SKU, price, and availability plus existing `custom.feel_label`, `custom.sleep_geometry`, `custom.compatibility_key`, verified compatibility fields, and `custom.showroom_representation`. Added only derived feed field `standardizedSize`; no Shopify metafield, product, variant, collection, price, inventory, or status changed.
+- Unpublished theme `139216420925` received exactly `assets/snoozepod-shop-by-size.js`, `sections/main-collection-product-grid.liquid`, and `snippets/card-product.liquid`. Published theme `139460542525` was hash-verified unchanged. Latest private recovery snapshot: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\shop-by-size\2026-11-11T19-17-48-087Z`.
+- Tests passed: Shop by Size 37; product knowledge 40; Product Page v2 28; Product Page v1 67; website experience 44; mattress naming 18 groups; guided shopping 10; catalog/shopping 10/10; storefront routes; JavaScript syntax; whitespace checks; Shopify three-asset readback.
+- Remaining truth gaps: exact physical showroom Pod/display locations; verified mattress/base compatibility relationships; whole-product Feel for Dual Comfort remains intentionally null. No Snoozer backend/API/AWS work was performed.
+- Exact next action: complete a bounded accessibility and release-readiness audit of the unpublished theme, including keyboard/focus review of Shop by Size and the remaining payment/tax/shipping/fulfillment/policy gates. Do not publish without Ty's separate authorization.
 
 ## Product Page Refinement v2 checkpoint — 2026-11-11
 

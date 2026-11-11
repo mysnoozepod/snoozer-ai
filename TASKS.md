@@ -1,7 +1,17 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-11 — Product Page Refinement v2 staged on the existing unpublished theme
-Queue state: Mattress Product Page v2 is implemented and API/contract-validated. Authenticated desktop/mobile preview QA, missing owner/manufacturer content, future Snoozer retrieval implementation, and final release acceptance remain gated.
+Last updated: 2026-11-11 — Shop by Size staged and rendered on the existing unpublished theme
+Queue state: Shop by Size and Product Page v2 are implemented on unpublished theme `139216420925`. Size filtering, exact variant pricing, variant deep links, Twin cart handoff, and 390×844 rendering are verified. Missing showroom/compatibility content, broader release acceptance, and any future Snoozer retrieval implementation remain gated.
+
+### Shop by Size and Snoozer-ready filtering
+
+- **Status:** IMPLEMENTED, STAGED, AND RENDER-VERIFIED ON UNPUBLISHED THEME `139216420925`.
+- **Collection behavior:** Twin, Twin XL, Full, Queen, King, and California King filter the mattress grid by actual available Shopify variants; cards show the exact selected-size price and deep-link the matching native variant.
+- **Validation:** Queen returned four exact-price products; Twin returned only Hybrid and Memory Foam; Twin Hybrid preselected variant `44128362201149`, added to the preview cart, and rendered as `Size: Twin` at `$1,799.00`. Desktop and 390×844 mobile passed with no horizontal overflow.
+- **Data:** Native variant option, ID, SKU, price, and availability remain canonical. Existing Feel, geometry, compatibility-key, and showroom fields were reused. The feed adds derived `standardizedSize`; no new Shopify metafield was created.
+- **Safety:** Published theme `139460542525` remained unchanged across the exact three-asset staging allowlist. No product/catalog/backend/publication/deployment mutation occurred and no order was submitted.
+- **Remaining:** exact showroom display locations and verified mattress/base compatibility relationships; final launch acceptance and separate publication authorization.
+- **Evidence:** `docs/shop-by-size/SHOP_BY_SIZE_AND_SNOOZER_FILTERING.md` and `docs/shop-by-size/SHOPIFY_READBACK.json`.
 
 ### Product Page Refinement v2
 

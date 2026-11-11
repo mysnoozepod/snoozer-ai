@@ -1,0 +1,27 @@
+{
+  "verifiedAt": "2026-11-11T19:17:51.477Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\shop-by-size\\2026-11-11T19-17-48-087Z",
+  "publishedTheme": {
+    "id": "139460542525",
+    "unchangedAssets": 3
+  },
+  "targetTheme": {
+    "id": "139216420925",
+    "assets": [
+      {
+        "key": "assets/snoozepod-shop-by-size.js",
+        "sha256": "03f81c94b50b07f87bc686f43a84ed3e7e6f711edc001c0d93f22dcacff71aa9"
+      },
+      {
+        "key": "sections/main-collection-product-grid.liquid",
+        "sha256": "579ff3333d9e158b92909f65a6954629e409270873bb135cadad1e5b3aa61348"
+      },
+      {
+        "key": "snippets/card-product.liquid",
+        "sha256": "95763e18e4d5a840c7a4b94ae6cc44839ca409c994c7dd4d214dbf7198b381a3"
+      }
+    ]
+  },
+  "previewUrl": "https://mysnoozepodtest.myshopify.com/collections/mattresses?preview_theme_id=139216420925"
+}

@@ -7,6 +7,16 @@ const OUTPUT = path.join(ROOT, 'docs', 'product-knowledge', 'PRODUCT_KNOWLEDGE_F
 
 function fail(message) { throw new Error(message); }
 
+function standardizedSize(options) {
+  const entry = Object.entries(options || {}).find(([name]) => name.trim().toLowerCase() === 'size');
+  if (!entry) return null;
+  return String(entry[1] || '')
+    .trim()
+    .replace(/^Cal King$/i, 'California King')
+    .replace(/^Split Head Cal King$/i, 'Split Head California King')
+    .replace(/^Split Cal King$/i, 'Split California King');
+}
+
 const readback = JSON.parse(fs.readFileSync(READBACK, 'utf8'));
 if (readback.schemaVersion !== '1.0.0') fail(`Unsupported product knowledge schema ${readback.schemaVersion}.`);
 if (readback.products.length !== 43) fail(`Expected 43 products, received ${readback.products.length}.`);
@@ -28,7 +38,14 @@ const products = readback.products.map((product) => {
     commerce: {
       authority: 'Shopify live query required',
       status: product.commerce.status,
-      variants: product.commerce.variants,
+      variants: product.commerce.variants.map((variant) => ({
+        shopifyVariantId: variant.shopifyVariantId,
+        sku: variant.sku,
+        price: variant.price,
+        options: variant.options,
+        standardizedSize: standardizedSize(variant.options),
+        contract: variant.contract,
+      })),
     },
     compatibility: {
       source: product.compatibility.source,

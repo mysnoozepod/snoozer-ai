@@ -1,6 +1,6 @@
 # MySnoozePod.com Decision Register
 
-Last updated: 2026-11-11 — Product Page Refinement v2 structure and Feel contract
+Last updated: 2026-11-11 — Shop by Size and standardized retrieval mapping
 
 ## Confirmed owner decisions and constraints
 
@@ -78,6 +78,8 @@ Last updated: 2026-11-11 — Product Page Refinement v2 structure and Feel contr
 | D-070 | Mattress Product Page v2 uses five ordered top-level sections: Product Details, Sleep Trial, Delivery, Warranty, and Feel. Product Details contains Construction, Features & Benefits, Showroom Location, and Manufacturer's Model Name. Empty/unverified content remains hidden rather than fabricated; non-mattress category structures are unchanged. | **OWNER DIRECTIVE / IMPLEMENTED ON UNPUBLISHED THEME** — 2026-11-11. |
 | D-071 | Product-level Feel is `custom.feel_label`, constrained to Plush, Medium Plush, Medium Firm, or Firm, and renders only when verified. This supersedes D-024's earlier generic Soft-to-Firm data contract but does not change D-065/D-068's separate independent Dual Comfort selection labels and cart properties. | **OWNER DIRECTIVE / IMPLEMENTED** — 2026-11-11. |
 | D-072 | The product-page lower CTA makes Book a Snooze Session primary and Ask Snoozer secondary. Native Add to Cart remains the focal commerce action in the hero, and no booking or Snoozer backend infrastructure is changed. | **OWNER DIRECTIVE / IMPLEMENTED ON UNPUBLISHED THEME** — 2026-11-11. |
+| D-073 | Shop by Size uses the existing mattress collection and actual available Shopify variants. Exact size pricing and product handoff resolve through the native variant ID; no duplicate product or collection is created. `Cal King` remains the native option and normalizes to customer-facing `California King`. | **OWNER DIRECTIVE / IMPLEMENTED AND RENDER-VERIFIED ON UNPUBLISHED THEME** — 2026-11-11. |
+| D-074 | Future Snoozer retrieval uses Shopify-native variant option/ID/SKU/price plus existing Feel, geometry, compatibility, and showroom fields. `standardizedSize` is a deterministic feed derivation, not a duplicate Shopify metafield. Availability and price must be resolved live; unknown compatibility remains unverified. | **IMPLEMENTATION DECISION / DOCUMENTED ONLY; NO SNOOZER BACKEND CHANGE** — 2026-11-11. |
 
 ## Verified architectural and operational facts
 
