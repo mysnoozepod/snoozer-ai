@@ -17,6 +17,12 @@ function standardizedSize(options) {
     .replace(/^Split Cal King$/i, 'Split California King');
 }
 
+function shopSizeKeys(options) {
+  const size = standardizedSize(options);
+  if (!size || size.toLowerCase() === 'one size') return [];
+  return [...new Set(size.replace(/\s*\(2pc\)$/i, '').split('/').map((value) => value.trim()).filter(Boolean))];
+}
+
 const readback = JSON.parse(fs.readFileSync(READBACK, 'utf8'));
 if (readback.schemaVersion !== '1.0.0') fail(`Unsupported product knowledge schema ${readback.schemaVersion}.`);
 if (readback.products.length !== 43) fail(`Expected 43 products, received ${readback.products.length}.`);
@@ -44,6 +50,7 @@ const products = readback.products.map((product) => {
         price: variant.price,
         options: variant.options,
         standardizedSize: standardizedSize(variant.options),
+        shopSizeKeys: shopSizeKeys(variant.options),
         contract: variant.contract,
       })),
     },

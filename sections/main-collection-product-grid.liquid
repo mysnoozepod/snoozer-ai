@@ -1,9 +1,8 @@
 {{ 'template-collection.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
-{%- if collection.handle == 'mattresses' -%}
-  {{ 'snoozepod-shop-by-size.js' | asset_url | script_tag }}
-{%- endif -%}
+{{ 'snoozepod-size-collection-map.js' | asset_url | script_tag }}
+{{ 'snoozepod-shop-by-size.js' | asset_url | script_tag }}
 {%- if section.settings.show_snoozepod_card_details -%}
   {{ 'component-snoozepod-commerce-v1.css' | asset_url | stylesheet_tag }}
 {%- endif -%}
@@ -42,8 +41,7 @@
   }
 {%- endstyle -%}
 
-{%- if collection.handle == 'mattresses' -%}
-  {%- style -%}
+{%- style -%}
     .snoozepod-shop-by-size {
       max-width: min(100%, var(--wide-content-max));
       margin: 0 auto 28px;
@@ -98,6 +96,8 @@
       font: inherit;
       font-weight: 700;
       cursor: pointer;
+      text-align: center;
+      text-decoration: none;
     }
 
     .snoozepod-shop-by-size__option {
@@ -114,7 +114,7 @@
     }
 
     .snoozepod-shop-by-size__option.is-active,
-    .snoozepod-shop-by-size__option[aria-pressed='true'] {
+    .snoozepod-shop-by-size__option[aria-current='page'] {
       border-color: #0b2c5a;
       color: #ffffff;
       background: #0b2c5a;
@@ -159,10 +159,9 @@
     @media screen and (min-width: 750px) {
       .snoozepod-shop-by-size { padding: 0 64px; }
       .snoozepod-shop-by-size__panel { padding: 28px 30px; }
-      .snoozepod-shop-by-size__options { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .snoozepod-shop-by-size__options { grid-template-columns: repeat(5, minmax(0, 1fr)); }
     }
-  {%- endstyle -%}
-{%- endif -%}
+{%- endstyle -%}
 
 {%- if template.suffix == 'snoozepod' or template.suffix == 'main' or template.suffix == 'snoozepod-v1' -%}
   {%- style -%}
@@ -304,25 +303,16 @@
 {%- endif -%}
 
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if template.suffix == 'snoozepod' or template.suffix == 'main' or template.suffix == 'snoozepod-v1' %} snoozepod-collection-grid{% endif %}">
-  {%- if collection.handle == 'mattresses' -%}
-    <section class="snoozepod-shop-by-size" data-shop-by-size aria-labelledby="ShopBySizeHeading-{{ section.id }}">
+    <section class="snoozepod-shop-by-size" data-shop-by-size data-collection-handle="{{ collection.handle | escape }}" aria-labelledby="ShopBySizeHeading-{{ section.id }}" hidden>
       <div class="snoozepod-shop-by-size__panel">
         <p class="snoozepod-shop-by-size__eyebrow">Find your fit</p>
-        <h2 class="snoozepod-shop-by-size__heading" id="ShopBySizeHeading-{{ section.id }}">Shop Mattresses by Size</h2>
-        <p class="snoozepod-shop-by-size__intro">Choose a size to see mattresses that are currently available, with the exact price for that size.</p>
-        <div class="snoozepod-shop-by-size__options" aria-label="Mattress size">
-          {%- assign snoozepod_sizes = 'Twin|Twin XL|Full|Queen|King|California King' | split: '|' -%}
-          {%- for snoozepod_size in snoozepod_sizes -%}
-            <button class="snoozepod-shop-by-size__option" type="button" data-shop-by-size-option="{{ snoozepod_size }}" aria-pressed="false">
-              {{ snoozepod_size }}
-            </button>
-          {%- endfor -%}
-        </div>
-        <button class="snoozepod-shop-by-size__clear" type="button" data-shop-by-size-clear hidden>Show all mattress sizes</button>
+        <h2 class="snoozepod-shop-by-size__heading" id="ShopBySizeHeading-{{ section.id }}" data-shop-by-size-heading>Shop by Size</h2>
+        <p class="snoozepod-shop-by-size__intro" data-shop-by-size-intro>Choose a size to see exact availability and pricing.</p>
+        <div class="snoozepod-shop-by-size__options" data-shop-by-size-options aria-label="Available sizes"></div>
+        <a class="snoozepod-shop-by-size__clear" href="{{ collection.url }}" data-shop-by-size-clear hidden>Show all products</a>
         <p class="snoozepod-shop-by-size__status" data-shop-by-size-status aria-live="polite">Choose a size to see exact availability and pricing.</p>
       </div>
     </section>
-  {%- endif -%}
   {%- paginate collection.products by section.settings.products_per_page -%}
     {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
     {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}
@@ -439,10 +429,7 @@
               "
             >
               {% assign skip_card_product_styles = false %}
-              {% assign shop_by_size_enabled = false %}
-              {% if collection.handle == 'mattresses' %}
-                {% assign shop_by_size_enabled = true %}
-              {% endif %}
+              {% assign shop_by_size_enabled = true %}
               {%- for product in collection.products -%}
                 {% assign lazy_load = false %}
                 {%- if forloop.index > 2 -%}
@@ -450,7 +437,7 @@
                 {%- endif -%}
                 <li
                   class="grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-                  {% if collection.handle == 'mattresses' %}data-shop-by-size-product{% endif %}
+                  data-shop-by-size-product
                   {% if settings.animations_reveal_on_scroll %}
                     data-cascade
                     style="--animation-order: {{ forloop.index }};"
@@ -470,7 +457,7 @@
                     shop_by_size: shop_by_size_enabled,
                     section_id: section.id
                   %}
-                  {%- if collection.handle == 'mattresses' -%}
+                  {%- if shop_by_size_enabled -%}
                     {%- liquid
                       assign snoozepod_size_option_index = 1
                       for product_option_name in product.options

@@ -1,0 +1,1949 @@
+{
+  "schemaVersion": "1.0.0",
+  "verifiedAt": "2026-11-11T20:26:56.451Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\storewide-shop-by-size\\2026-11-11T20-26-50-012Z",
+  "summary": {
+    "taggedProducts": 42,
+    "storewideSizes": 15,
+    "categories": 9,
+    "collections": 77,
+    "excludedOneSizeVariants": 1
+  },
+  "productStatusesPreserved": true,
+  "collections": [
+    {
+      "handle": "shop-by-size",
+      "title": "Shop by Size",
+      "sizeLabel": null,
+      "categoryKey": null,
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress",
+        "bamboo-charcoal-pillow-cooling-cover",
+        "blackwell-designer-headboard",
+        "carboncool-omniphase-pillow",
+        "carlisle-upholstered-headboard",
+        "convolution-pillow",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "eastman-upholstered-platform-base",
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base",
+        "flex-sh-adjustable-base",
+        "gel-convolution-pillow",
+        "gel-dough-z-gel-pillow",
+        "gelled-microfiber-pillow",
+        "hennessy-upholstered-headboard",
+        "hexcurve-omniphase-pillow",
+        "ice-cloud-omniphase-pillow",
+        "light-grey-racetrack-duvet-sham-set",
+        "light-weight-comforter",
+        "malouf-2-5-inch-gel-memory-foam-topper",
+        "medium-weight-comforter",
+        "quilted-convolution-hyperchill-pillow",
+        "react-pro-performance-topper",
+        "scoresby-designer-headboard",
+        "shoulder-zoned-gel-activedough-pillow",
+        "solid-white-duvet-sham-set",
+        "stretchwick-mattress-encasement",
+        "ultra-weight-comforter",
+        "ver-tex-mattress-protector",
+        "ver-tex-sheet-set",
+        "watson-upholstered-platform-base",
+        "weekender-gel-memory-foam-pillow",
+        "zoned-activedough-bamboo-charcoal-pillow",
+        "zoned-dough-bamboo-charcoal-pillow",
+        "zoned-gel-activedough-pillow",
+        "zoned-gel-dough-pillow",
+        "zoned-talalay-latex-pillow"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-by-size:true"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-standard",
+      "title": "Shop Standard",
+      "sizeLabel": "Standard",
+      "categoryKey": null,
+      "products": [
+        "weekender-gel-memory-foam-pillow"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:standard"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-twin",
+      "title": "Shop Twin",
+      "sizeLabel": "Twin",
+      "categoryKey": null,
+      "products": [
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "malouf-2-5-inch-gel-memory-foam-topper",
+        "stretchwick-mattress-encasement",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-twin-xl",
+      "title": "Shop Twin XL",
+      "sizeLabel": "Twin XL",
+      "categoryKey": null,
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base",
+        "malouf-2-5-inch-gel-memory-foam-topper",
+        "stretchwick-mattress-encasement",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin-xl"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-full",
+      "title": "Shop Full",
+      "sizeLabel": "Full",
+      "categoryKey": null,
+      "products": [
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "light-weight-comforter",
+        "malouf-2-5-inch-gel-memory-foam-topper",
+        "medium-weight-comforter",
+        "stretchwick-mattress-encasement",
+        "ultra-weight-comforter",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:full"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-full-xl",
+      "title": "Shop Full XL",
+      "sizeLabel": "Full XL",
+      "categoryKey": null,
+      "products": [
+        "dri-tec-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:full-xl"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-queen",
+      "title": "Shop Queen",
+      "sizeLabel": "Queen",
+      "categoryKey": null,
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress",
+        "bamboo-charcoal-pillow-cooling-cover",
+        "blackwell-designer-headboard",
+        "carboncool-omniphase-pillow",
+        "carlisle-upholstered-headboard",
+        "convolution-pillow",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "eastman-upholstered-platform-base",
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base",
+        "gel-convolution-pillow",
+        "gel-dough-z-gel-pillow",
+        "gelled-microfiber-pillow",
+        "hennessy-upholstered-headboard",
+        "hexcurve-omniphase-pillow",
+        "ice-cloud-omniphase-pillow",
+        "light-grey-racetrack-duvet-sham-set",
+        "light-weight-comforter",
+        "malouf-2-5-inch-gel-memory-foam-topper",
+        "medium-weight-comforter",
+        "quilted-convolution-hyperchill-pillow",
+        "react-pro-performance-topper",
+        "scoresby-designer-headboard",
+        "shoulder-zoned-gel-activedough-pillow",
+        "solid-white-duvet-sham-set",
+        "stretchwick-mattress-encasement",
+        "ultra-weight-comforter",
+        "ver-tex-mattress-protector",
+        "ver-tex-sheet-set",
+        "watson-upholstered-platform-base",
+        "weekender-gel-memory-foam-pillow",
+        "zoned-activedough-bamboo-charcoal-pillow",
+        "zoned-dough-bamboo-charcoal-pillow",
+        "zoned-gel-activedough-pillow",
+        "zoned-gel-dough-pillow",
+        "zoned-talalay-latex-pillow"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:queen"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-king",
+      "title": "Shop King",
+      "sizeLabel": "King",
+      "categoryKey": null,
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress",
+        "bamboo-charcoal-pillow-cooling-cover",
+        "blackwell-designer-headboard",
+        "carboncool-omniphase-pillow",
+        "carlisle-upholstered-headboard",
+        "convolution-pillow",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "eastman-upholstered-platform-base",
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base",
+        "gel-convolution-pillow",
+        "gel-dough-z-gel-pillow",
+        "gelled-microfiber-pillow",
+        "hennessy-upholstered-headboard",
+        "hexcurve-omniphase-pillow",
+        "ice-cloud-omniphase-pillow",
+        "light-weight-comforter",
+        "malouf-2-5-inch-gel-memory-foam-topper",
+        "medium-weight-comforter",
+        "quilted-convolution-hyperchill-pillow",
+        "scoresby-designer-headboard",
+        "shoulder-zoned-gel-activedough-pillow",
+        "stretchwick-mattress-encasement",
+        "ultra-weight-comforter",
+        "ver-tex-mattress-protector",
+        "ver-tex-sheet-set",
+        "watson-upholstered-platform-base",
+        "weekender-gel-memory-foam-pillow",
+        "zoned-activedough-bamboo-charcoal-pillow",
+        "zoned-dough-bamboo-charcoal-pillow",
+        "zoned-gel-activedough-pillow",
+        "zoned-gel-dough-pillow",
+        "zoned-talalay-latex-pillow"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:king"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-california-king",
+      "title": "Shop California King",
+      "sizeLabel": "California King",
+      "categoryKey": null,
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress",
+        "blackwell-designer-headboard",
+        "carlisle-upholstered-headboard",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "eastman-upholstered-platform-base",
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base",
+        "hennessy-upholstered-headboard",
+        "light-weight-comforter",
+        "malouf-2-5-inch-gel-memory-foam-topper",
+        "medium-weight-comforter",
+        "scoresby-designer-headboard",
+        "stretchwick-mattress-encasement",
+        "ultra-weight-comforter",
+        "ver-tex-mattress-protector",
+        "ver-tex-sheet-set",
+        "watson-upholstered-platform-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:california-king"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-texas-king",
+      "title": "Shop Texas King",
+      "sizeLabel": "Texas King",
+      "categoryKey": null,
+      "products": [
+        "dri-tec-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:texas-king"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-split-head-queen",
+      "title": "Shop Split Head Queen",
+      "sizeLabel": "Split Head Queen",
+      "categoryKey": null,
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "flex-sh-adjustable-base",
+        "ver-tex-mattress-protector",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-queen"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-split-head-king",
+      "title": "Shop Split Head King",
+      "sizeLabel": "Split Head King",
+      "categoryKey": null,
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "flex-sh-adjustable-base",
+        "ver-tex-mattress-protector",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-king"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-split-head-california-king",
+      "title": "Shop Split Head California King",
+      "sizeLabel": "Split Head California King",
+      "categoryKey": null,
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "flex-sh-adjustable-base",
+        "ver-tex-mattress-protector",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-california-king"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-split-king",
+      "title": "Shop Split King",
+      "sizeLabel": "Split King",
+      "categoryKey": null,
+      "products": [
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "ver-tex-mattress-protector",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-king"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-split-california-king",
+      "title": "Shop Split California King",
+      "sizeLabel": "Split California King",
+      "categoryKey": null,
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "14-inch-dual-comfort-mattress",
+        "cotton-sheet-set",
+        "dri-tec-mattress-protector",
+        "dri-tec-sheet-set",
+        "flex-lsx-adjustable-base",
+        "ver-tex-mattress-protector",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-california-king"
+        }
+      ]
+    },
+    {
+      "handle": "shop-by-size-twin-xl-x-2",
+      "title": "Shop Twin XL x 2",
+      "sizeLabel": "Twin XL x 2",
+      "categoryKey": null,
+      "products": [
+        "14-inch-dual-comfort-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin-xl-x-2"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-twin",
+      "title": "Twin Mattresses",
+      "sizeLabel": "Twin",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-twin-xl",
+      "title": "Twin XL Mattresses",
+      "sizeLabel": "Twin XL",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin-xl"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-full",
+      "title": "Full Mattresses",
+      "sizeLabel": "Full",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:full"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-queen",
+      "title": "Queen Mattresses",
+      "sizeLabel": "Queen",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:queen"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-king",
+      "title": "King Mattresses",
+      "sizeLabel": "King",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:king"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-california-king",
+      "title": "California King Mattresses",
+      "sizeLabel": "California King",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:california-king"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-split-head-queen",
+      "title": "Split Head Queen Mattresses",
+      "sizeLabel": "Split Head Queen",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-queen"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-split-head-king",
+      "title": "Split Head King Mattresses",
+      "sizeLabel": "Split Head King",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-king"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-split-head-california-king",
+      "title": "Split Head California King Mattresses",
+      "sizeLabel": "Split Head California King",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress",
+        "14-inch-dual-comfort-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-california-king"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-split-king",
+      "title": "Split King Mattresses",
+      "sizeLabel": "Split King",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-hybrid-mattress",
+        "12-inch-memory-foam-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-king"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-split-california-king",
+      "title": "Split California King Mattresses",
+      "sizeLabel": "Split California King",
+      "categoryKey": "mattresses",
+      "products": [
+        "12-inch-dual-comfort-mattress",
+        "14-inch-dual-comfort-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-california-king"
+        }
+      ]
+    },
+    {
+      "handle": "mattresses-size-twin-xl-x-2",
+      "title": "Twin XL x 2 Mattresses",
+      "sizeLabel": "Twin XL x 2",
+      "categoryKey": "mattresses",
+      "products": [
+        "14-inch-dual-comfort-mattress"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattresses"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin-xl-x-2"
+        }
+      ]
+    },
+    {
+      "handle": "adjustable-bases-size-twin-xl",
+      "title": "Twin XL Adjustable Bases",
+      "sizeLabel": "Twin XL",
+      "categoryKey": "adjustable-bases",
+      "products": [
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:adjustable-bases"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin-xl"
+        }
+      ]
+    },
+    {
+      "handle": "adjustable-bases-size-queen",
+      "title": "Queen Adjustable Bases",
+      "sizeLabel": "Queen",
+      "categoryKey": "adjustable-bases",
+      "products": [
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:adjustable-bases"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:queen"
+        }
+      ]
+    },
+    {
+      "handle": "adjustable-bases-size-king",
+      "title": "King Adjustable Bases",
+      "sizeLabel": "King",
+      "categoryKey": "adjustable-bases",
+      "products": [
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:adjustable-bases"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:king"
+        }
+      ]
+    },
+    {
+      "handle": "adjustable-bases-size-california-king",
+      "title": "California King Adjustable Bases",
+      "sizeLabel": "California King",
+      "categoryKey": "adjustable-bases",
+      "products": [
+        "flex-l-adjustable-base",
+        "flex-lsx-adjustable-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:adjustable-bases"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:california-king"
+        }
+      ]
+    },
+    {
+      "handle": "adjustable-bases-size-split-head-queen",
+      "title": "Split Head Queen Adjustable Bases",
+      "sizeLabel": "Split Head Queen",
+      "categoryKey": "adjustable-bases",
+      "products": [
+        "flex-sh-adjustable-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:adjustable-bases"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-queen"
+        }
+      ]
+    },
+    {
+      "handle": "adjustable-bases-size-split-head-king",
+      "title": "Split Head King Adjustable Bases",
+      "sizeLabel": "Split Head King",
+      "categoryKey": "adjustable-bases",
+      "products": [
+        "flex-sh-adjustable-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:adjustable-bases"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-king"
+        }
+      ]
+    },
+    {
+      "handle": "adjustable-bases-size-split-head-california-king",
+      "title": "Split Head California King Adjustable Bases",
+      "sizeLabel": "Split Head California King",
+      "categoryKey": "adjustable-bases",
+      "products": [
+        "flex-sh-adjustable-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:adjustable-bases"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-california-king"
+        }
+      ]
+    },
+    {
+      "handle": "adjustable-bases-size-split-california-king",
+      "title": "Split California King Adjustable Bases",
+      "sizeLabel": "Split California King",
+      "categoryKey": "adjustable-bases",
+      "products": [
+        "flex-lsx-adjustable-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:adjustable-bases"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-california-king"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-twin",
+      "title": "Twin Sheets",
+      "sizeLabel": "Twin",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-twin-xl",
+      "title": "Twin XL Sheets",
+      "sizeLabel": "Twin XL",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin-xl"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-full",
+      "title": "Full Sheets",
+      "sizeLabel": "Full",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:full"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-queen",
+      "title": "Queen Sheets",
+      "sizeLabel": "Queen",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:queen"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-king",
+      "title": "King Sheets",
+      "sizeLabel": "King",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:king"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-california-king",
+      "title": "California King Sheets",
+      "sizeLabel": "California King",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:california-king"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-texas-king",
+      "title": "Texas King Sheets",
+      "sizeLabel": "Texas King",
+      "categoryKey": "sheets",
+      "products": [
+        "dri-tec-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:texas-king"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-split-head-queen",
+      "title": "Split Head Queen Sheets",
+      "sizeLabel": "Split Head Queen",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-queen"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-split-head-king",
+      "title": "Split Head King Sheets",
+      "sizeLabel": "Split Head King",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-king"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-split-head-california-king",
+      "title": "Split Head California King Sheets",
+      "sizeLabel": "Split Head California King",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-california-king"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-split-king",
+      "title": "Split King Sheets",
+      "sizeLabel": "Split King",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-king"
+        }
+      ]
+    },
+    {
+      "handle": "sheets-size-split-california-king",
+      "title": "Split California King Sheets",
+      "sizeLabel": "Split California King",
+      "categoryKey": "sheets",
+      "products": [
+        "cotton-sheet-set",
+        "dri-tec-sheet-set",
+        "ver-tex-sheet-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:sheets"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-california-king"
+        }
+      ]
+    },
+    {
+      "handle": "comforters-size-full",
+      "title": "Full Comforters & Duvets",
+      "sizeLabel": "Full",
+      "categoryKey": "comforters",
+      "products": [
+        "light-weight-comforter",
+        "medium-weight-comforter",
+        "ultra-weight-comforter"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:comforters"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:full"
+        }
+      ]
+    },
+    {
+      "handle": "comforters-size-queen",
+      "title": "Queen Comforters & Duvets",
+      "sizeLabel": "Queen",
+      "categoryKey": "comforters",
+      "products": [
+        "light-weight-comforter",
+        "medium-weight-comforter",
+        "ultra-weight-comforter"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:comforters"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:queen"
+        }
+      ]
+    },
+    {
+      "handle": "comforters-size-king",
+      "title": "King Comforters & Duvets",
+      "sizeLabel": "King",
+      "categoryKey": "comforters",
+      "products": [
+        "light-weight-comforter",
+        "medium-weight-comforter",
+        "ultra-weight-comforter"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:comforters"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:king"
+        }
+      ]
+    },
+    {
+      "handle": "comforters-size-california-king",
+      "title": "California King Comforters & Duvets",
+      "sizeLabel": "California King",
+      "categoryKey": "comforters",
+      "products": [
+        "light-weight-comforter",
+        "medium-weight-comforter",
+        "ultra-weight-comforter"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:comforters"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:california-king"
+        }
+      ]
+    },
+    {
+      "handle": "cooling-bedding-size-queen",
+      "title": "Queen Cooling & Bedding",
+      "sizeLabel": "Queen",
+      "categoryKey": "cooling-bedding",
+      "products": [
+        "light-grey-racetrack-duvet-sham-set",
+        "solid-white-duvet-sham-set"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:cooling-bedding"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:queen"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-twin",
+      "title": "Twin Mattress Protectors",
+      "sizeLabel": "Twin",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "stretchwick-mattress-encasement",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-twin-xl",
+      "title": "Twin XL Mattress Protectors",
+      "sizeLabel": "Twin XL",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "stretchwick-mattress-encasement",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin-xl"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-full",
+      "title": "Full Mattress Protectors",
+      "sizeLabel": "Full",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "stretchwick-mattress-encasement",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:full"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-full-xl",
+      "title": "Full XL Mattress Protectors",
+      "sizeLabel": "Full XL",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:full-xl"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-queen",
+      "title": "Queen Mattress Protectors",
+      "sizeLabel": "Queen",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "stretchwick-mattress-encasement",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:queen"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-king",
+      "title": "King Mattress Protectors",
+      "sizeLabel": "King",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "stretchwick-mattress-encasement",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:king"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-california-king",
+      "title": "California King Mattress Protectors",
+      "sizeLabel": "California King",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "stretchwick-mattress-encasement",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:california-king"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-split-head-queen",
+      "title": "Split Head Queen Mattress Protectors",
+      "sizeLabel": "Split Head Queen",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-queen"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-split-head-king",
+      "title": "Split Head King Mattress Protectors",
+      "sizeLabel": "Split Head King",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-king"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-split-head-california-king",
+      "title": "Split Head California King Mattress Protectors",
+      "sizeLabel": "Split Head California King",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-head-california-king"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-split-king",
+      "title": "Split King Mattress Protectors",
+      "sizeLabel": "Split King",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-king"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-protectors-size-split-california-king",
+      "title": "Split California King Mattress Protectors",
+      "sizeLabel": "Split California King",
+      "categoryKey": "mattress-protectors",
+      "products": [
+        "dri-tec-mattress-protector",
+        "ver-tex-mattress-protector"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-protectors"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:split-california-king"
+        }
+      ]
+    },
+    {
+      "handle": "pillows-size-standard",
+      "title": "Standard Pillows",
+      "sizeLabel": "Standard",
+      "categoryKey": "pillows",
+      "products": [
+        "weekender-gel-memory-foam-pillow"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:pillows"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:standard"
+        }
+      ]
+    },
+    {
+      "handle": "pillows-size-queen",
+      "title": "Queen Pillows",
+      "sizeLabel": "Queen",
+      "categoryKey": "pillows",
+      "products": [
+        "bamboo-charcoal-pillow-cooling-cover",
+        "carboncool-omniphase-pillow",
+        "convolution-pillow",
+        "gel-convolution-pillow",
+        "gel-dough-z-gel-pillow",
+        "gelled-microfiber-pillow",
+        "hexcurve-omniphase-pillow",
+        "ice-cloud-omniphase-pillow",
+        "quilted-convolution-hyperchill-pillow",
+        "shoulder-zoned-gel-activedough-pillow",
+        "weekender-gel-memory-foam-pillow",
+        "zoned-activedough-bamboo-charcoal-pillow",
+        "zoned-dough-bamboo-charcoal-pillow",
+        "zoned-gel-activedough-pillow",
+        "zoned-gel-dough-pillow",
+        "zoned-talalay-latex-pillow"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:pillows"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:queen"
+        }
+      ]
+    },
+    {
+      "handle": "pillows-size-king",
+      "title": "King Pillows",
+      "sizeLabel": "King",
+      "categoryKey": "pillows",
+      "products": [
+        "bamboo-charcoal-pillow-cooling-cover",
+        "carboncool-omniphase-pillow",
+        "convolution-pillow",
+        "gel-convolution-pillow",
+        "gel-dough-z-gel-pillow",
+        "gelled-microfiber-pillow",
+        "hexcurve-omniphase-pillow",
+        "ice-cloud-omniphase-pillow",
+        "quilted-convolution-hyperchill-pillow",
+        "shoulder-zoned-gel-activedough-pillow",
+        "weekender-gel-memory-foam-pillow",
+        "zoned-activedough-bamboo-charcoal-pillow",
+        "zoned-dough-bamboo-charcoal-pillow",
+        "zoned-gel-activedough-pillow",
+        "zoned-gel-dough-pillow",
+        "zoned-talalay-latex-pillow"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:pillows"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:king"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-toppers-size-twin",
+      "title": "Twin Mattress Toppers",
+      "sizeLabel": "Twin",
+      "categoryKey": "mattress-toppers",
+      "products": [
+        "malouf-2-5-inch-gel-memory-foam-topper"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-toppers"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-toppers-size-twin-xl",
+      "title": "Twin XL Mattress Toppers",
+      "sizeLabel": "Twin XL",
+      "categoryKey": "mattress-toppers",
+      "products": [
+        "malouf-2-5-inch-gel-memory-foam-topper"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-toppers"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:twin-xl"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-toppers-size-full",
+      "title": "Full Mattress Toppers",
+      "sizeLabel": "Full",
+      "categoryKey": "mattress-toppers",
+      "products": [
+        "malouf-2-5-inch-gel-memory-foam-topper"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-toppers"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:full"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-toppers-size-queen",
+      "title": "Queen Mattress Toppers",
+      "sizeLabel": "Queen",
+      "categoryKey": "mattress-toppers",
+      "products": [
+        "malouf-2-5-inch-gel-memory-foam-topper",
+        "react-pro-performance-topper"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-toppers"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:queen"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-toppers-size-king",
+      "title": "King Mattress Toppers",
+      "sizeLabel": "King",
+      "categoryKey": "mattress-toppers",
+      "products": [
+        "malouf-2-5-inch-gel-memory-foam-topper"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-toppers"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:king"
+        }
+      ]
+    },
+    {
+      "handle": "mattress-toppers-size-california-king",
+      "title": "California King Mattress Toppers",
+      "sizeLabel": "California King",
+      "categoryKey": "mattress-toppers",
+      "products": [
+        "malouf-2-5-inch-gel-memory-foam-topper"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:mattress-toppers"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:california-king"
+        }
+      ]
+    },
+    {
+      "handle": "bedroom-furniture-size-queen",
+      "title": "Queen Bedroom Furniture",
+      "sizeLabel": "Queen",
+      "categoryKey": "bedroom-furniture",
+      "products": [
+        "blackwell-designer-headboard",
+        "carlisle-upholstered-headboard",
+        "eastman-upholstered-platform-base",
+        "hennessy-upholstered-headboard",
+        "scoresby-designer-headboard",
+        "watson-upholstered-platform-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:bedroom-furniture"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:queen"
+        }
+      ]
+    },
+    {
+      "handle": "bedroom-furniture-size-king",
+      "title": "King Bedroom Furniture",
+      "sizeLabel": "King",
+      "categoryKey": "bedroom-furniture",
+      "products": [
+        "blackwell-designer-headboard",
+        "carlisle-upholstered-headboard",
+        "eastman-upholstered-platform-base",
+        "hennessy-upholstered-headboard",
+        "scoresby-designer-headboard",
+        "watson-upholstered-platform-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:bedroom-furniture"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:king"
+        }
+      ]
+    },
+    {
+      "handle": "bedroom-furniture-size-california-king",
+      "title": "California King Bedroom Furniture",
+      "sizeLabel": "California King",
+      "categoryKey": "bedroom-furniture",
+      "products": [
+        "blackwell-designer-headboard",
+        "carlisle-upholstered-headboard",
+        "eastman-upholstered-platform-base",
+        "hennessy-upholstered-headboard",
+        "scoresby-designer-headboard",
+        "watson-upholstered-platform-base"
+      ],
+      "rules": [
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "collection:bedroom-furniture"
+        },
+        {
+          "column": "TAG",
+          "relation": "EQUALS",
+          "condition": "shop-size:california-king"
+        }
+      ]
+    }
+  ],
+  "navigation": {
+    "id": "gid://shopify/MenuItem/528881680445",
+    "title": "Shop by Size",
+    "type": "COLLECTION",
+    "url": "/collections/shop-by-size",
+    "resourceId": "gid://shopify/Collection/302845689917",
+    "items": [
+      {
+        "id": "gid://shopify/MenuItem/528881713213",
+        "title": "Twin",
+        "type": "COLLECTION",
+        "url": "/collections/shop-by-size-twin",
+        "resourceId": "gid://shopify/Collection/302845755453",
+        "items": []
+      },
+      {
+        "id": "gid://shopify/MenuItem/528881745981",
+        "title": "Twin XL",
+        "type": "COLLECTION",
+        "url": "/collections/shop-by-size-twin-xl",
+        "resourceId": "gid://shopify/Collection/302845788221",
+        "items": []
+      },
+      {
+        "id": "gid://shopify/MenuItem/528881778749",
+        "title": "Full",
+        "type": "COLLECTION",
+        "url": "/collections/shop-by-size-full",
+        "resourceId": "gid://shopify/Collection/302845820989",
+        "items": []
+      },
+      {
+        "id": "gid://shopify/MenuItem/528881811517",
+        "title": "Queen",
+        "type": "COLLECTION",
+        "url": "/collections/shop-by-size-queen",
+        "resourceId": "gid://shopify/Collection/302845886525",
+        "items": []
+      },
+      {
+        "id": "gid://shopify/MenuItem/528881844285",
+        "title": "King",
+        "type": "COLLECTION",
+        "url": "/collections/shop-by-size-king",
+        "resourceId": "gid://shopify/Collection/302845919293",
+        "items": []
+      },
+      {
+        "id": "gid://shopify/MenuItem/528881877053",
+        "title": "California King",
+        "type": "COLLECTION",
+        "url": "/collections/shop-by-size-california-king",
+        "resourceId": "gid://shopify/Collection/302845952061",
+        "items": []
+      }
+    ]
+  },
+  "theme": {
+    "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\storewide-shop-by-size\\2026-11-11T20-26-50-012Z",
+    "publishedThemeUnchanged": true,
+    "targetThemeId": "139216420925",
+    "assets": [
+      "assets/snoozepod-size-collection-map.js",
+      "assets/snoozepod-shop-by-size.js",
+      "sections/main-collection-product-grid.liquid",
+      "snippets/card-product.liquid"
+    ]
+  },
+  "previewUrl": "https://mysnoozepodtest.myshopify.com/collections/shop-by-size?preview_theme_id=139216420925"
+}

@@ -1,6 +1,6 @@
 # MySnoozePod.com Decision Register
 
-Last updated: 2026-11-11 — Shop by Size and standardized retrieval mapping
+Last updated: 2026-11-11 — Storewide Shop by Size and variant-derived collection routing
 
 ## Confirmed owner decisions and constraints
 
@@ -80,6 +80,9 @@ Last updated: 2026-11-11 — Shop by Size and standardized retrieval mapping
 | D-072 | The product-page lower CTA makes Book a Snooze Session primary and Ask Snoozer secondary. Native Add to Cart remains the focal commerce action in the hero, and no booking or Snoozer backend infrastructure is changed. | **OWNER DIRECTIVE / IMPLEMENTED ON UNPUBLISHED THEME** — 2026-11-11. |
 | D-073 | Shop by Size uses the existing mattress collection and actual available Shopify variants. Exact size pricing and product handoff resolve through the native variant ID; no duplicate product or collection is created. `Cal King` remains the native option and normalizes to customer-facing `California King`. | **OWNER DIRECTIVE / IMPLEMENTED AND RENDER-VERIFIED ON UNPUBLISHED THEME** — 2026-11-11. |
 | D-074 | Future Snoozer retrieval uses Shopify-native variant option/ID/SKU/price plus existing Feel, geometry, compatibility, and showroom fields. `standardizedSize` is a deterministic feed derivation, not a duplicate Shopify metafield. Availability and price must be resolved live; unknown compatibility remains unverified. | **IMPLEMENTATION DECISION / DOCUMENTED ONLY; NO SNOOZER BACKEND CHANGE** — 2026-11-11. |
+| D-075 | Storewide Shop by Size membership derives only from current available Shopify Size variants. Products receive `shop-by-size:true` and exact `shop-size:<slug>` tags; automated collections combine those tags with existing canonical category tags. Native product, variant, SKU, price, availability, media, and status remain unchanged. This expands and supersedes D-073's mattress-only/no-collection scope. | **OWNER DIRECTIVE / IMPLEMENTED AND SHOPIFY-VERIFIED** — 2026-11-11. |
+| D-076 | Size normalization is display/routing logic, not a commerce rewrite: `Cal King` becomes customer-facing `California King`, `(2pc)` is removed from the route label, compound values such as `Full/Queen` map to both supported destinations, `Twin XL x 2` remains distinct, and `One Size` does not create a narrowing destination. | **IMPLEMENTATION DECISION / 1,049 ASSERTIONS** — 2026-11-11. |
+| D-077 | The product-knowledge feed exposes `shopSizeKeys` as a deterministic array beside native options and `standardizedSize`. It creates no Shopify metafield and grants no compatibility inference; live Shopify continues to own price, availability, cart, and checkout. | **IMPLEMENTATION DECISION / FEED VERIFIED; NO BACKEND CHANGE** — 2026-11-11. |
 
 ## Verified architectural and operational facts
 

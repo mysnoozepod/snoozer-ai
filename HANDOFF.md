@@ -1,9 +1,24 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-11 — Shop by Size implemented, staged, and render-verified
+Last updated: 2026-11-11 — Storewide Shop by Size implemented, staged, and render-verified
 Owner: Ty  
 Implementer: Codi  
-Current phase: Shop by Size and Product Page v2 are validated on the existing unpublished theme; missing showroom/compatibility content and release acceptance remain next
+Current phase: Storewide Shop by Size and Product Page v2 are validated on the existing unpublished theme; release accessibility and commerce readiness remain next
+
+## Storewide Shop by Size checkpoint — 2026-11-11
+
+- Continued on existing `main` at `815bef9d5ec2d0f637dcd70b4dd86fd9479d54f6`; preserved all completed work and did not reset, switch branches, create a store, or create a theme.
+- Re-inventoried the actual Shopify development catalog: 43 products, 274 variants, 25 pre-existing automated collections, and four menus. Product identities, statuses, variants, SKUs, prices, availability, media, and existing taxonomy were held immutable.
+- Derived `shop-by-size:true` plus exact `shop-size:<slug>` tags for 42 products with meaningful available Size variants. The One Size-only cooling throw is intentionally excluded. Native compound values map deterministically to their supported destinations; no size or configuration was invented.
+- Created and verified 77 nonempty automated collections: one master Shop by Size, 15 storewide size destinations, and 61 category-size destinations across nine categories. All use exact tag rules and the existing `snoozepod-v1` collection template.
+- Added Shop by Size to the existing main menu after Mattresses with direct Twin, Twin XL, Full, Queen, King, and California King children. The master and category pages expose all other actual configurations without crowding the primary navigation.
+- Generalized the existing collection-card implementation. Size routes show exact variant-specific prices and product links preserve `variant=<id>` plus size context. Existing native filters, product pages, Add to Cart, booking, and Ask Snoozer remain intact.
+- Extended the product-knowledge feed with deterministic `shopSizeKeys`; Shopify remains authoritative for live price, availability, cart, and checkout. No Snoozer backend or AWS work occurred.
+- Actual preview acceptance passed: Queen collection exact prices; Queen memory-foam variant `44128361971773` at `$1,599.99`; Add to Cart confirmed `Size: Queen`; Split Head King Adjustable Bases returned only Flex SH at `$2,799.00`; desktop and 390×844 responsive rendering remained usable.
+- Tests passed: Storewide Shop by Size 1,049 assertions; Shop by Size 30; product knowledge 40; Product Page v2 28; catalog/shopping 10/10; JavaScript syntax; whitespace checks.
+- Unpublished theme `139216420925` contains the four bounded storefront assets. Published theme `139460542525` was hash-verified unchanged. Latest private backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\storewide-shop-by-size\2026-11-11T20-26-50-012Z`.
+- Durable evidence: `docs/storewide-shop-by-size/STOREWIDE_SHOP_BY_SIZE.md`, manifest, and `SHOPIFY_READBACK.json`.
+- Exact next action: perform a bounded keyboard/focus/accessibility and launch-readiness audit on the unpublished theme. Do not publish without Ty's separate authorization.
 
 ## Shop by Size checkpoint — 2026-11-11
 

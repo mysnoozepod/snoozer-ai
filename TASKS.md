@@ -1,7 +1,18 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-11 — Shop by Size staged and rendered on the existing unpublished theme
-Queue state: Shop by Size and Product Page v2 are implemented on unpublished theme `139216420925`. Size filtering, exact variant pricing, variant deep links, Twin cart handoff, and 390×844 rendering are verified. Missing showroom/compatibility content, broader release acceptance, and any future Snoozer retrieval implementation remain gated.
+Last updated: 2026-11-11 — Storewide Shop by Size staged and rendered on the existing unpublished theme
+Queue state: Storewide size collections and Product Page v2 are implemented on unpublished theme `139216420925`. Exact catalog-driven membership, variant pricing, deep links, cart handoff, and responsive rendering are verified. Broader release accessibility/commerce acceptance and any future Snoozer retrieval implementation remain gated.
+
+### Storewide Shop by Size collections
+
+- **Status:** IMPLEMENTED, SHOPIFY-VERIFIED, AND RENDER-VERIFIED ON UNPUBLISHED THEME `139216420925`.
+- **Catalog contract:** 42 of 43 products receive derived size tags from available Shopify variants; the One Size-only cooling throw is excluded. No product, variant, size, SKU, price, availability, media, or status was changed.
+- **Collections:** one master, 15 storewide sizes, and 61 category-size collections across mattresses, adjustable bases, sheets, comforters/duvets, cooling/bedding, protectors, pillows, toppers, and bedroom furniture. All 77 are automated, exact-tag-driven, and nonempty.
+- **Navigation/storefront:** main-menu Shop by Size added; all actual sizes remain reachable from the master/category panels; exact variant prices and `?variant=` handoff are preserved; filters/sort and standard Add to Cart remain native.
+- **Validation:** 1,049 manifest assertions; 30 storefront/feed assertions; product knowledge 40; Product Page v2 28; catalog/shopping 10/10; actual Queen and Split Head King routes; actual Queen cart addition; desktop and 390×844 inspection.
+- **Safety:** unpublished theme only; published theme `139460542525` unchanged; no checkout/order, theme publication, backend, or AWS work.
+- **Evidence:** `docs/storewide-shop-by-size/STOREWIDE_SHOP_BY_SIZE.md`, generated manifest, and Shopify readback.
+- **Next:** bounded keyboard/focus/accessibility and launch-readiness audit; publication remains separately gated.
 
 ### Shop by Size and Snoozer-ready filtering
 

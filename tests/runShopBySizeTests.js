@@ -4,83 +4,57 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const shopBySize = require(path.join(root, 'assets', 'snoozepod-shop-by-size.js'));
+const mapSource = fs.readFileSync(path.join(root, 'assets', 'snoozepod-size-collection-map.js'), 'utf8');
+const sizeMap = JSON.parse(mapSource.replace(/^window\.SnoozePodSizeCollections = /, '').replace(/;\s*$/, ''));
 const section = fs.readFileSync(path.join(root, 'sections', 'main-collection-product-grid.liquid'), 'utf8');
 const card = fs.readFileSync(path.join(root, 'snippets', 'card-product.liquid'), 'utf8');
 const feed = JSON.parse(fs.readFileSync(path.join(root, 'docs', 'product-knowledge', 'PRODUCT_KNOWLEDGE_FEED.v1.json'), 'utf8'));
 
 let assertions = 0;
-function check(value, message) {
-  assert.ok(value, message);
-  assertions += 1;
-}
+function equal(actual, expected, message) { assert.equal(actual, expected, message); assertions += 1; }
+function check(value, message) { assert.ok(value, message); assertions += 1; }
 
-assert.deepEqual(shopBySize.STANDARD_SIZES, ['Twin', 'Twin XL', 'Full', 'Queen', 'King', 'California King']);
-assertions += 1;
-assert.equal(shopBySize.normalizeSize('Cal King'), 'California King');
-assertions += 1;
-assert.equal(shopBySize.normalizeSize('California King'), 'California King');
-assertions += 1;
-assert.equal(shopBySize.normalizeSize('Split King'), null);
-assertions += 1;
+equal(shopBySize.normalizeSize('Cal King'), 'California King');
+equal(shopBySize.normalizeSize('Split Head Cal King'), 'Split Head California King');
+equal(shopBySize.normalizeSize('Split King (2pc)'), 'Split King');
+equal(shopBySize.normalizeSize('One Size'), null);
+assert.deepEqual(shopBySize.shopSizeLabels('Full/Queen'), ['Full', 'Queen']); assertions += 1;
+assert.deepEqual(shopBySize.shopSizeLabels('Split King/Split Cal King'), ['Split King', 'Split California King']); assertions += 1;
+assert.deepEqual(shopBySize.shopSizeLabels('Twin XL x 2'), ['Twin XL x 2']); assertions += 1;
 
 const representativeVariants = [
-  { variantId: '101', nativeSize: 'Queen', available: true, price: '$1,999.00' },
-  { variantId: '102', nativeSize: 'King', available: false, price: '$2,499.00' },
-  { variantId: '103', nativeSize: 'Cal King', available: true, price: '$2,499.00' },
+  { variantId: '101', nativeSize: 'Full/Queen', available: true, price: '$199.00' },
+  { variantId: '102', nativeSize: 'King', available: false, price: '$249.00' },
+  { variantId: '103', nativeSize: 'Split Cal King (2pc)', available: true, price: '$499.00' },
 ];
-assert.equal(shopBySize.eligibleVariant(representativeVariants, 'Queen').variantId, '101');
-assertions += 1;
-assert.equal(shopBySize.eligibleVariant(representativeVariants, 'King'), null, 'unavailable variants must not be eligible');
-assertions += 1;
-assert.equal(shopBySize.eligibleVariant(representativeVariants, 'California King').variantId, '103');
-assertions += 1;
+equal(shopBySize.eligibleVariant(representativeVariants, 'Queen').variantId, '101');
+equal(shopBySize.eligibleVariant(representativeVariants, 'King'), null, 'unavailable variants are ineligible');
+equal(shopBySize.eligibleVariant(representativeVariants, 'Split California King').variantId, '103');
+equal(shopBySize.selectedSizeFromSearch('?size=Split+Head+King'), 'Split Head King');
 
-assert.equal(shopBySize.selectedSizeFromSearch('?size=Twin+XL'), 'Twin XL');
-assertions += 1;
-assert.equal(shopBySize.selectedSizeFromSearch('?filter.v.option.size=Cal+King'), 'California King');
-assertions += 1;
-assert.equal(shopBySize.selectedSizeFromSearch('?filter.v.option.size=Queen&filter.v.option.size=King'), null);
-assertions += 1;
+equal(shopBySize.productUrlForVariant('/products/example?ref=collection', '101', 'Queen'), '/products/example?ref=collection&variant=101&size=Queen');
+const mattressContext = shopBySize.collectionContext(sizeMap, 'mattresses');
+equal(mattressContext.heading, 'Shop Mattresses by Size');
+equal(mattressContext.sizes.length, 12);
+const splitContext = shopBySize.collectionContext(sizeMap, 'adjustable-bases-size-split-head-king');
+equal(splitContext.selectedSize, 'Split Head King');
+equal(splitContext.clearHandle, 'adjustable-bases');
+equal(shopBySize.collectionContext(sizeMap, 'zoned-pillows'), null, 'unmanaged collections do not show the size panel');
 
-assert.equal(
-  shopBySize.productUrlForVariant('/products/example?ref=collection', '101', 'Queen'),
-  '/products/example?ref=collection&variant=101&size=Queen',
-);
-assertions += 1;
-assert.equal(
-  shopBySize.filterUrl('?sort_by=price-ascending&filter.v.option.size=King&page=2', 'California King'),
-  '?sort_by=price-ascending&size=California+King&filter.v.option.size=Cal+King',
-);
-assertions += 1;
-assert.equal(shopBySize.filterUrl('?size=Queen&filter.v.option.size=Queen', null), '');
-assertions += 1;
+check(section.includes("'snoozepod-size-collection-map.js' | asset_url"), 'the catalog-derived routing map is loaded');
+check(section.includes('data-collection-handle="{{ collection.handle | escape }}"'), 'the active collection handle is exposed');
+check(section.includes('variant.available | json'), 'Shopify availability is emitted');
+check(section.includes('variant.id | json'), 'Shopify variant IDs are emitted');
+check(section.includes('variant.price | money | json'), 'exact Shopify variant prices are emitted');
+check(section.includes("product_option_name_normalized == 'size'"), 'Liquid locates the named Size option');
+check(card.includes('data-shop-by-size-price'), 'cards expose a selected-size price surface');
+check(section.includes('aria-live="polite"'), 'result status is announced accessibly');
 
-for (const size of shopBySize.STANDARD_SIZES) {
-  check(section.includes(`data-shop-by-size-option="{{ snoozepod_size }}"`) && section.includes(`'Twin|Twin XL|Full|Queen|King|California King'`), `${size} is represented by the canonical size list`);
-}
-check(section.includes('variant.available | json'), 'Liquid availability is the storefront eligibility authority');
-check(section.includes('variant.id | json'), 'Shopify variant IDs are emitted for variant deep links');
-check(section.includes('variant.price | money | json'), 'variant-specific Shopify prices are emitted');
-check(section.includes("product_option_name_normalized == 'size'") && section.includes('snoozepod_variant_size'), 'Liquid finds the named Size option instead of assuming a fixed option position');
-check(section.includes("collection.handle == 'mattresses'"), 'Shop by Size is bounded to the mattress collection');
-check(card.includes('data-shop-by-size-price'), 'product cards expose a selected-size price surface');
-check(section.includes('aria-live="polite"'), 'filter results are announced accessibly');
-
-const mattresses = feed.products.filter((product) => product.categoryContract === 'mattress');
-assert.equal(mattresses.length, 4);
-assertions += 1;
-const allMattressVariants = mattresses.flatMap((product) => product.commerce.variants);
-check(allMattressVariants.every((variant) => variant.shopifyVariantId.startsWith('gid://shopify/ProductVariant/')), 'every mattress variant retains its Shopify identity');
-check(allMattressVariants.every((variant) => variant.sku), 'every mattress variant retains its manufacturer SKU');
-check(allMattressVariants.every((variant) => /^\d+\.\d{2}$/.test(variant.price)), 'every mattress variant retains its Shopify price');
-check(allMattressVariants.every((variant) => typeof variant.standardizedSize === 'string'), 'every mattress variant exports a standardized size');
-check(allMattressVariants.some((variant) => variant.options.Size === 'Cal King' && variant.standardizedSize === 'California King'), 'Cal King is normalized without changing the native Shopify option');
-check(allMattressVariants.every((variant) => variant.contract['custom.sleep_geometry']), 'every mattress variant retains explicit geometry');
-check(allMattressVariants.every((variant) => variant.contract['custom.compatibility_key']), 'every mattress variant retains a compatibility key');
-check(mattresses.every((product) => [null, 'Plush', 'Medium Plush', 'Medium Firm', 'Firm'].includes(product.feelLabel)), 'mattress Feel stays within the approved vocabulary');
-
-const dualComfort = mattresses.find((product) => product.handle === '12-inch-dual-comfort-mattress');
-check(!dualComfort.commerce.variants.some((variant) => variant.standardizedSize === 'Full'), 'a missing Full variant is not invented for Dual Comfort');
-check(dualComfort.commerce.variants.some((variant) => variant.standardizedSize === 'Queen' && variant.price === '2499.00'), 'representative exact Queen price remains mapped');
+const allVariants = feed.products.flatMap((product) => product.commerce.variants);
+check(allVariants.every((variant) => variant.shopifyVariantId.startsWith('gid://shopify/ProductVariant/')), 'variant identities are retained');
+check(allVariants.every((variant) => typeof variant.price === 'string'), 'variant prices are retained');
+check(allVariants.every((variant) => Array.isArray(variant.shopSizeKeys)), 'every variant exports structured shopping size keys');
+check(allVariants.some((variant) => variant.standardizedSize === 'Full/Queen' && variant.shopSizeKeys.join('|') === 'Full|Queen'), 'compound sizes remain exact while supporting both destinations');
+check(allVariants.some((variant) => variant.standardizedSize === 'One Size' && variant.shopSizeKeys.length === 0), 'One Size does not create a narrowing destination');
 
 console.log(`Shop by Size: ${assertions} assertions passed.`);

@@ -5,27 +5,23 @@
 })(typeof window !== "undefined" ? window : globalThis, function () {
   "use strict";
 
-  const STANDARD_SIZES = ["Twin", "Twin XL", "Full", "Queen", "King", "California King"];
-  const SIZE_ALIASES = new Map([
-    ["twin", "Twin"],
-    ["twin xl", "Twin XL"],
-    ["full", "Full"],
-    ["queen", "Queen"],
-    ["king", "King"],
-    ["cal king", "California King"],
-    ["california king", "California King"],
-  ]);
-
   function normalizeSize(value) {
-    const normalized = String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
-    return SIZE_ALIASES.get(normalized) || null;
+    const clean = String(value || "").trim().replace(/\s*\(2pc\)$/i, "").replace(/Cal King/gi, "California King").replace(/\s+/g, " ");
+    if (!clean || clean.toLowerCase() === "one size") return null;
+    return clean;
+  }
+
+  function shopSizeLabels(value) {
+    const normalized = normalizeSize(value);
+    if (!normalized) return [];
+    return Array.from(new Set(normalized.split("/").map(function (label) { return label.trim(); }).filter(Boolean)));
   }
 
   function eligibleVariant(variants, selectedSize) {
     const wanted = normalizeSize(selectedSize);
     if (!wanted || !Array.isArray(variants)) return null;
     return variants.find(function (variant) {
-      return variant && variant.available === true && normalizeSize(variant.nativeSize) === wanted;
+      return variant && variant.available === true && shopSizeLabels(variant.nativeSize).includes(wanted);
     }) || null;
   }
 
@@ -33,7 +29,7 @@
     const params = new URLSearchParams(search || "");
     const explicit = normalizeSize(params.get("size"));
     if (explicit) return explicit;
-    const nativeSizes = params.getAll("filter.v.option.size").map(normalizeSize).filter(Boolean);
+    const nativeSizes = params.getAll("filter.v.option.size").flatMap(shopSizeLabels);
     return nativeSizes.length === 1 ? nativeSizes[0] : null;
   }
 
@@ -44,18 +40,25 @@
     return next.pathname + next.search + next.hash;
   }
 
-  function filterUrl(search, selectedSize) {
-    const params = new URLSearchParams(search || "");
-    params.delete("page");
-    params.delete("size");
-    params.delete("filter.v.option.size");
-    const normalized = normalizeSize(selectedSize);
-    if (normalized) {
-      params.set("size", normalized);
-      params.set("filter.v.option.size", normalized === "California King" ? "Cal King" : normalized);
+  function collectionContext(map, handle) {
+    if (!map || !handle) return null;
+    if (handle === map.masterCollectionHandle) {
+      return { heading: "Shop Everything by Size", intro: "Choose a size to see every currently available product that supports it.", sizes: map.storewide, selectedSize: null, clearHandle: map.masterCollectionHandle, noun: "product" };
     }
-    const query = params.toString();
-    return query ? "?" + query : "";
+    const storewide = (map.storewide || []).find(function (entry) { return entry.handle === handle; });
+    if (storewide) {
+      return { heading: "Shop " + storewide.label, intro: "Showing products with an available " + storewide.label + " variant and its exact price.", sizes: map.storewide, selectedSize: storewide.label, clearHandle: map.masterCollectionHandle, noun: "product" };
+    }
+    for (const category of map.categories || []) {
+      if (handle === category.canonicalCollectionHandle) {
+        return { heading: "Shop " + category.title + " by Size", intro: "Choose a size to see currently available " + category.title.toLowerCase() + " and exact variant pricing.", sizes: category.sizes, selectedSize: null, clearHandle: category.canonicalCollectionHandle, noun: category.title.toLowerCase() };
+      }
+      const categorySize = (category.sizes || []).find(function (entry) { return entry.handle === handle; });
+      if (categorySize) {
+        return { heading: categorySize.label + " " + category.title, intro: "Showing " + category.title.toLowerCase() + " with an available " + categorySize.label + " variant and its exact price.", sizes: category.sizes, selectedSize: categorySize.label, clearHandle: category.canonicalCollectionHandle, noun: category.title.toLowerCase() };
+      }
+    }
+    return null;
   }
 
   function parseVariants(card) {
@@ -72,25 +75,13 @@
   function setCardLinks(card, variant, selectedSize) {
     card.querySelectorAll("a[href]").forEach(function (link) {
       if (!link.dataset.shopBySizeOriginalHref) link.dataset.shopBySizeOriginalHref = link.getAttribute("href") || "";
-      if (variant) {
-        link.setAttribute("href", productUrlForVariant(link.dataset.shopBySizeOriginalHref, variant.variantId, selectedSize, window.location.origin));
-      } else {
-        link.setAttribute("href", link.dataset.shopBySizeOriginalHref);
-      }
-    });
-  }
-
-  function updateCount(count) {
-    [document.getElementById("ProductCount"), document.getElementById("ProductCountDesktop")].forEach(function (node) {
-      if (!node) return;
-      if (!node.dataset.shopBySizeOriginalText) node.dataset.shopBySizeOriginalText = node.textContent.trim();
-      node.textContent = count === null ? node.dataset.shopBySizeOriginalText : count + (count === 1 ? " product" : " products");
+      link.setAttribute("href", variant ? productUrlForVariant(link.dataset.shopBySizeOriginalHref, variant.variantId, selectedSize, window.location.origin) : link.dataset.shopBySizeOriginalHref);
     });
   }
 
   function preserveSizeInFacetForms(selectedSize) {
     document.querySelectorAll("#main-collection-filters form").forEach(function (form) {
-      let input = form.querySelector('input[data-shop-by-size-preserver]');
+      let input = form.querySelector("input[data-shop-by-size-preserver]");
       if (!selectedSize) {
         if (input) input.remove();
         return;
@@ -106,26 +97,48 @@
     });
   }
 
-  function controller(section) {
-    const selectedSize = selectedSizeFromSearch(window.location.search);
+  function renderPanel(section, context) {
+    section.hidden = false;
+    const heading = section.querySelector("[data-shop-by-size-heading]");
+    const intro = section.querySelector("[data-shop-by-size-intro]");
+    const options = section.querySelector("[data-shop-by-size-options]");
+    const clear = section.querySelector("[data-shop-by-size-clear]");
+    if (heading) heading.textContent = context.heading;
+    if (intro) intro.textContent = context.intro;
+    if (options) {
+      options.textContent = "";
+      (context.sizes || []).forEach(function (size) {
+        const link = document.createElement("a");
+        link.className = "snoozepod-shop-by-size__option";
+        link.href = "/collections/" + size.handle + "?size=" + encodeURIComponent(size.label);
+        link.dataset.shopBySizeOption = size.label;
+        link.setAttribute("aria-current", size.label === context.selectedSize ? "page" : "false");
+        link.classList.toggle("is-active", size.label === context.selectedSize);
+        link.textContent = size.label;
+        options.appendChild(link);
+      });
+    }
+    if (clear) {
+      clear.hidden = !context.selectedSize;
+      clear.href = "/collections/" + context.clearHandle;
+      clear.textContent = "Show all " + context.noun + (context.noun.endsWith("s") ? "" : "s");
+    }
+  }
+
+  function controller(section, map) {
+    const context = collectionContext(map, section.dataset.collectionHandle);
+    if (!context) return;
+    renderPanel(section, context);
+    const selectedSize = context.selectedSize || selectedSizeFromSearch(window.location.search);
     const grid = document.getElementById("product-grid");
     const cards = grid ? Array.from(grid.querySelectorAll("[data-shop-by-size-product]")) : [];
-    const availableSizes = new Set();
     let visibleCount = 0;
-
     cards.forEach(function (card) {
-      const variants = parseVariants(card);
-      variants.forEach(function (variant) {
-        const normalized = variant && variant.available === true ? normalizeSize(variant.nativeSize) : null;
-        if (normalized) availableSizes.add(normalized);
-      });
-
-      const match = selectedSize ? eligibleVariant(variants, selectedSize) : null;
+      const match = selectedSize ? eligibleVariant(parseVariants(card), selectedSize) : null;
       const visible = !selectedSize || Boolean(match);
       card.hidden = !visible;
       if (visible) visibleCount += 1;
       setCardLinks(card, match, selectedSize);
-
       const nativePrice = card.querySelector(".card-information > .price");
       const selectedPrice = card.querySelector("[data-shop-by-size-price]");
       if (nativePrice) nativePrice.hidden = Boolean(match);
@@ -139,56 +152,23 @@
         }
       }
     });
-
-    section.querySelectorAll("[data-shop-by-size-option]").forEach(function (button) {
-      const size = normalizeSize(button.dataset.shopBySizeOption);
-      const active = Boolean(selectedSize && size === selectedSize);
-      button.setAttribute("aria-pressed", active ? "true" : "false");
-      button.disabled = !availableSizes.has(size);
-      button.classList.toggle("is-active", active);
-    });
-
-    const clear = section.querySelector("[data-shop-by-size-clear]");
-    if (clear) clear.hidden = !selectedSize;
     const status = section.querySelector("[data-shop-by-size-status]");
-    if (status) {
-      status.textContent = selectedSize
-        ? visibleCount + (visibleCount === 1 ? " mattress" : " mattresses") + " available in " + selectedSize + "."
-        : "Choose a size to see exact availability and pricing.";
-    }
-    updateCount(selectedSize ? visibleCount : null);
+    if (status) status.textContent = selectedSize ? visibleCount + (visibleCount === 1 ? " product" : " products") + " shown in " + selectedSize + "." : "Choose a size to see exact availability and pricing.";
     preserveSizeInFacetForms(selectedSize);
-    document.documentElement.classList.toggle("snoozepod-size-filter-active", Boolean(selectedSize));
-  }
-
-  function navigateToSize(size) {
-    window.location.assign(window.location.pathname + filterUrl(window.location.search, size) + window.location.hash);
   }
 
   function init() {
     const section = document.querySelector("[data-shop-by-size]");
-    if (!section) return;
-
-    section.addEventListener("click", function (event) {
-      const option = event.target.closest("[data-shop-by-size-option]");
-      if (option && !option.disabled) {
-        navigateToSize(option.dataset.shopBySizeOption);
-        return;
-      }
-      if (event.target.closest("[data-shop-by-size-clear]")) navigateToSize(null);
-    });
-
-    controller(section);
+    const map = typeof window !== "undefined" ? window.SnoozePodSizeCollections : null;
+    if (!section || !map || !collectionContext(map, section.dataset.collectionHandle)) return;
+    controller(section, map);
     const container = document.getElementById("ProductGridContainer");
     if (container && typeof MutationObserver !== "undefined") {
       let queued = false;
       new MutationObserver(function () {
         if (queued) return;
         queued = true;
-        queueMicrotask(function () {
-          queued = false;
-          controller(section);
-        });
+        queueMicrotask(function () { queued = false; controller(section, map); });
       }).observe(container, { childList: true, subtree: true });
     }
   }
@@ -198,12 +178,5 @@
     else init();
   }
 
-  return {
-    STANDARD_SIZES: STANDARD_SIZES,
-    normalizeSize: normalizeSize,
-    eligibleVariant: eligibleVariant,
-    selectedSizeFromSearch: selectedSizeFromSearch,
-    productUrlForVariant: productUrlForVariant,
-    filterUrl: filterUrl,
-  };
+  return { normalizeSize: normalizeSize, shopSizeLabels: shopSizeLabels, eligibleVariant: eligibleVariant, selectedSizeFromSearch: selectedSizeFromSearch, productUrlForVariant: productUrlForVariant, collectionContext: collectionContext };
 });

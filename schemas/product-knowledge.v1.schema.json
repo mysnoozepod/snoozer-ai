@@ -68,13 +68,14 @@
               "minItems": 1,
               "items": {
                 "type": "object",
-                "required": ["shopifyVariantId", "sku", "price", "options", "standardizedSize", "contract"],
+                "required": ["shopifyVariantId", "sku", "price", "options", "standardizedSize", "shopSizeKeys", "contract"],
                 "properties": {
                   "shopifyVariantId": { "type": "string", "pattern": "^gid://shopify/ProductVariant/[0-9]+$" },
                   "sku": { "type": "string" },
                   "price": { "type": "string" },
                   "options": { "type": "object" },
                   "standardizedSize": { "type": ["string", "null"] },
+                  "shopSizeKeys": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
                   "contract": { "type": "object" }
                 },
                 "additionalProperties": false
