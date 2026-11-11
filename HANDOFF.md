@@ -1,9 +1,26 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-09 — header Check In removed and mobile logo enlarged
+Last updated: 2026-11-11 — Product Page Refinement v2 implemented and staged
 Owner: Ty  
 Implementer: Codi  
-Current phase: Header simplification deployed and responsive-verified; final release acceptance remains next
+Current phase: Product Page Refinement v2 staged on the existing unpublished theme; authenticated visual acceptance and missing content remain next
+
+## Product Page Refinement v2 checkpoint — 2026-11-11
+
+- Continued on existing branch `main` from starting commit `3556be8d6ccbb484f9dad9feac28baf65a3f2eaf`; no reset or branch switch occurred.
+- Mattress pages now use the dedicated five-section information renderer in the approved order: Product Details, Sleep Trial, Delivery, Warranty, and Feel. Product Details implements Construction, Features & Benefits, Showroom Location, and Manufacturer's Model Name. Unverified subsections stay hidden.
+- Non-mattress pages retain the existing category-specific product-knowledge renderer. Native gallery, variant selection, price updates, product form/Add to Cart, Ask Snoozer, and Dual Comfort controls are preserved.
+- Added only `custom.feel_label`, constrained to Plush, Medium Plush, Medium Firm, and Firm. Existing Shopify vendor/model, construction, verified features/materials, showroom JSON, warranty, policy pages, variant IDs, and SKUs remain authoritative. Product-knowledge feed/schema now expose `feelLabel`.
+- Verified Plush values were applied to the `12" Memory Foam Mattress` and `12" Hybrid Mattress`. No product-level Feel was invented for either Dual Comfort mattress.
+- Mattress customer-facing descriptions, navigation labels, and media alt text now consistently use inch symbols; internal canonical handles remain unchanged.
+- Mobile refinements: one full-width swipe position per gallery image, compact thumbnails, two-column pill options, tighter accordions, and a horizontal related-product carousel. Desktop hero structure remains intact.
+- Lower CTA hierarchy is Book a Snooze Session primary and Ask Snoozer secondary; hero Add to Cart remains immediately after variant selection.
+- Shopify staging/readback: unpublished theme `139216420925`; 43 products; 274 variants; 82 product definitions; four variant definitions; 84 contract definitions; published theme `139460542525` hash-verified unchanged across ten bounded assets. No theme publication, order, price, inventory, fulfillment, AWS, or Snoozer backend change occurred.
+- Recovery snapshots: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\product-knowledge-architecture\2026-11-11T15-44-23-852Z` and `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\mattress-customer-naming\2026-11-11T15-43-24-478Z`.
+- Tests passed: Product Page v2 28 assertions; product knowledge 40; Product Page v1 67; website experience 44; catalog/shopping 10/10; mattress naming 18 groups; JavaScript syntax and whitespace checks.
+- Visual limitation: actual authenticated desktop/mobile preview QA could not run because the storefront is password-protected, the available browser was not authenticated to Shopify Admin, and Shopify CLI is not installed. Do not claim render verification from this checkpoint.
+- Missing content for Ty: exact showroom Pod/display locations; verified product-specific warranty length/coverage/foundation/care facts; approved benefit copy; optional whole-product Feel for Dual Comfort only if accurate; final review of global Sleep Trial and Delivery policies.
+- Exact next action: run authenticated desktop and 390×844 unpublished-theme preview acceptance across one mattress, adjustable base, pillow, and sheet product, then correct only observed responsive defects. Do not publish the theme.
 
 ## Header simplification checkpoint — 2026-11-09
 

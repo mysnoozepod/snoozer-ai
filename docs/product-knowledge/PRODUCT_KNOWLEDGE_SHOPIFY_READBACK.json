@@ -1,16 +1,16 @@
 {
   "schemaVersion": "1.0.0",
-  "verifiedAt": "2026-11-08T20:39:29.561Z",
+  "verifiedAt": "2026-11-11T15:44:32.086Z",
   "store": "mysnoozepodtest.myshopify.com",
   "apiVersion": "2025-10",
-  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\product-knowledge-architecture\\2026-11-08T20-39-24-009Z",
+  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\product-knowledge-architecture\\2026-11-11T15-44-23-852Z",
   "previewUrl": "https://mysnoozepodtest.myshopify.com/?preview_theme_id=139216420925",
   "summary": {
     "products": 43,
     "variants": 274,
-    "productDefinitions": 81,
+    "productDefinitions": 82,
     "variantDefinitions": 4,
-    "contractDefinitionCount": 83,
+    "contractDefinitionCount": 84,
     "createdDefinitionsThisRun": 0,
     "pinChanges": 0,
     "unpinChanges": 0,
@@ -1158,6 +1158,24 @@
           "name": "rich_text_field"
         },
         "validations": []
+      },
+      {
+        "id": "gid://shopify/MetafieldDefinition/296758509629",
+        "name": "13 Verified product feel",
+        "namespace": "custom",
+        "key": "feel_label",
+        "description": "Customer-facing mattress feel classification. Populate only when the classification is verified.",
+        "ownerType": "PRODUCT",
+        "pinnedPosition": null,
+        "type": {
+          "name": "single_line_text_field"
+        },
+        "validations": [
+          {
+            "name": "choices",
+            "value": "[\"Plush\",\"Medium Plush\",\"Medium Firm\",\"Firm\"]"
+          }
+        ]
       }
     ],
     "productVariant": [
@@ -1233,16 +1251,48 @@
   },
   "theme": {
     "publishedThemeId": "139460542525",
-    "publishedAssetsUnchanged": 2,
+    "publishedAssetsUnchanged": 10,
     "unpublishedThemeId": "139216420925",
     "assets": [
       {
+        "key": "assets/component-product-variant-picker.css",
+        "sha256": "3e63dd773e53f29ed9594fb14e13a78f03924aba700cfd9a57c378d92fdd1677"
+      },
+      {
+        "key": "assets/component-snoozepod-commerce-v1.css",
+        "sha256": "b6a93a78de90329ac268dcbf17a13b07eccc7b8a599539022a0a85481d72a0a5"
+      },
+      {
+        "key": "sections/related-products.liquid",
+        "sha256": "e94c30a88e8a0ab1f7621f3ed91d4b42691641dfc6645786b896983a72f52a10"
+      },
+      {
+        "key": "sections/snoozepod-product-cta.liquid",
+        "sha256": "28860aae25c80da429a74b65a44f06243014c53f12f8789e0a13ad4695c0e9f1"
+      },
+      {
+        "key": "sections/snoozepod-product-hero.liquid",
+        "sha256": "5a926f4b3c7a13dfccd0517f1fe5caac49f6857ebbfb624340d42282609fdcab"
+      },
+      {
         "key": "sections/snoozepod-product-information-v1.liquid",
-        "sha256": "aafa62ce983ce2ee69127f00877fd7ccdc65e2ffbc1ca980ec76f40056e8f3ca"
+        "sha256": "7c3c46c0b06a94bff8cd5f738397a171f8f53b35c4b9fb754e85c38bc847fe5f"
+      },
+      {
+        "key": "snippets/snoozepod-mattress-product-information.liquid",
+        "sha256": "4f1f8c7048921412ad62fbfe5fa8605154a2ecf18dfc439682061f2a57e4e94f"
       },
       {
         "key": "snippets/snoozepod-product-knowledge.liquid",
-        "sha256": "1955710dab45dcfb4155d3e5c59008de1136b419ce5cfa86d74e7823c034b593"
+        "sha256": "2a59415ffbafae6920c9418af037f53ab0fe85d262f16c962e4168dbc2e0d097"
+      },
+      {
+        "key": "snippets/snoozepod-product-feel.liquid",
+        "sha256": "cc01ccd94d21f6f44be45544870c3380da177a88ba66be9cb824df2dd6b94dc2"
+      },
+      {
+        "key": "templates/product.snoozepod-v1.json",
+        "sha256": "18f3b098c91110a6548cee364b2bcff9e1e0e6862260caca616b5f02fcbd0c96"
       }
     ]
   },
@@ -1253,6 +1303,7 @@
       "handle": "12-inch-dual-comfort-mattress",
       "title": "12\" Dual Comfort Mattress",
       "model": "M3",
+      "feelLabel": null,
       "categoryContract": "mattress",
       "productType": "Mattress",
       "vendor": "BEDGEAR",
@@ -1416,13 +1467,14 @@
         "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
       },
       "schemaVersion": "1.0.0",
-      "shopifyUpdatedAt": "2026-11-08T20:37:37Z"
+      "shopifyUpdatedAt": "2026-11-11T15:43:27Z"
     },
     {
       "shopifyProductId": "gid://shopify/Product/8100282826813",
       "handle": "12-inch-hybrid-mattress",
       "title": "12\" Hybrid Mattress",
       "model": "H6",
+      "feelLabel": "Plush",
       "categoryContract": "mattress",
       "productType": "Mattress",
       "vendor": "BEDGEAR",
@@ -1614,13 +1666,14 @@
         "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
       },
       "schemaVersion": "1.0.0",
-      "shopifyUpdatedAt": "2026-11-08T20:37:36Z"
+      "shopifyUpdatedAt": "2026-11-11T15:43:26Z"
     },
     {
       "shopifyProductId": "gid://shopify/Product/8100282794045",
       "handle": "12-inch-memory-foam-mattress",
       "title": "12\" Memory Foam Mattress",
       "model": "S7",
+      "feelLabel": "Plush",
       "categoryContract": "mattress",
       "productType": "Mattress",
       "vendor": "BEDGEAR",
@@ -1817,13 +1870,14 @@
         "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
       },
       "schemaVersion": "1.0.0",
-      "shopifyUpdatedAt": "2026-11-08T20:37:36Z"
+      "shopifyUpdatedAt": "2026-11-11T15:43:25Z"
     },
     {
       "shopifyProductId": "gid://shopify/Product/8100282925117",
       "handle": "14-inch-dual-comfort-mattress",
       "title": "14\" Dual Comfort Mattress",
       "model": "M5",
+      "feelLabel": null,
       "categoryContract": "mattress",
       "productType": "Mattress",
       "vendor": "BEDGEAR",
@@ -2001,13 +2055,14 @@
         "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
       },
       "schemaVersion": "1.0.0",
-      "shopifyUpdatedAt": "2026-11-08T20:37:37Z"
+      "shopifyUpdatedAt": "2026-11-11T15:43:28Z"
     },
     {
       "shopifyProductId": "gid://shopify/Product/8100250714173",
       "handle": "malouf-2-5-inch-gel-memory-foam-topper",
       "title": "2.5-Inch Gel Memory Foam Topper",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "mattress_topper",
       "productType": "Mattress Topper",
       "vendor": "Malouf",
@@ -2140,6 +2195,7 @@
       "handle": "bamboo-charcoal-pillow-cooling-cover",
       "title": "Bamboo Charcoal Pillow + Cooling Cover",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -2221,6 +2277,7 @@
       "handle": "blackwell-designer-headboard",
       "title": "Blackwell Designer Headboard",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "bedroom_furniture",
       "productType": "Headboard",
       "vendor": "Malouf",
@@ -2364,6 +2421,7 @@
       "handle": "carboncool-omniphase-pillow",
       "title": "CarbonCool + OmniPhase Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -2435,6 +2493,7 @@
       "handle": "carlisle-upholstered-headboard",
       "title": "Carlisle Upholstered Headboard",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "bedroom_furniture",
       "productType": "Headboard",
       "vendor": "Malouf",
@@ -2578,6 +2637,7 @@
       "handle": "convolution-pillow",
       "title": "Convolution Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -2649,6 +2709,7 @@
       "handle": "cooling-performance-throw",
       "title": "Cooling Performance Throw",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "comforter_duvet_accessory",
       "productType": "Throw",
       "vendor": "BEDGEAR",
@@ -2712,6 +2773,7 @@
       "handle": "cotton-sheet-set",
       "title": "Cotton Sheet Set",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "sheets_bedding",
       "productType": "Sheet Set",
       "vendor": "BEDGEAR",
@@ -3300,6 +3362,7 @@
       "handle": "dri-tec-mattress-protector",
       "title": "Dri-Tec Mattress Protector",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "mattress_protection",
       "productType": "Mattress Protector",
       "vendor": "BEDGEAR",
@@ -3516,6 +3579,7 @@
       "handle": "dri-tec-sheet-set",
       "title": "Dri-Tec Sheet Set",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "sheets_bedding",
       "productType": "Sheet Set",
       "vendor": "BEDGEAR",
@@ -4179,6 +4243,7 @@
       "handle": "eastman-upholstered-platform-base",
       "title": "Eastman Upholstered Platform Base",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "bedroom_furniture",
       "productType": "Platform Base",
       "vendor": "Malouf",
@@ -4367,6 +4432,7 @@
       "handle": "flex-l-adjustable-base",
       "title": "Flex L Adjustable Base",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "adjustable_base",
       "productType": "Adjustable Base",
       "vendor": "BEDGEAR",
@@ -4471,6 +4537,7 @@
       "handle": "flex-lsx-adjustable-base",
       "title": "Flex LSX Adjustable Base",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "adjustable_base",
       "productType": "Adjustable Base",
       "vendor": "BEDGEAR",
@@ -4589,6 +4656,7 @@
       "handle": "flex-sh-adjustable-base",
       "title": "Flex SH Adjustable Base",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "adjustable_base",
       "productType": "Adjustable Base",
       "vendor": "BEDGEAR",
@@ -4679,6 +4747,7 @@
       "handle": "gel-convolution-pillow",
       "title": "Gel Convolution Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -4760,6 +4829,7 @@
       "handle": "gel-dough-z-gel-pillow",
       "title": "Gel Dough + Z Gel Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -4873,6 +4943,7 @@
       "handle": "gelled-microfiber-pillow",
       "title": "Gelled Microfiber Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -4954,6 +5025,7 @@
       "handle": "hennessy-upholstered-headboard",
       "title": "Hennessy Upholstered Headboard",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "bedroom_furniture",
       "productType": "Headboard",
       "vendor": "Malouf",
@@ -5097,6 +5169,7 @@
       "handle": "hexcurve-omniphase-pillow",
       "title": "HexCurve + OmniPhase Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -5178,6 +5251,7 @@
       "handle": "ice-cloud-omniphase-pillow",
       "title": "Ice Cloud + OmniPhase Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -5316,6 +5390,7 @@
       "handle": "light-grey-racetrack-duvet-sham-set",
       "title": "Light Grey Racetrack Duvet + Sham Set",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "comforter_duvet_accessory",
       "productType": "Duvet Set",
       "vendor": "BEDGEAR",
@@ -5379,6 +5454,7 @@
       "handle": "light-weight-comforter",
       "title": "Light Weight Comforter",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "comforter_duvet_accessory",
       "productType": "Comforter",
       "vendor": "BEDGEAR",
@@ -5455,6 +5531,7 @@
       "handle": "medium-weight-comforter",
       "title": "Medium Weight Comforter",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "comforter_duvet_accessory",
       "productType": "Comforter",
       "vendor": "BEDGEAR",
@@ -5531,6 +5608,7 @@
       "handle": "quilted-convolution-hyperchill-pillow",
       "title": "Quilted Convolution + HyperChill Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -5602,6 +5680,7 @@
       "handle": "react-pro-performance-topper",
       "title": "React Pro Performance Topper",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "mattress_topper",
       "productType": "Mattress Topper",
       "vendor": "BEDGEAR",
@@ -5659,6 +5738,7 @@
       "handle": "scoresby-designer-headboard",
       "title": "Scoresby Designer Headboard",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "bedroom_furniture",
       "productType": "Headboard",
       "vendor": "Malouf",
@@ -5802,6 +5882,7 @@
       "handle": "shoulder-zoned-gel-activedough-pillow",
       "title": "Shoulder Zoned Gel ActiveDough Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -5883,6 +5964,7 @@
       "handle": "solid-white-duvet-sham-set",
       "title": "Solid White Duvet + Sham Set",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "comforter_duvet_accessory",
       "productType": "Duvet Set",
       "vendor": "BEDGEAR",
@@ -5946,6 +6028,7 @@
       "handle": "stretchwick-mattress-encasement",
       "title": "Stretchwick Mattress Encasement",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "mattress_protection",
       "productType": "Mattress Protector",
       "vendor": "BEDGEAR",
@@ -6078,6 +6161,7 @@
       "handle": "ultra-weight-comforter",
       "title": "Ultra Weight Comforter",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "comforter_duvet_accessory",
       "productType": "Comforter",
       "vendor": "BEDGEAR",
@@ -6154,6 +6238,7 @@
       "handle": "ver-tex-mattress-protector",
       "title": "Ver-Tex Mattress Protector",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "mattress_protection",
       "productType": "Mattress Protector",
       "vendor": "BEDGEAR",
@@ -6356,6 +6441,7 @@
       "handle": "ver-tex-sheet-set",
       "title": "Ver-Tex Sheet Set",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "sheets_bedding",
       "productType": "Sheet Set",
       "vendor": "BEDGEAR",
@@ -6674,6 +6760,7 @@
       "handle": "watson-upholstered-platform-base",
       "title": "Watson Upholstered Platform Base",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "bedroom_furniture",
       "productType": "Platform Base",
       "vendor": "Malouf",
@@ -6862,6 +6949,7 @@
       "handle": "weekender-gel-memory-foam-pillow",
       "title": "Weekender Gel Memory Foam Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -6952,6 +7040,7 @@
       "handle": "zoned-activedough-bamboo-charcoal-pillow",
       "title": "Zoned ActiveDough + Bamboo Charcoal Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -7033,6 +7122,7 @@
       "handle": "zoned-dough-bamboo-charcoal-pillow",
       "title": "Zoned Dough + Bamboo Charcoal Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -7114,6 +7204,7 @@
       "handle": "zoned-gel-activedough-pillow",
       "title": "Zoned Gel ActiveDough Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -7195,6 +7286,7 @@
       "handle": "zoned-gel-dough-pillow",
       "title": "Zoned Gel Dough Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -7343,6 +7435,7 @@
       "handle": "zoned-talalay-latex-pillow",
       "title": "Zoned Talalay Latex Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",

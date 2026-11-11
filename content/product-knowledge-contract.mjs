@@ -29,6 +29,7 @@ export const PRODUCT_METAFIELD_DEFINITIONS = [
   definition('custom', 'showroom_representation', '10 Showroom representation', 'json', 'Structured physical showroom display, sample, or swatch relationship.'),
   definition('custom', 'comfort_options', '11 Internal comfort options', 'json', 'Verified technical comfort identifiers. Customer labels require an approved mapping.'),
   definition('custom', 'configuration_readiness', '12 Configuration readiness', 'single_line_text_field', 'Whether exact purchasable configuration mappings are verified.'),
+  definition('custom', 'feel_label', '13 Verified product feel', 'single_line_text_field', 'Customer-facing mattress feel classification. Populate only when the classification is verified.', { validations: choices(['Plush', 'Medium Plush', 'Medium Firm', 'Firm']) }),
 
   definition('snoozepod_content', 'product_introduction', 'Content | Product introduction', 'rich_text_field', 'Ty-authored opening description. Visible only when the content workflow is Approved.', { pin: true }),
   definition('snoozepod_content', 'product_summary', 'Content | Product summary', 'multi_line_text_field', 'Concise Ty-authored summary for product and future Snoozer contexts.', { pin: true }),

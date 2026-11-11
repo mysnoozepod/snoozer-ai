@@ -1,12 +1,12 @@
 {% comment %}
   Verified product-feel indicator.
 
-  Expected metafields (product or selected variant):
-  - custom.feel_label: single-line text
-  - custom.feel_position: integer from 0 through 100
+  Expected product metafield:
+  - custom.feel_label: constrained single-line text
 
-  Variant values take precedence. The indicator fails closed when either value
-  is absent or the position is outside the approved range.
+  Approved values are Plush, Medium Plush, Medium Firm, and Firm. The visual
+  position is derived from that controlled value so merchants do not maintain
+  a second, potentially contradictory field.
 
   Accepts:
   - feel_product: Product object
@@ -15,20 +15,22 @@
 {% endcomment %}
 
 {%- liquid
-  assign feel_variant = feel_product.selected_or_first_available_variant
-  assign feel_label = feel_variant.metafields.custom.feel_label.value | default: feel_product.metafields.custom.feel_label.value | strip
-  assign feel_position_raw = feel_variant.metafields.custom.feel_position.value
-  if feel_position_raw == blank
-    assign feel_position_raw = feel_product.metafields.custom.feel_position.value
-  endif
-
+  assign feel_label = feel_product.metafields.custom.feel_label.value | default: feel_product.metafields.custom.feel_label | strip
   assign feel_is_verified = false
-  if feel_label != blank and feel_position_raw != blank
-    assign feel_position = feel_position_raw | plus: 0
-    if feel_position >= 0 and feel_position <= 100
+  case feel_label
+    when 'Plush'
+      assign feel_position = 15
       assign feel_is_verified = true
-    endif
-  endif
+    when 'Medium Plush'
+      assign feel_position = 38
+      assign feel_is_verified = true
+    when 'Medium Firm'
+      assign feel_position = 65
+      assign feel_is_verified = true
+    when 'Firm'
+      assign feel_position = 90
+      assign feel_is_verified = true
+  endcase
 -%}
 
 {%- if feel_is_verified -%}
@@ -49,12 +51,12 @@
       <span class="snoozepod-feel__fill" style="--snoozepod-feel-position: {{ feel_position }}%;"></span>
     </div>
     <div class="snoozepod-feel__scale" aria-hidden="true">
-      <span>Soft</span>
+      <span>Plush</span>
       <span>Firm</span>
     </div>
   </div>
 {%- elsif request.design_mode and show_editor_placeholder -%}
   <div class="snoozepod-data-placeholder" role="note">
-    Theme editor preview only: Product Feel is hidden until a verified label and 0–100 position are supplied.
+    Theme editor preview only: Product Feel is hidden until one of the four approved classifications is supplied.
   </div>
 {%- endif -%}

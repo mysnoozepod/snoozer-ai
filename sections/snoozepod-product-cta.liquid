@@ -66,6 +66,22 @@
     color: #ffffff;
   }
 
+  @media screen and (max-width: 749px) {
+    .snoozepod-product-cta-{{ section.id }} {
+      margin: 16px 12px 36px;
+    }
+
+    .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__card {
+      gap: 20px;
+      padding: 28px 20px;
+      border-radius: 20px;
+    }
+
+    .snoozepod-product-cta-{{ section.id }} .snoozepod-product-cta__heading {
+      font-size: 28px;
+    }
+  }
+
   @media screen and (min-width: 990px) {
     .snoozepod-product-cta-{{ section.id }} {
       margin: 40px auto 56px;
@@ -134,12 +150,15 @@
         {%- endif -%}
 
         {%- if section.settings.show_secondary and section.settings.secondary_label != blank -%}
-          <a
-            class="snoozepod-product-cta__button snoozepod-product-cta__button--secondary"
-            href="{% if section.settings.secondary_link != blank %}{{ section.settings.secondary_link }}{% else %}#{% endif %}"
-          >
-            {{ section.settings.secondary_label | escape }}
-          </a>
+          {%- if section.settings.secondary_link != blank and section.settings.secondary_link != '#' -%}
+            <a class="snoozepod-product-cta__button snoozepod-product-cta__button--secondary" href="{{ section.settings.secondary_link }}">
+              {{ section.settings.secondary_label | escape }}
+            </a>
+          {%- else -%}
+            <button type="button" class="snoozepod-product-cta__button snoozepod-product-cta__button--secondary" data-snoozer-trigger data-snoozer-source="product-final-cta">
+              {{ section.settings.secondary_label | escape }}
+            </button>
+          {%- endif -%}
         {%- endif -%}
       </div>
     </div>
@@ -168,7 +187,7 @@
       "type": "text",
       "id": "primary_label",
       "label": "Primary CTA label",
-      "default": "Ask Snoozer"
+      "default": "Book a Snooze Session"
     },
     {
       "type": "url",
@@ -179,7 +198,7 @@
       "type": "text",
       "id": "secondary_label",
       "label": "Secondary CTA label",
-      "default": "Book a Snooze Session"
+      "default": "Ask Snoozer"
     },
     {
       "type": "url",

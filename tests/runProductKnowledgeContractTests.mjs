@@ -25,9 +25,9 @@ const check = (condition, message) => { assert.ok(condition, message); assertion
 check(PRODUCT_KNOWLEDGE_SCHEMA_VERSION === '1.0.0', 'schema version is frozen');
 check(inventory.summary.productCount === 43 && inventory.summary.variantCount === 274, 'audit covers the complete catalog');
 check(inventory.summary.metafieldValueCount >= 1280, 'all pre-existing metafield values remain preserved in the current inventory');
-check(inventory.summary.productDefinitionCount >= 81 && inventory.summary.variantDefinitionCount === 4, 'current Shopify definition inventory includes the complete contract');
-check(PRODUCT_METAFIELD_DEFINITIONS.length === 79 && VARIANT_METAFIELD_DEFINITIONS.length === 4, 'definition contract is exact');
-check(new Set([...PRODUCT_METAFIELD_DEFINITIONS, ...VARIANT_METAFIELD_DEFINITIONS].map((entry) => `${entry.ownerType}:${entry.namespace}.${entry.key}`)).size === 83, 'definitions are unique');
+check(inventory.summary.productDefinitionCount >= 82 && inventory.summary.variantDefinitionCount === 4, 'current Shopify definition inventory includes the complete contract');
+check(PRODUCT_METAFIELD_DEFINITIONS.length === 80 && VARIANT_METAFIELD_DEFINITIONS.length === 4, 'definition contract is exact');
+check(new Set([...PRODUCT_METAFIELD_DEFINITIONS, ...VARIANT_METAFIELD_DEFINITIONS].map((entry) => `${entry.ownerType}:${entry.namespace}.${entry.key}`)).size === 84, 'definitions are unique');
 check(PRODUCT_METAFIELD_DEFINITIONS.filter((entry) => entry.pin).length === 14, 'the owner workflow and universal writing surface are pinned');
 check(CONTENT_STATUSES.join('|') === 'NOT_STARTED|DRAFT|READY_FOR_REVIEW|APPROVED', 'owner workflow states are exact');
 
@@ -36,12 +36,12 @@ const expectedCounts = { mattress: 4, adjustable_base: 3, pillow: 16, sheets_bed
 for (const [contract, count] of Object.entries(expectedCounts)) check(mapped.filter((value) => value === contract).length === count, `${contract} maps ${count} products`);
 check(readback.summary.products === 43 && readback.summary.variants === 274, 'Shopify readback covers every product and variant');
 check(readback.summary.nativeCommerceFingerprintPreserved === true, 'native commerce fingerprint was preserved');
-check(readback.summary.contractDefinitionCount === 83, 'all contract definitions exist');
+check(readback.summary.contractDefinitionCount === 84, 'all contract definitions exist');
 check(readback.summary.pinnedProductDefinitionCount === 14, 'the owner workflow and writing fields are pinned in Shopify');
 check(readback.summary.preservedConflicts === 0, 'no existing merchant values conflicted with initialization');
 check(readback.summary.ownerContentStatuses.NOT_STARTED === 43, 'all products start in an explicit owner workflow state');
 check(readback.summary.ownerContentStatuses.APPROVED === 0, 'no manufacturer copy was auto-approved as owner content');
-check(readback.theme.publishedAssetsUnchanged === 2, 'published theme assets were verified unchanged');
+check(readback.theme.publishedAssetsUnchanged === 10, 'published theme assets were verified unchanged');
 check(readback.products.every((product) => product.schemaVersion === '1.0.0'), 'every product carries the schema version');
 check(readback.products.every((product) => product.technical.provenance?.sources?.length >= 2), 'every product has technical provenance');
 check(readback.products.every((product) => !product.content.approved && Object.keys(product.content.fields).length === 0), 'unapproved owner content is excluded');

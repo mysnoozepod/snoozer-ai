@@ -1,16 +1,16 @@
 {
   "schemaVersion": "1.0.0",
-  "capturedAt": "2026-11-08T20:38:27.587Z",
+  "capturedAt": "2026-11-11T15:44:43.412Z",
   "store": "mysnoozepodtest.myshopify.com",
   "apiVersion": "2025-10",
   "summary": {
     "productCount": 43,
     "variantCount": 274,
-    "productDefinitionCount": 81,
+    "productDefinitionCount": 82,
     "variantDefinitionCount": 4,
     "metaobjectDefinitionCount": 3,
-    "metafieldValueCount": 1561,
-    "productMetafieldValueCount": 465,
+    "metafieldValueCount": 1563,
+    "productMetafieldValueCount": 467,
     "variantMetafieldValueCount": 1096,
     "namespaces": [
       "custom",
@@ -1117,6 +1117,24 @@
           "name": "rich_text_field"
         },
         "validations": []
+      },
+      {
+        "id": "gid://shopify/MetafieldDefinition/296758509629",
+        "name": "13 Verified product feel",
+        "namespace": "custom",
+        "key": "feel_label",
+        "description": "Customer-facing mattress feel classification. Populate only when the classification is verified.",
+        "ownerType": "PRODUCT",
+        "pinnedPosition": null,
+        "type": {
+          "name": "single_line_text_field"
+        },
+        "validations": [
+          {
+            "name": "choices",
+            "value": "[\"Plush\",\"Medium Plush\",\"Medium Firm\",\"Firm\"]"
+          }
+        ]
       }
     ],
     "productVariant": [
@@ -1523,7 +1541,7 @@
       "vendor": "BEDGEAR",
       "productType": "Mattress",
       "templateSuffix": "snoozepod-v1",
-      "descriptionHtml": "<div data-mysnoozepod-mattress-product-copy=\"2026-11-08\">\n<h3>Product Overview</h3>\n<p>This 12-inch modular mattress uses interchangeable support components so each sleeper can choose an independent comfort direction. Its removable cooling cover and airflow-focused construction support easier care and breathable comfort.</p>\n<h4>Key Features</h4>\n<ul>\n<li>Independent left and right comfort</li>\n<li>Interchangeable support components</li>\n<li>Removable, washable cooling cover</li>\n<li>Airflow-focused chassis and vents</li>\n</ul>\n</div>",
+      "descriptionHtml": "<div data-mysnoozepod-mattress-product-copy=\"2026-11-08\">\n<h3>Product Overview</h3>\n<p>This 12\" modular mattress uses interchangeable support components so each sleeper can choose an independent comfort direction. Its removable cooling cover and airflow-focused construction support easier care and breathable comfort.</p>\n<h4>Key Features</h4>\n<ul>\n<li>Independent left and right comfort</li>\n<li>Interchangeable support components</li>\n<li>Removable, washable cooling cover</li>\n<li>Airflow-focused chassis and vents</li>\n</ul>\n</div>",
       "tags": [
         "category:mattresses",
         "collection:m3",
@@ -1535,7 +1553,7 @@
         "subcategory:m3",
         "type:mattress"
       ],
-      "updatedAt": "2026-11-08T20:37:37Z",
+      "updatedAt": "2026-11-11T15:43:27Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/na",
         "name": "Uncategorized",
@@ -2328,7 +2346,7 @@
       "vendor": "BEDGEAR",
       "productType": "Mattress",
       "templateSuffix": "snoozepod-v1",
-      "descriptionHtml": "<div data-mysnoozepod-mattress-product-copy=\"2026-11-08\">\n<h3>Product Overview</h3>\n<p>This 12-inch pillowtop mattress combines conforming comfort with responsive hybrid support and cooling, breathable materials.</p>\n<h4>Key Features</h4>\n<ul>\n<li>Plush comfort direction</li>\n<li>Integrated pillowtop</li>\n<li>Hybrid suspension support</li>\n<li>Cooling, breathable construction</li>\n</ul>\n</div>",
+      "descriptionHtml": "<div data-mysnoozepod-mattress-product-copy=\"2026-11-08\">\n<h3>Product Overview</h3>\n<p>This 12\" pillowtop mattress combines conforming comfort with responsive hybrid support and cooling, breathable materials.</p>\n<h4>Key Features</h4>\n<ul>\n<li>Plush comfort direction</li>\n<li>Integrated pillowtop</li>\n<li>Hybrid suspension support</li>\n<li>Cooling, breathable construction</li>\n</ul>\n</div>",
       "tags": [
         "category:mattresses",
         "collection:h6",
@@ -2338,7 +2356,7 @@
         "subcategory:h6",
         "type:mattress"
       ],
-      "updatedAt": "2026-11-08T20:37:36Z",
+      "updatedAt": "2026-11-11T15:43:26Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/na",
         "name": "Uncategorized",
@@ -3235,6 +3253,18 @@
           "definition": {
             "id": "gid://shopify/MetafieldDefinition/294995165245"
           }
+        },
+        {
+          "id": "gid://shopify/Metafield/161076560035901",
+          "namespace": "custom",
+          "key": "feel_label",
+          "type": "single_line_text_field",
+          "value": "Plush",
+          "compareDigest": "7ecca8c7b682709e50acf6dab5470180c52354243b6b16e5aecee3d36afbb575",
+          "updatedAt": "2026-11-11T15:43:24Z",
+          "definition": {
+            "id": "gid://shopify/MetafieldDefinition/296758509629"
+          }
         }
       ]
     },
@@ -3247,7 +3277,7 @@
       "vendor": "BEDGEAR",
       "productType": "Mattress",
       "templateSuffix": "snoozepod-v1",
-      "descriptionHtml": "<div data-mysnoozepod-mattress-product-copy=\"2026-11-08\">\n<h3>Product Overview</h3>\n<p>This 12-inch all-foam mattress pairs conforming pressure relief with cooling and airflow-focused materials designed to limit heat buildup.</p>\n<h4>Key Features</h4>\n<ul>\n<li>Plush comfort direction</li>\n<li>Cooling cover</li>\n<li>Ventilated comfort foam</li>\n<li>Breathable side panels</li>\n</ul>\n</div>",
+      "descriptionHtml": "<div data-mysnoozepod-mattress-product-copy=\"2026-11-08\">\n<h3>Product Overview</h3>\n<p>This 12\" all-foam mattress pairs conforming pressure relief with cooling and airflow-focused materials designed to limit heat buildup.</p>\n<h4>Key Features</h4>\n<ul>\n<li>Plush comfort direction</li>\n<li>Cooling cover</li>\n<li>Ventilated comfort foam</li>\n<li>Breathable side panels</li>\n</ul>\n</div>",
       "tags": [
         "category:mattresses",
         "collection:mattresses",
@@ -3258,7 +3288,7 @@
         "subcategory:s7",
         "type:mattress"
       ],
-      "updatedAt": "2026-11-08T20:37:36Z",
+      "updatedAt": "2026-11-11T15:43:25Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/na",
         "name": "Uncategorized",
@@ -4167,6 +4197,18 @@
           "definition": {
             "id": "gid://shopify/MetafieldDefinition/294995165245"
           }
+        },
+        {
+          "id": "gid://shopify/Metafield/161076560003133",
+          "namespace": "custom",
+          "key": "feel_label",
+          "type": "single_line_text_field",
+          "value": "Plush",
+          "compareDigest": "7ecca8c7b682709e50acf6dab5470180c52354243b6b16e5aecee3d36afbb575",
+          "updatedAt": "2026-11-11T15:43:23Z",
+          "definition": {
+            "id": "gid://shopify/MetafieldDefinition/296758509629"
+          }
         }
       ]
     },
@@ -4179,7 +4221,7 @@
       "vendor": "BEDGEAR",
       "productType": "Mattress",
       "templateSuffix": "snoozepod-v1",
-      "descriptionHtml": "<div data-mysnoozepod-mattress-product-copy=\"2026-11-08\">\n<h3>Product Overview</h3>\n<p>This 14-inch modular mattress adds a taller comfort profile for deeper conforming pressure relief while allowing each side to be configured independently.</p>\n<h4>Key Features</h4>\n<ul>\n<li>Independent left and right comfort</li>\n<li>Enhanced comfort layer</li>\n<li>Interchangeable support components</li>\n<li>Removable cooling cover and airflow features</li>\n</ul>\n</div>",
+      "descriptionHtml": "<div data-mysnoozepod-mattress-product-copy=\"2026-11-08\">\n<h3>Product Overview</h3>\n<p>This 14\" modular mattress adds a taller comfort profile for deeper conforming pressure relief while allowing each side to be configured independently.</p>\n<h4>Key Features</h4>\n<ul>\n<li>Independent left and right comfort</li>\n<li>Enhanced comfort layer</li>\n<li>Interchangeable support components</li>\n<li>Removable cooling cover and airflow features</li>\n</ul>\n</div>",
       "tags": [
         "category:mattresses",
         "collection:m5",
@@ -4191,7 +4233,7 @@
         "subcategory:m5",
         "type:mattress"
       ],
-      "updatedAt": "2026-11-08T20:37:37Z",
+      "updatedAt": "2026-11-11T15:43:28Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/na",
         "name": "Uncategorized",

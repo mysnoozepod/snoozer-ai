@@ -1,7 +1,17 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-09 — header Check In removed and mobile logo enlarged
-Queue state: Header simplification is deployed and responsive-verified. Owner content authoring, technical completion, future Snoozer retrieval implementation, and final release acceptance remain gated.
+Last updated: 2026-11-11 — Product Page Refinement v2 staged on the existing unpublished theme
+Queue state: Mattress Product Page v2 is implemented and API/contract-validated. Authenticated desktop/mobile preview QA, missing owner/manufacturer content, future Snoozer retrieval implementation, and final release acceptance remain gated.
+
+### Product Page Refinement v2
+
+- **Status:** IMPLEMENTED AND STAGED ON UNPUBLISHED THEME `139216420925` — the five approved mattress information sections, structured Feel, responsive mobile gallery/options/accordions/related carousel, and corrected lower CTA hierarchy are complete.
+- **Data:** Existing Shopify vendor/model, construction, features, materials, showroom, warranty, workflow, variant, and SKU fields were reused. Only `custom.feel_label` was added, constrained to Plush, Medium Plush, Medium Firm, and Firm. The product-knowledge feed now carries `feelLabel` for future retrieval.
+- **Current verified Feel:** `12" Memory Foam Mattress` and `12" Hybrid Mattress` are Plush. Dual Comfort mattresses remain unclassified at the whole-product level rather than inventing a value.
+- **Naming:** Titles, descriptions, navigation labels, and mattress media alt text use inch symbols. URL handles retain `-inch-` as internal routes.
+- **Validation:** Product Page v2 28 assertions; product knowledge 40; Product Page v1 67; website experience 44; catalog/shopping 10/10; mattress naming 18 groups; Shopify readback confirms 43 products/274 variants and published-theme hashes unchanged.
+- **Remaining:** authenticated desktop/mobile preview QA; verified Pod/display locations; product-specific warranty facts; Ty-approved benefits; final review of global Sleep Trial and Delivery pages.
+- **Evidence:** `docs/product-page-v2/PRODUCT_PAGE_REFINEMENT_V2.md` and current product-knowledge/catalog readbacks.
 
 ## Readiness classification
 
@@ -162,7 +172,7 @@ Queue state: Header simplification is deployed and responsive-verified. Owner co
 
 #### P1-005UX — Product and collection experience v1
 
-- **Status:** IMPLEMENTED AND LOCALLY VALIDATED — reusable templates, responsive styling, Product Feel fail-closed behavior, showroom fields, booking/cart/Ask Snoozer actions, collection navigation, and deterministic previews pass 61 contract assertions and width/overflow checks. Shopify theme deployment and authenticated real-product storefront acceptance were not performed.
+- **Status:** REFINED V2 / STAGED — reusable templates, native cart/variant behavior, fail-closed structured Feel, showroom fields, booking/Ask Snoozer actions, responsive mobile refinements, and non-mattress category safety pass the current focused regressions. The bounded asset set is staged on unpublished theme `139216420925`; authenticated browser visual acceptance remains pending because the available session was not authenticated and the storefront is password-protected.
 
 #### P1-005F — Full storefront visual QA, integration, and polish
 

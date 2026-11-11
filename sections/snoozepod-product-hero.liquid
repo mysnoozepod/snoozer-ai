@@ -35,13 +35,12 @@
 
 <product-info
   id="MainProduct-{{ section.id }}"
-  class="snoozepod-product-hero-section color-{{ section.settings.color_scheme }} gradient"
+  class="snoozepod-product-hero-section color-{{ section.settings.color_scheme }} gradient{% if is_dual_comfort %} snoozepod-product--dual-comfort{% endif %}"
   data-section="{{ section.id }}"
   data-product-id="{{ product.id }}"
   data-product-handle="{{ product.handle | escape }}"
   data-product-type="{{ product.type | escape }}"
   data-product-type-handle="{{ product.type | handleize }}"
-  class="{% if is_dual_comfort %}snoozepod-product--dual-comfort{% endif %}"
   data-update-url="true"
   data-url="{{ product.url }}"
   {% if section.settings.image_zoom == 'hover' %}
@@ -187,6 +186,51 @@
 
     .snoozepod-product-hero-{{ section.id }} .price {
       color: #071942;
+    }
+
+    @media screen and (max-width: 749px) {
+      .snoozepod-product-hero-{{ section.id }} {
+        margin: 12px 12px 18px;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__grid {
+        gap: 16px;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__media-card,
+      .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__info-card {
+        border-radius: 18px;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__info-card {
+        padding: 20px 16px;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .product__title h1 {
+        font-size: clamp(28px, 8vw, 34px);
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .product__media-list {
+        margin: 0;
+        width: 100%;
+        scroll-snap-type: inline mandatory;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .product__media-list .product__media-item {
+        width: 100%;
+        min-width: 100%;
+        padding-left: 0;
+        scroll-snap-align: start;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .product__media-wrapper slider-component:not(.thumbnail-slider--no-slide) {
+        margin-right: 0;
+        margin-left: 0;
+      }
+
+      .snoozepod-product-hero-{{ section.id }} .thumbnail-slider {
+        padding: 0 8px 8px;
+      }
     }
 
     .snoozepod-product-hero-{{ section.id }} .price--large .price-item,

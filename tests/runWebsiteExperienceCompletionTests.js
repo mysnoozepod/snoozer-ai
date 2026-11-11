@@ -51,10 +51,12 @@ check(collection.sections['product-grid'].settings.quick_add === 'none', 'Collec
 const product = json('templates/product.snoozepod-v1.json');
 const productBlockOrder = product.sections.hero.block_order;
 check(!productBlockOrder.includes('booking'), 'Product booking CTA must stay out of the primary purchase controls.');
-check(productBlockOrder.indexOf('buy_buttons') < productBlockOrder.indexOf('feel'), 'Add to Cart must be the focal action immediately after variant selection.');
+check(productBlockOrder.indexOf('buy_buttons') === productBlockOrder.indexOf('variant_picker') + 1, 'Add to Cart must be the focal action immediately after variant selection.');
+check(productBlockOrder.indexOf('feel') === productBlockOrder.indexOf('price') + 1, 'Verified Feel must stay adjacent to price.');
 check(product.order.includes('related'), 'Product template must include related products.');
 check(product.order.at(-1) === 'final-cta', 'Product booking guidance must remain at the page tail.');
-check(product.sections['final-cta'].settings.secondary_label === 'Book a Snooze Session', 'Booking must be the secondary page-tail action.');
+check(product.sections['final-cta'].settings.primary_label === 'Book a Snooze Session', 'Booking must be the primary page-tail action.');
+check(product.sections['final-cta'].settings.secondary_label === 'Ask Snoozer', 'Ask Snoozer must remain the secondary page-tail action.');
 check(!read('templates/product.snoozepod-v1.json').toLowerCase().includes('pod builder'), 'Product template must not reintroduce the retired Pod Builder.');
 const productHero = read('sections/snoozepod-product-hero.liquid');
 check(productHero.includes('Left Side Comfort') && productHero.includes('Right Side Comfort'), 'Dual Comfort must preserve independent left/right controls.');

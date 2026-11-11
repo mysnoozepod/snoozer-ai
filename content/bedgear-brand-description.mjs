@@ -55,22 +55,22 @@ const officialCopy = (sourceUrl, summary, features) => Object.freeze({ sourceUrl
 export const bedgearOfficialProductCopy = Object.freeze({
   '12-inch-memory-foam-mattress': officialCopy(
     'https://bedgear.com/products/s-performance-mattresses',
-    'This 12-inch all-foam mattress pairs conforming pressure relief with cooling and airflow-focused materials designed to limit heat buildup.',
+    'This 12" all-foam mattress pairs conforming pressure relief with cooling and airflow-focused materials designed to limit heat buildup.',
     ['Plush comfort direction', 'Cooling cover', 'Ventilated comfort foam', 'Breathable side panels'],
   ),
   '12-inch-hybrid-mattress': officialCopy(
     'https://bedgear.com/products/h-hybrid-performance-pillowtop-mattress',
-    'This 12-inch pillowtop mattress combines conforming comfort with responsive hybrid support and cooling, breathable materials.',
+    'This 12" pillowtop mattress combines conforming comfort with responsive hybrid support and cooling, breathable materials.',
     ['Plush comfort direction', 'Integrated pillowtop', 'Hybrid suspension support', 'Cooling, breathable construction'],
   ),
   '12-inch-dual-comfort-mattress': officialCopy(
     'https://bedgear.com/products/m3-performance-mattress',
-    'This 12-inch modular mattress uses interchangeable support components so each sleeper can choose an independent comfort direction. Its removable cooling cover and airflow-focused construction support easier care and breathable comfort.',
+    'This 12" modular mattress uses interchangeable support components so each sleeper can choose an independent comfort direction. Its removable cooling cover and airflow-focused construction support easier care and breathable comfort.',
     ['Independent left and right comfort', 'Interchangeable support components', 'Removable, washable cooling cover', 'Airflow-focused chassis and vents'],
   ),
   '14-inch-dual-comfort-mattress': officialCopy(
     'https://bedgear.com/products/m5-performance-mattress',
-    'This 14-inch modular mattress adds a taller comfort profile for deeper conforming pressure relief while allowing each side to be configured independently.',
+    'This 14" modular mattress adds a taller comfort profile for deeper conforming pressure relief while allowing each side to be configured independently.',
     ['Independent left and right comfort', 'Enhanced comfort layer', 'Interchangeable support components', 'Removable cooling cover and airflow features'],
   ),
   'flex-l-adjustable-base': officialCopy(

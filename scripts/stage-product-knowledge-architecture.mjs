@@ -25,12 +25,28 @@ const BACKUP_ROOT = 'C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Bac
 const READBACK_PATH = path.join(ROOT, 'docs', 'product-knowledge', 'PRODUCT_KNOWLEDGE_SHOPIFY_READBACK.json');
 const FIXTURE_PATH = path.join(ROOT, 'tests', 'fixtures', 'product-knowledge-categories.v1.json');
 const THEME_ASSETS = [
+  'assets/component-product-variant-picker.css',
+  'assets/component-snoozepod-commerce-v1.css',
+  'sections/related-products.liquid',
+  'sections/snoozepod-product-cta.liquid',
+  'sections/snoozepod-product-hero.liquid',
   'sections/snoozepod-product-information-v1.liquid',
+  'snippets/snoozepod-mattress-product-information.liquid',
   'snippets/snoozepod-product-knowledge.liquid',
+  'snippets/snoozepod-product-feel.liquid',
+  'templates/product.snoozepod-v1.json',
 ];
 
 function fail(message) { throw new Error(message); }
 function sha256(value) { return crypto.createHash('sha256').update(String(value || ''), 'utf8').digest('hex'); }
+function normalizeAsset(key, value) {
+  const text = String(value || '').replace(/\r\n/g, '\n');
+  if (!key.endsWith('.json')) return text;
+  return JSON.stringify(JSON.parse(text.replace(/^\s*\/\*[\s\S]*?\*\//, '')));
+}
+function assetMatches(key, current, desired) {
+  try { return normalizeAsset(key, current) === normalizeAsset(key, desired); } catch { return false; }
+}
 function requireNoErrors(errors, label) {
   if (errors?.length) fail(`${label}: ${errors.map((error) => `${error.field || 'input'}: ${error.message}`).join(' | ')}`);
 }
@@ -90,13 +106,21 @@ async function rest(pathname, options = {}) {
 
 async function readAsset(themeId, key) {
   const params = new URLSearchParams({ 'asset[key]': key });
-  const response = await fetch(`${baseEndpoint}/themes/${themeId}/assets.json?${params}`, {
-    headers: { 'X-Shopify-Access-Token': shopifyConnection.token },
-  });
-  if (response.status === 404) return null;
-  const payload = await response.json().catch(() => null);
-  if (!response.ok || !payload?.asset) fail(`Could not read ${key} from theme ${themeId}: HTTP ${response.status}.`);
-  return payload.asset;
+  for (let attempt = 0; attempt < 7; attempt += 1) {
+    const response = await fetch(`${baseEndpoint}/themes/${themeId}/assets.json?${params}`, {
+      headers: { 'X-Shopify-Access-Token': shopifyConnection.token },
+    });
+    if (response.status === 404) return null;
+    if (response.status === 429 && attempt < 6) {
+      const retryAfter = Number(response.headers.get('retry-after') || 1);
+      await new Promise((resolve) => setTimeout(resolve, Math.max(800, retryAfter * 1000) * (attempt + 1)));
+      continue;
+    }
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.asset) fail(`Could not read ${key} from theme ${themeId}: HTTP ${response.status}.`);
+    return payload.asset;
+  }
+  fail(`Could not read ${key} from theme ${themeId} after bounded retries.`);
 }
 
 async function writeAsset(themeId, key, value) {
@@ -301,6 +325,7 @@ function normalizedProduct(product) {
     handle: product.handle,
     title: product.title,
     model: metafields['custom.model']?.value || null,
+    feelLabel: metafields['custom.feel_label']?.value || null,
     categoryContract: metafields['custom.product_contract']?.value || null,
     productType: product.productType,
     vendor: product.vendor,
@@ -347,7 +372,7 @@ for (const key of THEME_ASSETS) {
 const before = await hydrate(await graphql(CATALOG_QUERY));
 const fingerprintBefore = nativeFingerprint(before.products.nodes);
 const plan = preparePlan(before);
-const themePlan = [...desiredAssets].map(([key, value]) => ({ key, action: unpublishedAssetsBefore.get(key)?.value === value ? 'unchanged' : unpublishedAssetsBefore.get(key) ? 'update' : 'create' }));
+const themePlan = [...desiredAssets].map(([key, value]) => ({ key, action: assetMatches(key, unpublishedAssetsBefore.get(key)?.value, value) ? 'unchanged' : unpublishedAssetsBefore.get(key) ? 'update' : 'create' }));
 console.log(JSON.stringify({
   mode: APPLY ? 'apply' : 'plan',
   store: shopifyConnection.shop,
@@ -410,7 +435,7 @@ for (const entry of definitionsToPin) {
 await setMetafields(plan.writes.filter((field) => field.reason !== 'legacy-status-migration'));
 
 for (const [key, value] of desiredAssets) {
-  if (unpublishedAssetsBefore.get(key)?.value !== value) await writeAsset(UNPUBLISHED_THEME_ID, key, value);
+  if (!assetMatches(key, unpublishedAssetsBefore.get(key)?.value, value)) await writeAsset(UNPUBLISHED_THEME_ID, key, value);
 }
 
 const after = await hydrate(await graphql(CATALOG_QUERY));
@@ -429,7 +454,7 @@ for (const product of after.products.nodes) {
 const themeReadback = [];
 for (const [key, value] of desiredAssets) {
   const actual = await readAsset(UNPUBLISHED_THEME_ID, key);
-  if (!actual || actual.value !== value) fail(`${key} failed unpublished-theme readback.`);
+  if (!actual || !assetMatches(key, actual.value, value)) fail(`${key} failed unpublished-theme readback.`);
   themeReadback.push({ key, sha256: sha256(actual.value) });
   const publishedAfter = await readAsset(PUBLISHED_THEME_ID, key);
   const publishedBefore = publishedAssetsBefore.get(key);

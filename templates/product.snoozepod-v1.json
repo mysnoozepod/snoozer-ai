@@ -64,9 +64,9 @@
         "vendor",
         "title",
         "price",
+        "feel",
         "variant_picker",
         "buy_buttons",
-        "feel",
         "snoozer",
         "showroom"
       ],
@@ -153,9 +153,10 @@
       "settings": {
         "heading": "Want to compare it in person?",
         "body": "Ask Snoozer for product guidance now, or schedule a private visit when you are ready to compare the feel in the showroom.",
-        "primary_label": "Ask Snoozer",
-        "secondary_label": "Book a Snooze Session",
-        "secondary_link": "/pages/book-a-snooze-session",
+        "primary_label": "Book a Snooze Session",
+        "primary_link": "/pages/book-a-snooze-session",
+        "secondary_label": "Ask Snoozer",
+        "secondary_link": "",
         "show_secondary": true
       }
     }

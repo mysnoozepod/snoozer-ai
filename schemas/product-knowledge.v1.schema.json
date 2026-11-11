@@ -33,6 +33,7 @@
         "handle": { "type": "string", "minLength": 1 },
         "title": { "type": "string", "minLength": 1 },
         "model": { "type": ["string", "null"] },
+        "feelLabel": { "enum": ["Plush", "Medium Plush", "Medium Firm", "Firm", null] },
         "categoryContract": { "enum": ["mattress", "adjustable_base", "pillow", "sheets_bedding", "mattress_protection", "comforter_duvet_accessory", "mattress_topper", "bedroom_furniture"] },
         "productType": { "type": "string" },
         "vendor": { "type": "string" },

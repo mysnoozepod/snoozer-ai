@@ -1,0 +1,154 @@
+{%- comment -%}
+  Mattress-only Product Page v2 information contract.
+
+  The five approved top-level sections are emitted in a fixed order. Sections
+  with no verified Shopify source remain hidden; no customer-facing placeholder
+  or inferred policy is introduced.
+{%- endcomment -%}
+
+{%- liquid
+  assign content_status = product.metafields.custom.owner_content_status.value | default: product.metafields.custom.owner_content_status
+  assign content_approved = false
+  if content_status == 'APPROVED'
+    assign content_approved = true
+  endif
+
+  assign construction = product.metafields.snoozepod_mattress.construction
+  assign height = product.metafields.snoozepod_mattress.overall_height_inches.value
+  assign materials = product.metafields.snoozepod_technical.materials.value
+  assign verified_features = product.metafields.snoozepod_technical.verified_features.value
+  assign key_benefits = product.metafields.snoozepod_content.key_benefits.value
+  assign manufacturer_model = product.metafields.custom.model.value | default: product.metafields.custom.model | strip
+
+  assign showroom_data = product.metafields.custom.showroom_representation.value
+  assign showroom_state = showroom_data.readiness | default: showroom_data.status | default: showroom_data.locationStatus | upcase
+  assign showroom_label = showroom_data.label | default: showroom_data.station_label | default: showroom_data.display_label | default: showroom_data.station_id | strip
+  assign showroom_locations = showroom_data.locations
+  assign showroom_is_verified = false
+  if showroom_state == 'READY' or showroom_state == 'VERIFIED'
+    if showroom_label != blank or showroom_locations.size > 0
+      assign showroom_is_verified = true
+    endif
+  endif
+
+  assign has_construction = false
+  if construction != blank or height != blank or materials.size > 0
+    assign has_construction = true
+  endif
+  assign has_features = false
+  if verified_features.size > 0
+    assign has_features = true
+  elsif content_approved and key_benefits.size > 0
+    assign has_features = true
+  endif
+  assign has_product_details = false
+  if has_construction or has_features or showroom_is_verified or manufacturer_model != blank
+    assign has_product_details = true
+  endif
+
+  assign sleep_trial_page = pages['90-day-sleep-trial']
+  assign delivery_page = pages['shipping-policy']
+  assign warranty_page = pages['warranty-support']
+  assign warranty_information = product.metafields.snoozepod_technical.warranty_information
+
+  assign feel_label = product.metafields.custom.feel_label.value | default: product.metafields.custom.feel_label | strip
+  assign feel_is_verified = false
+  case feel_label
+    when 'Plush', 'Medium Plush', 'Medium Firm', 'Firm'
+      assign feel_is_verified = true
+  endcase
+-%}
+
+{%- if has_product_details -%}
+  <details class="snoozepod-product-information__item" data-mattress-information-section="product-details" open>
+    <summary class="snoozepod-product-information__summary"><span>Product Details</span></summary>
+    <div class="snoozepod-product-information__content snoozepod-product-information__content--mattress rte">
+      {%- if has_construction -%}
+        <section class="snoozepod-product-information__subsection" aria-labelledby="Construction-{{ section.id }}">
+          <h3 id="Construction-{{ section.id }}">Construction</h3>
+          <dl class="snoozepod-product-information__specs">
+            {%- if construction != blank -%}<div><dt>Design</dt><dd>{{ construction.value | newline_to_br }}</dd></div>{%- endif -%}
+            {%- if height != blank -%}<div><dt>Overall height</dt><dd>{{ height | plus: 0 | escape }}&quot;</dd></div>{%- endif -%}
+            {%- if materials.size > 0 -%}<div><dt>Materials</dt><dd>{{ materials | join: ', ' | escape }}</dd></div>{%- endif -%}
+          </dl>
+        </section>
+      {%- endif -%}
+
+      {%- if has_features -%}
+        <section class="snoozepod-product-information__subsection" aria-labelledby="Features-{{ section.id }}">
+          <h3 id="Features-{{ section.id }}">Features &amp; Benefits</h3>
+          <ul>
+            {%- for feature in verified_features -%}<li>{{ feature | escape }}</li>{%- endfor -%}
+            {%- if content_approved -%}
+              {%- for benefit in key_benefits -%}<li>{{ benefit | escape }}</li>{%- endfor -%}
+            {%- endif -%}
+          </ul>
+        </section>
+      {%- endif -%}
+
+      {%- if showroom_is_verified -%}
+        <section class="snoozepod-product-information__subsection" aria-labelledby="Showroom-{{ section.id }}">
+          <h3 id="Showroom-{{ section.id }}">Showroom Location</h3>
+          {%- if showroom_label != blank -%}<p>{{ showroom_label | escape }}</p>{%- endif -%}
+          {%- if showroom_locations.size > 0 -%}
+            <ul>
+              {%- for location in showroom_locations -%}
+                {%- assign location_label = location.label | default: location.name | default: location.station_label | default: location.station_id | default: location -%}
+                {%- if location_label != blank -%}<li>{{ location_label | escape }}</li>{%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </section>
+      {%- endif -%}
+
+      {%- if manufacturer_model != blank -%}
+        <section class="snoozepod-product-information__subsection" aria-labelledby="ManufacturerModel-{{ section.id }}">
+          <h3 id="ManufacturerModel-{{ section.id }}">Manufacturer's Model Name</h3>
+          <p>{{ product.vendor | escape }} {{ manufacturer_model | escape }}</p>
+        </section>
+      {%- endif -%}
+    </div>
+  </details>
+{%- endif -%}
+
+{%- if sleep_trial_page != blank and sleep_trial_page.content != blank -%}
+  <details class="snoozepod-product-information__item" data-mattress-information-section="sleep-trial">
+    <summary class="snoozepod-product-information__summary"><span>Sleep Trial</span></summary>
+    <div class="snoozepod-product-information__content rte">
+      {{ sleep_trial_page.content }}
+      <p class="snoozepod-product-information__policy-link"><a href="{{ sleep_trial_page.url }}">Review the complete sleep-trial policy</a></p>
+    </div>
+  </details>
+{%- endif -%}
+
+{%- if delivery_page != blank and delivery_page.content != blank -%}
+  <details class="snoozepod-product-information__item" data-mattress-information-section="delivery">
+    <summary class="snoozepod-product-information__summary"><span>Delivery</span></summary>
+    <div class="snoozepod-product-information__content rte">
+      {{ delivery_page.content }}
+      <p class="snoozepod-product-information__policy-link"><a href="{{ delivery_page.url }}">Review the complete delivery policy</a></p>
+    </div>
+  </details>
+{%- endif -%}
+
+{%- if warranty_information != blank or warranty_page != blank and warranty_page.content != blank -%}
+  <details class="snoozepod-product-information__item" data-mattress-information-section="warranty">
+    <summary class="snoozepod-product-information__summary"><span>Warranty</span></summary>
+    <div class="snoozepod-product-information__content rte">
+      {%- if warranty_information != blank -%}{{ warranty_information | metafield_tag }}{%- endif -%}
+      {%- if warranty_page != blank and warranty_page.content != blank -%}
+        {{ warranty_page.content }}
+        <p class="snoozepod-product-information__policy-link"><a href="{{ warranty_page.url }}">Review warranty support information</a></p>
+      {%- endif -%}
+    </div>
+  </details>
+{%- endif -%}
+
+{%- if feel_is_verified -%}
+  <details class="snoozepod-product-information__item" data-mattress-information-section="feel">
+    <summary class="snoozepod-product-information__summary"><span>Feel</span></summary>
+    <div class="snoozepod-product-information__content rte">
+      {%- render 'snoozepod-product-feel', feel_product: product, compact: true -%}
+    </div>
+  </details>
+{%- endif -%}

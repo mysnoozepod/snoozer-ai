@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-11-08T20:39:29.558Z",
+  "generatedAt": "2026-11-11T15:44:32.084Z",
   "fixtureType": "representative-category-contracts",
   "products": [
     {
@@ -8,6 +8,7 @@
       "handle": "14-inch-dual-comfort-mattress",
       "title": "14\" Dual Comfort Mattress",
       "model": "M5",
+      "feelLabel": null,
       "categoryContract": "mattress",
       "productType": "Mattress",
       "vendor": "BEDGEAR",
@@ -185,13 +186,14 @@
         "source": "Exact variant fields and verified product compatibility metafields only; unknown is not compatible."
       },
       "schemaVersion": "1.0.0",
-      "shopifyUpdatedAt": "2026-11-08T20:37:37Z"
+      "shopifyUpdatedAt": "2026-11-11T15:43:28Z"
     },
     {
       "shopifyProductId": "gid://shopify/Product/8100247863357",
       "handle": "react-pro-performance-topper",
       "title": "React Pro Performance Topper",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "mattress_topper",
       "productType": "Mattress Topper",
       "vendor": "BEDGEAR",
@@ -249,6 +251,7 @@
       "handle": "zoned-talalay-latex-pillow",
       "title": "Zoned Talalay Latex Pillow",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "pillow",
       "productType": "Pillow",
       "vendor": "Malouf",
@@ -330,6 +333,7 @@
       "handle": "watson-upholstered-platform-base",
       "title": "Watson Upholstered Platform Base",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "bedroom_furniture",
       "productType": "Platform Base",
       "vendor": "Malouf",
@@ -518,6 +522,7 @@
       "handle": "ultra-weight-comforter",
       "title": "Ultra Weight Comforter",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "comforter_duvet_accessory",
       "productType": "Comforter",
       "vendor": "BEDGEAR",
@@ -594,6 +599,7 @@
       "handle": "ver-tex-sheet-set",
       "title": "Ver-Tex Sheet Set",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "sheets_bedding",
       "productType": "Sheet Set",
       "vendor": "BEDGEAR",
@@ -912,6 +918,7 @@
       "handle": "ver-tex-mattress-protector",
       "title": "Ver-Tex Mattress Protector",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "mattress_protection",
       "productType": "Mattress Protector",
       "vendor": "BEDGEAR",
@@ -1114,6 +1121,7 @@
       "handle": "flex-sh-adjustable-base",
       "title": "Flex SH Adjustable Base",
       "model": null,
+      "feelLabel": null,
       "categoryContract": "adjustable_base",
       "productType": "Adjustable Base",
       "vendor": "BEDGEAR",

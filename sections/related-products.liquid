@@ -18,6 +18,35 @@
       padding-bottom: {{ section.settings.padding_bottom }}px;
     }
   }
+
+  @media screen and (max-width: 749px) {
+    .section-{{ section.id }}-padding .product-grid {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 14px;
+      margin: 0;
+      padding: 0 0 12px;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scroll-snap-type: inline mandatory;
+      scrollbar-width: thin;
+    }
+
+    .section-{{ section.id }}-padding .product-grid > .grid__item {
+      flex: 0 0 min(78vw, 290px);
+      width: min(78vw, 290px);
+      max-width: min(78vw, 290px);
+      scroll-snap-align: start;
+    }
+
+    .section-{{ section.id }}-padding .card__heading {
+      line-height: 1.28;
+    }
+
+    .section-{{ section.id }}-padding .price {
+      white-space: normal;
+    }
+  }
 {%- endstyle -%}
 
 <div class="color-{{ section.settings.color_scheme }} gradient">

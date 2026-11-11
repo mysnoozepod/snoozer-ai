@@ -19,6 +19,7 @@ const products = readback.products.map((product) => {
     handle: product.handle,
     title: product.title,
     model: product.model,
+    feelLabel: product.feelLabel || null,
     categoryContract: product.categoryContract,
     productType: product.productType,
     vendor: product.vendor,

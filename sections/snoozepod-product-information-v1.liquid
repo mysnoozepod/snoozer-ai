@@ -91,6 +91,37 @@
     margin-bottom: 0;
   }
 
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__content--mattress {
+    display: grid;
+    gap: 22px;
+  }
+
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__subsection {
+    min-width: 0;
+  }
+
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__subsection + .snoozepod-product-information__subsection {
+    padding-top: 20px;
+    border-top: 1px solid rgba(7, 25, 66, 0.09);
+  }
+
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__subsection h3 {
+    margin: 0 0 10px;
+    color: #071942;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__policy-link {
+    margin-top: 18px;
+  }
+
+  .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__policy-link a {
+    color: #071942;
+    font-weight: 700;
+    text-underline-offset: 0.2em;
+  }
+
   .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__specs {
     display: grid;
     gap: 0;
@@ -146,6 +177,49 @@
       padding: 0 24px 24px;
       font-size: 16px;
     }
+
+    .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__content--mattress {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 32px;
+    }
+
+    .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__subsection + .snoozepod-product-information__subsection {
+      padding-top: 0;
+      border-top: 0;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .snoozepod-product-information-{{ section.id }} {
+      margin-top: 18px;
+      margin-bottom: 28px;
+    }
+
+    .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__items {
+      gap: 8px;
+    }
+
+    .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__item {
+      border-radius: 14px;
+    }
+
+    .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__summary {
+      min-height: 54px;
+      padding: 14px 16px;
+      font-size: 16px;
+    }
+
+    .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__content {
+      padding: 0 16px 17px;
+      font-size: 14px;
+      line-height: 1.58;
+    }
+
+    .snoozepod-product-information-{{ section.id }} .snoozepod-product-information__specs > div {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: 10px 0;
+    }
   }
 {%- endstyle -%}
 
@@ -156,9 +230,12 @@
     {%- endif -%}
 
     <div class="snoozepod-product-information__items">
-      {%- render 'snoozepod-product-knowledge', product: product -%}
+      {%- if product_category == 'mattress' -%}
+        {%- render 'snoozepod-mattress-product-information', product: product -%}
+      {%- else -%}
+        {%- render 'snoozepod-product-knowledge', product: product -%}
 
-      {%- for block in section.blocks -%}
+        {%- for block in section.blocks -%}
         {%- liquid
           assign show_block = false
           if block.settings.applies_to == 'all' or block.settings.applies_to == product_category
@@ -208,7 +285,8 @@
             Theme editor preview only: {{ block.settings.heading | escape }} is hidden until Ty-approved content is connected.
           </div>
         {%- endif -%}
-      {%- endfor -%}
+        {%- endfor -%}
+      {%- endif -%}
     </div>
   </div>
 </section>

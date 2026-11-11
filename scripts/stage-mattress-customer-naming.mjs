@@ -20,14 +20,21 @@ const PRODUCT_COPY_PATTERN = /<div\s+data-mysnoozepod-(?:bedgear|mattress)-produ
 const BRAND_PATTERN = /<div\s+data-mysnoozepod-bedgear-boilerplate="[^"]+">[\s\S]*?<\/div>/i;
 
 const themeAssets = [
+  'assets/component-product-variant-picker.css',
+  'assets/component-snoozepod-commerce-v1.css',
   'assets/snoozepod-dual-comfort.js',
   'snippets/card-product.liquid',
   'snippets/cart-drawer.liquid',
   'sections/cart-notification-product.liquid',
   'sections/main-cart-items.liquid',
   'sections/predictive-search.liquid',
+  'sections/related-products.liquid',
+  'sections/snoozepod-product-cta.liquid',
   'sections/snoozepod-product-hero.liquid',
+  'sections/snoozepod-product-information-v1.liquid',
   'sections/snoozepod-collection-navigation-v1.liquid',
+  'snippets/snoozepod-mattress-product-information.liquid',
+  'snippets/snoozepod-product-feel.liquid',
   'templates/index.json',
   'templates/product.snoozepod-v1.json',
   'templates/collection.snoozepod-v1.json',
@@ -104,11 +111,19 @@ async function shopify(pathname, options = {}) {
 
 async function readAsset(themeId, key) {
   const params = new URLSearchParams({ 'asset[key]': key });
-  const response = await fetch(`${restEndpoint}/themes/${themeId}/assets.json?${params}`, { headers: { 'X-Shopify-Access-Token': connection.token } });
-  if (response.status === 404) return null;
-  const payload = await response.json().catch(() => null);
-  if (!response.ok || !payload?.asset) fail(`Could not read ${key} from theme ${themeId}: HTTP ${response.status}.`);
-  return payload.asset;
+  for (let attempt = 0; attempt < 7; attempt += 1) {
+    const response = await fetch(`${restEndpoint}/themes/${themeId}/assets.json?${params}`, { headers: { 'X-Shopify-Access-Token': connection.token } });
+    if (response.status === 404) return null;
+    if (response.status === 429 && attempt < 6) {
+      const retryAfter = Number(response.headers.get('retry-after') || 1);
+      await new Promise((resolve) => setTimeout(resolve, Math.max(800, retryAfter * 1000) * (attempt + 1)));
+      continue;
+    }
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.asset) fail(`Could not read ${key} from theme ${themeId}: HTTP ${response.status}.`);
+    return payload.asset;
+  }
+  fail(`Could not read ${key} from theme ${themeId} after bounded retries.`);
 }
 
 async function writeAsset(themeId, key, value) {
@@ -212,12 +227,16 @@ const productPlans = MATTRESS_CUSTOMER_NAMING.map((contract) => {
     verificationStatus: 'PENDING_APPROVED_COMPLETE_CONFIGURATION_MAP',
   }) : null;
   const currentComfortOptions = product.metafields.nodes.find((entry) => entry.namespace === 'custom' && entry.key === 'comfort_options');
+  const currentFeelLabel = product.metafields.nodes.find((entry) => entry.namespace === 'custom' && entry.key === 'feel_label');
   const media = product.media.nodes.map((entry, index) => ({ id: entry.id, currentAlt: entry.alt || '', alt: contract.mediaAlts[index] }));
   const updateInput = { id: product.id };
   if (product.title !== contract.title) updateInput.title = contract.title;
   if (product.handle !== contract.handle) Object.assign(updateInput, { handle: contract.handle, redirectNewHandle: true });
   if (normalizeHtml(product.descriptionHtml) !== normalizeHtml(descriptionHtml)) updateInput.descriptionHtml = descriptionHtml;
-  if (comfortOptions && currentComfortOptions?.value !== comfortOptions) updateInput.metafields = [{ namespace: 'custom', key: 'comfort_options', type: 'json', value: comfortOptions }];
+  const metafields = [];
+  if (comfortOptions && currentComfortOptions?.value !== comfortOptions) metafields.push({ namespace: 'custom', key: 'comfort_options', type: 'json', value: comfortOptions });
+  if (contract.feelLabel && currentFeelLabel?.value !== contract.feelLabel) metafields.push({ namespace: 'custom', key: 'feel_label', type: 'single_line_text_field', value: contract.feelLabel });
+  if (metafields.length) updateInput.metafields = metafields;
   return {
     contract, product, descriptionHtml, comfortOptions, media, updateInput,
     productAction: Object.keys(updateInput).length > 1 ? 'update' : 'unchanged',
@@ -310,6 +329,8 @@ const afterByHandle = new Map(after.products.nodes.map((product) => [product.han
 for (const contract of MATTRESS_CUSTOMER_NAMING) {
   const product = afterByHandle.get(contract.handle);
   if (!product || product.title !== contract.title) fail(`Product readback failed for ${contract.handle}.`);
+  const feelLabel = product.metafields.nodes.find((entry) => entry.namespace === 'custom' && entry.key === 'feel_label')?.value || null;
+  if (feelLabel !== (contract.feelLabel || null)) fail(`Verified feel readback failed for ${contract.handle}.`);
   if (/\b(?:BEDGEAR|S7|H6|M3|M5)\b/i.test(product.descriptionHtml)) fail(`Customer-facing mattress description still exposes a manufacturer/model name for ${contract.handle}.`);
   if (product.media.nodes.some((media) => /\b(?:BEDGEAR|S7|H6|M3|M5)\b/i.test(media.alt || ''))) fail(`Mattress media alt text still exposes a manufacturer/model name for ${contract.handle}.`);
   const redirect = after.urlRedirects.nodes.find((entry) => entry.path === `/products/${contract.oldHandle}`);
