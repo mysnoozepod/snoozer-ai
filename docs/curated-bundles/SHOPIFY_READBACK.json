@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.0.0",
-  "verifiedAt": "2026-11-12T01:07:27.090Z",
+  "verifiedAt": "2026-11-12T02:12:11.652Z",
   "store": "mysnoozepodtest.myshopify.com",
-  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\curated-bundles\\2026-11-12T01-07-15-066Z",
+  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\curated-bundles\\2026-11-12T02-11-50-224Z",
   "catalog": {
     "products": 43,
     "variants": 274,
@@ -12,19 +12,19 @@
     "id": "gid://shopify/Page/109195460669",
     "title": "Sleep Systems",
     "handle": "sleep-systems",
-    "body": "<!-- mysnoozepod-curated-bundles-v1 -->\n<p>Explore curated sleep systems, bedding sets, and complete-package starting points built from existing Shopify products.</p>",
+    "body": "<!-- mysnoozepod-curated-bundles-v1 -->\n<p>Choose a mattress, size, and compatible adjustable base, or shop curated bedding sets built from existing Shopify products.</p>",
     "isPublished": true,
     "templateSuffix": "sleep-systems"
   },
   "navigation": {
-    "id": "gid://shopify/MenuItem/528922902589",
+    "id": "gid://shopify/MenuItem/528937582653",
     "title": "Sleep Systems",
     "type": "HTTP",
     "url": "/pages/sleep-systems",
     "resourceId": null,
     "items": [
       {
-        "id": "gid://shopify/MenuItem/528922935357",
+        "id": "gid://shopify/MenuItem/528937615421",
         "title": "Sleep Systems",
         "type": "HTTP",
         "url": "/pages/sleep-systems#sleep-systems",
@@ -32,30 +32,22 @@
         "items": []
       },
       {
-        "id": "gid://shopify/MenuItem/528922968125",
+        "id": "gid://shopify/MenuItem/528937648189",
         "title": "Bedding Sets",
         "type": "HTTP",
         "url": "/pages/sleep-systems#bedding-sets",
-        "resourceId": null,
-        "items": []
-      },
-      {
-        "id": "gid://shopify/MenuItem/528923000893",
-        "title": "Complete Sleep Packages",
-        "type": "HTTP",
-        "url": "/pages/sleep-systems#complete-sleep-packages",
         "resourceId": null,
         "items": []
       }
     ]
   },
   "bundleSummary": {
-    "bundles": 11,
-    "sleepSystems": 4,
+    "bundles": 17,
+    "sleepSystems": 12,
     "beddingSets": 5,
-    "completePackages": 2,
-    "stagedPurchasable": 5,
-    "blockedPendingCompatibility": 6
+    "completePackages": 0,
+    "stagedPurchasable": 17,
+    "blockedPendingCompatibility": 0
   },
   "theme": {
     "targetThemeId": "139216420925",
@@ -66,8 +58,15 @@
       "assets/snoozepod-curated-bundle-catalog.js",
       "assets/snoozepod-curated-bundles.js",
       "assets/snoozepod-curated-bundles.css",
+      "assets/snoozepod-shop-by-size.js",
       "sections/snoozepod-curated-bundles.liquid",
-      "templates/page.sleep-systems.json"
+      "sections/main-collection-product-grid.liquid",
+      "sections/snoozepod-collection-navigation-v1.liquid",
+      "templates/page.sleep-systems.json",
+      "templates/collection.json",
+      "templates/collection.main.json",
+      "templates/collection.snoozepod.json",
+      "templates/collection.snoozepod-v1.json"
     ]
   },
   "previewUrl": "https://mysnoozepodtest.myshopify.com/pages/sleep-systems?preview_theme_id=139216420925"

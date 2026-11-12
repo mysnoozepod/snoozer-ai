@@ -7,25 +7,42 @@ const FEED_PATH = path.join(ROOT, 'docs', 'product-knowledge', 'PRODUCT_KNOWLEDG
 const OUTPUT_DIR = path.join(ROOT, 'docs', 'curated-bundles');
 const MANIFEST_PATH = path.join(OUTPUT_DIR, 'CURATED_BUNDLE_MANIFEST.json');
 const ASSET_PATH = path.join(ROOT, 'assets', 'snoozepod-curated-bundle-catalog.js');
-const SIZE_ORDER = ['Queen', 'King', 'California King', 'Twin', 'Twin XL', 'Full', 'Full XL', 'Split Head Queen', 'Split Head King', 'Split Head California King', 'Split King', 'Split California King', 'Twin XL x 2'];
+const SIZE_ORDER = ['Queen', 'King', 'California King', 'Twin', 'Twin XL', 'Full', 'Full XL', 'Split Head Queen', 'Split Head King', 'Split Head California King', 'Split King'];
 
-const DEFINITIONS = [
-  { id: 'dri-tec-protection-set', name: 'Dri-Tec Bedding + Protection Set', category: 'BEDDING_SET', status: 'STAGED_PURCHASABLE', handles: ['dri-tec-sheet-set', 'dri-tec-mattress-protector'], basis: 'A sheet set and mattress protector sharing an exact Shopify size and sleep geometry.' },
-  { id: 'ver-tex-protection-set', name: 'Ver-Tex Bedding + Protection Set', category: 'BEDDING_SET', status: 'STAGED_PURCHASABLE', handles: ['ver-tex-sheet-set', 'ver-tex-mattress-protector'], basis: 'A sheet set and mattress protector sharing an exact Shopify size and sleep geometry.' },
-  { id: 'cotton-light-bedding-set', name: 'Cotton + Light Weight Bedding Set', category: 'BEDDING_SET', status: 'STAGED_PURCHASABLE', handles: ['cotton-sheet-set', 'light-weight-comforter'], basis: 'A sheet set and comforter whose existing Shopify variants both cover the selected size.' },
-  { id: 'dri-tec-medium-bedding-set', name: 'Dri-Tec + Medium Weight Bedding Set', category: 'BEDDING_SET', status: 'STAGED_PURCHASABLE', handles: ['dri-tec-sheet-set', 'medium-weight-comforter'], basis: 'A sheet set and comforter whose existing Shopify variants both cover the selected size.' },
-  { id: 'ver-tex-light-bedding-set', name: 'Ver-Tex + Light Weight Bedding Set', category: 'BEDDING_SET', status: 'STAGED_PURCHASABLE', handles: ['ver-tex-sheet-set', 'light-weight-comforter'], basis: 'A sheet set and comforter whose existing Shopify variants both cover the selected size.' },
-  { id: 'memory-foam-flex-l-review', name: '12-inch Memory Foam + Flex L System', category: 'SLEEP_SYSTEM', status: 'BLOCKED_COMPATIBILITY', handles: ['12-inch-memory-foam-mattress', 'flex-l-adjustable-base'], basis: 'Review candidate only. Matching size and geometry do not prove mechanical compatibility.' },
-  { id: 'hybrid-flex-lsx-review', name: '12-inch Hybrid + Flex LSX System', category: 'SLEEP_SYSTEM', status: 'BLOCKED_COMPATIBILITY', handles: ['12-inch-hybrid-mattress', 'flex-lsx-adjustable-base'], basis: 'Review candidate only. Matching size and geometry do not prove mechanical compatibility.' },
-  { id: 'dual-comfort-flex-sh-review', name: '12-inch Dual Comfort + Flex SH System', category: 'SLEEP_SYSTEM', status: 'BLOCKED_COMPATIBILITY', handles: ['12-inch-dual-comfort-mattress', 'flex-sh-adjustable-base'], basis: 'Review candidate only. Matching size and geometry do not prove mechanical compatibility.' },
-  { id: 'dual-comfort-flex-lsx-review', name: '14-inch Dual Comfort + Flex LSX System', category: 'SLEEP_SYSTEM', status: 'BLOCKED_COMPATIBILITY', handles: ['14-inch-dual-comfort-mattress', 'flex-lsx-adjustable-base'], basis: 'Review candidate only. Matching size and geometry do not prove mechanical compatibility.' },
-  { id: 'queen-complete-review', name: 'Queen Complete Sleep Package', category: 'COMPLETE_SLEEP_PACKAGE', status: 'BLOCKED_COMPATIBILITY', handles: ['12-inch-memory-foam-mattress', 'flex-l-adjustable-base', 'cotton-sheet-set', 'dri-tec-mattress-protector'], basis: 'Review candidate only. The mattress and base pairing requires explicit compatibility verification.' },
-  { id: 'split-head-complete-review', name: 'Split Head Queen Complete Sleep Package', category: 'COMPLETE_SLEEP_PACKAGE', status: 'BLOCKED_COMPATIBILITY', handles: ['12-inch-dual-comfort-mattress', 'flex-sh-adjustable-base', 'dri-tec-sheet-set', 'dri-tec-mattress-protector'], basis: 'Review candidate only. The mattress and base pairing requires explicit compatibility verification.' },
+const BEDDING_DEFINITIONS = [
+  { id: 'dri-tec-protection-set', name: 'Dri-Tec Bedding + Protection Set', category: 'BEDDING_SET', handles: ['dri-tec-sheet-set', 'dri-tec-mattress-protector'], basis: 'A sheet set and mattress protector sharing an exact Shopify size and sleep geometry.' },
+  { id: 'ver-tex-protection-set', name: 'Ver-Tex Bedding + Protection Set', category: 'BEDDING_SET', handles: ['ver-tex-sheet-set', 'ver-tex-mattress-protector'], basis: 'A sheet set and mattress protector sharing an exact Shopify size and sleep geometry.' },
+  { id: 'cotton-light-bedding-set', name: 'Cotton + Light Weight Bedding Set', category: 'BEDDING_SET', handles: ['cotton-sheet-set', 'light-weight-comforter'], basis: 'A sheet set and comforter whose existing Shopify variants both cover the selected size.' },
+  { id: 'dri-tec-medium-bedding-set', name: 'Dri-Tec + Medium Weight Bedding Set', category: 'BEDDING_SET', handles: ['dri-tec-sheet-set', 'medium-weight-comforter'], basis: 'A sheet set and comforter whose existing Shopify variants both cover the selected size.' },
+  { id: 'ver-tex-light-bedding-set', name: 'Ver-Tex + Light Weight Bedding Set', category: 'BEDDING_SET', handles: ['ver-tex-sheet-set', 'light-weight-comforter'], basis: 'A sheet set and comforter whose existing Shopify variants both cover the selected size.' },
 ];
+
+const MATTRESS_HANDLES = [
+  '12-inch-memory-foam-mattress',
+  '12-inch-hybrid-mattress',
+  '12-inch-dual-comfort-mattress',
+  '14-inch-dual-comfort-mattress',
+];
+const BASE_HANDLES = ['flex-l-adjustable-base', 'flex-lsx-adjustable-base', 'flex-sh-adjustable-base'];
+const SYSTEM_DEFINITIONS = MATTRESS_HANDLES.flatMap((mattressHandle) => BASE_HANDLES.map((baseHandle) => ({
+  id: `${mattressHandle}--${baseHandle}`,
+  name: null,
+  category: 'SLEEP_SYSTEM',
+  handles: [mattressHandle, baseHandle],
+  basis: baseHandle === 'flex-sh-adjustable-base'
+    ? 'Owner approved: split-head mattresses pair only with the Flex SH split-head base in the exact same size.'
+    : 'Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.',
+})));
+const DEFINITIONS = [...BEDDING_DEFINITIONS, ...SYSTEM_DEFINITIONS];
 
 function fail(message) { throw new Error(message); }
 function normalizeSize(value) {
-  return String(value || '').trim().replace(/\s*\(2pc\)$/i, '').replace(/Cal King/gi, 'California King').replace(/\s+/g, ' ');
+  return String(value || '').trim()
+    .replace(/\s*\(2pc\)$/i, '')
+    .replace(/^Cal King$/i, 'California King')
+    .replace(/^Split Head Cal King$/i, 'Split Head California King')
+    .replace(/^Split Cal King$/i, 'Split California King')
+    .replace(/\s+/g, ' ');
 }
 function sizeKeys(value) {
   const normalized = normalizeSize(value);
@@ -38,6 +55,14 @@ function featureValues(product) {
   const raw = product.technical.fields['snoozepod_technical.verified_features']?.value;
   if (!raw) return [];
   try { return JSON.parse(raw); } catch { return []; }
+}
+function sortSizes(sizes) {
+  return sizes.sort((left, right) => {
+    const leftIndex = SIZE_ORDER.indexOf(left.label);
+    const rightIndex = SIZE_ORDER.indexOf(right.label);
+    if (leftIndex !== -1 || rightIndex !== -1) return (leftIndex === -1 ? 999 : leftIndex) - (rightIndex === -1 ? 999 : rightIndex);
+    return left.label.localeCompare(right.label);
+  });
 }
 
 const catalog = JSON.parse(fs.readFileSync(CATALOG_PATH, 'utf8'));
@@ -82,37 +107,77 @@ function productRecord(handle) {
   };
 }
 
-function buildSizes(components) {
+function priceRange(componentVariants, componentQuantities) {
+  const minimum = componentVariants.reduce((sum, variants, index) => sum + (Math.min(...variants.map((variant) => moneyNumber(variant.price))) * componentQuantities[index]), 0);
+  const maximum = componentVariants.reduce((sum, variants, index) => sum + (Math.max(...variants.map((variant) => moneyNumber(variant.price))) * componentQuantities[index]), 0);
+  return { minCombinedPrice: (minimum / 100).toFixed(2), maxCombinedPrice: (maximum / 100).toFixed(2) };
+}
+
+function sizeRecord(label, geometry, componentVariants, componentQuantities, sourceSize = label) {
+  return {
+    label,
+    geometry,
+    sourceSize,
+    componentQuantities,
+    ...priceRange(componentVariants, componentQuantities),
+    componentVariants,
+  };
+}
+
+function buildSharedSizes(components) {
   const candidateKeys = [...new Set(components.flatMap((component) => component.variants.flatMap((variant) => variant.shopSizeKeys)))];
-  return candidateKeys.flatMap((label) => {
+  return sortSizes(candidateKeys.flatMap((label) => {
     const byComponent = components.map((component) => component.variants.filter((variant) => variant.shopSizeKeys.includes(label)));
     if (byComponent.some((variants) => !variants.length)) return [];
     const geometries = [...new Set(byComponent.flat().map((variant) => variant.geometry).filter(Boolean))];
-    const geometryMatches = geometries.length <= 1;
-    if (!geometryMatches) return [];
-    const minimum = byComponent.reduce((sum, variants) => sum + Math.min(...variants.map((variant) => moneyNumber(variant.price))), 0);
-    const maximum = byComponent.reduce((sum, variants) => sum + Math.max(...variants.map((variant) => moneyNumber(variant.price))), 0);
-    return [{ label, geometry: geometries[0] || 'standard', minCombinedPrice: (minimum / 100).toFixed(2), maxCombinedPrice: (maximum / 100).toFixed(2), componentVariants: byComponent }];
-  }).sort((left, right) => {
-    const leftIndex = SIZE_ORDER.indexOf(left.label);
-    const rightIndex = SIZE_ORDER.indexOf(right.label);
-    if (leftIndex !== -1 || rightIndex !== -1) return (leftIndex === -1 ? 999 : leftIndex) - (rightIndex === -1 ? 999 : rightIndex);
-    return left.label.localeCompare(right.label);
+    if (geometries.length > 1) return [];
+    return [sizeRecord(label, geometries[0] || 'standard', byComponent, components.map(() => 1))];
+  }));
+}
+
+function buildSystemSizes(components) {
+  const [mattress, base] = components;
+  if (base.handle === 'flex-sh-adjustable-base') {
+    const labels = [...new Set(base.variants.filter((variant) => variant.geometry === 'split_head').flatMap((variant) => variant.shopSizeKeys))];
+    return sortSizes(labels.flatMap((label) => {
+      const componentVariants = [
+        mattress.variants.filter((variant) => variant.geometry === 'split_head' && variant.shopSizeKeys.includes(label)),
+        base.variants.filter((variant) => variant.geometry === 'split_head' && variant.shopSizeKeys.includes(label)),
+      ];
+      return componentVariants.some((variants) => !variants.length) ? [] : [sizeRecord(label, 'split_head', componentVariants, [1, 1])];
+    }));
+  }
+
+  const labels = [...new Set(base.variants.filter((variant) => variant.geometry === 'standard').flatMap((variant) => variant.shopSizeKeys))];
+  const standard = labels.flatMap((label) => {
+    const componentVariants = [
+      mattress.variants.filter((variant) => variant.geometry === 'standard' && variant.shopSizeKeys.includes(label)),
+      base.variants.filter((variant) => variant.geometry === 'standard' && variant.shopSizeKeys.includes(label)),
+    ];
+    return componentVariants.some((variants) => !variants.length) ? [] : [sizeRecord(label, 'standard', componentVariants, [1, 1])];
   });
+  const splitKingVariants = [
+    mattress.variants.filter((variant) => variant.geometry === 'standard' && variant.shopSizeKeys.includes('Twin XL')),
+    base.variants.filter((variant) => variant.geometry === 'standard' && variant.shopSizeKeys.includes('Twin XL')),
+  ];
+  if (!splitKingVariants.some((variants) => !variants.length)) {
+    standard.push(sizeRecord('Split King', 'full_split', splitKingVariants, [2, 2], 'Twin XL'));
+  }
+  return sortSizes(standard);
 }
 
 const bundles = DEFINITIONS.map((definition) => {
   const components = definition.handles.map(productRecord);
-  const sizes = buildSizes(components);
-  if (!sizes.length) fail(`${definition.id} has no exact shared size/geometry candidates.`);
-  const purchasable = definition.status === 'STAGED_PURCHASABLE';
+  const isSystem = definition.category === 'SLEEP_SYSTEM';
+  const sizes = isSystem ? buildSystemSizes(components) : buildSharedSizes(components);
+  if (!sizes.length) fail(`${definition.id} has no supported configuration.`);
   return {
     id: definition.id,
-    name: definition.name,
+    name: definition.name || `${components[0].title} + ${components[1].title}`,
     category: definition.category,
     contentStatus: 'READY_FOR_REVIEW',
-    purchaseStatus: definition.status,
-    compatibilityStatus: purchasable ? 'COMPONENT_SIZE_GEOMETRY_VERIFIED' : 'PENDING_VERIFICATION',
+    purchaseStatus: 'STAGED_PURCHASABLE',
+    compatibilityStatus: isSystem ? 'OWNER_APPROVED' : 'COMPONENT_SIZE_GEOMETRY_VERIFIED',
     curationBasis: definition.basis,
     showroomRelationship: 'PENDING_VERIFICATION',
     verifiedAttributes: [...new Set(components.flatMap((component) => component.verifiedFeatures))],
@@ -121,12 +186,19 @@ const bundles = DEFINITIONS.map((definition) => {
   };
 });
 
+if (bundles.some((bundle) => bundle.sizes.some((size) => size.label === 'Split Queen'))) fail('Split Queen must never be generated.');
 const manifest = {
-  schemaVersion: '1.0.0',
+  schemaVersion: '1.1.0',
   generatedAt: catalog.generatedAt,
   source: { store: catalog.shop, products: catalog.summary.products, variants: catalog.summary.variants, authority: 'Existing Shopify products and available variants; exact commerce state must be rechecked at add-to-cart time.' },
-  architecture: { mode: 'MULTI_LINE_COMPONENT_CART', parentBundleProductsCreated: false, artificialSkusCreated: false, discountsApplied: false, rationale: 'Preserves each real component variant, live price, inventory check, line item, and fulfillment path without hiding unverified compatibility.' },
-  summary: { bundles: bundles.length, sleepSystems: bundles.filter((bundle) => bundle.category === 'SLEEP_SYSTEM').length, beddingSets: bundles.filter((bundle) => bundle.category === 'BEDDING_SET').length, completePackages: bundles.filter((bundle) => bundle.category === 'COMPLETE_SLEEP_PACKAGE').length, stagedPurchasable: bundles.filter((bundle) => bundle.purchaseStatus === 'STAGED_PURCHASABLE').length, blockedPendingCompatibility: bundles.filter((bundle) => bundle.purchaseStatus === 'BLOCKED_COMPATIBILITY').length },
+  architecture: { mode: 'MULTI_LINE_COMPONENT_CART', parentBundleProductsCreated: false, artificialSkusCreated: false, discountsApplied: false, rationale: 'Preserves each real component variant, live price, inventory check, line item, and fulfillment path while applying only the owner-approved mattress/base rules.' },
+  compatibilityRules: {
+    standard: 'Exact same-size standard mattress and standard Flex L or Flex LSX base.',
+    splitHead: 'Exact same-size split-head mattress and Flex SH base only.',
+    splitKing: 'Two Twin XL mattress units and two Twin XL base units.',
+    unsupported: ['Split Queen'],
+  },
+  summary: { bundles: bundles.length, sleepSystems: bundles.filter((bundle) => bundle.category === 'SLEEP_SYSTEM').length, beddingSets: bundles.filter((bundle) => bundle.category === 'BEDDING_SET').length, completePackages: 0, stagedPurchasable: bundles.length, blockedPendingCompatibility: 0 },
   bundles,
 };
 

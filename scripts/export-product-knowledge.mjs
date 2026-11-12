@@ -92,6 +92,8 @@ const feed = {
       sizes: bundle.sizes.map((size) => ({
         label: size.label,
         geometry: size.geometry,
+        sourceSize: size.sourceSize,
+        componentQuantities: size.componentQuantities,
         minCombinedPrice: size.minCombinedPrice,
         maxCombinedPrice: size.maxCombinedPrice,
         componentVariants: size.componentVariants.map((variants) => variants.map((variant) => ({

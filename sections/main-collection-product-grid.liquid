@@ -42,100 +42,6 @@
 {%- endstyle -%}
 
 {%- style -%}
-    .snoozepod-shop-by-size {
-      max-width: min(100%, var(--wide-content-max));
-      margin: 0 auto 28px;
-      padding: 0 22px;
-    }
-
-    .snoozepod-shop-by-size__panel {
-      padding: 22px;
-      border: 1px solid rgba(10, 25, 55, 0.11);
-      border-radius: 22px;
-      background: linear-gradient(135deg, #f3f6fb 0%, #faf8f3 100%);
-      box-shadow: 0 12px 28px rgba(7, 25, 66, 0.06);
-    }
-
-    .snoozepod-shop-by-size__eyebrow {
-      margin: 0 0 6px;
-      color: #48607f;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .snoozepod-shop-by-size__heading {
-      margin: 0;
-      color: #081a3b;
-      font-size: clamp(24px, 3vw, 34px);
-      line-height: 1.12;
-      letter-spacing: -0.03em;
-    }
-
-    .snoozepod-shop-by-size__intro,
-    .snoozepod-shop-by-size__status {
-      color: #40516c;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .snoozepod-shop-by-size__intro { margin: 8px 0 18px; }
-    .snoozepod-shop-by-size__status { margin: 14px 0 0; }
-
-    .snoozepod-shop-by-size__options {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 9px;
-    }
-
-    .snoozepod-shop-by-size__option,
-    .snoozepod-shop-by-size__clear {
-      min-height: 46px;
-      border-radius: 999px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-    }
-
-    .snoozepod-shop-by-size__option {
-      padding: 10px 14px;
-      border: 1px solid #b7c4d7;
-      color: #12294d;
-      background: #e4eaf2;
-    }
-
-    .snoozepod-shop-by-size__option:hover:not(:disabled),
-    .snoozepod-shop-by-size__option:focus-visible {
-      border-color: #173d73;
-      background: #d7e1ee;
-    }
-
-    .snoozepod-shop-by-size__option.is-active,
-    .snoozepod-shop-by-size__option[aria-current='page'] {
-      border-color: #0b2c5a;
-      color: #ffffff;
-      background: #0b2c5a;
-      box-shadow: 0 6px 16px rgba(11, 44, 90, 0.2);
-    }
-
-    .snoozepod-shop-by-size__option:disabled {
-      color: #7e8999;
-      background: #edf0f4;
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
-
-    .snoozepod-shop-by-size__clear {
-      margin-top: 14px;
-      padding: 8px 16px;
-      border: 1px solid #b7c4d7;
-      color: #173d73;
-      background: #ffffff;
-    }
-
     .snoozepod-size-card-price {
       display: flex;
       flex-wrap: wrap;
@@ -156,11 +62,6 @@
       font-weight: 700;
     }
 
-    @media screen and (min-width: 750px) {
-      .snoozepod-shop-by-size { padding: 0 64px; }
-      .snoozepod-shop-by-size__panel { padding: 28px 30px; }
-      .snoozepod-shop-by-size__options { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-    }
 {%- endstyle -%}
 
 {%- if template.suffix == 'snoozepod' or template.suffix == 'main' or template.suffix == 'snoozepod-v1' -%}
@@ -302,17 +203,7 @@
   {%- endstyle -%}
 {%- endif -%}
 
-<div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if template.suffix == 'snoozepod' or template.suffix == 'main' or template.suffix == 'snoozepod-v1' %} snoozepod-collection-grid{% endif %}">
-    <section class="snoozepod-shop-by-size" data-shop-by-size data-collection-handle="{{ collection.handle | escape }}" aria-labelledby="ShopBySizeHeading-{{ section.id }}" hidden>
-      <div class="snoozepod-shop-by-size__panel">
-        <p class="snoozepod-shop-by-size__eyebrow">Find your fit</p>
-        <h2 class="snoozepod-shop-by-size__heading" id="ShopBySizeHeading-{{ section.id }}" data-shop-by-size-heading>Shop by Size</h2>
-        <p class="snoozepod-shop-by-size__intro" data-shop-by-size-intro>Choose a size to see exact availability and pricing.</p>
-        <div class="snoozepod-shop-by-size__options" data-shop-by-size-options aria-label="Available sizes"></div>
-        <a class="snoozepod-shop-by-size__clear" href="{{ collection.url }}" data-shop-by-size-clear hidden>Show all products</a>
-        <p class="snoozepod-shop-by-size__status" data-shop-by-size-status aria-live="polite">Choose a size to see exact availability and pricing.</p>
-      </div>
-    </section>
+<div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if template.suffix == 'snoozepod' or template.suffix == 'main' or template.suffix == 'snoozepod-v1' %} snoozepod-collection-grid{% endif %}" data-shop-by-size-root data-collection-handle="{{ collection.handle | escape }}">
   {%- paginate collection.products by section.settings.products_per_page -%}
     {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
     {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}

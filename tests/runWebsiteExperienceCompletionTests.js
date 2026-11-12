@@ -43,7 +43,10 @@ check(header.includes('.header__heading-logo { max-width: 18rem; }'), 'Mobile lo
 check(header.includes('data-snoozer-source="header-desktop"') && header.includes('data-snoozer-source="header-mobile"'), 'Ask Snoozer must remain available on desktop and mobile.');
 
 const collection = json('templates/collection.snoozepod-v1.json');
+check(collection.order.join('|') === 'banner|product-grid|category-navigation|guided-shopping', 'Collection pages must be title, products, Shop by Category, then Find Your Fit.');
 check(collection.order.indexOf('product-grid') < collection.order.indexOf('guided-shopping'), 'Collection product grid must precede guided tools.');
+check(collection.order.indexOf('product-grid') < collection.order.indexOf('category-navigation'), 'Collection product grid must precede Shop by Category.');
+check(!JSON.stringify(collection).toLowerCase().includes('snoozer'), 'Collection templates must not show an Ask Snoozer prompt.');
 check(collection.sections['product-grid'].settings.enable_filtering === true, 'Collection filtering must remain enabled.');
 check(collection.sections['product-grid'].settings.enable_sorting === true, 'Collection sorting must remain enabled.');
 check(collection.sections['product-grid'].settings.quick_add === 'none', 'Collection cards must continue to lead to full product pages.');
@@ -82,9 +85,6 @@ check(footerNavigation.includes('Shop') && footerNavigation.includes('Visit &amp
 check(footerNavigation.includes('/pages/warranty-support'), 'Footer must expose warranty support.');
 check(footerNavigation.includes("request.page_type == 'product'") && footerNavigation.includes("request.page_type == 'collection'"), 'Product and collection pages must not repeat the global booking banner below their page-tail CTA.');
 check(footerNavigation.includes("page.handle == 'book-a-snooze-session'"), 'The booking page must not repeat a self-referential booking banner.');
-
-const collectionCta = read('sections/snoozepod-collection-cta.liquid');
-check(collectionCta.includes('primary_is_snoozer') && collectionCta.includes('data-snoozer-trigger'), 'A primary Ask Snoozer collection action must open Snoozer rather than fall back to the all-products collection.');
 
 checkSchema('sections/snoozepod-mattress-showcase.liquid');
 checkSchema('sections/snoozepod-meet-snoozer.liquid');

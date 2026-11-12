@@ -1,24 +1,16 @@
 {%- liquid
-  assign suppress_category_navigation = false
   assign navigation_heading = section.settings.heading
-  if collection.handle == 'mattresses' or collection.handle == 'adjustable-bases'
-    assign suppress_category_navigation = true
-    assign visible_collection_count = 0
-  endif
-
   assign mapped_collections = collection.metafields.custom.category_navigation.value
-  unless suppress_category_navigation
-    assign visible_collection_count = 0
-    if mapped_collections != blank
-      assign visible_collection_count = mapped_collections.size
-    else
-      for block in section.blocks
-        if block.settings.collection != blank
-          assign visible_collection_count = visible_collection_count | plus: 1
-        endif
-      endfor
-    endif
-  endunless
+  assign visible_collection_count = 0
+  if mapped_collections != blank
+    assign visible_collection_count = mapped_collections.size
+  else
+    for block in section.blocks
+      if block.settings.collection != blank
+        assign visible_collection_count = visible_collection_count | plus: 1
+      endif
+    endfor
+  endif
 -%}
 
 {%- style -%}

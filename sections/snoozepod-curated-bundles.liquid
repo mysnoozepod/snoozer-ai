@@ -7,35 +7,16 @@
   <div class="snoozepod-bundles__shell">
     <header class="snoozepod-bundles__hero">
       <div>
-        <p class="snoozepod-bundles__eyebrow">Curated shopping</p>
         <h1>{{ page.title | default: 'Sleep Systems' | escape }}</h1>
-        <p class="snoozepod-bundles__lede">Start with real products that work together by size and purpose. Every purchasable set keeps its individual Shopify variants, prices, and cart lines.</p>
+        <p class="snoozepod-bundles__lede">Choose your mattress, size, and adjustable base. Each product remains a real Shopify item with its own variant, price, and cart line.</p>
       </div>
-      <aside class="snoozepod-bundles__assurance">
-        <strong>Compatibility stays fail-closed.</strong>
-        <p>Mattress and adjustable-base combinations remain review-only until their exact mechanical compatibility is verified.</p>
-      </aside>
     </header>
-
-    <div class="snoozepod-bundles__filter">
-      <label for="CuratedBundleSize-{{ section.id }}">Shop these sets by size</label>
-      <select id="CuratedBundleSize-{{ section.id }}" data-bundle-size-filter>
-        <option value="">All available sizes</option>
-      </select>
-      <p data-bundle-filter-count aria-live="polite"></p>
-    </div>
-
-    <nav class="snoozepod-bundles__jump" aria-label="Sleep system categories">
-      <a href="#sleep-systems">Sleep Systems</a>
-      <a href="#bedding-sets">Bedding Sets</a>
-      <a href="#complete-sleep-packages">Complete Sleep Packages</a>
-    </nav>
 
     <div class="snoozepod-bundles__group" id="sleep-systems">
       <div class="snoozepod-bundles__group-heading">
         <p class="snoozepod-bundles__eyebrow">Mattress + adjustable base</p>
         <h2>Sleep Systems</h2>
-        <p>These exact-size candidates are organized for review. Purchasing remains unavailable until the mattress-to-base relationship is verified.</p>
+        <p>Standard sizes pair by exact size. Split-head mattresses pair only with Flex SH. Split King uses two Twin XL mattresses and two Twin XL bases.</p>
       </div>
       <div class="snoozepod-bundles__grid" data-bundle-grid="SLEEP_SYSTEM"></div>
     </div>
@@ -49,25 +30,7 @@
       <div class="snoozepod-bundles__grid" data-bundle-grid="BEDDING_SET"></div>
     </div>
 
-    <div class="snoozepod-bundles__group" id="complete-sleep-packages">
-      <div class="snoozepod-bundles__group-heading">
-        <p class="snoozepod-bundles__eyebrow">Whole-room starting points</p>
-        <h2>Complete Sleep Packages</h2>
-        <p>Complete packages are staged for assortment review and remain unavailable until their mattress and base pairings are confirmed.</p>
-      </div>
-      <div class="snoozepod-bundles__grid" data-bundle-grid="COMPLETE_SLEEP_PACKAGE"></div>
-    </div>
-
-    <div class="snoozepod-bundles__empty" data-bundle-empty hidden>No curated sets are available for that size. Try another size or view all sets.</div>
     <div class="snoozepod-bundles__status" data-bundle-cart-status role="status" aria-live="assertive" aria-atomic="true" tabindex="-1" hidden></div>
-
-    <div class="snoozepod-bundles__secondary">
-      <div><p class="snoozepod-bundles__eyebrow">Need a hand?</p><h2>Talk through the complete setup.</h2></div>
-      <div class="snoozepod-bundles__actions">
-        <button class="button button--secondary" type="button" data-snoozer-trigger>Ask Snoozer</button>
-        <a class="button button--secondary" href="/pages/book-a-snooze-session">Book a Snooze Session</a>
-      </div>
-    </div>
   </div>
 </section>
 

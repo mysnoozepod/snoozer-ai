@@ -1,78 +1,24 @@
 {
   "sections": {
-    "hero": {
-      "type": "snoozepod-collection-hero",
-      "settings": {
-        "show_eyebrow": true,
-        "eyebrow": "SnoozePod Collection",
-        "heading_override": "",
-        "body": "Explore the pieces that help complete your sleep environment.",
-        "image_alt": ""
-      }
+    "banner": { "type": "main-collection-banner", "settings": { "show_collection_description": false, "show_collection_image": false, "color_scheme": "scheme-1" } },
+    "product-grid": { "type": "main-collection-product-grid", "settings": { "products_per_page": 24, "columns_desktop": 4, "color_scheme": "scheme-1", "image_ratio": "portrait", "image_shape": "default", "show_secondary_image": true, "show_vendor": false, "show_rating": false, "show_snoozepod_card_details": true, "quick_add": "none", "enable_filtering": true, "filter_type": "drawer", "enable_sorting": true, "columns_mobile": "2", "padding_top": 8, "padding_bottom": 40 } },
+    "category-navigation": {
+      "type": "snoozepod-collection-navigation-v1",
+      "blocks": {
+        "mattresses": { "type": "collection", "settings": { "collection": "mattresses" } },
+        "adjustable-bases": { "type": "collection", "settings": { "collection": "adjustable-bases" } },
+        "pillows": { "type": "collection", "settings": { "collection": "pillows" } },
+        "sheets": { "type": "collection", "settings": { "collection": "sheets" } },
+        "mattress-protectors": { "type": "collection", "settings": { "collection": "mattress-protectors" } },
+        "comforters": { "type": "collection", "settings": { "collection": "comforters" } },
+        "cooling-bedding": { "type": "collection", "settings": { "collection": "cooling-bedding" } },
+        "mattress-toppers": { "type": "collection", "settings": { "collection": "mattress-toppers" } },
+        "bedroom-furniture": { "type": "collection", "settings": { "collection": "bedroom-furniture" } }
+      },
+      "block_order": ["mattresses", "adjustable-bases", "pillows", "sheets", "mattress-protectors", "comforters", "cooling-bedding", "mattress-toppers", "bedroom-furniture"],
+      "settings": { "heading": "Shop by Category" }
     },
-    "guidance": {
-      "type": "snoozer-collection-guidance",
-      "settings": {
-        "heading": "Need Help Narrowing It Down?",
-        "body": "Ask Snoozer about comfort, support, cooling, and what to compare next.",
-        "chip_1": "I sleep hot",
-        "chip_2": "I need better support",
-        "chip_3": "I want less pressure",
-        "chip_4": "Help me compare options",
-        "cta_label": "Ask Snoozer",
-        "show_chips": true,
-        "show_avatar": true
-      }
-    },
-    "product-grid": {
-      "type": "main-collection-product-grid",
-      "settings": {
-        "products_per_page": 24,
-        "columns_desktop": 4,
-        "color_scheme": "scheme-1",
-        "image_ratio": "portrait",
-        "image_shape": "default",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_rating": false,
-        "quick_add": "none",
-        "enable_filtering": false,
-        "filter_type": "horizontal",
-        "enable_sorting": true,
-        "columns_mobile": "2",
-        "padding_top": 24,
-        "padding_bottom": 64
-      }
-    },
-    "education": {
-      "type": "snoozepod-category-education",
-      "settings": {
-        "eyebrow": "Sleep Environment Guide",
-        "heading": "How This Fits Your SnoozePod",
-        "body": "Each piece plays a role. Start with the essentials, then add the comfort details that support how you rest, recover, and wake up.",
-        "bullet_1": "Start with comfort and support.",
-        "bullet_2": "Add pieces that solve specific sleep needs.",
-        "bullet_3": "Keep the final sleep environment simple and intentional.",
-        "show_bullets": true
-      }
-    },
-    "final-cta": {
-      "type": "snoozepod-collection-cta",
-      "settings": {
-        "heading": "Build Your SnoozePod",
-        "body": "Create a sleep environment built around how you rest, recover, cool down, and wake up.",
-        "primary_label": "Start Building Your Sleep Environment",
-        "primary_link": "shopify://collections/all",
-        "secondary_label": "Plan It With Snoozer",
-        "show_secondary": true
-      }
-    }
+    "guided-shopping": { "type": "snoozepod-guided-shopping-links", "settings": { "heading": "Find Your Fit", "intro": "Use a guided tool after browsing the products to narrow your next step." } }
   },
-  "order": [
-    "hero",
-    "guidance",
-    "product-grid",
-    "education",
-    "final-cta"
-  ]
+  "order": ["banner", "product-grid", "category-navigation", "guided-shopping"]
 }

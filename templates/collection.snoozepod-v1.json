@@ -1,103 +1,11 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
-    "hero": {
-      "type": "snoozepod-collection-hero",
+    "banner": {
+      "type": "main-collection-banner",
       "settings": {
-        "show_eyebrow": false,
-        "eyebrow": "",
-        "heading_override": "",
-        "body": "",
-        "snoozer_label": "Ask Snoozer",
-        "image_alt": ""
-      }
-    },
-    "category-navigation": {
-      "type": "snoozepod-collection-navigation-v1",
-      "blocks": {
-        "mattresses": {
-          "type": "collection",
-          "settings": {
-            "collection": "mattresses"
-          }
-        },
-        "adjustable-bases": {
-          "type": "collection",
-          "settings": {
-            "collection": "adjustable-bases"
-          }
-        },
-        "pillows": {
-          "type": "collection",
-          "settings": {
-            "collection": "pillows"
-          }
-        },
-        "sheets": {
-          "type": "collection",
-          "settings": {
-            "collection": "sheets"
-          }
-        },
-        "mattress-protectors": {
-          "type": "collection",
-          "settings": {
-            "collection": "mattress-protectors"
-          }
-        },
-        "comforters": {
-          "type": "collection",
-          "settings": {
-            "collection": "comforters"
-          }
-        },
-        "cooling-bedding": {
-          "type": "collection",
-          "settings": {
-            "collection": "cooling-bedding"
-          }
-        },
-        "mattress-toppers": {
-          "type": "collection",
-          "settings": {
-            "collection": "mattress-toppers"
-          }
-        },
-        "bedroom-furniture": {
-          "type": "collection",
-          "settings": {
-            "collection": "bedroom-furniture"
-          }
-        }
-      },
-      "block_order": [
-        "mattresses",
-        "adjustable-bases",
-        "pillows",
-        "sheets",
-        "mattress-protectors",
-        "comforters",
-        "cooling-bedding",
-        "mattress-toppers",
-        "bedroom-furniture"
-      ],
-      "settings": {
-        "heading": "Shop by Category"
-      }
-    },
-    "guided-shopping": {
-      "type": "snoozepod-guided-shopping-links",
-      "settings": {
-        "heading": "Need Help Narrowing Your Choices?",
-        "intro": "Use filters to narrow the collection, or ask Snoozer to compare the details that matter to you."
+        "show_collection_description": false,
+        "show_collection_image": false,
+        "color_scheme": "scheme-1"
       }
     },
     "product-grid": {
@@ -117,28 +25,33 @@
         "filter_type": "drawer",
         "enable_sorting": true,
         "columns_mobile": "2",
-        "padding_top": 24,
-        "padding_bottom": 48
+        "padding_top": 8,
+        "padding_bottom": 40
       }
     },
-    "closing": {
-      "type": "snoozepod-collection-cta",
+    "category-navigation": {
+      "type": "snoozepod-collection-navigation-v1",
+      "blocks": {
+        "mattresses": { "type": "collection", "settings": { "collection": "mattresses" } },
+        "adjustable-bases": { "type": "collection", "settings": { "collection": "adjustable-bases" } },
+        "pillows": { "type": "collection", "settings": { "collection": "pillows" } },
+        "sheets": { "type": "collection", "settings": { "collection": "sheets" } },
+        "mattress-protectors": { "type": "collection", "settings": { "collection": "mattress-protectors" } },
+        "comforters": { "type": "collection", "settings": { "collection": "comforters" } },
+        "cooling-bedding": { "type": "collection", "settings": { "collection": "cooling-bedding" } },
+        "mattress-toppers": { "type": "collection", "settings": { "collection": "mattress-toppers" } },
+        "bedroom-furniture": { "type": "collection", "settings": { "collection": "bedroom-furniture" } }
+      },
+      "block_order": ["mattresses", "adjustable-bases", "pillows", "sheets", "mattress-protectors", "comforters", "cooling-bedding", "mattress-toppers", "bedroom-furniture"],
+      "settings": { "heading": "Shop by Category" }
+    },
+    "guided-shopping": {
+      "type": "snoozepod-guided-shopping-links",
       "settings": {
-        "heading": "Want a second opinion?",
-        "body": "Ask Snoozer for help comparing products, or schedule a private visit when you are ready to try them in person.",
-        "primary_label": "Ask Snoozer",
-        "primary_link": "",
-        "secondary_label": "Book a Snooze Session",
-        "secondary_link": "/pages/book-a-snooze-session",
-        "show_secondary": true
+        "heading": "Find Your Fit",
+        "intro": "Use a guided tool after browsing the products to narrow your next step."
       }
     }
   },
-  "order": [
-    "hero",
-    "category-navigation",
-    "product-grid",
-    "guided-shopping",
-    "closing"
-  ]
+  "order": ["banner", "product-grid", "category-navigation", "guided-shopping"]
 }

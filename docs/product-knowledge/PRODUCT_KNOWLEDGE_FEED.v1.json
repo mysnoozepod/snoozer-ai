@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-11-12T01:05:31.133Z",
+  "generatedAt": "2026-11-12T01:59:23.739Z",
   "source": {
     "system": "Shopify",
     "store": "mysnoozepodtest.myshopify.com",
@@ -7471,6 +7471,11 @@
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "409.98",
           "maxCombinedPrice": "409.98",
           "componentVariants": [
@@ -7513,6 +7518,11 @@
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "469.98",
           "maxCombinedPrice": "469.98",
           "componentVariants": [
@@ -7553,50 +7563,13 @@
           ]
         },
         {
-          "label": "California King",
-          "geometry": "standard",
-          "minCombinedPrice": "469.98",
-          "maxCombinedPrice": "469.98",
-          "componentVariants": [
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477035581",
-                "sku": "BGS194X12",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477297725",
-                "sku": "BGS194L12",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477592637",
-                "sku": "BGS194N12",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477854781",
-                "sku": "BGS194T12",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478116925",
-                "sku": "BGS194W12",
-                "price": "279.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479067197",
-                "sku": "BGM03AWFW",
-                "price": "189.99"
-              }
-            ]
-          ]
-        },
-        {
           "label": "Twin",
           "geometry": "standard",
+          "sourceSize": "Twin",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "309.98",
           "maxCombinedPrice": "309.98",
           "componentVariants": [
@@ -7639,6 +7612,11 @@
         {
           "label": "Twin XL",
           "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "319.98",
           "maxCombinedPrice": "319.98",
           "componentVariants": [
@@ -7681,6 +7659,11 @@
         {
           "label": "Full",
           "geometry": "standard",
+          "sourceSize": "Full",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "349.98",
           "maxCombinedPrice": "349.98",
           "componentVariants": [
@@ -7723,6 +7706,11 @@
         {
           "label": "Split Head Queen",
           "geometry": "split_head",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "459.98",
           "maxCombinedPrice": "459.98",
           "componentVariants": [
@@ -7765,6 +7753,11 @@
         {
           "label": "Split Head King",
           "geometry": "split_head",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "519.98",
           "maxCombinedPrice": "519.98",
           "componentVariants": [
@@ -7807,6 +7800,11 @@
         {
           "label": "Split Head California King",
           "geometry": "split_head",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "519.98",
           "maxCombinedPrice": "519.98",
           "componentVariants": [
@@ -7849,6 +7847,11 @@
         {
           "label": "Split King",
           "geometry": "full_split",
+          "sourceSize": "Split King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "509.98",
           "maxCombinedPrice": "509.98",
           "componentVariants": [
@@ -7887,48 +7890,6 @@
               }
             ]
           ]
-        },
-        {
-          "label": "Split California King",
-          "geometry": "full_split",
-          "minCombinedPrice": "509.98",
-          "maxCombinedPrice": "509.98",
-          "componentVariants": [
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477068349",
-                "sku": "BGS194X14",
-                "price": "299.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477330493",
-                "sku": "BGS194L14",
-                "price": "299.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477625405",
-                "sku": "BGS194N14",
-                "price": "299.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477887549",
-                "sku": "BGS194T14",
-                "price": "299.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478149693",
-                "sku": "BGS194W14",
-                "price": "299.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479132733",
-                "sku": "BGM03AWFD",
-                "price": "209.99"
-              }
-            ]
-          ]
         }
       ]
     },
@@ -7959,6 +7920,11 @@
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "579.98",
           "maxCombinedPrice": "579.98",
           "componentVariants": [
@@ -7996,6 +7962,11 @@
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "629.98",
           "maxCombinedPrice": "629.98",
           "componentVariants": [
@@ -8031,45 +8002,13 @@
           ]
         },
         {
-          "label": "California King",
-          "geometry": "standard",
-          "minCombinedPrice": "629.98",
-          "maxCombinedPrice": "629.98",
-          "componentVariants": [
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478280765",
-                "sku": "BGS197B12",
-                "price": "329.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478411837",
-                "sku": "BGS197L12",
-                "price": "329.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478575677",
-                "sku": "BGS197G12",
-                "price": "329.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478706749",
-                "sku": "BGS197W12",
-                "price": "329.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479460413",
-                "sku": "BGM026007",
-                "price": "299.99"
-              }
-            ]
-          ]
-        },
-        {
           "label": "Split Head Queen",
           "geometry": "split_head",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "629.98",
           "maxCombinedPrice": "629.98",
           "componentVariants": [
@@ -8097,6 +8036,11 @@
         {
           "label": "Split Head King",
           "geometry": "split_head",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "719.98",
           "maxCombinedPrice": "719.98",
           "componentVariants": [
@@ -8124,6 +8068,11 @@
         {
           "label": "Split Head California King",
           "geometry": "split_head",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "719.98",
           "maxCombinedPrice": "719.98",
           "componentVariants": [
@@ -8151,6 +8100,11 @@
         {
           "label": "Split King",
           "geometry": "full_split",
+          "sourceSize": "Split King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "709.98",
           "maxCombinedPrice": "709.98",
           "componentVariants": [
@@ -8180,43 +8134,6 @@
               {
                 "shopifyVariantId": "gid://shopify/ProductVariant/44122479493181",
                 "sku": "BGM026008",
-                "price": "359.99"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "Split California King",
-          "geometry": "full_split",
-          "minCombinedPrice": "709.98",
-          "maxCombinedPrice": "709.98",
-          "componentVariants": [
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478313533",
-                "sku": "BGS197B14",
-                "price": "349.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478444605",
-                "sku": "BGS197L14",
-                "price": "349.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478608445",
-                "sku": "BGS197G14",
-                "price": "349.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478739517",
-                "sku": "BGS197W14",
-                "price": "349.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479525949",
-                "sku": "BGM026009",
                 "price": "359.99"
               }
             ]
@@ -8251,6 +8168,11 @@
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "399.98",
           "maxCombinedPrice": "399.98",
           "componentVariants": [
@@ -8288,6 +8210,11 @@
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "459.98",
           "maxCombinedPrice": "459.98",
           "componentVariants": [
@@ -8323,40 +8250,13 @@
           ]
         },
         {
-          "label": "California King",
-          "geometry": "standard",
-          "minCombinedPrice": "459.98",
-          "maxCombinedPrice": "459.98",
-          "componentVariants": [
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122475921469",
-                "sku": "BGS122W70",
-                "price": "229.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476281917",
-                "sku": "BGS122L70",
-                "price": "229.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476740669",
-                "sku": "BGS122T70",
-                "price": "229.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122488012861",
-                "sku": "BGB050W60",
-                "price": "229.99"
-              }
-            ]
-          ]
-        },
-        {
           "label": "Full",
           "geometry": "standard",
+          "sourceSize": "Full",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "379.98",
           "maxCombinedPrice": "379.98",
           "componentVariants": [
@@ -8415,6 +8315,11 @@
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "499.98",
           "maxCombinedPrice": "499.98",
           "componentVariants": [
@@ -8457,48 +8362,11 @@
         {
           "label": "King",
           "geometry": "standard",
-          "minCombinedPrice": "559.98",
-          "maxCombinedPrice": "559.98",
-          "componentVariants": [
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477035581",
-                "sku": "BGS194X12",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477297725",
-                "sku": "BGS194L12",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477592637",
-                "sku": "BGS194N12",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477854781",
-                "sku": "BGS194T12",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478116925",
-                "sku": "BGS194W12",
-                "price": "279.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122488078397",
-                "sku": "BGB051W60",
-                "price": "279.99"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "California King",
-          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "559.98",
           "maxCombinedPrice": "559.98",
           "componentVariants": [
@@ -8541,6 +8409,11 @@
         {
           "label": "Full",
           "geometry": "standard",
+          "sourceSize": "Full",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "479.98",
           "maxCombinedPrice": "479.98",
           "componentVariants": [
@@ -8579,6 +8452,53 @@
               }
             ]
           ]
+        },
+        {
+          "label": "Cal King",
+          "geometry": "standard",
+          "sourceSize": "Cal King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "559.98",
+          "maxCombinedPrice": "559.98",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122477035581",
+                "sku": "BGS194X12",
+                "price": "279.99"
+              },
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122477297725",
+                "sku": "BGS194L12",
+                "price": "279.99"
+              },
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122477592637",
+                "sku": "BGS194N12",
+                "price": "279.99"
+              },
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122477854781",
+                "sku": "BGS194T12",
+                "price": "279.99"
+              },
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122478116925",
+                "sku": "BGS194W12",
+                "price": "279.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122488078397",
+                "sku": "BGB051W60",
+                "price": "279.99"
+              }
+            ]
+          ]
         }
       ]
     },
@@ -8609,6 +8529,11 @@
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "499.98",
           "maxCombinedPrice": "499.98",
           "componentVariants": [
@@ -8646,6 +8571,11 @@
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "559.98",
           "maxCombinedPrice": "559.98",
           "componentVariants": [
@@ -8681,8 +8611,13 @@
           ]
         },
         {
-          "label": "California King",
+          "label": "Cal King",
           "geometry": "standard",
+          "sourceSize": "Cal King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "559.98",
           "maxCombinedPrice": "559.98",
           "componentVariants": [
@@ -8720,13 +8655,13 @@
       ]
     },
     {
-      "id": "memory-foam-flex-l-review",
-      "name": "12-inch Memory Foam + Flex L System",
+      "id": "12-inch-memory-foam-mattress--flex-l-adjustable-base",
+      "name": "12\" Memory Foam Mattress + Flex L Adjustable Base",
       "category": "SLEEP_SYSTEM",
       "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. Matching size and geometry do not prove mechanical compatibility.",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
       "showroomRelationship": "PENDING_VERIFICATION",
       "components": [
         {
@@ -8746,6 +8681,11 @@
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "2398.99",
           "maxCombinedPrice": "2398.99",
           "componentVariants": [
@@ -8768,6 +8708,11 @@
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "2898.99",
           "maxCombinedPrice": "2898.99",
           "componentVariants": [
@@ -8790,6 +8735,11 @@
         {
           "label": "California King",
           "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "2898.99",
           "maxCombinedPrice": "2898.99",
           "componentVariants": [
@@ -8812,8 +8762,40 @@
         {
           "label": "Twin XL",
           "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "1998.99",
           "maxCombinedPrice": "1998.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
+                "sku": "BGA025902",
+                "price": "1299.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "price": "699.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "3997.98",
+          "maxCombinedPrice": "3997.98",
           "componentVariants": [
             [
               {
@@ -8834,13 +8816,442 @@
       ]
     },
     {
-      "id": "hybrid-flex-lsx-review",
-      "name": "12-inch Hybrid + Flex LSX System",
+      "id": "12-inch-memory-foam-mattress--flex-lsx-adjustable-base",
+      "name": "12\" Memory Foam Mattress + Flex LSX Adjustable Base",
       "category": "SLEEP_SYSTEM",
       "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. Matching size and geometry do not prove mechanical compatibility.",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "components": [
+        {
+          "shopifyProductId": "gid://shopify/Product/8100282794045",
+          "handle": "12-inch-memory-foam-mattress",
+          "title": "12\" Memory Foam Mattress",
+          "quantity": 1
+        },
+        {
+          "shopifyProductId": "gid://shopify/Product/8100247175229",
+          "handle": "flex-lsx-adjustable-base",
+          "title": "Flex LSX Adjustable Base",
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Queen",
+          "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3598.99",
+          "maxCombinedPrice": "3598.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128361971773",
+                "sku": "BGA025905",
+                "price": "1599.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467303485",
+                "sku": "BGF032205",
+                "price": "1999.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "King",
+          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4398.99",
+          "maxCombinedPrice": "4398.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362037309",
+                "sku": "BGA025906",
+                "price": "1899.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467336253",
+                "sku": "BGF032206",
+                "price": "2499.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "California King",
+          "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4398.99",
+          "maxCombinedPrice": "4398.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362070077",
+                "sku": "BGA025907",
+                "price": "1899.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467369021",
+                "sku": "BGF032207",
+                "price": "2499.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Twin XL",
+          "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3148.99",
+          "maxCombinedPrice": "3148.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
+                "sku": "BGA025902",
+                "price": "1299.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "price": "1849.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "6297.98",
+          "maxCombinedPrice": "6297.98",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
+                "sku": "BGA025902",
+                "price": "1299.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "price": "1849.00"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-memory-foam-mattress--flex-sh-adjustable-base",
+      "name": "12\" Memory Foam Mattress + Flex SH Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: split-head mattresses pair only with the Flex SH split-head base in the exact same size.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "components": [
+        {
+          "shopifyProductId": "gid://shopify/Product/8100282794045",
+          "handle": "12-inch-memory-foam-mattress",
+          "title": "12\" Memory Foam Mattress",
+          "quantity": 1
+        },
+        {
+          "shopifyProductId": "gid://shopify/Product/8100247240765",
+          "handle": "flex-sh-adjustable-base",
+          "title": "Flex SH Adjustable Base",
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Split Head Queen",
+          "geometry": "split_head",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3898.99",
+          "maxCombinedPrice": "3898.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362004541",
+                "sku": "BGA025955",
+                "price": "1799.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467434557",
+                "sku": "BGF032255",
+                "price": "2099.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split Head King",
+          "geometry": "split_head",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5098.99",
+          "maxCombinedPrice": "5098.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362102845",
+                "sku": "BGA025965",
+                "price": "2299.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467467325",
+                "sku": "BGF032265",
+                "price": "2799.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split Head California King",
+          "geometry": "split_head",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5098.99",
+          "maxCombinedPrice": "5098.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362135613",
+                "sku": "BGA025975",
+                "price": "2299.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467500093",
+                "sku": "BGF032275",
+                "price": "2799.00"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-hybrid-mattress--flex-l-adjustable-base",
+      "name": "12\" Hybrid Mattress + Flex L Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "components": [
+        {
+          "shopifyProductId": "gid://shopify/Product/8100282826813",
+          "handle": "12-inch-hybrid-mattress",
+          "title": "12\" Hybrid Mattress",
+          "quantity": 1
+        },
+        {
+          "shopifyProductId": "gid://shopify/Product/8100247142461",
+          "handle": "flex-l-adjustable-base",
+          "title": "Flex L Adjustable Base",
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Queen",
+          "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "2798.00",
+          "maxCombinedPrice": "2798.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362299453",
+                "sku": "BGA121W50",
+                "price": "1999.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
+                "sku": "BGF026805-BLK",
+                "price": "799.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "King",
+          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3498.00",
+          "maxCombinedPrice": "3498.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362364989",
+                "sku": "BGA121W60",
+                "price": "2499.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
+                "sku": "BGF026806-BLK",
+                "price": "999.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "California King",
+          "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3498.00",
+          "maxCombinedPrice": "3498.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362397757",
+                "sku": "BGA121W70",
+                "price": "2499.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
+                "sku": "BGF026807-BLK",
+                "price": "999.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Twin XL",
+          "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "2548.00",
+          "maxCombinedPrice": "2548.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362233917",
+                "sku": "BGA121W20",
+                "price": "1849.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "price": "699.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "5096.00",
+          "maxCombinedPrice": "5096.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362233917",
+                "sku": "BGA121W20",
+                "price": "1849.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "price": "699.00"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-hybrid-mattress--flex-lsx-adjustable-base",
+      "name": "12\" Hybrid Mattress + Flex LSX Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
       "showroomRelationship": "PENDING_VERIFICATION",
       "components": [
         {
@@ -8860,6 +9271,11 @@
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "3998.00",
           "maxCombinedPrice": "3998.00",
           "componentVariants": [
@@ -8882,6 +9298,11 @@
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "4998.00",
           "maxCombinedPrice": "4998.00",
           "componentVariants": [
@@ -8904,6 +9325,11 @@
         {
           "label": "California King",
           "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "4998.00",
           "maxCombinedPrice": "4998.00",
           "componentVariants": [
@@ -8926,8 +9352,40 @@
         {
           "label": "Twin XL",
           "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "3698.00",
           "maxCombinedPrice": "3698.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362233917",
+                "sku": "BGA121W20",
+                "price": "1849.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "price": "1849.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "7396.00",
+          "maxCombinedPrice": "7396.00",
           "componentVariants": [
             [
               {
@@ -8948,13 +9406,442 @@
       ]
     },
     {
-      "id": "dual-comfort-flex-sh-review",
-      "name": "12-inch Dual Comfort + Flex SH System",
+      "id": "12-inch-hybrid-mattress--flex-sh-adjustable-base",
+      "name": "12\" Hybrid Mattress + Flex SH Adjustable Base",
       "category": "SLEEP_SYSTEM",
       "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. Matching size and geometry do not prove mechanical compatibility.",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: split-head mattresses pair only with the Flex SH split-head base in the exact same size.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "components": [
+        {
+          "shopifyProductId": "gid://shopify/Product/8100282826813",
+          "handle": "12-inch-hybrid-mattress",
+          "title": "12\" Hybrid Mattress",
+          "quantity": 1
+        },
+        {
+          "shopifyProductId": "gid://shopify/Product/8100247240765",
+          "handle": "flex-sh-adjustable-base",
+          "title": "Flex SH Adjustable Base",
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Split Head Queen",
+          "geometry": "split_head",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4498.00",
+          "maxCombinedPrice": "4498.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362332221",
+                "sku": "BGA121W55",
+                "price": "2399.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467434557",
+                "sku": "BGF032255",
+                "price": "2099.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split Head King",
+          "geometry": "split_head",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5698.00",
+          "maxCombinedPrice": "5698.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362430525",
+                "sku": "BGA121W65",
+                "price": "2899.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467467325",
+                "sku": "BGF032265",
+                "price": "2799.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split Head California King",
+          "geometry": "split_head",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5698.00",
+          "maxCombinedPrice": "5698.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362463293",
+                "sku": "BGA121W75",
+                "price": "2899.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467500093",
+                "sku": "BGF032275",
+                "price": "2799.00"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-dual-comfort-mattress--flex-l-adjustable-base",
+      "name": "12\" Dual Comfort Mattress + Flex L Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "components": [
+        {
+          "shopifyProductId": "gid://shopify/Product/8100282892349",
+          "handle": "12-inch-dual-comfort-mattress",
+          "title": "12\" Dual Comfort Mattress",
+          "quantity": 1
+        },
+        {
+          "shopifyProductId": "gid://shopify/Product/8100247142461",
+          "handle": "flex-l-adjustable-base",
+          "title": "Flex L Adjustable Base",
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Queen",
+          "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3298.00",
+          "maxCombinedPrice": "3298.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362561597",
+                "sku": "BGM301W51",
+                "price": "2499.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
+                "sku": "BGF026805-BLK",
+                "price": "799.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "King",
+          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4198.00",
+          "maxCombinedPrice": "4198.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362627133",
+                "sku": "BGM301W61",
+                "price": "3199.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
+                "sku": "BGF026806-BLK",
+                "price": "999.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "California King",
+          "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4198.00",
+          "maxCombinedPrice": "4198.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362659901",
+                "sku": "BGM301W71",
+                "price": "3199.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
+                "sku": "BGF026807-BLK",
+                "price": "999.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Twin XL",
+          "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "2798.00",
+          "maxCombinedPrice": "2798.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
+                "sku": "BGM301W21",
+                "price": "2099.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "price": "699.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "5596.00",
+          "maxCombinedPrice": "5596.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
+                "sku": "BGM301W21",
+                "price": "2099.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "price": "699.00"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-dual-comfort-mattress--flex-lsx-adjustable-base",
+      "name": "12\" Dual Comfort Mattress + Flex LSX Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "components": [
+        {
+          "shopifyProductId": "gid://shopify/Product/8100282892349",
+          "handle": "12-inch-dual-comfort-mattress",
+          "title": "12\" Dual Comfort Mattress",
+          "quantity": 1
+        },
+        {
+          "shopifyProductId": "gid://shopify/Product/8100247175229",
+          "handle": "flex-lsx-adjustable-base",
+          "title": "Flex LSX Adjustable Base",
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Queen",
+          "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4498.00",
+          "maxCombinedPrice": "4498.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362561597",
+                "sku": "BGM301W51",
+                "price": "2499.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467303485",
+                "sku": "BGF032205",
+                "price": "1999.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "King",
+          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5698.00",
+          "maxCombinedPrice": "5698.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362627133",
+                "sku": "BGM301W61",
+                "price": "3199.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467336253",
+                "sku": "BGF032206",
+                "price": "2499.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "California King",
+          "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5698.00",
+          "maxCombinedPrice": "5698.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362659901",
+                "sku": "BGM301W71",
+                "price": "3199.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467369021",
+                "sku": "BGF032207",
+                "price": "2499.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Twin XL",
+          "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3948.00",
+          "maxCombinedPrice": "3948.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
+                "sku": "BGM301W21",
+                "price": "2099.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "price": "1849.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "7896.00",
+          "maxCombinedPrice": "7896.00",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
+                "sku": "BGM301W21",
+                "price": "2099.00"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "price": "1849.00"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-dual-comfort-mattress--flex-sh-adjustable-base",
+      "name": "12\" Dual Comfort Mattress + Flex SH Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: split-head mattresses pair only with the Flex SH split-head base in the exact same size.",
       "showroomRelationship": "PENDING_VERIFICATION",
       "components": [
         {
@@ -8974,6 +9861,11 @@
         {
           "label": "Split Head Queen",
           "geometry": "split_head",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "5098.00",
           "maxCombinedPrice": "5098.00",
           "componentVariants": [
@@ -8996,6 +9888,11 @@
         {
           "label": "Split Head King",
           "geometry": "split_head",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "6598.00",
           "maxCombinedPrice": "6598.00",
           "componentVariants": [
@@ -9018,6 +9915,11 @@
         {
           "label": "Split Head California King",
           "geometry": "split_head",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "6598.00",
           "maxCombinedPrice": "6598.00",
           "componentVariants": [
@@ -9040,13 +9942,174 @@
       ]
     },
     {
-      "id": "dual-comfort-flex-lsx-review",
-      "name": "14-inch Dual Comfort + Flex LSX System",
+      "id": "14-inch-dual-comfort-mattress--flex-l-adjustable-base",
+      "name": "14\" Dual Comfort Mattress + Flex L Adjustable Base",
       "category": "SLEEP_SYSTEM",
       "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. Matching size and geometry do not prove mechanical compatibility.",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "components": [
+        {
+          "shopifyProductId": "gid://shopify/Product/8100282925117",
+          "handle": "14-inch-dual-comfort-mattress",
+          "title": "14\" Dual Comfort Mattress",
+          "quantity": 1
+        },
+        {
+          "shopifyProductId": "gid://shopify/Product/8100247142461",
+          "handle": "flex-l-adjustable-base",
+          "title": "Flex L Adjustable Base",
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Queen",
+          "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4798.99",
+          "maxCombinedPrice": "4798.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128370982973",
+                "sku": "BGM506W51",
+                "price": "3999.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
+                "sku": "BGF026805-BLK",
+                "price": "799.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "King",
+          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5798.99",
+          "maxCombinedPrice": "5798.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128371015741",
+                "sku": "BGM506W61",
+                "price": "4799.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
+                "sku": "BGF026806-BLK",
+                "price": "999.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "California King",
+          "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5798.99",
+          "maxCombinedPrice": "5798.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128371048509",
+                "sku": "BGM506W71",
+                "price": "4799.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
+                "sku": "BGF026807-BLK",
+                "price": "999.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Twin XL",
+          "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4198.99",
+          "maxCombinedPrice": "4198.99",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128370950205",
+                "sku": "BGM506W21",
+                "price": "3499.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "price": "699.00"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "8397.98",
+          "maxCombinedPrice": "8397.98",
+          "componentVariants": [
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128370950205",
+                "sku": "BGM506W21",
+                "price": "3499.99"
+              }
+            ],
+            [
+              {
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "price": "699.00"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "14-inch-dual-comfort-mattress--flex-lsx-adjustable-base",
+      "name": "14\" Dual Comfort Mattress + Flex LSX Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
       "showroomRelationship": "PENDING_VERIFICATION",
       "components": [
         {
@@ -9066,6 +10129,11 @@
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "5998.99",
           "maxCombinedPrice": "5998.99",
           "componentVariants": [
@@ -9088,6 +10156,11 @@
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "7298.99",
           "maxCombinedPrice": "7298.99",
           "componentVariants": [
@@ -9110,6 +10183,11 @@
         {
           "label": "California King",
           "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "7298.99",
           "maxCombinedPrice": "7298.99",
           "componentVariants": [
@@ -9132,6 +10210,11 @@
         {
           "label": "Twin XL",
           "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "5348.99",
           "maxCombinedPrice": "5348.99",
           "componentVariants": [
@@ -9152,23 +10235,28 @@
           ]
         },
         {
-          "label": "Split California King",
+          "label": "Split King",
           "geometry": "full_split",
-          "minCombinedPrice": "10598.99",
-          "maxCombinedPrice": "10598.99",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "10697.98",
+          "maxCombinedPrice": "10697.98",
           "componentVariants": [
             [
               {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128371212349",
-                "sku": "BGM506W91",
-                "price": "6999.99"
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128370950205",
+                "sku": "BGM506W21",
+                "price": "3499.99"
               }
             ],
             [
               {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122467401789",
-                "sku": "BGF032209",
-                "price": "3599.00"
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "price": "1849.00"
               }
             ]
           ]
@@ -9176,251 +10264,19 @@
       ]
     },
     {
-      "id": "queen-complete-review",
-      "name": "Queen Complete Sleep Package",
-      "category": "COMPLETE_SLEEP_PACKAGE",
+      "id": "14-inch-dual-comfort-mattress--flex-sh-adjustable-base",
+      "name": "14\" Dual Comfort Mattress + Flex SH Adjustable Base",
+      "category": "SLEEP_SYSTEM",
       "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. The mattress and base pairing requires explicit compatibility verification.",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: split-head mattresses pair only with the Flex SH split-head base in the exact same size.",
       "showroomRelationship": "PENDING_VERIFICATION",
       "components": [
         {
-          "shopifyProductId": "gid://shopify/Product/8100282794045",
-          "handle": "12-inch-memory-foam-mattress",
-          "title": "12\" Memory Foam Mattress",
-          "quantity": 1
-        },
-        {
-          "shopifyProductId": "gid://shopify/Product/8100247142461",
-          "handle": "flex-l-adjustable-base",
-          "title": "Flex L Adjustable Base",
-          "quantity": 1
-        },
-        {
-          "shopifyProductId": "gid://shopify/Product/8100247306301",
-          "handle": "cotton-sheet-set",
-          "title": "Cotton Sheet Set",
-          "quantity": 1
-        },
-        {
-          "shopifyProductId": "gid://shopify/Product/8100247404605",
-          "handle": "dri-tec-mattress-protector",
-          "title": "Dri-Tec Mattress Protector",
-          "quantity": 1
-        }
-      ],
-      "sizes": [
-        {
-          "label": "Queen",
-          "geometry": "standard",
-          "minCombinedPrice": "2758.97",
-          "maxCombinedPrice": "2758.97",
-          "componentVariants": [
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128361971773",
-                "sku": "BGA025905",
-                "price": "1599.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
-                "sku": "BGF026805-BLK",
-                "price": "799.00"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122475823165",
-                "sku": "BGS122W50",
-                "price": "199.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476183613",
-                "sku": "BGS122L50",
-                "price": "199.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476445757",
-                "sku": "BGS122G50",
-                "price": "199.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476642365",
-                "sku": "BGS122T50",
-                "price": "199.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478968893",
-                "sku": "BGM03AWFQ",
-                "price": "159.99"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "King",
-          "geometry": "standard",
-          "minCombinedPrice": "3318.97",
-          "maxCombinedPrice": "3318.97",
-          "componentVariants": [
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128362037309",
-                "sku": "BGA025906",
-                "price": "1899.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
-                "sku": "BGF026806-BLK",
-                "price": "999.00"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122475888701",
-                "sku": "BGS122W60",
-                "price": "229.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476249149",
-                "sku": "BGS122L60",
-                "price": "229.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476478525",
-                "sku": "BGS122G60",
-                "price": "229.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476707901",
-                "sku": "BGS122T60",
-                "price": "229.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479034429",
-                "sku": "BGM03AWFK",
-                "price": "189.99"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "California King",
-          "geometry": "standard",
-          "minCombinedPrice": "3318.97",
-          "maxCombinedPrice": "3318.97",
-          "componentVariants": [
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128362070077",
-                "sku": "BGA025907",
-                "price": "1899.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
-                "sku": "BGF026807-BLK",
-                "price": "999.00"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122475921469",
-                "sku": "BGS122W70",
-                "price": "229.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476281917",
-                "sku": "BGS122L70",
-                "price": "229.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476740669",
-                "sku": "BGS122T70",
-                "price": "229.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479067197",
-                "sku": "BGM03AWFW",
-                "price": "189.99"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "Twin XL",
-          "geometry": "standard",
-          "minCombinedPrice": "2278.97",
-          "maxCombinedPrice": "2278.97",
-          "componentVariants": [
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
-                "sku": "BGA025902",
-                "price": "1299.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
-                "sku": "BGF026802-BLK",
-                "price": "699.00"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122475757629",
-                "sku": "BGS122W20",
-                "price": "159.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476118077",
-                "sku": "BGS122L20",
-                "price": "159.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476576829",
-                "sku": "BGS122T20",
-                "price": "159.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478870589",
-                "sku": "BGM03AWFX",
-                "price": "119.99"
-              }
-            ]
-          ]
-        }
-      ]
-    },
-    {
-      "id": "split-head-complete-review",
-      "name": "Split Head Queen Complete Sleep Package",
-      "category": "COMPLETE_SLEEP_PACKAGE",
-      "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. The mattress and base pairing requires explicit compatibility verification.",
-      "showroomRelationship": "PENDING_VERIFICATION",
-      "components": [
-        {
-          "shopifyProductId": "gid://shopify/Product/8100282892349",
-          "handle": "12-inch-dual-comfort-mattress",
-          "title": "12\" Dual Comfort Mattress",
+          "shopifyProductId": "gid://shopify/Product/8100282925117",
+          "handle": "14-inch-dual-comfort-mattress",
+          "title": "14\" Dual Comfort Mattress",
           "quantity": 1
         },
         {
@@ -9428,32 +10284,25 @@
           "handle": "flex-sh-adjustable-base",
           "title": "Flex SH Adjustable Base",
           "quantity": 1
-        },
-        {
-          "shopifyProductId": "gid://shopify/Product/8100247339069",
-          "handle": "dri-tec-sheet-set",
-          "title": "Dri-Tec Sheet Set",
-          "quantity": 1
-        },
-        {
-          "shopifyProductId": "gid://shopify/Product/8100247404605",
-          "handle": "dri-tec-mattress-protector",
-          "title": "Dri-Tec Mattress Protector",
-          "quantity": 1
         }
       ],
       "sizes": [
         {
           "label": "Split Head Queen",
           "geometry": "split_head",
-          "minCombinedPrice": "5557.98",
-          "maxCombinedPrice": "5557.98",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "6598.99",
+          "maxCombinedPrice": "6598.99",
           "componentVariants": [
             [
               {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128362594365",
-                "sku": "BGM301W55",
-                "price": "2999.00"
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128371081277",
+                "sku": "BGM506W55",
+                "price": "4499.99"
               }
             ],
             [
@@ -9462,54 +10311,25 @@
                 "sku": "BGF032255",
                 "price": "2099.00"
               }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477002813",
-                "sku": "BGS194X55",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477264957",
-                "sku": "BGS194L55",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477559869",
-                "sku": "BGS194N55",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477822013",
-                "sku": "BGS194T55",
-                "price": "279.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478084157",
-                "sku": "BGS194W55",
-                "price": "279.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479001661",
-                "sku": "BGM014555",
-                "price": "179.99"
-              }
             ]
           ]
         },
         {
           "label": "Split Head King",
           "geometry": "split_head",
-          "minCombinedPrice": "7117.98",
-          "maxCombinedPrice": "7117.98",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "8098.99",
+          "maxCombinedPrice": "8098.99",
           "componentVariants": [
             [
               {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128362692669",
-                "sku": "BGM301W65",
-                "price": "3799.00"
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128371114045",
+                "sku": "BGM506W65",
+                "price": "5299.99"
               }
             ],
             [
@@ -9518,54 +10338,25 @@
                 "sku": "BGF032265",
                 "price": "2799.00"
               }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477101117",
-                "sku": "BGS194X65",
-                "price": "309.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477363261",
-                "sku": "BGS194L65",
-                "price": "309.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477658173",
-                "sku": "BGS194N65",
-                "price": "309.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477920317",
-                "sku": "BGS194T65",
-                "price": "309.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478182461",
-                "sku": "BGS194W65",
-                "price": "309.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479165501",
-                "sku": "BGM014515",
-                "price": "209.99"
-              }
             ]
           ]
         },
         {
           "label": "Split Head California King",
           "geometry": "split_head",
-          "minCombinedPrice": "7117.98",
-          "maxCombinedPrice": "7117.98",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "8098.99",
+          "maxCombinedPrice": "8098.99",
           "componentVariants": [
             [
               {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128362725437",
-                "sku": "BGM301W75",
-                "price": "3799.00"
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128371146813",
+                "sku": "BGM506W75",
+                "price": "5299.99"
               }
             ],
             [
@@ -9573,40 +10364,6 @@
                 "shopifyVariantId": "gid://shopify/ProductVariant/44122467500093",
                 "sku": "BGF032275",
                 "price": "2799.00"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477133885",
-                "sku": "BGS194X75",
-                "price": "309.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477396029",
-                "sku": "BGS194L75",
-                "price": "309.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477690941",
-                "sku": "BGS194N75",
-                "price": "309.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477953085",
-                "sku": "BGS194T75",
-                "price": "309.99"
-              },
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478215229",
-                "sku": "BGS194W75",
-                "price": "309.99"
-              }
-            ],
-            [
-              {
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479198269",
-                "sku": "BGM014575",
-                "price": "209.99"
               }
             ]
           ]

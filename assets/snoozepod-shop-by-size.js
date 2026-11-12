@@ -125,10 +125,11 @@
     }
   }
 
-  function controller(section, map) {
-    const context = collectionContext(map, section.dataset.collectionHandle);
+  function controller(root, map) {
+    const context = collectionContext(map, root.dataset.collectionHandle);
     if (!context) return;
-    renderPanel(section, context);
+    const panel = root.querySelector("[data-shop-by-size]");
+    if (panel) renderPanel(panel, context);
     const selectedSize = context.selectedSize || selectedSizeFromSearch(window.location.search);
     const grid = document.getElementById("product-grid");
     const cards = grid ? Array.from(grid.querySelectorAll("[data-shop-by-size-product]")) : [];
@@ -152,23 +153,23 @@
         }
       }
     });
-    const status = section.querySelector("[data-shop-by-size-status]");
+    const status = panel ? panel.querySelector("[data-shop-by-size-status]") : null;
     if (status) status.textContent = selectedSize ? visibleCount + (visibleCount === 1 ? " product" : " products") + " shown in " + selectedSize + "." : "Choose a size to see exact availability and pricing.";
     preserveSizeInFacetForms(selectedSize);
   }
 
   function init() {
-    const section = document.querySelector("[data-shop-by-size]");
+    const root = document.querySelector("[data-shop-by-size-root]");
     const map = typeof window !== "undefined" ? window.SnoozePodSizeCollections : null;
-    if (!section || !map || !collectionContext(map, section.dataset.collectionHandle)) return;
-    controller(section, map);
+    if (!root || !map || !collectionContext(map, root.dataset.collectionHandle)) return;
+    controller(root, map);
     const container = document.getElementById("ProductGridContainer");
     if (container && typeof MutationObserver !== "undefined") {
       let queued = false;
       new MutationObserver(function () {
         if (queued) return;
         queued = true;
-        queueMicrotask(function () { queued = false; controller(section, map); });
+        queueMicrotask(function () { queued = false; controller(root, map); });
       }).observe(container, { childList: true, subtree: true });
     }
   }

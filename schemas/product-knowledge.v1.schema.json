@@ -38,7 +38,7 @@
         "category": { "enum": ["SLEEP_SYSTEM", "BEDDING_SET", "COMPLETE_SLEEP_PACKAGE"] },
         "contentStatus": { "enum": ["READY_FOR_REVIEW", "APPROVED"] },
         "purchaseStatus": { "enum": ["STAGED_PURCHASABLE", "BLOCKED_COMPATIBILITY"] },
-        "compatibilityStatus": { "enum": ["COMPONENT_SIZE_GEOMETRY_VERIFIED", "PENDING_VERIFICATION"] },
+        "compatibilityStatus": { "enum": ["COMPONENT_SIZE_GEOMETRY_VERIFIED", "OWNER_APPROVED", "PENDING_VERIFICATION"] },
         "curationBasis": { "type": "string", "minLength": 1 },
         "showroomRelationship": { "enum": ["PENDING_VERIFICATION", "VERIFIED"] },
         "components": {
@@ -61,10 +61,16 @@
           "minItems": 1,
           "items": {
             "type": "object",
-            "required": ["label", "geometry", "minCombinedPrice", "maxCombinedPrice", "componentVariants"],
+            "required": ["label", "geometry", "sourceSize", "componentQuantities", "minCombinedPrice", "maxCombinedPrice", "componentVariants"],
             "properties": {
               "label": { "type": "string", "minLength": 1 },
               "geometry": { "type": "string", "minLength": 1 },
+              "sourceSize": { "type": "string", "minLength": 1 },
+              "componentQuantities": {
+                "type": "array",
+                "minItems": 2,
+                "items": { "type": "integer", "minimum": 1 }
+              },
               "minCombinedPrice": { "type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$" },
               "maxCombinedPrice": { "type": "string", "pattern": "^[0-9]+\\.[0-9]{2}$" },
               "componentVariants": {

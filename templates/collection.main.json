@@ -1,84 +1,24 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
-    "hero": {
-      "type": "snoozepod-collection-hero",
-      "settings": {
-        "show_eyebrow": true,
-        "eyebrow": "SNOOZEPOD COLLECTION",
-        "heading_override": "",
-        "body": "Explore sleep products built to support your full sleep environment.",
-        "image_alt": ""
-      }
-    },
-    "product-grid": {
-      "type": "main-collection-product-grid",
-      "settings": {
-        "products_per_page": 24,
-        "columns_desktop": 4,
-        "color_scheme": "scheme-1",
-        "image_ratio": "portrait",
-        "image_shape": "default",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_rating": false,
-        "quick_add": "standard",
-        "enable_filtering": true,
-        "filter_type": "horizontal",
-        "enable_sorting": true,
-        "columns_mobile": "2",
-        "padding_top": 0,
-        "padding_bottom": 40
-      }
-    },
-    "education": {
-      "type": "snoozepod-category-education",
+    "banner": { "type": "main-collection-banner", "settings": { "show_collection_description": false, "show_collection_image": false, "color_scheme": "scheme-1" } },
+    "product-grid": { "type": "main-collection-product-grid", "settings": { "products_per_page": 24, "columns_desktop": 4, "color_scheme": "scheme-1", "image_ratio": "portrait", "image_shape": "default", "show_secondary_image": true, "show_vendor": false, "show_rating": false, "show_snoozepod_card_details": true, "quick_add": "none", "enable_filtering": true, "filter_type": "drawer", "enable_sorting": true, "columns_mobile": "2", "padding_top": 8, "padding_bottom": 40 } },
+    "category-navigation": {
+      "type": "snoozepod-collection-navigation-v1",
       "blocks": {
-        "tile_1": {
-          "type": "education_tile",
-          "settings": {
-            "title": "Start with comfort",
-            "text": "Choose the feel and support that match how you sleep."
-          }
-        },
-        "tile_2": {
-          "type": "education_tile",
-          "settings": {
-            "title": "Layer in support",
-            "text": "Add products that improve position, pressure relief, and recovery."
-          }
-        },
-        "tile_3": {
-          "type": "education_tile",
-          "settings": {
-            "title": "Finish the room",
-            "text": "Complete the environment around your nightly routine."
-          }
-        }
+        "mattresses": { "type": "collection", "settings": { "collection": "mattresses" } },
+        "adjustable-bases": { "type": "collection", "settings": { "collection": "adjustable-bases" } },
+        "pillows": { "type": "collection", "settings": { "collection": "pillows" } },
+        "sheets": { "type": "collection", "settings": { "collection": "sheets" } },
+        "mattress-protectors": { "type": "collection", "settings": { "collection": "mattress-protectors" } },
+        "comforters": { "type": "collection", "settings": { "collection": "comforters" } },
+        "cooling-bedding": { "type": "collection", "settings": { "collection": "cooling-bedding" } },
+        "mattress-toppers": { "type": "collection", "settings": { "collection": "mattress-toppers" } },
+        "bedroom-furniture": { "type": "collection", "settings": { "collection": "bedroom-furniture" } }
       },
-      "block_order": [
-        "tile_1",
-        "tile_2",
-        "tile_3"
-      ],
-      "settings": {
-        "eyebrow": "",
-        "heading": "How to choose",
-        "body": ""
-      }
-    }
+      "block_order": ["mattresses", "adjustable-bases", "pillows", "sheets", "mattress-protectors", "comforters", "cooling-bedding", "mattress-toppers", "bedroom-furniture"],
+      "settings": { "heading": "Shop by Category" }
+    },
+    "guided-shopping": { "type": "snoozepod-guided-shopping-links", "settings": { "heading": "Find Your Fit", "intro": "Use a guided tool after browsing the products to narrow your next step." } }
   },
-  "order": [
-    "hero",
-    "product-grid",
-    "education"
-  ]
+  "order": ["banner", "product-grid", "category-navigation", "guided-shopping"]
 }

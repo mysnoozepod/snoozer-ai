@@ -49,7 +49,8 @@ check(readback.products.every((product) => product.commerce.status === 'ACTIVE')
 check(readback.products.flatMap((product) => product.commerce.variants).length === 274, 'variant identity count is preserved');
 check(fixture.products.length === 8 && new Set(fixture.products.map((product) => product.categoryContract)).size === 8, 'representative fixture covers every category');
 check(feed.schemaVersion === '1.0.0' && feed.products.length === 43, 'normalized feed is versioned and complete');
-check(feed.bundles.length === 11, 'normalized feed exposes every curated bundle and review candidate');
+check(feed.bundles.length === 17, 'normalized feed exposes every owner-approved system option and curated bedding set');
+check(feed.bundles.every((bundle) => bundle.sizes.every((size) => size.sourceSize && size.componentQuantities.length === bundle.components.length)), 'bundle retrieval data preserves source variants and configuration quantities');
 check(feed.bundles.every((bundle) => bundle.components.length >= 2 && bundle.sizes.length >= 1), 'bundle retrieval data preserves component and size relationships');
 check(feed.products.every((product) => product.commerce.authority === 'Shopify live query required'), 'dynamic commerce stays Shopify-authoritative');
 check(feed.products.every((product) => product.compatibility.rule.startsWith('Unknown or missing')), 'unknown compatibility fails closed');

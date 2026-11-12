@@ -42,13 +42,14 @@ equal(splitContext.clearHandle, 'adjustable-bases');
 equal(shopBySize.collectionContext(sizeMap, 'zoned-pillows'), null, 'unmanaged collections do not show the size panel');
 
 check(section.includes("'snoozepod-size-collection-map.js' | asset_url"), 'the catalog-derived routing map is loaded');
+check(section.includes('data-shop-by-size-root'), 'size-specific behavior mounts without a visible pre-product panel');
 check(section.includes('data-collection-handle="{{ collection.handle | escape }}"'), 'the active collection handle is exposed');
 check(section.includes('variant.available | json'), 'Shopify availability is emitted');
 check(section.includes('variant.id | json'), 'Shopify variant IDs are emitted');
 check(section.includes('variant.price | money | json'), 'exact Shopify variant prices are emitted');
 check(section.includes("product_option_name_normalized == 'size'"), 'Liquid locates the named Size option');
 check(card.includes('data-shop-by-size-price'), 'cards expose a selected-size price surface');
-check(section.includes('aria-live="polite"'), 'result status is announced accessibly');
+check(!section.includes('class="snoozepod-shop-by-size"'), 'collection products are not buried beneath a Shop by Size panel');
 
 const allVariants = feed.products.flatMap((product) => product.commerce.variants);
 check(allVariants.every((variant) => variant.shopifyVariantId.startsWith('gid://shopify/ProductVariant/')), 'variant identities are retained');

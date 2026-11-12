@@ -1,5 +1,5 @@
 window.SnoozePodCuratedBundles = {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "generatedAt": "2026-11-11T20:10:18.089Z",
   "source": {
     "store": "mysnoozepodtest.myshopify.com",
@@ -12,15 +12,23 @@ window.SnoozePodCuratedBundles = {
     "parentBundleProductsCreated": false,
     "artificialSkusCreated": false,
     "discountsApplied": false,
-    "rationale": "Preserves each real component variant, live price, inventory check, line item, and fulfillment path without hiding unverified compatibility."
+    "rationale": "Preserves each real component variant, live price, inventory check, line item, and fulfillment path while applying only the owner-approved mattress/base rules."
+  },
+  "compatibilityRules": {
+    "standard": "Exact same-size standard mattress and standard Flex L or Flex LSX base.",
+    "splitHead": "Exact same-size split-head mattress and Flex SH base only.",
+    "splitKing": "Two Twin XL mattress units and two Twin XL base units.",
+    "unsupported": [
+      "Split Queen"
+    ]
   },
   "summary": {
-    "bundles": 11,
-    "sleepSystems": 4,
+    "bundles": 17,
+    "sleepSystems": 12,
     "beddingSets": 5,
-    "completePackages": 2,
-    "stagedPurchasable": 5,
-    "blockedPendingCompatibility": 6
+    "completePackages": 0,
+    "stagedPurchasable": 17,
+    "blockedPendingCompatibility": 0
   },
   "bundles": [
     {
@@ -136,7 +144,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -155,7 +163,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -283,7 +291,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -302,7 +310,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -448,7 +456,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -467,7 +475,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -595,7 +603,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -614,7 +622,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -742,7 +750,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -761,7 +769,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -1030,6 +1038,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "409.98",
           "maxCombinedPrice": "409.98",
           "componentVariants": [
@@ -1149,6 +1162,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "469.98",
           "maxCombinedPrice": "469.98",
           "componentVariants": [
@@ -1167,7 +1185,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -1186,7 +1204,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -1205,7 +1223,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -1224,7 +1242,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -1243,7 +1261,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -1271,132 +1289,13 @@ window.SnoozePodCuratedBundles = {
           ]
         },
         {
-          "label": "California King",
-          "geometry": "standard",
-          "minCombinedPrice": "469.98",
-          "maxCombinedPrice": "469.98",
-          "componentVariants": [
-            [
-              {
-                "variantId": "44122477035581",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477035581",
-                "sku": "BGS194X12",
-                "title": "King/Cal King / Charcoal",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Charcoal"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477297725",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477297725",
-                "sku": "BGS194L12",
-                "title": "King/Cal King / Light Grey",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477592637",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477592637",
-                "sku": "BGS194N12",
-                "title": "King/Cal King / Navy",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Navy"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477854781",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477854781",
-                "sku": "BGS194T12",
-                "title": "King/Cal King / Taupe",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478116925",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478116925",
-                "sku": "BGS194W12",
-                "title": "King/Cal King / White",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "White"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122479067197",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479067197",
-                "sku": "BGM03AWFW",
-                "title": "Cal King",
-                "price": "189.99",
-                "available": true,
-                "options": {
-                  "Size": "Cal King"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ]
-          ]
-        },
-        {
           "label": "Twin",
           "geometry": "standard",
+          "sourceSize": "Twin",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "309.98",
           "maxCombinedPrice": "309.98",
           "componentVariants": [
@@ -1521,6 +1420,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Twin XL",
           "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "319.98",
           "maxCombinedPrice": "319.98",
           "componentVariants": [
@@ -1645,6 +1549,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Full",
           "geometry": "standard",
+          "sourceSize": "Full",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "349.98",
           "maxCombinedPrice": "349.98",
           "componentVariants": [
@@ -1764,6 +1673,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Split Head Queen",
           "geometry": "split_head",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "459.98",
           "maxCombinedPrice": "459.98",
           "componentVariants": [
@@ -1883,6 +1797,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Split Head King",
           "geometry": "split_head",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "519.98",
           "maxCombinedPrice": "519.98",
           "componentVariants": [
@@ -2002,6 +1921,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Split Head California King",
           "geometry": "split_head",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "519.98",
           "maxCombinedPrice": "519.98",
           "componentVariants": [
@@ -2121,6 +2045,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Split King",
           "geometry": "full_split",
+          "sourceSize": "Split King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "509.98",
           "maxCombinedPrice": "509.98",
           "componentVariants": [
@@ -2139,7 +2068,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King/Split Cal King",
                 "shopSizeKeys": [
                   "Split King",
-                  "Split California King"
+                  "Split Cal King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -2158,7 +2087,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King/Split Cal King",
                 "shopSizeKeys": [
                   "Split King",
-                  "Split California King"
+                  "Split Cal King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -2177,7 +2106,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King/Split Cal King",
                 "shopSizeKeys": [
                   "Split King",
-                  "Split California King"
+                  "Split Cal King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -2196,7 +2125,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King/Split Cal King",
                 "shopSizeKeys": [
                   "Split King",
-                  "Split California King"
+                  "Split Cal King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -2215,7 +2144,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King/Split Cal King",
                 "shopSizeKeys": [
                   "Split King",
-                  "Split California King"
+                  "Split Cal King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -2235,130 +2164,6 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King (2pc)",
                 "shopSizeKeys": [
                   "Split King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "Split California King",
-          "geometry": "full_split",
-          "minCombinedPrice": "509.98",
-          "maxCombinedPrice": "509.98",
-          "componentVariants": [
-            [
-              {
-                "variantId": "44122477068349",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477068349",
-                "sku": "BGS194X14",
-                "title": "Split King/Split Cal King / Charcoal",
-                "price": "299.99",
-                "available": true,
-                "options": {
-                  "Size": "Split King/Split Cal King",
-                  "Color": "Charcoal"
-                },
-                "nativeSize": "Split King/Split Cal King",
-                "shopSizeKeys": [
-                  "Split King",
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477330493",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477330493",
-                "sku": "BGS194L14",
-                "title": "Split King/Split Cal King / Light Grey",
-                "price": "299.99",
-                "available": true,
-                "options": {
-                  "Size": "Split King/Split Cal King",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "Split King/Split Cal King",
-                "shopSizeKeys": [
-                  "Split King",
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477625405",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477625405",
-                "sku": "BGS194N14",
-                "title": "Split King/Split Cal King / Navy",
-                "price": "299.99",
-                "available": true,
-                "options": {
-                  "Size": "Split King/Split Cal King",
-                  "Color": "Navy"
-                },
-                "nativeSize": "Split King/Split Cal King",
-                "shopSizeKeys": [
-                  "Split King",
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477887549",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477887549",
-                "sku": "BGS194T14",
-                "title": "Split King/Split Cal King / Taupe",
-                "price": "299.99",
-                "available": true,
-                "options": {
-                  "Size": "Split King/Split Cal King",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "Split King/Split Cal King",
-                "shopSizeKeys": [
-                  "Split King",
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478149693",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478149693",
-                "sku": "BGS194W14",
-                "title": "Split King/Split Cal King / White",
-                "price": "299.99",
-                "available": true,
-                "options": {
-                  "Size": "Split King/Split Cal King",
-                  "Color": "White"
-                },
-                "nativeSize": "Split King/Split Cal King",
-                "shopSizeKeys": [
-                  "Split King",
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122479132733",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479132733",
-                "sku": "BGM03AWFD",
-                "title": "Split Cal King (2pc)",
-                "price": "209.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Cal King (2pc)"
-                },
-                "nativeSize": "Split Cal King (2pc)",
-                "shopSizeKeys": [
-                  "Split California King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -2426,7 +2231,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -2445,7 +2250,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -2500,7 +2305,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -2519,7 +2324,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -2592,7 +2397,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -2611,7 +2416,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -2666,7 +2471,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -2685,7 +2490,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -2937,6 +2742,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "579.98",
           "maxCombinedPrice": "579.98",
           "componentVariants": [
@@ -3038,6 +2848,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "629.98",
           "maxCombinedPrice": "629.98",
           "componentVariants": [
@@ -3056,7 +2871,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -3075,7 +2890,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -3094,7 +2909,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -3113,7 +2928,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -3141,113 +2956,13 @@ window.SnoozePodCuratedBundles = {
           ]
         },
         {
-          "label": "California King",
-          "geometry": "standard",
-          "minCombinedPrice": "629.98",
-          "maxCombinedPrice": "629.98",
-          "componentVariants": [
-            [
-              {
-                "variantId": "44122478280765",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478280765",
-                "sku": "BGS197B12",
-                "title": "King/Cal King / Light Blue",
-                "price": "329.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Light Blue"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478411837",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478411837",
-                "sku": "BGS197L12",
-                "title": "King/Cal King / Light Grey",
-                "price": "329.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478575677",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478575677",
-                "sku": "BGS197G12",
-                "title": "King/Cal King / Moss",
-                "price": "329.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Moss"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478706749",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478706749",
-                "sku": "BGS197W12",
-                "title": "King/Cal King / White",
-                "price": "329.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "White"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122479460413",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479460413",
-                "sku": "BGM026007",
-                "title": "Cal King",
-                "price": "299.99",
-                "available": true,
-                "options": {
-                  "Size": "Cal King"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ]
-          ]
-        },
-        {
           "label": "Split Head Queen",
           "geometry": "split_head",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "629.98",
           "maxCombinedPrice": "629.98",
           "componentVariants": [
@@ -3313,6 +3028,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Split Head King",
           "geometry": "split_head",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "719.98",
           "maxCombinedPrice": "719.98",
           "componentVariants": [
@@ -3378,6 +3098,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Split Head California King",
           "geometry": "split_head",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "719.98",
           "maxCombinedPrice": "719.98",
           "componentVariants": [
@@ -3443,6 +3168,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Split King",
           "geometry": "full_split",
+          "sourceSize": "Split King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "709.98",
           "maxCombinedPrice": "709.98",
           "componentVariants": [
@@ -3461,7 +3191,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King/Split Cal King",
                 "shopSizeKeys": [
                   "Split King",
-                  "Split California King"
+                  "Split Cal King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -3480,7 +3210,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King/Split Cal King",
                 "shopSizeKeys": [
                   "Split King",
-                  "Split California King"
+                  "Split Cal King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -3499,7 +3229,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King/Split Cal King",
                 "shopSizeKeys": [
                   "Split King",
-                  "Split California King"
+                  "Split Cal King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -3518,7 +3248,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King/Split Cal King",
                 "shopSizeKeys": [
                   "Split King",
-                  "Split California King"
+                  "Split Cal King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -3538,111 +3268,6 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "Split King (2pc)",
                 "shopSizeKeys": [
                   "Split King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "Split California King",
-          "geometry": "full_split",
-          "minCombinedPrice": "709.98",
-          "maxCombinedPrice": "709.98",
-          "componentVariants": [
-            [
-              {
-                "variantId": "44122478313533",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478313533",
-                "sku": "BGS197B14",
-                "title": "Split King/Split Cal King / Light Blue",
-                "price": "349.99",
-                "available": true,
-                "options": {
-                  "Size": "Split King/Split Cal King",
-                  "Color": "Light Blue"
-                },
-                "nativeSize": "Split King/Split Cal King",
-                "shopSizeKeys": [
-                  "Split King",
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478444605",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478444605",
-                "sku": "BGS197L14",
-                "title": "Split King/Split Cal King / Light Grey",
-                "price": "349.99",
-                "available": true,
-                "options": {
-                  "Size": "Split King/Split Cal King",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "Split King/Split Cal King",
-                "shopSizeKeys": [
-                  "Split King",
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478608445",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478608445",
-                "sku": "BGS197G14",
-                "title": "Split King/Split Cal King / Moss",
-                "price": "349.99",
-                "available": true,
-                "options": {
-                  "Size": "Split King/Split Cal King",
-                  "Color": "Moss"
-                },
-                "nativeSize": "Split King/Split Cal King",
-                "shopSizeKeys": [
-                  "Split King",
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478739517",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478739517",
-                "sku": "BGS197W14",
-                "title": "Split King/Split Cal King / White",
-                "price": "349.99",
-                "available": true,
-                "options": {
-                  "Size": "Split King/Split Cal King",
-                  "Color": "White"
-                },
-                "nativeSize": "Split King/Split Cal King",
-                "shopSizeKeys": [
-                  "Split King",
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122479525949",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479525949",
-                "sku": "BGM026009",
-                "title": "Split Cal King (2pc)",
-                "price": "359.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Cal King (2pc)"
-                },
-                "nativeSize": "Split Cal King (2pc)",
-                "shopSizeKeys": [
-                  "Split California King"
                 ],
                 "geometry": "full_split",
                 "fulfillmentReadiness": "PENDING"
@@ -4365,7 +3990,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -4378,6 +4003,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "399.98",
           "maxCombinedPrice": "399.98",
           "componentVariants": [
@@ -4480,6 +4110,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "459.98",
           "maxCombinedPrice": "459.98",
           "componentVariants": [
@@ -4571,91 +4206,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "California King",
-          "geometry": "standard",
-          "minCombinedPrice": "459.98",
-          "maxCombinedPrice": "459.98",
-          "componentVariants": [
-            [
-              {
-                "variantId": "44122475921469",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122475921469",
-                "sku": "BGS122W70",
-                "title": "Cal King / Bright White",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "Cal King",
-                  "Color": "Bright White"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476281917",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476281917",
-                "sku": "BGS122L70",
-                "title": "Cal King / Light Grey",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "Cal King",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476740669",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476740669",
-                "sku": "BGS122T70",
-                "title": "Cal King / Taupe",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "Cal King",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122488012861",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122488012861",
-                "sku": "BGB050W60",
-                "title": "King/Cal King",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -4666,6 +4217,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Full",
           "geometry": "standard",
+          "sourceSize": "Full",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "379.98",
           "maxCombinedPrice": "379.98",
           "componentVariants": [
@@ -4861,7 +4417,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -4880,7 +4436,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -5008,7 +4564,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -5027,7 +4583,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -5173,7 +4729,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -5192,7 +4748,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -5320,7 +4876,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -5339,7 +4895,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -5467,7 +5023,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -5486,7 +5042,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -5571,7 +5127,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -5584,6 +5140,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "499.98",
           "maxCombinedPrice": "499.98",
           "componentVariants": [
@@ -5704,6 +5265,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "559.98",
           "maxCombinedPrice": "559.98",
           "componentVariants": [
@@ -5722,7 +5288,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -5741,7 +5307,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -5760,7 +5326,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -5779,7 +5345,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -5798,7 +5364,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -5818,132 +5384,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "California King",
-          "geometry": "standard",
-          "minCombinedPrice": "559.98",
-          "maxCombinedPrice": "559.98",
-          "componentVariants": [
-            [
-              {
-                "variantId": "44122477035581",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477035581",
-                "sku": "BGS194X12",
-                "title": "King/Cal King / Charcoal",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Charcoal"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477297725",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477297725",
-                "sku": "BGS194L12",
-                "title": "King/Cal King / Light Grey",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477592637",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477592637",
-                "sku": "BGS194N12",
-                "title": "King/Cal King / Navy",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Navy"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477854781",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477854781",
-                "sku": "BGS194T12",
-                "title": "King/Cal King / Taupe",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478116925",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478116925",
-                "sku": "BGS194W12",
-                "title": "King/Cal King / White",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King",
-                  "Color": "White"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122488078397",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122488078397",
-                "sku": "BGB051W60",
-                "title": "King/Cal King",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "King/Cal King"
-                },
-                "nativeSize": "King/Cal King",
-                "shopSizeKeys": [
-                  "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -5954,6 +5395,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Full",
           "geometry": "standard",
+          "sourceSize": "Full",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "479.98",
           "maxCombinedPrice": "479.98",
           "componentVariants": [
@@ -6070,6 +5516,136 @@ window.SnoozePodCuratedBundles = {
               }
             ]
           ]
+        },
+        {
+          "label": "Cal King",
+          "geometry": "standard",
+          "sourceSize": "Cal King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "559.98",
+          "maxCombinedPrice": "559.98",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44122477035581",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122477035581",
+                "sku": "BGS194X12",
+                "title": "King/Cal King / Charcoal",
+                "price": "279.99",
+                "available": true,
+                "options": {
+                  "Size": "King/Cal King",
+                  "Color": "Charcoal"
+                },
+                "nativeSize": "King/Cal King",
+                "shopSizeKeys": [
+                  "King",
+                  "Cal King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              },
+              {
+                "variantId": "44122477297725",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122477297725",
+                "sku": "BGS194L12",
+                "title": "King/Cal King / Light Grey",
+                "price": "279.99",
+                "available": true,
+                "options": {
+                  "Size": "King/Cal King",
+                  "Color": "Light Grey"
+                },
+                "nativeSize": "King/Cal King",
+                "shopSizeKeys": [
+                  "King",
+                  "Cal King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              },
+              {
+                "variantId": "44122477592637",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122477592637",
+                "sku": "BGS194N12",
+                "title": "King/Cal King / Navy",
+                "price": "279.99",
+                "available": true,
+                "options": {
+                  "Size": "King/Cal King",
+                  "Color": "Navy"
+                },
+                "nativeSize": "King/Cal King",
+                "shopSizeKeys": [
+                  "King",
+                  "Cal King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              },
+              {
+                "variantId": "44122477854781",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122477854781",
+                "sku": "BGS194T12",
+                "title": "King/Cal King / Taupe",
+                "price": "279.99",
+                "available": true,
+                "options": {
+                  "Size": "King/Cal King",
+                  "Color": "Taupe"
+                },
+                "nativeSize": "King/Cal King",
+                "shopSizeKeys": [
+                  "King",
+                  "Cal King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              },
+              {
+                "variantId": "44122478116925",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122478116925",
+                "sku": "BGS194W12",
+                "title": "King/Cal King / White",
+                "price": "279.99",
+                "available": true,
+                "options": {
+                  "Size": "King/Cal King",
+                  "Color": "White"
+                },
+                "nativeSize": "King/Cal King",
+                "shopSizeKeys": [
+                  "King",
+                  "Cal King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122488078397",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122488078397",
+                "sku": "BGB051W60",
+                "title": "King/Cal King",
+                "price": "279.99",
+                "available": true,
+                "options": {
+                  "Size": "King/Cal King"
+                },
+                "nativeSize": "King/Cal King",
+                "shopSizeKeys": [
+                  "King",
+                  "Cal King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
         }
       ]
     },
@@ -6130,7 +5706,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -6149,7 +5725,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -6204,7 +5780,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -6223,7 +5799,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -6296,7 +5872,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -6315,7 +5891,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -6370,7 +5946,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -6389,7 +5965,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "Split King/Split Cal King",
               "shopSizeKeys": [
                 "Split King",
-                "Split California King"
+                "Split Cal King"
               ],
               "geometry": "full_split",
               "fulfillmentReadiness": "PENDING"
@@ -6474,7 +6050,7 @@ window.SnoozePodCuratedBundles = {
               "nativeSize": "King/Cal King",
               "shopSizeKeys": [
                 "King",
-                "California King"
+                "Cal King"
               ],
               "geometry": "standard",
               "fulfillmentReadiness": "PENDING"
@@ -6487,6 +6063,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "499.98",
           "maxCombinedPrice": "499.98",
           "componentVariants": [
@@ -6589,6 +6170,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "559.98",
           "maxCombinedPrice": "559.98",
           "componentVariants": [
@@ -6607,7 +6193,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -6626,7 +6212,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -6645,7 +6231,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -6664,7 +6250,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -6684,7 +6270,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -6693,8 +6279,13 @@ window.SnoozePodCuratedBundles = {
           ]
         },
         {
-          "label": "California King",
+          "label": "Cal King",
           "geometry": "standard",
+          "sourceSize": "Cal King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "559.98",
           "maxCombinedPrice": "559.98",
           "componentVariants": [
@@ -6713,7 +6304,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -6732,7 +6323,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -6751,7 +6342,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -6770,7 +6361,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -6790,7 +6381,7 @@ window.SnoozePodCuratedBundles = {
                 "nativeSize": "King/Cal King",
                 "shopSizeKeys": [
                   "King",
-                  "California King"
+                  "Cal King"
                 ],
                 "geometry": "standard",
                 "fulfillmentReadiness": "PENDING"
@@ -6801,13 +6392,13 @@ window.SnoozePodCuratedBundles = {
       ]
     },
     {
-      "id": "memory-foam-flex-l-review",
-      "name": "12-inch Memory Foam + Flex L System",
+      "id": "12-inch-memory-foam-mattress--flex-l-adjustable-base",
+      "name": "12\" Memory Foam Mattress + Flex L Adjustable Base",
       "category": "SLEEP_SYSTEM",
       "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. Matching size and geometry do not prove mechanical compatibility.",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
       "showroomRelationship": "PENDING_VERIFICATION",
       "verifiedAttributes": [
         "foam construction",
@@ -7087,6 +6678,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "2398.99",
           "maxCombinedPrice": "2398.99",
           "componentVariants": [
@@ -7133,6 +6729,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "2898.99",
           "maxCombinedPrice": "2898.99",
           "componentVariants": [
@@ -7179,6 +6780,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "California King",
           "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "2898.99",
           "maxCombinedPrice": "2898.99",
           "componentVariants": [
@@ -7225,8 +6831,64 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Twin XL",
           "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "1998.99",
           "maxCombinedPrice": "1998.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128361906237",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
+                "sku": "BGA025902",
+                "title": "Twin XL",
+                "price": "1299.99",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467139645",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "title": "Twin XL",
+                "price": "699.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "3997.98",
+          "maxCombinedPrice": "3997.98",
           "componentVariants": [
             [
               {
@@ -7271,13 +6933,1536 @@ window.SnoozePodCuratedBundles = {
       ]
     },
     {
-      "id": "hybrid-flex-lsx-review",
-      "name": "12-inch Hybrid + Flex LSX System",
+      "id": "12-inch-memory-foam-mattress--flex-lsx-adjustable-base",
+      "name": "12\" Memory Foam Mattress + Flex LSX Adjustable Base",
       "category": "SLEEP_SYSTEM",
       "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. Matching size and geometry do not prove mechanical compatibility.",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "verifiedAttributes": [
+        "foam construction",
+        "adjustable"
+      ],
+      "components": [
+        {
+          "productId": "8100282794045",
+          "shopifyProductId": "gid://shopify/Product/8100282794045",
+          "handle": "12-inch-memory-foam-mattress",
+          "title": "12\" Memory Foam Mattress",
+          "productType": "Mattress",
+          "url": "/products/12-inch-memory-foam-mattress",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ffd79485-cc8c-4007-a3c4-710170c1883c.jpg?v=1793551148",
+          "verifiedFeatures": [
+            "foam construction"
+          ],
+          "variants": [
+            {
+              "variantId": "44128361873469",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128361873469",
+              "sku": "BGA025901",
+              "title": "Twin",
+              "price": "1249.99",
+              "available": true,
+              "options": {
+                "Size": "Twin"
+              },
+              "nativeSize": "Twin",
+              "shopSizeKeys": [
+                "Twin"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128361906237",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
+              "sku": "BGA025902",
+              "title": "Twin XL",
+              "price": "1299.99",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128361939005",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128361939005",
+              "sku": "BGA025903",
+              "title": "Full",
+              "price": "1499.99",
+              "available": true,
+              "options": {
+                "Size": "Full"
+              },
+              "nativeSize": "Full",
+              "shopSizeKeys": [
+                "Full"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128361971773",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128361971773",
+              "sku": "BGA025905",
+              "title": "Queen",
+              "price": "1599.99",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362004541",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362004541",
+              "sku": "BGA025955",
+              "title": "Split Head Queen",
+              "price": "1799.99",
+              "available": true,
+              "options": {
+                "Size": "Split Head Queen"
+              },
+              "nativeSize": "Split Head Queen",
+              "shopSizeKeys": [
+                "Split Head Queen"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362037309",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362037309",
+              "sku": "BGA025906",
+              "title": "King",
+              "price": "1899.99",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362070077",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362070077",
+              "sku": "BGA025907",
+              "title": "Cal King",
+              "price": "1899.99",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362102845",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362102845",
+              "sku": "BGA025965",
+              "title": "Split Head King",
+              "price": "2299.99",
+              "available": true,
+              "options": {
+                "Size": "Split Head King"
+              },
+              "nativeSize": "Split Head King",
+              "shopSizeKeys": [
+                "Split Head King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362135613",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362135613",
+              "sku": "BGA025975",
+              "title": "Split Head Cal King",
+              "price": "2299.99",
+              "available": true,
+              "options": {
+                "Size": "Split Head Cal King"
+              },
+              "nativeSize": "Split Head Cal King",
+              "shopSizeKeys": [
+                "Split Head California King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362168381",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362168381",
+              "sku": "BGA025908",
+              "title": "Split King",
+              "price": "2599.98",
+              "available": true,
+              "options": {
+                "Size": "Split King"
+              },
+              "nativeSize": "Split King",
+              "shopSizeKeys": [
+                "Split King"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        },
+        {
+          "productId": "8100247175229",
+          "shopifyProductId": "gid://shopify/Product/8100247175229",
+          "handle": "flex-lsx-adjustable-base",
+          "title": "Flex LSX Adjustable Base",
+          "productType": "Adjustable Base",
+          "url": "/products/flex-lsx-adjustable-base",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/eba03ba8-76de-4a19-9410-d087f66c6c35.jpg?v=1793551142",
+          "verifiedFeatures": [
+            "adjustable"
+          ],
+          "variants": [
+            {
+              "variantId": "44122467270717",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+              "sku": "BGF032202",
+              "title": "Twin XL",
+              "price": "1849.00",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467303485",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467303485",
+              "sku": "BGF032205",
+              "title": "Queen",
+              "price": "1999.00",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467336253",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467336253",
+              "sku": "BGF032206",
+              "title": "King",
+              "price": "2499.00",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467369021",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467369021",
+              "sku": "BGF032207",
+              "title": "Cal King",
+              "price": "2499.00",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467401789",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467401789",
+              "sku": "BGF032209",
+              "title": "Split Cal King",
+              "price": "3599.00",
+              "available": true,
+              "options": {
+                "Size": "Split Cal King"
+              },
+              "nativeSize": "Split Cal King",
+              "shopSizeKeys": [
+                "Split California King"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Queen",
+          "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3598.99",
+          "maxCombinedPrice": "3598.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128361971773",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128361971773",
+                "sku": "BGA025905",
+                "title": "Queen",
+                "price": "1599.99",
+                "available": true,
+                "options": {
+                  "Size": "Queen"
+                },
+                "nativeSize": "Queen",
+                "shopSizeKeys": [
+                  "Queen"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467303485",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467303485",
+                "sku": "BGF032205",
+                "title": "Queen",
+                "price": "1999.00",
+                "available": true,
+                "options": {
+                  "Size": "Queen"
+                },
+                "nativeSize": "Queen",
+                "shopSizeKeys": [
+                  "Queen"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "King",
+          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4398.99",
+          "maxCombinedPrice": "4398.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362037309",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362037309",
+                "sku": "BGA025906",
+                "title": "King",
+                "price": "1899.99",
+                "available": true,
+                "options": {
+                  "Size": "King"
+                },
+                "nativeSize": "King",
+                "shopSizeKeys": [
+                  "King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467336253",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467336253",
+                "sku": "BGF032206",
+                "title": "King",
+                "price": "2499.00",
+                "available": true,
+                "options": {
+                  "Size": "King"
+                },
+                "nativeSize": "King",
+                "shopSizeKeys": [
+                  "King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "California King",
+          "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4398.99",
+          "maxCombinedPrice": "4398.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362070077",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362070077",
+                "sku": "BGA025907",
+                "title": "Cal King",
+                "price": "1899.99",
+                "available": true,
+                "options": {
+                  "Size": "Cal King"
+                },
+                "nativeSize": "Cal King",
+                "shopSizeKeys": [
+                  "California King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467369021",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467369021",
+                "sku": "BGF032207",
+                "title": "Cal King",
+                "price": "2499.00",
+                "available": true,
+                "options": {
+                  "Size": "Cal King"
+                },
+                "nativeSize": "Cal King",
+                "shopSizeKeys": [
+                  "California King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Twin XL",
+          "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3148.99",
+          "maxCombinedPrice": "3148.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128361906237",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
+                "sku": "BGA025902",
+                "title": "Twin XL",
+                "price": "1299.99",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467270717",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "title": "Twin XL",
+                "price": "1849.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "6297.98",
+          "maxCombinedPrice": "6297.98",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128361906237",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
+                "sku": "BGA025902",
+                "title": "Twin XL",
+                "price": "1299.99",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467270717",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "title": "Twin XL",
+                "price": "1849.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-memory-foam-mattress--flex-sh-adjustable-base",
+      "name": "12\" Memory Foam Mattress + Flex SH Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: split-head mattresses pair only with the Flex SH split-head base in the exact same size.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "verifiedAttributes": [
+        "foam construction",
+        "adjustable",
+        "split head"
+      ],
+      "components": [
+        {
+          "productId": "8100282794045",
+          "shopifyProductId": "gid://shopify/Product/8100282794045",
+          "handle": "12-inch-memory-foam-mattress",
+          "title": "12\" Memory Foam Mattress",
+          "productType": "Mattress",
+          "url": "/products/12-inch-memory-foam-mattress",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ffd79485-cc8c-4007-a3c4-710170c1883c.jpg?v=1793551148",
+          "verifiedFeatures": [
+            "foam construction"
+          ],
+          "variants": [
+            {
+              "variantId": "44128361873469",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128361873469",
+              "sku": "BGA025901",
+              "title": "Twin",
+              "price": "1249.99",
+              "available": true,
+              "options": {
+                "Size": "Twin"
+              },
+              "nativeSize": "Twin",
+              "shopSizeKeys": [
+                "Twin"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128361906237",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
+              "sku": "BGA025902",
+              "title": "Twin XL",
+              "price": "1299.99",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128361939005",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128361939005",
+              "sku": "BGA025903",
+              "title": "Full",
+              "price": "1499.99",
+              "available": true,
+              "options": {
+                "Size": "Full"
+              },
+              "nativeSize": "Full",
+              "shopSizeKeys": [
+                "Full"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128361971773",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128361971773",
+              "sku": "BGA025905",
+              "title": "Queen",
+              "price": "1599.99",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362004541",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362004541",
+              "sku": "BGA025955",
+              "title": "Split Head Queen",
+              "price": "1799.99",
+              "available": true,
+              "options": {
+                "Size": "Split Head Queen"
+              },
+              "nativeSize": "Split Head Queen",
+              "shopSizeKeys": [
+                "Split Head Queen"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362037309",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362037309",
+              "sku": "BGA025906",
+              "title": "King",
+              "price": "1899.99",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362070077",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362070077",
+              "sku": "BGA025907",
+              "title": "Cal King",
+              "price": "1899.99",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362102845",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362102845",
+              "sku": "BGA025965",
+              "title": "Split Head King",
+              "price": "2299.99",
+              "available": true,
+              "options": {
+                "Size": "Split Head King"
+              },
+              "nativeSize": "Split Head King",
+              "shopSizeKeys": [
+                "Split Head King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362135613",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362135613",
+              "sku": "BGA025975",
+              "title": "Split Head Cal King",
+              "price": "2299.99",
+              "available": true,
+              "options": {
+                "Size": "Split Head Cal King"
+              },
+              "nativeSize": "Split Head Cal King",
+              "shopSizeKeys": [
+                "Split Head California King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362168381",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362168381",
+              "sku": "BGA025908",
+              "title": "Split King",
+              "price": "2599.98",
+              "available": true,
+              "options": {
+                "Size": "Split King"
+              },
+              "nativeSize": "Split King",
+              "shopSizeKeys": [
+                "Split King"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        },
+        {
+          "productId": "8100247240765",
+          "shopifyProductId": "gid://shopify/Product/8100247240765",
+          "handle": "flex-sh-adjustable-base",
+          "title": "Flex SH Adjustable Base",
+          "productType": "Adjustable Base",
+          "url": "/products/flex-sh-adjustable-base",
+          "image": null,
+          "verifiedFeatures": [
+            "adjustable",
+            "split head"
+          ],
+          "variants": [
+            {
+              "variantId": "44122467434557",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467434557",
+              "sku": "BGF032255",
+              "title": "Split Head Queen",
+              "price": "2099.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Queen"
+              },
+              "nativeSize": "Split Head Queen",
+              "shopSizeKeys": [
+                "Split Head Queen"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467467325",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467467325",
+              "sku": "BGF032265",
+              "title": "Split Head King",
+              "price": "2799.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head King"
+              },
+              "nativeSize": "Split Head King",
+              "shopSizeKeys": [
+                "Split Head King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467500093",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467500093",
+              "sku": "BGF032275",
+              "title": "Split Head Cal King",
+              "price": "2799.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Cal King"
+              },
+              "nativeSize": "Split Head Cal King",
+              "shopSizeKeys": [
+                "Split Head California King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Split Head Queen",
+          "geometry": "split_head",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3898.99",
+          "maxCombinedPrice": "3898.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362004541",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362004541",
+                "sku": "BGA025955",
+                "title": "Split Head Queen",
+                "price": "1799.99",
+                "available": true,
+                "options": {
+                  "Size": "Split Head Queen"
+                },
+                "nativeSize": "Split Head Queen",
+                "shopSizeKeys": [
+                  "Split Head Queen"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467434557",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467434557",
+                "sku": "BGF032255",
+                "title": "Split Head Queen",
+                "price": "2099.00",
+                "available": true,
+                "options": {
+                  "Size": "Split Head Queen"
+                },
+                "nativeSize": "Split Head Queen",
+                "shopSizeKeys": [
+                  "Split Head Queen"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split Head King",
+          "geometry": "split_head",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5098.99",
+          "maxCombinedPrice": "5098.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362102845",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362102845",
+                "sku": "BGA025965",
+                "title": "Split Head King",
+                "price": "2299.99",
+                "available": true,
+                "options": {
+                  "Size": "Split Head King"
+                },
+                "nativeSize": "Split Head King",
+                "shopSizeKeys": [
+                  "Split Head King"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467467325",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467467325",
+                "sku": "BGF032265",
+                "title": "Split Head King",
+                "price": "2799.00",
+                "available": true,
+                "options": {
+                  "Size": "Split Head King"
+                },
+                "nativeSize": "Split Head King",
+                "shopSizeKeys": [
+                  "Split Head King"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split Head California King",
+          "geometry": "split_head",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5098.99",
+          "maxCombinedPrice": "5098.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362135613",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362135613",
+                "sku": "BGA025975",
+                "title": "Split Head Cal King",
+                "price": "2299.99",
+                "available": true,
+                "options": {
+                  "Size": "Split Head Cal King"
+                },
+                "nativeSize": "Split Head Cal King",
+                "shopSizeKeys": [
+                  "Split Head California King"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467500093",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467500093",
+                "sku": "BGF032275",
+                "title": "Split Head Cal King",
+                "price": "2799.00",
+                "available": true,
+                "options": {
+                  "Size": "Split Head Cal King"
+                },
+                "nativeSize": "Split Head Cal King",
+                "shopSizeKeys": [
+                  "Split Head California King"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-hybrid-mattress--flex-l-adjustable-base",
+      "name": "12\" Hybrid Mattress + Flex L Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "verifiedAttributes": [
+        "hybrid construction",
+        "adjustable"
+      ],
+      "components": [
+        {
+          "productId": "8100282826813",
+          "shopifyProductId": "gid://shopify/Product/8100282826813",
+          "handle": "12-inch-hybrid-mattress",
+          "title": "12\" Hybrid Mattress",
+          "productType": "Mattress",
+          "url": "/products/12-inch-hybrid-mattress",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/dfc9910f-93a8-4126-ba73-dd2981243b93.jpg?v=1793551144",
+          "verifiedFeatures": [
+            "hybrid construction"
+          ],
+          "variants": [
+            {
+              "variantId": "44128362201149",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362201149",
+              "sku": "BGA121W10",
+              "title": "Twin",
+              "price": "1799.00",
+              "available": true,
+              "options": {
+                "Size": "Twin"
+              },
+              "nativeSize": "Twin",
+              "shopSizeKeys": [
+                "Twin"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362233917",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362233917",
+              "sku": "BGA121W20",
+              "title": "Twin XL",
+              "price": "1849.00",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362266685",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362266685",
+              "sku": "BGA121W30",
+              "title": "Full",
+              "price": "1899.00",
+              "available": true,
+              "options": {
+                "Size": "Full"
+              },
+              "nativeSize": "Full",
+              "shopSizeKeys": [
+                "Full"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362299453",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362299453",
+              "sku": "BGA121W50",
+              "title": "Queen",
+              "price": "1999.00",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362332221",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362332221",
+              "sku": "BGA121W55",
+              "title": "Split Head Queen",
+              "price": "2399.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Queen"
+              },
+              "nativeSize": "Split Head Queen",
+              "shopSizeKeys": [
+                "Split Head Queen"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362364989",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362364989",
+              "sku": "BGA121W60",
+              "title": "King",
+              "price": "2499.00",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362397757",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362397757",
+              "sku": "BGA121W70",
+              "title": "Cal King",
+              "price": "2499.00",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362430525",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362430525",
+              "sku": "BGA121W65",
+              "title": "Split Head King",
+              "price": "2899.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head King"
+              },
+              "nativeSize": "Split Head King",
+              "shopSizeKeys": [
+                "Split Head King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362463293",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362463293",
+              "sku": "BGA121W75",
+              "title": "Split Head Cal King",
+              "price": "2899.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Cal King"
+              },
+              "nativeSize": "Split Head Cal King",
+              "shopSizeKeys": [
+                "Split Head California King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362496061",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362496061",
+              "sku": "BGA121W80",
+              "title": "Split King",
+              "price": "3698.00",
+              "available": true,
+              "options": {
+                "Size": "Split King"
+              },
+              "nativeSize": "Split King",
+              "shopSizeKeys": [
+                "Split King"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        },
+        {
+          "productId": "8100247142461",
+          "shopifyProductId": "gid://shopify/Product/8100247142461",
+          "handle": "flex-l-adjustable-base",
+          "title": "Flex L Adjustable Base",
+          "productType": "Adjustable Base",
+          "url": "/products/flex-l-adjustable-base",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/0af53a18-5eff-4179-8a17-660d69c63294.jpg?v=1793551142",
+          "verifiedFeatures": [
+            "adjustable"
+          ],
+          "variants": [
+            {
+              "variantId": "44122467139645",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+              "sku": "BGF026802-BLK",
+              "title": "Twin XL",
+              "price": "699.00",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467172413",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
+              "sku": "BGF026805-BLK",
+              "title": "Queen",
+              "price": "799.00",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467205181",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
+              "sku": "BGF026806-BLK",
+              "title": "King",
+              "price": "999.00",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467237949",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
+              "sku": "BGF026807-BLK",
+              "title": "Cal King",
+              "price": "999.00",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Queen",
+          "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "2798.00",
+          "maxCombinedPrice": "2798.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362299453",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362299453",
+                "sku": "BGA121W50",
+                "title": "Queen",
+                "price": "1999.00",
+                "available": true,
+                "options": {
+                  "Size": "Queen"
+                },
+                "nativeSize": "Queen",
+                "shopSizeKeys": [
+                  "Queen"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467172413",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
+                "sku": "BGF026805-BLK",
+                "title": "Queen",
+                "price": "799.00",
+                "available": true,
+                "options": {
+                  "Size": "Queen"
+                },
+                "nativeSize": "Queen",
+                "shopSizeKeys": [
+                  "Queen"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "King",
+          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3498.00",
+          "maxCombinedPrice": "3498.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362364989",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362364989",
+                "sku": "BGA121W60",
+                "title": "King",
+                "price": "2499.00",
+                "available": true,
+                "options": {
+                  "Size": "King"
+                },
+                "nativeSize": "King",
+                "shopSizeKeys": [
+                  "King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467205181",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
+                "sku": "BGF026806-BLK",
+                "title": "King",
+                "price": "999.00",
+                "available": true,
+                "options": {
+                  "Size": "King"
+                },
+                "nativeSize": "King",
+                "shopSizeKeys": [
+                  "King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "California King",
+          "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3498.00",
+          "maxCombinedPrice": "3498.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362397757",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362397757",
+                "sku": "BGA121W70",
+                "title": "Cal King",
+                "price": "2499.00",
+                "available": true,
+                "options": {
+                  "Size": "Cal King"
+                },
+                "nativeSize": "Cal King",
+                "shopSizeKeys": [
+                  "California King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467237949",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
+                "sku": "BGF026807-BLK",
+                "title": "Cal King",
+                "price": "999.00",
+                "available": true,
+                "options": {
+                  "Size": "Cal King"
+                },
+                "nativeSize": "Cal King",
+                "shopSizeKeys": [
+                  "California King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Twin XL",
+          "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "2548.00",
+          "maxCombinedPrice": "2548.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362233917",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362233917",
+                "sku": "BGA121W20",
+                "title": "Twin XL",
+                "price": "1849.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467139645",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "title": "Twin XL",
+                "price": "699.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "5096.00",
+          "maxCombinedPrice": "5096.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362233917",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362233917",
+                "sku": "BGA121W20",
+                "title": "Twin XL",
+                "price": "1849.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467139645",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "title": "Twin XL",
+                "price": "699.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-hybrid-mattress--flex-lsx-adjustable-base",
+      "name": "12\" Hybrid Mattress + Flex LSX Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
       "showroomRelationship": "PENDING_VERIFICATION",
       "verifiedAttributes": [
         "hybrid construction",
@@ -7574,6 +8759,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "3998.00",
           "maxCombinedPrice": "3998.00",
           "componentVariants": [
@@ -7620,6 +8810,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "4998.00",
           "maxCombinedPrice": "4998.00",
           "componentVariants": [
@@ -7666,6 +8861,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "California King",
           "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "4998.00",
           "maxCombinedPrice": "4998.00",
           "componentVariants": [
@@ -7712,8 +8912,64 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Twin XL",
           "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "3698.00",
           "maxCombinedPrice": "3698.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362233917",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362233917",
+                "sku": "BGA121W20",
+                "title": "Twin XL",
+                "price": "1849.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467270717",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "title": "Twin XL",
+                "price": "1849.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "7396.00",
+          "maxCombinedPrice": "7396.00",
           "componentVariants": [
             [
               {
@@ -7758,13 +9014,1476 @@ window.SnoozePodCuratedBundles = {
       ]
     },
     {
-      "id": "dual-comfort-flex-sh-review",
-      "name": "12-inch Dual Comfort + Flex SH System",
+      "id": "12-inch-hybrid-mattress--flex-sh-adjustable-base",
+      "name": "12\" Hybrid Mattress + Flex SH Adjustable Base",
       "category": "SLEEP_SYSTEM",
       "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. Matching size and geometry do not prove mechanical compatibility.",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: split-head mattresses pair only with the Flex SH split-head base in the exact same size.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "verifiedAttributes": [
+        "hybrid construction",
+        "adjustable",
+        "split head"
+      ],
+      "components": [
+        {
+          "productId": "8100282826813",
+          "shopifyProductId": "gid://shopify/Product/8100282826813",
+          "handle": "12-inch-hybrid-mattress",
+          "title": "12\" Hybrid Mattress",
+          "productType": "Mattress",
+          "url": "/products/12-inch-hybrid-mattress",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/dfc9910f-93a8-4126-ba73-dd2981243b93.jpg?v=1793551144",
+          "verifiedFeatures": [
+            "hybrid construction"
+          ],
+          "variants": [
+            {
+              "variantId": "44128362201149",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362201149",
+              "sku": "BGA121W10",
+              "title": "Twin",
+              "price": "1799.00",
+              "available": true,
+              "options": {
+                "Size": "Twin"
+              },
+              "nativeSize": "Twin",
+              "shopSizeKeys": [
+                "Twin"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362233917",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362233917",
+              "sku": "BGA121W20",
+              "title": "Twin XL",
+              "price": "1849.00",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362266685",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362266685",
+              "sku": "BGA121W30",
+              "title": "Full",
+              "price": "1899.00",
+              "available": true,
+              "options": {
+                "Size": "Full"
+              },
+              "nativeSize": "Full",
+              "shopSizeKeys": [
+                "Full"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362299453",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362299453",
+              "sku": "BGA121W50",
+              "title": "Queen",
+              "price": "1999.00",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362332221",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362332221",
+              "sku": "BGA121W55",
+              "title": "Split Head Queen",
+              "price": "2399.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Queen"
+              },
+              "nativeSize": "Split Head Queen",
+              "shopSizeKeys": [
+                "Split Head Queen"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362364989",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362364989",
+              "sku": "BGA121W60",
+              "title": "King",
+              "price": "2499.00",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362397757",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362397757",
+              "sku": "BGA121W70",
+              "title": "Cal King",
+              "price": "2499.00",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362430525",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362430525",
+              "sku": "BGA121W65",
+              "title": "Split Head King",
+              "price": "2899.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head King"
+              },
+              "nativeSize": "Split Head King",
+              "shopSizeKeys": [
+                "Split Head King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362463293",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362463293",
+              "sku": "BGA121W75",
+              "title": "Split Head Cal King",
+              "price": "2899.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Cal King"
+              },
+              "nativeSize": "Split Head Cal King",
+              "shopSizeKeys": [
+                "Split Head California King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362496061",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362496061",
+              "sku": "BGA121W80",
+              "title": "Split King",
+              "price": "3698.00",
+              "available": true,
+              "options": {
+                "Size": "Split King"
+              },
+              "nativeSize": "Split King",
+              "shopSizeKeys": [
+                "Split King"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        },
+        {
+          "productId": "8100247240765",
+          "shopifyProductId": "gid://shopify/Product/8100247240765",
+          "handle": "flex-sh-adjustable-base",
+          "title": "Flex SH Adjustable Base",
+          "productType": "Adjustable Base",
+          "url": "/products/flex-sh-adjustable-base",
+          "image": null,
+          "verifiedFeatures": [
+            "adjustable",
+            "split head"
+          ],
+          "variants": [
+            {
+              "variantId": "44122467434557",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467434557",
+              "sku": "BGF032255",
+              "title": "Split Head Queen",
+              "price": "2099.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Queen"
+              },
+              "nativeSize": "Split Head Queen",
+              "shopSizeKeys": [
+                "Split Head Queen"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467467325",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467467325",
+              "sku": "BGF032265",
+              "title": "Split Head King",
+              "price": "2799.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head King"
+              },
+              "nativeSize": "Split Head King",
+              "shopSizeKeys": [
+                "Split Head King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467500093",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467500093",
+              "sku": "BGF032275",
+              "title": "Split Head Cal King",
+              "price": "2799.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Cal King"
+              },
+              "nativeSize": "Split Head Cal King",
+              "shopSizeKeys": [
+                "Split Head California King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Split Head Queen",
+          "geometry": "split_head",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4498.00",
+          "maxCombinedPrice": "4498.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362332221",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362332221",
+                "sku": "BGA121W55",
+                "title": "Split Head Queen",
+                "price": "2399.00",
+                "available": true,
+                "options": {
+                  "Size": "Split Head Queen"
+                },
+                "nativeSize": "Split Head Queen",
+                "shopSizeKeys": [
+                  "Split Head Queen"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467434557",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467434557",
+                "sku": "BGF032255",
+                "title": "Split Head Queen",
+                "price": "2099.00",
+                "available": true,
+                "options": {
+                  "Size": "Split Head Queen"
+                },
+                "nativeSize": "Split Head Queen",
+                "shopSizeKeys": [
+                  "Split Head Queen"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split Head King",
+          "geometry": "split_head",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5698.00",
+          "maxCombinedPrice": "5698.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362430525",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362430525",
+                "sku": "BGA121W65",
+                "title": "Split Head King",
+                "price": "2899.00",
+                "available": true,
+                "options": {
+                  "Size": "Split Head King"
+                },
+                "nativeSize": "Split Head King",
+                "shopSizeKeys": [
+                  "Split Head King"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467467325",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467467325",
+                "sku": "BGF032265",
+                "title": "Split Head King",
+                "price": "2799.00",
+                "available": true,
+                "options": {
+                  "Size": "Split Head King"
+                },
+                "nativeSize": "Split Head King",
+                "shopSizeKeys": [
+                  "Split Head King"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split Head California King",
+          "geometry": "split_head",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5698.00",
+          "maxCombinedPrice": "5698.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362463293",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362463293",
+                "sku": "BGA121W75",
+                "title": "Split Head Cal King",
+                "price": "2899.00",
+                "available": true,
+                "options": {
+                  "Size": "Split Head Cal King"
+                },
+                "nativeSize": "Split Head Cal King",
+                "shopSizeKeys": [
+                  "Split Head California King"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467500093",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467500093",
+                "sku": "BGF032275",
+                "title": "Split Head Cal King",
+                "price": "2799.00",
+                "available": true,
+                "options": {
+                  "Size": "Split Head Cal King"
+                },
+                "nativeSize": "Split Head Cal King",
+                "shopSizeKeys": [
+                  "Split Head California King"
+                ],
+                "geometry": "split_head",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-dual-comfort-mattress--flex-l-adjustable-base",
+      "name": "12\" Dual Comfort Mattress + Flex L Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "verifiedAttributes": [
+        "dual comfort",
+        "independent side comfort",
+        "modular comfort",
+        "adjustable"
+      ],
+      "components": [
+        {
+          "productId": "8100282892349",
+          "shopifyProductId": "gid://shopify/Product/8100282892349",
+          "handle": "12-inch-dual-comfort-mattress",
+          "title": "12\" Dual Comfort Mattress",
+          "productType": "Mattress",
+          "url": "/products/12-inch-dual-comfort-mattress",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019d1b36-2013-7089-9ef2-764c398e9cdf.jpg?v=1793551148",
+          "verifiedFeatures": [
+            "dual comfort",
+            "independent side comfort",
+            "modular comfort"
+          ],
+          "variants": [
+            {
+              "variantId": "44128362528829",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
+              "sku": "BGM301W21",
+              "title": "Twin XL",
+              "price": "2099.00",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362561597",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362561597",
+              "sku": "BGM301W51",
+              "title": "Queen",
+              "price": "2499.00",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362594365",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362594365",
+              "sku": "BGM301W55",
+              "title": "Split Head Queen",
+              "price": "2999.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Queen"
+              },
+              "nativeSize": "Split Head Queen",
+              "shopSizeKeys": [
+                "Split Head Queen"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362627133",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362627133",
+              "sku": "BGM301W61",
+              "title": "King",
+              "price": "3199.00",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362659901",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362659901",
+              "sku": "BGM301W71",
+              "title": "Cal King",
+              "price": "3199.00",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362692669",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362692669",
+              "sku": "BGM301W65",
+              "title": "Split Head King",
+              "price": "3799.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head King"
+              },
+              "nativeSize": "Split Head King",
+              "shopSizeKeys": [
+                "Split Head King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362725437",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362725437",
+              "sku": "BGM301W75",
+              "title": "Split Head Cal King",
+              "price": "3799.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Cal King"
+              },
+              "nativeSize": "Split Head Cal King",
+              "shopSizeKeys": [
+                "Split Head California King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362758205",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362758205",
+              "sku": "BGM301W91",
+              "title": "Split Cal King",
+              "price": "4198.00",
+              "available": true,
+              "options": {
+                "Size": "Split Cal King"
+              },
+              "nativeSize": "Split Cal King",
+              "shopSizeKeys": [
+                "Split California King"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        },
+        {
+          "productId": "8100247142461",
+          "shopifyProductId": "gid://shopify/Product/8100247142461",
+          "handle": "flex-l-adjustable-base",
+          "title": "Flex L Adjustable Base",
+          "productType": "Adjustable Base",
+          "url": "/products/flex-l-adjustable-base",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/0af53a18-5eff-4179-8a17-660d69c63294.jpg?v=1793551142",
+          "verifiedFeatures": [
+            "adjustable"
+          ],
+          "variants": [
+            {
+              "variantId": "44122467139645",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+              "sku": "BGF026802-BLK",
+              "title": "Twin XL",
+              "price": "699.00",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467172413",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
+              "sku": "BGF026805-BLK",
+              "title": "Queen",
+              "price": "799.00",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467205181",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
+              "sku": "BGF026806-BLK",
+              "title": "King",
+              "price": "999.00",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467237949",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
+              "sku": "BGF026807-BLK",
+              "title": "Cal King",
+              "price": "999.00",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Queen",
+          "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3298.00",
+          "maxCombinedPrice": "3298.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362561597",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362561597",
+                "sku": "BGM301W51",
+                "title": "Queen",
+                "price": "2499.00",
+                "available": true,
+                "options": {
+                  "Size": "Queen"
+                },
+                "nativeSize": "Queen",
+                "shopSizeKeys": [
+                  "Queen"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467172413",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
+                "sku": "BGF026805-BLK",
+                "title": "Queen",
+                "price": "799.00",
+                "available": true,
+                "options": {
+                  "Size": "Queen"
+                },
+                "nativeSize": "Queen",
+                "shopSizeKeys": [
+                  "Queen"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "King",
+          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4198.00",
+          "maxCombinedPrice": "4198.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362627133",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362627133",
+                "sku": "BGM301W61",
+                "title": "King",
+                "price": "3199.00",
+                "available": true,
+                "options": {
+                  "Size": "King"
+                },
+                "nativeSize": "King",
+                "shopSizeKeys": [
+                  "King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467205181",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
+                "sku": "BGF026806-BLK",
+                "title": "King",
+                "price": "999.00",
+                "available": true,
+                "options": {
+                  "Size": "King"
+                },
+                "nativeSize": "King",
+                "shopSizeKeys": [
+                  "King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "California King",
+          "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4198.00",
+          "maxCombinedPrice": "4198.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362659901",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362659901",
+                "sku": "BGM301W71",
+                "title": "Cal King",
+                "price": "3199.00",
+                "available": true,
+                "options": {
+                  "Size": "Cal King"
+                },
+                "nativeSize": "Cal King",
+                "shopSizeKeys": [
+                  "California King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467237949",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
+                "sku": "BGF026807-BLK",
+                "title": "Cal King",
+                "price": "999.00",
+                "available": true,
+                "options": {
+                  "Size": "Cal King"
+                },
+                "nativeSize": "Cal King",
+                "shopSizeKeys": [
+                  "California King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Twin XL",
+          "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "2798.00",
+          "maxCombinedPrice": "2798.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362528829",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
+                "sku": "BGM301W21",
+                "title": "Twin XL",
+                "price": "2099.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467139645",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "title": "Twin XL",
+                "price": "699.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "5596.00",
+          "maxCombinedPrice": "5596.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362528829",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
+                "sku": "BGM301W21",
+                "title": "Twin XL",
+                "price": "2099.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467139645",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "title": "Twin XL",
+                "price": "699.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-dual-comfort-mattress--flex-lsx-adjustable-base",
+      "name": "12\" Dual Comfort Mattress + Flex LSX Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "verifiedAttributes": [
+        "dual comfort",
+        "independent side comfort",
+        "modular comfort",
+        "adjustable"
+      ],
+      "components": [
+        {
+          "productId": "8100282892349",
+          "shopifyProductId": "gid://shopify/Product/8100282892349",
+          "handle": "12-inch-dual-comfort-mattress",
+          "title": "12\" Dual Comfort Mattress",
+          "productType": "Mattress",
+          "url": "/products/12-inch-dual-comfort-mattress",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019d1b36-2013-7089-9ef2-764c398e9cdf.jpg?v=1793551148",
+          "verifiedFeatures": [
+            "dual comfort",
+            "independent side comfort",
+            "modular comfort"
+          ],
+          "variants": [
+            {
+              "variantId": "44128362528829",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
+              "sku": "BGM301W21",
+              "title": "Twin XL",
+              "price": "2099.00",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362561597",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362561597",
+              "sku": "BGM301W51",
+              "title": "Queen",
+              "price": "2499.00",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362594365",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362594365",
+              "sku": "BGM301W55",
+              "title": "Split Head Queen",
+              "price": "2999.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Queen"
+              },
+              "nativeSize": "Split Head Queen",
+              "shopSizeKeys": [
+                "Split Head Queen"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362627133",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362627133",
+              "sku": "BGM301W61",
+              "title": "King",
+              "price": "3199.00",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362659901",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362659901",
+              "sku": "BGM301W71",
+              "title": "Cal King",
+              "price": "3199.00",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362692669",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362692669",
+              "sku": "BGM301W65",
+              "title": "Split Head King",
+              "price": "3799.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head King"
+              },
+              "nativeSize": "Split Head King",
+              "shopSizeKeys": [
+                "Split Head King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362725437",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362725437",
+              "sku": "BGM301W75",
+              "title": "Split Head Cal King",
+              "price": "3799.00",
+              "available": true,
+              "options": {
+                "Size": "Split Head Cal King"
+              },
+              "nativeSize": "Split Head Cal King",
+              "shopSizeKeys": [
+                "Split Head California King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128362758205",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128362758205",
+              "sku": "BGM301W91",
+              "title": "Split Cal King",
+              "price": "4198.00",
+              "available": true,
+              "options": {
+                "Size": "Split Cal King"
+              },
+              "nativeSize": "Split Cal King",
+              "shopSizeKeys": [
+                "Split California King"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        },
+        {
+          "productId": "8100247175229",
+          "shopifyProductId": "gid://shopify/Product/8100247175229",
+          "handle": "flex-lsx-adjustable-base",
+          "title": "Flex LSX Adjustable Base",
+          "productType": "Adjustable Base",
+          "url": "/products/flex-lsx-adjustable-base",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/eba03ba8-76de-4a19-9410-d087f66c6c35.jpg?v=1793551142",
+          "verifiedFeatures": [
+            "adjustable"
+          ],
+          "variants": [
+            {
+              "variantId": "44122467270717",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+              "sku": "BGF032202",
+              "title": "Twin XL",
+              "price": "1849.00",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467303485",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467303485",
+              "sku": "BGF032205",
+              "title": "Queen",
+              "price": "1999.00",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467336253",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467336253",
+              "sku": "BGF032206",
+              "title": "King",
+              "price": "2499.00",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467369021",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467369021",
+              "sku": "BGF032207",
+              "title": "Cal King",
+              "price": "2499.00",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467401789",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467401789",
+              "sku": "BGF032209",
+              "title": "Split Cal King",
+              "price": "3599.00",
+              "available": true,
+              "options": {
+                "Size": "Split Cal King"
+              },
+              "nativeSize": "Split Cal King",
+              "shopSizeKeys": [
+                "Split California King"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Queen",
+          "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4498.00",
+          "maxCombinedPrice": "4498.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362561597",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362561597",
+                "sku": "BGM301W51",
+                "title": "Queen",
+                "price": "2499.00",
+                "available": true,
+                "options": {
+                  "Size": "Queen"
+                },
+                "nativeSize": "Queen",
+                "shopSizeKeys": [
+                  "Queen"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467303485",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467303485",
+                "sku": "BGF032205",
+                "title": "Queen",
+                "price": "1999.00",
+                "available": true,
+                "options": {
+                  "Size": "Queen"
+                },
+                "nativeSize": "Queen",
+                "shopSizeKeys": [
+                  "Queen"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "King",
+          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5698.00",
+          "maxCombinedPrice": "5698.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362627133",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362627133",
+                "sku": "BGM301W61",
+                "title": "King",
+                "price": "3199.00",
+                "available": true,
+                "options": {
+                  "Size": "King"
+                },
+                "nativeSize": "King",
+                "shopSizeKeys": [
+                  "King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467336253",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467336253",
+                "sku": "BGF032206",
+                "title": "King",
+                "price": "2499.00",
+                "available": true,
+                "options": {
+                  "Size": "King"
+                },
+                "nativeSize": "King",
+                "shopSizeKeys": [
+                  "King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "California King",
+          "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5698.00",
+          "maxCombinedPrice": "5698.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362659901",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362659901",
+                "sku": "BGM301W71",
+                "title": "Cal King",
+                "price": "3199.00",
+                "available": true,
+                "options": {
+                  "Size": "Cal King"
+                },
+                "nativeSize": "Cal King",
+                "shopSizeKeys": [
+                  "California King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467369021",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467369021",
+                "sku": "BGF032207",
+                "title": "Cal King",
+                "price": "2499.00",
+                "available": true,
+                "options": {
+                  "Size": "Cal King"
+                },
+                "nativeSize": "Cal King",
+                "shopSizeKeys": [
+                  "California King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Twin XL",
+          "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "3948.00",
+          "maxCombinedPrice": "3948.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362528829",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
+                "sku": "BGM301W21",
+                "title": "Twin XL",
+                "price": "2099.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467270717",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "title": "Twin XL",
+                "price": "1849.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "7896.00",
+          "maxCombinedPrice": "7896.00",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128362528829",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
+                "sku": "BGM301W21",
+                "title": "Twin XL",
+                "price": "2099.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467270717",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
+                "title": "Twin XL",
+                "price": "1849.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "12-inch-dual-comfort-mattress--flex-sh-adjustable-base",
+      "name": "12\" Dual Comfort Mattress + Flex SH Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: split-head mattresses pair only with the Flex SH split-head base in the exact same size.",
       "showroomRelationship": "PENDING_VERIFICATION",
       "verifiedAttributes": [
         "dual comfort",
@@ -7999,6 +10718,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Split Head Queen",
           "geometry": "split_head",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "5098.00",
           "maxCombinedPrice": "5098.00",
           "componentVariants": [
@@ -8045,6 +10769,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Split Head King",
           "geometry": "split_head",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "6598.00",
           "maxCombinedPrice": "6598.00",
           "componentVariants": [
@@ -8091,6 +10820,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Split Head California King",
           "geometry": "split_head",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "6598.00",
           "maxCombinedPrice": "6598.00",
           "componentVariants": [
@@ -8137,13 +10871,541 @@ window.SnoozePodCuratedBundles = {
       ]
     },
     {
-      "id": "dual-comfort-flex-lsx-review",
-      "name": "14-inch Dual Comfort + Flex LSX System",
+      "id": "14-inch-dual-comfort-mattress--flex-l-adjustable-base",
+      "name": "14\" Dual Comfort Mattress + Flex L Adjustable Base",
       "category": "SLEEP_SYSTEM",
       "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. Matching size and geometry do not prove mechanical compatibility.",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
+      "showroomRelationship": "PENDING_VERIFICATION",
+      "verifiedAttributes": [
+        "dual comfort",
+        "independent side comfort",
+        "modular comfort",
+        "adjustable"
+      ],
+      "components": [
+        {
+          "productId": "8100282925117",
+          "shopifyProductId": "gid://shopify/Product/8100282925117",
+          "handle": "14-inch-dual-comfort-mattress",
+          "title": "14\" Dual Comfort Mattress",
+          "productType": "Mattress",
+          "url": "/products/14-inch-dual-comfort-mattress",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019df90b-24f9-7eee-9202-56c1bdb7510c.jpg?v=1793551147",
+          "verifiedFeatures": [
+            "dual comfort",
+            "independent side comfort",
+            "modular comfort"
+          ],
+          "variants": [
+            {
+              "variantId": "44128370950205",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128370950205",
+              "sku": "BGM506W21",
+              "title": "Twin XL",
+              "price": "3499.99",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128370982973",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128370982973",
+              "sku": "BGM506W51",
+              "title": "Queen",
+              "price": "3999.99",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128371015741",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371015741",
+              "sku": "BGM506W61",
+              "title": "King",
+              "price": "4799.99",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128371048509",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371048509",
+              "sku": "BGM506W71",
+              "title": "Cal King",
+              "price": "4799.99",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128371081277",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371081277",
+              "sku": "BGM506W55",
+              "title": "Split Head Queen",
+              "price": "4499.99",
+              "available": true,
+              "options": {
+                "Size": "Split Head Queen"
+              },
+              "nativeSize": "Split Head Queen",
+              "shopSizeKeys": [
+                "Split Head Queen"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128371114045",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371114045",
+              "sku": "BGM506W65",
+              "title": "Split Head King",
+              "price": "5299.99",
+              "available": true,
+              "options": {
+                "Size": "Split Head King"
+              },
+              "nativeSize": "Split Head King",
+              "shopSizeKeys": [
+                "Split Head King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128371146813",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371146813",
+              "sku": "BGM506W75",
+              "title": "Split Head Cal King",
+              "price": "5299.99",
+              "available": true,
+              "options": {
+                "Size": "Split Head Cal King"
+              },
+              "nativeSize": "Split Head Cal King",
+              "shopSizeKeys": [
+                "Split Head California King"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128371179581",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371179581",
+              "sku": "BGM506W81",
+              "title": "Twin XL x 2",
+              "price": "6999.99",
+              "available": true,
+              "options": {
+                "Size": "Twin XL x 2"
+              },
+              "nativeSize": "Twin XL x 2",
+              "shopSizeKeys": [
+                "Twin XL x 2"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128371212349",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371212349",
+              "sku": "BGM506W91",
+              "title": "Split Cal King",
+              "price": "6999.99",
+              "available": true,
+              "options": {
+                "Size": "Split Cal King"
+              },
+              "nativeSize": "Split Cal King",
+              "shopSizeKeys": [
+                "Split California King"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        },
+        {
+          "productId": "8100247142461",
+          "shopifyProductId": "gid://shopify/Product/8100247142461",
+          "handle": "flex-l-adjustable-base",
+          "title": "Flex L Adjustable Base",
+          "productType": "Adjustable Base",
+          "url": "/products/flex-l-adjustable-base",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/0af53a18-5eff-4179-8a17-660d69c63294.jpg?v=1793551142",
+          "verifiedFeatures": [
+            "adjustable"
+          ],
+          "variants": [
+            {
+              "variantId": "44122467139645",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+              "sku": "BGF026802-BLK",
+              "title": "Twin XL",
+              "price": "699.00",
+              "available": true,
+              "options": {
+                "Size": "Twin XL"
+              },
+              "nativeSize": "Twin XL",
+              "shopSizeKeys": [
+                "Twin XL"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467172413",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
+              "sku": "BGF026805-BLK",
+              "title": "Queen",
+              "price": "799.00",
+              "available": true,
+              "options": {
+                "Size": "Queen"
+              },
+              "nativeSize": "Queen",
+              "shopSizeKeys": [
+                "Queen"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467205181",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
+              "sku": "BGF026806-BLK",
+              "title": "King",
+              "price": "999.00",
+              "available": true,
+              "options": {
+                "Size": "King"
+              },
+              "nativeSize": "King",
+              "shopSizeKeys": [
+                "King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44122467237949",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
+              "sku": "BGF026807-BLK",
+              "title": "Cal King",
+              "price": "999.00",
+              "available": true,
+              "options": {
+                "Size": "Cal King"
+              },
+              "nativeSize": "Cal King",
+              "shopSizeKeys": [
+                "California King"
+              ],
+              "geometry": "standard",
+              "fulfillmentReadiness": "PENDING"
+            }
+          ],
+          "quantity": 1
+        }
+      ],
+      "sizes": [
+        {
+          "label": "Queen",
+          "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4798.99",
+          "maxCombinedPrice": "4798.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128370982973",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128370982973",
+                "sku": "BGM506W51",
+                "title": "Queen",
+                "price": "3999.99",
+                "available": true,
+                "options": {
+                  "Size": "Queen"
+                },
+                "nativeSize": "Queen",
+                "shopSizeKeys": [
+                  "Queen"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467172413",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
+                "sku": "BGF026805-BLK",
+                "title": "Queen",
+                "price": "799.00",
+                "available": true,
+                "options": {
+                  "Size": "Queen"
+                },
+                "nativeSize": "Queen",
+                "shopSizeKeys": [
+                  "Queen"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "King",
+          "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5798.99",
+          "maxCombinedPrice": "5798.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128371015741",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128371015741",
+                "sku": "BGM506W61",
+                "title": "King",
+                "price": "4799.99",
+                "available": true,
+                "options": {
+                  "Size": "King"
+                },
+                "nativeSize": "King",
+                "shopSizeKeys": [
+                  "King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467205181",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
+                "sku": "BGF026806-BLK",
+                "title": "King",
+                "price": "999.00",
+                "available": true,
+                "options": {
+                  "Size": "King"
+                },
+                "nativeSize": "King",
+                "shopSizeKeys": [
+                  "King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "California King",
+          "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "5798.99",
+          "maxCombinedPrice": "5798.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128371048509",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128371048509",
+                "sku": "BGM506W71",
+                "title": "Cal King",
+                "price": "4799.99",
+                "available": true,
+                "options": {
+                  "Size": "Cal King"
+                },
+                "nativeSize": "Cal King",
+                "shopSizeKeys": [
+                  "California King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467237949",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
+                "sku": "BGF026807-BLK",
+                "title": "Cal King",
+                "price": "999.00",
+                "available": true,
+                "options": {
+                  "Size": "Cal King"
+                },
+                "nativeSize": "Cal King",
+                "shopSizeKeys": [
+                  "California King"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Twin XL",
+          "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "4198.99",
+          "maxCombinedPrice": "4198.99",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128370950205",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128370950205",
+                "sku": "BGM506W21",
+                "title": "Twin XL",
+                "price": "3499.99",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467139645",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "title": "Twin XL",
+                "price": "699.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        },
+        {
+          "label": "Split King",
+          "geometry": "full_split",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "8397.98",
+          "maxCombinedPrice": "8397.98",
+          "componentVariants": [
+            [
+              {
+                "variantId": "44128370950205",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128370950205",
+                "sku": "BGM506W21",
+                "title": "Twin XL",
+                "price": "3499.99",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ],
+            [
+              {
+                "variantId": "44122467139645",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
+                "sku": "BGF026802-BLK",
+                "title": "Twin XL",
+                "price": "699.00",
+                "available": true,
+                "options": {
+                  "Size": "Twin XL"
+                },
+                "nativeSize": "Twin XL",
+                "shopSizeKeys": [
+                  "Twin XL"
+                ],
+                "geometry": "standard",
+                "fulfillmentReadiness": "PENDING"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "14-inch-dual-comfort-mattress--flex-lsx-adjustable-base",
+      "name": "14\" Dual Comfort Mattress + Flex LSX Adjustable Base",
+      "category": "SLEEP_SYSTEM",
+      "contentStatus": "READY_FOR_REVIEW",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: standard mattresses and bases pair in the exact same size; Split King uses two Twin XL mattresses and two Twin XL bases.",
       "showroomRelationship": "PENDING_VERIFICATION",
       "verifiedAttributes": [
         "dual comfort",
@@ -8427,6 +11689,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Queen",
           "geometry": "standard",
+          "sourceSize": "Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "5998.99",
           "maxCombinedPrice": "5998.99",
           "componentVariants": [
@@ -8473,6 +11740,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "King",
           "geometry": "standard",
+          "sourceSize": "King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "7298.99",
           "maxCombinedPrice": "7298.99",
           "componentVariants": [
@@ -8519,6 +11791,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "California King",
           "geometry": "standard",
+          "sourceSize": "California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "7298.99",
           "maxCombinedPrice": "7298.99",
           "componentVariants": [
@@ -8565,6 +11842,11 @@ window.SnoozePodCuratedBundles = {
         {
           "label": "Twin XL",
           "geometry": "standard",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            1,
+            1
+          ],
           "minCombinedPrice": "5348.99",
           "maxCombinedPrice": "5348.99",
           "componentVariants": [
@@ -8609,1632 +11891,23 @@ window.SnoozePodCuratedBundles = {
           ]
         },
         {
-          "label": "Split California King",
+          "label": "Split King",
           "geometry": "full_split",
-          "minCombinedPrice": "10598.99",
-          "maxCombinedPrice": "10598.99",
+          "sourceSize": "Twin XL",
+          "componentQuantities": [
+            2,
+            2
+          ],
+          "minCombinedPrice": "10697.98",
+          "maxCombinedPrice": "10697.98",
           "componentVariants": [
             [
               {
-                "variantId": "44128371212349",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128371212349",
-                "sku": "BGM506W91",
-                "title": "Split Cal King",
-                "price": "6999.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Cal King"
-                },
-                "nativeSize": "Split Cal King",
-                "shopSizeKeys": [
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122467401789",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122467401789",
-                "sku": "BGF032209",
-                "title": "Split Cal King",
-                "price": "3599.00",
-                "available": true,
-                "options": {
-                  "Size": "Split Cal King"
-                },
-                "nativeSize": "Split Cal King",
-                "shopSizeKeys": [
-                  "Split California King"
-                ],
-                "geometry": "full_split",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ]
-          ]
-        }
-      ]
-    },
-    {
-      "id": "queen-complete-review",
-      "name": "Queen Complete Sleep Package",
-      "category": "COMPLETE_SLEEP_PACKAGE",
-      "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. The mattress and base pairing requires explicit compatibility verification.",
-      "showroomRelationship": "PENDING_VERIFICATION",
-      "verifiedAttributes": [
-        "foam construction",
-        "adjustable",
-        "dri tec",
-        "mattress protection"
-      ],
-      "components": [
-        {
-          "productId": "8100282794045",
-          "shopifyProductId": "gid://shopify/Product/8100282794045",
-          "handle": "12-inch-memory-foam-mattress",
-          "title": "12\" Memory Foam Mattress",
-          "productType": "Mattress",
-          "url": "/products/12-inch-memory-foam-mattress",
-          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ffd79485-cc8c-4007-a3c4-710170c1883c.jpg?v=1793551148",
-          "verifiedFeatures": [
-            "foam construction"
-          ],
-          "variants": [
-            {
-              "variantId": "44128361873469",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128361873469",
-              "sku": "BGA025901",
-              "title": "Twin",
-              "price": "1249.99",
-              "available": true,
-              "options": {
-                "Size": "Twin"
-              },
-              "nativeSize": "Twin",
-              "shopSizeKeys": [
-                "Twin"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44128361906237",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
-              "sku": "BGA025902",
-              "title": "Twin XL",
-              "price": "1299.99",
-              "available": true,
-              "options": {
-                "Size": "Twin XL"
-              },
-              "nativeSize": "Twin XL",
-              "shopSizeKeys": [
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44128361939005",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128361939005",
-              "sku": "BGA025903",
-              "title": "Full",
-              "price": "1499.99",
-              "available": true,
-              "options": {
-                "Size": "Full"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44128361971773",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128361971773",
-              "sku": "BGA025905",
-              "title": "Queen",
-              "price": "1599.99",
-              "available": true,
-              "options": {
-                "Size": "Queen"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44128362004541",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362004541",
-              "sku": "BGA025955",
-              "title": "Split Head Queen",
-              "price": "1799.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44128362037309",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362037309",
-              "sku": "BGA025906",
-              "title": "King",
-              "price": "1899.99",
-              "available": true,
-              "options": {
-                "Size": "King"
-              },
-              "nativeSize": "King",
-              "shopSizeKeys": [
-                "King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44128362070077",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362070077",
-              "sku": "BGA025907",
-              "title": "Cal King",
-              "price": "1899.99",
-              "available": true,
-              "options": {
-                "Size": "Cal King"
-              },
-              "nativeSize": "Cal King",
-              "shopSizeKeys": [
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44128362102845",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362102845",
-              "sku": "BGA025965",
-              "title": "Split Head King",
-              "price": "2299.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44128362135613",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362135613",
-              "sku": "BGA025975",
-              "title": "Split Head Cal King",
-              "price": "2299.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44128362168381",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362168381",
-              "sku": "BGA025908",
-              "title": "Split King",
-              "price": "2599.98",
-              "available": true,
-              "options": {
-                "Size": "Split King"
-              },
-              "nativeSize": "Split King",
-              "shopSizeKeys": [
-                "Split King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            }
-          ],
-          "quantity": 1
-        },
-        {
-          "productId": "8100247142461",
-          "shopifyProductId": "gid://shopify/Product/8100247142461",
-          "handle": "flex-l-adjustable-base",
-          "title": "Flex L Adjustable Base",
-          "productType": "Adjustable Base",
-          "url": "/products/flex-l-adjustable-base",
-          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/0af53a18-5eff-4179-8a17-660d69c63294.jpg?v=1793551142",
-          "verifiedFeatures": [
-            "adjustable"
-          ],
-          "variants": [
-            {
-              "variantId": "44122467139645",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
-              "sku": "BGF026802-BLK",
-              "title": "Twin XL",
-              "price": "699.00",
-              "available": true,
-              "options": {
-                "Size": "Twin XL"
-              },
-              "nativeSize": "Twin XL",
-              "shopSizeKeys": [
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122467172413",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
-              "sku": "BGF026805-BLK",
-              "title": "Queen",
-              "price": "799.00",
-              "available": true,
-              "options": {
-                "Size": "Queen"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122467205181",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
-              "sku": "BGF026806-BLK",
-              "title": "King",
-              "price": "999.00",
-              "available": true,
-              "options": {
-                "Size": "King"
-              },
-              "nativeSize": "King",
-              "shopSizeKeys": [
-                "King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122467237949",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
-              "sku": "BGF026807-BLK",
-              "title": "Cal King",
-              "price": "999.00",
-              "available": true,
-              "options": {
-                "Size": "Cal King"
-              },
-              "nativeSize": "Cal King",
-              "shopSizeKeys": [
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            }
-          ],
-          "quantity": 1
-        },
-        {
-          "productId": "8100247306301",
-          "shopifyProductId": "gid://shopify/Product/8100247306301",
-          "handle": "cotton-sheet-set",
-          "title": "Cotton Sheet Set",
-          "productType": "Sheet Set",
-          "url": "/products/cotton-sheet-set",
-          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/01a0b4b8-d5ae-7dd8-a5e5-ef6c1a446c16.jpg?v=1793551140",
-          "verifiedFeatures": [],
-          "variants": [
-            {
-              "variantId": "44122475724861",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122475724861",
-              "sku": "BGS122W10",
-              "title": "Twin / Bright White",
-              "price": "149.99",
-              "available": true,
-              "options": {
-                "Size": "Twin",
-                "Color": "Bright White"
-              },
-              "nativeSize": "Twin",
-              "shopSizeKeys": [
-                "Twin"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122475757629",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122475757629",
-              "sku": "BGS122W20",
-              "title": "Twin XL / Bright White",
-              "price": "159.99",
-              "available": true,
-              "options": {
-                "Size": "Twin XL",
-                "Color": "Bright White"
-              },
-              "nativeSize": "Twin XL",
-              "shopSizeKeys": [
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122475790397",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122475790397",
-              "sku": "BGS122W30",
-              "title": "Full / Bright White",
-              "price": "179.99",
-              "available": true,
-              "options": {
-                "Size": "Full",
-                "Color": "Bright White"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122475823165",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122475823165",
-              "sku": "BGS122W50",
-              "title": "Queen / Bright White",
-              "price": "199.99",
-              "available": true,
-              "options": {
-                "Size": "Queen",
-                "Color": "Bright White"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122475855933",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122475855933",
-              "sku": "BGS122W55",
-              "title": "Split Head Queen / Bright White",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen",
-                "Color": "Bright White"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122475888701",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122475888701",
-              "sku": "BGS122W60",
-              "title": "King / Bright White",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "King",
-                "Color": "Bright White"
-              },
-              "nativeSize": "King",
-              "shopSizeKeys": [
-                "King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122475921469",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122475921469",
-              "sku": "BGS122W70",
-              "title": "Cal King / Bright White",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Cal King",
-                "Color": "Bright White"
-              },
-              "nativeSize": "Cal King",
-              "shopSizeKeys": [
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122475954237",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122475954237",
-              "sku": "BGS122W80",
-              "title": "Split King / Bright White",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Split King",
-                "Color": "Bright White"
-              },
-              "nativeSize": "Split King",
-              "shopSizeKeys": [
-                "Split King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122475987005",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122475987005",
-              "sku": "BGS122W90",
-              "title": "Split Cal King / Bright White",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Split Cal King",
-                "Color": "Bright White"
-              },
-              "nativeSize": "Split Cal King",
-              "shopSizeKeys": [
-                "Split California King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476019773",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476019773",
-              "sku": "BGS122W65",
-              "title": "Split Head King / Bright White",
-              "price": "259.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King",
-                "Color": "Bright White"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476052541",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476052541",
-              "sku": "BGS122W75",
-              "title": "Split Head Cal King / Bright White",
-              "price": "259.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King",
-                "Color": "Bright White"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476085309",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476085309",
-              "sku": "BGS122L10",
-              "title": "Twin / Light Grey",
-              "price": "149.99",
-              "available": true,
-              "options": {
-                "Size": "Twin",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Twin",
-              "shopSizeKeys": [
-                "Twin"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476118077",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476118077",
-              "sku": "BGS122L20",
-              "title": "Twin XL / Light Grey",
-              "price": "159.99",
-              "available": true,
-              "options": {
-                "Size": "Twin XL",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Twin XL",
-              "shopSizeKeys": [
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476150845",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476150845",
-              "sku": "BGS122L30",
-              "title": "Full / Light Grey",
-              "price": "179.99",
-              "available": true,
-              "options": {
-                "Size": "Full",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476183613",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476183613",
-              "sku": "BGS122L50",
-              "title": "Queen / Light Grey",
-              "price": "199.99",
-              "available": true,
-              "options": {
-                "Size": "Queen",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476216381",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476216381",
-              "sku": "BGS122L55",
-              "title": "Split Head Queen / Light Grey",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476249149",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476249149",
-              "sku": "BGS122L60",
-              "title": "King / Light Grey",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "King",
-              "shopSizeKeys": [
-                "King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476281917",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476281917",
-              "sku": "BGS122L70",
-              "title": "Cal King / Light Grey",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Cal King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Cal King",
-              "shopSizeKeys": [
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476314685",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476314685",
-              "sku": "BGS122L80",
-              "title": "Split King / Light Grey",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Split King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Split King",
-              "shopSizeKeys": [
-                "Split King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476347453",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476347453",
-              "sku": "BGS122L90",
-              "title": "Split Cal King / Light Grey",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Split Cal King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Split Cal King",
-              "shopSizeKeys": [
-                "Split California King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476380221",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476380221",
-              "sku": "BGS122L65",
-              "title": "Split Head King / Light Grey",
-              "price": "259.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476412989",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476412989",
-              "sku": "BGS122L75",
-              "title": "Split Head Cal King / Light Grey",
-              "price": "259.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476445757",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476445757",
-              "sku": "BGS122G50",
-              "title": "Queen / Moss",
-              "price": "199.99",
-              "available": true,
-              "options": {
-                "Size": "Queen",
-                "Color": "Moss"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476478525",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476478525",
-              "sku": "BGS122G60",
-              "title": "King / Moss",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "King",
-                "Color": "Moss"
-              },
-              "nativeSize": "King",
-              "shopSizeKeys": [
-                "King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476511293",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476511293",
-              "sku": "BGS122G80",
-              "title": "Split King / Moss",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Split King",
-                "Color": "Moss"
-              },
-              "nativeSize": "Split King",
-              "shopSizeKeys": [
-                "Split King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476544061",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476544061",
-              "sku": "BGS122T10",
-              "title": "Twin / Taupe",
-              "price": "149.99",
-              "available": true,
-              "options": {
-                "Size": "Twin",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Twin",
-              "shopSizeKeys": [
-                "Twin"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476576829",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476576829",
-              "sku": "BGS122T20",
-              "title": "Twin XL / Taupe",
-              "price": "159.99",
-              "available": true,
-              "options": {
-                "Size": "Twin XL",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Twin XL",
-              "shopSizeKeys": [
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476609597",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476609597",
-              "sku": "BGS122T30",
-              "title": "Full / Taupe",
-              "price": "179.99",
-              "available": true,
-              "options": {
-                "Size": "Full",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476642365",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476642365",
-              "sku": "BGS122T50",
-              "title": "Queen / Taupe",
-              "price": "199.99",
-              "available": true,
-              "options": {
-                "Size": "Queen",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476675133",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476675133",
-              "sku": "BGS122T55",
-              "title": "Split Head Queen / Taupe",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476707901",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476707901",
-              "sku": "BGS122T60",
-              "title": "King / Taupe",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "King",
-                "Color": "Taupe"
-              },
-              "nativeSize": "King",
-              "shopSizeKeys": [
-                "King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476740669",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476740669",
-              "sku": "BGS122T70",
-              "title": "Cal King / Taupe",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Cal King",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Cal King",
-              "shopSizeKeys": [
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476773437",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476773437",
-              "sku": "BGS122T80",
-              "title": "Split King / Taupe",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Split King",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Split King",
-              "shopSizeKeys": [
-                "Split King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476806205",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476806205",
-              "sku": "BGS122T90",
-              "title": "Split Cal King / Taupe",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Split Cal King",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Split Cal King",
-              "shopSizeKeys": [
-                "Split California King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476838973",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476838973",
-              "sku": "BGS122T65",
-              "title": "Split Head King / Taupe",
-              "price": "259.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476871741",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476871741",
-              "sku": "BGS122T75",
-              "title": "Split Head Cal King / Taupe",
-              "price": "259.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            }
-          ],
-          "quantity": 1
-        },
-        {
-          "productId": "8100247404605",
-          "shopifyProductId": "gid://shopify/Product/8100247404605",
-          "handle": "dri-tec-mattress-protector",
-          "title": "Dri-Tec Mattress Protector",
-          "productType": "Mattress Protector",
-          "url": "/products/dri-tec-mattress-protector",
-          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019e0442-8d58-7dd9-b5c3-750584828add.jpg?v=1793551141",
-          "verifiedFeatures": [
-            "dri tec",
-            "mattress protection"
-          ],
-          "variants": [
-            {
-              "variantId": "44122478837821",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478837821",
-              "sku": "BGM03AWFT",
-              "title": "Twin",
-              "price": "109.99",
-              "available": true,
-              "options": {
-                "Size": "Twin"
-              },
-              "nativeSize": "Twin",
-              "shopSizeKeys": [
-                "Twin"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478870589",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478870589",
-              "sku": "BGM03AWFX",
-              "title": "Twin XL",
-              "price": "119.99",
-              "available": true,
-              "options": {
-                "Size": "Twin XL"
-              },
-              "nativeSize": "Twin XL",
-              "shopSizeKeys": [
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478903357",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478903357",
-              "sku": "BGM03AWFF",
-              "title": "Full",
-              "price": "119.99",
-              "available": true,
-              "options": {
-                "Size": "Full"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478936125",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478936125",
-              "sku": "BGM03AWFY",
-              "title": "Full XL",
-              "price": "149.99",
-              "available": true,
-              "options": {
-                "Size": "Full XL"
-              },
-              "nativeSize": "Full XL",
-              "shopSizeKeys": [
-                "Full XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478968893",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478968893",
-              "sku": "BGM03AWFQ",
-              "title": "Queen",
-              "price": "159.99",
-              "available": true,
-              "options": {
-                "Size": "Queen"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479001661",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479001661",
-              "sku": "BGM014555",
-              "title": "Split Head Queen",
-              "price": "179.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479034429",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479034429",
-              "sku": "BGM03AWFK",
-              "title": "King",
-              "price": "189.99",
-              "available": true,
-              "options": {
-                "Size": "King"
-              },
-              "nativeSize": "King",
-              "shopSizeKeys": [
-                "King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479067197",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479067197",
-              "sku": "BGM03AWFW",
-              "title": "Cal King",
-              "price": "189.99",
-              "available": true,
-              "options": {
-                "Size": "Cal King"
-              },
-              "nativeSize": "Cal King",
-              "shopSizeKeys": [
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479099965",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479099965",
-              "sku": "BGM03AWFE",
-              "title": "Split King (2pc)",
-              "price": "209.99",
-              "available": true,
-              "options": {
-                "Size": "Split King (2pc)"
-              },
-              "nativeSize": "Split King (2pc)",
-              "shopSizeKeys": [
-                "Split King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479132733",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479132733",
-              "sku": "BGM03AWFD",
-              "title": "Split Cal King (2pc)",
-              "price": "209.99",
-              "available": true,
-              "options": {
-                "Size": "Split Cal King (2pc)"
-              },
-              "nativeSize": "Split Cal King (2pc)",
-              "shopSizeKeys": [
-                "Split California King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479165501",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479165501",
-              "sku": "BGM014515",
-              "title": "Split Head King",
-              "price": "209.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479198269",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479198269",
-              "sku": "BGM014575",
-              "title": "Split Head Cal King",
-              "price": "209.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            }
-          ],
-          "quantity": 1
-        }
-      ],
-      "sizes": [
-        {
-          "label": "Queen",
-          "geometry": "standard",
-          "minCombinedPrice": "2758.97",
-          "maxCombinedPrice": "2758.97",
-          "componentVariants": [
-            [
-              {
-                "variantId": "44128361971773",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128361971773",
-                "sku": "BGA025905",
-                "title": "Queen",
-                "price": "1599.99",
-                "available": true,
-                "options": {
-                  "Size": "Queen"
-                },
-                "nativeSize": "Queen",
-                "shopSizeKeys": [
-                  "Queen"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122467172413",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122467172413",
-                "sku": "BGF026805-BLK",
-                "title": "Queen",
-                "price": "799.00",
-                "available": true,
-                "options": {
-                  "Size": "Queen"
-                },
-                "nativeSize": "Queen",
-                "shopSizeKeys": [
-                  "Queen"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122475823165",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122475823165",
-                "sku": "BGS122W50",
-                "title": "Queen / Bright White",
-                "price": "199.99",
-                "available": true,
-                "options": {
-                  "Size": "Queen",
-                  "Color": "Bright White"
-                },
-                "nativeSize": "Queen",
-                "shopSizeKeys": [
-                  "Queen"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476183613",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476183613",
-                "sku": "BGS122L50",
-                "title": "Queen / Light Grey",
-                "price": "199.99",
-                "available": true,
-                "options": {
-                  "Size": "Queen",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "Queen",
-                "shopSizeKeys": [
-                  "Queen"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476445757",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476445757",
-                "sku": "BGS122G50",
-                "title": "Queen / Moss",
-                "price": "199.99",
-                "available": true,
-                "options": {
-                  "Size": "Queen",
-                  "Color": "Moss"
-                },
-                "nativeSize": "Queen",
-                "shopSizeKeys": [
-                  "Queen"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476642365",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476642365",
-                "sku": "BGS122T50",
-                "title": "Queen / Taupe",
-                "price": "199.99",
-                "available": true,
-                "options": {
-                  "Size": "Queen",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "Queen",
-                "shopSizeKeys": [
-                  "Queen"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122478968893",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478968893",
-                "sku": "BGM03AWFQ",
-                "title": "Queen",
-                "price": "159.99",
-                "available": true,
-                "options": {
-                  "Size": "Queen"
-                },
-                "nativeSize": "Queen",
-                "shopSizeKeys": [
-                  "Queen"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "King",
-          "geometry": "standard",
-          "minCombinedPrice": "3318.97",
-          "maxCombinedPrice": "3318.97",
-          "componentVariants": [
-            [
-              {
-                "variantId": "44128362037309",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128362037309",
-                "sku": "BGA025906",
-                "title": "King",
-                "price": "1899.99",
-                "available": true,
-                "options": {
-                  "Size": "King"
-                },
-                "nativeSize": "King",
-                "shopSizeKeys": [
-                  "King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122467205181",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122467205181",
-                "sku": "BGF026806-BLK",
-                "title": "King",
-                "price": "999.00",
-                "available": true,
-                "options": {
-                  "Size": "King"
-                },
-                "nativeSize": "King",
-                "shopSizeKeys": [
-                  "King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122475888701",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122475888701",
-                "sku": "BGS122W60",
-                "title": "King / Bright White",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "King",
-                  "Color": "Bright White"
-                },
-                "nativeSize": "King",
-                "shopSizeKeys": [
-                  "King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476249149",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476249149",
-                "sku": "BGS122L60",
-                "title": "King / Light Grey",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "King",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "King",
-                "shopSizeKeys": [
-                  "King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476478525",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476478525",
-                "sku": "BGS122G60",
-                "title": "King / Moss",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "King",
-                  "Color": "Moss"
-                },
-                "nativeSize": "King",
-                "shopSizeKeys": [
-                  "King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476707901",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476707901",
-                "sku": "BGS122T60",
-                "title": "King / Taupe",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "King",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "King",
-                "shopSizeKeys": [
-                  "King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122479034429",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479034429",
-                "sku": "BGM03AWFK",
-                "title": "King",
-                "price": "189.99",
-                "available": true,
-                "options": {
-                  "Size": "King"
-                },
-                "nativeSize": "King",
-                "shopSizeKeys": [
-                  "King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "California King",
-          "geometry": "standard",
-          "minCombinedPrice": "3318.97",
-          "maxCombinedPrice": "3318.97",
-          "componentVariants": [
-            [
-              {
-                "variantId": "44128362070077",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128362070077",
-                "sku": "BGA025907",
-                "title": "Cal King",
-                "price": "1899.99",
-                "available": true,
-                "options": {
-                  "Size": "Cal King"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122467237949",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122467237949",
-                "sku": "BGF026807-BLK",
-                "title": "Cal King",
-                "price": "999.00",
-                "available": true,
-                "options": {
-                  "Size": "Cal King"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122475921469",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122475921469",
-                "sku": "BGS122W70",
-                "title": "Cal King / Bright White",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "Cal King",
-                  "Color": "Bright White"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476281917",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476281917",
-                "sku": "BGS122L70",
-                "title": "Cal King / Light Grey",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "Cal King",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476740669",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476740669",
-                "sku": "BGS122T70",
-                "title": "Cal King / Taupe",
-                "price": "229.99",
-                "available": true,
-                "options": {
-                  "Size": "Cal King",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122479067197",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479067197",
-                "sku": "BGM03AWFW",
-                "title": "Cal King",
-                "price": "189.99",
-                "available": true,
-                "options": {
-                  "Size": "Cal King"
-                },
-                "nativeSize": "Cal King",
-                "shopSizeKeys": [
-                  "California King"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ]
-          ]
-        },
-        {
-          "label": "Twin XL",
-          "geometry": "standard",
-          "minCombinedPrice": "2278.97",
-          "maxCombinedPrice": "2278.97",
-          "componentVariants": [
-            [
-              {
-                "variantId": "44128361906237",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128361906237",
-                "sku": "BGA025902",
+                "variantId": "44128370950205",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128370950205",
+                "sku": "BGM506W21",
                 "title": "Twin XL",
-                "price": "1299.99",
+                "price": "3499.99",
                 "available": true,
                 "options": {
                   "Size": "Twin XL"
@@ -10249,86 +11922,11 @@ window.SnoozePodCuratedBundles = {
             ],
             [
               {
-                "variantId": "44122467139645",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122467139645",
-                "sku": "BGF026802-BLK",
+                "variantId": "44122467270717",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44122467270717",
+                "sku": "BGF032202",
                 "title": "Twin XL",
-                "price": "699.00",
-                "available": true,
-                "options": {
-                  "Size": "Twin XL"
-                },
-                "nativeSize": "Twin XL",
-                "shopSizeKeys": [
-                  "Twin XL"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122475757629",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122475757629",
-                "sku": "BGS122W20",
-                "title": "Twin XL / Bright White",
-                "price": "159.99",
-                "available": true,
-                "options": {
-                  "Size": "Twin XL",
-                  "Color": "Bright White"
-                },
-                "nativeSize": "Twin XL",
-                "shopSizeKeys": [
-                  "Twin XL"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476118077",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476118077",
-                "sku": "BGS122L20",
-                "title": "Twin XL / Light Grey",
-                "price": "159.99",
-                "available": true,
-                "options": {
-                  "Size": "Twin XL",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "Twin XL",
-                "shopSizeKeys": [
-                  "Twin XL"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122476576829",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122476576829",
-                "sku": "BGS122T20",
-                "title": "Twin XL / Taupe",
-                "price": "159.99",
-                "available": true,
-                "options": {
-                  "Size": "Twin XL",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "Twin XL",
-                "shopSizeKeys": [
-                  "Twin XL"
-                ],
-                "geometry": "standard",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122478870589",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478870589",
-                "sku": "BGM03AWFX",
-                "title": "Twin XL",
-                "price": "119.99",
+                "price": "1849.00",
                 "available": true,
                 "options": {
                   "Size": "Twin XL"
@@ -10346,32 +11944,30 @@ window.SnoozePodCuratedBundles = {
       ]
     },
     {
-      "id": "split-head-complete-review",
-      "name": "Split Head Queen Complete Sleep Package",
-      "category": "COMPLETE_SLEEP_PACKAGE",
+      "id": "14-inch-dual-comfort-mattress--flex-sh-adjustable-base",
+      "name": "14\" Dual Comfort Mattress + Flex SH Adjustable Base",
+      "category": "SLEEP_SYSTEM",
       "contentStatus": "READY_FOR_REVIEW",
-      "purchaseStatus": "BLOCKED_COMPATIBILITY",
-      "compatibilityStatus": "PENDING_VERIFICATION",
-      "curationBasis": "Review candidate only. The mattress and base pairing requires explicit compatibility verification.",
+      "purchaseStatus": "STAGED_PURCHASABLE",
+      "compatibilityStatus": "OWNER_APPROVED",
+      "curationBasis": "Owner approved: split-head mattresses pair only with the Flex SH split-head base in the exact same size.",
       "showroomRelationship": "PENDING_VERIFICATION",
       "verifiedAttributes": [
         "dual comfort",
         "independent side comfort",
         "modular comfort",
         "adjustable",
-        "split head",
-        "dri tec",
-        "mattress protection"
+        "split head"
       ],
       "components": [
         {
-          "productId": "8100282892349",
-          "shopifyProductId": "gid://shopify/Product/8100282892349",
-          "handle": "12-inch-dual-comfort-mattress",
-          "title": "12\" Dual Comfort Mattress",
+          "productId": "8100282925117",
+          "shopifyProductId": "gid://shopify/Product/8100282925117",
+          "handle": "14-inch-dual-comfort-mattress",
+          "title": "14\" Dual Comfort Mattress",
           "productType": "Mattress",
-          "url": "/products/12-inch-dual-comfort-mattress",
-          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019d1b36-2013-7089-9ef2-764c398e9cdf.jpg?v=1793551148",
+          "url": "/products/14-inch-dual-comfort-mattress",
+          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019df90b-24f9-7eee-9202-56c1bdb7510c.jpg?v=1793551147",
           "verifiedFeatures": [
             "dual comfort",
             "independent side comfort",
@@ -10379,11 +11975,11 @@ window.SnoozePodCuratedBundles = {
           ],
           "variants": [
             {
-              "variantId": "44128362528829",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362528829",
-              "sku": "BGM301W21",
+              "variantId": "44128370950205",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128370950205",
+              "sku": "BGM506W21",
               "title": "Twin XL",
-              "price": "2099.00",
+              "price": "3499.99",
               "available": true,
               "options": {
                 "Size": "Twin XL"
@@ -10396,11 +11992,11 @@ window.SnoozePodCuratedBundles = {
               "fulfillmentReadiness": "PENDING"
             },
             {
-              "variantId": "44128362561597",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362561597",
-              "sku": "BGM301W51",
+              "variantId": "44128370982973",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128370982973",
+              "sku": "BGM506W51",
               "title": "Queen",
-              "price": "2499.00",
+              "price": "3999.99",
               "available": true,
               "options": {
                 "Size": "Queen"
@@ -10413,28 +12009,11 @@ window.SnoozePodCuratedBundles = {
               "fulfillmentReadiness": "PENDING"
             },
             {
-              "variantId": "44128362594365",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362594365",
-              "sku": "BGM301W55",
-              "title": "Split Head Queen",
-              "price": "2999.00",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44128362627133",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362627133",
-              "sku": "BGM301W61",
+              "variantId": "44128371015741",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371015741",
+              "sku": "BGM506W61",
               "title": "King",
-              "price": "3199.00",
+              "price": "4799.99",
               "available": true,
               "options": {
                 "Size": "King"
@@ -10447,11 +12026,11 @@ window.SnoozePodCuratedBundles = {
               "fulfillmentReadiness": "PENDING"
             },
             {
-              "variantId": "44128362659901",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362659901",
-              "sku": "BGM301W71",
+              "variantId": "44128371048509",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371048509",
+              "sku": "BGM506W71",
               "title": "Cal King",
-              "price": "3199.00",
+              "price": "4799.99",
               "available": true,
               "options": {
                 "Size": "Cal King"
@@ -10464,11 +12043,28 @@ window.SnoozePodCuratedBundles = {
               "fulfillmentReadiness": "PENDING"
             },
             {
-              "variantId": "44128362692669",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362692669",
-              "sku": "BGM301W65",
+              "variantId": "44128371081277",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371081277",
+              "sku": "BGM506W55",
+              "title": "Split Head Queen",
+              "price": "4499.99",
+              "available": true,
+              "options": {
+                "Size": "Split Head Queen"
+              },
+              "nativeSize": "Split Head Queen",
+              "shopSizeKeys": [
+                "Split Head Queen"
+              ],
+              "geometry": "split_head",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128371114045",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371114045",
+              "sku": "BGM506W65",
               "title": "Split Head King",
-              "price": "3799.00",
+              "price": "5299.99",
               "available": true,
               "options": {
                 "Size": "Split Head King"
@@ -10481,11 +12077,11 @@ window.SnoozePodCuratedBundles = {
               "fulfillmentReadiness": "PENDING"
             },
             {
-              "variantId": "44128362725437",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362725437",
-              "sku": "BGM301W75",
+              "variantId": "44128371146813",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371146813",
+              "sku": "BGM506W75",
               "title": "Split Head Cal King",
-              "price": "3799.00",
+              "price": "5299.99",
               "available": true,
               "options": {
                 "Size": "Split Head Cal King"
@@ -10498,11 +12094,28 @@ window.SnoozePodCuratedBundles = {
               "fulfillmentReadiness": "PENDING"
             },
             {
-              "variantId": "44128362758205",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44128362758205",
-              "sku": "BGM301W91",
+              "variantId": "44128371179581",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371179581",
+              "sku": "BGM506W81",
+              "title": "Twin XL x 2",
+              "price": "6999.99",
+              "available": true,
+              "options": {
+                "Size": "Twin XL x 2"
+              },
+              "nativeSize": "Twin XL x 2",
+              "shopSizeKeys": [
+                "Twin XL x 2"
+              ],
+              "geometry": "full_split",
+              "fulfillmentReadiness": "PENDING"
+            },
+            {
+              "variantId": "44128371212349",
+              "shopifyVariantId": "gid://shopify/ProductVariant/44128371212349",
+              "sku": "BGM506W91",
               "title": "Split Cal King",
-              "price": "4198.00",
+              "price": "6999.99",
               "available": true,
               "options": {
                 "Size": "Split Cal King"
@@ -10583,1010 +12196,27 @@ window.SnoozePodCuratedBundles = {
             }
           ],
           "quantity": 1
-        },
-        {
-          "productId": "8100247339069",
-          "shopifyProductId": "gid://shopify/Product/8100247339069",
-          "handle": "dri-tec-sheet-set",
-          "title": "Dri-Tec Sheet Set",
-          "productType": "Sheet Set",
-          "url": "/products/dri-tec-sheet-set",
-          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/01a0b4b8-d7ca-744b-b41f-3810b65ed391.jpg?v=1793551141",
-          "verifiedFeatures": [
-            "dri tec"
-          ],
-          "variants": [
-            {
-              "variantId": "44122476904509",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476904509",
-              "sku": "BGS194X11",
-              "title": "Twin/Twin XL / Charcoal",
-              "price": "199.99",
-              "available": true,
-              "options": {
-                "Size": "Twin/Twin XL",
-                "Color": "Charcoal"
-              },
-              "nativeSize": "Twin/Twin XL",
-              "shopSizeKeys": [
-                "Twin",
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476937277",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476937277",
-              "sku": "BGS194X30",
-              "title": "Full / Charcoal",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Full",
-                "Color": "Charcoal"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122476970045",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122476970045",
-              "sku": "BGS194X50",
-              "title": "Queen / Charcoal",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Queen",
-                "Color": "Charcoal"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477002813",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477002813",
-              "sku": "BGS194X55",
-              "title": "Split Head Queen / Charcoal",
-              "price": "279.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen",
-                "Color": "Charcoal"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477035581",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477035581",
-              "sku": "BGS194X12",
-              "title": "King/Cal King / Charcoal",
-              "price": "279.99",
-              "available": true,
-              "options": {
-                "Size": "King/Cal King",
-                "Color": "Charcoal"
-              },
-              "nativeSize": "King/Cal King",
-              "shopSizeKeys": [
-                "King",
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477068349",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477068349",
-              "sku": "BGS194X14",
-              "title": "Split King/Split Cal King / Charcoal",
-              "price": "299.99",
-              "available": true,
-              "options": {
-                "Size": "Split King/Split Cal King",
-                "Color": "Charcoal"
-              },
-              "nativeSize": "Split King/Split Cal King",
-              "shopSizeKeys": [
-                "Split King",
-                "Split California King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477101117",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477101117",
-              "sku": "BGS194X65",
-              "title": "Split Head King / Charcoal",
-              "price": "309.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King",
-                "Color": "Charcoal"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477133885",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477133885",
-              "sku": "BGS194X75",
-              "title": "Split Head Cal King / Charcoal",
-              "price": "309.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King",
-                "Color": "Charcoal"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477166653",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477166653",
-              "sku": "BGS194L11",
-              "title": "Twin/Twin XL / Light Grey",
-              "price": "199.99",
-              "available": true,
-              "options": {
-                "Size": "Twin/Twin XL",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Twin/Twin XL",
-              "shopSizeKeys": [
-                "Twin",
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477199421",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477199421",
-              "sku": "BGS194L30",
-              "title": "Full / Light Grey",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Full",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477232189",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477232189",
-              "sku": "BGS194L50",
-              "title": "Queen / Light Grey",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Queen",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477264957",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477264957",
-              "sku": "BGS194L55",
-              "title": "Split Head Queen / Light Grey",
-              "price": "279.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477297725",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477297725",
-              "sku": "BGS194L12",
-              "title": "King/Cal King / Light Grey",
-              "price": "279.99",
-              "available": true,
-              "options": {
-                "Size": "King/Cal King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "King/Cal King",
-              "shopSizeKeys": [
-                "King",
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477330493",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477330493",
-              "sku": "BGS194L14",
-              "title": "Split King/Split Cal King / Light Grey",
-              "price": "299.99",
-              "available": true,
-              "options": {
-                "Size": "Split King/Split Cal King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Split King/Split Cal King",
-              "shopSizeKeys": [
-                "Split King",
-                "Split California King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477363261",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477363261",
-              "sku": "BGS194L65",
-              "title": "Split Head King / Light Grey",
-              "price": "309.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477396029",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477396029",
-              "sku": "BGS194L75",
-              "title": "Split Head Cal King / Light Grey",
-              "price": "309.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477428797",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477428797",
-              "sku": "BGS194768",
-              "title": "Texas King / Light Grey",
-              "price": "329.99",
-              "available": true,
-              "options": {
-                "Size": "Texas King",
-                "Color": "Light Grey"
-              },
-              "nativeSize": "Texas King",
-              "shopSizeKeys": [
-                "Texas King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477461565",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477461565",
-              "sku": "BGS194N11",
-              "title": "Twin/Twin XL / Navy",
-              "price": "199.99",
-              "available": true,
-              "options": {
-                "Size": "Twin/Twin XL",
-                "Color": "Navy"
-              },
-              "nativeSize": "Twin/Twin XL",
-              "shopSizeKeys": [
-                "Twin",
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477494333",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477494333",
-              "sku": "BGS194N30",
-              "title": "Full / Navy",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Full",
-                "Color": "Navy"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477527101",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477527101",
-              "sku": "BGS194N50",
-              "title": "Queen / Navy",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Queen",
-                "Color": "Navy"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477559869",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477559869",
-              "sku": "BGS194N55",
-              "title": "Split Head Queen / Navy",
-              "price": "279.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen",
-                "Color": "Navy"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477592637",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477592637",
-              "sku": "BGS194N12",
-              "title": "King/Cal King / Navy",
-              "price": "279.99",
-              "available": true,
-              "options": {
-                "Size": "King/Cal King",
-                "Color": "Navy"
-              },
-              "nativeSize": "King/Cal King",
-              "shopSizeKeys": [
-                "King",
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477625405",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477625405",
-              "sku": "BGS194N14",
-              "title": "Split King/Split Cal King / Navy",
-              "price": "299.99",
-              "available": true,
-              "options": {
-                "Size": "Split King/Split Cal King",
-                "Color": "Navy"
-              },
-              "nativeSize": "Split King/Split Cal King",
-              "shopSizeKeys": [
-                "Split King",
-                "Split California King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477658173",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477658173",
-              "sku": "BGS194N65",
-              "title": "Split Head King / Navy",
-              "price": "309.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King",
-                "Color": "Navy"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477690941",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477690941",
-              "sku": "BGS194N75",
-              "title": "Split Head Cal King / Navy",
-              "price": "309.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King",
-                "Color": "Navy"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477723709",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477723709",
-              "sku": "BGS194T11",
-              "title": "Twin/Twin XL / Taupe",
-              "price": "199.99",
-              "available": true,
-              "options": {
-                "Size": "Twin/Twin XL",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Twin/Twin XL",
-              "shopSizeKeys": [
-                "Twin",
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477756477",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477756477",
-              "sku": "BGS194T30",
-              "title": "Full / Taupe",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Full",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477789245",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477789245",
-              "sku": "BGS194T50",
-              "title": "Queen / Taupe",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Queen",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477822013",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477822013",
-              "sku": "BGS194T55",
-              "title": "Split Head Queen / Taupe",
-              "price": "279.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477854781",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477854781",
-              "sku": "BGS194T12",
-              "title": "King/Cal King / Taupe",
-              "price": "279.99",
-              "available": true,
-              "options": {
-                "Size": "King/Cal King",
-                "Color": "Taupe"
-              },
-              "nativeSize": "King/Cal King",
-              "shopSizeKeys": [
-                "King",
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477887549",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477887549",
-              "sku": "BGS194T14",
-              "title": "Split King/Split Cal King / Taupe",
-              "price": "299.99",
-              "available": true,
-              "options": {
-                "Size": "Split King/Split Cal King",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Split King/Split Cal King",
-              "shopSizeKeys": [
-                "Split King",
-                "Split California King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477920317",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477920317",
-              "sku": "BGS194T65",
-              "title": "Split Head King / Taupe",
-              "price": "309.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477953085",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477953085",
-              "sku": "BGS194T75",
-              "title": "Split Head Cal King / Taupe",
-              "price": "309.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King",
-                "Color": "Taupe"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122477985853",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122477985853",
-              "sku": "BGS194W11",
-              "title": "Twin/Twin XL / White",
-              "price": "199.99",
-              "available": true,
-              "options": {
-                "Size": "Twin/Twin XL",
-                "Color": "White"
-              },
-              "nativeSize": "Twin/Twin XL",
-              "shopSizeKeys": [
-                "Twin",
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478018621",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478018621",
-              "sku": "BGS194W30",
-              "title": "Full / White",
-              "price": "229.99",
-              "available": true,
-              "options": {
-                "Size": "Full",
-                "Color": "White"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478051389",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478051389",
-              "sku": "BGS194W50",
-              "title": "Queen / White",
-              "price": "249.99",
-              "available": true,
-              "options": {
-                "Size": "Queen",
-                "Color": "White"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478084157",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478084157",
-              "sku": "BGS194W55",
-              "title": "Split Head Queen / White",
-              "price": "279.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen",
-                "Color": "White"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478116925",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478116925",
-              "sku": "BGS194W12",
-              "title": "King/Cal King / White",
-              "price": "279.99",
-              "available": true,
-              "options": {
-                "Size": "King/Cal King",
-                "Color": "White"
-              },
-              "nativeSize": "King/Cal King",
-              "shopSizeKeys": [
-                "King",
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478149693",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478149693",
-              "sku": "BGS194W14",
-              "title": "Split King/Split Cal King / White",
-              "price": "299.99",
-              "available": true,
-              "options": {
-                "Size": "Split King/Split Cal King",
-                "Color": "White"
-              },
-              "nativeSize": "Split King/Split Cal King",
-              "shopSizeKeys": [
-                "Split King",
-                "Split California King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478182461",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478182461",
-              "sku": "BGS194W65",
-              "title": "Split Head King / White",
-              "price": "309.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King",
-                "Color": "White"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478215229",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478215229",
-              "sku": "BGS194W75",
-              "title": "Split Head Cal King / White",
-              "price": "309.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King",
-                "Color": "White"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            }
-          ],
-          "quantity": 1
-        },
-        {
-          "productId": "8100247404605",
-          "shopifyProductId": "gid://shopify/Product/8100247404605",
-          "handle": "dri-tec-mattress-protector",
-          "title": "Dri-Tec Mattress Protector",
-          "productType": "Mattress Protector",
-          "url": "/products/dri-tec-mattress-protector",
-          "image": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019e0442-8d58-7dd9-b5c3-750584828add.jpg?v=1793551141",
-          "verifiedFeatures": [
-            "dri tec",
-            "mattress protection"
-          ],
-          "variants": [
-            {
-              "variantId": "44122478837821",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478837821",
-              "sku": "BGM03AWFT",
-              "title": "Twin",
-              "price": "109.99",
-              "available": true,
-              "options": {
-                "Size": "Twin"
-              },
-              "nativeSize": "Twin",
-              "shopSizeKeys": [
-                "Twin"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478870589",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478870589",
-              "sku": "BGM03AWFX",
-              "title": "Twin XL",
-              "price": "119.99",
-              "available": true,
-              "options": {
-                "Size": "Twin XL"
-              },
-              "nativeSize": "Twin XL",
-              "shopSizeKeys": [
-                "Twin XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478903357",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478903357",
-              "sku": "BGM03AWFF",
-              "title": "Full",
-              "price": "119.99",
-              "available": true,
-              "options": {
-                "Size": "Full"
-              },
-              "nativeSize": "Full",
-              "shopSizeKeys": [
-                "Full"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478936125",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478936125",
-              "sku": "BGM03AWFY",
-              "title": "Full XL",
-              "price": "149.99",
-              "available": true,
-              "options": {
-                "Size": "Full XL"
-              },
-              "nativeSize": "Full XL",
-              "shopSizeKeys": [
-                "Full XL"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122478968893",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122478968893",
-              "sku": "BGM03AWFQ",
-              "title": "Queen",
-              "price": "159.99",
-              "available": true,
-              "options": {
-                "Size": "Queen"
-              },
-              "nativeSize": "Queen",
-              "shopSizeKeys": [
-                "Queen"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479001661",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479001661",
-              "sku": "BGM014555",
-              "title": "Split Head Queen",
-              "price": "179.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Queen"
-              },
-              "nativeSize": "Split Head Queen",
-              "shopSizeKeys": [
-                "Split Head Queen"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479034429",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479034429",
-              "sku": "BGM03AWFK",
-              "title": "King",
-              "price": "189.99",
-              "available": true,
-              "options": {
-                "Size": "King"
-              },
-              "nativeSize": "King",
-              "shopSizeKeys": [
-                "King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479067197",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479067197",
-              "sku": "BGM03AWFW",
-              "title": "Cal King",
-              "price": "189.99",
-              "available": true,
-              "options": {
-                "Size": "Cal King"
-              },
-              "nativeSize": "Cal King",
-              "shopSizeKeys": [
-                "California King"
-              ],
-              "geometry": "standard",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479099965",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479099965",
-              "sku": "BGM03AWFE",
-              "title": "Split King (2pc)",
-              "price": "209.99",
-              "available": true,
-              "options": {
-                "Size": "Split King (2pc)"
-              },
-              "nativeSize": "Split King (2pc)",
-              "shopSizeKeys": [
-                "Split King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479132733",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479132733",
-              "sku": "BGM03AWFD",
-              "title": "Split Cal King (2pc)",
-              "price": "209.99",
-              "available": true,
-              "options": {
-                "Size": "Split Cal King (2pc)"
-              },
-              "nativeSize": "Split Cal King (2pc)",
-              "shopSizeKeys": [
-                "Split California King"
-              ],
-              "geometry": "full_split",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479165501",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479165501",
-              "sku": "BGM014515",
-              "title": "Split Head King",
-              "price": "209.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head King"
-              },
-              "nativeSize": "Split Head King",
-              "shopSizeKeys": [
-                "Split Head King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            },
-            {
-              "variantId": "44122479198269",
-              "shopifyVariantId": "gid://shopify/ProductVariant/44122479198269",
-              "sku": "BGM014575",
-              "title": "Split Head Cal King",
-              "price": "209.99",
-              "available": true,
-              "options": {
-                "Size": "Split Head Cal King"
-              },
-              "nativeSize": "Split Head Cal King",
-              "shopSizeKeys": [
-                "Split Head California King"
-              ],
-              "geometry": "split_head",
-              "fulfillmentReadiness": "PENDING"
-            }
-          ],
-          "quantity": 1
         }
       ],
       "sizes": [
         {
           "label": "Split Head Queen",
           "geometry": "split_head",
-          "minCombinedPrice": "5557.98",
-          "maxCombinedPrice": "5557.98",
+          "sourceSize": "Split Head Queen",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "6598.99",
+          "maxCombinedPrice": "6598.99",
           "componentVariants": [
             [
               {
-                "variantId": "44128362594365",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128362594365",
-                "sku": "BGM301W55",
+                "variantId": "44128371081277",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128371081277",
+                "sku": "BGM506W55",
                 "title": "Split Head Queen",
-                "price": "2999.00",
+                "price": "4499.99",
                 "available": true,
                 "options": {
                   "Size": "Split Head Queen"
@@ -11617,133 +12247,27 @@ window.SnoozePodCuratedBundles = {
                 "geometry": "split_head",
                 "fulfillmentReadiness": "PENDING"
               }
-            ],
-            [
-              {
-                "variantId": "44122477002813",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477002813",
-                "sku": "BGS194X55",
-                "title": "Split Head Queen / Charcoal",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Queen",
-                  "Color": "Charcoal"
-                },
-                "nativeSize": "Split Head Queen",
-                "shopSizeKeys": [
-                  "Split Head Queen"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477264957",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477264957",
-                "sku": "BGS194L55",
-                "title": "Split Head Queen / Light Grey",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Queen",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "Split Head Queen",
-                "shopSizeKeys": [
-                  "Split Head Queen"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477559869",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477559869",
-                "sku": "BGS194N55",
-                "title": "Split Head Queen / Navy",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Queen",
-                  "Color": "Navy"
-                },
-                "nativeSize": "Split Head Queen",
-                "shopSizeKeys": [
-                  "Split Head Queen"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477822013",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477822013",
-                "sku": "BGS194T55",
-                "title": "Split Head Queen / Taupe",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Queen",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "Split Head Queen",
-                "shopSizeKeys": [
-                  "Split Head Queen"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478084157",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478084157",
-                "sku": "BGS194W55",
-                "title": "Split Head Queen / White",
-                "price": "279.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Queen",
-                  "Color": "White"
-                },
-                "nativeSize": "Split Head Queen",
-                "shopSizeKeys": [
-                  "Split Head Queen"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122479001661",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479001661",
-                "sku": "BGM014555",
-                "title": "Split Head Queen",
-                "price": "179.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Queen"
-                },
-                "nativeSize": "Split Head Queen",
-                "shopSizeKeys": [
-                  "Split Head Queen"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              }
             ]
           ]
         },
         {
           "label": "Split Head King",
           "geometry": "split_head",
-          "minCombinedPrice": "7117.98",
-          "maxCombinedPrice": "7117.98",
+          "sourceSize": "Split Head King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "8098.99",
+          "maxCombinedPrice": "8098.99",
           "componentVariants": [
             [
               {
-                "variantId": "44128362692669",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128362692669",
-                "sku": "BGM301W65",
+                "variantId": "44128371114045",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128371114045",
+                "sku": "BGM506W65",
                 "title": "Split Head King",
-                "price": "3799.00",
+                "price": "5299.99",
                 "available": true,
                 "options": {
                   "Size": "Split Head King"
@@ -11774,133 +12298,27 @@ window.SnoozePodCuratedBundles = {
                 "geometry": "split_head",
                 "fulfillmentReadiness": "PENDING"
               }
-            ],
-            [
-              {
-                "variantId": "44122477101117",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477101117",
-                "sku": "BGS194X65",
-                "title": "Split Head King / Charcoal",
-                "price": "309.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head King",
-                  "Color": "Charcoal"
-                },
-                "nativeSize": "Split Head King",
-                "shopSizeKeys": [
-                  "Split Head King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477363261",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477363261",
-                "sku": "BGS194L65",
-                "title": "Split Head King / Light Grey",
-                "price": "309.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head King",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "Split Head King",
-                "shopSizeKeys": [
-                  "Split Head King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477658173",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477658173",
-                "sku": "BGS194N65",
-                "title": "Split Head King / Navy",
-                "price": "309.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head King",
-                  "Color": "Navy"
-                },
-                "nativeSize": "Split Head King",
-                "shopSizeKeys": [
-                  "Split Head King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477920317",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477920317",
-                "sku": "BGS194T65",
-                "title": "Split Head King / Taupe",
-                "price": "309.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head King",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "Split Head King",
-                "shopSizeKeys": [
-                  "Split Head King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478182461",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478182461",
-                "sku": "BGS194W65",
-                "title": "Split Head King / White",
-                "price": "309.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head King",
-                  "Color": "White"
-                },
-                "nativeSize": "Split Head King",
-                "shopSizeKeys": [
-                  "Split Head King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122479165501",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479165501",
-                "sku": "BGM014515",
-                "title": "Split Head King",
-                "price": "209.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head King"
-                },
-                "nativeSize": "Split Head King",
-                "shopSizeKeys": [
-                  "Split Head King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              }
             ]
           ]
         },
         {
           "label": "Split Head California King",
           "geometry": "split_head",
-          "minCombinedPrice": "7117.98",
-          "maxCombinedPrice": "7117.98",
+          "sourceSize": "Split Head California King",
+          "componentQuantities": [
+            1,
+            1
+          ],
+          "minCombinedPrice": "8098.99",
+          "maxCombinedPrice": "8098.99",
           "componentVariants": [
             [
               {
-                "variantId": "44128362725437",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44128362725437",
-                "sku": "BGM301W75",
+                "variantId": "44128371146813",
+                "shopifyVariantId": "gid://shopify/ProductVariant/44128371146813",
+                "sku": "BGM506W75",
                 "title": "Split Head Cal King",
-                "price": "3799.00",
+                "price": "5299.99",
                 "available": true,
                 "options": {
                   "Size": "Split Head Cal King"
@@ -11920,117 +12338,6 @@ window.SnoozePodCuratedBundles = {
                 "sku": "BGF032275",
                 "title": "Split Head Cal King",
                 "price": "2799.00",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Cal King"
-                },
-                "nativeSize": "Split Head Cal King",
-                "shopSizeKeys": [
-                  "Split Head California King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122477133885",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477133885",
-                "sku": "BGS194X75",
-                "title": "Split Head Cal King / Charcoal",
-                "price": "309.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Cal King",
-                  "Color": "Charcoal"
-                },
-                "nativeSize": "Split Head Cal King",
-                "shopSizeKeys": [
-                  "Split Head California King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477396029",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477396029",
-                "sku": "BGS194L75",
-                "title": "Split Head Cal King / Light Grey",
-                "price": "309.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Cal King",
-                  "Color": "Light Grey"
-                },
-                "nativeSize": "Split Head Cal King",
-                "shopSizeKeys": [
-                  "Split Head California King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477690941",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477690941",
-                "sku": "BGS194N75",
-                "title": "Split Head Cal King / Navy",
-                "price": "309.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Cal King",
-                  "Color": "Navy"
-                },
-                "nativeSize": "Split Head Cal King",
-                "shopSizeKeys": [
-                  "Split Head California King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122477953085",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122477953085",
-                "sku": "BGS194T75",
-                "title": "Split Head Cal King / Taupe",
-                "price": "309.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Cal King",
-                  "Color": "Taupe"
-                },
-                "nativeSize": "Split Head Cal King",
-                "shopSizeKeys": [
-                  "Split Head California King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              },
-              {
-                "variantId": "44122478215229",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122478215229",
-                "sku": "BGS194W75",
-                "title": "Split Head Cal King / White",
-                "price": "309.99",
-                "available": true,
-                "options": {
-                  "Size": "Split Head Cal King",
-                  "Color": "White"
-                },
-                "nativeSize": "Split Head Cal King",
-                "shopSizeKeys": [
-                  "Split Head California King"
-                ],
-                "geometry": "split_head",
-                "fulfillmentReadiness": "PENDING"
-              }
-            ],
-            [
-              {
-                "variantId": "44122479198269",
-                "shopifyVariantId": "gid://shopify/ProductVariant/44122479198269",
-                "sku": "BGM014575",
-                "title": "Split Head Cal King",
-                "price": "209.99",
                 "available": true,
                 "options": {
                   "Size": "Split Head Cal King"

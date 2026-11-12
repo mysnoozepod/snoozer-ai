@@ -1,9 +1,21 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-11 — Sleep Systems and curated bundles implemented, staged, and cart-verified
+Last updated: 2026-11-11 — Product-first collections and corrected Sleep Systems staged and preview-verified
 Owner: Ty  
 Implementer: Codi  
-Current phase: Curated bedding sets are validated on the existing unpublished theme; mattress/base systems remain blocked pending explicit pairwise compatibility evidence
+Current phase: Product-first collection hierarchy and owner-approved mattress/base rules are implemented on the existing unpublished theme; publication remains separately gated
+
+## Collection hierarchy and Sleep Systems correction — 2026-11-11
+
+- Continued on existing `main` from `cd51e99c`; no reset, branch switch, new store, new theme, or catalog rebuild.
+- Collection templates now render the collection title, native filters/product grid, Shop by Category, then Find Your Fit. The custom collection hero, collection Ask Snoozer CTA, closing CTA, and visible pre-product Shop by Size panel are gone. Exact size-price and variant-deep-link behavior remains active invisibly on size collections.
+- Sleep Systems now render four mattress cards. Standard sizes offer exact-size Flex L/Flex LSX; split-head sizes offer only exact-size Flex SH; Split King resolves to quantity two of the actual Twin XL mattress variant plus quantity two of the actual Twin XL base variant. Split Queen is explicitly excluded.
+- The manifest/feed contain 17 relationships: 12 owner-approved mattress/base options and five existing bedding sets. The obsolete Complete Sleep Packages review group and menu link were removed.
+- Authenticated preview evidence: `/collections/mattresses` showed four products before Shop by Category and Find Your Fit; `/collections/shop-by-size-king` showed 38 products with exact King prices before those bottom sections; 390×844 Sleep Systems showed four responsive system cards, `2 ×` Twin XL pricing for Split King, and Flex SH for Split Head Queen.
+- Tests passed: curated bundles 1,658 assertions; Product Page/collection contract 70; Shop by Size 31; product knowledge 43; website experience 46; guided shopping; storefront skeleton; JavaScript syntax; whitespace.
+- Shopify readback: 43 products, 274 variants, zero products created; unpublished theme `139216420925` only; published theme `139460542525` unchanged. Latest private recovery backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\curated-bundles\2026-11-12T02-11-50-224Z`.
+- No checkout/order, theme publication, product/catalog mutation, Snoozer backend, or AWS work occurred.
+- Exact next action: controlled development-cart acceptance for one standard system, one split-head system, and one Split King system, verifying line variants, quantities, properties, totals, and reconciliation before publication.
 
 ## Sleep Systems and curated bundles checkpoint — 2026-11-11
 

@@ -42,7 +42,6 @@ const productPodBuilderTemplate = parseTemplate('templates/product.product-pod-b
 
 const productHero = read('sections/snoozepod-product-hero.liquid');
 const productInformation = read('sections/snoozepod-product-information-v1.liquid');
-const collectionHero = read('sections/snoozepod-collection-hero.liquid');
 const collectionNavigation = read('sections/snoozepod-collection-navigation-v1.liquid');
 const collectionGrid = read('sections/main-collection-product-grid.liquid');
 const cardProduct = read('snippets/card-product.liquid');
@@ -52,7 +51,6 @@ const podBuilderHero = read('sections/snoozepod-pod-builder-hero.liquid');
 
 parseSectionSchema('sections/snoozepod-product-hero.liquid');
 parseSectionSchema('sections/snoozepod-product-information-v1.liquid');
-parseSectionSchema('sections/snoozepod-collection-hero.liquid');
 parseSectionSchema('sections/snoozepod-collection-navigation-v1.liquid');
 parseSectionSchema('sections/main-collection-product-grid.liquid');
 
@@ -95,8 +93,11 @@ assert(productInformation.includes('<details'), 'product information uses keyboa
 assert(productInformation.includes('shop.shipping_policy.url'), 'delivery section can reuse the authoritative Shopify shipping policy');
 assert(productInformation.includes('shop.refund_policy.url'), 'returns section can reuse the authoritative Shopify return policy');
 
-assert(collectionTemplate.order.join('|') === 'hero|category-navigation|product-grid|guided-shopping|closing', 'Collection Page v1 follows the merchandise-first section sequence');
+assert(collectionTemplate.order.join('|') === 'banner|product-grid|category-navigation|guided-shopping', 'Collection Page v1 renders title and products before secondary discovery');
+assert(collectionTemplate.sections.banner.type === 'main-collection-banner', 'Collection Page v1 uses the native title banner');
+assert(collectionTemplate.sections.banner.settings.show_collection_description === false && collectionTemplate.sections.banner.settings.show_collection_image === false, 'Collection title has no pre-product description or image clutter');
 assert(collectionTemplate.sections['guided-shopping'].type === 'snoozepod-guided-shopping-links', 'Collection Page v1 keeps contextual tools after the product grid');
+assert(collectionTemplate.sections['guided-shopping'].settings.heading === 'Find Your Fit', 'Find Your Fit is the final secondary section');
 assert(collectionTemplate.sections['category-navigation'].blocks.pillows.settings.collection === 'pillows', 'collection preview uses the real Pillows collection');
 assert(collectionTemplate.sections['category-navigation'].blocks.sheets.settings.collection === 'sheets', 'collection preview uses the canonical Sheets collection');
 assert(collectionTemplate.sections['category-navigation'].blocks['bedroom-furniture'].settings.collection === 'bedroom-furniture', 'collection preview uses the canonical Bedroom Furniture collection');
@@ -105,9 +106,10 @@ assert(collectionTemplate.sections['product-grid'].settings.enable_sorting === t
 assert(collectionTemplate.sections['product-grid'].settings.filter_type === 'drawer', 'Collection Page v1 uses collapsible filters');
 assert(collectionTemplate.sections['product-grid'].settings.columns_mobile === '2', 'Collection Page v1 requests a two-column mobile grid');
 assert(collectionTemplate.sections['product-grid'].settings.show_snoozepod_card_details === true, 'Collection Page v1 enables enhanced product cards');
-assert(collectionHero.includes('collection.description'), 'collection hero prefers Shopify collection content over invented category copy');
-assert(collectionHero.includes('data-snoozer-collection-handle'), 'collection Snoozer trigger carries current collection identity');
+assert(!JSON.stringify(collectionTemplate).toLowerCase().includes('snoozer'), 'Collection Page v1 contains no Ask Snoozer prompt');
+assert(!Object.values(collectionTemplate.sections).some((section) => section.type === 'snoozepod-collection-hero' || section.type === 'snoozepod-collection-cta'), 'Collection Page v1 removes the custom hero and closing CTA');
 assert(collectionNavigation.includes('collection.metafields.custom.category_navigation.value'), 'category navigation supports per-collection real Shopify mappings');
+assert(!collectionNavigation.includes('suppress_category_navigation'), 'Shop by Category remains available below mattress and adjustable-base products');
 assert(collectionGrid.includes('show_snoozepod_details: section.settings.show_snoozepod_card_details'), 'collection grid passes the Product Card v1 contract');
 assert(cardProduct.includes("render 'snoozepod-card-details'"), 'product cards render verified v1 details when enabled');
 assert(cardProduct.includes("render 'price', product: card_product"), 'product cards keep Shopify price authority');

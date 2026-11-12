@@ -19,8 +19,15 @@ const ASSETS = [
   'assets/snoozepod-curated-bundle-catalog.js',
   'assets/snoozepod-curated-bundles.js',
   'assets/snoozepod-curated-bundles.css',
+  'assets/snoozepod-shop-by-size.js',
   'sections/snoozepod-curated-bundles.liquid',
+  'sections/main-collection-product-grid.liquid',
+  'sections/snoozepod-collection-navigation-v1.liquid',
   'templates/page.sleep-systems.json',
+  'templates/collection.json',
+  'templates/collection.main.json',
+  'templates/collection.snoozepod.json',
+  'templates/collection.snoozepod-v1.json',
 ];
 
 function fail(message) { throw new Error(message); }
@@ -90,7 +97,6 @@ function desiredMenuItems(menu) {
     title: 'Sleep Systems', type: 'HTTP', url: '/pages/sleep-systems', items: [
       { title: 'Sleep Systems', type: 'HTTP', url: '/pages/sleep-systems#sleep-systems' },
       { title: 'Bedding Sets', type: 'HTTP', url: '/pages/sleep-systems#bedding-sets' },
-      { title: 'Complete Sleep Packages', type: 'HTTP', url: '/pages/sleep-systems#complete-sleep-packages' },
     ],
   };
   const items = menu.items.filter((item) => item.title !== 'Sleep Systems').map(menuInput);
@@ -117,12 +123,12 @@ async function readUntilMatch(themeId, key, expected) {
 
 for (const key of ASSETS) if (!fs.existsSync(path.join(ROOT, ...key.split('/')))) fail(`Missing theme asset ${key}.`);
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs', 'curated-bundles', 'CURATED_BUNDLE_MANIFEST.json'), 'utf8'));
-if (manifest.summary.bundles !== 11 || manifest.summary.stagedPurchasable !== 5 || manifest.summary.blockedPendingCompatibility !== 6) fail('Curated bundle manifest boundary changed.');
+if (manifest.summary.bundles !== 17 || manifest.summary.stagedPurchasable !== 17 || manifest.summary.blockedPendingCompatibility !== 0) fail('Curated bundle manifest boundary changed.');
 const before = await graphql(INSPECT);
 const productCount = before.products.nodes.length;
 const variantCount = before.products.nodes.reduce((count, product) => count + product.variants.nodes.length, 0);
 if (productCount !== 43 || variantCount !== 274) fail(`Catalog boundary changed: ${productCount} products / ${variantCount} variants.`);
-const pageBody = `${SIGNATURE}\n<p>Explore curated sleep systems, bedding sets, and complete-package starting points built from existing Shopify products.</p>`;
+const pageBody = `${SIGNATURE}\n<p>Choose a mattress, size, and compatible adjustable base, or shop curated bedding sets built from existing Shopify products.</p>`;
 const currentPage = before.pages.nodes.find((page) => page.handle === 'sleep-systems');
 if (currentPage && !currentPage.body.includes(SIGNATURE)) fail('Refusing to overwrite the existing unmanaged sleep-systems page.');
 const mainMenu = before.menus.nodes.find((menu) => menu.handle === 'main-menu');
@@ -180,7 +186,7 @@ const actualPage = after.pages.nodes.find((page) => page.handle === 'sleep-syste
 if (!actualPage || actualPage.title !== 'Sleep Systems' || actualPage.body !== pageBody || !actualPage.isPublished || actualPage.templateSuffix !== 'sleep-systems') fail('Sleep Systems page failed readback.');
 const actualMenu = after.menus.nodes.find((menu) => menu.handle === 'main-menu');
 const sleepSystemsItem = actualMenu.items.find((item) => item.title === 'Sleep Systems');
-if (!sleepSystemsItem || sleepSystemsItem.url !== '/pages/sleep-systems' || sleepSystemsItem.items.length !== 3) fail('Sleep Systems navigation failed readback.');
+if (!sleepSystemsItem || sleepSystemsItem.url !== '/pages/sleep-systems' || sleepSystemsItem.items.length !== 2) fail('Sleep Systems navigation failed readback.');
 const actualProductCount = after.products.nodes.length;
 const actualVariantCount = after.products.nodes.reduce((count, product) => count + product.variants.nodes.length, 0);
 if (actualProductCount !== 43 || actualVariantCount !== 274) fail('Catalog count changed during staging.');

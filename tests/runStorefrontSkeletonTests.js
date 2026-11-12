@@ -123,7 +123,7 @@ assert.match(collectionNavigation, /"limit": 12/);
 
 const environment = homeTemplate.sections.snoozepod_environment_GYx7gN;
 const homeCollectionHandles = environment.block_order.map((blockId) => environment.blocks[blockId].settings.collection);
-assert.deepEqual(homeCollectionHandles, expectedTopLevelCollections);
+assert.deepEqual(homeCollectionHandles, expectedTopLevelCollections.filter((handle) => handle !== 'mattresses'));
 assert.equal(environment.settings.cta_link, '/collections');
 
 assert.match(builderCore, /bedding_collection_handles = 'sheets,bedding'/);
