@@ -92,6 +92,8 @@ check(section.includes('snoozepod-pod-builder.js') && ui.includes('SnoozePodBund
 check(cart.includes('window.SnoozePodBundleCart = Object.freeze'), 'cart integrity primitives are exposed without duplicating mutation logic');
 check(!/discount|save \$|% off|sale price/i.test(JSON.stringify(manifest.bundles)), 'curation does not invent discount claims');
 check(ui.includes('Add Sleep System to Cart') && ui.includes('data-system-base'), 'each mattress card exposes size, base, and a purchase action');
+check(ui.includes('data-system-comfort="left"') && ui.includes('data-system-comfort="right"'), 'Dual Comfort system cards expose independent left and right choices');
+check(ui.includes('event.target.matches("[data-system-size]")') && ui.includes('event.target.matches("[data-system-base]")'), 'size and base changes use distinct deterministic update paths');
 check(ui.includes('componentQuantities') && ui.includes('quantity: Number(quantities[index]'), 'cart quantities come from the selected configuration');
 check(ui.includes('button.dataset.pending') && ui.includes('claimBundleLock'), 'double submissions remain blocked');
 check(ui.includes('verifyBundleVariantReadiness') && ui.includes('executeBundleCartOperation'), 'live readiness and post-mutation reconciliation are required');
@@ -100,10 +102,20 @@ check(ui.includes('Your selections are still here'), 'selection-preserving failu
 const sandbox = { window: {}, document: { addEventListener() {}, querySelectorAll() { return []; } }, Intl, Map, Set };
 vm.runInNewContext(ui, sandbox);
 const grouped = sandbox.window.SnoozePodCuratedBundleUI.groupSystems(manifest.bundles);
+const helpers = sandbox.window.SnoozePodCuratedBundleUI;
 check(grouped.length === 4, 'twelve pair options render as four clear mattress system cards');
 check(grouped.every((group) => group.bundles.length === 3), 'each mattress offers Flex L, Flex LSX, and Flex SH through one card');
 check(grouped.every((group) => sandbox.window.SnoozePodCuratedBundleUI.systemSizeLabels(group, 'split_head').every((size) => size.startsWith('Split Head '))), 'split-head path exposes only split-head configurations');
 check(grouped.every((group) => sandbox.window.SnoozePodCuratedBundleUI.systemSizeLabels(group, 'full_split').join('|') === 'Split King'), 'full-split path exposes only Split King');
+for (const group of grouped) {
+  check(helpers.systemBundlesForSize(group, 'Queen').map((bundle) => bundle.components[1].handle).sort().join('|') === 'flex-l-adjustable-base|flex-lsx-adjustable-base', `${group.mattress.handle} standard sizes allow Flex L and Flex LSX`);
+  check(helpers.systemBundlesForSize(group, 'Split Head Queen').map((bundle) => bundle.components[1].handle).join('|') === 'flex-sh-adjustable-base', `${group.mattress.handle} split-head sizes allow only Flex SH`);
+  check(helpers.systemBundlesForSize(group, 'Split King').map((bundle) => bundle.components[1].handle).sort().join('|') === 'flex-l-adjustable-base|flex-lsx-adjustable-base', `${group.mattress.handle} Split King allows Flex L and Flex LSX`);
+}
+check(helpers.systemComfortProperties('12-inch-dual-comfort-mattress', 'Soft', 'Medium Firm')["Left Side Comfort"] === 'Soft', 'Dual Comfort properties preserve the left preference');
+check(helpers.systemComfortProperties('12-inch-dual-comfort-mattress', 'Soft', 'Medium Firm')["Right Side Comfort"] === 'Medium Firm', 'Dual Comfort properties preserve the right preference');
+check(helpers.systemComfortProperties('12-inch-dual-comfort-mattress', '', 'Firm') === null, 'incomplete Dual Comfort selections fail closed');
+check(Object.keys(helpers.systemComfortProperties('12-inch-memory-foam-mattress', '', '')).length === 0, 'non-Dual Comfort systems do not require comfort properties');
 check(sandbox.window.SnoozePodCuratedBundleUI.money('429.98') === '$429.98', 'price helper formats exact component totals');
 check(sandbox.window.SnoozePodCuratedBundleUI.variantLabel({ options: { Size: 'Queen', Color: 'White' } }) === 'Color: White', 'variant choice labels preserve selectable product options without duplicating size');
 

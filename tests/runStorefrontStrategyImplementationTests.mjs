@@ -40,8 +40,10 @@ check(systemsJs.includes('SHOWROOM_LOCATIONS') && systemsJs.includes('Try it in 
 
 for (const pod of ['Pod 1', 'Pod 2', 'Pod 3', 'Pod 4', 'Pod 5', 'Pod 6']) check(stager.includes(pod), `${pod} is recorded in the structured Shopify showroom contract`);
 check(stager.includes("'dri-tec-sheet-set': 'BEDGEAR Dri-Tec sheets in Light Grey on a bed'") && stager.includes("'ver-tex-sheet-set': 'BEDGEAR Ver-Tex White sheets in a bedroom'"), 'text-heavy sheet graphics are replaced as lead media by existing clean photography');
-check(showroom.includes('showroom_data.locations') && showroom.includes('location.comforts'), 'product badges render structured Pod, size, base, and comfort details');
-check(mattressInformation.includes('location.mattressSize') && mattressInformation.includes("location.comforts | join: ' / '") && !mattressInformation.includes('default: location -%}'), 'lower mattress details format structured showroom locations instead of printing raw objects');
+check(!showroom.includes('showroom_data.locations') && !showroom.includes('location.comforts'), 'product badges render only the concise Pod location label');
+check(!mattressInformation.includes('showroom_locations') && !mattressInformation.includes('location.mattressSize'), 'lower mattress details omit size, base, and comfort display clutter');
+check(systemsJs.includes('data-system-comfort="left"') && systemsJs.includes('data-system-comfort="right"'), 'Dual Comfort Sleep Systems collect independent left and right preferences');
+check(systemsJs.includes('"Left Side Comfort"') && systemsJs.includes('"Right Side Comfort"'), 'Sleep System cart lines preserve both Dual Comfort choices');
 check(!mattressInformation.includes("Manufacturer's Model Name") && !mattressInformation.includes('manufacturer_model'), 'internal mattress model codes stay out of customer-facing details');
 
 console.log(`PASS storefront strategy implementation: ${assertions} assertions.`);

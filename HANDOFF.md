@@ -1,9 +1,20 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-12 — Validated storefront theme published and live-route verified
+Last updated: 2026-11-12 — Live Sleep System configurator corrected and Shopify-readback-verified
 Owner: Ty  
 Implementer: Codi  
-Current phase: The approved storefront strategy is live on published theme `139216420925`; controlled system-cart acceptance remains the next bounded task
+Current phase: The approved storefront strategy and corrected Sleep System configurator are live on published theme `139216420925`; controlled live-cart acceptance remains the next bounded task
+
+## Live Sleep System configurator correction — 2026-11-12
+
+- Corrected the existing live theme `139216420925` without changing products, variants, prices, inventory, collections, orders, checkout, Snoozer backend, or AWS.
+- Customer-facing showroom location now displays only the concise Pod label (for example, `Try it in Pod 1` or `Try it in Pods 3 & 4`). The detailed six-Pod map remains structured internally for operations and future retrieval but no longer clutters mattress cards or Product Page v1.
+- Sleep System size and base changes now use separate deterministic update paths. Standard sizes and Split King allow the actual Flex L and Flex LSX choices; only Split Head is constrained to Flex SH.
+- Both Dual Comfort models now require independent Left Side Comfort and Right Side Comfort selections from Soft, Medium Soft, Medium Firm, and Firm. The chosen pair appears in an accessible summary and is attached to the mattress cart line as `Left Side Comfort` and `Right Side Comfort`. Add to Cart remains fail closed until both sides are selected.
+- Focused validation passed: headless browser interaction fixture; curated bundle contract `1,680` assertions; storefront strategy `25`; Product Page v2 `28`; cart-integrity regression; and all `21` Pod Builder cart-integrity scenarios.
+- Shopify API readback matched all four bounded live assets. Rollback theme `139460542525` was verified unchanged. Durable evidence: `docs/sleep-system-configurator/SHOPIFY_READBACK.json`.
+- Original pre-mutation recovery snapshot: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\sleep-system-configurator-fix\2026-11-12T11-58-21-950Z`. Successful final staging snapshot: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\sleep-system-configurator-fix\2026-11-12T11-58-59-803Z`.
+- Live browser attachment was unavailable during the final pass, so no unsupported claim of manual live clicking is made. The final bounded requirement is a controlled live cart acceptance for one Standard system, one Dual Comfort system, one Split Head system, and one Split King system without checkout or order submission.
 
 ## Theme publication — 2026-11-12
 

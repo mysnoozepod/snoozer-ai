@@ -15,7 +15,6 @@
   assign showroom_data = showroom_product.metafields.custom.showroom_representation.value
   assign showroom_state = showroom_data.readiness | default: showroom_data.status | upcase
   assign showroom_label = showroom_data.label | default: showroom_data.station_label | default: showroom_data.display_label | default: showroom_data.station_id | strip
-  assign showroom_locations = showroom_data.locations
   assign showroom_is_verified = false
   if showroom_state == 'READY' and showroom_label != blank
     assign showroom_is_verified = true
@@ -26,18 +25,6 @@
   <div class="snoozepod-showroom{% if compact %} snoozepod-showroom--compact{% endif %}">
     <span class="snoozepod-showroom__label">Showroom location</span>
     <span class="snoozepod-showroom__value">{{ showroom_label | escape }}</span>
-    {%- if compact != true and showroom_locations != blank -%}
-      <ul class="snoozepod-showroom__locations" role="list">
-        {%- for location in showroom_locations -%}
-          <li>
-            <strong>{{ location.pod | escape }}</strong>
-            {%- if location.mattressSize != blank -%}<span>{{ location.mattressSize | escape }}</span>{%- endif -%}
-            {%- if location.base != blank -%}<span>{{ location.base | escape }}</span>{%- endif -%}
-            {%- if location.comforts != blank -%}<span>{{ location.comforts | join: ' / ' | escape }}</span>{%- endif -%}
-          </li>
-        {%- endfor -%}
-      </ul>
-    {%- endif -%}
   </div>
 {%- elsif request.design_mode and show_editor_placeholder -%}
   <div class="snoozepod-data-placeholder" role="note">

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "verifiedAt": "2026-11-12T11:59:18.086Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\sleep-system-configurator-fix\\2026-11-12T11-58-59-803Z",
+  "liveTheme": {
+    "id": 139216420925,
+    "role": "main",
+    "name": "snoozer-ai/main"
+  },
+  "rollbackTheme": {
+    "id": 139460542525,
+    "role": "unpublished",
+    "name": "snoozer-ai/main",
+    "unchanged": true
+  },
+  "assets": [
+    "assets/snoozepod-curated-bundles.js",
+    "assets/snoozepod-curated-bundles.css",
+    "snippets/snoozepod-showroom-location.liquid",
+    "snippets/snoozepod-mattress-product-information.liquid"
+  ],
+  "catalogMutations": 0,
+  "previewUrl": "https://mysnoozepod.com/pages/sleep-systems"
+}

@@ -21,10 +21,9 @@
   assign showroom_data = product.metafields.custom.showroom_representation.value
   assign showroom_state = showroom_data.readiness | default: showroom_data.status | default: showroom_data.locationStatus | upcase
   assign showroom_label = showroom_data.label | default: showroom_data.station_label | default: showroom_data.display_label | default: showroom_data.station_id | strip
-  assign showroom_locations = showroom_data.locations
   assign showroom_is_verified = false
   if showroom_state == 'READY' or showroom_state == 'VERIFIED'
-    if showroom_label != blank or showroom_locations.size > 0
+    if showroom_label != blank
       assign showroom_is_verified = true
     endif
   endif
@@ -88,23 +87,6 @@
         <section class="snoozepod-product-information__subsection" aria-labelledby="Showroom-{{ section.id }}">
           <h3 id="Showroom-{{ section.id }}">Showroom Location</h3>
           {%- if showroom_label != blank -%}<p>{{ showroom_label | escape }}</p>{%- endif -%}
-          {%- if showroom_locations.size > 0 -%}
-            <ul>
-              {%- for location in showroom_locations -%}
-                {%- assign location_label = location.label | default: location.name | default: location.station_label | default: location.station_id | default: location.pod -%}
-                {%- assign location_size = location.mattressSize -%}
-                {%- assign location_comforts = location.comforts | join: ' / ' -%}
-                {%- if location_label != blank -%}
-                  <li>
-                    <strong>{{ location_label | escape }}</strong>
-                    {%- if location_size != blank -%} · {{ location_size | escape }}{%- endif -%}
-                    {%- if location.base != blank -%} · {{ location.base | escape }}{%- endif -%}
-                    {%- if location_comforts != blank -%} · {{ location_comforts | escape }}{%- endif -%}
-                  </li>
-                {%- endif -%}
-              {%- endfor -%}
-            </ul>
-          {%- endif -%}
         </section>
       {%- endif -%}
 

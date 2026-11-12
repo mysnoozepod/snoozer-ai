@@ -1,7 +1,17 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-12 — Validated storefront theme published and live-route verified
-Queue state: Products lead all collection and size routes; unfinished Find Your Fit content is removed; standalone mattress shopping excludes system-only split geometry; curated Standard, Split Head, and Split King pathways plus the six-Pod showroom map are live on published theme `139216420925`.
+Last updated: 2026-11-12 — Live Sleep System configurator corrected and Shopify-readback-verified
+Queue state: Pod labels are concise; Standard and Split King systems expose Flex L/Flex LSX; Split Head alone is locked to Flex SH; Dual Comfort systems require independent left/right comfort selections on published theme `139216420925`.
+
+### Live Sleep System configurator correction
+
+- **Status:** IMPLEMENTED, LOCALLY BROWSER-VERIFIED, LIVE-THEME-READBACK-VERIFIED, AND PUSH PENDING.
+- **Pod presentation:** mattress cards and Product Page v1 show only which Pod contains the mattress. Detailed size, base, and comfort demonstration data remain internal structured metadata.
+- **Size/base behavior:** size and base changes no longer reset or freeze one another. Standard and Split King configurations permit their actual Flex L and Flex LSX choices. Split Head is the only geometry constrained to Flex SH.
+- **Dual Comfort:** both Dual Comfort system cards expose independent Soft, Medium Soft, Medium Firm, and Firm choices for each side. Add to Cart is enabled only after both sides are selected, and the values are carried as mattress line properties.
+- **Validation:** browser interaction fixture passed; curated contract `1,680`; storefront strategy `25`; Product Page v2 `28`; cart-integrity regression and all `21` focused cart scenarios passed; four live assets match source; rollback theme `139460542525` is unchanged.
+- **Evidence:** `docs/sleep-system-configurator/SHOPIFY_READBACK.json`; private recovery paths and test boundary are recorded in `HANDOFF.md`.
+- **Next:** controlled live cart acceptance for Standard, Dual Comfort, Split Head, and Split King without checkout or order submission.
 
 ### Theme publication
 
