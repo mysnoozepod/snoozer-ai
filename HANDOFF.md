@@ -1,9 +1,24 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-11 — Storewide Shop by Size implemented, staged, and render-verified
+Last updated: 2026-11-11 — Sleep Systems and curated bundles implemented, staged, and cart-verified
 Owner: Ty  
 Implementer: Codi  
-Current phase: Storewide Shop by Size and Product Page v2 are validated on the existing unpublished theme; release accessibility and commerce readiness remain next
+Current phase: Curated bedding sets are validated on the existing unpublished theme; mattress/base systems remain blocked pending explicit pairwise compatibility evidence
+
+## Sleep Systems and curated bundles checkpoint — 2026-11-11
+
+- Continued on existing `main` from starting commit `571b866634567cbe665d92451e49b0389929b320`; preserved completed work with no reset, branch switch, new store, new theme, or catalog rebuild.
+- Added `/pages/sleep-systems` with primary navigation and three groups: Sleep Systems, Bedding Sets, and Complete Sleep Packages. Desktop and 390×844 preview QA passed after correcting theme-global image bleed and default size ordering.
+- The deterministic manifest contains 11 bounded records: five shoppable bedding sets, four blocked mattress/base system candidates, and two blocked complete-package candidates. Matching size/geometry never becomes compatibility proof.
+- Shoppable sets use actual available component variants and the hardened operation-tagged cart layer. Each line preserves native variant ID, SKU, price, availability check, product handle, quantity, and separate fulfillment identity. No parent product, artificial SKU, discount, promotion, duplicated inventory, or new collection exists.
+- Actual Shopify Ajax Cart acceptance passed. The existing preview cart moved from six to eight items and contained Queen Ver-Tex Sheet Set `$299.99` plus Full/Queen Light Weight Comforter `$199.99`, each with exact variant/options and `Curated Set`, `Set Component`, and `Set Size` properties. Combined total matched `$499.98`. No checkout or order was created.
+- Product-knowledge feed/schema now expose bundle IDs, categories, statuses, component product IDs, exact variant IDs/SKUs/prices, size/geometry records, and curation/showroom status for future Snoozer retrieval. No Snoozer backend, AWS, API, or recommendation change occurred.
+- Shopify readback: 43 products, 274 variants, zero products created; page ID `gid://shopify/Page/109195460669`; six exact assets on unpublished theme `139216420925`; published theme `139460542525` unchanged.
+- Latest private recovery backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\curated-bundles\2026-11-12T01-07-15-066Z` (UTC timestamp; work date 2026-11-11 America/New_York).
+- Tests passed: curated bundles 1,564 assertions; cart integrity 21 scenarios plus legacy regression; canonical Pod Builder; P1-002 34 groups; product knowledge 42; Storewide Shop by Size 1,049; Shop by Size 30; Product Page v2 28; catalog/shopping 10/10; guided shopping; website experience; route; syntax; whitespace.
+- Changed implementation/data surfaces: `assets/snoozepod-pod-builder.js`, `assets/snoozepod-curated-bundle-*`, `sections/snoozepod-curated-bundles.liquid`, `templates/page.sleep-systems.json`, manifest/generator/stager, product-knowledge feed/schema/exporter, focused tests, and project-control documents.
+- Remaining material dependencies: Ty approval of names/composition/wording; explicit manufacturer/owner mattress-to-base pairwise compatibility; showroom relationship confirmation. All affected system/package records remain fail closed.
+- Exact next action: verify and encode pairwise mattress/base compatibility records, enable only proven configurations, and rerun the same real-cart acceptance. Do not publish the theme without separate authorization.
 
 ## Storewide Shop by Size checkpoint — 2026-11-11
 

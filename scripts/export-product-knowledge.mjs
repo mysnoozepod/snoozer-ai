@@ -4,6 +4,7 @@ import path from 'node:path';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const READBACK = path.join(ROOT, 'docs', 'product-knowledge', 'PRODUCT_KNOWLEDGE_SHOPIFY_READBACK.json');
 const OUTPUT = path.join(ROOT, 'docs', 'product-knowledge', 'PRODUCT_KNOWLEDGE_FEED.v1.json');
+const CURATED_BUNDLES = path.join(ROOT, 'docs', 'curated-bundles', 'CURATED_BUNDLE_MANIFEST.json');
 
 function fail(message) { throw new Error(message); }
 
@@ -20,7 +21,7 @@ function standardizedSize(options) {
 function shopSizeKeys(options) {
   const size = standardizedSize(options);
   if (!size || size.toLowerCase() === 'one size') return [];
-  return [...new Set(size.replace(/\s*\(2pc\)$/i, '').split('/').map((value) => value.trim()).filter(Boolean))];
+  return [...new Set(size.replace(/\s*\(2pc\)$/i, '').replace(/Cal King/gi, 'California King').split('/').map((value) => value.trim()).filter(Boolean))];
 }
 
 const readback = JSON.parse(fs.readFileSync(READBACK, 'utf8'));
@@ -72,7 +73,36 @@ const feed = {
     rule: 'Shopify is authoritative. Approved owner content and verified technical facts may be cached; prices, availability, variants, cart, and checkout require live Shopify authority.',
   },
   products,
+  bundles: fs.existsSync(CURATED_BUNDLES)
+    ? JSON.parse(fs.readFileSync(CURATED_BUNDLES, 'utf8')).bundles.map((bundle) => ({
+      id: bundle.id,
+      name: bundle.name,
+      category: bundle.category,
+      contentStatus: bundle.contentStatus,
+      purchaseStatus: bundle.purchaseStatus,
+      compatibilityStatus: bundle.compatibilityStatus,
+      curationBasis: bundle.curationBasis,
+      showroomRelationship: bundle.showroomRelationship,
+      components: bundle.components.map((component) => ({
+        shopifyProductId: component.shopifyProductId,
+        handle: component.handle,
+        title: component.title,
+        quantity: component.quantity,
+      })),
+      sizes: bundle.sizes.map((size) => ({
+        label: size.label,
+        geometry: size.geometry,
+        minCombinedPrice: size.minCombinedPrice,
+        maxCombinedPrice: size.maxCombinedPrice,
+        componentVariants: size.componentVariants.map((variants) => variants.map((variant) => ({
+          shopifyVariantId: variant.shopifyVariantId,
+          sku: variant.sku,
+          price: variant.price,
+        }))),
+      })),
+    }))
+    : [],
 };
 
 fs.writeFileSync(OUTPUT, `${JSON.stringify(feed, null, 2)}\n`);
-console.log(JSON.stringify({ output: path.relative(ROOT, OUTPUT), products: products.length, variants: products.reduce((count, product) => count + product.commerce.variants.length, 0) }, null, 2));
+console.log(JSON.stringify({ output: path.relative(ROOT, OUTPUT), products: products.length, variants: products.reduce((count, product) => count + product.commerce.variants.length, 0), bundles: feed.bundles.length }, null, 2));

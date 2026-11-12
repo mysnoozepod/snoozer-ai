@@ -1,7 +1,19 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-11 — Storewide Shop by Size staged and rendered on the existing unpublished theme
-Queue state: Storewide size collections and Product Page v2 are implemented on unpublished theme `139216420925`. Exact catalog-driven membership, variant pricing, deep links, cart handoff, and responsive rendering are verified. Broader release accessibility/commerce acceptance and any future Snoozer retrieval implementation remain gated.
+Last updated: 2026-11-11 — Sleep Systems and curated bedding bundles staged and validated on the existing unpublished theme
+Queue state: The curated shopping page, navigation, exact component-variant cart flow, and Snoozer-ready bundle feed are implemented on unpublished theme `139216420925`. Five bedding sets are shoppable; all six mattress/base-containing candidates fail closed pending pairwise compatibility evidence. Theme publication and owner approval remain gated.
+
+### Sleep Systems and Curated Product Bundles
+
+- **Status:** IMPLEMENTED, SHOPIFY-VERIFIED, CART-VERIFIED, AND RESPONSIVE-VERIFIED ON UNPUBLISHED THEME `139216420925`.
+- **Architecture:** real component variants are submitted as one reconciled multi-line cart operation. No parent bundle product, artificial SKU, duplicated inventory, discount, promotion, collection, or backend service was created.
+- **Assortment:** five bedding sets are staged purchasable; four Sleep System candidates and two Complete Sleep Package candidates are visible but blocked because the current data contains no explicit mattress/base pairwise compatibility rule.
+- **Shopping result:** `/pages/sleep-systems`; main-menu Sleep Systems entry with Sleep Systems, Bedding Sets, and Complete Sleep Packages anchors; size filter; exact options and combined component pricing; individual product links; secondary Ask Snoozer and booking actions.
+- **Actual cart evidence:** the Queen Ver-Tex + Light Weight set added two distinct Shopify lines, preserved native variant details and curated-set properties, and matched the exact `$499.98` component total. Existing cart contents were preserved; no checkout/order occurred.
+- **Validation:** curated contract 1,564 assertions; cart integrity 21 scenarios plus legacy regression; product knowledge 42; Storewide Shop by Size 1,049; Shop by Size 30; Product Page v2 28; catalog/shopping 10/10; guided, website, route, syntax, and whitespace checks.
+- **Safety:** zero products created; catalog remained 43 products/274 variants; published theme `139460542525` hash-verified unchanged; no publication, checkout, order, Snoozer backend, or AWS change.
+- **Evidence:** `docs/curated-bundles/CURATED_BUNDLE_IMPLEMENTATION.md`, manifest, and Shopify readback.
+- **Next:** obtain explicit mattress/base pairwise compatibility records, encode only approved relationships, and enable only those verified Sleep System configurations. Do not publish without Ty's separate authorization.
 
 ### Storewide Shop by Size collections
 

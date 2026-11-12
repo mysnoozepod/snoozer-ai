@@ -1854,6 +1854,16 @@
     document.querySelectorAll("[data-snoozepod-builder]").forEach(initBuilder);
   }
 
+  window.SnoozePodBundleCart = Object.freeze({
+    createBundleRequestPlan: createBundleRequestPlan,
+    validateBundleRequestPlan: validateBundleRequestPlan,
+    verifyBundleVariantReadiness: verifyBundleVariantReadiness,
+    executeBundleCartOperation: executeBundleCartOperation,
+    claimBundleLock: claimBundleLock,
+    retainBundleLock: retainBundleLock,
+    renderCartStatus: renderCartStatus
+  });
+
   document.addEventListener("DOMContentLoaded", initAll);
   document.addEventListener("shopify:section:load", function (event) {
     const root = event.target && event.target.querySelector ? event.target.querySelector("[data-snoozepod-builder]") : null;
