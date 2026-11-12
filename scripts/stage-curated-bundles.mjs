@@ -21,14 +21,52 @@ const ASSETS = [
   'assets/snoozepod-curated-bundles.css',
   'assets/snoozepod-shop-by-size.js',
   'sections/snoozepod-curated-bundles.liquid',
+  'sections/snoozepod-product-hero.liquid',
+  'sections/main-collection-banner.liquid',
   'sections/main-collection-product-grid.liquid',
   'sections/snoozepod-collection-navigation-v1.liquid',
+  'snippets/snoozepod-showroom-location.liquid',
+  'snippets/snoozepod-mattress-product-information.liquid',
+  'snippets/product-variant-picker.liquid',
+  'snippets/product-variant-options.liquid',
+  'snippets/buy-buttons.liquid',
+  'assets/component-snoozepod-commerce-v1.css',
+  'assets/snoozepod-dual-comfort.js',
   'templates/page.sleep-systems.json',
   'templates/collection.json',
   'templates/collection.main.json',
   'templates/collection.snoozepod.json',
   'templates/collection.snoozepod-v1.json',
 ];
+const SHOWROOM_CONTRACT = {
+  '12-inch-memory-foam-mattress': {
+    type: 'full_display', displayCount: 1, readiness: 'READY', label: 'Try it in Pod 1',
+    locations: [{ pod: 'Pod 1', mattressSize: 'Queen', base: 'Flex L' }],
+  },
+  '12-inch-hybrid-mattress': {
+    type: 'full_display', displayCount: 1, readiness: 'READY', label: 'Try it in Pod 2',
+    locations: [{ pod: 'Pod 2', mattressSize: 'Half-Split Queen', base: 'Flex SH' }],
+  },
+  '12-inch-dual-comfort-mattress': {
+    type: 'full_display', displayCount: 2, readiness: 'READY', label: 'Try it in Pods 3 & 4',
+    locations: [
+      { pod: 'Pod 3', mattressSize: 'Half-Split King', base: 'Flex SH', comforts: ['Soft', 'Firm'] },
+      { pod: 'Pod 4', mattressSize: 'Split King', base: 'Flex LSX', comforts: ['Medium Soft', 'Medium Firm'] },
+    ],
+  },
+  '14-inch-dual-comfort-mattress': {
+    type: 'full_display', displayCount: 2, readiness: 'READY', label: 'Try it in Pods 5 & 6',
+    locations: [
+      { pod: 'Pod 5', mattressSize: 'King', base: 'Flex LSX', comforts: ['Soft', 'Firm'] },
+      { pod: 'Pod 6', mattressSize: 'Queen', base: 'Flex LSX', comforts: ['Medium Soft', 'Medium Firm'] },
+    ],
+  },
+};
+const LEAD_MEDIA_CONTRACT = {
+  'cotton-sheet-set': 'BEDGEAR Cotton sheets styled on a bed',
+  'dri-tec-sheet-set': 'BEDGEAR Dri-Tec sheets in Light Grey on a bed',
+  'ver-tex-sheet-set': 'BEDGEAR Ver-Tex White sheets in a bedroom',
+};
 
 function fail(message) { throw new Error(message); }
 function sha256(value) { return crypto.createHash('sha256').update(String(value || '').replace(/\r\n/g, '\n'), 'utf8').digest('hex'); }
@@ -77,13 +115,15 @@ async function rest(pathname, options = {}) {
 }
 
 const INSPECT = `query CuratedBundleInspection {
-  products(first: 100) { nodes { id handle status variants(first: 100) { nodes { id sku price availableForSale selectedOptions { name value } } } } }
+  products(first: 100) { nodes { id handle status metafield(namespace: "custom", key: "showroom_representation") { id type value } media(first: 50) { nodes { id alt mediaContentType status } } variants(first: 100) { nodes { id sku price availableForSale selectedOptions { name value } } } } }
   pages(first: 250) { nodes { id title handle body isPublished templateSuffix } }
   menus(first: 50) { nodes { id title handle items { id title type url resourceId items { id title type url resourceId items { id title type url resourceId } } } } }
 }`;
 const PAGE_CREATE = `mutation ($page: PageCreateInput!) { pageCreate(page: $page) { page { id handle title isPublished templateSuffix body } userErrors { field message } } }`;
 const PAGE_UPDATE = `mutation ($id: ID!, $page: PageUpdateInput!) { pageUpdate(id: $id, page: $page) { page { id handle title isPublished templateSuffix body } userErrors { field message } } }`;
 const MENU_UPDATE = `mutation ($id: ID!, $title: String!, $handle: String, $items: [MenuItemUpdateInput!]!) { menuUpdate(id: $id, title: $title, handle: $handle, items: $items) { menu { id handle } userErrors { field message } } }`;
+const METAFIELDS_SET = `mutation ($metafields: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $metafields) { metafields { id namespace key type value } userErrors { field message } } }`;
+const PRODUCT_REORDER_MEDIA = `mutation ($id: ID!, $moves: [MoveInput!]!) { productReorderMedia(id: $id, moves: $moves) { job { id done } mediaUserErrors { field message } } }`;
 
 function menuInput(item) {
   const result = { title: item.title, type: item.type };
@@ -95,8 +135,9 @@ function menuInput(item) {
 function desiredMenuItems(menu) {
   const sleepSystems = {
     title: 'Sleep Systems', type: 'HTTP', url: '/pages/sleep-systems', items: [
-      { title: 'Sleep Systems', type: 'HTTP', url: '/pages/sleep-systems#sleep-systems' },
-      { title: 'Bedding Sets', type: 'HTTP', url: '/pages/sleep-systems#bedding-sets' },
+      { title: 'Standard Sleep Systems', type: 'HTTP', url: '/pages/sleep-systems?system=standard#sleep-systems' },
+      { title: 'Split-Head Sleep Systems', type: 'HTTP', url: '/pages/sleep-systems?system=split_head#sleep-systems' },
+      { title: 'Split King Sleep Systems', type: 'HTTP', url: '/pages/sleep-systems?system=full_split#sleep-systems' },
     ],
   };
   const items = menu.items.filter((item) => item.title !== 'Sleep Systems').map(menuInput);
@@ -128,7 +169,7 @@ const before = await graphql(INSPECT);
 const productCount = before.products.nodes.length;
 const variantCount = before.products.nodes.reduce((count, product) => count + product.variants.nodes.length, 0);
 if (productCount !== 43 || variantCount !== 274) fail(`Catalog boundary changed: ${productCount} products / ${variantCount} variants.`);
-const pageBody = `${SIGNATURE}\n<p>Choose a mattress, size, and compatible adjustable base, or shop curated bedding sets built from existing Shopify products.</p>`;
+const pageBody = `${SIGNATURE}\n<p>Choose a standard, split-head, or Split King sleep system. The experience shows only compatible mattress and adjustable-base configurations.</p>`;
 const currentPage = before.pages.nodes.find((page) => page.handle === 'sleep-systems');
 if (currentPage && !currentPage.body.includes(SIGNATURE)) fail('Refusing to overwrite the existing unmanaged sleep-systems page.');
 const mainMenu = before.menus.nodes.find((menu) => menu.handle === 'main-menu');
@@ -144,7 +185,19 @@ for (const key of ASSETS) {
   assetPlan.push({ key, action: current?.value && assetDigest(key, current.value) === assetDigest(key, desired) ? 'unchanged' : current ? 'update' : 'create' });
 }
 const pageMatches = currentPage && currentPage.title === 'Sleep Systems' && currentPage.body === pageBody && currentPage.isPublished && currentPage.templateSuffix === 'sleep-systems';
-console.log(JSON.stringify({ mode: APPLY ? 'apply' : 'plan', store: shopify.shop, catalog: { products: productCount, variants: variantCount }, page: { handle: 'sleep-systems', action: pageMatches ? 'unchanged' : currentPage ? 'update' : 'create' }, navigation: 'main-menu / Sleep Systems', assets: assetPlan, targetTheme: UNPUBLISHED_THEME_ID, publishedTheme: `${PUBLISHED_THEME_ID} unchanged`, productsCreated: 0, discountsCreated: 0 }, null, 2));
+const showroomUpdates = Object.entries(SHOWROOM_CONTRACT).filter(([handle, desired]) => {
+  const product = before.products.nodes.find((entry) => entry.handle === handle);
+  if (!product) fail(`Missing showroom mattress ${handle}.`);
+  try { return JSON.stringify(JSON.parse(product.metafield?.value || 'null')) !== JSON.stringify(desired); }
+  catch (_error) { return true; }
+});
+const leadMediaUpdates = Object.entries(LEAD_MEDIA_CONTRACT).filter(([handle, preferredAlt]) => {
+  const product = before.products.nodes.find((entry) => entry.handle === handle);
+  if (!product) fail(`Missing lead-media product ${handle}.`);
+  if (!product.media.nodes.some((media) => media.alt === preferredAlt)) fail(`Missing preferred clean media for ${handle}.`);
+  return product.media.nodes[0]?.alt !== preferredAlt;
+});
+console.log(JSON.stringify({ mode: APPLY ? 'apply' : 'plan', store: shopify.shop, catalog: { products: productCount, variants: variantCount }, page: { handle: 'sleep-systems', action: pageMatches ? 'unchanged' : currentPage ? 'update' : 'create' }, navigation: 'main-menu / Sleep Systems', showroomUpdates: showroomUpdates.map(([handle]) => handle), leadMediaUpdates: leadMediaUpdates.map(([handle]) => handle), assets: assetPlan, targetTheme: UNPUBLISHED_THEME_ID, publishedTheme: `${PUBLISHED_THEME_ID} unchanged`, productsCreated: 0, discountsCreated: 0 }, null, 2));
 if (!APPLY) process.exit(0);
 
 const backupDirectory = path.join(BACKUP_ROOT, new Date().toISOString().replace(/[:.]/g, '-'));
@@ -173,6 +226,29 @@ for (const key of ASSETS) {
   if (Boolean(publishedAfter) !== Boolean(publishedPrior) || (publishedAfter?.value && assetDigest(key, publishedAfter.value) !== assetDigest(key, publishedPrior.value))) fail(`Published theme changed unexpectedly for ${key}.`);
 }
 
+if (showroomUpdates.length) {
+  const data = await graphql(METAFIELDS_SET, { metafields: showroomUpdates.map(([handle, value]) => ({
+    ownerId: before.products.nodes.find((product) => product.handle === handle).id,
+    namespace: 'custom', key: 'showroom_representation', type: 'json', value: JSON.stringify(value),
+  })) });
+  noErrors(data.metafieldsSet.userErrors, 'Could not update showroom Pod locations');
+}
+for (const [handle, preferredAlt] of leadMediaUpdates) {
+  const product = before.products.nodes.find((entry) => entry.handle === handle);
+  const preferred = product.media.nodes.find((media) => media.alt === preferredAlt);
+  const data = await graphql(PRODUCT_REORDER_MEDIA, { id: product.id, moves: [{ id: preferred.id, newPosition: '0' }] });
+  noErrors(data.productReorderMedia.mediaUserErrors, `Could not reorder clean lead media for ${handle}`);
+}
+if (leadMediaUpdates.length) {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const mediaCheck = await graphql(INSPECT);
+    const unresolved = leadMediaUpdates.filter(([handle, preferredAlt]) => mediaCheck.products.nodes.find((product) => product.handle === handle)?.media.nodes[0]?.alt !== preferredAlt);
+    if (!unresolved.length) break;
+    if (attempt === 19) fail(`Lead media reorder did not settle: ${unresolved.map(([handle]) => handle).join(', ')}.`);
+    await new Promise((resolve) => setTimeout(resolve, 750));
+  }
+}
+
 const pageInput = { title: 'Sleep Systems', handle: 'sleep-systems', body: pageBody, isPublished: true, templateSuffix: 'sleep-systems' };
 if (!pageMatches) {
   if (currentPage) { const data = await graphql(PAGE_UPDATE, { id: currentPage.id, page: pageInput }); noErrors(data.pageUpdate.userErrors, 'Could not update Sleep Systems page'); }
@@ -186,10 +262,18 @@ const actualPage = after.pages.nodes.find((page) => page.handle === 'sleep-syste
 if (!actualPage || actualPage.title !== 'Sleep Systems' || actualPage.body !== pageBody || !actualPage.isPublished || actualPage.templateSuffix !== 'sleep-systems') fail('Sleep Systems page failed readback.');
 const actualMenu = after.menus.nodes.find((menu) => menu.handle === 'main-menu');
 const sleepSystemsItem = actualMenu.items.find((item) => item.title === 'Sleep Systems');
-if (!sleepSystemsItem || sleepSystemsItem.url !== '/pages/sleep-systems' || sleepSystemsItem.items.length !== 2) fail('Sleep Systems navigation failed readback.');
+if (!sleepSystemsItem || sleepSystemsItem.url !== '/pages/sleep-systems' || sleepSystemsItem.items.length !== 3 || sleepSystemsItem.items.some((item) => item.title === 'Bedding Sets')) fail('Sleep Systems navigation failed readback.');
+for (const [handle, desired] of Object.entries(SHOWROOM_CONTRACT)) {
+  const actual = after.products.nodes.find((product) => product.handle === handle);
+  if (!actual?.metafield?.value || JSON.stringify(JSON.parse(actual.metafield.value)) !== JSON.stringify(desired)) fail(`${handle} showroom mapping failed readback.`);
+}
+for (const [handle, preferredAlt] of Object.entries(LEAD_MEDIA_CONTRACT)) {
+  const actual = after.products.nodes.find((product) => product.handle === handle);
+  if (actual?.media?.nodes[0]?.alt !== preferredAlt) fail(`${handle} clean lead media failed readback.`);
+}
 const actualProductCount = after.products.nodes.length;
 const actualVariantCount = after.products.nodes.reduce((count, product) => count + product.variants.nodes.length, 0);
 if (actualProductCount !== 43 || actualVariantCount !== 274) fail('Catalog count changed during staging.');
-const readback = { schemaVersion: '1.0.0', verifiedAt: new Date().toISOString(), store: shopify.shop, backupDirectory, catalog: { products: actualProductCount, variants: actualVariantCount, productsCreated: 0 }, page: actualPage, navigation: sleepSystemsItem, bundleSummary: manifest.summary, theme: { targetThemeId: UNPUBLISHED_THEME_ID, publishedThemeId: PUBLISHED_THEME_ID, publishedThemeUnchanged: true, assets: ASSETS }, previewUrl: `https://${shopify.shop}/pages/sleep-systems?preview_theme_id=${UNPUBLISHED_THEME_ID}` };
+const readback = { schemaVersion: '1.0.0', verifiedAt: new Date().toISOString(), store: shopify.shop, backupDirectory, catalog: { products: actualProductCount, variants: actualVariantCount, productsCreated: 0 }, page: actualPage, navigation: sleepSystemsItem, showroom: SHOWROOM_CONTRACT, leadMedia: LEAD_MEDIA_CONTRACT, bundleSummary: manifest.summary, theme: { targetThemeId: UNPUBLISHED_THEME_ID, publishedThemeId: PUBLISHED_THEME_ID, publishedThemeUnchanged: true, assets: ASSETS }, previewUrl: `https://${shopify.shop}/pages/sleep-systems?preview_theme_id=${UNPUBLISHED_THEME_ID}` };
 fs.writeFileSync(READBACK_PATH, `${JSON.stringify(readback, null, 2)}\n`);
 console.log(JSON.stringify({ result: 'Curated bundles staged and verified.', backupDirectory, previewUrl: readback.previewUrl, catalog: readback.catalog, publishedThemeUnchanged: true }, null, 2));

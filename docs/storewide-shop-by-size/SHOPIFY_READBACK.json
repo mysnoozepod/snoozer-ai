@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0.0",
-  "verifiedAt": "2026-11-11T20:26:56.451Z",
+  "verifiedAt": "2026-11-12T06:12:10.021Z",
   "store": "mysnoozepodtest.myshopify.com",
-  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\storewide-shop-by-size\\2026-11-11T20-26-50-012Z",
+  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\storewide-shop-by-size\\2026-11-12T06-11-08-630Z",
   "summary": {
     "taggedProducts": 42,
-    "storewideSizes": 15,
+    "storewideSizes": 14,
     "categories": 9,
-    "collections": 77,
-    "excludedOneSizeVariants": 1
+    "collections": 70,
+    "excludedOneSizeVariants": 18
   },
   "productStatusesPreserved": true,
   "collections": [
@@ -345,10 +345,6 @@
       "sizeLabel": "Split Head Queen",
       "categoryKey": null,
       "products": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress",
         "cotton-sheet-set",
         "dri-tec-mattress-protector",
         "dri-tec-sheet-set",
@@ -370,10 +366,6 @@
       "sizeLabel": "Split Head King",
       "categoryKey": null,
       "products": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress",
         "cotton-sheet-set",
         "dri-tec-mattress-protector",
         "dri-tec-sheet-set",
@@ -395,10 +387,6 @@
       "sizeLabel": "Split Head California King",
       "categoryKey": null,
       "products": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress",
         "cotton-sheet-set",
         "dri-tec-mattress-protector",
         "dri-tec-sheet-set",
@@ -420,8 +408,6 @@
       "sizeLabel": "Split King",
       "categoryKey": null,
       "products": [
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
         "cotton-sheet-set",
         "dri-tec-mattress-protector",
         "dri-tec-sheet-set",
@@ -442,8 +428,6 @@
       "sizeLabel": "Split California King",
       "categoryKey": null,
       "products": [
-        "12-inch-dual-comfort-mattress",
-        "14-inch-dual-comfort-mattress",
         "cotton-sheet-set",
         "dri-tec-mattress-protector",
         "dri-tec-sheet-set",
@@ -456,22 +440,6 @@
           "column": "TAG",
           "relation": "EQUALS",
           "condition": "shop-size:split-california-king"
-        }
-      ]
-    },
-    {
-      "handle": "shop-by-size-twin-xl-x-2",
-      "title": "Shop Twin XL x 2",
-      "sizeLabel": "Twin XL x 2",
-      "categoryKey": null,
-      "products": [
-        "14-inch-dual-comfort-mattress"
-      ],
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:twin-xl-x-2"
         }
       ]
     },
@@ -612,143 +580,6 @@
           "column": "TAG",
           "relation": "EQUALS",
           "condition": "shop-size:california-king"
-        }
-      ]
-    },
-    {
-      "handle": "mattresses-size-split-head-queen",
-      "title": "Split Head Queen Mattresses",
-      "sizeLabel": "Split Head Queen",
-      "categoryKey": "mattresses",
-      "products": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress"
-      ],
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:split-head-queen"
-        }
-      ]
-    },
-    {
-      "handle": "mattresses-size-split-head-king",
-      "title": "Split Head King Mattresses",
-      "sizeLabel": "Split Head King",
-      "categoryKey": "mattresses",
-      "products": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress"
-      ],
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:split-head-king"
-        }
-      ]
-    },
-    {
-      "handle": "mattresses-size-split-head-california-king",
-      "title": "Split Head California King Mattresses",
-      "sizeLabel": "Split Head California King",
-      "categoryKey": "mattresses",
-      "products": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress"
-      ],
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:split-head-california-king"
-        }
-      ]
-    },
-    {
-      "handle": "mattresses-size-split-king",
-      "title": "Split King Mattresses",
-      "sizeLabel": "Split King",
-      "categoryKey": "mattresses",
-      "products": [
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress"
-      ],
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:split-king"
-        }
-      ]
-    },
-    {
-      "handle": "mattresses-size-split-california-king",
-      "title": "Split California King Mattresses",
-      "sizeLabel": "Split California King",
-      "categoryKey": "mattresses",
-      "products": [
-        "12-inch-dual-comfort-mattress",
-        "14-inch-dual-comfort-mattress"
-      ],
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:split-california-king"
-        }
-      ]
-    },
-    {
-      "handle": "mattresses-size-twin-xl-x-2",
-      "title": "Twin XL x 2 Mattresses",
-      "sizeLabel": "Twin XL x 2",
-      "categoryKey": "mattresses",
-      "products": [
-        "14-inch-dual-comfort-mattress"
-      ],
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:twin-xl-x-2"
         }
       ]
     },
@@ -1878,14 +1709,14 @@
     }
   ],
   "navigation": {
-    "id": "gid://shopify/MenuItem/528881680445",
+    "id": "gid://shopify/MenuItem/528952459325",
     "title": "Shop by Size",
     "type": "COLLECTION",
     "url": "/collections/shop-by-size",
     "resourceId": "gid://shopify/Collection/302845689917",
     "items": [
       {
-        "id": "gid://shopify/MenuItem/528881713213",
+        "id": "gid://shopify/MenuItem/528952492093",
         "title": "Twin",
         "type": "COLLECTION",
         "url": "/collections/shop-by-size-twin",
@@ -1893,7 +1724,7 @@
         "items": []
       },
       {
-        "id": "gid://shopify/MenuItem/528881745981",
+        "id": "gid://shopify/MenuItem/528952524861",
         "title": "Twin XL",
         "type": "COLLECTION",
         "url": "/collections/shop-by-size-twin-xl",
@@ -1901,7 +1732,7 @@
         "items": []
       },
       {
-        "id": "gid://shopify/MenuItem/528881778749",
+        "id": "gid://shopify/MenuItem/528952557629",
         "title": "Full",
         "type": "COLLECTION",
         "url": "/collections/shop-by-size-full",
@@ -1909,7 +1740,7 @@
         "items": []
       },
       {
-        "id": "gid://shopify/MenuItem/528881811517",
+        "id": "gid://shopify/MenuItem/528952590397",
         "title": "Queen",
         "type": "COLLECTION",
         "url": "/collections/shop-by-size-queen",
@@ -1917,7 +1748,7 @@
         "items": []
       },
       {
-        "id": "gid://shopify/MenuItem/528881844285",
+        "id": "gid://shopify/MenuItem/528952623165",
         "title": "King",
         "type": "COLLECTION",
         "url": "/collections/shop-by-size-king",
@@ -1925,7 +1756,7 @@
         "items": []
       },
       {
-        "id": "gid://shopify/MenuItem/528881877053",
+        "id": "gid://shopify/MenuItem/528952655933",
         "title": "California King",
         "type": "COLLECTION",
         "url": "/collections/shop-by-size-california-king",
@@ -1935,7 +1766,7 @@
     ]
   },
   "theme": {
-    "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\storewide-shop-by-size\\2026-11-11T20-26-50-012Z",
+    "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\storewide-shop-by-size\\2026-11-12T06-11-08-630Z",
     "publishedThemeUnchanged": true,
     "targetThemeId": "139216420925",
     "assets": [

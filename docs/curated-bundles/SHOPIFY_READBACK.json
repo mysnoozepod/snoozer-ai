@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.0.0",
-  "verifiedAt": "2026-11-12T02:12:11.652Z",
+  "verifiedAt": "2026-11-12T06:26:36.984Z",
   "store": "mysnoozepodtest.myshopify.com",
-  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\curated-bundles\\2026-11-12T02-11-50-224Z",
+  "backupDirectory": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\curated-bundles\\2026-11-12T06-25-50-566Z",
   "catalog": {
     "products": 43,
     "variants": 274,
@@ -12,34 +12,127 @@
     "id": "gid://shopify/Page/109195460669",
     "title": "Sleep Systems",
     "handle": "sleep-systems",
-    "body": "<!-- mysnoozepod-curated-bundles-v1 -->\n<p>Choose a mattress, size, and compatible adjustable base, or shop curated bedding sets built from existing Shopify products.</p>",
+    "body": "<!-- mysnoozepod-curated-bundles-v1 -->\n<p>Choose a standard, split-head, or Split King sleep system. The experience shows only compatible mattress and adjustable-base configurations.</p>",
     "isPublished": true,
     "templateSuffix": "sleep-systems"
   },
   "navigation": {
-    "id": "gid://shopify/MenuItem/528937582653",
+    "id": "gid://shopify/MenuItem/528960356413",
     "title": "Sleep Systems",
     "type": "HTTP",
     "url": "/pages/sleep-systems",
     "resourceId": null,
     "items": [
       {
-        "id": "gid://shopify/MenuItem/528937615421",
-        "title": "Sleep Systems",
+        "id": "gid://shopify/MenuItem/528960389181",
+        "title": "Standard Sleep Systems",
         "type": "HTTP",
-        "url": "/pages/sleep-systems#sleep-systems",
+        "url": "/pages/sleep-systems?system=standard#sleep-systems",
         "resourceId": null,
         "items": []
       },
       {
-        "id": "gid://shopify/MenuItem/528937648189",
-        "title": "Bedding Sets",
+        "id": "gid://shopify/MenuItem/528960421949",
+        "title": "Split-Head Sleep Systems",
         "type": "HTTP",
-        "url": "/pages/sleep-systems#bedding-sets",
+        "url": "/pages/sleep-systems?system=split_head#sleep-systems",
+        "resourceId": null,
+        "items": []
+      },
+      {
+        "id": "gid://shopify/MenuItem/528960454717",
+        "title": "Split King Sleep Systems",
+        "type": "HTTP",
+        "url": "/pages/sleep-systems?system=full_split#sleep-systems",
         "resourceId": null,
         "items": []
       }
     ]
+  },
+  "showroom": {
+    "12-inch-memory-foam-mattress": {
+      "type": "full_display",
+      "displayCount": 1,
+      "readiness": "READY",
+      "label": "Try it in Pod 1",
+      "locations": [
+        {
+          "pod": "Pod 1",
+          "mattressSize": "Queen",
+          "base": "Flex L"
+        }
+      ]
+    },
+    "12-inch-hybrid-mattress": {
+      "type": "full_display",
+      "displayCount": 1,
+      "readiness": "READY",
+      "label": "Try it in Pod 2",
+      "locations": [
+        {
+          "pod": "Pod 2",
+          "mattressSize": "Half-Split Queen",
+          "base": "Flex SH"
+        }
+      ]
+    },
+    "12-inch-dual-comfort-mattress": {
+      "type": "full_display",
+      "displayCount": 2,
+      "readiness": "READY",
+      "label": "Try it in Pods 3 & 4",
+      "locations": [
+        {
+          "pod": "Pod 3",
+          "mattressSize": "Half-Split King",
+          "base": "Flex SH",
+          "comforts": [
+            "Soft",
+            "Firm"
+          ]
+        },
+        {
+          "pod": "Pod 4",
+          "mattressSize": "Split King",
+          "base": "Flex LSX",
+          "comforts": [
+            "Medium Soft",
+            "Medium Firm"
+          ]
+        }
+      ]
+    },
+    "14-inch-dual-comfort-mattress": {
+      "type": "full_display",
+      "displayCount": 2,
+      "readiness": "READY",
+      "label": "Try it in Pods 5 & 6",
+      "locations": [
+        {
+          "pod": "Pod 5",
+          "mattressSize": "King",
+          "base": "Flex LSX",
+          "comforts": [
+            "Soft",
+            "Firm"
+          ]
+        },
+        {
+          "pod": "Pod 6",
+          "mattressSize": "Queen",
+          "base": "Flex LSX",
+          "comforts": [
+            "Medium Soft",
+            "Medium Firm"
+          ]
+        }
+      ]
+    }
+  },
+  "leadMedia": {
+    "cotton-sheet-set": "BEDGEAR Cotton sheets styled on a bed",
+    "dri-tec-sheet-set": "BEDGEAR Dri-Tec sheets in Light Grey on a bed",
+    "ver-tex-sheet-set": "BEDGEAR Ver-Tex White sheets in a bedroom"
   },
   "bundleSummary": {
     "bundles": 17,
@@ -60,8 +153,17 @@
       "assets/snoozepod-curated-bundles.css",
       "assets/snoozepod-shop-by-size.js",
       "sections/snoozepod-curated-bundles.liquid",
+      "sections/snoozepod-product-hero.liquid",
+      "sections/main-collection-banner.liquid",
       "sections/main-collection-product-grid.liquid",
       "sections/snoozepod-collection-navigation-v1.liquid",
+      "snippets/snoozepod-showroom-location.liquid",
+      "snippets/snoozepod-mattress-product-information.liquid",
+      "snippets/product-variant-picker.liquid",
+      "snippets/product-variant-options.liquid",
+      "snippets/buy-buttons.liquid",
+      "assets/component-snoozepod-commerce-v1.css",
+      "assets/snoozepod-dual-comfort.js",
       "templates/page.sleep-systems.json",
       "templates/collection.json",
       "templates/collection.main.json",

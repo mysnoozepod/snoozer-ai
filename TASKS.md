@@ -1,7 +1,19 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-11 — Product-first collections and owner-approved Sleep System rules staged and validated
-Queue state: Collection pages now render the collection title and native product grid first, followed by Shop by Category and Find Your Fit. Sleep Systems apply the owner-approved standard, split-head, and Split King rules on unpublished theme `139216420925`. Theme publication remains gated.
+Last updated: 2026-11-12 — Curated storefront strategy staged and preview-verified
+Queue state: Products lead all collection and size routes; unfinished Find Your Fit content is removed; standalone mattress shopping excludes system-only split geometry; curated Standard, Split Head, and Split King pathways plus the six-Pod showroom map are implemented on unpublished theme `139216420925`. Theme publication remains gated.
+
+### Curated storefront strategy and showroom Pods
+
+- **Status:** IMPLEMENTED, SHOPIFY-READBACK-VERIFIED, AND AUTHENTICATED-PREVIEW-VERIFIED ON UNPUBLISHED THEME `139216420925`.
+- **Collections:** products render immediately after the concise collection heading and native controls; Shop by Category follows products; Find Your Fit is absent until its pages/tools are configured.
+- **Size shopping:** 14 storewide size destinations and 70 managed collections remain catalog-derived. System-only mattress geometries are excluded from standalone mattress discovery while supported split bedding/protection products remain discoverable.
+- **Sleep Systems:** three intentional paths—Standard, featured Split Head on Flex SH, and Split King as two Twin XL mattresses plus two Twin XL Flex L/LSX bases. No Split Queen and no competing bedding-set catalog on the systems page.
+- **Showroom:** six structured Pod placements are stored in the existing showroom metafield and rendered on mattress cards/PDPs. Dual Comfort models occupy two Pods each with their approved comfort demonstrations.
+- **Presentation:** Dual Comfort controls are aligned premium tiles; Cotton, Dri-Tec, and Ver-Tex Sheet Set galleries lead with existing clean lifestyle photos rather than text graphics.
+- **Validation:** strategy 23; curated 1,662; Storewide Shop by Size 965; Shop by Size 33; Product Page v2 28; Product Page/collection 69; website 46; product knowledge 43; catalog/shopping 10/10; P1-002 34 groups; cart integrity 21 scenarios plus regression/canonical/discovery; syntax passed.
+- **Safety:** 43 products/274 variants preserved; zero products created; published theme `139460542525` unchanged; no publication, checkout/order, backend, or AWS work.
+- **Next:** controlled development-cart acceptance for one Standard, one Split Head, and one Split King system before publication.
 
 ### Collection hierarchy and Sleep System correction
 

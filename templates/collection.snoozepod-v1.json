@@ -44,14 +44,7 @@
       },
       "block_order": ["mattresses", "adjustable-bases", "pillows", "sheets", "mattress-protectors", "comforters", "cooling-bedding", "mattress-toppers", "bedroom-furniture"],
       "settings": { "heading": "Shop by Category" }
-    },
-    "guided-shopping": {
-      "type": "snoozepod-guided-shopping-links",
-      "settings": {
-        "heading": "Find Your Fit",
-        "intro": "Use a guided tool after browsing the products to narrow your next step."
-      }
     }
   },
-  "order": ["banner", "product-grid", "category-navigation", "guided-shopping"]
+  "order": ["banner", "product-grid", "category-navigation"]
 }

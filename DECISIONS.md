@@ -1,6 +1,6 @@
 # MySnoozePod.com Decision Register
 
-Last updated: 2026-11-11 — Storewide Shop by Size and variant-derived collection routing
+Last updated: 2026-11-12 — Curated system pathways and six-Pod showroom presentation
 
 ## Confirmed owner decisions and constraints
 
@@ -89,6 +89,11 @@ Last updated: 2026-11-11 — Storewide Shop by Size and variant-derived collecti
 | D-081 | Curated relationship data extends the existing product-knowledge feed rather than creating a second product authority. Bundle IDs, components, exact variants, prices, sizes, geometry, compatibility state, and showroom state are retrievable, while live Shopify retains price, availability, cart, and checkout authority. | **DATA CONTRACT IMPLEMENTED; NO SNOOZER BACKEND CHANGE** — 2026-11-11. |
 | D-082 | Collection pages render only the collection title and native product controls/grid before secondary discovery. Shop by Category and Find Your Fit remain below the products; the custom collection hero, collection Ask Snoozer CTA, closing CTA, and visible pre-product Shop by Size panel are removed. | **OWNER DIRECTIVE / IMPLEMENTED AND RENDER-VERIFIED ON UNPUBLISHED THEME** — 2026-11-11. |
 | D-083 | Mattress/base compatibility is owner-approved as follows: exact-size standard mattresses may use Flex L or Flex LSX; exact-size split-head mattresses use Flex SH only; Split King is two Twin XL mattress units plus two Twin XL base units; Split Queen is unsupported. This supersedes D-079's pending pairwise gate for these exact generated relationships. | **OWNER DIRECTIVE / IMPLEMENTED AND RENDER-VERIFIED ON UNPUBLISHED THEME** — 2026-11-11. |
+| D-084 | Find Your Fit must not appear in storefront navigation or collection merchandising until its guide pages and tools are configured. Collection pages should prioritize the concise title, native controls, and products; Shop by Category may follow as secondary discovery. | **OWNER DIRECTIVE / IMPLEMENTED AND PREVIEW-VERIFIED** — 2026-11-12. |
+| D-085 | Split-head and Split King mattress configurations are system-only shopping paths. They must not appear as standalone mattress choices, but supported split sheets, protectors, and other non-mattress products remain discoverable by size. | **OWNER DIRECTIVE / IMPLEMENTED FAIL-CLOSED** — 2026-11-12. |
+| D-086 | Sleep Systems are curated first by geometry: Standard, featured Split Head, and Split King. Split Head uses Flex SH; Split King uses two Twin XL mattress units plus two Twin XL Flex L or Flex LSX bases; bedding sets do not share this primary decision surface. | **OWNER DIRECTIVE / IMPLEMENTED AND PREVIEW-VERIFIED** — 2026-11-12. |
+| D-087 | The six showroom Pods are: Pod 1 memory foam Queen/Flex L; Pod 2 hybrid Half-Split Queen/Flex SH; Pod 3 12-inch Dual Comfort Half-Split King/Flex SH/Soft-Firm; Pod 4 12-inch Dual Comfort Split King/Flex LSX/Medium Soft-Medium Firm; Pod 5 14-inch Dual Comfort King/Flex LSX/Soft-Firm; Pod 6 14-inch Dual Comfort Queen/Flex LSX/Medium Soft-Medium Firm. Dual Comfort products therefore represent two physical floor positions each. | **OWNER DIRECTIVE / STRUCTURED SHOPIFY DATA AND STOREFRONT BADGES IMPLEMENTED** — 2026-11-12. |
+| D-088 | Product and collection lead media should be clean product/lifestyle photography without embedded marketing text when a verified existing alternative is available. Text-heavy manufacturer graphics may remain secondary. | **OWNER DIRECTIVE / SHEET-SET LEAD MEDIA REORDERED WITHOUT DELETION** — 2026-11-12. |
 
 ## Verified architectural and operational facts
 

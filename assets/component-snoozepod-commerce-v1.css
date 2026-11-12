@@ -97,6 +97,28 @@
   font-size: 1.1rem;
 }
 
+.snoozepod-showroom__locations {
+  display: grid;
+  width: 100%;
+  gap: 0.6rem;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.snoozepod-showroom__locations li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.7rem;
+  color: rgba(7, 25, 66, 0.72);
+  font-size: 1.2rem;
+}
+
+.snoozepod-showroom__locations li span:not(:last-child)::after {
+  margin-left: 0.7rem;
+  content: "·";
+}
+
 .snoozepod-data-placeholder {
   margin-top: 1.6rem;
   padding: 1.2rem 1.4rem;
@@ -143,10 +165,10 @@
 }
 .snoozepod-dual-comfort {
   margin-top: 24px;
-  padding: 20px;
+  padding: 22px;
   border: 1px solid rgba(7, 25, 66, 0.14);
-  border-radius: 20px;
-  background: #f7f9fc;
+  border-radius: 22px;
+  background: linear-gradient(145deg, #fbfcfe 0%, #f1f5fa 100%);
 }
 
 .snoozepod-dual-comfort__intro h2 {
@@ -165,25 +187,27 @@
 
 .snoozepod-dual-comfort__group {
   margin: 18px 0 0;
-  padding: 0;
-  border: 0;
+  padding: 16px;
+  border: 1px solid rgba(7, 25, 66, 0.1);
+  border-radius: 16px;
+  background: #ffffff;
 }
 
 .snoozepod-dual-comfort__groups {
   display: grid;
-  gap: 0 16px;
+  gap: 14px;
 }
 
 .snoozepod-dual-comfort__group legend {
-  margin-bottom: 9px;
+  padding: 0 3px;
   color: #071942;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
 }
 
 .snoozepod-dual-comfort__choices {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -199,24 +223,25 @@
 
 .snoozepod-dual-comfort__choices label {
   display: flex;
-  min-height: 44px;
+  min-height: 50px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(7, 25, 66, 0.26);
-  border-radius: 999px;
-  padding: 8px 10px;
-  background: #e9eff8;
+  border: 1px solid rgba(7, 25, 66, 0.2);
+  border-radius: 12px;
+  padding: 10px 8px;
+  background: #edf2f8;
   color: #071942;
   cursor: pointer;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  white-space: nowrap;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
-@media screen and (min-width: 1200px) {
+@media screen and (min-width: 750px) {
   .snoozepod-dual-comfort__groups {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .snoozepod-dual-comfort__choices {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -225,6 +250,13 @@
   border-color: #071942;
   background: #071942;
   color: #fff;
+  box-shadow: 0 8px 18px rgba(7, 25, 66, 0.18);
+  transform: translateY(-1px);
+}
+
+.snoozepod-dual-comfort__choices label:hover {
+  border-color: #2c4278;
+  background: #e2eaf4;
 }
 
 .snoozepod-dual-comfort__choices input:focus-visible + label {
@@ -234,7 +266,11 @@
 
 .snoozepod-dual-comfort__summary {
   min-height: 21px;
-  font-weight: 700;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  font-weight: 800;
 }
 
 @media screen and (max-width: 420px) {
@@ -242,7 +278,5 @@
     padding: 16px;
   }
 
-  .snoozepod-dual-comfort__choices {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  .snoozepod-dual-comfort__choices label { font-size: 12px; }
 }

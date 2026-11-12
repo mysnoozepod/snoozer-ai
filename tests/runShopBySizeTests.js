@@ -35,7 +35,8 @@ equal(shopBySize.selectedSizeFromSearch('?size=Split+Head+King'), 'Split Head Ki
 equal(shopBySize.productUrlForVariant('/products/example?ref=collection', '101', 'Queen'), '/products/example?ref=collection&variant=101&size=Queen');
 const mattressContext = shopBySize.collectionContext(sizeMap, 'mattresses');
 equal(mattressContext.heading, 'Shop Mattresses by Size');
-equal(mattressContext.sizes.length, 12);
+equal(mattressContext.sizes.length, 6);
+check(mattressContext.sizes.every((size) => !shopBySize.systemOnlyMattressSize(size.label)), 'standalone mattress size routes exclude system-only geometries');
 const splitContext = shopBySize.collectionContext(sizeMap, 'adjustable-bases-size-split-head-king');
 equal(splitContext.selectedSize, 'Split Head King');
 equal(splitContext.clearHandle, 'adjustable-bases');
@@ -44,6 +45,7 @@ equal(shopBySize.collectionContext(sizeMap, 'zoned-pillows'), null, 'unmanaged c
 check(section.includes("'snoozepod-size-collection-map.js' | asset_url"), 'the catalog-derived routing map is loaded');
 check(section.includes('data-shop-by-size-root'), 'size-specific behavior mounts without a visible pre-product panel');
 check(section.includes('data-collection-handle="{{ collection.handle | escape }}"'), 'the active collection handle is exposed');
+check(section.includes('data-product-type="{{ product.type | handleize }}"'), 'cards expose product type for system-only geometry protection');
 check(section.includes('variant.available | json'), 'Shopify availability is emitted');
 check(section.includes('variant.id | json'), 'Shopify variant IDs are emitted');
 check(section.includes('variant.price | money | json'), 'exact Shopify variant prices are emitted');

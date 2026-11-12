@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-11-11T20:13:09.527Z",
+  "generatedAt": "2026-11-12T06:09:03.133Z",
   "source": {
     "store": "mysnoozepodtest.myshopify.com",
     "inventoryGeneratedAt": "2026-11-11T20:10:18.089Z",
@@ -15,10 +15,10 @@
   },
   "summary": {
     "taggedProducts": 42,
-    "storewideSizes": 15,
+    "storewideSizes": 14,
     "categories": 9,
-    "collections": 77,
-    "excludedOneSizeVariants": 1
+    "collections": 70,
+    "excludedOneSizeVariants": 18
   },
   "products": [
     {
@@ -39,22 +39,14 @@
         "Twin XL",
         "Queen",
         "King",
-        "California King",
-        "Split Head Queen",
-        "Split Head King",
-        "Split Head California King",
-        "Split California King"
+        "California King"
       ],
       "addedTags": [
         "shop-by-size:true",
         "shop-size:twin-xl",
         "shop-size:queen",
         "shop-size:king",
-        "shop-size:california-king",
-        "shop-size:split-head-queen",
-        "shop-size:split-head-king",
-        "shop-size:split-head-california-king",
-        "shop-size:split-california-king"
+        "shop-size:california-king"
       ],
       "desiredTags": [
         "category:mattresses",
@@ -68,10 +60,6 @@
         "shop-size:california-king",
         "shop-size:king",
         "shop-size:queen",
-        "shop-size:split-california-king",
-        "shop-size:split-head-california-king",
-        "shop-size:split-head-king",
-        "shop-size:split-head-queen",
         "shop-size:twin-xl",
         "subcategory:m3",
         "type:mattress"
@@ -99,11 +87,7 @@
         "Full",
         "Queen",
         "King",
-        "California King",
-        "Split Head Queen",
-        "Split Head King",
-        "Split Head California King",
-        "Split King"
+        "California King"
       ],
       "addedTags": [
         "shop-by-size:true",
@@ -112,11 +96,7 @@
         "shop-size:full",
         "shop-size:queen",
         "shop-size:king",
-        "shop-size:california-king",
-        "shop-size:split-head-queen",
-        "shop-size:split-head-king",
-        "shop-size:split-head-california-king",
-        "shop-size:split-king"
+        "shop-size:california-king"
       ],
       "desiredTags": [
         "category:mattresses",
@@ -129,10 +109,6 @@
         "shop-size:full",
         "shop-size:king",
         "shop-size:queen",
-        "shop-size:split-head-california-king",
-        "shop-size:split-head-king",
-        "shop-size:split-head-queen",
-        "shop-size:split-king",
         "shop-size:twin",
         "shop-size:twin-xl",
         "subcategory:h6",
@@ -161,11 +137,7 @@
         "Full",
         "Queen",
         "King",
-        "California King",
-        "Split Head Queen",
-        "Split Head King",
-        "Split Head California King",
-        "Split King"
+        "California King"
       ],
       "addedTags": [
         "shop-by-size:true",
@@ -174,11 +146,7 @@
         "shop-size:full",
         "shop-size:queen",
         "shop-size:king",
-        "shop-size:california-king",
-        "shop-size:split-head-queen",
-        "shop-size:split-head-king",
-        "shop-size:split-head-california-king",
-        "shop-size:split-king"
+        "shop-size:california-king"
       ],
       "desiredTags": [
         "category:mattresses",
@@ -192,10 +160,6 @@
         "shop-size:full",
         "shop-size:king",
         "shop-size:queen",
-        "shop-size:split-head-california-king",
-        "shop-size:split-head-king",
-        "shop-size:split-head-queen",
-        "shop-size:split-king",
         "shop-size:twin",
         "shop-size:twin-xl",
         "subcategory:s7",
@@ -221,24 +185,14 @@
         "Twin XL",
         "Queen",
         "King",
-        "California King",
-        "Split Head Queen",
-        "Split Head King",
-        "Split Head California King",
-        "Split California King",
-        "Twin XL x 2"
+        "California King"
       ],
       "addedTags": [
         "shop-by-size:true",
         "shop-size:twin-xl",
         "shop-size:queen",
         "shop-size:king",
-        "shop-size:california-king",
-        "shop-size:split-head-queen",
-        "shop-size:split-head-king",
-        "shop-size:split-head-california-king",
-        "shop-size:split-california-king",
-        "shop-size:twin-xl-x-2"
+        "shop-size:california-king"
       ],
       "desiredTags": [
         "category:mattresses",
@@ -252,12 +206,7 @@
         "shop-size:california-king",
         "shop-size:king",
         "shop-size:queen",
-        "shop-size:split-california-king",
-        "shop-size:split-head-california-king",
-        "shop-size:split-head-king",
-        "shop-size:split-head-queen",
         "shop-size:twin-xl",
-        "shop-size:twin-xl-x-2",
         "subcategory:m5",
         "type:mattress"
       ]
@@ -1714,42 +1663,6 @@
           "slug": "california-king",
           "handle": "mattresses-size-california-king",
           "productCount": 4
-        },
-        {
-          "label": "Split Head Queen",
-          "slug": "split-head-queen",
-          "handle": "mattresses-size-split-head-queen",
-          "productCount": 4
-        },
-        {
-          "label": "Split Head King",
-          "slug": "split-head-king",
-          "handle": "mattresses-size-split-head-king",
-          "productCount": 4
-        },
-        {
-          "label": "Split Head California King",
-          "slug": "split-head-california-king",
-          "handle": "mattresses-size-split-head-california-king",
-          "productCount": 4
-        },
-        {
-          "label": "Split King",
-          "slug": "split-king",
-          "handle": "mattresses-size-split-king",
-          "productCount": 2
-        },
-        {
-          "label": "Split California King",
-          "slug": "split-california-king",
-          "handle": "mattresses-size-split-california-king",
-          "productCount": 2
-        },
-        {
-          "label": "Twin XL x 2",
-          "slug": "twin-xl-x-2",
-          "handle": "mattresses-size-twin-xl-x-2",
-          "productCount": 1
         }
       ]
     },
@@ -2456,10 +2369,6 @@
         }
       ],
       "productHandles": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress",
         "cotton-sheet-set",
         "dri-tec-mattress-protector",
         "dri-tec-sheet-set",
@@ -2482,10 +2391,6 @@
         }
       ],
       "productHandles": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress",
         "cotton-sheet-set",
         "dri-tec-mattress-protector",
         "dri-tec-sheet-set",
@@ -2508,10 +2413,6 @@
         }
       ],
       "productHandles": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress",
         "cotton-sheet-set",
         "dri-tec-mattress-protector",
         "dri-tec-sheet-set",
@@ -2534,8 +2435,6 @@
         }
       ],
       "productHandles": [
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
         "cotton-sheet-set",
         "dri-tec-mattress-protector",
         "dri-tec-sheet-set",
@@ -2557,31 +2456,12 @@
         }
       ],
       "productHandles": [
-        "12-inch-dual-comfort-mattress",
-        "14-inch-dual-comfort-mattress",
         "cotton-sheet-set",
         "dri-tec-mattress-protector",
         "dri-tec-sheet-set",
         "flex-lsx-adjustable-base",
         "ver-tex-mattress-protector",
         "ver-tex-sheet-set"
-      ]
-    },
-    {
-      "handle": "shop-by-size-twin-xl-x-2",
-      "title": "Shop Twin XL x 2",
-      "sizeLabel": "Twin XL x 2",
-      "categoryKey": null,
-      "templateSuffix": "snoozepod-v1",
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:twin-xl-x-2"
-        }
-      ],
-      "productHandles": [
-        "14-inch-dual-comfort-mattress"
       ]
     },
     {
@@ -2727,149 +2607,6 @@
         "12-inch-dual-comfort-mattress",
         "12-inch-hybrid-mattress",
         "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress"
-      ]
-    },
-    {
-      "handle": "mattresses-size-split-head-queen",
-      "title": "Split Head Queen Mattresses",
-      "sizeLabel": "Split Head Queen",
-      "categoryKey": "mattresses",
-      "templateSuffix": "snoozepod-v1",
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:split-head-queen"
-        }
-      ],
-      "productHandles": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress"
-      ]
-    },
-    {
-      "handle": "mattresses-size-split-head-king",
-      "title": "Split Head King Mattresses",
-      "sizeLabel": "Split Head King",
-      "categoryKey": "mattresses",
-      "templateSuffix": "snoozepod-v1",
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:split-head-king"
-        }
-      ],
-      "productHandles": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress"
-      ]
-    },
-    {
-      "handle": "mattresses-size-split-head-california-king",
-      "title": "Split Head California King Mattresses",
-      "sizeLabel": "Split Head California King",
-      "categoryKey": "mattresses",
-      "templateSuffix": "snoozepod-v1",
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:split-head-california-king"
-        }
-      ],
-      "productHandles": [
-        "12-inch-dual-comfort-mattress",
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress",
-        "14-inch-dual-comfort-mattress"
-      ]
-    },
-    {
-      "handle": "mattresses-size-split-king",
-      "title": "Split King Mattresses",
-      "sizeLabel": "Split King",
-      "categoryKey": "mattresses",
-      "templateSuffix": "snoozepod-v1",
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:split-king"
-        }
-      ],
-      "productHandles": [
-        "12-inch-hybrid-mattress",
-        "12-inch-memory-foam-mattress"
-      ]
-    },
-    {
-      "handle": "mattresses-size-split-california-king",
-      "title": "Split California King Mattresses",
-      "sizeLabel": "Split California King",
-      "categoryKey": "mattresses",
-      "templateSuffix": "snoozepod-v1",
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:split-california-king"
-        }
-      ],
-      "productHandles": [
-        "12-inch-dual-comfort-mattress",
-        "14-inch-dual-comfort-mattress"
-      ]
-    },
-    {
-      "handle": "mattresses-size-twin-xl-x-2",
-      "title": "Twin XL x 2 Mattresses",
-      "sizeLabel": "Twin XL x 2",
-      "categoryKey": "mattresses",
-      "templateSuffix": "snoozepod-v1",
-      "rules": [
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "collection:mattresses"
-        },
-        {
-          "column": "TAG",
-          "relation": "EQUALS",
-          "condition": "shop-size:twin-xl-x-2"
-        }
-      ],
-      "productHandles": [
         "14-inch-dual-comfort-mattress"
       ]
     },
@@ -4048,6 +3785,108 @@
     }
   ],
   "excluded": [
+    {
+      "productHandle": "12-inch-dual-comfort-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362594365",
+      "nativeSize": "Split Head Queen",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-dual-comfort-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362692669",
+      "nativeSize": "Split Head King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-dual-comfort-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362725437",
+      "nativeSize": "Split Head Cal King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-dual-comfort-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362758205",
+      "nativeSize": "Split Cal King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-hybrid-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362332221",
+      "nativeSize": "Split Head Queen",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-hybrid-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362430525",
+      "nativeSize": "Split Head King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-hybrid-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362463293",
+      "nativeSize": "Split Head Cal King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-hybrid-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362496061",
+      "nativeSize": "Split King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-memory-foam-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362004541",
+      "nativeSize": "Split Head Queen",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-memory-foam-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362102845",
+      "nativeSize": "Split Head King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-memory-foam-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362135613",
+      "nativeSize": "Split Head Cal King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "12-inch-memory-foam-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128362168381",
+      "nativeSize": "Split King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "14-inch-dual-comfort-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128371081277",
+      "nativeSize": "Split Head Queen",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "14-inch-dual-comfort-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128371114045",
+      "nativeSize": "Split Head King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "14-inch-dual-comfort-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128371146813",
+      "nativeSize": "Split Head Cal King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "14-inch-dual-comfort-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128371179581",
+      "nativeSize": "Twin XL x 2",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
+    {
+      "productHandle": "14-inch-dual-comfort-mattress",
+      "variantId": "gid://shopify/ProductVariant/44128371212349",
+      "nativeSize": "Split Cal King",
+      "reason": "System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping."
+    },
     {
       "productHandle": "cooling-performance-throw",
       "variantId": "gid://shopify/ProductVariant/44122488242237",

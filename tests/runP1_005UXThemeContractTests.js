@@ -93,11 +93,10 @@ assert(productInformation.includes('<details'), 'product information uses keyboa
 assert(productInformation.includes('shop.shipping_policy.url'), 'delivery section can reuse the authoritative Shopify shipping policy');
 assert(productInformation.includes('shop.refund_policy.url'), 'returns section can reuse the authoritative Shopify return policy');
 
-assert(collectionTemplate.order.join('|') === 'banner|product-grid|category-navigation|guided-shopping', 'Collection Page v1 renders title and products before secondary discovery');
+assert(collectionTemplate.order.join('|') === 'banner|product-grid|category-navigation', 'Collection Page v1 renders title and products before secondary category discovery');
 assert(collectionTemplate.sections.banner.type === 'main-collection-banner', 'Collection Page v1 uses the native title banner');
 assert(collectionTemplate.sections.banner.settings.show_collection_description === false && collectionTemplate.sections.banner.settings.show_collection_image === false, 'Collection title has no pre-product description or image clutter');
-assert(collectionTemplate.sections['guided-shopping'].type === 'snoozepod-guided-shopping-links', 'Collection Page v1 keeps contextual tools after the product grid');
-assert(collectionTemplate.sections['guided-shopping'].settings.heading === 'Find Your Fit', 'Find Your Fit is the final secondary section');
+assert(!collectionTemplate.sections['guided-shopping'], 'Unfinished Find Your Fit tools are removed from collection pages');
 assert(collectionTemplate.sections['category-navigation'].blocks.pillows.settings.collection === 'pillows', 'collection preview uses the real Pillows collection');
 assert(collectionTemplate.sections['category-navigation'].blocks.sheets.settings.collection === 'sheets', 'collection preview uses the canonical Sheets collection');
 assert(collectionTemplate.sections['category-navigation'].blocks['bedroom-furniture'].settings.collection === 'bedroom-furniture', 'collection preview uses the canonical Bedroom Furniture collection');

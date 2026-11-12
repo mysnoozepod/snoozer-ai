@@ -1,57 +1,60 @@
-# Sleep Systems and Curated Bundles
+# Curated Sleep Systems
 
-Status: implemented and staged on unpublished theme `139216420925`; owner content/assortment review and mattress-to-base compatibility verification remain required.
+Status: implemented, Shopify-readback-verified, and authenticated-preview-verified on unpublished theme `139216420925` on 2026-11-12. Theme publication remains separately gated.
 
 ## Storefront result
 
-- `/pages/sleep-systems` presents three bounded categories: Sleep Systems, Bedding Sets, and Complete Sleep Packages.
-- Five bedding sets are configurable and shoppable. They use only existing available variants whose normalized size and sleep geometry align.
-- Four mattress/base system candidates and two complete-package candidates are visible for review but cannot be purchased. Matching size and geometry are treated only as candidate filters, never as mechanical compatibility proof.
-- Main navigation includes Sleep Systems with direct anchors to all three page groups.
-- Desktop and 390×844 responsive rendering passed on the existing password-protected development preview.
+`/pages/sleep-systems` is a focused mattress-and-adjustable-base decision surface. It begins with three customer paths:
 
-## Bundle architecture
+1. Standard — one mattress and one exact-size Flex L or Flex LSX base.
+2. Split Head — a shared split-head mattress on the exact-size Flex SH base.
+3. Split King — two actual Twin XL mattresses and two actual Twin XL Flex L or Flex LSX bases.
 
-No parent bundle product, artificial SKU, discount, promotion, new collection, or duplicated inventory was created. A curated set submits its real component variants as one multi-item Shopify Ajax Cart operation. Each component remains a separate cart/order line with its native variant ID, SKU, price, availability check, and fulfillment identity.
+Split Head is the featured pathway because Pods 2 and 3 demonstrate it. Split Queen is unsupported. Bedding sets and complete-package review concepts no longer compete on this page.
 
-The curated UI reuses the existing operation-tagged cart integrity layer in `assets/snoozepod-pod-builder.js`: live product readiness checks, pre/post cart snapshots, deterministic line identity, duplicate-submission protection, partial-result detection, and fail-closed ambiguous-response behavior.
+Each card resolves existing Shopify component variants and uses the hardened operation-tagged, reconciled multi-line cart layer. No parent bundle product, artificial SKU, duplicated inventory, discount, promotion, or new collection was created.
 
-## Curated assortment
+## Six-Pod showroom map
 
-| Category | Curated record | Storefront state | Actual shared size destinations |
-|---|---|---|---|
-| Bedding Set | Dri-Tec Bedding + Protection Set | Staged purchasable | Queen, King, California King, Twin, Twin XL, Full, Split Head Queen, Split Head King, Split Head California King, Split King, Split California King |
-| Bedding Set | Ver-Tex Bedding + Protection Set | Staged purchasable | Queen, King, California King, Split Head Queen, Split Head King, Split Head California King, Split King, Split California King |
-| Bedding Set | Cotton + Light Weight Bedding Set | Staged purchasable | Queen, King, California King, Full |
-| Bedding Set | Dri-Tec + Medium Weight Bedding Set | Staged purchasable | Queen, King, California King, Full |
-| Bedding Set | Ver-Tex + Light Weight Bedding Set | Staged purchasable | Queen, King, California King |
-| Sleep System | 12-inch Memory Foam + Flex L | Blocked pending compatibility | Queen, King, California King, Twin XL candidates |
-| Sleep System | 12-inch Hybrid + Flex LSX | Blocked pending compatibility | Queen, King, California King, Twin XL candidates |
-| Sleep System | 12-inch Dual Comfort + Flex SH | Blocked pending compatibility | Split Head Queen, Split Head King, Split Head California King candidates |
-| Sleep System | 14-inch Dual Comfort + Flex LSX | Blocked pending compatibility | Queen, King, California King, Twin XL, Split California King candidates |
-| Complete Package | Queen Complete Sleep Package | Blocked pending compatibility | Queen, King, California King, Twin XL candidates |
-| Complete Package | Split Head Queen Complete Sleep Package | Blocked pending compatibility | Split Head Queen, Split Head King, Split Head California King candidates |
+| Pod | Mattress | Demonstration | Base | Comfort demonstration |
+|---|---|---|---|---|
+| 1 | 12-inch Memory Foam | Queen | Flex L | — |
+| 2 | 12-inch Hybrid | Half-Split Queen | Flex SH | — |
+| 3 | 12-inch Dual Comfort | Half-Split King | Flex SH | Soft / Firm |
+| 4 | 12-inch Dual Comfort | Split King | Flex LSX | Medium Soft / Medium Firm |
+| 5 | 14-inch Dual Comfort | King | Flex LSX | Soft / Firm |
+| 6 | 14-inch Dual Comfort | Queen | Flex LSX | Medium Soft / Medium Firm |
 
-Candidate sizes are not compatibility claims. The record names and customer-facing language are `READY_FOR_REVIEW`, not owner-approved final copy.
+The map is stored in the existing `custom.showroom_representation` JSON contract and rendered as customer-facing Pod badges/details on mattress cards and Product Page v1. Manufacturer model codes remain internal provenance and do not become customer-facing mattress names.
 
-## Structured data
+## Standalone mattress boundary
 
-`CURATED_BUNDLE_MANIFEST.json` is the deterministic source artifact. It records bundle ID/category/status, curation basis, component product IDs/handles/quantities, exact variant IDs/SKUs/prices/options, shared size/geometry records, price ranges, verified attributes, and the pending showroom relationship.
+System-only split mattress variants are not offered in the standalone mattress picker or standalone Shop by Size routes. Direct split-variant product URLs fall back to a safe available standard variant, and a short product-page message routes split shoppers to Sleep Systems. This restriction does not remove valid split sheets, protectors, or other non-mattress products from size shopping.
 
-The product-knowledge feed and schema now expose the bounded bundle relationships for future Snoozer retrieval. Live Shopify remains authoritative for current price, availability, cart, and checkout. No Snoozer backend, AWS, API, or recommendation-engine change occurred.
+## Presentation refinements
+
+- Dual Comfort uses aligned two-column tiles for Soft, Medium Soft, Medium Firm, and Firm on both sides, with a clear selected-pair summary.
+- Cotton, Dri-Tec, and Ver-Tex Sheet Set galleries lead with clean existing lifestyle photography. Text-heavy graphics remain available as secondary media; nothing was deleted.
+- Mobile system paths use horizontal snap behavior while desktop preserves the three-card hierarchy.
+- The page contains no internal Shopify implementation language and no unrelated bedding catalog.
+
+## Structured data and Snoozer boundary
+
+`CURATED_BUNDLE_MANIFEST.json` remains the deterministic component relationship record. The product-knowledge feed preserves product/variant IDs, SKUs, prices, size, geometry, compatibility, and bundle relationships for future retrieval. Live Shopify remains authoritative for price, availability, cart, and checkout. No Snoozer backend, AWS, or recommendation-engine work occurred.
 
 ## Validation evidence
 
-- Curated contract: 1,564 assertions.
-- Cart-integrity regression: 21 scenarios plus the legacy cart-integrity suite.
-- Canonical Pod Builder, P1-002 fixture, product knowledge, Storewide Shop by Size, Shop by Size, Product Page v2, catalog/shopping, guided shopping, website experience, and route tests passed.
-- Actual preview cart: existing cart count increased from six to eight. Queen Ver-Tex Sheet Set at `$299.99` and Full/Queen Light Weight Comforter at `$199.99` appeared as separate lines with `Curated Set`, `Set Component`, and `Set Size` properties. Total was `$499.98`. No checkout or order was created.
+- Curated bundle contract: 1,662 assertions.
+- Storefront strategy contract: 23 assertions.
+- Cart integrity: 21 scenarios plus legacy regression, canonical, and discovery checks.
+- Storewide Shop by Size: 965 assertions; Shop by Size: 33 assertions.
+- Product Page v2: 28; Product Page/collection: 69; website experience: 46; product knowledge: 43; catalog/shopping: 10/10; P1-002: 34 groups.
+- JavaScript syntax checks passed.
+- Authenticated preview confirmed the Split Head and Split King pathways, correct base restrictions and component quantities, structured Pod rendering, and the absence of the old bedding-set surface.
 - Shopify readback confirms 43 products, 274 variants, zero products created, unpublished-theme asset match, and published theme `139460542525` unchanged.
 
-## Remaining owner/manufacturer decisions
+Preview: `https://mysnoozepodtest.myshopify.com/pages/sleep-systems?preview_theme_id=139216420925`
 
-1. Approve or revise the five bedding-set names, composition, and minimal customer wording.
-2. Provide explicit pairwise mattress/base compatibility evidence, including size and geometry restrictions, before any Sleep System or Complete Sleep Package becomes purchasable.
-3. Confirm showroom relationships for curated components if they should be presented to Snoozer or customers.
+Latest private recovery snapshot: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\curated-bundles\2026-11-12T06-25-50-566Z`
 
-Exact next task: verify and encode approved pairwise mattress/base compatibility records, then enable only the proven Sleep System configurations and rerun the same cart acceptance. Theme publication remains separately gated.
+Exact next task: perform controlled development-cart acceptance for one Standard, one Split Head, and one Split King system, verifying exact variant IDs, quantities, line properties, totals, reconciliation, and selection recovery. Do not publish the theme without separate authorization.

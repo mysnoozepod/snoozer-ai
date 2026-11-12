@@ -63,7 +63,12 @@ const BASE_QUERY = `
         descriptionHtml tags updatedAt
         category { id name fullName }
         collections(first: 50) { nodes { id handle title } }
-        media(first: 1) { nodes { id } }
+        media(first: 50) {
+          nodes {
+            id alt mediaContentType status
+            preview { image { url width height } }
+          }
+        }
         variants(first: 250) {
           nodes {
             id legacyResourceId title sku barcode price updatedAt

@@ -1,6 +1,6 @@
 # Storewide Shop by Size
 
-Status: implemented and verified on the existing Shopify development store and unpublished theme `139216420925` on 2026-11-11.
+Status: implemented and verified on the existing Shopify development store and unpublished theme `139216420925`; strategy boundary updated and preview-verified on 2026-11-12.
 
 ## Authority and derivation
 
@@ -18,7 +18,7 @@ Deterministic normalization does not change native Shopify options. `Cal King` i
 
 | Category | Actual Shop by Size destinations |
 |---|---|
-| Mattresses | Twin; Twin XL; Full; Queen; King; California King; Split Head Queen; Split Head King; Split Head California King; Split King; Split California King; Twin XL x 2 |
+| Mattresses | Twin; Twin XL; Full; Queen; King; California King. Split-head and Split King mattress variants are reserved for Sleep Systems. |
 | Adjustable Bases | Twin XL; Queen; King; California King; Split Head Queen; Split Head King; Split Head California King; Split California King |
 | Sheets | Twin; Twin XL; Full; Queen; King; California King; Texas King; Split Head Queen; Split Head King; Split Head California King; Split King; Split California King |
 | Comforters & Duvets | Full; Queen; King; California King |
@@ -28,7 +28,7 @@ Deterministic normalization does not change native Shopify options. `Cal King` i
 | Mattress Toppers | Twin; Twin XL; Full; Queen; King; California King |
 | Bedroom Furniture | Queen; King; California King |
 
-The generated contract contains one master collection, 15 storewide size collections, and 61 category-size collections. All 77 are automated, nonempty, and use exact tag rules. The durable handle pattern is:
+The updated generated contract contains one master collection, 14 storewide size collections, and 55 category-size collections: 70 managed automated collections total. Eighteen non-shopping/system-only records are explicitly excluded: One Size plus 17 split mattress geometry entries. The durable handle pattern is:
 
 - `/collections/shop-by-size`
 - `/collections/shop-by-size-<size>`
@@ -38,7 +38,7 @@ The generated contract contains one master collection, 15 storewide size collect
 
 The main menu contains Shop by Size after Mattresses, with direct links for Twin, Twin XL, Full, Queen, King, and California King. The master page exposes all 15 actual destinations. Canonical category collections expose only that category's supported sizes.
 
-On a size collection, each product card resolves the matching available Shopify variant, shows its exact variant price, and deep-links to the product with both `variant=<id>` and the normalized `size` context. Native collection filters and sorting remain available. Product Page v2 and the standard Shopify product form remain authoritative for selection and cart submission.
+On a size collection, each product card resolves the matching available Shopify variant, shows its exact variant price, and deep-links to the product with both `variant=<id>` and the normalized `size` context. Native collection filters and sorting remain available. Product Page v2 and the standard Shopify product form remain authoritative for selection and cart submission. The concise size heading and products render first, Shop by Category follows, and unfinished Find Your Fit content is absent.
 
 ## Snoozer-ready contract
 
@@ -48,8 +48,8 @@ The product-knowledge feed retains product and variant IDs, SKU, price, native o
 
 - `STOREWIDE_SIZE_COLLECTIONS_MANIFEST.json`: deterministic expected tags, memberships, rules, handles, and exclusions.
 - `SHOPIFY_READBACK.json`: final Shopify product-status, collection, navigation, theme, and backup evidence.
-- `tests/runStorewideShopBySizeTests.mjs`: 1,049 catalog-derived assertions.
-- `tests/runShopBySizeTests.js`: 30 storefront and feed assertions.
+- `tests/runStorewideShopBySizeTests.mjs`: 965 catalog-derived assertions.
+- `tests/runShopBySizeTests.js`: 33 storefront and feed assertions.
 - Actual preview: Queen returned 41 products and exact per-card Queen prices; the Queen memory-foam deep link selected variant `44128361971773` at `$1,599.99`; Add to Cart confirmed `Size: Queen`.
 - Actual category-specific preview: Split Head King Adjustable Bases returned only Flex SH at `$2,799.00`.
 - Desktop and responsive 390×844 inspection preserved the existing design and fit the generated controls.
@@ -57,4 +57,4 @@ The product-knowledge feed retains product and variant IDs, SKU, price, native o
 
 Preview: `https://mysnoozepodtest.myshopify.com/collections/shop-by-size?preview_theme_id=139216420925`
 
-Private recovery snapshot: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\storewide-shop-by-size\2026-11-11T20-26-50-012Z`
+Private recovery snapshot: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\storewide-shop-by-size\2026-11-12T06-11-08-630Z`

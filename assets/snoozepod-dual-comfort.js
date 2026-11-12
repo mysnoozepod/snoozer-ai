@@ -55,8 +55,8 @@
       leftInput.value = left;
       rightInput.value = right;
       summary.textContent = left && right
-        ? `Selected configuration: Left ${left} / Right ${right}`
-        : 'Select a comfort level for each side.';
+        ? `Your comfort: ${left} left · ${right} right`
+        : 'Select a comfort level for both sides to continue.';
 
       const match = resolveMapping(mappings, { size, left, right });
 

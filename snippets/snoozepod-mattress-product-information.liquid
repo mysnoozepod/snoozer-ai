@@ -18,8 +18,6 @@
   assign materials = product.metafields.snoozepod_technical.materials.value
   assign verified_features = product.metafields.snoozepod_technical.verified_features.value
   assign key_benefits = product.metafields.snoozepod_content.key_benefits.value
-  assign manufacturer_model = product.metafields.custom.model.value | default: product.metafields.custom.model | strip
-
   assign showroom_data = product.metafields.custom.showroom_representation.value
   assign showroom_state = showroom_data.readiness | default: showroom_data.status | default: showroom_data.locationStatus | upcase
   assign showroom_label = showroom_data.label | default: showroom_data.station_label | default: showroom_data.display_label | default: showroom_data.station_id | strip
@@ -42,7 +40,7 @@
     assign has_features = true
   endif
   assign has_product_details = false
-  if has_construction or has_features or showroom_is_verified or manufacturer_model != blank
+  if has_construction or has_features or showroom_is_verified
     assign has_product_details = true
   endif
 
@@ -93,20 +91,23 @@
           {%- if showroom_locations.size > 0 -%}
             <ul>
               {%- for location in showroom_locations -%}
-                {%- assign location_label = location.label | default: location.name | default: location.station_label | default: location.station_id | default: location -%}
-                {%- if location_label != blank -%}<li>{{ location_label | escape }}</li>{%- endif -%}
+                {%- assign location_label = location.label | default: location.name | default: location.station_label | default: location.station_id | default: location.pod -%}
+                {%- assign location_size = location.mattressSize -%}
+                {%- assign location_comforts = location.comforts | join: ' / ' -%}
+                {%- if location_label != blank -%}
+                  <li>
+                    <strong>{{ location_label | escape }}</strong>
+                    {%- if location_size != blank -%} · {{ location_size | escape }}{%- endif -%}
+                    {%- if location.base != blank -%} · {{ location.base | escape }}{%- endif -%}
+                    {%- if location_comforts != blank -%} · {{ location_comforts | escape }}{%- endif -%}
+                  </li>
+                {%- endif -%}
               {%- endfor -%}
             </ul>
           {%- endif -%}
         </section>
       {%- endif -%}
 
-      {%- if manufacturer_model != blank -%}
-        <section class="snoozepod-product-information__subsection" aria-labelledby="ManufacturerModel-{{ section.id }}">
-          <h3 id="ManufacturerModel-{{ section.id }}">Manufacturer's Model Name</h3>
-          <p>{{ product.vendor | escape }} {{ manufacturer_model | escape }}</p>
-        </section>
-      {%- endif -%}
     </div>
   </details>
 {%- endif -%}

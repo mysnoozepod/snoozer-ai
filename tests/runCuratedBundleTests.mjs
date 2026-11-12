@@ -85,7 +85,9 @@ check(schema.$defs.bundle.properties.compatibilityStatus.enum.includes('OWNER_AP
 check(template.sections.main.type === 'snoozepod-curated-bundles', 'Sleep Systems page mounts the dedicated section');
 check(section.includes('data-bundle-cart-status') && section.includes('aria-live="assertive"'), 'cart outcomes use an assertive accessible live region');
 check(!section.includes('data-snoozer-trigger') && !section.includes('COMPLETE_SLEEP_PACKAGE'), 'Sleep Systems removes secondary CTA and obsolete complete-package clutter');
-check(section.includes('Split King uses two Twin XL') && section.includes('Flex SH'), 'customer-facing rules are simple and explicit');
+check(/two Twin XL mattresses/i.test(section) && section.includes('Flex SH'), 'customer-facing rules are simple and explicit');
+check(section.includes('data-system-path="split_head"') && section.includes('Featured in Pods 2 &amp; 3'), 'Split-Head Sleep Systems receive the featured path');
+check(!section.includes('data-bundle-grid="BEDDING_SET"'), 'bedding sets no longer compete with the core Sleep Systems journey');
 check(section.includes('snoozepod-pod-builder.js') && ui.includes('SnoozePodBundleCart'), 'curated systems reuse the hardened reconciled cart implementation');
 check(cart.includes('window.SnoozePodBundleCart = Object.freeze'), 'cart integrity primitives are exposed without duplicating mutation logic');
 check(!/discount|save \$|% off|sale price/i.test(JSON.stringify(manifest.bundles)), 'curation does not invent discount claims');
@@ -100,6 +102,8 @@ vm.runInNewContext(ui, sandbox);
 const grouped = sandbox.window.SnoozePodCuratedBundleUI.groupSystems(manifest.bundles);
 check(grouped.length === 4, 'twelve pair options render as four clear mattress system cards');
 check(grouped.every((group) => group.bundles.length === 3), 'each mattress offers Flex L, Flex LSX, and Flex SH through one card');
+check(grouped.every((group) => sandbox.window.SnoozePodCuratedBundleUI.systemSizeLabels(group, 'split_head').every((size) => size.startsWith('Split Head '))), 'split-head path exposes only split-head configurations');
+check(grouped.every((group) => sandbox.window.SnoozePodCuratedBundleUI.systemSizeLabels(group, 'full_split').join('|') === 'Split King'), 'full-split path exposes only Split King');
 check(sandbox.window.SnoozePodCuratedBundleUI.money('429.98') === '$429.98', 'price helper formats exact component totals');
 check(sandbox.window.SnoozePodCuratedBundleUI.variantLabel({ options: { Size: 'Queen', Color: 'White' } }) === 'Color: White', 'variant choice labels preserve selectable product options without duplicating size');
 

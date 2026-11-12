@@ -31,6 +31,17 @@
       assign parent_collection_handle = 'bedroom-furniture'
   endcase
   assign parent_collection = collections[parent_collection_handle]
+  assign standalone_variant = product.selected_or_first_available_variant
+  if product.type == 'Mattress' and standalone_variant.title contains 'Split'
+    for candidate_variant in product.variants
+      unless candidate_variant.title contains 'Split'
+        if candidate_variant.available
+          assign standalone_variant = candidate_variant
+          break
+        endif
+      endunless
+    endfor
+  endif
 -%}
 
 <product-info
@@ -343,6 +354,19 @@
       margin-bottom: 0;
     }
 
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__system-note {
+      margin: 1rem 0 0;
+      color: rgba(7, 25, 66, 0.72);
+      font-size: 1.3rem;
+      line-height: 1.45;
+    }
+
+    .snoozepod-product-hero-{{ section.id }} .snoozepod-product-hero__system-note a {
+      color: #071942;
+      font-weight: 750;
+      text-underline-offset: 0.25rem;
+    }
+
     @media screen and (min-width: 750px) {
       .snoozepod-product-hero-{{ section.id }} {
         margin-left: 24px;
@@ -453,7 +477,19 @@
                     -%}
                   </div>
                 {%- when 'variant_picker' -%}
-                  {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
+                  {% render 'product-variant-picker',
+                    product: product,
+                    block: block,
+                    product_form_id: product_form_id,
+                    exclude_system_mattress_sizes: true,
+                    selected_variant_override: standalone_variant
+                  %}
+                  {%- if product.type == 'Mattress' -%}
+                    <p class="snoozepod-product-hero__system-note">
+                      Split-head and Split King configurations are available through
+                      <a href="/pages/sleep-systems">Sleep Systems</a> so the mattress and adjustable base stay compatible.
+                    </p>
+                  {%- endif -%}
                 {%- when 'product_feel' -%}
                   <div {{ block.shopify_attributes }}>
                     {% render 'snoozepod-product-feel',
@@ -523,19 +559,23 @@
                         data-dual-comfort-property="right"
                       >
                       <p class="snoozepod-dual-comfort__summary" data-dual-comfort-summary>
-                        Select a comfort level for each side.
+                        Select a comfort level for both sides to continue.
                       </p>
                       <p class="visually-hidden" role="status" aria-live="polite" aria-atomic="true" data-dual-comfort-status></p>
                       <script type="application/json" data-dual-comfort-mappings>
                         [
+                          {%- assign rendered_mapping_count = 0 -%}
                           {%- for variant in product.variants -%}
-                            {%- unless forloop.first -%},{%- endunless -%}
+                            {%- unless variant.title contains 'Split' -%}
+                            {%- if rendered_mapping_count > 0 -%},{%- endif -%}
                             {
                               "variantId": {{ variant.id | json }},
                               "size": {{ variant.option1 | json }},
                               "acceptsAnyComfortPair": true,
                               "available": {{ variant.available | json }}
                             }
+                            {%- assign rendered_mapping_count = rendered_mapping_count | plus: 1 -%}
+                            {%- endunless -%}
                           {%- endfor -%}
                         ]
                       </script>
@@ -546,7 +586,8 @@
                     product: product,
                     product_form_id: product_form_id,
                     section_id: section.id,
-                    show_pickup_availability: false
+                    show_pickup_availability: false,
+                    selected_variant_override: standalone_variant
                   -%}
                 {%- when 'snoozer_cta' -%}
                   <button

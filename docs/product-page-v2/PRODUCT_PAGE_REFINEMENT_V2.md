@@ -15,9 +15,9 @@ Mattress products assigned to `snoozepod-v1` now use a dedicated, Shopify-driven
 4. Warranty
 5. Feel
 
-Product Details supports Construction, Features & Benefits, Showroom Location, and Manufacturer's Model Name. Empty or unverified subsections remain hidden. The shared non-mattress renderer remains in place for adjustable bases, pillows, sheets/bedding, protection, accessories, toppers, and furniture.
+Product Details supports Construction, Features & Benefits, and Showroom Location. Empty or unverified subsections remain hidden. The shared non-mattress renderer remains in place for adjustable bases, pillows, sheets/bedding, protection, accessories, toppers, and furniture.
 
-The customer-facing manufacturer identity is assembled from Shopify's native `product.vendor` plus the existing `custom.model` field only inside Manufacturer's Model Name. It does not compete with the MySnoozePod title. Construction, verified features, materials, showroom representation, warranty, and approval status reuse the existing product-knowledge contract.
+Mattress manufacturer and internal model identity remain available in Shopify and the product-knowledge contract but do not render in customer-facing mattress details. Construction, verified features, materials, showroom representation, warranty, and approval status reuse the existing product-knowledge contract.
 
 ## Shopify fields and sources
 

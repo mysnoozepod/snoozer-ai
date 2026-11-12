@@ -24,6 +24,14 @@ const DISPLAY_ORDER = [
   'Split Head Queen', 'Split Head King', 'Split Head California King', 'Split King',
   'Split California King', 'Twin XL x 2',
 ];
+const SYSTEM_ONLY_MATTRESS_SIZES = new Set([
+  'Split Head Queen',
+  'Split Head King',
+  'Split Head California King',
+  'Split King',
+  'Split California King',
+  'Twin XL x 2',
+]);
 
 function fail(message) { throw new Error(message); }
 function slug(value) {
@@ -71,7 +79,18 @@ for (const product of inventory.products.nodes) {
     nativeSizes.add(sizeOption.value);
     const mapped = shopSizeLabels(sizeOption.value);
     if (!mapped.length) excluded.push({ productHandle: product.handle, variantId: variant.id, nativeSize: sizeOption.value, reason: 'One Size does not narrow shopping.' });
-    mapped.forEach((label) => labels.add(label));
+    mapped.forEach((label) => {
+      if (category.key === 'mattresses' && SYSTEM_ONLY_MATTRESS_SIZES.has(label)) {
+        excluded.push({
+          productHandle: product.handle,
+          variantId: variant.id,
+          nativeSize: sizeOption.value,
+          reason: 'System-only mattress geometry remains available through Sleep Systems, not standalone mattress shopping.',
+        });
+        return;
+      }
+      labels.add(label);
+    });
   }
   if (!labels.size) continue;
   const sizeTags = sortSizes(labels).map((label) => `shop-size:${slug(label)}`);

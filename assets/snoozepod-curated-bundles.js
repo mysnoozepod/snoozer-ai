@@ -2,6 +2,17 @@
   "use strict";
 
   var SIZE_ORDER = ["Queen", "King", "California King", "Twin", "Twin XL", "Full", "Full XL", "Split Head Queen", "Split Head King", "Split Head California King", "Split King"];
+  var PATH_COPY = {
+    standard: { kicker: "Standard system", heading: "Standard Sleep Systems", copy: "Choose a mattress size, then select an exact-size Flex L or Flex LSX adjustable base." },
+    split_head: { kicker: "Signature system", heading: "Split-Head Sleep Systems", copy: "Choose a split-head mattress size. The compatible Flex SH base is selected with it." },
+    full_split: { kicker: "Fully independent", heading: "Split King Sleep Systems", copy: "Each system contains two Twin XL mattresses and two Twin XL adjustable bases." },
+  };
+  var SHOWROOM_LOCATIONS = {
+    "12-inch-memory-foam-mattress": { label: "Try it in Pod 1", detail: "Queen · Flex L" },
+    "12-inch-hybrid-mattress": { label: "Try it in Pod 2", detail: "Half-Split Queen · Flex SH" },
+    "12-inch-dual-comfort-mattress": { label: "Try it in Pods 3 & 4", detail: "Soft, Medium Soft, Medium Firm & Firm" },
+    "14-inch-dual-comfort-mattress": { label: "Try it in Pods 5 & 6", detail: "Soft, Medium Soft, Medium Firm & Firm" },
+  };
 
   function money(value) {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(value || 0));
@@ -85,8 +96,13 @@
     });
     return Array.from(groups.values());
   }
-  function systemSizeLabels(group) {
-    return sortSizes(Array.from(new Set(group.bundles.flatMap(function (bundle) { return bundle.sizes.map(function (size) { return size.label; }); }))));
+  function sizeMatchesPath(size, path) {
+    return size && size.geometry === path;
+  }
+  function systemSizeLabels(group, path) {
+    return sortSizes(Array.from(new Set(group.bundles.flatMap(function (bundle) {
+      return bundle.sizes.filter(function (size) { return sizeMatchesPath(size, path); }).map(function (size) { return size.label; });
+    }))));
   }
   function systemBundlesForSize(group, label) {
     return group.bundles.filter(function (bundle) { return bundle.sizes.some(function (size) { return size.label === label; }); });
@@ -94,15 +110,22 @@
   function baseLabel(bundle) {
     return bundle.components[1].title;
   }
-  function systemCardMarkup(group) {
-    var sizes = systemSizeLabels(group);
+  function systemCardMarkup(group, path) {
+    var sizes = systemSizeLabels(group, path);
+    if (!sizes.length) return "";
     var firstBundle = systemBundlesForSize(group, sizes[0])[0];
     var image = group.mattress.image;
+    var showroom = SHOWROOM_LOCATIONS[group.mattress.handle];
+    var pathBasis = path === "split_head"
+      ? "Select a split-head size; Flex SH is the compatible adjustable base."
+      : path === "full_split"
+        ? "Split King includes two Twin XL mattresses and two Twin XL bases."
+        : "Select a standard size and an exact-size Flex L or Flex LSX base.";
     return '<article class="snoozepod-bundle-card" data-bundle-card="' + escapeHtml(group.id) + '" data-system-card>' +
       '<div class="snoozepod-bundle-card__images">' + (image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(group.mattress.title) + '" loading="lazy" width="720" height="540">' : '') + '</div>' +
-      '<div class="snoozepod-bundle-card__body"><span class="snoozepod-bundle-card__badge">Build your system</span>' +
-      '<h3>' + escapeHtml(group.mattress.title) + ' Sleep System</h3>' +
-      '<p class="snoozepod-bundle-card__basis">Choose a size and compatible adjustable base. Split-head sizes use Flex SH; Split King is two Twin XL mattresses and two Twin XL bases.</p>' +
+      '<div class="snoozepod-bundle-card__body">' + (showroom ? '<div class="snoozepod-bundle-card__showroom"><span>' + escapeHtml(showroom.label) + '</span><small>' + escapeHtml(showroom.detail) + '</small></div>' : '') +
+      '<h3>' + escapeHtml(group.mattress.title) + '</h3>' +
+      '<p class="snoozepod-bundle-card__basis">' + escapeHtml(pathBasis) + '</p>' +
       '<div class="snoozepod-bundle-card__field"><label for="' + escapeHtml(group.id) + '-size">Mattress size</label><select id="' + escapeHtml(group.id) + '-size" data-system-size>' + sizes.map(function (size) { return '<option value="' + escapeHtml(size) + '">' + escapeHtml(size) + '</option>'; }).join("") + '</select></div>' +
       '<div class="snoozepod-bundle-card__field"><label for="' + escapeHtml(group.id) + '-base">Adjustable base</label><select id="' + escapeHtml(group.id) + '-base" data-system-base><option value="' + escapeHtml(firstBundle.id) + '">' + escapeHtml(baseLabel(firstBundle)) + '</option></select></div>' +
       '<ul class="snoozepod-bundle-card__components"><li><span><a href="' + escapeHtml(group.mattress.url) + '">' + escapeHtml(group.mattress.title) + '</a></span><strong data-component-price></strong></li><li><span><a href="#" data-system-base-link>' + escapeHtml(baseLabel(firstBundle)) + '</a></span><strong data-component-price></strong></li></ul>' +
@@ -187,12 +210,28 @@
     if (!catalog || !Array.isArray(catalog.bundles)) return;
     var groups = groupSystems(catalog.bundles);
     var systemGrid = root.querySelector('[data-bundle-grid="SLEEP_SYSTEM"]');
-    var beddingGrid = root.querySelector('[data-bundle-grid="BEDDING_SET"]');
-    systemGrid.innerHTML = groups.map(systemCardMarkup).join("");
-    var bedding = catalog.bundles.filter(function (bundle) { return bundle.category === "BEDDING_SET"; });
-    beddingGrid.innerHTML = bedding.map(setCardMarkup).join("");
-    groups.forEach(function (group) { updateSystemCard(root.querySelector('[data-bundle-card="' + group.id + '"]'), group); });
-    bedding.forEach(function (bundle) { updateSetCard(root.querySelector('[data-bundle-card="' + bundle.id + '"]'), bundle); });
+    var requestedPath = new URLSearchParams(window.location.search).get("system");
+    var activePath = PATH_COPY[requestedPath] ? requestedPath : "split_head";
+
+    function renderSystems() {
+      var copy = PATH_COPY[activePath];
+      root.dataset.systemPath = activePath;
+      root.querySelectorAll("[data-system-path]").forEach(function (button) {
+        button.setAttribute("aria-pressed", button.dataset.systemPath === activePath ? "true" : "false");
+      });
+      var kicker = root.querySelector("[data-system-path-kicker]");
+      var heading = root.querySelector("[data-system-path-heading]");
+      var description = root.querySelector("[data-system-path-copy]");
+      if (kicker) kicker.textContent = copy.kicker;
+      if (heading) heading.textContent = copy.heading;
+      if (description) description.textContent = copy.copy;
+      systemGrid.innerHTML = groups.map(function (group) { return systemCardMarkup(group, activePath); }).join("");
+      groups.forEach(function (group) {
+        var card = root.querySelector('[data-bundle-card="' + group.id + '"]');
+        if (card) updateSystemCard(card, group);
+      });
+    }
+    renderSystems();
 
     root.addEventListener("change", function (event) {
       var card = event.target.closest("[data-bundle-card]");
@@ -206,6 +245,13 @@
       if (bundle) updateSetCard(card, bundle);
     });
     root.addEventListener("click", function (event) {
+      var pathButton = event.target.closest("[data-system-path]");
+      if (pathButton) {
+        activePath = pathButton.dataset.systemPath;
+        renderSystems();
+        root.querySelector("[data-system-path-heading]")?.focus({ preventScroll: true });
+        return;
+      }
       var button = event.target.closest("[data-add-bundle]");
       if (!button) return;
       var card = button.closest("[data-bundle-card]");
@@ -217,5 +263,5 @@
   function initAll() { document.querySelectorAll("[data-curated-bundles]").forEach(init); }
   document.addEventListener("DOMContentLoaded", initAll);
   document.addEventListener("shopify:section:load", initAll);
-  window.SnoozePodCuratedBundleUI = Object.freeze({ money: money, variantLabel: variantLabel, sizeRecord: sizeRecord, groupSystems: groupSystems, systemSizeLabels: systemSizeLabels });
+  window.SnoozePodCuratedBundleUI = Object.freeze({ money: money, variantLabel: variantLabel, sizeRecord: sizeRecord, groupSystems: groupSystems, systemSizeLabels: systemSizeLabels, sizeMatchesPath: sizeMatchesPath });
 })();

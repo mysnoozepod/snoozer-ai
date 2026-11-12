@@ -43,8 +43,8 @@ check(header.includes('.header__heading-logo { max-width: 18rem; }'), 'Mobile lo
 check(header.includes('data-snoozer-source="header-desktop"') && header.includes('data-snoozer-source="header-mobile"'), 'Ask Snoozer must remain available on desktop and mobile.');
 
 const collection = json('templates/collection.snoozepod-v1.json');
-check(collection.order.join('|') === 'banner|product-grid|category-navigation|guided-shopping', 'Collection pages must be title, products, Shop by Category, then Find Your Fit.');
-check(collection.order.indexOf('product-grid') < collection.order.indexOf('guided-shopping'), 'Collection product grid must precede guided tools.');
+check(collection.order.join('|') === 'banner|product-grid|category-navigation', 'Collection pages must be title, products, then Shop by Category.');
+check(!collection.sections['guided-shopping'], 'Unfinished Find Your Fit tools must stay out of collections and navigation.');
 check(collection.order.indexOf('product-grid') < collection.order.indexOf('category-navigation'), 'Collection product grid must precede Shop by Category.');
 check(!JSON.stringify(collection).toLowerCase().includes('snoozer'), 'Collection templates must not show an Ask Snoozer prompt.');
 check(collection.sections['product-grid'].settings.enable_filtering === true, 'Collection filtering must remain enabled.');

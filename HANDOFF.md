@@ -1,9 +1,25 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-11 — Product-first collections and corrected Sleep Systems staged and preview-verified
+Last updated: 2026-11-12 — Curated Sleep Systems, six-Pod showroom map, and product-first size shopping staged and preview-verified
 Owner: Ty  
 Implementer: Codi  
-Current phase: Product-first collection hierarchy and owner-approved mattress/base rules are implemented on the existing unpublished theme; publication remains separately gated
+Current phase: The approved storefront strategy is implemented on the existing unpublished theme; publication and controlled cart acceptance remain separately gated
+
+## Curated storefront strategy implementation — 2026-11-12
+
+- Continued on existing `main` from starting commit `ea2d1db8`; no reset, branch switch, new store, new theme, backend work, or infrastructure work occurred.
+- Collections now render `title → filters/products → Shop by Category`. The unfinished Find Your Fit block is removed until its guides are configured. Storewide size pages use concise headings such as `King Size`; products remain the primary content.
+- Split-head and Split King mattress variants are hidden from standalone mattress shopping and direct split-variant URLs fall back to a safe standard variant. A short product-page link sends those shoppers to Sleep Systems. Split bedding/protection configurations remain available where the catalog supports them.
+- Sleep Systems now starts with Standard, featured Split Head, and Split King pathways. Split Head exposes only Flex SH. Split King is two real Twin XL mattress variants plus two real Twin XL Flex L/LSX variants. Split Queen remains unsupported. Bedding sets no longer compete on this page.
+- The structured showroom map is live in `custom.showroom_representation`: Pod 1 = 12-inch Memory Foam / Queen / Flex L; Pod 2 = 12-inch Hybrid / Half-Split Queen / Flex SH; Pod 3 = 12-inch Dual Comfort / Half-Split King / Flex SH / Soft-Firm; Pod 4 = 12-inch Dual Comfort / Split King / Flex LSX / Medium Soft-Medium Firm; Pod 5 = 14-inch Dual Comfort / King / Flex LSX / Soft-Firm; Pod 6 = 14-inch Dual Comfort / Queen / Flex LSX / Medium Soft-Medium Firm. Mattress cards and Product Page v1 render these as customer-facing Pod badges/details.
+- Dual Comfort selectors use aligned two-column premium tiles, clear selected states, and a persistent left/right summary. All existing 16 approved comfort pairs remain orderable; incomplete selection remains fail closed.
+- Existing clean lifestyle media now leads Cotton, Dri-Tec, and Ver-Tex Sheet Set galleries. Text-heavy graphics remain secondary media; no image was deleted.
+- Shopify readback: 43 products, 274 variants, zero products created; 70 managed size collections and 14 storewide size destinations; unpublished theme `139216420925` only; published theme `139460542525` unchanged. Latest recovery backups: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\storewide-shop-by-size\2026-11-12T06-11-08-630Z` and `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\curated-bundles\2026-11-12T06-25-50-566Z`.
+- Authenticated preview QA passed for the Split Head and Split King pathways, standalone Dual Comfort PDP, structured Pod information, King size collection ordering/prices, clean sheet lead media, and the absence of Find Your Fit. One raw JSON rendering defect in the lower showroom details was found during preview QA, corrected, restaged, and re-verified.
+- Tests passed: storefront strategy 23; curated bundles 1,662; Storewide Shop by Size 965; Shop by Size 33; Product Page v2 28; Product Page/collection contract 69; website experience 46; product knowledge 43; catalog/shopping 10/10; P1-002 34 groups; cart integrity 21 scenarios plus legacy regression; canonical/discovery; JavaScript syntax.
+- Preview URLs: `https://mysnoozepodtest.myshopify.com/pages/sleep-systems?preview_theme_id=139216420925` and `https://mysnoozepodtest.myshopify.com/collections/shop-by-size-king?preview_theme_id=139216420925`.
+- No theme publication, checkout/order, product/variant creation, discount, Snoozer backend, AWS, or Git deployment occurred during implementation.
+- Exact next action: perform a controlled development-cart acceptance for one Standard, one Split Head, and one Split King system, verifying exact variant IDs, quantities, line properties, totals, reconciliation, and selection recovery before publication.
 
 ## Collection hierarchy and Sleep Systems correction — 2026-11-11
 

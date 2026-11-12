@@ -197,7 +197,7 @@ async function stageTheme(themes, backupDirectory) {
 
 const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
 const inventory = JSON.parse(fs.readFileSync(INVENTORY_PATH, 'utf8'));
-if (manifest.summary.collections !== 77 || manifest.summary.storewideSizes !== 15 || manifest.summary.categories !== 9) fail('Generated manifest boundary changed.');
+if (manifest.summary.collections !== 70 || manifest.summary.storewideSizes !== 14 || manifest.summary.categories !== 9) fail('Generated manifest boundary changed.');
 const before = await graphql(INSPECT);
 assertCatalogBoundary(before, inventory);
 const themes = (await rest('/themes.json?fields=id,name,role,updated_at')).themes || [];

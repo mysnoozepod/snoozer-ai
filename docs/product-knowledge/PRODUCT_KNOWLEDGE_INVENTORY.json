@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "capturedAt": "2026-11-11T15:44:43.412Z",
+  "capturedAt": "2026-11-12T06:21:47.239Z",
   "store": "mysnoozepodtest.myshopify.com",
   "apiVersion": "2025-10",
   "summary": {
@@ -1550,10 +1550,15 @@
         "feature:dual-comfort",
         "feature:independent-side-comfort",
         "feature:modular-comfort",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:twin-xl",
         "subcategory:m3",
         "type:mattress"
       ],
-      "updatedAt": "2026-11-11T15:43:27Z",
+      "updatedAt": "2026-11-12T06:13:35Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/na",
         "name": "Uncategorized",
@@ -1570,13 +1575,94 @@
             "id": "gid://shopify/Collection/302125613117",
             "handle": "m3",
             "title": "M3 Dual Comfort Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846246973",
+            "handle": "mattresses-size-twin-xl",
+            "title": "Twin XL Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846312509",
+            "handle": "mattresses-size-queen",
+            "title": "Queen Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846345277",
+            "handle": "mattresses-size-king",
+            "title": "King Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846378045",
+            "handle": "mattresses-size-california-king",
+            "title": "California King Mattresses"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579037839421"
+            "id": "gid://shopify/MediaImage/28579037839421",
+            "alt": "12\" dual comfort mattress angle view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019d1b36-2013-7089-9ef2-764c398e9cdf.jpg?v=1793551148",
+                "width": 5000,
+                "height": 5000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037872189",
+            "alt": "12\" dual comfort mattress front view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019d1b36-c065-712f-8190-54f3b9fc29b8.jpg?v=1793551147",
+                "width": 5000,
+                "height": 5000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037904957",
+            "alt": "12\" dual comfort mattress in a bedroom setting",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019d1b37-b09d-77d4-8b30-ea57dac84905.jpg?v=1793551147",
+                "width": 5000,
+                "height": 5000
+              }
+            }
           }
         ]
       },
@@ -2172,9 +2258,9 @@
           "namespace": "custom",
           "key": "showroom_representation",
           "type": "json",
-          "value": "{\"type\":\"full_display\",\"displayCount\":2,\"locationStatus\":\"PENDING_LOCATION\",\"locations\":[]}",
-          "compareDigest": "a2e5484140fc0fae257047b7c73e8f240696415badb07d9e744e2a16db69a9c4",
-          "updatedAt": "2026-11-08T04:47:36Z",
+          "value": "{\"type\":\"full_display\",\"displayCount\":2,\"readiness\":\"READY\",\"label\":\"Try it in Pods 3 & 4\",\"locations\":[{\"pod\":\"Pod 3\",\"mattressSize\":\"Half-Split King\",\"base\":\"Flex SH\",\"comforts\":[\"Soft\",\"Firm\"]},{\"pod\":\"Pod 4\",\"mattressSize\":\"Split King\",\"base\":\"Flex LSX\",\"comforts\":[\"Medium Soft\",\"Medium Firm\"]}]}",
+          "compareDigest": "d410557420bd4783aaa8e063b940839dfa031eaf8414af8717c747031c40a122",
+          "updatedAt": "2026-11-12T06:13:32Z",
           "definition": {
             "id": "gid://shopify/MetafieldDefinition/294995427389"
           }
@@ -2353,10 +2439,17 @@
         "collection:mattresses",
         "comfort:hybrid",
         "feature:hybrid-construction",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:twin",
+        "shop-size:twin-xl",
         "subcategory:h6",
         "type:mattress"
       ],
-      "updatedAt": "2026-11-11T15:43:26Z",
+      "updatedAt": "2026-11-12T06:13:35Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/na",
         "name": "Uncategorized",
@@ -2373,13 +2466,114 @@
             "id": "gid://shopify/Collection/302125580349",
             "handle": "h6",
             "title": "H6 Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845755453",
+            "handle": "shop-by-size-twin",
+            "title": "Shop Twin"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846214205",
+            "handle": "mattresses-size-twin",
+            "title": "Twin Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846246973",
+            "handle": "mattresses-size-twin-xl",
+            "title": "Twin XL Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846279741",
+            "handle": "mattresses-size-full",
+            "title": "Full Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846312509",
+            "handle": "mattresses-size-queen",
+            "title": "Queen Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846345277",
+            "handle": "mattresses-size-king",
+            "title": "King Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846378045",
+            "handle": "mattresses-size-california-king",
+            "title": "California King Mattresses"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579037118525"
+            "id": "gid://shopify/MediaImage/28579037118525",
+            "alt": "12\" hybrid mattress product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/dfc9910f-93a8-4126-ba73-dd2981243b93.jpg?v=1793551144",
+                "width": 1400,
+                "height": 1000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037184061",
+            "alt": "12\" hybrid mattress in a bedroom setting",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/fd405ccc-1f3c-4c62-9b90-92101f2e96c4.jpg?v=1793551143",
+                "width": 1400,
+                "height": 1000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579044622397",
+            "alt": "12\" hybrid mattress angle view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/H6_Mattress_angle-shopify.jpg?v=1793551259",
+                "width": 4000,
+                "height": 2857
+              }
+            }
           }
         ]
       },
@@ -3139,9 +3333,9 @@
           "namespace": "custom",
           "key": "showroom_representation",
           "type": "json",
-          "value": "{\"type\":\"full_display\",\"displayCount\":1,\"locationStatus\":\"PENDING_LOCATION\",\"locations\":[]}",
-          "compareDigest": "1892a5ef054d1a1ebdacc7e7348728217baf87c17c8e9e91e9abc81e088e9dd6",
-          "updatedAt": "2026-11-08T04:47:36Z",
+          "value": "{\"type\":\"full_display\",\"displayCount\":1,\"readiness\":\"READY\",\"label\":\"Try it in Pod 2\",\"locations\":[{\"pod\":\"Pod 2\",\"mattressSize\":\"Half-Split Queen\",\"base\":\"Flex SH\"}]}",
+          "compareDigest": "f0854e9e9dfcd180653dd569764b0f0ebca0d0b0ac4c6d2d2d28b69046bfe6c6",
+          "updatedAt": "2026-11-12T06:13:32Z",
           "definition": {
             "id": "gid://shopify/MetafieldDefinition/294995427389"
           }
@@ -3285,10 +3479,17 @@
         "comfort:memory-foam",
         "feature:foam-construction",
         "material:memory-foam",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:twin",
+        "shop-size:twin-xl",
         "subcategory:s7",
         "type:mattress"
       ],
-      "updatedAt": "2026-11-11T15:43:25Z",
+      "updatedAt": "2026-11-12T06:13:35Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/na",
         "name": "Uncategorized",
@@ -3305,13 +3506,114 @@
             "id": "gid://shopify/Collection/302125547581",
             "handle": "s7",
             "title": "S7 Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845755453",
+            "handle": "shop-by-size-twin",
+            "title": "Shop Twin"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846214205",
+            "handle": "mattresses-size-twin",
+            "title": "Twin Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846246973",
+            "handle": "mattresses-size-twin-xl",
+            "title": "Twin XL Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846279741",
+            "handle": "mattresses-size-full",
+            "title": "Full Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846312509",
+            "handle": "mattresses-size-queen",
+            "title": "Queen Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846345277",
+            "handle": "mattresses-size-king",
+            "title": "King Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846378045",
+            "handle": "mattresses-size-california-king",
+            "title": "California King Mattresses"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579038429245"
+            "id": "gid://shopify/MediaImage/28579038429245",
+            "alt": "12\" memory foam mattress in a bedroom setting",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ffd79485-cc8c-4007-a3c4-710170c1883c.jpg?v=1793551148",
+                "width": 3000,
+                "height": 3000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579044655165",
+            "alt": "12\" memory foam mattress shown at an angle",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/S7_Mattress_Angle_BEDGEAR-shopify.jpg?v=1793551260",
+                "width": 4000,
+                "height": 2667
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579044687933",
+            "alt": "12\" memory foam mattress corner and cover detail",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/S7_Mattress_Corner_BEDGEAR-shopify.jpg?v=1793551260",
+                "width": 4000,
+                "height": 2667
+              }
+            }
           }
         ]
       },
@@ -4023,9 +4325,9 @@
           "namespace": "custom",
           "key": "showroom_representation",
           "type": "json",
-          "value": "{\"type\":\"full_display\",\"displayCount\":1,\"locationStatus\":\"PENDING_LOCATION\",\"locations\":[]}",
-          "compareDigest": "1892a5ef054d1a1ebdacc7e7348728217baf87c17c8e9e91e9abc81e088e9dd6",
-          "updatedAt": "2026-11-08T04:47:36Z",
+          "value": "{\"type\":\"full_display\",\"displayCount\":1,\"readiness\":\"READY\",\"label\":\"Try it in Pod 1\",\"locations\":[{\"pod\":\"Pod 1\",\"mattressSize\":\"Queen\",\"base\":\"Flex L\"}]}",
+          "compareDigest": "ddeab7a2e1563567593b02c853845bd4599673d4fbfc88702f537f32291f9c65",
+          "updatedAt": "2026-11-12T06:13:32Z",
           "definition": {
             "id": "gid://shopify/MetafieldDefinition/294995427389"
           }
@@ -4230,10 +4532,15 @@
         "feature:dual-comfort",
         "feature:independent-side-comfort",
         "feature:modular-comfort",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:twin-xl",
         "subcategory:m5",
         "type:mattress"
       ],
-      "updatedAt": "2026-11-11T15:43:28Z",
+      "updatedAt": "2026-11-12T06:13:35Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/na",
         "name": "Uncategorized",
@@ -4250,13 +4557,94 @@
             "id": "gid://shopify/Collection/302125645885",
             "handle": "m5",
             "title": "M5 Dual Comfort Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846246973",
+            "handle": "mattresses-size-twin-xl",
+            "title": "Twin XL Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846312509",
+            "handle": "mattresses-size-queen",
+            "title": "Queen Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846345277",
+            "handle": "mattresses-size-king",
+            "title": "King Mattresses"
+          },
+          {
+            "id": "gid://shopify/Collection/302846378045",
+            "handle": "mattresses-size-california-king",
+            "title": "California King Mattresses"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579037937725"
+            "id": "gid://shopify/MediaImage/28579037937725",
+            "alt": "14\" dual comfort mattress product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019df90b-24f9-7eee-9202-56c1bdb7510c.jpg?v=1793551147",
+                "width": 2288,
+                "height": 2288
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037970493",
+            "alt": "14\" dual comfort mattress angle view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019df90b-54be-722e-b811-46c3c00b930d.jpg?v=1793551147",
+                "width": 4820,
+                "height": 4820
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038003261",
+            "alt": "14\" dual comfort mattress in a bedroom setting",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019df90b-2d82-700f-825a-cecbc18a96cb.jpg?v=1793551148",
+                "width": 4464,
+                "height": 4464
+              }
+            }
           }
         ]
       },
@@ -4922,9 +5310,9 @@
           "namespace": "custom",
           "key": "showroom_representation",
           "type": "json",
-          "value": "{\"type\":\"full_display\",\"displayCount\":2,\"locationStatus\":\"PENDING_LOCATION\",\"locations\":[]}",
-          "compareDigest": "a2e5484140fc0fae257047b7c73e8f240696415badb07d9e744e2a16db69a9c4",
-          "updatedAt": "2026-11-08T04:47:36Z",
+          "value": "{\"type\":\"full_display\",\"displayCount\":2,\"readiness\":\"READY\",\"label\":\"Try it in Pods 5 & 6\",\"locations\":[{\"pod\":\"Pod 5\",\"mattressSize\":\"King\",\"base\":\"Flex LSX\",\"comforts\":[\"Soft\",\"Firm\"]},{\"pod\":\"Pod 6\",\"mattressSize\":\"Queen\",\"base\":\"Flex LSX\",\"comforts\":[\"Medium Soft\",\"Medium Firm\"]}]}",
+          "compareDigest": "22f78e35a73833ba7d125b13fd50f548c105dddcd18eab3f03f38f10a1070afd",
+          "updatedAt": "2026-11-12T06:13:32Z",
           "definition": {
             "id": "gid://shopify/MetafieldDefinition/294995427389"
           }
@@ -5103,10 +5491,17 @@
         "collection:mattress-toppers",
         "material:gel-memory-foam",
         "material:memory-foam",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:twin",
+        "shop-size:twin-xl",
         "subcategory:mattress-toppers",
         "type:mattress-topper"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:02Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -5119,13 +5514,127 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845755453",
+            "handle": "shop-by-size-twin",
+            "title": "Shop Twin"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847918141",
+            "handle": "mattress-toppers-size-twin",
+            "title": "Twin Mattress Toppers"
+          },
+          {
+            "id": "gid://shopify/Collection/302847950909",
+            "handle": "mattress-toppers-size-twin-xl",
+            "title": "Twin XL Mattress Toppers"
+          },
+          {
+            "id": "gid://shopify/Collection/302847983677",
+            "handle": "mattress-toppers-size-full",
+            "title": "Full Mattress Toppers"
+          },
+          {
+            "id": "gid://shopify/Collection/302848016445",
+            "handle": "mattress-toppers-size-queen",
+            "title": "Queen Mattress Toppers"
+          },
+          {
+            "id": "gid://shopify/Collection/302848049213",
+            "handle": "mattress-toppers-size-king",
+            "title": "King Mattress Toppers"
+          },
+          {
+            "id": "gid://shopify/Collection/302848081981",
+            "handle": "mattress-toppers-size-california-king",
+            "title": "California King Mattress Toppers"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579034857533"
+            "id": "gid://shopify/MediaImage/28579034857533",
+            "alt": "2.5-Inch Gel Memory Foam Topper product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/IS25QQ45GT-GelMemFoam-ENstraightWEB-3604.jpg?v=1793551137",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579034890301",
+            "alt": "2.5-Inch Gel Memory Foam Topper supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/IS25QQ45GT-GelMemFoam-EN3qtWEB-3608.jpg?v=1793551137",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579034955837",
+            "alt": "2.5-Inch Gel Memory Foam Topper feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/IS25QQ45GT-GelMemFoam-EN3qtcornerWEB-3612.jpg?v=1793551138",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579044294717",
+            "alt": "2.5-Inch Gel Memory Foam Topper feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/IS25QQ45GT-GelMemFoam-ENprofileWEB-3611-shopify.jpg?v=1793551255",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -5692,10 +6201,13 @@
         "feature:cooling-cover",
         "material:bamboo-charcoal",
         "material:foam",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:foam",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:03Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -5712,6 +6224,31 @@
             "id": "gid://shopify/Collection/302125908029",
             "handle": "foam-pillows",
             "title": "Foam Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
@@ -6011,10 +6548,14 @@
         "collection:furniture",
         "collection:headboards",
         "feature:upholstered",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:headboards",
         "type:headboard"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:03Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -6032,13 +6573,149 @@
             "id": "gid://shopify/Collection/302126235709",
             "handle": "headboards",
             "title": "Headboards"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302848114749",
+            "handle": "bedroom-furniture-size-queen",
+            "title": "Queen Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848147517",
+            "handle": "bedroom-furniture-size-king",
+            "title": "King Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848180285",
+            "handle": "bedroom-furniture-size-california-king",
+            "title": "California King Bedroom Furniture"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579034988605"
+            "id": "gid://shopify/MediaImage/28579034988605",
+            "alt": "Blackwell Designer Headboard product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQCHBLWBHB-Blackwell-EN3qtrWEB-3226.jpg?v=1793551137",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035021373",
+            "alt": "Blackwell Designer Headboard supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQCHBLWBHB-Blackwell0599copy.jpg?v=1793551140",
+                "width": 3220,
+                "height": 3220
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035054141",
+            "alt": "Blackwell Designer Headboard in a bedroom setting 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQCHBLWBHB-Blackwell-ENprofileWIDEWEB-3228.jpg?v=1793551138",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035086909",
+            "alt": "Blackwell Designer Headboard in a bedroom setting 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQCHBLWBHB-Blackwell-ENstraightWIDE-3222.jpg?v=1793551137",
+                "width": 1292,
+                "height": 1292
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035119677",
+            "alt": "Blackwell Designer Headboard in a bedroom setting 5",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQCHBLWBHB-Blackwell-ENstraightdetailWIDE-3211_e390dd3f-ee7c-40dd-ba93-f046e4e8f613.jpg?v=1793551138",
+                "width": 1292,
+                "height": 1292
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035152445",
+            "alt": "Blackwell Designer Headboard supporting product view 6",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST__STBLWBHB_BlackwellHeadboard_Stone_OnWhite_StraightOn.jpg?v=1793551137",
+                "width": 3587,
+                "height": 3587
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035185213",
+            "alt": "Blackwell Designer Headboard supporting product view 7",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST__OABLWBHB_BlackwellHeadboard_Oat_OnWhite_StraightOn.jpg?v=1793551137",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035217981",
+            "alt": "Blackwell Designer Headboard supporting product view 8",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST__CHBLWBHB_BlackwellHeadboard_Charcoal_OnWhite_StraightOn.jpg?v=1793551137",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -6641,10 +7318,13 @@
         "comfort:temperature-regulating",
         "feature:carboncool",
         "feature:omniphase",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:temperature-regulating",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:54Z",
+      "updatedAt": "2026-11-11T20:21:04Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -6661,13 +7341,87 @@
             "id": "gid://shopify/Collection/302125940797",
             "handle": "temperature-regulating-pillows",
             "title": "Temperature Regulating Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579035283517"
+            "id": "gid://shopify/MediaImage/28579035283517",
+            "alt": "CarbonCool + OmniPhase Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZKKMPCCLT-carboncool-EN3qtWEBcrop-2256.jpg?v=1793551138",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035316285",
+            "alt": "CarbonCool + OmniPhase Pillow feature detail 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/CarbonCool-ImageStack-5-1.jpg?v=1793551138",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035349053",
+            "alt": "CarbonCool + OmniPhase Pillow feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/CarbonCool-ImageStack-1a.jpg?v=1793551139",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035381821",
+            "alt": "CarbonCool + OmniPhase Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/CarbonCool-ImageStack-2.jpg?v=1793551138",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -6940,10 +7694,14 @@
         "collection:furniture",
         "collection:headboards",
         "feature:upholstered",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:headboards",
         "type:headboard"
       ],
-      "updatedAt": "2026-11-08T04:47:56Z",
+      "updatedAt": "2026-11-11T20:21:05Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -6961,13 +7719,149 @@
             "id": "gid://shopify/Collection/302126235709",
             "handle": "headboards",
             "title": "Headboards"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302848114749",
+            "handle": "bedroom-furniture-size-queen",
+            "title": "Queen Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848147517",
+            "handle": "bedroom-furniture-size-king",
+            "title": "King Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848180285",
+            "handle": "bedroom-furniture-size-california-king",
+            "title": "California King Bedroom Furniture"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579035414589"
+            "id": "gid://shopify/MediaImage/28579035414589",
+            "alt": "Carlisle Upholstered Headboard product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTCARLHB-Carlisle-EN3qtWEB.jpg?v=1793551139",
+                "width": 4319,
+                "height": 4319
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035447357",
+            "alt": "Carlisle Upholstered Headboard feature detail 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTCARLHB-Carlisle-ENdetailcornerWEB.jpg?v=1793551139",
+                "width": 3764,
+                "height": 3764
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035480125",
+            "alt": "Carlisle Upholstered Headboard feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTCARLHB-Carlisle-ENprofileWEB.jpg?v=1793551141",
+                "width": 4467,
+                "height": 4467
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035545661",
+            "alt": "Carlisle Upholstered Headboard in a bedroom setting 5",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTCARLHB-Carlisle-ENstraighttalentWIDE.jpg?v=1793551139",
+                "width": 3406,
+                "height": 3405
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035578429",
+            "alt": "Carlisle Upholstered Headboard supporting product view 6",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST_STCARLHB_StoneWhite-WB.jpg?v=1793551139",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035611197",
+            "alt": "Carlisle Upholstered Headboard supporting product view 7",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST_DECARLHB_DesertWhite-WB.jpg?v=1793551139",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035643965",
+            "alt": "Carlisle Upholstered Headboard supporting product view 8",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST_SCSTCHHB-ScoopedHeadboardCharcoal2FR.jpg?v=1793551139",
+                "width": 4068,
+                "height": 4068
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579044327485",
+            "alt": "Carlisle Upholstered Headboard in a bedroom setting 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTCARLHB-Carlisle-EN3qtdetailWIDE-shopify.jpg?v=1793551255",
+                "width": 2089,
+                "height": 2089
+              }
+            }
           }
         ]
       },
@@ -7568,10 +8462,13 @@
         "collection:pillows",
         "feature:convolution",
         "feature:filled",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:filled",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:05Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -7588,13 +8485,87 @@
             "id": "gid://shopify/Collection/302125875261",
             "handle": "filled-pillows",
             "title": "Filled Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579035807805"
+            "id": "gid://shopify/MediaImage/28579035807805",
+            "alt": "Convolution Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX2CG-convolution-EN3qtCROP.jpg?v=1793551139",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035840573",
+            "alt": "Convolution Pillow supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX2CG-convolution-ENstraightCROP.jpg?v=1793551140",
+                "width": 1726,
+                "height": 1726
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035873341",
+            "alt": "Convolution Pillow supporting product view 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX2CG-convolution-ENstraightloftWEB_379c9600-b5ab-4b24-a965-a7904cf2b84c.jpg?v=1793551139",
+                "width": 1726,
+                "height": 1726
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035906109",
+            "alt": "Convolution Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX2CG-convolution-ENprofileWEB.jpg?v=1793551139",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -8104,10 +9075,22 @@
         "collection:sheet-sets",
         "collection:sheets",
         "material:cotton",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:split-california-king",
+        "shop-size:split-head-california-king",
+        "shop-size:split-head-king",
+        "shop-size:split-head-queen",
+        "shop-size:split-king",
+        "shop-size:twin",
+        "shop-size:twin-xl",
         "subcategory:sheets",
         "type:sheet-set"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-12T06:13:32Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -8125,13 +9108,151 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845755453",
+            "handle": "shop-by-size-twin",
+            "title": "Shop Twin"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846017597",
+            "handle": "shop-by-size-split-head-queen",
+            "title": "Shop Split Head Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302846050365",
+            "handle": "shop-by-size-split-head-king",
+            "title": "Shop Split Head King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846083133",
+            "handle": "shop-by-size-split-head-california-king",
+            "title": "Shop Split Head California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846115901",
+            "handle": "shop-by-size-split-king",
+            "title": "Shop Split King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846148669",
+            "handle": "shop-by-size-split-california-king",
+            "title": "Shop Split California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846869565",
+            "handle": "sheets-size-twin",
+            "title": "Twin Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302846902333",
+            "handle": "sheets-size-twin-xl",
+            "title": "Twin XL Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302846935101",
+            "handle": "sheets-size-full",
+            "title": "Full Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302846967869",
+            "handle": "sheets-size-queen",
+            "title": "Queen Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847000637",
+            "handle": "sheets-size-king",
+            "title": "King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847033405",
+            "handle": "sheets-size-california-king",
+            "title": "California King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847098941",
+            "handle": "sheets-size-split-head-queen",
+            "title": "Split Head Queen Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847131709",
+            "handle": "sheets-size-split-head-king",
+            "title": "Split Head King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847164477",
+            "handle": "sheets-size-split-head-california-king",
+            "title": "Split Head California King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847197245",
+            "handle": "sheets-size-split-king",
+            "title": "Split King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847230013",
+            "handle": "sheets-size-split-california-king",
+            "title": "Split California King Sheets"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579035938877"
+            "id": "gid://shopify/MediaImage/28579035971645",
+            "alt": "BEDGEAR Cotton sheets styled on a bed",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/01a13656-aeb6-7dd4-bb1e-1932d81e4bcc.jpg?v=1793551140",
+                "width": 1080,
+                "height": 1350
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579035938877",
+            "alt": "BEDGEAR Cotton sheet set",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/01a0b4b8-d5ae-7dd8-a5e5-ef6c1a446c16.jpg?v=1793551140",
+                "width": 1200,
+                "height": 4390
+              }
+            }
           }
         ]
       },
@@ -10940,10 +12061,23 @@
         "collection:mattress-protectors",
         "feature:dri-tec",
         "feature:mattress-protection",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:full-xl",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:split-california-king",
+        "shop-size:split-head-california-king",
+        "shop-size:split-head-king",
+        "shop-size:split-head-queen",
+        "shop-size:split-king",
+        "shop-size:twin",
+        "shop-size:twin-xl",
         "subcategory:mattress-protectors",
         "type:mattress-protector"
       ],
-      "updatedAt": "2026-11-08T04:47:56Z",
+      "updatedAt": "2026-11-11T20:21:06Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -10956,13 +12090,174 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845755453",
+            "handle": "shop-by-size-twin",
+            "title": "Shop Twin"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845853757",
+            "handle": "shop-by-size-full-xl",
+            "title": "Shop Full XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846017597",
+            "handle": "shop-by-size-split-head-queen",
+            "title": "Shop Split Head Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302846050365",
+            "handle": "shop-by-size-split-head-king",
+            "title": "Shop Split Head King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846083133",
+            "handle": "shop-by-size-split-head-california-king",
+            "title": "Shop Split Head California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846115901",
+            "handle": "shop-by-size-split-king",
+            "title": "Shop Split King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846148669",
+            "handle": "shop-by-size-split-california-king",
+            "title": "Shop Split California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847426621",
+            "handle": "mattress-protectors-size-twin",
+            "title": "Twin Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847459389",
+            "handle": "mattress-protectors-size-twin-xl",
+            "title": "Twin XL Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847492157",
+            "handle": "mattress-protectors-size-full",
+            "title": "Full Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847524925",
+            "handle": "mattress-protectors-size-full-xl",
+            "title": "Full XL Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847557693",
+            "handle": "mattress-protectors-size-queen",
+            "title": "Queen Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847590461",
+            "handle": "mattress-protectors-size-king",
+            "title": "King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847623229",
+            "handle": "mattress-protectors-size-california-king",
+            "title": "California King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847655997",
+            "handle": "mattress-protectors-size-split-head-queen",
+            "title": "Split Head Queen Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847688765",
+            "handle": "mattress-protectors-size-split-head-king",
+            "title": "Split Head King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847721533",
+            "handle": "mattress-protectors-size-split-head-california-king",
+            "title": "Split Head California King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847754301",
+            "handle": "mattress-protectors-size-split-king",
+            "title": "Split King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847787069",
+            "handle": "mattress-protectors-size-split-california-king",
+            "title": "Split California King Mattress Protectors"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579036004413"
+            "id": "gid://shopify/MediaImage/28579036004413",
+            "alt": "BEDGEAR Dri-Tec mattress protector",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019e0442-8d58-7dd9-b5c3-750584828add.jpg?v=1793551141",
+                "width": 3212,
+                "height": 2143
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036037181",
+            "alt": "BEDGEAR Dri-Tec mattress protector corner detail",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019e0442-888b-7ff2-a80f-4831847e6c39.jpg?v=1793551142",
+                "width": 3608,
+                "height": 2408
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579044360253",
+            "alt": "BEDGEAR Dri-Tec mattress protector fitted to a bed",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/Dri-Tec_Mattress_Protector_lifestyle1-shopify.jpg?v=1793551256",
+                "width": 4000,
+                "height": 2857
+              }
+            }
           }
         ]
       },
@@ -11947,10 +13242,23 @@
         "collection:sheet-sets",
         "collection:sheets",
         "feature:dri-tec",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:split-california-king",
+        "shop-size:split-head-california-king",
+        "shop-size:split-head-king",
+        "shop-size:split-head-queen",
+        "shop-size:split-king",
+        "shop-size:texas-king",
+        "shop-size:twin",
+        "shop-size:twin-xl",
         "subcategory:sheets",
         "type:sheet-set"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-12T06:13:32Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -11968,13 +13276,174 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845755453",
+            "handle": "shop-by-size-twin",
+            "title": "Shop Twin"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845984829",
+            "handle": "shop-by-size-texas-king",
+            "title": "Shop Texas King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846017597",
+            "handle": "shop-by-size-split-head-queen",
+            "title": "Shop Split Head Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302846050365",
+            "handle": "shop-by-size-split-head-king",
+            "title": "Shop Split Head King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846083133",
+            "handle": "shop-by-size-split-head-california-king",
+            "title": "Shop Split Head California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846115901",
+            "handle": "shop-by-size-split-king",
+            "title": "Shop Split King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846148669",
+            "handle": "shop-by-size-split-california-king",
+            "title": "Shop Split California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846869565",
+            "handle": "sheets-size-twin",
+            "title": "Twin Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302846902333",
+            "handle": "sheets-size-twin-xl",
+            "title": "Twin XL Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302846935101",
+            "handle": "sheets-size-full",
+            "title": "Full Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302846967869",
+            "handle": "sheets-size-queen",
+            "title": "Queen Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847000637",
+            "handle": "sheets-size-king",
+            "title": "King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847033405",
+            "handle": "sheets-size-california-king",
+            "title": "California King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847066173",
+            "handle": "sheets-size-texas-king",
+            "title": "Texas King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847098941",
+            "handle": "sheets-size-split-head-queen",
+            "title": "Split Head Queen Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847131709",
+            "handle": "sheets-size-split-head-king",
+            "title": "Split Head King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847164477",
+            "handle": "sheets-size-split-head-california-king",
+            "title": "Split Head California King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847197245",
+            "handle": "sheets-size-split-king",
+            "title": "Split King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847230013",
+            "handle": "sheets-size-split-california-king",
+            "title": "Split California King Sheets"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579036135485"
+            "id": "gid://shopify/MediaImage/28579044556861",
+            "alt": "BEDGEAR Dri-Tec sheets in Light Grey on a bed",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/Dri-Tec_Sheets_Light_Grey_Lifestyle_4004-shopify.jpg?v=1793551258",
+                "width": 2668,
+                "height": 4000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036135485",
+            "alt": "BEDGEAR Dri-Tec sheet set",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/01a0b4b8-d7ca-744b-b41f-3810b65ed391.jpg?v=1793551141",
+                "width": 1200,
+                "height": 4480
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579044589629",
+            "alt": "BEDGEAR Dri-Tec Light Grey sheets in a bedroom",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/Dri-Tec_Sheets_Light_Grey_Lifestyle_Model_5141-shopify.jpg?v=1793551258",
+                "width": 4000,
+                "height": 2668
+              }
+            }
           }
         ]
       },
@@ -15153,10 +16622,14 @@
         "collection:furniture",
         "collection:platform-bases",
         "feature:upholstered",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:platform-bases",
         "type:platform-base"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:07Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/na",
         "name": "Uncategorized",
@@ -15178,13 +16651,136 @@
             "id": "gid://shopify/Collection/302126268477",
             "handle": "platform-bases",
             "title": "Platform Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302848114749",
+            "handle": "bedroom-furniture-size-queen",
+            "title": "Queen Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848147517",
+            "handle": "bedroom-furniture-size-king",
+            "title": "King Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848180285",
+            "handle": "bedroom-furniture-size-california-king",
+            "title": "California King Bedroom Furniture"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579036364861"
+            "id": "gid://shopify/MediaImage/28579036364861",
+            "alt": "Eastman Upholstered Platform Base supporting product view 5",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST_STEASTPL_STONEEastWhite-DE_6dd23cd9-e28e-44da-81b6-41885e54d815.jpg?v=1793551142",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036233789",
+            "alt": "Eastman Upholstered Platform Base product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQCHEASTPL-Eastman-EN3qtpanelWEB.jpg?v=1793551142",
+                "width": 4066,
+                "height": 4066
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036266557",
+            "alt": "Eastman Upholstered Platform Base feature detail 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQCHEASTPL-Eastman-ENprofileslatsWEB_64485bad-40db-4283-9f3f-52607909aa16.jpg?v=1793551142",
+                "width": 3213,
+                "height": 3213
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036299325",
+            "alt": "Eastman Upholstered Platform Base supporting product view 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQCHEASTPL-Eastman-ENStraightWEBpanel.jpg?v=1793551142",
+                "width": 3952,
+                "height": 3952
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036332093",
+            "alt": "Eastman Upholstered Platform Base in a bedroom setting 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQCHEASTPL-Eastman-ENtalentslatesWIDE.jpg?v=1793551142",
+                "width": 3140,
+                "height": 3141
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036397629",
+            "alt": "Eastman Upholstered Platform Base supporting product view 6",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/Eastman_Charcoal_Base_Straight.jpg?v=1793551143",
+                "width": 4608,
+                "height": 4608
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036430397",
+            "alt": "Eastman Upholstered Platform Base supporting product view 7",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST_OAEASTPL_OAT_EastWhite-DE.jpg?v=1793551142",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -16006,10 +17602,15 @@
         "collection:adjustable-bases",
         "collection:flex-l",
         "feature:adjustable",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:twin-xl",
         "subcategory:flex-l",
         "type:adjustable-base"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:07Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -16022,13 +17623,94 @@
             "id": "gid://shopify/Collection/302125711421",
             "handle": "flex-l",
             "title": "Flex L Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846607421",
+            "handle": "adjustable-bases-size-twin-xl",
+            "title": "Twin XL Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302846640189",
+            "handle": "adjustable-bases-size-queen",
+            "title": "Queen Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302846672957",
+            "handle": "adjustable-bases-size-king",
+            "title": "King Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302846705725",
+            "handle": "adjustable-bases-size-california-king",
+            "title": "California King Adjustable Bases"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579036463165"
+            "id": "gid://shopify/MediaImage/28579036463165",
+            "alt": "BEDGEAR Flex L adjustable base in a bedroom",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/0af53a18-5eff-4179-8a17-660d69c63294.jpg?v=1793551142",
+                "width": 3000,
+                "height": 3000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036495933",
+            "alt": "BEDGEAR Flex L adjustable base in a flat position",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/b69eef19-88d6-423b-9177-eccdc28eccd7.jpg?v=1793551144",
+                "width": 3000,
+                "height": 3000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036528701",
+            "alt": "BEDGEAR Flex L adjustable base with head and foot raised",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/b14b1a14-64bf-446d-b122-3268eb2ff888.jpg?v=1793551142",
+                "width": 3000,
+                "height": 3000
+              }
+            }
           }
         ]
       },
@@ -16452,10 +18134,16 @@
         "collection:adjustable-bases",
         "collection:flex-lsx",
         "feature:adjustable",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:split-california-king",
+        "shop-size:twin-xl",
         "subcategory:flex-lsx",
         "type:adjustable-base"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:08Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -16468,13 +18156,104 @@
             "id": "gid://shopify/Collection/302125744189",
             "handle": "flex-lsx",
             "title": "Flex LSX Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846148669",
+            "handle": "shop-by-size-split-california-king",
+            "title": "Shop Split California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846607421",
+            "handle": "adjustable-bases-size-twin-xl",
+            "title": "Twin XL Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302846640189",
+            "handle": "adjustable-bases-size-queen",
+            "title": "Queen Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302846672957",
+            "handle": "adjustable-bases-size-king",
+            "title": "King Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302846705725",
+            "handle": "adjustable-bases-size-california-king",
+            "title": "California King Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302846836797",
+            "handle": "adjustable-bases-size-split-california-king",
+            "title": "Split California King Adjustable Bases"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579036561469"
+            "id": "gid://shopify/MediaImage/28579036561469",
+            "alt": "BEDGEAR Flex LSX adjustable base in a bedroom",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/eba03ba8-76de-4a19-9410-d087f66c6c35.jpg?v=1793551142",
+                "width": 3000,
+                "height": 3000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036594237",
+            "alt": "BEDGEAR Flex LSX adjustable base with head and foot raised",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ecb8ca9f-7453-41f6-8f1b-94c2d4ee48a7.jpg?v=1793551142",
+                "width": 3000,
+                "height": 3000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036627005",
+            "alt": "BEDGEAR Flex LSX adjustable base in use",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/83c0e35f-84da-4c05-b13f-0b366b337f1c.jpg?v=1793551143",
+                "width": 3000,
+                "height": 3000
+              }
+            }
           }
         ]
       },
@@ -16969,10 +18748,14 @@
         "collection:flex-sh",
         "feature:adjustable",
         "feature:split-head",
+        "shop-by-size:true",
+        "shop-size:split-head-california-king",
+        "shop-size:split-head-king",
+        "shop-size:split-head-queen",
         "subcategory:flex-sh",
         "type:adjustable-base"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:09Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -16985,6 +18768,41 @@
             "id": "gid://shopify/Collection/302125776957",
             "handle": "flex-sh",
             "title": "Flex SH Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302846017597",
+            "handle": "shop-by-size-split-head-queen",
+            "title": "Shop Split Head Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302846050365",
+            "handle": "shop-by-size-split-head-king",
+            "title": "Shop Split Head King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846083133",
+            "handle": "shop-by-size-split-head-california-king",
+            "title": "Shop Split Head California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846738493",
+            "handle": "adjustable-bases-size-split-head-queen",
+            "title": "Split Head Queen Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302846771261",
+            "handle": "adjustable-bases-size-split-head-king",
+            "title": "Split Head King Adjustable Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302846804029",
+            "handle": "adjustable-bases-size-split-head-california-king",
+            "title": "Split Head California King Adjustable Bases"
           }
         ]
       },
@@ -17343,10 +19161,13 @@
         "feature:convolution",
         "feature:filled",
         "material:gel",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:filled",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:09Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -17363,13 +19184,87 @@
             "id": "gid://shopify/Collection/302125875261",
             "handle": "filled-pillows",
             "title": "Filled Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579036659773"
+            "id": "gid://shopify/MediaImage/28579036659773",
+            "alt": "Gel Convolution Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/gel_convolution_Web.jpg?v=1793551143",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036692541",
+            "alt": "Gel Convolution Pillow supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/GelConvolution-38-EditFR.jpg?v=1793551142",
+                "width": 4406,
+                "height": 4406
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036725309",
+            "alt": "Gel Convolution Pillow supporting product view 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/GelConvolution-45-ondarkFR.jpg?v=1793551143",
+                "width": 4658,
+                "height": 4658
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036758077",
+            "alt": "Gel Convolution Pillow supporting product view 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/GelConvolutionLofts-11FR.jpg?v=1793551143",
+                "width": 4596,
+                "height": 4595
+              }
+            }
           }
         ]
       },
@@ -17667,10 +19562,13 @@
         "comfort:cooling",
         "material:dough-foam",
         "material:gel",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:temperature-regulating",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:10Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -17687,13 +19585,61 @@
             "id": "gid://shopify/Collection/302125940797",
             "handle": "temperature-regulating-pillows",
             "title": "Temperature Regulating Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579036921917"
+            "id": "gid://shopify/MediaImage/28579036921917",
+            "alt": "Gel Dough + Z Gel Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZ_MPG-GelDoughZGEL-CUTAWAY.png?v=1793551145",
+                "width": 4000,
+                "height": 4000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579036954685",
+            "alt": "Gel Dough + Z Gel Pillow supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/gel_dough_z_gel_Web.jpg?v=1793551143",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -18147,10 +20093,13 @@
         "feature:filled",
         "material:gel",
         "material:microfiber",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:filled",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:10Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -18167,13 +20116,87 @@
             "id": "gid://shopify/Collection/302125875261",
             "handle": "filled-pillows",
             "title": "Filled Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579036987453"
+            "id": "gid://shopify/MediaImage/28579036987453",
+            "alt": "Gelled Microfiber Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQ00GM-gelledmicrofiberpillow-EN3qtWEB.jpg?v=1793551143",
+                "width": 3000,
+                "height": 3000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037020221",
+            "alt": "Gelled Microfiber Pillow supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQ00GM-gelledmicrofiberpillow-ENcroppedstraightWEB.jpg?v=1793551143",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037052989",
+            "alt": "Gelled Microfiber Pillow feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQ00GM-gelledmicrofiberpillow-ENprofileWEB.jpg?v=1793551144",
+                "width": 4689,
+                "height": 4689
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037085757",
+            "alt": "Gelled Microfiber Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQ00GM-gelledmicrofiberpillow-ENhandpressdetailWEB.jpg?v=1793551144",
+                "width": 4789,
+                "height": 4788
+              }
+            }
           }
         ]
       },
@@ -18470,10 +20493,14 @@
         "collection:furniture",
         "collection:headboards",
         "feature:upholstered",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:headboards",
         "type:headboard"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:10Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -18491,13 +20518,123 @@
             "id": "gid://shopify/Collection/302126235709",
             "handle": "headboards",
             "title": "Headboards"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302848114749",
+            "handle": "bedroom-furniture-size-queen",
+            "title": "Queen Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848147517",
+            "handle": "bedroom-furniture-size-king",
+            "title": "King Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848180285",
+            "handle": "bedroom-furniture-size-california-king",
+            "title": "California King Bedroom Furniture"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579037216829"
+            "id": "gid://shopify/MediaImage/28579037216829",
+            "alt": "Hennessy Upholstered Headboard product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQOAHENNHB-Hennessy-EN3qtWEB.jpg?v=1793551145",
+                "width": 4321,
+                "height": 4321
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037249597",
+            "alt": "Hennessy Upholstered Headboard feature detail 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQOAHENNHB-Hennessy-ENdetailcornerWEB.jpg?v=1793551145",
+                "width": 3734,
+                "height": 3734
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037282365",
+            "alt": "Hennessy Upholstered Headboard feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQOAHENNHB-Hennessy-ENprofileWEB.jpg?v=1793551144",
+                "width": 4304,
+                "height": 4304
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037315133",
+            "alt": "Hennessy Upholstered Headboard supporting product view 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQOAHENNHB-Hennessy-ENstraightWEB.jpg?v=1793551145",
+                "width": 4030,
+                "height": 4030
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037347901",
+            "alt": "Hennessy Upholstered Headboard supporting product view 5",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST_REDTSTHB-RectangleHeadboardStone1-DE.jpg?v=1793551144",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037380669",
+            "alt": "Hennessy Upholstered Headboard supporting product view 6",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST_CHHENNHB_CharcoalFR-nobg.png?v=1793551147",
+                "width": 4307,
+                "height": 4307
+              }
+            }
           }
         ]
       },
@@ -19100,10 +21237,13 @@
         "feature:hexcurve",
         "feature:omniphase",
         "material:foam",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:foam",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:11Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -19120,13 +21260,87 @@
             "id": "gid://shopify/Collection/302125908029",
             "handle": "foam-pillows",
             "title": "Foam Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579037413437"
+            "id": "gid://shopify/MediaImage/28579037413437",
+            "alt": "HexCurve + OmniPhase Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX1XC-hexcurvepillow-EN3qtWEB.jpg?v=1793551144",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037446205",
+            "alt": "HexCurve + OmniPhase Pillow supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX1XC-hexcurvepillow-ENstraightWEB.jpg?v=1793551145",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037478973",
+            "alt": "HexCurve + OmniPhase Pillow supporting product view 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX1XC-hexcurvepillow-ENflatstraightWEB.jpg?v=1793551145",
+                "width": 2000,
+                "height": 1999
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037511741",
+            "alt": "HexCurve + OmniPhase Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX1XC-hexcurvepillow-ENdetailWEB.jpg?v=1793551145",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -19424,10 +21638,13 @@
         "comfort:cooling",
         "comfort:temperature-regulating",
         "feature:omniphase",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:temperature-regulating",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:11Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -19444,13 +21661,87 @@
             "id": "gid://shopify/Collection/302125940797",
             "handle": "temperature-regulating-pillows",
             "title": "Temperature Regulating Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579037544509"
+            "id": "gid://shopify/MediaImage/28579037544509",
+            "alt": "Ice Cloud + OmniPhase Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQPICGF-icecloudpillow-EN3qtWEB.jpg?v=1793551145",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037577277",
+            "alt": "Ice Cloud + OmniPhase Pillow feature detail 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/IceCloudImageStack-1.jpg?v=1793551145",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037610045",
+            "alt": "Ice Cloud + OmniPhase Pillow feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/IceCloudImageStack-2.jpg?v=1793551145",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037642813",
+            "alt": "Ice Cloud + OmniPhase Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/IceCloudImageStack-3.jpg?v=1793551145",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -20039,10 +22330,12 @@
         "collection:cooling-bedding",
         "feature:duvet-sham-set",
         "feature:racetrack",
+        "shop-by-size:true",
+        "shop-size:queen",
         "subcategory:cooling-bedding",
         "type:duvet-set"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:12Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -20055,13 +22348,51 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302847393853",
+            "handle": "cooling-bedding-size-queen",
+            "title": "Queen Cooling & Bedding"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579037675581"
+            "id": "gid://shopify/MediaImage/28579037675581",
+            "alt": "BEDGEAR Light Grey Racetrack duvet and sham set",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019ecd29-e133-7337-acb5-37b5d2ab8201.png?v=1793551146",
+                "width": 600,
+                "height": 404
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037708349",
+            "alt": "BEDGEAR duvet and sham set feature view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019eadf0-b611-7ee8-9fa1-b650495288ad.jpg?v=1793551145",
+                "width": 1200,
+                "height": 675
+              }
+            }
           }
         ]
       },
@@ -20279,10 +22610,15 @@
         "collection:bedding",
         "collection:comforters",
         "comfort:light-weight",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:comforters",
         "type:comforter"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:12Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -20295,13 +22631,81 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847262781",
+            "handle": "comforters-size-full",
+            "title": "Full Comforters & Duvets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847295549",
+            "handle": "comforters-size-queen",
+            "title": "Queen Comforters & Duvets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847328317",
+            "handle": "comforters-size-king",
+            "title": "King Comforters & Duvets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847361085",
+            "handle": "comforters-size-california-king",
+            "title": "California King Comforters & Duvets"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579037773885"
+            "id": "gid://shopify/MediaImage/28579037773885",
+            "alt": "BEDGEAR Light Weight comforter on a bed",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/8be70dc9-136e-4427-98a0-239e5074bcd6.png?v=1793551150",
+                "width": 3000,
+                "height": 3000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579037806653",
+            "alt": "BEDGEAR Light Weight comforter in a bedroom",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/f511b1c1-f1fd-4b74-a959-ed5bea89d1e4.png?v=1793551149",
+                "width": 3000,
+                "height": 3000
+              }
+            }
           }
         ]
       },
@@ -20585,10 +22989,15 @@
         "collection:bedding",
         "collection:comforters",
         "comfort:medium-weight",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:comforters",
         "type:comforter"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:13Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -20601,13 +23010,81 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847262781",
+            "handle": "comforters-size-full",
+            "title": "Full Comforters & Duvets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847295549",
+            "handle": "comforters-size-queen",
+            "title": "Queen Comforters & Duvets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847328317",
+            "handle": "comforters-size-king",
+            "title": "King Comforters & Duvets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847361085",
+            "handle": "comforters-size-california-king",
+            "title": "California King Comforters & Duvets"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579038036029"
+            "id": "gid://shopify/MediaImage/28579038036029",
+            "alt": "BEDGEAR Medium Weight comforter on a bed",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/cad2c08b-cbd3-4bb8-b726-5fae988d2a5d.png?v=1793551151",
+                "width": 3000,
+                "height": 3000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038068797",
+            "alt": "BEDGEAR Medium Weight comforter in a bedroom",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/40cb81d5-66bc-4e98-bf56-89bbce1f4cd2.png?v=1793551150",
+                "width": 3000,
+                "height": 3000
+              }
+            }
           }
         ]
       },
@@ -20895,10 +23372,13 @@
         "feature:filled",
         "feature:hyperchill",
         "feature:quilted",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:filled",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:56Z",
+      "updatedAt": "2026-11-11T20:21:13Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -20915,13 +23395,87 @@
             "id": "gid://shopify/Collection/302125875261",
             "handle": "filled-pillows",
             "title": "Filled Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579038101565"
+            "id": "gid://shopify/MediaImage/28579038101565",
+            "alt": "Quilted Convolution + HyperChill Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX2QC-quiltedconvolutionpillow-EN3qtWEB.jpg?v=1793551147",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038134333",
+            "alt": "Quilted Convolution + HyperChill Pillow supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX2QC-quiltedconvolutionpillow-ENstraightWEB.jpg?v=1793551148",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038167101",
+            "alt": "Quilted Convolution + HyperChill Pillow supporting product view 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX2QC-quiltedconvolutionpillow-ENflatstraightWEB.jpg?v=1793551147",
+                "width": 2000,
+                "height": 1999
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038199869",
+            "alt": "Quilted Convolution + HyperChill Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQX2QC-quiltedconvolutionpillow-ENdetailWEB.jpg?v=1793551147",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -21193,10 +23747,12 @@
         "collection:bedding",
         "collection:mattress-toppers",
         "feature:performance-topper",
+        "shop-by-size:true",
+        "shop-size:queen",
         "subcategory:mattress-toppers",
         "type:mattress-topper"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:14Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -21209,6 +23765,21 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302848016445",
+            "handle": "mattress-toppers-size-queen",
+            "title": "Queen Mattress Toppers"
           }
         ]
       },
@@ -21414,10 +23985,14 @@
         "collection:furniture",
         "collection:headboards",
         "feature:upholstered",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:headboards",
         "type:headboard"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:14Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -21435,13 +24010,149 @@
             "id": "gid://shopify/Collection/302126235709",
             "handle": "headboards",
             "title": "Headboards"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302848114749",
+            "handle": "bedroom-furniture-size-queen",
+            "title": "Queen Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848147517",
+            "handle": "bedroom-furniture-size-king",
+            "title": "King Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848180285",
+            "handle": "bedroom-furniture-size-california-king",
+            "title": "California King Bedroom Furniture"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579038462013"
+            "id": "gid://shopify/MediaImage/28579038462013",
+            "alt": "Scoresby Designer Headboard product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTSCORHB-Scoresby-EN3qtWIDE.jpg?v=1793551148",
+                "width": 1000,
+                "height": 1000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038494781",
+            "alt": "Scoresby Designer Headboard supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTSCORHB-Scoresby-ENstraightWEB.jpg?v=1793551148",
+                "width": 2287,
+                "height": 2287
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038527549",
+            "alt": "Scoresby Designer Headboard supporting product view 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTSCORHB-Scoresby-EN3qtWEB.jpg?v=1793551148",
+                "width": 2543,
+                "height": 2543
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038560317",
+            "alt": "Scoresby Designer Headboard in a bedroom setting 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTSCORHB-Scoresby-ENprofileWIDE.jpg?v=1793551148",
+                "width": 3758,
+                "height": 3757
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038593085",
+            "alt": "Scoresby Designer Headboard in a bedroom setting 5",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTSCORHB-Scoresby-EN3qttalentWIDE.jpg?v=1793551149",
+                "width": 3121,
+                "height": 3120
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038625853",
+            "alt": "Scoresby Designer Headboard in a bedroom setting 6",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTSCORHB-Scoresby-ENstraighttalentWIDE.jpg?v=1793551148",
+                "width": 1000,
+                "height": 1000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038658621",
+            "alt": "Scoresby Designer Headboard supporting product view 7",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST__OASCORHB_ScoresbyHeadboard_Oat_OnWhite_StraightOn.jpg?v=1793551149",
+                "width": 3519,
+                "height": 3519
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038691389",
+            "alt": "Scoresby Designer Headboard supporting product view 8",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST__CHSCORHB_ScoresbyHeadboard_Charcoal_OnWhite_StraightOn.jpg?v=1793551148",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -22044,10 +24755,13 @@
         "feature:zoned",
         "material:activedough",
         "material:gel",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:zoned",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:15Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -22064,13 +24778,87 @@
             "id": "gid://shopify/Collection/302125842493",
             "handle": "zoned-pillows",
             "title": "Zoned Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579038724157"
+            "id": "gid://shopify/MediaImage/28579038724157",
+            "alt": "Shoulder Zoned Gel ActiveDough Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/Activedough-Gel-Shoulder-Pillow-ENcloseupWEB-1091.jpg?v=1793551149",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038756925",
+            "alt": "Shoulder Zoned Gel ActiveDough Pillow feature detail 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ShoulderZonedGelDough_ImageStack-1b.jpg?v=1793551149",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038789693",
+            "alt": "Shoulder Zoned Gel ActiveDough Pillow feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/GelActiveDoughShoulder-ImageStack-2.jpg?v=1793551149",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038822461",
+            "alt": "Shoulder Zoned Gel ActiveDough Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/GelActiveDoughShoulder-ImageStack-4.jpg?v=1793551150",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -22366,10 +25154,12 @@
         "collection:bedding",
         "collection:cooling-bedding",
         "feature:duvet-sham-set",
+        "shop-by-size:true",
+        "shop-size:queen",
         "subcategory:cooling-bedding",
         "type:duvet-set"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:15Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -22382,13 +25172,51 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302847393853",
+            "handle": "cooling-bedding-size-queen",
+            "title": "Queen Cooling & Bedding"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579038887997"
+            "id": "gid://shopify/MediaImage/28579038887997",
+            "alt": "BEDGEAR Solid White duvet and sham set",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019ead55-1d03-733c-b4b3-346aec9ea277.jpg?v=1793551150",
+                "width": 1080,
+                "height": 1080
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038920765",
+            "alt": "BEDGEAR Solid White duvet and sham set on a bed",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/09d69dc5-4e14-4b21-9604-f52069fd1aa6.jpg?v=1793551150",
+                "width": 1080,
+                "height": 1080
+              }
+            }
           }
         ]
       },
@@ -22607,10 +25435,17 @@
         "collection:mattress-protectors",
         "feature:mattress-protection",
         "feature:six-sided-encasement",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:twin",
+        "shop-size:twin-xl",
         "subcategory:mattress-protectors",
         "type:mattress-protector"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:16Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -22623,13 +25458,101 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845755453",
+            "handle": "shop-by-size-twin",
+            "title": "Shop Twin"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847426621",
+            "handle": "mattress-protectors-size-twin",
+            "title": "Twin Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847459389",
+            "handle": "mattress-protectors-size-twin-xl",
+            "title": "Twin XL Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847492157",
+            "handle": "mattress-protectors-size-full",
+            "title": "Full Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847557693",
+            "handle": "mattress-protectors-size-queen",
+            "title": "Queen Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847590461",
+            "handle": "mattress-protectors-size-king",
+            "title": "King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847623229",
+            "handle": "mattress-protectors-size-california-king",
+            "title": "California King Mattress Protectors"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579038953533"
+            "id": "gid://shopify/MediaImage/28579038953533",
+            "alt": "BEDGEAR Stretchwick six-sided mattress encasement",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/480324ee-726a-4bec-b208-001aa40124e4.jpg?v=1793551150",
+                "width": 3000,
+                "height": 3000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579038986301",
+            "alt": "BEDGEAR Stretchwick mattress protection detail",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019fae47-84f6-7330-b49a-b54440cdc7c0.jpg?v=1793551150",
+                "width": 726,
+                "height": 834
+              }
+            }
           }
         ]
       },
@@ -23193,10 +26116,15 @@
         "collection:bedding",
         "collection:comforters",
         "comfort:ultra-weight",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:comforters",
         "type:comforter"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:16Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -23209,13 +26137,81 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847262781",
+            "handle": "comforters-size-full",
+            "title": "Full Comforters & Duvets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847295549",
+            "handle": "comforters-size-queen",
+            "title": "Queen Comforters & Duvets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847328317",
+            "handle": "comforters-size-king",
+            "title": "King Comforters & Duvets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847361085",
+            "handle": "comforters-size-california-king",
+            "title": "California King Comforters & Duvets"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579039019069"
+            "id": "gid://shopify/MediaImage/28579039019069",
+            "alt": "BEDGEAR Ultra Weight comforter on a bed",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/5944ba14-53e8-4514-b357-fddab0541884.png?v=1793551156",
+                "width": 3000,
+                "height": 3000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039051837",
+            "alt": "BEDGEAR Ultra Weight comforter in a bedroom",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/7a7c60b6-2bae-4fe4-b7de-d89f40e43d57.png?v=1793551155",
+                "width": 3000,
+                "height": 3000
+              }
+            }
           }
         ]
       },
@@ -23500,10 +26496,22 @@
         "collection:mattress-protectors",
         "feature:mattress-protection",
         "feature:ver-tex",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:full",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:split-california-king",
+        "shop-size:split-head-california-king",
+        "shop-size:split-head-king",
+        "shop-size:split-head-queen",
+        "shop-size:split-king",
+        "shop-size:twin",
+        "shop-size:twin-xl",
         "subcategory:mattress-protectors",
         "type:mattress-protector"
       ],
-      "updatedAt": "2026-11-08T04:47:56Z",
+      "updatedAt": "2026-11-11T20:21:16Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -23516,13 +26524,164 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845755453",
+            "handle": "shop-by-size-twin",
+            "title": "Shop Twin"
+          },
+          {
+            "id": "gid://shopify/Collection/302845788221",
+            "handle": "shop-by-size-twin-xl",
+            "title": "Shop Twin XL"
+          },
+          {
+            "id": "gid://shopify/Collection/302845820989",
+            "handle": "shop-by-size-full",
+            "title": "Shop Full"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846017597",
+            "handle": "shop-by-size-split-head-queen",
+            "title": "Shop Split Head Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302846050365",
+            "handle": "shop-by-size-split-head-king",
+            "title": "Shop Split Head King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846083133",
+            "handle": "shop-by-size-split-head-california-king",
+            "title": "Shop Split Head California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846115901",
+            "handle": "shop-by-size-split-king",
+            "title": "Shop Split King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846148669",
+            "handle": "shop-by-size-split-california-king",
+            "title": "Shop Split California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847426621",
+            "handle": "mattress-protectors-size-twin",
+            "title": "Twin Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847459389",
+            "handle": "mattress-protectors-size-twin-xl",
+            "title": "Twin XL Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847492157",
+            "handle": "mattress-protectors-size-full",
+            "title": "Full Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847557693",
+            "handle": "mattress-protectors-size-queen",
+            "title": "Queen Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847590461",
+            "handle": "mattress-protectors-size-king",
+            "title": "King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847623229",
+            "handle": "mattress-protectors-size-california-king",
+            "title": "California King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847655997",
+            "handle": "mattress-protectors-size-split-head-queen",
+            "title": "Split Head Queen Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847688765",
+            "handle": "mattress-protectors-size-split-head-king",
+            "title": "Split Head King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847721533",
+            "handle": "mattress-protectors-size-split-head-california-king",
+            "title": "Split Head California King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847754301",
+            "handle": "mattress-protectors-size-split-king",
+            "title": "Split King Mattress Protectors"
+          },
+          {
+            "id": "gid://shopify/Collection/302847787069",
+            "handle": "mattress-protectors-size-split-california-king",
+            "title": "Split California King Mattress Protectors"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579039084605"
+            "id": "gid://shopify/MediaImage/28579039084605",
+            "alt": "BEDGEAR Ver-Tex mattress protector",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019e0884-a5f1-7dd0-be15-4eb9f7b5231b.jpg?v=1793551152",
+                "width": 3000,
+                "height": 2143
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039117373",
+            "alt": "BEDGEAR Ver-Tex mattress protector corner detail",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/019e0884-a896-7bb6-88ec-4b5704ba71a2.jpg?v=1793551152",
+                "width": 3372,
+                "height": 2408
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579044851773",
+            "alt": "BEDGEAR Ver-Tex mattress protector fitted to a bed",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/Ver-Tex_Mattress_Protector_2022_lifestyle1-shopify.jpg?v=1793551261",
+                "width": 4000,
+                "height": 2668
+              }
+            }
           }
         ]
       },
@@ -24437,10 +27596,19 @@
         "collection:sheet-sets",
         "collection:sheets",
         "feature:ver-tex",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:split-california-king",
+        "shop-size:split-head-california-king",
+        "shop-size:split-head-king",
+        "shop-size:split-head-queen",
+        "shop-size:split-king",
         "subcategory:sheets",
         "type:sheet-set"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-12T06:13:32Z",
       "category": null,
       "collections": {
         "nodes": [
@@ -24458,13 +27626,134 @@
             "id": "gid://shopify/Collection/302126301245",
             "handle": "bedding",
             "title": "Bedding"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846017597",
+            "handle": "shop-by-size-split-head-queen",
+            "title": "Shop Split Head Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302846050365",
+            "handle": "shop-by-size-split-head-king",
+            "title": "Shop Split Head King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846083133",
+            "handle": "shop-by-size-split-head-california-king",
+            "title": "Shop Split Head California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846115901",
+            "handle": "shop-by-size-split-king",
+            "title": "Shop Split King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846148669",
+            "handle": "shop-by-size-split-california-king",
+            "title": "Shop Split California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302846967869",
+            "handle": "sheets-size-queen",
+            "title": "Queen Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847000637",
+            "handle": "sheets-size-king",
+            "title": "King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847033405",
+            "handle": "sheets-size-california-king",
+            "title": "California King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847098941",
+            "handle": "sheets-size-split-head-queen",
+            "title": "Split Head Queen Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847131709",
+            "handle": "sheets-size-split-head-king",
+            "title": "Split Head King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847164477",
+            "handle": "sheets-size-split-head-california-king",
+            "title": "Split Head California King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847197245",
+            "handle": "sheets-size-split-king",
+            "title": "Split King Sheets"
+          },
+          {
+            "id": "gid://shopify/Collection/302847230013",
+            "handle": "sheets-size-split-california-king",
+            "title": "Split California King Sheets"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579039182909"
+            "id": "gid://shopify/MediaImage/28579044917309",
+            "alt": "BEDGEAR Ver-Tex White sheets in a bedroom",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/Ver-Tex_Sheets_White_Lifestyle_Model_5159-shopify.jpg?v=1793551262",
+                "width": 4000,
+                "height": 2668
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039182909",
+            "alt": "BEDGEAR Ver-Tex sheet set",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/01a0b4b8-d98b-7dd8-a5e5-f6a901430d67.jpg?v=1793551152",
+                "width": 1200,
+                "height": 4524
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579044950077",
+            "alt": "BEDGEAR Ver-Tex Light Grey split-head sheets",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/Splithead_Sheets_Ver-Tex_Light_Grey_Lifestyle_Model_05-shopify.jpg?v=1793551262",
+                "width": 2667,
+                "height": 4000
+              }
+            }
           }
         ]
       },
@@ -25941,10 +29230,14 @@
         "collection:furniture",
         "collection:platform-bases",
         "feature:upholstered",
+        "shop-by-size:true",
+        "shop-size:california-king",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:platform-bases",
         "type:platform-base"
       ],
-      "updatedAt": "2026-11-08T04:47:56Z",
+      "updatedAt": "2026-11-11T20:21:17Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/na",
         "name": "Uncategorized",
@@ -25966,13 +29259,149 @@
             "id": "gid://shopify/Collection/302126268477",
             "handle": "platform-bases",
             "title": "Platform Bases"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302845952061",
+            "handle": "shop-by-size-california-king",
+            "title": "Shop California King"
+          },
+          {
+            "id": "gid://shopify/Collection/302848114749",
+            "handle": "bedroom-furniture-size-queen",
+            "title": "Queen Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848147517",
+            "handle": "bedroom-furniture-size-king",
+            "title": "King Bedroom Furniture"
+          },
+          {
+            "id": "gid://shopify/Collection/302848180285",
+            "handle": "bedroom-furniture-size-california-king",
+            "title": "California King Bedroom Furniture"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579039608893"
+            "id": "gid://shopify/MediaImage/28579039608893",
+            "alt": "Watson Upholstered Platform Base supporting product view 7",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST_OAWATSPLHeroDrawersFR-DE.jpg?v=1793551152",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039412285",
+            "alt": "Watson Upholstered Platform Base product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTWATSPL-Watson-EN3qtWEBdrawer-3189.jpg?v=1793551152",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039445053",
+            "alt": "Watson Upholstered Platform Base feature detail 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTWATSPL-Watson-ENprofileWEB-3202.jpg?v=1793551152",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039477821",
+            "alt": "Watson Upholstered Platform Base feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTWATSPL-Watson-ENdetailWEBdrawer-3190.jpg?v=1793551153",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039510589",
+            "alt": "Watson Upholstered Platform Base feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTWATSPL-Watson-ENdetailWEBcorner-3180.jpg?v=1793551152",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039543357",
+            "alt": "Watson Upholstered Platform Base supporting product view 5",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTWATSPL-Watson-EN3qtWEBdrawer-3189_cc81dae0-fe49-4b38-899f-0273e60ed975.jpg?v=1793551153",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039576125",
+            "alt": "Watson Upholstered Platform Base in a bedroom setting 6",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/STQQSTWATSPL-Watson-ENstraightdrawerWIDE-3207_3e2ed950-9d1f-4751-9b2c-a58cff7e01d1.jpg?v=1793551152",
+                "width": 1291,
+                "height": 1292
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039641661",
+            "alt": "Watson Upholstered Platform Base supporting product view 8",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ST_CHWATSPL_HeroBase-DE.jpg?v=1793551152",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -26795,10 +30224,14 @@
         "collection:pillows",
         "material:gel-memory-foam",
         "material:memory-foam",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
+        "shop-size:standard",
         "subcategory:foam",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:18Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -26815,6 +30248,41 @@
             "id": "gid://shopify/Collection/302125908029",
             "handle": "foam-pillows",
             "title": "Foam Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845722685",
+            "handle": "shop-by-size-standard",
+            "title": "Shop Standard"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847819837",
+            "handle": "pillows-size-standard",
+            "title": "Standard Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
@@ -27173,10 +30641,13 @@
         "feature:zoned",
         "material:activedough",
         "material:bamboo-charcoal",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:zoned",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:56Z",
+      "updatedAt": "2026-11-11T20:21:18Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -27193,13 +30664,87 @@
             "id": "gid://shopify/Collection/302125842493",
             "handle": "zoned-pillows",
             "title": "Zoned Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579039674429"
+            "id": "gid://shopify/MediaImage/28579039674429",
+            "alt": "Zoned ActiveDough + Bamboo Charcoal Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQMPADZB-ZndActDghBambooCharcoal-ENstraitCROP.jpg?v=1793551153",
+                "width": 1722,
+                "height": 1722
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039707197",
+            "alt": "Zoned ActiveDough + Bamboo Charcoal Pillow supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQMPADZB-ZndActDghBambooCharcoal-ENstraightgroupWEB.jpg?v=1793551153",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039739965",
+            "alt": "Zoned ActiveDough + Bamboo Charcoal Pillow feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/GelActiveDoughImageStack-1.jpg?v=1793551153",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039772733",
+            "alt": "Zoned ActiveDough + Bamboo Charcoal Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/GelActiveDoughImageStack-2a.jpg?v=1793551153",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -27497,10 +31042,13 @@
         "feature:zoned",
         "material:bamboo-charcoal",
         "material:dough-foam",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:zoned",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:19Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -27517,13 +31065,87 @@
             "id": "gid://shopify/Collection/302125842493",
             "handle": "zoned-pillows",
             "title": "Zoned Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579039805501"
+            "id": "gid://shopify/MediaImage/28579039805501",
+            "alt": "Zoned Dough + Bamboo Charcoal Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQMPADZB-ZndActDghBambooCharcoal-EN3qtgroupWEB.jpg?v=1793551153",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039838269",
+            "alt": "Zoned Dough + Bamboo Charcoal Pillow feature detail 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZonedGelDough_ImageStack-1.jpg?v=1793551154",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039871037",
+            "alt": "Zoned Dough + Bamboo Charcoal Pillow feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZonedGelDough_ImageStack-2.jpg?v=1793551153",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039903805",
+            "alt": "Zoned Dough + Bamboo Charcoal Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZonedGelDough_ImageStack-4_8a39d2c5-d65a-4712-a1b5-6980554a4a1e.jpg?v=1793551154",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -27822,10 +31444,13 @@
         "feature:zoned",
         "material:activedough",
         "material:gel",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:temperature-regulating",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:19Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -27842,13 +31467,87 @@
             "id": "gid://shopify/Collection/302125940797",
             "handle": "temperature-regulating-pillows",
             "title": "Temperature Regulating Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579039936573"
+            "id": "gid://shopify/MediaImage/28579039936573",
+            "alt": "Zoned Gel ActiveDough Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQMPADZG-ZndActDghGel-ENstraitCROP.jpg?v=1793551153",
+                "width": 1623,
+                "height": 1623
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579039969341",
+            "alt": "Zoned Gel ActiveDough Pillow supporting product view 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQMPADZB-ZndActDghBambooCharcoal-ENstraightgroupWEB_83f74608-f791-448b-9bda-1947864b28b4.jpg?v=1793551153",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579040002109",
+            "alt": "Zoned Gel ActiveDough Pillow feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/GelActiveDoughImageStack-1_1dd3a98b-d069-4f3d-a06a-6a745e060f42.jpg?v=1793551153",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579040034877",
+            "alt": "Zoned Gel ActiveDough Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/GelActiveDoughImageStack-2a_897d4daa-995b-4f40-abb7-732180a2a457.jpg?v=1793551153",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -28146,10 +31845,13 @@
         "feature:zoned",
         "material:dough-foam",
         "material:gel",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:zoned",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:20Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -28166,13 +31868,87 @@
             "id": "gid://shopify/Collection/302125842493",
             "handle": "zoned-pillows",
             "title": "Zoned Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579040067645"
+            "id": "gid://shopify/MediaImage/28579040067645",
+            "alt": "Zoned Gel Dough Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQMPADZB-ZndActDghBambooCharcoal-EN3qtgroupWEB_bfa9d568-bd67-45b9-ac3f-54327387ea06.jpg?v=1793551154",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579040100413",
+            "alt": "Zoned Gel Dough Pillow feature detail 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZonedGelDough_ImageStack-1_b808546f-43c5-4e19-84e7-1de5dee4d6f5.jpg?v=1793551154",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579040133181",
+            "alt": "Zoned Gel Dough Pillow feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZonedGelDough_ImageStack-2_78e495bb-8773-442b-b3cf-1996fbb7df2d.jpg?v=1793551154",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579040165949",
+            "alt": "Zoned Gel Dough Pillow feature detail 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZonedGelDough_ImageStack-4.jpg?v=1793551154",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },
@@ -28785,10 +32561,13 @@
         "collection:pillows",
         "feature:zoned",
         "material:talalay-latex",
+        "shop-by-size:true",
+        "shop-size:king",
+        "shop-size:queen",
         "subcategory:foam",
         "type:pillow"
       ],
-      "updatedAt": "2026-11-08T04:47:55Z",
+      "updatedAt": "2026-11-11T20:21:20Z",
       "category": {
         "id": "gid://shopify/TaxonomyCategory/hg-15-1-9",
         "name": "Pillows",
@@ -28805,13 +32584,87 @@
             "id": "gid://shopify/Collection/302125908029",
             "handle": "foam-pillows",
             "title": "Foam Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302845689917",
+            "handle": "shop-by-size",
+            "title": "Shop by Size"
+          },
+          {
+            "id": "gid://shopify/Collection/302845886525",
+            "handle": "shop-by-size-queen",
+            "title": "Shop Queen"
+          },
+          {
+            "id": "gid://shopify/Collection/302845919293",
+            "handle": "shop-by-size-king",
+            "title": "Shop King"
+          },
+          {
+            "id": "gid://shopify/Collection/302847852605",
+            "handle": "pillows-size-queen",
+            "title": "Queen Pillows"
+          },
+          {
+            "id": "gid://shopify/Collection/302847885373",
+            "handle": "pillows-size-king",
+            "title": "King Pillows"
           }
         ]
       },
       "media": {
         "nodes": [
           {
-            "id": "gid://shopify/MediaImage/28579040198717"
+            "id": "gid://shopify/MediaImage/28579040198717",
+            "alt": "Zoned Talalay Latex Pillow product view",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQHPLX-talalaylatexpillow-ENcroppednocover3qtWEB.jpg?v=1793551154",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579040231485",
+            "alt": "Zoned Talalay Latex Pillow feature detail 2",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZ_LX-LatexImageStack-1.jpg?v=1793551155",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579040264253",
+            "alt": "Zoned Talalay Latex Pillow feature detail 3",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZ_LX-LatexImageStack-2.jpg?v=1793551155",
+                "width": 2000,
+                "height": 2000
+              }
+            }
+          },
+          {
+            "id": "gid://shopify/MediaImage/28579040297021",
+            "alt": "Zoned Talalay Latex Pillow supporting product view 4",
+            "mediaContentType": "IMAGE",
+            "status": "READY",
+            "preview": {
+              "image": {
+                "url": "https://cdn.shopify.com/s/files/1/0590/9807/1101/files/ZZQQHPLX-talalaylatexpillow-ENcroppednocoverstraightWEB.jpg?v=1793551155",
+                "width": 2000,
+                "height": 2000
+              }
+            }
           }
         ]
       },

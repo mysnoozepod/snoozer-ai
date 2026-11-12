@@ -60,37 +60,31 @@ window.SnoozePodSizeCollections = {
       "label": "Split Head Queen",
       "slug": "split-head-queen",
       "handle": "shop-by-size-split-head-queen",
-      "productCount": 10
+      "productCount": 6
     },
     {
       "label": "Split Head King",
       "slug": "split-head-king",
       "handle": "shop-by-size-split-head-king",
-      "productCount": 10
+      "productCount": 6
     },
     {
       "label": "Split Head California King",
       "slug": "split-head-california-king",
       "handle": "shop-by-size-split-head-california-king",
-      "productCount": 10
+      "productCount": 6
     },
     {
       "label": "Split King",
       "slug": "split-king",
       "handle": "shop-by-size-split-king",
-      "productCount": 7
+      "productCount": 5
     },
     {
       "label": "Split California King",
       "slug": "split-california-king",
       "handle": "shop-by-size-split-california-king",
-      "productCount": 8
-    },
-    {
-      "label": "Twin XL x 2",
-      "slug": "twin-xl-x-2",
-      "handle": "shop-by-size-twin-xl-x-2",
-      "productCount": 1
+      "productCount": 6
     }
   ],
   "categories": [
@@ -134,42 +128,6 @@ window.SnoozePodSizeCollections = {
           "slug": "california-king",
           "handle": "mattresses-size-california-king",
           "productCount": 4
-        },
-        {
-          "label": "Split Head Queen",
-          "slug": "split-head-queen",
-          "handle": "mattresses-size-split-head-queen",
-          "productCount": 4
-        },
-        {
-          "label": "Split Head King",
-          "slug": "split-head-king",
-          "handle": "mattresses-size-split-head-king",
-          "productCount": 4
-        },
-        {
-          "label": "Split Head California King",
-          "slug": "split-head-california-king",
-          "handle": "mattresses-size-split-head-california-king",
-          "productCount": 4
-        },
-        {
-          "label": "Split King",
-          "slug": "split-king",
-          "handle": "mattresses-size-split-king",
-          "productCount": 2
-        },
-        {
-          "label": "Split California King",
-          "slug": "split-california-king",
-          "handle": "mattresses-size-split-california-king",
-          "productCount": 2
-        },
-        {
-          "label": "Twin XL x 2",
-          "slug": "twin-xl-x-2",
-          "handle": "mattresses-size-twin-xl-x-2",
-          "productCount": 1
         }
       ]
     },

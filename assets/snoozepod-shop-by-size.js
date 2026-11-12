@@ -25,6 +25,11 @@
     }) || null;
   }
 
+  function systemOnlyMattressSize(value) {
+    const normalized = normalizeSize(value);
+    return Boolean(normalized && (/^Split Head /i.test(normalized) || /^Split (King|California King)$/i.test(normalized) || /^Twin XL x 2$/i.test(normalized)));
+  }
+
   function selectedSizeFromSearch(search) {
     const params = new URLSearchParams(search || "");
     const explicit = normalizeSize(params.get("size"));
@@ -136,7 +141,8 @@
     let visibleCount = 0;
     cards.forEach(function (card) {
       const match = selectedSize ? eligibleVariant(parseVariants(card), selectedSize) : null;
-      const visible = !selectedSize || Boolean(match);
+      const standaloneMattressBlocked = card.dataset.productType === "mattress" && systemOnlyMattressSize(selectedSize);
+      const visible = !standaloneMattressBlocked && (!selectedSize || Boolean(match));
       card.hidden = !visible;
       if (visible) visibleCount += 1;
       setCardLinks(card, match, selectedSize);
@@ -179,5 +185,5 @@
     else init();
   }
 
-  return { normalizeSize: normalizeSize, shopSizeLabels: shopSizeLabels, eligibleVariant: eligibleVariant, selectedSizeFromSearch: selectedSizeFromSearch, productUrlForVariant: productUrlForVariant, collectionContext: collectionContext };
+  return { normalizeSize: normalizeSize, shopSizeLabels: shopSizeLabels, eligibleVariant: eligibleVariant, systemOnlyMattressSize: systemOnlyMattressSize, selectedSizeFromSearch: selectedSizeFromSearch, productUrlForVariant: productUrlForVariant, collectionContext: collectionContext };
 });

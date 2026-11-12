@@ -5,6 +5,8 @@
   - product: {Object} product object.
   - block: {Object} passing the block information.
   - product_form_id: {String} Id of the product form to which the variant picker is associated.
+  - exclude_system_mattress_sizes: {Boolean} Hides system-only mattress geometries.
+  - selected_variant_override: {Object} Optional safe initial variant.
   Usage:
   {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
 {% endcomment %}
@@ -39,7 +41,9 @@
             product: product,
             option: option,
             block: block,
-            picker_type: picker_type
+            picker_type: picker_type,
+            exclude_system_mattress_sizes: exclude_system_mattress_sizes,
+            selected_variant_override: selected_variant_override
           %}
         </fieldset>
       {%- elsif picker_type == 'button' -%}
@@ -49,7 +53,9 @@
             product: product,
             option: option,
             block: block,
-            picker_type: picker_type
+            picker_type: picker_type,
+            exclude_system_mattress_sizes: exclude_system_mattress_sizes,
+            selected_variant_override: selected_variant_override
           %}
         </fieldset>
       {%- else -%}
@@ -76,7 +82,9 @@
                 product: product,
                 option: option,
                 block: block,
-                picker_type: picker_type
+                picker_type: picker_type,
+                exclude_system_mattress_sizes: exclude_system_mattress_sizes,
+                selected_variant_override: selected_variant_override
               %}
             </select>
             <span class="svg-wrapper">
@@ -88,7 +96,7 @@
     {%- endfor -%}
 
     <script type="application/json" data-selected-variant>
-      {{ product.selected_or_first_available_variant | json }}
+      {{ selected_variant_override | default: product.selected_or_first_available_variant | json }}
     </script>
   </variant-selects>
 {%- endunless -%}

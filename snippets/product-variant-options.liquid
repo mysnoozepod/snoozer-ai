@@ -6,6 +6,8 @@
   - option: {Object} current product_option object.
   - block: {Object} block object.
   - picker_type: {String} type of picker to dispay
+  - exclude_system_mattress_sizes: {Boolean} Hides system-only mattress geometries.
+  - selected_variant_override: {Object} Optional safe initial variant.
 
 
   Usage:
@@ -22,6 +24,17 @@
 
 {%- for value in option.values -%}
   {%- liquid
+    assign option_name_normalized = option.name | downcase
+    assign system_only_value = false
+    if exclude_system_mattress_sizes and product.type == 'Mattress' and option_name_normalized == 'size' and value contains 'Split'
+      assign system_only_value = true
+    endif
+    if system_only_value
+      continue
+    endif
+
+    assign option_index = option.position | minus: 1
+    assign selected_override_value = selected_variant_override.options[option_index]
     assign swatch_focal_point = null
     if value.swatch.image
       assign image_url = value.swatch.image | image_url: width: 50
@@ -71,7 +84,9 @@
       name="{{ input_name | escape }}"
       value="{{ value | escape }}"
       form="{{ product_form_id }}"
-      {% if value.selected %}
+      {% if selected_variant_override != blank and value == selected_override_value %}
+        checked
+      {% elsif selected_variant_override == blank and value.selected %}
         checked
       {% endif %}
       {% if option_disabled %}
@@ -87,7 +102,9 @@
     <option
       id="{{ input_id }}"
       value="{{ value | escape }}"
-      {% if value.selected %}
+      {% if selected_variant_override != blank and value == selected_override_value %}
+        selected="selected"
+      {% elsif selected_variant_override == blank and value.selected %}
         selected="selected"
       {% endif %}
       {% if swatch_value and picker_type == 'swatch_dropdown' %}

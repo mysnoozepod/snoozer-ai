@@ -8,26 +8,41 @@
     <header class="snoozepod-bundles__hero">
       <div>
         <h1>{{ page.title | default: 'Sleep Systems' | escape }}</h1>
-        <p class="snoozepod-bundles__lede">Choose your mattress, size, and adjustable base. Each product remains a real Shopify item with its own variant, price, and cart line.</p>
+        <p class="snoozepod-bundles__lede">Choose how you want your bed to move, then explore only the mattresses, sizes, and adjustable bases that belong together.</p>
       </div>
     </header>
 
     <div class="snoozepod-bundles__group" id="sleep-systems">
       <div class="snoozepod-bundles__group-heading">
         <p class="snoozepod-bundles__eyebrow">Mattress + adjustable base</p>
-        <h2>Sleep Systems</h2>
-        <p>Standard sizes pair by exact size. Split-head mattresses pair only with Flex SH. Split King uses two Twin XL mattresses and two Twin XL bases.</p>
+        <h2>How should your bed work?</h2>
+        <p>Start with the system geometry. We will keep the remaining choices compatible.</p>
+      </div>
+
+      <div class="snoozepod-system-paths" aria-label="Choose a sleep-system type">
+        <button class="snoozepod-system-path" type="button" data-system-path="standard" aria-pressed="false">
+          <span class="snoozepod-system-path__kicker">Standard</span>
+          <strong>One mattress. One base.</strong>
+          <span>A familiar sleep surface with adjustable positioning.</span>
+        </button>
+        <button class="snoozepod-system-path snoozepod-system-path--featured" type="button" data-system-path="split_head" aria-pressed="true">
+          <span class="snoozepod-system-path__kicker">Featured in Pods 2 &amp; 3</span>
+          <strong>Split-Head Sleep System</strong>
+          <span>A shared mattress with independent head positioning on Flex SH.</span>
+        </button>
+        <button class="snoozepod-system-path" type="button" data-system-path="full_split" aria-pressed="false">
+          <span class="snoozepod-system-path__kicker">Fully independent</span>
+          <strong>Split King Sleep System</strong>
+          <span>Two Twin XL mattresses and two Twin XL adjustable bases.</span>
+        </button>
+      </div>
+
+      <div class="snoozepod-bundles__selection-heading" aria-live="polite">
+        <p class="snoozepod-bundles__eyebrow" data-system-path-kicker>Signature system</p>
+        <h2 data-system-path-heading tabindex="-1">Split-Head Sleep Systems</h2>
+        <p data-system-path-copy>Choose a split-head mattress size. The compatible Flex SH base is selected with it.</p>
       </div>
       <div class="snoozepod-bundles__grid" data-bundle-grid="SLEEP_SYSTEM"></div>
-    </div>
-
-    <div class="snoozepod-bundles__group" id="bedding-sets">
-      <div class="snoozepod-bundles__group-heading">
-        <p class="snoozepod-bundles__eyebrow">Exact component variants</p>
-        <h2>Bedding Sets</h2>
-        <p>Choose the size and available product options. Each component is checked against live Shopify product data before it is added.</p>
-      </div>
-      <div class="snoozepod-bundles__grid" data-bundle-grid="BEDDING_SET"></div>
     </div>
 
     <div class="snoozepod-bundles__status" data-bundle-cart-status role="status" aria-live="assertive" aria-atomic="true" tabindex="-1" hidden></div>

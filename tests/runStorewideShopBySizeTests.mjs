@@ -15,11 +15,11 @@ function equal(actual, expected, message) { assert.equal(actual, expected, messa
 equal(inventory.summary.products, 43);
 equal(inventory.summary.variants, 274);
 equal(manifest.summary.taggedProducts, 42);
-equal(manifest.summary.storewideSizes, 15);
+equal(manifest.summary.storewideSizes, 14);
 equal(manifest.summary.categories, 9);
-equal(manifest.summary.collections, 77);
-equal(manifest.summary.excludedOneSizeVariants, 1);
-equal(new Set(manifest.collections.map((collection) => collection.handle)).size, 77, 'collection handles are unique');
+equal(manifest.summary.collections, 70);
+equal(manifest.summary.excludedOneSizeVariants, 18);
+equal(new Set(manifest.collections.map((collection) => collection.handle)).size, 70, 'collection handles are unique');
 check(manifest.collections.every((collection) => collection.productHandles.length > 0), 'no empty collections are generated');
 check(manifest.collections.every((collection) => collection.rules.every((rule) => rule.column === 'TAG' && rule.relation === 'EQUALS')), 'all automated membership rules use exact tags');
 check(!manifest.collections.some((collection) => collection.sizeLabel === 'One Size'), 'One Size is not exposed as a collection');
@@ -45,10 +45,11 @@ for (const collection of manifest.collections) {
   }
 }
 
-equal(sizeMap.storewide.length, 15);
+equal(sizeMap.storewide.length, 14);
 equal(sizeMap.categories.length, 9);
 check(sizeMap.storewide.some((size) => size.label === 'Texas King'), 'Texas King is included because a live variant supports it');
-check(sizeMap.storewide.some((size) => size.label === 'Twin XL x 2'), 'Twin XL x 2 remains an exact distinct configuration');
+check(!sizeMap.categories.find((category) => category.key === 'mattresses').sizes.some((size) => /^Split|Twin XL x 2/.test(size.label)), 'system-only mattress geometries are absent from standalone mattress collections');
+check(manifest.excluded.some((entry) => /System-only mattress geometry/.test(entry.reason)), 'system-only mattress exclusions are documented');
 check(sizeMap.categories.find((category) => category.key === 'pillows').sizes.some((size) => size.label === 'Standard'), 'Standard pillow routing exists');
 check(sizeMap.categories.find((category) => category.key === 'bedroom-furniture').sizes.some((size) => size.label === 'California King'), 'furniture size routing exists');
 
