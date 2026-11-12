@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0.0",
+  "publishedAt": "2026-11-12T01:30:55-05:00",
+  "store": "mysnoozepodtest.myshopify.com",
+  "storefront": "https://mysnoozepod.com",
+  "sourceCommit": "2ddce9a9f29a7f328f8bc5da2e09460ad73a0b52",
+  "publishedTheme": {
+    "id": 139216420925,
+    "name": "snoozer-ai/main",
+    "role": "main"
+  },
+  "previousTheme": {
+    "id": 139460542525,
+    "name": "snoozer-ai/main",
+    "role": "unpublished",
+    "rollbackAvailable": true
+  },
+  "prePublicationBackup": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\curated-bundles\\2026-11-12T06-25-50-566Z",
+  "verification": {
+    "adminRoleReadback": true,
+    "liveRoutes": [
+      "https://mysnoozepod.com/",
+      "https://mysnoozepod.com/pages/sleep-systems?system=split_head#sleep-systems",
+      "https://mysnoozepod.com/collections/shop-by-size-king"
+    ],
+    "blockingRenderErrorsObserved": false
+  },
+  "scope": {
+    "themeRolesChanged": true,
+    "productsChanged": 0,
+    "variantsChanged": 0,
+    "ordersCreated": 0,
+    "checkoutsSubmitted": 0,
+    "backendChanged": false,
+    "awsConfigurationChanged": false
+  }
+}

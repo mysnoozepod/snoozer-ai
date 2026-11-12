@@ -1,6 +1,6 @@
 # MySnoozePod.com Decision Register
 
-Last updated: 2026-11-12 — Curated system pathways and six-Pod showroom presentation
+Last updated: 2026-11-12 — Validated storefront theme publication
 
 ## Confirmed owner decisions and constraints
 
@@ -94,6 +94,7 @@ Last updated: 2026-11-12 — Curated system pathways and six-Pod showroom presen
 | D-086 | Sleep Systems are curated first by geometry: Standard, featured Split Head, and Split King. Split Head uses Flex SH; Split King uses two Twin XL mattress units plus two Twin XL Flex L or Flex LSX bases; bedding sets do not share this primary decision surface. | **OWNER DIRECTIVE / IMPLEMENTED AND PREVIEW-VERIFIED** — 2026-11-12. |
 | D-087 | The six showroom Pods are: Pod 1 memory foam Queen/Flex L; Pod 2 hybrid Half-Split Queen/Flex SH; Pod 3 12-inch Dual Comfort Half-Split King/Flex SH/Soft-Firm; Pod 4 12-inch Dual Comfort Split King/Flex LSX/Medium Soft-Medium Firm; Pod 5 14-inch Dual Comfort King/Flex LSX/Soft-Firm; Pod 6 14-inch Dual Comfort Queen/Flex LSX/Medium Soft-Medium Firm. Dual Comfort products therefore represent two physical floor positions each. | **OWNER DIRECTIVE / STRUCTURED SHOPIFY DATA AND STOREFRONT BADGES IMPLEMENTED** — 2026-11-12. |
 | D-088 | Product and collection lead media should be clean product/lifestyle photography without embedded marketing text when a verified existing alternative is available. Text-heavy manufacturer graphics may remain secondary. | **OWNER DIRECTIVE / SHEET-SET LEAD MEDIA REORDERED WITHOUT DELETION** — 2026-11-12. |
+| D-089 | Publish validated theme `139216420925` as the live storefront. Preserve former published theme `139460542525` as an unpublished rollback option and record the role swap and live-route verification. | **OWNER DIRECTIVE / PUBLISHED AND VERIFIED** — 2026-11-12. |
 
 ## Verified architectural and operational facts
 

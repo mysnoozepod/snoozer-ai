@@ -1,9 +1,21 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-12 — Curated Sleep Systems, six-Pod showroom map, and product-first size shopping staged and preview-verified
+Last updated: 2026-11-12 — Validated storefront theme published and live-route verified
 Owner: Ty  
 Implementer: Codi  
-Current phase: The approved storefront strategy is implemented on the existing unpublished theme; publication and controlled cart acceptance remain separately gated
+Current phase: The approved storefront strategy is live on published theme `139216420925`; controlled system-cart acceptance remains the next bounded task
+
+## Theme publication — 2026-11-12
+
+- Ty explicitly authorized publication of the validated theme.
+- Shopify GraphQL `themePublish` promoted theme `139216420925` (`snoozer-ai/main`) to role `main` at `2026-11-12T01:30:55-05:00`.
+- Former published theme `139460542525` moved to role `unpublished` and remains available as the immediate rollback theme.
+- Pre-publication recovery snapshot was verified at `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\curated-bundles\2026-11-12T06-25-50-566Z`, including both theme asset trees and recovery instructions.
+- Live browser verification passed on `https://mysnoozepod.com/`, `/pages/sleep-systems?system=split_head#sleep-systems`, and `/collections/shop-by-size-king`. The expected navigation, curated geometry paths, products-first size layout, clean lead media, prices, and Pod badges rendered without an observed blocking error.
+- No product, variant, price, inventory, collection, order, checkout, discount, Snoozer backend, or AWS configuration changed during publication.
+- Durable publication evidence: `docs/theme-publication/THEME_PUBLICATION_READBACK.json`.
+- Safety note: the completed staging scripts intentionally hardcode the pre-publication role boundary and will now fail closed. Before the next theme change, rebase those role/ID assertions against the new published theme and create or select an explicitly authorized unpublished development target. Do not treat former theme `139460542525` as a development target without a fresh decision.
+- Exact next action: controlled live-store development-cart acceptance for one Standard, one Split Head, and one Split King system without checkout/order submission, followed by reconciliation evidence.
 
 ## Curated storefront strategy implementation — 2026-11-12
 

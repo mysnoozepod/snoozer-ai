@@ -1,7 +1,17 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-12 — Curated storefront strategy staged and preview-verified
-Queue state: Products lead all collection and size routes; unfinished Find Your Fit content is removed; standalone mattress shopping excludes system-only split geometry; curated Standard, Split Head, and Split King pathways plus the six-Pod showroom map are implemented on unpublished theme `139216420925`. Theme publication remains gated.
+Last updated: 2026-11-12 — Validated storefront theme published and live-route verified
+Queue state: Products lead all collection and size routes; unfinished Find Your Fit content is removed; standalone mattress shopping excludes system-only split geometry; curated Standard, Split Head, and Split King pathways plus the six-Pod showroom map are live on published theme `139216420925`.
+
+### Theme publication
+
+- **Status:** PUBLISHED AND LIVE-ROUTE-VERIFIED.
+- **Published:** theme `139216420925` (`snoozer-ai/main`) is Shopify role `main`.
+- **Rollback:** former main theme `139460542525` is role `unpublished`; the verified pre-publication recovery snapshot is recorded in `HANDOFF.md`.
+- **Live checks:** homepage, Split-Head Sleep Systems, and King-size collection rendered the expected navigation, product hierarchy, system restrictions, pricing, media, and Pod badges.
+- **Safety:** publication changed theme roles only; no catalog, order, checkout, backend, AWS configuration, or Git source mutation occurred.
+- **Staging boundary:** existing staging scripts now fail closed because their pre-publication role assertions are historical. Rebase them before any future theme staging operation.
+- **Next:** controlled cart acceptance for Standard, Split Head, and Split King systems without submitting checkout or an order.
 
 ### Curated storefront strategy and showroom Pods
 
