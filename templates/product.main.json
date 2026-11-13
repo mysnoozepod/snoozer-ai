@@ -69,6 +69,7 @@
     },
     "guide": {
       "type": "snoozer-product-guide",
+      "disabled": true,
       "settings": {
         "heading": "Need Help Choosing?",
         "body": "Ask Snoozer to compare comfort, support, cooling, and how this fits your sleep environment.",
@@ -193,20 +194,21 @@
       "type": "snoozepod-product-cta",
       "settings": {
         "heading": "Want to compare it in person?",
-        "body": "Ask Snoozer for product guidance now, or schedule a private visit when you are ready to compare the feel in the showroom.",
-        "primary_label": "Ask Snoozer",
-        "secondary_label": "Book a Snooze Session",
-        "secondary_link": "/pages/book-a-snooze-session",
-        "show_secondary": true
+        "body": "Schedule a private Snooze Session when you are ready to compare this product in the showroom.",
+        "primary_label": "Book a Snooze Session",
+        "primary_link": "/pages/book-a-snooze-session",
+        "secondary_label": "",
+        "secondary_link": "",
+        "show_secondary": false
       }
     }
   },
   "order": [
     "hero",
-    "guide",
     "details",
     "pairing",
     "related-products",
-    "final-cta"
+    "final-cta",
+    "guide"
   ]
 }

@@ -31,8 +31,7 @@ const homeOrder = home.order;
 check(home.sections.image_with_text_hVQzdT.settings.primary_cta_link === 'shopify://pages/book-a-snooze-session', 'Homepage hero must lead to booking.');
 check(home.sections.image_with_text_hVQzdT.settings.secondary_cta_link === 'shopify://collections/mattresses', 'Homepage secondary CTA must lead to mattresses.');
 check(home.sections.image_with_text_wUxjfL.disabled === true, 'The redundant homepage booking explainer must stay disabled while its editor-managed section remains recoverable.');
-check(homeOrder.indexOf('mattress-showcase') < homeOrder.indexOf('guided-shopping'), 'Mattress browsing must precede optional tools.');
-check(homeOrder.indexOf('meet-snoozer') < homeOrder.indexOf('guided-shopping'), 'Meet Snoozer must precede optional tools.');
+check(home.sections['guided-shopping'].disabled === true && home.sections['meet-snoozer'].disabled === true, 'Homepage must defer unfinished guidance surfaces until the backend phase.');
 check(home.sections['mattress-showcase'].block_order.length === 4, 'Homepage must expose the four mattress models.');
 check(new Set(Object.values(home.sections['mattress-showcase'].blocks).map((block) => block.settings.product)).size === 4, 'Homepage mattress cards must point to four distinct products.');
 
@@ -40,7 +39,7 @@ const header = read('sections/header.liquid');
 check(!header.includes('class="header__book-link"'), 'Header must not duplicate the booking action already present in the announcement bar.');
 check(!header.includes('header__guest-checkin') && !header.includes('data-snooze-checkin-form'), 'Header must not expose Check In on desktop or mobile.');
 check(header.includes('.header__heading-logo { max-width: 18rem; }'), 'Mobile logo must use the enlarged 18rem presentation.');
-check(header.includes('data-snoozer-source="header-desktop"') && header.includes('data-snoozer-source="header-mobile"'), 'Ask Snoozer must remain available on desktop and mobile.');
+check(!header.includes('{{ ask_snoozer_desktop }}') && !header.includes('{{ ask_snoozer_mobile }}'), 'Dormant Ask Snoozer markup must not render in the header.');
 
 const collection = json('templates/collection.snoozepod-v1.json');
 check(collection.order.join('|') === 'banner|product-grid|category-navigation', 'Collection pages must be title, products, then Shop by Category.');
@@ -59,7 +58,7 @@ check(productBlockOrder.indexOf('feel') === productBlockOrder.indexOf('price') +
 check(product.order.includes('related'), 'Product template must include related products.');
 check(product.order.at(-1) === 'final-cta', 'Product booking guidance must remain at the page tail.');
 check(product.sections['final-cta'].settings.primary_label === 'Book a Snooze Session', 'Booking must be the primary page-tail action.');
-check(product.sections['final-cta'].settings.secondary_label === 'Ask Snoozer', 'Ask Snoozer must remain the secondary page-tail action.');
+check(product.sections['final-cta'].settings.show_secondary === false, 'Product page tail must keep one focused booking action.');
 check(!read('templates/product.snoozepod-v1.json').toLowerCase().includes('pod builder'), 'Product template must not reintroduce the retired Pod Builder.');
 const productHero = read('sections/snoozepod-product-hero.liquid');
 check(productHero.includes('Left Side Comfort') && productHero.includes('Right Side Comfort'), 'Dual Comfort must preserve independent left/right controls.');

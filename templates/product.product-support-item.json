@@ -109,11 +109,12 @@
       "type": "snoozepod-product-cta",
       "settings": {
         "heading": "Want to compare it in person?",
-        "body": "Ask Snoozer for product guidance now, or schedule a private visit when you are ready to compare it in the showroom.",
-        "primary_label": "Ask Snoozer",
-        "secondary_label": "Book a Snooze Session",
-        "secondary_link": "/pages/book-a-snooze-session",
-        "show_secondary": true
+        "body": "Schedule a private Snooze Session when you are ready to compare this product in the showroom.",
+        "primary_label": "Book a Snooze Session",
+        "primary_link": "/pages/book-a-snooze-session",
+        "secondary_label": "",
+        "secondary_link": "",
+        "show_secondary": false
       }
     }
   },

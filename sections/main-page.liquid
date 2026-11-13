@@ -361,36 +361,15 @@
       </div>
     {%- endif -%}
 
-    {%- if content_image_asset != blank -%}
+    {%- if content_image_asset != blank and page_key != 'sleep-guides' -%}
       <div class="content-guide-after{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
-        {%- unless page_key == 'sleep-guides' -%}
-          <nav class="content-guide-discovery" aria-label="Explore more sleep guides">
-            <h2>Explore more sleep guides</h2>
-            <p>Continue with the topic closest to your next sleep-system decision.</p>
-            <div class="content-guide-discovery__links">
-              <a href="/pages/sleep-guides#snoozepod-experience">Showroom &amp; Snooze Sessions</a>
-              <a href="/pages/sleep-guides#building-a-sleep-system">Building a Sleep System</a>
-              <a href="/pages/sleep-guides#dual-comfort-and-couples">Dual Comfort &amp; Couples</a>
-              <a href="/pages/sleep-guides#mattress-education">Mattress Education</a>
-              <a href="/pages/sleep-guides#adjustable-bases-and-compatibility">Adjustable Bases</a>
-              <a href="/pages/sleep-guides#pillows-protection-and-bedding">Pillows &amp; Bedding</a>
-            </div>
-          </nav>
-        {%- endunless -%}
-
-        <aside class="content-guide-conversion" aria-labelledby="ContentGuideConversion-{{ section.id }}">
-          <h2 id="ContentGuideConversion-{{ section.id }}">Ready to compare your options?</h2>
-          <p>Turn what you learned into a focused, pressure-free Snooze Session in the showroom or virtually.</p>
-          <div class="content-guide-conversion__actions">
-            <a class="button button--primary" href="/pages/book-a-snooze-session">Book a Snooze Session</a>
-            <a
-              class="button button--secondary"
-              href="#"
-              data-snoozer-trigger
-              data-snoozer-context="{{ page.title | escape }}"
-            >Ask Snoozer</a>
+        <nav class="content-guide-discovery" aria-label="Explore more sleep guides">
+          <h2>Continue exploring</h2>
+          <p>Browse the complete guide library by showroom experience, mattresses, sleep systems, adjustable bases, and bedding.</p>
+          <div class="content-guide-discovery__links">
+            <a href="/pages/sleep-guides">Browse all sleep guides</a>
           </div>
-        </aside>
+        </nav>
       </div>
     {%- endif -%}
   </div>

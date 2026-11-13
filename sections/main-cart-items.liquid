@@ -29,19 +29,19 @@
   <div class="page-width">
     <div class="title-wrapper-with-link cart__title-shell">
       <div class="cart__title-copy">
-        <h1 class="title title--primary cart__title-heading">Review Your Sleep Investment</h1>
+        <h1 class="title title--primary cart__title-heading">Your Cart</h1>
         <p class="cart__title-subtext">
-          Review your pod, explore your options, and continue with confidence.
+          Review your selected products and configurations before checkout.
         </p>
       </div>
-      <a href="{{ routes.all_products_collection_url }}" class="underlined-link cart__continue-link">
+      <a href="/collections" class="underlined-link cart__continue-link">
         {{- 'general.continue_shopping' | t -}}
       </a>
     </div>
 
     <div class="cart__warnings">
       <h1 class="cart__empty-text">{{ 'sections.cart.empty' | t }}</h1>
-      <a href="{{ routes.all_products_collection_url }}" class="button">
+      <a href="/collections" class="button">
         {{ 'general.continue_shopping' | t }}
       </a>
 
@@ -60,7 +60,7 @@
             <div class="cart__table-shell">
               <table class="cart-items">
                 <caption class="visually-hidden">
-                  Review Your Sleep Investment
+                  Shopping cart
                 </caption>
                 <thead>
                   <tr>

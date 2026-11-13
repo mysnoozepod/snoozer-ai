@@ -1,9 +1,22 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-12 — Live Sleep System configurator corrected and Shopify-readback-verified
+Last updated: 2026-11-13 — Live storefront polish pass 1 implemented and browser-verified
 Owner: Ty  
 Implementer: Codi  
-Current phase: The approved storefront strategy and corrected Sleep System configurator are live on published theme `139216420925`; controlled live-cart acceptance remains the next bounded task
+Current phase: The simplified storefront hierarchy and corrected Sleep System configurator are live on published theme `139216420925`; controlled live-cart acceptance remains the next bounded task
+
+## Live storefront polish pass 1 — 2026-11-13
+
+- Simplified the live homepage to one deliberate sequence: hero, value strip, mattress lineup, Sleep Systems handoff, and non-mattress collection discovery. Dormant Snoozer/tool/trust sections remain recoverable in the Shopify editor but are disabled.
+- Removed rendered Ask Snoozer controls from the desktop/mobile header, product templates, content-page onward paths, and cart. This is a frontend deferral only; no Snoozer backend, API, AWS, identity, or product-knowledge contract changed.
+- Product Page v1 retains its native gallery, variant selector, authoritative price, Add to Cart, Product Feel, and one concise Pod badge. The lower page CTA is now one secondary booking action. Duplicate showroom details were removed and raw structured feature labels are customer-cased.
+- Storewide size collections now expose only nonempty category-size shortcuts above the native filters and products. Exact variant links/prices remain authoritative. The mobile mattress collection uses one premium card per row; mixed storewide size collections retain the denser two-column product view.
+- Cart hierarchy is now `Your Cart` → items → order summary → Checkout. Repeated Snoozer/trust/booking modules were removed, the mobile shell was tightened, checkout remains native/enabled, and existing cart data was not changed.
+- Sleep Systems behavior was preserved: four system cards, working size/base dropdowns, Flex SH only for Split Head, independent left/right Dual Comfort controls, and reconciled multi-line cart submission. System badges now say `Mattress on display: Pod ...` so they do not imply the currently configured geometry is the exact floor setup.
+- Published theme `139216420925` received exactly 17 allowlisted assets. Shopify readback matched all 17; recovery theme `139460542525` was hash-verified unchanged. Private recovery backup: `C:\Users\1ones\OneDrive\Documents\ChatGPT\Private Backups\Shopify\storefront-polish-pass-1\2026-11-13T20-04-04-189Z`. Durable evidence: `docs/storefront-polish-pass-1/SHOPIFY_READBACK.json`.
+- Automated validation passed: polish pass `31`; Product Page/collection contract `69`; Product Page v2 `27`; website experience `45`; storefront strategy `25`; P1-002 contract `34` groups; guided shopping contract; JavaScript syntax; whitespace ignoring the repository's committed CRLF line endings.
+- Actual live browser QA passed on desktop and `430px` mobile for homepage, Shop King, 12-inch Dual Comfort, Sleep Systems, a managed guide, and cart. No document-level horizontal overflow or browser warning/error was observed. Add to Cart and Checkout were inspected but not submitted; no cart mutation, checkout, or order was created.
+- Exact next action: run controlled live cart acceptance for one Standard, one Dual Comfort, one Split Head, and one Split King Sleep System, verifying exact variants, quantities, properties, totals, and reconciliation without checkout or order submission.
 
 ## Live Sleep System configurator correction — 2026-11-12
 

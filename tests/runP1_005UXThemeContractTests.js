@@ -71,14 +71,14 @@ for (const template of [productTemplate, productV1Template]) {
   assert(!hero.block_order.includes('booking'), 'Product Page v1 keeps booking out of the primary purchase controls');
   assert(hero.block_order.indexOf('buy_buttons') === hero.block_order.indexOf('variant_picker') + 1, 'Add to Cart is the focal action immediately after variant selection');
   assert(hero.block_order.includes('feel'), 'Product Page v1 includes the verified Product Feel block');
-  assert(hero.block_order.includes('snoozer'), 'Product Page v1 includes Ask Snoozer');
+  assert(!hero.block_order.includes('snoozer'), 'Product Page v1 defers Ask Snoozer until the backend phase');
   assert(hero.block_order.includes('showroom'), 'Product Page v1 supports structured showroom location');
   assert(template.sections.information.type === 'snoozepod-product-information-v1', 'Product Page v1 uses reusable information accordions');
 }
 
 assert(productV1Template.sections.hero.block_order.indexOf('feel') === productV1Template.sections.hero.block_order.indexOf('price') + 1, 'verified Product Feel is subtle and adjacent to price on the refined product template');
 assert(productV1Template.sections['final-cta'].settings.primary_label === 'Book a Snooze Session', 'booking is the primary page-tail action on Product Page v1');
-assert(productV1Template.sections['final-cta'].settings.secondary_label === 'Ask Snoozer', 'Ask Snoozer remains the secondary page-tail guidance action');
+assert(productV1Template.sections['final-cta'].settings.show_secondary === false, 'Product Page v1 keeps one focused page-tail booking action');
 
 assert(productHero.includes("render 'product-media-gallery'"), 'product hero preserves native gallery and thumbnails');
 assert(productHero.includes("render 'product-variant-picker'"), 'product hero preserves native variant selectors');

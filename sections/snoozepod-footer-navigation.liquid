@@ -15,7 +15,7 @@
 
 <section class="footer-navigation footer-navigation-{{ section.id }}">
   <div class="page-width">
-    {%- unless request.page_type == 'product' or request.page_type == 'collection' or page.handle == 'book-a-snooze-session' -%}
+    {%- unless request.page_type == 'product' or request.page_type == 'collection' or request.page_type == 'cart' or page.handle == 'book-a-snooze-session' -%}
       <div class="footer-navigation__booking">
         <div class="footer-navigation__booking-copy">
           <h2>{{ section.settings.heading | escape }}</h2>

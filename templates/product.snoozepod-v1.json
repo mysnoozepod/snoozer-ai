@@ -47,12 +47,6 @@
             "show_gift_card_recipient": false
           }
         },
-        "snoozer": {
-          "type": "snoozer_cta",
-          "settings": {
-            "label": "Ask Snoozer About This Product"
-          }
-        },
         "showroom": {
           "type": "showroom_location",
           "settings": {
@@ -67,7 +61,6 @@
         "feel",
         "variant_picker",
         "buy_buttons",
-        "snoozer",
         "showroom"
       ],
       "settings": {
@@ -152,12 +145,12 @@
       "type": "snoozepod-product-cta",
       "settings": {
         "heading": "Want to compare it in person?",
-        "body": "Ask Snoozer for product guidance now, or schedule a private visit when you are ready to compare the feel in the showroom.",
+        "body": "Schedule a private Snooze Session when you are ready to compare this product in the showroom.",
         "primary_label": "Book a Snooze Session",
         "primary_link": "/pages/book-a-snooze-session",
-        "secondary_label": "Ask Snoozer",
+        "secondary_label": "",
         "secondary_link": "",
-        "show_secondary": true
+        "show_secondary": false
       }
     }
   },

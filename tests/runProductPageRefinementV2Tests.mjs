@@ -27,12 +27,12 @@ check(feelDefinition.validations[0]?.value === '["Plush","Medium Plush","Medium 
 
 const sectionNames = [...mattressSnippet.matchAll(/data-mattress-information-section="([^"]+)"/g)].map((match) => match[1]);
 check(sectionNames.join('|') === 'product-details|sleep-trial|delivery|warranty|feel', 'mattress information sections have the approved order');
-for (const heading of ['Construction', 'Features &amp; Benefits', 'Showroom Location']) {
+for (const heading of ['Construction', 'Features &amp; Benefits']) {
   check(mattressSnippet.includes(`>${heading}<`), `Product Details implements ${heading}`);
 }
+check(!mattressSnippet.includes('Showroom Location'), 'showroom location is shown once in the product hero rather than repeated below');
 check(mattressSnippet.includes("pages['90-day-sleep-trial']") && mattressSnippet.includes("pages['shipping-policy']"), 'approved Shopify policy pages are reused');
 check(mattressSnippet.includes('snoozepod_technical.warranty_information'), 'product warranty uses the existing verified warranty field');
-check(mattressSnippet.includes('custom.showroom_representation'), 'showroom placement uses the existing structured field');
 check(!/\b(?:S7|H6|M3|M5)\b/.test(mattressSnippet), 'product-specific model values are not hardcoded in the theme');
 check(!mattressSnippet.includes("Manufacturer's Model Name") && !mattressSnippet.includes('manufacturer_model'), 'internal mattress manufacturer/model identity is not rendered to customers');
 check(informationSection.includes("product_category == 'mattress'") && informationSection.includes("render 'snoozepod-mattress-product-information'"), 'mattresses use the dedicated five-section renderer');
@@ -41,8 +41,8 @@ check(informationSection.includes("render 'snoozepod-product-knowledge'") && gen
 check(!feelSnippet.includes('feel_position_raw') && feelSnippet.includes("when 'Plush'") && feelSnippet.includes("when 'Firm'"), 'feel indicator derives safely from the controlled value');
 check(template.sections.hero.block_order.indexOf('feel') === template.sections.hero.block_order.indexOf('price') + 1, 'verified feel sits next to price');
 check(template.sections['final-cta'].settings.primary_label === 'Book a Snooze Session', 'booking is the primary lower CTA');
-check(template.sections['final-cta'].settings.secondary_label === 'Ask Snoozer', 'Ask Snoozer is the secondary lower CTA');
-check(cta.includes('data-snoozer-source="product-final-cta"'), 'secondary Ask Snoozer remains wired to the existing integration');
+check(template.sections['final-cta'].settings.show_secondary === false, 'the lower CTA remains focused on one booking action');
+check(template.sections['final-cta'].settings.primary_link === '/pages/book-a-snooze-session', 'the lower CTA uses the approved booking route');
 
 check(variantCss.includes('grid-template-columns: repeat(2, minmax(0, 1fr))'), 'mobile pill options use a two-column layout');
 check(hero.includes('scroll-snap-type: inline mandatory') && hero.includes('min-width: 100%'), 'mobile gallery presents one swipeable primary image at a time');

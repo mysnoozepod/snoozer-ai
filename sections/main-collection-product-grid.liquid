@@ -7,6 +7,15 @@
   {{ 'component-snoozepod-commerce-v1.css' | asset_url | stylesheet_tag }}
 {%- endif -%}
 
+{%- liquid
+  assign is_storewide_size_collection = false
+  assign storewide_size_slug = ''
+  if collection.handle contains 'shop-by-size-' and collection.handle != 'shop-by-size'
+    assign is_storewide_size_collection = true
+    assign storewide_size_slug = collection.handle | remove_first: 'shop-by-size-'
+  endif
+-%}
+
 {% if section.settings.image_shape == 'blob' %}
   {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
 {%- endif -%}
@@ -153,6 +162,68 @@
       box-shadow: none;
     }
 
+    .snoozepod-size-category-tabs {
+      margin-bottom: 12px;
+    }
+
+    .snoozepod-size-category-tabs__label {
+      margin: 0 0 8px;
+      color: rgba(var(--color-foreground), 0.68);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .snoozepod-size-category-tabs__list {
+      display: flex;
+      gap: 8px;
+      margin: 0;
+      padding: 0 0 4px;
+      overflow-x: auto;
+      list-style: none;
+      scrollbar-width: none;
+    }
+
+    .snoozepod-size-category-tabs__list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .snoozepod-size-category-tabs__link {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 14px;
+      border: 1px solid rgba(7, 29, 73, 0.16);
+      border-radius: 999px;
+      color: rgb(var(--color-foreground));
+      background: #f4f7fb;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .snoozepod-size-category-tabs__link:hover,
+    .snoozepod-size-category-tabs__link:focus-visible {
+      border-color: rgba(7, 29, 73, 0.45);
+      background: #ffffff;
+      outline: none;
+    }
+
+    .snoozepod-size-category-tabs__count {
+      color: rgba(var(--color-foreground), 0.62);
+      font-size: 12px;
+    }
+
+    @media screen and (max-width: 749px) {
+      .snoozepod-collection-grid[data-collection-handle="mattresses"] .product-grid .grid__item {
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+
     @media screen and (min-width: 990px) {
       .snoozepod-collection-grid.section-{{ section.id }}-padding {
         padding-top: {{ section.settings.padding_top }}px;
@@ -204,6 +275,30 @@
 {%- endif -%}
 
 <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}{% if template.suffix == 'snoozepod' or template.suffix == 'main' or template.suffix == 'snoozepod-v1' %} snoozepod-collection-grid{% endif %}" data-shop-by-size-root data-collection-handle="{{ collection.handle | escape }}">
+  {%- if is_storewide_size_collection -%}
+    {%- assign size_category_definitions = 'mattresses|Mattresses,adjustable-bases|Adjustable bases,sheets|Sheets,comforters|Comforters,cooling-bedding|Cooling & bedding,mattress-protectors|Mattress protectors,pillows|Pillows,mattress-toppers|Mattress toppers,bedroom-furniture|Bedroom furniture' | split: ',' -%}
+    <nav class="page-width snoozepod-size-category-tabs" aria-label="Shop {{ collection.title | escape }} by category">
+      <p class="snoozepod-size-category-tabs__label">Shop this size by category</p>
+      <ul class="snoozepod-size-category-tabs__list" role="list">
+        {%- for category_definition in size_category_definitions -%}
+          {%- liquid
+            assign category_parts = category_definition | split: '|'
+            assign category_handle = category_parts[0] | append: '-size-' | append: storewide_size_slug
+            assign category_label = category_parts[1]
+            assign category_collection = collections[category_handle]
+          -%}
+          {%- if category_collection != blank and category_collection.products_count > 0 -%}
+            <li>
+              <a class="snoozepod-size-category-tabs__link" href="{{ category_collection.url }}">
+                <span>{{ category_label | escape }}</span>
+                <span class="snoozepod-size-category-tabs__count" aria-label="{{ category_collection.products_count }} products">{{ category_collection.products_count }}</span>
+              </a>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </nav>
+  {%- endif -%}
   {%- paginate collection.products by section.settings.products_per_page -%}
     {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
     {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}

@@ -36,8 +36,8 @@
           "type": "trust_item",
           "settings": {
             "icon": "question_mark",
-            "title": "Get Clear Guidance",
-            "short_text": "Compare comfort, support, cooling, and fit with help when you want it."
+            "title": "Compare With Confidence",
+            "short_text": "Understand comfort, support, cooling, and fit before you decide."
           }
         },
         "value-3": {
@@ -63,6 +63,7 @@
     },
     "guided-shopping": {
       "type": "snoozepod-guided-shopping-links",
+      "disabled": true,
       "settings": {
         "heading": "Optional Sleep Tools",
         "intro": "Use a guided tool when it helps you prepare, compare, or organize questions before a private Snooze Session."
@@ -102,6 +103,7 @@
     },
     "meet-snoozer": {
       "type": "snoozepod-meet-snoozer",
+      "disabled": true,
       "settings": {
         "eyebrow": "Meet Snoozer",
         "heading": "Guidance when you want it",
@@ -270,17 +272,18 @@
     "snoozepod_final_build_cta_K8nqLs": {
       "type": "snoozepod-collection-cta",
       "settings": {
-        "heading": "Find What Fits Your Sleep",
-        "body": "Browse the complete collection, compare verified options, or book a private Snooze Session for guided help.",
-        "primary_label": "Shop Mattresses",
-        "primary_link": "/collections/mattresses",
-        "secondary_label": "Book a Snooze Session",
-        "secondary_link": "/pages/book-a-snooze-session",
-        "show_secondary": true
+        "heading": "Build a Complete Sleep System",
+        "body": "Pair a mattress with a compatible adjustable base, choose an exact size, and keep every component as a real Shopify item.",
+        "primary_label": "Explore Sleep Systems",
+        "primary_link": "/pages/sleep-systems",
+        "secondary_label": "",
+        "secondary_link": "",
+        "show_secondary": false
       }
     },
     "snoozepod_trust_strip_F6kqDr": {
       "type": "snoozepod-trust-strip",
+      "disabled": true,
       "blocks": {
         "trust_1": {
           "type": "trust_item",
@@ -331,13 +334,13 @@
   "order": [
     "image_with_text_hVQzdT",
     "value-strip",
-    "image_with_text_wUxjfL",
     "mattress-showcase",
+    "snoozepod_final_build_cta_K8nqLs",
     "snoozepod_environment_GYx7gN",
-    "meet-snoozer",
+    "image_with_text_wUxjfL",
     "guided-shopping",
     "featured_collection_666q7i",
-    "snoozepod_final_build_cta_K8nqLs",
+    "meet-snoozer",
     "snoozepod_trust_strip_F6kqDr"
   ]
 }

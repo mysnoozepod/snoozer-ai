@@ -9,10 +9,10 @@
   };
   var COMFORT_OPTIONS = ["Soft", "Medium Soft", "Medium Firm", "Firm"];
   var SHOWROOM_LOCATIONS = {
-    "12-inch-memory-foam-mattress": "Try it in Pod 1",
-    "12-inch-hybrid-mattress": "Try it in Pod 2",
-    "12-inch-dual-comfort-mattress": "Try it in Pods 3 & 4",
-    "14-inch-dual-comfort-mattress": "Try it in Pods 5 & 6",
+    "12-inch-memory-foam-mattress": "Mattress on display: Pod 1",
+    "12-inch-hybrid-mattress": "Mattress on display: Pod 2",
+    "12-inch-dual-comfort-mattress": "Mattress on display: Pods 3 & 4",
+    "14-inch-dual-comfort-mattress": "Mattress on display: Pods 5 & 6",
   };
 
   function money(value) {

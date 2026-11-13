@@ -1213,10 +1213,6 @@
         {{ header_logo }}
       </div>
 
-      <div class="header__snoozer-entry small-hide medium-hide">
-        {{ ask_snoozer_desktop }}
-      </div>
-
       <div class="header__icons{% if localization_forms %} header__icons--localization header-localization{% endif %}">
         <div class="desktop-localization-wrapper small-hide medium-hide">
           {%- if section.settings.enable_country_selector and localization.available_countries.size > 1 -%}
@@ -1278,11 +1274,6 @@
             {%- endif -%}
           </a>
         </div>
-      </div>
-    </div>
-    <div class="header__mobile-tools large-up-hide">
-      <div class="header__snoozer-row">
-        {{ ask_snoozer_mobile }}
       </div>
     </div>
     {%- if section.settings.menu != blank -%}

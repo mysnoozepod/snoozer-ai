@@ -75,21 +75,13 @@
         <section class="snoozepod-product-information__subsection" aria-labelledby="Features-{{ section.id }}">
           <h3 id="Features-{{ section.id }}">Features &amp; Benefits</h3>
           <ul>
-            {%- for feature in verified_features -%}<li>{{ feature | escape }}</li>{%- endfor -%}
+            {%- for feature in verified_features -%}<li>{{ feature | capitalize | escape }}</li>{%- endfor -%}
             {%- if content_approved -%}
-              {%- for benefit in key_benefits -%}<li>{{ benefit | escape }}</li>{%- endfor -%}
+              {%- for benefit in key_benefits -%}<li>{{ benefit | capitalize | escape }}</li>{%- endfor -%}
             {%- endif -%}
           </ul>
         </section>
       {%- endif -%}
-
-      {%- if showroom_is_verified -%}
-        <section class="snoozepod-product-information__subsection" aria-labelledby="Showroom-{{ section.id }}">
-          <h3 id="Showroom-{{ section.id }}">Showroom Location</h3>
-          {%- if showroom_label != blank -%}<p>{{ showroom_label | escape }}</p>{%- endif -%}
-        </section>
-      {%- endif -%}
-
     </div>
   </details>
 {%- endif -%}

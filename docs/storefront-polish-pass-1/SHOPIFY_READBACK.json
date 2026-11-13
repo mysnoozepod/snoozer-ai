@@ -1,0 +1,191 @@
+{
+  "completedAt": "2026-11-13T20:04:23.248Z",
+  "store": "mysnoozepodtest.myshopify.com",
+  "backupDir": "C:\\Users\\1ones\\OneDrive\\Documents\\ChatGPT\\Private Backups\\Shopify\\storefront-polish-pass-1\\2026-11-13T20-04-04-189Z",
+  "baselineCommit": "74cbf9ee2a46eccea4b4ee56f6ea9d7385bedfe8",
+  "liveTheme": {
+    "id": "139216420925",
+    "name": "snoozer-ai/main",
+    "role": "main"
+  },
+  "recoveryTheme": {
+    "id": "139460542525",
+    "name": "snoozer-ai/main",
+    "role": "unpublished",
+    "verifiedUnchanged": true
+  },
+  "changedAssets": [
+    {
+      "key": "assets/component-cart.css",
+      "action": "update"
+    },
+    {
+      "key": "assets/snoozepod-curated-bundles.js",
+      "action": "update"
+    },
+    {
+      "key": "layout/theme.liquid",
+      "action": "update"
+    },
+    {
+      "key": "locales/en.default.json",
+      "action": "update"
+    },
+    {
+      "key": "sections/header.liquid",
+      "action": "update"
+    },
+    {
+      "key": "sections/main-cart-footer.liquid",
+      "action": "update"
+    },
+    {
+      "key": "sections/main-cart-items.liquid",
+      "action": "update"
+    },
+    {
+      "key": "sections/main-collection-product-grid.liquid",
+      "action": "update"
+    },
+    {
+      "key": "sections/main-page.liquid",
+      "action": "update"
+    },
+    {
+      "key": "sections/snoozepod-footer-navigation.liquid",
+      "action": "update"
+    },
+    {
+      "key": "snippets/snoozepod-mattress-product-information.liquid",
+      "action": "update"
+    },
+    {
+      "key": "templates/cart.json",
+      "action": "update"
+    },
+    {
+      "key": "templates/index.json",
+      "action": "update"
+    },
+    {
+      "key": "templates/product.json",
+      "action": "update"
+    },
+    {
+      "key": "templates/product.main.json",
+      "action": "update"
+    },
+    {
+      "key": "templates/product.product-support-item.json",
+      "action": "update"
+    },
+    {
+      "key": "templates/product.snoozepod-v1.json",
+      "action": "update"
+    }
+  ],
+  "verified": [
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "assets/component-cart.css",
+      "sha256": "a97a8c7b041144740c64a0a8195b59a14356f8c2a5f5a2d736c24cc35dfe1c89"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "assets/snoozepod-curated-bundles.js",
+      "sha256": "34a8723010b60f25fa403811689ae4919ce4504ddc2fbec66f5af2fe3bbe6175"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "layout/theme.liquid",
+      "sha256": "b13fbbea0a109690802b47122dd8d1f634e2f33d47a599d0074297d3c08b2c13"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "locales/en.default.json",
+      "sha256": "4ae053c50825185c59abdf6ac8240fe3e8248e9fa93abc7d825c1b1c29ea04a3"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "sections/header.liquid",
+      "sha256": "90016f7212505b839d6ed22b61d9ca261021e12f1eb1c138e87cd33a6ca7b307"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "sections/main-cart-footer.liquid",
+      "sha256": "5c1e475c9e3843fe8bcf9bb27a8ce46276144aa4dd0eef0b23d0cc0d55d21368"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "sections/main-cart-items.liquid",
+      "sha256": "644e967ab702eb580fc104724dfa17ed9652a483d7203732b05ee8a2ac5c8a0a"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "sections/main-collection-product-grid.liquid",
+      "sha256": "513b61bee98a7bf4a23cb3ad6969eecae68762becc8ede818099bd64a7c67f33"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "sections/main-page.liquid",
+      "sha256": "fe63ae5f7875e4771bcade64aec5a07bbcb89ec551402beab8523f107c6dd638"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "sections/snoozepod-footer-navigation.liquid",
+      "sha256": "2008ac33d4ec91bc66c1764337d49bdb83852d4b9dee5e24d1bb2b8cbad4abf3"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "snippets/snoozepod-mattress-product-information.liquid",
+      "sha256": "c30babc075040dd0785118b144cce48dc8b39a1095ba106e2bd730852c106c7c"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "templates/cart.json",
+      "sha256": "c7026f20177108fc4dd58eeb4976d3a34b194b6cd58d743186053a0a102af66c"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "templates/index.json",
+      "sha256": "0fd79d14b0438c28a3480c3273270785cb8b414f2e6df775e455212920b56e60"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "templates/product.json",
+      "sha256": "b85235c3529f1241bb68d07af5db21a1f9640e73daf7f51c6791cd5a88dd9f6a"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "templates/product.main.json",
+      "sha256": "8333f3de7d2a2ab93b943e203fb2e081833015ce918357511c8bd493a6880c0f"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "templates/product.product-support-item.json",
+      "sha256": "43afa359021b77a650b0bb82ca770b426ee6fba8f47949a3fca6ac104261009d"
+    },
+    {
+      "themeId": "139216420925",
+      "role": "main",
+      "key": "templates/product.snoozepod-v1.json",
+      "sha256": "75a1b35da83996a120f733061d6bf2eb1ebd79845459a1811dd08ee3477e9670"
+    }
+  ]
+}

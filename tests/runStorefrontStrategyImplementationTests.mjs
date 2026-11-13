@@ -36,7 +36,7 @@ check(dualJs.includes('Your comfort: ${left} left · ${right} right'), 'Dual Com
 check(systems.includes('data-system-path="standard"') && systems.includes('data-system-path="split_head"') && systems.includes('data-system-path="full_split"'), 'Sleep Systems begins with three intentional geometry paths');
 check(systems.includes('Featured in Pods 2 &amp; 3'), 'Split Head is the signature featured system');
 check(!systems.includes('data-bundle-grid="BEDDING_SET"') && !systems.includes('Exact component variants'), 'bedding catalog content no longer competes with system selection');
-check(systemsJs.includes('SHOWROOM_LOCATIONS') && systemsJs.includes('Try it in Pods 5 & 6'), 'system cards connect every mattress to its showroom Pods');
+check(systemsJs.includes('SHOWROOM_LOCATIONS') && systemsJs.includes('Mattress on display: Pods 5 & 6'), 'system cards identify model-level showroom locations without implying an exact configuration is displayed');
 
 for (const pod of ['Pod 1', 'Pod 2', 'Pod 3', 'Pod 4', 'Pod 5', 'Pod 6']) check(stager.includes(pod), `${pod} is recorded in the structured Shopify showroom contract`);
 check(stager.includes("'dri-tec-sheet-set': 'BEDGEAR Dri-Tec sheets in Light Grey on a bed'") && stager.includes("'ver-tex-sheet-set': 'BEDGEAR Ver-Tex White sheets in a bedroom'"), 'text-heavy sheet graphics are replaced as lead media by existing clean photography');

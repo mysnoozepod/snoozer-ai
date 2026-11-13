@@ -40,7 +40,7 @@
         change(dual.querySelector('[data-system-comfort="right"]'), 'Firm');
         check(!dual.querySelector('[data-add-bundle]').disabled, 'Complete Dual Comfort selection did not enable Add to Cart.');
         check(dual.querySelector('[data-system-comfort-summary]').textContent === 'Your comfort: Medium Soft left · Firm right', 'Dual Comfort summary is incorrect.');
-        check(dual.querySelector('.snoozepod-bundle-card__showroom').textContent.trim() === 'Try it in Pods 3 & 4', 'Pod label contains extra configuration details.');
+        check(dual.querySelector('.snoozepod-bundle-card__showroom').textContent.trim() === 'Mattress on display: Pods 3 & 4', 'Pod label must describe the displayed mattress model without implying an exact configuration.');
 
         choosePath('split_head');
         var splitHead = card('12-inch-memory-foam-mattress');

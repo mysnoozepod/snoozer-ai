@@ -30,10 +30,8 @@ assert.ok(legacyShelf, 'The inactive historical shelf remains traceable until Sh
 assert.equal(legacyShelf[1].disabled, true, 'The legacy hardcoded mattress shelf must remain explicitly disabled.');
 assert.ok(index.order.includes(legacyShelf[0]), 'Shopify requires every retained section ID in the template order.');
 
-const cartGuidance = Object.values(cart.sections).find((section) => section.type === 'snoozer-cart-guidance-cards');
-assert.ok(cartGuidance, 'Cart guidance must remain present.');
-assert.equal(cartGuidance.settings.card_1_cta_link, '/pages/snooze-assessment');
-assert.equal(cartGuidance.settings.card_2_cta_link, '/pages/book-a-snooze-session');
+assert.deepEqual(cart.order, ['cart-items', 'cart-footer'], 'Cart keeps only the native item and checkout sequence.');
+assert.ok(!Object.values(cart.sections).some((section) => String(section.type || '').includes('snoozer')), 'Cart defers Snoozer guidance until the backend phase.');
 
 const environment = Object.values(index.sections).find((section) => section.type === 'snoozepod-environment');
 assert.ok(environment, 'Homepage collection navigation must remain present.');
@@ -61,4 +59,4 @@ assert.match(pairing, /\/collections\/adjustable-bases/);
 assert.match(pairing, /\/collections\/mattress-protectors/);
 assert.doesNotMatch(pairing, /\/products\/(premium-motion-adjustable-base|storage-base|platform-base|dri-tec-mattress-protector|ver-tex-mattress-protector)/);
 
-console.log('Storefront route contract: PASS (booking-first homepage, cart routes, collection shells, and fail-closed legacy links).');
+console.log('Storefront route contract: PASS (booking-first homepage, direct cart, collection shells, and fail-closed legacy links).');

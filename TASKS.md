@@ -1,11 +1,23 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-12 — Live Sleep System configurator corrected and Shopify-readback-verified
-Queue state: Pod labels are concise; Standard and Split King systems expose Flex L/Flex LSX; Split Head alone is locked to Flex SH; Dual Comfort systems require independent left/right comfort selections on published theme `139216420925`.
+Last updated: 2026-11-13 — Live storefront polish pass 1 implemented and browser-verified
+Queue state: The live storefront now has a tighter homepage, product, collection, content, and cart hierarchy; Snoozer-facing UI is deferred for the backend phase; commerce controls and Sleep System rules remain intact on published theme `139216420925`.
+
+### Live storefront polish pass 1
+
+- **Status:** IMPLEMENTED, LIVE-THEME-READBACK-VERIFIED, AND DESKTOP/MOBILE-BROWSER-VERIFIED.
+- **Homepage/header:** active homepage reduced to the core discovery journey; rendered Ask Snoozer header controls and repeated homepage guidance/trust modules removed; announcement, logo, navigation, account, and cart preserved.
+- **Products/content:** native variants, price, Add to Cart, Dual Comfort, Pod badge, product information, related products, and one lower booking CTA remain. Managed content pages use one Sleep Guides onward path and no dead `#` Snoozer action.
+- **Collections:** nonempty category-size shortcuts refine broad storewide size pages without replacing Shopify filters or variant-aware product links. Mattress cards use a premium mobile single-column presentation.
+- **Cart:** direct item review and order summary; native enabled Checkout; no repeated Snoozer, trust, or booking banner; no cart/checkout mutation during validation.
+- **Validation:** polish `31`; Product Page/collection `69`; Product Page v2 `27`; guided shopping; website `45`; strategy `25`; P1-002 `34` groups; JavaScript syntax; desktop and `430px` live routes; clean browser console.
+- **Safety:** 17 live-theme assets matched source; rollback theme `139460542525` unchanged; no catalog, variant, price, inventory, collection, menu, order, checkout, Snoozer backend, AWS, or identity changes.
+- **Evidence:** `docs/storefront-polish-pass-1/SHOPIFY_READBACK.json`; private recovery path and exact continuation are recorded in `HANDOFF.md`.
+- **Next:** controlled live cart acceptance for Standard, Dual Comfort, Split Head, and Split King systems without checkout/order submission.
 
 ### Live Sleep System configurator correction
 
-- **Status:** IMPLEMENTED, LIVE-CLICK-VERIFIED, LIVE-THEME-READBACK-VERIFIED, AND PUSH PENDING.
+- **Status:** IMPLEMENTED, LIVE-CLICK-VERIFIED, LIVE-THEME-READBACK-VERIFIED, AND SOURCE-PUSHED.
 - **Pod presentation:** mattress cards and Product Page v1 show only which Pod contains the mattress. Detailed size, base, and comfort demonstration data remain internal structured metadata.
 - **Size/base behavior:** the root/pathway selector collision that rerendered every card click is fixed. Clean dropdowns persist size and base state. Standard and Split King permit actual Flex L and Flex LSX choices; Split Head alone is constrained to Flex SH.
 - **Dual Comfort:** both Dual Comfort system cards expose independent Soft, Medium Soft, Medium Firm, and Firm dropdown choices for each side. Add to Cart is enabled only after both sides are selected, and the values are carried as mattress line properties.
