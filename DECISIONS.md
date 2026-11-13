@@ -98,6 +98,7 @@ Last updated: 2026-11-12 — Live Sleep System configurator correction
 | D-090 | Customer-facing mattress location should state only which Pod contains the mattress. The detailed showroom size, base, and comfort map remains structured internal data and must not clutter product or system cards. | **OWNER DIRECTIVE / IMPLEMENTED ON LIVE THEME** — 2026-11-12. |
 | D-091 | Standard and Split King Sleep Systems may use either actual Flex L or Flex LSX choices. Split Head is the only system geometry restricted to Flex SH. Size and base controls must remain independently changeable wherever multiple options exist. | **OWNER DIRECTIVE / IMPLEMENTED AND BROWSER-FIXTURE-VERIFIED** — 2026-11-12. |
 | D-092 | Dual Comfort Sleep Systems require independent left/right selection from Soft, Medium Soft, Medium Firm, and Firm. Both values must be visible in the system summary and preserved on the mattress cart line; incomplete pairs fail closed. | **OWNER DIRECTIVE / IMPLEMENTED AND CONTRACT-VERIFIED** — 2026-11-12. |
+| D-093 | Configurator pathway detection must target only the actual pathway controls, never the root container that stores current path state. Size, base, and comfort choices use explicit buttons with `aria-pressed` state so a shopper click cannot be lost to native-select, hidden-radio, or pathway-rerender behavior. | **CORRECTIVE IMPLEMENTATION DECISION / LIVE-CLICK-VERIFIED** — 2026-11-12. |
 
 ## Verified architectural and operational facts
 

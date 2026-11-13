@@ -5,11 +5,11 @@ Queue state: Pod labels are concise; Standard and Split King systems expose Flex
 
 ### Live Sleep System configurator correction
 
-- **Status:** IMPLEMENTED, LOCALLY BROWSER-VERIFIED, LIVE-THEME-READBACK-VERIFIED, AND PUSH PENDING.
+- **Status:** IMPLEMENTED, LIVE-CLICK-VERIFIED, LIVE-THEME-READBACK-VERIFIED, AND PUSH PENDING.
 - **Pod presentation:** mattress cards and Product Page v1 show only which Pod contains the mattress. Detailed size, base, and comfort demonstration data remain internal structured metadata.
-- **Size/base behavior:** size and base changes no longer reset or freeze one another. Standard and Split King configurations permit their actual Flex L and Flex LSX choices. Split Head is the only geometry constrained to Flex SH.
-- **Dual Comfort:** both Dual Comfort system cards expose independent Soft, Medium Soft, Medium Firm, and Firm choices for each side. Add to Cart is enabled only after both sides are selected, and the values are carried as mattress line properties.
-- **Validation:** browser interaction fixture passed; curated contract `1,680`; storefront strategy `25`; Product Page v2 `28`; cart-integrity regression and all `21` focused cart scenarios passed; four live assets match source; rollback theme `139460542525` is unchanged.
+- **Size/base behavior:** the root/pathway selector collision that rerendered every card click is fixed. Visible premium buttons now persist size and base state. Standard and Split King permit actual Flex L and Flex LSX choices; Split Head alone is constrained to Flex SH.
+- **Dual Comfort:** both Dual Comfort system cards expose independent Soft, Medium Soft, Medium Firm, and Firm buttons for each side. Add to Cart is enabled only after both sides are selected, and the values are carried as mattress line properties.
+- **Validation:** headless real-click fixture passed; actual live clicks passed for Standard, Split Head, and Split King including Dual Comfort and Flex LSX choices; curated contract `1,680`; storefront strategy `25`; Product Page v2 `28`; cart-integrity regression and all `21` focused cart scenarios passed; live assets match source; rollback theme `139460542525` is unchanged.
 - **Evidence:** `docs/sleep-system-configurator/SHOPIFY_READBACK.json`; private recovery paths and test boundary are recorded in `HANDOFF.md`.
 - **Next:** controlled live cart acceptance for Standard, Dual Comfort, Split Head, and Split King without checkout or order submission.
 

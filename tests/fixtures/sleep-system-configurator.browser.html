@@ -3,9 +3,9 @@
   <head><meta charset="utf-8"><title>Sleep System Configurator Browser Fixture</title></head>
   <body>
     <section data-curated-bundles>
-      <button type="button" data-system-path="standard" aria-pressed="false">Standard</button>
-      <button type="button" data-system-path="split_head" aria-pressed="false">Split Head</button>
-      <button type="button" data-system-path="full_split" aria-pressed="false">Split King</button>
+      <button class="snoozepod-system-path" type="button" data-system-path="standard" aria-pressed="false">Standard</button>
+      <button class="snoozepod-system-path" type="button" data-system-path="split_head" aria-pressed="false">Split Head</button>
+      <button class="snoozepod-system-path" type="button" data-system-path="full_split" aria-pressed="false">Split King</button>
       <p data-system-path-kicker></p>
       <h2 data-system-path-heading tabindex="-1"></h2>
       <p data-system-path-copy></p>
@@ -20,23 +20,26 @@
         var result = document.getElementById('fixture-result');
         var root = document.querySelector('[data-curated-bundles]');
         var failures = [];
+        window.addEventListener('error', function (event) { failures.push('Browser error: ' + event.message); result.dataset.result = 'fail'; result.textContent = JSON.stringify({ failures: failures }); });
         function check(value, message) { if (!value) failures.push(message); }
         function choosePath(path) { root.querySelector('[data-system-path="' + path + '"]').click(); }
         function card(handle) { return root.querySelector('[data-bundle-card="system--' + handle + '"]'); }
-        function change(select, value) { select.value = value; select.dispatchEvent(new Event('change', { bubbles: true })); }
-        function baseHandles(systemCard) { return Array.from(systemCard.querySelector('[data-system-base]').options).map(function (option) { return option.value; }).sort(); }
+        function choose(systemCard, selector, value) { var button = systemCard.querySelector(selector + '[data-value="' + value + '"]'); if (!button) throw new Error('Missing choice ' + selector + ' = ' + value); button.click(); }
+        function baseHandles(systemCard) { return Array.from(systemCard.querySelectorAll('[data-system-base]')).map(function (button) { return button.dataset.value; }).sort(); }
 
         choosePath('standard');
         var standard = card('12-inch-memory-foam-mattress');
-        change(standard.querySelector('[data-system-size]'), 'King');
+        choose(standard, '[data-system-size]', 'King');
+        check(standard.querySelector('[data-system-size][data-value="King"]').getAttribute('aria-pressed') === 'true', 'King size tile click was not registered.');
         check(baseHandles(standard).join('|') === '12-inch-memory-foam-mattress--flex-l-adjustable-base|12-inch-memory-foam-mattress--flex-lsx-adjustable-base', 'Standard did not expose Flex L and Flex LSX.');
-        change(standard.querySelector('[data-system-base]'), '12-inch-memory-foam-mattress--flex-lsx-adjustable-base');
+        choose(standard, '[data-system-base]', '12-inch-memory-foam-mattress--flex-lsx-adjustable-base');
         check(standard.dataset.activeBundle === '12-inch-memory-foam-mattress--flex-lsx-adjustable-base', 'Base selection did not persist.');
-        check(standard.querySelector('[data-system-size]').value === 'King', 'Size selection did not persist.');
+        check(standard.querySelector('[data-system-size][aria-pressed="true"]').dataset.value === 'King', 'Size selection did not persist.');
 
         var dual = card('12-inch-dual-comfort-mattress');
-        change(dual.querySelector('[data-system-comfort="left"]'), 'Medium Soft');
-        change(dual.querySelector('[data-system-comfort="right"]'), 'Firm');
+        choose(dual, '[data-system-comfort="left"]', 'Medium Soft');
+        choose(dual, '[data-system-comfort="right"]', 'Firm');
+        check(dual.querySelector('[data-system-comfort="left"][data-value="Medium Soft"]').getAttribute('aria-pressed') === 'true', 'Left comfort tile click was not registered.');
         check(!dual.querySelector('[data-add-bundle]').disabled, 'Complete Dual Comfort selection did not enable Add to Cart.');
         check(dual.querySelector('[data-system-comfort-summary]').textContent === 'Your comfort: Medium Soft left · Firm right', 'Dual Comfort summary is incorrect.');
         check(dual.querySelector('.snoozepod-bundle-card__showroom').textContent.trim() === 'Try it in Pods 3 & 4', 'Pod label contains extra configuration details.');
@@ -48,8 +51,8 @@
 
         choosePath('full_split');
         var splitKing = card('12-inch-memory-foam-mattress');
-        check(splitKing.querySelector('[data-system-size]').value === 'Split King', 'Split King path did not resolve Split King.');
-        check(!splitKing.querySelector('[data-system-base]').disabled, 'Split King base should remain selectable.');
+        check(splitKing.querySelector('[data-system-size][aria-pressed="true"]').dataset.value === 'Split King', 'Split King path did not resolve Split King.');
+        check(Array.from(splitKing.querySelectorAll('[data-system-base]')).every(function (button) { return !button.disabled; }), 'Split King base should remain selectable.');
         check(baseHandles(splitKing).join('|') === '12-inch-memory-foam-mattress--flex-l-adjustable-base|12-inch-memory-foam-mattress--flex-lsx-adjustable-base', 'Split King did not expose Flex L and Flex LSX.');
 
         result.dataset.result = failures.length ? 'fail' : 'pass';

@@ -119,17 +119,23 @@
     if (COMFORT_OPTIONS.indexOf(left) === -1 || COMFORT_OPTIONS.indexOf(right) === -1) return null;
     return { "Left Side Comfort": left, "Right Side Comfort": right };
   }
-  function comfortOptionsMarkup() {
-    return '<option value="">Choose comfort</option>' + COMFORT_OPTIONS.map(function (comfort) {
-      return '<option value="' + escapeHtml(comfort) + '">' + escapeHtml(comfort) + '</option>';
+  function selectedChoice(card, selector) {
+    var selected = card.querySelector(selector + '[aria-pressed="true"]');
+    return selected ? selected.dataset.value : "";
+  }
+  function choiceButtonsMarkup(idPrefix, dataAttribute, options, selectedValue, disabled) {
+    return options.map(function (option, index) {
+      var value = typeof option === "string" ? option : option.value;
+      var label = typeof option === "string" ? option : option.label;
+      return '<button type="button" id="' + escapeHtml(idPrefix + "-" + index) + '" ' + dataAttribute + ' data-value="' + escapeHtml(value) + '" aria-pressed="' + (value === selectedValue ? 'true' : 'false') + '"' + (disabled ? ' disabled' : '') + '>' + escapeHtml(label) + '</button>';
     }).join("");
   }
   function dualComfortMarkup(group) {
     if (!isDualComfortHandle(group.mattress.handle)) return "";
     return '<fieldset class="snoozepod-bundle-card__comfort"><legend>Dual Comfort</legend>' +
       '<p>Choose each side independently.</p><div class="snoozepod-bundle-card__comfort-grid">' +
-      '<div class="snoozepod-bundle-card__field"><label for="' + escapeHtml(group.id) + '-left-comfort">Left side comfort</label><select id="' + escapeHtml(group.id) + '-left-comfort" data-system-comfort="left">' + comfortOptionsMarkup() + '</select></div>' +
-      '<div class="snoozepod-bundle-card__field"><label for="' + escapeHtml(group.id) + '-right-comfort">Right side comfort</label><select id="' + escapeHtml(group.id) + '-right-comfort" data-system-comfort="right">' + comfortOptionsMarkup() + '</select></div>' +
+      '<fieldset class="snoozepod-bundle-card__choice-field"><legend>Left side comfort</legend><div class="snoozepod-bundle-card__choices">' + choiceButtonsMarkup(group.id + '-left-comfort', 'data-system-comfort="left"', COMFORT_OPTIONS, "", false) + '</div></fieldset>' +
+      '<fieldset class="snoozepod-bundle-card__choice-field"><legend>Right side comfort</legend><div class="snoozepod-bundle-card__choices">' + choiceButtonsMarkup(group.id + '-right-comfort', 'data-system-comfort="right"', COMFORT_OPTIONS, "", false) + '</div></fieldset>' +
       '</div><p class="snoozepod-bundle-card__comfort-summary" data-system-comfort-summary role="status" aria-live="polite">Choose a comfort for both sides to continue.</p></fieldset>';
   }
   function systemCardMarkup(group, path) {
@@ -148,8 +154,8 @@
       '<div class="snoozepod-bundle-card__body">' + (showroom ? '<div class="snoozepod-bundle-card__showroom"><span>' + escapeHtml(showroom) + '</span></div>' : '') +
       '<h3>' + escapeHtml(group.mattress.title) + '</h3>' +
       '<p class="snoozepod-bundle-card__basis">' + escapeHtml(pathBasis) + '</p>' +
-      '<div class="snoozepod-bundle-card__field"><label for="' + escapeHtml(group.id) + '-size">Mattress size</label><select id="' + escapeHtml(group.id) + '-size" data-system-size>' + sizes.map(function (size) { return '<option value="' + escapeHtml(size) + '">' + escapeHtml(size) + '</option>'; }).join("") + '</select></div>' +
-      '<div class="snoozepod-bundle-card__field"><label for="' + escapeHtml(group.id) + '-base">Adjustable base</label><select id="' + escapeHtml(group.id) + '-base" data-system-base><option value="' + escapeHtml(firstBundle.id) + '">' + escapeHtml(baseLabel(firstBundle)) + '</option></select></div>' +
+      '<fieldset class="snoozepod-bundle-card__choice-field"><legend>Mattress size</legend><div class="snoozepod-bundle-card__choices">' + choiceButtonsMarkup(group.id + '-size', 'data-system-size', sizes, sizes[0], false) + '</div></fieldset>' +
+      '<fieldset class="snoozepod-bundle-card__choice-field" data-system-base-field><legend>Adjustable base</legend><div class="snoozepod-bundle-card__choices" data-system-base-options>' + choiceButtonsMarkup(group.id + '-base', 'data-system-base', [{ value: firstBundle.id, label: baseLabel(firstBundle) }], firstBundle.id, true) + '</div></fieldset>' +
       dualComfortMarkup(group) +
       '<ul class="snoozepod-bundle-card__components"><li><span><a href="' + escapeHtml(group.mattress.url) + '">' + escapeHtml(group.mattress.title) + '</a></span><strong data-component-price></strong></li><li><span><a href="#" data-system-base-link>' + escapeHtml(baseLabel(firstBundle)) + '</a></span><strong data-component-price></strong></li></ul>' +
       '<div class="snoozepod-bundle-card__variant-fields" data-component-fields></div>' +
@@ -159,9 +165,7 @@
   }
   function updateSystemComfortState(card, handle) {
     if (!isDualComfortHandle(handle)) return {};
-    var leftSelect = card.querySelector('[data-system-comfort="left"]');
-    var rightSelect = card.querySelector('[data-system-comfort="right"]');
-    var properties = systemComfortProperties(handle, leftSelect && leftSelect.value, rightSelect && rightSelect.value);
+    var properties = systemComfortProperties(handle, selectedChoice(card, '[data-system-comfort="left"]'), selectedChoice(card, '[data-system-comfort="right"]'));
     var summary = card.querySelector("[data-system-comfort-summary]");
     var button = card.querySelector("[data-add-bundle]");
     if (properties) {
@@ -174,10 +178,10 @@
     return properties;
   }
   function renderActiveSystem(card, group) {
-    var selectedSize = card.querySelector("[data-system-size]").value;
+    var selectedSize = selectedChoice(card, "[data-system-size]");
     var availableBundles = systemBundlesForSize(group, selectedSize);
-    var baseSelect = card.querySelector("[data-system-base]");
-    var bundle = availableBundles.find(function (item) { return item.id === baseSelect.value; }) || availableBundles[0];
+    var selectedBase = selectedChoice(card, "[data-system-base]");
+    var bundle = availableBundles.find(function (item) { return item.id === selectedBase; }) || availableBundles[0];
     if (!bundle) return;
     var size = sizeRecord(bundle, selectedSize);
     card.dataset.activeBundle = bundle.id;
@@ -188,14 +192,12 @@
     updateSystemComfortState(card, group.mattress.handle);
   }
   function updateSystemSize(card, group) {
-    var selectedSize = card.querySelector("[data-system-size]").value;
+    var selectedSize = selectedChoice(card, "[data-system-size]");
     var availableBundles = systemBundlesForSize(group, selectedSize);
-    var baseSelect = card.querySelector("[data-system-base]");
-    var previous = baseSelect.value;
-    baseSelect.innerHTML = availableBundles.map(function (bundle) { return '<option value="' + escapeHtml(bundle.id) + '">' + escapeHtml(baseLabel(bundle)) + '</option>'; }).join("");
-    if (availableBundles.some(function (bundle) { return bundle.id === previous; })) baseSelect.value = previous;
-    baseSelect.disabled = availableBundles.length === 1;
-    baseSelect.setAttribute("aria-disabled", baseSelect.disabled ? "true" : "false");
+    var previous = selectedChoice(card, "[data-system-base]");
+    var selectedBase = availableBundles.some(function (bundle) { return bundle.id === previous; }) ? previous : availableBundles[0].id;
+    var options = availableBundles.map(function (bundle) { return { value: bundle.id, label: baseLabel(bundle) }; });
+    card.querySelector("[data-system-base-options]").innerHTML = choiceButtonsMarkup(group.id + '-base', 'data-system-base', options, selectedBase, availableBundles.length === 1);
     renderActiveSystem(card, group);
   }
 
@@ -205,7 +207,7 @@
     var button = card.querySelector("[data-add-bundle]");
     if (!api) { status.hidden = false; status.textContent = "The cart tools could not be loaded. Your selections are still here."; return; }
     if (button.dataset.pending === "true") return;
-    var selectedSize = card.hasAttribute("data-system-card") ? card.querySelector("[data-system-size]").value : card.querySelector("[data-bundle-size]").value;
+    var selectedSize = card.hasAttribute("data-system-card") ? selectedChoice(card, "[data-system-size]") : card.querySelector("[data-bundle-size]").value;
     var size = sizeRecord(bundle, selectedSize);
     var variants = selectedVariants(card, size);
     var quantities = size.componentQuantities || bundle.components.map(function (component) { return component.quantity || 1; });
@@ -294,23 +296,28 @@
     root.addEventListener("change", function (event) {
       var card = event.target.closest("[data-bundle-card]");
       if (!card) return;
-      if (card.hasAttribute("data-system-card")) {
-        var group = groups.find(function (item) { return item.id === card.dataset.bundleCard; });
-        if (!group) return;
-        if (event.target.matches("[data-system-size]")) updateSystemSize(card, group);
-        else if (event.target.matches("[data-system-base]")) renderActiveSystem(card, group);
-        else if (event.target.matches("[data-system-comfort]")) updateSystemComfortState(card, group.mattress.handle);
-        return;
-      }
+      if (card.hasAttribute("data-system-card")) return;
       var bundle = catalog.bundles.find(function (item) { return item.id === card.dataset.bundleCard; });
       if (bundle) updateSetCard(card, bundle);
     });
     root.addEventListener("click", function (event) {
-      var pathButton = event.target.closest("[data-system-path]");
+      var pathButton = event.target.closest(".snoozepod-system-path[data-system-path]");
       if (pathButton) {
         activePath = pathButton.dataset.systemPath;
         renderSystems();
         root.querySelector("[data-system-path-heading]")?.focus({ preventScroll: true });
+        return;
+      }
+      var choice = event.target.closest("[data-system-size], [data-system-base], [data-system-comfort]");
+      if (choice && !choice.disabled) {
+        var choiceCard = choice.closest("[data-system-card]");
+        var choiceGroup = groups.find(function (item) { return item.id === choiceCard.dataset.bundleCard; });
+        if (!choiceGroup) return;
+        var choiceSelector = choice.hasAttribute("data-system-size") ? "[data-system-size]" : choice.hasAttribute("data-system-base") ? "[data-system-base]" : '[data-system-comfort="' + choice.dataset.systemComfort + '"]';
+        choiceCard.querySelectorAll(choiceSelector).forEach(function (item) { item.setAttribute("aria-pressed", item === choice ? "true" : "false"); });
+        if (choice.hasAttribute("data-system-size")) updateSystemSize(choiceCard, choiceGroup);
+        else if (choice.hasAttribute("data-system-base")) renderActiveSystem(choiceCard, choiceGroup);
+        else updateSystemComfortState(choiceCard, choiceGroup.mattress.handle);
         return;
       }
       var button = event.target.closest("[data-add-bundle]");
