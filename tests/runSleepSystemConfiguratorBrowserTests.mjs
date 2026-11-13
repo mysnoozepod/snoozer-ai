@@ -16,8 +16,6 @@ try {
   fs.rmSync(profile, { recursive: true, force: true });
 }
 if (!/id="fixture-result" data-result="pass"/.test(output)) {
-  const marker = output.indexOf('fixture-result');
-  if (marker >= 0) console.error(output.slice(Math.max(0, marker - 120), marker + 500));
   const detail = output.match(/<pre[^>]*id="fixture-result"[^>]*>([\s\S]*?)<\/pre>/)?.[1] || output.slice(-2000) || 'Browser fixture did not return a result.';
   throw new Error(`Sleep System browser fixture failed: ${detail}`);
 }

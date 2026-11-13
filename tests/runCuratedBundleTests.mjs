@@ -93,7 +93,7 @@ check(cart.includes('window.SnoozePodBundleCart = Object.freeze'), 'cart integri
 check(!/discount|save \$|% off|sale price/i.test(JSON.stringify(manifest.bundles)), 'curation does not invent discount claims');
 check(ui.includes('Add Sleep System to Cart') && ui.includes('data-system-base'), 'each mattress card exposes size, base, and a purchase action');
 check(ui.includes('data-system-comfort="left"') && ui.includes('data-system-comfort="right"'), 'Dual Comfort system cards expose independent left and right choices');
-check(ui.includes('.snoozepod-system-path[data-system-path]') && ui.includes('choice.hasAttribute("data-system-size")') && ui.includes('choice.hasAttribute("data-system-base")'), 'pathway, size, and base clicks use distinct deterministic update paths');
+check(ui.includes('.snoozepod-system-path[data-system-path]') && ui.includes('event.target.matches("[data-system-size]")') && ui.includes('event.target.matches("[data-system-base]")'), 'pathway clicks are scoped and size/base changes use distinct deterministic update paths');
 check(ui.includes('componentQuantities') && ui.includes('quantity: Number(quantities[index]'), 'cart quantities come from the selected configuration');
 check(ui.includes('button.dataset.pending') && ui.includes('claimBundleLock'), 'double submissions remain blocked');
 check(ui.includes('verifyBundleVariantReadiness') && ui.includes('executeBundleCartOperation'), 'live readiness and post-mutation reconciliation are required');

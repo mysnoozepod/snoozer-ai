@@ -33,8 +33,8 @@ System-only split mattress variants are not offered in the standalone mattress p
 
 ## Presentation refinements
 
-- Dual Comfort systems expose independent premium Soft, Medium Soft, Medium Firm, and Firm buttons for both sides, with explicit `aria-pressed` state and an accessible selected-pair summary. Add to Cart remains disabled until both sides are selected; the mattress cart line receives the exact left/right values.
-- Size and base also use visible stateful buttons. Standard and Split King expose their actual Flex L and Flex LSX choices. Split Head alone is constrained to Flex SH.
+- Dual Comfort systems expose independent Soft, Medium Soft, Medium Firm, and Firm dropdowns for both sides, with an accessible selected-pair summary. Add to Cart remains disabled until both sides are selected; the mattress cart line receives the exact left/right values.
+- Size and base retain the same clean dropdown treatment. Standard and Split King expose their actual Flex L and Flex LSX choices. Split Head alone is constrained to Flex SH.
 - Cotton, Dri-Tec, and Ver-Tex Sheet Set galleries lead with clean existing lifestyle photography. Text-heavy graphics remain available as secondary media; nothing was deleted.
 - Mobile system paths use horizontal snap behavior while desktop preserves the three-card hierarchy.
 - The page contains no internal Shopify implementation language and no unrelated bedding catalog.
@@ -51,7 +51,7 @@ System-only split mattress variants are not offered in the standalone mattress p
 - Storewide Shop by Size: 965 assertions; Shop by Size: 33 assertions.
 - Product Page v2: 28; Product Page/collection: 69; website experience: 46; product knowledge: 43; catalog/shopping: 10/10; P1-002: 34 groups.
 - JavaScript syntax checks passed.
-- The focused headless browser fixture uses real button clicks and confirms changeable size/base controls, Flex L/Flex LSX availability for Standard and Split King, Flex SH-only Split Head behavior, concise Pod labels, and independent Dual Comfort selections. Actual live clicks confirmed the same behavior on all three system pathways.
+- The focused headless browser fixture confirms changeable dropdown controls, Flex L/Flex LSX availability for Standard and Split King, Flex SH-only Split Head behavior, concise Pod labels, and independent Dual Comfort selections. Actual live interaction confirmed the same behavior after the pathway-selector correction.
 - Shopify readback confirms the four bounded source assets match published theme `139216420925`; rollback theme `139460542525` is unchanged and no catalog mutation occurred.
 
 Live route: `https://mysnoozepod.com/pages/sleep-systems`

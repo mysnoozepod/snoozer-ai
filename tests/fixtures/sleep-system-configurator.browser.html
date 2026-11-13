@@ -24,22 +24,20 @@
         function check(value, message) { if (!value) failures.push(message); }
         function choosePath(path) { root.querySelector('[data-system-path="' + path + '"]').click(); }
         function card(handle) { return root.querySelector('[data-bundle-card="system--' + handle + '"]'); }
-        function choose(systemCard, selector, value) { var button = systemCard.querySelector(selector + '[data-value="' + value + '"]'); if (!button) throw new Error('Missing choice ' + selector + ' = ' + value); button.click(); }
-        function baseHandles(systemCard) { return Array.from(systemCard.querySelectorAll('[data-system-base]')).map(function (button) { return button.dataset.value; }).sort(); }
+        function change(select, value) { select.value = value; select.dispatchEvent(new Event('change', { bubbles: true })); }
+        function baseHandles(systemCard) { return Array.from(systemCard.querySelector('[data-system-base]').options).map(function (option) { return option.value; }).sort(); }
 
         choosePath('standard');
         var standard = card('12-inch-memory-foam-mattress');
-        choose(standard, '[data-system-size]', 'King');
-        check(standard.querySelector('[data-system-size][data-value="King"]').getAttribute('aria-pressed') === 'true', 'King size tile click was not registered.');
+        change(standard.querySelector('[data-system-size]'), 'King');
         check(baseHandles(standard).join('|') === '12-inch-memory-foam-mattress--flex-l-adjustable-base|12-inch-memory-foam-mattress--flex-lsx-adjustable-base', 'Standard did not expose Flex L and Flex LSX.');
-        choose(standard, '[data-system-base]', '12-inch-memory-foam-mattress--flex-lsx-adjustable-base');
+        change(standard.querySelector('[data-system-base]'), '12-inch-memory-foam-mattress--flex-lsx-adjustable-base');
         check(standard.dataset.activeBundle === '12-inch-memory-foam-mattress--flex-lsx-adjustable-base', 'Base selection did not persist.');
-        check(standard.querySelector('[data-system-size][aria-pressed="true"]').dataset.value === 'King', 'Size selection did not persist.');
+        check(standard.querySelector('[data-system-size]').value === 'King', 'Size selection did not persist.');
 
         var dual = card('12-inch-dual-comfort-mattress');
-        choose(dual, '[data-system-comfort="left"]', 'Medium Soft');
-        choose(dual, '[data-system-comfort="right"]', 'Firm');
-        check(dual.querySelector('[data-system-comfort="left"][data-value="Medium Soft"]').getAttribute('aria-pressed') === 'true', 'Left comfort tile click was not registered.');
+        change(dual.querySelector('[data-system-comfort="left"]'), 'Medium Soft');
+        change(dual.querySelector('[data-system-comfort="right"]'), 'Firm');
         check(!dual.querySelector('[data-add-bundle]').disabled, 'Complete Dual Comfort selection did not enable Add to Cart.');
         check(dual.querySelector('[data-system-comfort-summary]').textContent === 'Your comfort: Medium Soft left · Firm right', 'Dual Comfort summary is incorrect.');
         check(dual.querySelector('.snoozepod-bundle-card__showroom').textContent.trim() === 'Try it in Pods 3 & 4', 'Pod label contains extra configuration details.');
@@ -51,8 +49,8 @@
 
         choosePath('full_split');
         var splitKing = card('12-inch-memory-foam-mattress');
-        check(splitKing.querySelector('[data-system-size][aria-pressed="true"]').dataset.value === 'Split King', 'Split King path did not resolve Split King.');
-        check(Array.from(splitKing.querySelectorAll('[data-system-base]')).every(function (button) { return !button.disabled; }), 'Split King base should remain selectable.');
+        check(splitKing.querySelector('[data-system-size]').value === 'Split King', 'Split King path did not resolve Split King.');
+        check(!splitKing.querySelector('[data-system-base]').disabled, 'Split King base should remain selectable.');
         check(baseHandles(splitKing).join('|') === '12-inch-memory-foam-mattress--flex-l-adjustable-base|12-inch-memory-foam-mattress--flex-lsx-adjustable-base', 'Split King did not expose Flex L and Flex LSX.');
 
         result.dataset.result = failures.length ? 'fail' : 'pass';
