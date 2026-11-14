@@ -1,0 +1,219 @@
+{
+  "schema": "mysnoozepod.sleep-system-live-cart-acceptance.v1",
+  "executedAt": "2026-11-14T12:50:15-05:00",
+  "storefront": "https://mysnoozepod.com",
+  "themeId": "139216420925",
+  "environment": "published password-protected development storefront",
+  "scope": {
+    "checkoutEntered": false,
+    "orderCreated": false,
+    "initialCartPreserved": true,
+    "consoleWarningsOrErrors": []
+  },
+  "baseline": {
+    "itemCount": 1,
+    "totalPriceCents": 249900,
+    "items": [
+      {
+        "variantId": 44128362561597,
+        "productTitle": "12\" Dual Comfort Mattress",
+        "variantTitle": "Queen",
+        "quantity": 1,
+        "finalLinePriceCents": 249900,
+        "properties": {
+          "Left Side Comfort": "Soft",
+          "Right Side Comfort": "Firm"
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "Standard",
+      "selection": {
+        "mattress": "12\" Memory Foam Mattress",
+        "size": "Queen",
+        "base": "Flex L Adjustable Base"
+      },
+      "uiTotalCents": 239899,
+      "beforeItemCount": 1,
+      "afterItemCount": 3,
+      "itemCountDelta": 2,
+      "beforeTotalCents": 249900,
+      "afterTotalCents": 489799,
+      "totalDeltaCents": 239899,
+      "operationId": "8fe9f7b0-c386-453e-bec1-d9c8d0df9d96",
+      "addedLines": [
+        {
+          "role": "adjustable-base",
+          "variantId": 44122467172413,
+          "productId": 8100247142461,
+          "productTitle": "Flex L Adjustable Base",
+          "variantTitle": "Queen",
+          "sku": "BGF026805-BLK",
+          "quantity": 1,
+          "unitPriceCents": 79900,
+          "finalLinePriceCents": 79900,
+          "selectedSize": "Queen"
+        },
+        {
+          "role": "mattress",
+          "variantId": 44128361971773,
+          "productId": 8100282794045,
+          "productTitle": "12\" Memory Foam Mattress",
+          "variantTitle": "Queen",
+          "sku": "BGA025905",
+          "quantity": 1,
+          "unitPriceCents": 159999,
+          "finalLinePriceCents": 159999,
+          "selectedSize": "Queen"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "name": "Dual Comfort",
+      "selection": {
+        "mattress": "12\" Dual Comfort Mattress",
+        "size": "Queen",
+        "base": "Flex LSX Adjustable Base",
+        "leftComfort": "Medium Soft",
+        "rightComfort": "Firm"
+      },
+      "uiTotalCents": 449800,
+      "beforeItemCount": 3,
+      "afterItemCount": 5,
+      "itemCountDelta": 2,
+      "beforeTotalCents": 489799,
+      "afterTotalCents": 939599,
+      "totalDeltaCents": 449800,
+      "operationId": "395e681e-7d52-4790-84af-c5eec4be79c5",
+      "addedLines": [
+        {
+          "role": "adjustable-base",
+          "variantId": 44122467303485,
+          "productId": 8100247175229,
+          "productTitle": "Flex LSX Adjustable Base",
+          "variantTitle": "Queen",
+          "sku": "BGF032205",
+          "quantity": 1,
+          "unitPriceCents": 199900,
+          "finalLinePriceCents": 199900,
+          "selectedSize": "Queen"
+        },
+        {
+          "role": "mattress",
+          "variantId": 44128362561597,
+          "productId": 8100282892349,
+          "productTitle": "12\" Dual Comfort Mattress",
+          "variantTitle": "Queen",
+          "sku": "BGM301W51",
+          "quantity": 1,
+          "unitPriceCents": 249900,
+          "finalLinePriceCents": 249900,
+          "selectedSize": "Queen",
+          "leftComfort": "Medium Soft",
+          "rightComfort": "Firm"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "name": "Split Head",
+      "selection": {
+        "mattress": "12\" Hybrid Mattress",
+        "size": "Split Head Queen",
+        "base": "Flex SH Adjustable Base",
+        "baseLocked": true
+      },
+      "uiTotalCents": 449800,
+      "beforeItemCount": 5,
+      "afterItemCount": 7,
+      "itemCountDelta": 2,
+      "beforeTotalCents": 939599,
+      "afterTotalCents": 1389399,
+      "totalDeltaCents": 449800,
+      "operationId": "5e8e20f1-ddf7-40ef-a2b2-924e0036e4f7",
+      "addedLines": [
+        {
+          "role": "adjustable-base",
+          "variantId": 44122467434557,
+          "productId": 8100247240765,
+          "productTitle": "Flex SH Adjustable Base",
+          "variantTitle": "Split Head Queen",
+          "sku": "BGF032255",
+          "quantity": 1,
+          "unitPriceCents": 209900,
+          "finalLinePriceCents": 209900,
+          "selectedSize": "Split Head Queen"
+        },
+        {
+          "role": "mattress",
+          "variantId": 44128362332221,
+          "productId": 8100282826813,
+          "productTitle": "12\" Hybrid Mattress",
+          "variantTitle": "Split Head Queen",
+          "sku": "BGA121W55",
+          "quantity": 1,
+          "unitPriceCents": 239900,
+          "finalLinePriceCents": 239900,
+          "selectedSize": "Split Head Queen"
+        }
+      ],
+      "pass": true
+    },
+    {
+      "name": "Split King",
+      "selection": {
+        "mattress": "14\" Dual Comfort Mattress",
+        "size": "Split King",
+        "base": "Flex LSX Adjustable Base",
+        "leftComfort": "Soft",
+        "rightComfort": "Medium Firm"
+      },
+      "uiTotalCents": 1069798,
+      "beforeItemCount": 7,
+      "afterItemCount": 11,
+      "itemCountDelta": 4,
+      "beforeTotalCents": 1389399,
+      "afterTotalCents": 2459197,
+      "totalDeltaCents": 1069798,
+      "operationId": "aa63f0bd-0f84-4e2d-8131-6e5b2e239051",
+      "addedLines": [
+        {
+          "role": "adjustable-base",
+          "variantId": 44122467270717,
+          "productId": 8100247175229,
+          "productTitle": "Flex LSX Adjustable Base",
+          "variantTitle": "Twin XL",
+          "sku": "BGF032202",
+          "quantity": 2,
+          "unitPriceCents": 184900,
+          "finalLinePriceCents": 369800,
+          "selectedSize": "Split King"
+        },
+        {
+          "role": "mattress",
+          "variantId": 44128370950205,
+          "productId": 8100282925117,
+          "productTitle": "14\" Dual Comfort Mattress",
+          "variantTitle": "Twin XL",
+          "sku": "BGM506W21",
+          "quantity": 2,
+          "unitPriceCents": 349999,
+          "finalLinePriceCents": 699998,
+          "selectedSize": "Split King",
+          "leftComfort": "Soft",
+          "rightComfort": "Medium Firm"
+        }
+      ],
+      "pass": true
+    }
+  ],
+  "finalCart": {
+    "itemCount": 11,
+    "totalPriceCents": 2459197,
+    "baselineItemStillPresent": true
+  },
+  "overallPass": true
+}

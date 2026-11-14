@@ -1,9 +1,22 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-13 — Live storefront polish pass 1 implemented and browser-verified
+Last updated: 2026-11-14 — Live Sleep System cart acceptance passed
 Owner: Ty  
 Implementer: Codi  
-Current phase: The simplified storefront hierarchy and corrected Sleep System configurator are live on published theme `139216420925`; controlled live-cart acceptance remains the next bounded task
+Current phase: The simplified storefront hierarchy and corrected Sleep System configurator are live on published theme `139216420925`; the four-path live cart acceptance is complete
+
+## Live Sleep System cart acceptance — 2026-11-14
+
+- Passed the actual password-protected Shopify storefront cart flow on published theme `139216420925` for four representative systems: Standard, Dual Comfort, Split Head, and Split King.
+- Standard added Queen `12\" Memory Foam Mattress` variant `44128361971773` and Queen `Flex L Adjustable Base` variant `44122467172413`, quantity one each. The cart total increased by the displayed `$2,398.99`.
+- Dual Comfort added Queen `12\" Dual Comfort Mattress` variant `44128362561597` and Queen `Flex LSX Adjustable Base` variant `44122467303485`, quantity one each. `Medium Soft` left and `Firm` right persisted on the mattress line; the cart total increased by `$4,498.00`.
+- Split Head exposed only Flex SH and locked the base dropdown. Split Head Queen added mattress variant `44128362332221` and base variant `44122467434557`, quantity one each, and increased the cart by `$4,498.00`.
+- Split King added two Twin XL `14\" Dual Comfort Mattress` variants `44128370950205` and two Twin XL `Flex LSX Adjustable Base` variants `44122467270717`. `Soft` left and `Medium Firm` right persisted; the cart increased by the displayed `$10,697.98`.
+- Every system used one unique private `_SnoozePod Bundle Operation` value shared by its mattress/base lines and retained the expected role, component, curated-selection, and selected-size properties. Existing cart content remained present and was not confused with the four new operations.
+- Reconciliation matched all displayed totals exactly. The controlled browser cart moved from one item at `$2,499.00` to eleven items at `$24,591.97`; the ten-unit delta is exactly the four requested systems. Browser console warnings/errors were empty.
+- No checkout was entered, no order was created, no existing cart line was removed, and no theme/catalog/price/inventory/backend/AWS mutation occurred. The acceptance lines remain only in the current password-protected browser cart session.
+- Durable evidence: `docs/sleep-system-cart-acceptance/LIVE_CART_ACCEPTANCE.json`. Evidence validator: `node tests/runSleepSystemLiveCartAcceptanceTests.mjs`.
+- Exact next action: run the bounded P1-009 automated accessibility scan on homepage, one collection, one standard PDP, one Dual Comfort PDP, Sleep Systems, and cart; correct only verified storefront defects and keep Snoozer/backend work deferred.
 
 ## Live storefront polish pass 1 — 2026-11-13
 

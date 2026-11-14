@@ -1,6 +1,6 @@
 # MySnoozePod.com Decision Register
 
-Last updated: 2026-11-12 — Live Sleep System configurator correction
+Last updated: 2026-11-14 — Live Sleep System cart acceptance
 
 ## Confirmed owner decisions and constraints
 
@@ -221,6 +221,7 @@ Last updated: 2026-11-12 — Live Sleep System configurator correction
 | F-113 | Published theme `139216420925` matches all 17 allowlisted storefront-polish assets. Unpublished recovery theme `139460542525` remained hash-identical for the same asset set, and both pre-mutation states have a private recoverable backup. | **VERIFIED SHOPIFY THEME API READBACK** — `docs/storefront-polish-pass-1/SHOPIFY_READBACK.json`, 2026-11-13. |
 | F-114 | Live desktop and 430px checks passed for homepage, Shop King, 12-inch Dual Comfort, Sleep Systems, managed content, and cart. The pages showed no document-level horizontal overflow, no rendered Ask Snoozer prompt in the polished shopping flow, and no browser warning/error. | **VERIFIED ACTUAL PASSWORD-PROTECTED LIVE STOREFRONT** — 2026-11-13. |
 | F-115 | Sleep Systems still renders four size/base dropdown pairs and two independent left/right Dual Comfort pairs. Product Add to Cart and cart Checkout remain present/enabled where valid, but this polish pass submitted neither cart mutations nor checkout/order operations. | **VERIFIED SOURCE + LIVE RENDERING; TRANSACTION ACCEPTANCE NOT REPEATED** — 2026-11-13. |
+| F-116 | The actual password-protected storefront added and reconciled four complete systems: Standard Queen Memory Foam + Flex L; Dual Comfort Queen + Flex LSX with Medium Soft/Firm; Split Head Queen Hybrid + locked Flex SH; and Split King as two Twin XL 14-inch Dual Comfort mattresses plus two Twin XL Flex LSX bases with Soft/Medium Firm. Exact variant IDs, SKUs, quantities, operation tags, line properties, and displayed-to-cart total deltas matched; the pre-existing cart line remained present. No checkout or order was created. | **VERIFIED ACTUAL SHOPIFY AJAX CART + CART JSON READBACK** — `docs/sleep-system-cart-acceptance/LIVE_CART_ACCEPTANCE.json`, 2026-11-14. |
 
 ## Codi recommendations — not owner decisions
 
@@ -249,7 +250,7 @@ Last updated: 2026-11-12 — Live Sleep System configurator correction
 | A-008 | Identify the single approved Zoho SalesIQ widget/account and approve removal of the other initialization in a later phase. | Two widget IDs are present; code cannot determine which business account is authoritative. |
 | A-009 | Confirm the analytics/pixel requirements and account owners for MVP. | No repository implementation was found and admin-side configuration was not verified. |
 | A-010 | **RESOLVED:** P1-001 inspection/documentation was authorized and completed without implementation or production changes. | P1-001 directive and this reconciliation record. |
-| A-011 | **PARTIALLY RESOLVED:** P1-006A implementation and available-environment E2E are complete. The Draft catalog now includes approved mattresses and accessories but no publication-ready complete bundle, so complete-bundle Ajax Cart acceptance remains pending. | Deterministic checks passed; Draft catalog presence is not storefront Ajax Cart acceptance evidence. |
+| A-011 | **RESOLVED FOR THE APPROVED SLEEP SYSTEM PATHS:** P1-006A deterministic failure/ambiguity coverage remains green, and the live storefront now has successful complete-bundle reconciliation evidence for Standard, Dual Comfort, Split Head, and Split King. | F-116 verifies actual Shopify success paths; destructive network-failure injection remains fixture-backed rather than performed against the live storefront. |
 | A-012 | **RESOLVED:** S7, H6, M3, and M5 are approved with the customer-facing titles recorded in D-030 and staged as Draft. | Mattress Catalog Implementation directive and Shopify readback. |
 | A-013 | Approve the exact two M3 and two M5 showroom comfort configurations after vendor-supported combinations are confirmed. | Component rows do not prove every left/right combination is supported. |
 | A-014 | Approve customer-facing names/content and live prices after current vendor policy verification, including comparable LSX/SH pricing. | Historical UPP/MAP and the working matched-price principle are not live authority. |

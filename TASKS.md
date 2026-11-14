@@ -1,7 +1,17 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-13 — Live storefront polish pass 1 implemented and browser-verified
-Queue state: The live storefront now has a tighter homepage, product, collection, content, and cart hierarchy; Snoozer-facing UI is deferred for the backend phase; commerce controls and Sleep System rules remain intact on published theme `139216420925`.
+Last updated: 2026-11-14 — Live Sleep System cart acceptance passed
+Queue state: The polished storefront and four-path Sleep System commerce flow are live and cart-verified on theme `139216420925`; Snoozer-facing UI remains deferred for the backend phase.
+
+### Live Sleep System cart acceptance
+
+- **Status:** PASSED ON THE ACTUAL PASSWORD-PROTECTED SHOPIFY STOREFRONT.
+- **Cases:** Standard Queen Memory Foam + Flex L; Dual Comfort Queen + Flex LSX with Medium Soft/Firm; Split Head Queen Hybrid + locked Flex SH; Split King 14-inch Dual Comfort + Flex LSX with Soft/Medium Firm.
+- **Reconciliation:** all four displayed totals matched the exact cart delta; each operation produced one tagged mattress line and one tagged base line; Split King used quantity two of the actual Twin XL variants.
+- **Integrity:** existing cart content stayed present, operation IDs were unique, exact variants/SKUs/quantities/properties were verified, and the browser console had no warnings/errors.
+- **Safety:** no checkout, order, theme/catalog/price/inventory mutation, deployment, Snoozer backend, or AWS work occurred. Test lines remain only in the current password-protected browser cart session.
+- **Evidence:** `docs/sleep-system-cart-acceptance/LIVE_CART_ACCEPTANCE.json`; `tests/runSleepSystemLiveCartAcceptanceTests.mjs`.
+- **Next:** run the bounded P1-009 automated accessibility scan across the primary storefront journey.
 
 ### Live storefront polish pass 1
 
@@ -13,7 +23,7 @@ Queue state: The live storefront now has a tighter homepage, product, collection
 - **Validation:** polish `31`; Product Page/collection `69`; Product Page v2 `27`; guided shopping; website `45`; strategy `25`; P1-002 `34` groups; JavaScript syntax; desktop and `430px` live routes; clean browser console.
 - **Safety:** 17 live-theme assets matched source; rollback theme `139460542525` unchanged; no catalog, variant, price, inventory, collection, menu, order, checkout, Snoozer backend, AWS, or identity changes.
 - **Evidence:** `docs/storefront-polish-pass-1/SHOPIFY_READBACK.json`; private recovery path and exact continuation are recorded in `HANDOFF.md`.
-- **Next:** controlled live cart acceptance for Standard, Dual Comfort, Split Head, and Split King systems without checkout/order submission.
+- **Next:** complete the bounded P1-009 automated accessibility scan; live cart acceptance is complete.
 
 ### Live Sleep System configurator correction
 
@@ -23,7 +33,7 @@ Queue state: The live storefront now has a tighter homepage, product, collection
 - **Dual Comfort:** both Dual Comfort system cards expose independent Soft, Medium Soft, Medium Firm, and Firm dropdown choices for each side. Add to Cart is enabled only after both sides are selected, and the values are carried as mattress line properties.
 - **Validation:** headless real-click fixture passed; actual live clicks passed for Standard, Split Head, and Split King including Dual Comfort and Flex LSX choices; curated contract `1,680`; storefront strategy `25`; Product Page v2 `28`; cart-integrity regression and all `21` focused cart scenarios passed; live assets match source; rollback theme `139460542525` is unchanged.
 - **Evidence:** `docs/sleep-system-configurator/SHOPIFY_READBACK.json`; private recovery paths and test boundary are recorded in `HANDOFF.md`.
-- **Next:** controlled live cart acceptance for Standard, Dual Comfort, Split Head, and Split King without checkout or order submission.
+- **Next:** complete the bounded P1-009 automated accessibility scan; live cart acceptance is complete.
 
 ### Theme publication
 
