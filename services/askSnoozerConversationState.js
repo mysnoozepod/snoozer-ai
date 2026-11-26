@@ -82,12 +82,12 @@ function getConversationState(context = {}) {
   };
 }
 
-function compactConversationState(context = {}) {
+function compactConversationState(context = {}, { preferenceLimit = 12 } = {}) {
   const state = getConversationState(context);
   const references = state.references || {};
   return {
     version: state.version,
-    preferences: Object.values(state.preferences || {}).filter((item) => item?.status !== "removed").slice(-12),
+    preferences: Object.values(state.preferences || {}).filter((item) => item?.status !== "removed").slice(-preferenceLimit),
     references: {
       presentedProductHandles: unique(references.presentedProductHandles || []).slice(-6),
       comparisonProductHandles: unique(references.comparisonProductHandles || []).slice(0, 2),

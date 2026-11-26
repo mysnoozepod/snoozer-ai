@@ -4,10 +4,18 @@ const { planTrustedAdvisorTurnWithModel } = require("./askSnoozerModelPlannerRun
 const { FINAL_MODEL, FINAL_REASONING_EFFORT, callOpenAIResponses } = require("./openaiModelRuntime");
 const { loadShowroomManifest } = require("./showroomManifest");
 const { snoozerConversationModelSchema, validateConversationResponse } = require("./askSnoozerConversationContracts");
-const { conversationToolDefinitions, executeConversationTool, groundedHandlesFromToolResult } = require("./askSnoozerConversationTools");
+const { conversationToolDefinitions, executeConversationTool, groundedHandlesFromToolResult, WEBSITE_TOOL_NAMES } = require("./askSnoozerConversationTools");
 const { compactConversationState, existingReferenceHandles, normalizedConversationHistory } = require("./askSnoozerConversationState");
 const { buildCartAction } = require("./askSnoozerConfigurationQuote");
 const { buildProductCardTruth } = require("./askSnoozerProductCardTruth");
+const {
+  WEBSITE_ASSESSMENT_INSTRUCTIONS,
+  getWebsiteMattressCatalog,
+  getWebsiteProductFacts,
+  isWebsiteAssessmentSource,
+  websiteManifest,
+  websiteNavigationActions,
+} = require("./askSnoozerWebsiteAssessment");
 
 const CONVERSATION_CORE_VERSION = "conversation-core.v1.3";
 const EXPECTED_MODEL = "gpt-6.1-sol";
@@ -69,13 +77,13 @@ function noteModelFailure(config) {
   if (modelCircuit.failures >= config.breakerThreshold && !modelCircuit.openedAt) modelCircuit.openedAt = Date.now();
 }
 
-function buildConversationEnvelope({ message = "", context = {}, history = [], manifest = loadShowroomManifest(), preparedEvidence = [] } = {}) {
+function buildConversationEnvelope({ message = "", context = {}, history = [], manifest = loadShowroomManifest(), preparedEvidence = [], websiteAssessment = false } = {}) {
   const recentTurns = normalizedConversationHistory(history, context?.recentConversation || [], message);
   return {
     version: CONVERSATION_CORE_VERSION,
     shopperMessage: clean(message).slice(0, 1800),
     recentTurns,
-    conversationState: compactConversationState(context),
+    conversationState: compactConversationState(context, websiteAssessment ? { preferenceLimit: 24 } : undefined),
     journey: {
       stage: clean(context?.activeJourney?.journeyStage || "exploring"),
       currentSurface: clean(context?.activeJourney?.currentSurface || context?.pageType || "ask_snoozer"),
@@ -90,7 +98,7 @@ function buildConversationEnvelope({ message = "", context = {}, history = [], m
   };
 }
 
-function buildCoreInstructions() {
+function buildCoreInstructions(websiteAssessment) {
   return [
     "You are Snoozer, MySnoozePod's expert showroom mattress advisor and the single conversational reasoner for free-form shopper language.",
     "Understand and answer the whole request; never reduce it to a task label.",
@@ -128,7 +136,9 @@ function buildCoreInstructions() {
     "For every dollar amount in reply, add a monetaryClaims entry. Classify verified_product_price, verified_starting_at_price, verified_exact_variant_price, verified_bundle_subtotal, shopper_budget, hypothetical_spending_example, suggested_budget_threshold, or unverified_product_price exactly.",
     "Verified commerce money requires its authoritative tool and source key. Shopper budgets and hypothetical amounts require an exact shopperEvidence phrase from the current message. Suggested budget thresholds require no product handle or source tool and must be phrased explicitly as a budget question or spending threshold, never as a product price.",
     "Never relabel an unsupported product price as a budget or hypothetical amount. If commerce is unavailable, omit the amount and state that live pricing could not be verified.",
-    "Before proposing add_to_cart, call quote_configuration. Only a complete cartReady result can produce a cart proposal; the server builds the cart lines.",
+    ...(websiteAssessment ? WEBSITE_ASSESSMENT_INSTRUCTIONS : [
+      "Before proposing add_to_cart, call quote_configuration. Only a complete cartReady result can produce a cart proposal; the server builds the cart lines.",
+    ]),
   ].join(" ");
 }
 
@@ -147,6 +157,7 @@ function toolOutputForModel(result) {
     exactVariantResolved: product?.exactVariantResolved === true,
     availabilityResolved: product?.availabilityResolved === true,
     available: product?.available ?? null,
+    ...(Array.isArray(product?.offeredSizes) ? { offeredSizes: product.offeredSizes, pricingReason: product.pricingReason } : {}),
   });
   const compactProduct = (item = {}) => ({
     handle: item?.handle || item?.commerce?.handle || null,
@@ -211,7 +222,7 @@ function sizeFromContext(context = {}) {
   return clean(preference?.value || context?.activeJourney?.activeConfiguration?.size || context?.askSnoozerWorkingMemory?.activeDeal?.activeSize);
 }
 
-async function responseProducts(response, toolResults, manifest = {}, { shopify, context = {} } = {}) {
+async function responseProducts(response, toolResults, manifest = {}, { shopify, context = {}, websiteAssessment = false } = {}) {
   const presentation = cardPresentationPolicy(response, context, toolResults);
   if (!presentation.show) return { products: [], presentation, enrichment: { status: "suppressed", requested: presentation.handles.length, displayed: 0, latencyMs: 0 } };
   const wanted = new Set(unique(response?.productHandles || []));
@@ -221,13 +232,14 @@ async function responseProducts(response, toolResults, manifest = {}, { shopify,
     for (const item of result?.data?.products || []) {
       const product = item?.commerce?.handle ? item.commerce : item;
       const handle = clean(product?.handle).toLowerCase();
-      if (handle && wanted.has(handle) && !byHandle.has(handle)) byHandle.set(handle, product);
+      if (websiteAssessment && product?.activeSize && !product.exactVariantResolved) continue;
+      if (handle && wanted.has(handle) && (websiteAssessment || !byHandle.has(handle))) byHandle.set(handle, product);
     }
   }
   const missing = [...wanted].filter((handle) => !byHandle.has(handle));
   const hydrationStartedAt = Date.now();
   let hydrationError = null;
-  if (missing.length && typeof shopify?.fetchProductsByHandles === "function") {
+  if (!websiteAssessment && missing.length && typeof shopify?.fetchProductsByHandles === "function") {
     try {
       const result = await shopify.fetchProductsByHandles({ handles: missing, lite: false });
       for (const product of result?.items || []) {
@@ -239,7 +251,8 @@ async function responseProducts(response, toolResults, manifest = {}, { shopify,
       hydrationError = clean(error?.code || error?.message || "commerce_hydration_failed");
     }
   }
-  for (const definition of manifest?.products || []) {
+  const fallbackDefinitions = websiteAssessment ? [] : (manifest?.products || []);
+  for (const definition of fallbackDefinitions) {
     const handle = clean(definition?.handle).toLowerCase();
     if (!handle || !wanted.has(handle) || byHandle.has(handle) || definition?.active === false) continue;
     byHandle.set(handle, {
@@ -391,6 +404,7 @@ function preparedConfiguration(message = "", context = {}, manifest = {}, handle
 }
 
 function amountKey(value) {
+  if (value == null || value === "") return null;
   const amount = Number(value);
   return Number.isFinite(amount) && amount >= 0 ? amount.toFixed(2) : null;
 }
@@ -590,7 +604,7 @@ function hasUsableNonDiscoveryEvidence(result = {}) {
 }
 
 async function runSnoozerConversationCore({
-  requestId, message = "", history = [], context = {}, event = null, identity = null,
+  requestId, message = "", history = [], context = {}, event = null, identity = null, source = "",
   shopify, rewardsService = null, log = () => {}, runtime = callOpenAIResponses,
   env = process.env, toolOverrides = {}, remainingTimeMs = null,
 } = {}) {
@@ -610,11 +624,24 @@ async function runSnoozerConversationCore({
   }
   if (!circuitAvailable(config)) return fallbackResult("model_circuit_open", [], [], config, startedAt);
 
-  const manifest = toolOverrides.manifest || loadShowroomManifest();
+  const websiteAssessment = isWebsiteAssessmentSource(source);
+  const manifest = websiteAssessment ? websiteManifest : (toolOverrides.manifest || loadShowroomManifest());
+  const toolDependencies = {
+    event, identity, shopify, rewardsService, manifest, ...toolOverrides,
+    ...(websiteAssessment ? {
+      websiteAssessment, manifest,
+      getShowroomCommerceCatalog: getWebsiteMattressCatalog,
+      loadTrustedAdvisorFactPack: getWebsiteProductFacts,
+    } : {}),
+  };
+  const toolDefinitions = websiteAssessment
+    ? conversationToolDefinitions.filter(({ name }) => WEBSITE_TOOL_NAMES.includes(name))
+    : conversationToolDefinitions;
+  const instructions = buildCoreInstructions(websiteAssessment);
   const toolResults = [];
   let toolExecutionMs = 0;
   const rejected = new Set(compactConversationState(context).rejectedProductHandles || []);
-  const preparedHandles = unique([
+  const preparedHandles = websiteAssessment ? [] : unique([
     ...existingReferenceHandles(context),
     ...mentionedApprovedHandles(message, manifest),
   ])
@@ -637,9 +664,7 @@ async function runSnoozerConversationCore({
       }]] : []),
     ];
     const preparedResults = await Promise.all(preparedRequests.map(async ([name, args]) => {
-      const result = await executeConversationTool(name, args, {
-        event, identity, shopify, rewardsService, manifest, ...toolOverrides,
-      });
+      const result = await executeConversationTool(name, args, toolDependencies);
       result.prepared = true;
       return result;
     }));
@@ -648,7 +673,7 @@ async function runSnoozerConversationCore({
     toolExecutionMs += Date.now() - preparedStartedAt;
   }
   const preModelMs = Date.now() - startedAt;
-  const envelope = buildConversationEnvelope({ message, context, history, manifest, preparedEvidence });
+  const envelope = buildConversationEnvelope({ message, context, history, manifest, preparedEvidence, websiteAssessment });
   const input = [{ role: "user", content: JSON.stringify(envelope) }];
   const modelCalls = [];
   let toolRounds = 0;
@@ -668,9 +693,9 @@ async function runSnoozerConversationCore({
         reqId: `${requestId || "conversation_core"}_${modelCalls.length + 1}`,
         model: config.model,
         reasoningEffort: config.reasoningEffort,
-        instructions: buildCoreInstructions(),
+        instructions,
         input,
-        tools: conversationToolDefinitions,
+        tools: toolDefinitions,
         text: { format: { type: "json_schema", name: "snoozer_conversation_response", strict: true, schema: snoozerConversationModelSchema } },
         maxOutputTokens: 1800,
         timeoutMs: Math.min(config.modelTimeoutMs, Math.max(500, remaining - RESPONSE_RESERVE_MS)),
@@ -695,9 +720,7 @@ async function runSnoozerConversationCore({
         const toolBudgetMs = Math.max(250, Math.min(8000, config.totalTimeoutMs - (Date.now() - startedAt) - RESPONSE_RESERVE_MS));
         const toolRoundStartedAt = Date.now();
         const results = await Promise.all(response.functionCalls.map((call) => withToolDeadline(
-          executeConversationTool(call.name, call.arguments, {
-            event, identity, shopify, rewardsService, manifest, ...toolOverrides,
-          }),
+          executeConversationTool(call.name, call.arguments, toolDependencies),
           toolBudgetMs,
           call.name
         )));
@@ -716,6 +739,7 @@ async function runSnoozerConversationCore({
         rejectedProductHandles: compactConversationState(context).rejectedProductHandles,
         successfulTools: toolResults.filter((result) => result.ok).map((result) => result.name),
         manifest,
+        websiteAssessment,
       });
       if (
         finalValidation.value?.fallback?.used === true &&
@@ -727,8 +751,12 @@ async function runSnoozerConversationCore({
         finalValidation.value.priority = "normal";
         finalValidation.value.ttlMs = 5000;
       }
-      const responseText = clean(response.text);
-      if (!context?.assessment && /\b(?:your|the) assessment\b|originally recommended from your assessment/i.test(responseText)) finalValidation.errors.push("fabricated_assessment_history");
+      const responseText = websiteAssessment ? clean(finalValidation.value?.reply) : clean(response.text);
+      const assessmentHistory = websiteAssessment
+        ? /\b(?:based on|from|you completed|you saved) (?:your|the) (?:snooze |sleep )?assessment\b/i
+        : /\b(?:your|the) assessment\b|originally recommended from your assessment/i;
+      if (!context?.assessment && assessmentHistory.test(responseText)) finalValidation.errors.push("fabricated_assessment_history");
+      if (websiteAssessment && /https?:\/\/|\bwww\./i.test(responseText)) finalValidation.errors.push("use_structured_navigation");
       if (/\b(?:will|guaranteed to) cure\b/i.test(responseText)) finalValidation.errors.push("medical_guarantee");
       finalValidation.errors.push(...validateReplyMonetaryClaims(finalValidation.value, toolResults, message));
       validationMs += Date.now() - validationStartedAt;
@@ -775,7 +803,7 @@ async function runSnoozerConversationCore({
       }
       const validated = finalValidation.value;
       const hydrationStartedAt = Date.now();
-      const productResult = await responseProducts(validated, toolResults, manifest, { shopify, context });
+      const productResult = await responseProducts(validated, toolResults, manifest, { shopify, context, websiteAssessment });
       productHydrationMs += Date.now() - hydrationStartedAt;
       const finalTelemetry = telemetry({
         config, modelCalls, toolResults, toolRounds, totalToolCalls, startedAt, finalValidation,
@@ -797,7 +825,10 @@ async function runSnoozerConversationCore({
         status: validated.fallback.used ? "fallback" : "answered",
         ...validated,
         products: productResult.products,
-        actions: validatedActions(validated, toolResults),
+        actions: websiteAssessment
+          ? websiteNavigationActions(validated.actionProposals, toolResults)
+          : validatedActions(validated, toolResults),
+        ...(websiteAssessment ? { chips: validated.chips.filter((chip) => chip.type === "prompt" && !chip.target) } : {}),
         quote: latestCompleteQuote(toolResults),
         toolResults,
         stateValidation: finalValidation.stateValidation,

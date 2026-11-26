@@ -65,11 +65,22 @@ function patchDependencies() {
     }
     return {};
   };
-  modelCore.runSnoozerConversationCore = async ({ message, context, history }) => {
+  modelCore.runSnoozerConversationCore = async ({ message, context, history, source }) => {
     coreCalls += 1;
+    assert.deepEqual(history, []);
+    assert.match(context.sessionId, /^website_[a-f0-9-]{36}$/);
+    assert.equal(source, "website");
+    if (message.includes("book")) {
+      assert.equal(context.snoozerConversationState.preferences["shopper:sleep_position"].value, "side");
+      assert.equal(context.recentConversation.at(-1).role, "assistant");
+      return {
+        ok: true,
+        reply: "You can choose a time on the booking page.",
+        actions: [{ type: "navigate", label: "Book a Snooze Session", target: "/pages/book-a-snooze-session", payload: {} }],
+        fallback: { used: false },
+      };
+    }
     assert(message.includes("side sleeper"));
-    assert(Array.isArray(history));
-    assert(context.sessionId);
     return {
       ok: true,
       status: "answered",
@@ -124,8 +135,7 @@ async function main() {
     const { lambdaHandler } = require("../index");
     const response = await lambdaHandler(event({
       sessionId,
-      accessCode: "9876",
-      shopperId: "9876",
+      source: "website",
       history: [],
       message: "I'm a side sleeper, my shoulders get sore, and I sleep hot. Where should I start?",
     }));
@@ -145,7 +155,21 @@ async function main() {
     assert.equal(Object.keys(stored.snoozerConversationState.preferences).length, 3);
     assert.deepEqual(stored.snoozerConversationState.references.comparisonProductHandles, ["12-all-foam-mattress", "12-dual-comfort-hybrid"]);
     assert.equal(stored.recentConversation.at(-1).role, "assistant");
-    console.log("Ask Snoozer Conversation Core route test passed (active cutover, Sol metadata, post-validation persistence, and frontend contract).");
+    assert.match(body.sessionId, /^website_[a-f0-9-]{36}$/);
+    const bookingResponse = await lambdaHandler(event({
+      sessionId: body.sessionId, source: "website", message: "I'd like to book.",
+      context: { snoozerConversationState: { preferences: { "shopper:sleep_position": { value: "back" } } } },
+      history: [{ role: "assistant", content: "A different conversation." }],
+    }));
+    assert.equal(coreCalls, 2);
+    const booking = JSON.parse(bookingResponse.body);
+    assert.equal(booking.sessionId, body.sessionId);
+    assert.equal(booking.actions[0]?.target, "/pages/book-a-snooze-session");
+    const typedResult = await lambdaHandler(event({ sessionId: body.sessionId, source: "website", command: {} }));
+    assert.equal(typedResult.statusCode, 400);
+    assert.equal(JSON.parse(typedResult.body).error.code, "E_WEBSITE_TEXT_REQUIRED");
+    assert.equal(coreCalls, 2);
+    console.log("Ask Snoozer Conversation Core route test passed (guest session continuity, validated preferences, booking action, and typed command isolation).");
   } finally {
     restore();
   }

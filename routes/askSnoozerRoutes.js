@@ -1,3 +1,6 @@
+const { randomUUID } = require("node:crypto");
+const { isWebsiteAssessmentSource } = require("../services/askSnoozerWebsiteAssessment");
+
 function buildBoundedConversationHistory(history = []) {
   return (Array.isArray(history) ? history : [])
     .slice(-8)
@@ -147,17 +150,34 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
 
     const msg = payload.message || payload.prompt || payload.text || "";
     const mode = payload.mode || undefined;
-    const effectiveSessionId = deriveEffectiveThreadId(event, {
-      ...payload,
-      preferSnoozeCodeSession: true,
-    });
     const askSourceSurface =
       payload.source ||
       payload?.context?.session?.source ||
       payload?.context?.source ||
       "ask_snoozer";
+    const websiteAssessment = isWebsiteAssessmentSource(askSourceSurface);
+    const requestedSessionId = deriveEffectiveThreadId(event, { ...payload, preferSnoozeCodeSession: !websiteAssessment });
+    const isWebsiteSessionId = /^website_[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(requestedSessionId);
+    const effectiveSessionId = websiteAssessment === isWebsiteSessionId
+      ? requestedSessionId
+      : `${websiteAssessment ? "website" : "sess"}_${randomUUID()}`;
+    const conversationCoreConfig = typeof getConversationCoreConfig === "function"
+      ? getConversationCoreConfig(process.env)
+      : { mode: "legacy" };
+    const conversationCoreMode = String(conversationCoreConfig?.mode || "legacy").trim().toLowerCase();
+    if (websiteAssessment && (conversationCoreMode !== "active" || typeof runSnoozerConversationCore !== "function" || Object.hasOwn(payload, "command"))) {
+      const commandSupplied = Object.hasOwn(payload, "command");
+      const reply = commandSupplied ? "Send me a question and I can help." : "I’m unavailable right now. Please try again in a moment.";
+      return flatResponse(event, commandSupplied ? 400 : 503, buildErrorResponse({
+        requestId: traceId,
+        latencyMs: Date.now() - startedAt,
+        context: { sessionId: effectiveSessionId },
+        code: commandSupplied ? "E_WEBSITE_TEXT_REQUIRED" : "E_WEBSITE_ASSISTANT_UNAVAILABLE",
+        message: reply,
+      }), { "X-Session-Id": effectiveSessionId });
+    }
     const incomingAskShopperId = cleanIdentityValue(payload?.shopperId);
-    const askIdentity = await safeResolveSnoozeIdentity(
+    const askIdentity = websiteAssessment ? null : await safeResolveSnoozeIdentity(
       {
         shopperId: incomingAskShopperId,
         snoozeCode:
@@ -354,7 +374,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     }
 
     // 2) Merge callerContext into SCO and normalize pod anchors
-    const callerContext = (payload.context && typeof payload.context === "object" ? payload.context : {}) || {};
+    const callerContext = (!websiteAssessment && payload.context && typeof payload.context === "object" ? payload.context : {}) || {};
 
     let context =
       sco && typeof sco === "object"
@@ -398,7 +418,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         ? payload.page.device
       : context?.device || null;
 
-    const visitResolution = typeof resolveAskSnoozerVisitLifecycle === "function"
+    const visitResolution = !websiteAssessment && typeof resolveAskSnoozerVisitLifecycle === "function"
       ? resolveAskSnoozerVisitLifecycle({
           context,
           storedContext: sco,
@@ -417,7 +437,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         ...visitMetadata,
       });
     }
-    const incomingConversation = buildBoundedConversationHistory(payload?.history);
+    const incomingConversation = websiteAssessment ? [] : buildBoundedConversationHistory(payload?.history);
     context.recentConversation = incomingConversation.length
       ? incomingConversation
       : Array.isArray(context.recentConversation)
@@ -430,7 +450,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
     // 3) Attach assessment and canonical recommendation context
     let storedAssessment = null;
     try {
-      if (shopperId) {
+      if (!websiteAssessment && shopperId) {
         storedAssessment = await getAssessmentResult(shopperId);
         if (storedAssessment) context.assessment = storedAssessment;
 
@@ -470,7 +490,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         }
       }
 
-      const canonicalContext = await resolveCanonicalRecommendationContext({
+      const canonicalContext = websiteAssessment ? null : await resolveCanonicalRecommendationContext({
         payload,
         context,
         storedAssessment,
@@ -511,7 +531,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       context,
       storedAssessment,
     });
-    const previousAskProfileResult = await safeGetCustomerProfile(
+    const previousAskProfileResult = websiteAssessment ? null : await safeGetCustomerProfile(
       {
         profileId: askIdentity?.profileId || undefined,
         shopperId: shopperId || undefined,
@@ -591,7 +611,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         log("active-journey.ask.error", error.code || error.message, { traceId, phase });
       }
     };
-    if (activeJourneyService && typeof activeJourneyService.resolve === "function") {
+    if (!websiteAssessment && activeJourneyService && typeof activeJourneyService.resolve === "function") {
       try {
         activeJourneyResolution = await activeJourneyService.resolve({
           identity: { ...askIdentity, shopperId, sessionId: effectiveSessionId },
@@ -617,10 +637,6 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
       }
     }
 
-    const conversationCoreConfig = typeof getConversationCoreConfig === "function"
-      ? getConversationCoreConfig(process.env)
-      : { mode: "legacy" };
-    const conversationCoreMode = String(conversationCoreConfig?.mode || "legacy").trim().toLowerCase();
     if (
       !showroomCommand &&
       ["active", "shadow"].includes(conversationCoreMode) &&
@@ -636,7 +652,8 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
         coreResult = await runSnoozerConversationCore({
           requestId: traceId,
           message: msg,
-          history: payload?.history,
+          history: websiteAssessment ? [] : payload?.history,
+          source: askSourceSurface,
           context,
           event,
           identity: { ...askIdentity, shopperId, sessionId: effectiveSessionId },

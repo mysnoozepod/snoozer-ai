@@ -4,6 +4,7 @@ const { loadTrustedAdvisorFactPack } = require("./askSnoozerAdvisorFactPack");
 const { resolveAskSnoozerPolicyTruth } = require("./askSnoozerPolicy");
 const { quoteConfiguration } = require("./askSnoozerConfigurationQuote");
 const shopperCart = require("./shopperCart");
+const { websiteProductCard } = require("./askSnoozerWebsiteAssessment");
 
 const TOOL_NAMES = Object.freeze([
   "discover_products",
@@ -14,6 +15,7 @@ const TOOL_NAMES = Object.freeze([
   "get_rewards",
   "get_cart",
 ]);
+const WEBSITE_TOOL_NAMES = ["discover_products", "get_product_facts", "get_live_commerce", "get_policy"];
 
 function clean(value) {
   return String(value == null ? "" : value).trim();
@@ -204,6 +206,7 @@ async function discoverProducts(args, deps) {
     showroomManifest: deps.manifest,
   });
   const definitions = approvedProductMap(deps.manifest);
+  const productCard = deps.websiteAssessment ? websiteProductCard : buildProductCardTruth;
   const exclusions = new Set(unique(args.exclusions || []));
   const limit = Math.max(1, Math.min(4, Number(args.limit) || 2));
   let ranked = (catalog.products || [])
@@ -212,18 +215,25 @@ async function discoverProducts(args, deps) {
     .filter((product) => !exclusions.has(clean(product.handle).toLowerCase()))
     .map((product, index) => {
       const definition = definitions.get(clean(product.handle).toLowerCase());
-      const scored = scoreProduct(definition, args);
+      const dualComfortMatch = args.partnerConsiderations && definition.attributes?.dualComfort;
+      const scored = deps.websiteAssessment
+        ? { score: dualComfortMatch ? 1 : 0, reasons: dualComfortMatch ? ["verified separate comfort choices"] : [] }
+        : scoreProduct(definition, args);
       return { product, definition, score: scored.score, reasons: scored.reasons, index };
     })
     .map((candidate) => ({
       ...candidate,
-      commerce: buildProductCardTruth(candidate.product, { activeSize: clean(args.size) }),
+      commerce: productCard(candidate.product, { activeSize: clean(args.size) }),
     }));
+
+  if (deps.websiteAssessment && args.size) {
+    ranked = ranked.filter(({ commerce }) => commerce.exactVariantResolved && commerce.available === true);
+  }
 
   if (args.budgetMax !== null && args.budgetMax !== undefined && Number.isFinite(Number(args.budgetMax)) && args.size) {
     ranked = ranked.filter(({ commerce }) => (
       commerce?.exactVariantResolved === true &&
-      Number.isFinite(Number(commerce?.price)) &&
+      Number.isFinite(commerce.price) &&
       Number(commerce.price) <= Number(args.budgetMax)
     ));
   }
@@ -232,8 +242,8 @@ async function discoverProducts(args, deps) {
     if (pricePreference !== "fit") {
       const leftPrice = Number(left.commerce?.price);
       const rightPrice = Number(right.commerce?.price);
-      const leftResolved = left.commerce?.exactVariantResolved === true && Number.isFinite(leftPrice);
-      const rightResolved = right.commerce?.exactVariantResolved === true && Number.isFinite(rightPrice);
+      const leftResolved = left.commerce?.exactVariantResolved === true && Number.isFinite(left.commerce.price);
+      const rightResolved = right.commerce?.exactVariantResolved === true && Number.isFinite(right.commerce.price);
       if (leftResolved !== rightResolved) return leftResolved ? -1 : 1;
       if (leftResolved && rightResolved && leftPrice !== rightPrice) return leftPrice - rightPrice;
     }
@@ -249,7 +259,7 @@ async function discoverProducts(args, deps) {
   });
   const factsByHandle = new Map((factPack?.productFacts || []).map((item) => [clean(item.handle).toLowerCase(), item]));
   return {
-    source: "approved_showroom_catalog",
+    source: deps.websiteAssessment ? "website_catalog" : "approved_showroom_catalog",
     catalogVersion: catalog.catalogVersion,
     selection: {
       pricePreference,
@@ -274,7 +284,7 @@ async function discoverProducts(args, deps) {
 async function executeConversationTool(name, rawArgs, deps = {}) {
   const startedAt = Date.now();
   const args = normalizeArgs(rawArgs);
-  if (!TOOL_NAMES.includes(name)) {
+  if (!(deps.websiteAssessment ? WEBSITE_TOOL_NAMES : TOOL_NAMES).includes(name)) {
     return { ok: false, name, error: "tool_not_allowlisted", latencyMs: Date.now() - startedAt };
   }
   const argumentError = validateToolArguments(name, args);
@@ -308,13 +318,15 @@ async function executeConversationTool(name, rawArgs, deps = {}) {
     } else if (name === "get_live_commerce") {
       const handles = assertHandles(args.productHandles);
       const result = await deps.shopify.fetchProductsByHandles({ handles, lite: false });
+      const items = (result?.items || []).filter((item) => handles.includes(clean(item?.handle).toLowerCase()));
+      const productCard = deps.websiteAssessment ? websiteProductCard : buildProductCardTruth;
       data = {
         source: "shopify_storefront",
-        products: (result?.items || []).map((product) => buildProductCardTruth(product, {
+        products: items.map((product) => productCard(product, {
           activeSize: clean(args.size),
           motionType: clean(args.motionKey || "standard"),
         })),
-        missingHandles: handles.filter((handle) => !(result?.items || []).some((item) => clean(item?.handle).toLowerCase() === handle)),
+        missingHandles: handles.filter((handle) => !items.some((item) => clean(item?.handle).toLowerCase() === handle)),
       };
     } else if (name === "quote_configuration") {
       assertHandles([args.mattressHandle, ...(args.baseHandle ? [args.baseHandle] : [])]);
@@ -363,6 +375,7 @@ function groundedHandlesFromToolResult(result = {}) {
 
 module.exports = {
   TOOL_NAMES,
+  WEBSITE_TOOL_NAMES,
   conversationToolDefinitions,
   executeConversationTool,
   groundedHandlesFromToolResult,

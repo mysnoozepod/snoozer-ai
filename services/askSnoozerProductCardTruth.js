@@ -29,7 +29,8 @@ function normalizeVariants(product = {}) {
   return source.map((variant) => {
     const id = clean(variant?.id || variant?.variantId || variant?.merchandiseId);
     if (!PRODUCT_VARIANT_GID.test(id)) return null;
-    const amount = Number(variant?.price?.amount ?? variant?.price);
+    const rawPrice = variant?.price?.amount ?? variant?.price;
+    const amount = rawPrice == null || rawPrice === "" ? NaN : Number(rawPrice);
     return {
       ...variant,
       id,

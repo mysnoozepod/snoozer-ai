@@ -5,6 +5,7 @@ const manifest = require("../data/showroom-manifest.v1.json");
 const {
   getConversationCoreConfig,
   runSnoozerConversationCore,
+  validateReplyMonetaryClaims,
 } = require("../services/askSnoozerModelCore");
 const {
   applyConversationState,
@@ -403,6 +404,161 @@ async function testPreparedExactConfigurationUsesOneModelCall() {
   assert.deepEqual(result.actions, []);
 }
 
+async function testWebsiteAssessmentContinuityAndGrounding() {
+  const handle = "12-inch-dual-comfort-mattress";
+  const mattress = product(handle, '12" Dual Comfort Mattress', "dual", 2000);
+  mattress.variants = [
+    { ...mattress.variants[0], id: "gid://shopify/ProductVariant/101" },
+    {
+      id: "gid://shopify/ProductVariant/102", price: null, availableForSale: false,
+      selectedOptions: [{ name: "Size", value: "King" }],
+    },
+    {
+      id: "gid://shopify/ProductVariant/103", price: { amount: "3000", currencyCode: "USD" }, availableForSale: true,
+      selectedOptions: [{ name: "Size", value: "Split Head Queen" }],
+    },
+  ];
+  const websiteShopify = {
+    fetchProductsByHandles: async ({ handles }) => {
+      assert(!handles.includes("12-dual-comfort-hybrid"));
+      return { items: handles.includes(handle) ? [mattress] : [] };
+    },
+  };
+  const navigate = (target, { handles = [], size = null, motionKey = null } = {}) => ({
+    type: "navigate", label: "Continue", target, productHandles: handles, size, motionKey, baseHandle: null, scope: "none",
+  });
+  const preference = (key, value, subject, evidence, operation = "set") => ({ key, value, subject, operation, evidence });
+  const commerce = (size) => ({ name: "get_live_commerce", args: { productHandles: [handle], size, motionKey: null } });
+  let context = {};
+
+  async function turn(message, response, { tool, inspectEnvelope, inspectEvidence } = {}) {
+    let callCount = 0;
+    const result = await runSnoozerConversationCore({
+      requestId: "website-assessment", source: "website", message, context, shopify: websiteShopify, env: ENV,
+      runtime: async ({ input, instructions, tools, text }) => {
+        callCount += 1;
+        assert.match(instructions, /first resolve whether they want an adjustable bed or want it to stay flat/);
+        assert.match(instructions, /one shared, unsplit Dual Comfort mattress/);
+        assert.match(instructions, /Full Split Queen is not offered/);
+        assert.match(instructions, /They can switch goals at any time/);
+        assert(!tools.some(({ name }) => ["quote_configuration", "get_cart", "get_rewards"].includes(name)));
+        assert(text.format.schema.properties.preferences.items.properties.key.enum.includes("motion_preference"));
+        const envelope = JSON.parse(input[0].content);
+        assert(envelope.approvedProducts.some((item) => item.handle === handle));
+        assert(!envelope.approvedProducts.some((item) => item.handle === "12-dual-comfort-hybrid"));
+        inspectEnvelope?.(envelope);
+        if (tool && callCount === 1) return {
+          text: "", output: [{ type: "function_call", name: tool.name, call_id: "website_read", arguments: JSON.stringify(tool.args) }],
+          functionCalls: [{ name: tool.name, callId: "website_read", arguments: tool.args }], tokens: {},
+        };
+        if (inspectEvidence) inspectEvidence(JSON.parse(input.at(-1).output));
+        return {
+          text: finalResponse({
+            productHandles: [], preferences: [], claims: [], decisions: [],
+            references: { presentedProductHandles: [], comparisonProductHandles: [], lastDiscussedProductHandle: null, lastDiscussedBaseHandle: null },
+            ...response,
+          }), output: [], functionCalls: [], tokens: {},
+        };
+      },
+    });
+    assert.equal(result.ok, true, JSON.stringify(result.telemetry));
+    context = applyConversationState({ context, response: result });
+    return result;
+  }
+
+  await turn("I'd like it soft, my partner wants it firm, and we'd like to keep a Queen bed.", {
+    reply: "You can have two feels on one shared mattress. Are you happy keeping the bed flat, or would you like it to adjust?",
+    responseMode: "clarification",
+    preferences: [
+      preference("firmness", "Soft", "shopper", "I'd like it soft"),
+      preference("firmness", "Firm", "partner", "my partner wants it firm"),
+      preference("size", "Queen", "household", "Queen bed"),
+    ],
+  });
+
+  const flat = await turn("Keep it flat. Can you show me one that works in Queen?", {
+    reply: "You can have Soft on your side and Firm on your partner's side on the same flat Queen mattress.",
+    preferences: [preference("motion_preference", "flat", "household", "Keep it flat")],
+    productHandles: [handle],
+    actionProposals: [navigate(null, { handles: [handle], size: "Queen" })],
+    claims: [{ kind: "product", sourceTool: "discover_products", sourceKey: handle, value: "Independent mattress comfort" }],
+  }, {
+    tool: { name: "discover_products", args: {
+      sleepPosition: null, temperature: null, pressureAreas: [], firmness: null, partnerConsiderations: "two different feels",
+      size: "Queen", budgetMax: null, pricePreference: "fit", exclusions: [], limit: 2,
+    } },
+    inspectEvidence: ({ data }) => {
+      assert.equal(data.products[0].curatedAttributes.dualComfort, true);
+      assert.equal(data.products[0].commerce.price, 2000);
+      assert.deepEqual(data.products[0].commerce.offeredSizes, ["Queen", "King"]);
+    },
+  });
+  assert.equal(flat.actions[0]?.target, `/products/${handle}?variant=101`);
+  assert.equal(flat.products[0]?.url, flat.actions[0]?.target);
+
+  const motion = await turn("Actually I'd like to sit up while they stay flat, but only at the head.", {
+    reply: "Half Split lets you raise your head while your partner stays flat. You can still keep Soft on your side and Firm on theirs.",
+    preferences: [preference("motion_preference", "half_split", "household", "only at the head", "correct")],
+    actionProposals: [navigate("/pages/sleep-systems", { motionKey: "half_split", size: "Queen" })],
+  }, { inspectEnvelope: ({ conversationState }) => {
+    assert(conversationState.preferences.some((item) => item.key === "motion_preference" && item.value === "flat"));
+  } });
+  assert.equal(motion.actions[0]?.target, "/pages/sleep-systems?system=split_head#sleep-systems");
+
+  const incompatible = await turn("What if we get Full Split in Queen?", {
+    reply: "Full Split isn't offered in Queen. Would you rather keep Queen with independent head movement or consider Split King for independent head and foot movement?",
+    responseMode: "clarification",
+    preferences: [preference("motion_preference", "full_split", "household", "Full Split in Queen")],
+    actionProposals: [navigate("/pages/sleep-systems", { motionKey: "full_split", size: "Queen" })],
+  });
+  assert.deepEqual(incompatible.actions, []);
+  assert.equal(incompatible.preferences.length, 0);
+
+  const unavailable = await turn('Is the 12" Dual Comfort available in King on its own?', {
+    reply: "The King variant is currently unavailable, and I couldn't verify its price.",
+    claims: [{ kind: "commerce", sourceTool: "get_live_commerce", sourceKey: handle, value: "King variant unavailable" }],
+    actionProposals: [navigate(null, { handles: [handle], size: "King" }), navigate("https://example.invalid")],
+  }, { tool: commerce("King"), inspectEvidence: ({ data }) => {
+    assert.equal(data.products[0].available, false);
+    assert.equal(data.products[0].price, null);
+  } });
+  assert.deepEqual(unavailable.actions.map(({ target }) => target), [`/products/${handle}?variant=102`]);
+  assert(validateReplyMonetaryClaims({
+    reply: "The King is $0.",
+    monetaryClaims: [{
+      semantic: "verified_exact_variant_price", amount: 0, currencyCode: "USD", productHandle: handle,
+      sourceTool: "get_live_commerce", sourceKey: handle, shopperEvidence: null, evidence: "$0",
+    }],
+  }, unavailable.toolResults).some((error) => error.startsWith("price_not_grounded")));
+
+  const splitMattressLink = await turn('Can I buy the 12-inch Dual Comfort in Split Head Queen on its own?', {
+    reply: "Split Head Queen is offered through Sleep Systems with an adjustable base.",
+    productHandles: [handle],
+    actionProposals: [
+      navigate(null, { handles: [handle] }),
+      navigate("/pages/sleep-systems", { motionKey: "half_split", size: "Queen" }),
+    ],
+  }, { tool: commerce("Split Head Queen") });
+  assert.deepEqual(splitMattressLink.products, []);
+  assert.deepEqual(splitMattressLink.actions.map(({ target }) => target), ["/pages/sleep-systems?system=split_head#sleep-systems"]);
+
+  const book = await turn("Can we try this in person? I'd like to book.", {
+    reply: "A Snooze Session gives you both a chance to compare the two feels and try raising just your side at the head.",
+    actionProposals: [navigate("/pages/book-a-snooze-session")],
+  }, { inspectEnvelope: ({ conversationState }) => {
+    const saved = Object.fromEntries(conversationState.preferences.map((item) => [`${item.subject}:${item.key}`, item.value]));
+    assert.deepEqual(saved, {
+      "shopper:firmness": "Soft", "partner:firmness": "Firm", "household:size": "Queen", "household:motion_preference": "half_split",
+    });
+  } });
+  assert.deepEqual(book.actions, [{ type: "navigate", label: "Book a Snooze Session", target: "/pages/book-a-snooze-session", payload: {} }]);
+  context = {};
+  const directBook = await turn("I'd like to book a Snooze Session.", {
+    reply: "You can choose a time on the booking page.", actionProposals: [navigate("/pages/book-a-snooze-session")],
+  });
+  assert.equal(directBook.actions[0]?.target, "/pages/book-a-snooze-session");
+}
+
 async function main() {
   assert.equal(getConversationCoreConfig({ ASK_SNOOZER_MODEL_ONLY: "cc_shadow", OPENAI_FINAL_MODEL: "gpt-6.1-sol" }).mode, "shadow");
   assert.equal(getConversationCoreConfig({ ASK_SNOOZER_MODEL_ONLY: "cc_active", OPENAI_FINAL_MODEL: "gpt-6.1-sol" }).mode, "active");
@@ -415,6 +571,8 @@ async function main() {
   await testToolArgumentBoundary();
   await testFactsCardHydrationFormattingAndRepeatSuppression();
   await testPreparedExactConfigurationUsesOneModelCall();
+  await testWebsiteAssessmentContinuityAndGrounding();
+  console.log("Website assessment tests passed (comfort/motion continuity, exact Shopify variant handoff, Full Split Queen, booking, and unavailable variant handling).");
   console.log("Ask Snoozer Conversation Core tests passed (Sol guard, tool correlation, grounding, state validation, history precedence, and safe fallback).");
 }
 

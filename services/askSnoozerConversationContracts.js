@@ -1,4 +1,5 @@
 const { loadShowroomManifest } = require("./showroomManifest");
+const { MOTION_PREFERENCES, WEBSITE_ASSESSMENT_KEYS } = require("./askSnoozerWebsiteAssessment");
 
 const CONVERSATION_CONTRACT_VERSION = "conversation-core.v1.1";
 const HUD_STATES = ["idle", "listening", "thinking", "speaking", "celebrate", "warning"];
@@ -7,6 +8,7 @@ const ACTION_TYPES = ["navigate", "start_assessment", "open_builder", "request_h
 const PREFERENCE_KEYS = [
   "sleep_position", "temperature", "pressure_area", "firmness", "partner_sleep_position",
   "partner_firmness", "size", "budget", "product_exclusion",
+  ...WEBSITE_ASSESSMENT_KEYS,
 ];
 const DECISION_STATUSES = ["candidate", "recommended", "considering", "accepted", "rejected", "quoted", "cart_proposed", "cart_confirmed"];
 const MONETARY_SEMANTICS = [
@@ -242,6 +244,7 @@ function validateConversationResponse(raw, {
   rejectedProductHandles = [],
   successfulTools = [],
   manifest = loadShowroomManifest(),
+  websiteAssessment = false,
 } = {}) {
   const value = parseStructuredConversationResponse(raw);
   const errors = [];
@@ -285,8 +288,16 @@ function validateConversationResponse(raw, {
   const acceptedPreferences = [];
   const rejectedPreferences = [];
   for (const preference of value.preferences || []) {
-    if (!PREFERENCE_KEYS.includes(preference?.key) || !clean(preference?.value)) {
+    const { key, value: preferenceValue, subject, operation } = preference || {};
+    const websiteKey = WEBSITE_ASSESSMENT_KEYS.includes(key);
+    const allowedValues = key === "motion_preference" ? MOTION_PREFERENCES : key === "shares_bed" ? ["yes", "no"] : null;
+    const validWebsitePreference = !websiteKey || (websiteAssessment && (
+      !allowedValues || (subject === "household" && (operation === "remove" || allowedValues.includes(preferenceValue)))
+    ));
+    if (!PREFERENCE_KEYS.includes(key) || !clean(preferenceValue) || !validWebsitePreference) {
       rejectedPreferences.push({ preference, reason: "preference_invalid" });
+    } else if (websiteAssessment && /^(?:what if|suppose|imagine)\b/i.test(clean(message))) {
+      rejectedPreferences.push({ preference, reason: "hypothetical_not_commitment" });
     } else if (!evidenceAppears(message, preference.evidence)) {
       rejectedPreferences.push({ preference, reason: "preference_evidence_missing" });
     } else {

@@ -1,9 +1,17 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-14 — Live Sleep System cart acceptance passed
+Last updated: 2026-11-26 — Website Ask Snoozer assessment backend verified locally
 Owner: Ty  
 Implementer: Codi  
-Current phase: The simplified storefront hierarchy and corrected Sleep System configurator are live on published theme `139216420925`; the four-path live cart acceptance is complete
+Current phase: Storefront layout and cart acceptance are complete. Website Ask Snoozer backend implementation is verified locally. The customer-facing interface is the next decision.
+
+## Website Ask Snoozer assessment backend — 2026-11-26
+
+- `POST /ask-snoozer` with `source: "website"` and a `message` uses the existing active Conversation Core. The response supplies a guest `sessionId` to send back on later turns, `reply`, verified `products` and `actions[].target` for navigation. Website sessions retain validated preferences and recent turns in server session state, independently of in-store visit state.
+- The conversation uses the in-store assessment topics and asks about flat versus adjustable first when configuring a bed. It keeps mattress feel for each sleeper separate from Standard, Half Split, or Full Split motion. Full Split Queen stays unavailable and the older assessment's implicit substitution is excluded from website guidance.
+- Booking hands off to `/pages/book-a-snooze-session`. The website product knowledge feed supplies verified technical facts, live Shopify Storefront reads supply product and variant commerce data, and the server builds product links. Sleep Systems navigation points to the appropriate existing pathway for supported configurations. The website chat tools are read-only.
+- Controlled Conversation Core and route tests cover Soft/Firm on a flat Queen, changing only the motion preference, retaining both feels, rejecting a hypothetical Full Split Queen, exact product variant links, an unavailable variant, and switching to direct booking. The canonical assessment and configuration quote suites also pass. These checks used controlled model and Shopify responses.
+- Deployment and live-model conversation acceptance remain pending. The next decision is how shoppers open and use the Ask Snoozer interface on the website. Then wire that interface to the website request and response contract and validate the conversations end to end on staging.
 
 ## Live Sleep System cart acceptance — 2026-11-14
 
