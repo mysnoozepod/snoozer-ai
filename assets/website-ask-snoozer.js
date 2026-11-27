@@ -25,6 +25,8 @@
   let parkedScroll;
   let pending = false;
   let layoutFrame = 0;
+  let observedPreviewBar;
+  const previewBarResize = new ResizeObserver(scheduleLayout);
 
   function text(value, limit) {
     return typeof value === 'string' ? value.trim().slice(0, limit) : '';
@@ -120,10 +122,25 @@
 
   function updateLayout() {
     if (!panel.open) return;
+    const viewport = mobile.matches ? window.visualViewport : null;
+    const top = viewport?.offsetTop || 0;
+    const height = viewport?.height || window.innerHeight;
+    const bottom = top + height;
+    // Shopify mounts its preview toolbar as a top-layer popover above the theme.
+    const previewBar = document.getElementById('PBarNextFrameWrapper');
+    if (previewBar !== observedPreviewBar) {
+      previewBarResize.disconnect();
+      if (previewBar) previewBarResize.observe(previewBar);
+      observedPreviewBar = previewBar;
+    }
+    const bar = previewBar?.getBoundingClientRect();
+    const bottomInset = bar?.height > 0 && bar.top > top && bar.top < bottom && bar.bottom >= bottom - 2
+      ? Math.ceil(bottom - bar.top)
+      : 0;
+    panel.style.setProperty('--website-snoozer-bottom-inset', `${bottomInset}px`);
     if (mobile.matches) {
-      const viewport = window.visualViewport;
-      panel.style.setProperty('--website-snoozer-viewport-top', `${viewport?.offsetTop || 0}px`);
-      panel.style.setProperty('--website-snoozer-viewport-height', `${viewport?.height || window.innerHeight}px`);
+      panel.style.setProperty('--website-snoozer-viewport-top', `${top}px`);
+      panel.style.setProperty('--website-snoozer-viewport-height', `${height}px`);
     } else {
       const header = document.querySelector('.section-header .header-wrapper');
       const bottom = header?.getBoundingClientRect().bottom || 0;
@@ -316,4 +333,5 @@
   window.addEventListener('resize', scheduleLayout);
   window.visualViewport?.addEventListener('resize', scheduleLayout);
   window.visualViewport?.addEventListener('scroll', scheduleLayout);
+  new MutationObserver(scheduleLayout).observe(document.body, { childList: true });
 })();

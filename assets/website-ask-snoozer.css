@@ -33,7 +33,7 @@ body.website-snoozer-docked { --website-snoozer-width: clamp(32rem, 30vw, 44rem)
 .website-snoozer {
   box-sizing: border-box;
   position: fixed;
-  inset: var(--website-snoozer-top, 0px) 0 0 auto;
+  inset: var(--website-snoozer-top, 0px) 0 var(--website-snoozer-bottom-inset, 0px) auto;
   width: var(--website-snoozer-width, 100%);
   height: auto;
   max-width: none;
@@ -162,6 +162,13 @@ body.website-snoozer-docked { --website-snoozer-width: clamp(32rem, 30vw, 44rem)
 .website-snoozer__status[data-error] { color: #9c341b; }
 .website-snoozer__form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.7rem; align-items: end; }
 
+.website-snoozer__form label {
+  grid-column: 1 / -1;
+  color: #0b1b42;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
 .website-snoozer__form textarea {
   width: 100%;
   min-height: 4.6rem;
@@ -215,7 +222,7 @@ body.website-snoozer-docked { --website-snoozer-width: clamp(32rem, 30vw, 44rem)
   .website-snoozer {
     inset: var(--website-snoozer-viewport-top, 0px) 0 auto;
     width: 100%;
-    height: var(--website-snoozer-viewport-height, 100dvh);
+    height: calc(var(--website-snoozer-viewport-height, 100dvh) - var(--website-snoozer-bottom-inset, 0px));
     border: 0;
   }
 

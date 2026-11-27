@@ -110,6 +110,36 @@ async function noOverflow() {
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
 }
 
+async function showPreviewBar() {
+  await page.evaluate(() => {
+    const bar = document.createElement('div');
+    bar.id = 'PBarNextFrameWrapper';
+    bar.popover = 'manual';
+    bar.style.cssText = 'position:fixed; inset:auto 0 0; width:100%; height:68px; margin:0; background:#111';
+    bar.textContent = 'Shopify preview toolbar';
+    document.body.append(bar);
+    bar.showPopover();
+  });
+}
+
+async function composerClearsPreviewBar(inset) {
+  await page.waitForFunction((pixels) => (
+    document.getElementById('WebsiteAskSnoozer').style.getPropertyValue('--website-snoozer-bottom-inset') === `${pixels}px`
+  ), inset);
+  const barBox = await page.locator('#PBarNextFrameWrapper').boundingBox();
+  const inputBox = await input.boundingBox();
+  assert(inputBox.y + inputBox.height <= barBox.y, 'The composer must sit above the Shopify toolbar.');
+  await input.click({ trial: true });
+  await send.click({ trial: true });
+}
+
+async function removePreviewBar() {
+  await page.locator('#PBarNextFrameWrapper').evaluate((bar) => bar.remove());
+  await page.waitForFunction(() => (
+    document.getElementById('WebsiteAskSnoozer').style.getPropertyValue('--website-snoozer-bottom-inset') === '0px'
+  ));
+}
+
 try {
   await page.goto(origin);
   assert.equal(await page.locator('#WebsiteAskSnoozer').count(), 1);
@@ -130,6 +160,13 @@ try {
   assert.equal(await panel.getByRole('link', { name: 'Book a Snooze Session' }).getAttribute('href'), booking);
   assert.equal(requests.length, 0);
   if (screenshotDir) await page.screenshot({ path: path.join(screenshotDir, 'desktop-ask-snoozer.png') });
+  await page.setViewportSize({ width: 1280, height: 585 });
+  await showPreviewBar();
+  await composerClearsPreviewBar(68);
+  await page.locator('#PBarNextFrameWrapper').evaluate((bar) => { bar.style.height = '96px'; });
+  await composerClearsPreviewBar(96);
+  await removePreviewBar();
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.keyboard.press('Escape');
   assert.equal(await trigger.getAttribute('aria-expanded'), 'false');
   assert.equal(await page.evaluate(() => document.activeElement.className), 'website-snoozer-trigger');
@@ -163,6 +200,9 @@ try {
   assert.equal(Math.round((await panel.boundingBox()).height), 844);
   assert.equal(await turns.count(), 2);
   await noOverflow();
+  await showPreviewBar();
+  await composerClearsPreviewBar(68);
+  await removePreviewBar();
   if (screenshotDir) await page.screenshot({ path: path.join(screenshotDir, 'mobile-ask-snoozer.png') });
   await close.click();
   await page.evaluate(() => window.scrollTo(0, 330));
@@ -213,7 +253,7 @@ try {
   assert.notEqual(requests.at(-1).sessionId, requests[0].sessionId);
   assert.deepEqual(errors, []);
   if (screenshotDir) console.log(`Browser fixture screenshots: ${screenshotDir}`);
-  console.log('PASS Ask Snoozer browser fixture: desktop dock, mobile dialog and Back, focus, guest continuity, three starter actions, variant links, and failure recovery.');
+  console.log('PASS Ask Snoozer browser fixture: desktop dock, mobile dialog and Back, Shopify preview toolbar clearance, focus, guest continuity, three starter actions, variant links, and failure recovery.');
 } catch (error) {
   console.error('Browser errors:', errors, 'Requests:', requests.length, 'Panel:', await page.locator('#WebsiteAskSnoozer').innerText());
   throw error;

@@ -5,7 +5,7 @@ Queue state: Ask Snoozer is enabled on the unpublished Shopify preview, backed b
 
 ### Website Ask Snoozer assessment
 
-- **Status:** The Shopify preview and staging backend are running. Live assessment, exact product and booking API checks passed. The storefront dock, full-screen chat, and two-turn conversation passed browser verification.
+- **Status:** The Shopify preview and staging backend are running. Live assessment, exact product and booking API checks passed. The storefront dock, full-screen chat, and two-turn conversation passed browser verification. After repairing a composer overlap, typing and sending also passed at desktop and mobile widths with the Shopify preview toolbar visible.
 - **Next:** Owner trial, including the keyboard on a physical phone. Publication is a separate decision. See `HANDOFF.md` for the preview and rollback details.
 
 ### Live Sleep System cart acceptance
