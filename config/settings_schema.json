@@ -8,6 +8,18 @@
     "theme_support_url": "https://support.shopify.com/"
   },
   {
+    "name": "Ask Snoozer",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "website_ask_snoozer_enabled",
+        "label": "Show Ask Snoozer on the storefront",
+        "default": false,
+        "info": "Enable on a preview theme after the website conversation endpoint is available."
+      }
+    ]
+  },
+  {
     "name": "t:settings_schema.logo.name",
     "settings": [
       {

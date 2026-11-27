@@ -1,9 +1,17 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-26 — Website Ask Snoozer assessment backend verified locally
+Last updated: 2026-11-26 — Website Ask Snoozer desktop and mobile interface verified locally
 Owner: Ty  
 Implementer: Codi  
-Current phase: Storefront layout and cart acceptance are complete. Website Ask Snoozer backend implementation is verified locally. The customer-facing interface is the next decision.
+Current phase: Option 1 is implemented in source and verified with the browser fixture. Shopify preview and live-model acceptance are next.
+
+## Website Ask Snoozer interface — 2026-11-26
+
+- Option 1 uses one header button beside account and bag and one chat transcript. Desktop docks a panel beside the store below the header. Mobile opens a full-screen dialog with a Back arrow that restores the prior scroll position and focus.
+- The first screen offers Book a Snooze Session, Find my sleep setup, and Ask a product question. Booking opens the existing booking page. Assessment starts a free-form conversation. The same-tab transcript and draft survive closing and navigation during the guest session.
+- The client calls the configured Ask Snoozer API with `source: "website"`, a guest session ID, the message, and the page context. The route includes `metadata.answerSourceKey: "website-assessment.v1"` so the interface can distinguish the correct response contract. On product pages, the Conversation Core accepts an approved handle only as a reference and verifies the current commerce details through Shopify.
+- `node tests/runWebsiteAskSnoozerBrowserTests.mjs` uses the actual panel markup and CSS with a controlled endpoint and a local storefront fixture. It passed desktop dock, mobile Back and focus, responsive mode changes, repeated submit, transcript continuity, the three starters, verified variant and booking links, rejected external/cart actions, and recovery from unavailable and older endpoints. Optional `--screenshots` captures both layouts.
+- The theme setting **Ask Snoozer → Show Ask Snoozer on the storefront** defaults off. The next action is to deploy the matching website conversation response contract to staging, enable the control on an authorized Shopify preview theme, and verify actual mobile keyboard behavior and desktop layout alongside the native shopping pages, then run the live assessment, product, and booking journeys.
 
 ## Website Ask Snoozer assessment backend — 2026-11-26
 
@@ -11,7 +19,7 @@ Current phase: Storefront layout and cart acceptance are complete. Website Ask S
 - The conversation uses the in-store assessment topics and asks about flat versus adjustable first when configuring a bed. It keeps mattress feel for each sleeper separate from Standard, Half Split, or Full Split motion. Full Split Queen stays unavailable and the older assessment's implicit substitution is excluded from website guidance.
 - Booking hands off to `/pages/book-a-snooze-session`. The website product knowledge feed supplies verified technical facts, live Shopify Storefront reads supply product and variant commerce data, and the server builds product links. Sleep Systems navigation points to the appropriate existing pathway for supported configurations. The website chat tools are read-only.
 - Controlled Conversation Core and route tests cover Soft/Firm on a flat Queen, changing only the motion preference, retaining both feels, rejecting a hypothetical Full Split Queen, exact product variant links, an unavailable variant, and switching to direct booking. The canonical assessment and configuration quote suites also pass. These checks used controlled model and Shopify responses.
-- Deployment and live-model conversation acceptance remain pending. The next decision is how shoppers open and use the Ask Snoozer interface on the website. Then wire that interface to the website request and response contract and validate the conversations end to end on staging.
+- Deployment and live-model conversation acceptance remain pending. The interface uses this contract as recorded in the November 26 interface checkpoint above.
 
 ## Live Sleep System cart acceptance — 2026-11-14
 

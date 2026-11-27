@@ -77,8 +77,15 @@ function noteModelFailure(config) {
   if (modelCircuit.failures >= config.breakerThreshold && !modelCircuit.openedAt) modelCircuit.openedAt = Date.now();
 }
 
-function buildConversationEnvelope({ message = "", context = {}, history = [], manifest = loadShowroomManifest(), preparedEvidence = [], websiteAssessment = false } = {}) {
+function buildConversationEnvelope({
+  message = "", context = {}, history = [], manifest = loadShowroomManifest(), preparedEvidence = [],
+  websiteAssessment = false, websiteProductHandle = "",
+} = {}) {
   const recentTurns = normalizedConversationHistory(history, context?.recentConversation || [], message);
+  const approvedProducts = (manifest?.products || [])
+    .filter((item) => item?.active !== false)
+    .map((item) => ({ handle: item.handle, title: item.title, category: item.catalogType }));
+  const currentProduct = websiteAssessment && approvedProducts.find((item) => item.handle === clean(websiteProductHandle));
   return {
     version: CONVERSATION_CORE_VERSION,
     shopperMessage: clean(message).slice(0, 1800),
@@ -91,9 +98,8 @@ function buildConversationEnvelope({ message = "", context = {}, history = [], m
       activeConfiguration: context?.activeJourney?.activeConfiguration || null,
       quoteStatus: context?.activeJourney?.activeQuote?.status || null,
     },
-    approvedProducts: (manifest?.products || [])
-      .filter((item) => item?.active !== false)
-      .map((item) => ({ handle: item.handle, title: item.title, category: item.catalogType })),
+    approvedProducts,
+    ...(currentProduct ? { websitePage: { productHandle: currentProduct.handle } } : {}),
     preparedEvidence,
   };
 }
@@ -604,7 +610,7 @@ function hasUsableNonDiscoveryEvidence(result = {}) {
 }
 
 async function runSnoozerConversationCore({
-  requestId, message = "", history = [], context = {}, event = null, identity = null, source = "",
+  requestId, message = "", history = [], context = {}, event = null, identity = null, source = "", websiteProductHandle,
   shopify, rewardsService = null, log = () => {}, runtime = callOpenAIResponses,
   env = process.env, toolOverrides = {}, remainingTimeMs = null,
 } = {}) {
@@ -673,7 +679,7 @@ async function runSnoozerConversationCore({
     toolExecutionMs += Date.now() - preparedStartedAt;
   }
   const preModelMs = Date.now() - startedAt;
-  const envelope = buildConversationEnvelope({ message, context, history, manifest, preparedEvidence, websiteAssessment });
+  const envelope = buildConversationEnvelope({ message, context, history, manifest, preparedEvidence, websiteAssessment, websiteProductHandle });
   const input = [{ role: "user", content: JSON.stringify(envelope) }];
   const modelCalls = [];
   let toolRounds = 0;

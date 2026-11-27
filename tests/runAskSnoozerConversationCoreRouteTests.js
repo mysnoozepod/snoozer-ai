@@ -65,7 +65,7 @@ function patchDependencies() {
     }
     return {};
   };
-  modelCore.runSnoozerConversationCore = async ({ message, context, history, source }) => {
+  modelCore.runSnoozerConversationCore = async ({ message, context, history, source, websiteProductHandle }) => {
     coreCalls += 1;
     assert.deepEqual(history, []);
     assert.match(context.sessionId, /^website_[a-f0-9-]{36}$/);
@@ -81,6 +81,7 @@ function patchDependencies() {
       };
     }
     assert(message.includes("side sleeper"));
+    assert.equal(websiteProductHandle, "12-inch-dual-comfort-mattress");
     return {
       ok: true,
       status: "answered",
@@ -136,6 +137,7 @@ async function main() {
     const response = await lambdaHandler(event({
       sessionId,
       source: "website",
+      page: { pageType: "product", route: "/products/12-inch-dual-comfort-mattress", productHandle: "12-inch-dual-comfort-mattress" },
       history: [],
       message: "I'm a side sleeper, my shoulders get sore, and I sleep hot. Where should I start?",
     }));
@@ -145,6 +147,7 @@ async function main() {
     assert.equal(body.ok, true);
     assert.equal(body.status, "answered");
     assert.equal(body.metadata.answerPath, "conversation_core");
+    assert.equal(body.metadata.answerSourceKey, "website-assessment.v1");
     assert.equal(body.metadata.model, "gpt-6.1-sol");
     assert.equal(body.metadata.metrics.modelCallCount, 2);
     assert.equal(body.metadata.conversationCore.toolCallCount, 1);

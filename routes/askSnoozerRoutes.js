@@ -654,6 +654,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           message: msg,
           history: websiteAssessment ? [] : payload?.history,
           source: askSourceSurface,
+          websiteProductHandle: websiteAssessment ? currentPage.productHandle : undefined,
           context,
           event,
           identity: { ...askIdentity, shopperId, sessionId: effectiveSessionId },
@@ -791,7 +792,7 @@ async function handleAskSnoozerRoutes({ event, method, routePath, traceId, deps 
           reason: coreTelemetry.fallbackReason || coreResult?.fallback?.reason || "",
           answer_strategy: "sol_conversation_core",
           answer_source_type: "validated_authoritative_tools",
-          answer_source_key: "conversation-core.v1.2",
+          answer_source_key: websiteAssessment ? "website-assessment.v1" : "conversation-core.v1.2",
           answer_grounded: Boolean(coreResult?.ok),
           answer_facts_count: Array.isArray(coreResult?.claims) ? coreResult.claims.length : 0,
           qualityGate: {

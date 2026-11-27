@@ -9,16 +9,21 @@ function read(relativePath) {
 }
 
 const header = read('sections/header.liquid');
-assert.match(header, /function getSnoozerPageContext\(trigger\)/);
-assert.match(header, /data-snoozer-product-id/);
-assert.match(header, /selectedVariantInput/);
-assert.match(header, /activeSnoozerContext/);
-assert.match(header, /shopifyProductId: pageContext\.shopifyProductId \|\| undefined/);
-assert.match(header, /productHandle: currentProductHandle \|\| undefined/);
-assert.match(header, /selectedVariantId: pageContext\.selectedVariantId \|\| undefined/);
-assert.match(header, /productType: pageContext\.productType \|\| undefined/);
-assert.match(header, /collectionHandle: pageContext\.collectionHandle \|\| undefined/);
-assert.match(header, /openVisibleShell\(trigger\.getAttribute\('data-snoozer-source'\), triggerContext\)/);
+const panel = read('snippets/website-ask-snoozer.liquid');
+const client = read('assets/website-ask-snoozer.js');
+const { buildConversationEnvelope } = require('../services/askSnoozerModelCore');
+const { websiteManifest } = require('../services/askSnoozerWebsiteAssessment');
+const handle = '12-inch-dual-comfort-mattress';
+assert.match(header, /data-website-snoozer-trigger aria-controls="WebsiteAskSnoozer"/);
+assert.match(panel, /data-product-handle="{{ product\.handle \| escape }}"/);
+assert.match(client, /productHandle: panel\.dataset\.productHandle/);
+assert.match(client, /source: 'website',[^\n]+page: currentPage\(\)/);
+const website = { websiteAssessment: true, manifest: websiteManifest };
+const envelope = buildConversationEnvelope({ ...website, websiteProductHandle: handle });
+assert.deepEqual(envelope.websitePage, { productHandle: handle });
+assert.deepEqual(envelope.conversationState.preferences, [], 'A page view must not create a shopper preference.');
+assert.equal(buildConversationEnvelope({ ...website, websiteProductHandle: '12-dual-comfort-hybrid' }).websitePage, undefined);
+assert.equal(buildConversationEnvelope({ ...website, websiteProductHandle: handle, websiteAssessment: false }).websitePage, undefined);
 
 const productHero = read('sections/snoozepod-product-hero.liquid');
 assert.match(productHero, /data-product-id="{{ product\.id }}"/);
@@ -35,4 +40,4 @@ const collectionCta = read('sections/snoozepod-collection-cta.liquid');
 assert.match(collectionHero, /data-snoozer-collection-handle="{{ collection\.handle \| escape }}"/);
 assert.match(collectionCta, /data-snoozer-collection-handle="{{ collection\.handle \| escape }}"/);
 
-console.log('Ask Snoozer context contract: PASS (product, variant, type, collection, and source context).');
+console.log('Ask Snoozer context contract: PASS (website source, verified product reference, and legacy section metadata).');

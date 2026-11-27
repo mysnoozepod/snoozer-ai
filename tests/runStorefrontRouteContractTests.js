@@ -15,6 +15,7 @@ function readJson(relativePath) {
 const index = readJson('templates/index.json');
 const cart = readJson('templates/cart.json');
 const header = read('sections/header.liquid');
+const websitePanel = read('snippets/website-ask-snoozer.liquid');
 const assessmentSection = read('sections/snoozer-landing-assessment.liquid');
 const assessmentScript = read('assets/snooze-assessment.js');
 const pairing = read('sections/snoozepod-pod-pairing.liquid');
@@ -41,10 +42,9 @@ const environmentSection = read('sections/snoozepod-environment.liquid');
 assert.match(environmentSection, /linked_collection\.featured_image/);
 assert.match(environmentSection, /routes\.collections_url \| append: '\/' \| append: linked_collection\.handle/);
 
-assert.match(header, /collections\['mattresses'\]/);
-assert.match(header, /snoozer_mattresses_collection\.products_count > 0/);
-assert.match(header, /if snoozer_mattresses_url != blank/);
-assert.doesNotMatch(header, /assign snoozer_mattresses_url = '\/collections\/mattresses'/);
+assert.match(header, /data-website-snoozer-trigger aria-controls="WebsiteAskSnoozer"/);
+assert.match(websitePanel, /href="\/pages\/book-a-snooze-session"/);
+assert.doesNotMatch(websitePanel, /href="#"|href="\/collections\/mattresses"/);
 
 assert.match(assessmentSection, /collections\['adjustable-bases'\]/);
 assert.match(assessmentSection, /collections\['pillows'\]/);

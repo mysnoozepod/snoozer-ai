@@ -404,6 +404,10 @@
     {% endstyle %}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
+    {%- if settings.website_ask_snoozer_enabled -%}
+      {{ 'website-ask-snoozer.css' | asset_url | stylesheet_tag }}
+      <script src="{{ 'website-ask-snoozer.js' | asset_url }}" defer="defer"></script>
+    {%- endif -%}
     <style>
       body.template-index #MainContent .section + .section {
         margin-top: 4.8rem;
@@ -482,6 +486,10 @@
     </main>
 
     {% sections 'footer-group' %}
+
+    {%- if settings.website_ask_snoozer_enabled -%}
+      {% render 'website-ask-snoozer' %}
+    {%- endif -%}
 
     <ul hidden>
       <li id="a11y-refresh-page-message">{{ 'accessibility.refresh_page' | t }}</li>
