@@ -280,17 +280,6 @@
             {%- endif -%}
           </div>
         {%- endif -%}
-        <div class="snoozepod-collection-hero__actions">
-          <button
-            type="button"
-            class="snoozepod-collection-hero__action snoozepod-collection-hero__action--secondary"
-            data-snoozer-trigger
-            data-snoozer-source="collection-v1"
-            data-snoozer-collection-handle="{{ collection.handle | escape }}"
-          >
-            {{ section.settings.snoozer_label | escape }}
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -326,12 +315,6 @@
       "type": "textarea",
       "id": "body",
       "label": "Ty-approved introduction override"
-    },
-    {
-      "type": "text",
-      "id": "snoozer_label",
-      "label": "Snoozer CTA label",
-      "default": "Ask Snoozer"
     },
     {
       "type": "image_picker",

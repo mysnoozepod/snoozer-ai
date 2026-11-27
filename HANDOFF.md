@@ -1,19 +1,25 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-27 — Website Ask Snoozer preview is ready to try
+Last updated: 2026-11-27 — Ask Snoozer removed from the storefront
 Owner: Ty  
 Implementer: Codi  
-Current phase: Option 1 is running on the unpublished Shopify preview and the staging backend. Owner trial is next.
+Current phase: Shopify storefront chat was removed at Ty's direction.
 
-## Website Ask Snoozer preview — 2026-11-27
+## Ask Snoozer storefront removal — 2026-11-27
 
-- Open [Ask Snoozer Preview](https://mysnoozepod.com/?preview_theme_id=143239839805) in the existing authorized store browser. Click **Ask Snoozer** beside account and bag. **Message for Snoozer** and **Send** stay above the visible Shopify preview toolbar.
+- Removed the chat launcher, panel, setting, frontend assets, and legacy theme triggers from current theme `139216420925` and preview `143239839805`. Theme roles were preserved. Two session guides, the FAQ, and Contact Us had their chat references removed in Shopify. The Contact Us social labels previously pointed to a Snoozer chat URL and are now plain text.
+- Authenticated Shopify browser checks at 1280px and 390×844 covered the homepage, a Dual Comfort product, the mattress collection, Sleep Systems, the session planner, both session guides, and the cart. The homepage also passed on the unpublished preview at both widths.
+- Shopify readback verified all 72 page titles and bodies. Seven focused route, content, catalog, and regression suites passed.
+- A private snapshot of the edited theme files and page bodies is in `%LOCALAPPDATA%\MySnoozePod\ThemeBackups\2026-11-27-chat-removal-301535e6`. Restore individual files or page bodies only after confirming the current resource and obtaining Ty's direction. The staging conversation endpoint and the in-store experience were outside this removal.
+
+## Website Ask Snoozer preview history — 2026-11-27
+
 - Composer repair readback matched the three updated theme files. With the real Shopify toolbar open, desktop and a 390×844 mobile viewport both accepted typed questions and Send clicks. The local browser suite also passed coverage for toolbar resize and removal. The repair was applied to the unpublished preview only.
-- Preview theme `143239839805` is an unpublished copy of current main `139216420925`. Applied and verified six interface files, the added settings schema group, and `current.website_ask_snoozer_enabled: true` in the preview. Main still has the control off. The recovery theme was left alone.
+- Before removal, six interface files and the theme setting enabled the chat on preview `143239839805`. The feature had remained disabled on main `139216420925`. The recovery theme was left alone.
 - Staging Lambda `snoozer-backend` on API Gateway `u6zcsiqgj0` returned code hash `vX3FxIshvApsQlhAjkCokaC1LLJzPPSccO+tFa0M+W0=` with successful update status. Merged the approved website runtime changes into the downloaded staging code to retain its newer tool execution, provenance, and telemetry behavior. No configuration or gateway changes were made. Core and route tests passed against the merged deployment candidate.
 - Safe local rollback artifacts are in `C:\Users\1ones\AppData\Local\MySnoozePod\StagingBackups\2026-11-27-ask-snoozer`. `rollback.zip` matches the pre-change code hash `VNwqPaOWHvdYLuUT1sam//kD6QapzrHCSZB9p1QxOP8=`. `website-staging.zip` matches the deployed hash above. Preserve current staging code when preparing any subsequent deploy. The repository packaging command now includes the product knowledge feed required at runtime.
 - Live API returned HTTP 200 with `website-assessment.v1` for assessment (`HfYQcjXloAMEPrw=`), booking (`HfYQch_uIAMEQ-g=`), and the Queen product inquiry (`HfYWFgV5oAMEZRQ=`). Booking returned `/pages/book-a-snooze-session`. Product returned the specific Queen variant with its current Shopify price.
-- Actual Shopify preview confirmed the desktop dock at 1280px and full-screen dialog at 390×844. A two-turn live conversation retained both comfort preferences, recognized the flat-bed follow-up, and returned the exact Queen variant link. Mobile Back restored focus and reopening retained both answers. Physical phone keyboard behavior and owner signoff are pending. No booking, cart update, order, or theme publication was performed.
+- The previous preview confirmed the desktop dock at 1280px and full-screen dialog at 390×844. A two-turn live conversation retained both comfort preferences, recognized the flat-bed follow-up, and returned the exact Queen variant link. Mobile Back restored focus and reopening retained both answers. The preview was removed before physical phone testing or owner signoff.
 
 ## Website Ask Snoozer interface — 2026-11-26
 
@@ -21,7 +27,7 @@ Current phase: Option 1 is running on the unpublished Shopify preview and the st
 - The first screen offers Book a Snooze Session, Find my sleep setup, and Ask a product question. Booking opens the existing booking page. Assessment starts a free-form conversation. The same-tab transcript and draft survive closing and navigation during the guest session.
 - The client calls the configured Ask Snoozer API with `source: "website"`, a guest session ID, the message, and the page context. The route includes `metadata.answerSourceKey: "website-assessment.v1"` so the interface can distinguish the correct response contract. On product pages, the Conversation Core accepts an approved handle only as a reference and verifies the current commerce details through Shopify.
 - `node tests/runWebsiteAskSnoozerBrowserTests.mjs` uses the actual panel markup and CSS with a controlled endpoint and a local storefront fixture. It passed desktop dock, mobile Back and focus, responsive mode changes, repeated submit, transcript continuity, the three starters, verified variant and booking links, rejected external/cart actions, and recovery from unavailable and older endpoints. Optional `--screenshots` captures both layouts.
-- The theme setting **Ask Snoozer → Show Ask Snoozer on the storefront** defaults off. The November 27 checkpoint records its preview-only activation.
+- The November 27 removal supersedes the interface described here.
 
 ## Website Ask Snoozer assessment backend — 2026-11-26
 

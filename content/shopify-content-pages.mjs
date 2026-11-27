@@ -55,7 +55,7 @@ export const contentPages = [
       ['You control the outcome', 'A session can lead to a purchase, a short list, or a follow-up question. The right result is the one that leaves you more certain about the decision.'],
     ],
     ['What feels wrong about your current setup', 'Your normal sleep positions', 'Partner and temperature preferences', 'Delivery, room, and timing constraints'],
-    [['How long should I plan for?', 'Allow enough time for calm testing; the booking details will show the scheduled duration.'], ['Can couples attend together?', 'Yes, and it is especially helpful when comfort preferences differ.'], ['Can I ask questions before visiting?', 'Yes. Ask Snoozer can help you prepare and identify useful topics for the session.']],
+    [['How long should I plan for?', 'Allow enough time for calm testing; the booking details will show the scheduled duration.'], ['Can couples attend together?', 'Yes, and it is especially helpful when comfort preferences differ.'], ['What should I bring?', 'Make a note of what you want to compare and bring any questions to your session.']],
     ['what-to-expect-during-your-snooze-session', 'how-to-prepare-for-your-showroom-visit', 'building-your-snoozepod']),
 
   page('What to Expect During Your Snooze Session', 'what-to-expect-during-your-snooze-session', 'The SnoozePod Experience',
@@ -103,7 +103,7 @@ export const contentPages = [
       ['Choose the next action', 'You may proceed, pause, ask a question, or test again. A deliberate follow-up is better than turning uncertainty into an avoidable order problem.'],
     ],
     ['Written configuration summary', 'Current authorized pricing', 'Compatibility confirmation', 'Delivery and support expectations'],
-    [['Do I have to order immediately?', 'No. Take the time needed to understand the configuration and terms.'], ['Can the recommendation change?', 'Yes. New information or another physical comparison may justify a different direction.'], ['What if I still have questions?', 'Ask Snoozer or contact the showroom before placing the order.']],
+    [['Do I have to order immediately?', 'No. Take the time needed to understand the configuration and terms.'], ['Can the recommendation change?', 'Yes. New information or another physical comparison may justify a different direction.'], ['What if I still have questions?', 'Contact the showroom before placing the order.']],
     ['from-showroom-recommendation-to-home-delivery', 'building-your-snoozepod', 'questions-to-ask-before-buying-a-mattress']),
 
   page('Comparing Sleep Systems Without Sales Pressure', 'comparing-sleep-systems-without-sales-pressure', 'The SnoozePod Experience',

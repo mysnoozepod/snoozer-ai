@@ -14,8 +14,6 @@ function readJson(relativePath) {
 
 const index = readJson('templates/index.json');
 const cart = readJson('templates/cart.json');
-const header = read('sections/header.liquid');
-const websitePanel = read('snippets/website-ask-snoozer.liquid');
 const assessmentSection = read('sections/snoozer-landing-assessment.liquid');
 const assessmentScript = read('assets/snooze-assessment.js');
 const pairing = read('sections/snoozepod-pod-pairing.liquid');
@@ -42,9 +40,18 @@ const environmentSection = read('sections/snoozepod-environment.liquid');
 assert.match(environmentSection, /linked_collection\.featured_image/);
 assert.match(environmentSection, /routes\.collections_url \| append: '\/' \| append: linked_collection\.handle/);
 
-assert.match(header, /data-website-snoozer-trigger aria-controls="WebsiteAskSnoozer"/);
-assert.match(websitePanel, /href="\/pages\/book-a-snooze-session"/);
-assert.doesNotMatch(websitePanel, /href="#"|href="\/collections\/mattresses"/);
+const themeRoot = path.resolve(__dirname, '..');
+const retiredChat = /ask(?:[ -]|_)snoozer|data-(?:website-)?snoozer-trigger|snoozer_cta|meet-snoozer/i;
+for (const directory of ['layout', 'sections', 'snippets', 'templates', 'config']) {
+  for (const file of fs.readdirSync(path.join(themeRoot, directory), { recursive: true })) {
+    if (/\.(liquid|json)$/.test(file)) {
+      assert.doesNotMatch(read(path.join(directory, file)), retiredChat, `Chat must stay off the storefront in ${directory}/${file}.`);
+    }
+  }
+}
+for (const asset of ['assets/website-ask-snoozer.js', 'assets/website-ask-snoozer.css']) {
+  assert.equal(fs.existsSync(path.join(themeRoot, asset)), false);
+}
 
 assert.match(assessmentSection, /collections\['adjustable-bases'\]/);
 assert.match(assessmentSection, /collections\['pillows'\]/);

@@ -6,6 +6,8 @@ import { footerMenuContract, guideGroups, guideHub, mainMenuContract } from '../
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const MAIN_PAGE = fs.readFileSync(path.join(ROOT, 'sections', 'main-page.liquid'), 'utf8');
+const FOOTER_BOOKING = fs.readFileSync(path.join(ROOT, 'sections', 'snoozepod-footer-navigation.liquid'), 'utf8');
+const FOOTER_GROUP = JSON.parse(fs.readFileSync(path.join(ROOT, 'sections', 'footer-group.json'), 'utf8').replace(/^\s*\/\*[\s\S]*?\*\//, ''));
 const PAGE_STAGER = fs.readFileSync(path.join(ROOT, 'scripts', 'stage-content-pages.mjs'), 'utf8');
 
 assert.equal(contentPages.length, 50, 'the education library retains exactly 50 guides');
@@ -22,7 +24,7 @@ const productDestinations = new Map(
   ['Mattresses', 'Adjustable Bases']
     .flatMap((title) => mainMenuContract.items.find((item) => item.title === title).items)
     .filter((item) => item.type === 'PRODUCT')
-    .map((item) => [item.title, item.product]),
+    .map((item) => [item.title.replace(/^(\d+)"/, '$1-inch'), item.product]),
 );
 assert.deepEqual(Object.fromEntries(productDestinations), {
   '12-inch Memory Foam': '12-inch-memory-foam-mattress',
@@ -38,10 +40,10 @@ assert(mainMenuContract.items.find((item) => item.title === 'Your Showroom Visit
 assert(footerMenuContract.items.some((item) => item.url.endsWith('/pages/sleep-guides')), 'the guide hub is present in the footer navigation');
 
 assert(MAIN_PAGE.includes('content-guide-directory'), 'the guide hub has a responsive directory treatment');
-assert(MAIN_PAGE.includes('content-guide-conversion'), 'content pages have a dedicated conversion band');
-assert(MAIN_PAGE.includes('Book a Snooze Session'), 'the conversion band retains the primary booking action');
-assert(MAIN_PAGE.includes('data-snoozer-trigger'), 'the conversion band retains contextual Ask Snoozer access');
-assert(MAIN_PAGE.indexOf('content-guide-conversion') < MAIN_PAGE.lastIndexOf('</section>'), 'content assets render inside main content before the global newsletter/footer group');
+assert(FOOTER_BOOKING.includes('Book a Snooze Session'), 'the footer booking band retains the primary booking action');
+assert(!/data-snoozer-trigger/.test(MAIN_PAGE + FOOTER_BOOKING), 'the content page and booking band stay clear of chat');
+assert(!/\bask snoozer\b/i.test(JSON.stringify(contentPages)), 'managed guides do not mention the removed chat');
+assert(FOOTER_GROUP.order.indexOf('experience-navigation') < FOOTER_GROUP.order.indexOf('newsletter'), 'the booking band appears before the global newsletter');
 assert(!PAGE_STAGER.includes('<p><a href="/pages/book-a-snooze-session"><strong>'), 'the old unstyled inline CTA is removed from managed page bodies');
 assert.equal(guideHub.handle, 'sleep-guides', 'the hub uses the canonical /pages/sleep-guides route');
 

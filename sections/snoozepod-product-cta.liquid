@@ -143,10 +143,6 @@
           <a class="snoozepod-product-cta__button snoozepod-product-cta__button--primary" href="{{ section.settings.primary_link }}">
             {{ section.settings.primary_label | escape }}
           </a>
-        {%- else -%}
-          <button type="button" class="snoozepod-product-cta__button snoozepod-product-cta__button--primary" data-snoozer-trigger data-snoozer-source="product-final-cta">
-            {{ section.settings.primary_label | escape }}
-          </button>
         {%- endif -%}
 
         {%- if section.settings.show_secondary and section.settings.secondary_label != blank -%}
@@ -154,10 +150,6 @@
             <a class="snoozepod-product-cta__button snoozepod-product-cta__button--secondary" href="{{ section.settings.secondary_link }}">
               {{ section.settings.secondary_label | escape }}
             </a>
-          {%- else -%}
-            <button type="button" class="snoozepod-product-cta__button snoozepod-product-cta__button--secondary" data-snoozer-trigger data-snoozer-source="product-final-cta">
-              {{ section.settings.secondary_label | escape }}
-            </button>
           {%- endif -%}
         {%- endif -%}
       </div>
@@ -197,8 +189,7 @@
     {
       "type": "text",
       "id": "secondary_label",
-      "label": "Secondary CTA label",
-      "default": "Ask Snoozer"
+      "label": "Secondary CTA label"
     },
     {
       "type": "url",

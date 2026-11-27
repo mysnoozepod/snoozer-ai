@@ -108,10 +108,10 @@ test('the active homepage contains no Pod Builder section or customer-facing bui
   assert(homepage.includes('"type": "snoozepod-collection-cta"'));
 });
 
-test('Product Page v1 retains the standard Shopify form, Ask Snoozer, gallery, feel, and description blocks', () => {
+test('Product Page v1 retains the standard Shopify form, gallery, feel, and description blocks', () => {
   for (const marker of [
     "render 'product-media-gallery'", "render 'product-variant-picker'", "render 'buy-buttons'",
-    "render 'snoozepod-product-feel'", 'data-snoozer-trigger', 'product__description',
+    "render 'snoozepod-product-feel'", 'product__description',
   ]) assert(hero.includes(marker), marker);
 });
 

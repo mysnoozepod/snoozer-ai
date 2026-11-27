@@ -238,7 +238,7 @@
     const notes = value(context.form, "notes").trim();
     return {
       title: "Your Snooze Session plan is ready",
-      copy: "This plan is saved on this device so you can review it while booking or talking with Snoozer.",
+      copy: "This plan is saved on this device so you can review it while booking or visiting the showroom.",
       items: ["Test: " + (items.length ? items.map(pretty).join(", ") : "General sleep-system guidance"), "Comfort direction: " + comfort, "Questions: " + (notes || "None added yet")],
       href: "/pages/book-a-snooze-session",
       linkLabel: "Book My Snooze Session",

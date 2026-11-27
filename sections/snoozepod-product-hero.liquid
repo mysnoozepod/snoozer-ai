@@ -589,20 +589,6 @@
                     show_pickup_availability: false,
                     selected_variant_override: standalone_variant
                   -%}
-                {%- when 'snoozer_cta' -%}
-                  <button
-                    type="button"
-                    class="snoozepod-product-hero__action snoozepod-product-hero__action--secondary"
-                    data-snoozer-trigger
-                    data-snoozer-source="product-v1"
-                    data-snoozer-product-id="{{ product.id }}"
-                    data-snoozer-product-handle="{{ product.handle | escape }}"
-                    data-snoozer-variant-id="{{ product.selected_or_first_available_variant.id }}"
-                    data-snoozer-product-type="{{ product.type | escape }}"
-                    {{ block.shopify_attributes }}
-                  >
-                    {{ block.settings.label | escape }}
-                  </button>
                 {%- when 'showroom_location' -%}
                   <div {{ block.shopify_attributes }}>
                     {% render 'snoozepod-showroom-location',
@@ -783,18 +769,6 @@
       ]
     },
     {
-      "type": "snoozer_cta",
-      "name": "Ask Snoozer CTA",
-      "settings": [
-        {
-          "type": "text",
-          "id": "label",
-          "label": "Label",
-          "default": "Ask Snoozer About This Product"
-        }
-      ]
-    },
-    {
       "type": "showroom_location",
       "name": "Showroom location",
       "settings": [
@@ -968,9 +942,6 @@
         },
         {
           "type": "buy_buttons"
-        },
-        {
-          "type": "snoozer_cta"
         },
         {
           "type": "showroom_location"

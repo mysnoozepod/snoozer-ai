@@ -1,12 +1,12 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-27 — Website Ask Snoozer preview is ready to try
-Queue state: Ask Snoozer is enabled on the unpublished Shopify preview, backed by the staging conversation endpoint.
+Last updated: 2026-11-27 — Ask Snoozer removed from the storefront
+Queue state: The published theme and the unpublished preview both omit storefront chat.
 
 ### Website Ask Snoozer assessment
 
-- **Status:** The Shopify preview and staging backend are running. Live assessment, exact product and booking API checks passed. The storefront dock, full-screen chat, and two-turn conversation passed browser verification. After repairing a composer overlap, typing and sending also passed at desktop and mobile widths with the Shopify preview toolbar visible.
-- **Next:** Owner trial, including the keyboard on a physical phone. Publication is a separate decision. See `HANDOFF.md` for the preview and rollback details.
+- **Status:** Removed from Shopify desktop and mobile at Ty's direction. Checked the published theme and preview. The in-store and backend services remain outside this task.
+- **Next:** No storefront chat work is scheduled. See `HANDOFF.md` for verification and recovery details.
 
 ### Live Sleep System cart acceptance
 

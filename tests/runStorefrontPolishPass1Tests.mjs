@@ -11,7 +11,7 @@ const check = (condition, message) => { assert.ok(condition, message); assertion
 const home = json('templates/index.json');
 const activeHomeOrder = home.order.filter((sectionId) => !home.sections[sectionId].disabled);
 check(activeHomeOrder.join('|') === 'image_with_text_hVQzdT|value-strip|mattress-showcase|snoozepod_final_build_cta_K8nqLs|snoozepod_environment_GYx7gN', 'homepage has one focused discovery sequence');
-check(home.sections['meet-snoozer'].disabled && home.sections['guided-shopping'].disabled && home.sections.snoozepod_trust_strip_F6kqDr.disabled, 'homepage defers repeated guidance and trust sections');
+check(!home.sections['meet-snoozer'] && home.sections['guided-shopping'].disabled && home.sections.snoozepod_trust_strip_F6kqDr.disabled, 'homepage removes the chat section and defers repeated guidance and trust');
 check(home.sections.snoozepod_final_build_cta_K8nqLs.settings.primary_link === '/pages/sleep-systems', 'homepage guides shoppers into real Sleep Systems');
 
 const header = read('sections/header.liquid');
@@ -32,7 +32,7 @@ for (const file of ['templates/product.json', 'templates/product.snoozepod-v1.js
 const productV1 = json('templates/product.snoozepod-v1.json');
 check(!productV1.sections.hero.block_order.includes('snoozer'), 'Product Page v1 defers Snoozer UI');
 check(productV1.sections.hero.block_order.indexOf('buy_buttons') === productV1.sections.hero.block_order.indexOf('variant_picker') + 1, 'Add to Cart remains immediately after variant selection');
-check(json('templates/product.main.json').sections.guide.disabled === true, 'legacy product guidance remains recoverable but inactive');
+check(!json('templates/product.main.json').sections.guide, 'legacy product chat guidance is removed');
 
 const contentPage = read('sections/main-page.liquid');
 check(!contentPage.includes('href="#"') && !contentPage.includes('data-snoozer-trigger'), 'content pages contain no dead Snoozer placeholder');

@@ -31,7 +31,7 @@ const homeOrder = home.order;
 check(home.sections.image_with_text_hVQzdT.settings.primary_cta_link === 'shopify://pages/book-a-snooze-session', 'Homepage hero must lead to booking.');
 check(home.sections.image_with_text_hVQzdT.settings.secondary_cta_link === 'shopify://collections/mattresses', 'Homepage secondary CTA must lead to mattresses.');
 check(home.sections.image_with_text_wUxjfL.disabled === true, 'The redundant homepage booking explainer must stay disabled while its editor-managed section remains recoverable.');
-check(home.sections['guided-shopping'].disabled === true && home.sections['meet-snoozer'].disabled === true, 'Homepage must defer unfinished guidance surfaces until the backend phase.');
+check(home.sections['guided-shopping'].disabled === true && !home.sections['meet-snoozer'], 'Homepage keeps the extra guidance section disabled and removes the chat section.');
 check(home.sections['mattress-showcase'].block_order.length === 4, 'Homepage must expose the four mattress models.');
 check(new Set(Object.values(home.sections['mattress-showcase'].blocks).map((block) => block.settings.product)).size === 4, 'Homepage mattress cards must point to four distinct products.');
 
@@ -86,7 +86,6 @@ check(footerNavigation.includes("request.page_type == 'product'") && footerNavig
 check(footerNavigation.includes("page.handle == 'book-a-snooze-session'"), 'The booking page must not repeat a self-referential booking banner.');
 
 checkSchema('sections/snoozepod-mattress-showcase.liquid');
-checkSchema('sections/snoozepod-meet-snoozer.liquid');
 checkSchema('sections/snoozepod-footer-navigation.liquid');
 
 console.log(`PASS website experience completion: ${assertions} assertions.`);

@@ -67,21 +67,6 @@
         "enable_video_looping": false
       }
     },
-    "guide": {
-      "type": "snoozer-product-guide",
-      "disabled": true,
-      "settings": {
-        "heading": "Need Help Choosing?",
-        "body": "Ask Snoozer to compare comfort, support, cooling, and how this fits your sleep environment.",
-        "chip_1": "Is this right for me?",
-        "chip_2": "Compare comfort",
-        "chip_3": "Help me choose",
-        "chip_4": "Build my sleep environment",
-        "cta_label": "Ask Snoozer",
-        "show_chips": true,
-        "show_avatar": true
-      }
-    },
     "details": {
       "type": "snoozepod-product-details",
       "blocks": {
@@ -208,7 +193,6 @@
     "details",
     "pairing",
     "related-products",
-    "final-cta",
-    "guide"
+    "final-cta"
   ]
 }

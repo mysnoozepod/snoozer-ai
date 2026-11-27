@@ -421,18 +421,6 @@
             <a class="button button--primary" href="/pages/book-a-snooze-session">
               Book a Snooze Session
             </a>
-            <button
-              type="button"
-              class="button button--secondary"
-              data-snoozer-trigger
-              data-snoozer-source="pod-builder-product-v1"
-              data-snoozer-product-id="{{ product.id }}"
-              data-snoozer-product-handle="{{ product.handle | escape }}"
-              data-snoozer-variant-id="{{ product.selected_or_first_available_variant.id }}"
-              data-snoozer-product-type="{{ product.type | escape }}"
-            >
-              Ask Snoozer About This Product
-            </button>
           </div>
 
           {% render 'snoozepod-showroom-location',

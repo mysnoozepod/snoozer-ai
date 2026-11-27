@@ -133,21 +133,7 @@
       </div>
 
       <div class="snoozepod-collection-cta__actions">
-        {%- assign primary_is_snoozer = false -%}
-        {%- if section.settings.primary_link == blank and section.settings.primary_label contains 'Snoozer' -%}
-          {%- assign primary_is_snoozer = true -%}
-        {%- endif -%}
-        {%- if primary_is_snoozer -%}
-          <button
-            type="button"
-            class="snoozepod-collection-cta__button snoozepod-collection-cta__button--primary"
-            data-snoozer-trigger
-            data-snoozer-source="collection-final-cta"
-            data-snoozer-collection-handle="{{ collection.handle | escape }}"
-          >
-            {{ section.settings.primary_label | escape }}
-          </button>
-        {%- else -%}
+        {%- if section.settings.primary_label != blank -%}
           <a
             class="snoozepod-collection-cta__button snoozepod-collection-cta__button--primary"
             href="{% if section.settings.primary_link != blank %}{{ section.settings.primary_link }}{% else %}{{ routes.all_products_collection_url }}{% endif %}"
@@ -157,23 +143,13 @@
         {%- endif -%}
 
         {%- if section.settings.show_secondary and section.settings.secondary_label != blank -%}
-          {%- if section.settings.secondary_link != blank and section.settings.secondary_link != '#ask-snoozer' -%}
+          {%- if section.settings.secondary_link != blank and section.settings.secondary_link != '#' -%}
             <a
               class="snoozepod-collection-cta__button snoozepod-collection-cta__button--secondary"
               href="{{ section.settings.secondary_link }}"
             >
               {{ section.settings.secondary_label | escape }}
             </a>
-          {%- else -%}
-            <button
-              type="button"
-              class="snoozepod-collection-cta__button snoozepod-collection-cta__button--secondary"
-              data-snoozer-trigger
-              data-snoozer-source="collection-final-cta"
-              data-snoozer-collection-handle="{{ collection.handle | escape }}"
-            >
-              {{ section.settings.secondary_label | escape }}
-            </button>
           {%- endif -%}
         {%- endif -%}
       </div>
@@ -200,7 +176,7 @@
       "type": "textarea",
       "id": "body",
       "label": "Body",
-      "default": "Explore this collection, then use Snoozer to connect the right pieces around your sleep needs."
+      "default": "Explore this collection and compare the options for your sleep setup."
     },
     {
       "type": "text",
@@ -216,8 +192,7 @@
     {
       "type": "text",
       "id": "secondary_label",
-      "label": "Secondary CTA label",
-      "default": "Ask Snoozer"
+      "label": "Secondary CTA label"
     },
     {
       "type": "url",

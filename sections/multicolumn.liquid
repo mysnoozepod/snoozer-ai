@@ -652,15 +652,11 @@
           {%- assign empty_column = '' -%}
           {%- assign has_icon = false -%}
           {%- assign is_how_it_works_card = false -%}
-          {%- assign is_snoozer_trigger = false -%}
           {%- if block.settings.icon != blank and block.settings.icon != 'none' -%}
             {%- assign has_icon = true -%}
           {%- endif -%}
           {%- if section.id == 'how-it-works' -%}
             {%- assign is_how_it_works_card = true -%}
-            {%- if block.settings.link == '#ask-snoozer' -%}
-              {%- assign is_snoozer_trigger = true -%}
-            {%- endif -%}
           {%- endif -%}
           {%- if block.settings.image == blank
             and has_icon == false
@@ -682,21 +678,11 @@
           >
             <div class="multicolumn-card content-container{% if is_how_it_works_card and block.settings.link != blank %} multicolumn-card--linked{% endif %}">
               {%- if is_how_it_works_card and block.settings.link != blank -%}
-                {%- if is_snoozer_trigger -%}
-                  <button
-                    type="button"
-                    class="multicolumn-card__overlay-button"
-                    data-snoozer-trigger
-                    data-snoozer-source="process-card-{{ forloop.index }}"
-                    aria-label="{{ block.settings.title | escape }}"
-                  ></button>
-                {%- else -%}
-                  <a
-                    href="{{ block.settings.link }}"
-                    class="multicolumn-card__overlay-link"
-                    aria-label="{{ block.settings.title | escape }}"
-                  ></a>
-                {%- endif -%}
+                <a
+                  href="{{ block.settings.link }}"
+                  class="multicolumn-card__overlay-link"
+                  aria-label="{{ block.settings.title | escape }}"
+                ></a>
               {%- endif -%}
               {%- if block.settings.image != blank -%}
                 {% if section.settings.image_ratio == 'adapt' or section.settings.image_ratio == 'circle' %}

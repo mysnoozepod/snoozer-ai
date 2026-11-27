@@ -142,16 +142,12 @@
           <a class="snoozepod-page-cta__button snoozepod-page-cta__button--primary" href="{{ section.settings.primary_link }}">
             {{ section.settings.primary_label | escape }}
           </a>
-        {%- else -%}
-          <button type="button" class="snoozepod-page-cta__button snoozepod-page-cta__button--primary" data-snoozer-trigger data-snoozer-source="page-final-cta">
-            {{ section.settings.primary_label | escape }}
-          </button>
         {%- endif -%}
 
         {%- if section.settings.show_secondary and section.settings.secondary_label != blank -%}
           <a
             class="snoozepod-page-cta__button snoozepod-page-cta__button--secondary"
-            href="{% if section.settings.secondary_link != blank %}{{ section.settings.secondary_link }}{% else %}#{% endif %}"
+            href="{{ section.settings.secondary_link | default: '/pages/book-a-snooze-session' }}"
           >
             {{ section.settings.secondary_label | escape }}
           </a>
@@ -184,7 +180,7 @@
       "type": "text",
       "id": "primary_label",
       "label": "Primary CTA label",
-      "default": "Ask Snoozer"
+      "default": "Book a Snooze Session"
     },
     {
       "type": "url",
