@@ -1,12 +1,12 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-26 — Website Ask Snoozer desktop and mobile interface verified locally
-Queue state: The storefront layout and four-path Sleep System cart were accepted. Ask Snoozer's website interface and assessment backend are ready for staging acceptance.
+Last updated: 2026-11-27 — Website Ask Snoozer preview is ready to try
+Queue state: Ask Snoozer is enabled on the unpublished Shopify preview, backed by the staging conversation endpoint.
 
 ### Website Ask Snoozer assessment
 
-- **Status:** Option 1 is implemented. The desktop side panel and mobile full-screen chat passed controlled browser tests, and the website response contract passed the route and core checks.
-- **Next:** Stage the website response contract and enable the opt-in control on an authorized Shopify preview theme. Confirm actual mobile keyboard, docked storefront layout, and live assessment/product/booking flows before release. See `HANDOFF.md`.
+- **Status:** The Shopify preview and staging backend are running. Live assessment, exact product and booking API checks passed. The storefront dock, full-screen chat, and two-turn conversation passed browser verification.
+- **Next:** Owner trial, including the keyboard on a physical phone. Publication is a separate decision. See `HANDOFF.md` for the preview and rollback details.
 
 ### Live Sleep System cart acceptance
 

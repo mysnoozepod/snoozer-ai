@@ -1,9 +1,18 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-26 — Website Ask Snoozer desktop and mobile interface verified locally
+Last updated: 2026-11-27 — Website Ask Snoozer preview is ready to try
 Owner: Ty  
 Implementer: Codi  
-Current phase: Option 1 is implemented in source and verified with the browser fixture. Shopify preview and live-model acceptance are next.
+Current phase: Option 1 is running on the unpublished Shopify preview and the staging backend. Owner trial is next.
+
+## Website Ask Snoozer preview — 2026-11-27
+
+- Open [Ask Snoozer Preview](https://mysnoozepod.com/?preview_theme_id=143239839805) in the existing authorized store browser. Click **Ask Snoozer** beside account and bag. If the black Shopify preview bar covers the composer, click **Hide bar**.
+- Preview theme `143239839805` is an unpublished copy of current main `139216420925`. Applied and verified six interface files, the added settings schema group, and `current.website_ask_snoozer_enabled: true` in the preview. Main still has the control off. The recovery theme was left alone.
+- Staging Lambda `snoozer-backend` on API Gateway `u6zcsiqgj0` returned code hash `vX3FxIshvApsQlhAjkCokaC1LLJzPPSccO+tFa0M+W0=` with successful update status. Merged the approved website runtime changes into the downloaded staging code to retain its newer tool execution, provenance, and telemetry behavior. No configuration or gateway changes were made. Core and route tests passed against the merged deployment candidate.
+- Safe local rollback artifacts are in `C:\Users\1ones\AppData\Local\MySnoozePod\StagingBackups\2026-11-27-ask-snoozer`. `rollback.zip` matches the pre-change code hash `VNwqPaOWHvdYLuUT1sam//kD6QapzrHCSZB9p1QxOP8=`. `website-staging.zip` matches the deployed hash above. Preserve current staging code when preparing any subsequent deploy. The repository packaging command now includes the product knowledge feed required at runtime.
+- Live API returned HTTP 200 with `website-assessment.v1` for assessment (`HfYQcjXloAMEPrw=`), booking (`HfYQch_uIAMEQ-g=`), and the Queen product inquiry (`HfYWFgV5oAMEZRQ=`). Booking returned `/pages/book-a-snooze-session`. Product returned the specific Queen variant with its current Shopify price.
+- Actual Shopify preview confirmed the desktop dock at 1280px and full-screen dialog at 390×844. A two-turn live conversation retained both comfort preferences, recognized the flat-bed follow-up, and returned the exact Queen variant link. Mobile Back restored focus and reopening retained both answers. Physical phone keyboard behavior and owner signoff are pending. No booking, cart update, order, or theme publication was performed.
 
 ## Website Ask Snoozer interface — 2026-11-26
 
@@ -11,7 +20,7 @@ Current phase: Option 1 is implemented in source and verified with the browser f
 - The first screen offers Book a Snooze Session, Find my sleep setup, and Ask a product question. Booking opens the existing booking page. Assessment starts a free-form conversation. The same-tab transcript and draft survive closing and navigation during the guest session.
 - The client calls the configured Ask Snoozer API with `source: "website"`, a guest session ID, the message, and the page context. The route includes `metadata.answerSourceKey: "website-assessment.v1"` so the interface can distinguish the correct response contract. On product pages, the Conversation Core accepts an approved handle only as a reference and verifies the current commerce details through Shopify.
 - `node tests/runWebsiteAskSnoozerBrowserTests.mjs` uses the actual panel markup and CSS with a controlled endpoint and a local storefront fixture. It passed desktop dock, mobile Back and focus, responsive mode changes, repeated submit, transcript continuity, the three starters, verified variant and booking links, rejected external/cart actions, and recovery from unavailable and older endpoints. Optional `--screenshots` captures both layouts.
-- The theme setting **Ask Snoozer → Show Ask Snoozer on the storefront** defaults off. The next action is to deploy the matching website conversation response contract to staging, enable the control on an authorized Shopify preview theme, and verify actual mobile keyboard behavior and desktop layout alongside the native shopping pages, then run the live assessment, product, and booking journeys.
+- The theme setting **Ask Snoozer → Show Ask Snoozer on the storefront** defaults off. The November 27 checkpoint records its preview-only activation.
 
 ## Website Ask Snoozer assessment backend — 2026-11-26
 
@@ -19,7 +28,7 @@ Current phase: Option 1 is implemented in source and verified with the browser f
 - The conversation uses the in-store assessment topics and asks about flat versus adjustable first when configuring a bed. It keeps mattress feel for each sleeper separate from Standard, Half Split, or Full Split motion. Full Split Queen stays unavailable and the older assessment's implicit substitution is excluded from website guidance.
 - Booking hands off to `/pages/book-a-snooze-session`. The website product knowledge feed supplies verified technical facts, live Shopify Storefront reads supply product and variant commerce data, and the server builds product links. Sleep Systems navigation points to the appropriate existing pathway for supported configurations. The website chat tools are read-only.
 - Controlled Conversation Core and route tests cover Soft/Firm on a flat Queen, changing only the motion preference, retaining both feels, rejecting a hypothetical Full Split Queen, exact product variant links, an unavailable variant, and switching to direct booking. The canonical assessment and configuration quote suites also pass. These checks used controlled model and Shopify responses.
-- Deployment and live-model conversation acceptance remain pending. The interface uses this contract as recorded in the November 26 interface checkpoint above.
+- The November 27 checkpoint records staging deployment and live-model evidence for the website response contract.
 
 ## Live Sleep System cart acceptance — 2026-11-14
 
