@@ -22,7 +22,7 @@ const mattressInformation = read('snippets/snoozepod-mattress-product-informatio
 const stager = read('scripts/stage-curated-bundles.mjs');
 
 check(!collection.sections['guided-shopping'] && !collection.order.includes('guided-shopping'), 'unfinished Find Your Fit tools are absent from collections');
-check(collectionBanner.includes("display_title = display_size | append: ' Size'") && collectionBanner.includes('Products currently available in'), 'storewide size collections use a concise non-redundant heading');
+check(collectionBanner.includes("display_title = display_size | append: ' Size'") && collectionBanner.includes('Use the filters to narrow the list'), 'storewide size collections use a concise heading and practical next step');
 
 check(productHero.includes('exclude_system_mattress_sizes: true'), 'standard mattress PDPs request system-only size filtering');
 check(variantOptions.includes("product.type == 'Mattress'") && variantOptions.includes("value contains 'Split'"), 'split mattress geometries are removed from standalone variant controls');

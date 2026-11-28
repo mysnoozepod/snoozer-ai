@@ -81,27 +81,19 @@ function requireNoUserErrors(errors, label) {
 const titleByHandle = new Map(contentPages.map((item) => [item.handle, item.title]));
 
 function helpCopy(category) {
-  if (category === 'The SnoozePod Experience') return 'A Snooze Session turns these ideas into a focused showroom plan. You can compare the relevant choices, ask questions, and leave with a clear next step without being pushed into a premature purchase.';
-  if (category === 'Dual Comfort and Couples') return 'A private Snooze Session gives both sleepers time to test independently and then review the shared configuration together. MySnoozePod keeps unsupported combinations unavailable until the exact order can be verified.';
-  if (category === 'Adjustable Bases and Compatibility') return 'MySnoozePod can help you compare useful base functions and verify the mattress, size, geometry, furniture, and room requirements before an order is placed.';
-  if (category === 'Pillows, Protection, and Bedding') return 'During a Snooze Session, these layers can be considered with the mattress instead of as disconnected add-ons. The goal is a coordinated system in which every selected item has a reason.';
-  return 'A Snooze Session lets you compare these ideas on real sleep surfaces. MySnoozePod focuses on what you feel, what is verified, and what the next decision should be.';
+  if (category === 'The SnoozePod Experience') return 'Bring one thing you wish felt different about your bed. We can help you work out what to try first in a private Snooze Session.';
+  if (category === 'Dual Comfort and Couples') return 'Come try different feels side by side. Take a few minutes to decide what you each like, then compare notes.';
+  if (category === 'Adjustable Bases and Compatibility') return 'Try the positions you’d use at home. Bring your mattress and frame measurements if you want help checking fit.';
+  if (category === 'Pillows, Protection, and Bedding') return 'Ask which bedding layers you can try during a Snooze Session. See how they feel on the mattress you’re considering.';
+  return 'Give yourself time to lie down the way you sleep. A private Snooze Session makes it easy to compare a few mattresses side by side.';
 }
 
 function comparisonCopy(category) {
-  if (category === 'The SnoozePod Experience') return 'Use the visit or planning process to answer one question at a time. Write down what you already know, what you noticed during testing, and what still needs verification. A clear next step is more valuable than collecting a long list of products.';
-  if (category === 'Dual Comfort and Couples') return 'Have each sleeper describe comfort, pressure, movement, and temperature separately before discussing the shared setup. Then compare the two results alongside the exact mattress size, side orientation, base geometry, and bedding requirements.';
-  if (category === 'Adjustable Bases and Compatibility') return 'Compare the flat position first, then test the movements and controls you expect to use. Notice clearance, noise, ease of control, partner movement, and whether the mattress follows the base without resistance or bunching.';
-  if (category === 'Pillows, Protection, and Bedding') return 'Evaluate the item as part of the bed rather than in isolation. Notice fit, stretch, temperature, movement, care requirements, and whether it supports or changes the comfort you selected underneath it.';
-  return 'Use the same sleep positions and the same questions on each candidate. Notice pressure, stability, movement, temperature, and ease of repositioning, then describe the difference in your own words before looking at marketing labels.';
-}
-
-function decisionCopy(item) {
-  return 'This guide is a starting point, not a substitute for physical testing or verified product information. Separate personal preference from compatibility facts, and keep any unknown price, configuration, warranty, or fulfillment detail unresolved until it is confirmed.';
-}
-
-function useGuideCopy(item) {
-  return 'Read the sections that match your immediate question, then turn them into two or three things to observe during a Snooze Session. You do not need to memorize terminology. Use the guide to make a more informed comparison and recognize which questions deserve a verified answer before purchase.';
+  if (category === 'The SnoozePod Experience') return 'Pick one question to answer first. Try two options and write down the difference you noticed. Use that to decide what to try next.';
+  if (category === 'Dual Comfort and Couples') return 'Try a few feels on your own before you compare notes. Then decide together whether you want the bed to stay flat or move.';
+  if (category === 'Adjustable Bases and Compatibility') return 'Start flat. Try raising the head or foot in small steps. If you share a bed, see what your partner feels on their side.';
+  if (category === 'Pillows, Protection, and Bedding') return 'Try one change at a time. Notice how the fabric feels, how it fits, and how it moves when you turn over or raise your bed.';
+  return 'Lie down in the same position on each mattress. Notice where you settle in, where you feel supported, and how easy it is to roll over.';
 }
 
 function renderBody(item) {
@@ -115,16 +107,12 @@ function renderBody(item) {
   }).join('');
   const content = `<p><strong>${escapeHtml(item.category)}</strong></p>
 <p class="lead">${escapeHtml(item.lead)}</p>
-<h2>How to use this guide</h2>
-<p>${escapeHtml(useGuideCopy(item))}</p>
 ${sections}
-<h2>A practical way to compare</h2>
+<h2>Try This When You Compare</h2>
 <p>${escapeHtml(comparisonCopy(item.category))}</p>
-<h2>What to consider</h2>
+<h2>What to Check</h2>
 <ul>${considerations}</ul>
-<h2>Keep the decision clear</h2>
-<p>${escapeHtml(decisionCopy(item))}</p>
-<h2>How MySnoozePod helps</h2>
+<h2>Try It at MySnoozePod</h2>
 <p>${escapeHtml(helpCopy(item.category))}</p>
 <h2>Frequently asked questions</h2>
 ${faqs}
@@ -143,7 +131,7 @@ function renderHubBody() {
 </section>`;
   }).join('\n');
   const content = `<p class="lead">${escapeHtml(guideHub.description)}</p>
-<p>Start with the topic closest to the decision in front of you. Each guide is designed to help you compare choices, prepare for a Snooze Session, and separate personal preference from product details that still require verification.</p>
+<p>What are you trying to figure out? Pick a topic below and start with the question that’s on your mind.</p>
 <div class="content-guide-directory">${groups}</div>`;
   return `${SIGNATURE_PREFIX} hub=true sha256=${sha256(content)} -->\n${content}`;
 }
@@ -156,7 +144,12 @@ const handles = desired.map((item) => item.handle);
 if (new Set(handles).size !== handles.length) fail('Content page handles must be unique.');
 for (const item of desired) {
   const textWords = item.body.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
-  if (item.kind === 'guide' && textWords < 350) fail(`${item.handle} is too short at ${textWords} words.`);
+  if (item.kind === 'guide') {
+    const editorialSections = [...item.sections, ...item.faqs];
+    if (item.sections.length < 4 || item.faqs.length < 3 || editorialSections.some(([heading, copy]) => !heading.trim() || !copy.trim())) {
+      fail(`${item.handle} must contain four complete topic sections and three answered questions.`);
+    }
+  }
   if (item.kind === 'hub' && textWords < 250) fail(`${item.handle} is too short at ${textWords} words.`);
   if (/BEDGEAR|0\.0|1\.0|2\.0|3\.0/i.test(item.body)) fail(`${item.handle} contains prohibited manufacturer or numeric comfort language.`);
 }

@@ -8,39 +8,39 @@
     <header class="snoozepod-bundles__hero">
       <div>
         <h1>{{ page.title | default: 'Sleep Systems' | escape }}</h1>
-        <p class="snoozepod-bundles__lede">Choose how you want your bed to move, then explore only the mattresses, sizes, and adjustable bases that belong together.</p>
+        <p class="snoozepod-bundles__lede">Would you rather sleep flat, or would you like your bed to move? If you prefer a flat bed, <a href="{{ routes.collections_url }}/mattresses">explore our mattresses</a>. If you want motion, decide whether you’d like both sides to move together or separately.</p>
       </div>
     </header>
 
     <div class="snoozepod-bundles__group" id="sleep-systems">
       <div class="snoozepod-bundles__group-heading">
         <p class="snoozepod-bundles__eyebrow">Mattress + adjustable base</p>
-        <h2>How should your bed work?</h2>
-        <p>Start with the system geometry. We will keep the remaining choices compatible.</p>
+        <h2>How Do You Want Your Bed to Move?</h2>
+        <p>Choose your motion first. Then pick your size and a mattress and base that work together.</p>
       </div>
 
       <div class="snoozepod-system-paths" aria-label="Choose a sleep-system type">
         <button class="snoozepod-system-path" type="button" data-system-path="standard" aria-pressed="false">
           <span class="snoozepod-system-path__kicker">Standard</span>
           <strong>One mattress. One base.</strong>
-          <span>A familiar sleep surface with adjustable positioning.</span>
+          <span>The head and foot can rise, and both sides move together.</span>
         </button>
         <button class="snoozepod-system-path snoozepod-system-path--featured" type="button" data-system-path="split_head" aria-pressed="true">
           <span class="snoozepod-system-path__kicker">Featured in Pods 2 &amp; 3</span>
           <strong>Split-Head Sleep System</strong>
-          <span>A shared mattress with independent head positioning on Flex SH.</span>
+          <span>Read on one side while the other side stays flat. The lower part of the mattress stays joined. Pairs with Flex SH.</span>
         </button>
         <button class="snoozepod-system-path" type="button" data-system-path="full_split" aria-pressed="false">
           <span class="snoozepod-system-path__kicker">Fully independent</span>
           <strong>Split King Sleep System</strong>
-          <span>Two Twin XL mattresses and two Twin XL adjustable bases.</span>
+          <span>Raise the head and foot on each side independently. Includes two Twin XL mattresses and two Twin XL bases.</span>
         </button>
       </div>
 
       <div class="snoozepod-bundles__selection-heading" aria-live="polite">
         <p class="snoozepod-bundles__eyebrow" data-system-path-kicker>Signature system</p>
         <h2 data-system-path-heading tabindex="-1">Split-Head Sleep Systems</h2>
-        <p data-system-path-copy>Choose a split-head mattress size. The compatible Flex SH base is selected with it.</p>
+        <p data-system-path-copy>Choose your split-head size. We’ll match it with the Flex SH base.</p>
       </div>
       <div class="snoozepod-bundles__grid" data-bundle-grid="SLEEP_SYSTEM"></div>
     </div>

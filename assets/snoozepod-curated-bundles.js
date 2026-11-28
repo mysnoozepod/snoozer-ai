@@ -3,9 +3,9 @@
 
   var SIZE_ORDER = ["Queen", "King", "California King", "Twin", "Twin XL", "Full", "Full XL", "Split Head Queen", "Split Head King", "Split Head California King", "Split King"];
   var PATH_COPY = {
-    standard: { kicker: "Standard system", heading: "Standard Sleep Systems", copy: "Choose a mattress size, then select an exact-size Flex L or Flex LSX adjustable base." },
-    split_head: { kicker: "Signature system", heading: "Split-Head Sleep Systems", copy: "Choose a split-head mattress size. The compatible Flex SH base is selected with it." },
-    full_split: { kicker: "Fully independent", heading: "Split King Sleep Systems", copy: "Each system contains two Twin XL mattresses and two Twin XL adjustable bases." },
+    standard: { kicker: "Standard system", heading: "Standard Sleep Systems", copy: "Choose your size and a matching Flex L or Flex LSX base. Both sleepers move together." },
+    split_head: { kicker: "Signature system", heading: "Split-Head Sleep Systems", copy: "Choose your split-head size. We’ll match it with the Flex SH base." },
+    full_split: { kicker: "Fully independent", heading: "Split King Sleep Systems", copy: "Each side can raise its head and foot independently. Your system includes two Twin XL mattresses and two Twin XL bases." },
   };
   var COMFORT_OPTIONS = ["Soft", "Medium Soft", "Medium Firm", "Firm"];
   var SHOWROOM_LOCATIONS = {
@@ -139,10 +139,10 @@
     var image = group.mattress.image;
     var showroom = SHOWROOM_LOCATIONS[group.mattress.handle];
     var pathBasis = path === "split_head"
-      ? "Select a split-head size; Flex SH is the compatible adjustable base."
+      ? "Pick your size. Flex SH lets each sleeper raise the head of their side."
       : path === "full_split"
         ? "Split King includes two Twin XL mattresses and two Twin XL bases."
-        : "Select a standard size and an exact-size Flex L or Flex LSX base.";
+        : "Choose your mattress size and a matching Flex L or Flex LSX base.";
     return '<article class="snoozepod-bundle-card" data-bundle-card="' + escapeHtml(group.id) + '" data-system-card>' +
       '<div class="snoozepod-bundle-card__images">' + (image ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(group.mattress.title) + '" loading="lazy" width="720" height="540">' : '') + '</div>' +
       '<div class="snoozepod-bundle-card__body">' + (showroom ? '<div class="snoozepod-bundle-card__showroom"><span>' + escapeHtml(showroom) + '</span></div>' : '') +

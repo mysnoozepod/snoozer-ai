@@ -23,8 +23,8 @@
     "experience-navigation": {
       "type": "snoozepod-footer-navigation",
       "settings": {
-        "heading": "Ready to experience the difference?",
-        "text": "Schedule a private Snooze Session and compare the options that matter to you.",
+        "heading": "What Would You Like to Try?",
+        "text": "Come try the feel you like, compare it with another, and take your time deciding.",
         "booking_label": "Book a Snooze Session",
         "booking_link": "shopify://pages/book-a-snooze-session"
       }
@@ -42,7 +42,7 @@
         "paragraph": {
           "type": "paragraph",
           "settings": {
-            "text": "<p>Get updates on new collections, showroom availability, and SnoozePod planning tools.<\/p>"
+            "text": "<p>Get showroom updates, new arrivals, and practical tips for choosing your next bed.<\/p>"
           }
         },
         "email-form": {

@@ -11,7 +11,7 @@ const page = (title, handle, category, lead, sections, considerations, faqs, rel
 
 export const contentPages = [
   page('Building Your SnoozePod', 'building-your-snoozepod', 'The SnoozePod Experience',
-    'A SnoozePod is a complete sleep environment built around how you rest, not a preset package. Start with the mattress, then consider the base, pillow, protection, sheets, and comfort layers that make the system work for you.',
+    'What would you change about your bed first? Maybe you’d choose a softer feel, a pillow with more height, or a base that lets you sit up to read. Start there and build your SnoozePod one piece at a time.',
     [
       ['Start with the way you sleep', 'Your usual position, temperature preferences, comfort language, mobility needs, and partner preferences create the starting point. The goal is to identify what deserves attention before comparing products.'],
       ['Choose the foundation', 'A mattress and its support system should be considered together. The right foundation supports the mattress correctly and may add positioning options, while the wrong combination can create avoidable fit or performance problems.'],
@@ -23,7 +23,7 @@ export const contentPages = [
     ['what-is-a-snoozepod', 'what-is-a-snooze-session', 'what-makes-a-complete-sleep-system']),
 
   page('What Is a SnoozePod?', 'what-is-a-snoozepod', 'The SnoozePod Experience',
-    'A SnoozePod is MySnoozePod’s name for a coordinated sleep system. It brings the mattress, foundation, pillow, protection, and bedding into one plan while keeping every recommendation tied to the customer’s actual needs.',
+    'Think about your favorite way to get comfortable in bed. Your SnoozePod brings together the mattress, base, pillow, protection, and bedding that make that spot feel like yours.',
     [
       ['More than a mattress', 'The mattress is important, but it is only one part of the environment. Support, positioning, pillow height, temperature, and bedding can all change how the same mattress feels during the night.'],
       ['Built around the individual', 'There is no universal SnoozePod. A useful system reflects sleep position, comfort preference, body support, room constraints, and whether one or two sleepers will share the surface.'],
@@ -31,15 +31,15 @@ export const contentPages = [
       ['Designed to remain understandable', 'A SnoozePod should simplify the decision, not hide it. You should know what each component does, why it was selected, and which choices remain optional.'],
     ],
     ['Comfort and support needs', 'Size and geometry', 'Adjustability and mobility', 'Cooling and bedding preferences'],
-    [['Is a SnoozePod a bundled product?', 'It is a coordinated approach. Components can remain separate Shopify products and should only be added when selected.'], ['Is an adjustable base required?', 'No. It is an option when positioning features match the customer’s goals and the mattress is compatible.'], ['Can I build one online?', 'You can explore online, but a Snooze Session is the best way to test comfort before completing the system.']],
+    [['Is a SnoozePod a bundled product?', 'You can build it piece by piece. Start with what you need now and add the rest when it makes sense for you.'], ['Is an adjustable base required?', 'No. It is an option when positioning features match the customer’s goals and the mattress is compatible.'], ['Can I build one online?', 'You can explore online, but a Snooze Session is the best way to test comfort before completing the system.']],
     ['building-your-snoozepod', 'how-your-sleep-system-components-work-together', 'how-the-mysnoozepod-showroom-works']),
 
   page('How the MySnoozePod Showroom Works', 'how-the-mysnoozepod-showroom-works', 'The SnoozePod Experience',
-    'The showroom is designed for guided, low-pressure testing. A Snooze Session helps you narrow the right starting points, compare meaningful differences, and leave with a clear understanding of what should happen next.',
+    'How much can a quick sit on the edge of a mattress really tell you? In a private Snooze Session, you can lie down the way you sleep and give yourself time to feel the difference.',
     [
       ['A private starting point', 'Your visit begins with what you already know about your sleep and what you want to improve. That context helps keep the session focused instead of turning it into a tour of every product.'],
       ['Real comfort testing', 'You can compare sleep surfaces, positions, pillows, and system features in person. Spending deliberate time on each option is more useful than making a decision from a quick sit at the edge of a bed.'],
-      ['Guidance without pressure', 'The goal is to explain differences and help you notice your own response. Recommendations should reflect your needs rather than automatically moving toward the most expensive option.'],
+      ['Guidance without pressure', 'Want help narrowing it down? Tell us what feels better on one bed than another. We’ll help you work out what to try next.'],
       ['A documented next step', 'Your session can end with a configuration to consider, questions that still need answers, or a plan for a follow-up. You do not have to force a purchase before the decision is ready.'],
     ],
     ['Wear comfortable clothing', 'Bring your partner when preferences differ', 'Share room or access constraints', 'Allow enough time to test without rushing'],
@@ -47,7 +47,7 @@ export const contentPages = [
     ['what-is-a-snooze-session', 'how-to-prepare-for-your-showroom-visit', 'comparing-sleep-systems-without-sales-pressure']),
 
   page('What Is a Snooze Session?', 'what-is-a-snooze-session', 'The SnoozePod Experience',
-    'A Snooze Session is a private appointment for understanding and testing your sleep options. It combines conversation, guided comparisons, and real showroom experience so your decision begins with evidence rather than guesswork.',
+    'A Snooze Session is time set aside for you to try beds in private. Tell us what you’d like to change, then lie down the way you sleep and compare a few options at your own pace.',
     [
       ['Your priorities come first', 'The session starts with comfort, support, temperature, movement, partner needs, and any frustrations with your current setup. These priorities determine what is worth testing.'],
       ['Comparisons are intentional', 'Instead of trying every surface, you compare options that answer a question. A useful comparison might isolate a comfort change, a foam-versus-hybrid feel, or the effect of an adjustable position.'],
@@ -59,7 +59,7 @@ export const contentPages = [
     ['what-to-expect-during-your-snooze-session', 'how-to-prepare-for-your-showroom-visit', 'building-your-snoozepod']),
 
   page('What to Expect During Your Snooze Session', 'what-to-expect-during-your-snooze-session', 'The SnoozePod Experience',
-    'Your Snooze Session is a structured but relaxed visit. Expect a short conversation, focused product testing, time to compare what you feel, and a clear recap of the options that best match your priorities.',
+    'Come as you are. We’ll start with what you wish felt different about your bed, then give you time to lie down, try a few options, and talk through what you noticed.',
     [
       ['Begin with context', 'You will discuss your current mattress, comfort preference, sleep position, temperature, partner needs, and what prompted the visit. You do not need perfect answers; ordinary observations are enough.'],
       ['Test with purpose', 'Each recommended surface should answer a specific question. Lie in your usual positions, notice pressure and support, and avoid judging only from the first few seconds.'],
@@ -67,11 +67,11 @@ export const contentPages = [
       ['Review the result', 'At the end, you should understand the leading configuration, alternatives, compatibility questions, and any decisions that remain open.'],
     ],
     ['Arrive ready to describe your current sleep setup', 'Use your normal sleep positions during testing', 'Speak up when something feels unclear', 'Take time before making a final decision'],
-    [['Do I need to know mattress terminology?', 'No. Describe what you feel in your own words and the session can translate that into useful comparisons.'], ['What if my partner cannot attend?', 'You can still begin, but a follow-up may be useful before finalizing a shared surface.'], ['Will pricing be discussed?', 'Current authorized pricing can be reviewed once the relevant configuration is identified.']],
+    [['Do I need to know mattress terminology?', 'No. Describe what you feel in your own words and the session can translate that into useful comparisons.'], ['What if my partner cannot attend?', 'You can still begin, but a follow-up may be useful before finalizing a shared surface.'], ['Will pricing be discussed?', 'Yes. Once you’ve narrowed down your mattress, size, and setup, you can review the price of the pieces you chose.']],
     ['what-is-a-snooze-session', 'how-to-prepare-for-your-showroom-visit', 'what-happens-after-your-snooze-session']),
 
   page('How to Prepare for Your Showroom Visit', 'how-to-prepare-for-your-showroom-visit', 'The SnoozePod Experience',
-    'A little preparation makes showroom testing more useful. You do not need research notes or technical vocabulary—just a clear picture of your current setup, your main concerns, and any practical limits that affect the purchase.',
+    'Before your visit, ask yourself one question. What would I change about the bed I sleep on now? Bring that answer, any questions you have, and room measurements if space is tight.',
     [
       ['Think about your current bed', 'Note its age, size, general construction, and what you would keep or change. Pay attention to when discomfort occurs and whether it changes with position or temperature.'],
       ['Discuss partner preferences', 'Partners may agree on size but differ on comfort, temperature, or movement. Naming those differences early helps the session explore shared and independent options.'],
@@ -251,27 +251,27 @@ export const contentPages = [
     ['how-to-choose-the-right-mattress', 'from-showroom-recommendation-to-home-delivery', 'comparing-sleep-systems-without-sales-pressure']),
 
   page('The Benefits of Dual Comfort Mattresses', 'benefits-of-dual-comfort-mattresses', 'Dual Comfort and Couples',
-    'Dual comfort allows each sleeper to choose a different comfort direction on the same shared bed. It can reduce forced compromise while preserving a coordinated sleep system.',
+    'Like your side soft while your partner likes theirs firm? With Dual Comfort, you can each pick the feel you like on one mattress. The bed can stay flat.',
     [
-      ['Independent comfort choices', 'One side can be Soft or Medium Soft while the other is Medium Firm or Firm, provided the selected combination is supported. Each sleeper can focus on personal pressure and support response.'],
+      ['Independent comfort choices', 'Choose Soft, Medium Soft, Medium Firm, or Firm for each side. The choices can match or be different.'],
       ['A shared footprint', 'Dual comfort can keep the visual and practical simplicity of one bed while addressing different preferences. Exact construction and center feel vary by product.'],
       ['Better conversations about comfort', 'Partners can describe their needs separately instead of searching for one average label. This often makes showroom comparisons clearer.'],
       ['Compatibility still matters', 'Size, geometry, foundation, protectors, and sheets must match the dual-comfort system. Independent feel does not remove the need for exact configuration verification.'],
     ],
     ['Each partner’s comfort preference', 'Size and split geometry', 'Foundation compatibility', 'Verified orderable combinations'],
-    [['Is dual comfort the same as a split mattress?', 'Not always. Some systems create different feels within one mattress, while others use physically separate pieces.'], ['Can any two comfort levels be combined?', 'Only combinations supported and verified for the product should be sold.'], ['Do both partners need to attend the showroom?', 'It is strongly helpful because each side should be tested by the person who will use it.']],
+    [['Is dual comfort the same as a split mattress?', 'You can have Dual Comfort on one shared mattress. Choose a split only if you also want the sides to raise separately.'], ['Can any two comfort levels be combined?', 'Yes. On our Dual Comfort mattresses, each side can have any of the four feels for the sizes available to order.'], ['Do both partners need to attend the showroom?', 'It is strongly helpful because each side should be tested by the person who will use it.']],
     ['how-independent-left-and-right-comfort-works', 'choosing-comfort-for-each-side-of-the-bed', 'choosing-a-mattress-for-couples-with-different-sleep-styles']),
 
   page('How Independent Left and Right Comfort Works', 'how-independent-left-and-right-comfort-works', 'Dual Comfort and Couples',
-    'Independent comfort separates the choice for the left side from the choice for the right side. The customer experience should remain simple while the order resolves to an exact supported configuration.',
+    'You get to choose how your side feels. Your partner gets to choose theirs. Start with the size you share, then pick the feel you want on each side.',
     [
       ['Choose sides deliberately', 'Left and right should be defined from a consistent viewpoint, normally while standing at the foot of the bed and looking toward the head. Confirm this before ordering.'],
-      ['Select comfort in plain language', 'Each sleeper chooses Soft, Medium Soft, Medium Firm, or Firm based on physical testing and preference. Internal codes should not replace clear customer language.'],
-      ['Resolve the sellable configuration', 'The selected size plus both comfort choices must map to a verified variant or fulfillment plan. If no mapping exists, Add to Cart should remain unavailable.'],
-      ['Carry the choices through the order', 'The cart and order should preserve the left and right selections clearly. A note alone must not imply that unsupported components were added.'],
+      ['Select comfort in plain language', 'Pick Soft, Medium Soft, Medium Firm, or Firm on each side. If you’re unsure, spend a few minutes on each feel in the position you usually sleep in.'],
+      ['Pick Your Mattress Size', 'Choose an available mattress size and make a selection for both sides before adding it to your cart.'],
+      ['Check Both Sides Before You Order', 'Your cart shows the chosen feel for the left side and the right side. Check that each one matches what you meant to select.'],
     ],
     ['Which side belongs to which sleeper', 'Comfort for each side', 'Exact size and geometry', 'Verified variant and quantities'],
-    [['How are left and right defined?', 'Confirm the store’s viewpoint before ordering so both parties use the same orientation.'], ['Can I change a side later?', 'That depends on the verified product design and service terms.'], ['Why might Add to Cart be disabled?', 'The chosen combination may not yet have an approved sellable mapping.']],
+    [['How are left and right defined?', 'Confirm the store’s viewpoint before ordering so both parties use the same orientation.'], ['Can I change a side later?', 'That depends on the verified product design and service terms.'], ['Why might Add to Cart be disabled?', 'Check that the size is available and you’ve picked a feel for both sides.']],
     ['benefits-of-dual-comfort-mattresses', 'choosing-between-soft-medium-soft-medium-firm-and-firm', 'showroom-comfort-vs-ordered-configuration']),
 
   page('Choosing Between Soft, Medium Soft, Medium Firm, and Firm', 'choosing-between-soft-medium-soft-medium-firm-and-firm', 'Dual Comfort and Couples',
@@ -335,12 +335,12 @@ export const contentPages = [
     ['benefits-of-dual-comfort-mattresses', 'choosing-different-comfort-levels-as-a-couple', 'what-happens-when-partners-have-different-sleep-preferences']),
 
   page('Standard, Split-Head, Half-Split, and Full-Split Explained', 'standard-split-head-half-split-and-full-split-explained', 'Dual Comfort and Couples',
-    'Mattress geometry determines how the sleep surface can move and which bases, protectors, and sheets will fit. Similar size names do not make standard and split configurations interchangeable.',
+    'Do you want the bed to stay flat, move together, or let each person adjust their side? Start there. How your bed moves determines which mattress, base, and bedding will fit.',
     [
-      ['Standard', 'A standard mattress is one continuous sleep surface without an articulated split at the head. It may still work with an adjustable base when approved.'],
-      ['Split-head', 'A split-head mattress separates movement near the head while remaining connected farther down the bed. The split length and matching base movement must be verified.'],
+      ['Standard', 'A standard mattress is one piece. On a compatible adjustable base, both sides rise together at the head and foot.'],
+      ['Split-head', 'The top of the mattress is divided so one of you can sit up while the other side stays flat. The bottom stays joined. Our split-head systems use the Flex SH base.'],
       ['Half-split', 'Half-split terminology can refer to a deeper partial division, but definitions vary. Confirm the manufacturer’s exact geometry rather than relying on the label.'],
-      ['Full-split', 'A full-split system uses separate left and right sleep surfaces or components. It can support independent movement but affects sheets, protectors, gap feel, and quantities.'],
+      ['Full-split', 'Our Split King uses two Twin XL mattresses and two Twin XL bases. Each person can raise the head and foot on their side independently.'],
     ],
     ['Exact split length and geometry', 'Base articulation', 'Protector and sheet design', 'Number of physical pieces'],
     [['Can split-head sheets fit every split mattress?', 'No. Match the exact size, split geometry, and depth.'], ['Can a standard mattress go on a split base?', 'Only when the mattress and base manufacturer support that configuration.'], ['Does a full split mean two mattresses?', 'Often it uses two separate sleep surfaces, but confirm the exact product and quantity.']],
@@ -349,7 +349,7 @@ export const contentPages = [
   page('Is a Split-Head Mattress Right for You?', 'is-a-split-head-mattress-right-for-you', 'Dual Comfort and Couples',
     'A split-head mattress can allow independent upper-body positioning while preserving a more connected lower sleep surface. It is worth considering when partners want different head positions but do not want a full split.',
     [
-      ['Independent upper-body movement', 'One sleeper may read, rest, or reduce snoring-related positioning without moving the other side’s head section, subject to the selected base and mattress design.'],
+      ['Independent upper-body movement', 'If one of you likes to read upright while the other stays flat, a split-head mattress paired with Flex SH lets you raise just your side at the head.'],
       ['A more connected lower surface', 'Because the split does not run the full length, the lower portion remains joined. Some couples prefer that feel.'],
       ['Specialized bedding is required', 'Standard fitted sheets and protectors may not articulate correctly. Use products designed for the exact split-head geometry.'],
       ['Mechanical compatibility is essential', 'The split length, hinge location, base geometry, and mattress construction must work together. Matching width labels are not enough.'],
@@ -467,10 +467,10 @@ export const contentPages = [
     ['how-to-choose-the-right-mattress', 'how-your-sleep-system-components-work-together', 'questions-to-ask-before-buying-a-mattress']),
 
   page('The Benefits of an Adjustable Base', 'benefits-of-an-adjustable-base', 'Adjustable Bases and Compatibility',
-    'An adjustable base can change upper-body and leg position, support activities such as reading, and offer convenience features. Its value depends on the functions you will actually use and the mattress being compatible.',
+    'Ever stack pillows behind you just to read in bed? An adjustable base lets you raise the head or foot of a compatible mattress. Start with the positions you’d actually use.',
     [
       ['Independent positioning', 'Raising the head or legs changes how the body rests on the mattress. Split systems may allow partners to choose positions independently.'],
-      ['Everyday comfort and access', 'Positioning can make reading or relaxing more comfortable and may help some people get in and out of bed. Avoid turning general comfort into a medical promise.'],
+      ['Everyday comfort and access', 'Try sitting up to read, lowering the bed to lie flat, or raising the foot until it feels comfortable. Notice which positions you’d use at home.'],
       ['Convenience features', 'Remote controls, presets, lighting, massage-style vibration, and USB power may be available. Compare the features you will use rather than counting them.'],
       ['Compatibility is required', 'The mattress must flex appropriately, and the size, geometry, frame, headboard, and room must accommodate movement.'],
     ],
@@ -508,7 +508,7 @@ export const contentPages = [
       ['What the label generally means', 'A zero-gravity-style preset usually raises the upper body and legs into a balanced reclined position. Exact angles vary by base.'],
       ['Comfort is personal', 'Some sleepers enjoy the distribution of pressure in a reclined position, while others prefer a smaller adjustment. Test rather than relying on the name.'],
       ['Presets can be starting points', 'Reading, anti-snore-labeled, lounge, and memory positions may be available. They can be adjusted when the base permits.'],
-      ['Avoid medical promises', 'A preset name does not prove treatment of reflux, snoring, circulation, pain, or another condition. Seek appropriate medical guidance for health concerns.'],
+      ['Try the Position for Yourself', 'Try the preset, then move the head or foot a little at a time if your base allows it. Notice which position feels easiest to settle into.'],
     ],
     ['Comfort at the actual angle', 'Ease of getting in and out', 'Partner movement needs', 'Remote and memory controls'],
     [['Is zero gravity the same on every base?', 'No. Angles and movement ranges vary.'], ['Will it stop snoring?', 'Do not assume so; a labeled preset is not a guaranteed treatment.'], ['Can I save my own position?', 'Some bases offer memory buttons; verify the exact model.']],
@@ -520,7 +520,7 @@ export const contentPages = [
       ['Match exact size and geometry', 'Standard, split-head, and full-split products require different movement patterns. Confirm the exact combination in manufacturer documentation or an approved compatibility record.'],
       ['Confirm the mattress can flex', 'The mattress must articulate without damage or excessive resistance. Thickness and construction can affect movement.'],
       ['Review foundation and frame rules', 'Some mattresses require particular support spacing or should not be used on certain legacy foundations. The adjustable base may also need clearance inside furniture.'],
-      ['Verify the complete cart', 'If two base sections or special components are required, the actual variants and quantities must appear in the cart. Product properties alone are not enough.'],
+      ['Check What You’re Ordering', 'Before you order, check that every mattress and base you expect is listed with the right size and quantity.'],
     ],
     ['Exact model and size', 'Split geometry', 'Flexibility and support rules', 'Base section quantities'],
     [['Does matching size prove compatibility?', 'No. Mechanical geometry and manufacturer approval also matter.'], ['Can any foam mattress adjust?', 'No. Verify the exact mattress rather than assuming from material type.'], ['What about platform beds?', 'Check whether the base can fit within or replace the platform support structure.']],
@@ -567,7 +567,7 @@ export const contentPages = [
     [
       ['Protection supports care', 'A washable protector can make routine care easier and reduce direct exposure of the mattress cover to everyday accidents. Review the specific care instructions.'],
       ['Fit affects performance', 'A protector that is too tight, loose, or shallow may bunch, pull, or change the surface response. Measure depth and account for toppers.'],
-      ['Geometry matters', 'Standard, split-head, and full-split systems need different designs. Do not imply that a standard encasement will articulate correctly on a split system.'],
+      ['Geometry matters', 'Does your bed split at the head or all the way down? Choose a protector made for that split so your bedding can move with the bed.'],
       ['Protection types differ', 'Top-only protectors, fitted designs, and full encasements serve different purposes. Compare verified construction rather than treating them as interchangeable.'],
     ],
     ['Mattress size and depth', 'Standard or split geometry', 'Stretch and surface feel', 'Cleaning instructions'],
@@ -604,7 +604,7 @@ export const contentPages = [
       ['Begin with the room', 'Temperature, airflow, humidity, sunlight, and seasonal conditions create the baseline. Adjust the environment before attributing every warm night to the mattress.'],
       ['Review the layers closest to you', 'Pajamas, sheets, protector, and pillow affect moisture and airflow. Heavy or poorly fitted layers can change the response of cooling-oriented products.'],
       ['Choose an appropriate comforter', 'Use Light, Medium, or Ultra based on the room and sleeper. Layering can make seasonal adjustments easier.'],
-      ['Keep claims realistic', 'Cooling features can help manage heat or moisture, but individual response varies. Avoid guarantees and medical claims.'],
+      ['See How It Feels to You', 'Try the bedding layers together and notice what feels comfortable to you. A lighter cover or a different sheet may be a good place to start.'],
     ],
     ['Room temperature and humidity', 'Sheet and protector materials', 'Comforter weight', 'Your own temperature pattern'],
     [['What should I change first?', 'Start with the room and the bedding layers closest to the body.'], ['Will a cooling mattress keep me cold?', 'No product can guarantee a specific body temperature all night.'], ['Can partners use different bedding?', 'Yes. Separate comforters or layers can address different warmth preferences.']],

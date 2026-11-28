@@ -6,11 +6,11 @@
   assign display_subtitle = blank
   if collection.handle == 'shop-by-size'
     assign display_title = 'Shop by Size'
-    assign display_subtitle = 'Choose a size to see products currently available in that size.'
+    assign display_subtitle = 'Already know what size bed you have? Start there, then shop for what you need.'
   elsif collection.handle contains 'shop-by-size-'
     assign display_size = collection.title | remove_first: 'Shop '
     assign display_title = display_size | append: ' Size'
-    assign display_subtitle = 'Products currently available in ' | append: display_size | append: '.'
+    assign display_subtitle = 'Use the filters to narrow the list, then open a product to see your options.'
   endif
 -%}
 

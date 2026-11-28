@@ -13,15 +13,15 @@
       "type": "snoozer-landing-booking",
       "settings": {
         "hero_eyebrow": "PRIVATE SNOOZE SESSION",
-        "hero_headline": "Plan Your Private Snooze Session",
-        "hero_text": "Choose a time for a private showroom visit and compare products at your own pace.",
-        "hero_helper_text": "Book directly below. The Snooze Assessment is optional and never required to schedule your visit.",
+        "hero_headline": "Book Your Snooze Session",
+        "hero_text": "What would you like to try first? Book a private visit, bring your questions, and give yourself time to find out what feels right.",
+        "hero_helper_text": "Pick a time below. The Snooze Assessment is optional and never required to book.",
         "hero_image": "shopify://shop_images/ChatGPT_Image_Apr_28_2026_03_23_05_AM.png",
         "hero_image_alt": "",
-        "mini_heading": "Complete Your Mini Snooze Assessment",
-        "mini_text": "If you want, answer a few guided questions so your visit starts with additional context.",
-        "booking_heading": "Choose Your Visit Time",
-        "booking_text": "Choose the private session time that fits your schedule. No assessment or account is required.",
+        "mini_heading": "Want a Head Start?",
+        "mini_text": "Tell us how you sleep, what feels off, and what you’d like to compare. A few answers can help you decide where to start.",
+        "booking_heading": "Choose a Time",
+        "booking_text": "Choose a time that works for you. You can book without an account.",
         "calendly_url": "https://calendly.com/zohotyree/30min"
       }
     }

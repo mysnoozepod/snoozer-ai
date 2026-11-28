@@ -1,9 +1,18 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-27 — Storefront layout polish published
+Last updated: 2026-11-27 — Brandy-inspired storefront copy prepared for review
 Owner: Ty  
 Implementer: Codi  
-Current phase: Visual polish is live following Ty's publication instruction. Copy polish is the next phase.
+Current phase: Visual polish is live. Copy polish is in review.
+
+## Storefront copy polish — 2026-11-27
+
+- Review the [Shopify copy preview](https://mysnoozepod.com/?preview_theme_id=143239839805). The homepage, announcement bar, booking page, size collection intro, product guidance, Sleep Systems, and footer use shorter, more conversational copy. The copy uses Brandy’s questions, examples from daily life, and practical next steps.
+- Reviewed nine rendered storefront routes and screened the stored text on 72 pages, 43 products, and 102 collections. Used current storefront decisions for product names, Dual Comfort selections, and base movement. A separate editor reviewed the source samples and the edits. Clarified virtual attendance, shared and independent movement, and which bedding can be tried.
+- The guide drafts in `content/shopify-content-pages.mjs` and the shared guide format in `scripts/stage-content-pages.mjs` preserve the guide handles, four topic sections, three FAQs, and related links. A read-only Shopify plan found 51 updates and zero creates. These Shopify page bodies are shared by the live and preview themes, so the guide revisions remain in source until the copy release.
+- The attached sales samples were used for voice. Any medical, universal product-feature, trial, warranty, or old showroom-access claims require current evidence before publication. The stored legacy FAQ includes a trial claim and an address placeholder. The visible FAQ currently uses theme-managed answers. Review the stored FAQ before publishing its replacement.
+- Preview asset backups are under `%LOCALAPPDATA%\MySnoozePod\ThemeBackups\20261127-225607-copy-preview`. The next action is to review the copy, then release the approved preview text and shared guide updates as a copy-only change.
+- The Shopify browser rendered the revised homepage at 1280px and 390px. Sleep Systems, Dual Comfort, the booking page, and Shop King passed at 390px with zero page overflow. Verified the optional assessment language and the existing Add to Cart button. Six regression suites and the Shopify guide dry run passed.
 
 ## Storefront visual polish — 2026-11-27
 

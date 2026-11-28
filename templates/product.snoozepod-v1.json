@@ -144,8 +144,8 @@
     "final-cta": {
       "type": "snoozepod-product-cta",
       "settings": {
-        "heading": "Want to compare it in person?",
-        "body": "Schedule a private Snooze Session when you are ready to compare this product in the showroom.",
+        "heading": "Want to Try It in Person?",
+        "body": "Book a private Snooze Session to see how it feels and compare it with your other options.",
         "primary_label": "Book a Snooze Session",
         "primary_link": "/pages/book-a-snooze-session",
         "secondary_label": "",

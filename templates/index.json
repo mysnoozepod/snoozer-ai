@@ -12,8 +12,8 @@
     "image_with_text_hVQzdT": {
       "type": "snooze-hero",
       "settings": {
-        "heading": "A Private Way To Find Better Sleep",
-        "subtext": "Book a private Snooze Session to compare mattresses and complete sleep systems with clear, personal guidance.",
+        "heading": "Try Your Next Bed in Private",
+        "subtext": "What do you wish felt different about your bed? Book a private Snooze Session to try mattresses and sleep systems at your own pace.",
         "primary_cta_label": "Book a Snooze Session",
         "primary_cta_link": "shopify://pages/book-a-snooze-session",
         "secondary_cta_label": "Explore Mattresses",
@@ -29,23 +29,23 @@
           "settings": {
             "icon": "map_pin",
             "title": "Shop Your Way",
-            "short_text": "Online or through a private showroom visit."
+            "short_text": "Browse online or give yourself time to try a bed in private."
           }
         },
         "value-2": {
           "type": "trust_item",
           "settings": {
             "icon": "question_mark",
-            "title": "Compare With Confidence",
-            "short_text": "Understand comfort, support, cooling, and fit before you decide."
+            "title": "Feel the Difference",
+            "short_text": "Lie down the way you sleep. Give yourself a few minutes to notice what feels different."
           }
         },
         "value-3": {
           "type": "trust_item",
           "settings": {
             "icon": "box",
-            "title": "Complete Your Sleep Space",
-            "short_text": "Explore mattresses, bases, pillows, bedding, and furniture at your own pace."
+            "title": "Make It Yours",
+            "short_text": "Pick the mattress, base, and bedding that fit the way you sleep."
           }
         }
       },
@@ -90,8 +90,8 @@
       "block_order": ["s7", "h6", "m3", "m5"],
       "settings": {
         "eyebrow": "Explore our mattresses",
-        "heading": "Compare the mattress lineup",
-        "intro": "Start online by comparing memory foam, hybrid, and two Dual Comfort profiles, then experience the meaningful differences during a private visit.",
+        "heading": "What Feel Works for You?",
+        "intro": "Like the close feel of memory foam? Prefer the bounce of a hybrid? Try those feels side by side, or explore a Dual Comfort mattress with a feel for each sleeper.",
         "shop_label": "Shop all mattresses",
         "shop_link": "shopify://collections/mattresses",
         "booking_label": "",
@@ -158,7 +158,7 @@
           "settings": {
             "collection": "adjustable-bases",
             "title_override": "Bases",
-            "description": "Add elevation, adjustability, and recovery support.",
+            "description": "Raise the head or foot of your bed to find a position you like.",
             "cta_label": "Explore",
             "link": ""
           }
@@ -188,7 +188,7 @@
           "settings": {
             "collection": "mattress-protectors",
             "title_override": "Mattress Protection",
-            "description": "Protect the mattress with fit and geometry in mind.",
+            "description": "Choose protection that fits your mattress size and split, if it has one.",
             "cta_label": "Explore",
             "link": ""
           }
@@ -208,7 +208,7 @@
           "settings": {
             "collection": "cooling-bedding",
             "title_override": "Cooling & Bedding",
-            "description": "Complete the sleep environment with selected bedding layers.",
+            "description": "Try lighter layers or fabrics that feel cool to the touch.",
             "cta_label": "Explore",
             "link": ""
           }
@@ -218,7 +218,7 @@
           "settings": {
             "collection": "mattress-toppers",
             "title_override": "Mattress Toppers",
-            "description": "Add comfort, pressure relief, and a refreshed feel.",
+            "description": "Change how the surface of your mattress feels.",
             "cta_label": "Explore",
             "link": ""
           }
@@ -228,7 +228,7 @@
           "settings": {
             "collection": "bedroom-furniture",
             "title_override": "Bedroom Furniture",
-            "description": "Finish the room around your sleep environment.",
+            "description": "Give your bed a finished look with a headboard or platform base.",
             "cta_label": "Explore",
             "link": ""
           }
@@ -245,8 +245,8 @@
         "collection_card_gK9axe"
       ],
       "settings": {
-        "heading": "More Than A Mattress",
-        "subheading": "Complete your sleep environment with adjustable bases, pillows, sheets, protection, comfort layers, and furniture.",
+        "heading": "More Than a Mattress",
+        "subheading": "Start with what you want to change. Try a different pillow, find sheets that fit, or give your bed a new foundation.",
         "cta_label": "Explore Our Collections",
         "cta_link": "/collections",
         "color_scheme": "scheme-1",
@@ -258,7 +258,7 @@
       "type": "snoozepod-collection-cta",
       "settings": {
         "heading": "Build a Complete Sleep System",
-        "body": "Pair a mattress with a compatible adjustable base, choose an exact size, and keep every component as a real Shopify item.",
+        "body": "Want your bed to move? Choose how you want it to move, pick your size, and find a mattress and base that work together.",
         "primary_label": "Explore Sleep Systems",
         "primary_link": "/pages/sleep-systems",
         "secondary_label": "",

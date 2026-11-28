@@ -1,7 +1,12 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-27 — Storefront layout polish published
-Queue state: Visual changes are live on Shopify theme `139216420925`.
+Last updated: 2026-11-27 — Storefront copy prepared for review
+Queue state: Visual changes are live. Core copy is staged on preview theme `143239839805`.
+
+### Storefront copy polish
+
+- **Status:** Brandy-inspired theme copy and guide drafts are edited and independently reviewed. The guide release dry run resolved 51 existing managed pages.
+- **Next:** Review the preview and the stored FAQ wording, then release the approved copy.
 
 ### Storefront visual polish
 
