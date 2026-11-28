@@ -1,12 +1,12 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-27 — Storefront layout polish ready for review
-Queue state: The visual changes are on unpublished Shopify preview `143239839805`.
+Last updated: 2026-11-27 — Storefront layout polish published
+Queue state: Visual changes are live on Shopify theme `139216420925`.
 
 ### Storefront visual polish
 
-- **Status:** Preview staged with tighter spacing, a responsive Ask Snoozer site search field, and a mobile homepage feature carousel.
-- **Next:** Ty reviews the preview before copy polish. Schedule Ask Snoozer backend work with the showroom app backend.
+- **Status:** Published and verified on desktop and mobile. The Ask Snoozer field uses Shopify site search.
+- **Next:** Copy polish. Schedule Ask Snoozer backend work with the showroom app backend.
 
 ### Website Ask Snoozer assessment
 

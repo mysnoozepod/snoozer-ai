@@ -1,18 +1,19 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-27 — Storefront layout polish ready for review
+Last updated: 2026-11-27 — Storefront layout polish published
 Owner: Ty  
 Implementer: Codi  
-Current phase: Visual polish is on the unpublished Shopify preview. Copy polish follows Ty's approval.
+Current phase: Visual polish is live following Ty's publication instruction. Copy polish is the next phase.
 
 ## Storefront visual polish — 2026-11-27
 
-- Review the [polished Shopify preview](https://mysnoozepod.com/?preview_theme_id=143239839805). The Ask Snoozer header field submits to native Shopify search for products, pages, and articles. The old chat interface and conversation runtime are outside this release.
-- The preview keeps the menu, logo, account, and cart on one mobile row and places search beneath it. The three homepage features use the theme's existing slider with a swipeable track and previous and next controls. The desktop feature row stays at three columns.
+- On the [live storefront](https://mysnoozepod.com/), the Ask Snoozer header field submits to native Shopify search for products, pages, and articles. The old chat interface and conversation runtime are outside this release.
+- The header keeps the menu, logo, account, and cart on one mobile row and places search beneath it. The three homepage features use the theme's existing slider with a swipeable track and previous and next controls. The desktop feature row stays at three columns.
 - Section spacing is tighter across the main content. The homepage has a shorter desktop hero and no small-screen horizontal page overflow from the mattress shelf.
 - Shopify preview checks covered 320px and 390px mobile widths and 1280px and 1440px desktop widths. At 390px, the feature strip went from 312px to 131px tall and the collection heading-to-grid gap went from 64px to 32px. At 1280px, the hero went from 560px to 486px. The browser confirmed three carousel positions, arrow and keyboard controls, the mobile menu, a product search to its product page, and a guide search to its guide page. Six storefront regression suites passed.
-- Theme setting `storefront_polish_enabled` is enabled on preview `143239839805` only. The setting defaults off in the repository. The preview changes were deployed individually to preserve the Shopify-managed homepage content.
-- The private backup of touched assets is under `%LOCALAPPDATA%\MySnoozePod\ThemeBackups\20261127-220920-layout-polish`. The next work is copy polish after Ty approves the layout. Ask Snoozer backend work belongs with the showroom app backend phase.
+- Activated `storefront_polish_enabled` on published theme `139216420925` after saving the existing theme assets privately. Applied the approved files individually from `8d533a10` and preserved Shopify-managed header changes. Preview `143239839805` remains unpublished.
+- Exited the Shopify preview and verified theme `139216420925` on the canonical URL. Desktop at 1280px returned the correct Hybrid Mattress product link and displayed the three features side by side. Mobile at 390px advanced through all three carousel cards, returned the Snooze Session guide, and showed zero page overflow. Three focused regression suites passed again.
+- The private backup of the published assets is under `%LOCALAPPDATA%\MySnoozePod\ThemeBackups\20261127-223640-published-layout-polish`. To turn the polish off, disable its theme setting on the published theme. The manifest and individual file backups provide full rollback if needed. Ask Snoozer backend work belongs with the showroom app backend phase.
 
 ## Ask Snoozer storefront removal — 2026-11-27
 
