@@ -47,6 +47,11 @@
   assign sort_by = search.sort_by | default: search.default_sort_by
   assign terms = search.terms | escape
   assign search_url = '?q=' | append: terms | append: '&options%5Bprefix%5D=last&sort_by=' | append: sort_by
+  if settings.storefront_polish_enabled
+    assign search_resource_types = 'product,page,article'
+    assign encoded_types = search_resource_types | url_encode
+    assign search_url = search_url | append: '&type=' | append: encoded_types
+  endif
 -%}
 
 {%- style -%}
@@ -102,6 +107,9 @@
               >
               <label class="field__label" for="Search-In-Template">{{ 'general.search.search' | t }}</label>
               <input name="options[prefix]" type="hidden" value="last">
+              {%- if search_resource_types != blank -%}
+                <input type="hidden" name="type" value="{{ search_resource_types }}">
+              {%- endif -%}
 
               {%- if settings.predictive_search_enabled -%}
                 <div class="predictive-search predictive-search--search-template" tabindex="-1" data-predictive-search>
@@ -152,6 +160,9 @@
       -%}
         <facet-filters-form class="facets facets-vertical-sort page-width small-hide">
           <form class="facets-vertical-form" id="FacetSortForm">
+            {%- if search_resource_types != blank -%}
+              <input type="hidden" name="type" value="{{ search_resource_types }}">
+            {%- endif -%}
             <div class="facet-filters sorting caption">
               <div class="facet-filters__field">
                 <h2 class="facet-filters__label caption-large text-body">
@@ -218,6 +229,7 @@
             >
               {% render 'facets',
                 results: search,
+                search_resource_types: search_resource_types,
                 enable_filtering: section.settings.enable_filtering,
                 enable_sorting: section.settings.enable_sorting,
                 filter_type: section.settings.filter_type,

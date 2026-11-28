@@ -404,6 +404,9 @@
     {% endstyle %}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
+    {%- if settings.storefront_polish_enabled -%}
+      {{ 'snoozepod-storefront-polish.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
     <style>
       body.template-index #MainContent .section + .section {
         margin-top: 4.8rem;
@@ -466,7 +469,7 @@
     </script>
   </head>
 
-  <body class="gradient template-{{ request.page_type | handle }}{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
+  <body class="gradient template-{{ request.page_type | handle }}{% if settings.storefront_polish_enabled %} storefront-polish{% endif %}{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
     <a class="skip-to-content-link button visually-hidden" href="#MainContent">
       {{ 'accessibility.skip_to_text' | t }}
     </a>

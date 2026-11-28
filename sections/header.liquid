@@ -561,7 +561,7 @@
   {%- endcapture -%}
 
   <header class="header page-width{% if section.settings.menu_type_desktop == 'drawer' %} drawer-menu{% endif %}{% if section.settings.menu != blank %} header--has-menu{% endif %}{% if has_app_block %} header--has-app{% endif %}{% if social_links %} header--has-social{% endif %}{% if shop.customer_accounts_enabled %} header--has-account{% endif %}{% if localization_forms %} header--has-localizations{% endif %} header--mobile-{{ section.settings.mobile_logo_position }}">
-    <div class="header__main">
+    <div class="header__main{% if settings.storefront_polish_enabled %} header__main--polished{% endif %}">
       <div class="header__main-toggle">
         {%- if section.settings.menu != blank -%}
           {%- render 'header-drawer' -%}
@@ -634,6 +634,25 @@
           </a>
         </div>
       </div>
+      {%- if settings.storefront_polish_enabled -%}
+        <form class="snoozepod-header-search" action="{{ routes.search_url }}" method="get" role="search" aria-label="Storefront">
+          <label for="SnoozePodSearch-{{ section.id }}">Ask Snoozer</label>
+          <input
+            id="SnoozePodSearch-{{ section.id }}"
+            type="search"
+            name="q"
+            value="{{ search.terms | escape }}"
+            placeholder="Search the site"
+            enterkeyhint="search"
+            required
+          >
+          <input type="hidden" name="options[prefix]" value="last">
+          <input type="hidden" name="type" value="product,page,article">
+          <button type="submit" aria-label="{{ 'general.search.search' | t }}">
+            {{- 'icon-search.svg' | inline_asset_content -}}
+          </button>
+        </form>
+      {%- endif -%}
     </div>
     {%- if section.settings.menu != blank -%}
       <nav class="header__mobile-nav large-up-hide" aria-label="Category navigation">

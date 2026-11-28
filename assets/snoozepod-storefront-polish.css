@@ -1,0 +1,185 @@
+.storefront-polish #MainContent {
+  --spacing-sections-mobile: 32px;
+  --spacing-sections-desktop: 52px;
+}
+
+.storefront-polish.template-index #MainContent > .section + .section {
+  margin-top: 24px;
+}
+
+.storefront-polish.template-index #MainContent > .section:has([data-home-benefits-padding]) {
+  margin-top: 16px;
+}
+
+.storefront-polish #MainContent [data-home-benefits-padding] {
+  padding-block: 0 !important;
+}
+
+.header .header__main--polished {
+  grid-template-columns: 3.6rem minmax(0, 1fr) auto;
+  grid-template-areas: 'menu logo utility' 'search search search';
+  gap: 0.6rem 0.8rem;
+  padding: 0.5rem 0 1rem;
+}
+
+.header__main--polished .header__main-toggle { grid-area: menu; }
+.header__main--polished .header__branding { grid-area: logo; }
+.header__main--polished .header__icons { grid-area: utility; }
+
+.snoozepod-header-search {
+  grid-area: search;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 4.4rem;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 4.6rem;
+  padding-inline-start: 1.4rem;
+  border: 1px solid #bcc8d9;
+  border-radius: 999px;
+  background: #fff;
+  color: #071a44;
+}
+
+.snoozepod-header-search:focus-within {
+  outline: 2px solid #2d5590;
+  outline-offset: 2px;
+}
+
+.snoozepod-header-search label {
+  font-size: 1.4rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.snoozepod-header-search input[type='search'] {
+  min-width: 0;
+  min-height: 4.4rem;
+  padding: 0;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1.6rem;
+}
+
+.snoozepod-header-search input::placeholder { color: #52647d; }
+
+.snoozepod-header-search button,
+.snoozepod-benefits-carousel__controls button {
+  display: grid;
+  place-items: center;
+  height: 4.4rem;
+  width: 4.4rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.snoozepod-header-search button:hover,
+.snoozepod-benefits-carousel__controls button:not(:disabled):hover {
+  background: #eef2f7;
+}
+
+.snoozepod-header-search button svg { width: 1.8rem; height: 1.8rem; }
+
+.snoozepod-benefits-carousel { display: block; }
+.snoozepod-benefits-carousel__controls { display: none; }
+
+@media screen and (max-width: 989px) {
+  .storefront-polish .snoozepod-trust-strip__panel:has(.snoozepod-benefits-carousel) {
+    padding-block: 1.4rem 0.2rem;
+  }
+
+  .storefront-polish .snoozepod-benefits-carousel .snoozepod-trust-strip__grid {
+    position: relative;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    width: round(down, 100%, 1px);
+    align-items: start;
+    gap: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .snoozepod-benefits-carousel .snoozepod-trust-strip__grid::-webkit-scrollbar { display: none; }
+
+  .snoozepod-benefits-carousel .snoozepod-trust-strip__item {
+    min-width: 0;
+    padding-inline: 0.4rem;
+    scroll-snap-align: start;
+  }
+
+  .snoozepod-benefits-carousel:defined .snoozepod-benefits-carousel__controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    color: #071a44;
+  }
+
+  .snoozepod-benefits-carousel__position {
+    min-width: 3rem;
+    text-align: center;
+    font-size: 1.2rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .snoozepod-benefits-carousel__controls button:disabled { opacity: 0.38; cursor: default; }
+  .snoozepod-benefits-carousel__controls svg { width: 1rem; height: 1rem; }
+  .snoozepod-benefits-carousel__controls [name='previous'] svg { transform: rotate(90deg); }
+  .snoozepod-benefits-carousel__controls [name='next'] svg { transform: rotate(-90deg); }
+}
+
+@media screen and (max-width: 749px) {
+  .storefront-polish .mattress-showcase .mattress-showcase__grid {
+    margin-right: 0;
+    padding-right: 0;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .storefront-polish.template-index #MainContent > .section + .section {
+    margin-top: 36px;
+  }
+
+  .storefront-polish.template-index #MainContent > .section:has([data-home-benefits-padding]) {
+    margin-top: 20px;
+  }
+
+  .storefront-polish #MainContent .snooze-hero,
+  .storefront-polish #MainContent .snooze-hero__inner {
+    min-height: clamp(420px, 38vw, 520px);
+  }
+
+  .header .header__main--polished {
+    grid-template-columns: minmax(18rem, 23rem) minmax(0, 1fr) auto;
+    grid-template-areas: 'logo search utility';
+    gap: 1.6rem;
+    min-height: 6.8rem;
+    padding: 0.45rem 0;
+  }
+
+  .snoozepod-header-search {
+    justify-self: center;
+    width: min(100%, 50rem);
+    min-height: 4.8rem;
+    padding-inline-start: 1.8rem;
+  }
+
+  .storefront-polish .header__nav-row,
+  .storefront-polish .header__nav-row .header__inline-menu {
+    min-height: 4.8rem;
+  }
+
+  .storefront-polish .header__nav-row .list-menu--inline {
+    gap: clamp(1.2rem, 1.8vw, 2.8rem);
+  }
+}

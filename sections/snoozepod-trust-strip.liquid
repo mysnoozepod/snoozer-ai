@@ -10,6 +10,11 @@
     assign mobile_padding_top = 0
     assign desktop_padding_top = 0
   endif
+
+  assign mobile_carousel = false
+  if settings.storefront_polish_enabled and request.page_type == 'index' and section.blocks.size > 1
+    assign mobile_carousel = true
+  endif
 -%}
 
 {%- style -%}
@@ -167,12 +172,15 @@
 {%- endstyle -%}
 
 <section class="section color-{{ section.settings.color_scheme }} gradient snoozepod-trust-strip-section">
-  <div class="section-{{ section.id }}-padding">
-    <div class="snoozepod-trust-strip-{{ section.id }}{% if section.settings.pull_up %} snoozepod-trust-strip--pull-up{% endif %}">
+  <div class="section-{{ section.id }}-padding"{% if mobile_carousel %} data-home-benefits-padding{% endif %}>
+    <div class="snoozepod-trust-strip-{{ section.id }}{% if section.settings.pull_up and mobile_carousel == false %} snoozepod-trust-strip--pull-up{% endif %}">
       <div class="snoozepod-trust-strip__panel">
-        <ul class="snoozepod-trust-strip__grid" role="list">
+        {%- if mobile_carousel -%}
+          <slider-component class="snoozepod-benefits-carousel" role="region" aria-label="Shopping at MySnoozePod">
+        {%- endif -%}
+        <ul class="snoozepod-trust-strip__grid" role="list"{% if mobile_carousel %} id="Slider-{{ section.id }}"{% endif %}>
           {%- for block in section.blocks -%}
-            <li class="snoozepod-trust-strip__item" {{ block.shopify_attributes }}>
+            <li class="snoozepod-trust-strip__item"{% if mobile_carousel %} id="Slide-{{ section.id }}-{{ forloop.index }}"{% endif %} {{ block.shopify_attributes }}>
               {%- if block.settings.icon != blank and block.settings.icon != 'none' -%}
                 <span class="snoozepod-trust-strip__icon">
                   {% render 'icon-accordion', icon: block.settings.icon %}
@@ -189,6 +197,23 @@
             </li>
           {%- endfor -%}
         </ul>
+        {%- if mobile_carousel -%}
+            <div class="snoozepod-benefits-carousel__controls">
+              <button type="button" name="previous" aria-label="{{ 'general.slider.previous_slide' | t }}" aria-controls="Slider-{{ section.id }}" disabled>
+                {{- 'icon-caret.svg' | inline_asset_content -}}
+              </button>
+              <span class="snoozepod-benefits-carousel__position">
+                <span class="slider-counter--current">1</span>
+                <span aria-hidden="true">/</span>
+                <span class="visually-hidden">{{ 'general.slider.of' | t }}</span>
+                <span class="slider-counter--total">{{ section.blocks.size }}</span>
+              </span>
+              <button type="button" name="next" aria-label="{{ 'general.slider.next_slide' | t }}" aria-controls="Slider-{{ section.id }}">
+                {{- 'icon-caret.svg' | inline_asset_content -}}
+              </button>
+            </div>
+          </slider-component>
+        {%- endif -%}
       </div>
     </div>
   </div>

@@ -1,7 +1,12 @@
 # MySnoozePod.com Execution Queue
 
-Last updated: 2026-11-27 — Ask Snoozer removed from the storefront
-Queue state: The published theme and the unpublished preview both omit storefront chat.
+Last updated: 2026-11-27 — Storefront layout polish ready for review
+Queue state: The visual changes are on unpublished Shopify preview `143239839805`.
+
+### Storefront visual polish
+
+- **Status:** Preview staged with tighter spacing, a responsive Ask Snoozer site search field, and a mobile homepage feature carousel.
+- **Next:** Ty reviews the preview before copy polish. Schedule Ask Snoozer backend work with the showroom app backend.
 
 ### Website Ask Snoozer assessment
 

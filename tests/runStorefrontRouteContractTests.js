@@ -41,11 +41,25 @@ assert.match(environmentSection, /linked_collection\.featured_image/);
 assert.match(environmentSection, /routes\.collections_url \| append: '\/' \| append: linked_collection\.handle/);
 
 const themeRoot = path.resolve(__dirname, '..');
+const header = read('sections/header.liquid');
+const searchForm = header.match(/<form class="snoozepod-header-search"[^>]*>[\s\S]*?<\/form>/g);
+assert.equal(searchForm?.length, 1, 'Use a single responsive header search form.');
+assert.match(searchForm[0], /action="{{ routes\.search_url }}" method="get"/);
+assert.match(searchForm[0], /<label[^>]+>Ask Snoozer<\/label>[\s\S]*?type="search"\s+name="q"/);
+assert.match(searchForm[0], /name="type" value="product,page,article"/);
+assert.match(read('sections/main-search.liquid'), /search_resource_types: search_resource_types/);
+const trustStrip = read('sections/snoozepod-trust-strip.liquid');
+assert.match(trustStrip, /<slider-component[^>]+>[\s\S]*?id="Slider-{{ section\.id }}"/);
+assert.match(trustStrip, /name="previous"[\s\S]*?name="next"/);
+const settings = readJson('config/settings_schema.json');
+assert.equal(settings.flatMap((group) => group.settings || []).find((setting) => setting.id === 'storefront_polish_enabled')?.default, false);
 const retiredChat = /ask(?:[ -]|_)snoozer|data-(?:website-)?snoozer-trigger|snoozer_cta|meet-snoozer/i;
 for (const directory of ['layout', 'sections', 'snippets', 'templates', 'config']) {
   for (const file of fs.readdirSync(path.join(themeRoot, directory), { recursive: true })) {
     if (/\.(liquid|json)$/.test(file)) {
-      assert.doesNotMatch(read(path.join(directory, file)), retiredChat, `Chat must stay off the storefront in ${directory}/${file}.`);
+      const markup = read(path.join(directory, file));
+      const withoutNativeSearch = directory === 'sections' && file === 'header.liquid' ? markup.replace(searchForm[0], '') : markup;
+      assert.doesNotMatch(withoutNativeSearch, retiredChat, `Chat must stay off the storefront in ${directory}/${file}.`);
     }
   }
 }

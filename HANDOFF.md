@@ -1,9 +1,18 @@
 # MySnoozePod.com Operational Handoff
 
-Last updated: 2026-11-27 — Ask Snoozer removed from the storefront
+Last updated: 2026-11-27 — Storefront layout polish ready for review
 Owner: Ty  
 Implementer: Codi  
-Current phase: Shopify storefront chat was removed at Ty's direction.
+Current phase: Visual polish is on the unpublished Shopify preview. Copy polish follows Ty's approval.
+
+## Storefront visual polish — 2026-11-27
+
+- Review the [polished Shopify preview](https://mysnoozepod.com/?preview_theme_id=143239839805). The Ask Snoozer header field submits to native Shopify search for products, pages, and articles. The old chat interface and conversation runtime are outside this release.
+- The preview keeps the menu, logo, account, and cart on one mobile row and places search beneath it. The three homepage features use the theme's existing slider with a swipeable track and previous and next controls. The desktop feature row stays at three columns.
+- Section spacing is tighter across the main content. The homepage has a shorter desktop hero and no small-screen horizontal page overflow from the mattress shelf.
+- Shopify preview checks covered 320px and 390px mobile widths and 1280px and 1440px desktop widths. At 390px, the feature strip went from 312px to 131px tall and the collection heading-to-grid gap went from 64px to 32px. At 1280px, the hero went from 560px to 486px. The browser confirmed three carousel positions, arrow and keyboard controls, the mobile menu, a product search to its product page, and a guide search to its guide page. Six storefront regression suites passed.
+- Theme setting `storefront_polish_enabled` is enabled on preview `143239839805` only. The setting defaults off in the repository. The preview changes were deployed individually to preserve the Shopify-managed homepage content.
+- The private backup of touched assets is under `%LOCALAPPDATA%\MySnoozePod\ThemeBackups\20261127-220920-layout-polish`. The next work is copy polish after Ty approves the layout. Ask Snoozer backend work belongs with the showroom app backend phase.
 
 ## Ask Snoozer storefront removal — 2026-11-27
 
